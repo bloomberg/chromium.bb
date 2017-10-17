@@ -82,8 +82,8 @@ LayoutRect PaintInvalidator::MapLocalRectToVisualRectInBacking(
     }
   }
 
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-    // In SPv2, visual rects are in the space of their local transform node.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
+    // In SPv175, visual rects are in the space of their local transform node.
     // For SVG, the input rect is in local SVG coordinates in which paint
     // offset doesn't apply.
     if (!is_svg_child)
@@ -182,8 +182,8 @@ LayoutRect PaintInvalidator::ComputeVisualRectInBacking(
 LayoutPoint PaintInvalidator::ComputeLocationInBacking(
     const LayoutObject& object,
     const PaintInvalidatorContext& context) {
-  // In SPv2, locationInBacking is in the space of their local transform node.
-  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+  // In SPv175, locationInBacking is in the space of their local transform node.
+  if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
     return object.PaintOffset();
 
   LayoutPoint point;

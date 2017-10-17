@@ -30,7 +30,7 @@ void TableCellPaintInvalidator::InvalidateContainerForCellGeometryChange(
   container_context.painting_layer->SetNeedsRepaint();
   container.InvalidateDisplayItemClients(PaintInvalidationReason::kGeometry);
 
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
       context_.paint_invalidation_container !=
           container_context.paint_invalidation_container) {
     ObjectPaintInvalidatorWithContext(container, container_context)

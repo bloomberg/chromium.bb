@@ -2428,9 +2428,9 @@ bool LayoutBox::PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const {
     return false;
 
   // If the box has any kind of clip, we need issue paint invalidation to cover
-  // the changed part of children when the box got resized. In SPv2 this is
+  // the changed part of children when the box got resized. In SPv175 this is
   // handled by detecting paint property changes.
-  if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     if (HasClipRelatedProperty())
       return false;
   }

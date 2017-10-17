@@ -180,15 +180,19 @@ void CompositedLayerRasterInvalidator::InvalidateRasterForOldChunk(
   }
 }
 
-void CompositedLayerRasterInvalidator::InvalidateRasterForWholeLayer() {
+void CompositedLayerRasterInvalidator::InvalidateRasterForWholeLayer(
+    const DisplayItemClient* layer_display_item_client) {
   IntRect rect(0, 0, layer_bounds_.width(), layer_bounds_.height());
   raster_invalidation_function_(rect);
 
   if (tracking_info_) {
+    const auto* client = layer_display_item_client;
+    if (!client) {
+      DCHECK(!paint_chunks_info_.IsEmpty());
+      client = &paint_chunks_info_[0].id.client;
+    }
     tracking_info_->tracking.AddInvalidation(
-        &paint_chunks_info_[0].id.client,
-        paint_chunks_info_[0].id.client.DebugName(), rect,
-        PaintInvalidationReason::kFullLayer);
+        client, client->DebugName(), rect, PaintInvalidationReason::kFullLayer);
   }
 }
 
@@ -201,7 +205,8 @@ RasterInvalidationTracking& CompositedLayerRasterInvalidator::EnsureTracking() {
 void CompositedLayerRasterInvalidator::Generate(
     const gfx::Rect& layer_bounds,
     const Vector<const PaintChunk*>& paint_chunks,
-    const PropertyTreeState& layer_state) {
+    const PropertyTreeState& layer_state,
+    const DisplayItemClient* layer_display_item_client) {
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     EnsureTracking();
 
@@ -224,7 +229,7 @@ void CompositedLayerRasterInvalidator::Generate(
 
   if (!layer_bounds_was_empty && !layer_bounds_.IsEmpty()) {
     if (layer_origin_changed || layer_state_changed)
-      InvalidateRasterForWholeLayer();
+      InvalidateRasterForWholeLayer(layer_display_item_client);
     else
       GenerateRasterInvalidations(paint_chunks, new_chunks_info);
   }

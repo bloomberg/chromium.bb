@@ -340,7 +340,9 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   sk_sp<PaintRecord> CaptureRecord();
 
+  Vector<const PaintChunk*> AllChunkPointers() const;
   CompositedLayerRasterInvalidator& EnsureRasterInvalidator();
+  void SetNeedsDisplayInRectInternal(const IntRect&);
 
   GraphicsLayerClient* client_;
 
