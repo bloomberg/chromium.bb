@@ -158,7 +158,7 @@ class PLATFORM_EXPORT TaskQueueImpl {
   void InsertFence(TaskQueue::InsertFencePosition position);
   void InsertFenceAt(base::TimeTicks time);
   void RemoveFence();
-  bool HasFence() const;
+  bool HasActiveFence();
   bool BlockedByFence() const;
   // Implementation of TaskQueue::SetObserver.
   void SetOnNextWakeUpChangedCallback(OnNextWakeUpChangedCallback callback);
