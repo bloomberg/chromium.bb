@@ -22,6 +22,7 @@ To use this script, you need to
 import argparse
 import collections
 import filecmp
+import logging
 import os
 import pprint
 import re
@@ -32,11 +33,21 @@ import zipfile
 
 SRC_DIR = os.path.join(os.path.dirname(__file__), '..', '..')
 SRC_DIR = os.path.abspath(SRC_DIR)
-BUILD_ANDROID_GYP_DIR = os.path.join(SRC_DIR, 'build/android/gyp')
+BUILD_ANDROID_DIR = os.path.join(SRC_DIR, 'build', 'android')
+BUILD_ANDROID_GYP_DIR = os.path.join(BUILD_ANDROID_DIR, 'gyp')
 sys.path.append(BUILD_ANDROID_GYP_DIR)
 
 import finalize_apk # pylint: disable=import-error
 from util import build_utils # pylint: disable=import-error
+
+sys.path.append(BUILD_ANDROID_DIR)
+
+from pylib import constants  # pylint: disable=import-error
+
+DEFAULT_ZIPALIGN_PATH = os.path.join(
+    SRC_DIR, 'third_party', 'android_tools', 'sdk', 'build-tools',
+    constants.ANDROID_SDK_BUILD_TOOLS_VERSION, 'zipalign')
+
 
 class ApkMergeFailure(Exception):
   pass
@@ -215,7 +226,7 @@ def main():
   parser.add_argument('--apk_32bit', required=True, type=os.path.abspath)
   parser.add_argument('--apk_64bit', required=True, type=os.path.abspath)
   parser.add_argument('--out_apk', required=True, type=os.path.abspath)
-  parser.add_argument('--zipalign_path', required=True, type=os.path.abspath)
+  parser.add_argument('--zipalign_path', type=os.path.abspath)
   parser.add_argument('--keystore_path', required=True, type=os.path.abspath)
   parser.add_argument('--key_name', required=True)
   parser.add_argument('--key_password', required=True)
@@ -228,6 +239,19 @@ def main():
   parser.add_argument('--ignore-classes-dex', action='store_true')
   parser.add_argument('--component-build', action='store_true')
   args = parser.parse_args()
+
+  if (args.zipalign_path is not None and
+      not os.path.isfile(args.zipalign_path)):
+    # If given an invalid path, fall back to try the default.
+    logging.warning('zipalign path not found: %s', args.zipalign_path)
+    logging.warning('falling back to: %s', DEFAULT_ZIPALIGN_PATH)
+    args.zipalign_path = None
+
+  if args.zipalign_path is None:
+    # When no path given, try the default.
+    if not os.path.isfile(DEFAULT_ZIPALIGN_PATH):
+      return 'zipalign path not found: %s' % DEFAULT_ZIPALIGN_PATH
+    args.zipalign_path = DEFAULT_ZIPALIGN_PATH
 
   tmp_dir = tempfile.mkdtemp()
   tmp_dir_64 = os.path.join(tmp_dir, '64_bit')
