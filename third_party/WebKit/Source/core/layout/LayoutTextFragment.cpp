@@ -28,6 +28,7 @@
 #include "core/dom/Text.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/layout/HitTestResult.h"
+#include "core/layout/ng/inline/ng_offset_mapping_result.h"
 
 namespace blink {
 
@@ -171,6 +172,54 @@ void LayoutTextFragment::UpdateHitTestResult(HitTestResult& result,
   if (is_remaining_text_layout_object_ || !GetFirstLetterPseudoElement())
     return;
   result.SetInnerNode(GetFirstLetterPseudoElement());
+}
+
+int LayoutTextFragment::CaretMinOffset() const {
+  if (!ShouldUseNGAlternatives())
+    return LayoutText::CaretMinOffset();
+
+  const Node* node = AssociatedTextNode();
+  if (!node)
+    return 0;
+
+  const unsigned candidate =
+      GetNGOffsetMapping().StartOfNextNonCollapsedCharacter(*node, Start());
+  DCHECK_GE(candidate, Start());
+  // Align with the legacy behavior that 0 is returned if the entire layout
+  // object contains only collapsed whitespaces.
+  const unsigned adjusted = candidate - Start();
+  return adjusted == FragmentLength() ? 0 : adjusted;
+}
+
+int LayoutTextFragment::CaretMaxOffset() const {
+  if (!ShouldUseNGAlternatives())
+    return LayoutText::CaretMaxOffset();
+
+  const Node* node = AssociatedTextNode();
+  if (!node)
+    return 0;
+
+  const unsigned candidate =
+      GetNGOffsetMapping().EndOfLastNonCollapsedCharacter(
+          *node, Start() + FragmentLength());
+  // Align with the legacy behavior that FragmentLength() is returned if the
+  // entire layout object contains only collapsed whitespaces.
+  return candidate <= Start() ? FragmentLength() : candidate - Start();
+}
+
+unsigned LayoutTextFragment::ResolvedTextLength() const {
+  if (!ShouldUseNGAlternatives())
+    return LayoutText::ResolvedTextLength();
+
+  const Node* node = AssociatedTextNode();
+  if (!node)
+    return 0;
+  const NGOffsetMappingResult& mapping = GetNGOffsetMapping();
+  const unsigned start = mapping.GetTextContentOffset(*node, Start());
+  const unsigned end =
+      mapping.GetTextContentOffset(*node, Start() + FragmentLength());
+  DCHECK_LE(start, end);
+  return end - start;
 }
 
 }  // namespace blink

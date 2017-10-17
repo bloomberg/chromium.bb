@@ -1575,6 +1575,7 @@ jumbo_source_set("unit_tests") {
     "layout/LayoutTableTest.cpp",
     "layout/LayoutTestHelper.cpp",
     "layout/LayoutTestHelper.h",
+    "layout/LayoutTextFragmentTest.cpp",
     "layout/LayoutTextTest.cpp",
     "layout/LayoutThemeTest.cpp",
     "layout/LayoutViewTest.cpp",

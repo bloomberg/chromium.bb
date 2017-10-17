@@ -203,7 +203,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   int CaretMinOffset() const override;
   int CaretMaxOffset() const override;
-  unsigned ResolvedTextLength() const;
+  virtual unsigned ResolvedTextLength() const;
 
   // True if any character remains after CSS white-space collapsing.
   bool HasNonCollapsedText() const;

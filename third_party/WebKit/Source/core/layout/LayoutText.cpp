@@ -1916,7 +1916,8 @@ const NGOffsetMappingResult& LayoutText::GetNGOffsetMapping() const {
 
 int LayoutText::CaretMinOffset() const {
   if (ShouldUseNGAlternatives()) {
-    // TODO(xiaochengh): Support ::first-letter.
+    // ::first-letter handling should be done by LayoutTextFragment override.
+    DCHECK(!IsTextFragment());
     if (!GetNode())
       return 0;
     const unsigned candidate =
@@ -1937,7 +1938,8 @@ int LayoutText::CaretMinOffset() const {
 
 int LayoutText::CaretMaxOffset() const {
   if (ShouldUseNGAlternatives()) {
-    // TODO(xiaochengh): Support ::first-letter.
+    // ::first-letter handling should be done by LayoutTextFragment override.
+    DCHECK(!IsTextFragment());
     if (!GetNode())
       return TextLength();
     const unsigned candidate =
@@ -1960,7 +1962,8 @@ int LayoutText::CaretMaxOffset() const {
 
 unsigned LayoutText::ResolvedTextLength() const {
   if (ShouldUseNGAlternatives()) {
-    // TODO(xiaochengh): Support ::first-letter.
+    // ::first-letter handling should be done by LayoutTextFragment override.
+    DCHECK(!IsTextFragment());
     if (!GetNode())
       return 0;
     const NGOffsetMappingResult& mapping = GetNGOffsetMapping();

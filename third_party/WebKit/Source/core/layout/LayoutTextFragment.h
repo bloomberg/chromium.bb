@@ -37,7 +37,7 @@ class FirstLetterPseudoElement;
 // We cache offsets so that text transformations can be applied in such a way
 // that we can recover the original unaltered string from our corresponding DOM
 // node.
-class LayoutTextFragment final : public LayoutText {
+class CORE_EXPORT LayoutTextFragment final : public LayoutText {
  public:
   LayoutTextFragment(Node*, StringImpl*, int start_offset, int length);
   LayoutTextFragment(Node*, StringImpl*);
@@ -50,6 +50,10 @@ class LayoutTextFragment final : public LayoutText {
                                              unsigned length);
 
   bool IsTextFragment() const override { return true; }
+
+  int CaretMinOffset() const override;
+  int CaretMaxOffset() const override;
+  unsigned ResolvedTextLength() const override;
 
   unsigned Start() const { return start_; }
   unsigned FragmentLength() const { return fragment_length_; }
