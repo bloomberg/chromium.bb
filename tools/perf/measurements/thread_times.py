@@ -4,7 +4,6 @@
 
 from telemetry.page import legacy_page_test
 from telemetry.timeline import chrome_trace_category_filter
-from telemetry.web_perf.metrics import layout
 
 from measurements import timeline_controller
 from metrics import timeline
@@ -47,9 +46,6 @@ class ThreadTimes(legacy_page_test.LegacyPageTest):
       metric.details_to_report = timeline.ReportSilkDetails
     metric.AddResults(self._timeline_controller.model, renderer_thread,
                       self._timeline_controller.smooth_records, results)
-    layout_metric = layout.LayoutMetric()
-    layout_metric.AddResults(self._timeline_controller.model, renderer_thread,
-                             self._timeline_controller.smooth_records, results)
 
   def DidRunPage(self, platform):
     if self._timeline_controller:
