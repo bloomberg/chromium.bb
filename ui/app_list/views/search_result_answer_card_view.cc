@@ -4,6 +4,8 @@
 
 #include "ui/app_list/views/search_result_answer_card_view.h"
 
+#include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/app_list/app_list_features.h"
 #include "ui/app_list/app_list_view_delegate.h"
@@ -89,6 +91,20 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     return "SearchAnswerContainerView";
   }
 
+  void OnBlur() override {
+    if (features::IsAppListFocusEnabled())
+      SetSelected(false);
+    Button::OnBlur();
+  }
+
+  void OnFocus() override {
+    if (features::IsAppListFocusEnabled()) {
+      SetSelected(true);
+      NotifyAccessibilityEvent(ui::AX_EVENT_SELECTION, true);
+    }
+    Button::OnFocus();
+  }
+
   bool OnKeyPressed(const ui::KeyEvent& event) override {
     if (event.key_code() == ui::VKEY_SPACE) {
       // Shouldn't eat Space; we want Space to go to the search box.
@@ -96,6 +112,15 @@ class SearchResultAnswerCardView::SearchAnswerContainerView
     }
 
     return Button::OnKeyPressed(event);
+  }
+
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    if (!features::IsAppListFocusEnabled()) {
+      Button::GetAccessibleNodeData(node_data);
+      return;
+    }
+    node_data->role = ui::AX_ROLE_GENERIC_CONTAINER;
+    node_data->SetName(accessible_name());
   }
 
   // views::ButtonListener overrides:
