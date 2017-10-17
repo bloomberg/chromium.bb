@@ -40,8 +40,6 @@ class PolicyToolUITest : public InProcessBrowserTest {
 
   void LoadSession(const std::string& session_name);
 
-  void LoadSessionAndWaitForAlert(const std::string& session_name);
-
   std::unique_ptr<base::DictionaryValue> ExtractPolicyValues(bool need_status);
 
   bool IsInvalidSessionNameErrorMessageDisplayed();
@@ -147,19 +145,6 @@ std::unique_ptr<base::ListValue> PolicyToolUITest::ExtractSessionsList() {
   EXPECT_TRUE(content::ExecuteScriptAndExtractString(
       browser()->tab_strip_model()->GetActiveWebContents(), javascript, &json));
   return base::ListValue::From(base::JSONReader::Read(json));
-}
-
-void PolicyToolUITest::LoadSessionAndWaitForAlert(
-    const std::string& session_name) {
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  JavaScriptDialogTabHelper* js_helper =
-      JavaScriptDialogTabHelper::FromWebContents(contents);
-  base::RunLoop dialog_wait;
-  js_helper->SetDialogShownCallbackForTesting(dialog_wait.QuitClosure());
-  LoadSession(session_name);
-  dialog_wait.Run();
-  EXPECT_TRUE(js_helper->IsShowingDialogForTesting());
 }
 
 bool PolicyToolUITest::IsInvalidSessionNameErrorMessageDisplayed() {

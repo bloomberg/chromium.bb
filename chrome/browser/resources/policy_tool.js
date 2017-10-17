@@ -255,18 +255,6 @@ policy.PolicyTable.prototype.getDictionary = function() {
   return result;
 };
 
-// Add error showing function.
-
-/**
- * Shows an error message to the user.
- * @param {String} message_name Identifier for the error message.
- */
-policy.showErrorMessage = function(message_name) {
-  // TODO(urusant): improve error showing.
-  alert(loadTimeData.getString(message_name));
-  console.log(loadTimeData.getString(message_name));
-};
-
 // Call the main inttialization function when the page finishes loading.
 document.addEventListener(
     'DOMContentLoaded',

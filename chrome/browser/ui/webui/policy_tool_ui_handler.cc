@@ -255,8 +255,3 @@ void PolicyToolUIHandler::HandleResetSession(const base::ListValue* args) {
       base::BindOnce(&PolicyToolUIHandler::OnSessionUpdated,
                      callback_weak_ptr_factory_.GetWeakPtr()));
 }
-
-void PolicyToolUIHandler::ShowErrorMessageToUser(
-    const std::string& message_name) {
-  CallJavascriptFunction("policy.showErrorMessage", base::Value(message_name));
-}
