@@ -202,7 +202,8 @@ enum TrimPositions {
 };
 
 // Removes characters in |trim_chars| from the beginning and end of |input|.
-// The 8-bit version only works on 8-bit characters, not UTF-8.
+// The 8-bit version only works on 8-bit characters, not UTF-8. Returns true if
+// any characters were removed.
 //
 // It is safe to use the same variable for both |input| and |output| (this is
 // the normal usage to trim in-place).
@@ -246,7 +247,7 @@ BASE_EXPORT TrimPositions TrimWhitespaceASCII(const std::string& input,
 BASE_EXPORT StringPiece TrimWhitespaceASCII(StringPiece input,
                                             TrimPositions positions);
 
-// Searches  for CR or LF characters.  Removes all contiguous whitespace
+// Searches for CR or LF characters.  Removes all contiguous whitespace
 // strings that contain them.  This is useful when trying to deal with text
 // copied from terminals.
 // Returns |text|, with the following three transformations:
@@ -426,9 +427,6 @@ BASE_EXPORT void ReplaceSubstringsAfterOffset(
 // to this function (probably 0).
 BASE_EXPORT char* WriteInto(std::string* str, size_t length_with_null);
 BASE_EXPORT char16* WriteInto(string16* str, size_t length_with_null);
-#ifndef OS_WIN
-BASE_EXPORT wchar_t* WriteInto(std::wstring* str, size_t length_with_null);
-#endif
 
 // Does the opposite of SplitString()/SplitStringPiece(). Joins a vector or list
 // of strings into a single string, inserting |separator| (which may be empty)
