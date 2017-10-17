@@ -102,11 +102,6 @@ void PreviewModeClient::SubmitForm(const std::string& url,
   NOTREACHED();
 }
 
-std::string PreviewModeClient::ShowFileSelectionDialog() {
-  NOTREACHED();
-  return std::string();
-}
-
 pp::URLLoader PreviewModeClient::CreateURLLoader() {
   NOTREACHED();
   return pp::URLLoader();

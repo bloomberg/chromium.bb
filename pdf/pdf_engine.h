@@ -144,9 +144,6 @@ class PDFEngine {
                             const void* data,
                             int length) = 0;
 
-    // Pops up a file selection dialog and returns the result.
-    virtual std::string ShowFileSelectionDialog() = 0;
-
     // Creates and returns new URL loader for partial document requests.
     virtual pp::URLLoader CreateURLLoader() = 0;
 
