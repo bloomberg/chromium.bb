@@ -10,11 +10,13 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "base/sys_byteorder.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "net/base/ip_address.h"
 #include "net/dns/dns_config_service_posix.h"
 #include "net/dns/dns_protocol.h"
+#include "net/test/net_test_suite.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -211,7 +213,15 @@ class DnsConfigServicePosixTest : public testing::Test {
     EXPECT_TRUE(config.IsValid());
     seen_config_ = true;
     real_config_ = config;
-    run_loop_->QuitWhenIdle();
+    // run_loop_ will be nullptr if ExpectChange() was never called.
+    // ChangeConfigMultipleTimes can't call ExpectChange() because
+    // OnConfigChanged() will only be called when the DnsConfig is actually
+    // different. When the device has nameservers configured, that's true on the
+    // initial read, and OnConfigChanged() will be called, but when it doesn't,
+    // that's never true, and the Run() call in ExpectChange() would hang
+    // forever.
+    if (run_loop_)
+      run_loop_->QuitWhenIdle();
   }
 
   void WriteMockHostsFile(const char* hosts_string) {
@@ -301,7 +311,7 @@ TEST_F(DnsConfigServicePosixTest, SeenChangeSinceNetworkChange) {
 TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
   service_->WatchConfig(base::Bind(&DnsConfigServicePosixTest::OnConfigChanged,
                                    base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+  NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
 
   for (int i = 0; i < 5; i++) {
     service_->OnNetworkChanged(NetworkChangeNotifier::CONNECTION_WIFI);
@@ -309,7 +319,7 @@ TEST_F(DnsConfigServicePosixTest, ChangeConfigMultipleTimes) {
     // called if the new config is different from the old one, so this can't be
     // ExpectChange().
     base::PlatformThread::Sleep(base::TimeDelta::FromMilliseconds(50));
-    base::RunLoop().RunUntilIdle();
+    NetTestSuite::GetScopedTaskEnvironment()->RunUntilIdle();
   }
 
   // There should never be more than 4 nameservers in a real config.
