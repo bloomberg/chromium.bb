@@ -16,6 +16,7 @@
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
+#include "components/history/core/browser/default_top_sites_provider.h"
 #include "components/history/core/browser/history_client.h"
 #include "components/history/core/browser/history_constants.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -279,6 +280,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
                                                   base::string16(), -1, -1, 0));
     top_sites_impl_ = new TopSitesImpl(
         pref_service_.get(), history_service_.get(),
+        std::make_unique<DefaultTopSitesProvider>(history_service_.get()),
         prepopulated_pages, base::Bind(MockCanAddURLToHistory));
     top_sites_impl_->Init(scoped_temp_dir_.GetPath().Append(kTopSitesFilename));
   }

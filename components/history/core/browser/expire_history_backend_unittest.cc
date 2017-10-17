@@ -23,6 +23,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
+#include "components/history/core/browser/default_top_sites_provider.h"
 #include "components/history/core/browser/history_backend_client.h"
 #include "components/history/core/browser/history_backend_notifier.h"
 #include "components/history/core/browser/history_constants.h"
@@ -145,9 +146,11 @@ class ExpireHistoryTest : public testing::Test, public HistoryBackendNotifier {
     TopSitesImpl::RegisterPrefs(pref_service_->registry());
 
     expirer_.SetDatabases(main_db_.get(), thumb_db_.get());
-    top_sites_ = new TopSitesImpl(pref_service_.get(), nullptr,
-                                  PrepopulatedPageList(),
-                                  base::Bind(MockCanAddURLToHistory));
+    top_sites_ = new TopSitesImpl(
+        pref_service_.get(), nullptr,
+        std::make_unique<history::DefaultTopSitesProvider>(
+            /*history_service=*/nullptr),
+        PrepopulatedPageList(), base::Bind(MockCanAddURLToHistory));
     WaitTopSitesLoadedObserver wait_top_sites_observer(top_sites_);
     top_sites_->Init(path().Append(kTopSitesFilename));
     wait_top_sites_observer.Run();

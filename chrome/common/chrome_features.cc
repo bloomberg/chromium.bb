@@ -449,6 +449,10 @@ const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
+// Enable TopSites to source and sort its site data using site engagement.
+const base::Feature kTopSitesFromSiteEngagement{
+    "TopSitesFromSiteEngagement", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables using the local NTP if Google is the default search engine.
 const base::Feature kUseGoogleLocalNtp{"UseGoogleLocalNtp",
                                        base::FEATURE_DISABLED_BY_DEFAULT};

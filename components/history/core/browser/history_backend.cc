@@ -102,26 +102,6 @@ const int kMaxRedirectCount = 32;
 // and is deleted.
 const int kExpireDaysThreshold = 90;
 
-// Converts from PageUsageData to MostVisitedURL. |redirects| is a
-// list of redirects for this URL. Empty list means no redirects.
-MostVisitedURL MakeMostVisitedURL(const PageUsageData& page_data,
-                                  const RedirectList& redirects) {
-  MostVisitedURL mv;
-  mv.url = page_data.GetURL();
-  mv.title = page_data.GetTitle();
-  if (redirects.empty()) {
-    // Redirects must contain at least the target url.
-    mv.redirects.push_back(mv.url);
-  } else {
-    mv.redirects = redirects;
-    if (mv.redirects.back() != mv.url) {
-      // The last url must be the target url.
-      mv.redirects.push_back(mv.url);
-    }
-  }
-  return mv;
-}
-
 QueuedHistoryDBTask::QueuedHistoryDBTask(
     std::unique_ptr<HistoryDBTask> task,
     scoped_refptr<base::SingleThreadTaskRunner> origin_loop,
@@ -1397,8 +1377,8 @@ void HistoryBackend::QueryMostVisitedURLs(int result_count,
   for (const std::unique_ptr<PageUsageData>& current_data : data) {
     RedirectList redirects;
     QueryRedirectsFrom(current_data->GetURL(), &redirects);
-    MostVisitedURL url = MakeMostVisitedURL(*current_data, redirects);
-    result->push_back(url);
+    result->emplace_back(current_data->GetURL(), current_data->GetTitle(),
+                         redirects);
   }
 
   UMA_HISTOGRAM_TIMES("History.QueryMostVisitedURLsTime",

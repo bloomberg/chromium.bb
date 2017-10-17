@@ -232,6 +232,8 @@ extern const base::Feature kSyzyasanDeferredFree;
 
 extern const base::Feature kTabsInCbd;
 
+extern const base::Feature kTopSitesFromSiteEngagement;
+
 extern const base::Feature kUseGoogleLocalNtp;
 
 #if !defined(OS_ANDROID)
