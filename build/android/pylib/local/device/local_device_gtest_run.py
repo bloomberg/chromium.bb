@@ -411,17 +411,18 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
     if test_artifacts_dir:
       with tempfile_ext.NamedTemporaryDirectory() as test_artifacts_host_dir:
         device.PullFile(test_artifacts_dir.name, test_artifacts_host_dir)
-        test_artifacts_zip = shutil.make_archive('test_artifacts', 'zip',
-                                                 test_artifacts_host_dir)
-        link = google_storage_helper.upload(
-            google_storage_helper.unique_name(
-                'test_artifacts', device=device),
-            test_artifacts_zip,
-            bucket='%s/test_artifacts' % (
-                self._test_instance.gs_test_artifacts_bucket))
-        logging.info('Uploading test artifacts to %s.', link)
-        os.remove(test_artifacts_zip)
-        return link
+        with tempfile_ext.NamedTemporaryDirectory() as temp_zip_dir:
+          zip_base_name = os.path.join(temp_zip_dir, 'test_artifacts')
+          test_artifacts_zip = shutil.make_archive(
+              zip_base_name, 'zip', test_artifacts_host_dir)
+          link = google_storage_helper.upload(
+              google_storage_helper.unique_name(
+                  'test_artifacts', device=device),
+              test_artifacts_zip,
+              bucket='%s/test_artifacts' % (
+                  self._test_instance.gs_test_artifacts_bucket))
+          logging.info('Uploading test artifacts to %s.', link)
+          return link
     return None
 
   #override
