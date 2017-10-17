@@ -34,6 +34,7 @@ class WebrtcVideoEncoderProxy : public WebrtcVideoEncoder {
   class Core;
 
   void OnEncoded(EncodeCallback done,
+                 EncodeResult result,
                  std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame);
 
   std::unique_ptr<Core> core_;

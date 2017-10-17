@@ -29,8 +29,27 @@
 namespace remoting {
 namespace protocol {
 
+namespace {
+
 const char kStreamLabel[] = "screen_stream";
 const char kVideoLabel[] = "screen_video";
+
+std::string EncodeResultToString(WebrtcVideoEncoder::EncodeResult result) {
+  using EncodeResult = WebrtcVideoEncoder::EncodeResult;
+
+  switch (result) {
+    case EncodeResult::SUCCEEDED:
+      return "Succeeded";
+    case EncodeResult::FRAME_SIZE_EXCEEDS_CAPABILITY:
+      return "Frame size exceeds capability";
+    case EncodeResult::UNKNOWN_ERROR:
+      return "Unknown error";
+  }
+  NOTREACHED();
+  return "";
+}
+
+}  // namespace
 
 struct WebrtcVideoStream::FrameStats {
   // The following fields is not null only for one frame after each incoming
@@ -199,6 +218,7 @@ void WebrtcVideoStream::CaptureNextFrame() {
 }
 
 void WebrtcVideoStream::OnFrameEncoded(
+    WebrtcVideoEncoder::EncodeResult encode_result,
     std::unique_ptr<WebrtcVideoEncoder::EncodedFrame> frame) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -206,6 +226,14 @@ void WebrtcVideoStream::OnFrameEncoded(
 
   HostFrameStats stats;
   scheduler_->OnFrameEncoded(frame.get(), &stats);
+
+  if (encode_result != WebrtcVideoEncoder::EncodeResult::SUCCEEDED) {
+    // TODO(zijiehe): If |encode_result| is an unrecoverable error, we should
+    // restart the stream and select a different encoder.
+    LOG(ERROR) << "Video encoder returns error "
+               << EncodeResultToString(encode_result);
+    return;
+  }
 
   if (!frame) {
     return;

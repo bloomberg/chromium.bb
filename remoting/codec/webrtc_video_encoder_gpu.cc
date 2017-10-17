@@ -62,7 +62,9 @@ void WebrtcVideoEncoderGpu::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
     // likely the initialization may fail by using H264 encoder. We should
     // provide a way to tell the WebrtcVideoStream to stop the video stream.
     DLOG(ERROR) << "Encoder failed to initialize; dropping encode request";
-    std::move(done).Run(nullptr);
+    // Initialization fails only when the input frame size exceeds the
+    // limitation.
+    std::move(done).Run(EncodeResult::FRAME_SIZE_EXCEEDS_CAPABILITY, nullptr);
     return;
   }
 
@@ -170,7 +172,8 @@ void WebrtcVideoEncoderGpu::BitstreamBufferReady(int32_t bitstream_buffer_id,
   auto callback_it = callbacks_.find(timestamp);
   DCHECK(callback_it != callbacks_.end())
       << "Callback not found for timestamp " << timestamp;
-  std::move(std::get<1>(*callback_it)).Run(std::move(encoded_frame));
+  std::move(std::get<1>(*callback_it)).Run(
+      EncodeResult::SUCCEEDED, std::move(encoded_frame));
   callbacks_.erase(timestamp);
 }
 

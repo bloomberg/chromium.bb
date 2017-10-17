@@ -285,7 +285,7 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
 
   // Don't need to send anything until we get the first non-null frame.
   if (frame_size.is_empty()) {
-    std::move(done).Run(nullptr);
+    std::move(done).Run(EncodeResult::SUCCEEDED, nullptr);
     return;
   }
 
@@ -325,10 +325,14 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
   vpx_codec_err_t ret = vpx_codec_encode(
       codec_.get(), image_.get(), 0, params.duration.InMicroseconds(),
       (params.key_frame) ? VPX_EFLAG_FORCE_KF : 0, VPX_DL_REALTIME);
-  DCHECK_EQ(ret, VPX_CODEC_OK)
-      << "Encoding error: " << vpx_codec_err_to_string(ret) << "\n"
-      << "Details: " << vpx_codec_error(codec_.get()) << "\n"
-      << vpx_codec_error_detail(codec_.get());
+  if (ret != VPX_CODEC_OK) {
+      LOG(ERROR) << "Encoding error: " << vpx_codec_err_to_string(ret) << "\n"
+                 << "Details: " << vpx_codec_error(codec_.get()) << "\n"
+                 << vpx_codec_error_detail(codec_.get());
+      // TODO(zijiehe): A more exact error type is preferred.
+      std::move(done).Run(EncodeResult::UNKNOWN_ERROR, nullptr);
+      return;
+  }
 
   if (!lossless_encode_) {
     // VP8 doesn't return active map, so we assume it's the same on the output
@@ -375,7 +379,7 @@ void WebrtcVideoEncoderVpx::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
     }
   }
 
-  std::move(done).Run(std::move(encoded_frame));
+  std::move(done).Run(EncodeResult::SUCCEEDED, std::move(encoded_frame));
 }
 
 WebrtcVideoEncoderVpx::WebrtcVideoEncoderVpx(bool use_vp9)

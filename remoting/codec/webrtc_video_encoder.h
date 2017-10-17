@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 
 #include "base/time/time.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
@@ -51,7 +52,23 @@ class WebrtcVideoEncoder {
     int quantizer;
   };
 
-  typedef base::OnceCallback<void(std::unique_ptr<EncodedFrame>)>
+  enum class EncodeResult {
+    SUCCEEDED,
+
+    // The implementation cannot handle the frame, the size exceeds the
+    // capability of the codec or the implementation.
+    FRAME_SIZE_EXCEEDS_CAPABILITY,
+
+    // Undefined or unhandled error has happened. This error type should be
+    // avoided. A more exact error type is preferred.
+    UNKNOWN_ERROR,
+  };
+
+  // A derived class calls EncodeCallback to return the result of an encoding
+  // request. SUCCEEDED with an empty EncodedFrame (nullptr) indicates the frame
+  // should be dropped (unchanged or empty frame). Otherwise EncodeResult shows
+  // the errors.
+  typedef base::OnceCallback<void(EncodeResult, std::unique_ptr<EncodedFrame>)>
       EncodeCallback;
 
   virtual ~WebrtcVideoEncoder() {}
