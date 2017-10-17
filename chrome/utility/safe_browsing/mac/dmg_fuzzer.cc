@@ -13,6 +13,7 @@
 #include "chrome/utility/safe_browsing/mac/hfs.h"
 #include "chrome/utility/safe_browsing/mac/read_stream.h"
 #include "chrome/utility/safe_browsing/mac/udif.h"
+#include "testing/libfuzzer/libfuzzer_exports.h"
 
 extern "C" int LLVMFuzzerInitialize(int* argc, char*** argv) {
   base::CommandLine::Init(*argc, *argv);

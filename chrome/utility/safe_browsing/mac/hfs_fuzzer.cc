@@ -10,6 +10,7 @@
 
 #include "chrome/utility/safe_browsing/mac/hfs.h"
 #include "chrome/utility/safe_browsing/mac/read_stream.h"
+#include "testing/libfuzzer/libfuzzer_exports.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   safe_browsing::dmg::MemoryReadStream input(data, size);
