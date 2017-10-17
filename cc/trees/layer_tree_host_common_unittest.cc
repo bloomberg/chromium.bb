@@ -4019,7 +4019,6 @@ TEST_F(LayerTreeHostCommonScalingTest, LayerTransformsInHighDPI) {
   child2->SetDrawsContent(true);
 
   float device_scale_factor = 2.5f;
-  gfx::Size viewport_size(100, 100);
   ExecuteCalculateDrawProperties(root, device_scale_factor);
 
   EXPECT_FLOAT_EQ(device_scale_factor, root->GetIdealContentsScale());

@@ -1140,7 +1140,6 @@ TEST_F(StructTraitsTest, YUVDrawQuad) {
 
   const DrawQuad::Material material = DrawQuad::YUV_VIDEO_CONTENT;
   const gfx::Rect rect(1234, 4321, 1357, 7531);
-  const gfx::Rect opaque_rect(1357, 8642, 432, 123);
   const gfx::Rect visible_rect(1337, 7331, 561, 293);
   const bool needs_blending = true;
   const gfx::RectF ya_tex_coord_rect(1234.1f, 5678.2f, 9101112.3f, 13141516.4f);

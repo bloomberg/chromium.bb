@@ -3099,7 +3099,6 @@ TEST_P(ResourceProviderTest, TextureAllocation) {
       CreateResourceSettings()));
 
   gfx::Size size(2, 2);
-  gfx::Vector2d offset(0, 0);
   viz::ResourceFormat format = viz::RGBA_8888;
   viz::ResourceId id = 0;
   uint8_t pixels[16] = { 0 };

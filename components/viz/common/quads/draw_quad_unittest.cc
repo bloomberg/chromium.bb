@@ -110,6 +110,7 @@ void CompareDrawQuad(DrawQuad* quad, DrawQuad* copy) {
 #define QUAD_DATA                              \
   gfx::Rect quad_rect(30, 40, 50, 60);         \
   gfx::Rect quad_visible_rect(40, 50, 30, 20); \
+  ALLOW_UNUSED_LOCAL(quad_visible_rect);       \
   bool needs_blending = true;                  \
   ALLOW_UNUSED_LOCAL(needs_blending);
 

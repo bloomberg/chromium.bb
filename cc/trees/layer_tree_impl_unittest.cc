@@ -684,8 +684,6 @@ TEST_F(LayerTreeImplTest, HitTestingForMultiClippedRotatedLayer) {
 TEST_F(LayerTreeImplTest, HitTestingForNonClippingIntermediateLayer) {
   // This test checks that hit testing code does not accidentally clip to layer
   // bounds for a layer that actually does not clip.
-  gfx::Transform identity_matrix;
-  gfx::Point3F transform_origin;
 
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
@@ -1420,8 +1418,6 @@ TEST_F(LayerTreeImplTest,
   {
     TouchActionRegion touch_action_region;
     touch_action_region.Union(kTouchActionNone, gfx::Rect(10, 10, 30, 30));
-    gfx::PointF position(25.f, 25.f);
-    gfx::Size bounds(50, 50);
     std::unique_ptr<LayerImpl> test_layer =
         LayerImpl::Create(host_impl().active_tree(), 12345);
     test_layer->SetPosition(gfx::PointF(25.f, 25.f));
@@ -1707,9 +1703,6 @@ TEST_F(LayerTreeImplTest,
 }
 
 TEST_F(LayerTreeImplTest, HitCheckingTouchHandlerOverlappingRegions) {
-  gfx::Transform identity_matrix;
-  gfx::Point3F transform_origin;
-
   LayerImpl* root = root_layer();
   root->SetBounds(gfx::Size(100, 100));
   {

@@ -751,7 +751,6 @@ TEST(ComputeTilePriorityRectsTest, VisibleTiles) {
   FakePictureLayerTilingClient client;
 
   gfx::Size device_viewport(800, 600);
-  gfx::Size last_layer_bounds(200, 200);
   gfx::Size current_layer_bounds(200, 200);
   float current_layer_contents_scale = 1.f;
   gfx::Transform current_screen_transform;
@@ -806,7 +805,6 @@ TEST(ComputeTilePriorityRectsTest, OffscreenTiles) {
   FakePictureLayerTilingClient client;
 
   gfx::Size device_viewport(800, 600);
-  gfx::Size last_layer_bounds(200, 200);
   gfx::Size current_layer_bounds(200, 200);
   float current_layer_contents_scale = 1.f;
   gfx::Transform last_screen_transform;
@@ -875,7 +873,6 @@ TEST(ComputeTilePriorityRectsTest, PartiallyOffscreenLayer) {
   FakePictureLayerTilingClient client;
 
   gfx::Size device_viewport(800, 600);
-  gfx::Size last_layer_bounds(200, 200);
   gfx::Size current_layer_bounds(200, 200);
   float current_layer_contents_scale = 1.f;
   gfx::Transform last_screen_transform;
@@ -1270,7 +1267,6 @@ TEST_F(PictureLayerTilingIteratorTest, EdgeCaseLargeIntBounds) {
 }
 
 TEST_F(PictureLayerTilingIteratorTest, EdgeCaseLargeIntBounds2) {
-  gfx::RectF rect(2104670720.f, 522014.5f, 192.f, 1.f);
   gfx::Size tile_size(256, 256);
   float scale = 7352.331055f;
   gfx::Size layer_bounds(292082, 26910);
