@@ -33,6 +33,10 @@ class ChromeBrowserState;
 // Called when the controller should be dismissed.
 - (void)bookmarkEditorWantsDismissal:(BookmarkEditViewController*)controller;
 
+// Called when the controller is going to commit the title or URL change.
+- (void)bookmarkEditorWillCommitTitleOrUrlChange:
+    (BookmarkEditViewController*)controller;
+
 @end
 
 // View controller for editing bookmarks. Allows editing of the title, URL and

@@ -296,6 +296,15 @@ typedef NS_ENUM(NSInteger, ItemType) {
   GURL url = ConvertUserDataToGURL([self inputURLString]);
   // If the URL was not valid, the |save| message shouldn't have been sent.
   DCHECK([self inputURLIsValid]);
+
+  // Tell delegate if bookmark name or title has been changed.
+  if (self.bookmark &&
+      (self.bookmark->GetTitle() !=
+           base::SysNSStringToUTF16([self inputBookmarkName]) ||
+       self.bookmark->url() != url)) {
+    [self.delegate bookmarkEditorWillCommitTitleOrUrlChange:self];
+  }
+
   bookmark_utils_ios::CreateOrUpdateBookmarkWithUndoToast(
       self.bookmark, [self inputBookmarkName], url, self.folder,
       self.bookmarkModel, self.browserState);

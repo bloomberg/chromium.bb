@@ -245,6 +245,11 @@ folderEditorWithBookmarkModel:(bookmarks::BookmarkModel*)bookmarkModel
 
   if (self.editingExistingFolder) {
     DCHECK(self.folder);
+    // Tell delegate if folder title has been changed.
+    if (self.folder->GetTitle() != folderTitle) {
+      [self.delegate bookmarkFolderEditorWillCommitTitleChange:self];
+    }
+
     self.bookmarkModel->SetTitle(self.folder, folderTitle);
     if (self.folder->parent() != self.parentFolder) {
       base::AutoReset<BOOL> autoReset(&_ignoresOwnMove, YES);
