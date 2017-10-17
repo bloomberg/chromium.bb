@@ -68,6 +68,8 @@ class PageInfoPopupAndroid : public PageInfoUI {
 
   GURL url_;
 
+  content::WebContents* web_contents_;
+
   DISALLOW_COPY_AND_ASSIGN(PageInfoPopupAndroid);
 };
 
