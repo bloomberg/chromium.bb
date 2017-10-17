@@ -113,6 +113,9 @@ if (!is_android && !is_mac) {
     if (use_aura && (is_win || is_linux)) {
       data_deps += [ "//chrome/app:service_manifests" ]
     }
+    if (is_chromeos) {
+      data_deps += [ "//sandbox/linux:chrome_sandbox" ]
+    }
   }
 
   template("chrome_binary") {
