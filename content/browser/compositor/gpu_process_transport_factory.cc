@@ -276,7 +276,7 @@ GpuProcessTransportFactory::~GpuProcessTransportFactory() {
 
 std::unique_ptr<viz::SoftwareOutputDevice>
 GpuProcessTransportFactory::CreateSoftwareOutputDevice(
-    ui::Compositor* compositor) {
+    gfx::AcceleratedWidget widget) {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (command_line->HasSwitch(switches::kHeadless))
     return base::WrapUnique(new viz::SoftwareOutputDevice);
@@ -289,16 +289,14 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 #endif
 
 #if defined(OS_WIN)
-  return std::unique_ptr<viz::SoftwareOutputDevice>(
-      new SoftwareOutputDeviceWin(software_backing_.get(), compositor));
+  return std::make_unique<SoftwareOutputDeviceWin>(software_backing_.get(),
+                                                   widget);
 #elif defined(USE_OZONE)
-  return SoftwareOutputDeviceOzone::Create(compositor);
+  return SoftwareOutputDeviceOzone::Create(widget);
 #elif defined(USE_X11)
-  return std::unique_ptr<viz::SoftwareOutputDevice>(
-      new SoftwareOutputDeviceX11(compositor));
+  return std::make_unique<SoftwareOutputDeviceX11>(widget);
 #elif defined(OS_MACOSX)
-  return std::unique_ptr<viz::SoftwareOutputDevice>(
-      new SoftwareOutputDeviceMac(compositor));
+  return std::make_unique<SoftwareOutputDeviceMac>(widget);
 #else
   NOTREACHED();
   return std::unique_ptr<viz::SoftwareOutputDevice>();
@@ -531,7 +529,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (!create_gpu_output_surface) {
       display_output_surface =
           base::MakeUnique<SoftwareBrowserCompositorOutputSurface>(
-              CreateSoftwareOutputDevice(compositor.get()), vsync_callback,
+              CreateSoftwareOutputDevice(compositor->widget()), vsync_callback,
               compositor->task_runner());
     } else {
       DCHECK(context_provider);

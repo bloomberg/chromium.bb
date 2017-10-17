@@ -102,7 +102,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   compositor_->SetScaleAndSize(1.0f, size);
 
   output_device_ =
-      content::SoftwareOutputDeviceOzone::Create(compositor_.get());
+      content::SoftwareOutputDeviceOzone::Create(compositor_->widget());
   if (output_device_)
     output_device_->Resize(size, 1.f);
 }

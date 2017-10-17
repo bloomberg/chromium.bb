@@ -14,20 +14,18 @@
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
-#include "ui/compositor/compositor.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace content {
 
-SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(ui::Compositor* compositor)
-    : compositor_(compositor), display_(gfx::GetXDisplay()), gc_(NULL) {
+SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
+    : widget_(widget), display_(gfx::GetXDisplay()), gc_(NULL) {
   // TODO(skaslev) Remove this when crbug.com/180702 is fixed.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  gc_ = XCreateGC(display_, compositor_->widget(), 0, NULL);
-  if (!XGetWindowAttributes(display_, compositor_->widget(), &attributes_)) {
-    LOG(ERROR) << "XGetWindowAttributes failed for window "
-               << compositor_->widget();
+  gc_ = XCreateGC(display_, widget_, 0, NULL);
+  if (!XGetWindowAttributes(display_, widget_, &attributes_)) {
+    LOG(ERROR) << "XGetWindowAttributes failed for window " << widget_;
     return;
   }
 }
@@ -56,8 +54,8 @@ void SoftwareOutputDeviceX11::EndPaint() {
   if (bpp != 32 && bpp != 16 && ui::QueryRenderSupport(display_)) {
     // gfx::PutARGBImage only supports 16 and 32 bpp, but Xrender can do other
     // conversions.
-    Pixmap pixmap = XCreatePixmap(
-        display_, compositor_->widget(), rect.width(), rect.height(), 32);
+    Pixmap pixmap =
+        XCreatePixmap(display_, widget_, rect.width(), rect.height(), 32);
     GC gc = XCreateGC(display_, pixmap, 0, NULL);
     XImage image;
     memset(&image, 0, sizeof(image));
@@ -94,8 +92,8 @@ void SoftwareOutputDeviceX11::EndPaint() {
         display_, pixmap, ui::GetRenderARGB32Format(display_), 0, NULL);
     XRenderPictFormat* pictformat =
         XRenderFindVisualFormat(display_, attributes_.visual);
-    Picture dest_picture = XRenderCreatePicture(
-        display_, compositor_->widget(), pictformat, 0, NULL);
+    Picture dest_picture =
+        XRenderCreatePicture(display_, widget_, pictformat, 0, NULL);
     XRenderComposite(display_,
                      PictOpSrc,       // op
                      picture,         // src
@@ -118,11 +116,11 @@ void SoftwareOutputDeviceX11::EndPaint() {
   // TODO(jbauman): Switch to XShmPutImage since it's async.
   SkPixmap pixmap;
   surface_->peekPixels(&pixmap);
-  gfx::PutARGBImage(
-      display_, attributes_.visual, attributes_.depth, compositor_->widget(),
-      gc_, static_cast<const uint8_t*>(pixmap.addr()),
-      viewport_pixel_size_.width(), viewport_pixel_size_.height(), rect.x(),
-      rect.y(), rect.x(), rect.y(), rect.width(), rect.height());
+  gfx::PutARGBImage(display_, attributes_.visual, attributes_.depth, widget_,
+                    gc_, static_cast<const uint8_t*>(pixmap.addr()),
+                    viewport_pixel_size_.width(), viewport_pixel_size_.height(),
+                    rect.x(), rect.y(), rect.x(), rect.y(), rect.width(),
+                    rect.height());
 }
 
 }  // namespace content

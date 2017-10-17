@@ -14,20 +14,17 @@
 #include "content/common/content_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
+#include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/vsync_provider.h"
 
 class SkCanvas;
-
-namespace ui {
-class Compositor;
-}
 
 namespace content {
 
 class CONTENT_EXPORT SoftwareOutputDeviceMac : public viz::SoftwareOutputDevice,
                                                public gfx::VSyncProvider {
  public:
-  explicit SoftwareOutputDeviceMac(ui::Compositor* compositor);
+  explicit SoftwareOutputDeviceMac(gfx::AcceleratedWidget widget);
   ~SoftwareOutputDeviceMac() override;
 
   // viz::SoftwareOutputDevice implementation.
@@ -65,7 +62,7 @@ class CONTENT_EXPORT SoftwareOutputDeviceMac : public viz::SoftwareOutputDevice,
   void UpdateAndCopyBufferDamage(Buffer* previous_paint_buffer,
                                  const SkRegion& new_damage_rect);
 
-  ui::Compositor* compositor_ = nullptr;
+  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
   gfx::Size pixel_size_;
   float scale_factor_ = 1;
 
