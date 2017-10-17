@@ -4,8 +4,13 @@
 
 module echo.mojom;
 
+const string kServiceName = "echo";
+
 // Echos its input.
 interface Echo {
   // Echos the passed-in string.
   EchoString(string input) => (string echoed_input);
+
+  // Cleanly quits.
+  Quit();
 };

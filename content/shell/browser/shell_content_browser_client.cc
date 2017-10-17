@@ -42,6 +42,7 @@
 #include "media/mojo/features.h"
 #include "net/ssl/client_cert_identity.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/test/echo/echo_service.h"
 #include "storage/browser/quota/quota_settings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "url/gurl.h"
@@ -219,11 +220,23 @@ void ShellContentBrowserClient::RegisterInProcessServices(
     services->insert(std::make_pair(media::mojom::kMediaServiceName, info));
   }
 #endif
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::Bind(&echo::CreateEchoService);
+    services->insert(std::make_pair(echo::mojom::kServiceName, info));
+  }
 }
 
 void ShellContentBrowserClient::RegisterOutOfProcessServices(
-      OutOfProcessServiceMap* services) {
+    OutOfProcessServiceMap* services) {
   (*services)[kTestServiceUrl] = base::UTF8ToUTF16("Test Service");
+}
+
+bool ShellContentBrowserClient::ShouldTerminateOnServiceQuit(
+    const service_manager::Identity& id) {
+  if (should_terminate_on_service_quit_callback_)
+    return should_terminate_on_service_quit_callback_.Run(id);
+  return false;
 }
 
 std::unique_ptr<base::Value>
@@ -231,6 +244,8 @@ ShellContentBrowserClient::GetServiceManifestOverlay(base::StringPiece name) {
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
     id = IDR_CONTENT_SHELL_BROWSER_MANIFEST_OVERLAY;
+  else if (name == content::mojom::kPackagedServicesServiceName)
+    id = IDR_CONTENT_SHELL_PACKAGED_SERVICES_MANIFEST_OVERLAY;
   else if (name == content::mojom::kGpuServiceName)
     id = IDR_CONTENT_SHELL_GPU_MANIFEST_OVERLAY;
   else if (name == content::mojom::kRendererServiceName)

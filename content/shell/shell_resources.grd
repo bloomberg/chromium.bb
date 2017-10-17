@@ -16,6 +16,8 @@
       <include name="IDR_CONTENT_SHELL_GPU_MANIFEST_OVERLAY" file="browser/content_shell_gpu_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CONTENT_SHELL_RENDERER_MANIFEST_OVERLAY" file="browser/content_shell_renderer_manifest_overlay.json" type="BINDATA" />
       <include name="IDR_CONTENT_SHELL_UTILITY_MANIFEST_OVERLAY" file="browser/content_shell_utility_manifest_overlay.json" type="BINDATA" />
+      <!-- Generated resources. -->
+      <include name="IDR_CONTENT_SHELL_PACKAGED_SERVICES_MANIFEST_OVERLAY" file="${root_gen_dir}/content/shell/content_shell_packaged_services_manifest_overlay.json" type="BINDATA" use_base_dir="false"/>
     </includes>
   </release>
 </grit>
