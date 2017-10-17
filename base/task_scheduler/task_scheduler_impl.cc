@@ -172,7 +172,7 @@ void TaskSchedulerImpl::JoinForTesting() {
   DCHECK(!join_for_testing_returned_.IsSet());
 #endif
   // The service thread must be stopped before the workers are joined, otherwise
-  // tasks scheduled by the DeferredTaskManager might be posted between joining
+  // tasks scheduled by the DelayedTaskManager might be posted between joining
   // those workers and stopping the service thread which will cause a CHECK. See
   // https://crbug.com/771701.
   service_thread_.Stop();
