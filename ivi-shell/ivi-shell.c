@@ -108,7 +108,6 @@ shell_surface_send_configure(struct weston_surface *surface,
 	struct ivi_shell_surface *shsurf;
 
 	shsurf = get_ivi_shell_surface(surface);
-	assert(shsurf);
 	if (!shsurf)
 		return;
 
