@@ -1189,7 +1189,7 @@ void VrShellGl::OnVSync(base::TimeTicks frame_time) {
     // DrawFrame.
     gfx::Transform head_pose;
     device::GvrDelegate::GetGvrPoseWithNeckModel(gvr_api_.get(), &head_pose);
-    UpdateController(render_info_primary_.head_pose);
+    UpdateController(head_pose);
   } else {
     DrawFrame(-1);
   }
