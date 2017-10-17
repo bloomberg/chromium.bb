@@ -24,6 +24,7 @@ import("//build/config/chromecast_build.gni")
 import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/dcheck_always_on.gni")
+import("//build/config/jumbo.gni")
 import("//build/config/nacl/config.gni")
 import("//build/config/sysroot.gni")
 import("//build/config/ui.gni")
@@ -105,7 +106,7 @@ if (is_android) {
 # to be linked in where they wouldn't have otherwise. This does not include
 # test code (test support and anything in the test directory) which should use
 # source_set as is recommended for GN targets).
-component("base") {
+jumbo_component("base") {
   if (is_nacl_nonsfi) {
     # TODO(phosek) bug 570839: If field_trial.cc is in a static library,
     # nacl_helper_nonsfi doesn't link properly on Linux in debug builds. The
@@ -1073,6 +1074,13 @@ component("base") {
     "win/wrapped_window_proc.cc",
     "win/wrapped_window_proc.h",
   ]
+
+  # winternl.h and NTSecAPI.h have different definitions of UNICODE_STRING.
+  # There's only one client of NTSecAPI.h in base but several of winternl.h,
+  # so exclude the NTSecAPI.h one.
+  if (is_win) {
+    jumbo_excluded_sources = [ "rand_util_win.cc" ]
+  }
 
   if (!is_nacl) {
     sources += [

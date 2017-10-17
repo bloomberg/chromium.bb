@@ -52,7 +52,7 @@ namespace win {
 //   ScopedHString string(win_string);
 //
 class BASE_EXPORT ScopedHString
-    : public ScopedGeneric<HSTRING, internal::ScopedHStringTraits> {
+    : public ScopedGeneric<HSTRING, base::internal::ScopedHStringTraits> {
  public:
   // Constructs a ScopedHString from an HSTRING, and takes ownership of |hstr|.
   explicit ScopedHString(HSTRING hstr);

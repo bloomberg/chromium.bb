@@ -12,7 +12,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/json/string_escape.h"
 #include "base/memory/ptr_util.h"
-#include "base/trace_event/common/trace_event_common.h"
+#include "base/trace_event/trace_event.h"
 #include "base/trace_event/trace_event_impl.h"
 #include "base/trace_event/trace_event_memory_overhead.h"
 #include "base/values.h"

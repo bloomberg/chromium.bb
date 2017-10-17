@@ -9,21 +9,21 @@
 namespace base {
 namespace {
 
-DiscardableMemoryAllocator* g_allocator = nullptr;
+DiscardableMemoryAllocator* g_discardable_allocator = nullptr;
 
 }  // namespace
 
 // static
 void DiscardableMemoryAllocator::SetInstance(
     DiscardableMemoryAllocator* allocator) {
-  DCHECK(!allocator || !g_allocator);
-  g_allocator = allocator;
+  DCHECK(!allocator || !g_discardable_allocator);
+  g_discardable_allocator = allocator;
 }
 
 // static
 DiscardableMemoryAllocator* DiscardableMemoryAllocator::GetInstance() {
-  DCHECK(g_allocator);
-  return g_allocator;
+  DCHECK(g_discardable_allocator);
+  return g_discardable_allocator;
 }
 
 }  // namespace base

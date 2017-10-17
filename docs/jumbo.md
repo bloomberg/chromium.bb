@@ -22,19 +22,21 @@ compile the merged files and any files left outside the merge.
 Template file: `//build/config/jumbo.gni`
 Merge script: `//build/config/merge_for_jumbo.py`
 
-### Merge The "merge" is currently done by creating wrapper files that
-`#include` the source files.
+### Merge
+
+The "merge" is currently done by creating wrapper files that `#include` the
+source files.
 
 ## Jumbo Pros and Cons
 
 ### Pros
 
 * Everything compiles significantly faster. When fully enabled
-* everywhere this can save hours for a full build (binaries and tests)
-* on a moderate computer.  Linking is faster because there is less
-* redundant data (debug information, inline functions) to merge.
+  everywhere this can save hours for a full build (binaries and tests)
+  on a moderate computer.  Linking is faster because there is less
+  redundant data (debug information, inline functions) to merge.
 * Certain code bugs can be statically detected by the compiler when it
-* sees more/all the relevant source code.
+  sees more/all the relevant source code.
 
 ### Cons
 

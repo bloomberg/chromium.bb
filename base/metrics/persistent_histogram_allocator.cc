@@ -51,7 +51,7 @@ enum : uint32_t {
 // managed elsewhere and which could be destructed first. An AtomicWord is
 // used instead of std::atomic because the latter can create global ctors
 // and dtors.
-subtle::AtomicWord g_allocator = 0;
+subtle::AtomicWord g_histogram_allocator = 0;
 
 // Take an array of range boundaries and create a proper BucketRanges object
 // which is returned to the caller. A return of nullptr indicates that the
@@ -938,8 +938,8 @@ void GlobalHistogramAllocator::Set(
   // Releasing or changing an allocator is extremely dangerous because it
   // likely has histograms stored within it. If the backing memory is also
   // also released, future accesses to those histograms will seg-fault.
-  CHECK(!subtle::NoBarrier_Load(&g_allocator));
-  subtle::Release_Store(&g_allocator,
+  CHECK(!subtle::NoBarrier_Load(&g_histogram_allocator));
+  subtle::Release_Store(&g_histogram_allocator,
                         reinterpret_cast<uintptr_t>(allocator.release()));
   size_t existing = StatisticsRecorder::GetHistogramCount();
 
@@ -950,7 +950,7 @@ void GlobalHistogramAllocator::Set(
 // static
 GlobalHistogramAllocator* GlobalHistogramAllocator::Get() {
   return reinterpret_cast<GlobalHistogramAllocator*>(
-      subtle::Acquire_Load(&g_allocator));
+      subtle::Acquire_Load(&g_histogram_allocator));
 }
 
 // static
@@ -980,7 +980,7 @@ GlobalHistogramAllocator::ReleaseForTesting() {
     DCHECK_NE(kResultHistogram, data->name);
   }
 
-  subtle::Release_Store(&g_allocator, 0);
+  subtle::Release_Store(&g_histogram_allocator, 0);
   return WrapUnique(histogram_allocator);
 };
 

@@ -19,13 +19,13 @@ namespace base {
 namespace {
 
 base::LazyInstance<base::ThreadLocalPointer<ThreadTaskRunnerHandle>>::Leaky
-    lazy_tls_ptr = LAZY_INSTANCE_INITIALIZER;
+    thread_task_runner_tls = LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
 // static
 scoped_refptr<SingleThreadTaskRunner> ThreadTaskRunnerHandle::Get() {
-  ThreadTaskRunnerHandle* current = lazy_tls_ptr.Pointer()->Get();
+  ThreadTaskRunnerHandle* current = thread_task_runner_tls.Pointer()->Get();
   CHECK(current) << "Error: This caller requires a single-threaded context "
                     "(i.e. the current task needs to run from a "
                     "SingleThreadTaskRunner).";
@@ -34,7 +34,7 @@ scoped_refptr<SingleThreadTaskRunner> ThreadTaskRunnerHandle::Get() {
 
 // static
 bool ThreadTaskRunnerHandle::IsSet() {
-  return !!lazy_tls_ptr.Pointer()->Get();
+  return !!thread_task_runner_tls.Pointer()->Get();
 }
 
 // static
@@ -61,7 +61,7 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
         base::Passed(&top_level_ttrh)));
   }
 
-  ThreadTaskRunnerHandle* ttrh = lazy_tls_ptr.Pointer()->Get();
+  ThreadTaskRunnerHandle* ttrh = thread_task_runner_tls.Pointer()->Get();
   // Swap the two (and below bind |overriding_task_runner|, which is now the
   // previous one, as the |task_runner_to_restore|).
   ttrh->task_runner_.swap(overriding_task_runner);
@@ -74,7 +74,7 @@ ScopedClosureRunner ThreadTaskRunnerHandle::OverrideForTesting(
          SingleThreadTaskRunner* expected_task_runner_before_restore,
          std::unique_ptr<RunLoop::ScopedDisallowRunningForTesting>
              no_running_during_override) {
-        ThreadTaskRunnerHandle* ttrh = lazy_tls_ptr.Pointer()->Get();
+        ThreadTaskRunnerHandle* ttrh = thread_task_runner_tls.Pointer()->Get();
 
         DCHECK_EQ(expected_task_runner_before_restore, ttrh->task_runner_.get())
             << "Nested overrides must expire their ScopedClosureRunners "
@@ -94,13 +94,13 @@ ThreadTaskRunnerHandle::ThreadTaskRunnerHandle(
   // No SequencedTaskRunnerHandle (which includes ThreadTaskRunnerHandles)
   // should already be set for this thread.
   DCHECK(!SequencedTaskRunnerHandle::IsSet());
-  lazy_tls_ptr.Pointer()->Set(this);
+  thread_task_runner_tls.Pointer()->Set(this);
 }
 
 ThreadTaskRunnerHandle::~ThreadTaskRunnerHandle() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(lazy_tls_ptr.Pointer()->Get(), this);
-  lazy_tls_ptr.Pointer()->Set(nullptr);
+  DCHECK_EQ(thread_task_runner_tls.Pointer()->Get(), this);
+  thread_task_runner_tls.Pointer()->Set(nullptr);
 }
 
 }  // namespace base
