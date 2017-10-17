@@ -11,7 +11,6 @@ from telemetry.value import scalar
 from metrics import Metric
 
 
-MONSOON_POWER_LABEL = 'monsoon_energy_consumption_mwh'
 FUELGAUGE_POWER_LABEL = 'fuel_gauge_energy_consumption_mwh'
 APP_POWER_LABEL = 'application_energy_consumption_mwh'
 TOTAL_POWER_LABEL = 'energy_consumption_mwh'
@@ -122,7 +121,6 @@ class PowerMetric(Metric):
     total_energy_consumption_mwh = self._results.get(TOTAL_POWER_LABEL)
     fuel_gauge_energy_consumption_mwh = self._results.get(
         FUELGAUGE_POWER_LABEL)
-    monsoon_energy_consumption_mwh = self._results.get(MONSOON_POWER_LABEL)
 
     if (PowerMetric._quiescent_power_draw_mwh and
         application_energy_consumption_mwh is None and
@@ -135,11 +133,6 @@ class PowerMetric(Metric):
       results.AddValue(scalar.ScalarValue(
           results.current_page, FUELGAUGE_POWER_LABEL, 'mWh',
           fuel_gauge_energy_consumption_mwh))
-
-    if monsoon_energy_consumption_mwh is not None:
-      results.AddValue(scalar.ScalarValue(
-          results.current_page, MONSOON_POWER_LABEL, 'mWh',
-          monsoon_energy_consumption_mwh))
 
     if total_energy_consumption_mwh is not None:
       results.AddValue(scalar.ScalarValue(
