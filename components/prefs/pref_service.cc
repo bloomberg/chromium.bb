@@ -332,11 +332,9 @@ const base::Value* PrefService::GetDefaultPrefValue(
     const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Lookup the preference in the default store.
-  const base::Value* value = NULL;
-  if (!pref_registry_->defaults()->GetValue(path, &value)) {
-    NOTREACHED() << "Default value missing for pref: " << path;
-    return NULL;
-  }
+  const base::Value* value = nullptr;
+  bool has_value = pref_registry_->defaults()->GetValue(path, &value);
+  DCHECK(has_value) << "Default value missing for pref: " << path;
   return value;
 }
 

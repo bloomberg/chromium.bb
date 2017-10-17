@@ -78,9 +78,8 @@ std::string GetPerDisplayPref(PrefService* prefs,
   if (local_pref->IsRecommended() || !has_per_display_prefs)
     return value;
 
-  const base::Value* default_value = prefs->GetDefaultPrefValue(local_path);
   std::string default_string;
-  default_value->GetAsString(&default_string);
+  prefs->GetDefaultPrefValue(local_path)->GetAsString(&default_string);
   return default_string;
 }
 
