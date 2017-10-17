@@ -73,10 +73,6 @@ void WorkQueue::Push(TaskQueueImpl::Task task) {
   DCHECK(task.enqueue_order_set());
 #endif
 
-  // Temporary check for crbug.com/752914.
-  // TODO(skyostil): Remove this.
-  CHECK(task.task);
-
   // Amoritized O(1).
   work_queue_.push_back(std::move(task));
 
@@ -110,24 +106,9 @@ TaskQueueImpl::Task WorkQueue::TakeTaskFromWorkQueue() {
   DCHECK(work_queue_sets_);
   DCHECK(!work_queue_.empty());
 
-  static const char kBlinkSchedulerTaskFunctionNameKey[] =
-      "blink_scheduler_task_function_name";
-  static const char kBlinkSchedulerTaskFileNameKey[] =
-      "blink_scheduler_task_file_name";
-
   // Skip over canceled tasks, except for the last one since we always return
   // something.
   while (work_queue_.size() > 1u) {
-    if (!work_queue_.front().task) {
-      base::debug::SetCrashKeyValue(
-          kBlinkSchedulerTaskFunctionNameKey,
-          work_queue_.front().posted_from.function_name());
-      base::debug::SetCrashKeyValue(
-          kBlinkSchedulerTaskFileNameKey,
-          work_queue_.front().posted_from.file_name());
-    }
-    CHECK(work_queue_.front().task);
-
     if (work_queue_.front().task.IsCancelled()) {
       work_queue_.pop_front();
     } else {

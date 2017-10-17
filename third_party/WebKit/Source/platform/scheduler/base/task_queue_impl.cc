@@ -333,22 +333,6 @@ TaskQueueImpl::TaskDeque TaskQueueImpl::TakeImmediateIncomingQueue() {
     }
   }
 
-  // Temporary check for crbug.com/752914. Ideally we'd check the entire queue
-  // but that would be too expensive.
-  // TODO(skyostil): Remove this.
-  if (!queue.empty()) {
-    if (!queue.front().task) {
-      static const char kBlinkSchedulerTaskFunctionNameKey[] =
-          "blink_scheduler_task_function_name";
-      static const char kBlinkSchedulerTaskFileNameKey[] =
-          "blink_scheduler_task_file_name";
-      base::debug::SetCrashKeyValue(kBlinkSchedulerTaskFunctionNameKey,
-                                    queue.front().posted_from.function_name());
-      base::debug::SetCrashKeyValue(kBlinkSchedulerTaskFileNameKey,
-                                    queue.front().posted_from.file_name());
-    }
-    CHECK(queue.front().task);
-  }
   return queue;
 }
 
