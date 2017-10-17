@@ -1200,7 +1200,21 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="AppListPlayStoreQueryState">
   <int value="0" label="SUCCESS"/>
   <int value="1" label="CANCELED"/>
-  <int value="2" label="ERROR"/>
+  <int value="2" label="ERROR_DEPRECATED"/>
+  <int value="3" label="PLAY_STORE_PROXY_NOT_AVAILABLE"/>
+  <int value="4" label="FAILED_TO_CALL_CANCEL"/>
+  <int value="5" label="FAILED_TO_CALL_FINDAPPS"/>
+  <int value="6" label="REQUEST_HAS_INVALID_PARAMS"/>
+  <int value="7" label="REQUEST_TIMEOUT"/>
+  <int value="8" label="PHONESKY_RESULT_REQUEST_CODE_UNMATCHED"/>
+  <int value="9" label="PHONESKY_RESULT_SESSION_ID_UNMATCHED"/>
+  <int value="10" label="PHONESKY_REQUEST_REQUEST_CODE_UNMATCHED"/>
+  <int value="11" label="PHONESKY_APP_DISCOVERY_NOT_AVAILABLE"/>
+  <int value="12" label="PHONESKY_VERSION_NOT_SUPPORTED"/>
+  <int value="13" label="PHONESKY_UNEXPECTED_EXCEPTION"/>
+  <int value="14" label="PHONESKY_MALFORMED_QUERY"/>
+  <int value="15" label="PHONESKY_INTERNAL_ERROR"/>
+  <int value="16" label="PHONESKY_RESULT_INVALID_DATA"/>
 </enum>
 
 <enum name="AppListSearchResult">
