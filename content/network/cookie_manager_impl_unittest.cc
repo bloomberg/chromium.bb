@@ -147,46 +147,6 @@ class CookieManagerImplTest : public testing::Test {
   }
   ~CookieManagerImplTest() override {}
 
-  void SetUp() override {
-    setup_time_ = base::Time::Now();
-
-    // Set a couple of cookies for tests to play with.
-    bool result;
-    result = SetCanonicalCookie(
-        net::CanonicalCookie(
-            "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
-            /*secure=*/false, /*httponly=*/false,
-            net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
-        true, true);
-    DCHECK(result);
-
-    result = SetCanonicalCookie(
-        net::CanonicalCookie(
-            "C", "D", "foo_host2", "/with/path", base::Time(), base::Time(),
-            base::Time(), /*secure=*/false, /*httponly=*/false,
-            net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
-        true, true);
-    DCHECK(result);
-
-    result = SetCanonicalCookie(
-        net::CanonicalCookie(
-            "Secure", "E", "foo_host", "/with/path", base::Time(), base::Time(),
-            base::Time(), /*secure=*/true,
-            /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
-            net::COOKIE_PRIORITY_MEDIUM),
-        true, true);
-    DCHECK(result);
-
-    result = SetCanonicalCookie(
-        net::CanonicalCookie(
-            "HttpOnly", "F", "foo_host", "/with/path", base::Time(),
-            base::Time(), base::Time(), /*secure=*/false,
-            /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
-            net::COOKIE_PRIORITY_MEDIUM),
-        true, true);
-    DCHECK(result);
-  }
-
   // Tear down the remote service.
   void NukeService() { cookie_service_.reset(); }
 
@@ -216,8 +176,6 @@ class CookieManagerImplTest : public testing::Test {
   // Synchronous wrapper
   SynchronousCookieManager* service_wrapper() { return service_wrapper_.get(); }
 
-  base::Time setup_time() const { return setup_time_; }
-
   bool connection_error_seen() const { return connection_error_seen_; }
 
  private:
@@ -230,7 +188,6 @@ class CookieManagerImplTest : public testing::Test {
   std::unique_ptr<content::CookieManagerImpl> cookie_service_;
   network::mojom::CookieManagerPtr cookie_service_ptr_;
   std::unique_ptr<SynchronousCookieManager> service_wrapper_;
-  base::Time setup_time_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManagerImplTest);
 };
@@ -247,7 +204,37 @@ bool CompareCanonicalCookies(const net::CanonicalCookie& c1,
 // Test the GetAllCookies accessor.  Also tests that canonical
 // cookies come out of the store unchanged.
 TEST_F(CookieManagerImplTest, GetAllCookies) {
-  base::Time now(base::Time::Now());
+  base::Time before_creation(base::Time::Now());
+
+  // Set some cookies for the test to play with.
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
+          /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "C", "D", "foo_host2", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "Secure", "E", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/true,
+          /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "HttpOnly", "F", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false,
+          /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+
+  base::Time after_creation(base::Time::Now());
 
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
@@ -259,8 +246,8 @@ TEST_F(CookieManagerImplTest, GetAllCookies) {
   EXPECT_EQ("B", cookies[0].Value());
   EXPECT_EQ("foo_host", cookies[0].Domain());
   EXPECT_EQ("/", cookies[0].Path());
-  EXPECT_LT(setup_time(), cookies[0].CreationDate());
-  EXPECT_LT(cookies[0].CreationDate(), now);
+  EXPECT_LT(before_creation, cookies[0].CreationDate());
+  EXPECT_LE(cookies[0].CreationDate(), after_creation);
   EXPECT_EQ(cookies[0].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[0].ExpiryDate(), base::Time());
   EXPECT_FALSE(cookies[0].IsPersistent());
@@ -273,8 +260,8 @@ TEST_F(CookieManagerImplTest, GetAllCookies) {
   EXPECT_EQ("D", cookies[1].Value());
   EXPECT_EQ("foo_host2", cookies[1].Domain());
   EXPECT_EQ("/with/path", cookies[1].Path());
-  EXPECT_LT(setup_time(), cookies[1].CreationDate());
-  EXPECT_LT(cookies[1].CreationDate(), now);
+  EXPECT_LT(before_creation, cookies[1].CreationDate());
+  EXPECT_LE(cookies[1].CreationDate(), after_creation);
   EXPECT_EQ(cookies[1].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[1].ExpiryDate(), base::Time());
   EXPECT_FALSE(cookies[1].IsPersistent());
@@ -287,8 +274,8 @@ TEST_F(CookieManagerImplTest, GetAllCookies) {
   EXPECT_EQ("F", cookies[2].Value());
   EXPECT_EQ("foo_host", cookies[2].Domain());
   EXPECT_EQ("/with/path", cookies[2].Path());
-  EXPECT_LT(setup_time(), cookies[2].CreationDate());
-  EXPECT_LT(cookies[2].CreationDate(), now);
+  EXPECT_LT(before_creation, cookies[2].CreationDate());
+  EXPECT_LE(cookies[2].CreationDate(), after_creation);
   EXPECT_EQ(cookies[2].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[2].ExpiryDate(), base::Time());
   EXPECT_FALSE(cookies[2].IsPersistent());
@@ -301,8 +288,8 @@ TEST_F(CookieManagerImplTest, GetAllCookies) {
   EXPECT_EQ("E", cookies[3].Value());
   EXPECT_EQ("foo_host", cookies[3].Domain());
   EXPECT_EQ("/with/path", cookies[3].Path());
-  EXPECT_LT(setup_time(), cookies[3].CreationDate());
-  EXPECT_LT(cookies[3].CreationDate(), now);
+  EXPECT_LT(before_creation, cookies[3].CreationDate());
+  EXPECT_LE(cookies[3].CreationDate(), after_creation);
   EXPECT_EQ(cookies[3].LastAccessDate(), base::Time());
   EXPECT_EQ(cookies[3].ExpiryDate(), base::Time());
   EXPECT_FALSE(cookies[3].IsPersistent());
@@ -313,6 +300,34 @@ TEST_F(CookieManagerImplTest, GetAllCookies) {
 }
 
 TEST_F(CookieManagerImplTest, GetCookieList) {
+  // Set some cookies for the test to play with.
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
+          /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "C", "D", "foo_host2", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "Secure", "E", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/true,
+          /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "HttpOnly", "F", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false,
+          /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+
   std::vector<net::CanonicalCookie> cookies = service_wrapper()->GetCookieList(
       GURL("https://foo_host/with/path"), net::CookieOptions());
 
@@ -327,10 +342,6 @@ TEST_F(CookieManagerImplTest, GetCookieList) {
 }
 
 TEST_F(CookieManagerImplTest, GetCookieListHttpOnly) {
-  // Clean out the cookies.
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
-
   // Create an httponly and a non-httponly cookie.
   bool result;
   result = SetCanonicalCookie(
@@ -368,10 +379,6 @@ TEST_F(CookieManagerImplTest, GetCookieListHttpOnly) {
 }
 
 TEST_F(CookieManagerImplTest, GetCookieListSameSite) {
-  // Clean out the cookies.
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
-
   // Create an unrestricted, a lax, and a strict cookie.
   bool result;
   result = SetCanonicalCookie(
@@ -428,11 +435,7 @@ TEST_F(CookieManagerImplTest, GetCookieListSameSite) {
 }
 
 TEST_F(CookieManagerImplTest, GetCookieListAccessTime) {
-  // Clean out the cookies and set a new, clean cookie.
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
-  bool result;
-  result = SetCanonicalCookie(
+  bool result = SetCanonicalCookie(
       net::CanonicalCookie(
           "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
           /*secure=*/false, /*httponly=*/false,
@@ -463,37 +466,35 @@ TEST_F(CookieManagerImplTest, GetCookieListAccessTime) {
   EXPECT_LE(cookies[0].LastAccessDate(), base::Time::Now());
 }
 
-TEST_F(CookieManagerImplTest, SetExtraCookie) {
-  EXPECT_TRUE(service_wrapper()->SetCanonicalCookie(
+TEST_F(CookieManagerImplTest, DeleteThroughSet) {
+  // Set some cookies for the test to play with.
+  EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
-          "X", "Y", "new_host", "/", base::Time(), base::Time(), base::Time(),
+          "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
           /*secure=*/false, /*httponly=*/false,
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
-      false, false));
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "C", "D", "foo_host2", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "Secure", "E", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/true,
+          /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "HttpOnly", "F", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false,
+          /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
 
-  std::vector<net::CanonicalCookie> cookies =
-      service_wrapper()->GetAllCookies();
-
-  ASSERT_EQ(5u, cookies.size());
-  std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
-
-  EXPECT_EQ("A", cookies[0].Name());
-  EXPECT_EQ("B", cookies[0].Value());
-
-  EXPECT_EQ("C", cookies[1].Name());
-  EXPECT_EQ("D", cookies[1].Value());
-
-  EXPECT_EQ("HttpOnly", cookies[2].Name());
-  EXPECT_EQ("F", cookies[2].Value());
-
-  EXPECT_EQ("Secure", cookies[3].Name());
-  EXPECT_EQ("E", cookies[3].Value());
-
-  EXPECT_EQ("X", cookies[4].Name());
-  EXPECT_EQ("Y", cookies[4].Value());
-}
-
-TEST_F(CookieManagerImplTest, DeleteThroughSet) {
   base::Time yesterday = base::Time::Now() - base::TimeDelta::FromDays(1);
   EXPECT_TRUE(service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie("A", "E", "foo_host", "/", base::Time(), yesterday,
@@ -528,7 +529,7 @@ TEST_F(CookieManagerImplTest, ConfirmSecureSetFails) {
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
 
-  ASSERT_EQ(4u, cookies.size());
+  ASSERT_EQ(0u, cookies.size());
 }
 
 TEST_F(CookieManagerImplTest, ConfirmHttpOnlySetFails) {
@@ -541,10 +542,18 @@ TEST_F(CookieManagerImplTest, ConfirmHttpOnlySetFails) {
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
 
-  ASSERT_EQ(4u, cookies.size());
+  ASSERT_EQ(0u, cookies.size());
 }
 
 TEST_F(CookieManagerImplTest, ConfirmHttpOnlyOverwriteFails) {
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "HttpOnly", "F", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false,
+          /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+
   EXPECT_FALSE(service_wrapper()->SetCanonicalCookie(
       net::CanonicalCookie(
           "HttpOnly", "Nope", "foo_host", "/with/path", base::Time(),
@@ -555,13 +564,41 @@ TEST_F(CookieManagerImplTest, ConfirmHttpOnlyOverwriteFails) {
 
   std::vector<net::CanonicalCookie> cookies =
       service_wrapper()->GetAllCookies();
-  ASSERT_EQ(4u, cookies.size());
+  ASSERT_EQ(1u, cookies.size());
   std::sort(cookies.begin(), cookies.end(), &CompareCanonicalCookies);
-  EXPECT_EQ("HttpOnly", cookies[2].Name());
-  EXPECT_EQ("F", cookies[2].Value());
+  EXPECT_EQ("HttpOnly", cookies[0].Name());
+  EXPECT_EQ("F", cookies[0].Value());
 }
 
 TEST_F(CookieManagerImplTest, DeleteEverything) {
+  // Set some cookies for the test to play with.
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "A", "B", "foo_host", "/", base::Time(), base::Time(), base::Time(),
+          /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "C", "D", "foo_host2", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false, /*httponly=*/false,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "Secure", "E", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/true,
+          /*httponly=*/false, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+  EXPECT_TRUE(SetCanonicalCookie(
+      net::CanonicalCookie(
+          "HttpOnly", "F", "foo_host", "/with/path", base::Time(), base::Time(),
+          base::Time(), /*secure=*/false,
+          /*httponly=*/true, net::CookieSameSite::NO_RESTRICTION,
+          net::COOKIE_PRIORITY_MEDIUM),
+      true, true));
+
   network::mojom::CookieDeletionFilter filter;
   EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
 
@@ -571,8 +608,6 @@ TEST_F(CookieManagerImplTest, DeleteEverything) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByTime) {
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
   base::Time now(base::Time::Now());
 
   // Create three cookies and delete the middle one.
@@ -597,6 +632,7 @@ TEST_F(CookieManagerImplTest, DeleteByTime) {
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
       true, true));
 
+  network::mojom::CookieDeletionFilter filter;
   filter.created_after_time = now - base::TimeDelta::FromMinutes(150);
   filter.created_before_time = now - base::TimeDelta::FromMinutes(90);
   EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
@@ -609,9 +645,6 @@ TEST_F(CookieManagerImplTest, DeleteByTime) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
-
   // Create three cookies and delete the middle one.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -634,6 +667,7 @@ TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
       true, true));
 
+  network::mojom::CookieDeletionFilter filter;
   filter.excluding_domains = std::vector<std::string>();
   filter.excluding_domains->push_back("foo_host2");
   EXPECT_EQ(2u, service_wrapper()->DeleteCookies(filter));
@@ -644,9 +678,6 @@ TEST_F(CookieManagerImplTest, DeleteByExcludingDomains) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
-
   // Create three cookies and delete the middle one.
   EXPECT_TRUE(SetCanonicalCookie(
       net::CanonicalCookie(
@@ -669,6 +700,7 @@ TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
       true, true));
 
+  network::mojom::CookieDeletionFilter filter;
   filter.including_domains = std::vector<std::string>();
   filter.including_domains->push_back("foo_host1");
   filter.including_domains->push_back("foo_host3");
@@ -680,8 +712,6 @@ TEST_F(CookieManagerImplTest, DeleteByIncludingDomains) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
   base::Time now(base::Time::Now());
 
   // Create three cookies and delete the middle one.
@@ -707,6 +737,7 @@ TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
           net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
       true, true));
 
+  network::mojom::CookieDeletionFilter filter;
   filter.session_control =
       network::mojom::CookieDeletionSessionControl::PERSISTENT_COOKIES;
   EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
@@ -719,8 +750,6 @@ TEST_F(CookieManagerImplTest, DeleteBySessionStatus) {
 }
 
 TEST_F(CookieManagerImplTest, DeleteByAll) {
-  network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(4u, service_wrapper()->DeleteCookies(filter));
   base::Time now(base::Time::Now());
 
   // Add a lot of cookies, only one of which will be deleted by the filter.
@@ -735,6 +764,7 @@ TEST_F(CookieManagerImplTest, DeleteByAll) {
   // Each of the other four cookies will vary in a way that will take it out
   // of being deleted by one of the filter.
 
+  network::mojom::CookieDeletionFilter filter;
   filter.created_after_time = now - base::TimeDelta::FromDays(4);
   filter.created_before_time = now - base::TimeDelta::FromDays(2);
   filter.including_domains = std::vector<std::string>();
@@ -1008,7 +1038,7 @@ TEST_F(CookieManagerImplTest, NotificationRequestDestroyed) {
 
   // Confirm the second interface can still receive notifications.
   network::mojom::CookieDeletionFilter filter;
-  EXPECT_EQ(5u, service_wrapper()->DeleteCookies(filter));
+  EXPECT_EQ(1u, service_wrapper()->DeleteCookies(filter));
 
   notification_impl2->WaitForSomeNotification();
   notification_impl2->GetCurrentNotifications(&notifications);
