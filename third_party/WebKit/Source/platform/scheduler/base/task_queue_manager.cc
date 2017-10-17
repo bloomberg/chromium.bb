@@ -48,7 +48,6 @@ TaskQueueManager::TaskQueueManager(
       task_count_(0),
       currently_executing_task_queue_(nullptr),
       observer_(nullptr),
-      deletion_sentinel_(new DeletionSentinel()),
       weak_factory_(this) {
   DCHECK(delegate->RunsTasksInCurrentSequence());
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
@@ -474,7 +473,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
     LazyNow time_before_task,
     base::TimeTicks* time_after_task) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
+  base::WeakPtr<TaskQueueManager> protect = GetWeakPtr();
   internal::TaskQueueImpl::Task pending_task =
       work_queue->TakeTaskFromWorkQueue();
 
@@ -531,7 +530,7 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
   task_annotator_.RunTask("TaskQueueManager::PostTask", &pending_task);
   // Detect if the TaskQueueManager just got deleted.  If this happens we must
   // not access any member variables after this point.
-  if (protect->HasOneRef())
+  if (!protect)
     return ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED;
 
   currently_executing_task_queue_ = prev_executing_task_queue;
