@@ -147,7 +147,7 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateMouseEvent(
     default:
       NOTREACHED();
   }
-  std::unique_ptr<ui::Event> event = base::MakeUnique<ui::MouseEvent>(
+  std::unique_ptr<ui::Event> event = std::make_unique<ui::MouseEvent>(
       event_type, point, point, ui::EventTimeForNow(), flag, changed_flag,
       pointer_details);
   event->AsMouseEvent()->SetClickCount(click_count);
@@ -187,7 +187,7 @@ std::unique_ptr<ui::Event> PenEventProcessor::GenerateTouchEvent(
   int rotation_angle = static_cast<int>(pointer_details.twist) % 180;
   if (rotation_angle < 0)
     rotation_angle += 180;
-  std::unique_ptr<ui::Event> event = base::MakeUnique<ui::TouchEvent>(
+  std::unique_ptr<ui::Event> event = std::make_unique<ui::TouchEvent>(
       event_type, point, event_time, pointer_details, flags, rotation_angle);
   event->latency()->AddLatencyNumberWithTimestamp(
       ui::INPUT_EVENT_LATENCY_ORIGINAL_COMPONENT, 0, 0, event_time, 1);

@@ -140,7 +140,7 @@ Mixer::~Mixer() {
 }
 
 size_t Mixer::AddGroup(size_t max_results, double multiplier, double boost) {
-  groups_.push_back(base::MakeUnique<Group>(max_results, multiplier, boost));
+  groups_.push_back(std::make_unique<Group>(max_results, multiplier, boost));
   return groups_.size() - 1;
 }
 

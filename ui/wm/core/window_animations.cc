@@ -380,12 +380,12 @@ std::unique_ptr<ui::LayerAnimationElement> CreateGrowShrinkElement(
     aura::Window* window,
     bool grow) {
   std::unique_ptr<ui::InterpolatedTransform> scale =
-      base::MakeUnique<ui::InterpolatedScale>(
+      std::make_unique<ui::InterpolatedScale>(
           gfx::Point3F(kWindowAnimation_Bounce_Scale,
                        kWindowAnimation_Bounce_Scale, 1),
           gfx::Point3F(1, 1, 1));
   std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
-      base::MakeUnique<ui::InterpolatedTransformAboutPivot>(
+      std::make_unique<ui::InterpolatedTransformAboutPivot>(
           gfx::Point(window->bounds().width() * 0.5,
                      window->bounds().height() * 0.5),
           std::move(scale));
@@ -406,7 +406,7 @@ void AnimateBounce(aura::Window* window) {
   scoped_settings.SetPreemptionStrategy(
       ui::LayerAnimator::REPLACE_QUEUED_ANIMATIONS);
   std::unique_ptr<ui::LayerAnimationSequence> sequence =
-      base::MakeUnique<ui::LayerAnimationSequence>();
+      std::make_unique<ui::LayerAnimationSequence>();
   sequence->AddElement(CreateGrowShrinkElement(window, true));
   sequence->AddElement(ui::LayerAnimationElement::CreatePauseElement(
       ui::LayerAnimationElement::BOUNDS,
@@ -478,22 +478,22 @@ void AddLayerAnimationsForRotate(aura::Window* window, bool show) {
   transform.ApplyPerspectiveDepth(kWindowAnimation_Rotate_PerspectiveDepth);
   transform.Translate(-xcenter, 0);
   std::unique_ptr<ui::InterpolatedTransform> perspective =
-      base::MakeUnique<ui::InterpolatedConstantTransform>(transform);
+      std::make_unique<ui::InterpolatedConstantTransform>(transform);
 
   std::unique_ptr<ui::InterpolatedTransform> scale =
-      base::MakeUnique<ui::InterpolatedScale>(
+      std::make_unique<ui::InterpolatedScale>(
           1, kWindowAnimation_Rotate_ScaleFactor);
   std::unique_ptr<ui::InterpolatedTransform> scale_about_pivot =
-      base::MakeUnique<ui::InterpolatedTransformAboutPivot>(
+      std::make_unique<ui::InterpolatedTransformAboutPivot>(
           gfx::Point(xcenter, kWindowAnimation_Rotate_TranslateY),
           std::move(scale));
 
   std::unique_ptr<ui::InterpolatedTransform> translation =
-      base::MakeUnique<ui::InterpolatedTranslation>(
+      std::make_unique<ui::InterpolatedTranslation>(
           gfx::PointF(), gfx::PointF(0, kWindowAnimation_Rotate_TranslateY));
 
   std::unique_ptr<ui::InterpolatedTransform> rotation =
-      base::MakeUnique<ui::InterpolatedAxisAngleRotation>(
+      std::make_unique<ui::InterpolatedAxisAngleRotation>(
           gfx::Vector3dF(1, 0, 0), 0, kWindowAnimation_Rotate_DegreesX);
 
   scale_about_pivot->SetChild(std::move(perspective));

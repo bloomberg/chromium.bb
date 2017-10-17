@@ -47,7 +47,7 @@ void CompositorThreadEventQueue::Queue(
   oldest_latency.set_coalesced();
   base::TimeTicks oldest_creation_timestamp = last_event->creation_timestamp();
   auto combined_original_events =
-      base::MakeUnique<EventWithCallback::OriginalEventList>();
+      std::make_unique<EventWithCallback::OriginalEventList>();
   combined_original_events->splice(combined_original_events->end(),
                                    last_event->original_events());
   combined_original_events->splice(combined_original_events->end(),
@@ -77,12 +77,12 @@ void CompositorThreadEventQueue::Queue(
           ToWebGestureEvent(new_event->event()));
 
   std::unique_ptr<EventWithCallback> scroll_event =
-      base::MakeUnique<EventWithCallback>(
+      std::make_unique<EventWithCallback>(
           WebInputEventTraits::Clone(coalesced_events.first), oldest_latency,
           oldest_creation_timestamp, timestamp_now, nullptr);
 
   std::unique_ptr<EventWithCallback> pinch_event =
-      base::MakeUnique<EventWithCallback>(
+      std::make_unique<EventWithCallback>(
           WebInputEventTraits::Clone(coalesced_events.second), oldest_latency,
           oldest_creation_timestamp, timestamp_now,
           std::move(combined_original_events));

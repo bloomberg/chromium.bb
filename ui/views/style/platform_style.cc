@@ -54,9 +54,9 @@ const bool PlatformStyle::kTextfieldScrollsToStartOnFocusChange = false;
 // static
 std::unique_ptr<ScrollBar> PlatformStyle::CreateScrollBar(bool is_horizontal) {
 #if defined(OS_CHROMEOS)
-  return base::MakeUnique<OverlayScrollBar>(is_horizontal);
+  return std::make_unique<OverlayScrollBar>(is_horizontal);
 #else
-  return base::MakeUnique<ScrollBarViews>(is_horizontal);
+  return std::make_unique<ScrollBarViews>(is_horizontal);
 #endif
 }
 

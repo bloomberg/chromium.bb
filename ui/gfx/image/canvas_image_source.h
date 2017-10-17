@@ -30,7 +30,7 @@ class GFX_EXPORT CanvasImageSource : public gfx::ImageSkiaSource {
   //       CanvasImageSource::MakeImageSkia<MySource>(param1, param2);
   template <typename T, typename... Args>
   static ImageSkia MakeImageSkia(Args&&... args) {
-    auto source = base::MakeUnique<T>(std::forward<Args>(args)...);
+    auto source = std::make_unique<T>(std::forward<Args>(args)...);
     gfx::Size size = source->size();
     return gfx::ImageSkia(std::move(source), size);
   }

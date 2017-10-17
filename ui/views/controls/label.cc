@@ -282,7 +282,7 @@ bool Label::SetSelectable(bool value) {
   if (!IsSelectionSupported())
     return false;
 
-  selection_controller_ = base::MakeUnique<SelectionController>(this);
+  selection_controller_ = std::make_unique<SelectionController>(this);
   return true;
 }
 

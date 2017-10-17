@@ -15,7 +15,7 @@ namespace views {
 // static
 std::unique_ptr<NativeViewAccessibility> NativeViewAccessibility::Create(
     View* view) {
-  return base::MakeUnique<NativeViewAccessibilityMac>(view);
+  return std::make_unique<NativeViewAccessibilityMac>(view);
 }
 
 NativeViewAccessibilityMac::NativeViewAccessibilityMac(View* view)

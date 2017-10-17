@@ -31,7 +31,7 @@ class TestPointerWatcher : public PointerWatcher {
   void OnPointerEventObserved(const ui::PointerEvent& event,
                               const gfx::Point& location_in_screen,
                               gfx::NativeView target) override {
-    last_event_observed_ = base::MakeUnique<ui::PointerEvent>(event);
+    last_event_observed_ = std::make_unique<ui::PointerEvent>(event);
   }
 
  private:

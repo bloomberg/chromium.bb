@@ -81,14 +81,14 @@ ui::EventDispatchDetails InputMethodChromeOS::DispatchKeyEvent(
         // Treating as PostIME event if character composer handles key event and
         // generates some IME event,
         return ProcessKeyEventPostIME(
-            event, base::MakeUnique<AckCallback>(std::move(ack_callback)),
+            event, std::make_unique<AckCallback>(std::move(ack_callback)),
             false, true);
       }
       return ProcessUnfilteredKeyPressEvent(
-          event, base::MakeUnique<AckCallback>(std::move(ack_callback)));
+          event, std::make_unique<AckCallback>(std::move(ack_callback)));
     }
     return DispatchKeyEventPostIME(
-        event, base::MakeUnique<AckCallback>(std::move(ack_callback)));
+        event, std::make_unique<AckCallback>(std::move(ack_callback)));
   }
 
   handling_key_event_ = true;
@@ -136,7 +136,7 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventDone(
   ui::EventDispatchDetails details;
   if (event->type() == ET_KEY_PRESSED || event->type() == ET_KEY_RELEASED) {
     details = ProcessKeyEventPostIME(
-        event, base::MakeUnique<AckCallback>(std::move(ack_callback)), false,
+        event, std::make_unique<AckCallback>(std::move(ack_callback)), false,
         is_handled);
   }
   handling_key_event_ = false;
@@ -369,7 +369,7 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessKeyEventPostIME(
 ui::EventDispatchDetails InputMethodChromeOS::ProcessFilteredKeyPressEvent(
     ui::KeyEvent* event,
     std::unique_ptr<AckCallback> ack_callback) {
-  auto callback = base::MakeUnique<AckCallback>(base::Bind(
+  auto callback = std::make_unique<AckCallback>(base::Bind(
       &InputMethodChromeOS::PostProcessFilteredKeyPressEvent,
       weak_ptr_factory_.GetWeakPtr(), base::Owned(new ui::KeyEvent(*event)),
       GetTextInputClient(), Passed(&ack_callback)));
@@ -414,7 +414,7 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessUnfilteredKeyPressEvent(
     std::unique_ptr<AckCallback> ack_callback) {
   return DispatchKeyEventPostIME(
       event,
-      base::MakeUnique<AckCallback>(base::Bind(
+      std::make_unique<AckCallback>(base::Bind(
           &InputMethodChromeOS::PostProcessUnfilteredKeyPressEvent,
           weak_ptr_factory_.GetWeakPtr(), base::Owned(new ui::KeyEvent(*event)),
           GetTextInputClient(), Passed(&ack_callback))));

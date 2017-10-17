@@ -243,7 +243,7 @@ SearchBoxView::SearchBoxView(SearchBoxViewDelegate* delegate,
 
   SetShadow(GetShadowForZHeight(2));
   content_container_->SetBackground(
-      base::MakeUnique<SearchBoxBackground>(background_color_));
+      std::make_unique<SearchBoxBackground>(background_color_));
 
   box_layout_ = new views::BoxLayout(
       views::BoxLayout::kHorizontal, gfx::Insets(0, kPadding),
@@ -351,7 +351,7 @@ void SearchBoxView::SetShadow(const gfx::ShadowValue& shadow) {
   if (is_fullscreen_app_list_enabled_)
     return;
 
-  SetBorder(base::MakeUnique<views::ShadowBorder>(shadow));
+  SetBorder(std::make_unique<views::ShadowBorder>(shadow));
   Layout();
 }
 

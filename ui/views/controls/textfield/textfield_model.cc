@@ -689,7 +689,7 @@ void TextfieldModel::ConfirmCompositionText() {
       composition_range_.start(), composition_range_.length());
   // TODO(oshima): current behavior on ChromeOS is a bit weird and not
   // sure exactly how this should work. Find out and fix if necessary.
-  AddOrMergeEditHistory(base::MakeUnique<InsertEdit>(
+  AddOrMergeEditHistory(std::make_unique<InsertEdit>(
       false, composition, composition_range_.start()));
   render_text_->SetCursorPosition(composition_range_.end());
   ClearComposition();
@@ -778,7 +778,7 @@ void TextfieldModel::ExecuteAndRecordDelete(gfx::Range range, bool mergeable) {
   size_t old_text_start = range.GetMin();
   const base::string16 old_text = text().substr(old_text_start, range.length());
   bool backward = range.is_reversed();
-  auto edit = base::MakeUnique<DeleteEdit>(mergeable, old_text, old_text_start,
+  auto edit = std::make_unique<DeleteEdit>(mergeable, old_text, old_text_start,
                                            backward);
   edit->Redo(this);
   AddOrMergeEditHistory(std::move(edit));
@@ -803,7 +803,7 @@ void TextfieldModel::ExecuteAndRecordReplace(MergeType merge_type,
                                              size_t new_text_start) {
   size_t old_text_start = render_text_->selection().GetMin();
   bool backward = render_text_->selection().is_reversed();
-  auto edit = base::MakeUnique<ReplaceEdit>(
+  auto edit = std::make_unique<ReplaceEdit>(
       merge_type, GetSelectedText(), old_cursor_pos, old_text_start, backward,
       new_cursor_pos, new_text, new_text_start);
   edit->Redo(this);
@@ -813,7 +813,7 @@ void TextfieldModel::ExecuteAndRecordReplace(MergeType merge_type,
 void TextfieldModel::ExecuteAndRecordInsert(const base::string16& new_text,
                                             bool mergeable) {
   auto edit =
-      base::MakeUnique<InsertEdit>(mergeable, new_text, GetCursorPosition());
+      std::make_unique<InsertEdit>(mergeable, new_text, GetCursorPosition());
   edit->Redo(this);
   AddOrMergeEditHistory(std::move(edit));
 }

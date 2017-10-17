@@ -83,7 +83,7 @@ void AuraTestBase::SetUp() {
   ui::InitializeContextFactoryForTests(enable_pixel_output, &context_factory,
                                        &context_factory_private);
 
-  helper_ = base::MakeUnique<AuraTestHelper>();
+  helper_ = std::make_unique<AuraTestHelper>();
   if (use_mus_) {
     helper_->EnableMusWithTestWindowTree(window_tree_client_delegate_,
                                          window_manager_delegate_);

@@ -227,7 +227,7 @@ void FolderImage::RedrawIconAndNotify() {
 
   const gfx::Size icon_size = gfx::Size(kGridIconDimension, kGridIconDimension);
   icon_ = gfx::ImageSkia(
-      base::MakeUnique<FolderImageSource>(top_icons, icon_size), icon_size);
+      std::make_unique<FolderImageSource>(top_icons, icon_size), icon_size);
 
   for (auto& observer : observers_)
     observer.OnFolderImageUpdated();

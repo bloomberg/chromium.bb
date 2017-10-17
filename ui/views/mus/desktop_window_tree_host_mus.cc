@@ -311,8 +311,8 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
   if (!params.bounds.IsEmpty())
     SetBoundsInDIP(params.bounds);
 
-  cursor_manager_ = base::MakeUnique<wm::CursorManager>(
-      base::MakeUnique<NativeCursorManagerMus>(window()));
+  cursor_manager_ = std::make_unique<wm::CursorManager>(
+      std::make_unique<NativeCursorManagerMus>(window()));
   aura::client::SetCursorClient(window(), cursor_manager_.get());
   InitHost();
 
@@ -376,7 +376,7 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
 }
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostMus::CreateTooltip() {
-  return base::MakeUnique<corewm::TooltipAura>();
+  return std::make_unique<corewm::TooltipAura>();
 }
 
 std::unique_ptr<aura::client::DragDropClient>

@@ -61,7 +61,7 @@ gfx::Rect NinePatchResource::Border(const gfx::Size& bounds,
 }
 
 std::unique_ptr<Resource> NinePatchResource::CreateForCopy() {
-  return base::MakeUnique<NinePatchResource>(padding_, aperture_);
+  return std::make_unique<NinePatchResource>(padding_, aperture_);
 }
 
 }  // namespace ui

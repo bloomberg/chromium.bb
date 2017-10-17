@@ -129,7 +129,7 @@ HistoryDataStore::~HistoryDataStore() {
 void HistoryDataStore::Init(base::DictionaryValue* cached_dict) {
   DCHECK(cached_dict);
   cached_dict->SetString(kKeyVersion, kCurrentVersion);
-  cached_dict->Set(kKeyAssociations, base::MakeUnique<base::DictionaryValue>());
+  cached_dict->Set(kKeyAssociations, std::make_unique<base::DictionaryValue>());
 }
 
 void HistoryDataStore::Flush(
@@ -209,7 +209,7 @@ base::DictionaryValue* HistoryDataStore::GetEntryDict(
   if (!assoc_dict->GetDictionaryWithoutPathExpansion(query, &entry_dict)) {
     // Creates one if none exists.
     entry_dict = assoc_dict->SetDictionaryWithoutPathExpansion(
-        query, base::MakeUnique<base::DictionaryValue>());
+        query, std::make_unique<base::DictionaryValue>());
   }
 
   return entry_dict;

@@ -242,7 +242,7 @@ void NativeWidgetAura::InitNativeWidget(const Widget::InitParams& params) {
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
     focus_manager_event_handler_ =
-        base::MakeUnique<FocusManagerEventHandler>(GetWidget(), window_);
+        std::make_unique<FocusManagerEventHandler>(GetWidget(), window_);
   }
 
   wm::SetActivationDelegate(window_, this);

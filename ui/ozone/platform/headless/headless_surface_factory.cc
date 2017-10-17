@@ -111,7 +111,7 @@ HeadlessSurfaceFactory::HeadlessSurfaceFactory(
     HeadlessWindowManager* window_manager)
     : window_manager_(window_manager) {
 #if !defined(OS_FUCHSIA)
-  osmesa_implementation_ = base::MakeUnique<GLOzoneOSMesa>();
+  osmesa_implementation_ = std::make_unique<GLOzoneOSMesa>();
 #endif
 }
 

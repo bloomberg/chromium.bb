@@ -1727,7 +1727,7 @@ TEST(LayerAnimatorTest, CacheRenderSurface) {
 // crash when the layer was destroyed.
 TEST(LayerAnimatorTest, CacheRenderSurfaceOnWillBeDestroyedLayer) {
   // Case 1: layer is a pointer.
-  auto layer1 = base::MakeUnique<Layer>();
+  auto layer1 = std::make_unique<Layer>();
   scoped_refptr<LayerAnimator> animator(layer1->GetAnimator());
   animator->set_disable_timer_for_test(true);
   TestImplicitAnimationObserver observer1(false);
@@ -2023,7 +2023,7 @@ TEST(LayerAnimatorTest, DeferredPaintInTwoAnimations) {
 // not crash when the layer was destroyed.
 TEST(LayerAnimatorTest, DeferredPaintOnWillBeDestroyedLayer) {
   // Case 1: layer is a pointer.
-  auto layer1 = base::MakeUnique<Layer>();
+  auto layer1 = std::make_unique<Layer>();
   scoped_refptr<LayerAnimator> animator(layer1->GetAnimator());
   animator->set_disable_timer_for_test(true);
   TestImplicitAnimationObserver observer1(false);
@@ -2115,7 +2115,7 @@ TEST(LayerAnimatorTest, TrilinearFiltering) {
 // not crash when the layer was destroyed.
 TEST(LayerAnimatorTest, TrilinearFilteringOnWillBeDestroyedLayer) {
   // Case 1: layer is a pointer.
-  auto layer1 = base::MakeUnique<Layer>();
+  auto layer1 = std::make_unique<Layer>();
   scoped_refptr<LayerAnimator> animator(layer1->GetAnimator());
   animator->set_disable_timer_for_test(true);
   TestImplicitAnimationObserver observer1(false);
@@ -2667,7 +2667,7 @@ TEST(LayerAnimatorTest, SettingPropertyDuringAnAnimation) {
   delegate.SetOpacityFromAnimation(start_opacity);
 
   std::unique_ptr<LayerAnimationSequence> sequence =
-      base::MakeUnique<LayerAnimationSequence>(
+      std::make_unique<LayerAnimationSequence>(
           LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
 
   animator->StartAnimation(sequence.release());
@@ -2702,7 +2702,7 @@ TEST(LayerAnimatorTest, ImmediatelySettingNewTargetDoesNotLeak) {
   int num_live_instances = 0;
   base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
   std::unique_ptr<TestLayerAnimationSequence> sequence =
-      base::MakeUnique<TestLayerAnimationSequence>(
+      std::make_unique<TestLayerAnimationSequence>(
           LayerAnimationElement::CreateBoundsElement(target_bounds, delta),
           &num_live_instances);
 

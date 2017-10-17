@@ -30,7 +30,7 @@ class DragDropControllerMusTest : public test::AuraMusWmTestBase {
   // test::AuraMusWmTestBase
   void SetUp() override {
     AuraMusWmTestBase::SetUp();
-    controller_ = base::MakeUnique<DragDropControllerMus>(&controller_host_,
+    controller_ = std::make_unique<DragDropControllerMus>(&controller_host_,
                                                           window_tree());
     window_ = std::unique_ptr<aura::Window>(
         CreateNormalWindow(0, root_window(), nullptr));

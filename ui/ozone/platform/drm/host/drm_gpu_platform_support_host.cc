@@ -182,7 +182,7 @@ void DrmGpuPlatformSupportHost::OnChannelEstablished() {
   // (windowing) state on the GPU can be initialized before the cursor is
   // allowed to IPC messages (which are targeted to a specific window).
   cursor_->SetDrmCursorProxy(
-      base::MakeUnique<CursorIPC>(send_runner_, send_callback_));
+      std::make_unique<CursorIPC>(send_runner_, send_callback_));
 }
 
 bool DrmGpuPlatformSupportHost::OnMessageReceivedForDrmDisplayHostManager(

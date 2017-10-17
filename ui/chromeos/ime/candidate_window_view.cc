@@ -364,7 +364,7 @@ void CandidateWindowView::MaybeInitializeCandidateViews(
 
   while (page_size > candidate_views_.size()) {
     std::unique_ptr<CandidateView> new_candidate =
-        base::MakeUnique<CandidateView>(this, orientation);
+        std::make_unique<CandidateView>(this, orientation);
     candidate_area_->AddChildView(new_candidate.get());
     candidate_views_.push_back(std::move(new_candidate));
   }

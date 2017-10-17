@@ -137,7 +137,7 @@ FormatEtcEnumerator::FormatEtcEnumerator(
     : cursor_(0), ref_count_(0) {
   // Copy FORMATETC data from our source into ourselves.
   while (start != end) {
-    auto format_etc = base::MakeUnique<FORMATETC>();
+    auto format_etc = std::make_unique<FORMATETC>();
     CloneFormatEtc(&(*start)->format_etc, format_etc.get());
     contents_.push_back(std::move(format_etc));
     ++start;
@@ -221,7 +221,7 @@ FormatEtcEnumerator* FormatEtcEnumerator::CloneFromOther(
   std::transform(other->contents_.cbegin(), other->contents_.cend(),
                  std::back_inserter(e->contents_),
                  [](const std::unique_ptr<FORMATETC>& format_etc) {
-                   auto clone = base::MakeUnique<FORMATETC>();
+                   auto clone = std::make_unique<FORMATETC>();
                    CloneFormatEtc(format_etc.get(), clone.get());
                    return clone;
                  });
@@ -291,12 +291,12 @@ OSExchangeDataProviderWin::~OSExchangeDataProviderWin() {
 
 std::unique_ptr<OSExchangeData::Provider>
 OSExchangeDataProviderWin::Clone() const {
-  return base::MakeUnique<OSExchangeDataProviderWin>(data_object());
+  return std::make_unique<OSExchangeDataProviderWin>(data_object());
 }
 
 void OSExchangeDataProviderWin::MarkOriginatedFromRenderer() {
   STGMEDIUM* storage = GetStorageForString(std::string());
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       GetRendererTaintFormatType().ToFormatEtc(), storage));
 }
 
@@ -306,12 +306,12 @@ bool OSExchangeDataProviderWin::DidOriginateFromRenderer() const {
 
 void OSExchangeDataProviderWin::SetString(const base::string16& data) {
   STGMEDIUM* storage = GetStorageForString(data);
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetPlainTextWFormatType().ToFormatEtc(), storage));
 
   // Also add the UTF8-encoded version.
   storage = GetStorageForString(base::UTF16ToUTF8(data));
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetPlainTextFormatType().ToFormatEtc(), storage));
 }
 
@@ -328,7 +328,7 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
   x_moz_url_str += '\n';
   x_moz_url_str += title;
   STGMEDIUM* storage = GetStorageForString(x_moz_url_str);
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetMozUrlFormatType().ToFormatEtc(), storage));
 
   // Add a .URL shortcut file for dragging to Explorer.
@@ -340,10 +340,10 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
 
   // Add a UniformResourceLocator link for apps like IE and Word.
   storage = GetStorageForString(base::UTF8ToUTF16(url.spec()));
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetUrlWFormatType().ToFormatEtc(), storage));
   storage = GetStorageForString(url.spec());
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetUrlFormatType().ToFormatEtc(), storage));
 
   // TODO(beng): add CF_HTML.
@@ -356,13 +356,13 @@ void OSExchangeDataProviderWin::SetURL(const GURL& url,
 
 void OSExchangeDataProviderWin::SetFilename(const base::FilePath& path) {
   STGMEDIUM* storage = GetStorageForFileName(path);
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage));
 
   storage = GetIDListStorageForFileName(path);
   if (!storage)
     return;
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetIDListFormatType().ToFormatEtc(), storage));
 }
 
@@ -370,7 +370,7 @@ void OSExchangeDataProviderWin::SetFilenames(
     const std::vector<FileInfo>& filenames) {
   for (size_t i = 0; i < filenames.size(); ++i) {
     STGMEDIUM* storage = GetStorageForFileName(filenames[i].path);
-    data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+    data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
         Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage));
   }
 }
@@ -379,7 +379,7 @@ void OSExchangeDataProviderWin::SetPickledData(
     const Clipboard::FormatType& format,
     const base::Pickle& data) {
   STGMEDIUM* storage = GetStorageForBytes(data.data(), data.size());
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       format.ToFormatEtc(), storage));
 }
 
@@ -388,12 +388,12 @@ void OSExchangeDataProviderWin::SetFileContents(
     const std::string& file_contents) {
   // Add CFSTR_FILEDESCRIPTOR
   STGMEDIUM* storage = GetStorageForFileDescriptor(filename);
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetFileDescriptorFormatType().ToFormatEtc(), storage));
 
   // Add CFSTR_FILECONTENTS
   storage = GetStorageForBytes(file_contents.data(), file_contents.length());
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetFileContentZeroFormatType().ToFormatEtc(), storage));
 }
 
@@ -405,12 +405,12 @@ void OSExchangeDataProviderWin::SetHtml(const base::string16& html,
 
   std::string cf_html = ClipboardUtil::HtmlToCFHtml(utf8_html, url);
   STGMEDIUM* storage = GetStorageForBytes(cf_html.c_str(), cf_html.size());
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetHtmlFormatType().ToFormatEtc(), storage));
 
   STGMEDIUM* storage_plain = GetStorageForBytes(utf8_html.c_str(),
                                                 utf8_html.size());
-  data_->contents_.push_back(base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  data_->contents_.push_back(std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetTextHtmlFormatType().ToFormatEtc(), storage_plain));
 }
 
@@ -541,7 +541,7 @@ void OSExchangeDataProviderWin::SetDownloadFileInfo(
     storage = GetStorageForFileName(download.filename);
 
   // Add CF_HDROP.
-  auto info = base::MakeUnique<DataObjectImpl::StoredDataInfo>(
+  auto info = std::make_unique<DataObjectImpl::StoredDataInfo>(
       Clipboard::GetCFHDropFormatType().ToFormatEtc(), storage);
   info->downloader = download.downloader;
   data_->contents_.push_back(std::move(info));
@@ -853,7 +853,7 @@ HRESULT DataObjectImpl::SetData(
     DuplicateMedium(format_etc->cfFormat, medium, local_medium);
   }
 
-  auto info = base::MakeUnique<DataObjectImpl::StoredDataInfo>(*format_etc,
+  auto info = std::make_unique<DataObjectImpl::StoredDataInfo>(*format_etc,
                                                                local_medium);
   info->medium->tymed = format_etc->tymed;
   info->owns_medium = !!should_release;

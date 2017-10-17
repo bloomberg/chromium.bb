@@ -26,7 +26,7 @@ TEST_F(ViewTrackerTest, ObservedAtConstruction) {
   std::unique_ptr<ViewTracker> tracker;
   {
     View view;
-    tracker = base::MakeUnique<ViewTracker>(&view);
+    tracker = std::make_unique<ViewTracker>(&view);
     EXPECT_EQ(&view, tracker->view());
   }
   EXPECT_EQ(nullptr, tracker->view());

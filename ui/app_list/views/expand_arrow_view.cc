@@ -173,7 +173,7 @@ std::unique_ptr<views::InkDrop> ExpandArrowView::CreateInkDrop() {
 }
 
 std::unique_ptr<views::InkDropMask> ExpandArrowView::CreateInkDropMask() const {
-  return base::MakeUnique<views::CircleInkDropMask>(
+  return std::make_unique<views::CircleInkDropMask>(
       size(), GetLocalBounds().CenterPoint(), kInkDropRadius);
 }
 
@@ -182,7 +182,7 @@ std::unique_ptr<views::InkDropRipple> ExpandArrowView::CreateInkDropRipple()
   gfx::Point center = GetLocalBounds().CenterPoint();
   gfx::Rect bounds(center.x() - kInkDropRadius, center.y() - kInkDropRadius,
                    2 * kInkDropRadius, 2 * kInkDropRadius);
-  return base::MakeUnique<views::FloodFillInkDropRipple>(
+  return std::make_unique<views::FloodFillInkDropRipple>(
       size(), GetLocalBounds().InsetsFrom(bounds),
       GetInkDropCenterBasedOnLastEvent(), kInkDropRippleColor, 1.0f);
 }

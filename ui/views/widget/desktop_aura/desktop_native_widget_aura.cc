@@ -516,14 +516,14 @@ void DesktopNativeWidgetAura::InitNativeWidget(
 
   if (params.opacity == Widget::InitParams::TRANSLUCENT_WINDOW &&
       desktop_window_tree_host_->ShouldCreateVisibilityController()) {
-    visibility_controller_ = base::MakeUnique<wm::VisibilityController>();
+    visibility_controller_ = std::make_unique<wm::VisibilityController>();
     aura::client::SetVisibilityClient(host_->window(),
                                       visibility_controller_.get());
     wm::SetChildWindowVisibilityChangesAnimated(host_->window());
   }
 
   if (params.type == Widget::InitParams::TYPE_WINDOW) {
-    focus_manager_event_handler_ = base::MakeUnique<FocusManagerEventHandler>(
+    focus_manager_event_handler_ = std::make_unique<FocusManagerEventHandler>(
         GetWidget(), host_->window());
   }
 

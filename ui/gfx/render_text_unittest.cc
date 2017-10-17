@@ -439,11 +439,11 @@ class RenderTextTest : public testing::Test,
   std::unique_ptr<RenderText> CreateRenderTextInstance() const {
     switch (GetParam()) {
       case RENDER_TEXT_HARFBUZZ:
-        return base::MakeUnique<RenderTextHarfBuzz>();
+        return std::make_unique<RenderTextHarfBuzz>();
 
       case RENDER_TEXT_MAC:
 #if defined(OS_MACOSX)
-        return base::MakeUnique<RenderTextMac>();
+        return std::make_unique<RenderTextMac>();
 #else
         break;
 #endif

@@ -235,7 +235,7 @@ class KeyboardControllerTest : public testing::Test,
     focus_controller_.reset(new TestFocusController(root_window()));
     layout_delegate_.reset(new TestKeyboardLayoutDelegate());
     controller_.reset(
-        new KeyboardController(base::MakeUnique<TestKeyboardUI>(
+        new KeyboardController(std::make_unique<TestKeyboardUI>(
                                    aura_test_helper_->host()->GetInputMethod()),
                                layout_delegate_.get()));
     controller()->AddObserver(this);

@@ -16,7 +16,7 @@ bool StructTraits<display::mojom::DisplayModeDataView,
   gfx::Size size;
   if (!data.ReadSize(&size))
     return false;
-  *out = base::MakeUnique<display::DisplayMode>(size, data.is_interlaced(),
+  *out = std::make_unique<display::DisplayMode>(size, data.is_interlaced(),
                                                 data.refresh_rate());
   return true;
 };

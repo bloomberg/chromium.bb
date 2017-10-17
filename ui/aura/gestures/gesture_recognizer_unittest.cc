@@ -693,7 +693,7 @@ class GestureRecognizerWithSwitchTest : public GestureRecognizerTest {
 // event originating from CancelActiveTouchesExcept. This monitors for
 // regressions on crbug.com/651258.
 TEST_F(GestureRecognizerTest, TouchCancelCanDestroyWindow) {
-  auto delegate = base::MakeUnique<GestureEventConsumeDelegate>();
+  auto delegate = std::make_unique<GestureEventConsumeDelegate>();
   TimedEvents tes;
   const int kTouchId = 1;
 
@@ -701,7 +701,7 @@ TEST_F(GestureRecognizerTest, TouchCancelCanDestroyWindow) {
   // events.
   std::unique_ptr<aura::Window> window(CreateTestWindowWithDelegate(
       delegate.get(), -1234, gfx::Rect(0, 0, 200, 200), root_window()));
-  auto handler = base::MakeUnique<RemoveOnTouchCancelHandler>();
+  auto handler = std::make_unique<RemoveOnTouchCancelHandler>();
   window->AddPreTargetHandler(handler.get());
 
   // Dispatch an event to |host_window| that will be cancelled.

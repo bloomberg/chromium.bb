@@ -122,7 +122,7 @@ WindowPortLocal::CreateLayerTreeFrameSink() {
   auto* context_factory_private =
       aura::Env::GetInstance()->context_factory_private();
   frame_sink_id_ = context_factory_private->AllocateFrameSinkId();
-  auto frame_sink = base::MakeUnique<LayerTreeFrameSinkLocal>(
+  auto frame_sink = std::make_unique<LayerTreeFrameSinkLocal>(
       frame_sink_id_, context_factory_private->GetHostFrameSinkManager(),
       window_->GetName());
   frame_sink->SetSurfaceChangedCallback(base::Bind(

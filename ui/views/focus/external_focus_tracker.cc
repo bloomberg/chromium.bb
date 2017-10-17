@@ -15,7 +15,7 @@ ExternalFocusTracker::ExternalFocusTracker(View* parent_view,
                                            FocusManager* focus_manager)
     : focus_manager_(focus_manager),
       parent_view_(parent_view),
-      last_focused_view_tracker_(base::MakeUnique<ViewTracker>()) {
+      last_focused_view_tracker_(std::make_unique<ViewTracker>()) {
   DCHECK(parent_view);
   // Store the view which is focused when we're created.
   if (focus_manager_)

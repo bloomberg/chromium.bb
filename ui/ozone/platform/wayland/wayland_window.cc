@@ -29,10 +29,10 @@ class XDGShellObjectFactory {
       WaylandConnection* connection,
       WaylandWindow* wayland_window) {
     if (connection->shell_v6())
-      return base::MakeUnique<XDGSurfaceWrapperV6>(wayland_window);
+      return std::make_unique<XDGSurfaceWrapperV6>(wayland_window);
 
     DCHECK(connection->shell());
-    return base::MakeUnique<XDGSurfaceWrapperV5>(wayland_window);
+    return std::make_unique<XDGSurfaceWrapperV5>(wayland_window);
   }
 
  private:

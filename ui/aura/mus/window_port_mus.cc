@@ -116,12 +116,12 @@ WindowPortMus::RequestLayerTreeFrameSink(
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
   params.hit_test_data_provider =
-      base::MakeUnique<HitTestDataProviderAura>(window_);
+      std::make_unique<HitTestDataProviderAura>(window_);
   params.local_surface_id_provider =
-      base::MakeUnique<viz::DefaultLocalSurfaceIdProvider>();
+      std::make_unique<viz::DefaultLocalSurfaceIdProvider>();
   params.enable_surface_synchronization = true;
 
-  auto layer_tree_frame_sink = base::MakeUnique<viz::ClientLayerTreeFrameSink>(
+  auto layer_tree_frame_sink = std::make_unique<viz::ClientLayerTreeFrameSink>(
       std::move(context_provider), nullptr /* worker_context_provider */,
       &params);
   window_tree_client_->AttachCompositorFrameSink(
@@ -352,7 +352,7 @@ void WindowPortMus::DestroyFromServer() {
     ServerChangeData data;
     data.child_id = server_id();
     WindowPortMus* parent = Get(window_->parent());
-    remove_from_parent_change = base::MakeUnique<ScopedServerChange>(
+    remove_from_parent_change = std::make_unique<ScopedServerChange>(
         parent, ServerChangeType::REMOVE, data);
   }
   // NOTE: this can't use ScopedServerChange as |this| is destroyed before the
@@ -412,10 +412,10 @@ const viz::LocalSurfaceId& WindowPortMus::GetLocalSurfaceId() {
 std::unique_ptr<WindowMusChangeData>
 WindowPortMus::PrepareForServerBoundsChange(const gfx::Rect& bounds) {
   std::unique_ptr<WindowMusChangeDataImpl> data(
-      base::MakeUnique<WindowMusChangeDataImpl>());
+      std::make_unique<WindowMusChangeDataImpl>());
   ServerChangeData change_data;
   change_data.bounds_in_dip = bounds;
-  data->change = base::MakeUnique<ScopedServerChange>(
+  data->change = std::make_unique<ScopedServerChange>(
       this, ServerChangeType::BOUNDS, change_data);
   return std::move(data);
 }
@@ -423,10 +423,10 @@ WindowPortMus::PrepareForServerBoundsChange(const gfx::Rect& bounds) {
 std::unique_ptr<WindowMusChangeData>
 WindowPortMus::PrepareForServerVisibilityChange(bool value) {
   std::unique_ptr<WindowMusChangeDataImpl> data(
-      base::MakeUnique<WindowMusChangeDataImpl>());
+      std::make_unique<WindowMusChangeDataImpl>());
   ServerChangeData change_data;
   change_data.visible = value;
-  data->change = base::MakeUnique<ScopedServerChange>(
+  data->change = std::make_unique<ScopedServerChange>(
       this, ServerChangeType::VISIBLE, change_data);
   return std::move(data);
 }
@@ -603,7 +603,7 @@ void WindowPortMus::UpdateClientSurfaceEmbedder() {
   }
 
   if (!client_surface_embedder_) {
-    client_surface_embedder_ = base::MakeUnique<ClientSurfaceEmbedder>(
+    client_surface_embedder_ = std::make_unique<ClientSurfaceEmbedder>(
         window_, window_mus_type() == WindowMusType::TOP_LEVEL_IN_WM,
         window_tree_client_->normal_client_area_insets_);
   }

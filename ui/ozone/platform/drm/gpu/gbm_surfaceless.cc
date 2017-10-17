@@ -39,7 +39,7 @@ GbmSurfaceless::GbmSurfaceless(GbmSurfaceFactory* surface_factory,
           HasEGLExtension("EGL_ARM_implicit_external_sync")),
       weak_factory_(this) {
   surface_factory_->RegisterSurface(window_->widget(), this);
-  unsubmitted_frames_.push_back(base::MakeUnique<PendingFrame>());
+  unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 }
 
 void GbmSurfaceless::QueueOverlayPlane(const OverlayPlane& plane) {
@@ -50,7 +50,7 @@ void GbmSurfaceless::QueueOverlayPlane(const OverlayPlane& plane) {
 bool GbmSurfaceless::Initialize(gl::GLSurfaceFormat format) {
   if (!SurfacelessEGL::Initialize(format))
     return false;
-  vsync_provider_ = base::MakeUnique<DrmVSyncProvider>(window_.get());
+  vsync_provider_ = std::make_unique<DrmVSyncProvider>(window_.get());
   if (!vsync_provider_)
     return false;
   return true;
@@ -114,7 +114,7 @@ void GbmSurfaceless::SwapBuffersAsync(const SwapCompletionCallback& callback) {
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
   frame->callback = surface_swap_callback;
-  unsubmitted_frames_.push_back(base::MakeUnique<PendingFrame>());
+  unsubmitted_frames_.push_back(std::make_unique<PendingFrame>());
 
   // TODO(dcastagna): Remove the following workaround once we get explicit sync
   // on Intel.

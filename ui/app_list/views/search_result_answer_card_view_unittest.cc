@@ -33,13 +33,13 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
 
-    search_card_view_ = base::MakeUnique<views::View>();
+    search_card_view_ = std::make_unique<views::View>();
 
     result_container_view_ = new SearchResultAnswerCardView(&view_delegate_);
     search_card_view_->AddChildView(result_container_view_);
     result_container_view_->SetResults(view_delegate_.GetModel()->results());
 
-    result_view_ = base::MakeUnique<views::View>();
+    result_view_ = std::make_unique<views::View>();
     result_view_->set_owned_by_client();
 
     SetUpSearchResult();
@@ -49,7 +49,7 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   void SetUpSearchResult() {
     AppListModel::SearchResults* results = GetResults();
     std::unique_ptr<TestSearchResult> result =
-        base::MakeUnique<TestSearchResult>();
+        std::make_unique<TestSearchResult>();
     result->set_display_type(SearchResult::DISPLAY_CARD);
     result->set_title(base::UTF8ToUTF16(kResultTitle));
     result->set_view(result_view_.get());

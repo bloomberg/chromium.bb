@@ -43,7 +43,7 @@ DrmOverlayManager::~DrmOverlayManager() {
 
 std::unique_ptr<OverlayCandidatesOzone>
 DrmOverlayManager::CreateOverlayCandidates(gfx::AcceleratedWidget w) {
-  return base::MakeUnique<DrmOverlayCandidatesHost>(this, w);
+  return std::make_unique<DrmOverlayCandidatesHost>(this, w);
 }
 
 void DrmOverlayManager::CheckOverlaySupport(

@@ -88,7 +88,7 @@ class PageSwitcherButton : public views::Button {
   }
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
-    return base::MakeUnique<views::CircleInkDropMask>(
+    return std::make_unique<views::CircleInkDropMask>(
         size(), GetLocalBounds().CenterPoint(), kMaxButtonRadius);
   }
 
@@ -97,16 +97,16 @@ class PageSwitcherButton : public views::Button {
     gfx::Rect bounds(center.x() - kMaxButtonRadius,
                      center.y() - kMaxButtonRadius, 2 * kMaxButtonRadius,
                      2 * kMaxButtonRadius);
-    return base::MakeUnique<views::FloodFillInkDropRipple>(
+    return std::make_unique<views::FloodFillInkDropRipple>(
         size(), GetLocalBounds().InsetsFrom(bounds),
         GetInkDropCenterBasedOnLastEvent(), kInkDropRippleColor, 1.0f);
   }
 
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
       const override {
-    return base::MakeUnique<views::InkDropHighlight>(
+    return std::make_unique<views::InkDropHighlight>(
         gfx::PointF(GetLocalBounds().CenterPoint()),
-        base::MakeUnique<views::CircleLayerDelegate>(kInkDropHighlightColor,
+        std::make_unique<views::CircleLayerDelegate>(kInkDropHighlightColor,
                                                      kInkDropRadius));
   }
 

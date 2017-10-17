@@ -387,10 +387,10 @@ TEST_F(L10nUtilTest, GetAppLocale) {
 
 TEST_F(L10nUtilTest, SortStringsUsingFunction) {
   std::vector<std::unique_ptr<StringWrapper>> strings;
-  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("C")));
-  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("d")));
-  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("b")));
-  strings.push_back(base::MakeUnique<StringWrapper>(UTF8ToUTF16("a")));
+  strings.push_back(std::make_unique<StringWrapper>(UTF8ToUTF16("C")));
+  strings.push_back(std::make_unique<StringWrapper>(UTF8ToUTF16("d")));
+  strings.push_back(std::make_unique<StringWrapper>(UTF8ToUTF16("b")));
+  strings.push_back(std::make_unique<StringWrapper>(UTF8ToUTF16("a")));
   l10n_util::SortStringsUsingMethod("en-US",
                                     &strings,
                                     &StringWrapper::string);

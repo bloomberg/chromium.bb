@@ -37,7 +37,7 @@ using FocusSynchronizerTest = test::AuraMusClientTestBase;
 
 TEST_F(FocusSynchronizerTest, SetFocusFromServerResetsActiveFocusClient) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      base::MakeUnique<WindowTreeHostMus>(
+      std::make_unique<WindowTreeHostMus>(
           CreateInitParamsForTopLevel(window_tree_client_impl()));
   window_tree_host->InitHost();
   window_tree_host->Show();

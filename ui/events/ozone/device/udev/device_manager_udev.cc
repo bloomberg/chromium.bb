@@ -187,7 +187,7 @@ std::unique_ptr<DeviceEvent> DeviceManagerUdev::ProcessMessage(
   else
     return nullptr;
 
-  return base::MakeUnique<DeviceEvent>(device_type, action_type,
+  return std::make_unique<DeviceEvent>(device_type, action_type,
                                        base::FilePath(path));
 }
 

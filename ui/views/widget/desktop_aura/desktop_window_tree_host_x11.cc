@@ -2305,9 +2305,9 @@ DesktopWindowTreeHostX11::DisableEventListening() {
         std::unique_ptr<ui::EventTargeter>(new ui::NullEventTargeter)));
   }
 
-  return base::MakeUnique<base::Closure>(base::Bind(
-      &DesktopWindowTreeHostX11::EnableEventListening,
-      weak_factory_.GetWeakPtr()));
+  return std::make_unique<base::Closure>(
+      base::Bind(&DesktopWindowTreeHostX11::EnableEventListening,
+                 weak_factory_.GetWeakPtr()));
 }
 
 void DesktopWindowTreeHostX11::EnableEventListening() {

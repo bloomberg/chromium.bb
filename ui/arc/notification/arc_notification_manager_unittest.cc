@@ -115,9 +115,9 @@ class ArcNotificationManagerTest : public testing::Test {
   std::unique_ptr<MockMessageCenter> message_center_;
 
   void SetUp() override {
-    arc_notifications_instance_ = base::MakeUnique<FakeNotificationsInstance>();
-    service_ = base::MakeUnique<ArcBridgeService>();
-    message_center_ = base::MakeUnique<MockMessageCenter>();
+    arc_notifications_instance_ = std::make_unique<FakeNotificationsInstance>();
+    service_ = std::make_unique<ArcBridgeService>();
+    message_center_ = std::make_unique<MockMessageCenter>();
 
     arc_notification_manager_ = ArcNotificationManager::CreateForTesting(
         service_.get(), EmptyAccountId(), message_center_.get());

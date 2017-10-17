@@ -186,7 +186,7 @@ class LabelSelectionTest : public LabelTest {
 #endif
     LabelTest::SetUp();
     event_generator_ =
-        base::MakeUnique<ui::test::EventGenerator>(widget()->GetNativeWindow());
+        std::make_unique<ui::test::EventGenerator>(widget()->GetNativeWindow());
   }
 
  protected:

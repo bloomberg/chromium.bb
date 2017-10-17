@@ -118,11 +118,11 @@ void NativeMenuWin::AddMenuItemAt(int menu_index, int model_index) {
   else
     mii.fType = MFT_OWNERDRAW;
 
-  std::unique_ptr<ItemData> item_data = base::MakeUnique<ItemData>();
+  std::unique_ptr<ItemData> item_data = std::make_unique<ItemData>();
   item_data->label = base::string16();
   ui::MenuModel::ItemType type = model_->GetTypeAt(model_index);
   if (type == ui::MenuModel::TYPE_SUBMENU) {
-    item_data->submenu = base::MakeUnique<NativeMenuWin>(
+    item_data->submenu = std::make_unique<NativeMenuWin>(
         model_->GetSubmenuModelAt(model_index), nullptr);
     item_data->submenu->Rebuild(nullptr);
     mii.fMask |= MIIM_SUBMENU;
@@ -149,7 +149,7 @@ void NativeMenuWin::AddSeparatorItemAt(int menu_index, int model_index) {
   mii.fType = MFT_SEPARATOR;
   // Insert a dummy entry into our label list so we can index directly into it
   // using item indices if need be.
-  items_.insert(items_.begin() + model_index, base::MakeUnique<ItemData>());
+  items_.insert(items_.begin() + model_index, std::make_unique<ItemData>());
   InsertMenuItem(menu_, menu_index, TRUE, &mii);
 }
 

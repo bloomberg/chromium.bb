@@ -290,7 +290,7 @@ void MenuScrollViewContainer::CreateDefaultBorder() {
                               ui::NativeTheme::kColorId_MenuBorderColor)
                         : gfx::kPlaceholderColor;
     SetBorder(views::CreateBorderPainter(
-        base::MakeUnique<views::RoundRectPainter>(color,
+        std::make_unique<views::RoundRectPainter>(color,
                                                   menu_config.corner_radius),
         gfx::Insets(vertical_inset, horizontal_inset)));
   } else {
@@ -304,7 +304,7 @@ void MenuScrollViewContainer::CreateBubbleBorder() {
                                     BubbleBorder::SMALL_SHADOW,
                                     SK_ColorWHITE);
   SetBorder(std::unique_ptr<Border>(bubble_border_));
-  SetBackground(base::MakeUnique<BubbleBackground>(bubble_border_));
+  SetBackground(std::make_unique<BubbleBackground>(bubble_border_));
 }
 
 BubbleBorder::Arrow MenuScrollViewContainer::BubbleBorderTypeFromAnchor(

@@ -146,7 +146,7 @@ TEST(DisplayStructTraitsTest, SetAllDisplayValues) {
 
 TEST(DisplayStructTraitsTest, DefaultDisplayMode) {
   std::unique_ptr<DisplayMode> input =
-      base::MakeUnique<DisplayMode>(gfx::Size(1024, 768), true, 61.0);
+      std::make_unique<DisplayMode>(gfx::Size(1024, 768), true, 61.0);
 
   std::unique_ptr<DisplayMode> output;
   SerializeAndDeserialize<mojom::DisplayMode>(input->Clone(), &output);
@@ -190,7 +190,7 @@ TEST(DisplayStructTraitsTest, DisplayLayoutTwoExtended) {
   placement.offset = 0;
   placement.offset_reference = DisplayPlacement::TOP_LEFT;
 
-  auto input = base::MakeUnique<DisplayLayout>();
+  auto input = std::make_unique<DisplayLayout>();
   input->placement_list.push_back(placement);
   input->primary_id = kDisplayId2;
   input->mirrored = false;
@@ -217,7 +217,7 @@ TEST(DisplayStructTraitsTest, DisplayLayoutThreeExtended) {
   placement2.offset = -100;
   placement2.offset_reference = DisplayPlacement::BOTTOM_RIGHT;
 
-  auto input = base::MakeUnique<DisplayLayout>();
+  auto input = std::make_unique<DisplayLayout>();
   input->placement_list.push_back(placement1);
   input->placement_list.push_back(placement2);
   input->primary_id = kDisplayId1;
@@ -238,7 +238,7 @@ TEST(DisplayStructTraitsTest, DisplayLayoutTwoMirrored) {
   placement.offset = 0;
   placement.offset_reference = DisplayPlacement::TOP_LEFT;
 
-  auto input = base::MakeUnique<DisplayLayout>();
+  auto input = std::make_unique<DisplayLayout>();
   input->placement_list.push_back(placement);
   input->primary_id = kDisplayId2;
   input->mirrored = true;
@@ -285,7 +285,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentAndNativeModesNull) {
   const DisplayMode* native_mode = nullptr;
   const std::vector<uint8_t> edid = {1};
 
-  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+  std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix, display_name, sys_path,
       std::move(modes), edid, current_mode, native_mode, product_id,
@@ -321,7 +321,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotCurrentModeNull) {
   const DisplayMode* native_mode = modes[0].get();
   const std::vector<uint8_t> edid = {1};
 
-  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+  std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix, display_name, sys_path,
       std::move(modes), edid, current_mode, native_mode, product_id,
@@ -361,7 +361,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotExternal) {
   const DisplayMode* native_mode = modes[2].get();
   const std::vector<uint8_t> edid = {2, 3, 4, 5};
 
-  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+  std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix, display_name, sys_path,
       std::move(modes), edid, current_mode, native_mode, product_id,
@@ -396,7 +396,7 @@ TEST(DisplayStructTraitsTest, DisplaySnapshotInternal) {
   const DisplayMode* native_mode = modes[0].get();
   const std::vector<uint8_t> edid = {2, 3};
 
-  std::unique_ptr<DisplaySnapshot> input = base::MakeUnique<DisplaySnapshot>(
+  std::unique_ptr<DisplaySnapshot> input = std::make_unique<DisplaySnapshot>(
       display_id, origin, physical_size, type, is_aspect_preserving_scaling,
       has_overscan, has_color_correction_matrix, display_name, sys_path,
       std::move(modes), edid, current_mode, native_mode, product_id,

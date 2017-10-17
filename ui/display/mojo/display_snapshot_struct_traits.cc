@@ -122,7 +122,7 @@ bool StructTraits<display::mojom::DisplaySnapshotDataView,
   if (!data.ReadMaximumCursorSize(&maximum_cursor_size))
     return false;
 
-  *out = base::MakeUnique<display::DisplaySnapshot>(
+  *out = std::make_unique<display::DisplaySnapshot>(
       data.display_id(), origin, physical_size, type,
       data.is_aspect_preserving_scaling(), data.has_overscan(),
       data.has_color_correction_matrix(), display_name, file_path,

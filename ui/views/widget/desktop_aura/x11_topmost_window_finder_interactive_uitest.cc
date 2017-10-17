@@ -301,7 +301,7 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangular) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  auto shape1 = base::MakeUnique<Widget::ShapeRects>();
+  auto shape1 = std::make_unique<Widget::ShapeRects>();
   shape1->emplace_back(0, 10, 10, 90);
   shape1->emplace_back(10, 0, 90, 100);
   widget1->SetShape(std::move(shape1));
@@ -340,7 +340,7 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularEmptyShape) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  auto shape1 = base::MakeUnique<Widget::ShapeRects>();
+  auto shape1 = std::make_unique<Widget::ShapeRects>();
   shape1->emplace_back();
   // Widget takes ownership of |shape1|.
   widget1->SetShape(std::move(shape1));
@@ -361,7 +361,7 @@ TEST_F(X11TopmostWindowFinderTest, NonRectangularNullShape) {
   std::unique_ptr<Widget> widget1(
       CreateAndShowWidget(gfx::Rect(100, 100, 100, 100)));
   XID xid1 = widget1->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
-  auto shape1 = base::MakeUnique<Widget::ShapeRects>();
+  auto shape1 = std::make_unique<Widget::ShapeRects>();
   shape1->emplace_back();
   widget1->SetShape(std::move(shape1));
 

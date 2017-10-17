@@ -28,9 +28,9 @@ ArcNotificationDelegate::CreateCustomMessageView(
   DCHECK(item_);
   DCHECK_EQ(item_->GetNotificationId(), notification.id());
 
-  auto view = base::MakeUnique<ArcNotificationContentView>(item_.get());
+  auto view = std::make_unique<ArcNotificationContentView>(item_.get());
   auto content_view_delegate = view->CreateContentViewDelegate();
-  return base::MakeUnique<ArcNotificationView>(std::move(view),
+  return std::make_unique<ArcNotificationView>(std::move(view),
                                                std::move(content_view_delegate),
                                                controller, notification);
 }

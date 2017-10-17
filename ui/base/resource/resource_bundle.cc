@@ -211,7 +211,7 @@ void ResourceBundle::InitSharedInstanceWithPakFileRegion(
     base::File pak_file,
     const base::MemoryMappedFile::Region& region) {
   InitSharedInstance(NULL);
-  auto data_pack = base::MakeUnique<DataPack>(SCALE_FACTOR_100P);
+  auto data_pack = std::make_unique<DataPack>(SCALE_FACTOR_100P);
   if (!data_pack->LoadFromFileRegion(std::move(pak_file), region)) {
     LOG(WARNING) << "failed to load pak file";
     NOTREACHED();
@@ -252,7 +252,7 @@ ResourceBundle& ResourceBundle::GetSharedInstance() {
 void ResourceBundle::LoadSecondaryLocaleDataWithPakFileRegion(
     base::File pak_file,
     const base::MemoryMappedFile::Region& region) {
-  auto data_pack = base::MakeUnique<DataPack>(SCALE_FACTOR_100P);
+  auto data_pack = std::make_unique<DataPack>(SCALE_FACTOR_100P);
   if (!data_pack->LoadFromFileRegion(std::move(pak_file), region)) {
     LOG(WARNING) << "failed to load secondary pak file";
     NOTREACHED();
@@ -469,7 +469,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
     // BrowserMainLoop has finished running. |image_skia| is guaranteed to be
     // destroyed before the resource bundle is destroyed.
     gfx::ImageSkia image_skia(
-        base::MakeUnique<ResourceBundleImageSource>(this, resource_id),
+        std::make_unique<ResourceBundleImageSource>(this, resource_id),
         GetScaleForScaleFactor(scale_factor_to_load));
     if (image_skia.isNull()) {
       LOG(WARNING) << "Unable to load image with id " << resource_id;

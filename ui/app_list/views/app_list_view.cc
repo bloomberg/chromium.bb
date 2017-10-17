@@ -533,7 +533,7 @@ void AppListView::InitializeFullscreen(gfx::NativeView parent,
   app_list_overlay_view_params.layer_type = ui::LAYER_SOLID_COLOR;
   fullscreen_widget_->Init(app_list_overlay_view_params);
   fullscreen_widget_->GetNativeWindow()->SetEventTargeter(
-      base::MakeUnique<AppListEventTargeter>());
+      std::make_unique<AppListEventTargeter>());
 
   // The widget's initial position will be off the bottom of the display.
   // Set native view's bounds directly to avoid screen position controller

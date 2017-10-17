@@ -312,9 +312,9 @@ void LabelButton::EnableCanvasFlippingForRTLUI(bool flip) {
 
 std::unique_ptr<LabelButtonBorder> LabelButton::CreateDefaultBorder() const {
   if (style_ != Button::STYLE_TEXTBUTTON)
-    return base::MakeUnique<LabelButtonAssetBorder>(style_);
+    return std::make_unique<LabelButtonAssetBorder>(style_);
   std::unique_ptr<LabelButtonBorder> border =
-      base::MakeUnique<LabelButtonBorder>();
+      std::make_unique<LabelButtonBorder>();
   border->set_insets(views::LabelButtonAssetBorder::GetDefaultInsetsForStyle(
       style_));
   return border;
@@ -381,7 +381,7 @@ std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
   return ShouldUseFloodFillInkDrop()
-             ? base::MakeUnique<views::FloodFillInkDropRipple>(
+             ? std::make_unique<views::FloodFillInkDropRipple>(
                    size(), GetInkDropCenterBasedOnLastEvent(),
                    GetInkDropBaseColor(), ink_drop_visible_opacity())
              : CreateDefaultInkDropRipple(
@@ -391,7 +391,7 @@ std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
 std::unique_ptr<views::InkDropHighlight> LabelButton::CreateInkDropHighlight()
     const {
   return ShouldUseFloodFillInkDrop()
-             ? base::MakeUnique<views::InkDropHighlight>(
+             ? std::make_unique<views::InkDropHighlight>(
                    size(), kInkDropSmallCornerRadius,
                    gfx::RectF(GetLocalBounds()).CenterPoint(),
                    GetInkDropBaseColor())

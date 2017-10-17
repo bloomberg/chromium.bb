@@ -308,7 +308,7 @@ class MockInputHandlerProxyClient
       WebGestureDevice deviceSource,
       const WebFloatPoint& velocity,
       const WebSize& cumulative_scroll) override {
-    return base::MakeUnique<FakeWebGestureCurve>(
+    return std::make_unique<FakeWebGestureCurve>(
         blink::WebFloatSize(velocity.x, velocity.y),
         blink::WebFloatSize(cumulative_scroll.width, cumulative_scroll.height));
   }
@@ -545,11 +545,11 @@ class InputHandlerProxyEventQueueTest : public testing::TestWithParam<bool> {
     bool wheel_scroll_latching_enabled = GetParam();
     event_disposition_recorder_.clear();
     latency_info_recorder_.clear();
-    input_handler_proxy_ = base::MakeUnique<TestInputHandlerProxy>(
+    input_handler_proxy_ = std::make_unique<TestInputHandlerProxy>(
         &mock_input_handler_, &mock_client_, wheel_scroll_latching_enabled);
     if (input_handler_proxy_->compositor_event_queue_)
       input_handler_proxy_->compositor_event_queue_ =
-          base::MakeUnique<CompositorThreadEventQueue>();
+          std::make_unique<CompositorThreadEventQueue>();
   }
 
   void StartTracing() {
@@ -3848,7 +3848,7 @@ TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedGestureScrollPinchScroll) {
 TEST_P(InputHandlerProxyEventQueueTest, VSyncAlignedQueueingTime) {
   base::HistogramTester histogram_tester;
   std::unique_ptr<base::SimpleTestTickClock> tick_clock =
-      base::MakeUnique<base::SimpleTestTickClock>();
+      std::make_unique<base::SimpleTestTickClock>();
   base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
   tick_clock_ptr->SetNowTicks(base::TimeTicks::Now());
   SetInputHandlerProxyTickClockForTesting(std::move(tick_clock));

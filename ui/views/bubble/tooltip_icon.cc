@@ -94,8 +94,8 @@ void TooltipIcon::ShowBubble() {
   if (mouse_inside_) {
     View* frame = bubble_->GetWidget()->non_client_view()->frame_view();
     std::unique_ptr<MouseWatcherHost> host(
-        base::MakeUnique<MouseWatcherViewHost>(frame, gfx::Insets()));
-    mouse_watcher_ = base::MakeUnique<MouseWatcher>(host.release(), this);
+        std::make_unique<MouseWatcherViewHost>(frame, gfx::Insets()));
+    mouse_watcher_ = std::make_unique<MouseWatcher>(host.release(), this);
     mouse_watcher_->Start();
   }
 }

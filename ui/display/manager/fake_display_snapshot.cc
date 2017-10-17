@@ -71,7 +71,7 @@ std::unique_ptr<DisplayMode> ParseDisplayMode(const std::string& str) {
     return nullptr;
   }
 
-  return base::MakeUnique<DisplayMode>(gfx::Size(width, height), false,
+  return std::make_unique<DisplayMode>(gfx::Size(width, height), false,
                                        static_cast<float>(refresh_rate));
 }
 
@@ -161,7 +161,7 @@ std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
   gfx::Size physical_size =
       gfx::ScaleToRoundedSize(native_mode_->size(), PixelPitchMmFromDPI(dpi_));
 
-  return base::MakeUnique<FakeDisplaySnapshot>(
+  return std::make_unique<FakeDisplaySnapshot>(
       id_, origin_, physical_size, type_, is_aspect_preserving_scaling_,
       has_overscan_, has_color_correction_matrix_, name_, std::move(modes_),
       current_mode_, native_mode_, product_id_, maximum_cursor_size_);
@@ -262,7 +262,7 @@ const DisplayMode* Builder::AddOrFindDisplayMode(const gfx::Size& size) {
   }
 
   // Not found, insert a mode with the size and return.
-  modes_.push_back(base::MakeUnique<DisplayMode>(size, false, 60.0f));
+  modes_.push_back(std::make_unique<DisplayMode>(size, false, 60.0f));
   return modes_.back().get();
 }
 

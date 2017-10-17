@@ -125,7 +125,7 @@ class PlatformTestHelperMus : public PlatformTestHelper {
 std::unique_ptr<PlatformTestHelper> CreatePlatformTestHelper(
     const service_manager::Identity& identity,
     const base::Callback<service_manager::Connector*(void)>& callback) {
-  return base::MakeUnique<PlatformTestHelperMus>(callback.Run(), identity);
+  return std::make_unique<PlatformTestHelperMus>(callback.Run(), identity);
 }
 
 }  // namespace
@@ -140,7 +140,7 @@ class ServiceManagerConnection {
     mojo::edk::Init();
     ipc_thread_.StartWithOptions(
         base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
-    ipc_support_ = base::MakeUnique<mojo::edk::ScopedIPCSupport>(
+    ipc_support_ = std::make_unique<mojo::edk::ScopedIPCSupport>(
         ipc_thread_.task_runner(),
         mojo::edk::ScopedIPCSupport::ShutdownPolicy::CLEAN);
 
@@ -193,11 +193,11 @@ class ServiceManagerConnection {
 
   void SetUpConnections(base::WaitableEvent* wait) {
     background_service_manager_ =
-        base::MakeUnique<service_manager::BackgroundServiceManager>(
-            nullptr, nullptr);
+        std::make_unique<service_manager::BackgroundServiceManager>(nullptr,
+                                                                    nullptr);
     service_manager::mojom::ServicePtr service;
-    context_ = base::MakeUnique<service_manager::ServiceContext>(
-        base::MakeUnique<DefaultService>(), mojo::MakeRequest(&service));
+    context_ = std::make_unique<service_manager::ServiceContext>(
+        std::make_unique<DefaultService>(), mojo::MakeRequest(&service));
     background_service_manager_->RegisterService(
         service_manager::Identity(
             GetTestName(), service_manager::mojom::kRootUserID),
@@ -253,7 +253,7 @@ void ViewsMusTestSuite::Initialize() {
   EnsureCommandLineSwitch(switches::kOverrideUseSoftwareGLForTests);
 
   ViewsTestSuite::Initialize();
-  service_manager_connections_ = base::MakeUnique<ServiceManagerConnection>();
+  service_manager_connections_ = std::make_unique<ServiceManagerConnection>();
 }
 
 void ViewsMusTestSuite::Shutdown() {

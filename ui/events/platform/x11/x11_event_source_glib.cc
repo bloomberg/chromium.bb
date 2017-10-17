@@ -96,7 +96,7 @@ void X11EventSourceGlib::InitXSource(int fd) {
 
 // static
 std::unique_ptr<PlatformEventSource> PlatformEventSource::CreateDefault() {
-  return base::MakeUnique<X11EventSourceGlib>(gfx::GetXDisplay());
+  return std::make_unique<X11EventSourceGlib>(gfx::GetXDisplay());
 }
 
 }  // namespace ui

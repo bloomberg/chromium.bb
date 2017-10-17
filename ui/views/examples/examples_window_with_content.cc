@@ -19,7 +19,7 @@ void ShowExamplesWindowWithContent(Operation operation,
                                    content::BrowserContext* browser_context,
                                    gfx::NativeWindow window_context) {
   std::vector<std::unique_ptr<ExampleBase>> extra_examples;
-  extra_examples.push_back(base::MakeUnique<WebViewExample>(browser_context));
+  extra_examples.push_back(std::make_unique<WebViewExample>(browser_context));
   ShowExamplesWindow(operation, window_context, std::move(extra_examples));
 }
 

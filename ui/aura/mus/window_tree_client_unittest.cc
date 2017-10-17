@@ -119,8 +119,8 @@ WindowTreeHostMusInitParams CreateWindowTreeHostMusInitParams(
     const gfx::Rect& bounds,
     int64_t display_id) {
   std::unique_ptr<DisplayInitParams> display_params =
-      base::MakeUnique<DisplayInitParams>();
-  display_params->display = base::MakeUnique<display::Display>(display_id);
+      std::make_unique<DisplayInitParams>();
+  display_params->display = std::make_unique<display::Display>(display_id);
   display_params->display->set_bounds(bounds);
   display_params->viewport_metrics.bounds_in_pixels = bounds;
   display_params->viewport_metrics.device_scale_factor = 1.0f;
@@ -1004,7 +1004,7 @@ TEST_F(WindowTreeClientClientTest, InputEventFindTargetAndConversion) {
   InputEventBasicTestWindowDelegate window_delegate1(window_tree());
   Window child1(&window_delegate1);
   child1.Init(ui::LAYER_NOT_DRAWN);
-  child1.SetEventTargeter(base::MakeUnique<WindowTargeter>());
+  child1.SetEventTargeter(std::make_unique<WindowTargeter>());
   top_level->AddChild(&child1);
   child1.SetBounds(gfx::Rect(10, 10, 100, 100));
   child1.Show();
@@ -1072,7 +1072,7 @@ TEST_F(WindowTreeClientClientTest, InputEventCustomWindowTargeter) {
   InputEventBasicTestWindowDelegate window_delegate1(window_tree());
   Window child1(&window_delegate1);
   child1.Init(ui::LAYER_NOT_DRAWN);
-  child1.SetEventTargeter(base::MakeUnique<test::TestWindowTargeter>());
+  child1.SetEventTargeter(std::make_unique<test::TestWindowTargeter>());
   top_level->AddChild(&child1);
   child1.SetBounds(gfx::Rect(10, 10, 100, 100));
   child1.Show();
@@ -1126,7 +1126,7 @@ TEST_F(WindowTreeClientClientTest, InputEventCustomWindowTargeter) {
 
 TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      base::MakeUnique<WindowTreeHostMus>(
+      std::make_unique<WindowTreeHostMus>(
           CreateInitParamsForTopLevel(window_tree_client_impl()));
   Window* top_level = window_tree_host->window();
   const gfx::Rect bounds(0, 0, 100, 100);
@@ -1136,18 +1136,18 @@ TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
   EXPECT_EQ(bounds, top_level->bounds());
   EXPECT_EQ(bounds, window_tree_host->GetBoundsInPixels());
   std::unique_ptr<InputEventBasicTestWindowDelegate> window_delegate1(
-      base::MakeUnique<InputEventBasicTestWindowDelegate>(window_tree()));
+      std::make_unique<InputEventBasicTestWindowDelegate>(window_tree()));
   std::unique_ptr<Window> child1(
-      base::MakeUnique<Window>(window_delegate1.get()));
+      std::make_unique<Window>(window_delegate1.get()));
   child1->Init(ui::LAYER_NOT_DRAWN);
-  child1->SetEventTargeter(base::MakeUnique<test::TestWindowTargeter>());
+  child1->SetEventTargeter(std::make_unique<test::TestWindowTargeter>());
   top_level->AddChild(child1.get());
   child1->SetBounds(gfx::Rect(10, 10, 100, 100));
   child1->Show();
   std::unique_ptr<InputEventBasicTestWindowDelegate> window_delegate2(
-      base::MakeUnique<InputEventBasicTestWindowDelegate>(window_tree()));
+      std::make_unique<InputEventBasicTestWindowDelegate>(window_tree()));
   std::unique_ptr<Window> child2(
-      base::MakeUnique<Window>(window_delegate2.get()));
+      std::make_unique<Window>(window_delegate2.get()));
   child2->Init(ui::LAYER_NOT_DRAWN);
   child1->AddChild(child2.get());
   child2->SetBounds(gfx::Rect(20, 30, 100, 100));
@@ -1182,7 +1182,7 @@ TEST_F(WindowTreeClientClientTest, InputEventCaptureWindow) {
   // converted local coordinates are converted from the original target to root
   // and then to capture target.
   std::unique_ptr<client::DefaultCaptureClient> capture_client(
-      base::MakeUnique<client::DefaultCaptureClient>());
+      std::make_unique<client::DefaultCaptureClient>());
   client::SetCaptureClient(top_level, capture_client.get());
   child2->SetCapture();
   EXPECT_EQ(child2.get(), client::GetCaptureWindow(child2->GetRootWindow()));
@@ -1397,7 +1397,7 @@ class WindowTreeClientPointerObserverTest : public WindowTreeClientClientTest {
 // Tests pointer watchers triggered by events that did not hit a target in this
 // window tree.
 TEST_F(WindowTreeClientPointerObserverTest, OnPointerEventObserved) {
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
+  std::unique_ptr<Window> top_level(std::make_unique<Window>(nullptr));
   top_level->SetType(client::WINDOW_TYPE_NORMAL);
   top_level->Init(ui::LAYER_NOT_DRAWN);
   top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -1522,7 +1522,7 @@ TEST_F(WindowTreeClientWmTest, SetFocusFailedWithPendingChange) {
 }
 
 TEST_F(WindowTreeClientWmTest, FocusOnRemovedWindowWithInFlightFocusChange) {
-  std::unique_ptr<Window> child1(base::MakeUnique<Window>(nullptr));
+  std::unique_ptr<Window> child1(std::make_unique<Window>(nullptr));
   child1->Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(child1.get());
   Window child2(nullptr);
@@ -1576,7 +1576,7 @@ class ToggleVisibilityFromDestroyedObserver : public WindowObserver {
 };
 
 TEST_F(WindowTreeClientWmTest, ToggleVisibilityFromWindowDestroyed) {
-  std::unique_ptr<Window> child(base::MakeUnique<Window>(nullptr));
+  std::unique_ptr<Window> child(std::make_unique<Window>(nullptr));
   child->Init(ui::LAYER_NOT_DRAWN);
   root_window()->AddChild(child.get());
   ToggleVisibilityFromDestroyedObserver toggler(child.get());
@@ -1593,7 +1593,7 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindow) {
   const size_t initial_root_count =
       window_tree_client_impl()->GetRoots().size();
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      base::MakeUnique<WindowTreeHostMus>(
+      std::make_unique<WindowTreeHostMus>(
           CreateInitParamsForTopLevel(window_tree_client_impl()));
   window_tree_host->InitHost();
   EXPECT_FALSE(window_tree_host->window()->TargetVisibility());
@@ -1960,7 +1960,7 @@ TEST_F(WindowTreeClientClientTest,
   const size_t initial_root_count =
       window_tree_client_impl()->GetRoots().size();
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      base::MakeUnique<WindowTreeHostMus>(
+      std::make_unique<WindowTreeHostMus>(
           CreateInitParamsForTopLevel(window_tree_client_impl()));
   window_tree_host->InitHost();
   EXPECT_EQ(initial_root_count + 1,
@@ -2142,7 +2142,7 @@ TEST_F(WindowTreeClientWmTest, TwoWindowsRequestCapture) {
 }
 
 TEST_F(WindowTreeClientWmTest, WindowDestroyedWhileTransientChildHasCapture) {
-  std::unique_ptr<Window> transient_parent(base::MakeUnique<Window>(nullptr));
+  std::unique_ptr<Window> transient_parent(std::make_unique<Window>(nullptr));
   transient_parent->Init(ui::LAYER_NOT_DRAWN);
   // Owned by |transient_parent|.
   Window* transient_child = new Window(nullptr);
@@ -2216,7 +2216,7 @@ class CaptureRecorder : public client::CaptureClientObserver {
 TEST_F(WindowTreeClientWmTest, OnWindowTreeCaptureChanged) {
   CaptureRecorder capture_recorder(root_window());
 
-  std::unique_ptr<Window> child1(base::MakeUnique<Window>(nullptr));
+  std::unique_ptr<Window> child1(std::make_unique<Window>(nullptr));
   const int child1_id = 1;
   child1->Init(ui::LAYER_NOT_DRAWN);
   child1->set_id(child1_id);
@@ -2265,12 +2265,12 @@ TEST_F(WindowTreeClientClientTest, TwoWindowTreesRequestCapture) {
   // Creating a WindowTreeHost so we can have two root windows: top_level
   // and root_window().
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
-      base::MakeUnique<WindowTreeHostMus>(
+      std::make_unique<WindowTreeHostMus>(
           CreateInitParamsForTopLevel(window_tree_client_impl()));
   window_tree_host->InitHost();
   Window* top_level = window_tree_host->window();
   std::unique_ptr<client::DefaultCaptureClient> capture_client(
-      base::MakeUnique<client::DefaultCaptureClient>());
+      std::make_unique<client::DefaultCaptureClient>());
   client::SetCaptureClient(top_level, capture_client.get());
   window_tree_client_impl()->capture_synchronizer()->AttachToCaptureClient(
       capture_client.get());
@@ -2293,9 +2293,9 @@ TEST_F(WindowTreeClientClientTest, TwoWindowTreesRequestCapture) {
   EXPECT_TRUE(top_level->TargetVisibility());
 
   std::unique_ptr<CaptureRecorder> capture_recorder1(
-      base::MakeUnique<CaptureRecorder>(root_window()));
+      std::make_unique<CaptureRecorder>(root_window()));
   std::unique_ptr<CaptureRecorder> capture_recorder2(
-      base::MakeUnique<CaptureRecorder>(top_level));
+      std::make_unique<CaptureRecorder>(top_level));
   EXPECT_NE(client::GetCaptureClient(root_window()),
             client::GetCaptureClient(top_level));
 
@@ -2470,8 +2470,8 @@ TEST_F(WindowTreeClientWmTest, NewWindowTreeHostIsConfiguredCorrectly) {
 TEST_F(WindowTreeClientWmTest, ManuallyCreateDisplay) {
   const gfx::Rect bounds(1, 2, 101, 102);
   std::unique_ptr<DisplayInitParams> display_params =
-      base::MakeUnique<DisplayInitParams>();
-  display_params->display = base::MakeUnique<display::Display>(201);
+      std::make_unique<DisplayInitParams>();
+  display_params->display = std::make_unique<display::Display>(201);
   display_params->display->set_bounds(bounds);
   display_params->viewport_metrics.bounds_in_pixels = bounds;
   display_params->viewport_metrics.device_scale_factor = 1.0f;
@@ -2513,12 +2513,12 @@ TEST_F(WindowTreeClientWmTest, FocusInDifferentDisplayThanEvent) {
   aura::Window child2(nullptr);
   child2.Init(ui::LAYER_NOT_DRAWN);
   child2.Show();
-  child2.SetEventTargeter(base::MakeUnique<WindowTargeter>());
+  child2.SetEventTargeter(std::make_unique<WindowTargeter>());
   window_tree_host2.window()->AddChild(&child2);
 
   EXPECT_TRUE(child1.HasFocus());
 
-  std::unique_ptr<ui::KeyEvent> key_event = base::MakeUnique<ui::KeyEvent>(
+  std::unique_ptr<ui::KeyEvent> key_event = std::make_unique<ui::KeyEvent>(
       ui::ET_KEY_PRESSED, ui::VKEY_ESCAPE, ui::EF_NONE);
   window_tree_client()->OnWindowInputEvent(1, server_id(&child2), kDisplayId2,
                                            gfx::PointF(), std::move(key_event),
@@ -2528,8 +2528,8 @@ TEST_F(WindowTreeClientWmTest, FocusInDifferentDisplayThanEvent) {
 TEST_F(WindowTreeClientWmTestHighDPI, BoundsChangeWhenAdded) {
   const gfx::Rect bounds(1, 2, 101, 102);
   std::unique_ptr<DisplayInitParams> display_params =
-      base::MakeUnique<DisplayInitParams>();
-  display_params->display = base::MakeUnique<display::Display>(201);
+      std::make_unique<DisplayInitParams>();
+  display_params->display = std::make_unique<display::Display>(201);
   display_params->display->set_bounds(bounds);
   display_params->viewport_metrics.bounds_in_pixels = bounds;
   const float device_scale_factor = 2.0f;
@@ -2616,7 +2616,7 @@ TEST_F(WindowTreeClientClientTestHighDPI, PointerEventsInDip) {
   const display::Display primary_display = screen->GetPrimaryDisplay();
   ASSERT_EQ(2.0f, primary_display.device_scale_factor());
 
-  std::unique_ptr<Window> top_level(base::MakeUnique<Window>(nullptr));
+  std::unique_ptr<Window> top_level(std::make_unique<Window>(nullptr));
   top_level->SetType(client::WINDOW_TYPE_NORMAL);
   top_level->Init(ui::LAYER_NOT_DRAWN);
   top_level->SetBounds(gfx::Rect(0, 0, 100, 100));
@@ -2667,7 +2667,7 @@ TEST_F(WindowTreeClientClientTestHighDPI, InputEventsInDip) {
   InputEventBasicTestWindowDelegate window_delegate1(window_tree());
   Window child1(&window_delegate1);
   child1.Init(ui::LAYER_NOT_DRAWN);
-  child1.SetEventTargeter(base::MakeUnique<test::TestWindowTargeter>());
+  child1.SetEventTargeter(std::make_unique<test::TestWindowTargeter>());
   top_level->AddChild(&child1);
   child1.SetBounds(gfx::Rect(10, 10, 100, 100));
   child1.Show();
@@ -2759,11 +2759,11 @@ TEST_F(WindowTreeClientDestructionTest, WindowsFromOtherConnectionsDeleted) {
 TEST_F(WindowTreeClientWmTest, ObservedPointerEvents) {
   const gfx::Rect bounds(1, 2, 101, 102);
   std::unique_ptr<DisplayInitParams> display_params =
-      base::MakeUnique<DisplayInitParams>();
+      std::make_unique<DisplayInitParams>();
   const int64_t display_id = 201;
   float device_scale_factor = 2.0f;
   float ui_scale_factor = 1.5f;
-  display_params->display = base::MakeUnique<display::Display>(display_id);
+  display_params->display = std::make_unique<display::Display>(display_id);
   display_params->display->set_bounds(bounds);
   display_params->viewport_metrics.bounds_in_pixels = bounds;
   display_params->viewport_metrics.device_scale_factor = device_scale_factor;

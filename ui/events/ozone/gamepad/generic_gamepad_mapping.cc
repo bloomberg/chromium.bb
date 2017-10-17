@@ -69,7 +69,7 @@ class GamepadMapperBuilder {
       : devinfo_(devinfo) {}
 
   std::unique_ptr<ui::GamepadMapper> ToGamepadMapper() {
-    return base::MakeUnique<GenericGamepadMapper>(std::move(axis_mapping_),
+    return std::make_unique<GenericGamepadMapper>(std::move(axis_mapping_),
                                                   std::move(button_mapping_));
   }
 

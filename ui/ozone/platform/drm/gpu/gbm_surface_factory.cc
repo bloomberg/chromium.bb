@@ -79,8 +79,8 @@ class GLOzoneEGLGbm : public GLOzoneEGL {
 
 GbmSurfaceFactory::GbmSurfaceFactory(DrmThreadProxy* drm_thread_proxy)
     : egl_implementation_(
-          base::MakeUnique<GLOzoneEGLGbm>(this, drm_thread_proxy)),
-      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()),
+          std::make_unique<GLOzoneEGLGbm>(this, drm_thread_proxy)),
+      osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()),
       drm_thread_proxy_(drm_thread_proxy) {}
 
 GbmSurfaceFactory::~GbmSurfaceFactory() {

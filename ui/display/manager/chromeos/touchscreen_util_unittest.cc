@@ -48,7 +48,7 @@ class TouchscreenUtilTest : public testing::Test {
   void SetUp() override {
     // Recreate for each test, DisplayManager has a lot of state.
     display_manager_ =
-        base::MakeUnique<DisplayManager>(base::MakeUnique<ScreenBase>());
+        std::make_unique<DisplayManager>(std::make_unique<ScreenBase>());
 
     // Internal display will always match to internal touchscreen. If internal
     // touchscreen can't be detected, it is then associated to a touch screen

@@ -23,7 +23,7 @@ namespace {
 
 std::unique_ptr<TouchEvent> CreateTouchEvent(EventType event_type,
                                              const XEvent& xev) {
-  std::unique_ptr<TouchEvent> event = base::MakeUnique<TouchEvent>(
+  std::unique_ptr<TouchEvent> event = std::make_unique<TouchEvent>(
       event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
       ui::PointerDetails(
           GetTouchPointerTypeFromXEvent(xev), GetTouchIdFromXEvent(xev),
@@ -44,19 +44,19 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
   switch (event_type) {
     case ET_KEY_PRESSED:
     case ET_KEY_RELEASED:
-      return base::MakeUnique<KeyEvent>(event_type,
+      return std::make_unique<KeyEvent>(event_type,
                                         KeyboardCodeFromXKeyEvent(&xev),
                                         EventFlagsFromXEvent(xev));
     case ET_MOUSE_PRESSED:
     case ET_MOUSE_MOVED:
     case ET_MOUSE_DRAGGED:
     case ET_MOUSE_RELEASED:
-      return base::MakeUnique<MouseEvent>(
+      return std::make_unique<MouseEvent>(
           event_type, EventLocationFromXEvent(xev),
           EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
           EventFlagsFromXEvent(xev), GetChangedMouseButtonFlagsFromXEvent(xev));
     case ET_MOUSEWHEEL:
-      return base::MakeUnique<MouseWheelEvent>(
+      return std::make_unique<MouseWheelEvent>(
           GetMouseWheelOffsetFromXEvent(xev), EventLocationFromXEvent(xev),
           EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
           EventFlagsFromXEvent(xev), GetChangedMouseButtonFlagsFromXEvent(xev));
@@ -65,7 +65,7 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
       float x_offset, y_offset, x_offset_ordinal, y_offset_ordinal;
       GetFlingDataFromXEvent(xev, &x_offset, &y_offset, &x_offset_ordinal,
                              &y_offset_ordinal, nullptr);
-      return base::MakeUnique<ScrollEvent>(
+      return std::make_unique<ScrollEvent>(
           event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
           EventFlagsFromXEvent(xev), x_offset, y_offset, x_offset_ordinal,
           y_offset_ordinal, 0);
@@ -75,7 +75,7 @@ std::unique_ptr<ui::Event> TranslateXI2EventToEvent(const XEvent& xev) {
       int finger_count;
       GetScrollOffsetsFromXEvent(xev, &x_offset, &y_offset, &x_offset_ordinal,
                                  &y_offset_ordinal, &finger_count);
-      return base::MakeUnique<ScrollEvent>(
+      return std::make_unique<ScrollEvent>(
           event_type, EventLocationFromXEvent(xev), EventTimeFromXEvent(xev),
           EventFlagsFromXEvent(xev), x_offset, y_offset, x_offset_ordinal,
           y_offset_ordinal, finger_count);
@@ -99,27 +99,27 @@ std::unique_ptr<ui::Event> TranslateXEventToEvent(const XEvent& xev) {
   switch (xev.type) {
     case LeaveNotify:
     case EnterNotify:
-      return base::MakeUnique<MouseEvent>(ET_MOUSE_MOVED,
+      return std::make_unique<MouseEvent>(ET_MOUSE_MOVED,
                                           EventLocationFromXEvent(xev),
                                           EventSystemLocationFromXEvent(xev),
                                           EventTimeFromXEvent(xev), flags, 0);
 
     case KeyPress:
     case KeyRelease:
-      return base::MakeUnique<KeyEvent>(EventTypeFromXEvent(xev),
+      return std::make_unique<KeyEvent>(EventTypeFromXEvent(xev),
                                         KeyboardCodeFromXKeyEvent(&xev), flags);
 
     case ButtonPress:
     case ButtonRelease: {
       switch (EventTypeFromXEvent(xev)) {
         case ET_MOUSEWHEEL:
-          return base::MakeUnique<MouseWheelEvent>(
+          return std::make_unique<MouseWheelEvent>(
               GetMouseWheelOffsetFromXEvent(xev), EventLocationFromXEvent(xev),
               EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
               flags, 0);
         case ET_MOUSE_PRESSED:
         case ET_MOUSE_RELEASED:
-          return base::MakeUnique<MouseEvent>(
+          return std::make_unique<MouseEvent>(
               EventTypeFromXEvent(xev), EventLocationFromXEvent(xev),
               EventSystemLocationFromXEvent(xev), EventTimeFromXEvent(xev),
               flags, GetChangedMouseButtonFlagsFromXEvent(xev));

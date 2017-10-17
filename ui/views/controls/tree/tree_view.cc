@@ -77,7 +77,7 @@ TreeView::TreeView()
       controller_(NULL),
       root_shown_(true),
       row_height_(font_list_.GetHeight() + kTextVerticalPadding * 2),
-      drawing_provider_(base::MakeUnique<TreeViewDrawingProvider>()) {
+      drawing_provider_(std::make_unique<TreeViewDrawingProvider>()) {
   // Always focusable, even on Mac (consistent with NSOutlineView).
   SetFocusBehavior(FocusBehavior::ALWAYS);
 #if defined(OS_MACOSX)
@@ -440,7 +440,7 @@ void TreeView::TreeNodesAdded(TreeModel* model,
   if (!parent_node || !parent_node->loaded_children())
     return;
   for (int i = 0; i < count; ++i) {
-    std::unique_ptr<InternalNode> child = base::MakeUnique<InternalNode>();
+    std::unique_ptr<InternalNode> child = std::make_unique<InternalNode>();
     ConfigureInternalNode(model_->GetChild(parent, start + i), child.get());
     parent_node->Add(std::move(child), start + i);
   }
@@ -681,7 +681,7 @@ void TreeView::LoadChildren(InternalNode* node) {
   node->set_loaded_children(true);
   for (int i = 0, child_count = model_->GetChildCount(node->model_node());
        i < child_count; ++i) {
-    std::unique_ptr<InternalNode> child = base::MakeUnique<InternalNode>();
+    std::unique_ptr<InternalNode> child = std::make_unique<InternalNode>();
     ConfigureInternalNode(model_->GetChild(node->model_node(), i), child.get());
     node->Add(std::move(child), node->child_count());
   }

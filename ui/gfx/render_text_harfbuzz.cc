@@ -1384,7 +1384,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   }
 
   if (!bidi_iterator.Open(text, GetTextDirection(text), behavior)) {
-    auto run = base::MakeUnique<internal::TextRunHarfBuzz>(
+    auto run = std::make_unique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
     run->range = Range(0, text.length());
     run_list_out->Add(std::move(run));
@@ -1405,7 +1405,7 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
   internal::StyleIterator style(empty_colors, baselines(), weights(), styles());
 
   for (size_t run_break = 0; run_break < text.length();) {
-    auto run = base::MakeUnique<internal::TextRunHarfBuzz>(
+    auto run = std::make_unique<internal::TextRunHarfBuzz>(
         font_list().GetPrimaryFont());
     run->range.set_start(run_break);
     run->italic = style.style(ITALIC);

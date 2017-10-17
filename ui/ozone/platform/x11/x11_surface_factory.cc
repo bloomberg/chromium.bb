@@ -51,9 +51,9 @@ class GLOzoneEGLX11 : public GLOzoneEGL {
 }  // namespace
 
 X11SurfaceFactory::X11SurfaceFactory()
-    : glx_implementation_(base::MakeUnique<GLOzoneGLX>()),
-      egl_implementation_(base::MakeUnique<GLOzoneEGLX11>()),
-      osmesa_implementation_(base::MakeUnique<GLOzoneOSMesa>()) {}
+    : glx_implementation_(std::make_unique<GLOzoneGLX>()),
+      egl_implementation_(std::make_unique<GLOzoneEGLX11>()),
+      osmesa_implementation_(std::make_unique<GLOzoneOSMesa>()) {}
 
 X11SurfaceFactory::~X11SurfaceFactory() {}
 

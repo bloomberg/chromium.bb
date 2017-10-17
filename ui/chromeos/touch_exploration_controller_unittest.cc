@@ -1383,17 +1383,17 @@ TEST_F(TouchExplorationTest, DISABLED_AllFingerPermutations) {
   for (int touch_id = 0; touch_id < 3; touch_id++){
     int x = 10*touch_id + 1;
     int y = 10*touch_id + 2;
-    all_events.push_back(base::MakeUnique<TouchEvent>(
+    all_events.push_back(std::make_unique<TouchEvent>(
         ui::ET_TOUCH_PRESSED, gfx::Point(x++, y++), Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                            touch_id)));
     queued_events.push_back(all_events.back().get());
-    all_events.push_back(base::MakeUnique<TouchEvent>(
+    all_events.push_back(std::make_unique<TouchEvent>(
         ui::ET_TOUCH_MOVED, gfx::Point(x++, y++), Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                            touch_id)));
     queued_events.push_back(all_events.back().get());
-    all_events.push_back(base::MakeUnique<TouchEvent>(
+    all_events.push_back(std::make_unique<TouchEvent>(
         ui::ET_TOUCH_RELEASED, gfx::Point(x, y), Now(),
         ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH,
                            touch_id)));

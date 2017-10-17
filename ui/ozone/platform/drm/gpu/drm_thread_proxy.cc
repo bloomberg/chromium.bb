@@ -28,7 +28,7 @@ void DrmThreadProxy::StartDrmThread() {
 
 std::unique_ptr<DrmWindowProxy> DrmThreadProxy::CreateDrmWindowProxy(
     gfx::AcceleratedWidget widget) {
-  return base::MakeUnique<DrmWindowProxy>(widget, &drm_thread_);
+  return std::make_unique<DrmWindowProxy>(widget, &drm_thread_);
 }
 
 scoped_refptr<GbmBuffer> DrmThreadProxy::CreateBuffer(

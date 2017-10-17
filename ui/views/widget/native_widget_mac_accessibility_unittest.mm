@@ -884,7 +884,7 @@ class TestComboboxModel : public ui::ComboboxModel {
 
 // Test a11y attributes of Comboboxes.
 TEST_F(NativeWidgetMacAccessibilityTest, Combobox) {
-  Combobox* combobox = new Combobox(base::MakeUnique<TestComboboxModel>());
+  Combobox* combobox = new Combobox(std::make_unique<TestComboboxModel>());
   combobox->SetSize(GetWidgetBounds().size());
   widget()->GetContentsView()->AddChildView(combobox);
 

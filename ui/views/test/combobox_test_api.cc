@@ -50,7 +50,7 @@ void ComboboxTestApi::InstallTestMenuRunner(int* menu_show_count) {
       new MenuRunner(menu_model(), MenuRunner::COMBOBOX));
   test::MenuRunnerTestAPI test_api(combobox_->menu_runner_.get());
   test_api.SetMenuRunnerHandler(
-      base::MakeUnique<TestMenuRunnerHandler>(menu_show_count));
+      std::make_unique<TestMenuRunnerHandler>(menu_show_count));
 }
 
 gfx::Size ComboboxTestApi::content_size() {

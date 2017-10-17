@@ -90,10 +90,10 @@ std::unique_ptr<EventConverterEvdev> CreateConverter(
   // EventReaderLibevdevCros -> GestureInterpreterLibevdevCros -> DispatchEvent
   if (devinfo.HasTouchpad() || devinfo.HasMouse()) {
     std::unique_ptr<GestureInterpreterLibevdevCros> gesture_interp =
-        base::MakeUnique<GestureInterpreterLibevdevCros>(
+        std::make_unique<GestureInterpreterLibevdevCros>(
             params.id, params.cursor, params.gesture_property_provider,
             params.dispatcher);
-    return base::MakeUnique<EventReaderLibevdevCros>(std::move(fd), params.path,
+    return std::make_unique<EventReaderLibevdevCros>(std::move(fd), params.path,
                                                      params.id, devinfo,
                                                      std::move(gesture_interp));
   }

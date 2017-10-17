@@ -155,7 +155,7 @@ class ImageSkiaTest : public testing::Test {
 
 TEST_F(ImageSkiaTest, FixedSource) {
   ImageSkiaRep image(Size(100, 200), 0.0f);
-  ImageSkia image_skia(base::MakeUnique<FixedSource>(image), Size(100, 200));
+  ImageSkia image_skia(std::make_unique<FixedSource>(image), Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
 
   const ImageSkiaRep& result_100p = image_skia.GetRepresentation(1.0f);
@@ -192,7 +192,7 @@ TEST_F(ImageSkiaTest, FixedSource) {
 
 TEST_F(ImageSkiaTest, FixedScaledSource) {
   ImageSkiaRep image(Size(100, 200), 1.0f);
-  ImageSkia image_skia(base::MakeUnique<FixedScaleSource>(image),
+  ImageSkia image_skia(std::make_unique<FixedScaleSource>(image),
                        Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
 
@@ -221,7 +221,7 @@ TEST_F(ImageSkiaTest, FixedScaledSource) {
 
 TEST_F(ImageSkiaTest, FixedUnscaledSource) {
   ImageSkiaRep image(Size(100, 200), 0.0f);
-  ImageSkia image_skia(base::MakeUnique<FixedScaleSource>(image),
+  ImageSkia image_skia(std::make_unique<FixedScaleSource>(image),
                        Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
 
@@ -247,7 +247,7 @@ TEST_F(ImageSkiaTest, FixedUnscaledSource) {
 }
 
 TEST_F(ImageSkiaTest, DynamicSource) {
-  ImageSkia image_skia(base::MakeUnique<DynamicSource>(Size(100, 200)),
+  ImageSkia image_skia(std::make_unique<DynamicSource>(Size(100, 200)),
                        Size(100, 200));
   EXPECT_EQ(0U, image_skia.image_reps().size());
   const ImageSkiaRep& result_100p = image_skia.GetRepresentation(1.0f);
@@ -281,7 +281,7 @@ TEST_F(ImageSkiaTest, ManyRepsPerScaleFactor) {
   const int kSmallIcon2x = 32;
   const int kLargeIcon1x = 32;
 
-  ImageSkia image(base::MakeUnique<NullSource>(),
+  ImageSkia image(std::make_unique<NullSource>(),
                   gfx::Size(kSmallIcon1x, kSmallIcon1x));
   // Simulate a source which loads images on a delay. Upon
   // GetImageForScaleFactor, it immediately returns null and starts loading
@@ -313,7 +313,7 @@ TEST_F(ImageSkiaTest, ManyRepsPerScaleFactor) {
 }
 
 TEST_F(ImageSkiaTest, GetBitmap) {
-  ImageSkia image_skia(base::MakeUnique<DynamicSource>(Size(100, 200)),
+  ImageSkia image_skia(std::make_unique<DynamicSource>(Size(100, 200)),
                        Size(100, 200));
   const SkBitmap* bitmap = image_skia.bitmap();
   EXPECT_NE(static_cast<SkBitmap*>(NULL), bitmap);
@@ -433,7 +433,7 @@ TEST_F(ImageSkiaTest, StaticOnThreadTest) {
 }
 
 TEST_F(ImageSkiaTest, SourceOnThreadTest) {
-  ImageSkia image(base::MakeUnique<DynamicSource>(Size(100, 200)),
+  ImageSkia image(std::make_unique<DynamicSource>(Size(100, 200)),
                   Size(100, 200));
   EXPECT_FALSE(image.IsThreadSafe());
 
@@ -587,7 +587,7 @@ TEST_F(ImageSkiaTest, ArbitraryScaleFactor) {
 
 TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
   ImageSkia image(
-      base::MakeUnique<FixedScaleSource>(ImageSkiaRep(Size(100, 200), 1.0f)),
+      std::make_unique<FixedScaleSource>(ImageSkiaRep(Size(100, 200), 1.0f)),
       Size(100, 200));
 
   // Requesting 1.5f -- falls back to 2.0f, but couldn't find. It should
@@ -603,7 +603,7 @@ TEST_F(ImageSkiaTest, ArbitraryScaleFactorWithMissingResource) {
 TEST_F(ImageSkiaTest, UnscaledImageForArbitraryScaleFactor) {
   // 0.0f means unscaled.
   ImageSkia image(
-      base::MakeUnique<FixedScaleSource>(ImageSkiaRep(Size(100, 200), 0.0f)),
+      std::make_unique<FixedScaleSource>(ImageSkiaRep(Size(100, 200), 0.0f)),
       Size(100, 200));
 
   // Requesting 2.0f, which should return 1.0f unscaled image.

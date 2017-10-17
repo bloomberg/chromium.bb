@@ -4930,7 +4930,7 @@ class ViewObserverTest : public ViewTest, public ViewObserver {
   }
 
   std::unique_ptr<View> NewView() {
-    auto view = base::MakeUnique<View>();
+    auto view = std::make_unique<View>();
     view->AddObserver(this);
     return view;
   }

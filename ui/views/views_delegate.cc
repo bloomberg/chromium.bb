@@ -31,7 +31,7 @@ ViewsDelegate::ViewsDelegate()
 
 #if defined(USE_AURA)
   touch_selection_menu_runner_ =
-      base::MakeUnique<TouchSelectionMenuRunnerViews>();
+      std::make_unique<TouchSelectionMenuRunnerViews>();
 #endif
 }
 

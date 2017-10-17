@@ -70,18 +70,18 @@ typedef TreeNodeWithValue<int> TestNode;
 //     +-- foo2
 // +-- child2
 TEST_F(TreeNodeModelTest, AddNode) {
-  TreeNodeModel<TestNode> model(base::MakeUnique<TestNode>());
+  TreeNodeModel<TestNode> model(std::make_unique<TestNode>());
   TestNode* root = model.GetRoot();
   model.AddObserver(this);
 
-  TestNode* child1 = model.Add(root, base::MakeUnique<TestNode>(), 0);
+  TestNode* child1 = model.Add(root, std::make_unique<TestNode>(), 0);
 
   EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
   for (int i = 0; i < 2; ++i)
-    child1->Add(base::MakeUnique<TestNode>(), i);
+    child1->Add(std::make_unique<TestNode>(), i);
 
-  TestNode* child2 = model.Add(root, base::MakeUnique<TestNode>(), 1);
+  TestNode* child2 = model.Add(root, std::make_unique<TestNode>(), 1);
 
   EXPECT_EQ("added=1 removed=0 changed=0", GetObserverCountStateAndClear());
 
@@ -93,11 +93,11 @@ TEST_F(TreeNodeModelTest, AddNode) {
 // Verifies if the model is properly removing a node from the tree
 // and notifying the observers.
 TEST_F(TreeNodeModelTest, RemoveNode) {
-  TreeNodeModel<TestNode> model(base::MakeUnique<TestNode>());
+  TreeNodeModel<TestNode> model(std::make_unique<TestNode>());
   TestNode* root = model.GetRoot();
   model.AddObserver(this);
 
-  TestNode* child1 = root->Add(base::MakeUnique<TestNode>(), 0);
+  TestNode* child1 = root->Add(std::make_unique<TestNode>(), 0);
 
   EXPECT_EQ(1, model.GetChildCount(root));
 
@@ -123,15 +123,15 @@ TEST_F(TreeNodeModelTest, RemoveNode) {
 TEST_F(TreeNodeModelTest, DeleteAllNodes) {
   TestNode root;
 
-  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
-  root.Add(base::MakeUnique<TestNode>(), 1);  // child2
-  root.Add(base::MakeUnique<TestNode>(), 2);  // child3
+  TestNode* child1 = root.Add(std::make_unique<TestNode>(), 0);
+  root.Add(std::make_unique<TestNode>(), 1);  // child2
+  root.Add(std::make_unique<TestNode>(), 2);  // child3
 
-  TestNode* foo = child1->Add(base::MakeUnique<TestNode>(), 0);
+  TestNode* foo = child1->Add(std::make_unique<TestNode>(), 0);
 
   // Add some nodes to |foo|.
   for (int i = 0; i < 3; ++i)
-    foo->Add(base::MakeUnique<TestNode>(), i);  // bar[n]
+    foo->Add(std::make_unique<TestNode>(), i);  // bar[n]
 
   EXPECT_EQ(3, root.child_count());
   EXPECT_EQ(1, child1->child_count());
@@ -153,9 +153,9 @@ TEST_F(TreeNodeModelTest, DeleteAllNodes) {
 TEST_F(TreeNodeModelTest, GetIndexOf) {
   TestNode root;
 
-  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
-  TestNode* child2 = root.Add(base::MakeUnique<TestNode>(), 1);
-  TestNode* foo1 = child1->Add(base::MakeUnique<TestNode>(), 0);
+  TestNode* child1 = root.Add(std::make_unique<TestNode>(), 0);
+  TestNode* child2 = root.Add(std::make_unique<TestNode>(), 1);
+  TestNode* foo1 = child1->Add(std::make_unique<TestNode>(), 0);
 
   EXPECT_EQ(-1, root.GetIndexOf(&root));
   EXPECT_EQ(0, root.GetIndexOf(child1));
@@ -182,10 +182,10 @@ TEST_F(TreeNodeModelTest, GetIndexOf) {
 TEST_F(TreeNodeModelTest, HasAncestor) {
   TestNode root;
 
-  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
-  TestNode* child2 = root.Add(base::MakeUnique<TestNode>(), 1);
+  TestNode* child1 = root.Add(std::make_unique<TestNode>(), 0);
+  TestNode* child2 = root.Add(std::make_unique<TestNode>(), 1);
 
-  TestNode* foo1 = child1->Add(base::MakeUnique<TestNode>(), 0);
+  TestNode* foo1 = child1->Add(std::make_unique<TestNode>(), 0);
 
   EXPECT_TRUE(root.HasAncestor(&root));
   EXPECT_FALSE(root.HasAncestor(child1));
@@ -229,16 +229,16 @@ TEST_F(TreeNodeModelTest, HasAncestor) {
 TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
   TestNode root;
 
-  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), 0);
-  TestNode* child2 = child1->Add(base::MakeUnique<TestNode>(), 0);
-  child2->Add(base::MakeUnique<TestNode>(), 0);  // child3
+  TestNode* child1 = root.Add(std::make_unique<TestNode>(), 0);
+  TestNode* child2 = child1->Add(std::make_unique<TestNode>(), 0);
+  child2->Add(std::make_unique<TestNode>(), 0);  // child3
 
-  TestNode* foo1 = root.Add(base::MakeUnique<TestNode>(), 1);
-  TestNode* foo2 = foo1->Add(base::MakeUnique<TestNode>(), 0);
-  foo2->Add(base::MakeUnique<TestNode>(), 0);  // foo3
-  foo1->Add(base::MakeUnique<TestNode>(), 1);  // foo4
+  TestNode* foo1 = root.Add(std::make_unique<TestNode>(), 1);
+  TestNode* foo2 = foo1->Add(std::make_unique<TestNode>(), 0);
+  foo2->Add(std::make_unique<TestNode>(), 0);  // foo3
+  foo1->Add(std::make_unique<TestNode>(), 1);  // foo4
 
-  TestNode* bar1 = root.Add(base::MakeUnique<TestNode>(), 2);
+  TestNode* bar1 = root.Add(std::make_unique<TestNode>(), 2);
 
   EXPECT_EQ(9, root.GetTotalNodeCount());
   EXPECT_EQ(3, child1->GetTotalNodeCount());
@@ -251,7 +251,7 @@ TEST_F(TreeNodeModelTest, GetTotalNodeCount) {
 // also makes sure the node is properly renamed.
 TEST_F(TreeNodeModelTest, SetTitle) {
   TreeNodeModel<TestNode> model(
-      base::MakeUnique<TestNode>(ASCIIToUTF16("root"), 0));
+      std::make_unique<TestNode>(ASCIIToUTF16("root"), 0));
   TestNode* root = model.GetRoot();
   model.AddObserver(this);
 
@@ -265,11 +265,11 @@ TEST_F(TreeNodeModelTest, BasicOperations) {
   TestNode root;
   EXPECT_EQ(0, root.child_count());
 
-  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), root.child_count());
+  TestNode* child1 = root.Add(std::make_unique<TestNode>(), root.child_count());
   EXPECT_EQ(1, root.child_count());
   EXPECT_EQ(&root, child1->parent());
 
-  TestNode* child2 = root.Add(base::MakeUnique<TestNode>(), root.child_count());
+  TestNode* child2 = root.Add(std::make_unique<TestNode>(), root.child_count());
   EXPECT_EQ(2, root.child_count());
   EXPECT_EQ(child1->parent(), child2->parent());
 
@@ -285,7 +285,7 @@ TEST_F(TreeNodeModelTest, IsRoot) {
   TestNode root;
   EXPECT_TRUE(root.is_root());
 
-  TestNode* child1 = root.Add(base::MakeUnique<TestNode>(), root.child_count());
+  TestNode* child1 = root.Add(std::make_unique<TestNode>(), root.child_count());
   EXPECT_FALSE(child1->is_root());
 }
 

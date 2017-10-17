@@ -141,14 +141,14 @@ std::unique_ptr<ui::LayerTreeOwner> RecreateLayersWithClosure(
   auto layer = map_func.Run(root);
   if (!layer)
     return nullptr;
-  auto old_layer = base::MakeUnique<ui::LayerTreeOwner>(std::move(layer));
+  auto old_layer = std::make_unique<ui::LayerTreeOwner>(std::move(layer));
   CloneChildren(root->layer(), old_layer->root(), map_func);
   return old_layer;
 }
 
 std::unique_ptr<ui::LayerTreeOwner> MirrorLayers(
     ui::LayerOwner* root, bool sync_bounds) {
-  auto mirror = base::MakeUnique<ui::LayerTreeOwner>(root->layer()->Mirror());
+  auto mirror = std::make_unique<ui::LayerTreeOwner>(root->layer()->Mirror());
   MirrorChildren(root->layer(), mirror->root(), sync_bounds);
   return mirror;
 }

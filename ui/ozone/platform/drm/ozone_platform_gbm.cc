@@ -157,7 +157,7 @@ class OzonePlatformGbm : public OzonePlatform {
   }
   std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
       override {
-    return base::MakeUnique<DrmNativeDisplayDelegate>(display_manager_.get());
+    return std::make_unique<DrmNativeDisplayDelegate>(display_manager_.get());
   }
   void InitializeUI(const InitParams& args) override {
     // Ozone drm can operate in three modes configured at runtime:
@@ -179,10 +179,10 @@ class OzonePlatformGbm : public OzonePlatform {
     cursor_.reset(new DrmCursor(window_manager_.get()));
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::MakeUnique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
+        std::make_unique<XkbKeyboardLayoutEngine>(xkb_evdev_code_converter_));
 #else
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
-        base::MakeUnique<StubKeyboardLayoutEngine>());
+        std::make_unique<StubKeyboardLayoutEngine>());
 #endif
 
     event_factory_ozone_.reset(new EventFactoryEvdev(
@@ -196,7 +196,7 @@ class OzonePlatformGbm : public OzonePlatform {
 
     if (using_mojo_) {
       host_drm_device_ =
-          base::MakeUnique<HostDrmDevice>(cursor_.get(), args.connector);
+          std::make_unique<HostDrmDevice>(cursor_.get(), args.connector);
       adapter = host_drm_device_.get();
     } else {
       gpu_platform_support_host_.reset(

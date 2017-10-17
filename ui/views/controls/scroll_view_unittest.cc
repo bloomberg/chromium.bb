@@ -175,7 +175,7 @@ class ScrollViewTest : public ViewsTestBase {
     // Otherwise, the swizzlers are interleaved and restore incorrect methods.
     scroller_style_.reset();
     scroller_style_ =
-        base::MakeUnique<ui::test::ScopedPreferredScrollerStyle>(enabled);
+        std::make_unique<ui::test::ScopedPreferredScrollerStyle>(enabled);
   }
 
  private:
@@ -184,7 +184,7 @@ class ScrollViewTest : public ViewsTestBase {
   // change modes, which requires a MessageLoop to exist. Tests should only
   // modify this via SetOverlayScrollersEnabled().
   std::unique_ptr<ui::test::ScopedPreferredScrollerStyle> scroller_style_ =
-      base::MakeUnique<ui::test::ScopedPreferredScrollerStyle>(false);
+      std::make_unique<ui::test::ScopedPreferredScrollerStyle>(false);
 
  protected:
 #endif
