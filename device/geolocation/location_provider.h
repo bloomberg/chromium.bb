@@ -25,9 +25,8 @@ class DEVICE_GEOLOCATION_EXPORT LocationProvider {
       const LocationProviderUpdateCallback& callback) = 0;
 
   // StartProvider maybe called multiple times, e.g. to alter the
-  // |high_accuracy| setting. Returns false if a fatal error was encountered
-  // which prevented the provider from starting.
-  virtual bool StartProvider(bool high_accuracy) = 0;
+  // |high_accuracy| setting.
+  virtual void StartProvider(bool high_accuracy) = 0;
 
   // Stops the provider from sending more requests.
   // Important: a LocationProvider may be instantiated and StartProvider() may

@@ -159,8 +159,6 @@ source_set("test_support") {
     "fake_access_token_store.h",
     "fake_location_provider.cc",
     "fake_location_provider.h",
-    "mock_location_provider.cc",
-    "mock_location_provider.h",
   ]
   public_deps = [
     ":geolocation",

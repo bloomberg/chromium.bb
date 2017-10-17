@@ -68,7 +68,7 @@ class NetworkLocationProvider : public LocationProvider {
 
   // LocationProvider implementation
   void SetUpdateCallback(const LocationProviderUpdateCallback& cb) override;
-  bool StartProvider(bool high_accuracy) override;
+  void StartProvider(bool high_accuracy) override;
   void StopProvider() override;
   const Geoposition& GetPosition() override;
   void OnPermissionGranted() override;

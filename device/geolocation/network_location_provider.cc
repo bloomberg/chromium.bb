@@ -157,11 +157,11 @@ void NetworkLocationProvider::OnLocationResponse(
     location_provider_update_callback_.Run(this, position_);
 }
 
-bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
+void NetworkLocationProvider::StartProvider(bool high_accuracy) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (IsStarted())
-    return true;
+    return;
 
   // Registers a callback with the data provider. The first call to Register()
   // will create a singleton data provider that will be deleted on Unregister().
@@ -174,7 +174,6 @@ bool NetworkLocationProvider::StartProvider(bool high_accuracy) {
       base::TimeDelta::FromSeconds(kDataCompleteWaitSeconds));
 
   OnWifiDataUpdate();
-  return true;
 }
 
 void NetworkLocationProvider::StopProvider() {

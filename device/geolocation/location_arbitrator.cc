@@ -46,7 +46,7 @@ void LocationArbitrator::OnPermissionGranted() {
     provider->OnPermissionGranted();
 }
 
-bool LocationArbitrator::StartProvider(bool enable_high_accuracy) {
+void LocationArbitrator::StartProvider(bool enable_high_accuracy) {
   is_running_ = true;
   enable_high_accuracy_ = enable_high_accuracy;
 
@@ -66,26 +66,24 @@ bool LocationArbitrator::StartProvider(bool enable_high_accuracy) {
       // Invoke callback to obtain a URL request context.
       request_context_producer_.Run(
           request_context_response_callback_.callback());
-      return true;
+      return;
     }
   }
-  return DoStartProviders();
+  DoStartProviders();
 }
 
-bool LocationArbitrator::DoStartProviders() {
+void LocationArbitrator::DoStartProviders() {
   if (providers_.empty()) {
     // If no providers are available, we report an error to avoid
     // callers waiting indefinitely for a reply.
     Geoposition position;
     position.error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
     arbitrator_update_callback_.Run(this, position);
-    return false;
+    return;
   }
-  bool started = false;
   for (const auto& provider : providers_) {
-    started = provider->StartProvider(enable_high_accuracy_) || started;
+    provider->StartProvider(enable_high_accuracy_);
   }
-  return started;
 }
 
 void LocationArbitrator::StopProvider() {
