@@ -10,6 +10,9 @@ import("//tools/grit/grit_rule.gni")
 
 component("keyboard") {
   sources = [
+    "container_behavior.h",
+    "container_full_width_behavior.cc",
+    "container_full_width_behavior.h",
     "keyboard_controller.cc",
     "keyboard_controller.h",
     "keyboard_controller_observer.h",
