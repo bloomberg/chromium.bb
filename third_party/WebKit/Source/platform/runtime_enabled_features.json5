@@ -586,6 +586,10 @@
       name: "MediaEngagementBypassAutoplayPolicies",
     },
     {
+      name: "MediaPlaybackRateOutOfRange",
+      status: "experimental",
+    },
+    {
       name: "MediaQueryShape",
       status: "experimental",
     },

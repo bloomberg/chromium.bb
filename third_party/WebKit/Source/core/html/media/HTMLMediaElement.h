@@ -177,7 +177,7 @@ class CORE_EXPORT HTMLMediaElement
   double defaultPlaybackRate() const;
   void setDefaultPlaybackRate(double);
   double playbackRate() const;
-  void setPlaybackRate(double);
+  void setPlaybackRate(double, ExceptionState& = ASSERT_NO_EXCEPTION);
   void UpdatePlaybackRate();
   TimeRanges* played();
   TimeRanges* seekable() const;

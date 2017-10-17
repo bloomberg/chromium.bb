@@ -16595,6 +16595,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2189" label="PerformanceObserverForWorker"/>
   <int value="2190" label="PaintTimingObserved"/>
   <int value="2191" label="PaintTimingRequested"/>
+  <int value="2192" label="HTMLMediaElementMediaPlaybackRateOutOfRange"/>
 </enum>
 
 <enum name="FeedbackSource">

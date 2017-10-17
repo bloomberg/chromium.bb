@@ -162,6 +162,10 @@ enum class PlayPromiseRejectReason {
   kCount,
 };
 
+// Limits the range of media playback rate.
+const double kMinRate = 0.0625;
+const double kMaxRate = 16.0;
+
 void ReportContentTypeResultToUMA(String content_type,
                                   MIMETypeRegistry::SupportsType result) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(
@@ -2137,8 +2141,25 @@ double HTMLMediaElement::playbackRate() const {
   return playback_rate_;
 }
 
-void HTMLMediaElement::setPlaybackRate(double rate) {
+void HTMLMediaElement::setPlaybackRate(double rate,
+                                       ExceptionState& exception_state) {
   BLINK_MEDIA_LOG << "setPlaybackRate(" << (void*)this << ", " << rate << ")";
+
+  // Limit rates to reasonable values by clamping.
+  if (rate != 0.0 && (rate < kMinRate || rate > kMaxRate)) {
+    if (RuntimeEnabledFeatures::PreloadDefaultIsMetadataEnabled()) {
+      exception_state.ThrowDOMException(
+          kNotSupportedError, "The provided playback rate (" +
+                                  String::Number(rate) + ") is not in the " +
+                                  "supported playback range.");
+
+      // Do not update |playback_rate_|.
+      return;
+    }
+
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kHTMLMediaElementMediaPlaybackRateOutOfRange);
+  }
 
   if (playback_rate_ != rate) {
     playback_rate_ = rate;
