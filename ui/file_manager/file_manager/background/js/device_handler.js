@@ -202,22 +202,6 @@ DeviceHandler.Notification.FORMAT_FAIL = new DeviceHandler.Notification(
  * @type {DeviceHandler.Notification}
  * @const
  */
-DeviceHandler.Notification.RENAME_START = new DeviceHandler.Notification(
-    'renameStart', 'RENAMING_OF_DEVICE_PENDING_TITLE',
-    'RENAMING_OF_DEVICE_PENDING_MESSAGE');
-
-/**
- * @type {DeviceHandler.Notification}
- * @const
- */
-DeviceHandler.Notification.RENAME_SUCCESS = new DeviceHandler.Notification(
-    'renameSuccess', 'RENAMING_OF_DEVICE_FINISHED_TITLE',
-    'RENAMING_OF_DEVICE_FINISHED_SUCCESS_MESSAGE');
-
-/**
- * @type {DeviceHandler.Notification}
- * @const
- */
 DeviceHandler.Notification.RENAME_FAIL = new DeviceHandler.Notification(
     'renameFail', 'RENAMING_OF_DEVICE_FAILED_TITLE',
     'RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE');
@@ -331,15 +315,7 @@ DeviceHandler.prototype.onDeviceChanged_ = function(event) {
       DeviceHandler.Notification.FORMAT_START.hide(event.devicePath);
       DeviceHandler.Notification.FORMAT_FAIL.show(event.devicePath);
       break;
-    case 'rename_start':
-      DeviceHandler.Notification.RENAME_START.show(event.devicePath);
-      break;
-    case 'rename_success':
-      DeviceHandler.Notification.RENAME_START.hide(event.devicePath);
-      DeviceHandler.Notification.RENAME_SUCCESS.show(event.devicePath);
-      break;
     case 'rename_fail':
-      DeviceHandler.Notification.RENAME_START.hide(event.devicePath);
       DeviceHandler.Notification.RENAME_FAIL.show(event.devicePath);
       break;
     default:

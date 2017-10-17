@@ -43,11 +43,6 @@ loadTimeData.data = {
   FORMATTING_FINISHED_SUCCESS_MESSAGE: 'FORMATTING_FINISHED_SUCCESS',
   FORMATTING_OF_DEVICE_FAILED_TITLE: 'FORMATTING_OF_DEVICE_FAILED_TITLE',
   FORMATTING_FINISHED_FAILURE_MESSAGE: 'FORMATTING_FINISHED_FAILURE',
-  RENAMING_OF_DEVICE_PENDING_TITLE: 'RENAMING_OF_DEVICE_PENDING_TITLE',
-  RENAMING_OF_DEVICE_PENDING_MESSAGE: 'RENAMING_OF_DEVICE_PENDING',
-  RENAMING_OF_DEVICE_FINISHED_TITLE: 'RENAMING_OF_DEVICE_FINISHED_TITLE',
-  RENAMING_OF_DEVICE_FINISHED_SUCCESS_MESSAGE:
-      'RENAMING_OF_DEVICE_FINISHED_SUCCESS',
   RENAMING_OF_DEVICE_FAILED_TITLE: 'RENAMING_OF_DEVICE_FAILED_TITLE',
   RENAMING_OF_DEVICE_FINISHED_FAILURE_MESSAGE:
       'RENAMING_OF_DEVICE_FINISHED_FAILURE',
@@ -602,26 +597,17 @@ function testFormatFailed() {
 function testRenameSucceeded() {
   chrome.fileManagerPrivate.onDeviceChanged.dispatch(
       {type: 'rename_start', devicePath: '/device/path'});
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'RENAMING_OF_DEVICE_PENDING',
-      chrome.notifications.items['renameStart:/device/path'].message);
+  assertEquals(0, Object.keys(chrome.notifications.items).length);
 
   chrome.fileManagerPrivate.onDeviceChanged.dispatch(
       {type: 'rename_success', devicePath: '/device/path'});
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'RENAMING_OF_DEVICE_FINISHED_SUCCESS',
-      chrome.notifications.items['renameSuccess:/device/path'].message);
+  assertEquals(0, Object.keys(chrome.notifications.items).length);
 }
 
 function testRenameFailed() {
   chrome.fileManagerPrivate.onDeviceChanged.dispatch(
       {type: 'rename_start', devicePath: '/device/path'});
-  assertEquals(1, Object.keys(chrome.notifications.items).length);
-  assertEquals(
-      'RENAMING_OF_DEVICE_PENDING',
-      chrome.notifications.items['renameStart:/device/path'].message);
+  assertEquals(0, Object.keys(chrome.notifications.items).length);
 
   chrome.fileManagerPrivate.onDeviceChanged.dispatch(
       {type: 'rename_fail', devicePath: '/device/path'});
