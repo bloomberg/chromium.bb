@@ -719,7 +719,10 @@ group("gn_all") {
   }
 
   if (enable_vr) {
-    deps += [ "//chrome/browser/vr:vr_common_unittests" ]
+    deps += [
+      "//chrome/browser/vr:vr_common_perftests",
+      "//chrome/browser/vr:vr_common_unittests",
+    ]
     if (is_linux && use_ozone) {
       deps += [ "//chrome/browser/vr/testapp:vr_testapp" ]
     }

@@ -17,9 +17,16 @@ namespace vr {
 
 class TextTexture : public UiTexture {
  public:
-  TextTexture(const base::string16& text, float font_height, float text_width)
-      : text_(text), font_height_(font_height), text_width_(text_width) {}
+  TextTexture(float font_height, float text_width)
+      : font_height_(font_height), text_width_(text_width) {}
   ~TextTexture() override {}
+
+  void SetText(const base::string16& text) {
+    if (text_ == text)
+      return;
+    text_ = text;
+    set_dirty();
+  }
 
   void SetColor(SkColor color) {
     if (color_ == color)
@@ -50,20 +57,22 @@ class TextTexture : public UiTexture {
 
 Text::Text(int maximum_width_pixels,
            float font_height_meters,
-           float text_width_meters,
-           const base::string16& text)
+           float text_width_meters)
     : TexturedElement(maximum_width_pixels),
-      texture_(base::MakeUnique<TextTexture>(text,
-                                             font_height_meters,
+      texture_(base::MakeUnique<TextTexture>(font_height_meters,
                                              text_width_meters)) {}
 Text::~Text() {}
 
-UiTexture* Text::GetTexture() const {
-  return texture_.get();
+void Text::SetText(const base::string16& text) {
+  texture_->SetText(text);
 }
 
 void Text::SetColor(SkColor color) {
   texture_->SetColor(color);
+}
+
+UiTexture* Text::GetTexture() const {
+  return texture_.get();
 }
 
 void TextTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
