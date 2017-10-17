@@ -13,3 +13,7 @@ content/: Driver for the shared code based on the content layer.
   renderer/: Renderer process code.
   common/: Code shared by the browser and the renderer.
 ios/: Driver for the shared code based on src/ios.
+
+Note:
+The language code locator is built on all platforms but iOS since iOS currently
+does not support //device/geolocation. See http://crbug.com/774879 for details.

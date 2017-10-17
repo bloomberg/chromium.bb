@@ -1,0 +1,22 @@
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include <string>
+#include <vector>
+
+namespace language {
+namespace internal {
+std::vector<std::pair<uint64_t, std::string>>
+GenerateDistrictLanguageMapping() {
+  return {
+  {% set c = 1 %}
+  {% for cell_lang_pair in cell_lang_pairs -%}
+    { {{cell_lang_pair[0]}}ull, "{{cell_lang_pair[1]}}"}{% if c < cell_lang_pairs|length%},{% endif %}
+    {% set c = c + 1%}
+  {%- endfor %}
+  };
+}
+
+}  // namespace internal
+}  // namespace language
