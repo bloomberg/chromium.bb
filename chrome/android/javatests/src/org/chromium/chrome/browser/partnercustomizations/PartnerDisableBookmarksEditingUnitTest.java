@@ -19,9 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomizationsProvider;
 
@@ -29,9 +27,6 @@ import org.chromium.chrome.test.partnercustomizations.TestPartnerBrowserCustomiz
  * Unit tests for the partner disabling bookmarks editing functionality.
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
-@CommandLineFlags.Add({
-        ChromeSwitches.ALLOW_PARTNER_CUSTOMIZATION,
-})
 public class PartnerDisableBookmarksEditingUnitTest {
     @Rule
     public BasePartnerBrowserCustomizationUnitTestRule mTestRule =
