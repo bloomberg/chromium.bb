@@ -187,12 +187,12 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (712,602.47) size 232.06x15.36 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (712,602.47) size 232.06x15.36
             chunk 1 text run 1 at (712.00,614.00) startOffset 0 endOffset 39 width 232.07: "RGBA: 120,120,120,100; HSVA: 0,0,47,100"
-    LayoutSVGContainer {g} at (490,190) size 336.39x153.02 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,-400.00)}]
+    LayoutSVGContainer {g} at (490,190) size 336.39x153.03 [transform={m=((0.71,0.71)(-0.71,0.71)) t=(0.00,-400.00)}]
       LayoutSVGRect {rect} at (490,190) size 320x110 [fill={[type=SOLID] [color=#00FFFF] [opacity=0.50]}] [x=490.00] [y=190.00] [width=320.00] [height=110.00]
-      LayoutSVGText {text} at (500,303.36) size 326.39x39.66 contains 1 chunk(s)
+      LayoutSVGText {text} at (500,303.36) size 326.39x39.67 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (500,303.36) size 308.47x20.47
           chunk 1 text run 1 at (500.00,320.00) startOffset 0 endOffset 41 width 308.48: "This colourPicker has a callBack function"
-        LayoutSVGTSpan {tspan} at (500,303.36) size 326.39x39.66
+        LayoutSVGTSpan {tspan} at (500,303.36) size 326.39x39.67
           LayoutSVGInlineText {#text} at (500,322.55) size 326.39x20.47
             chunk 1 text run 1 at (500.00,339.20) startOffset 0 endOffset 42 width 325.12: "attached that changes the background color"
       LayoutSVGContainer {g} at (500,200) size 300x90

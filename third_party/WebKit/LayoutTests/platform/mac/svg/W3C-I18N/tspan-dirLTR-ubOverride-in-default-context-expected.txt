@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (20,133.80) size 390x85.20
-      LayoutSVGText {text} at (81.97,133.80) size 296.05x19.80 contains 1 chunk(s)
+      LayoutSVGText {text} at (81.97,133.80) size 296.03x19.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (81.97,133.80) size 158.09x19.80
           chunk 1 (middle anchor) text run 1 at (81.98,150.00) startOffset 0 endOffset 19 width 158.11: "dirLTR ubOverride \""
-        LayoutSVGTSpan {tspan} at (81.97,133.80) size 296.05x19.80
+        LayoutSVGTSpan {tspan} at (81.97,133.80) size 296.03x19.80
           LayoutSVGInlineText {#text} at (240.08,133.80) size 126.53x19.80
             chunk 1 (middle anchor) text run 1 at (240.09,150.00) startOffset 0 endOffset 17 width 126.54 LTR override: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}\x{60C} W3C"
         LayoutSVGInlineText {#text} at (366.63,133.80) size 11.39x19.80

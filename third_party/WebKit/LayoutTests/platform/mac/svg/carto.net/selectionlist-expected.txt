@@ -49,20 +49,20 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (765,101.75) size 92.27x12.80
           chunk 1 text run 1 at (765.00,112.00) startOffset 0 endOffset 18 width 92.27: "This is selnumber2"
     LayoutSVGImage {image} at (50,150) size 410x307
-    LayoutSVGContainer {g} at (220,201.75) size 425.72x72.80 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(550.00,20.00)}]
-      LayoutSVGText {text} at (220,201.75) size 425.72x72.80 contains 1 chunk(s)
+    LayoutSVGContainer {g} at (220,201.75) size 425.73x72.80 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(550.00,20.00)}]
+      LayoutSVGText {text} at (220,201.75) size 425.73x72.80 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (220,201.75) size 198.59x12.80
           chunk 1 text run 1 at (220.00,212.00) startOffset 0 endOffset 39 width 198.60: "Communities of Kt. Aargau (Switzerland)"
-        LayoutSVGTSpan {tspan} at (220,201.75) size 425.72x72.80
+        LayoutSVGTSpan {tspan} at (220,201.75) size 425.73x72.80
           LayoutSVGInlineText {#text} at (220,221.75) size 343.48x12.80
             chunk 1 text run 1 at (220.00,232.00) startOffset 0 endOffset 23 width 113.08: "Note that one can also "
             chunk 1 text run 1 at (333.08,232.00) startOffset 0 endOffset 49 width 230.42: "transform the group containing the selection list"
-        LayoutSVGTSpan {tspan} at (220,201.75) size 425.72x72.80
+        LayoutSVGTSpan {tspan} at (220,201.75) size 425.73x72.80
           LayoutSVGInlineText {#text} at (220,241.75) size 400.31x12.80
             chunk 1 text run 1 at (220.00,252.00) startOffset 0 endOffset 5 width 23.83: "This "
             chunk 1 text run 1 at (243.83,252.00) startOffset 0 endOffset 74 width 346.55: "selectionlist does not react on user input (functionToCall is a undefined "
             chunk 1 text run 1 at (590.38,252.00) startOffset 0 endOffset 6 width 29.95: "value)"
-        LayoutSVGTSpan {tspan} at (220,201.75) size 425.72x72.80
+        LayoutSVGTSpan {tspan} at (220,201.75) size 425.73x72.80
           LayoutSVGInlineText {#text} at (220,261.75) size 425.72x12.80
             chunk 1 text run 1 at (220.00,272.00) startOffset 0 endOffset 14 width 62.33: "Click on this "
             chunk 1 text run 1 at (282.33,272.00) startOffset 0 endOffset 69 width 329.80: "text to toggle \"above\"/\"below\" mode to open the box either to top or "

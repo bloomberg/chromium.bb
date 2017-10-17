@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (20,133.19) size 390x85.81
-      LayoutSVGContainer {g} at (105.86,133.19) size 248.27x21
-        LayoutSVGText {text} at (105.86,133.19) size 248.27x21 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (105.86,133.19) size 248.25x21
+        LayoutSVGText {text} at (105.86,133.19) size 248.25x21 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (105.86,133.19) size 248.27x21
             chunk 1 (middle anchor) text run 1 at (105.87,150.00) startOffset 0 endOffset 4 width 45.00: "W3C "
             chunk 1 (middle anchor) text run 1 at (150.87,150.00) startOffset 0 endOffset 12 width 71.40 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644}"

@@ -7,7 +7,7 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (5,4) size 362.30x44.41 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (5,4) size 362.30x44.41
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 24 width 362.31: "Test left-to-right text."
-      LayoutSVGContainer {g} at (10,60) size 237.58x159.23
+      LayoutSVGContainer {g} at (10,60) size 237.59x159.23
         LayoutSVGText {text} at (10,60) size 214.34x19.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,60) size 214.34x19.19
             chunk 1 text run 1 at (10.00,75.00) startOffset 0 endOffset 33 width 214.36: "Polish: Mog\x{119} je\x{15B}\x{107} szk\x{142}o, i mi ..."
@@ -17,12 +17,12 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (10,130) size 185.42x19.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,130) size 185.42x19.19
             chunk 1 text run 1 at (10.00,145.00) startOffset 0 endOffset 23 width 185.43: "Greek: \x{39C}\x{3C0}\x{3BF}\x{3C1}\x{3CE} \x{3BD}\x{3B1} \x{3C6}\x{3AC}\x{3C9} ..."
-        LayoutSVGText {text} at (10,165) size 237.58x19.19 contains 1 chunk(s)
+        LayoutSVGText {text} at (10,165) size 237.59x19.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,165) size 237.58x19.19
             chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 8 width 62.77: "Hebrew: "
             chunk 1 text run 1 at (72.77,180.00) startOffset 0 endOffset 21 width 157.84 RTL: "\x{5D0}\x{5E0}\x{5D9} \x{5D9}\x{5DB}\x{5D5}\x{5DC} \x{5DC}\x{5D0}\x{5DB}\x{5D5}\x{5DC} \x{5D6}\x{5DB}\x{5D5}\x{5DB}\x{5D9}\x{5EA}"
             chunk 1 text run 1 at (230.61,180.00) startOffset 0 endOffset 4 width 17.00: " ..."
-        LayoutSVGText {text} at (10,200) size 229.58x19.23 contains 1 chunk(s)
+        LayoutSVGText {text} at (10,200) size 229.59x19.23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,200) size 229.58x19.23
             chunk 1 text run 1 at (10.00,215.00) startOffset 0 endOffset 9 width 61.87: "Yiddish: "
             chunk 1 text run 1 at (71.87,215.00) startOffset 0 endOffset 21 width 150.72 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF}"

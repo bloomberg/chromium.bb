@@ -13,11 +13,11 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (50,59) size 142x27 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (50,59) size 142x27
           chunk 1 text run 1 at (50.00,80.00) startOffset 0 endOffset 13 width 142.00: "Batik is Good"
-      LayoutSVGContainer {g} at (5.34,-14.34) size 174.66x69.02 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,60.00)}]
+      LayoutSVGContainer {g} at (5.34,-14.34) size 174.66x69.05 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,60.00)}]
         LayoutSVGContainer {use} at (20,11.72) size 160x36.57
           LayoutSVGPath {path} at (20,11.72) size 160x36.57 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 20 40 C 40 20 60 0 80 20 C 100 40 120 60 140 40 C 160 20 180 20 180 20"]
-        LayoutSVGText {text} at (5.34,-14.34) size 136.47x69.02 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (5.34,-14.34) size 136.47x69.02
+        LayoutSVGText {text} at (5.34,-14.34) size 136.47x69.05 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (5.34,-14.34) size 136.47x69.05
             LayoutSVGInlineText {#text} at (5.34,-9.50) size 69.25x53.64
               chunk 1 text run 1 at (25.78,34.26) startOffset 0 endOffset 1 width 16.00: "B"
               chunk 1 text run 2 at (36.34,24.46) startOffset 1 endOffset 2 width 13.00: "a"
@@ -25,11 +25,11 @@ layer at (0,0) size 450x500
               chunk 1 text run 4 at (49.41,15.30) startOffset 3 endOffset 4 width 5.00: "i"
               chunk 1 text run 5 at (57.33,12.30) startOffset 4 endOffset 5 width 12.00: "k"
               chunk 1 text run 6 at (66.77,12.18) startOffset 5 endOffset 6 width 7.00: " "
-            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.02
+            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.05
               LayoutSVGInlineText {#text} at (72.05,-14.34) size 32.83x34.80
                 chunk 1 text run 1 at (72.41,14.25) startOffset 0 endOffset 1 width 5.00: "i"
                 chunk 1 text run 2 at (79.21,19.23) startOffset 1 endOffset 2 width 12.00: "s"
-            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.02
+            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.05
               LayoutSVGInlineText {#text} at (79.39,8.59) size 62.42x46.08
                 chunk 1 text run 1 at (86.10,26.06) startOffset 0 endOffset 1 width 7.00: " "
                 chunk 1 text run 2 at (95.53,34.83) startOffset 1 endOffset 2 width 19.00: "G"
@@ -69,11 +69,11 @@ layer at (0,0) size 450x500
       LayoutSVGText {text} at (50,219) size 142x27 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (50,219) size 142x27
           chunk 1 text run 1 at (50.00,240.00) startOffset 0 endOffset 13 width 142.00: "Batik is Good"
-      LayoutSVGContainer {g} at (5.34,-14.34) size 174.66x69.02 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,220.00)}]
+      LayoutSVGContainer {g} at (5.34,-14.34) size 174.66x69.05 [transform={m=((1.00,0.00)(0.00,1.00)) t=(220.00,220.00)}]
         LayoutSVGContainer {use} at (20,11.72) size 160x36.57
           LayoutSVGPath {path} at (20,11.72) size 160x36.57 [stroke={[type=SOLID] [color=#0000FF] [stroke width=2.00]}] [data="M 20 40 C 40 20 60 0 80 20 C 100 40 120 60 140 40 C 160 20 180 20 180 20"]
-        LayoutSVGText {text} at (5.34,-14.34) size 136.47x69.02 contains 1 chunk(s)
-          LayoutSVGTextPath {textPath} at (5.34,-14.34) size 136.47x69.02
+        LayoutSVGText {text} at (5.34,-14.34) size 136.47x69.05 contains 1 chunk(s)
+          LayoutSVGTextPath {textPath} at (5.34,-14.34) size 136.47x69.05
             LayoutSVGInlineText {#text} at (5.34,-9.50) size 69.25x53.64
               chunk 1 text run 1 at (25.78,34.26) startOffset 0 endOffset 1 width 16.00: "B"
               chunk 1 text run 2 at (36.34,24.46) startOffset 1 endOffset 2 width 13.00: "a"
@@ -81,11 +81,11 @@ layer at (0,0) size 450x500
               chunk 1 text run 4 at (49.41,15.30) startOffset 3 endOffset 4 width 5.00: "i"
               chunk 1 text run 5 at (57.33,12.30) startOffset 4 endOffset 5 width 12.00: "k"
               chunk 1 text run 6 at (66.77,12.18) startOffset 5 endOffset 6 width 7.00: " "
-            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.02
+            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.05
               LayoutSVGInlineText {#text} at (72.05,-14.34) size 32.83x34.80
                 chunk 1 text run 1 at (72.41,14.25) startOffset 0 endOffset 1 width 5.00: "i"
                 chunk 1 text run 2 at (79.21,19.23) startOffset 1 endOffset 2 width 12.00: "s"
-            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.02
+            LayoutSVGTSpan {tspan} at (5.34,-14.34) size 136.47x69.05
               LayoutSVGInlineText {#text} at (79.39,8.59) size 62.42x46.08
                 chunk 1 text run 1 at (86.10,26.06) startOffset 0 endOffset 1 width 7.00: " "
                 chunk 1 text run 2 at (95.53,34.83) startOffset 1 endOffset 2 width 19.00: "G"

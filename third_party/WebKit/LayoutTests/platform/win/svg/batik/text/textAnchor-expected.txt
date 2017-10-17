@@ -13,7 +13,7 @@ layer at (0,0) size 450x500
         LayoutSVGPath {line} at (150,0) size 0x500 [stroke={[type=SOLID] [color=#FF0000]}] [x1=150.00] [y1=0.00] [x2=150.00] [y2=500.00]
         LayoutSVGPath {line} at (320,0) size 0x500 [stroke={[type=SOLID] [color=#FF0000]}] [x1=320.00] [y1=0.00] [x2=320.00] [y2=500.00]
         LayoutSVGRect {rect} at (0,0) size 450x500 [stroke={[type=SOLID] [color=#FF0000]}] [x=0.00] [y=0.00] [width=450.00] [height=500.00]
-      LayoutSVGContainer {g} at (-12.66,14) size 451.31x120
+      LayoutSVGContainer {g} at (-12.66,14) size 451.33x120
         LayoutSVGContainer {g} at (150,14) size 288.66x40
           LayoutSVGText {text} at (150,14) size 288.66x40 contains 1 chunk(s)
             LayoutSVGTSpan {tspan} at (150,14) size 288.66x40
@@ -46,36 +46,36 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (320,14) size 118.66x20
                 chunk 1 text run 1 at (320.00,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGContainer {g} at (-12.66,14) size 451.31x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
-          LayoutSVGText {text} at (-12.66,14) size 451.31x40 contains 1 chunk(s)
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 451.31x40
+        LayoutSVGContainer {g} at (-12.66,14) size 451.33x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
+          LayoutSVGText {text} at (-12.66,14) size 451.33x40 contains 1 chunk(s)
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 451.33x40
               LayoutSVGInlineText {#text} at (-12.66,34) size 52x20
                 chunk 1 (end anchor) text run 1 at (-12.67,50.00) startOffset 0 endOffset 8 width 52.00: "I am the"
             LayoutSVGInlineText {#text} at (39.33,34) size 4x20
               chunk 1 text run 1 at (39.33,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 451.31x40
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 451.33x40
               LayoutSVGInlineText {#text} at (43.33,34) size 102.66x20
                 chunk 1 text run 1 at (43.33,50.00) startOffset 0 endOffset 15 width 102.67: "same text chunk"
             LayoutSVGInlineText {#text} at (146,34) size 4x20
               chunk 1 text run 1 at (146.00,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 451.31x40
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 451.33x40
               LayoutSVGInlineText {#text} at (320,14) size 118.66x20
                 chunk 1 text run 1 at (320.00,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-      LayoutSVGContainer {g} at (-12.66,134) size 391.97x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
-        LayoutSVGContainer {g} at (150,14) size 229.31x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
-          LayoutSVGText {text} at (150,14) size 229.31x40 contains 1 chunk(s)
-            LayoutSVGTSpan {tspan} at (150,14) size 229.31x40
+      LayoutSVGContainer {g} at (-12.66,134) size 392x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,50.00)}]
+        LayoutSVGContainer {g} at (150,14) size 229.33x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,120.00)}]
+          LayoutSVGText {text} at (150,14) size 229.33x40 contains 1 chunk(s)
+            LayoutSVGTSpan {tspan} at (150,14) size 229.33x40
               LayoutSVGInlineText {#text} at (150,34) size 52x20
                 chunk 1 text run 1 at (150.00,50.00) startOffset 0 endOffset 8 width 52.00: "I am the"
             LayoutSVGInlineText {#text} at (202,34) size 4x20
               chunk 1 text run 1 at (202.00,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (150,14) size 229.31x40
+            LayoutSVGTSpan {tspan} at (150,14) size 229.33x40
               LayoutSVGInlineText {#text} at (206,34) size 102.66x20
                 chunk 1 text run 1 at (206.00,50.00) startOffset 0 endOffset 15 width 102.67: "same text chunk"
             LayoutSVGInlineText {#text} at (308.66,34) size 4x20
               chunk 1 text run 1 at (308.67,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (150,14) size 229.31x40
+            LayoutSVGTSpan {tspan} at (150,14) size 229.33x40
               LayoutSVGInlineText {#text} at (260.66,14) size 118.66x20
                 chunk 1 (middle anchor) text run 1 at (260.67,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -95,36 +95,36 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (260.66,14) size 118.66x20
                 chunk 1 (middle anchor) text run 1 at (260.67,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGContainer {g} at (-12.66,14) size 391.97x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,200.00)}]
-          LayoutSVGText {text} at (-12.66,14) size 391.97x40 contains 1 chunk(s)
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 391.97x40
+        LayoutSVGContainer {g} at (-12.66,14) size 392x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,200.00)}]
+          LayoutSVGText {text} at (-12.66,14) size 392x40 contains 1 chunk(s)
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 392x40
               LayoutSVGInlineText {#text} at (-12.66,34) size 52x20
                 chunk 1 (end anchor) text run 1 at (-12.67,50.00) startOffset 0 endOffset 8 width 52.00: "I am the"
             LayoutSVGInlineText {#text} at (39.33,34) size 4x20
               chunk 1 text run 1 at (39.33,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 391.97x40
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 392x40
               LayoutSVGInlineText {#text} at (43.33,34) size 102.66x20
                 chunk 1 text run 1 at (43.33,50.00) startOffset 0 endOffset 15 width 102.67: "same text chunk"
             LayoutSVGInlineText {#text} at (146,34) size 4x20
               chunk 1 text run 1 at (146.00,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 391.97x40
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 392x40
               LayoutSVGInlineText {#text} at (260.66,14) size 118.66x20
                 chunk 1 (middle anchor) text run 1 at (260.67,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-      LayoutSVGContainer {g} at (-12.66,274) size 332.64x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
-        LayoutSVGContainer {g} at (150,14) size 169.98x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,260.00)}]
-          LayoutSVGText {text} at (150,14) size 169.98x40 contains 1 chunk(s)
-            LayoutSVGTSpan {tspan} at (150,14) size 169.98x40
+      LayoutSVGContainer {g} at (-12.66,274) size 332.66x120 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,80.00)}]
+        LayoutSVGContainer {g} at (150,14) size 170x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,260.00)}]
+          LayoutSVGText {text} at (150,14) size 170x40 contains 1 chunk(s)
+            LayoutSVGTSpan {tspan} at (150,14) size 170x40
               LayoutSVGInlineText {#text} at (150,34) size 52x20
                 chunk 1 text run 1 at (150.00,50.00) startOffset 0 endOffset 8 width 52.00: "I am the"
             LayoutSVGInlineText {#text} at (202,34) size 4x20
               chunk 1 text run 1 at (202.00,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (150,14) size 169.98x40
+            LayoutSVGTSpan {tspan} at (150,14) size 170x40
               LayoutSVGInlineText {#text} at (206,34) size 102.66x20
                 chunk 1 text run 1 at (206.00,50.00) startOffset 0 endOffset 15 width 102.67: "same text chunk"
             LayoutSVGInlineText {#text} at (308.66,34) size 4x20
               chunk 1 text run 1 at (308.67,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (150,14) size 169.98x40
+            LayoutSVGTSpan {tspan} at (150,14) size 170x40
               LayoutSVGInlineText {#text} at (201.33,14) size 118.66x20
                 chunk 1 (end anchor) text run 1 at (201.33,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
@@ -144,19 +144,19 @@ layer at (0,0) size 450x500
               LayoutSVGInlineText {#text} at (201.33,14) size 118.66x20
                 chunk 1 (end anchor) text run 1 at (201.33,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0
-        LayoutSVGContainer {g} at (-12.66,14) size 332.64x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,340.00)}]
-          LayoutSVGText {text} at (-12.66,14) size 332.64x40 contains 1 chunk(s)
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 332.64x40
+        LayoutSVGContainer {g} at (-12.66,14) size 332.66x40 [transform={m=((1.00,0.00)(0.00,1.00)) t=(0.00,340.00)}]
+          LayoutSVGText {text} at (-12.66,14) size 332.66x40 contains 1 chunk(s)
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 332.66x40
               LayoutSVGInlineText {#text} at (-12.66,34) size 52x20
                 chunk 1 (end anchor) text run 1 at (-12.67,50.00) startOffset 0 endOffset 8 width 52.00: "I am the"
             LayoutSVGInlineText {#text} at (39.33,34) size 4x20
               chunk 1 text run 1 at (39.33,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 332.64x40
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 332.66x40
               LayoutSVGInlineText {#text} at (43.33,34) size 102.66x20
                 chunk 1 text run 1 at (43.33,50.00) startOffset 0 endOffset 15 width 102.67: "same text chunk"
             LayoutSVGInlineText {#text} at (146,34) size 4x20
               chunk 1 text run 1 at (146.00,50.00) startOffset 0 endOffset 1 width 4.00: " "
-            LayoutSVGTSpan {tspan} at (-12.66,14) size 332.64x40
+            LayoutSVGTSpan {tspan} at (-12.66,14) size 332.66x40
               LayoutSVGInlineText {#text} at (201.33,14) size 118.66x20
                 chunk 1 (end anchor) text run 1 at (201.33,30.00) startOffset 0 endOffset 18 width 118.67: "another text chunk"
             LayoutSVGInlineText {#text} at (0,0) size 0x0

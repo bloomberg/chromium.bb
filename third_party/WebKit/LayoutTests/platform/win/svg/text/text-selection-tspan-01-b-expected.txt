@@ -7,10 +7,10 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (25,4.39) size 430.19x19.19
           chunk 1 text run 1 at (25.00,20.00) startOffset 0 endOffset 60 width 430.20: "Basics of tspan: changing visual properties and positioning."
       LayoutSVGContainer {g} at (47.50,48.14) size 311.75x80.69
-        LayoutSVGText {text} at (74,48.14) size 163.52x19.80 contains 1 chunk(s)
+        LayoutSVGText {text} at (74,48.14) size 163.53x19.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (74,48.14) size 55.53x19.19
             chunk 1 text run 1 at (74.00,63.75) startOffset 0 endOffset 7 width 55.53: "You are"
-          LayoutSVGTSpan {tspan} at (74,48.14) size 163.52x19.80
+          LayoutSVGTSpan {tspan} at (74,48.14) size 163.53x19.80
             LayoutSVGInlineText {#text} at (129.53,48.75) size 35.39x19.19
               chunk 1 text run 1 at (129.53,63.75) startOffset 0 endOffset 5 width 35.40: " not "
           LayoutSVGInlineText {#text} at (164.92,48.14) size 72.59x19.19
@@ -26,13 +26,13 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (65.25,109.64) size 87x19.19
             chunk 1 text run 1 at (65.25,125.25) startOffset 0 endOffset 13 width 87.00: "to red, bold."
       LayoutSVGContainer {g} at (225,128) size 245.81x105.08
-        LayoutSVGText {text} at (257.50,128) size 180.19x44.08 contains 1 chunk(s)
+        LayoutSVGText {text} at (257.50,128) size 180.19x44.09 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (257.50,138.14) size 55.80x19.19
             chunk 1 text run 1 at (257.50,153.75) startOffset 0 endOffset 7 width 55.80: "But you"
-          LayoutSVGTSpan {tspan} at (257.50,128) size 180.19x44.08
+          LayoutSVGTSpan {tspan} at (257.50,128) size 180.19x44.09
             LayoutSVGInlineText {#text} at (345.30,128) size 24.59x19.19
               chunk 1 text run 1 at (345.30,143.00) startOffset 0 endOffset 3 width 24.60: "are"
-          LayoutSVGTSpan {tspan} at (257.50,128) size 180.19x44.08
+          LayoutSVGTSpan {tspan} at (257.50,128) size 180.19x44.09
             LayoutSVGInlineText {#text} at (369.89,152.89) size 67.80x19.19
               chunk 1 text run 1 at (369.90,168.50) startOffset 0 endOffset 9 width 67.80: " a peach!"
         LayoutSVGRect {rect} at (225,179) size 245.50x53.50 [stroke={[type=SOLID] [color=#000000]}] [x=225.00] [y=179.00] [width=245.50] [height=53.50]

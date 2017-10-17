@@ -40,18 +40,18 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (301,15) size 128x128 [fill={[type=SOLID] [color=#000000]}] [x=301.00] [y=15.00] [width=128.00] [height=128.00]
           [filter="RotateMapTest"] LayoutSVGResourceFilter {filter} at (301,15) size 128x128
         LayoutSVGRect {rect} at (-1,-1) size 2x2 [transform={m=((30.07,10.94)(-10.94,30.07)) t=(365.00,79.00)}] [fill={[type=SOLID] [color=#0000FF] [opacity=0.50]}] [x=-1.00] [y=-1.00] [width=2.00] [height=2.00]
-        LayoutSVGText {text} at (301.30,149) size 127.39x38 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (301.30,149) size 127.39x38
+        LayoutSVGText {text} at (301.30,149) size 127.41x38 contains 1 chunk(s)
+          LayoutSVGTSpan {tspan} at (301.30,149) size 127.41x38
             LayoutSVGInlineText {#text} at (346.31,149) size 34x14
               chunk 1 (middle anchor) text run 1 at (346.33,160.00) startOffset 0 endOffset 6 width 34.01: "Result"
           LayoutSVGInlineText {#text} at (380.33,149) size 3.33x14
             chunk 1 (middle anchor) text run 1 at (380.34,160.00) startOffset 0 endOffset 1 width 3.33: " "
-          LayoutSVGTSpan {tspan} at (301.30,149) size 127.39x38
+          LayoutSVGTSpan {tspan} at (301.30,149) size 127.41x38
             LayoutSVGInlineText {#text} at (301.30,161) size 124.06x14
               chunk 1 (middle anchor) text run 1 at (301.30,172.00) startOffset 0 endOffset 23 width 124.07: "(overlayed with 20 deg."
           LayoutSVGInlineText {#text} at (425.36,161) size 3.33x14
             chunk 1 (middle anchor) text run 1 at (425.37,172.00) startOffset 0 endOffset 1 width 3.33: " "
-          LayoutSVGTSpan {tspan} at (301.30,149) size 127.39x38
+          LayoutSVGTSpan {tspan} at (301.30,149) size 127.41x38
             LayoutSVGInlineText {#text} at (304.95,173) size 120.06x14
               chunk 1 (middle anchor) text run 1 at (304.96,184.00) startOffset 0 endOffset 23 width 120.08: "rotated blue rectangle)"
         LayoutSVGRect {rect} at (15,158) size 128x128 [fill={[type=SOLID] [color=#000000]}] [x=15.00] [y=158.00] [width=128.00] [height=128.00]

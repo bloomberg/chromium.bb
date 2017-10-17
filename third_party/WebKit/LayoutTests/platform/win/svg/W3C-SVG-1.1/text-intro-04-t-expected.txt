@@ -17,12 +17,12 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (10,106.19) size 381.67x17.39 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,106.19) size 381.67x17.39
             chunk 1 text run 1 at (10.00,120.00) startOffset 0 endOffset 57 width 381.69: "Greek: \x{39C}\x{3C0}\x{3BF}\x{3C1}\x{3CE} \x{3BD}\x{3B1} \x{3C6}\x{3AC}\x{3C9} \x{3C3}\x{3C0}\x{3B1}\x{3C3}\x{3BC}\x{3AD}\x{3BD}\x{3B1} \x{3B3}\x{3C5}\x{3B1}\x{3BB}\x{3B9}\x{3AC} \x{3C7}\x{3C9}\x{3C1}\x{3AF}\x{3C2} \x{3BD}\x{3B1} \x{3C0}\x{3AC}\x{3B8}\x{3C9} \x{3C4}\x{3AF}\x{3C0}\x{3BF}\x{3C4}\x{3B1}."
-        LayoutSVGText {text} at (10,134.39) size 343.19x19.80 contains 1 chunk(s)
+        LayoutSVGText {text} at (10,134.39) size 343.20x19.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,134.39) size 343.19x19.80
             chunk 1 text run 1 at (10.00,150.00) startOffset 0 endOffset 6 width 39.01: "Text \""
             chunk 1 text run 1 at (49.01,150.00) startOffset 0 endOffset 36 width 210.00 RTL: "\x{5D0}\x{5E0}\x{5D9} \x{5D9}\x{5DB}\x{5D5}\x{5DC} \x{5DC}\x{5D0}\x{5DB}\x{5D5}\x{5DC} \x{5D6}\x{5DB}\x{5D5}\x{5DB}\x{5D9}\x{5EA} \x{5D5}\x{5D6}\x{5D4} \x{5DC}\x{5D0} \x{5DE}\x{5D6}\x{5D9}\x{5E7} \x{5DC}\x{5D9}"
             chunk 1 text run 1 at (259.01,150.00) startOffset 0 endOffset 14 width 94.20: "\" is in Hebrew"
-        LayoutSVGText {text} at (10,164.39) size 309.23x19.80 contains 1 chunk(s)
+        LayoutSVGText {text} at (10,164.39) size 309.25x19.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,164.39) size 309.23x19.80
             chunk 1 text run 1 at (10.00,180.00) startOffset 0 endOffset 9 width 61.46: "Yiddish: "
             chunk 1 text run 1 at (71.46,180.00) startOffset 0 endOffset 40 width 243.60 RTL: "\x{5D0}\x{5D9}\x{5DA} \x{5E7}\x{5E2}\x{5DF} \x{5E2}\x{5E1}\x{5DF} \x{5D2}\x{5DC}\x{5D0}\x{5B8}\x{5D6} \x{5D0}\x{5D5}\x{5DF} \x{5E2}\x{5E1} \x{5D8}\x{5D5}\x{5D8} \x{5DE}\x{5D9}\x{5E8} \x{5E0}\x{5D9}\x{5E9}\x{5D8} \x{5F0}\x{5F2}"
