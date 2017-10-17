@@ -533,12 +533,8 @@ void V8Initializer::InitializeMainThread(const intptr_t* reference_table) {
   }
   V8ContextSnapshot::SetReferenceTable(reference_table);
 
-  // When timer task runner is used for PerIsolateData, GC tasks are getting
-  // throttled and memory usage goes up. For now we're using loading task queue
-  // to prevent this.
-  // TODO(altimin): Consider switching to timerTaskRunner here.
   v8::Isolate* isolate = V8PerIsolateData::Initialize(
-      scheduler ? scheduler->LoadingTaskRunner()
+      scheduler ? scheduler->V8TaskRunner()
                 : Platform::Current()->CurrentThread()->GetWebTaskRunner(),
       reference_table, v8_context_snapshot_mode);
 
