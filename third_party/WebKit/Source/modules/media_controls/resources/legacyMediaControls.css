@@ -383,7 +383,7 @@ audio::-webkit-media-controls-timeline, video::-webkit-media-controls-timeline {
     /* Leave 6px on either side for the thumb.  Use margin so that
      * the slider doesn't extend into it.  We also add 12px border.
      */
-    padding: 0;
+    padding: 14px 0;
     margin: 0 18px 0 18px;
     background-color: transparent;
     min-width: 25px;
@@ -404,7 +404,7 @@ audio::-webkit-media-controls-volume-slider, video::-webkit-media-controls-volum
      * than padding so that the slider doesn't extend into it.  We also
      * leave an addition 12px margin.
      */
-    padding: 0;
+    padding: 14px 0;
     margin: 0 18px 0 18px;
     background-color: transparent;
     min-width: 25px;

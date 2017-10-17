@@ -34,17 +34,17 @@ layer at (8,42) size 384x334
           LayoutBlockFlow (anonymous) at (4,0) size 30.69x32
             LayoutText {#text} at (0,9) size 31x14
               text run at (0,9) width 31: "/ 0:01"
-        LayoutSlider {INPUT} at (108.05,15) size 80.95x2
-          LayoutFlexibleBox {DIV} at (0,0) size 80.95x2
+        LayoutSlider {INPUT} at (108.05,2) size 80.95x28
+          LayoutFlexibleBox {DIV} at (0,14) size 80.95x0
         LayoutButton {INPUT} at (207,0) size 32x32
-        LayoutSlider {INPUT} at (257,15) size 25x2
-          LayoutFlexibleBox {DIV} at (0,0) size 25x2
+        LayoutSlider {INPUT} at (257,2) size 25x28
+          LayoutFlexibleBox {DIV} at (0,14) size 25x0
     layer at (130,150) size 117x0
-      LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 116.95x0
+      LayoutBlockFlow (relative positioned) {DIV} at (-18,0) size 116.95x0
     layer at (148,149) size 81x2
       LayoutBlockFlow (positioned) {DIV} at (18,-1) size 80.95x2 [bgcolor=#DADADA]
     layer at (279,150) size 61x0
-      LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 61x0
+      LayoutBlockFlow (relative positioned) {DIV} at (-18,0) size 61x0
     layer at (297,149) size 25x2
       LayoutBlockFlow (positioned) {DIV} at (18,-1) size 25x2 [bgcolor=#DADADA]
     layer at (188,149) size 40x2

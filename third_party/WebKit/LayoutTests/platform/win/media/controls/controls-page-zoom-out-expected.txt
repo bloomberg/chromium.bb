@@ -22,11 +22,11 @@ layer at (6,192) size 278x22 backgroundClip at (6,192) size 277x22 clip at (6,19
       LayoutBlockFlow (anonymous) at (2.77,0) size 24x22.22
         LayoutText {#text} at (0,5) size 24x12
           text run at (0,5) width 24: "/ 0:06"
-    LayoutSlider {INPUT} at (79.48,10.42) size 78.83x1.38
-      LayoutFlexibleBox {DIV} at (0,0) size 78.83x1.38
+    LayoutSlider {INPUT} at (79.48,0.70) size 78.83x20.81
+      LayoutFlexibleBox {DIV} at (0,9.72) size 78.83x1.38
     LayoutButton {INPUT} at (170.81,0) size 22.22x22.22
-    LayoutSlider {INPUT} at (205.53,10.42) size 37.52x1.38
-      LayoutFlexibleBox {DIV} at (0,0) size 37.52x1.38
+    LayoutSlider {INPUT} at (205.53,0.70) size 37.52x20.81
+      LayoutFlexibleBox {DIV} at (0,9.72) size 37.52x1.38
 layer at (261,192) size 22x22
   LayoutButton {INPUT} at (255.55,0) size 22.22x22.22
 layer at (73,203) size 103x0
