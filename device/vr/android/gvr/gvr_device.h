@@ -42,6 +42,11 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase {
   void Activate(mojom::VRDisplayEventReason reason,
                 base::Callback<void(bool)> on_handled);
 
+  // TODO(mthiesse): Make this functionality cross-platform.
+  void SetInBrowsingMode(bool in_browsing_mode) {
+    in_browsing_mode_ = in_browsing_mode;
+  }
+
  private:
   void OnListeningForActivate(bool listening) override;
   void OnRequestPresentResult(
@@ -54,6 +59,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase {
 
   base::android::ScopedJavaGlobalRef<jobject> non_presenting_context_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
+  bool in_browsing_mode_ = false;
 
   base::WeakPtrFactory<GvrDevice> weak_ptr_factory_;
 
