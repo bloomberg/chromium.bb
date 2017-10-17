@@ -41,9 +41,12 @@ void NoteTakingControllerClient::OnAvailableNoteTakingAppsUpdated() {
   if (binding_.is_bound()) {
     binding_.Close();
   } else {
-    content::ServiceManagerConnection::GetForProcess()
-        ->GetConnector()
-        ->BindInterface(ash::mojom::kServiceName, &controller_);
+    // Connector can be overridden for testing.
+    if (!connector_) {
+      connector_ =
+          content::ServiceManagerConnection::GetForProcess()->GetConnector();
+    }
+    connector_->BindInterface(ash::mojom::kServiceName, &controller_);
     ash::mojom::NoteTakingControllerClientPtr client;
     binding_.Bind(mojo::MakeRequest(&client));
     controller_->SetClient(std::move(client));

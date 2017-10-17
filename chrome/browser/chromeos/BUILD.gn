@@ -1990,6 +1990,7 @@ source_set("unit_tests") {
     "//device/bluetooth",
     "//google_apis:test_support",
     "//mojo/public/cpp/system:system",
+    "//services/service_manager/public/cpp/test:test_support",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
