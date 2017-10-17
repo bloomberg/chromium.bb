@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<link type="text/css" rel="stylesheet" href="resources/lazy-pasing-delete-rule-crash.css"/>
+<script src='../../resources/testharness.js'></script>
+<script src='../../resources/testharnessreport.js'></script>
+<div id="success"></div>
+<script>
+test(function() {
+	document.styleSheets[0].deleteRule(0);
+}, "Test that deleting a rule with lazy parsing turned on doesn't cause a crash");
+</script>
