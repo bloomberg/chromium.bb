@@ -30,6 +30,9 @@ class IPAddress;
 
 namespace safe_browsing {
 
+// The Safe Browsing V4 server URL prefix.
+constexpr char kSbV4UrlPrefix[] = "https://safebrowsing.googleapis.com/v4";
+
 // The size of the hash prefix, in bytes. It should be between 4 to 32 (full
 // hash).
 using PrefixSize = size_t;

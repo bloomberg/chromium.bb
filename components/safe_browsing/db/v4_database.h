@@ -179,6 +179,7 @@ class V4Database {
  private:
   friend class ::TestSafeBrowsingDatabaseHelper;
   friend class V4DatabaseFactory;
+  friend class V4GetHashInterceptorBrowserTest;
   friend class V4DatabaseTest;
   friend class V4SafeBrowsingServiceTest;
   FRIEND_TEST_ALL_PREFIXES(V4DatabaseTest, TestSetupDatabaseWithFakeStores);

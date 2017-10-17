@@ -349,12 +349,18 @@ source_set("v4_store") {
 static_library("v4_test_util") {
   testonly = true
   sources = [
+    "v4_get_hash_interceptor.cc",
+    "v4_get_hash_interceptor.h",
     "v4_test_util.cc",
     "v4_test_util.h",
   ]
   deps = [
     ":util",
+    ":v4_database",
+    ":v4_get_hash_protocol_manager",
     ":v4_protocol_manager_util",
+    "//base",
+    "//net:test_support",
   ]
 }
 

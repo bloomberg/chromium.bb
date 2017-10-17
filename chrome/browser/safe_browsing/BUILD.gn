@@ -230,8 +230,6 @@ static_library("safe_browsing") {
         "signature_evaluator_mac.mm",
         "trigger_creator.cc",
         "trigger_creator.h",
-        "v4_test_utils.cc",
-        "v4_test_utils.h",
       ]
       deps += [
         "//components/content_settings/core/browser:browser",
