@@ -253,8 +253,8 @@ size_t SyncSocket::Send(const void* buffer, size_t length) {
   while (count < length) {
     DWORD len;
     DWORD chunk = GetNextChunkSize(count, length);
-    if (WriteFile(handle_, static_cast<const char*>(buffer) + count,
-                  chunk, &len, NULL) == FALSE) {
+    if (::WriteFile(handle_, static_cast<const char*>(buffer) + count, chunk,
+                    &len, NULL) == FALSE) {
       return count;
     }
     count += len;
@@ -278,8 +278,8 @@ size_t SyncSocket::Receive(void* buffer, size_t length) {
   while (count < length) {
     DWORD len;
     DWORD chunk = GetNextChunkSize(count, length);
-    if (ReadFile(handle_, static_cast<char*>(buffer) + count,
-                 chunk, &len, NULL) == FALSE) {
+    if (::ReadFile(handle_, static_cast<char*>(buffer) + count, chunk, &len,
+                   NULL) == FALSE) {
       return count;
     }
     count += len;
@@ -328,23 +328,23 @@ bool CancelableSyncSocket::Close() {
 size_t CancelableSyncSocket::Send(const void* buffer, size_t length) {
   static const DWORD kWaitTimeOutInMs = 500;
   return CancelableFileOperation(
-      &WriteFile, handle_, reinterpret_cast<const char*>(buffer),
-      length, &file_operation_, &shutdown_event_, this, kWaitTimeOutInMs);
+      &::WriteFile, handle_, reinterpret_cast<const char*>(buffer), length,
+      &file_operation_, &shutdown_event_, this, kWaitTimeOutInMs);
 }
 
 size_t CancelableSyncSocket::Receive(void* buffer, size_t length) {
   return CancelableFileOperation(
-      &ReadFile, handle_, reinterpret_cast<char*>(buffer), length,
+      &::ReadFile, handle_, reinterpret_cast<char*>(buffer), length,
       &file_operation_, &shutdown_event_, this, INFINITE);
 }
 
 size_t CancelableSyncSocket::ReceiveWithTimeout(void* buffer,
                                                 size_t length,
                                                 TimeDelta timeout) {
-  return CancelableFileOperation(
-      &ReadFile, handle_, reinterpret_cast<char*>(buffer), length,
-      &file_operation_, &shutdown_event_, this,
-      static_cast<DWORD>(timeout.InMilliseconds()));
+  return CancelableFileOperation(&::ReadFile, handle_,
+                                 reinterpret_cast<char*>(buffer), length,
+                                 &file_operation_, &shutdown_event_, this,
+                                 static_cast<DWORD>(timeout.InMilliseconds()));
 }
 
 // static

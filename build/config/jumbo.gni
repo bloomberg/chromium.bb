@@ -128,14 +128,17 @@ template("internal_jumbo_target") {
   }
 
   if (use_jumbo_build_for_target) {
-    has_objective_c_file = false
     has_c_file = false
+    has_objective_c_file = false
+    has_S_file = false
     foreach(source_file, invoker_sources) {
       source_ext = get_path_info(source_file, "extension")
       if (source_ext == "c") {
         has_c_file = true
       } else if (source_ext == "mm") {
         has_objective_c_file = true
+      } else if (source_ext == "S") {
+        has_S_file = true
       }
     }
     if (has_c_file) {
@@ -143,6 +146,9 @@ template("internal_jumbo_target") {
     }
     if (has_objective_c_file) {
       jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_mm.mm" ]
+    }
+    if (has_S_file) {
+      jumbo_files += [ "$gen_target_dir/" + target_name + "_jumbo_S.S" ]
     }
 
     merge_action_name = target_name + "__jumbo_merge"

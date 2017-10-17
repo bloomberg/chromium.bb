@@ -34,14 +34,6 @@ namespace base {
 
 namespace {
 
-// This exit code is used by the Windows task manager when it kills a
-// process.  It's value is obviously not that unique, and it's
-// surprising to me that the task manager uses this value, but it
-// seems to be common practice on Windows to test for it as an
-// indication that the task manager has killed something if the
-// process goes away.
-const DWORD kProcessKilledExitCode = 1;
-
 bool GetAppOutputInternal(const StringPiece16& cl,
                           bool include_stderr,
                           std::string* output,
@@ -114,7 +106,7 @@ bool GetAppOutputInternal(const StringPiece16& cl,
   for (;;) {
     DWORD bytes_read = 0;
     BOOL success =
-        ReadFile(out_read, buffer, kBufferSize, &bytes_read, nullptr);
+        ::ReadFile(out_read, buffer, kBufferSize, &bytes_read, nullptr);
     if (!success || bytes_read == 0)
       break;
     output->append(buffer, bytes_read);
@@ -318,6 +310,14 @@ Process LaunchProcess(const string16& cmdline,
   if (options.job_handle) {
     if (0 == AssignProcessToJobObject(options.job_handle,
                                       process_info.process_handle())) {
+      // This exit code is used by the Windows task manager when it kills a
+      // process.  It's value is obviously not that unique, and it's
+      // surprising to me that the task manager uses this value, but it
+      // seems to be common practice on Windows to test for it as an
+      // indication that the task manager has killed something if the
+      // process goes away.
+      const DWORD kProcessKilledExitCode = 1;
+
       DLOG(ERROR) << "Could not AssignProcessToObject.";
       Process scoped_process(process_info.TakeProcessHandle());
       scoped_process.Terminate(kProcessKilledExitCode, true);
