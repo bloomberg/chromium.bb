@@ -321,6 +321,7 @@ source_set("eg_tests") {
     "clear_browsing_data_egtest.mm",
     "passwords_settings_egtest.mm",
     "settings_egtest.mm",
+    "signin_settings_egtest.mm",
     "translate_ui_egtest.mm",
   ]
 
