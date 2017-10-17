@@ -1551,12 +1551,9 @@ static void loop_switchable_filter_highbd(uint8_t *data8, int width, int height,
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
-static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                                  int start_mi_row, int end_mi_row,
-                                  int components_pattern, RestorationInfo *rsi,
-                                  YV12_BUFFER_CONFIG *dst) {
-  const int ywidth = frame->y_crop_width;
-  const int yheight = frame->y_crop_height;
+void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
+                                RestorationInfo *rsi, int components_pattern,
+                                YV12_BUFFER_CONFIG *dst) {
   restore_func_type restore_funcs[RESTORE_TYPES] = {
     NULL, loop_wiener_filter, loop_sgrproj_filter, loop_switchable_filter
   };
@@ -1594,12 +1591,13 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   if (!dst) {
     dst = &dst_;
     memset(dst, 0, sizeof(YV12_BUFFER_CONFIG));
-    if (aom_realloc_frame_buffer(
-            dst, ywidth, yheight, cm->subsampling_x, cm->subsampling_y,
+    if (aom_realloc_frame_buffer(dst, frame->y_crop_width, frame->y_crop_height,
+                                 cm->subsampling_x, cm->subsampling_y,
 #if CONFIG_HIGHBITDEPTH
-            cm->use_highbitdepth,
+                                 cm->use_highbitdepth,
 #endif
-            AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL, NULL, NULL) < 0)
+                                 AOM_BORDER_IN_PIXELS, cm->byte_alignment, NULL,
+                                 NULL, NULL) < 0)
       aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                          "Failed to allocate restoration dst buffer");
   }
@@ -1619,8 +1617,6 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 
     const int plane_width = frame->crop_widths[is_uv];
     const int plane_height = frame->crop_heights[is_uv];
-    const int row0 = (start_mi_row << MI_SIZE_LOG2) >> ss_y;
-    const int row1 = AOMMIN((end_mi_row << MI_SIZE_LOG2) >> ss_y, plane_height);
 
     rst.rsi = &rsi[plane];
     rst.keyframe = cm->frame_type == KEY_FRAME;
@@ -1634,16 +1630,13 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
 #if CONFIG_HIGHBITDEPTH
     restore_func_highbd_type restore_func_highbd = restore_funcs_highbd[rtype];
     if (cm->use_highbitdepth)
-      restore_func_highbd(frame->buffers[plane] + row0 * frame->strides[is_uv],
-                          plane_width, row1 - row0, frame->strides[is_uv], &rst,
-                          cm->bit_depth,
-                          dst->buffers[plane] + row0 * dst->strides[is_uv],
-                          dst->strides[is_uv]);
+      restore_func_highbd(frame->buffers[plane], plane_width, plane_height,
+                          frame->strides[is_uv], &rst, cm->bit_depth,
+                          dst->buffers[plane], dst->strides[is_uv]);
     else
 #endif  // CONFIG_HIGHBITDEPTH
-      restore_func(frame->buffers[plane] + row0 * frame->strides[is_uv],
-                   plane_width, row1 - row0, frame->strides[is_uv], &rst,
-                   dst->buffers[plane] + row0 * dst->strides[is_uv],
+      restore_func(frame->buffers[plane], plane_width, plane_height,
+                   frame->strides[is_uv], &rst, dst->buffers[plane],
                    dst->strides[is_uv]);
   }
 
@@ -1655,27 +1648,6 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     }
     aom_free_frame_buffer(dst);
   }
-}
-
-void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
-                                RestorationInfo *rsi, int components_pattern,
-                                int partial_frame, YV12_BUFFER_CONFIG *dst) {
-  int start_mi_row, end_mi_row, mi_rows_to_filter;
-  start_mi_row = 0;
-#if CONFIG_FRAME_SUPERRES
-  mi_rows_to_filter =
-      ALIGN_POWER_OF_TWO(cm->superres_upscaled_height, 3) >> MI_SIZE_LOG2;
-#else
-  mi_rows_to_filter = cm->mi_rows;
-#endif  // CONFIG_FRAME_SUPERRES
-  if (partial_frame && mi_rows_to_filter > 8) {
-    start_mi_row = mi_rows_to_filter >> 1;
-    start_mi_row &= 0xfffffff8;
-    mi_rows_to_filter = AOMMAX(mi_rows_to_filter / 8, 8);
-  }
-  end_mi_row = start_mi_row + mi_rows_to_filter;
-  loop_restoration_rows(frame, cm, start_mi_row, end_mi_row, components_pattern,
-                        rsi, dst);
 }
 
 int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,

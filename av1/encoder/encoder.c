@@ -4693,11 +4693,11 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
 #if CONFIG_LOOP_RESTORATION
   aom_extend_frame_borders(cm->frame_to_show);
-  av1_pick_filter_restoration(cpi->source, cpi, cpi->sf.lpf_pick);
+  av1_pick_filter_restoration(cpi->source, cpi);
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    av1_loop_restoration_frame(cm->frame_to_show, cm, cm->rst_info, 7, 0, NULL);
+    av1_loop_restoration_frame(cm->frame_to_show, cm, cm->rst_info, 7, NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
   // TODO(debargha): Fix mv search range on encoder side

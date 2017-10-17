@@ -297,7 +297,7 @@ void extend_frame_highbd(uint16_t *data, int width, int height, int stride,
 void decode_xq(int *xqd, int *xq);
 void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                                 RestorationInfo *rsi, int components_pattern,
-                                int partial_frame, YV12_BUFFER_CONFIG *dst);
+                                YV12_BUFFER_CONFIG *dst);
 void av1_loop_restoration_precal();
 
 // Return 1 iff the block at mi_row, mi_col with size bsize is a
