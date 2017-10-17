@@ -18,6 +18,12 @@ namespace sync_util {
 
 typedef SyncUsernameTestBase PasswordSyncUtilTest;
 
+PasswordForm SimpleGAIAChangePasswordForm() {
+  PasswordForm form;
+  form.signon_realm = "https://myaccount.google.com/";
+  return form;
+}
+
 TEST_F(PasswordSyncUtilTest, GetSyncUsernameIfSyncingPasswords) {
   const struct TestCase {
     enum { SYNCING_PASSWORDS, NOT_SYNCING_PASSWORDS } password_sync;
@@ -68,6 +74,7 @@ TEST_F(PasswordSyncUtilTest, IsSyncAccountCredential) {
        false},
       {SimpleGaiaForm(""), "sync_user@example.org", true},
       {SimpleNonGaiaForm(""), "sync_user@example.org", false},
+      {SimpleGAIAChangePasswordForm(), "sync_user@example.org", true},
   };
 
   for (size_t i = 0; i < arraysize(kTestCases); ++i) {

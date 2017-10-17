@@ -38239,6 +38239,7 @@ would be helpful to identify which type is being sent.
   <int value="0" label="Saved on Chrome sign-in"/>
   <int value="1" label="Saved in the content area"/>
   <int value="2" label="Cleared on Chrome sign-out"/>
+  <int value="3" label="Changed in the content area"/>
 </enum>
 
 <enum name="SyncPromoAction">
