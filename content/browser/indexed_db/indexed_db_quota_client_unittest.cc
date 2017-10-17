@@ -28,6 +28,7 @@
 // Declared to shorten the line lengths.
 static const storage::StorageType kTemp = storage::kStorageTypeTemporary;
 static const storage::StorageType kPerm = storage::kStorageTypePersistent;
+static const storage::StorageType kSync = storage::kStorageTypeSyncable;
 
 namespace content {
 
@@ -112,11 +113,11 @@ class IndexedDBQuotaClientTest : public testing::Test {
   }
 
   storage::QuotaStatusCode DeleteOrigin(storage::QuotaClient* client,
-                                        const GURL& origin_url) {
+                                        const GURL& origin_url,
+                                        storage::StorageType type) {
     delete_status_ = storage::kQuotaStatusUnknown;
     client->DeleteOriginData(
-        origin_url,
-        kTemp,
+        origin_url, type,
         base::Bind(&IndexedDBQuotaClientTest::OnDeleteOriginComplete,
                    weak_factory_.GetWeakPtr()));
     RunAllTasksUntilIdle();
@@ -228,10 +229,19 @@ TEST_F(IndexedDBQuotaClientTest, DeleteOrigin) {
   EXPECT_EQ(1000, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(50, GetOriginUsage(&client, kOriginB, kTemp));
 
-  storage::QuotaStatusCode delete_status = DeleteOrigin(&client, kOriginA);
+  storage::QuotaStatusCode delete_status =
+      DeleteOrigin(&client, kOriginA, kTemp);
   EXPECT_EQ(storage::kQuotaStatusOk, delete_status);
   EXPECT_EQ(0, GetOriginUsage(&client, kOriginA, kTemp));
   EXPECT_EQ(50, GetOriginUsage(&client, kOriginB, kTemp));
+
+  // IndexedDB only supports temporary storage; requests to delete other types
+  // are no-ops, but should not fail.
+  delete_status = DeleteOrigin(&client, kOriginA, kPerm);
+  EXPECT_EQ(storage::kQuotaStatusOk, delete_status);
+
+  delete_status = DeleteOrigin(&client, kOriginA, kSync);
+  EXPECT_EQ(storage::kQuotaStatusOk, delete_status);
 }
 
 }  // namespace content
