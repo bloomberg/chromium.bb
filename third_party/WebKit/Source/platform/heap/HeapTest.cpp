@@ -760,7 +760,7 @@ class IntNode : public GarbageCollected<IntNode> {
   void* operator new(size_t size) {
     ThreadState* state = ThreadState::Current();
     const char* type_name = WTF_HEAP_PROFILER_TYPE_NAME(IntNode);
-    return ThreadHeap::AllocateOnArenaIndex(
+    return state->Heap().AllocateOnArenaIndex(
         state, size, BlinkGC::kNodeArenaIndex, GCInfoTrait<IntNode>::Index(),
         type_name);
   }
@@ -923,7 +923,7 @@ class RefCountedAndGarbageCollected
   void AddRef() {
     if (UNLIKELY(!ref_count_)) {
 #if DCHECK_IS_ON()
-      DCHECK(ThreadState::Current()->FindPageFromAddress(
+      DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(
           reinterpret_cast<Address>(this)));
 #endif
       keep_alive_ = this;
@@ -963,7 +963,7 @@ class RefCountedAndGarbageCollected2
   void Ref() {
     if (UNLIKELY(!ref_count_)) {
 #if DCHECK_IS_ON()
-      DCHECK(ThreadState::Current()->FindPageFromAddress(
+      DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(
           reinterpret_cast<Address>(this)));
 #endif
       keep_alive_ = this;
@@ -2081,13 +2081,13 @@ TEST(HeapTest, MarkTest) {
     Bar::live_ = 0;
     Persistent<Bar> bar = Bar::Create();
 #if DCHECK_IS_ON()
-    DCHECK(ThreadState::Current()->FindPageFromAddress(bar));
+    DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(bar));
 #endif
     EXPECT_EQ(1u, Bar::live_);
     {
       Foo* foo = Foo::Create(bar);
 #if DCHECK_IS_ON()
-      DCHECK(ThreadState::Current()->FindPageFromAddress(foo));
+      DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(foo));
 #endif
       EXPECT_EQ(2u, Bar::live_);
       EXPECT_TRUE(reinterpret_cast<Address>(foo) !=
@@ -2109,18 +2109,18 @@ TEST(HeapTest, DeepTest) {
   {
     Bar* bar = Bar::Create();
 #if DCHECK_IS_ON()
-    DCHECK(ThreadState::Current()->FindPageFromAddress(bar));
+    DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(bar));
 #endif
     Foo* foo = Foo::Create(bar);
 #if DCHECK_IS_ON()
-    DCHECK(ThreadState::Current()->FindPageFromAddress(foo));
+    DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(foo));
 #endif
     EXPECT_EQ(2u, Bar::live_);
     for (unsigned i = 0; i < kDepth; i++) {
       Foo* foo2 = Foo::Create(foo);
       foo = foo2;
 #if DCHECK_IS_ON()
-      DCHECK(ThreadState::Current()->FindPageFromAddress(foo));
+      DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(foo));
 #endif
     }
     EXPECT_EQ(kDepth + 2, Bar::live_);
@@ -2265,8 +2265,8 @@ TEST(HeapTest, LargeHeapObjects) {
         8;  // LargeHeapObject points to an IntWrapper that is also allocated.
     Persistent<LargeHeapObject> object = LargeHeapObject::Create();
 #if DCHECK_IS_ON()
-    DCHECK(ThreadState::Current()->FindPageFromAddress(object));
-    DCHECK(ThreadState::Current()->FindPageFromAddress(
+    DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(object));
+    DCHECK(ThreadState::Current()->Heap().FindPageFromAddress(
         reinterpret_cast<char*>(object.Get()) + sizeof(LargeHeapObject) - 1));
 #endif
     ClearOutOldGarbage();

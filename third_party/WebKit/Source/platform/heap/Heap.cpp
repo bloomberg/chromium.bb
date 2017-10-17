@@ -31,6 +31,7 @@
 #include "platform/heap/Heap.h"
 
 #include <memory>
+#include "base/trace_event/process_memory_dump.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
@@ -154,22 +155,31 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       marking_stack_(CallbackStack::Create()),
       post_marking_callback_stack_(CallbackStack::Create()),
       weak_callback_stack_(CallbackStack::Create()),
-      ephemeron_stack_(CallbackStack::Create()) {
+      ephemeron_stack_(CallbackStack::Create()),
+      vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
+      current_arena_ages_(0),
+      should_flush_heap_does_not_contain_cache_(false) {
   if (ThreadState::Current()->IsMainThread())
     main_thread_heap_ = this;
+
+  for (int arena_index = 0; arena_index < BlinkGC::kLargeObjectArenaIndex;
+       arena_index++)
+    arenas_[arena_index] = new NormalPageArena(thread_state_, arena_index);
+  arenas_[BlinkGC::kLargeObjectArenaIndex] =
+      new LargeObjectArena(thread_state_, BlinkGC::kLargeObjectArenaIndex);
+
+  likely_to_be_promptly_freed_ =
+      WrapArrayUnique(new int[kLikelyToBePromptlyFreedArraySize]);
+  ClearArenaAges();
 }
 
 ThreadHeap::~ThreadHeap() {
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
+    delete arenas_[i];
 }
-
-#if DCHECK_IS_ON()
-BasePage* ThreadHeap::FindPageFromAddress(Address address) {
-  return thread_state_->FindPageFromAddress(address);
-}
-#endif
 
 Address ThreadHeap::CheckAndMarkPointer(Visitor* visitor, Address address) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
 
 #if !DCHECK_IS_ON()
   if (heap_does_not_contain_cache_->Lookup(address))
@@ -203,7 +213,7 @@ Address ThreadHeap::CheckAndMarkPointer(
     Visitor* visitor,
     Address address,
     MarkedPointerCallbackForTesting callback) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
 
   if (BasePage* page = LookupPageForAddress(address)) {
     DCHECK(page->Contains(address));
@@ -219,7 +229,7 @@ Address ThreadHeap::CheckAndMarkPointer(
 #endif
 
 void ThreadHeap::PushTraceCallback(void* object, TraceCallback callback) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
 
   CallbackStack::Item* slot = marking_stack_->AllocateEntry();
   *slot = CallbackStack::Item(object, callback);
@@ -234,7 +244,7 @@ bool ThreadHeap::PopAndInvokeTraceCallback(Visitor* visitor) {
 }
 
 void ThreadHeap::PushPostMarkingCallback(void* object, TraceCallback callback) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
 
   CallbackStack::Item* slot = post_marking_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(object, callback);
@@ -249,7 +259,7 @@ bool ThreadHeap::PopAndInvokePostMarkingCallback(Visitor* visitor) {
 }
 
 void ThreadHeap::PushWeakCallback(void* closure, WeakCallback callback) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
 
   CallbackStack::Item* slot = weak_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(closure, callback);
@@ -266,7 +276,7 @@ bool ThreadHeap::PopAndInvokeWeakCallback(Visitor* visitor) {
 void ThreadHeap::RegisterWeakTable(void* table,
                                    EphemeronCallback iteration_callback,
                                    EphemeronCallback iteration_done_callback) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
 
   CallbackStack::Item* slot = ephemeron_stack_->AllocateEntry();
   *slot = CallbackStack::Item(table, iteration_callback);
@@ -488,15 +498,36 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   size_t object_payload_size = 0;
   thread_state_->SetGCState(ThreadState::kGCRunning);
-  thread_state_->MakeConsistentForGC();
-  object_payload_size += thread_state_->ObjectPayloadSizeForTesting();
+  thread_state_->Heap().MakeConsistentForGC();
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
+    object_payload_size += arenas_[i]->ObjectPayloadSizeForTesting();
   thread_state_->SetGCState(ThreadState::kSweeping);
   thread_state_->SetGCState(ThreadState::kNoGCScheduled);
   return object_payload_size;
 }
 
+void ThreadHeap::ShouldFlushHeapDoesNotContainCache() {
+  should_flush_heap_does_not_contain_cache_ = true;
+}
+
+void ThreadHeap::FlushHeapDoesNotContainCacheIfNeeded() {
+  if (should_flush_heap_does_not_contain_cache_) {
+    FlushHeapDoesNotContainCache();
+    should_flush_heap_does_not_contain_cache_ = false;
+  }
+}
+
+bool ThreadHeap::IsAddressInHeapDoesNotContainCache(Address address) {
+  // If the cache has been marked as invalidated, it's cleared prior
+  // to performing the next GC. Hence, consider the cache as being
+  // effectively empty.
+  if (should_flush_heap_does_not_contain_cache_)
+    return false;
+  return heap_does_not_contain_cache_->Lookup(address);
+}
+
 void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
   ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
 
@@ -504,13 +535,13 @@ void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
 }
 
 void ThreadHeap::VisitStackRoots(Visitor* visitor) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
   thread_state_->VisitStack(visitor);
 }
 
 BasePage* ThreadHeap::LookupPageForAddress(Address address) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
   if (PageMemoryRegion* region = region_tree_->Lookup(address)) {
     return region->PageFromAddress(address);
   }
@@ -518,7 +549,7 @@ BasePage* ThreadHeap::LookupPageForAddress(Address address) {
 }
 
 void ThreadHeap::ResetHeapCounters() {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(thread_state_->IsInGC());
 
   ThreadHeap::ReportMemoryUsageForTracing();
 
@@ -526,6 +557,244 @@ void ThreadHeap::ResetHeapCounters() {
   ProcessHeap::DecreaseTotalMarkedObjectSize(stats_.MarkedObjectSize());
 
   stats_.Reset();
+}
+
+void ThreadHeap::MakeConsistentForGC() {
+  DCHECK(thread_state_->IsInGC());
+  TRACE_EVENT0("blink_gc", "ThreadHeap::MakeConsistentForGC");
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
+    arenas_[i]->MakeConsistentForGC();
+}
+
+void ThreadHeap::MakeConsistentForMutator() {
+  DCHECK(thread_state_->IsInGC());
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
+    arenas_[i]->MakeConsistentForMutator();
+}
+
+void ThreadHeap::Compact() {
+  if (!Compaction()->IsCompacting())
+    return;
+
+  // Compaction is done eagerly and before the mutator threads get
+  // to run again. Doing it lazily is problematic, as the mutator's
+  // references to live objects could suddenly be invalidated by
+  // compaction of a page/heap. We do know all the references to
+  // the relocating objects just after marking, but won't later.
+  // (e.g., stack references could have been created, new objects
+  // created which refer to old collection objects, and so on.)
+
+  // Compact the hash table backing store arena first, it usually has
+  // higher fragmentation and is larger.
+  //
+  // TODO: implement bail out wrt any overall deadline, not compacting
+  // the remaining arenas if the time budget has been exceeded.
+  Compaction()->StartThreadCompaction();
+  for (int i = BlinkGC::kHashTableArenaIndex; i >= BlinkGC::kVector1ArenaIndex;
+       --i)
+    static_cast<NormalPageArena*>(arenas_[i])->SweepAndCompact();
+  Compaction()->FinishThreadCompaction();
+}
+
+void ThreadHeap::PrepareForSweep() {
+  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->CheckThread());
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; i++)
+    arenas_[i]->PrepareForSweep();
+}
+
+void ThreadHeap::RemoveAllPages() {
+  DCHECK(thread_state_->CheckThread());
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
+    arenas_[i]->RemoveAllPages();
+}
+
+void ThreadHeap::CompleteSweep() {
+  static_assert(BlinkGC::kEagerSweepArenaIndex == 0,
+                "Eagerly swept arenas must be processed first.");
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; i++)
+    arenas_[i]->CompleteSweep();
+}
+
+void ThreadHeap::ClearArenaAges() {
+  memset(arena_ages_, 0, sizeof(size_t) * BlinkGC::kNumberOfArenas);
+  memset(likely_to_be_promptly_freed_.get(), 0,
+         sizeof(int) * kLikelyToBePromptlyFreedArraySize);
+  current_arena_ages_ = 0;
+}
+
+int ThreadHeap::ArenaIndexOfVectorArenaLeastRecentlyExpanded(
+    int begin_arena_index,
+    int end_arena_index) {
+  size_t min_arena_age = arena_ages_[begin_arena_index];
+  int arena_index_with_min_arena_age = begin_arena_index;
+  for (int arena_index = begin_arena_index + 1; arena_index <= end_arena_index;
+       arena_index++) {
+    if (arena_ages_[arena_index] < min_arena_age) {
+      min_arena_age = arena_ages_[arena_index];
+      arena_index_with_min_arena_age = arena_index;
+    }
+  }
+  DCHECK(IsVectorArenaIndex(arena_index_with_min_arena_age));
+  return arena_index_with_min_arena_age;
+}
+
+BaseArena* ThreadHeap::ExpandedVectorBackingArena(size_t gc_info_index) {
+  size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
+  --likely_to_be_promptly_freed_[entry_index];
+  int arena_index = vector_backing_arena_index_;
+  arena_ages_[arena_index] = ++current_arena_ages_;
+  vector_backing_arena_index_ = ArenaIndexOfVectorArenaLeastRecentlyExpanded(
+      BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
+  return arenas_[arena_index];
+}
+
+void ThreadHeap::AllocationPointAdjusted(int arena_index) {
+  arena_ages_[arena_index] = ++current_arena_ages_;
+  if (vector_backing_arena_index_ == arena_index) {
+    vector_backing_arena_index_ = ArenaIndexOfVectorArenaLeastRecentlyExpanded(
+        BlinkGC::kVector1ArenaIndex, BlinkGC::kVector4ArenaIndex);
+  }
+}
+
+void ThreadHeap::PromptlyFreed(size_t gc_info_index) {
+  DCHECK(thread_state_->CheckThread());
+  size_t entry_index = gc_info_index & kLikelyToBePromptlyFreedArrayMask;
+  // See the comment in vectorBackingArena() for why this is +3.
+  likely_to_be_promptly_freed_[entry_index] += 3;
+}
+
+#if defined(ADDRESS_SANITIZER)
+void ThreadHeap::PoisonAllHeaps() {
+  CrossThreadPersistentRegion::LockScope persistent_lock(
+      ProcessHeap::GetCrossThreadPersistentRegion());
+  // Poisoning all unmarked objects in the other arenas.
+  for (int i = 1; i < BlinkGC::kNumberOfArenas; i++)
+    arenas_[i]->PoisonArena();
+  // CrossThreadPersistents in unmarked objects may be accessed from other
+  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
+  // that would be fine.
+  ProcessHeap::GetCrossThreadPersistentRegion()
+      .UnpoisonCrossThreadPersistents();
+}
+
+void ThreadHeap::PoisonEagerArena() {
+  CrossThreadPersistentRegion::LockScope persistent_lock(
+      ProcessHeap::GetCrossThreadPersistentRegion());
+  arenas_[BlinkGC::kEagerSweepArenaIndex]->PoisonArena();
+  // CrossThreadPersistents in unmarked objects may be accessed from other
+  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
+  // that would be fine.
+  ProcessHeap::GetCrossThreadPersistentRegion()
+      .UnpoisonCrossThreadPersistents();
+}
+#endif
+
+#if DCHECK_IS_ON()
+BasePage* ThreadHeap::FindPageFromAddress(Address address) {
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i) {
+    if (BasePage* page = arenas_[i]->FindPageFromAddress(address))
+      return page;
+  }
+  return nullptr;
+}
+#endif
+
+void ThreadHeap::TakeSnapshot(SnapshotType type) {
+  DCHECK(thread_state_->IsInGC());
+
+  // 0 is used as index for freelist entries. Objects are indexed 1 to
+  // gcInfoIndex.
+  ThreadState::GCSnapshotInfo info(GCInfoTable::GcInfoIndex() + 1);
+  String thread_dump_name =
+      String::Format("blink_gc/thread_%lu",
+                     static_cast<unsigned long>(thread_state_->ThreadId()));
+  const String heaps_dump_name = thread_dump_name + "/heaps";
+  const String classes_dump_name = thread_dump_name + "/classes";
+
+  int number_of_heaps_reported = 0;
+#define SNAPSHOT_HEAP(ArenaType)                                          \
+  {                                                                       \
+    number_of_heaps_reported++;                                           \
+    switch (type) {                                                       \
+      case SnapshotType::kHeapSnapshot:                                   \
+        arenas_[BlinkGC::k##ArenaType##ArenaIndex]->TakeSnapshot(         \
+            heaps_dump_name + "/" #ArenaType, info);                      \
+        break;                                                            \
+      case SnapshotType::kFreelistSnapshot:                               \
+        arenas_[BlinkGC::k##ArenaType##ArenaIndex]->TakeFreelistSnapshot( \
+            heaps_dump_name + "/" #ArenaType);                            \
+        break;                                                            \
+      default:                                                            \
+        NOTREACHED();                                                     \
+    }                                                                     \
+  }
+
+  SNAPSHOT_HEAP(NormalPage1);
+  SNAPSHOT_HEAP(NormalPage2);
+  SNAPSHOT_HEAP(NormalPage3);
+  SNAPSHOT_HEAP(NormalPage4);
+  SNAPSHOT_HEAP(EagerSweep);
+  SNAPSHOT_HEAP(Vector1);
+  SNAPSHOT_HEAP(Vector2);
+  SNAPSHOT_HEAP(Vector3);
+  SNAPSHOT_HEAP(Vector4);
+  SNAPSHOT_HEAP(InlineVector);
+  SNAPSHOT_HEAP(HashTable);
+  SNAPSHOT_HEAP(LargeObject);
+  FOR_EACH_TYPED_ARENA(SNAPSHOT_HEAP);
+
+  DCHECK_EQ(number_of_heaps_reported, BlinkGC::kNumberOfArenas);
+
+#undef SNAPSHOT_HEAP
+
+  if (type == SnapshotType::kFreelistSnapshot)
+    return;
+
+  size_t total_live_count = 0;
+  size_t total_dead_count = 0;
+  size_t total_live_size = 0;
+  size_t total_dead_size = 0;
+  for (size_t gc_info_index = 1; gc_info_index <= GCInfoTable::GcInfoIndex();
+       ++gc_info_index) {
+    total_live_count += info.live_count[gc_info_index];
+    total_dead_count += info.dead_count[gc_info_index];
+    total_live_size += info.live_size[gc_info_index];
+    total_dead_size += info.dead_size[gc_info_index];
+  }
+
+  base::trace_event::MemoryAllocatorDump* thread_dump =
+      BlinkGCMemoryDumpProvider::Instance()
+          ->CreateMemoryAllocatorDumpForCurrentGC(thread_dump_name);
+  thread_dump->AddScalar("live_count", "objects", total_live_count);
+  thread_dump->AddScalar("dead_count", "objects", total_dead_count);
+  thread_dump->AddScalar("live_size", "bytes", total_live_size);
+  thread_dump->AddScalar("dead_size", "bytes", total_dead_size);
+
+  base::trace_event::MemoryAllocatorDump* heaps_dump =
+      BlinkGCMemoryDumpProvider::Instance()
+          ->CreateMemoryAllocatorDumpForCurrentGC(heaps_dump_name);
+  base::trace_event::MemoryAllocatorDump* classes_dump =
+      BlinkGCMemoryDumpProvider::Instance()
+          ->CreateMemoryAllocatorDumpForCurrentGC(classes_dump_name);
+  BlinkGCMemoryDumpProvider::Instance()
+      ->CurrentProcessMemoryDump()
+      ->AddOwnershipEdge(classes_dump->guid(), heaps_dump->guid());
+}
+
+bool ThreadHeap::AdvanceLazySweep(double deadline_seconds) {
+  for (int i = 0; i < BlinkGC::kNumberOfArenas; i++) {
+    // lazySweepWithDeadline() won't check the deadline until it sweeps
+    // 10 pages. So we give a small slack for safety.
+    double slack = 0.001;
+    double remaining_budget =
+        deadline_seconds - slack - MonotonicallyIncreasingTime();
+    if (remaining_budget <= 0 ||
+        !arenas_[i]->LazySweepWithDeadline(deadline_seconds)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 ThreadHeap* ThreadHeap::main_thread_heap_ = nullptr;

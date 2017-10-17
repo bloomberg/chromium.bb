@@ -127,6 +127,7 @@ const uint8_t kReuseForbiddenZapValue = 0x2c;
 
 class NormalPageArena;
 class PageMemory;
+class BaseArena;
 
 // HeapObjectHeader is a 64-bit (64-bit platforms) or 32-bit (32-bit platforms)
 // object that has the following layout:
