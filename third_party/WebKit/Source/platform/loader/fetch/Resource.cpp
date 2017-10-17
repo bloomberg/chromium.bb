@@ -422,7 +422,7 @@ void Resource::FinishAsError(const ResourceError& error,
   error_ = error;
   is_revalidating_ = false;
 
-  if ((error_.IsCancellation() || !is_unused_preload_) && IsMainThread())
+  if (IsMainThread())
     GetMemoryCache()->Remove(this);
 
   if (!ErrorOccurred())
