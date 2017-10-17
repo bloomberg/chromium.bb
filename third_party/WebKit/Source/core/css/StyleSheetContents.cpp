@@ -125,12 +125,8 @@ bool StyleSheetContents::IsCacheableForResource() const {
   // This would require dealing with multiple clients for load callbacks.
   if (!LoadCompleted())
     return false;
-  // FIXME: StyleSheets with media queries can't be cached because their RuleSet
-  // is processed differently based off the media queries, which might resolve
-  // differently depending on the context of the parent CSSStyleSheet (e.g.
-  // if they are in differently sized iframes). Once RuleSets are media query
-  // agnostic, we can restore sharing of StyleSheetContents with medea queries.
-  if (has_media_queries_)
+  if (has_media_queries_ &&
+      !RuntimeEnabledFeatures::CacheStyleSheetWithMediaQueriesEnabled())
     return false;
   // FIXME: Support copying import rules.
   if (!import_rules_.IsEmpty())

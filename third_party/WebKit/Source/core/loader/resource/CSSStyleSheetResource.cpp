@@ -36,6 +36,7 @@
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/TextResourceDecoderOptions.h"
+#include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/SecurityPolicy.h"
 #include "platform/wtf/CurrentTime.h"
 #include "platform/wtf/text/TextEncoding.h"
@@ -213,7 +214,7 @@ bool CSSStyleSheetResource::CanUseSheet(MIMETypeCheck mime_type_check) const {
                                      "application/x-unknown-content-type");
 }
 
-StyleSheetContents* CSSStyleSheetResource::RestoreParsedStyleSheet(
+StyleSheetContents* CSSStyleSheetResource::CreateParsedStyleSheetFromCache(
     const CSSParserContext* context) {
   if (!parsed_style_sheet_cache_)
     return nullptr;
@@ -229,6 +230,15 @@ StyleSheetContents* CSSStyleSheetResource::RestoreParsedStyleSheet(
   // we parsed again.
   if (*parsed_style_sheet_cache_->ParserContext() != *context)
     return nullptr;
+
+  DCHECK(!parsed_style_sheet_cache_->IsLoading());
+
+  // If the stylesheet has a media query, we need to clone the cached sheet
+  // due to potential differences in the rule set.
+  if (RuntimeEnabledFeatures::CacheStyleSheetWithMediaQueriesEnabled() &&
+      parsed_style_sheet_cache_->HasMediaQueries()) {
+    return parsed_style_sheet_cache_->Copy();
+  }
 
   return parsed_style_sheet_cache_;
 }
