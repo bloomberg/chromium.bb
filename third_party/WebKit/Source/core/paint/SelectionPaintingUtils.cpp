@@ -128,7 +128,7 @@ TextPaintStyle SelectionPaintingUtils::SelectionPaintingStyle(
     const TextPaintStyle& text_style,
     const PaintInfo& paint_info) {
   TextPaintStyle selection_style = text_style;
-  bool uses_text_as_clip = paint_info.phase == kPaintPhaseTextClip;
+  bool uses_text_as_clip = paint_info.phase == PaintPhase::kTextClip;
   bool is_printing = paint_info.IsPrinting();
   const GlobalPaintFlags global_paint_flags = paint_info.GetGlobalPaintFlags();
 

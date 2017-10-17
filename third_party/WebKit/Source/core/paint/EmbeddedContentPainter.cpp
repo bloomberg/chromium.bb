@@ -42,13 +42,13 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
                          layout_embedded_content_.Size());
 
   if (layout_embedded_content_.HasBoxDecorationBackground() &&
-      (paint_info.phase == kPaintPhaseForeground ||
-       paint_info.phase == kPaintPhaseSelection)) {
+      (paint_info.phase == PaintPhase::kForeground ||
+       paint_info.phase == PaintPhase::kSelection)) {
     BoxPainter(layout_embedded_content_)
         .PaintBoxDecorationBackground(paint_info, adjusted_paint_offset);
   }
 
-  if (paint_info.phase == kPaintPhaseMask) {
+  if (paint_info.phase == PaintPhase::kMask) {
     BoxPainter(layout_embedded_content_)
         .PaintMask(paint_info, adjusted_paint_offset);
     return;
@@ -59,7 +59,7 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
         .PaintOutline(paint_info, adjusted_paint_offset);
   }
 
-  if (paint_info.phase != kPaintPhaseForeground)
+  if (paint_info.phase != PaintPhase::kForeground)
     return;
 
   if (layout_embedded_content_.GetEmbeddedContentView()) {

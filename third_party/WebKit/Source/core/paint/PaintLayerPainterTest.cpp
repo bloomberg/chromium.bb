@@ -380,7 +380,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
   EXPECT_FALSE(non_self_painting_layer.NeedsPaintPhaseDescendantOutlines());
   EXPECT_TRUE(DisplayItemListContains(
       RootPaintController().GetDisplayItemList(), self_painting_layer_object,
-      DisplayItem::PaintPhaseToDrawingType(kPaintPhaseSelfOutlineOnly)));
+      DisplayItem::PaintPhaseToDrawingType(PaintPhase::kSelfOutlineOnly)));
 
   // needsPaintPhaseDescendantOutlines should be set when any descendant on the
   // same layer has outline.
@@ -392,7 +392,7 @@ TEST_P(PaintLayerPainterTest, PaintPhaseOutline) {
   Paint();
   EXPECT_TRUE(DisplayItemListContains(
       RootPaintController().GetDisplayItemList(), outline_div,
-      DisplayItem::PaintPhaseToDrawingType(kPaintPhaseSelfOutlineOnly)));
+      DisplayItem::PaintPhaseToDrawingType(PaintPhase::kSelfOutlineOnly)));
 
   // needsPaintPhaseDescendantOutlines should be reset when no outline is
   // actually painted.

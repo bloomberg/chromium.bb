@@ -182,9 +182,9 @@ void TableSectionPainter::PaintSection(const PaintInfo& paint_info,
   LayoutPoint adjusted_paint_offset =
       paint_offset + layout_table_section_.Location();
 
-  if (paint_info.phase != kPaintPhaseSelfOutlineOnly) {
+  if (paint_info.phase != PaintPhase::kSelfOutlineOnly) {
     Optional<BoxClipper> box_clipper;
-    if (paint_info.phase != kPaintPhaseSelfBlockBackgroundOnly)
+    if (paint_info.phase != PaintPhase::kSelfBlockBackgroundOnly)
       box_clipper.emplace(layout_table_section_, paint_info,
                           adjusted_paint_offset, kForceContentsClip);
     PaintObject(paint_info, adjusted_paint_offset);
@@ -272,7 +272,7 @@ void TableSectionPainter::PaintObject(const PaintInfo& paint_info,
                                  dirtied_columns);
   }
 
-  if (paint_info.phase == kPaintPhaseSelfBlockBackgroundOnly)
+  if (paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly)
     return;
 
   if (ShouldPaintDescendantBlockBackgrounds(paint_info.phase)) {

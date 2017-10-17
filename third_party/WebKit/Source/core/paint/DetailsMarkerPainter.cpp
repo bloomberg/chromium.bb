@@ -15,7 +15,7 @@ namespace blink {
 
 void DetailsMarkerPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
-  if (paint_info.phase != kPaintPhaseForeground ||
+  if (paint_info.phase != PaintPhase::kForeground ||
       layout_details_marker_.Style()->Visibility() != EVisibility::kVisible) {
     BlockPainter(layout_details_marker_).Paint(paint_info, paint_offset);
     return;

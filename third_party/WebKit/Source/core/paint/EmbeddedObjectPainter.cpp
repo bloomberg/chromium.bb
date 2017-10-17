@@ -39,7 +39,7 @@ void EmbeddedObjectPainter::PaintReplaced(const PaintInfo& paint_info,
   if (!layout_embedded_object_.ShowsUnavailablePluginIndicator())
     return;
 
-  if (paint_info.phase == kPaintPhaseSelection)
+  if (paint_info.phase == PaintPhase::kSelection)
     return;
 
   GraphicsContext& context = paint_info.context;

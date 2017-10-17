@@ -20,7 +20,7 @@ void EllipsisBoxPainter::Paint(const PaintInfo& paint_info,
                                const LayoutPoint& paint_offset,
                                LayoutUnit line_top,
                                LayoutUnit line_bottom) {
-  if (paint_info.phase == kPaintPhaseSelection)
+  if (paint_info.phase == PaintPhase::kSelection)
     return;
 
   const ComputedStyle& style = ellipsis_box_.GetLineLayoutItem().StyleRef(

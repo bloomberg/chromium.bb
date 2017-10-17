@@ -68,7 +68,7 @@ void SVGRootPainter::PaintReplaced(const PaintInfo& paint_info,
                                         transform_to_border_box);
 
   SVGPaintContext paint_context(layout_svg_root_, paint_info_before_filtering);
-  if (paint_context.GetPaintInfo().phase == kPaintPhaseForeground &&
+  if (paint_context.GetPaintInfo().phase == PaintPhase::kForeground &&
       !paint_context.ApplyClipMaskAndFilterIfNecessary())
     return;
 

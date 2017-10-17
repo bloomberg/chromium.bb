@@ -224,7 +224,7 @@ sk_sp<const PaintRecord> LayoutSVGResourceClipper::CreatePaintRecord() {
   // - fill is set to the initial fill paint server (solid, black)
   // - stroke is set to the initial stroke paint server (none)
   PaintInfo info(builder.Context(), LayoutRect::InfiniteIntRect(),
-                 kPaintPhaseForeground, kGlobalPaintNormalPhase,
+                 PaintPhase::kForeground, kGlobalPaintNormalPhase,
                  kPaintLayerPaintingRenderingClipPathAsMask |
                      kPaintLayerPaintingRenderingResourceSubtree);
 

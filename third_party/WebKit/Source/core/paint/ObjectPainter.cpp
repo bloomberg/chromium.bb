@@ -683,23 +683,23 @@ void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info,
   // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that
   // they will paint for selection and text clip respectively. We don't need
   // complete painting for these phases.
-  if (paint_info.phase == kPaintPhaseSelection ||
-      paint_info.phase == kPaintPhaseTextClip) {
+  if (paint_info.phase == PaintPhase::kSelection ||
+      paint_info.phase == PaintPhase::kTextClip) {
     layout_object_.Paint(paint_info, paint_offset);
     return;
   }
 
-  if (paint_info.phase != kPaintPhaseForeground)
+  if (paint_info.phase != PaintPhase::kForeground)
     return;
 
   PaintInfo info(paint_info);
-  info.phase = kPaintPhaseBlockBackground;
+  info.phase = PaintPhase::kBlockBackground;
   layout_object_.Paint(info, paint_offset);
-  info.phase = kPaintPhaseFloat;
+  info.phase = PaintPhase::kFloat;
   layout_object_.Paint(info, paint_offset);
-  info.phase = kPaintPhaseForeground;
+  info.phase = PaintPhase::kForeground;
   layout_object_.Paint(info, paint_offset);
-  info.phase = kPaintPhaseOutline;
+  info.phase = PaintPhase::kOutline;
   layout_object_.Paint(info, paint_offset);
 }
 

@@ -58,7 +58,7 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     SVGPaintContext paint_context(layout_svg_container_,
                                   paint_info_before_filtering);
     bool continue_rendering = true;
-    if (paint_context.GetPaintInfo().phase == kPaintPhaseForeground)
+    if (paint_context.GetPaintInfo().phase == PaintPhase::kForeground)
       continue_rendering = paint_context.ApplyClipMaskAndFilterIfNecessary();
 
     if (continue_rendering) {
@@ -68,13 +68,13 @@ void SVGContainerPainter::Paint(const PaintInfo& paint_info) {
     }
   }
 
-  if (paint_info_before_filtering.phase != kPaintPhaseForeground)
+  if (paint_info_before_filtering.phase != PaintPhase::kForeground)
     return;
 
   if (layout_svg_container_.Style()->OutlineWidth() &&
       layout_svg_container_.Style()->Visibility() == EVisibility::kVisible) {
     PaintInfo outline_paint_info(paint_info_before_filtering);
-    outline_paint_info.phase = kPaintPhaseSelfOutlineOnly;
+    outline_paint_info.phase = PaintPhase::kSelfOutlineOnly;
     ObjectPainter(layout_svg_container_)
         .PaintOutline(outline_paint_info, LayoutPoint(bounding_box.Location()));
   }

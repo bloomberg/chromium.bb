@@ -27,7 +27,7 @@ void ImagePainter::Paint(const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset) {
   layout_image_.LayoutReplaced::Paint(paint_info, paint_offset);
 
-  if (paint_info.phase == kPaintPhaseOutline)
+  if (paint_info.phase == PaintPhase::kOutline)
     PaintAreaElementFocusRing(paint_info, paint_offset);
 }
 
@@ -98,7 +98,7 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
     if (!c_width || !c_height)
       return;
   } else {
-    if (paint_info.phase == kPaintPhaseSelection)
+    if (paint_info.phase == PaintPhase::kSelection)
       return;
     if (c_width <= 2 || c_height <= 2)
       return;

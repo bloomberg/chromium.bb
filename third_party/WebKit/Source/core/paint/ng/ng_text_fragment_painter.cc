@@ -48,7 +48,7 @@ void NGTextFragmentPainter::Paint(const Document& document,
 
   // Determine whether or not we're selected.
   bool have_selection = false;  // TODO(layout-dev): Implement.
-  if (!have_selection && paint_info.phase == kPaintPhaseSelection) {
+  if (!have_selection && paint_info.phase == PaintPhase::kSelection) {
     // When only painting the selection, don't bother to paint if there is none.
     return;
   }
@@ -59,7 +59,7 @@ void NGTextFragmentPainter::Paint(const Document& document,
   TextPaintStyle selection_style = TextPainterBase::SelectionPaintingStyle(
       document, style, fragment_.GetNode(), have_selection, paint_info,
       text_style);
-  bool paint_selected_text_only = (paint_info.phase == kPaintPhaseSelection);
+  bool paint_selected_text_only = (paint_info.phase == PaintPhase::kSelection);
   bool paint_selected_text_separately =
       !paint_selected_text_only && text_style != selection_style;
 
@@ -73,8 +73,8 @@ void NGTextFragmentPainter::Paint(const Document& document,
 
   // 1. Paint backgrounds behind text if needed. Examples of such backgrounds
   // include selection and composition highlights.
-  if (paint_info.phase != kPaintPhaseSelection &&
-      paint_info.phase != kPaintPhaseTextClip && !is_printing) {
+  if (paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip && !is_printing) {
     // TODO(layout-dev): Implement.
   }
 

@@ -48,7 +48,7 @@ NGBoxFragmentPainter::NGBoxFragmentPainter(const NGPaintFragment& box)
 
 void NGBoxFragmentPainter::Paint(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
-  if (paint_info.phase == kPaintPhaseForeground)
+  if (paint_info.phase == PaintPhase::kForeground)
     PaintBoxDecorationBackground(paint_info, paint_offset);
   PaintChildren(box_fragment_.Children(), paint_info, paint_offset);
 }
@@ -229,7 +229,7 @@ void NGBoxFragmentPainter::PaintFillLayerTextFillBox(
   // painting using a special paint phase that signals to InlineTextBoxes that
   // they should just add their contents to the clip.
   context.BeginLayer(1, SkBlendMode::kDstIn);
-  PaintInfo paint_info(context, mask_rect, kPaintPhaseTextClip,
+  PaintInfo paint_info(context, mask_rect, PaintPhase::kTextClip,
                        kGlobalPaintNormalPhase, 0);
 
   // TODO(eae): Paint text child fragments.

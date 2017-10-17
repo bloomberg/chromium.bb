@@ -18,7 +18,7 @@ void RootInlineBoxPainter::PaintEllipsisBox(const PaintInfo& paint_info,
   if (root_inline_box_.HasEllipsisBox() &&
       root_inline_box_.GetLineLayoutItem().Style()->Visibility() ==
           EVisibility::kVisible &&
-      paint_info.phase == kPaintPhaseForeground)
+      paint_info.phase == PaintPhase::kForeground)
     root_inline_box_.GetEllipsisBox()->Paint(paint_info, paint_offset, line_top,
                                              line_bottom);
 }

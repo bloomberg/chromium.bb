@@ -32,7 +32,7 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
   if (!paint_info.GetCullRect().IntersectsCullRect(overflow_rect))
     return;
 
-  if (paint_info.phase == kPaintPhaseMask) {
+  if (paint_info.phase == PaintPhase::kMask) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
             paint_info.context, inline_flow_box_,
             DisplayItem::PaintPhaseToDrawingType(paint_info.phase)))
@@ -45,7 +45,7 @@ void InlineFlowBoxPainter::Paint(const PaintInfo& paint_info,
     return;
   }
 
-  if (paint_info.phase == kPaintPhaseForeground) {
+  if (paint_info.phase == PaintPhase::kForeground) {
     // Paint our background, border and box-shadow.
     PaintBoxDecorationBackground(paint_info, paint_offset, overflow_rect);
   }
@@ -256,7 +256,7 @@ void InlineFlowBoxPainter::PaintBoxDecorationBackground(
     const PaintInfo& paint_info,
     const LayoutPoint& paint_offset,
     const LayoutRect& cull_rect) {
-  DCHECK(paint_info.phase == kPaintPhaseForeground);
+  DCHECK(paint_info.phase == PaintPhase::kForeground);
   if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
       EVisibility::kVisible)
     return;
@@ -348,7 +348,7 @@ void InlineFlowBoxPainter::PaintMask(const PaintInfo& paint_info,
                                      const LayoutPoint& paint_offset) {
   if (inline_flow_box_.GetLineLayoutItem().Style()->Visibility() !=
           EVisibility::kVisible ||
-      paint_info.phase != kPaintPhaseMask)
+      paint_info.phase != PaintPhase::kMask)
     return;
 
   LayoutRect frame_rect = FrameRectClampedToLineTopAndBottomIfNeeded();

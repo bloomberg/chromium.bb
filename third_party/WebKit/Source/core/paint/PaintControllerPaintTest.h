@@ -142,7 +142,7 @@ class TestDisplayItem final : public DisplayItem {
 // Shorter names for frequently used display item types in tests.
 const DisplayItem::Type kBackgroundType = DisplayItem::kBoxDecorationBackground;
 const DisplayItem::Type kForegroundType =
-    DisplayItem::PaintPhaseToDrawingType(kPaintPhaseForeground);
+    DisplayItem::PaintPhaseToDrawingType(PaintPhase::kForeground);
 const DisplayItem::Type kDocumentBackgroundType =
     DisplayItem::kDocumentBackground;
 const DisplayItem::Type kScrollHitTestType = DisplayItem::kScrollHitTest;

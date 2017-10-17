@@ -1008,13 +1008,13 @@ void PaintLayerPainter::PaintFragmentWithPhase(
         DisplayItem::PaintPhaseToClipLayerFragmentType(phase);
     LayerClipRecorder::BorderRadiusClippingRule clipping_rule;
     switch (phase) {
-      case kPaintPhaseSelfBlockBackgroundOnly:  // Background painting will
-                                                // handle clipping to self.
-      case kPaintPhaseSelfOutlineOnly:
-      case kPaintPhaseMask:  // Mask painting will handle clipping to self.
+      // These phases will handle clipping to self.
+      case PaintPhase::kSelfBlockBackgroundOnly:
+      case PaintPhase::kSelfOutlineOnly:
+      case PaintPhase::kMask:
         clipping_rule = LayerClipRecorder::kDoNotIncludeSelfForBorderRadius;
         break;
-      case kPaintPhaseClippingMask:
+      case PaintPhase::kClippingMask:
         if (paint_flags & kPaintLayerPaintingAncestorClippingMaskPhase) {
           // The ancestor is the thing that needs to clip, so do not include
           // this layer's clips.
@@ -1039,7 +1039,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   // clips, there is no need to go through the remaining painting pipeline.
   // We know that the mask just needs the area bounded by the clip rects to be
   // filled with black.
-  if (clip_recorder && phase == kPaintPhaseClippingMask) {
+  if (clip_recorder && phase == PaintPhase::kClippingMask) {
     FillMaskingFragment(context, clip_rect, *client);
     return;
   }
@@ -1083,7 +1083,7 @@ void PaintLayerPainter::PaintBackgroundForFragments(
     cache_skipper.emplace(context);
 
   for (auto& fragment : layer_fragments)
-    PaintFragmentWithPhase(kPaintPhaseSelfBlockBackgroundOnly, fragment,
+    PaintFragmentWithPhase(PaintPhase::kSelfBlockBackgroundOnly, fragment,
                            context, fragment.background_rect,
                            local_painting_info, paint_flags, kHasNotClipped);
 }
@@ -1116,16 +1116,16 @@ void PaintLayerPainter::PaintForegroundForFragments(
   // issue paint invalidations in each specific phase in order for interleaving
   // of the fragments to work properly.
   if (selection_only) {
-    PaintForegroundForFragmentsWithPhase(kPaintPhaseSelection, layer_fragments,
-                                         context, local_painting_info,
-                                         paint_flags, clip_state);
+    PaintForegroundForFragmentsWithPhase(
+        PaintPhase::kSelection, layer_fragments, context, local_painting_info,
+        paint_flags, clip_state);
   } else {
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantBlockBackgrounds()) {
       size_t size_before =
           context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(
-          kPaintPhaseDescendantBlockBackgroundsOnly, layer_fragments, context,
+          PaintPhase::kDescendantBlockBackgroundsOnly, layer_fragments, context,
           local_painting_info, paint_flags, clip_state);
       // Don't set the empty flag if we are not painting the whole background.
       if (!(paint_flags & kPaintLayerPaintingSkipRootBackground)) {
@@ -1143,7 +1143,7 @@ void PaintLayerPainter::PaintForegroundForFragments(
         paint_layer_.NeedsPaintPhaseFloat()) {
       size_t size_before =
           context.GetPaintController().NewDisplayItemList().size();
-      PaintForegroundForFragmentsWithPhase(kPaintPhaseFloat, layer_fragments,
+      PaintForegroundForFragmentsWithPhase(PaintPhase::kFloat, layer_fragments,
                                            context, local_painting_info,
                                            paint_flags, clip_state);
       bool phase_is_empty =
@@ -1153,16 +1153,16 @@ void PaintLayerPainter::PaintForegroundForFragments(
       paint_layer_.SetPreviousPaintPhaseFloatEmpty(phase_is_empty);
     }
 
-    PaintForegroundForFragmentsWithPhase(kPaintPhaseForeground, layer_fragments,
-                                         context, local_painting_info,
-                                         paint_flags, clip_state);
+    PaintForegroundForFragmentsWithPhase(
+        PaintPhase::kForeground, layer_fragments, context, local_painting_info,
+        paint_flags, clip_state);
 
     if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() ||
         paint_layer_.NeedsPaintPhaseDescendantOutlines()) {
       size_t size_before =
           context.GetPaintController().NewDisplayItemList().size();
       PaintForegroundForFragmentsWithPhase(
-          kPaintPhaseDescendantOutlinesOnly, layer_fragments, context,
+          PaintPhase::kDescendantOutlinesOnly, layer_fragments, context,
           local_painting_info, paint_flags, clip_state);
       bool phase_is_empty =
           context.GetPaintController().NewDisplayItemList().size() ==
@@ -1203,7 +1203,7 @@ void PaintLayerPainter::PaintSelfOutlineForFragments(
 
   for (auto& fragment : layer_fragments) {
     if (!fragment.background_rect.IsEmpty())
-      PaintFragmentWithPhase(kPaintPhaseSelfOutlineOnly, fragment, context,
+      PaintFragmentWithPhase(PaintPhase::kSelfOutlineOnly, fragment, context,
                              fragment.background_rect, local_painting_info,
                              paint_flags, kHasNotClipped);
   }
@@ -1231,7 +1231,7 @@ void PaintLayerPainter::PaintMaskForFragments(
   }
 
   for (auto& fragment : layer_fragments)
-    PaintFragmentWithPhase(kPaintPhaseMask, fragment, context,
+    PaintFragmentWithPhase(PaintPhase::kMask, fragment, context,
                            fragment.background_rect, local_painting_info,
                            paint_flags, kHasNotClipped);
 }
@@ -1246,7 +1246,7 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
     cache_skipper.emplace(context);
 
   for (auto& fragment : layer_fragments)
-    PaintFragmentWithPhase(kPaintPhaseClippingMask, fragment, context,
+    PaintFragmentWithPhase(PaintPhase::kClippingMask, fragment, context,
                            fragment.foreground_rect, local_painting_info,
                            paint_flags, kHasNotClipped);
 }
@@ -1270,7 +1270,7 @@ void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
                                             const ClipRect& clip_rect,
                                             const DisplayItemClient& client) {
   DisplayItem::Type type =
-      DisplayItem::PaintPhaseToDrawingType(kPaintPhaseClippingMask);
+      DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask);
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, client, type))
     return;
 

@@ -22,16 +22,16 @@ void TablePainter::PaintObject(const PaintInfo& paint_info,
 
   if (ShouldPaintSelfBlockBackground(paint_phase)) {
     PaintBoxDecorationBackground(paint_info, paint_offset);
-    if (paint_phase == kPaintPhaseSelfBlockBackgroundOnly)
+    if (paint_phase == PaintPhase::kSelfBlockBackgroundOnly)
       return;
   }
 
-  if (paint_phase == kPaintPhaseMask) {
+  if (paint_phase == PaintPhase::kMask) {
     PaintMask(paint_info, paint_offset);
     return;
   }
 
-  if (paint_phase != kPaintPhaseSelfOutlineOnly) {
+  if (paint_phase != PaintPhase::kSelfOutlineOnly) {
     PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
 
     for (LayoutObject* child = layout_table_.FirstChild(); child;
@@ -71,7 +71,7 @@ void TablePainter::PaintBoxDecorationBackground(
 void TablePainter::PaintMask(const PaintInfo& paint_info,
                              const LayoutPoint& paint_offset) {
   if (layout_table_.Style()->Visibility() != EVisibility::kVisible ||
-      paint_info.phase != kPaintPhaseMask)
+      paint_info.phase != PaintPhase::kMask)
     return;
 
   if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(

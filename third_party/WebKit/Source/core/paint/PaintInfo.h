@@ -80,10 +80,10 @@ struct CORE_EXPORT PaintInfo {
   // phases in PaintPhase.h for details.
   PaintInfo ForDescendants() const {
     PaintInfo result(*this);
-    if (phase == kPaintPhaseDescendantOutlinesOnly)
-      result.phase = kPaintPhaseOutline;
-    else if (phase == kPaintPhaseDescendantBlockBackgroundsOnly)
-      result.phase = kPaintPhaseBlockBackground;
+    if (phase == PaintPhase::kDescendantOutlinesOnly)
+      result.phase = PaintPhase::kOutline;
+    else if (phase == PaintPhase::kDescendantBlockBackgroundsOnly)
+      result.phase = PaintPhase::kBlockBackground;
     return result;
   }
 
