@@ -5,6 +5,13 @@
 import("//build/config/ui.gni")
 import("//media/media_options.gni")
 
+if (is_ios) {
+  import("//build/config/ios/ios_sdk.gni")
+}
+
 declare_args() {
-  enable_remoting = !is_chromecast && !is_fuchsia && enable_webrtc
+  # TODO(774483): Remoting has dependencies that are using deprecated APIs if the iOS deployment
+  # target is set to 10.0.
+  enable_remoting = !is_chromecast && !is_fuchsia && enable_webrtc &&
+                    (!is_ios || ios_deployment_target == "9.0")
 }
