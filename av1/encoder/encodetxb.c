@@ -272,11 +272,15 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   const int16_t *scan = scan_order->scan;
+  const int seg_eob = tx_size_2d[tx_size];
   int c;
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int height = tx_size_high[tx_size];
   uint16_t update_eob = 0;
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
+  uint8_t levels[64 * 64];
+  int8_t signs[64 * 64];
+  int i;
 
   (void)blk_row;
   (void)blk_col;
@@ -289,6 +293,12 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #endif
 
   if (eob == 0) return;
+
+  for (i = 0; i < seg_eob; i++) {
+    levels[i] = (uint8_t)abs(tcoeff[i]);
+    signs[i] = (int8_t)(tcoeff[i] < 0);
+  }
+
 #if CONFIG_TXK_SEL
   av1_write_tx_type(cm, xd, blk_row, blk_col, block, plane,
                     get_min_tx_size(tx_size), w);
@@ -325,21 +335,19 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   write_nz_map(w, tcoeff, eob, plane, scan, tx_size, tx_type, ec_ctx);
 #endif  // CONFIG_CTX1D
 
-  int i;
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
 #if !LV_MAP_PROB
     aom_prob *coeff_base = ec_ctx->coeff_base[txs_ctx][plane_type][i];
 #endif
     update_eob = 0;
     for (c = eob - 1; c >= 0; --c) {
-      tran_low_t v = tcoeff[scan[c]];
-      tran_low_t level = abs(v);
-      int sign = (v < 0) ? 1 : 0;
+      const int level = levels[scan[c]];
+      const int sign = signs[scan[c]];
       int ctx;
 
       if (level <= i) continue;
 
-      ctx = get_base_ctx(tcoeff, scan[c], bwl, height, i + 1);
+      ctx = get_base_ctx(levels, scan[c], bwl, height, i + 1);
 
       if (level == i + 1) {
 #if LV_MAP_PROB
@@ -373,9 +381,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 
   for (c = update_eob; c >= 0; --c) {
-    tran_low_t v = tcoeff[scan[c]];
-    tran_low_t level = abs(v);
-    int sign = (v < 0) ? 1 : 0;
+    const int level = levels[scan[c]];
+    const int sign = signs[scan[c]];
     int idx;
     int ctx;
 
@@ -393,7 +400,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     }
 
     // level is above 1.
-    ctx = get_br_ctx(tcoeff, scan[c], bwl, height);
+    ctx = get_br_ctx(levels, scan[c], bwl, height);
 
 #if BR_NODE
     int base_range = level - 1 - NUM_BASE_LEVELS;
@@ -770,7 +777,7 @@ int av1_cost_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
 
       if (level > NUM_BASE_LEVELS) {
         int ctx;
-        ctx = get_br_ctx(qcoeff, scan[c], bwl, height);
+        ctx = get_br_ctx_coeff(qcoeff, scan[c], bwl, height);
 #if BR_NODE
         int base_range = level - 1 - NUM_BASE_LEVELS;
         if (base_range < COEFF_BASE_RANGE) {
@@ -1289,7 +1296,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
       ref_num = BASE_CONTEXT_POSITION_NUM;
     }
 #else
-    int(*ref_offset)[2] = base_ref_offset;
+    const int(*ref_offset)[2] = base_ref_offset;
     int ref_num = BASE_CONTEXT_POSITION_NUM;
 #endif
     for (int i = 0; i < ref_num; ++i) {
@@ -1325,7 +1332,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
       ref_num = BR_CONTEXT_POSITION_NUM;
     }
 #else
-    int(*ref_offset)[2] = br_ref_offset;
+    const int(*ref_offset)[2] = br_ref_offset;
     const int ref_num = BR_CONTEXT_POSITION_NUM;
 #endif
     for (int i = 0; i < ref_num; ++i) {
@@ -1594,8 +1601,8 @@ static int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
     }
 
     if (abs_qc > NUM_BASE_LEVELS) {
-      int ctx = get_br_ctx(txb_info->qcoeff, scan[scan_idx], txb_info->bwl,
-                           txb_info->height);
+      int ctx = get_br_ctx_coeff(txb_info->qcoeff, scan[scan_idx],
+                                 txb_info->bwl, txb_info->height);
       cost += get_br_cost(abs_qc, ctx, txb_costs->lps_cost[ctx]);
       cost += get_golomb_cost(abs_qc);
     }
@@ -2176,6 +2183,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int height = tx_size_high[tx_size];
   int cul_level = 0;
+  uint8_t levels[64 * 64];
+  int8_t signs[64 * 64];
 
   TX_SIZE txsize_ctx = get_txsize_context(tx_size);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
@@ -2194,6 +2203,11 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   if (eob == 0) {
     av1_set_contexts(xd, pd, plane, tx_size, 0, blk_col, blk_row);
     return;
+  }
+
+  for (i = 0; i < seg_eob; i++) {
+    levels[i] = (uint8_t)abs(tcoeff[i]);
+    signs[i] = (int8_t)(tcoeff[i] < 0);
   }
 
 #if CONFIG_TXK_SEL
@@ -2239,13 +2253,13 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   for (i = 0; i < NUM_BASE_LEVELS; ++i) {
     update_eob = 0;
     for (c = eob - 1; c >= 0; --c) {
-      tran_low_t v = qcoeff[scan[c]];
-      tran_low_t level = abs(v);
+      const int level = levels[scan[c]];
+      const int sign = signs[scan[c]];
       int ctx;
 
       if (level <= i) continue;
 
-      ctx = get_base_ctx(tcoeff, scan[c], bwl, height, i + 1);
+      ctx = get_base_ctx(levels, scan[c], bwl, height, i + 1);
 
       if (level == i + 1) {
         ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][1];
@@ -2256,9 +2270,9 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
         if (c == 0) {
           int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
-          ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
+          ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
 #if LV_MAP_PROB
-          update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
+          update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
 #endif
           x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
         }
@@ -2274,8 +2288,8 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   }
 
   for (c = update_eob; c >= 0; --c) {
-    tran_low_t v = qcoeff[scan[c]];
-    tran_low_t level = abs(v);
+    const int level = levels[scan[c]];
+    const int sign = signs[scan[c]];
     int idx;
     int ctx;
 
@@ -2285,15 +2299,15 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     if (c == 0) {
       int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
-      ++td->counts->dc_sign[plane_type][dc_sign_ctx][v < 0];
+      ++td->counts->dc_sign[plane_type][dc_sign_ctx][sign];
 #if LV_MAP_PROB
-      update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], v < 0, 2);
+      update_bin(ec_ctx->dc_sign_cdf[plane_type][dc_sign_ctx], sign, 2);
 #endif
       x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
     }
 
     // level is above 1.
-    ctx = get_br_ctx(tcoeff, scan[c], bwl, height);
+    ctx = get_br_ctx(levels, scan[c], bwl, height);
 
 #if BR_NODE
     int base_range = level - 1 - NUM_BASE_LEVELS;
