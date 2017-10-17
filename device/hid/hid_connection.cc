@@ -8,6 +8,8 @@
 
 #include "base/stl_util.h"
 #include "components/device_event_log/device_event_log.h"
+#include "device/hid/public/cpp/hid_usage_and_page.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 
 namespace device {
 
@@ -17,15 +19,15 @@ namespace {
 struct CollectionHasReportId {
   explicit CollectionHasReportId(uint8_t report_id) : report_id_(report_id) {}
 
-  bool operator()(const HidCollectionInfo& info) const {
-    if (info.report_ids.size() == 0 ||
+  bool operator()(const device::mojom::HidCollectionInfoPtr& info) const {
+    if (info->report_ids.size() == 0 ||
         report_id_ == HidConnection::kNullReportId)
       return false;
 
     if (report_id_ == HidConnection::kAnyReportId)
       return true;
 
-    return base::ContainsKey(info.report_ids, report_id_);
+    return base::ContainsValue(info->report_ids, report_id_);
   }
 
  private:
@@ -34,27 +36,26 @@ struct CollectionHasReportId {
 
 // Functor returning true if collection has a protected usage.
 struct CollectionIsProtected {
-  bool operator()(const HidCollectionInfo& info) const {
-    return info.usage.IsProtected();
+  bool operator()(const device::mojom::HidCollectionInfoPtr& info) const {
+    return IsProtected(*info->usage);
   }
 };
 
-bool FindCollectionByReportId(const std::vector<HidCollectionInfo>& collections,
-                              uint8_t report_id,
-                              HidCollectionInfo* collection_info) {
-  std::vector<HidCollectionInfo>::const_iterator collection_iter = std::find_if(
-      collections.begin(), collections.end(), CollectionHasReportId(report_id));
+const device::mojom::HidCollectionInfo* FindCollectionByReportId(
+    const std::vector<device::mojom::HidCollectionInfoPtr>& collections,
+    uint8_t report_id) {
+  auto collection_iter = std::find_if(collections.begin(), collections.end(),
+                                      CollectionHasReportId(report_id));
   if (collection_iter != collections.end()) {
-    if (collection_info) {
-      *collection_info = *collection_iter;
-    }
-    return true;
+    DCHECK(collection_iter->get());
+    return collection_iter->get();
   }
 
-  return false;
+  return nullptr;
 }
 
-bool HasProtectedCollection(const std::vector<HidCollectionInfo>& collections) {
+bool HasProtectedCollection(
+    const std::vector<device::mojom::HidCollectionInfoPtr>& collections) {
   return std::find_if(collections.begin(), collections.end(),
                       CollectionIsProtected()) != collections.end();
 }
@@ -169,10 +170,10 @@ void HidConnection::SendFeatureReport(scoped_refptr<net::IOBuffer> buffer,
 }
 
 bool HidConnection::IsReportIdProtected(uint8_t report_id) {
-  HidCollectionInfo collection_info;
-  if (FindCollectionByReportId(device_info_->collections(), report_id,
-                               &collection_info)) {
-    return collection_info.usage.IsProtected();
+  auto* collection_info =
+      FindCollectionByReportId(device_info_->collections(), report_id);
+  if (collection_info) {
+    return IsProtected(*collection_info->usage);
   }
 
   return has_protected_collection();

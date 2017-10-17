@@ -6,10 +6,11 @@
 #include <stdint.h>
 
 #include "device/hid/hid_report_descriptor.h"
+#include "device/hid/public/interfaces/hid.mojom.h"
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   device::HidReportDescriptor desc(std::vector<uint8_t>(data, data + size));
-  std::vector<device::HidCollectionInfo> top_level_collections;
+  std::vector<device::mojom::HidCollectionInfoPtr> top_level_collections;
   bool has_report_id;
   size_t max_input_report_size;
   size_t max_output_report_size;

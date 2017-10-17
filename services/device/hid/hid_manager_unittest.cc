@@ -220,11 +220,11 @@ TEST_F(HidManagerTest, GetDevicesAndSetClient) {
 // Test the Connect and the device::mojom::HidConnection interface.
 TEST_F(HidManagerTest, TestHidConnectionInterface) {
   // Add one hid device.
-  HidCollectionInfo c_info;
-  c_info.usage = HidUsageAndPage(1, 0xf1d0);
+  auto c_info = device::mojom::HidCollectionInfo::New();
+  c_info->usage = device::mojom::HidUsageAndPage::New(1, 0xf1d0);
   auto device0 = base::MakeRefCounted<device::HidDeviceInfo>(
       kTestDeviceIds[0], 0, 0, "Hid Service Unit Test", "HidDevice-0",
-      device::mojom::HidBusType::kHIDBusTypeUSB, c_info, 64, 64, 64);
+      device::mojom::HidBusType::kHIDBusTypeUSB, std::move(c_info), 64, 64, 64);
   mock_hid_service_->AddDevice(device0);
   mock_hid_service_->FirstEnumerationComplete();
 

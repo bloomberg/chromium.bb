@@ -19,7 +19,7 @@ HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
                              const std::vector<uint8_t> report_descriptor,
                              std::string device_node)
     : platform_device_id_(platform_device_id) {
-  std::vector<HidCollectionInfo> collections;
+  std::vector<device::mojom::HidCollectionInfoPtr> collections;
   bool has_report_id;
   size_t max_input_report_size;
   size_t max_output_report_size;
@@ -32,7 +32,7 @@ HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
 
   device_ = device::mojom::HidDeviceInfo::New(
       base::GenerateGUID(), vendor_id, product_id, product_name, serial_number,
-      bus_type, report_descriptor, collections, has_report_id,
+      bus_type, report_descriptor, std::move(collections), has_report_id,
       max_input_report_size, max_output_report_size, max_feature_report_size,
       device_node);
 }
@@ -43,19 +43,19 @@ HidDeviceInfo::HidDeviceInfo(const HidPlatformDeviceId& platform_device_id,
                              const std::string& product_name,
                              const std::string& serial_number,
                              device::mojom::HidBusType bus_type,
-                             const HidCollectionInfo& collection,
+                             device::mojom::HidCollectionInfoPtr collection,
                              size_t max_input_report_size,
                              size_t max_output_report_size,
                              size_t max_feature_report_size)
     : platform_device_id_(platform_device_id) {
-  std::vector<HidCollectionInfo> collections;
-  collections.push_back(collection);
-  bool has_report_id = !collection.report_ids.empty();
+  std::vector<device::mojom::HidCollectionInfoPtr> collections;
+  bool has_report_id = !collection->report_ids.empty();
+  collections.push_back(std::move(collection));
 
   std::vector<uint8_t> report_descriptor;
   device_ = device::mojom::HidDeviceInfo::New(
       base::GenerateGUID(), vendor_id, product_id, product_name, serial_number,
-      bus_type, report_descriptor, collections, has_report_id,
+      bus_type, report_descriptor, std::move(collections), has_report_id,
       max_input_report_size, max_output_report_size, max_feature_report_size,
       "");
 }

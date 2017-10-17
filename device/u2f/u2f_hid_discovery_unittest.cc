@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/test/scoped_task_environment.h"
-#include "device/hid/hid_collection_info.h"
 #include "device/hid/public/interfaces/hid.mojom.h"
 #include "device/u2f/fake_hid_impl_for_testing.h"
 #include "device/u2f/mock_u2f_discovery.h"
@@ -24,15 +23,15 @@ namespace device {
 namespace {
 
 device::mojom::HidDeviceInfoPtr MakeU2fDevice(std::string guid) {
-  HidCollectionInfo c_info;
-  c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
+  auto c_info = device::mojom::HidCollectionInfo::New();
+  c_info->usage = device::mojom::HidUsageAndPage::New(1, 0xf1d0);
 
   auto u2f_device = device::mojom::HidDeviceInfo::New();
   u2f_device->guid = std::move(guid);
   u2f_device->product_name = "Test Fido Device";
   u2f_device->serial_number = "123FIDO";
   u2f_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
-  u2f_device->collections.push_back(c_info);
+  u2f_device->collections.push_back(std::move(c_info));
   u2f_device->max_input_report_size = 64;
   u2f_device->max_output_report_size = 64;
   return u2f_device;

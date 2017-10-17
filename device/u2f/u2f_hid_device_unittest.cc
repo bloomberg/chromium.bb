@@ -193,15 +193,15 @@ TEST_F(U2fHidDeviceTest, TestConnectionFailure) {
   // Setup and enumerate mock device
   U2fDeviceEnumerate callback(hid_manager_.get());
 
-  HidCollectionInfo c_info;
-  c_info.usage = HidUsageAndPage(1, 0xf1d0);
+  auto c_info = device::mojom::HidCollectionInfo::New();
+  c_info->usage = device::mojom::HidUsageAndPage::New(1, 0xf1d0);
 
   auto hid_device = device::mojom::HidDeviceInfo::New();
   hid_device->guid = "A";
   hid_device->product_name = "Test Fido device";
   hid_device->serial_number = "123FIDO";
   hid_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
-  hid_device->collections.push_back(c_info);
+  hid_device->collections.push_back(std::move(c_info));
   hid_device->max_input_report_size = 64;
   hid_device->max_output_report_size = 64;
 
@@ -244,15 +244,15 @@ TEST_F(U2fHidDeviceTest, TestDeviceError) {
   // Setup and enumerate mock device
   U2fDeviceEnumerate callback(hid_manager_.get());
 
-  HidCollectionInfo c_info;
-  c_info.usage = HidUsageAndPage(1, static_cast<HidUsageAndPage::Page>(0xf1d0));
+  auto c_info = device::mojom::HidCollectionInfo::New();
+  c_info->usage = device::mojom::HidUsageAndPage::New(1, 0xf1d0);
 
   auto hid_device = device::mojom::HidDeviceInfo::New();
   hid_device->guid = "A";
   hid_device->product_name = "Test Fido device";
   hid_device->serial_number = "123FIDO";
   hid_device->bus_type = device::mojom::HidBusType::kHIDBusTypeUSB;
-  hid_device->collections.push_back(c_info);
+  hid_device->collections.push_back(std::move(c_info));
   hid_device->max_input_report_size = 64;
   hid_device->max_output_report_size = 64;
 

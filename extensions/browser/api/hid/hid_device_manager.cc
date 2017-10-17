@@ -19,6 +19,7 @@
 #include "content/public/common/service_manager_connection.h"
 #include "device/base/device_client.h"
 #include "device/hid/hid_device_filter.h"
+#include "device/hid/public/cpp/hid_usage_and_page.h"
 #include "extensions/browser/api/device_permissions_manager.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/permissions/usb_device_permission.h"
@@ -45,19 +46,17 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
   output->max_output_report_size = input.max_output_report_size;
   output->max_feature_report_size = input.max_feature_report_size;
 
-  for (const device::HidCollectionInfo& collection : input.collections) {
+  for (const auto& collection : input.collections) {
     // Don't expose sensitive data.
-    if (collection.usage.IsProtected()) {
+    if (device::IsProtected(*collection->usage)) {
       continue;
     }
 
     hid::HidCollectionInfo api_collection;
-    api_collection.usage_page = collection.usage.usage_page;
-    api_collection.usage = collection.usage.usage;
+    api_collection.usage_page = collection->usage->usage_page;
+    api_collection.usage = collection->usage->usage;
 
-    api_collection.report_ids.resize(collection.report_ids.size());
-    std::copy(collection.report_ids.begin(), collection.report_ids.end(),
-              api_collection.report_ids.begin());
+    api_collection.report_ids = collection->report_ids;
 
     output->collections.push_back(std::move(api_collection));
   }
