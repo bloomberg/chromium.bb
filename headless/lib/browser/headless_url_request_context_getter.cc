@@ -11,14 +11,18 @@
 #include "base/memory/ptr_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/cookie_store_factory.h"
 #include "content/public/browser/devtools_network_transaction_factory.h"
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_delegate.h"
+#include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_transaction_factory.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_service.h"
+#include "net/ssl/channel_id_service.h"
+#include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 
@@ -74,6 +78,29 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   if (!url_request_context_) {
     net::URLRequestContextBuilder builder;
+
+    // Don't store cookies in incognito mode or if no user-data-dir was
+    // specified
+    // TODO: Enable this always once saving/restoring sessions is implemented
+    // (https://crbug.com/617931)
+    if (headless_browser_context_ &&
+        !headless_browser_context_->IsOffTheRecord() &&
+        !headless_browser_context_->options()->user_data_dir().empty()) {
+      content::CookieStoreConfig cookie_config(
+          headless_browser_context_->GetPath().Append(
+              FILE_PATH_LITERAL("Cookies")),
+          content::CookieStoreConfig::PERSISTANT_SESSION_COOKIES, NULL);
+      std::unique_ptr<net::CookieStore> cookie_store =
+          CreateCookieStore(cookie_config);
+      std::unique_ptr<net::ChannelIDService> channel_id_service =
+          base::MakeUnique<net::ChannelIDService>(
+              new net::DefaultChannelIDStore(nullptr));
+
+      cookie_store->SetChannelIDServiceID(channel_id_service->GetUniqueID());
+      builder.SetCookieAndChannelIdStores(std::move(cookie_store),
+                                          std::move(channel_id_service));
+    }
+
     builder.set_accept_language(
         net::HttpUtil::GenerateAcceptLanguageHeader(accept_language_));
     builder.set_user_agent(user_agent_);
