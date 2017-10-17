@@ -63,30 +63,31 @@ static base::LazyInstance<
     g_child_process_list = LAZY_INSTANCE_INITIALIZER;
 
 base::LazyInstance<base::ObserverList<BrowserChildProcessObserver>>::
-    DestructorAtExit g_observers = LAZY_INSTANCE_INITIALIZER;
+    DestructorAtExit g_browser_child_process_observers =
+        LAZY_INSTANCE_INITIALIZER;
 
 void NotifyProcessLaunchedAndConnected(const ChildProcessData& data) {
-  for (auto& observer : g_observers.Get())
+  for (auto& observer : g_browser_child_process_observers.Get())
     observer.BrowserChildProcessLaunchedAndConnected(data);
 }
 
 void NotifyProcessHostConnected(const ChildProcessData& data) {
-  for (auto& observer : g_observers.Get())
+  for (auto& observer : g_browser_child_process_observers.Get())
     observer.BrowserChildProcessHostConnected(data);
 }
 
 void NotifyProcessHostDisconnected(const ChildProcessData& data) {
-  for (auto& observer : g_observers.Get())
+  for (auto& observer : g_browser_child_process_observers.Get())
     observer.BrowserChildProcessHostDisconnected(data);
 }
 
 void NotifyProcessCrashed(const ChildProcessData& data, int exit_code) {
-  for (auto& observer : g_observers.Get())
+  for (auto& observer : g_browser_child_process_observers.Get())
     observer.BrowserChildProcessCrashed(data, exit_code);
 }
 
 void NotifyProcessKilled(const ChildProcessData& data, int exit_code) {
-  for (auto& observer : g_observers.Get())
+  for (auto& observer : g_browser_child_process_observers.Get())
     observer.BrowserChildProcessKilled(data, exit_code);
 }
 
@@ -132,14 +133,14 @@ BrowserChildProcessHostImpl::BrowserChildProcessList*
 void BrowserChildProcessHostImpl::AddObserver(
     BrowserChildProcessObserver* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  g_observers.Get().AddObserver(observer);
+  g_browser_child_process_observers.Get().AddObserver(observer);
 }
 
 // static
 void BrowserChildProcessHostImpl::RemoveObserver(
     BrowserChildProcessObserver* observer) {
   // TODO(phajdan.jr): Check thread after fixing http://crbug.com/167126.
-  g_observers.Get().RemoveObserver(observer);
+  g_browser_child_process_observers.Get().RemoveObserver(observer);
 }
 
 BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
