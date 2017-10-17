@@ -92,6 +92,7 @@ enum Operation {
   CLOSE_ARCHIVE_DONE = 26,
   CANCEL_ARCHIVE = 27,
   CANCEL_ARCHIVE_DONE = 28,
+  RELEASE_COMPRESSOR = 29,
   FILE_SYSTEM_ERROR = -1,  // Errors specific to a file system.
   COMPRESSOR_ERROR = -2    // Errors specific to a compressor.
 };

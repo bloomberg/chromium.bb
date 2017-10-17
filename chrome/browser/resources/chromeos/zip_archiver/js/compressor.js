@@ -369,6 +369,16 @@ unpacker.Compressor.prototype.sendAddToArchiveRequest_ = function() {
 };
 
 /**
+ * Sends a release compressor request to NaCl module. Zip Archiver releases
+ * objects obtainted in the packing process.
+ */
+unpacker.Compressor.prototype.sendReleaseCompressor = function() {
+  var request =
+      unpacker.request.createReleaseCompressorRequest(this.compressorId_);
+  this.naclModule_.postMessage(request);
+};
+
+/**
  * Sends a close archive request to minizip. minizip writes metadata of
  * the archive itself on the archive and releases objects obtainted in the
  * packing process.
@@ -598,10 +608,12 @@ unpacker.Compressor.prototype.processMessage = function(data, operation) {
       break;
 
     case unpacker.request.Operation.CLOSE_ARCHIVE_DONE:
+      this.sendReleaseCompressor();
       this.onCloseArchiveDone_();
       break;
 
     case unpacker.request.Operation.CANCEL_ARCHIVE_DONE:
+      this.sendReleaseCompressor();
       this.onCancelArchiveDone_();
       break;
 
@@ -610,11 +622,13 @@ unpacker.Compressor.prototype.processMessage = function(data, operation) {
           'Compressor error for compressor id ' + this.compressorId_ + ': ' +
           data[unpacker.request.Key.ERROR]);  // The error contains
                                               // the '.' at the end.
+      this.sendReleaseCompressor();
       this.onError_(this.compressorId_);
       break;
 
     default:
       console.error('Invalid NaCl operation: ' + operation + '.');
+      this.sendReleaseCompressor();
       this.onError_(this.compressorId_);
   }
 };
