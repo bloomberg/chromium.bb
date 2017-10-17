@@ -606,4 +606,24 @@ TEST_F(SplitViewControllerTest, ExitTabletModeEndSplitView) {
   EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
 }
 
+// Tests that if a window's minimum size is larger than half of the display work
+// area's size, it can't be snapped.
+TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
+  const gfx::Rect bounds(0, 0, 400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+
+  const gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window1.get());
+  aura::test::TestWindowDelegate* delegate =
+      static_cast<aura::test::TestWindowDelegate*>(window1->delegate());
+  delegate->set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.5f, display_bounds.height()));
+  EXPECT_TRUE(split_view_controller()->CanSnap(window1.get()));
+
+  delegate->set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  EXPECT_FALSE(split_view_controller()->CanSnap(window1.get()));
+}
+
 }  // namespace ash

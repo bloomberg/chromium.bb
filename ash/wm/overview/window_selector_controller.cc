@@ -158,7 +158,7 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
   // TODO(sammiequon): Bounce the window if it is not snappable.
   if (!active_window ||
       Shell::Get()->mru_window_tracker()->BuildMruWindowList().size() < 2u ||
-      !SplitViewController::CanSnap(active_window)) {
+      !split_view_controller->CanSnap(active_window)) {
     return;
   }
 
@@ -186,7 +186,7 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
   // unsnappable.
   // TODO(sammiequon): Bounce the window if it is not snappable.
   if (!item_to_snap ||
-      !SplitViewController::CanSnap(item_to_snap->GetWindow())) {
+      !split_view_controller->CanSnap(item_to_snap->GetWindow())) {
     return;
   }
 
