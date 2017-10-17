@@ -27,6 +27,8 @@
 #include "testing/gtest_mac.h"
 #import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
+#include "ui/gfx/render_text.h"
+
 // Gmock matcher
 using testing::_;
 
@@ -133,7 +135,9 @@ TEST_F(SavePendingPasswordViewControllerTest, SelectAnotherPassword) {
       base::mac::ObjCCastStrict<NSComboBox>(controller().passwordField);
   EXPECT_FALSE(passwordSelection.editable);
   [passwordSelection selectItemAtIndex:1];
-  EXPECT_NSEQ(@"***", [passwordSelection stringValue]);
+  base::string16 expected(3, gfx::RenderText::kPasswordReplacementChar);
+  EXPECT_NSEQ(base::SysUTF16ToNSString(expected),
+              [passwordSelection stringValue]);
 
   EXPECT_CALL(*ui_controller(), SavePassword(base::ASCIIToUTF16("username"),
                                              base::ASCIIToUTF16("111")));
