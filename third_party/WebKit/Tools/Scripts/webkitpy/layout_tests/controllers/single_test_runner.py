@@ -326,7 +326,10 @@ class SingleTestRunner(object):
         return True, []
 
     def _is_render_tree(self, text):
-        return text and 'layer at (0,0) size 800x600' in text
+        return text and 'layer at (0,0) size' in text
+
+    def _is_layer_tree(self, text):
+        return text and '{\n  "layers": [' in text
 
     def _compare_text(self, expected_text, actual_text):
         if not actual_text:
@@ -345,6 +348,18 @@ class SingleTestRunner(object):
             for char in chars:
                 text = text.replace(char, '')
             return text
+
+        def is_ng_name_mismatch(expected, actual):
+            if 'LayoutNGBlockFlow' not in actual:
+                return False
+            if not self._is_render_tree(actual) and not self._is_layer_tree(actual):
+                return False
+            processed = actual.replace('LayoutNGBlockFlow', 'LayoutBlockFlow').replace('LayoutNGListItem', 'LayoutListItem')
+            return not self._port.do_text_results_differ(expected, processed)
+
+        # LayoutNG name mismatch
+        if is_ng_name_mismatch(expected_text, normalized_actual_text):
+            return [test_failures.FailureLayoutNGNameMismatch()]
 
         # General text mismatch
         if self._port.do_text_results_differ(
