@@ -5,8 +5,8 @@
 #ifndef SVGNumberInterpolationType_h
 #define SVGNumberInterpolationType_h
 
-#include "core/animation/NumberAttributeFunctions.h"
 #include "core/animation/SVGInterpolationType.h"
+#include "core/svg_names.h"
 
 namespace blink {
 
@@ -14,7 +14,7 @@ class SVGNumberInterpolationType : public SVGInterpolationType {
  public:
   SVGNumberInterpolationType(const QualifiedName& attribute)
       : SVGInterpolationType(attribute),
-        is_non_negative_(NumberAttributeFunctions::IsNonNegative(attribute)) {}
+        is_non_negative_(attribute == SVGNames::pathLengthAttr) {}
 
  private:
   InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,

@@ -5,12 +5,47 @@
 #include "core/animation/CSSPaintInterpolationType.h"
 
 #include <memory>
+#include "core/CSSPropertyNames.h"
 #include "core/animation/CSSColorInterpolationType.h"
-#include "core/animation/PaintPropertyFunctions.h"
+#include "core/css/StyleColor.h"
 #include "core/css/resolver/StyleResolverState.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
+
+namespace {
+static bool GetColorFromPaint(const SVGPaintType type,
+                              const Color color,
+                              StyleColor& result) {
+  switch (type) {
+    case SVG_PAINTTYPE_RGBCOLOR:
+      result = color;
+      return true;
+    case SVG_PAINTTYPE_CURRENTCOLOR:
+      result = StyleColor::CurrentColor();
+      return true;
+    default:
+      return false;
+  }
+}
+
+bool GetColor(CSSPropertyID property,
+              const ComputedStyle& style,
+              StyleColor& result) {
+  switch (property) {
+    case CSSPropertyFill:
+      return GetColorFromPaint(style.SvgStyle().FillPaintType(),
+                               style.SvgStyle().FillPaintColor(), result);
+    case CSSPropertyStroke:
+      return GetColorFromPaint(style.SvgStyle().StrokePaintType(),
+                               style.SvgStyle().StrokePaintColor(), result);
+    default:
+      NOTREACHED();
+      return false;
+  }
+}
+}  // namespace
 
 InterpolationValue CSSPaintInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
@@ -23,7 +58,7 @@ InterpolationValue CSSPaintInterpolationType::MaybeConvertInitial(
     const StyleResolverState&,
     ConversionCheckers& conversion_checkers) const {
   StyleColor initial_color;
-  if (!PaintPropertyFunctions::GetInitialColor(CssProperty(), initial_color))
+  if (!GetColor(CssProperty(), ComputedStyle::InitialStyle(), initial_color))
     return nullptr;
   return InterpolationValue(
       CSSColorInterpolationType::CreateInterpolableColor(initial_color));
@@ -50,8 +85,7 @@ class InheritedPaintChecker
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
     StyleColor parent_color;
-    if (!PaintPropertyFunctions::GetColor(property_, *state.ParentStyle(),
-                                          parent_color))
+    if (!GetColor(property_, *state.ParentStyle(), parent_color))
       return !valid_color_;
     return valid_color_ && parent_color == color_;
   }
@@ -67,8 +101,7 @@ InterpolationValue CSSPaintInterpolationType::MaybeConvertInherit(
   if (!state.ParentStyle())
     return nullptr;
   StyleColor parent_color;
-  if (!PaintPropertyFunctions::GetColor(CssProperty(), *state.ParentStyle(),
-                                        parent_color)) {
+  if (!GetColor(CssProperty(), *state.ParentStyle(), parent_color)) {
     conversion_checkers.push_back(InheritedPaintChecker::Create(CssProperty()));
     return nullptr;
   }
@@ -95,7 +128,7 @@ CSSPaintInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
   // TODO(alancutter): Support capturing and animating with the visited paint
   // color.
   StyleColor underlying_color;
-  if (!PaintPropertyFunctions::GetColor(CssProperty(), style, underlying_color))
+  if (!GetColor(CssProperty(), style, underlying_color))
     return nullptr;
   return InterpolationValue(
       CSSColorInterpolationType::CreateInterpolableColor(underlying_color));
@@ -105,10 +138,20 @@ void CSSPaintInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_color,
     const NonInterpolableValue*,
     StyleResolverState& state) const {
-  PaintPropertyFunctions::SetColor(
-      CssProperty(), *state.Style(),
-      CSSColorInterpolationType::ResolveInterpolableColor(interpolable_color,
-                                                          state));
+  Color color = CSSColorInterpolationType::ResolveInterpolableColor(
+      interpolable_color, state);
+  switch (CssProperty()) {
+    case CSSPropertyFill:
+      state.Style()->AccessSVGStyle().SetFillPaint(SVG_PAINTTYPE_RGBCOLOR,
+                                                   color, String(), true, true);
+      break;
+    case CSSPropertyStroke:
+      state.Style()->AccessSVGStyle().SetStrokePaint(
+          SVG_PAINTTYPE_RGBCOLOR, color, String(), true, true);
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 }  // namespace blink

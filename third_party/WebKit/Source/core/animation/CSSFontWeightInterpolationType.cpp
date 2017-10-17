@@ -5,13 +5,31 @@
 #include "core/animation/CSSFontWeightInterpolationType.h"
 
 #include <memory>
-#include "core/animation/FontWeightConversion.h"
 #include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/ComputedStyle.h"
+#include "platform/wtf/MathExtras.h"
 #include "platform/wtf/PtrUtil.h"
+#include "platform/wtf/StdLibExtras.h"
 
 namespace blink {
+
+namespace {
+FontSelectionValue DoubleToFontWeight(double value) {
+  // Until we allow continuous animations for font weight in a subsequent CL
+  // (crbug.com/739334), convert to a discrete font weight value here.
+  static const FontSelectionValue kFontWeights[] = {
+      FontSelectionValue(100), FontSelectionValue(200), FontSelectionValue(300),
+      FontSelectionValue(400), FontSelectionValue(500), FontSelectionValue(600),
+      FontSelectionValue(700), FontSelectionValue(800), FontSelectionValue(900),
+  };
+
+  int index = round(value / 100 - 1);
+  int clamped_index =
+      clampTo<int>(index, 0, WTF_ARRAY_LENGTH(kFontWeights) - 1);
+  return kFontWeights[clamped_index];
+}
+}  // namespace
 
 class InheritedFontWeightChecker
     : public CSSInterpolationType::CSSConversionChecker {
