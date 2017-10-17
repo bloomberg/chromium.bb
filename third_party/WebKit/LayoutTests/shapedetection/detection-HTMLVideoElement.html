@@ -36,10 +36,7 @@ var createTestForVideoElement = function(createDetector, mock,
 
 function FaceDetectorDetectionResultTest(detectionResult, mock) {
   const imageReceivedByMock = mock.getFrameData();
-  assert_equals(imageReceivedByMock.byteLength, 307200,
-                "Image length");
-  const WHITE_PIXEL = 0xFFFFFFFF;
-  assert_equals(imageReceivedByMock[0], WHITE_PIXEL, "Pixel color");
+  assert_equals(imageReceivedByMock.byteLength, 307200, "Image length");
   assert_equals(detectionResult.length, 3, "Number of faces");
 }
 
