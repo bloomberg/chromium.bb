@@ -52,8 +52,11 @@ class GlobalCookieStoreImpl final
   CookieStore* GetCookieStore(ExecutionContext* execution_context) {
     if (!cookie_store_) {
       network::mojom::blink::RestrictedCookieManagerPtr cookie_manager_ptr;
-      execution_context->GetInterfaceProvider()->GetInterface(
-          mojo::MakeRequest(&cookie_manager_ptr));
+      service_manager::InterfaceProvider* interface_provider =
+          execution_context->GetInterfaceProvider();
+      if (!interface_provider)
+        return nullptr;
+      interface_provider->GetInterface(mojo::MakeRequest(&cookie_manager_ptr));
       cookie_store_ =
           CookieStore::Create(execution_context, std::move(cookie_manager_ptr));
     }
