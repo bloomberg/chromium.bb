@@ -776,9 +776,8 @@ const char kMarkHttpAsNonSecureWhileIncognito[] =
 const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[] =
     "Warn on HTTP while in Incognito mode or after editing forms";
 
-extern const char kMaterialDesignIncognitoNTPName[] =
-    "Material Design Incognito NTP.";
-extern const char kMaterialDesignIncognitoNTPDescription[] =
+const char kMaterialDesignIncognitoNTPName[] = "Material Design Incognito NTP.";
+const char kMaterialDesignIncognitoNTPDescription[] =
     "If enabled, the Incognito New Tab page uses the new material design with "
     "a better readable text.";
 
@@ -1967,8 +1966,8 @@ const char kOffliningRecentPagesDescription[] =
     "Enable storing recently visited pages locally for offline use. Requires "
     "Offline Pages to be enabled.";
 
-extern const char kPayWithGoogleV1Name[] = "Pay with Google v1";
-extern const char kPayWithGoogleV1Description[] =
+const char kPayWithGoogleV1Name[] = "Pay with Google v1";
+const char kPayWithGoogleV1Description[] =
     "Enable Pay with Google integration into Web Payments with API version "
     "'1'.";
 
@@ -2192,8 +2191,8 @@ const char kWindows10CustomTitlebarDescription[] =
     "deferring to Windows.";
 
 #if DCHECK_IS_ON() && defined(SYZYASAN)
-extern const char kSyzyAsanDcheckIsFatalName[] = "DCHECKs are fatal";
-extern const char kSyzyAsanDcheckIsFatalDescription[] =
+const char kSyzyAsanDcheckIsFatalName[] = "DCHECKs are fatal";
+const char kSyzyAsanDcheckIsFatalDescription[] =
     "By default Chrome will evaluate DCHECKs in SyzyASAN builds, but only log "
     "failed DCHECKs. If enabled, DCHECKs will crash the calling process.";
 #endif  // DCHECK_IS_ON() && defined(SYZYASAN)
@@ -2218,9 +2217,8 @@ const char kAppWindowCyclingDescription[] =
     "browser window, and browser windows will not be cycled when a Chrome App "
     "is active.";
 
-extern const char kCreditCardAutofillTouchBarName[] =
-    "Credit Card Autofill Touch Bar";
-extern const char kCreditCardAutofillTouchBarDescription[] =
+const char kCreditCardAutofillTouchBarName[] = "Credit Card Autofill Touch Bar";
+const char kCreditCardAutofillTouchBarDescription[] =
     "Shows Credit Card Autofill Suggestions on the Touch Bar.";
 
 const char kFullscreenToolbarRevealName[] =
@@ -2234,8 +2232,8 @@ const char kContentFullscreenDescription[] =
     "Fullscreen content window detaches from main browser window and goes to "
     "a new space without moving or changing the original browser window.";
 
-extern const char kDialogTouchBarName[] = "Dialog Touch Bar";
-extern const char kDialogTouchBarDescription[] =
+const char kDialogTouchBarName[] = "Dialog Touch Bar";
+const char kDialogTouchBarDescription[] =
     "Shows Dialog buttons on the Touch Bar.";
 
 const char kHostedAppsInWindowsName[] =
@@ -2244,17 +2242,15 @@ const char kHostedAppsInWindowsDescription[] =
     "Allows hosted apps to be opened in windows instead of being limited to "
     "tabs.";
 
-extern const char kMacRTLName[] = "Enable RTL";
-extern const char kMacRTLDescription[] =
-    "Mirrors the UI for RTL language users";
+const char kMacRTLName[] = "Enable RTL";
+const char kMacRTLDescription[] = "Mirrors the UI for RTL language users";
 
-extern const char kMacSystemShareMenuName[] = "Enable System Share Menu";
-extern const char kMacSystemShareMenuDescription[] =
+const char kMacSystemShareMenuName[] = "Enable System Share Menu";
+const char kMacSystemShareMenuDescription[] =
     "Enables sharing via macOS share extensions.";
 
-extern const char kMacTouchBarName[] = "Hardware Touch Bar";
-extern const char kMacTouchBarDescription[] =
-    "Control the use of the Touch Bar.";
+const char kMacTouchBarName[] = "Hardware Touch Bar";
+const char kMacTouchBarDescription[] = "Control the use of the Touch Bar.";
 
 const char kMacV2SandboxName[] = "Mac V2 Sandbox";
 const char kMacV2SandboxDescription[] =
@@ -2377,8 +2373,8 @@ const char kEnableFullscreenAppListDescription[] =
     "The peeking launcher UI supports touch and provides more space for "
     "upcoming features.";
 
-extern const char kEnableBackgroundBlurName[] = "Enable background blur.";
-extern const char kEnableBackgroundBlurDescription[] =
+const char kEnableBackgroundBlurName[] = "Enable background blur.";
+const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Peeking Launcher, Lock Screen, and Tab "
     "Switcher.";
 

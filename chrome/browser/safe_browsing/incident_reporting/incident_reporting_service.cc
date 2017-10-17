@@ -46,7 +46,7 @@
 
 namespace safe_browsing {
 
-extern const base::Feature kIncidentReportingEnableUpload {
+const base::Feature kIncidentReportingEnableUpload {
   "IncidentReportingEnableUpload",
 #if defined(GOOGLE_CHROME_BUILD)
       base::FEATURE_ENABLED_BY_DEFAULT
