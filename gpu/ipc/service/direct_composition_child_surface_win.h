@@ -5,11 +5,11 @@
 #ifndef GPU_IPC_SERVICE_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
 #define GPU_IPC_SERVICE_DIRECT_COMPOSITION_CHILD_SURFACE_WIN_H_
 
+#include <windows.h>
 #include <d3d11.h>
 #include <dcomp.h>
-#include <windows.h>
+#include <wrl/client.h>
 
-#include "base/win/scoped_comptr.h"
 #include "gpu/gpu_export.h"
 #include "ui/gl/gl_surface_egl.h"
 
@@ -37,11 +37,11 @@ class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
   bool SetDrawRectangle(const gfx::Rect& rect) override;
   gfx::Vector2d GetDrawOffset() const override;
 
-  const base::win::ScopedComPtr<IDCompositionSurface>& dcomp_surface() const {
+  const Microsoft::WRL::ComPtr<IDCompositionSurface>& dcomp_surface() const {
     return dcomp_surface_;
   }
 
-  const base::win::ScopedComPtr<IDXGISwapChain1>& swap_chain() const {
+  const Microsoft::WRL::ComPtr<IDXGISwapChain1>& swap_chain() const {
     return swap_chain_;
   }
 
@@ -78,11 +78,11 @@ class GPU_EXPORT DirectCompositionChildSurfaceWin : public gl::GLSurfaceEGL {
   // be called on the device.
   uint64_t dcomp_surface_serial_ = 0;
 
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
-  base::win::ScopedComPtr<IDCompositionDevice2> dcomp_device_;
-  base::win::ScopedComPtr<IDCompositionSurface> dcomp_surface_;
-  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain_;
-  base::win::ScopedComPtr<ID3D11Texture2D> draw_texture_;
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
+  Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device_;
+  Microsoft::WRL::ComPtr<IDCompositionSurface> dcomp_surface_;
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> draw_texture_;
 
   // Keep track of whether the texture has been rendered to, as the first draw
   // to it must overwrite the entire thing.

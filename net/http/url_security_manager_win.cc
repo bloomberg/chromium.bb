@@ -5,11 +5,11 @@
 #include "net/http/url_security_manager.h"
 
 #include <urlmon.h>
+#include <wrl/client.h>
 
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/scoped_comptr.h"
 #include "net/http/http_auth_filter.h"
 #include "url/gurl.h"
 
@@ -37,7 +37,7 @@ class URLSecurityManagerWin : public URLSecurityManagerWhitelist {
  private:
   bool EnsureSystemSecurityManager();
 
-  base::win::ScopedComPtr<IInternetSecurityManager> security_manager_;
+  Microsoft::WRL::ComPtr<IInternetSecurityManager> security_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(URLSecurityManagerWin);
 };

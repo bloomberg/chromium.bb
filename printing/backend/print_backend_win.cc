@@ -7,6 +7,7 @@
 #include <objidl.h>
 #include <stddef.h>
 #include <winspool.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -17,7 +18,6 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_hglobal.h"
 #include "printing/backend/print_backend_consts.h"
 #include "printing/backend/printing_info_win.h"
@@ -324,7 +324,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
     return true;
 
   {
-    base::win::ScopedComPtr<IStream> print_capabilities_stream;
+    Microsoft::WRL::ComPtr<IStream> print_capabilities_stream;
     hr = CreateStreamOnHGlobal(nullptr, TRUE,
                                print_capabilities_stream.GetAddressOf());
     DCHECK(SUCCEEDED(hr));
@@ -347,7 +347,7 @@ bool PrintBackendWin::GetPrinterCapsAndDefaults(
           CreateDevMode(printer_handle.Get(), nullptr));
       if (!devmode_out)
         return false;
-      base::win::ScopedComPtr<IStream> printer_defaults_stream;
+      Microsoft::WRL::ComPtr<IStream> printer_defaults_stream;
       hr = CreateStreamOnHGlobal(nullptr, TRUE,
                                  printer_defaults_stream.GetAddressOf());
       DCHECK(SUCCEEDED(hr));

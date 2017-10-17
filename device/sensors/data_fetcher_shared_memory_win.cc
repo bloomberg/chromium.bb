@@ -312,13 +312,13 @@ bool DataFetcherSharedMemory::RegisterForSensor(
     REFSENSOR_TYPE_ID sensor_type,
     ISensor** sensor,
     scoped_refptr<SensorEventSink> event_sink) {
-  base::win::ScopedComPtr<ISensorManager> sensor_manager;
+  Microsoft::WRL::ComPtr<ISensorManager> sensor_manager;
   HRESULT hr = ::CoCreateInstance(CLSID_SensorManager, nullptr, CLSCTX_ALL,
                                   IID_PPV_ARGS(&sensor_manager));
   if (FAILED(hr) || !sensor_manager.Get())
     return false;
 
-  base::win::ScopedComPtr<ISensorCollection> sensor_collection;
+  Microsoft::WRL::ComPtr<ISensorCollection> sensor_collection;
   hr = sensor_manager->GetSensorsByType(sensor_type,
                                         sensor_collection.GetAddressOf());
 
@@ -334,19 +334,19 @@ bool DataFetcherSharedMemory::RegisterForSensor(
   if (FAILED(hr) || !(*sensor))
     return false;
 
-  base::win::ScopedComPtr<IPortableDeviceValues> device_values;
+  Microsoft::WRL::ComPtr<IPortableDeviceValues> device_values;
   if (SUCCEEDED(::CoCreateInstance(CLSID_PortableDeviceValues, nullptr,
                                    CLSCTX_ALL, IID_PPV_ARGS(&device_values)))) {
     if (SUCCEEDED(device_values->SetUnsignedIntegerValue(
             SENSOR_PROPERTY_CURRENT_REPORT_INTERVAL,
             GetInterval().InMilliseconds()))) {
-      base::win::ScopedComPtr<IPortableDeviceValues> return_values;
+      Microsoft::WRL::ComPtr<IPortableDeviceValues> return_values;
       (*sensor)->SetProperties(device_values.Get(),
                                return_values.GetAddressOf());
     }
   }
 
-  base::win::ScopedComPtr<ISensorEvents> sensor_events;
+  Microsoft::WRL::ComPtr<ISensorEvents> sensor_events;
   hr = event_sink->QueryInterface(IID_PPV_ARGS(&sensor_events));
   if (FAILED(hr) || !sensor_events.Get())
     return false;

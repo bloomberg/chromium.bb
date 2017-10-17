@@ -114,8 +114,8 @@ void DestroySurface(scoped_refptr<DirectCompositionSurfaceWin> surface) {
   base::RunLoop().RunUntilIdle();
 }
 
-base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
-    const base::win::ScopedComPtr<ID3D11Device>& d3d11_device,
+Microsoft::WRL::ComPtr<ID3D11Texture2D> CreateNV12Texture(
+    const Microsoft::WRL::ComPtr<ID3D11Device>& d3d11_device,
     const gfx::Size& size,
     bool shared) {
   D3D11_TEXTURE2D_DESC desc = {};
@@ -140,7 +140,7 @@ base::win::ScopedComPtr<ID3D11Texture2D> CreateNV12Texture(
   data.pSysMem = (const void*)&image_data[0];
   data.SysMemPitch = size.width();
 
-  base::win::ScopedComPtr<ID3D11Texture2D> texture;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture;
   HRESULT hr =
       d3d11_device->CreateTexture2D(&desc, &data, texture.GetAddressOf());
   CHECK(SUCCEEDED(hr));
@@ -287,7 +287,7 @@ TEST(DirectCompositionSurfaceTest, SwitchAlpha) {
   EXPECT_FALSE(surface->swap_chain());
 
   EXPECT_TRUE(surface->SetDrawRectangle(gfx::Rect(0, 0, 100, 100)));
-  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain = surface->swap_chain();
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain = surface->swap_chain();
   ASSERT_TRUE(swap_chain);
   DXGI_SWAP_CHAIN_DESC1 desc;
   swap_chain->GetDesc1(&desc);
@@ -329,11 +329,11 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   scoped_refptr<gl::GLContext> context =
       gl::init::CreateGLContext(nullptr, surface.get(), gl::GLContextAttribs());
 
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
-  base::win::ScopedComPtr<ID3D11Texture2D> texture =
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, false);
 
   scoped_refptr<gl::GLImageDXGI> image_dxgi(
@@ -348,7 +348,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
       0);
   surface->ScheduleDCLayer(params);
 
-  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain =
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain =
       surface->GetLayerSwapChainForTesting(1);
   ASSERT_FALSE(swap_chain);
 
@@ -367,7 +367,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
   surface->ScheduleDCLayer(params);
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
 
-  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain2 =
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain2 =
       surface->GetLayerSwapChainForTesting(1);
   EXPECT_EQ(swap_chain2.Get(), swap_chain.Get());
 
@@ -385,7 +385,7 @@ TEST(DirectCompositionSurfaceTest, NoPresentTwice) {
 
   EXPECT_EQ(gfx::SwapResult::SWAP_ACK, surface->SwapBuffers());
 
-  base::win::ScopedComPtr<IDXGISwapChain1> swap_chain3 =
+  Microsoft::WRL::ComPtr<IDXGISwapChain1> swap_chain3 =
       surface->GetLayerSwapChainForTesting(1);
   EXPECT_NE(swap_chain2.Get(), swap_chain3.Get());
 
@@ -512,11 +512,11 @@ class DirectCompositionVideoPixelTest : public DirectCompositionPixelTest {
     EXPECT_TRUE(surface_->Resize(window_size, 1.0,
                                  gl::GLSurface::ColorSpace::UNSPECIFIED, true));
 
-    base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+    Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
         gl::QueryD3D11DeviceObjectFromANGLE();
 
     gfx::Size texture_size(50, 50);
-    base::win::ScopedComPtr<ID3D11Texture2D> texture =
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
         CreateNV12Texture(d3d11_device, texture_size, false);
 
     scoped_refptr<gl::GLImageDXGI> image_dxgi(
@@ -597,7 +597,7 @@ TEST_F(DirectCompositionPixelTest, SoftwareVideoSwapchain) {
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
                                gl::GLSurface::ColorSpace::UNSPECIFIED, true));
 
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size y_size(50, 50);
@@ -651,13 +651,13 @@ TEST_F(DirectCompositionPixelTest, VideoHandleSwapchain) {
   EXPECT_TRUE(surface_->Resize(window_size, 1.0,
                                gl::GLSurface::ColorSpace::UNSPECIFIED, true));
 
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device =
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device =
       gl::QueryD3D11DeviceObjectFromANGLE();
 
   gfx::Size texture_size(50, 50);
-  base::win::ScopedComPtr<ID3D11Texture2D> texture =
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture =
       CreateNV12Texture(d3d11_device, texture_size, true);
-  base::win::ScopedComPtr<IDXGIResource1> resource;
+  Microsoft::WRL::ComPtr<IDXGIResource1> resource;
   texture.CopyTo(resource.GetAddressOf());
   HANDLE handle;
   resource->CreateSharedHandle(nullptr, DXGI_SHARED_RESOURCE_READ, nullptr,

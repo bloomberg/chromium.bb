@@ -18,7 +18,7 @@
 class SuddenMotionSensor;
 #elif defined(OS_WIN)
 #include <SensorsApi.h>
-#include "base/win/scoped_comptr.h"
+#include <wrl/client.h>
 #endif
 
 namespace device {
@@ -69,10 +69,10 @@ class DEVICE_SENSOR_EXPORT DataFetcherSharedMemory
   void DisableSensors(ConsumerType consumer_type);
   void SetBufferAvailableState(ConsumerType consumer_type, bool enabled);
 
-  base::win::ScopedComPtr<ISensor> sensor_inclinometer_;
-  base::win::ScopedComPtr<ISensor> sensor_inclinometer_absolute_;
-  base::win::ScopedComPtr<ISensor> sensor_accelerometer_;
-  base::win::ScopedComPtr<ISensor> sensor_gyrometer_;
+  Microsoft::WRL::ComPtr<ISensor> sensor_inclinometer_;
+  Microsoft::WRL::ComPtr<ISensor> sensor_inclinometer_absolute_;
+  Microsoft::WRL::ComPtr<ISensor> sensor_accelerometer_;
+  Microsoft::WRL::ComPtr<ISensor> sensor_gyrometer_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(DataFetcherSharedMemory);
