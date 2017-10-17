@@ -194,6 +194,7 @@ public class DownloadBroadcastManager extends Service {
     @VisibleForTesting
     void propagateInteraction(Intent intent) {
         String action = intent.getAction();
+        DownloadNotificationUmaHelper.recordNotificationInteractionHistogram(action);
         final ContentId id = getContentIdFromIntent(intent);
 
         // Handle actions that do not require a specific entry or service delegate.

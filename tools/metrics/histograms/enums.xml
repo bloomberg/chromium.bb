@@ -9317,6 +9317,33 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="8" label="POTENTIALLY_UNWANTED"/>
 </enum>
 
+<enum name="DownloadNotificationForegroundLifecycle">
+  <int value="0" label="START"/>
+  <int value="1" label="UPDATE"/>
+  <int value="2" label="STOP"/>
+</enum>
+
+<enum name="DownloadNotificationInteractions">
+  <int value="0" label="CLICKED"/>
+  <int value="1" label="OPEN"/>
+  <int value="2" label="CANCEL"/>
+  <int value="3" label="PAUSE"/>
+  <int value="4" label="RESUME"/>
+</enum>
+
+<enum name="DownloadNotificationLaunchType">
+  <int value="0" label="LAUNCH"/>
+  <int value="1" label="RELAUNCH"/>
+</enum>
+
+<enum name="DownloadNotificationServiceStopped">
+  <int value="0" label="STOPPED"/>
+  <int value="1" label="DESTROYED"/>
+  <int value="2" label="TASK_REMOVED"/>
+  <int value="3" label="LOW_MEMORY"/>
+  <int value="4" label="START_STICKY"/>
+</enum>
+
 <enum name="DownloadOpenMethod">
   <int value="0" label="Opened with plaform handler by default"/>
   <int value="1" label="Opened in browser by default"/>
