@@ -389,3 +389,13 @@ IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest,
                       "switchRemoteStreamWithoutWaitingForPromisesToResolve()",
                       left_tab_));
 }
+
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, TrackSwitchingStream) {
+  StartServerAndOpenTabs();
+  EXPECT_EQ("ok", ExecuteJavascript("trackSwitchingStream()", left_tab_));
+}
+
+IN_PROC_BROWSER_TEST_F(WebRtcRtpBrowserTest, TrackAddedToSecondStream) {
+  StartServerAndOpenTabs();
+  EXPECT_EQ("ok", ExecuteJavascript("trackAddedToSecondStream()", left_tab_));
+}
