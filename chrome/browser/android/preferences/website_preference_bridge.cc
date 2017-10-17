@@ -588,7 +588,7 @@ class SiteDataDeleteHelper :
     RecursivelyFindSiteAndDelete(cookies_tree_model_->GetRoot());
 
     // This will result in this class getting deleted.
-    Release();
+    BrowserThread::ReleaseSoon(BrowserThread::UI, FROM_HERE, this);
   }
 
   void RecursivelyFindSiteAndDelete(CookieTreeNode* node) {
