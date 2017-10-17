@@ -37,4 +37,8 @@ void EchoService::EchoString(const std::string& input,
   std::move(callback).Run(input);
 }
 
+void EchoService::Quit() {
+  context()->RequestQuit();
+}
+
 }  // namespace echo

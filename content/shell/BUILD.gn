@@ -10,6 +10,7 @@ import("//build/config/win/manifest.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//ppapi/features/features.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/repack.gni")
 import("//tools/grit/grit_rule.gni")
 if (is_android) {
@@ -218,6 +219,7 @@ static_library("content_shell_lib") {
     "//ipc",
   ]
   deps = [
+    ":content_shell_packaged_services_manifest_overlay",
     ":mojo_bindings",
     ":resources",
     "//base",
@@ -258,6 +260,8 @@ static_library("content_shell_lib") {
     "//ppapi/features",
     "//sandbox",
     "//services/service_manager/public/cpp",
+    "//services/test/echo:lib",
+    "//services/test/echo/public/interfaces",
     "//skia",
     "//storage/browser",
     "//testing/gmock",
@@ -404,6 +408,16 @@ grit("content_shell_resources_grit") {
   outputs = [
     "grit/shell_resources.h",
     "shell_resources.pak",
+  ]
+
+  # Mojo manifest overlays are generated.
+  source_is_generated = true
+  grit_flags = [
+    "-E",
+    "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+  ]
+  deps = [
+    ":content_shell_packaged_services_manifest_overlay",
   ]
 }
 
@@ -799,6 +813,11 @@ mojom("mojo_bindings") {
     "//ui/gfx/geometry/mojo",
     "//url/mojo:url_mojom_gurl",
   ]
+}
+
+service_manifest("content_shell_packaged_services_manifest_overlay") {
+  source = "//content/shell/browser/content_shell_packaged_services_manifest_overlay.json"
+  packaged_services = [ "//services/test/echo:manifest" ]
 }
 
 group("content_shell_crash_test") {

@@ -29,6 +29,7 @@ class EchoService : public service_manager::Service, public mojom::Echo {
   // mojom::Echo:
   void EchoString(const std::string& input,
                   EchoStringCallback callback) override;
+  void Quit() override;
 
   void BindEchoRequest(mojom::EchoRequest request);
 
