@@ -59,25 +59,25 @@ function test() {
     };
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testShowAll(next) {
     // Make sure all nodes are visible.
     Profiler.HeapSnapshotDiffDataGrid.prototype.defaultPopulateCount = function() {
       return 100;
     };
 
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotA, createSnapshotB);
     function createSnapshotB() {
-      ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
+      HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshotB, step1);
     }
 
     function step1() {
-      ProfilerTestRunner.switchToView('Comparison', step2);
+      HeapSnapshotTestRunner.switchToView('Comparison', step2);
     }
 
     function step2() {
-      var row = ProfilerTestRunner.findRow('A');
+      var row = HeapSnapshotTestRunner.findRow('A');
       TestRunner.assertEquals(true, !!row, '"A" row');
-      ProfilerTestRunner.expandRow(row, step3);
+      HeapSnapshotTestRunner.expandRow(row, step3);
     }
 
     function step3(row) {

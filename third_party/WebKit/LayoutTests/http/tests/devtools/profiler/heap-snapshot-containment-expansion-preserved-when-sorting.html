@@ -7,58 +7,58 @@
 function test() {
   var instanceCount = 25;
   function createHeapSnapshot() {
-    return ProfilerTestRunner.createHeapSnapshot(instanceCount);
+    return HeapSnapshotTestRunner.createHeapSnapshot(instanceCount);
   }
 
-  ProfilerTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
-    ProfilerTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
+  HeapSnapshotTestRunner.runHeapSnapshotTestSuite([function testExpansionPreservedWhenSorting(next) {
+    HeapSnapshotTestRunner.takeAndOpenSnapshot(createHeapSnapshot, step1);
 
     function step1() {
-      ProfilerTestRunner.switchToView('Containment', step2);
+      HeapSnapshotTestRunner.switchToView('Containment', step2);
     }
 
     var columns;
     function step2() {
-      columns = ProfilerTestRunner.viewColumns();
-      ProfilerTestRunner.clickColumn(columns[0], step3);
+      columns = HeapSnapshotTestRunner.viewColumns();
+      HeapSnapshotTestRunner.clickColumn(columns[0], step3);
     }
 
     function step3() {
-      ProfilerTestRunner.findAndExpandWindow(step4);
+      HeapSnapshotTestRunner.findAndExpandWindow(step4);
     }
 
     function step4(row) {
-      var buttonsNode = ProfilerTestRunner.findButtonsNode(row);
+      var buttonsNode = HeapSnapshotTestRunner.findButtonsNode(row);
       TestRunner.assertEquals(true, !!buttonsNode, 'no buttons node found!');
-      ProfilerTestRunner.clickShowMoreButton('showAll', buttonsNode, step5);
+      HeapSnapshotTestRunner.clickShowMoreButton('showAll', buttonsNode, step5);
     }
 
     function step5(row) {
       var row = row.children[0];
       TestRunner.assertEquals(true, !!row, '"B" instance row');
-      ProfilerTestRunner.expandRow(row, expandA);
+      HeapSnapshotTestRunner.expandRow(row, expandA);
       function expandA(row) {
         function propertyMatcher(data) {
           return data._referenceName === 'a' && data._name.charAt(0) === 'A';
         }
-        var aRow = ProfilerTestRunner.findMatchingRow(propertyMatcher, row);
+        var aRow = HeapSnapshotTestRunner.findMatchingRow(propertyMatcher, row);
         TestRunner.assertEquals(true, !!aRow, '"a: A" row');
-        ProfilerTestRunner.expandRow(aRow, step6);
+        HeapSnapshotTestRunner.expandRow(aRow, step6);
       }
     }
 
     var columnContents;
     function step6() {
-      columnContents = ProfilerTestRunner.columnContents(columns[0]);
-      ProfilerTestRunner.clickColumn(columns[0], clickTwice);
+      columnContents = HeapSnapshotTestRunner.columnContents(columns[0]);
+      HeapSnapshotTestRunner.clickColumn(columns[0], clickTwice);
       function clickTwice() {
-        ProfilerTestRunner.clickColumn(columns[0], step7);
+        HeapSnapshotTestRunner.clickColumn(columns[0], step7);
       }
     }
 
     function step7() {
-      var newColumnContents = ProfilerTestRunner.columnContents(columns[0]);
-      ProfilerTestRunner.assertColumnContentsEqual(columnContents, newColumnContents);
+      var newColumnContents = HeapSnapshotTestRunner.columnContents(columns[0]);
+      HeapSnapshotTestRunner.assertColumnContentsEqual(columnContents, newColumnContents);
       setTimeout(next, 0);
     }
   }]);
