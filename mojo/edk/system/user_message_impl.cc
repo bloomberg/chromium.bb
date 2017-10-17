@@ -279,7 +279,9 @@ UserMessageImpl::~UserMessageImpl() {
 
     if (!pending_handle_attachments_.empty()) {
       internal::g_core->ReleaseDispatchersForTransit(
-          pending_handle_attachments_, true);
+          pending_handle_attachments_, false);
+      for (const auto& dispatcher : pending_handle_attachments_)
+        MojoClose(dispatcher.local_handle);
     }
   }
 }
