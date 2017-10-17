@@ -13,10 +13,10 @@
 #include "ash/display/touch_calibrator_controller.h"
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/chromeos/display/display_preferences.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "extensions/common/api/system_display.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
@@ -421,9 +421,7 @@ bool ValidateParamsForTouchCalibration(
 }
 
 bool IsTabletModeWindowManagerEnabled() {
-  return ash::Shell::Get()
-      ->tablet_mode_controller()
-      ->IsTabletModeWindowManagerEnabled();
+  return TabletModeClient::Get()->tablet_mode_enabled();
 }
 
 }  // namespace
