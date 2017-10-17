@@ -69,8 +69,6 @@ fuzzer_test("safe_browsing_dmg_fuzzer") {
     ":dmg_common",
     "//base",
   ]
-
-  libfuzzer_options = [ "close_fd_mask=2" ]
 }
 
 fuzzer_test("safe_browsing_hfs_fuzzer") {
