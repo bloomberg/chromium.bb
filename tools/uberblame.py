@@ -24,7 +24,8 @@ class TokenContext(object):
     row: Row index of the token in the data file.
     column: Column index of the token in the data file.
     token: The token string.
-    commit: Hash of the git commit that added this token.
+    commit: A Commit object that corresponds to the commit that added
+      this token.
   """
   def __init__(self, row, column, token, commit=None):
     self.row = row
@@ -38,10 +39,19 @@ class Commit(object):
 
   Attributes:
     hash: The commit hash.
+    author_name: The author's name.
+    author_email: the author's email.
+    author_date: The date and time the author created this commit.
+    message: The commit message.
     diff: The commit diff.
   """
-  def __init__(self, hash, diff):
+  def __init__(self, hash, author_name, author_email, author_date, message,
+               diff):
     self.hash = hash
+    self.author_name = author_name
+    self.author_email = author_email
+    self.author_date = author_date
+    self.message = message
     self.diff = diff
 
 
@@ -300,19 +310,25 @@ def generate_substrings(file):
   Args:
     file: A readable file.
   """
-  data = ''
+  BUF_SIZE = 448  # Experimentally found to be pretty fast.
+  data = []
   while True:
-    ch = file.read(1)
-    if ch == '':
-      break
-    if ch == '\0':
-      if data != '':
-        yield data
-        data = ''
-    else:
-      data += ch
-  if data != '':
-    yield data
+    buf = file.read(BUF_SIZE)
+    parts = buf.split('\0')
+    data.append(parts[0])
+    if len(parts) > 1:
+      joined = ''.join(data)
+      if joined != '':
+        yield joined
+      for i in range(1, len(parts) - 1):
+        if parts[i] != '':
+          yield parts[i]
+      data = [parts[-1]]
+    if len(buf) < BUF_SIZE:
+      joined = ''.join(data)
+      if joined != '':
+        yield joined
+      return
 
 
 def generate_commits(git_log_stdout):
@@ -320,9 +336,13 @@ def generate_commits(git_log_stdout):
   """
   substring_generator = generate_substrings(git_log_stdout)
   while True:
-    hash = substring_generator.next().strip('\n')
-    diff = substring_generator.next().strip('\n').split('\n')
-    yield Commit(hash, diff)
+    hash = substring_generator.next()
+    author_name = substring_generator.next()
+    author_email = substring_generator.next()
+    author_date = substring_generator.next()
+    message = substring_generator.next()
+    diff = substring_generator.next().split('\n')
+    yield Commit(hash, author_name, author_email, author_date, message, diff)
 
 
 def uberblame_aux(file_name, git_log_stdout, data):
@@ -368,7 +388,7 @@ def uberblame_aux(file_name, git_log_stdout, data):
       added_token_positions, changed_token_positions = (
           compute_changed_token_positions(previous_tokens, current_tokens))
       for r, c in added_token_positions:
-        current_contexts[r][c].commit = commit.hash
+        current_contexts[r][c].commit = commit
         blamed_tokens += 1
       for r, c in changed_token_positions:
         pr, pc = changed_token_positions[(r, c)]
@@ -395,9 +415,22 @@ def uberblame(file_name, revision):
       data: File contents.
       blame: A list of TokenContexts.
   """
-  cmd_git_log = ['git', 'log', '--minimal', '--no-prefix', '--follow', '-m',
-                 '--first-parent', '-p', '-U0', '-z', '--format=%x00%h',
-                 revision, '--', file_name]
+  cmd_git_log = [
+      'git',
+      'log',
+      '--minimal',
+      '--no-prefix',
+      '--follow',
+      '-m',
+      '--first-parent',
+      '-p',
+      '-U0',
+      '-z',
+      '--format=%x00%H%x00%an%x00%ae%x00%ad%x00%B',
+      revision,
+      '--',
+      file_name
+  ]
   git_log = subprocess.Popen(cmd_git_log,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
@@ -440,36 +473,62 @@ def visualize_uberblame(data, blame):
         pre {
           display: inline;
         }
-        a {
-          color: #000000;
-          text-decoration: none;
-        }
         span {
           outline: 1pt solid #00000030;
           outline-offset: -1pt;
+          cursor: pointer;
         }
         #linenums {
           text-align: right;
         }
+        #file_display {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 50%%;
+          height: 100%%;
+          overflow: scroll;
+        }
+        #commit_display_container {
+          position: absolute;
+          left: 50%%;
+          top: 0;
+          width: 50%%;
+          height: 100%%;
+          overflow: scroll;
+        }
       </style>
+      <script>
+        commit_data = %s;
+        function display_commit(hash) {
+          var e = document.getElementById("commit_display");
+          e.innerHTML = commit_data[hash]
+        }
+      </script>
     </head>
     <body>
-      <table>
-        <tbody>
-          <tr>
-            <td valign="top" id="linenums">
-              <pre>%s</pre>
-            </td>
-            <td valign="top">
-              <pre>%s</pre>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+      <div id="file_display">
+        <table>
+          <tbody>
+            <tr>
+              <td valign="top" id="linenums">
+                <pre>%s</pre>
+              </td>
+              <td valign="top">
+                <pre>%s</pre>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div id="commit_display_container" valign="top">
+        <pre id="commit_display" />
+      </div>
     </body>
   </html>
   """
   html = textwrap.dedent(html)
+  commits = {}
   lines = []
   commit_colors = {}
   blame_index = 0
@@ -485,29 +544,57 @@ def visualize_uberblame(data, blame):
         if (row == token_context.row and
             column == token_context.column + len(token_context.token)):
           if (blame_index + 1 == len(blame) or
-              blame[blame_index].commit != blame[blame_index + 1].commit):
-            lines.append('</a></span>')
+              blame[blame_index].commit.hash !=
+              blame[blame_index + 1].commit.hash):
+            lines.append('</span>')
           blame_index += 1
       if blame_index < len(blame):
         token_context = blame[blame_index]
         if row == token_context.row and column == token_context.column:
           if (blame_index == 0 or
-              blame[blame_index - 1].commit != blame[blame_index].commit):
-            commit = token_context.commit
-            assert commit != None
-            lines.append(('<a href="https://chromium.googlesource.com/' +
-                         'chromium/src/+/%s">') % commit)
-            if commit not in commit_colors:
-              commit_colors[commit] = generate_pastel_color()
-            color = commit_colors[commit]
-            lines.append('<span style="background-color: %s">' % color)
+              blame[blame_index - 1].commit.hash !=
+              blame[blame_index].commit.hash):
+            hash = token_context.commit.hash
+            commits[hash] = token_context.commit
+            if hash not in commit_colors:
+              commit_colors[hash] = generate_pastel_color()
+            color = commit_colors[hash]
+            lines.append(
+                ('<span style="background-color: %s" ' +
+                 'onclick="display_commit(&quot;%s&quot;)">') % (color, hash))
       lines.append(cgi.escape(c))
       column += 1
     row += 1
+  commit_data = ['{']
+  commit_display_format = """\
+    commit: {hash}
+    Author: {author_name} <{author_email}>
+    Date: {author_date}
+
+    {message}
+    """
+  commit_display_format = textwrap.dedent(commit_display_format)
+  links = re.compile(r'(https?:\/\/\S+)')
+  for hash in commits:
+    commit = commits[hash]
+    commit_display = commit_display_format.format(
+        hash=hash,
+        author_name=commit.author_name,
+        author_email=commit.author_email,
+        author_date=commit.author_date,
+        message=commit.message,
+    )
+    commit_display = cgi.escape(commit_display, quote=True)
+    commit_display = re.sub(
+        links, '<a href=\\"\\1\\">\\1</a>', commit_display)
+    commit_display = commit_display.replace('\n', '\\n')
+    commit_data.append('"%s": "%s",' % (hash, commit_display))
+  commit_data.append('}')
+  commit_data = ''.join(commit_data)
   line_nums = range(1, row if lastline.strip() == '' else row + 1)
   line_nums = '\n'.join([str(num) for num in line_nums])
   lines = ''.join(lines)
-  return html % (line_nums, lines)
+  return html % (commit_data, line_nums, lines)
 
 
 def show_visualization(html):
