@@ -8,8 +8,10 @@
 #include <hstring.h>
 #include <inspectable.h>
 #include <windef.h>
+#include <windows.storage.streams.h>
 
 #include "base/base_export.h"
+#include "base/strings/string16.h"
 
 namespace base {
 namespace win {
@@ -21,7 +23,7 @@ namespace win {
 BASE_EXPORT bool ResolveCoreWinRTDelayload();
 
 // The following stubs are provided for when component build is enabled, in
-// order to avoid the propogation of delay-loading CoreWinRT to other modules.
+// order to avoid the propagation of delay-loading CoreWinRT to other modules.
 
 BASE_EXPORT HRESULT RoGetActivationFactory(HSTRING class_id,
                                            const IID& iid,
@@ -29,6 +31,26 @@ BASE_EXPORT HRESULT RoGetActivationFactory(HSTRING class_id,
 
 BASE_EXPORT HRESULT RoActivateInstance(HSTRING class_id,
                                        IInspectable** instance);
+
+BASE_EXPORT HRESULT
+GetPointerToBufferData(ABI::Windows::Storage::Streams::IBuffer* buffer,
+                       uint8_t** out);
+
+BASE_EXPORT HRESULT
+CreateIBufferFromData(const uint8_t* data,
+                      UINT32 length,
+                      ABI::Windows::Storage::Streams::IBuffer** buffer);
+
+// Retrieves an activation factory for the type specified.
+template <typename InterfaceType, char16 const* runtime_class_id>
+HRESULT GetActivationFactory(InterfaceType** factory) {
+  ScopedHString class_id_hstring = ScopedHString::Create(runtime_class_id);
+  if (!class_id_hstring.is_valid())
+    return E_FAIL;
+
+  return base::win::RoGetActivationFactory(class_id_hstring.get(),
+                                           IID_PPV_ARGS(factory));
+}
 
 }  // namespace win
 }  // namespace base
