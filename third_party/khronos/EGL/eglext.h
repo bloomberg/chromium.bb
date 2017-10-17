@@ -33,12 +33,12 @@ extern "C" {
 ** used to make the header, and the header can be found at
 **   http://www.khronos.org/registry/egl
 **
-** Khronos $Git commit SHA1: 65416b63de $ on $Git commit date: 2017-10-03 14:37:16 -0700 $
+** Khronos $Git commit SHA1: 6480009b57 $ on $Git commit date: 2017-10-11 22:51:16 -0700 $
 */
 
 #include <EGL/eglplatform.h>
 
-#define EGL_EGLEXT_VERSION 20171004
+#define EGL_EGLEXT_VERSION 20171013
 
 /* Generated C header for:
  * API: egl
@@ -526,6 +526,17 @@ EGLAPI EGLBoolean EGLAPIENTRY eglGetFrameTimestampSupportedANDROID (EGLDisplay d
 EGLAPI EGLBoolean EGLAPIENTRY eglGetFrameTimestampsANDROID (EGLDisplay dpy, EGLSurface surface, EGLuint64KHR frameId, EGLint numTimestamps,  const EGLint *timestamps, EGLnsecsANDROID *values);
 #endif
 #endif /* EGL_ANDROID_get_frame_timestamps */
+
+#ifndef EGL_ANDROID_get_native_client_buffer
+#define EGL_ANDROID_get_native_client_buffer 1
+struct AHardwareBuffer;
+typedef EGLClientBuffer(EGLAPIENTRYP PFNEGLGETNATIVECLIENTBUFFERANDROIDPROC)(
+    const struct AHardwareBuffer* buffer);
+#ifdef EGL_EGLEXT_PROTOTYPES
+EGLAPI EGLClientBuffer EGLAPIENTRY
+eglGetNativeClientBufferANDROID(const struct AHardwareBuffer* buffer);
+#endif
+#endif /* EGL_ANDROID_get_native_client_buffer */
 
 #ifndef EGL_ANDROID_image_native_buffer
 #define EGL_ANDROID_image_native_buffer 1

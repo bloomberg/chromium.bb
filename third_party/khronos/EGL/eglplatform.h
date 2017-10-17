@@ -95,7 +95,6 @@ typedef void*                           EGLNativeDisplayType;
 
 #elif defined(USE_OZONE)
 
-/* Chromium-specific */
 typedef intptr_t EGLNativeDisplayType;
 typedef intptr_t EGLNativeWindowType;
 typedef intptr_t EGLNativePixmapType;
