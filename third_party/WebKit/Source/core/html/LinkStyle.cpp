@@ -98,22 +98,19 @@ void LinkStyle::SetCSSStyleSheet(
   CSSParserContext* parser_context = CSSParserContext::Create(
       GetDocument(), base_url, referrer_policy, charset);
 
-  if (StyleSheetContents* restored_sheet =
+  if (StyleSheetContents* parsed_sheet =
           const_cast<CSSStyleSheetResource*>(cached_style_sheet)
-              ->RestoreParsedStyleSheet(parser_context)) {
-    DCHECK(restored_sheet->IsCacheableForResource());
-    DCHECK(!restored_sheet->IsLoading());
-
+              ->CreateParsedStyleSheetFromCache(parser_context)) {
     if (sheet_)
       ClearSheet();
-    sheet_ = CSSStyleSheet::Create(restored_sheet, *owner_);
+    sheet_ = CSSStyleSheet::Create(parsed_sheet, *owner_);
     sheet_->SetMediaQueries(MediaQuerySet::Create(owner_->Media()));
     if (owner_->IsInDocumentTree())
       SetSheetTitle(owner_->title());
     SetCrossOriginStylesheetStatus(sheet_.Get());
 
     loading_ = false;
-    restored_sheet->CheckLoaded();
+    parsed_sheet->CheckLoaded();
 
     return;
   }

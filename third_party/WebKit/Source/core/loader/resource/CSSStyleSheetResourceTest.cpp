@@ -56,6 +56,19 @@ class CSSStyleSheetResourceTest : public ::testing::Test {
     ReplaceMemoryCacheForTesting(original_memory_cache_.Release());
   }
 
+  CSSStyleSheetResource* CreateAndSaveTestStyleSheetResource() {
+    const char kUrl[] = "https://localhost/style.css";
+    KURL css_url(NullURL(), kUrl);
+
+    CSSStyleSheetResource* css_resource =
+        CSSStyleSheetResource::CreateForTest(css_url, UTF8Encoding());
+    css_resource->ResponseReceived(
+        ResourceResponse(css_url, "style/css", 0, g_null_atom), nullptr);
+    css_resource->FinishForTest();
+    GetMemoryCache()->Add(css_resource);
+    return css_resource;
+  }
+
   Document& GetDocument() { return page_->GetDocument(); }
 
   Persistent<MemoryCache> original_memory_cache_;
@@ -95,7 +108,71 @@ TEST_F(CSSStyleSheetResourceTest, DuplicateResourceNotCached) {
   EXPECT_TRUE(GetMemoryCache()->Contains(image_resource));
   EXPECT_FALSE(GetMemoryCache()->Contains(css_resource));
   EXPECT_FALSE(contents->IsReferencedFromResource());
-  EXPECT_FALSE(css_resource->RestoreParsedStyleSheet(parser_context));
+  EXPECT_FALSE(css_resource->CreateParsedStyleSheetFromCache(parser_context));
+}
+
+TEST_F(CSSStyleSheetResourceTest, CreateFromCacheRestoresOriginalSheet) {
+  CSSStyleSheetResource* css_resource = CreateAndSaveTestStyleSheetResource();
+
+  CSSParserContext* parser_context =
+      CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
+  ASSERT_TRUE(sheet);
+
+  contents->ParseString("div { color: red; }");
+  contents->NotifyLoadedSheet(css_resource);
+  contents->CheckLoaded();
+  EXPECT_TRUE(contents->IsCacheableForResource());
+
+  css_resource->SaveParsedStyleSheet(contents);
+  EXPECT_TRUE(GetMemoryCache()->Contains(css_resource));
+  EXPECT_TRUE(contents->IsReferencedFromResource());
+
+  StyleSheetContents* parsed_stylesheet =
+      css_resource->CreateParsedStyleSheetFromCache(parser_context);
+  ASSERT_EQ(contents, parsed_stylesheet);
+}
+
+TEST_F(CSSStyleSheetResourceTest,
+       CreateFromCacheWithMediaQueriesCopiesOriginalSheet) {
+  CSSStyleSheetResource* css_resource = CreateAndSaveTestStyleSheetResource();
+
+  CSSParserContext* parser_context =
+      CSSParserContext::Create(kHTMLStandardMode);
+  StyleSheetContents* contents = StyleSheetContents::Create(parser_context);
+  CSSStyleSheet* sheet = CSSStyleSheet::Create(contents, GetDocument());
+  ASSERT_TRUE(sheet);
+
+  contents->ParseString("@media { div { color: red; } }");
+  contents->NotifyLoadedSheet(css_resource);
+  contents->CheckLoaded();
+  EXPECT_TRUE(contents->IsCacheableForResource());
+
+  contents->EnsureRuleSet(MediaQueryEvaluator(), kRuleHasNoSpecialState);
+  EXPECT_TRUE(contents->HasRuleSet());
+
+  css_resource->SaveParsedStyleSheet(contents);
+  EXPECT_TRUE(GetMemoryCache()->Contains(css_resource));
+  EXPECT_TRUE(contents->IsReferencedFromResource());
+
+  StyleSheetContents* parsed_stylesheet =
+      css_resource->CreateParsedStyleSheetFromCache(parser_context);
+  ASSERT_TRUE(parsed_stylesheet);
+
+  sheet->ClearOwnerNode();
+  sheet = CSSStyleSheet::Create(parsed_stylesheet, GetDocument());
+  ASSERT_TRUE(sheet);
+
+  EXPECT_TRUE(contents->HasSingleOwnerDocument());
+  EXPECT_EQ(0U, contents->ClientSize());
+  EXPECT_TRUE(contents->IsReferencedFromResource());
+  EXPECT_TRUE(contents->HasRuleSet());
+
+  EXPECT_TRUE(parsed_stylesheet->HasSingleOwnerDocument());
+  EXPECT_TRUE(parsed_stylesheet->HasOneClient());
+  EXPECT_FALSE(parsed_stylesheet->IsReferencedFromResource());
+  EXPECT_FALSE(parsed_stylesheet->HasRuleSet());
 }
 
 }  // namespace
