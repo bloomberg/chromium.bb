@@ -208,7 +208,8 @@ void LocalTranslator::TranslateOpenVPN() {
     std::string key = it.key();
     std::unique_ptr<base::Value> translated;
     if (key == ::onc::openvpn::kRemoteCertKU ||
-        key == ::onc::openvpn::kServerCAPEMs) {
+        key == ::onc::openvpn::kServerCAPEMs ||
+        key == ::onc::openvpn::kExtraHosts) {
       translated.reset(it.value().DeepCopy());
     } else {
       // Shill wants all Provider/VPN fields to be strings.

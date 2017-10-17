@@ -22,6 +22,10 @@
                 }
             },
             "ClientCertType": "Pattern",
+            "ExtraHosts": [
+                "0.0.0.1",
+                "123.com"
+            ],
             "Password": "some password",
             "Port": 1234,
             "Proto": "udp",
