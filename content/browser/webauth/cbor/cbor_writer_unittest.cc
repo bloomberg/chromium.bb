@@ -78,9 +78,13 @@ TEST(CBORWriterTest, TestWriteString) {
 
 TEST(CBORWriterTest, TestWriteArray) {
   static const uint8_t kArrayTestCaseCbor[] = {
-      0x98, 0x19, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
-      0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12,
-      0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x18, 0x18, 0x19};
+      // clang-format off
+      0x98, 0x19,  // array of 25 elements
+        0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
+        0x0d, 0x0e, 0x0f, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18,
+        0x18, 0x18, 0x19,
+      // clang-format on
+  };
   std::vector<CBORValue> array;
   for (int i = 1; i <= 25; i++) {
     array.push_back(CBORValue(i));
@@ -92,22 +96,56 @@ TEST(CBORWriterTest, TestWriteArray) {
 
 TEST(CBORWriterTest, TestWriteMapWithMapValue) {
   static const uint8_t kMapTestCaseCbor[] = {
-      0xa5, 0x61, 0x61, 0x61, 0x41, 0x61, 0x62, 0x61, 0x42, 0x61, 0x63,
-      0x61, 0x43, 0x61, 0x64, 0x61, 0x44, 0x61, 0x65, 0x61, 0x45};
+      // clang-format off
+      0xa6,  // map of 6 pairs:
+        0x60,  // ""
+        0x61, 0x2e,  // "."
+
+        0x61, 0x62,  // "b"
+        0x61, 0x42,  // "B"
+
+        0x61, 0x63,  // "c"
+        0x61, 0x43,  // "C"
+
+        0x61, 0x64,  // "d"
+        0x61, 0x44,  // "D"
+
+        0x61, 0x65,  // "e"
+        0x61, 0x45,  // "E"
+
+        0x62, 0x61, 0x61,  // "aa"
+        0x62, 0x41, 0x41,  // "AA"
+      // clang-format on
+  };
   CBORValue::MapValue map;
-  map["a"] = CBORValue("A");
-  map["b"] = CBORValue("B");
-  map["c"] = CBORValue("C");
+  // Shorter strings sort first in CTAP, thus the “aa” value should be
+  // serialised last in the map.
+  map["aa"] = CBORValue("AA");
   map["d"] = CBORValue("D");
+  map["b"] = CBORValue("B");
   map["e"] = CBORValue("E");
+  map["c"] = CBORValue("C");
+  // The empty string is shorter than all others, so should appear first in the
+  // serialisation.
+  map[""] = CBORValue(".");
   std::vector<uint8_t> cbor = CBORWriter::Write(CBORValue(map));
   EXPECT_THAT(cbor, testing::ElementsAreArray(kMapTestCaseCbor,
                                               arraysize(kMapTestCaseCbor)));
 }
 
 TEST(CBORWriterTest, TestWriteMapWithArray) {
-  static const uint8_t kMapArrayTestCaseCbor[] = {0xa2, 0x61, 0x61, 0x01, 0x61,
-                                                  0x62, 0x82, 0x02, 0x03};
+  static const uint8_t kMapArrayTestCaseCbor[] = {
+      // clang-format off
+      0xa2,  // map of 2 pairs
+        0x61, 0x61,  // "a"
+        0x01,
+
+        0x61, 0x62,  // "b"
+        0x82,        // array with 2 elements
+          0x02,
+          0x03,
+      // clang-format on
+  };
   CBORValue::MapValue map;
   map["a"] = CBORValue(1);
   CBORValue::ArrayValue array;
@@ -121,9 +159,21 @@ TEST(CBORWriterTest, TestWriteMapWithArray) {
 }
 
 TEST(CBORWriterTest, TestWriteNestedMap) {
-  static const uint8_t kNestedMapTestCase[] = {0xa2, 0x61, 0x61, 0x01, 0x61,
-                                               0x62, 0xa2, 0x61, 0x63, 0x02,
-                                               0x61, 0x64, 0x03};
+  static const uint8_t kNestedMapTestCase[] = {
+      // clang-format off
+      0xa2,  // map of 2 pairs
+        0x61, 0x61,  // "a"
+        0x01,
+
+        0x61, 0x62,  // "b"
+        0xa2,        // map of 2 pairs
+          0x61, 0x63,  // "c"
+          0x02,
+
+          0x61, 0x64,  // "d"
+          0x03,
+      // clang-format on
+  };
   CBORValue::MapValue map;
   map["a"] = CBORValue(1);
   CBORValue::MapValue nested_map;
