@@ -52,6 +52,10 @@ class NET_EXPORT SSLConfigService
   // with itself and with GetCRLSet.
   static void SetCRLSetIfNewer(scoped_refptr<CRLSet> crl_set);
 
+  // Like SetCRLSetIfNewer() but assigns it unconditionally. Should only be used
+  // by test code.
+  static void SetCRLSetForTesting(scoped_refptr<CRLSet> crl_set);
+
   // Gets the current global CRL set. In the case that none exists, returns
   // nullptr.
   static scoped_refptr<CRLSet> GetCRLSet();
@@ -74,6 +78,8 @@ class NET_EXPORT SSLConfigService
   // Process before/after config update.
   void ProcessConfigUpdate(const SSLConfig& orig_config,
                            const SSLConfig& new_config);
+
+  static void SetCRLSet(scoped_refptr<CRLSet> crl_set, bool if_newer);
 
  private:
   base::ObserverList<Observer> observer_list_;
