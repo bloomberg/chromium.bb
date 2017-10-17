@@ -20,3 +20,22 @@ executable("ax_dump_events") {
     libs = [ "oleacc.lib" ]
   }
 }
+
+executable("ax_dump_tree") {
+  testonly = true
+
+  sources = [
+    "ax_dump_tree.cc",
+    "ax_tree_server.cc",
+  ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//content/test:test_support",
+  ]
+
+  if (is_win) {
+    libs = [ "oleacc.lib" ]
+  }
+}

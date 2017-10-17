@@ -45,6 +45,12 @@ void AccessibilityTreeFormatter::FormatAccessibilityTree(
   RecursiveFormatAccessibilityTree(*(dict.get()), contents);
 }
 
+void AccessibilityTreeFormatter::FormatAccessibilityTree(
+    const base::DictionaryValue& dict,
+    base::string16* contents) {
+  RecursiveFormatAccessibilityTree(dict, contents);
+}
+
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     const base::DictionaryValue& dict, base::string16* contents, int depth) {
   base::string16 indent = base::string16(depth * kIndentSymbolCount,
@@ -64,7 +70,8 @@ void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     return;
 
   const base::ListValue* children;
-  dict.GetList(kChildrenDictAttr, &children);
+  if (!dict.GetList(kChildrenDictAttr, &children))
+    return;
   const base::DictionaryValue* child_dict;
   for (size_t i = 0; i < children->GetSize(); i++) {
     children->GetDictionary(i, &child_dict);
