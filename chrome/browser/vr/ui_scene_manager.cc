@@ -279,10 +279,10 @@ void UiSceneManager::CreateSplashScreen() {
                        std::move(transient_parent));
 
   // Add "Powered by Chrome" text.
-  auto text = base::MakeUnique<Text>(
-      512, kSplashScreenTextFontHeightM, kSplashScreenTextWidthM,
-      l10n_util::GetStringUTF16(IDS_VR_POWERED_BY_CHROME_MESSAGE));
+  auto text = base::MakeUnique<Text>(512, kSplashScreenTextFontHeightM,
+                                     kSplashScreenTextWidthM);
   BindColor(this, text.get(), &ColorScheme::splash_screen_text_color);
+  text->SetText(l10n_util::GetStringUTF16(IDS_VR_POWERED_BY_CHROME_MESSAGE));
   text->set_name(kSplashScreenText);
   text->SetVisible(true);
   text->set_draw_phase(kPhaseOverlayForeground);
@@ -304,10 +304,10 @@ void UiSceneManager::CreateSplashScreen() {
 }
 
 void UiSceneManager::CreateUnderDevelopmentNotice() {
-  auto text = base::MakeUnique<Text>(
-      512, kUnderDevelopmentNoticeFontHeightM, kUnderDevelopmentNoticeWidthM,
-      l10n_util::GetStringUTF16(IDS_VR_UNDER_DEVELOPMENT_NOTICE));
+  auto text = base::MakeUnique<Text>(512, kUnderDevelopmentNoticeFontHeightM,
+                                     kUnderDevelopmentNoticeWidthM);
   BindColor(this, text.get(), &ColorScheme::world_background_text);
+  text->SetText(l10n_util::GetStringUTF16(IDS_VR_UNDER_DEVELOPMENT_NOTICE));
   text->set_name(kUnderDevelopmentNotice);
   text->set_draw_phase(kPhaseForeground);
   text->set_hit_testable(false);
