@@ -28,8 +28,8 @@ void MultiColumnSetPainter::PaintObject(const PaintInfo& paint_info,
   // columns anyway, thus making it impossible for them to overlap one another.
   // It's also really unlikely that the columns would overlap another block.
   if (!layout_multi_column_set_.FlowThread() ||
-      (paint_info.phase != kPaintPhaseForeground &&
-       paint_info.phase != kPaintPhaseSelection))
+      (paint_info.phase != PaintPhase::kForeground &&
+       paint_info.phase != PaintPhase::kSelection))
     return;
 
   PaintColumnRules(paint_info, paint_offset);

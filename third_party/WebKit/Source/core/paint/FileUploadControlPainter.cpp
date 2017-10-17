@@ -24,8 +24,8 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
 
   // Push a clip.
   Optional<ClipRecorder> clip_recorder;
-  if (paint_info.phase == kPaintPhaseForeground ||
-      paint_info.phase == kPaintPhaseDescendantBlockBackgroundsOnly) {
+  if (paint_info.phase == PaintPhase::kForeground ||
+      paint_info.phase == PaintPhase::kDescendantBlockBackgroundsOnly) {
     IntRect clip_rect = EnclosingIntRect(LayoutRect(
         LayoutPoint(paint_offset.X() + layout_file_upload_control_.BorderLeft(),
                     paint_offset.Y() + layout_file_upload_control_.BorderTop()),
@@ -39,7 +39,7 @@ void FileUploadControlPainter::PaintObject(const PaintInfo& paint_info,
                           DisplayItem::kClipFileUploadControlRect, clip_rect);
   }
 
-  if (paint_info.phase == kPaintPhaseForeground &&
+  if (paint_info.phase == PaintPhase::kForeground &&
       !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_file_upload_control_, paint_info.phase)) {
     const String& displayed_filename =

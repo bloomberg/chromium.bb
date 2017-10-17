@@ -153,7 +153,7 @@ void FrameSetPainter::PaintChildren(const PaintInfo& paint_info,
 void FrameSetPainter::Paint(const PaintInfo& paint_info,
                             const LayoutPoint& paint_offset) {
   ObjectPainter(layout_frame_set_).CheckPaintOffset(paint_info, paint_offset);
-  if (paint_info.phase != kPaintPhaseForeground)
+  if (paint_info.phase != PaintPhase::kForeground)
     return;
 
   LayoutObject* child = layout_frame_set_.FirstChild();

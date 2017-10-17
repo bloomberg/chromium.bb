@@ -22,6 +22,7 @@ namespace blink {
 
 class GraphicsContext;
 class LayoutSize;
+enum class PaintPhase;
 class WebDisplayItemList;
 
 class PLATFORM_EXPORT DisplayItem {
@@ -280,14 +281,15 @@ class PLATFORM_EXPORT DisplayItem {
   DEFINE_CATEGORY_METHODS(End##Category)                   \
   DEFINE_CONVERSION_METHODS(Category, category, End##Category, end##Category)
 
-#define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category)                   \
-  static Type PaintPhaseTo##Category##Type(int paintPhase) {             \
-    static_assert(                                                       \
-        k##Category##PaintPhaseLast - k##Category##PaintPhaseFirst ==    \
-            k##PaintPhaseMax,                                            \
-        "Invalid paint-phase-based category " #Category                  \
-        ". See comments of DisplayItem::Type");                          \
-    return static_cast<Type>(paintPhase + k##Category##PaintPhaseFirst); \
+#define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category)                \
+  static Type PaintPhaseTo##Category##Type(PaintPhase paint_phase) {  \
+    static_assert(                                                    \
+        k##Category##PaintPhaseLast - k##Category##PaintPhaseFirst == \
+            kPaintPhaseMax,                                           \
+        "Invalid paint-phase-based category " #Category               \
+        ". See comments of DisplayItem::Type");                       \
+    return static_cast<Type>(static_cast<int>(paint_phase) +          \
+                             k##Category##PaintPhaseFirst);           \
   }
 
   DEFINE_CATEGORY_METHODS(Drawing)

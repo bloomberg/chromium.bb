@@ -37,10 +37,10 @@ BoxClipper::BoxClipper(const LayoutBox& box,
     : box_(box),
       paint_info_(paint_info),
       clip_type_(DisplayItem::kUninitializedType) {
-  DCHECK(paint_info_.phase != kPaintPhaseSelfBlockBackgroundOnly &&
-         paint_info_.phase != kPaintPhaseSelfOutlineOnly);
+  DCHECK(paint_info_.phase != PaintPhase::kSelfBlockBackgroundOnly &&
+         paint_info_.phase != PaintPhase::kSelfOutlineOnly);
 
-  if (paint_info_.phase == kPaintPhaseMask)
+  if (paint_info_.phase == PaintPhase::kMask)
     return;
 
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {

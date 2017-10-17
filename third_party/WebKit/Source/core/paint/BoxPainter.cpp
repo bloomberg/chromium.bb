@@ -208,7 +208,7 @@ void BoxPainter::PaintBackground(const PaintInfo& paint_info,
 void BoxPainter::PaintMask(const PaintInfo& paint_info,
                            const LayoutPoint& paint_offset) {
   if (layout_box_.Style()->Visibility() != EVisibility::kVisible ||
-      paint_info.phase != kPaintPhaseMask)
+      paint_info.phase != PaintPhase::kMask)
     return;
 
   if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
@@ -269,7 +269,7 @@ void BoxPainter::PaintMaskImages(const PaintInfo& paint_info,
 
 void BoxPainter::PaintClippingMask(const PaintInfo& paint_info,
                                    const LayoutPoint& paint_offset) {
-  DCHECK(paint_info.phase == kPaintPhaseClippingMask);
+  DCHECK(paint_info.phase == PaintPhase::kClippingMask);
 
   if (layout_box_.Style()->Visibility() != EVisibility::kVisible)
     return;

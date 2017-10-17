@@ -88,16 +88,16 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
                                                     adjusted_paint_offset);
     }
     // We're done. We don't bother painting any children.
-    if (paint_info.phase == kPaintPhaseSelfBlockBackgroundOnly)
+    if (paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly)
       return;
   }
 
-  if (paint_info.phase == kPaintPhaseMask) {
+  if (paint_info.phase == PaintPhase::kMask) {
     layout_replaced_.PaintMask(paint_info, adjusted_paint_offset);
     return;
   }
 
-  if (paint_info.phase == kPaintPhaseClippingMask &&
+  if (paint_info.phase == PaintPhase::kClippingMask &&
       (!layout_replaced_.HasLayer() ||
        !layout_replaced_.Layer()->HasCompositedClippingMask()))
     return;
@@ -108,13 +108,13 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
     return;
   }
 
-  if (paint_info.phase != kPaintPhaseForeground &&
-      paint_info.phase != kPaintPhaseSelection &&
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection &&
       !layout_replaced_.CanHaveChildren() &&
-      paint_info.phase != kPaintPhaseClippingMask)
+      paint_info.phase != PaintPhase::kClippingMask)
     return;
 
-  if (paint_info.phase == kPaintPhaseSelection)
+  if (paint_info.phase == PaintPhase::kSelection)
     if (layout_replaced_.GetSelectionState() == SelectionState::kNone)
       return;
 
@@ -146,7 +146,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
     }
 
     if (!completely_clipped_out) {
-      if (paint_info.phase == kPaintPhaseClippingMask) {
+      if (paint_info.phase == PaintPhase::kClippingMask) {
         BoxPainter(layout_replaced_)
             .PaintClippingMask(paint_info, adjusted_paint_offset);
       } else {
@@ -158,7 +158,7 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
   // The selection tint never gets clipped by border-radius rounding, since we
   // want it to run right up to the edges of surrounding content.
   bool draw_selection_tint =
-      paint_info.phase == kPaintPhaseForeground &&
+      paint_info.phase == PaintPhase::kForeground &&
       layout_replaced_.GetSelectionState() != SelectionState::kNone &&
       !paint_info.IsPrinting();
   if (draw_selection_tint &&
@@ -182,11 +182,11 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
 bool ReplacedPainter::ShouldPaint(
     const PaintInfo& paint_info,
     const LayoutPoint& adjusted_paint_offset) const {
-  if (paint_info.phase != kPaintPhaseForeground &&
+  if (paint_info.phase != PaintPhase::kForeground &&
       !ShouldPaintSelfOutline(paint_info.phase) &&
-      paint_info.phase != kPaintPhaseSelection &&
-      paint_info.phase != kPaintPhaseMask &&
-      paint_info.phase != kPaintPhaseClippingMask &&
+      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kMask &&
+      paint_info.phase != PaintPhase::kClippingMask &&
       !ShouldPaintSelfBlockBackground(paint_info.phase))
     return false;
 

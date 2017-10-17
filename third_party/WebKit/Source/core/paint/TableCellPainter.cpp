@@ -133,7 +133,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
 void TableCellPainter::PaintMask(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
   if (layout_table_cell_.Style()->Visibility() != EVisibility::kVisible ||
-      paint_info.phase != kPaintPhaseMask)
+      paint_info.phase != PaintPhase::kMask)
     return;
 
   LayoutTable* table_elt = layout_table_cell_.Table();

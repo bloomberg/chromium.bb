@@ -40,12 +40,12 @@ void BlockFlowPainter::PaintFloats(const PaintInfo& paint_info,
   if (!layout_block_flow_.GetFloatingObjects())
     return;
 
-  DCHECK(paint_info.phase == kPaintPhaseFloat ||
-         paint_info.phase == kPaintPhaseSelection ||
-         paint_info.phase == kPaintPhaseTextClip);
+  DCHECK(paint_info.phase == PaintPhase::kFloat ||
+         paint_info.phase == PaintPhase::kSelection ||
+         paint_info.phase == PaintPhase::kTextClip);
   PaintInfo float_paint_info(paint_info);
-  if (paint_info.phase == kPaintPhaseFloat)
-    float_paint_info.phase = kPaintPhaseForeground;
+  if (paint_info.phase == PaintPhase::kFloat)
+    float_paint_info.phase = PaintPhase::kForeground;
 
   for (const auto& floating_object :
        layout_block_flow_.GetFloatingObjects()->Set()) {

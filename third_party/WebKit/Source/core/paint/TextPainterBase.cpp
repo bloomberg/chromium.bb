@@ -110,7 +110,7 @@ TextPaintStyle TextPainterBase::TextPaintingStyle(const Document& document,
   TextPaintStyle text_style;
   bool is_printing = paint_info.IsPrinting();
 
-  if (paint_info.phase == kPaintPhaseTextClip) {
+  if (paint_info.phase == PaintPhase::kTextClip) {
     // When we use the text as a clip, we only care about the alpha, thus we
     // make all the colors black.
     text_style.current_color = Color::kBlack;

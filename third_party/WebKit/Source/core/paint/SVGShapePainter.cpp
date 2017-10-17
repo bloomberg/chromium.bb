@@ -41,7 +41,7 @@ static SkPath::FillType FillRuleFromStyle(const PaintInfo& paint_info,
 }
 
 void SVGShapePainter::Paint(const PaintInfo& paint_info) {
-  if (paint_info.phase != kPaintPhaseForeground ||
+  if (paint_info.phase != PaintPhase::kForeground ||
       layout_svg_shape_.Style()->Visibility() != EVisibility::kVisible ||
       layout_svg_shape_.IsShapeEmpty())
     return;
@@ -135,7 +135,7 @@ void SVGShapePainter::Paint(const PaintInfo& paint_info) {
 
   if (layout_svg_shape_.Style()->OutlineWidth()) {
     PaintInfo outline_paint_info(paint_info_before_filtering);
-    outline_paint_info.phase = kPaintPhaseSelfOutlineOnly;
+    outline_paint_info.phase = PaintPhase::kSelfOutlineOnly;
     ObjectPainter(layout_svg_shape_)
         .PaintOutline(outline_paint_info, LayoutPoint(bounding_box.Location()));
   }

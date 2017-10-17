@@ -34,8 +34,8 @@ class BlockPainterDelegate : public LayoutBlock {
 }  // namespace
 
 void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
-  if (paint_info.phase != kPaintPhaseForeground &&
-      paint_info.phase != kPaintPhaseSelection)
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection)
     return;
 
   PaintInfo paint_info_before_filtering(paint_info);
@@ -59,7 +59,7 @@ void SVGForeignObjectPainter::Paint(const PaintInfo& paint_info) {
   SVGPaintContext paint_context(layout_svg_foreign_object_,
                                 paint_info_before_filtering);
   bool continue_rendering = true;
-  if (paint_context.GetPaintInfo().phase == kPaintPhaseForeground)
+  if (paint_context.GetPaintInfo().phase == PaintPhase::kForeground)
     continue_rendering = paint_context.ApplyClipMaskAndFilterIfNecessary();
 
   if (continue_rendering) {

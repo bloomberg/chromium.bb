@@ -33,8 +33,8 @@ class TextPainterTest : public RenderingTest {
   PaintInfo CreatePaintInfo(bool uses_text_as_clip, bool is_printing) {
     return PaintInfo(
         context_, IntRect(),
-        uses_text_as_clip ? kPaintPhaseTextClip
-                          : kPaintPhaseSelfBlockBackgroundOnly,
+        uses_text_as_clip ? PaintPhase::kTextClip
+                          : PaintPhase::kSelfBlockBackgroundOnly,
         is_printing ? kGlobalPaintPrinting : kGlobalPaintNormalPhase, 0);
   }
 

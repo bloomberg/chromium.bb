@@ -88,8 +88,8 @@ LayoutSVGInlineText& SVGInlineTextBoxPainter::InlineText() const {
 
 void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
                                     const LayoutPoint& paint_offset) {
-  DCHECK(paint_info.phase == kPaintPhaseForeground ||
-         paint_info.phase == kPaintPhaseSelection);
+  DCHECK(paint_info.phase == PaintPhase::kForeground ||
+         paint_info.phase == PaintPhase::kSelection);
   DCHECK(svg_inline_text_box_.Truncation() == kCNoTruncation);
 
   if (svg_inline_text_box_.GetLineLayoutItem().Style()->Visibility() !=
@@ -102,7 +102,7 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   // very easy to refactor and reuse the code.
 
   bool have_selection = ShouldPaintSelection(paint_info);
-  if (!have_selection && paint_info.phase == kPaintPhaseSelection)
+  if (!have_selection && paint_info.phase == PaintPhase::kSelection)
     return;
 
   LayoutSVGInlineText& text_layout_object = InlineText();
@@ -117,7 +117,7 @@ void SVGInlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     const ComputedStyle& style = parent_layout_object.StyleRef();
 
     bool include_selection_rect =
-        paint_info.phase != kPaintPhaseSelection &&
+        paint_info.phase != PaintPhase::kSelection &&
         (have_selection ||
          InlineTextBoxPainter::PaintsMarkerHighlights(text_layout_object));
     DrawingRecorder recorder(
@@ -228,7 +228,7 @@ void SVGInlineTextBoxPainter::PaintSelectionBackground(
 
   DCHECK(!paint_info.IsPrinting());
 
-  if (paint_info.phase == kPaintPhaseSelection ||
+  if (paint_info.phase == PaintPhase::kSelection ||
       !ShouldPaintSelection(paint_info))
     return;
 
@@ -517,7 +517,7 @@ void SVGInlineTextBoxPainter::PaintText(const PaintInfo& paint_info,
 
   // Eventually draw text using regular style until the start position of the
   // selection.
-  bool paint_selected_text_only = paint_info.phase == kPaintPhaseSelection;
+  bool paint_selected_text_only = paint_info.phase == PaintPhase::kSelection;
   if (start_position > 0 && !paint_selected_text_only) {
     PaintFlags flags;
     if (SetupTextPaint(paint_info, style, resource_mode, flags))

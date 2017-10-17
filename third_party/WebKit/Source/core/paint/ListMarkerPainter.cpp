@@ -43,7 +43,7 @@ static inline void PaintSymbol(GraphicsContext& context,
 
 void ListMarkerPainter::Paint(const PaintInfo& paint_info,
                               const LayoutPoint& paint_offset) {
-  if (paint_info.phase != kPaintPhaseForeground)
+  if (paint_info.phase != PaintPhase::kForeground)
     return;
 
   if (layout_list_marker_.Style()->Visibility() != EVisibility::kVisible)

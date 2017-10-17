@@ -229,7 +229,7 @@ TEST_P(TablePainterTest, CollapsedBorderAndOverflow) {
       TestDisplayItem(cell, DisplayItem::kBoxDecorationBackground),
       TestDisplayItem(*cell.Row(), DisplayItem::kTableCollapsedBorders),
       TestDisplayItem(cell, DisplayItem::PaintPhaseToDrawingType(
-                                kPaintPhaseSelfOutlineOnly)));
+                                PaintPhase::kSelfOutlineOnly)));
 }
 
 }  // namespace blink

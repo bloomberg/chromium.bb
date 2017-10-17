@@ -9,8 +9,8 @@
 
 namespace blink {
 
-// DisplayItem types must be kept in sync with PaintPhase.
-static_assert((unsigned)DisplayItem::kPaintPhaseMax == (unsigned)kPaintPhaseMax,
-              "DisplayItem Type should stay in sync");
+static_assert(static_cast<PaintPhase>(DisplayItem::kPaintPhaseMax) ==
+                  PaintPhase::kMax,
+              "DisplayItem Type and PaintPhase should stay in sync");
 
 }  // namespace blink

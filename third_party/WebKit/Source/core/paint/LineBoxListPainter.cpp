@@ -37,17 +37,17 @@ void LineBoxListPainter::Paint(const LayoutBoxModelObject& layout_object,
          !ShouldPaintDescendantOutlines(paint_info.phase));
 
   // Only paint during the foreground/selection phases.
-  if (paint_info.phase != kPaintPhaseForeground &&
-      paint_info.phase != kPaintPhaseSelection &&
-      paint_info.phase != kPaintPhaseTextClip &&
-      paint_info.phase != kPaintPhaseMask)
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip &&
+      paint_info.phase != PaintPhase::kMask)
     return;
 
   // The only way an inline could paint like this is if it has a layer.
   DCHECK(layout_object.IsLayoutBlock() ||
          (layout_object.IsLayoutInline() && layout_object.HasLayer()));
 
-  if (paint_info.phase == kPaintPhaseForeground && paint_info.IsPrinting())
+  if (paint_info.phase == PaintPhase::kForeground && paint_info.IsPrinting())
     AddPDFURLRectsForInlineChildrenRecursively(layout_object, paint_info,
                                                paint_offset);
 

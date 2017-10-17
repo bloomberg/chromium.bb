@@ -49,12 +49,12 @@ TEST_F(LayoutObjectDrawingRecorderTest, Nothing) {
   RootPaintController().InvalidateAll();
   GraphicsContext context(RootPaintController());
   LayoutRect bound = GetLayoutView().ViewRect();
-  DrawNothing(context, GetLayoutView(), kPaintPhaseForeground, bound);
+  DrawNothing(context, GetLayoutView(), PaintPhase::kForeground, bound);
   RootPaintController().CommitNewDisplayItems();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
       TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
-                                           kPaintPhaseForeground)));
+                                           PaintPhase::kForeground)));
   EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(
                    RootPaintController().GetDisplayItemList()[0])
                    .GetPaintRecord());
@@ -64,33 +64,34 @@ TEST_F(LayoutObjectDrawingRecorderTest, Rect) {
   RootPaintController().InvalidateAll();
   GraphicsContext context(RootPaintController());
   LayoutRect bound = GetLayoutView().ViewRect();
-  DrawRect(context, GetLayoutView(), kPaintPhaseForeground, bound);
+  DrawRect(context, GetLayoutView(), PaintPhase::kForeground, bound);
   RootPaintController().CommitNewDisplayItems();
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 1,
       TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
-                                           kPaintPhaseForeground)));
+                                           PaintPhase::kForeground)));
 }
 
 TEST_F(LayoutObjectDrawingRecorderTest, Cached) {
   RootPaintController().InvalidateAll();
   GraphicsContext context(RootPaintController());
   LayoutRect bound = GetLayoutView().ViewRect();
-  DrawNothing(context, GetLayoutView(), kPaintPhaseSelfBlockBackgroundOnly,
+  DrawNothing(context, GetLayoutView(), PaintPhase::kSelfBlockBackgroundOnly,
               bound);
-  DrawRect(context, GetLayoutView(), kPaintPhaseForeground, bound);
+  DrawRect(context, GetLayoutView(), PaintPhase::kForeground, bound);
   RootPaintController().CommitNewDisplayItems();
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(GetLayoutView(),
+                      DisplayItem::PaintPhaseToDrawingType(
+                          PaintPhase::kSelfBlockBackgroundOnly)),
       TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
-                                           kPaintPhaseSelfBlockBackgroundOnly)),
-      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
-                                           kPaintPhaseForeground)));
+                                           PaintPhase::kForeground)));
 
-  DrawNothing(context, GetLayoutView(), kPaintPhaseSelfBlockBackgroundOnly,
+  DrawNothing(context, GetLayoutView(), PaintPhase::kSelfBlockBackgroundOnly,
               bound);
-  DrawRect(context, GetLayoutView(), kPaintPhaseForeground, bound);
+  DrawRect(context, GetLayoutView(), PaintPhase::kForeground, bound);
 
   EXPECT_EQ(2, NumCachedNewItems());
 
@@ -98,10 +99,11 @@ TEST_F(LayoutObjectDrawingRecorderTest, Cached) {
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 2,
+      TestDisplayItem(GetLayoutView(),
+                      DisplayItem::PaintPhaseToDrawingType(
+                          PaintPhase::kSelfBlockBackgroundOnly)),
       TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
-                                           kPaintPhaseSelfBlockBackgroundOnly)),
-      TestDisplayItem(GetLayoutView(), DisplayItem::PaintPhaseToDrawingType(
-                                           kPaintPhaseForeground)));
+                                           PaintPhase::kForeground)));
 }
 
 template <typename T>

@@ -85,24 +85,24 @@ void BlockPainter::Paint(const PaintInfo& paint_info,
       !layout_block_.ShouldPaintCarets())
     contents_clip_behavior = kSkipContentsClipIfPossible;
 
-  if (original_phase == kPaintPhaseOutline) {
-    local_paint_info.phase = kPaintPhaseDescendantOutlinesOnly;
+  if (original_phase == PaintPhase::kOutline) {
+    local_paint_info.phase = PaintPhase::kDescendantOutlinesOnly;
   } else if (ShouldPaintSelfBlockBackground(original_phase)) {
-    local_paint_info.phase = kPaintPhaseSelfBlockBackgroundOnly;
+    local_paint_info.phase = PaintPhase::kSelfBlockBackgroundOnly;
     layout_block_.PaintObject(local_paint_info, adjusted_paint_offset);
     if (ShouldPaintDescendantBlockBackgrounds(original_phase))
-      local_paint_info.phase = kPaintPhaseDescendantBlockBackgroundsOnly;
+      local_paint_info.phase = PaintPhase::kDescendantBlockBackgroundsOnly;
   }
 
-  if (original_phase != kPaintPhaseSelfBlockBackgroundOnly &&
-      original_phase != kPaintPhaseSelfOutlineOnly) {
+  if (original_phase != PaintPhase::kSelfBlockBackgroundOnly &&
+      original_phase != PaintPhase::kSelfOutlineOnly) {
     BoxClipper box_clipper(layout_block_, local_paint_info,
                            adjusted_paint_offset, contents_clip_behavior);
     layout_block_.PaintObject(local_paint_info, adjusted_paint_offset);
   }
 
   if (ShouldPaintSelfOutline(original_phase)) {
-    local_paint_info.phase = kPaintPhaseSelfOutlineOnly;
+    local_paint_info.phase = PaintPhase::kSelfOutlineOnly;
     layout_block_.PaintObject(local_paint_info, adjusted_paint_offset);
   }
 
@@ -175,13 +175,13 @@ void BlockPainter::PaintAllChildPhasesAtomically(
 void BlockPainter::PaintInlineBox(const InlineBox& inline_box,
                                   const PaintInfo& paint_info,
                                   const LayoutPoint& paint_offset) {
-  if (paint_info.phase != kPaintPhaseForeground &&
-      paint_info.phase != kPaintPhaseSelection)
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection)
     return;
 
   // Text clips are painted only for the direct inline children of the object
   // that has a text clip style on it, not block children.
-  DCHECK(paint_info.phase != kPaintPhaseTextClip);
+  DCHECK(paint_info.phase != PaintPhase::kTextClip);
 
   LayoutPoint child_point = paint_offset;
   if (inline_box.Parent()
@@ -294,30 +294,30 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       PaintScrollHitTestDisplayItem(paint_info);
     // We're done. We don't bother painting any children.
-    if (paint_phase == kPaintPhaseSelfBlockBackgroundOnly)
+    if (paint_phase == PaintPhase::kSelfBlockBackgroundOnly)
       return;
   }
 
   if (paint_info.PaintRootBackgroundOnly())
     return;
 
-  if (paint_phase == kPaintPhaseMask &&
+  if (paint_phase == PaintPhase::kMask &&
       layout_block_.Style()->Visibility() == EVisibility::kVisible) {
     layout_block_.PaintMask(paint_info, paint_offset);
     return;
   }
 
-  if (paint_phase == kPaintPhaseClippingMask &&
+  if (paint_phase == PaintPhase::kClippingMask &&
       layout_block_.Style()->Visibility() == EVisibility::kVisible) {
     BoxPainter(layout_block_).PaintClippingMask(paint_info, paint_offset);
     return;
   }
 
-  if (paint_phase == kPaintPhaseForeground && paint_info.IsPrinting())
+  if (paint_phase == PaintPhase::kForeground && paint_info.IsPrinting())
     ObjectPainter(layout_block_)
         .AddPDFURLRectIfNeeded(paint_info, paint_offset);
 
-  if (paint_phase != kPaintPhaseSelfOutlineOnly) {
+  if (paint_phase != PaintPhase::kSelfOutlineOnly) {
     Optional<ScopedPaintChunkProperties> scoped_scroll_property;
     Optional<ScrollRecorder> scroll_recorder;
     Optional<PaintInfo> scrolled_paint_info;
@@ -358,9 +358,9 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
     if (layout_block_.IsLayoutBlockFlow()) {
       BlockFlowPainter block_flow_painter(ToLayoutBlockFlow(layout_block_));
       block_flow_painter.PaintContents(contents_paint_info, paint_offset);
-      if (paint_phase == kPaintPhaseFloat ||
-          paint_phase == kPaintPhaseSelection ||
-          paint_phase == kPaintPhaseTextClip)
+      if (paint_phase == PaintPhase::kFloat ||
+          paint_phase == PaintPhase::kSelection ||
+          paint_phase == PaintPhase::kTextClip)
         block_flow_painter.PaintFloats(contents_paint_info, paint_offset);
     } else {
       PaintContents(contents_paint_info, paint_offset);
@@ -372,7 +372,8 @@ void BlockPainter::PaintObject(const PaintInfo& paint_info,
 
   // If the caret's node's layout object's containing block is this block, and
   // the paint action is PaintPhaseForeground, then paint the caret.
-  if (paint_phase == kPaintPhaseForeground && layout_block_.ShouldPaintCarets())
+  if (paint_phase == PaintPhase::kForeground &&
+      layout_block_.ShouldPaintCarets())
     PaintCarets(paint_info, paint_offset);
 }
 

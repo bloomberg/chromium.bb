@@ -25,7 +25,7 @@ void TableRowPainter::Paint(const PaintInfo& paint_info,
   // outlines.
   if (ShouldPaintSelfOutline(paint_info.phase))
     PaintOutline(paint_info, paint_offset);
-  if (paint_info.phase == kPaintPhaseSelfOutlineOnly)
+  if (paint_info.phase == PaintPhase::kSelfOutlineOnly)
     return;
 
   if (ShouldPaintSelfBlockBackground(paint_info.phase)) {
@@ -34,7 +34,7 @@ void TableRowPainter::Paint(const PaintInfo& paint_info,
         layout_table_row_.Section()->FullTableEffectiveColumnSpan());
   }
 
-  if (paint_info.phase == kPaintPhaseSelfBlockBackgroundOnly)
+  if (paint_info.phase == PaintPhase::kSelfBlockBackgroundOnly)
     return;
 
   PaintInfo paint_info_for_cells = paint_info.ForDescendants();
