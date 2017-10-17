@@ -50,10 +50,7 @@
   ]);
 
   function createSnippetPromise(content) {
-    var callback;
-    var promise = new Promise(fullfill => (callback = fullfill));
-    Snippets.scriptSnippetModel._project.createFile('', null, content, callback);
-    return promise;
+    return Snippets.scriptSnippetModel._project.createFile('', null, content);
   }
 
   function renameSourceCodePromise(newName, uiSourceCode) {
