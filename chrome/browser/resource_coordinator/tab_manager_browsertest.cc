@@ -822,8 +822,8 @@ Browser* CreateBrowserWithTabs(int num_tabs) {
 
 }  // namespace
 
-// Flaky on Linux. http://crbug.com/772839.
-#if defined(OS_LINUX)
+// Flaky on Linux.  Times out on Windows debug builds. http://crbug.com/772839.
+#if defined(OS_LINUX) || (defined(OS_WIN) && !defined(NDEBUG))
 #define MAYBE_DiscardTabsWithMinimizedAndOccludedWindows \
   DISABLED_DiscardTabsWithMinimizedAndOccludedWindows
 #else
