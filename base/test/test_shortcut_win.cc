@@ -8,11 +8,11 @@
 #include <objbase.h>
 #include <shlobj.h>
 #include <propkey.h>
+#include <wrl/client.h>
 
 #include "base/files/file_path.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -49,8 +49,8 @@ void ValidatePathsAreEqual(const base::FilePath& expected_path,
 
 void ValidateShortcut(const base::FilePath& shortcut_path,
                       const ShortcutProperties& properties) {
-  ScopedComPtr<IShellLink> i_shell_link;
-  ScopedComPtr<IPersistFile> i_persist_file;
+  Microsoft::WRL::ComPtr<IShellLink> i_shell_link;
+  Microsoft::WRL::ComPtr<IPersistFile> i_persist_file;
 
   wchar_t read_target[MAX_PATH] = {0};
   wchar_t read_working_dir[MAX_PATH] = {0};
@@ -112,7 +112,7 @@ void ValidateShortcut(const base::FilePath& shortcut_path,
     EXPECT_EQ(properties.icon_index, read_icon_index);
   }
 
-  ScopedComPtr<IPropertyStore> property_store;
+  Microsoft::WRL::ComPtr<IPropertyStore> property_store;
   EXPECT_TRUE(
       SUCCEEDED(hr = i_shell_link.CopyTo(property_store.GetAddressOf())));
   if (FAILED(hr))
