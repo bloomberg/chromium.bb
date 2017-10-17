@@ -256,11 +256,14 @@
 #include "platform/wtf/text/CharacterNames.h"
 #include "platform/wtf/text/StringBuffer.h"
 #include "platform/wtf/text/TextEncodingRegistry.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
 #include "public/platform/site_engagement.mojom-blink.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/interfaces/ukm_interface.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 #ifndef NDEBUG
@@ -3696,6 +3699,9 @@ void Document::SetURL(const KURL& url) {
   access_entry_from_url_ = nullptr;
   UpdateBaseURL();
   GetContextFeatures().UrlDidChange(this);
+
+  if (ukm_recorder_)
+    ukm_recorder_->UpdateSourceURL(ukm_source_id_, url_);
 }
 
 KURL Document::ValidBaseElementURL() const {
@@ -5958,6 +5964,24 @@ void Document::SetFeaturePolicy(const String& feature_policy_header) {
   }
   if (frame_ && !parsed_header.empty())
     frame_->Client()->DidSetFeaturePolicyHeader(parsed_header);
+}
+
+ukm::UkmRecorder* Document::UkmRecorder() {
+  if (ukm_recorder_)
+    return ukm_recorder_.get();
+
+  ukm::mojom::UkmRecorderInterfacePtr interface;
+  Platform::Current()->GetInterfaceProvider()->GetInterface(
+      mojo::MakeRequest(&interface));
+  ukm_recorder_.reset(new ukm::MojoUkmRecorder(std::move(interface)));
+  ukm_source_id_ = ukm_recorder_->GetNewSourceID();
+  ukm_recorder_->UpdateSourceURL(ukm_source_id_, url_);
+  return ukm_recorder_.get();
+}
+
+int64_t Document::UkmSourceID() const {
+  DCHECK(ukm_recorder_);
+  return ukm_source_id_;
 }
 
 void Document::InitSecurityContext(const DocumentInit& initializer) {

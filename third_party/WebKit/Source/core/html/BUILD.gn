@@ -633,6 +633,10 @@ blink_core_sources("html") {
     # TODO(jschuh): crbug.com/167187 fix size_t to int truncations.
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
+
+  deps = [
+    "//services/metrics/public/cpp:metrics_cpp",
+  ]
 }
 
 fuzzer_test("blink_html_tokenizer_fuzzer") {

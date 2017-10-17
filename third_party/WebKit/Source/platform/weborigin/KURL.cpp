@@ -37,6 +37,7 @@
 #include "platform/wtf/text/StringStatics.h"
 #include "platform/wtf/text/StringUTF8Adaptor.h"
 #include "platform/wtf/text/TextEncoding.h"
+#include "url/gurl.h"
 #include "url/url_util.h"
 #ifndef NDEBUG
 #include <stdio.h>
@@ -879,6 +880,10 @@ void KURL::ReplaceComponents(const url::Replacements<CHAR>& replacements) {
 bool KURL::IsSafeToSendToAnotherThread() const {
   return string_.IsSafeToSendToAnotherThread() &&
          (!inner_url_ || inner_url_->IsSafeToSendToAnotherThread());
+}
+
+KURL::operator GURL() const {
+  return GURL(string_.Utf8().data(), parsed_, is_valid_);
 }
 
 }  // namespace blink

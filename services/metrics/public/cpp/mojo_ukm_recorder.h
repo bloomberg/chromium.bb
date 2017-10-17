@@ -30,9 +30,11 @@ class METRICS_EXPORT MojoUkmRecorder : public UkmRecorder {
   explicit MojoUkmRecorder(mojom::UkmRecorderInterfacePtr interface);
   ~MojoUkmRecorder() override;
 
- private:
   // UkmRecorder:
   void UpdateSourceURL(SourceId source_id, const GURL& url) override;
+
+ private:
+  // UkmRecorder:
   void AddEntry(mojom::UkmEntryPtr entry) override;
 
   mojom::UkmRecorderInterfacePtr interface_;
