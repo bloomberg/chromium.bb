@@ -9,6 +9,7 @@
 #include "base/stl_util.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/log_manager.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/sync_service.h"
 #include "crypto/openssl_util.h"
 #include "third_party/boringssl/src/include/openssl/evp.h"
@@ -116,6 +117,13 @@ uint64_t CalculateSyncPasswordHash(const base::StringPiece16& text,
                     (((static_cast<uint64_t>(hash[4])) & 0x1F) << 32);
 
   return hash37;
+}
+
+bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service) {
+  return (base::FeatureList::IsEnabled(
+              password_manager::features::kEnableManualPasswordGeneration) &&
+          (password_manager_util::GetPasswordSyncState(sync_service) ==
+           password_manager::SYNCING_NORMAL_ENCRYPTION));
 }
 
 }  // namespace password_manager_util

@@ -54,6 +54,10 @@ bool IsLoggingActive(const password_manager::PasswordManagerClient* client);
 uint64_t CalculateSyncPasswordHash(const base::StringPiece16& text,
                                    const std::string& salt);
 
+// True iff the manual password generation is enabled and the user is sync user
+// without custom passphrase.
+bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service);
+
 }  // namespace password_manager_util
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PASSWORD_MANAGER_UTIL_H_
