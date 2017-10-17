@@ -11,10 +11,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/notification.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/drive.pb.h"
 #include "ui/gfx/image/image.h"
+#include "ui/message_center/notification.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
 class Profile;
@@ -106,11 +106,6 @@ class ChromeScreenshotGrabber : public ash::ScreenshotDelegate,
   // |image| is a preview image attached to the notification. It can be empty.
   void OnReadScreenshotFileForPreviewCompleted(
       ui::ScreenshotGrabberObserver::Result result,
-      const base::FilePath& screenshot_path,
-      gfx::Image image);
-
-  Notification* CreateNotification(
-      ui::ScreenshotGrabberObserver::Result screenshot_result,
       const base::FilePath& screenshot_path,
       gfx::Image image);
 

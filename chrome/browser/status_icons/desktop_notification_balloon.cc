@@ -13,11 +13,11 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notification_types.h"
 #include "ui/message_center/notifier_settings.h"
@@ -88,10 +88,10 @@ void DesktopNotificationBalloon::DisplayBalloon(
 
   const std::string notification_id =
       kNotificationPrefix + base::IntToString(id_count_++);
-  Notification notification(
+  message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id, title,
-      contents, gfx::Image(icon), notifier_id, base::string16(), GURL(),
-      std::string(), message_center::RichNotificationData(),
+      contents, gfx::Image(icon), base::string16(), GURL(), notifier_id,
+      message_center::RichNotificationData(),
       new DummyNotificationDelegate(notification_id, profile_));
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);

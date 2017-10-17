@@ -16,19 +16,19 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/notifications/message_center_stats_collector.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_system_observer.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_types.h"
+#include "ui/message_center/notification.h"
 
-class Notification;
 class Profile;
 class ProfileNotification;
 
 namespace message_center {
+class Notification;
 class NotificationBlocker;
 FORWARD_DECLARE_TEST(WebNotificationTrayTest, ManuallyCloseMessageCenter);
 }
@@ -51,10 +51,13 @@ class MessageCenterNotificationManager
   ~MessageCenterNotificationManager() override;
 
   // NotificationUIManager
-  void Add(const Notification& notification, Profile* profile) override;
-  bool Update(const Notification& notification, Profile* profile) override;
-  const Notification* FindById(const std::string& delegate_id,
-                               ProfileID profile_id) const override;
+  void Add(const message_center::Notification& notification,
+           Profile* profile) override;
+  bool Update(const message_center::Notification& notification,
+              Profile* profile) override;
+  const message_center::Notification* FindById(
+      const std::string& delegate_id,
+      ProfileID profile_id) const override;
   bool CancelById(const std::string& delegate_id,
                   ProfileID profile_id) override;
   std::set<std::string> GetAllIdsByProfile(ProfileID profile_id) override;

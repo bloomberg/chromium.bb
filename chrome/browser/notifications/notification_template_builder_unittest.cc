@@ -56,7 +56,7 @@ class NotificationTemplateBuilderTest : public ::testing::Test {
                      base::string16* xml_template) {
     GURL origin_url(notification_data.origin);
 
-    Notification notification(
+    message_center::Notification notification(
         message_center::NOTIFICATION_TYPE_SIMPLE, notification_data.id,
         base::UTF8ToUTF16(notification_data.title),
         base::UTF8ToUTF16(notification_data.message), gfx::Image() /* icon */,

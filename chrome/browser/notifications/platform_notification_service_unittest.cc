@@ -42,6 +42,7 @@
 
 using content::NotificationResources;
 using content::PlatformNotificationData;
+using message_center::Notification;
 
 namespace {
 

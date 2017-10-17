@@ -9,8 +9,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/download/download_commands.h"
 #include "chrome/browser/image_decoder.h"
-#include "chrome/browser/notifications/notification.h"
-#include "chrome/browser/notifications/notification_test_util.h"
 #include "content/public/browser/download_item.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/message_center/notification_delegate.h"
@@ -24,6 +22,10 @@ class DownloadItemNotificationTest;
 
 namespace gfx {
 struct VectorIcon;
+}
+
+namespace message_center {
+class Notification;
 }
 
 class DownloadNotificationManagerForProfile;
@@ -117,7 +119,7 @@ class DownloadItemNotification : public ImageDecoder::ImageRequest {
   content::DownloadItem::DownloadState previous_download_state_ =
       content::DownloadItem::MAX_DOWNLOAD_STATE;  // As uninitialized state
   bool previous_dangerous_state_ = false;
-  std::unique_ptr<Notification> notification_;
+  std::unique_ptr<message_center::Notification> notification_;
   content::DownloadItem* item_;
   std::unique_ptr<std::vector<DownloadCommands::Command>> button_actions_;
 

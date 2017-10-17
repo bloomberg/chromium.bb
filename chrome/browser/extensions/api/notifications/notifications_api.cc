@@ -23,7 +23,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper.h"
 #include "chrome/browser/extensions/api/notifications/extension_notification_display_helper_factory.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
@@ -49,6 +48,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/skia_util.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 #include "ui/message_center/notifier_settings.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -352,11 +352,11 @@ bool NotificationsApiFunction::CreateNotification(
   }
 
   std::string notification_id = CreateScopedIdentifier(extension_->id(), id);
-  Notification notification(
+  message_center::Notification notification(
       type, notification_id, title, message, icon,
+      base::UTF8ToUTF16(extension_->name()), extension_->url(),
       message_center::NotifierId(message_center::NotifierId::APPLICATION,
                                  extension_->id()),
-      base::UTF8ToUTF16(extension_->name()), extension_->url(), notification_id,
       optional_fields,
       new WebNotificationDelegate(NotificationCommon::EXTENSION, GetProfile(),
                                   notification_id, extension_->url()));
@@ -372,7 +372,7 @@ bool NotificationsApiFunction::CreateNotification(
 bool NotificationsApiFunction::UpdateNotification(
     const std::string& id,
     api::notifications::NotificationOptions* options,
-    Notification* notification) {
+    message_center::Notification* notification) {
 #if !defined(OS_CHROMEOS)
   if (options->priority &&
       *options->priority < message_center::DEFAULT_PRIORITY) {
@@ -608,7 +608,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
 
   // We are in update.  If the ID doesn't exist, succeed but call the callback
   // with "false".
-  const Notification* matched_notification =
+  const message_center::Notification* matched_notification =
       GetDisplayHelper()->GetByNotificationId(
           CreateScopedIdentifier(extension_->id(), params_->notification_id));
 
@@ -619,7 +619,7 @@ bool NotificationsUpdateFunction::RunNotificationsApi() {
   }
 
   // Copy the existing notification to get a writable version of it.
-  Notification notification = *matched_notification;
+  message_center::Notification notification = *matched_notification;
 
   // If we have trouble updating the notification (could be improper use of API
   // or some other reason), mark the function as failed, calling the callback

@@ -9,7 +9,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/desktop_notification_profile_util.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/permissions/permission_manager.h"
@@ -21,6 +20,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "ui/message_center/notification.h"
 
 namespace {
 
@@ -107,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(MessageCenterNotificationManagerBrowserTest,
       NotificationUIManager::GetProfileID(browser()->profile());
   std::set<std::string> ids = manager()->GetAllIdsByProfile(profile_id);
   ASSERT_EQ(1u, ids.size());
-  const Notification* notification =
+  const message_center::Notification* notification =
       manager()->FindById(*ids.begin(), profile_id);
   ASSERT_TRUE(notification);
   notification->delegate()->Click();

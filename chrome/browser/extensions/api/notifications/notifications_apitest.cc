@@ -17,7 +17,6 @@
 #include "chrome/browser/extensions/api/notifications/notifications_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notifier_state_tracker.h"
@@ -38,6 +37,7 @@
 #include "extensions/common/features/feature.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if defined(OS_MACOSX)
@@ -188,7 +188,7 @@ class NotificationsApiTest : public ExtensionApiTest {
   // when the notification count is not equal to one. It's not safe to rely on
   // the Notification pointer after closing the notification, but a copy can be
   // made to continue to be able to access the underlying information.
-  Notification* GetNotificationForExtension(
+  message_center::Notification* GetNotificationForExtension(
       const extensions::Extension* extension) {
     DCHECK(extension);
 
@@ -296,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestPartialUpdate) {
   int kNewPriority = 2;
   const char kButtonTitle[] = "NewButton";
 
-  Notification* notification = GetNotificationForExtension(extension);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
   EXPECT_EQ(base::ASCIIToUTF16(kNewTitle), notification->title());
@@ -389,7 +390,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestUserGesture) {
       LoadExtensionAndWait("notifications/api/user_gesture");
   ASSERT_TRUE(extension) << message_;
 
-  Notification* notification = GetNotificationForExtension(extension);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
   {
@@ -413,7 +415,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestRequireInteraction) {
       LoadExtensionAndWait("notifications/api/require_interaction");
   ASSERT_TRUE(extension) << message_;
 
-  Notification* notification = GetNotificationForExtension(extension);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
   EXPECT_TRUE(notification->never_timeout());
@@ -431,7 +434,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayNormal) {
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
       GetFirstAppWindow(extension->id())->GetNativeWindow()));
 
-  Notification* notification = GetNotificationForExtension(extension);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
   // If the app hasn't created a fullscreen window, then its notifications
@@ -459,7 +463,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayFullscreen) {
   ASSERT_TRUE(GetFirstAppWindow(extension->id())->GetBaseWindow()->IsActive())
       << "Not Active";
 
-  Notification* notification = GetNotificationForExtension(extension);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
   // If the app has created a fullscreen window, then its notifications should
@@ -484,7 +489,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayFullscreenOff) {
   ASSERT_TRUE(GetFirstAppWindow(extension->id())->GetBaseWindow()->IsActive())
       << "Not Active";
 
-  Notification* notification = GetNotificationForExtension(extension);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
   // When the experiment flag is off, then ShouldDisplayOverFullscreen should
@@ -516,7 +522,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest, TestShouldDisplayMultiFullscreen) {
   ASSERT_TRUE(ui_test_utils::ShowAndFocusNativeWindow(
       GetFirstAppWindow(extension2->id())->GetNativeWindow()));
 
-  Notification* notification = GetNotificationForExtension(extension1);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension1);
   ASSERT_TRUE(notification);
 
   // The first app window is superseded by the second window, so its
@@ -544,7 +551,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsApiTest,
   ASSERT_TRUE(GetFirstAppWindow(extension->id())->GetBaseWindow()->IsActive())
       << "Not Active";
 
-  Notification* notification = GetNotificationForExtension(extension);
+  message_center::Notification* notification =
+      GetNotificationForExtension(extension);
   ASSERT_TRUE(notification);
 
   // The extension's window is being shown and focused, so its expected that

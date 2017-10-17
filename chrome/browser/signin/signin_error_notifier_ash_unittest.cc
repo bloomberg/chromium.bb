@@ -13,7 +13,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_error_controller_factory.h"
@@ -74,7 +73,7 @@ class SigninErrorNotifierTest : public BrowserWithTestWindowTest {
 
  protected:
   void GetMessage(base::string16* message) {
-    const Notification* notification =
+    const message_center::Notification* notification =
         g_browser_process->notification_ui_manager()->FindById(
             kNotificationId, NotificationUIManager::GetProfileID(GetProfile()));
     ASSERT_FALSE(notification == NULL);
@@ -196,8 +195,9 @@ TEST_F(SigninErrorNotifierTest, AuthStatusEnumerateAllErrors) {
     FakeAuthStatusProvider provider(error_controller_);
     provider.SetAuthError(kTestAccountId,
                           GoogleServiceAuthError(table[i].error_state));
-    const Notification* notification = notification_ui_manager_->FindById(
-        kNotificationId, NotificationUIManager::GetProfileID(GetProfile()));
+    const message_center::Notification* notification =
+        notification_ui_manager_->FindById(
+            kNotificationId, NotificationUIManager::GetProfileID(GetProfile()));
     ASSERT_EQ(table[i].is_error, notification != NULL);
     if (table[i].is_error) {
       EXPECT_FALSE(notification->title().empty());

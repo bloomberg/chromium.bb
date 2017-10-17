@@ -16,7 +16,6 @@
 #include "base/strings/nullable_string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -33,6 +32,7 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/android/java_bitmap.h"
 #include "ui/gfx/image/image.h"
+#include "ui/message_center/notification.h"
 
 using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF8;
@@ -240,7 +240,7 @@ void NotificationPlatformBridgeAndroid::Display(
     const std::string& notification_id,
     const std::string& profile_id,
     bool incognito,
-    const Notification& notification,
+    const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   JNIEnv* env = AttachCurrentThread();
 
@@ -262,8 +262,10 @@ void NotificationPlatformBridgeAndroid::Display(
       ConvertUTF8ToJavaString(env, notification_id);
   ScopedJavaLocalRef<jstring> j_origin =
       ConvertUTF8ToJavaString(env, origin_url.spec());
+  // TODO(estade,peter): remove the tag field from Java and just use the
+  // notification id.
   ScopedJavaLocalRef<jstring> tag =
-      ConvertUTF8ToJavaString(env, notification.tag());
+      ConvertUTF8ToJavaString(env, notification_id);
   ScopedJavaLocalRef<jstring> title =
       ConvertUTF16ToJavaString(env, notification.title());
   ScopedJavaLocalRef<jstring> body =
@@ -301,7 +303,7 @@ void NotificationPlatformBridgeAndroid::Display(
 
   regenerated_notification_infos_[notification_id] =
       RegeneratedNotificationInfo(origin_url.spec(), scope_url.spec(),
-                                  notification.tag(), base::nullopt);
+                                  notification_id, base::nullopt);
 }
 
 void NotificationPlatformBridgeAndroid::Close(

@@ -29,7 +29,7 @@ namespace {
 // Extension icon size for the notification.
 const int kIconSize = 48;
 
-std::unique_ptr<Notification> CreateAutoGrantedNotification(
+std::unique_ptr<message_center::Notification> CreateAutoGrantedNotification(
     const extensions::Extension& extension,
     const base::WeakPtr<Volume>& volume,
     bool writable,
@@ -38,7 +38,7 @@ std::unique_ptr<Notification> CreateAutoGrantedNotification(
 
   // If the volume is gone, then do not show the notification.
   if (!volume.get())
-    return std::unique_ptr<Notification>(nullptr);
+    return std::unique_ptr<message_center::Notification>(nullptr);
 
   const std::string notification_id =
       extension.id() + "-" + volume->volume_id();
@@ -54,7 +54,7 @@ std::unique_ptr<Notification> CreateAutoGrantedNotification(
           : IDS_FILE_SYSTEM_REQUEST_FILE_SYSTEM_NOTIFICATION_MESSAGE,
       display_name);
 
-  std::unique_ptr<Notification> notification(new Notification(
+  std::unique_ptr<message_center::Notification> notification(new Notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
       base::UTF8ToUTF16(extension.name()), message,
       gfx::Image(),      // Updated asynchronously later.
@@ -111,7 +111,7 @@ RequestFileSystemNotification::~RequestFileSystemNotification() {
 }
 
 void RequestFileSystemNotification::Show(
-    std::unique_ptr<Notification> notification) {
+    std::unique_ptr<message_center::Notification> notification) {
   pending_notification_ = std::move(notification);
   // If the extension icon is not known yet, then defer showing the notification
   // until it is (from SetAppImage).

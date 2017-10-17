@@ -29,7 +29,7 @@ class NotificationPlatformBridgeLinux : public NotificationPlatformBridge {
                const std::string& notification_id,
                const std::string& profile_id,
                bool is_incognito,
-               const Notification& notification,
+               const message_center::Notification& notification,
                std::unique_ptr<NotificationCommon::Metadata> metadata) override;
   void Close(const std::string& profile_id,
              const std::string& notification_id) override;

@@ -17,9 +17,12 @@
 #include "chrome/browser/notifications/notification_common.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class Notification;
 class NotificationHandler;
 class Profile;
+
+namespace message_center {
+class Notification;
+}
 
 // Profile-bound service that enables notifications to be displayed and
 // interacted with on the user's screen, orthogonal of whether this
@@ -39,7 +42,7 @@ class NotificationDisplayService : public KeyedService {
   virtual void Display(
       NotificationCommon::Type notification_type,
       const std::string& notification_id,
-      const Notification& notification,
+      const message_center::Notification& notification,
       std::unique_ptr<NotificationCommon::Metadata> metadata = nullptr) = 0;
 
   // Closes the notification identified by |notification_id|.

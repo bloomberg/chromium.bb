@@ -19,8 +19,8 @@ unsigned int StubNotificationUIManager::GetNotificationCount() const {
   return notifications_.size();
 }
 
-const Notification& StubNotificationUIManager::GetNotificationAt(
-    unsigned int index) const {
+const message_center::Notification&
+StubNotificationUIManager::GetNotificationAt(unsigned int index) const {
   DCHECK_GT(GetNotificationCount(), index);
   return notifications_[index].first;
 }
@@ -43,8 +43,9 @@ bool StubNotificationUIManager::SilentDismissById(
   return false;
 }
 
-void StubNotificationUIManager::Add(const Notification& notification,
-                                    Profile* profile) {
+void StubNotificationUIManager::Add(
+    const message_center::Notification& notification,
+    Profile* profile) {
   if (is_shutdown_started_)
     return;
 
@@ -60,16 +61,15 @@ void StubNotificationUIManager::Add(const Notification& notification,
   notification.delegate()->Display();
 }
 
-bool StubNotificationUIManager::Update(const Notification& notification,
-                                       Profile* profile) {
+bool StubNotificationUIManager::Update(
+    const message_center::Notification& notification,
+    Profile* profile) {
   const ProfileID profile_id = NotificationUIManager::GetProfileID(profile);
-  if (notification.tag().empty())
-    return false;
 
   auto iter = notifications_.begin();
   for (; iter != notifications_.end(); ++iter) {
-    const Notification& old_notification = iter->first;
-    if (old_notification.tag() == notification.tag() &&
+    const message_center::Notification& old_notification = iter->first;
+    if (old_notification.id() == notification.id() &&
         old_notification.origin_url() == notification.origin_url() &&
         iter->second == profile_id) {
       notifications_.erase(iter);
@@ -81,7 +81,7 @@ bool StubNotificationUIManager::Update(const Notification& notification,
   return false;
 }
 
-const Notification* StubNotificationUIManager::FindById(
+const message_center::Notification* StubNotificationUIManager::FindById(
     const std::string& delegate_id,
     ProfileID profile_id) const {
   auto iter = notifications_.begin();

@@ -22,8 +22,9 @@ std::string ProfileNotification::GetProfileNotificationId(
                             delegate_id.c_str());
 }
 
-ProfileNotification::ProfileNotification(Profile* profile,
-                                         const Notification& notification)
+ProfileNotification::ProfileNotification(
+    Profile* profile,
+    const message_center::Notification& notification)
     : profile_id_(NotificationUIManager::GetProfileID(profile)),
       notification_(
           // Uses Notification's copy constructor to assign the message center

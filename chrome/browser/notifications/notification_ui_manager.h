@@ -10,24 +10,27 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "chrome/browser/notifications/notification_common.h"
 
 typedef void* ProfileID;
 
 class GURL;
-class Notification;
 class Profile;
 
-// This virtual interface is used to manage the UI surfaces for desktop
-// notifications. There is just one instance for all profiles.
-// This represents the middle layer of notification and it's aware of profile.
-// It identifies a notification by the id string and a profile, hence two
-// notifications from two different profiles, even though they may have
-// identical ids, will not be considered the same notification.
-// This interface will generate a new id behind the scene based on the id string
-// and the profile's characteristics for each notification and use this new id
-// to call lower layer MessageCenter interface which is profile agnostic.
-// Therefore the ids passed into this interface are not the same as those passed
-// into the MessageCenter interface.
+namespace message_center {
+class Notification;
+}
+
+// This interface is used to manage the UI surfaces for desktop notifications.
+// There is just one instance for all profiles. This represents the middle layer
+// of notification and it's aware of profile. It identifies a notification by
+// the id string and a profile, hence two notifications from two different
+// profiles, even though they may have identical ids, will not be considered the
+// same notification. This interface will generate a new id behind the scene
+// based on the id string and the profile's characteristics for each
+// notification and use this new id to call lower layer MessageCenter interface
+// which is profile agnostic. Therefore the ids passed into this interface are
+// not the same as those passed into the MessageCenter interface.
 class NotificationUIManager {
  public:
   // Convert a profile pointer into an opaque profile id, which can be safely
@@ -42,20 +45,23 @@ class NotificationUIManager {
   // Creates an initialized UI manager.
   static NotificationUIManager* Create();
 
-  // Adds a notification to be displayed. Virtual for unit test override.
-  virtual void Add(const Notification& notification, Profile* profile) = 0;
+  // Adds a notification to be displayed.
+  virtual void Add(const message_center::Notification& notification,
+                   Profile* profile) = 0;
 
-  // Updates an existing notification. If |update_progress_only|, assume
-  // only message and progress properties are updated.
-  virtual bool Update(const Notification& notification, Profile* profile) = 0;
+  // Updates the given notification, if it already exists.Returns true for
+  // update and false to report a no-op.
+  virtual bool Update(const message_center::Notification& notification,
+                      Profile* profile) = 0;
 
   // Returns the pointer to a notification if it match the supplied ID, either
   // currently displayed or in the queue.
   // This function can be bound for delayed execution, where a profile pointer
   // may not be valid. Hence caller needs to call the static GetProfileID(...)
   // function to turn a profile pointer into a profile id and pass that in.
-  virtual const Notification* FindById(const std::string& delegate_id,
-                                       ProfileID profile_id) const = 0;
+  virtual const message_center::Notification* FindById(
+      const std::string& delegate_id,
+      ProfileID profile_id) const = 0;
 
   // Removes any notifications matching the supplied ID, either currently
   // displayed or in the queue.  Returns true if anything was removed.

@@ -11,9 +11,12 @@
 #include "base/macros.h"
 #include "chrome/browser/notifications/notification_common.h"
 
-class Notification;
 class Profile;
 class StubNotificationDisplayService;
+
+namespace message_center {
+class Notification;
+}
 
 // Helper class that enables use of the NotificationDisplayService in tests. The
 // Profile* passed when constructing an instance must outlive this class, as
@@ -29,11 +32,11 @@ class NotificationDisplayServiceTester {
   void SetNotificationAddedClosure(base::RepeatingClosure closure);
 
   // Synchronously gets a vector of the displayed Notifications for the |type|.
-  std::vector<Notification> GetDisplayedNotificationsForType(
+  std::vector<message_center::Notification> GetDisplayedNotificationsForType(
       NotificationCommon::Type type);
 
   const NotificationCommon::Metadata* GetMetadataForNotification(
-      const Notification& notification);
+      const message_center::Notification& notification);
 
   // Simulates the notification identified by |notification_id| being closed due
   // to external events, such as the user dismissing it when |by_user| is set.

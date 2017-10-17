@@ -14,7 +14,9 @@
 #include "chrome/browser/notifications/displayed_notifications_dispatch_callback.h"
 #include "chrome/browser/notifications/notification_common.h"
 
+namespace message_center {
 class Notification;
+}
 
 // Provides the low-level interface that enables notifications to be displayed
 // and interacted with on the user's screen, orthogonal of whether this
@@ -35,7 +37,7 @@ class NotificationPlatformBridge {
       const std::string& notification_id,
       const std::string& profile_id,
       bool is_incognito,
-      const Notification& notification,
+      const message_center::Notification& notification,
       std::unique_ptr<NotificationCommon::Metadata> metadata) = 0;
 
   // Closes a nofication with |notification_id| and |profile_id| if being

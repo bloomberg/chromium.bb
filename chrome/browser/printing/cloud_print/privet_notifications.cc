@@ -17,7 +17,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/local_discovery/service_discovery_shared_client.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/printing/cloud_print/privet_device_lister_impl.h"
 #include "chrome/browser/printing/cloud_print/privet_http_asynchronous_factory.h"
@@ -43,6 +42,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notifier_settings.h"
 
 #if BUILDFLAG(ENABLE_MDNS)
@@ -257,14 +257,14 @@ void PrivetNotificationService::PrivetNotify(int devices_active,
       l10n_util::GetStringUTF16(IDS_LOCAL_DISCOVERY_SERVICE_NAME_PRINTER);
 
   Profile* profile = Profile::FromBrowserContext(profile_);
-  Notification notification(
+  message_center::Notification notification(
       message_center::NOTIFICATION_TYPE_SIMPLE, kPrivetNotificationID, title,
       body,
       ui::ResourceBundle::GetSharedInstance().GetImageNamed(
           IDR_LOCAL_DISCOVERY_CLOUDPRINT_ICON),
+      product_name, GURL(kPrivetNotificationOriginUrl),
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kPrivetNotificationID),
-      product_name, GURL(kPrivetNotificationOriginUrl), kPrivetNotificationID,
       rich_notification_data, CreateNotificationDelegate(profile));
 
   auto* notification_ui_manager = g_browser_process->notification_ui_manager();

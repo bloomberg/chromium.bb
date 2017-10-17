@@ -26,7 +26,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -46,6 +45,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/message_center/notification.h"
 
 namespace {
 
@@ -105,7 +105,8 @@ int ClampInt(int value, int low, int hi) {
   return std::max(std::min(value, hi), low);
 }
 
-base::string16 CreateNotificationTitle(const Notification& notification) {
+base::string16 CreateNotificationTitle(
+    const message_center::Notification& notification) {
   base::string16 title;
   if (notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS) {
     title += base::FormatPercent(notification.progress());
@@ -292,7 +293,7 @@ class NotificationPlatformBridgeLinuxImpl
       const std::string& notification_id,
       const std::string& profile_id,
       bool is_incognito,
-      const Notification& notification,
+      const message_center::Notification& notification,
       std::unique_ptr<NotificationCommon::Metadata> metadata) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     // Notifications contain gfx::Image's which have reference counts
@@ -300,7 +301,8 @@ class NotificationPlatformBridgeLinuxImpl
     // notification and its images.  Wrap the notification in a
     // unique_ptr to transfer ownership of the notification (and the
     // non-thread-safe reference counts) to the task runner thread.
-    auto notification_copy = std::make_unique<Notification>(notification);
+    auto notification_copy =
+        std::make_unique<message_center::Notification>(notification);
     notification_copy->set_icon(DeepCopyImage(notification_copy->icon()));
     notification_copy->set_image(body_images_supported_.value()
                                      ? DeepCopyImage(notification_copy->image())
@@ -499,11 +501,12 @@ class NotificationPlatformBridgeLinuxImpl
   }
 
   // Makes the "Notify" call to D-Bus.
-  void DisplayOnTaskRunner(NotificationCommon::Type notification_type,
-                           const std::string& notification_id,
-                           const std::string& profile_id,
-                           bool is_incognito,
-                           std::unique_ptr<Notification> notification) {
+  void DisplayOnTaskRunner(
+      NotificationCommon::Type notification_type,
+      const std::string& notification_id,
+      const std::string& profile_id,
+      bool is_incognito,
+      std::unique_ptr<message_center::Notification> notification) {
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
     NotificationData* data =
         FindNotificationData(notification_id, profile_id, is_incognito);
@@ -990,7 +993,7 @@ void NotificationPlatformBridgeLinux::Display(
     const std::string& notification_id,
     const std::string& profile_id,
     bool is_incognito,
-    const Notification& notification,
+    const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   impl_->Display(notification_type, notification_id, profile_id, is_incognito,
                  notification, std::move(metadata));

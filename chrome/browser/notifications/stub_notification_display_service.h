@@ -11,9 +11,9 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_common.h"
 #include "chrome/browser/notifications/notification_display_service.h"
+#include "ui/message_center/notification.h"
 
 class Profile;
 
@@ -34,11 +34,11 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   void SetNotificationAddedClosure(base::RepeatingClosure closure);
 
   // Returns a vector of the displayed Notification objects.
-  std::vector<Notification> GetDisplayedNotificationsForType(
+  std::vector<message_center::Notification> GetDisplayedNotificationsForType(
       NotificationCommon::Type type) const;
 
   const NotificationCommon::Metadata* GetMetadataForNotification(
-      const Notification& notification);
+      const message_center::Notification& notification);
 
   // Simulates the notification identified by |notification_id| being closed due
   // to external events, such as the user dismissing it when |by_user| is set.
@@ -57,7 +57,7 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   // NotificationDisplayService implementation:
   void Display(NotificationCommon::Type notification_type,
                const std::string& notification_id,
-               const Notification& notification,
+               const message_center::Notification& notification,
                std::unique_ptr<NotificationCommon::Metadata> metadata) override;
   void Close(NotificationCommon::Type notification_type,
              const std::string& notification_id) override;
@@ -67,7 +67,7 @@ class StubNotificationDisplayService : public NotificationDisplayService {
   // Data to store for a notification that's being shown through this service.
   struct NotificationData {
     NotificationData(NotificationCommon::Type type,
-                     const Notification& notification,
+                     const message_center::Notification& notification,
                      std::unique_ptr<NotificationCommon::Metadata> metadata);
     NotificationData(NotificationData&& other);
     ~NotificationData();
@@ -75,7 +75,7 @@ class StubNotificationDisplayService : public NotificationDisplayService {
     NotificationData& operator=(NotificationData&& other);
 
     NotificationCommon::Type type;
-    Notification notification;
+    message_center::Notification notification;
     std::unique_ptr<NotificationCommon::Metadata> metadata;
   };
 

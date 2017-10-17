@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/android/ntp/content_suggestions_notifier.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/ntp_snippets/ntp_snippets_metrics.h"
 #include "chrome/common/pref_names.h"

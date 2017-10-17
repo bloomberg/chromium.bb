@@ -92,13 +92,13 @@ class DownloadItemNotificationTest : public testing::Test {
     return download_item_notification_->notification_->id();
   }
 
-  std::unique_ptr<Notification> LookUpNotification() const {
-    std::vector<Notification> notifications =
+  std::unique_ptr<message_center::Notification> LookUpNotification() const {
+    std::vector<message_center::Notification> notifications =
         service_tester_->GetDisplayedNotificationsForType(
             NotificationCommon::DOWNLOAD);
     for (const auto& notification : notifications) {
       if (notification.id() == download_item_notification_->GetNotificationId())
-        return std::make_unique<Notification>(notification);
+        return std::make_unique<message_center::Notification>(notification);
     }
     return nullptr;
   }

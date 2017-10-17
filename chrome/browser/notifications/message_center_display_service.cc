@@ -9,13 +9,13 @@
 #include <string>
 
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/notifications/notification.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
 
 namespace {
@@ -28,7 +28,7 @@ namespace {
 class PassThroughDelegate : public message_center::NotificationDelegate {
  public:
   PassThroughDelegate(Profile* profile,
-                      const Notification& notification,
+                      const message_center::Notification& notification,
                       NotificationCommon::Type notification_type)
       : profile_(profile),
         notification_(notification),
@@ -63,7 +63,7 @@ class PassThroughDelegate : public message_center::NotificationDelegate {
 
  private:
   Profile* profile_;
-  Notification notification_;
+  message_center::Notification notification_;
   NotificationCommon::Type notification_type_;
 
   DISALLOW_COPY_AND_ASSIGN(PassThroughDelegate);
@@ -79,7 +79,7 @@ MessageCenterDisplayService::~MessageCenterDisplayService() {}
 void MessageCenterDisplayService::Display(
     NotificationCommon::Type notification_type,
     const std::string& notification_id,
-    const Notification& notification,
+    const message_center::Notification& notification,
     std::unique_ptr<NotificationCommon::Metadata> metadata) {
   // TODO(miguelg): MCDS should stop relying on the |notification|'s delegate
   // for Close/Click operations once the Notification object becomes a mojom
@@ -102,11 +102,11 @@ void MessageCenterDisplayService::Display(
 
   // If there's no delegate, replace it with a PassThroughDelegate so clicks
   // go back to the appropriate handler.
-  Notification notification_with_delegate(
+  message_center::Notification notification_with_delegate(
       notification.type(), notification.id(), notification.title(),
-      notification.message(), notification.icon(), notification.notifier_id(),
+      notification.message(), notification.icon(),
       notification.display_source(), notification.origin_url(),
-      notification.tag(), notification.rich_notification_data(),
+      notification.notifier_id(), notification.rich_notification_data(),
       base::WrapRefCounted(
           new PassThroughDelegate(profile_, notification, notification_type)));
   ui_manager->Add(notification_with_delegate, profile_);
