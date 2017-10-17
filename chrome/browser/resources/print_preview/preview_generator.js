@@ -5,166 +5,133 @@
 cr.define('print_preview', function() {
   'use strict';
 
-  /**
-   * Interface to the Chromium print preview generator.
-   * @param {!print_preview.DestinationStore} destinationStore Used to get the
-   *     currently selected destination.
-   * @param {!print_preview.PrintTicketStore} printTicketStore Used to read the
-   *     state of the ticket and write document information.
-   * @param {!print_preview.NativeLayer} nativeLayer Used to communicate to
-   *     Chromium's preview rendering system.
-   * @param {!print_preview.DocumentInfo} documentInfo Document data model.
-   * @param {!WebUIListenerTracker} listenerTracker Tracker for the WebUI
-   *     listeners added in the PreviewGenerator constructor.
-   * @constructor
-   * @extends {cr.EventTarget}
-   */
-  function PreviewGenerator(
-      destinationStore, printTicketStore, nativeLayer, documentInfo,
-      listenerTracker) {
-    cr.EventTarget.call(this);
-
+  class PreviewGenerator extends cr.EventTarget {
     /**
-     * Used to get the currently selected destination.
-     * @type {!print_preview.DestinationStore}
-     * @private
+     * Interface to the Chromium print preview generator.
+     * @param {!print_preview.DestinationStore} destinationStore Used to get the
+     *     currently selected destination.
+     * @param {!print_preview.PrintTicketStore} printTicketStore Used to read
+     *     the state of the ticket and write document information.
+     * @param {!print_preview.NativeLayer} nativeLayer Used to communicate to
+     *     Chromium's preview rendering system.
+     * @param {!print_preview.DocumentInfo} documentInfo Document data model.
+     * @param {!WebUIListenerTracker} listenerTracker Tracker for the WebUI
+     *     listeners added in the PreviewGenerator constructor.
      */
-    this.destinationStore_ = destinationStore;
+    constructor(
+        destinationStore, printTicketStore, nativeLayer, documentInfo,
+        listenerTracker) {
+      super();
 
-    /**
-     * Used to read the state of the ticket and write document information.
-     * @type {!print_preview.PrintTicketStore}
-     * @private
-     */
-    this.printTicketStore_ = printTicketStore;
+      /**
+       * Used to get the currently selected destination.
+       * @private {!print_preview.DestinationStore}
+       */
+      this.destinationStore_ = destinationStore;
 
-    /**
-     * Interface to the Chromium native layer.
-     * @type {!print_preview.NativeLayer}
-     * @private
-     */
-    this.nativeLayer_ = nativeLayer;
+      /**
+       * Used to read the state of the ticket and write document information.
+       * @private {!print_preview.PrintTicketStore}
+       */
+      this.printTicketStore_ = printTicketStore;
 
-    /**
-     * Document data model.
-     * @type {!print_preview.DocumentInfo}
-     * @private
-     */
-    this.documentInfo_ = documentInfo;
+      /**
+       * Interface to the Chromium native layer.
+       * @private {!print_preview.NativeLayer}
+       */
+      this.nativeLayer_ = nativeLayer;
 
-    /**
-     * ID of current in-flight request. Requests that do not share this ID will
-     * be ignored.
-     * @type {number}
-     * @private
-     */
-    this.inFlightRequestId_ = -1;
+      /**
+       * Document data model.
+       * @private {!print_preview.DocumentInfo}
+       */
+      this.documentInfo_ = documentInfo;
 
-    /**
-     * Whether the current in flight request requires generating draft pages for
-     * print preview. This is true only for modifiable documents when the print
-     * settings has changed sufficiently to require re-rendering.
-     * @private {boolean}
-     */
-    this.generateDraft_ = false;
+      /**
+       * ID of current in-flight request. Requests that do not share this ID
+       * will be ignored.
+       * @private {number}
+       */
+      this.inFlightRequestId_ = -1;
 
-    /**
-     * Media size to generate preview with. {@code null} indicates default size.
-     * @type {print_preview.ValueType}
-     * @private
-     */
-    this.mediaSize_ = null;
+      /**
+       * Whether the current in flight request requires generating draft pages
+       * for print preview. This is true only for modifiable documents when the
+       * print settings has changed sufficiently to require re-rendering.
+       * @private {boolean}
+       */
+      this.generateDraft_ = false;
 
-    /**
-     * Whether the previews are being generated in landscape mode.
-     * @type {boolean}
-     * @private
-     */
-    this.isLandscapeEnabled_ = false;
+      /**
+       * Media size to generate preview with. {@code null} indicates default
+       * size.
+       * @private {print_preview.ValueType}
+       */
+      this.mediaSize_ = null;
 
-    /**
-     * Whether the previews are being generated with a header and footer.
-     * @type {boolean}
-     * @private
-     */
-    this.isHeaderFooterEnabled_ = false;
+      /**
+       * Whether the previews are being generated in landscape mode.
+       * @private {boolean}
+       */
+      this.isLandscapeEnabled_ = false;
 
-    /**
-     * Whether the previews are being generated in color.
-     * @type {boolean}
-     * @private
-     */
-    this.colorValue_ = false;
+      /**
+       * Whether the previews are being generated with a header and footer.
+       * @private {boolean}
+       */
+      this.isHeaderFooterEnabled_ = false;
 
-    /**
-     * Whether the document should be fitted to the page.
-     * @type {boolean}
-     * @private
-     */
-    this.isFitToPageEnabled_ = false;
+      /**
+       * Whether the previews are being generated in color.
+       * @private {boolean}
+       */
+      this.colorValue_ = false;
 
-    /**
-     * The scaling factor (in percent) for the document. Ignored if fit to page
-     * is true.
-     * @type {number}
-     * @private
-     */
-    this.scalingValue_ = 100;
+      /**
+       * Whether the document should be fitted to the page.
+       * @private {boolean}
+       */
+      this.isFitToPageEnabled_ = false;
 
-    /**
-     * Page ranges setting used used to generate the last preview.
-     * @type {Array<{from: number, to: number}>}
-     * @private
-     */
-    this.pageRanges_ = null;
+      /**
+       * The scaling factor (in percent) for the document. Ignored if fit to
+       * page is true.
+       * @private {number}
+       */
+      this.scalingValue_ = 100;
 
-    /**
-     * Margins type used to generate the last preview.
-     * @type {!print_preview.ticket_items.MarginsTypeValue}
-     * @private
-     */
-    this.marginsType_ = print_preview.ticket_items.MarginsTypeValue.DEFAULT;
+      /**
+       * Page ranges setting used used to generate the last preview.
+       * @private {Array<{from: number, to: number}>}
+       */
+      this.pageRanges_ = null;
 
-    /**
-     * Whether the document should have element CSS backgrounds printed.
-     * @type {boolean}
-     * @private
-     */
-    this.isCssBackgroundEnabled_ = false;
+      /**
+       * Margins type used to generate the last preview.
+       * @private {!print_preview.ticket_items.MarginsTypeValue}
+       */
+      this.marginsType_ = print_preview.ticket_items.MarginsTypeValue.DEFAULT;
 
-    /**
-     * Destination that was selected for the last preview.
-     * @type {print_preview.Destination}
-     * @private
-     */
-    this.selectedDestination_ = null;
+      /**
+       * Whether the document should have element CSS backgrounds printed.
+       * @private {boolean}
+       */
+      this.isCssBackgroundEnabled_ = false;
 
-    this.addWebUIEventListeners_(listenerTracker);
-  }
+      /**
+       * Whether the document should have only the selected area printed.
+       * @private {boolean}
+       */
+      this.isSelectionOnlyEnabled_ = false;
 
-  /**
-   * Event types dispatched by the preview generator.
-   * @enum {string}
-   */
-  PreviewGenerator.EventType = {
-    // Dispatched when the document can be printed.
-    DOCUMENT_READY: 'print_preview.PreviewGenerator.DOCUMENT_READY',
+      /**
+       * Destination that was selected for the last preview.
+       * @private {print_preview.Destination}
+       */
+      this.selectedDestination_ = null;
 
-    // Dispatched when a page preview is ready. The previewIndex field of the
-    // event is the index of the page in the modified document, not the
-    // original. So page 4 of the original document might be previewIndex = 0 of
-    // the modified document.
-    PAGE_READY: 'print_preview.PreviewGenerator.PAGE_READY',
-
-    // Dispatched when the document preview starts to be generated.
-    PREVIEW_START: 'print_preview.PreviewGenerator.PREVIEW_START',
-
-    // Dispatched when the current print preview request fails.
-    FAIL: 'print_preview.PreviewGenerator.FAIL'
-  };
-
-  PreviewGenerator.prototype = {
-    __proto__: cr.EventTarget.prototype,
+      this.addWebUIEventListeners_(listenerTracker);
+    }
 
     /**
      * Starts listening for relevant WebUI events and adds the listeners to
@@ -173,14 +140,14 @@ cr.define('print_preview', function() {
      * @param {!WebUIListenerTracker} listenerTracker
      * @private
      */
-    addWebUIEventListeners_: function(listenerTracker) {
+    addWebUIEventListeners_(listenerTracker) {
       listenerTracker.add(
           'page-count-ready', this.onPageCountReady_.bind(this));
       listenerTracker.add(
           'page-layout-ready', this.onPageLayoutReady_.bind(this));
       listenerTracker.add(
           'page-preview-ready', this.onPagePreviewReady_.bind(this));
-    },
+    }
 
     /**
      * Request that new preview be generated. A preview request will not be
@@ -190,7 +157,7 @@ cr.define('print_preview', function() {
      *     was requested, and a promise that will resolve when the preview is
      *     complete (null if no preview was actually requested).
      */
-    requestPreview: function() {
+    requestPreview() {
       if (!this.printTicketStore_.isTicketValidForPreview() ||
           !this.printTicketStore_.isInitialized ||
           !this.destinationStore_.selectedDestination) {
@@ -226,7 +193,7 @@ cr.define('print_preview', function() {
             this.destinationStore_.selectedDestination, this.printTicketStore_,
             this.documentInfo_, this.generateDraft_, this.inFlightRequestId_),
       };
-    },
+    }
 
     /**
      * Dispatches a PAGE_READY event to signal that a page preview is ready.
@@ -239,13 +206,13 @@ cr.define('print_preview', function() {
      * @param {number} previewUid Unique identifier of the preview.
      * @private
      */
-    dispatchPageReadyEvent_: function(previewIndex, pageNumber, previewUid) {
+    dispatchPageReadyEvent_(previewIndex, pageNumber, previewUid) {
       var pageGenEvent = new Event(PreviewGenerator.EventType.PAGE_READY);
       pageGenEvent.previewIndex = previewIndex;
       pageGenEvent.previewUrl = 'chrome://print/' + previewUid.toString() +
           '/' + (pageNumber - 1) + '/print.pdf';
       this.dispatchEvent(pageGenEvent);
-    },
+    }
 
     /**
      * Dispatches a PREVIEW_START event. Signals that the preview should be
@@ -254,7 +221,7 @@ cr.define('print_preview', function() {
      * @param {number} index Index of the first page of the preview.
      * @private
      */
-    dispatchPreviewStartEvent_: function(previewUid, index) {
+    dispatchPreviewStartEvent_(previewUid, index) {
       var previewStartEvent =
           new Event(PreviewGenerator.EventType.PREVIEW_START);
       if (!this.documentInfo_.isModifiable) {
@@ -263,7 +230,7 @@ cr.define('print_preview', function() {
       previewStartEvent.previewUrl = 'chrome://print/' + previewUid.toString() +
           '/' + index + '/print.pdf';
       this.dispatchEvent(previewStartEvent);
-    },
+    }
 
     /**
      * @return {boolean} Whether the print ticket, excluding the page range, has
@@ -271,7 +238,7 @@ cr.define('print_preview', function() {
      *     should be issued.
      * @private
      */
-    hasPreviewChanged_: function() {
+    hasPreviewChanged_() {
       var ticketStore = this.printTicketStore_;
       return this.inFlightRequestId_ == -1 ||
           !ticketStore.mediaSize.isValueEqual(this.mediaSize_) ||
@@ -293,18 +260,18 @@ cr.define('print_preview', function() {
               this.isSelectionOnlyEnabled_) ||
           (this.selectedDestination_ !=
            this.destinationStore_.selectedDestination);
-    },
+    }
 
     /**
      * @return {boolean} Whether the page range in the print ticket has changed.
      * @private
      */
-    hasPreviewPageRangeChanged_: function() {
+    hasPreviewPageRangeChanged_() {
       return this.pageRanges_ == null ||
           !areRangesEqual(
                  this.printTicketStore_.pageRange.getPageRanges(),
                  this.pageRanges_);
-    },
+    }
 
     /**
      * Called when the page layout of the document is ready. Always occurs
@@ -324,7 +291,7 @@ cr.define('print_preview', function() {
      *     custom page size or style to use.
      * @private
      */
-    onPageLayoutReady_: function(pageLayout, hasCustomPageSizeStyle) {
+    onPageLayoutReady_(pageLayout, hasCustomPageSizeStyle) {
       // NOTE: A request ID is not specified, so assuming its for the current
       // in-flight request.
 
@@ -347,7 +314,7 @@ cr.define('print_preview', function() {
       this.documentInfo_.updatePageInfo(
           new print_preview.PrintableArea(origin, size), pageSize,
           hasCustomPageSizeStyle, margins);
-    },
+    }
 
     /**
      * Called when the document page count is received from the native layer.
@@ -359,14 +326,13 @@ cr.define('print_preview', function() {
      *     to page (unused).
      * @private
      */
-    onPageCountReady_: function(
-        pageCount, previewResponseId, fitToPageScaling) {
+    onPageCountReady_(pageCount, previewResponseId, fitToPageScaling) {
       if (this.inFlightRequestId_ != previewResponseId) {
         return;  // Ignore old response.
       }
       this.documentInfo_.updatePageCount(pageCount);
       this.pageRanges_ = this.printTicketStore_.pageRange.getPageRanges();
-    },
+    }
 
     /**
      * Called when a page's preview has been generated. Dispatches a
@@ -377,7 +343,7 @@ cr.define('print_preview', function() {
      *     preview is a response to.
      * @private
      */
-    onPagePreviewReady_: function(pageIndex, previewUid, previewResponseId) {
+    onPagePreviewReady_(pageIndex, previewUid, previewResponseId) {
       if (this.inFlightRequestId_ != previewResponseId) {
         return;  // Ignore old response.
       }
@@ -390,7 +356,7 @@ cr.define('print_preview', function() {
         }
         this.dispatchPageReadyEvent_(previewIndex, pageNumber, previewUid);
       }
-    },
+    }
 
     /**
      * Called when the preview generation is complete. Dispatches a
@@ -398,7 +364,7 @@ cr.define('print_preview', function() {
      * @param {number} previewResponseId
      * @param {number} previewUid
      */
-    onPreviewGenerationDone: function(previewResponseId, previewUid) {
+    onPreviewGenerationDone(previewResponseId, previewUid) {
       if (this.inFlightRequestId_ != previewResponseId) {
         return;  // Ignore old response.
       }
@@ -409,17 +375,38 @@ cr.define('print_preview', function() {
         this.dispatchPreviewStartEvent_(previewUid, 0);
       }
       cr.dispatchSimpleEvent(this, PreviewGenerator.EventType.DOCUMENT_READY);
-    },
+    }
 
     /**
      * Called when the preview generation fails.
      * @private
      */
-    onPreviewGenerationFail_: function() {
+    onPreviewGenerationFail_() {
       // NOTE: No request ID is returned from Chromium so its assumed its the
       // current one.
       cr.dispatchSimpleEvent(this, PreviewGenerator.EventType.FAIL);
     }
+  }
+
+  /**
+   * Event types dispatched by the preview generator.
+   * @enum {string}
+   */
+  PreviewGenerator.EventType = {
+    // Dispatched when the document can be printed.
+    DOCUMENT_READY: 'print_preview.PreviewGenerator.DOCUMENT_READY',
+
+    // Dispatched when a page preview is ready. The previewIndex field of the
+    // event is the index of the page in the modified document, not the
+    // original. So page 4 of the original document might be previewIndex = 0 of
+    // the modified document.
+    PAGE_READY: 'print_preview.PreviewGenerator.PAGE_READY',
+
+    // Dispatched when the document preview starts to be generated.
+    PREVIEW_START: 'print_preview.PreviewGenerator.PREVIEW_START',
+
+    // Dispatched when the current print preview request fails.
+    FAIL: 'print_preview.PreviewGenerator.FAIL'
   };
 
   // Export
