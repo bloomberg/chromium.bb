@@ -223,6 +223,7 @@ extern const char kDisplayRotationLock[];
 extern const char kNoteTakingAppId[];
 extern const char kNoteTakingAppEnabledOnLockScreen[];
 extern const char kNoteTakingAppsLockScreenWhitelist[];
+extern const char kNoteTakingAppsLockScreenToastShown[];
 extern const char kRestoreLastLockScreenNote[];
 extern const char kSessionUserActivitySeen[];
 extern const char kSessionStartTime[];
