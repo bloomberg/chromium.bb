@@ -32,6 +32,7 @@
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/Snackbar/src/MaterialSnackbar.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/web_state/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -121,11 +122,11 @@ using bookmarks::BookmarkNode;
 
 - (void)presentBookmarkForBookmarkedTab:(Tab*)tab {
   DCHECK(!self.bookmarkBrowser && !self.bookmarkEditor);
-  DCHECK(tab);
+  DCHECK(tab && tab.webState);
 
   const BookmarkNode* bookmark =
       self.bookmarkModel->GetMostRecentlyAddedUserNodeForURL(
-          tab.lastCommittedURL);
+          tab.webState->GetLastCommittedURL());
   if (!bookmark)
     return;
 
@@ -147,7 +148,7 @@ using bookmarks::BookmarkNode;
 - (void)presentBookmarkForTab:(Tab*)tab currentlyBookmarked:(BOOL)bookmarked {
   if (!self.bookmarkModel->loaded())
     return;
-  if (!tab)
+  if (!tab || !tab.webState)
     return;
 
   if (bookmarked) {
@@ -157,12 +158,12 @@ using bookmarks::BookmarkNode;
     __weak Tab* weakTab = tab;
     void (^editAction)() = ^() {
       BookmarkInteractionController* strongSelf = weakSelf;
-      if (!strongSelf || !weakTab)
+      if (!strongSelf || !weakTab || !weakTab.webState)
         return;
       [strongSelf presentBookmarkForBookmarkedTab:weakTab];
     };
     [self.mediator addBookmarkWithTitle:tab.title
-                                    URL:tab.lastCommittedURL
+                                    URL:tab.webState->GetLastCommittedURL()
                              editAction:editAction];
   }
 }

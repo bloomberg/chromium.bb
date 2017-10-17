@@ -218,8 +218,8 @@ const int kNumberOfURLsToSend = 1;
                atIndex:(NSUInteger)modelIndex {
   web::NavigationItem* pendingItem =
       newTab.webState->GetNavigationManager()->GetPendingItem();
-  const GURL& URL =
-      pendingItem ? pendingItem->GetURL() : newTab.lastCommittedURL;
+  const GURL& URL = pendingItem ? pendingItem->GetURL()
+                                : newTab.webState->GetLastCommittedURL();
   [self recordURL:base::SysUTF8ToNSString(URL.spec())
          forTabId:newTab.tabId
           pending:pendingItem ? YES : NO];
