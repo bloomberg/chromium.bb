@@ -32,7 +32,7 @@ namespace content {
 
 namespace {
 
-const uint32_t kFilteredMessageClasses[] = {CacheStorageMsgStart};
+const uint32_t kCacheFilteredMessageClasses[] = {CacheStorageMsgStart};
 const int32_t kCachePreservationSeconds = 5;
 
 blink::WebServiceWorkerCacheError ToWebServiceWorkerCacheError(
@@ -70,8 +70,8 @@ void StopPreservingCache(
 }  // namespace
 
 CacheStorageDispatcherHost::CacheStorageDispatcherHost()
-    : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)) {}
+    : BrowserMessageFilter(kCacheFilteredMessageClasses,
+                           arraysize(kCacheFilteredMessageClasses)) {}
 
 CacheStorageDispatcherHost::~CacheStorageDispatcherHost() {
 }
