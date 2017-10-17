@@ -5,6 +5,7 @@ PASS Sensor interface object name
 PASS Sensor interface: existence and properties of interface prototype object
 PASS Sensor interface: existence and properties of interface prototype object's "constructor" property
 PASS Sensor interface: attribute activated
+PASS Sensor interface: attribute hasReading
 PASS Sensor interface: attribute timestamp
 PASS Sensor interface: operation start()
 PASS Sensor interface: operation stop()
@@ -25,6 +26,7 @@ PASS Accelerometer interface: new Accelerometer(); must inherit property "x" wit
 PASS Accelerometer interface: new Accelerometer(); must inherit property "y" with the proper type
 PASS Accelerometer interface: new Accelerometer(); must inherit property "z" with the proper type
 PASS Sensor interface: new Accelerometer(); must inherit property "activated" with the proper type
+PASS Sensor interface: new Accelerometer(); must inherit property "hasReading" with the proper type
 PASS Sensor interface: new Accelerometer(); must inherit property "timestamp" with the proper type
 PASS Sensor interface: new Accelerometer(); must inherit property "start()" with the proper type
 PASS Sensor interface: new Accelerometer(); must inherit property "stop()" with the proper type
@@ -42,6 +44,7 @@ PASS Accelerometer interface: new LinearAccelerationSensor(); must inherit prope
 PASS Accelerometer interface: new LinearAccelerationSensor(); must inherit property "y" with the proper type
 PASS Accelerometer interface: new LinearAccelerationSensor(); must inherit property "z" with the proper type
 PASS Sensor interface: new LinearAccelerationSensor(); must inherit property "activated" with the proper type
+PASS Sensor interface: new LinearAccelerationSensor(); must inherit property "hasReading" with the proper type
 PASS Sensor interface: new LinearAccelerationSensor(); must inherit property "timestamp" with the proper type
 PASS Sensor interface: new LinearAccelerationSensor(); must inherit property "start()" with the proper type
 PASS Sensor interface: new LinearAccelerationSensor(); must inherit property "stop()" with the proper type
@@ -59,6 +62,7 @@ FAIL Accelerometer interface: new GravitySensor(); must inherit property "x" wit
 FAIL Accelerometer interface: new GravitySensor(); must inherit property "y" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: GravitySensor is not defined"
 FAIL Accelerometer interface: new GravitySensor(); must inherit property "z" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: GravitySensor is not defined"
 FAIL Sensor interface: new GravitySensor(); must inherit property "activated" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: GravitySensor is not defined"
+FAIL Sensor interface: new GravitySensor(); must inherit property "hasReading" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: GravitySensor is not defined"
 FAIL Sensor interface: new GravitySensor(); must inherit property "timestamp" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: GravitySensor is not defined"
 FAIL Sensor interface: new GravitySensor(); must inherit property "start()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: GravitySensor is not defined"
 FAIL Sensor interface: new GravitySensor(); must inherit property "stop()" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "ReferenceError: GravitySensor is not defined"
