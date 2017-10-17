@@ -6,7 +6,7 @@
 # (including AndroidManifest.xml) is updated. This version should be incremented
 # prior to uploading a new ShellAPK to the WebAPK Minting Server.
 # Does not affect Chrome.apk
-template_shell_apk_version = 28
+template_shell_apk_version = 29
 
 # The ShellAPK version expected by Chrome. Chrome will try to update the WebAPK
 # if the WebAPK's ShellAPK version is less than |expected_shell_apk_version|.
