@@ -12,6 +12,7 @@
 # This way, we can reduce risk of symbol conflict when linking it into apps
 # by exposing internal symbols, especially in third-party libraries.
 
+import glob
 import optparse
 import os
 import subprocess
@@ -59,6 +60,14 @@ def main():
 
   if options.developer_dir:
     os.environ['DEVELOPER_DIR'] = options.developer_dir
+    developer_dir = options.developer_dir
+  else:
+    developer_dir = subprocess.check_output(
+        ['xcode-select', '--print-path']).strip()
+
+  xctoolchain_libs = glob.glob(developer_dir
+      + '/Toolchains/XcodeDefault.xctoolchain/usr/lib'
+      + '/clang/*/lib/darwin/*.ios.a')
 
   # ld -r concatenates multiple .o files and .a files into a single .o file,
   # while "hiding" symbols not marked as visible.
@@ -72,6 +81,7 @@ def main():
     # resolve some symbol reference. We apply -force_load option to input_lib
     # (but not to deps_lib) to force pulling all .o files.
     command += ['-force_load', input_lib]
+  command += xctoolchain_libs
   command += [
     options.deps_lib,
     '-o', options.output_obj
@@ -95,6 +105,8 @@ def main():
       ]
       subprocess.check_call(command)
       return
+    else:
+      exit(1)
 
   if os.path.exists(options.output_lib):
     os.remove(options.output_lib)
