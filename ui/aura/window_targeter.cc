@@ -234,13 +234,19 @@ bool WindowTargeter::ShouldUseExtendedBounds(const aura::Window* window) const {
   return true;
 }
 
-void WindowTargeter::OnSetInsets() {}
+void WindowTargeter::OnSetInsets(const gfx::Insets& last_mouse_extend,
+                                 const gfx::Insets& last_touch_extend) {}
 
 void WindowTargeter::SetInsets(const gfx::Insets& mouse_extend,
                                const gfx::Insets& touch_extend) {
+  if (mouse_extend_ == mouse_extend && touch_extend_ == touch_extend)
+    return;
+
+  const gfx::Insets last_mouse_extend_ = mouse_extend_;
+  const gfx::Insets last_touch_extend_ = touch_extend_;
   mouse_extend_ = mouse_extend;
   touch_extend_ = touch_extend;
-  OnSetInsets();
+  OnSetInsets(last_mouse_extend_, last_touch_extend_);
 }
 
 Window* WindowTargeter::FindTargetForKeyEvent(Window* window,
