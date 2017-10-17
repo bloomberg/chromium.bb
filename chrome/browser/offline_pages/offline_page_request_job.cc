@@ -149,7 +149,8 @@ NetworkState GetNetworkState(net::URLRequest* request,
 
   // Checks if previews are allowed, the network is slow, and the request is
   // allowed to be shown for previews.
-  if (previews_decider &&
+  if (offline_header.reason != OfflinePageHeader::Reason::RELOAD &&
+      previews_decider &&
       previews_decider->ShouldAllowPreview(*request,
                                            previews::PreviewsType::OFFLINE)) {
     return NetworkState::PROHIBITIVELY_SLOW_NETWORK;
