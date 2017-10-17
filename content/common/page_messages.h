@@ -30,9 +30,6 @@ IPC_MESSAGE_ROUTED2(PageMsg_SetZoomLevel,
                     PageMsg_SetZoomLevel_Command /* command */,
                     double /* zoom_level */)
 
-IPC_MESSAGE_ROUTED1(PageMsg_SetDeviceScaleFactor,
-                    double /* device_scale_factor */)
-
 // Informs the renderer that the page was hidden.
 IPC_MESSAGE_ROUTED0(PageMsg_WasHidden)
 
