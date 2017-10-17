@@ -338,9 +338,28 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
                                fc->inter_singleref_comp_mode_cdf[i], NULL);
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #if CONFIG_INTERINTRA
-    for (i = 0; i < BLOCK_SIZE_GROUPS; ++i)
+    for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->interintra_cost[i], fc->interintra_cdf[i],
+                               NULL);
+#else
+      x->interintra_cost[i][0] = av1_cost_bit(fc->interintra_prob[i], 0);
+      x->interintra_cost[i][1] = av1_cost_bit(fc->interintra_prob[i], 1);
+#endif
       av1_cost_tokens_from_cdf(x->interintra_mode_cost[i],
                                fc->interintra_mode_cdf[i], NULL);
+    }
+    for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->wedge_interintra_cost[i],
+                               fc->wedge_interintra_cdf[i], NULL);
+#else
+      x->wedge_interintra_cost[i][0] =
+          av1_cost_bit(fc->wedge_interintra_prob[i], 0);
+      x->wedge_interintra_cost[i][1] =
+          av1_cost_bit(fc->wedge_interintra_prob[i], 1);
+#endif
+    }
 #endif  // CONFIG_INTERINTRA
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
     for (i = BLOCK_8X8; i < BLOCK_SIZES_ALL; i++) {

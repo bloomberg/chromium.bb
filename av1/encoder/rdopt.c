@@ -9740,7 +9740,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       int64_t best_interintra_rd_nowedge = INT64_MAX;
       int64_t best_interintra_rd_wedge = INT64_MAX;
       int_mv tmp_mv;
-      int rwedge = av1_cost_bit(cm->fc->wedge_interintra_prob[bsize], 0);
+      int rwedge = x->wedge_interintra_cost[bsize][0];
       if (rd != INT64_MAX)
         rd = RDCOST(x->rdmult, rmode + rate_mv + rwedge + rate_sum, dist_sum);
       best_interintra_rd_nowedge = best_interintra_rd;
@@ -9750,7 +9750,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         mbmi->use_wedge_interintra = 1;
 
         rwedge = av1_cost_literal(get_interintra_wedge_bits(bsize)) +
-                 av1_cost_bit(cm->fc->wedge_interintra_prob[bsize], 1);
+                 x->wedge_interintra_cost[bsize][1];
 
         best_interintra_rd_wedge =
             pick_interintra_wedge(cpi, x, bsize, intrapred_, tmp_buf_);
@@ -9807,20 +9807,18 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_WEDGE
 
     pred_exists = 0;
-    compmode_interintra_cost =
-        av1_cost_bit(cm->fc->interintra_prob[size_group_lookup[bsize]], 1) +
-        interintra_mode_cost[mbmi->interintra_mode];
+    compmode_interintra_cost = x->interintra_cost[size_group_lookup[bsize]][1] +
+                               interintra_mode_cost[mbmi->interintra_mode];
     if (is_interintra_wedge_used(bsize)) {
-      compmode_interintra_cost += av1_cost_bit(
-          cm->fc->wedge_interintra_prob[bsize], mbmi->use_wedge_interintra);
+      compmode_interintra_cost +=
+          x->wedge_interintra_cost[bsize][mbmi->use_wedge_interintra];
       if (mbmi->use_wedge_interintra) {
         compmode_interintra_cost +=
             av1_cost_literal(get_interintra_wedge_bits(bsize));
       }
     }
   } else if (is_interintra_allowed(mbmi)) {
-    compmode_interintra_cost =
-        av1_cost_bit(cm->fc->interintra_prob[size_group_lookup[bsize]], 0);
+    compmode_interintra_cost = x->interintra_cost[size_group_lookup[bsize]][0];
   }
 #endif  // CONFIG_INTERINTRA
 
