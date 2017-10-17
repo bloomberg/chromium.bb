@@ -5790,6 +5790,35 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2" label="Successful first layout"/>
 </enum>
 
+<enum name="CompileHeuristicsDecision">
+  <int value="0" label="NoCacheHandler">
+    No CachedMetadataHandler was provided, thus caching functionality is
+    disabled.
+  </int>
+  <int value="1" label="CachingDisabled">Caching is disabled by settings.</int>
+  <int value="2" label="CodeTooShortToCache">
+    The script is too short to benefit from caching, thus caching functionality
+    is disabled.
+  </int>
+  <int value="3" label="CacheTooCold">
+    The script is not loaded often enough to benefit from caching, thus not
+    producing cache.
+  </int>
+  <int value="4" label="ProduceParserCache">
+    Parser cache is produced for the script when compiled.
+  </int>
+  <int value="5" label="ConsumeParserCache">
+    Consume previously generated parser cache for the script.
+  </int>
+  <int value="6" label="ProduceCodeCache">
+    Code cache is produced for the script when compiled.
+  </int>
+  <int value="7" label="ConsumeCodeCache">
+    Consume previously generated code cache for the script.
+  </int>
+  <int value="8" label="StreamingCompile">Use streamed compilation result.</int>
+</enum>
+
 <enum name="ComponentUpdaterCalls">
   <int value="0" label="Install"/>
   <int value="1" label="Update"/>
