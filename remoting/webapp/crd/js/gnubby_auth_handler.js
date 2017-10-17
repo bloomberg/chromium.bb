@@ -31,13 +31,13 @@ remoting.GnubbyAuthHandler = function() {
 /** @private @const  {string} */
 remoting.GnubbyAuthHandler.EXTENSION_TYPE = 'gnubby-auth';
 
-/** @private @const {string} */
-remoting.GnubbyAuthHandler.GNUBBY_DEV_EXTENSION_ID =
-    'dlfcjilkjfhdnfiecknlnddkmmiofjbg';
-
-/** @private @const {string} */
-remoting.GnubbyAuthHandler.GNUBBY_STABLE_EXTENSION_ID =
-    'beknehfpfkghjoafdifaflglpjkojoco';
+/** @private @const {Array<string>} */
+remoting.GnubbyAuthHandler.GnubbyExtensions = [
+  'klnjmillfildbbimkincljmfoepfhjjj',  // gNubbyd corp extension (dev)
+  'lkjlajklkdhaneeelolkfgbpikkgnkpk',  // gNubbyd corp extension (stable)
+  'dlfcjilkjfhdnfiecknlnddkmmiofjbg',  // gNubbyd app (dev)
+  'beknehfpfkghjoafdifaflglpjkojoco',  // gNubbyd app (stable)
+];
 
 /**
  * Determines whether any supported Gnubby extensions are installed.
@@ -51,35 +51,27 @@ remoting.GnubbyAuthHandler.prototype.isGnubbyExtensionInstalled = function() {
     return this.gnubbyExtensionPromise_;
   }
 
-  var findGnubbyExtension = function(extensionId, resolve, reject) {
+  var findGnubbyExtension = function(exts, i, resolve, reject) {
+    var extensionId = exts[i];
     var message_callback = function(response) {
       if (response) {
         this.gnubbyExtensionId_ = extensionId;
         resolve(true);
       } else {
-        reject();
+        if (i + 1 < exts.length) {
+          findGnubbyExtension.call(this, exts, i+1, resolve, reject);
+        } else {
+          // If no extensions are found, return false.
+          resolve(false);
+        }
       }
-    }.bind(this)
+    }.bind(this);
 
     chrome.runtime.sendMessage(extensionId, "HELLO", message_callback);
   }
 
-  var findDevGnubbyExtension = findGnubbyExtension.bind(this,
-      remoting.GnubbyAuthHandler.GNUBBY_DEV_EXTENSION_ID)
-
-  var findStableGnubbyExtension = findGnubbyExtension.bind(this,
-      remoting.GnubbyAuthHandler.GNUBBY_STABLE_EXTENSION_ID)
-
-  this.gnubbyExtensionPromise_ = new Promise(
-    findStableGnubbyExtension
-  ).catch(function () {
-      return new Promise(findDevGnubbyExtension);
-    }
-  ).catch(function () {
-      // If no extensions are found, return false.
-      return Promise.resolve(false);
-    }
-  );
+  this.gnubbyExtensionPromise_ = new Promise(findGnubbyExtension.bind(
+      this, remoting.GnubbyAuthHandler.GnubbyExtensions, 0));
 
   return this.gnubbyExtensionPromise_;
 };
