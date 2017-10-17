@@ -177,26 +177,25 @@ void SVGFilterBuilder::BuildGraph(Filter* filter,
     if (!element->IsFilterEffect())
       continue;
 
-    SVGFilterPrimitiveStandardAttributes* effect_element =
-        static_cast<SVGFilterPrimitiveStandardAttributes*>(element);
-    FilterEffect* effect = effect_element->Build(this, filter);
+    SVGFilterPrimitiveStandardAttributes& effect_element =
+        ToSVGFilterPrimitiveStandardAttributes(*element);
+    FilterEffect* effect = effect_element.Build(this, filter);
     if (!effect)
       continue;
 
     if (node_map_)
-      node_map_->AddPrimitive(effect_element->GetLayoutObject(), effect);
+      node_map_->AddPrimitive(effect_element.GetLayoutObject(), effect);
 
-    effect_element->SetStandardAttributes(effect, primitive_units,
-                                          reference_box);
+    effect_element.SetStandardAttributes(effect, primitive_units,
+                                         reference_box);
     EColorInterpolation color_interpolation = ColorInterpolationForElement(
-        *effect_element, filter_color_interpolation);
+        effect_element, filter_color_interpolation);
     effect->SetOperatingInterpolationSpace(
         ResolveInterpolationSpace(color_interpolation));
-    if (effect_element->TaintsOrigin(effect->InputsTaintOrigin()))
+    if (effect_element.TaintsOrigin(effect->InputsTaintOrigin()))
       effect->SetOriginTainted();
 
-    Add(AtomicString(effect_element->result()->CurrentValue()->Value()),
-        effect);
+    Add(AtomicString(effect_element.result()->CurrentValue()->Value()), effect);
   }
 }
 

@@ -27,6 +27,8 @@
 
 #include "core/layout/svg/LayoutSVGResourceFilterPrimitive.h"
 
+#include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
+
 namespace blink {
 
 void LayoutSVGResourceFilterPrimitive::StyleDidChange(
@@ -34,32 +36,27 @@ void LayoutSVGResourceFilterPrimitive::StyleDidChange(
     const ComputedStyle* old_style) {
   LayoutSVGHiddenContainer::StyleDidChange(diff, old_style);
 
-  LayoutObject* filter = Parent();
-  if (!filter)
-    return;
-  DCHECK(filter->IsSVGResourceFilter());
   if (!old_style)
     return;
-  const SVGComputedStyle& new_style = this->StyleRef().SvgStyle();
   DCHECK(GetElement());
-  if (IsSVGFEFloodElement(*GetElement()) ||
-      IsSVGFEDropShadowElement(*GetElement())) {
+  SVGFilterPrimitiveStandardAttributes& element =
+      ToSVGFilterPrimitiveStandardAttributes(*GetElement());
+  const SVGComputedStyle& new_style = this->StyleRef().SvgStyle();
+  if (IsSVGFEFloodElement(element) || IsSVGFEDropShadowElement(element)) {
     if (new_style.FloodColor() != old_style->SvgStyle().FloodColor())
-      ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(
-          this, SVGNames::flood_colorAttr);
+      element.PrimitiveAttributeChanged(SVGNames::flood_colorAttr);
     if (new_style.FloodOpacity() != old_style->SvgStyle().FloodOpacity())
-      ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(
-          this, SVGNames::flood_opacityAttr);
-  } else if (IsSVGFEDiffuseLightingElement(*GetElement()) ||
-             IsSVGFESpecularLightingElement(*GetElement())) {
+      element.PrimitiveAttributeChanged(SVGNames::flood_opacityAttr);
+  } else if (IsSVGFEDiffuseLightingElement(element) ||
+             IsSVGFESpecularLightingElement(element)) {
     if (new_style.LightingColor() != old_style->SvgStyle().LightingColor())
-      ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(
-          this, SVGNames::lighting_colorAttr);
+      element.PrimitiveAttributeChanged(SVGNames::lighting_colorAttr);
   }
   if (new_style.ColorInterpolationFilters() !=
-      old_style->SvgStyle().ColorInterpolationFilters())
-    ToLayoutSVGResourceFilter(filter)->PrimitiveAttributeChanged(
-        this, SVGNames::color_interpolation_filtersAttr);
+      old_style->SvgStyle().ColorInterpolationFilters()) {
+    element.PrimitiveAttributeChanged(
+        SVGNames::color_interpolation_filtersAttr);
+  }
 }
 
 }  // namespace blink

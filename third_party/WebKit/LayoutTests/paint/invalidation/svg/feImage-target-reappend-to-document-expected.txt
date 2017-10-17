@@ -14,7 +14,7 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 110, 110],
-          "reason": "style change"
+          "reason": "full"
         }
       ]
     }
@@ -30,7 +30,7 @@
     },
     {
       "object": "LayoutSVGRect rect",
-      "reason": "style change"
+      "reason": "full"
     }
   ]
 }

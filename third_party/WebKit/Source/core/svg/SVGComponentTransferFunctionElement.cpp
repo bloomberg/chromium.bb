@@ -99,8 +99,7 @@ void SVGComponentTransferFunctionElement::SvgAttributeChanged(
       attr_name == SVGNames::exponentAttr ||
       attr_name == SVGNames::offsetAttr) {
     SVGElement::InvalidationGuard invalidation_guard(this);
-
-    InvalidateFilterPrimitiveParent(this);
+    InvalidateFilterPrimitiveParent(*this);
     return;
   }
 

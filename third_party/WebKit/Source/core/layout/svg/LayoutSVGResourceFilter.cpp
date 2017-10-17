@@ -119,10 +119,9 @@ SVGUnitTypes::SVGUnitType LayoutSVGResourceFilter::PrimitiveUnits() const {
 }
 
 void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
-    LayoutObject* object,
+    SVGFilterPrimitiveStandardAttributes& primitive,
     const QualifiedName& attribute) {
-  SVGFilterPrimitiveStandardAttributes* primitive =
-      static_cast<SVGFilterPrimitiveStandardAttributes*>(object->GetNode());
+  LayoutObject* object = primitive.GetLayoutObject();
 
   for (auto& filter : filter_) {
     FilterData* filter_data = filter.value.Get();
@@ -135,7 +134,7 @@ void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
       continue;
     // Since all effects shares the same attribute value, all
     // or none of them will be changed.
-    if (!primitive->SetFilterEffectAttribute(effect, attribute))
+    if (!primitive.SetFilterEffectAttribute(effect, attribute))
       return;
     node_map->InvalidateDependentEffects(effect);
 

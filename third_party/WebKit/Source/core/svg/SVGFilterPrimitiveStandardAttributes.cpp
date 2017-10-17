@@ -21,8 +21,8 @@
 
 #include "core/svg/SVGFilterPrimitiveStandardAttributes.h"
 
-#include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/layout/svg/LayoutSVGResourceFilterPrimitive.h"
+#include "core/svg/SVGFilterElement.h"
 #include "core/svg/SVGLength.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "core/svg_names.h"
@@ -175,32 +175,24 @@ bool SVGFilterPrimitiveStandardAttributes::LayoutObjectIsNeeded(
 }
 
 void SVGFilterPrimitiveStandardAttributes::Invalidate() {
-  if (LayoutObject* primitive_layout_object = GetLayoutObject())
-    MarkForLayoutAndParentResourceInvalidation(primitive_layout_object);
+  if (SVGFilterElement* filter = ToSVGFilterElementOrNull(parentElement()))
+    filter->InvalidateFilterChain();
 }
 
 void SVGFilterPrimitiveStandardAttributes::PrimitiveAttributeChanged(
     const QualifiedName& attribute) {
-  if (LayoutObject* primitive_layout_object = GetLayoutObject())
-    static_cast<LayoutSVGResourceFilterPrimitive*>(primitive_layout_object)
-        ->PrimitiveAttributeChanged(attribute);
+  if (SVGFilterElement* filter = ToSVGFilterElementOrNull(parentElement()))
+    filter->PrimitiveAttributeChanged(*this, attribute);
 }
 
-void InvalidateFilterPrimitiveParent(SVGElement* element) {
-  if (!element)
+void InvalidateFilterPrimitiveParent(SVGElement& element) {
+  Element* parent = element.parentElement();
+  if (!parent || !parent->IsSVGElement())
     return;
-
-  ContainerNode* parent = element->parentNode();
-
-  if (!parent)
+  SVGElement& svgparent = ToSVGElement(*parent);
+  if (!IsSVGFilterPrimitiveStandardAttributes(svgparent))
     return;
-
-  LayoutObject* layout_object = parent->GetLayoutObject();
-  if (!layout_object || !layout_object->IsSVGResourceFilterPrimitive())
-    return;
-
-  LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-      layout_object, false);
+  ToSVGFilterPrimitiveStandardAttributes(svgparent).Invalidate();
 }
 
 }  // namespace blink
