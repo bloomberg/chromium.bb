@@ -1,0 +1,9 @@
+This is a testharness.js-based test.
+FAIL easing values are parsed correctly when set on a property-indexed keyframe effect.getKeyframes is not a function
+FAIL easing values are parsed correctly when using a keyframe sequence effect.getKeyframes is not a function
+PASS Invalid easing values are correctly rejected when set on a property-indexed keyframe
+PASS Invalid easing values are correctly rejected when using a keyframe sequence
+FAIL Errors from invalid easings on a property-indexed keyframe are thrown after reading all properties assert_equals: All properties were read before throwing the easing error expected 2 but got 0
+FAIL Errors from invalid easings on a keyframe sequence are thrown after reading all properties assert_equals: All properties were read before throwing the easing error expected 4 but got 0
+Harness: the test ran to completion.
+

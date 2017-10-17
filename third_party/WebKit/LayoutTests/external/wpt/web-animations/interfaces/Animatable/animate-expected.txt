@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 90 tests; 47 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 93 tests; 50 PASS, 43 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Element.animate() creates an Animation object
 PASS Element.animate() creates an Animation object in the relevant realm of the target element
 PASS Element.animate() creates an Animation object with a KeyframeEffect
@@ -60,6 +60,9 @@ PASS Element.animate() does not accept invalid easing: 'test'
 PASS Element.animate() does not accept invalid easing: 'initial'
 PASS Element.animate() does not accept invalid easing: 'inherit'
 PASS Element.animate() does not accept invalid easing: 'unset'
+PASS Element.animate() does not accept invalid easing: 'unrecognized'
+PASS Element.animate() does not accept invalid easing: 'var(--x)'
+PASS Element.animate() does not accept invalid easing: 'ease-in-out, ease-out'
 PASS Element.animate() does not accept invalid easing: 'cubic-bezier(1.1, 0, 1, 1)'
 PASS Element.animate() does not accept invalid easing: 'cubic-bezier(0, 0, 1.1, 1)'
 PASS Element.animate() does not accept invalid easing: 'cubic-bezier(-0.1, 0, 1, 1)'

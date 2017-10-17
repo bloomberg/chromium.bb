@@ -1730,6 +1730,9 @@ crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_t
 crbug.com/771729 [ Win Debug ] external/wpt/html/semantics/scripting-1/the-script-element/execution-timing/039.html [ Pass Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux Win ] external/wpt/css/selectors4/selector-placeholder-shown-type-change-001.html [ Failure ]
+crbug.com/626703 [ Linux Win ] external/wpt/css/selectors4/selector-read-write-type-change-002.html [ Failure ]
+crbug.com/626703 [ Linux Win ] external/wpt/css/selectors4/selector-required-type-change-002.html [ Failure ]
 crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue-region/font_properties.html [ Failure ]
 crbug.com/626703 [ Linux Mac10.10 Mac10.11 Mac10.12 Retina Win ] external/wpt/webvtt/rendering/cues-with-video/processing-model/selectors/cue-region_function/font_properties.html [ Failure ]
 crbug.com/626703 external/wpt/html/editing/dnd/events/drag-event-div-manual.html [ Skip ]
@@ -3316,7 +3319,6 @@ crbug.com/755405 [ Android ] external/wpt/user-timing/invoke_with_timing_attribu
 crbug.com/755405 [ Android ] external/wpt/user-timing/invoke_without_parameter.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/animation-model/combining-effects/effect-composition.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/animation-model/keyframe-effects/effect-value-context.html [ Failure ]
-crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Animatable/animate.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Animatable/getAnimations.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Animation/playState.html [ Failure ]
 crbug.com/755405 [ Android ] external/wpt/web-animations/interfaces/Animation/ready.html [ Failure ]
