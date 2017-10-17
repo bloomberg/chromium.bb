@@ -1112,7 +1112,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
           continue;
 #endif
 
-#if CONFIG_VAR_TX
         const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
         int mu_blocks_wide =
             block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
@@ -1122,6 +1121,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
         mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
+#if CONFIG_VAR_TX
         const TX_SIZE max_tx_size = get_vartx_max_txsize(
             mbmi, plane_bsize, pd->subsampling_x || pd->subsampling_y);
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
@@ -1151,11 +1151,22 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
         const int stepr = tx_size_high_unit[tx_size];
         const int stepc = tx_size_wide_unit[tx_size];
-        for (row = 0; row < max_blocks_high; row += stepr)
-          for (col = 0; col < max_blocks_wide; col += stepc)
-            eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id,
-                                                plane, row, col, tx_size);
-#endif
+
+        for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
+          const int unit_height = AOMMIN(mu_blocks_high + row, max_blocks_high);
+          for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
+            int blk_row, blk_col;
+            const int unit_width =
+                AOMMIN(mu_blocks_wide + col, max_blocks_wide);
+
+            for (blk_row = row; blk_row < unit_height; blk_row += stepr)
+              for (blk_col = col; blk_col < unit_width; blk_col += stepc)
+                eobtotal +=
+                    reconstruct_inter_block(cm, xd, r, mbmi->segment_id, plane,
+                                            blk_row, blk_col, tx_size);
+          }
+        }
+#endif  // CONFIG_VAR_TX
       }
     }
   }
