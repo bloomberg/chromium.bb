@@ -23,6 +23,10 @@ class WindowSelectorItem;
 // and shows/hides the phantom window accordingly.
 class ASH_EXPORT OverviewWindowDragController {
  public:
+  // Snapping distance between the dragged window with the screen edge. It's
+  // useful especially for touch events.
+  static constexpr int kScreenEdgeInsetForDrag = 200;
+
   explicit OverviewWindowDragController(WindowSelector* window_selector);
   ~OverviewWindowDragController();
 
@@ -38,6 +42,10 @@ class ASH_EXPORT OverviewWindowDragController {
   void ResetWindowSelector();
 
   WindowSelectorItem* item() { return item_; }
+
+  bool IsPhantomWindowShowing() const {
+    return phantom_window_controller_ != nullptr;
+  }
 
  private:
   // Updates visuals for the user while dragging items around.
