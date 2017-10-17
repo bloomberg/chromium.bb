@@ -44,6 +44,7 @@ ninja -C out/coverage -j100 pdfium_fuzzer
 ./testing/libfuzzer/coverage.py \\
   --output="coverage_out" \\
   --command="out/coverage/pdfium_fuzzer -runs=<runs> <corpus_dir>"
+  --filter third_party/pdfium/ pdf/
 
 where:
   <corpus_dir> - directory containing samples files for this format.
@@ -97,11 +98,23 @@ ZERO_FUNCTION_FILE_TEXT = 'Files which contain no functions'
 HTTP_PORT = 9000
 COVERAGE_REPORT_LINK = 'http://127.0.0.1:%d/report.html' % HTTP_PORT
 
+LARGE_BINARY_THRESHOLD = 128 * 2 ** 20
 
-def CheckBuildInstrumentation(executable_path):
-  """Verify that the given file has been built with coverage instrumentation."""
+
+def CheckBinaryAndArgs(executable_path, filters):
+  """Verify that the given file has been built with coverage instrumentation,
+  also perform check for "--filter" argument and for the binary size."""
+  CheckFilterArgument(filters)
+
   with open(executable_path) as file_handle:
     data = file_handle.read()
+
+  if len(data) > LARGE_BINARY_THRESHOLD and not filters:
+    logging.warning('The target binary is quite large. Generating the full '
+                    'coverage report may take a while. To generate the report '
+                    'faster, consider using the "--filter" argument to specify '
+                    'the source code files and directories shown in the report.'
+                    )
 
   # For minimum threshold reference, tiny "Hello World" program has count of 34.
   if data.count('__llvm_profile') > 20:
@@ -114,6 +127,14 @@ def CheckBuildInstrumentation(executable_path):
   if not answer.lower().startswith('y'):
     print('Exiting.')
     sys.exit(-1)
+
+
+def CheckFilterArgument(filters):
+  """Verify that all the paths specified in --filter arg exist."""
+  for path in filters:
+    if not os.path.exists(path):
+      logging.error('The path specified does not exist: %s.' % path)
+      sys.exit(-1)
 
 
 def CreateOutputDir(dir_path):
@@ -160,7 +181,7 @@ def DownloadCoverageToolsIfNeeded():
   if (coverage_revision == clang_revision and
       coverage_sub_revision == clang_sub_revision):
     # LLVM coverage tools are up to date, bail out.
-    return
+    return clang_revision
 
   package_version = '%d-%d' % (clang_revision, clang_sub_revision)
   coverage_tools_file = 'llvm-code-coverage-%s.tgz' % package_version
@@ -185,6 +206,8 @@ def DownloadCoverageToolsIfNeeded():
   except urllib2.URLError:
     raise Exception(
         'Failed to download coverage tools: %s.' % coverage_tools_url)
+
+  return clang_revision
 
 
 def ExtractAndFixFilename(data, source_dir):
@@ -267,12 +290,16 @@ def GenerateReport(report_data):
   return REPORT_TEMPLATE.format(table_data=table_data)
 
 
-def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
+def GenerateSources(executable_path, output_dir, source_dir, filters,
+                    coverage_file):
   """Generate coverage visualization for source code files."""
   llvm_cov_command = [
       LLVM_COV_PATH, 'show', '-format=html', executable_path,
       '-instr-profile=%s' % coverage_file
   ]
+
+  for path in filters:
+    llvm_cov_command.append(path)
 
   data = subprocess.check_output(llvm_cov_command)
 
@@ -324,17 +351,27 @@ def GenerateSources(executable_path, output_dir, source_dir, coverage_file):
       file_handle.write(file_data)
 
 
-def GenerateSummary(executable_path, output_dir, coverage_file):
+def GenerateSummary(executable_path, output_dir, filters, coverage_file,
+                    clang_revision):
   """Generate code coverage summary report (i.e. a table with all files)."""
   llvm_cov_command = [
       LLVM_COV_PATH, 'report', executable_path,
       '-instr-profile=%s' % coverage_file
   ]
 
+  for path in filters:
+    llvm_cov_command.append(path)
+
   data = subprocess.check_output(llvm_cov_command)
   report = GenerateReport(data)
 
   with open(os.path.join(output_dir, REPORT_FILENAME), 'w') as file_handle:
+    # TODO(mmoroz): remove this hacky warning after next clang roll.
+    if filters and clang_revision < 315685:
+      report = ('Warning: the report below contains information for all the '
+                'sources even though you used "--filter" option. This bug has '
+                'been fixed upstream. It will be fixed in Chromium after next '
+                'clang roll (https://reviews.llvm.org/rL315685).<br>' + report)
     file_handle.write(report)
 
 
@@ -421,6 +458,14 @@ def main():
       '--output',
       required=True,
       help='Directory where code coverage files will be written to.')
+  parser.add_argument(
+      '--filter',
+      required=False,
+      nargs='+',
+      default = [],
+      help='(Optional) Paths to source code files/directories shown in the '
+      'report. By default, the report shows all the sources compiled and '
+      'linked into the target executable.')
 
   if not len(sys.argv[1:]):
     # Print help when no arguments are provided on command line.
@@ -431,9 +476,9 @@ def main():
 
   executable_path = args.command.split()[0]
 
-  CheckBuildInstrumentation(executable_path)
+  CheckBinaryAndArgs(executable_path, args.filter)
 
-  DownloadCoverageToolsIfNeeded()
+  clang_revision = DownloadCoverageToolsIfNeeded()
 
   CreateOutputDir(args.output)
   profile_file = os.path.join(args.output, LLVM_PROFILE_FILE_NAME)
@@ -442,8 +487,10 @@ def main():
   coverage_file = os.path.join(args.output, LLVM_COVERAGE_FILE_NAME)
   ProcessCoverageDump(profile_file, coverage_file)
 
-  GenerateSummary(executable_path, args.output, coverage_file)
-  GenerateSources(executable_path, args.output, args.source, coverage_file)
+  GenerateSummary(executable_path, args.output, args.filter, coverage_file,
+                  clang_revision)
+  GenerateSources(executable_path, args.output, args.source, args.filter,
+                  coverage_file)
 
   ServeReportOnHTTP(args.output)
 
