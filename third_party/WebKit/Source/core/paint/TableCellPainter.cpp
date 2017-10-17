@@ -10,7 +10,6 @@
 #include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/BoxPainter.h"
 #include "core/paint/BoxPainterBase.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
@@ -88,7 +87,7 @@ void TableCellPainter::PaintBoxDecorationBackground(
   if (!has_background && !has_box_shadow && !needs_to_paint_border)
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_table_cell_,
           DisplayItem::kBoxDecorationBackground))
     return;
@@ -96,10 +95,9 @@ void TableCellPainter::PaintBoxDecorationBackground(
   LayoutRect visual_overflow_rect = layout_table_cell_.VisualOverflowRect();
   visual_overflow_rect.MoveBy(paint_offset);
   // TODO(chrishtr): the pixel-snapping here is likely incorrect.
-  LayoutObjectDrawingRecorder recorder(
-      paint_info.context, layout_table_cell_,
-      DisplayItem::kBoxDecorationBackground,
-      PixelSnappedIntRect(visual_overflow_rect));
+  DrawingRecorder recorder(paint_info.context, layout_table_cell_,
+                           DisplayItem::kBoxDecorationBackground,
+                           PixelSnappedIntRect(visual_overflow_rect));
 
   LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
 
@@ -142,13 +140,13 @@ void TableCellPainter::PaintMask(const PaintInfo& paint_info,
       !layout_table_cell_.FirstChild())
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_table_cell_, paint_info.phase))
     return;
 
   LayoutRect paint_rect = PaintRectNotIncludingVisualOverflow(paint_offset);
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_table_cell_,
-                                       paint_info.phase, paint_rect);
+  DrawingRecorder recorder(paint_info.context, layout_table_cell_,
+                           paint_info.phase, paint_rect);
   BoxPainter(layout_table_cell_).PaintMaskImages(paint_info, paint_rect);
 }
 

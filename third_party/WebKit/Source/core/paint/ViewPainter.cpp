@@ -12,11 +12,11 @@
 #include "core/paint/BlockPainter.h"
 #include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ScrollRecorder.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/runtime_enabled_features.h"
 
 namespace blink {

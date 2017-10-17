@@ -18,13 +18,13 @@
 #include "core/layout/svg/SVGResourcesCache.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/paint/InlineTextBoxPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGPaintContext.h"
 #include "core/paint/SelectionPaintingUtils.h"
 #include "core/style/AppliedTextDecoration.h"
 #include "core/style/ShadowList.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 

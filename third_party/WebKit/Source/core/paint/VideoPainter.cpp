@@ -9,9 +9,9 @@
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/layout/LayoutVideo.h"
 #include "core/paint/ImagePainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 
 namespace blink {
@@ -32,7 +32,7 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
   if (snapped_replaced_rect.IsEmpty())
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_video_, paint_info.phase))
     return;
 
@@ -60,8 +60,8 @@ void VideoPainter::PaintReplaced(const PaintInfo& paint_info,
 
   // TODO(trchen): Video rect could overflow the content rect due to object-fit.
   // Should apply a clip here like EmbeddedObjectPainter does.
-  LayoutObjectDrawingRecorder drawing_recorder(context, layout_video_,
-                                               paint_info.phase, content_rect);
+  DrawingRecorder recorder(context, layout_video_, paint_info.phase,
+                           content_rect);
 
   if (displaying_poster || !force_software_video_paint) {
     // This will display the poster image, if one is present, and otherwise

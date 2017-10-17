@@ -56,8 +56,8 @@ class SolidColorOverlay : public PageOverlay::Delegate {
             graphics_context, page_overlay, DisplayItem::kPageOverlay))
       return;
     FloatRect rect(0, 0, size.width, size.height);
-    DrawingRecorder drawing_recorder(graphics_context, page_overlay,
-                                     DisplayItem::kPageOverlay, rect);
+    DrawingRecorder recorder(graphics_context, page_overlay,
+                             DisplayItem::kPageOverlay, rect);
     graphics_context.FillRect(rect, color_);
   }
 

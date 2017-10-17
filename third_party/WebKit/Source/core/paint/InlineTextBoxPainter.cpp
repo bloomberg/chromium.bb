@@ -148,10 +148,10 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
     return;
   }
 
-  // The text clip phase already has a LayoutObjectDrawingRecorder. Text clips
-  // are initiated only in BoxPainter::paintFillLayer, which is already within a
-  // LayoutObjectDrawingRecorder.
-  Optional<DrawingRecorder> drawing_recorder;
+  // The text clip phase already has a DrawingRecorder. Text clips are initiated
+  // only in BoxPainter::PaintFillLayer, which is already within a
+  // DrawingRecorder.
+  Optional<DrawingRecorder> recorder;
   if (paint_info.phase != PaintPhase::kTextClip) {
     if (DrawingRecorder::UseCachedDrawingIfPossible(
             paint_info.context, inline_text_box_,
@@ -165,10 +165,9 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
           inline_text_box_.Start(),
           inline_text_box_.Start() + inline_text_box_.Len()));
     paint_rect.MoveBy(adjusted_paint_offset);
-    drawing_recorder.emplace(
-        paint_info.context, inline_text_box_,
-        DisplayItem::PaintPhaseToDrawingType(paint_info.phase),
-        FloatRect(paint_rect));
+    recorder.emplace(paint_info.context, inline_text_box_,
+                     DisplayItem::PaintPhaseToDrawingType(paint_info.phase),
+                     FloatRect(paint_rect));
   }
 
   GraphicsContext& context = paint_info.context;

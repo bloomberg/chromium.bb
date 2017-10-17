@@ -9,11 +9,11 @@
 #include "core/layout/svg/line/SVGInlineFlowBox.h"
 #include "core/layout/svg/line/SVGInlineTextBox.h"
 #include "core/layout/svg/line/SVGRootInlineBox.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/SVGInlineFlowBoxPainter.h"
 #include "core/paint/SVGInlineTextBoxPainter.h"
 #include "core/paint/SVGPaintContext.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -27,17 +27,16 @@ void SVGRootInlineBoxPainter::Paint(const PaintInfo& paint_info,
       svg_root_inline_box_.GetSelectionState() != SelectionState::kNone;
 
   PaintInfo paint_info_before_filtering(paint_info);
-  if (has_selection && !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (has_selection && !DrawingRecorder::UseCachedDrawingIfPossible(
                            paint_info_before_filtering.context,
                            *LineLayoutAPIShim::ConstLayoutObjectFrom(
                                svg_root_inline_box_.GetLineLayoutItem()),
                            paint_info_before_filtering.phase)) {
-    LayoutObjectDrawingRecorder recorder(
-        paint_info_before_filtering.context,
-        *LineLayoutAPIShim::ConstLayoutObjectFrom(
-            svg_root_inline_box_.GetLineLayoutItem()),
-        paint_info_before_filtering.phase,
-        paint_info_before_filtering.GetCullRect().rect_);
+    DrawingRecorder recorder(paint_info_before_filtering.context,
+                             *LineLayoutAPIShim::ConstLayoutObjectFrom(
+                                 svg_root_inline_box_.GetLineLayoutItem()),
+                             paint_info_before_filtering.phase,
+                             paint_info_before_filtering.GetCullRect().rect_);
     for (InlineBox* child = svg_root_inline_box_.FirstChild(); child;
          child = child->NextOnLine()) {
       if (child->IsSVGInlineTextBox())

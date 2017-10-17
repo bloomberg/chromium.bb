@@ -8,13 +8,13 @@
 #include "core/layout/api/SelectionState.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/RoundedInnerRectClipper.h"
 #include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/compositing/CompositedLayerMapping.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/wtf/Optional.h"
 
@@ -162,16 +162,16 @@ void ReplacedPainter::Paint(const PaintInfo& paint_info,
       layout_replaced_.GetSelectionState() != SelectionState::kNone &&
       !paint_info.IsPrinting();
   if (draw_selection_tint &&
-      !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+      !DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_replaced_, DisplayItem::kSelectionTint)) {
     LayoutRect selection_painting_rect = layout_replaced_.LocalSelectionRect();
     selection_painting_rect.MoveBy(adjusted_paint_offset);
     IntRect selection_painting_int_rect =
         PixelSnappedIntRect(selection_painting_rect);
 
-    LayoutObjectDrawingRecorder drawing_recorder(
-        paint_info.context, layout_replaced_, DisplayItem::kSelectionTint,
-        selection_painting_int_rect);
+    DrawingRecorder recorder(paint_info.context, layout_replaced_,
+                             DisplayItem::kSelectionTint,
+                             selection_painting_int_rect);
     Color selection_bg = SelectionPaintingUtils::SelectionBackgroundColor(
         layout_replaced_.GetDocument(), layout_replaced_.StyleRef(),
         layout_replaced_.GetNode());

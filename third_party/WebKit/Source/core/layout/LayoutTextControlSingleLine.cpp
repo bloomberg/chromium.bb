@@ -34,11 +34,11 @@
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutAnalyzer.h"
 #include "core/layout/LayoutTheme.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/ThemePainter.h"
 #include "platform/fonts/SimpleFontData.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -72,8 +72,8 @@ void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
 
   if (ShouldPaintSelfBlockBackground(paint_info.phase) &&
       should_draw_caps_lock_indicator_) {
-    if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-            paint_info.context, *this, paint_info.phase))
+    if (DrawingRecorder::UseCachedDrawingIfPossible(paint_info.context, *this,
+                                                    paint_info.phase))
       return;
 
     LayoutRect contents_rect = ContentBoxRect();
@@ -87,8 +87,8 @@ void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
     // Convert the rect into the coords used for painting the content
     contents_rect.MoveBy(paint_offset + Location());
     IntRect snapped_rect = PixelSnappedIntRect(contents_rect);
-    LayoutObjectDrawingRecorder recorder(paint_info.context, *this,
-                                         paint_info.phase, snapped_rect);
+    DrawingRecorder recorder(paint_info.context, *this, paint_info.phase,
+                             snapped_rect);
     LayoutTheme::GetTheme().Painter().PaintCapsLockIndicator(*this, paint_info,
                                                              snapped_rect);
   }

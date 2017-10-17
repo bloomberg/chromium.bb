@@ -6,12 +6,12 @@
 
 #include "core/layout/svg/LayoutSVGResourceFilter.h"
 #include "core/paint/FilterEffectBuilder.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/svg/SVGFilterElement.h"
 #include "core/svg/graphics/filters/SVGFilterBuilder.h"
 #include "platform/graphics/filters/Filter.h"
 #include "platform/graphics/filters/SkiaImageFilterBuilder.h"
 #include "platform/graphics/filters/SourceGraphic.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/wtf/PtrUtil.h"
 
 namespace blink {
@@ -57,12 +57,11 @@ static void PaintFilteredContent(GraphicsContext& context,
                                  const LayoutObject& object,
                                  const FloatRect& bounds,
                                  FilterEffect* effect) {
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-          context, object, DisplayItem::kSVGFilter))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, object,
+                                                  DisplayItem::kSVGFilter))
     return;
 
-  LayoutObjectDrawingRecorder recorder(context, object, DisplayItem::kSVGFilter,
-                                       bounds);
+  DrawingRecorder recorder(context, object, DisplayItem::kSVGFilter, bounds);
   sk_sp<SkImageFilter> image_filter =
       SkiaImageFilterBuilder::Build(effect, kInterpolationSpaceSRGB);
   context.Save();

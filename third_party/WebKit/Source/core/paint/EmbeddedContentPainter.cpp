@@ -7,7 +7,6 @@
 #include "core/frame/EmbeddedContentView.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -16,6 +15,7 @@
 #include "core/paint/ScrollableAreaPainter.h"
 #include "core/paint/SelectionPaintingUtils.h"
 #include "core/paint/TransformRecorder.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/wtf/Optional.h"
 
 namespace blink {
@@ -89,14 +89,13 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
 
   // Paint a partially transparent wash over selected EmbeddedContentViews.
   if (IsSelected() && !paint_info.IsPrinting() &&
-      !LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+      !DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_embedded_content_, paint_info.phase)) {
     LayoutRect rect = layout_embedded_content_.LocalSelectionRect();
     rect.MoveBy(adjusted_paint_offset);
     IntRect selection_rect = PixelSnappedIntRect(rect);
-    LayoutObjectDrawingRecorder drawing_recorder(
-        paint_info.context, layout_embedded_content_, paint_info.phase,
-        selection_rect);
+    DrawingRecorder recorder(paint_info.context, layout_embedded_content_,
+                             paint_info.phase, selection_rect);
     Color selection_bg = SelectionPaintingUtils::SelectionBackgroundColor(
         layout_embedded_content_.GetDocument(),
         layout_embedded_content_.StyleRef(),

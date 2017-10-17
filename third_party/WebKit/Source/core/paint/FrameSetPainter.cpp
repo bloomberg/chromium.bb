@@ -6,9 +6,9 @@
 
 #include "core/html/HTMLFrameSetElement.h"
 #include "core/layout/LayoutFrameSet.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPainter.h"
 #include "core/paint/PaintInfo.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -83,14 +83,14 @@ static bool ShouldPaintBorderAfter(const LayoutFrameSet::GridAxis& axis,
 
 void FrameSetPainter::PaintBorders(const PaintInfo& paint_info,
                                    const LayoutPoint& adjusted_paint_offset) {
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_frame_set_, paint_info.phase))
     return;
 
   LayoutRect adjusted_frame_rect(adjusted_paint_offset,
                                  layout_frame_set_.Size());
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_frame_set_,
-                                       paint_info.phase, adjusted_frame_rect);
+  DrawingRecorder recorder(paint_info.context, layout_frame_set_,
+                           paint_info.phase, adjusted_frame_rect);
 
   LayoutUnit border_thickness(layout_frame_set_.FrameSet()->Border());
   if (!border_thickness)

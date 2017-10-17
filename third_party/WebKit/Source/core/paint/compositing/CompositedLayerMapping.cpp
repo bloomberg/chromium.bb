@@ -3547,9 +3547,9 @@ void CompositedLayerMapping::PaintScrollableArea(
   // Replay the painted scrollbar content with the GraphicsLayer backing as the
   // DisplayItemClient in order for the resulting DrawingDisplayItem to produce
   // the correct visualRect (i.e., the bounds of the involved GraphicsLayer).
-  DrawingRecorder drawing_recorder(context, *graphics_layer,
-                                   DisplayItem::kScrollbarCompositedScrollbar,
-                                   layer_bounds);
+  DrawingRecorder recorder(context, *graphics_layer,
+                           DisplayItem::kScrollbarCompositedScrollbar,
+                           layer_bounds);
   context.Canvas()->drawPicture(builder.EndRecording());
 }
 

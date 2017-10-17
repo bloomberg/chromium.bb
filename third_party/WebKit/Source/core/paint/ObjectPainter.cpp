@@ -9,12 +9,12 @@
 #include "core/layout/LayoutObject.h"
 #include "core/layout/LayoutTheme.h"
 #include "core/paint/BoxBorderPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "core/style/BorderEdge.h"
 #include "core/style/ComputedStyle.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -243,7 +243,7 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
   if (outline_rects.IsEmpty())
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_object_, paint_info.phase))
     return;
 
@@ -268,8 +268,8 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
       UnionRectEvenIfEmpty(pixel_snapped_outline_rects);
   IntRect bounds = united_outline_rect;
   bounds.Inflate(layout_object_.StyleRef().OutlineOutsetExtent());
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_object_,
-                                       paint_info.phase, bounds);
+  DrawingRecorder recorder(paint_info.context, layout_object_, paint_info.phase,
+                           bounds);
 
   Color color =
       layout_object_.ResolveColor(style_to_use, CSSPropertyOutlineColor);
@@ -323,14 +323,13 @@ void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
   if (rect.IsEmpty())
     return;
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_object_,
           DisplayItem::kPrintedContentPDFURLRect))
     return;
 
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_object_,
-                                       DisplayItem::kPrintedContentPDFURLRect,
-                                       rect);
+  DrawingRecorder recorder(paint_info.context, layout_object_,
+                           DisplayItem::kPrintedContentPDFURLRect, rect);
   if (url.HasFragmentIdentifier() &&
       EqualIgnoringFragmentIdentifier(url,
                                       layout_object_.GetDocument().BaseURL())) {

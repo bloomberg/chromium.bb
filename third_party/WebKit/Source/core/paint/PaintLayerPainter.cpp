@@ -9,7 +9,6 @@
 #include "core/paint/ClipPathClipper.h"
 #include "core/paint/FilterPainter.h"
 #include "core/paint/LayerClipRecorder.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintInfo.h"
 #include "core/paint/PaintLayer.h"
@@ -21,6 +20,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/CompositingRecorder.h"
 #include "platform/graphics/paint/DisplayItemCacheSkipper.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintChunkProperties.h"
 #include "platform/graphics/paint/ScopedPaintChunkProperties.h"
 #include "platform/graphics/paint/SubsequenceRecorder.h"
@@ -1008,10 +1008,10 @@ void PaintLayerPainter::PaintFragmentWithPhase(
         DisplayItem::PaintPhaseToClipLayerFragmentType(phase);
     LayerClipRecorder::BorderRadiusClippingRule clipping_rule;
     switch (phase) {
-      // These phases will handle clipping to self.
-      case PaintPhase::kSelfBlockBackgroundOnly:
+      case PaintPhase::kSelfBlockBackgroundOnly:  // Background painting will
+                                                  // handle clipping to self.
       case PaintPhase::kSelfOutlineOnly:
-      case PaintPhase::kMask:
+      case PaintPhase::kMask:  // Mask painting will handle clipping to self.
         clipping_rule = LayerClipRecorder::kDoNotIncludeSelfForBorderRadius;
         break;
       case PaintPhase::kClippingMask:
@@ -1275,7 +1275,7 @@ void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
     return;
 
   IntRect snapped_clip_rect = PixelSnappedIntRect(clip_rect.Rect());
-  DrawingRecorder drawing_recorder(context, client, type, snapped_clip_rect);
+  DrawingRecorder recorder(context, client, type, snapped_clip_rect);
   context.FillRect(snapped_clip_rect, Color::kBlack);
 }
 

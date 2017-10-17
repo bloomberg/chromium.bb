@@ -66,9 +66,9 @@ BoxReflection BoxReflectionForPaintLayer(const PaintLayer& layer,
   PaintRecordBuilder builder(mask_bounding_float_rect);
   {
     GraphicsContext& context = builder.Context();
-    DrawingRecorder drawing_recorder(context, layer.GetLayoutObject(),
-                                     DisplayItem::kReflectionMask,
-                                     mask_bounding_float_rect);
+    DrawingRecorder recorder(context, layer.GetLayoutObject(),
+                             DisplayItem::kReflectionMask,
+                             mask_bounding_float_rect);
     Node* node = nullptr;
     const LayoutObject* layout_object = &layer.GetLayoutObject();
     for (; layout_object && !node; layout_object = layout_object->Parent())

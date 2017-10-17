@@ -9,11 +9,11 @@
 #include "core/layout/LayoutText.h"
 #include "core/layout/line/InlineTextBox.h"
 #include "core/page/FocusController.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/ObjectPaintProperties.h"
 #include "core/paint/PaintLayerPainter.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 

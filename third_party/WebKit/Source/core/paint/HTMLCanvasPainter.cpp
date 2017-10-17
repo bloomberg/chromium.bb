@@ -7,9 +7,9 @@
 #include "core/html/HTMLCanvasElement.h"
 #include "core/html/canvas/CanvasRenderingContext.h"
 #include "core/layout/LayoutHTMLCanvas.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 
 namespace blink {
@@ -38,12 +38,12 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
     }
   }
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-          context, layout_html_canvas_, paint_info.phase))
+  if (DrawingRecorder::UseCachedDrawingIfPossible(context, layout_html_canvas_,
+                                                  paint_info.phase))
     return;
 
-  LayoutObjectDrawingRecorder drawing_recorder(context, layout_html_canvas_,
-                                               paint_info.phase, content_rect);
+  DrawingRecorder recorder(context, layout_html_canvas_, paint_info.phase,
+                           content_rect);
 
   bool clip = !content_rect.Contains(paint_rect);
   if (clip) {

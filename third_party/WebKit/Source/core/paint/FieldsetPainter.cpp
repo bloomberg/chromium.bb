@@ -9,9 +9,9 @@
 #include "core/paint/BoxDecorationData.h"
 #include "core/paint/BoxModelObjectPainter.h"
 #include "core/paint/BoxPainter.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/graphics/GraphicsContextStateSaver.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 
 namespace blink {
 
@@ -24,7 +24,7 @@ void FieldsetPainter::PaintBoxDecorationBackground(
     return BoxPainter(layout_fieldset_)
         .PaintBoxDecorationBackground(paint_info, paint_offset);
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_fieldset_, paint_info.phase))
     return;
 
@@ -47,8 +47,8 @@ void FieldsetPainter::PaintBoxDecorationBackground(
     paint_rect.SetX(paint_rect.X() + x_off);
   }
 
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_fieldset_,
-                                       paint_info.phase, paint_rect);
+  DrawingRecorder recorder(paint_info.context, layout_fieldset_,
+                           paint_info.phase, paint_rect);
   BoxDecorationData box_decoration_data(layout_fieldset_);
 
   BoxPainterBase::PaintNormalBoxShadow(paint_info, paint_rect,
@@ -110,7 +110,7 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
   if (!legend)
     return BoxPainter(layout_fieldset_).PaintMask(paint_info, paint_offset);
 
-  if (LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
+  if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_fieldset_, paint_info.phase))
     return;
 
@@ -133,8 +133,8 @@ void FieldsetPainter::PaintMask(const PaintInfo& paint_info,
     paint_rect.Move(x_off, LayoutUnit());
   }
 
-  LayoutObjectDrawingRecorder recorder(paint_info.context, layout_fieldset_,
-                                       paint_info.phase, paint_rect);
+  DrawingRecorder recorder(paint_info.context, layout_fieldset_,
+                           paint_info.phase, paint_rect);
   BoxPainter(layout_fieldset_).PaintMaskImages(paint_info, paint_rect);
 }
 

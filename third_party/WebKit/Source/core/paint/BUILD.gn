@@ -91,7 +91,6 @@ blink_core_sources("paint") {
     "LayerClipRecorder.cpp",
     "LayerClipRecorder.h",
     "LayerHitTestRects.h",
-    "LayoutObjectDrawingRecorder.h",
     "LineBoxListPainter.cpp",
     "LineBoxListPainter.h",
     "LinkHighlightImpl.cpp",

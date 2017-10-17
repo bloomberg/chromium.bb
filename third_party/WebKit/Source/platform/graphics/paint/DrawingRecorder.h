@@ -8,16 +8,13 @@
 #include "platform/PlatformExport.h"
 
 #include "platform/geometry/FloatRect.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/paint/DrawingDisplayItem.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
 #include "platform/wtf/Noncopyable.h"
-
-#ifndef NDEBUG
-#include "platform/wtf/text/WTFString.h"
-#endif
 
 namespace blink {
 
@@ -35,10 +32,61 @@ class PLATFORM_EXPORT DrawingRecorder final {
                                                                    type);
   }
 
+  static bool UseCachedDrawingIfPossible(GraphicsContext& context,
+                                         const DisplayItemClient& client,
+                                         PaintPhase phase) {
+    return UseCachedDrawingIfPossible(
+        context, client, DisplayItem::PaintPhaseToDrawingType(phase));
+  }
+
   DrawingRecorder(GraphicsContext&,
                   const DisplayItemClient&,
                   DisplayItem::Type,
-                  const FloatRect& cull_rect);
+                  const IntRect& bounds);
+
+  DrawingRecorder(GraphicsContext& context,
+                  const DisplayItemClient& client,
+                  PaintPhase phase,
+                  const IntRect& bounds)
+      : DrawingRecorder(context,
+                        client,
+                        DisplayItem::PaintPhaseToDrawingType(phase),
+                        bounds) {}
+
+  DrawingRecorder(GraphicsContext& context,
+                  const DisplayItemClient& client,
+                  DisplayItem::Type type,
+                  const FloatRect& bounds)
+      // Use the enclosing int rect, since pixel-snapping may be applied to the
+      // bounds of the object during painting. Potentially expanding the bounds
+      // by a pixel or two also does not affect correctness, and is very
+      // unlikely to matter for performance.
+      : DrawingRecorder(context, client, type, EnclosingIntRect(bounds)) {}
+
+  DrawingRecorder(GraphicsContext& context,
+                  const DisplayItemClient& client,
+                  PaintPhase phase,
+                  const FloatRect& bounds)
+      : DrawingRecorder(context,
+                        client,
+                        DisplayItem::PaintPhaseToDrawingType(phase),
+                        bounds) {}
+
+  DrawingRecorder(GraphicsContext& context,
+                  const DisplayItemClient& client,
+                  DisplayItem::Type type,
+                  const LayoutRect& bounds)
+      : DrawingRecorder(context, client, type, EnclosingIntRect(bounds)) {}
+
+  DrawingRecorder(GraphicsContext& context,
+                  const DisplayItemClient& client,
+                  PaintPhase phase,
+                  const LayoutRect& bounds)
+      : DrawingRecorder(context,
+                        client,
+                        DisplayItem::PaintPhaseToDrawingType(phase),
+                        bounds) {}
+
   ~DrawingRecorder();
 
   void SetKnownToBeOpaque() {
@@ -48,13 +96,13 @@ class PLATFORM_EXPORT DrawingRecorder final {
 
  private:
   GraphicsContext& context_;
-  const DisplayItemClient& display_item_client_;
-  const DisplayItem::Type display_item_type_;
+  const DisplayItemClient& client_;
+  const DisplayItem::Type type_;
 
   // True if there are no transparent areas. Only used for SlimmingPaintV2.
   bool known_to_be_opaque_;
   // The bounds of the area being recorded.
-  IntRect recording_bounds_;
+  IntRect bounds_;
 
 #if DCHECK_IS_ON()
   // Ensures the list size does not change during the recorder's scope.

@@ -5,12 +5,12 @@
 #include "core/paint/LayerClipRecorder.h"
 
 #include "core/layout/LayoutView.h"
-#include "core/paint/LayoutObjectDrawingRecorder.h"
 #include "core/paint/PaintControllerPaintTest.h"
 #include "core/paint/PaintLayer.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
+#include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintController.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -48,10 +48,9 @@ void DrawRectInClip(GraphicsContext& context,
       DisplayItem::kClipLayerForeground, clip_rect, 0, LayoutPoint(),
       PaintLayerFlags(),
       layout_view.Compositor()->RootLayer()->GetLayoutObject());
-  if (!LayoutObjectDrawingRecorder::UseCachedDrawingIfPossible(
-          context, layout_view, phase)) {
-    LayoutObjectDrawingRecorder drawing_recorder(context, layout_view, phase,
-                                                 bound);
+  if (!DrawingRecorder::UseCachedDrawingIfPossible(context, layout_view,
+                                                   phase)) {
+    DrawingRecorder recorder(context, layout_view, phase, bound);
     context.DrawRect(rect);
   }
 }
