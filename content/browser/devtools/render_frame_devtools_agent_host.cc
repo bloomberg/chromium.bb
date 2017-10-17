@@ -405,27 +405,14 @@ bool RenderFrameDevToolsAgentHost::IsNetworkHandlerEnabled(
 void RenderFrameDevToolsAgentHost::AppendDevToolsHeaders(
     FrameTreeNode* frame_tree_node,
     net::HttpRequestHeaders* headers) {
-  static const char kDevToolsEmulateNetworkConditionsClientId[] =
-      "X-DevTools-Emulate-Network-Conditions-Client-Id";
-
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
   RenderFrameDevToolsAgentHost* agent_host = FindAgentHost(frame_tree_node);
   if (!agent_host)
     return;
-  std::string ua_override;
-  bool enabled = false;
   for (auto* network : protocol::NetworkHandler::ForAgentHost(agent_host)) {
-    enabled = enabled || network->enabled();
-    ua_override = network->UserAgentOverride();
-    if (!ua_override.empty())
+    if (network->AppendDevToolsHeaders(headers))
       break;
   }
-  if (!enabled)
-    return;
-  headers->SetHeader(kDevToolsEmulateNetworkConditionsClientId,
-                     agent_host->GetId());
-  if (!ua_override.empty())
-    headers->SetHeader(net::HttpRequestHeaders::kUserAgent, ua_override);
 }
 
 // static

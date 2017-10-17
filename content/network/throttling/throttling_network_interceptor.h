@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_INTERCEPTOR_H_
-#define CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_INTERCEPTOR_H_
+#ifndef CONTENT_NETWORK_THROTTLING_THROTTLING_NETWORK_INTERCEPTOR_H_
+#define CONTENT_NETWORK_THROTTLING_THROTTLING_NETWORK_INTERCEPTOR_H_
 
 #include <stdint.h>
 
@@ -23,21 +23,21 @@ class TimeTicks;
 }  // namespace base
 
 namespace content {
-class DevToolsNetworkConditions;
+class NetworkConditions;
 
-// DevToolsNetworkInterceptor emulates network conditions for transactions with
-// specific client id.
-class CONTENT_EXPORT DevToolsNetworkInterceptor {
+// ThrottlingNetworkInterceptor emulates network conditions for transactions
+// with specific client id.
+class CONTENT_EXPORT ThrottlingNetworkInterceptor {
  public:
   using ThrottleCallback = base::Callback<void(int, int64_t)>;
 
-  DevToolsNetworkInterceptor();
-  virtual ~DevToolsNetworkInterceptor();
+  ThrottlingNetworkInterceptor();
+  virtual ~ThrottlingNetworkInterceptor();
 
-  base::WeakPtr<DevToolsNetworkInterceptor> GetWeakPtr();
+  base::WeakPtr<ThrottlingNetworkInterceptor> GetWeakPtr();
 
   // Applies network emulation configuration.
-  void UpdateConditions(std::unique_ptr<DevToolsNetworkConditions> conditions);
+  void UpdateConditions(std::unique_ptr<NetworkConditions> conditions);
 
   // Throttles with |is_upload == true| always succeed, even in offline mode.
   int StartThrottle(int result,
@@ -83,7 +83,7 @@ class CONTENT_EXPORT DevToolsNetworkInterceptor {
 
   void RemoveRecord(ThrottleRecords* records, const ThrottleCallback& callback);
 
-  std::unique_ptr<DevToolsNetworkConditions> conditions_;
+  std::unique_ptr<NetworkConditions> conditions_;
 
   // Throttables suspended for a "latency" period.
   ThrottleRecords suspended_;
@@ -100,11 +100,11 @@ class CONTENT_EXPORT DevToolsNetworkInterceptor {
   uint64_t download_last_tick_;
   uint64_t upload_last_tick_;
 
-  base::WeakPtrFactory<DevToolsNetworkInterceptor> weak_ptr_factory_;
+  base::WeakPtrFactory<ThrottlingNetworkInterceptor> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkInterceptor);
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingNetworkInterceptor);
 };
 
 }  // namespace content
 
-#endif  // CONTENT_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_INTERCEPTOR_H_
+#endif  // CONTENT_NETWORK_THROTTLING_THROTTLING_NETWORK_INTERCEPTOR_H_

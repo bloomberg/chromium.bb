@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "content/common/devtools/devtools_network_interceptor.h"
+#include "content/network/throttling/throttling_network_interceptor.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
@@ -33,23 +33,24 @@ class X509Certificate;
 
 namespace content {
 
-class DevToolsNetworkController;
-class DevToolsNetworkControllerHelper;
-class DevToolsNetworkUploadDataStream;
+class ThrottlingController;
+class ThrottlingControllerHelper;
+class ThrottlingUploadDataStream;
 
-// DevToolsNetworkTransaction is a wrapper for network transaction. All
+// ThrottlingNetworkTransaction is a wrapper for network transaction. All
 // HttpTransaction methods are proxied to real transaction, but |callback|
 // parameter is saved and replaced with proxy callback. Fail method should be
 // used to simulate network outage. It runs saved callback (if any) with
 // net::ERR_INTERNET_DISCONNECTED result value.
-class CONTENT_EXPORT DevToolsNetworkTransaction : public net::HttpTransaction {
+class CONTENT_EXPORT ThrottlingNetworkTransaction
+    : public net::HttpTransaction {
  public:
   static const char kDevToolsEmulateNetworkConditionsClientId[];
 
-  explicit DevToolsNetworkTransaction(
+  explicit ThrottlingNetworkTransaction(
       std::unique_ptr<net::HttpTransaction> network_transaction);
 
-  ~DevToolsNetworkTransaction() override;
+  ~ThrottlingNetworkTransaction() override;
 
   // HttpTransaction methods:
   int Start(const net::HttpRequestInfo* request,
@@ -93,7 +94,7 @@ class CONTENT_EXPORT DevToolsNetworkTransaction : public net::HttpTransaction {
   void GetConnectionAttempts(net::ConnectionAttempts* out) const override;
 
  protected:
-  friend class content::DevToolsNetworkControllerHelper;
+  friend class content::ThrottlingControllerHelper;
 
  private:
   void Fail();
@@ -107,14 +108,14 @@ class CONTENT_EXPORT DevToolsNetworkTransaction : public net::HttpTransaction {
                         int result,
                         int64_t bytes);
 
-  DevToolsNetworkInterceptor::ThrottleCallback throttle_callback_;
+  ThrottlingNetworkInterceptor::ThrottleCallback throttle_callback_;
   int64_t throttled_byte_count_;
 
-  DevToolsNetworkController* controller_;
-  base::WeakPtr<DevToolsNetworkInterceptor> interceptor_;
+  ThrottlingController* controller_;
+  base::WeakPtr<ThrottlingNetworkInterceptor> interceptor_;
 
   // Modified upload data stream. Should be destructed after |custom_request_|.
-  std::unique_ptr<DevToolsNetworkUploadDataStream> custom_upload_data_stream_;
+  std::unique_ptr<ThrottlingUploadDataStream> custom_upload_data_stream_;
 
   // Modified request. Should be destructed after |network_transaction_|.
   std::unique_ptr<net::HttpRequestInfo> custom_request_;
@@ -127,7 +128,7 @@ class CONTENT_EXPORT DevToolsNetworkTransaction : public net::HttpTransaction {
   // True if Fail was already invoked.
   bool failed_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkTransaction);
+  DISALLOW_COPY_AND_ASSIGN(ThrottlingNetworkTransaction);
 };
 
 }  // namespace content

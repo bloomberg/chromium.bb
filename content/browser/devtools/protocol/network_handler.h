@@ -13,17 +13,17 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/devtools/protocol/devtools_domain_handler.h"
 #include "content/browser/devtools/protocol/network.h"
+#include "content/public/common/network_service.mojom.h"
 #include "net/base/net_errors.h"
 #include "net/cookies/canonical_cookie.h"
 
 namespace net {
+class HttpRequestHeaders;
 class URLRequest;
 }  // namespace net
 
 namespace content {
-
 class DevToolsAgentHostImpl;
-class DevToolsNetworkConditions;
 class RenderFrameHostImpl;
 struct BeginNavigationParams;
 struct CommonNavigationParams;
@@ -117,7 +117,6 @@ class NetworkHandler : public DevToolsDomainHandler,
                         net::Error error_code);
 
   bool enabled() const { return enabled_; }
-  std::string UserAgentOverride() const;
 
   Network::Frontend* frontend() const { return frontend_.get(); }
 
@@ -130,16 +129,17 @@ class NetworkHandler : public DevToolsDomainHandler,
                                     const std::string& interception_id);
   void InterceptedNavigationRequestFinished(const std::string& interception_id);
   bool ShouldCancelNavigation(const GlobalRequestID& global_request_id);
+  bool AppendDevToolsHeaders(net::HttpRequestHeaders* headers);
 
  private:
-  void SetNetworkConditions(
-      std::unique_ptr<DevToolsNetworkConditions> conditions);
+  void SetNetworkConditions(mojom::NetworkConditionsPtr conditions);
 
   std::unique_ptr<Network::Frontend> frontend_;
   RenderProcessHost* process_;
   RenderFrameHostImpl* host_;
   bool enabled_;
   bool interception_enabled_;
+  bool throttling_enabled_;
   std::string user_agent_;
   base::flat_map<std::string, GlobalRequestID> navigation_requests_;
   base::flat_set<GlobalRequestID> canceled_navigation_requests_;

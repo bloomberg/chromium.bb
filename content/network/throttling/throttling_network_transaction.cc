@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/devtools/devtools_network_transaction.h"
+#include "content/network/throttling/throttling_network_transaction.h"
 
 #include <utility>
 
 #include "base/callback_helpers.h"
-#include "content/common/devtools/devtools_network_controller.h"
-#include "content/common/devtools/devtools_network_interceptor.h"
-#include "content/common/devtools/devtools_network_upload_data_stream.h"
+#include "content/network/throttling/throttling_controller.h"
+#include "content/network/throttling/throttling_network_interceptor.h"
+#include "content/network/throttling/throttling_upload_data_stream.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_network_transaction.h"
@@ -21,22 +21,22 @@ namespace content {
 // Keep in sync with X_DevTools_Emulate_Network_Conditions_Client_Id defined in
 // HTTPNames.json5.
 const char
-    DevToolsNetworkTransaction::kDevToolsEmulateNetworkConditionsClientId[] =
+    ThrottlingNetworkTransaction::kDevToolsEmulateNetworkConditionsClientId[] =
         "X-DevTools-Emulate-Network-Conditions-Client-Id";
 
-DevToolsNetworkTransaction::DevToolsNetworkTransaction(
+ThrottlingNetworkTransaction::ThrottlingNetworkTransaction(
     std::unique_ptr<net::HttpTransaction> network_transaction)
     : throttled_byte_count_(0),
       network_transaction_(std::move(network_transaction)),
       request_(nullptr),
       failed_(false) {}
 
-DevToolsNetworkTransaction::~DevToolsNetworkTransaction() {
+ThrottlingNetworkTransaction::~ThrottlingNetworkTransaction() {
   if (interceptor_ && !throttle_callback_.is_null())
     interceptor_->StopThrottle(throttle_callback_);
 }
 
-void DevToolsNetworkTransaction::IOCallback(
+void ThrottlingNetworkTransaction::IOCallback(
     const net::CompletionCallback& callback,
     bool start,
     int result) {
@@ -45,7 +45,7 @@ void DevToolsNetworkTransaction::IOCallback(
     callback.Run(result);
 }
 
-int DevToolsNetworkTransaction::Throttle(
+int ThrottlingNetworkTransaction::Throttle(
     const net::CompletionCallback& callback,
     bool start,
     int result) {
@@ -69,8 +69,9 @@ int DevToolsNetworkTransaction::Throttle(
   if (result > 0)
     throttled_byte_count_ += result;
 
-  throttle_callback_ = base::Bind(&DevToolsNetworkTransaction::ThrottleCallback,
-                                  base::Unretained(this), callback);
+  throttle_callback_ =
+      base::Bind(&ThrottlingNetworkTransaction::ThrottleCallback,
+                 base::Unretained(this), callback);
   int rv = interceptor_->StartThrottle(result, throttled_byte_count_, send_end,
                                        start, false, throttle_callback_);
   if (rv != net::ERR_IO_PENDING)
@@ -80,7 +81,7 @@ int DevToolsNetworkTransaction::Throttle(
   return rv;
 }
 
-void DevToolsNetworkTransaction::ThrottleCallback(
+void ThrottlingNetworkTransaction::ThrottleCallback(
     const net::CompletionCallback& callback,
     int result,
     int64_t bytes) {
@@ -92,7 +93,7 @@ void DevToolsNetworkTransaction::ThrottleCallback(
   callback.Run(result);
 }
 
-void DevToolsNetworkTransaction::Fail() {
+void ThrottlingNetworkTransaction::Fail() {
   DCHECK(request_);
   DCHECK(!failed_);
   failed_ = true;
@@ -102,7 +103,7 @@ void DevToolsNetworkTransaction::Fail() {
     interceptor_.reset();
 }
 
-bool DevToolsNetworkTransaction::CheckFailed() {
+bool ThrottlingNetworkTransaction::CheckFailed() {
   if (failed_)
     return true;
   if (interceptor_ && interceptor_->IsOffline()) {
@@ -112,9 +113,9 @@ bool DevToolsNetworkTransaction::CheckFailed() {
   return false;
 }
 
-int DevToolsNetworkTransaction::Start(const net::HttpRequestInfo* request,
-                                      const net::CompletionCallback& callback,
-                                      const net::NetLogWithSource& net_log) {
+int ThrottlingNetworkTransaction::Start(const net::HttpRequestInfo* request,
+                                        const net::CompletionCallback& callback,
+                                        const net::NetLogWithSource& net_log) {
   DCHECK(request);
   request_ = request;
 
@@ -130,15 +131,15 @@ int DevToolsNetworkTransaction::Start(const net::HttpRequestInfo* request,
 
     if (request_->upload_data_stream) {
       custom_upload_data_stream_.reset(
-          new DevToolsNetworkUploadDataStream(request_->upload_data_stream));
+          new ThrottlingUploadDataStream(request_->upload_data_stream));
       custom_request_->upload_data_stream = custom_upload_data_stream_.get();
     }
 
     request_ = custom_request_.get();
   }
 
-  DevToolsNetworkInterceptor* interceptor =
-      DevToolsNetworkController::GetInterceptor(client_id);
+  ThrottlingNetworkInterceptor* interceptor =
+      ThrottlingController::GetInterceptor(client_id);
   if (interceptor) {
     interceptor_ = interceptor->GetWeakPtr();
     if (custom_upload_data_stream_)
@@ -153,13 +154,13 @@ int DevToolsNetworkTransaction::Start(const net::HttpRequestInfo* request,
 
   int result = network_transaction_->Start(
       request_,
-      base::Bind(&DevToolsNetworkTransaction::IOCallback,
+      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
                  base::Unretained(this), callback, true),
       net_log);
   return Throttle(callback, true, result);
 }
 
-int DevToolsNetworkTransaction::RestartIgnoringLastError(
+int ThrottlingNetworkTransaction::RestartIgnoringLastError(
     const net::CompletionCallback& callback) {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
@@ -167,12 +168,12 @@ int DevToolsNetworkTransaction::RestartIgnoringLastError(
     return network_transaction_->RestartIgnoringLastError(callback);
 
   int result = network_transaction_->RestartIgnoringLastError(
-      base::Bind(&DevToolsNetworkTransaction::IOCallback,
+      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
                  base::Unretained(this), callback, true));
   return Throttle(callback, true, result);
 }
 
-int DevToolsNetworkTransaction::RestartWithCertificate(
+int ThrottlingNetworkTransaction::RestartWithCertificate(
     scoped_refptr<net::X509Certificate> client_cert,
     scoped_refptr<net::SSLPrivateKey> client_private_key,
     const net::CompletionCallback& callback) {
@@ -185,12 +186,12 @@ int DevToolsNetworkTransaction::RestartWithCertificate(
 
   int result = network_transaction_->RestartWithCertificate(
       std::move(client_cert), std::move(client_private_key),
-      base::Bind(&DevToolsNetworkTransaction::IOCallback,
+      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
                  base::Unretained(this), callback, true));
   return Throttle(callback, true, result);
 }
 
-int DevToolsNetworkTransaction::RestartWithAuth(
+int ThrottlingNetworkTransaction::RestartWithAuth(
     const net::AuthCredentials& credentials,
     const net::CompletionCallback& callback) {
   if (CheckFailed())
@@ -199,18 +200,19 @@ int DevToolsNetworkTransaction::RestartWithAuth(
     return network_transaction_->RestartWithAuth(credentials, callback);
 
   int result = network_transaction_->RestartWithAuth(
-      credentials, base::Bind(&DevToolsNetworkTransaction::IOCallback,
+      credentials, base::Bind(&ThrottlingNetworkTransaction::IOCallback,
                               base::Unretained(this), callback, true));
   return Throttle(callback, true, result);
 }
 
-bool DevToolsNetworkTransaction::IsReadyToRestartForAuth() {
+bool ThrottlingNetworkTransaction::IsReadyToRestartForAuth() {
   return network_transaction_->IsReadyToRestartForAuth();
 }
 
-int DevToolsNetworkTransaction::Read(net::IOBuffer* buf,
-                                     int buf_len,
-                                     const net::CompletionCallback& callback) {
+int ThrottlingNetworkTransaction::Read(
+    net::IOBuffer* buf,
+    int buf_len,
+    const net::CompletionCallback& callback) {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
   if (!interceptor_)
@@ -218,7 +220,7 @@ int DevToolsNetworkTransaction::Read(net::IOBuffer* buf,
 
   int result = network_transaction_->Read(
       buf, buf_len,
-      base::Bind(&DevToolsNetworkTransaction::IOCallback,
+      base::Bind(&ThrottlingNetworkTransaction::IOCallback,
                  base::Unretained(this), callback, false));
   // URLRequestJob relies on synchronous end-of-stream notification.
   if (result == 0)
@@ -226,92 +228,92 @@ int DevToolsNetworkTransaction::Read(net::IOBuffer* buf,
   return Throttle(callback, false, result);
 }
 
-void DevToolsNetworkTransaction::StopCaching() {
+void ThrottlingNetworkTransaction::StopCaching() {
   network_transaction_->StopCaching();
 }
 
-bool DevToolsNetworkTransaction::GetFullRequestHeaders(
+bool ThrottlingNetworkTransaction::GetFullRequestHeaders(
     net::HttpRequestHeaders* headers) const {
   return network_transaction_->GetFullRequestHeaders(headers);
 }
 
-int64_t DevToolsNetworkTransaction::GetTotalReceivedBytes() const {
+int64_t ThrottlingNetworkTransaction::GetTotalReceivedBytes() const {
   return network_transaction_->GetTotalReceivedBytes();
 }
 
-int64_t DevToolsNetworkTransaction::GetTotalSentBytes() const {
+int64_t ThrottlingNetworkTransaction::GetTotalSentBytes() const {
   return network_transaction_->GetTotalSentBytes();
 }
 
-void DevToolsNetworkTransaction::DoneReading() {
+void ThrottlingNetworkTransaction::DoneReading() {
   network_transaction_->DoneReading();
 }
 
-const net::HttpResponseInfo* DevToolsNetworkTransaction::GetResponseInfo()
+const net::HttpResponseInfo* ThrottlingNetworkTransaction::GetResponseInfo()
     const {
   return network_transaction_->GetResponseInfo();
 }
 
-net::LoadState DevToolsNetworkTransaction::GetLoadState() const {
+net::LoadState ThrottlingNetworkTransaction::GetLoadState() const {
   return network_transaction_->GetLoadState();
 }
 
-void DevToolsNetworkTransaction::SetQuicServerInfo(
+void ThrottlingNetworkTransaction::SetQuicServerInfo(
     net::QuicServerInfo* quic_server_info) {
   network_transaction_->SetQuicServerInfo(quic_server_info);
 }
 
-bool DevToolsNetworkTransaction::GetLoadTimingInfo(
+bool ThrottlingNetworkTransaction::GetLoadTimingInfo(
     net::LoadTimingInfo* load_timing_info) const {
   return network_transaction_->GetLoadTimingInfo(load_timing_info);
 }
 
-bool DevToolsNetworkTransaction::GetRemoteEndpoint(
+bool ThrottlingNetworkTransaction::GetRemoteEndpoint(
     net::IPEndPoint* endpoint) const {
   return network_transaction_->GetRemoteEndpoint(endpoint);
 }
 
-void DevToolsNetworkTransaction::PopulateNetErrorDetails(
+void ThrottlingNetworkTransaction::PopulateNetErrorDetails(
     net::NetErrorDetails* details) const {
   return network_transaction_->PopulateNetErrorDetails(details);
 }
 
-void DevToolsNetworkTransaction::SetPriority(net::RequestPriority priority) {
+void ThrottlingNetworkTransaction::SetPriority(net::RequestPriority priority) {
   network_transaction_->SetPriority(priority);
 }
 
-void DevToolsNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
+void ThrottlingNetworkTransaction::SetWebSocketHandshakeStreamCreateHelper(
     net::WebSocketHandshakeStreamBase::CreateHelper* create_helper) {
   network_transaction_->SetWebSocketHandshakeStreamCreateHelper(create_helper);
 }
 
-void DevToolsNetworkTransaction::SetBeforeNetworkStartCallback(
+void ThrottlingNetworkTransaction::SetBeforeNetworkStartCallback(
     const BeforeNetworkStartCallback& callback) {
   network_transaction_->SetBeforeNetworkStartCallback(callback);
 }
 
-void DevToolsNetworkTransaction::SetRequestHeadersCallback(
+void ThrottlingNetworkTransaction::SetRequestHeadersCallback(
     net::RequestHeadersCallback callback) {
   network_transaction_->SetRequestHeadersCallback(std::move(callback));
 }
 
-void DevToolsNetworkTransaction::SetResponseHeadersCallback(
+void ThrottlingNetworkTransaction::SetResponseHeadersCallback(
     net::ResponseHeadersCallback callback) {
   network_transaction_->SetResponseHeadersCallback(std::move(callback));
 }
 
-void DevToolsNetworkTransaction::SetBeforeHeadersSentCallback(
+void ThrottlingNetworkTransaction::SetBeforeHeadersSentCallback(
     const BeforeHeadersSentCallback& callback) {
   network_transaction_->SetBeforeHeadersSentCallback(callback);
 }
 
-int DevToolsNetworkTransaction::ResumeNetworkStart() {
+int ThrottlingNetworkTransaction::ResumeNetworkStart() {
   if (CheckFailed())
     return net::ERR_INTERNET_DISCONNECTED;
   return network_transaction_->ResumeNetworkStart();
 }
 
-void DevToolsNetworkTransaction::GetConnectionAttempts(
+void ThrottlingNetworkTransaction::GetConnectionAttempts(
     net::ConnectionAttempts* out) const {
   network_transaction_->GetConnectionAttempts(out);
 }

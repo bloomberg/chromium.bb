@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTET_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
-#define CONTET_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
+#ifndef CONTET_NETWORK_THROTTLING_NETWORK_CONDITIONS_H_
+#define CONTET_NETWORK_THROTTLING_NETWORK_CONDITIONS_H_
 
 #include <string>
 #include <vector>
@@ -14,17 +14,17 @@
 
 namespace content {
 
-// DevToolsNetworkConditions holds information about desired network conditions.
-class CONTENT_EXPORT DevToolsNetworkConditions {
+// NetworkConditions holds information about desired network conditions.
+class CONTENT_EXPORT NetworkConditions {
  public:
-  DevToolsNetworkConditions();
-  ~DevToolsNetworkConditions();
+  NetworkConditions();
+  ~NetworkConditions();
 
-  explicit DevToolsNetworkConditions(bool offline);
-  DevToolsNetworkConditions(bool offline,
-                            double latency,
-                            double download_throughput,
-                            double upload_throughput);
+  explicit NetworkConditions(bool offline);
+  NetworkConditions(bool offline,
+                    double latency,
+                    double download_throughput,
+                    double upload_throughput);
 
   bool IsThrottling() const;
 
@@ -39,9 +39,9 @@ class CONTENT_EXPORT DevToolsNetworkConditions {
   const double download_throughput_;
   const double upload_throughput_;
 
-  DISALLOW_COPY_AND_ASSIGN(DevToolsNetworkConditions);
+  DISALLOW_COPY_AND_ASSIGN(NetworkConditions);
 };
 
 }  // namespace content
 
-#endif  // CONTET_COMMON_DEVTOOLS_DEVTOOLS_NETWORK_CONDITIONS_H_
+#endif  // CONTET_NETWORK_THROTTLING_NETWORK_CONDITIONS_H_

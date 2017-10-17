@@ -2,43 +2,43 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/devtools/devtools_network_upload_data_stream.h"
+#include "content/network/throttling/throttling_upload_data_stream.h"
 
 #include "net/base/net_errors.h"
 
 namespace content {
 
-DevToolsNetworkUploadDataStream::DevToolsNetworkUploadDataStream(
+ThrottlingUploadDataStream::ThrottlingUploadDataStream(
     net::UploadDataStream* upload_data_stream)
     : net::UploadDataStream(upload_data_stream->is_chunked(),
                             upload_data_stream->identifier()),
       throttle_callback_(
-          base::Bind(&DevToolsNetworkUploadDataStream::ThrottleCallback,
+          base::Bind(&ThrottlingUploadDataStream::ThrottleCallback,
                      base::Unretained(this))),
       throttled_byte_count_(0),
       upload_data_stream_(upload_data_stream) {}
 
-DevToolsNetworkUploadDataStream::~DevToolsNetworkUploadDataStream() {
+ThrottlingUploadDataStream::~ThrottlingUploadDataStream() {
   if (interceptor_)
     interceptor_->StopThrottle(throttle_callback_);
 }
 
-void DevToolsNetworkUploadDataStream::SetInterceptor(
-    DevToolsNetworkInterceptor* interceptor) {
+void ThrottlingUploadDataStream::SetInterceptor(
+    ThrottlingNetworkInterceptor* interceptor) {
   DCHECK(!interceptor_);
   if (interceptor)
     interceptor_ = interceptor->GetWeakPtr();
 }
 
-bool DevToolsNetworkUploadDataStream::IsInMemory() const {
+bool ThrottlingUploadDataStream::IsInMemory() const {
   return false;
 }
 
-int DevToolsNetworkUploadDataStream::InitInternal(
+int ThrottlingUploadDataStream::InitInternal(
     const net::NetLogWithSource& net_log) {
   throttled_byte_count_ = 0;
   int result = upload_data_stream_->Init(
-      base::Bind(&DevToolsNetworkUploadDataStream::StreamInitCallback,
+      base::Bind(&ThrottlingUploadDataStream::StreamInitCallback,
                  base::Unretained(this)),
       net_log);
   if (result == net::OK && !is_chunked())
@@ -46,28 +46,27 @@ int DevToolsNetworkUploadDataStream::InitInternal(
   return result;
 }
 
-void DevToolsNetworkUploadDataStream::StreamInitCallback(int result) {
+void ThrottlingUploadDataStream::StreamInitCallback(int result) {
   if (!is_chunked())
     SetSize(upload_data_stream_->size());
   OnInitCompleted(result);
 }
 
-int DevToolsNetworkUploadDataStream::ReadInternal(net::IOBuffer* buf,
-                                                  int buf_len) {
+int ThrottlingUploadDataStream::ReadInternal(net::IOBuffer* buf, int buf_len) {
   int result = upload_data_stream_->Read(
       buf, buf_len,
-      base::Bind(&DevToolsNetworkUploadDataStream::StreamReadCallback,
+      base::Bind(&ThrottlingUploadDataStream::StreamReadCallback,
                  base::Unretained(this)));
   return ThrottleRead(result);
 }
 
-void DevToolsNetworkUploadDataStream::StreamReadCallback(int result) {
+void ThrottlingUploadDataStream::StreamReadCallback(int result) {
   result = ThrottleRead(result);
   if (result != net::ERR_IO_PENDING)
     OnReadCompleted(result);
 }
 
-int DevToolsNetworkUploadDataStream::ThrottleRead(int result) {
+int ThrottlingUploadDataStream::ThrottleRead(int result) {
   if (is_chunked() && upload_data_stream_->IsEOF())
     SetIsFinalChunk();
 
@@ -81,13 +80,12 @@ int DevToolsNetworkUploadDataStream::ThrottleRead(int result) {
                                      throttle_callback_);
 }
 
-void DevToolsNetworkUploadDataStream::ThrottleCallback(int result,
-                                                       int64_t bytes) {
+void ThrottlingUploadDataStream::ThrottleCallback(int result, int64_t bytes) {
   throttled_byte_count_ = bytes;
   OnReadCompleted(result);
 }
 
-void DevToolsNetworkUploadDataStream::ResetInternal() {
+void ThrottlingUploadDataStream::ResetInternal() {
   upload_data_stream_->Reset();
   throttled_byte_count_ = 0;
   if (interceptor_)
