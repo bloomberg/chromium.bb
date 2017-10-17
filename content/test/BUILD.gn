@@ -1512,6 +1512,7 @@ test("content_unittests") {
     "../network/restricted_cookie_manager_impl_unittest.cc",
     "../network/throttling/throttling_controller_unittest.cc",
     "../network/url_loader_unittest.cc",
+    "../public/common/drop_data_unittest.cc",
     "../public/common/simple_url_loader_unittest.cc",
     "../public/common/url_utils_unittest.cc",
     "../public/test/referrer_unittest.cc",
