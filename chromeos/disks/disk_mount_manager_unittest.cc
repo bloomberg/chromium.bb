@@ -5,8 +5,9 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/bind.h"
-#include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
@@ -15,7 +16,6 @@
 #include "chromeos/disks/disk_mount_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::MakeUnique;
 using base::StringPrintf;
 using chromeos::disks::DiskMountManager;
 using chromeos::CrosDisksClient;
@@ -331,26 +331,28 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
   // Mock notify methods.
   void OnDeviceEvent(DiskMountManager::DeviceEvent event,
                      const std::string& device_path) override {
-    events_.push_back(MakeUnique<DeviceEvent>(event, device_path));
+    events_.push_back(std::make_unique<DeviceEvent>(event, device_path));
   }
 
   void OnDiskEvent(DiskMountManager::DiskEvent event,
                    const DiskMountManager::Disk* disk) override {
     // Take a snapshot (copy) of the Disk object at the time of invocation for
     // later verification.
-    events_.push_back(MakeUnique<DiskEvent>(event, *disk));
+    events_.push_back(std::make_unique<DiskEvent>(event, *disk));
   }
 
   void OnFormatEvent(DiskMountManager::FormatEvent event,
                      chromeos::FormatError error_code,
                      const std::string& device_path) override {
-    events_.push_back(MakeUnique<FormatEvent>(event, error_code, device_path));
+    events_.push_back(
+        std::make_unique<FormatEvent>(event, error_code, device_path));
   }
 
   void OnRenameEvent(DiskMountManager::RenameEvent event,
                      chromeos::RenameError error_code,
                      const std::string& device_path) override {
-    events_.push_back(MakeUnique<RenameEvent>(event, error_code, device_path));
+    events_.push_back(
+        std::make_unique<RenameEvent>(event, error_code, device_path));
   }
 
   void OnMountEvent(
@@ -359,7 +361,7 @@ class MockDiskMountManagerObserver : public DiskMountManager::Observer {
       const DiskMountManager::MountPointInfo& mount_point) override {
     // Take a snapshot (copy) of a Disk object at the time of invocation.
     // It can be verified later besides the arguments.
-    events_.push_back(MakeUnique<MountEvent>(
+    events_.push_back(std::make_unique<MountEvent>(
         event, error_code, mount_point,
         *manager_->disks().find(mount_point.source_path)->second));
   }
@@ -509,7 +511,7 @@ class DiskMountManagerTest : public testing::Test {
   // Adds a new disk to the disk mount manager.
   void AddTestDisk(const TestDiskInfo& disk) {
     EXPECT_TRUE(DiskMountManager::GetInstance()->AddDiskForTest(
-        base::MakeUnique<DiskMountManager::Disk>(
+        std::make_unique<DiskMountManager::Disk>(
             disk.source_path, disk.mount_path, disk.write_disabled_by_policy,
             disk.system_path, disk.file_path, disk.device_label,
             disk.drive_label, disk.vendor_id, disk.vendor_name, disk.product_id,
