@@ -53,6 +53,7 @@ class DefaultAudioDestinationHandler final : public AudioDestinationHandler {
   // AudioDestinationHandler
   void StartRendering() override;
   void StopRendering() override;
+  void RestartDestination() override;
   unsigned long MaxChannelCount() const override;
   // Returns the rendering callback buffer size.
   size_t CallbackBufferSize() const override;

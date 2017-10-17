@@ -1040,8 +1040,14 @@ void BaseAudioContext::SetWorkletMessagingProxy(
   DCHECK(!worklet_messaging_proxy_);
   worklet_messaging_proxy_ = proxy;
   has_worklet_messaging_proxy_ = true;
-  // TODO(hongchan): If the context was already running, stop the destination
-  // and restart the context with the worklet thread.
+
+  // If the context is running or suspended, restart the destination to switch
+  // the render thread with the worklet thread. Note that restarting can happen
+  // right after the context construction.
+  // TODO(hongchan): consider removing redundant restart.
+  if (ContextState() != kClosed) {
+    destination()->GetAudioDestinationHandler().RestartDestination();
+  }
 }
 
 AudioWorkletMessagingProxy* BaseAudioContext::WorkletMessagingProxy() {

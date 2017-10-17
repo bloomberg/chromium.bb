@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>
-      Test the construction of AudioWorkletNode
+      Test the construction of AudioWorkletNode with real-time context
     </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
@@ -15,14 +15,15 @@
       assertAudioWorklet();
 
       let audit = Audit.createTaskRunner();
-      let context = new AudioContext();
+
+      let realtimeContext = new AudioContext();
 
       // Test if an exception is thrown correctly when AWN constructor is
       // invoked before resolving |.addModule()| promise.
       audit.define(
           {label: 'construction-before-module-loading'},
           (task, should) => {
-            should(() => new AudioWorkletNode(context, 'dummy'),
+            should(() => new AudioWorkletNode(realtimeContext, 'dummy'),
                    'Creating a node before loading a module should throw.')
                 .throw('InvalidStateError');
 
@@ -36,11 +37,12 @@
           {label: 'construction-after-module-loading'},
           (task, should) => {
             audioWorklet.addModule('dummy-processor.js').then(() => {
-              let dummyWorkletNode = new AudioWorkletNode(context, 'dummy');
+              let dummyWorkletNode =
+                  new AudioWorkletNode(realtimeContext, 'dummy');
               should(dummyWorkletNode instanceof AudioWorkletNode,
                      '"dummyWorkletNode" is an instance of AudioWorkletNode')
                   .beTrue();
-              should(() => new AudioWorkletNode(context, 'foobar'),
+              should(() => new AudioWorkletNode(realtimeContext, 'foobar'),
                      'Unregistered name "foobar" must throw an exception.')
                   .throw();
               task.done();

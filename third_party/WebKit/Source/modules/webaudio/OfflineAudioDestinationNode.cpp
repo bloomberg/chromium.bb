@@ -381,6 +381,19 @@ WebThread* OfflineAudioDestinationHandler::GetRenderingThread() {
   return render_thread_.get();
 }
 
+void OfflineAudioDestinationHandler::RestartDestination() {
+  // If the worklet thread is not assigned yet, that means the context has
+  // started without a valid WorkletGlobalScope. Assign the worklet thread,
+  // and it will be picked up when the GetRenderingThread() is called next.
+  if (RuntimeEnabledFeatures::AudioWorkletEnabled() &&
+      Context()->HasWorkletMessagingProxy() &&
+      !worklet_backing_thread_) {
+    DCHECK(Context()->WorkletMessagingProxy()->GetWorkletBackingThread());
+    worklet_backing_thread_ =
+        Context()->WorkletMessagingProxy()->GetWorkletBackingThread();
+  }
+};
+
 // ----------------------------------------------------------------
 
 OfflineAudioDestinationNode::OfflineAudioDestinationNode(
