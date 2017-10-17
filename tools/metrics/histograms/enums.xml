@@ -23661,6 +23661,8 @@ from previous Chrome versions.
   <int value="-1426817842" label="BlockTabUnders:enabled"/>
   <int value="-1426034869" label="NoCreditCardAbort:enabled"/>
   <int value="-1419788257" label="enable-experimental-hotwording"/>
+  <int value="-1417122729"
+      label="AutofillCreditCardAblationExperiment:disabled"/>
   <int value="-1416754663" label="enable-mac-views-native-app-windows"/>
   <int value="-1416184931" label="TranslateRankerEnforcement:enabled"/>
   <int value="-1411003295" label="disable-encrypted-media"/>
@@ -24036,6 +24038,7 @@ from previous Chrome versions.
       label="CrossOriginMediaPlaybackRequiresUserGesture:disabled"/>
   <int value="-290672626" label="enable-asm-wasm"/>
   <int value="-288316828" label="enable-delegated-renderer"/>
+  <int value="-281844827" label="AutofillCreditCardAblationExperiment:enabled"/>
   <int value="-279920685" label="affiliation-based-matching:enabled"/>
   <int value="-279493876" label="WebVRExperimentalRendering:enabled"/>
   <int value="-278347667" label="default-tile-height"/>
