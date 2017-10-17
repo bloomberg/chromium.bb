@@ -3,16 +3,39 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
+#include "base/command_line.h"
+#include "base/feature_list.h"
+#include "base/message_loop/message_loop.h"
 #include "base/test/launcher/unit_test_launcher.h"
 #include "base/test/test_suite.h"
+#include "build/build_config.h"
+#include "ui/gl/init/gl_factory.h"
+
+static int RunHelper(base::TestSuite* test_suite) {
+#if defined(USE_OZONE)
+  base::MessageLoopForUI main_loop;
+#else
+  base::MessageLoopForIO message_loop;
+#endif
+  base::FeatureList::InitializeInstance(std::string(), std::string());
+
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  ALLOW_UNUSED_LOCAL(command_line);
+  CHECK(gl::init::InitializeGLOneOff());
+  return test_suite->Run();
+}
 
 int main(int argc, char** argv) {
   base::TestSuite test_suite(argc, argv);
+  base::CommandLine::Init(argc, argv);
+#if defined(OS_MACOSX)
+  base::mac::ScopedNSAutoreleasePool pool;
+#endif
 
   // Always run the perf tests serially, to avoid distorting
   // perf measurements with randomness resulting from running
   // in parallel.
   const auto& run_test_suite =
-      base::Bind(&base::TestSuite::Run, base::Unretained(&test_suite));
+      base::Bind(&RunHelper, base::Unretained(&test_suite));
   return base::LaunchUnitTestsSerially(argc, argv, run_test_suite);
 }
