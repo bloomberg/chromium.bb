@@ -5,6 +5,7 @@
 #include "content/browser/site_instance_impl.h"
 
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/browsing_instance.h"
@@ -539,6 +540,10 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
           HAS_WRONG_LOCK:
         // We should never attempt to reassign a different origin lock to a
         // process.
+        base::debug::SetCrashKeyValue("requested_site_url", site_.spec());
+        base::debug::SetCrashKeyValue(
+            "killed_process_origin_lock",
+            policy->GetOriginLock(process_->GetID()).spec());
         CHECK(false) << "Trying to lock a process to " << site_
                      << " but the process is already locked to "
                      << policy->GetOriginLock(process_->GetID());
@@ -555,6 +560,10 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
     // If the site that we've just committed doesn't require a dedicated
     // process, make sure we aren't putting it in a process for a site that
     // does.
+    base::debug::SetCrashKeyValue("requested_site_url", site_.spec());
+    base::debug::SetCrashKeyValue(
+        "killed_process_origin_lock",
+        policy->GetOriginLock(process_->GetID()).spec());
     CHECK_EQ(lock_state,
              ChildProcessSecurityPolicyImpl::CheckOriginLockResult::NO_LOCK)
         << "Trying to commit non-isolated site " << site_
