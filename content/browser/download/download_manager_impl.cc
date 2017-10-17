@@ -594,14 +594,9 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
 void DownloadManagerImpl::ResumeInterruptedDownload(
     std::unique_ptr<content::DownloadUrlParameters> params,
     uint32_t id) {
-  BrowserThread::PostTaskAndReplyWithResult(
-      BrowserThread::IO, FROM_HERE,
-      base::Bind(&BeginDownload, base::Passed(&params),
-                 browser_context_->GetResourceContext(), id,
-                 weak_factory_.GetWeakPtr()),
-      base::Bind(&DownloadManagerImpl::AddUrlDownloadHandler,
-                 weak_factory_.GetWeakPtr()));
+  BeginDownloadInternal(std::move(params), id);
 }
+
 
 void DownloadManagerImpl::SetDownloadItemFactoryForTesting(
     std::unique_ptr<DownloadItemFactory> item_factory) {
@@ -731,34 +726,7 @@ void DownloadManagerImpl::DownloadUrl(
     DCHECK_EQ("POST", params->method());
   }
 
-  // TODO(qinmin): remove false from the if statement once download works when
-  // network service is enabled, or once we disable the tests that are currently
-  // passing with the URLRequest code path.
-  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
-    std::unique_ptr<ResourceRequest> request = CreateResourceRequest(
-        params.get());
-    StoragePartitionImpl* storage_partition =
-        GetStoragePartition(browser_context_, params->render_process_host_id(),
-                            params->render_frame_host_routing_id());
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(
-            &BeginResourceDownload, std::move(params), std::move(request),
-            storage_partition->url_loader_factory_getter(),
-            base::WrapRefCounted(storage_partition->GetFileSystemContext()),
-            content::DownloadItem::kInvalidId, weak_factory_.GetWeakPtr()),
-        base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
-                       weak_factory_.GetWeakPtr()));
-  } else {
-    BrowserThread::PostTaskAndReplyWithResult(
-        BrowserThread::IO, FROM_HERE,
-        base::BindOnce(&BeginDownload, std::move(params),
-                       browser_context_->GetResourceContext(),
-                       content::DownloadItem::kInvalidId,
-                       weak_factory_.GetWeakPtr()),
-        base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
-                       weak_factory_.GetWeakPtr()));
-  }
+  BeginDownloadInternal(std::move(params), content::DownloadItem::kInvalidId);
 }
 
 void DownloadManagerImpl::AddObserver(Observer* observer) {
@@ -901,6 +869,35 @@ void DownloadManagerImpl::OpenDownload(DownloadItemImpl* download) {
 void DownloadManagerImpl::ShowDownloadInShell(DownloadItemImpl* download) {
   if (delegate_)
     delegate_->ShowDownloadInShell(download);
+}
+
+void DownloadManagerImpl::BeginDownloadInternal(
+    std::unique_ptr<content::DownloadUrlParameters> params,
+    uint32_t id) {
+  if (base::FeatureList::IsEnabled(features::kNetworkService)) {
+    std::unique_ptr<ResourceRequest> request = CreateResourceRequest(
+        params.get());
+    StoragePartitionImpl* storage_partition =
+        GetStoragePartition(browser_context_, params->render_process_host_id(),
+                            params->render_frame_host_routing_id());
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(
+            &BeginResourceDownload, std::move(params), std::move(request),
+            storage_partition->url_loader_factory_getter(),
+             base::WrapRefCounted(storage_partition->GetFileSystemContext()),
+             id, weak_factory_.GetWeakPtr()),
+        base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
+                       weak_factory_.GetWeakPtr()));
+  } else {
+    BrowserThread::PostTaskAndReplyWithResult(
+        BrowserThread::IO, FROM_HERE,
+        base::BindOnce(&BeginDownload, std::move(params),
+                       browser_context_->GetResourceContext(), id,
+                       weak_factory_.GetWeakPtr()),
+         base::BindOnce(&DownloadManagerImpl::AddUrlDownloadHandler,
+                        weak_factory_.GetWeakPtr()));
+   }
 }
 
 }  // namespace content

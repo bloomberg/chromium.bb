@@ -211,6 +211,11 @@ class CONTENT_EXPORT DownloadManagerImpl : public DownloadManager,
 
   void AddUrlDownloadHandler(UniqueUrlDownloadHandlerPtr downloader);
 
+  // Helper method to start or resume a download.
+  void BeginDownloadInternal(
+      std::unique_ptr<content::DownloadUrlParameters> params,
+      uint32_t id);
+
   // Factory for creation of downloads items.
   std::unique_ptr<DownloadItemFactory> item_factory_;
 
