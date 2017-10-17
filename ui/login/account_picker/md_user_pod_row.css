@@ -726,6 +726,12 @@ html[dir=rtl] .user-type-icon-area {
   padding-bottom: 19px;
 }
 
+.action-box-remove-non-owner-user-warning-text span.email {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .total-count {
   font-weight: bold;
 }
