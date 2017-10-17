@@ -8,6 +8,7 @@
 #include <X11/Xlib.h>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "components/viz/service/display/software_output_device.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/x/x11_types.h"
@@ -27,6 +28,7 @@ class SoftwareOutputDeviceX11 : public viz::SoftwareOutputDevice {
   XDisplay* display_;
   GC gc_;
   XWindowAttributes attributes_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceX11);
 };
