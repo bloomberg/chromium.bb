@@ -213,6 +213,7 @@ const CGFloat kMDCloseButtonSize = 24;
 
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [[self animatableView] setResizeDelegate:resizeDelegate_];
+  [[self animatableView] setDelegate:self];
   if (!base::FeatureList::IsEnabled(
           features::kMacMaterialDesignDownloadShelf)) {
     [[self view] setPostsFrameChangedNotifications:YES];
@@ -235,6 +236,7 @@ const CGFloat kMDCloseButtonSize = 24;
 
 - (void)dealloc {
   [[self animatableView] setResizeDelegate:nil];
+  [[self animatableView] setDelegate:nil];
   [self browserWillBeDestroyed];
   [super dealloc];
 }
@@ -371,6 +373,8 @@ const CGFloat kMDCloseButtonSize = 24;
   if (![self isVisible]) {
     [self closed];
     [[self view] setHidden:YES];  // So that it doesn't appear in AX hierarchy.
+    NSAccessibilityPostNotification([self view],
+                                    NSAccessibilityLayoutChangedNotification);
   }
 }
 
