@@ -1348,8 +1348,8 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
       ->UpdateControlVisibility(app_list_state_, is_in_drag_);
 }
 
-int AppListView::GetWorkAreaBottom() {
-  return fullscreen_widget_->GetWorkAreaBoundsInScreen().bottom();
+int AppListView::GetScreenBottom() {
+  return GetDisplayNearestView().bounds().bottom();
 }
 
 void AppListView::DraggingLayout() {
@@ -1453,7 +1453,8 @@ void AppListView::OnDisplayMetricsChanged(const display::Display& display,
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   float top_of_applist = fullscreen_widget_->GetWindowBoundsInScreen().y();
-  float dragging_height = std::max((GetWorkAreaBottom() - top_of_applist), 0.f);
+  float dragging_height =
+      std::max((GetScreenBottom() - kShelfSize - top_of_applist), 0.f);
   float coefficient =
       std::min(dragging_height / (kNumOfShelfSize * kShelfSize), 1.0f);
   float shield_opacity =

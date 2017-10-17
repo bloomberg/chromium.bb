@@ -198,8 +198,8 @@ class APP_LIST_EXPORT AppListView : public views::BubbleDialogDelegateView,
   // screen coordinates.
   gfx::Rect GetAppInfoDialogBounds() const;
 
-  // Gets current work area bottom.
-  int GetWorkAreaBottom();
+  // Gets current screen bottom.
+  int GetScreenBottom();
 
   views::Widget* get_fullscreen_widget_for_test() const {
     return fullscreen_widget_;
