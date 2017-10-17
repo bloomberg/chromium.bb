@@ -297,9 +297,16 @@ struct MostVisitedURL {
   MostVisitedURL(const GURL& url,
                  const base::string16& title,
                  base::Time last_forced_time = base::Time());
+  MostVisitedURL(const GURL& url,
+                 const base::string16& title,
+                 const RedirectList& preceding_redirects);
   MostVisitedURL(const MostVisitedURL& other);
   MostVisitedURL(MostVisitedURL&& other) noexcept;
   ~MostVisitedURL();
+
+  // Initializes |redirects| from |preceding_redirects|, ensuring that |url| is
+  // always present as the last item.
+  void InitRedirects(const RedirectList& preceding_redirects);
 
   GURL url;
   base::string16 title;

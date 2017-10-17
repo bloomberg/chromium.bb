@@ -31,6 +31,7 @@
 #include "components/history/core/browser/page_usage_data.h"
 #include "components/history/core/browser/top_sites_cache.h"
 #include "components/history/core/browser/top_sites_observer.h"
+#include "components/history/core/browser/top_sites_provider.h"
 #include "components/history/core/browser/url_utils.h"
 #include "components/history/core/common/thumbnail_score.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -84,8 +85,6 @@ bool DoTitlesDiffer(const MostVisitedURLList& old_list,
 // temp_images_ for details.
 const size_t kMaxTempTopImages = 8;
 
-const int kDaysOfHistory = 90;
-
 // The delay for the first HistoryService query at startup.
 constexpr base::TimeDelta kFirstDelayAtStartup =
     base::TimeDelta::FromSeconds(15);
@@ -115,6 +114,7 @@ bool TopSitesImpl::histogram_recorded_ = false;
 
 TopSitesImpl::TopSitesImpl(PrefService* pref_service,
                            HistoryService* history_service,
+                           std::unique_ptr<TopSitesProvider> provider,
                            const PrepopulatedPageList& prepopulated_pages,
                            const CanAddURLToHistoryFn& can_add_url_to_history)
     : backend_(nullptr),
@@ -123,11 +123,13 @@ TopSitesImpl::TopSitesImpl(PrefService* pref_service,
       prepopulated_pages_(prepopulated_pages),
       pref_service_(pref_service),
       history_service_(history_service),
+      provider_(std::move(provider)),
       can_add_url_to_history_(can_add_url_to_history),
       loaded_(false),
       history_service_observer_(this) {
   DCHECK(pref_service_);
   DCHECK(!can_add_url_to_history_.is_null());
+  DCHECK(provider_);
 }
 
 void TopSitesImpl::Init(const base::FilePath& db_name) {
@@ -413,8 +415,8 @@ void TopSitesImpl::StartQueryForMostVisited() {
   if (!history_service_)
     return;
 
-  history_service_->QueryMostVisitedURLs(
-      num_results_to_request_from_history(), kDaysOfHistory,
+  provider_->ProvideTopSites(
+      num_results_to_request_from_history(),
       base::Bind(&TopSitesImpl::OnTopSitesAvailableFromHistory,
                  base::Unretained(this)),
       &cancelable_task_tracker_);
