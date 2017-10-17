@@ -20,10 +20,8 @@ constexpr int kAddressNormalizationTimeoutSeconds = 5;
 
 AddressNormalizationManager::AddressNormalizationManager(
     AddressNormalizer* address_normalizer,
-    const std::string& default_country_code)
-    : default_country_code_(default_country_code),
-      address_normalizer_(address_normalizer) {
-  DCHECK(autofill::data_util::IsValidCountryCode(default_country_code));
+    const std::string& app_locale)
+    : app_locale_(app_locale), address_normalizer_(address_normalizer) {
   DCHECK(address_normalizer_);
 }
 
@@ -74,11 +72,9 @@ AddressNormalizationManager::NormalizerDelegate::NormalizerDelegate(
   DCHECK(owner_);
   DCHECK(profile_);
 
-  std::string country_code =
-      base::UTF16ToUTF8(profile_->GetRawInfo(ADDRESS_HOME_COUNTRY));
-  if (!autofill::data_util::IsValidCountryCode(country_code))
-    country_code = owner_->default_country_code_;
-
+  const std::string country_code =
+      autofill::data_util::GetCountryCodeWithFallback(*profile_,
+                                                      owner->app_locale_);
   address_normalizer->StartAddressNormalization(
       *profile_, country_code, kAddressNormalizationTimeoutSeconds, this);
 }

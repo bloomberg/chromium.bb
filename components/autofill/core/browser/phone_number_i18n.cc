@@ -271,17 +271,15 @@ base::string16 GetFormattedPhoneNumberForDisplay(const AutofillProfile& profile,
 
   // Always favor the tentative international phone number if it's determined as
   // being a valid number.
-  if (IsValidPhoneNumber(
-          base::UTF8ToUTF16(tentative_intl_phone),
-          autofill::data_util::GetCountryCodeWithFallback(&profile, locale))) {
-    return base::UTF8ToUTF16(FormatPhoneForDisplay(
-        tentative_intl_phone,
-        autofill::data_util::GetCountryCodeWithFallback(&profile, locale)));
+  const std::string country_code =
+      autofill::data_util::GetCountryCodeWithFallback(profile, locale);
+  if (IsValidPhoneNumber(base::UTF8ToUTF16(tentative_intl_phone),
+                         country_code)) {
+    return base::UTF8ToUTF16(
+        FormatPhoneForDisplay(tentative_intl_phone, country_code));
   }
 
-  return base::UTF8ToUTF16(FormatPhoneForDisplay(
-      phone,
-      autofill::data_util::GetCountryCodeWithFallback(&profile, locale)));
+  return base::UTF8ToUTF16(FormatPhoneForDisplay(phone, country_code));
 }
 
 std::string FormatPhoneForDisplay(const std::string& phone_number,

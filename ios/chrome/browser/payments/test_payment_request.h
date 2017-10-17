@@ -47,7 +47,7 @@ class TestPaymentRequest : public PaymentRequest {
                        web_state,
                        personal_data_manager,
                        payment_request_ui_delegate),
-        address_normalization_manager_(&address_normalizer_, "US"),
+        address_normalization_manager_(&address_normalizer_, "en-US"),
         region_data_loader_(nullptr),
         pref_service_(nullptr),
         profile_comparator_(nullptr) {}

@@ -444,10 +444,10 @@ bool IsValidCountryCode(const base::string16& country_code) {
   return IsValidCountryCode(base::UTF16ToUTF8(country_code));
 }
 
-std::string GetCountryCodeWithFallback(const autofill::AutofillProfile* profile,
+std::string GetCountryCodeWithFallback(const autofill::AutofillProfile& profile,
                                        const std::string& app_locale) {
   std::string country_code =
-      base::UTF16ToUTF8(profile->GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
+      base::UTF16ToUTF8(profile.GetRawInfo(autofill::ADDRESS_HOME_COUNTRY));
   if (!IsValidCountryCode(country_code))
     country_code = AutofillCountry::CountryCodeForLocale(app_locale);
   return country_code;

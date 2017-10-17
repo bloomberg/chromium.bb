@@ -17,9 +17,9 @@ class AddressNormalizationManagerTest : public testing::Test {
  protected:
   AddressNormalizationManagerTest() {}
 
-  void Initialize(const std::string& country_code) {
+  void Initialize(const std::string& app_locale) {
     manager_ = std::make_unique<AddressNormalizationManager>(
-        &address_normalizer_, country_code);
+        &address_normalizer_, app_locale);
   }
 
   void Finalize() {
@@ -36,7 +36,7 @@ class AddressNormalizationManagerTest : public testing::Test {
 };
 
 TEST_F(AddressNormalizationManagerTest, SynchronousResult) {
-  Initialize("US");
+  Initialize("en-US");
 
   AutofillProfile profile_to_normalize;
   manager_->StartNormalizingAddress(&profile_to_normalize);
@@ -47,7 +47,7 @@ TEST_F(AddressNormalizationManagerTest, SynchronousResult) {
 }
 
 TEST_F(AddressNormalizationManagerTest, AsynchronousResult) {
-  Initialize("US");
+  Initialize("en-US");
   address_normalizer_.DelayNormalization();
 
   AutofillProfile profile_to_normalize;
