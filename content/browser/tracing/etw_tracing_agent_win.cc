@@ -91,8 +91,7 @@ void EtwTracingAgent::StartTracing(
 }
 
 void EtwTracingAgent::StopAndFlush(tracing::mojom::RecorderPtr recorder) {
-  if (!is_tracing_)
-    return;
+  DCHECK(is_tracing_);
   // Deactivate kernel tracing.
   if (!StopKernelSessionTracing()) {
     LOG(FATAL) << "Could not stop system tracing.";

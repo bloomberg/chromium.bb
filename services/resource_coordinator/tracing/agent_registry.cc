@@ -29,7 +29,8 @@ AgentRegistry::AgentEntry::AgentEntry(size_t id,
       agent_(std::move(agent)),
       label_(label),
       type_(type),
-      supports_explicit_clock_sync_(supports_explicit_clock_sync) {
+      supports_explicit_clock_sync_(supports_explicit_clock_sync),
+      is_tracing_(false) {
   DCHECK(!label.empty());
   agent_.set_connection_error_handler(base::BindRepeating(
       &AgentRegistry::AgentEntry::OnConnectionError, base::Unretained(this)));
