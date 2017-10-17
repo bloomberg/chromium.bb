@@ -439,18 +439,6 @@ const base::Feature kWebVrVsyncAlign{"WebVrVsyncAlign",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
-#if defined(OS_WIN)
-// Emergency "off switch" for new Windows sandbox security mitigation,
-// sandbox::MITIGATION_EXTENSION_POINT_DISABLE.
-const base::Feature kWinSboxDisableExtensionPoints{
-    "WinSboxDisableExtensionPoint", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Emergency "off switch" for new Windows sandbox security mitigation,
-// sandbox::MITIGATION_FORCE_MS_SIGNED_BINS.
-const base::Feature kWinSboxForceMsSigned{"WinSboxForceMsSigned",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_WIN)
-
 #if defined(OS_MACOSX)
 // Enables caching of media devices for the purpose of enumerating them.
 const base::Feature kDeviceMonitorMac{"DeviceMonitorMac",

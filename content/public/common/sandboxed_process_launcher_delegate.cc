@@ -9,10 +9,6 @@
 namespace content {
 
 #if defined(OS_WIN)
-bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
-  return false;
-}
-
 bool SandboxedProcessLauncherDelegate::DisableDefaultPolicy() {
   return false;
 }
@@ -20,6 +16,13 @@ bool SandboxedProcessLauncherDelegate::DisableDefaultPolicy() {
 bool SandboxedProcessLauncherDelegate::PreSpawnTarget(
     sandbox::TargetPolicy* policy) {
   return true;
+}
+
+void SandboxedProcessLauncherDelegate::PostSpawnTarget(
+    base::ProcessHandle process) {}
+
+bool SandboxedProcessLauncherDelegate::ShouldLaunchElevated() {
+  return false;
 }
 
 #elif(OS_POSIX)

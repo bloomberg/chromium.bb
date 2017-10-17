@@ -20,6 +20,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_features.h"
+#include "services/service_manager/sandbox/features.h"
 
 const char kBrowserBlacklistTrialName[] = "BrowserBlacklist";
 const char kBrowserBlacklistTrialDisabledGroupName[] = "NoBlacklist";
@@ -126,7 +127,8 @@ void InitializeChromeElf() {
   base::win::RegKey finch_security_registry_key(HKEY_CURRENT_USER,
                                                 finch_path.c_str(), KEY_READ);
 
-  if (base::FeatureList::IsEnabled(features::kWinSboxDisableExtensionPoints)) {
+  if (base::FeatureList::IsEnabled(
+          service_manager::features::kWinSboxDisableExtensionPoints)) {
     if (finch_security_registry_key.Valid())
       finch_security_registry_key.DeleteKey(L"");
   } else {

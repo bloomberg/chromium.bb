@@ -88,19 +88,6 @@ bool IsPinchToZoomEnabled() {
   return !command_line.HasSwitch(switches::kDisablePinch);
 }
 
-#if defined(OS_WIN)
-
-bool IsWin32kLockdownEnabled() {
-  if (base::win::GetVersion() < base::win::VERSION_WIN8)
-    return false;
-  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kDisableWin32kLockDown))
-    return false;
-  return true;
-}
-
-#endif
-
 V8CacheOptions GetV8CacheOptions() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();

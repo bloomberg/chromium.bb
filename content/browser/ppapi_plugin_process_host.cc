@@ -36,6 +36,7 @@
 #include "net/base/network_change_notifier.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_POSIX)
@@ -88,7 +89,7 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 #if !defined(NACL_WIN64)
     // We don't support PPAPI win32k lockdown prior to Windows 10.
     if (base::win::GetVersion() >= base::win::VERSION_WIN10 &&
-        IsWin32kLockdownEnabled()) {
+        service_manager::IsWin32kLockdownEnabled()) {
       result = AddWin32kLockdownPolicy(policy, true);
       if (result != sandbox::SBOX_ALL_OK)
         return false;

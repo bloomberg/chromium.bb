@@ -5,6 +5,7 @@
 component("sandbox") {
   sources = [
     "export.h",
+    "sandbox_delegate.h",
     "sandbox_type.cc",
     "sandbox_type.h",
     "switches.cc",
@@ -33,6 +34,12 @@ component("sandbox") {
       "CoreGraphics.framework",
       "Foundation.framework",
       "IOSurface.framework",
+    ]
+  }
+  if (is_win) {
+    sources += [
+      "features.cc",
+      "features.h",
     ]
   }
 }
