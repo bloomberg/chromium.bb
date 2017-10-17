@@ -663,13 +663,24 @@ INSTANTIATE_TEST_CASE_P(DiceTable,
                         AccountReconcilorTestDice,
                         ::testing::ValuesIn(kDiceParams));
 
-// Tests that the AccountReconcilor is enabled when Dice is enabled.
-TEST_F(AccountReconcilorTest, EnabledWithDice) {
+// Tests that the AccountReconcilor is always registered.
+TEST_F(AccountReconcilorTest, DiceTokenServiceRegistration) {
   signin::ScopedAccountConsistencyDice scoped_dice;
-  ASSERT_TRUE(signin::IsAccountConsistencyDiceEnabled());
   AccountReconcilor* reconcilor =
       AccountReconcilorFactory::GetForProfile(profile());
   ASSERT_TRUE(reconcilor);
+  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+
+  account_tracker()->SeedAccountInfo("12345", "user@gmail.com");
+  signin_manager()->SignIn("12345", "user@gmail.com", "password");
+  ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
+
+  // Reconcilor should not logout all accounts from the cookies when
+  // SigninManager signs out.
+  EXPECT_CALL(*GetMockReconcilor(), PerformLogoutAllAccountsAction()).Times(0);
+
+  signin_manager()->SignOut(signin_metrics::SIGNOUT_TEST,
+                            signin_metrics::SignoutDelete::IGNORE_METRIC);
   ASSERT_TRUE(reconcilor->IsRegisteredWithTokenService());
 }
 

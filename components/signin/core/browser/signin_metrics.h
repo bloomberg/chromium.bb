@@ -221,7 +221,7 @@ enum CrossDevicePromoInitialized {
 // histogram, which records the state of the AccountReconcilor when GAIA returns
 // a specific response.
 enum AccountReconcilorState {
-  // The AccountReconcilor has finished running ans is up to date.
+  // The AccountReconcilor has finished running and is up to date.
   ACCOUNT_RECONCILOR_OK,
   // The AccountReconcilor is running and gathering information.
   ACCOUNT_RECONCILOR_RUNNING,
