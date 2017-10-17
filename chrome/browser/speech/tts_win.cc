@@ -7,6 +7,7 @@
 #include <sapi.h>
 #include <sphelper.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include "base/macros.h"
 #include "base/memory/singleton.h"
@@ -15,7 +16,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 #include "base/win/scoped_co_mem.h"
-#include "base/win/scoped_comptr.h"
 #include "chrome/browser/speech/tts_controller.h"
 #include "chrome/browser/speech/tts_platform.h"
 
@@ -64,7 +64,7 @@ class TtsPlatformImplWin : public TtsPlatformImpl {
 
   void SetVoiceFromName(const std::string& name);
 
-  base::win::ScopedComPtr<ISpVoice> speech_synthesizer_;
+  Microsoft::WRL::ComPtr<ISpVoice> speech_synthesizer_;
 
   // These apply to the current utterance only.
   std::wstring utterance_;
@@ -190,7 +190,7 @@ bool TtsPlatformImplWin::IsSpeaking() {
 
 void TtsPlatformImplWin::GetVoices(
     std::vector<VoiceData>* out_voices) {
-  base::win::ScopedComPtr<IEnumSpObjectTokens> voice_tokens;
+  Microsoft::WRL::ComPtr<IEnumSpObjectTokens> voice_tokens;
   unsigned long voice_count;
   if (S_OK !=
       SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.GetAddressOf()))
@@ -201,7 +201,7 @@ void TtsPlatformImplWin::GetVoices(
   for (unsigned i = 0; i < voice_count; i++) {
     VoiceData voice;
 
-    base::win::ScopedComPtr<ISpObjectToken> voice_token;
+    Microsoft::WRL::ComPtr<ISpObjectToken> voice_token;
     if (S_OK != voice_tokens->Next(1, voice_token.GetAddressOf(), NULL))
       return;
 
@@ -210,7 +210,7 @@ void TtsPlatformImplWin::GetVoices(
       continue;
     voice.name = base::WideToUTF8(description.get());
 
-    base::win::ScopedComPtr<ISpDataKey> attributes;
+    Microsoft::WRL::ComPtr<ISpDataKey> attributes;
     if (S_OK != voice_token->OpenKey(kAttributesKey, attributes.GetAddressOf()))
       continue;
 
@@ -289,7 +289,7 @@ void TtsPlatformImplWin::SetVoiceFromName(const std::string& name) {
 
   last_voice_name_ = name;
 
-  base::win::ScopedComPtr<IEnumSpObjectTokens> voice_tokens;
+  Microsoft::WRL::ComPtr<IEnumSpObjectTokens> voice_tokens;
   unsigned long voice_count;
   if (S_OK !=
       SpEnumTokens(SPCAT_VOICES, NULL, NULL, voice_tokens.GetAddressOf()))
@@ -298,7 +298,7 @@ void TtsPlatformImplWin::SetVoiceFromName(const std::string& name) {
     return;
 
   for (unsigned i = 0; i < voice_count; i++) {
-    base::win::ScopedComPtr<ISpObjectToken> voice_token;
+    Microsoft::WRL::ComPtr<ISpObjectToken> voice_token;
     if (S_OK != voice_tokens->Next(1, voice_token.GetAddressOf(), NULL))
       return;
 

@@ -13,6 +13,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <urlhist.h>
+#include <wrl/client.h>
 
 #include <algorithm>
 #include <vector>
@@ -29,7 +30,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_propvariant.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/importer/external_process_importer_host.h"
@@ -169,13 +169,13 @@ bool CreateOrderBlob(const base::FilePath& favorites_folder,
 bool CreateUrlFileWithFavicon(const base::FilePath& file,
                               const base::string16& url,
                               const base::string16& favicon_url) {
-  base::win::ScopedComPtr<IUniformResourceLocator> locator;
+  Microsoft::WRL::ComPtr<IUniformResourceLocator> locator;
   HRESULT result =
       ::CoCreateInstance(CLSID_InternetShortcut, NULL, CLSCTX_INPROC_SERVER,
                          IID_PPV_ARGS(&locator));
   if (FAILED(result))
     return false;
-  base::win::ScopedComPtr<IPersistFile> persist_file;
+  Microsoft::WRL::ComPtr<IPersistFile> persist_file;
   result = locator.CopyTo(persist_file.GetAddressOf());
   if (FAILED(result))
     return false;
@@ -185,10 +185,10 @@ bool CreateUrlFileWithFavicon(const base::FilePath& file,
 
   // Write favicon url if specified.
   if (!favicon_url.empty()) {
-    base::win::ScopedComPtr<IPropertySetStorage> property_set_storage;
+    Microsoft::WRL::ComPtr<IPropertySetStorage> property_set_storage;
     if (FAILED(locator.CopyTo(property_set_storage.GetAddressOf())))
       return false;
-    base::win::ScopedComPtr<IPropertyStorage> property_storage;
+    Microsoft::WRL::ComPtr<IPropertyStorage> property_storage;
     if (FAILED(property_set_storage->Open(FMTID_Intshcut, STGM_WRITE,
                                           property_storage.GetAddressOf()))) {
       return false;
@@ -488,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(IEImporterBrowserTest, IEImporter) {
                                   root_links + arraysize(root_links))));
 
   // Sets up a special history link.
-  base::win::ScopedComPtr<IUrlHistoryStg2> url_history_stg2;
+  Microsoft::WRL::ComPtr<IUrlHistoryStg2> url_history_stg2;
   ASSERT_EQ(S_OK,
             ::CoCreateInstance(CLSID_CUrlHistory, NULL, CLSCTX_INPROC_SERVER,
                                IID_PPV_ARGS(&url_history_stg2)));

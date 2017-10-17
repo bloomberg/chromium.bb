@@ -5,9 +5,10 @@
 #ifndef CHROME_BROWSER_MEDIA_GALLERIES_WIN_SNAPSHOT_FILE_DETAILS_H_
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_SNAPSHOT_FILE_DETAILS_H_
 
+#include <wrl/client.h>
+
 #include "base/files/file.h"
 #include "base/files/file_path.h"
-#include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 
 // Structure used to represent snapshot file request params.
@@ -83,7 +84,7 @@ class SnapshotFileDetails {
   base::File::Info file_info_;
 
   // Used to read the device file contents.
-  base::win::ScopedComPtr<IStream> file_stream_;
+  Microsoft::WRL::ComPtr<IStream> file_stream_;
 
   // The number of bytes of data to read from the |file_stream| object
   // during each IStream::Read() operation.

@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <atlbase.h>
 #include <atlcom.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -24,7 +25,6 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
 #include "base/win/registry.h"
-#include "base/win/scoped_comptr.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/install_static/test/scoped_install_details.h"
 #include "chrome/installer/util/google_update_settings.h"
@@ -75,7 +75,7 @@ class GoogleUpdateFactory {
  public:
   virtual ~GoogleUpdateFactory() {}
   virtual HRESULT Create(
-      base::win::ScopedComPtr<IGoogleUpdate3Web>* google_update) = 0;
+      Microsoft::WRL::ComPtr<IGoogleUpdate3Web>* google_update) = 0;
 };
 
 class MockCurrentState : public CComObjectRootEx<CComSingleThreadModel>,
@@ -489,7 +489,7 @@ class MockGoogleUpdate : public CComObjectRootEx<CComSingleThreadModel>,
 class MockGoogleUpdateFactory : public GoogleUpdateFactory {
  public:
   MockGoogleUpdateFactory() {}
-  MOCK_METHOD1(Create, HRESULT(base::win::ScopedComPtr<IGoogleUpdate3Web>*));
+  MOCK_METHOD1(Create, HRESULT(Microsoft::WRL::ComPtr<IGoogleUpdate3Web>*));
 
   // Returns a mock IGoogleUpdate3Web object that will be returned by the
   // factory.

@@ -5,11 +5,11 @@
 #include "chrome/browser/download/trusted_sources_manager.h"
 
 #include <urlmon.h>
+#include <wrl/client.h>
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/scoped_comptr.h"
 #include "url/gurl.h"
 
 namespace {
@@ -27,7 +27,7 @@ TrustedSourcesManagerWin::TrustedSourcesManagerWin() = default;
 TrustedSourcesManagerWin::~TrustedSourcesManagerWin() = default;
 
 bool TrustedSourcesManagerWin::IsFromTrustedSource(const GURL& url) const {
-  base::win::ScopedComPtr<IInternetSecurityManager> security_manager;
+  Microsoft::WRL::ComPtr<IInternetSecurityManager> security_manager;
   HRESULT hr = ::CoInternetCreateSecurityManager(
       NULL, security_manager.GetAddressOf(), NULL);
   // URLZONE_LOCAL_MACHINE 0

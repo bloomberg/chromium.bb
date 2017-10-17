@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_MEDIA_GALLERIES_WIN_MTP_DEVICE_DELEGATE_IMPL_WIN_H_
 
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -16,7 +17,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
-#include "base/win/scoped_comptr.h"
 #include "chrome/browser/media_galleries/fileapi/mtp_device_async_delegate.h"
 #include "storage/browser/fileapi/async_file_util.h"
 

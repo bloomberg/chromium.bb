@@ -8,6 +8,7 @@
 #include <windows.h>
 #include <shobjidl.h>
 #include <stddef.h>
+#include <wrl/client.h>
 
 #include <string>
 #include <vector>
@@ -15,7 +16,6 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/win/scoped_comptr.h"
 #include "ui/gfx/image/image_skia.h"
 
 // Represents a class used for creating an IShellLink object.
@@ -131,7 +131,7 @@ class JumpListUpdater {
   base::string16 app_user_model_id_;
 
   // Windows API interface used to modify JumpLists.
-  base::win::ScopedComPtr<ICustomDestinationList> destination_list_;
+  Microsoft::WRL::ComPtr<ICustomDestinationList> destination_list_;
 
   // The current user setting for "Number of recent items to display in Jump
   // Lists" option in the "Taskbar and Start Menu Properties".

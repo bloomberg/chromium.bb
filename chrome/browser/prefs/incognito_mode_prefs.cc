@@ -25,10 +25,10 @@
 #include <windows.h>
 #include <objbase.h>
 #include <wpcapi.h>
+#include <wrl/client.h>
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/memory/singleton.h"
-#include "base/win/scoped_comptr.h"
 #endif  // OS_WIN
 
 #if defined(OS_ANDROID)
@@ -97,13 +97,13 @@ class PlatformParentalControlsValue {
   // Does the work of determining if Windows Parental control activity logging
   // is enabled.
   static bool IsParentalControlActivityLoggingOnImpl() {
-    base::win::ScopedComPtr<IWindowsParentalControlsCore> parent_controls;
+    Microsoft::WRL::ComPtr<IWindowsParentalControlsCore> parent_controls;
     HRESULT hr = ::CoCreateInstance(__uuidof(WindowsParentalControls), nullptr,
                                     CLSCTX_ALL, IID_PPV_ARGS(&parent_controls));
     if (FAILED(hr))
       return false;
 
-    base::win::ScopedComPtr<IWPCSettings> settings;
+    Microsoft::WRL::ComPtr<IWPCSettings> settings;
     hr = parent_controls->GetUserSettings(nullptr, settings.GetAddressOf());
     if (FAILED(hr))
       return false;

@@ -13,6 +13,7 @@
 #include <objbase.h>
 #include <shlobj.h>
 #include <shobjidl.h>
+#include <wrl/client.h>
 
 #include <algorithm>
 #include <iterator>
@@ -45,7 +46,6 @@
 #include "base/values.h"
 #include "base/win/registry.h"
 #include "base/win/scoped_co_mem.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/shortcut.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
@@ -763,7 +763,7 @@ bool LaunchDefaultAppsSettingsModernDialog(const wchar_t* protocol) {
       L"windows.immersivecontrolpanel_cw5n1h2txyewy"
       L"!microsoft.windows.immersivecontrolpanel";
 
-  base::win::ScopedComPtr<IApplicationActivationManager> activator;
+  Microsoft::WRL::ComPtr<IApplicationActivationManager> activator;
   HRESULT hr = ::CoCreateInstance(CLSID_ApplicationActivationManager, nullptr,
                                   CLSCTX_ALL, IID_PPV_ARGS(&activator));
   if (SUCCEEDED(hr)) {
@@ -1119,7 +1119,7 @@ ShellUtil::DefaultState ProbeCurrentDefaultHandlers(
     const base::FilePath& chrome_exe,
     const wchar_t* const* protocols,
     size_t num_protocols) {
-  base::win::ScopedComPtr<IApplicationAssociationRegistration> registration;
+  Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> registration;
   HRESULT hr =
       ::CoCreateInstance(CLSID_ApplicationAssociationRegistration, NULL,
                          CLSCTX_INPROC, IID_PPV_ARGS(&registration));
@@ -1178,7 +1178,7 @@ ShellUtil::DefaultState ProbeAppIsDefaultHandlers(
     const base::FilePath& chrome_exe,
     const wchar_t* const* protocols,
     size_t num_protocols) {
-  base::win::ScopedComPtr<IApplicationAssociationRegistration> registration;
+  Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> registration;
   HRESULT hr =
       ::CoCreateInstance(CLSID_ApplicationAssociationRegistration, NULL,
                          CLSCTX_INPROC, IID_PPV_ARGS(&registration));
@@ -1988,7 +1988,7 @@ bool ShellUtil::MakeChromeDefault(BrowserDistribution* dist,
   // On Windows 7 we still can set ourselves via the the
   // IApplicationAssociationRegistration interface.
   VLOG(1) << "Registering Chrome as default browser on Windows 7.";
-  base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
+  Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> pAAR;
   HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistration,
                                   NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pAAR));
   if (SUCCEEDED(hr)) {
@@ -2091,7 +2091,7 @@ bool ShellUtil::MakeChromeDefaultProtocolClient(
   // protocol handler.
   VLOG(1) << "Registering Chrome as default handler for " << protocol
           << " on Windows 7.";
-  base::win::ScopedComPtr<IApplicationAssociationRegistration> pAAR;
+  Microsoft::WRL::ComPtr<IApplicationAssociationRegistration> pAAR;
   HRESULT hr = ::CoCreateInstance(CLSID_ApplicationAssociationRegistration,
                                   NULL, CLSCTX_INPROC, IID_PPV_ARGS(&pAAR));
   if (SUCCEEDED(hr)) {

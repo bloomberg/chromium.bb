@@ -3,13 +3,13 @@
 // found in the LICENSE file.
 
 #include <oleacc.h>
+#include <wrl/client.h>
 
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/browser.h"
@@ -119,7 +119,7 @@ void WinAccessibilityEventMonitor::WaitForNextEvent(
   *out_event = event_info.event;
   *out_hwnd = event_info.hwnd;
 
-  base::win::ScopedComPtr<IAccessible> acc_obj;
+  Microsoft::WRL::ComPtr<IAccessible> acc_obj;
   base::win::ScopedVariant child_variant;
   CHECK(S_OK == AccessibleObjectFromEvent(
                     event_info.hwnd, event_info.obj_id, event_info.child_id,

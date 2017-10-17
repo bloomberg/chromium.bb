@@ -6,11 +6,11 @@
 
 #include <objbase.h>
 #include <shobjidl.h>
+#include <wrl/client.h>
 
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/task_scheduler/post_task.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_gdi_object.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "skia/ext/image_operations.h"
@@ -31,7 +31,7 @@ namespace {
 // Docs for TaskbarList::SetOverlayIcon() say it does nothing if the HWND is not
 // valid.
 void SetOverlayIcon(HWND hwnd, std::unique_ptr<SkBitmap> bitmap) {
-  base::win::ScopedComPtr<ITaskbarList3> taskbar;
+  Microsoft::WRL::ComPtr<ITaskbarList3> taskbar;
   HRESULT result = ::CoCreateInstance(
       CLSID_TaskbarList, nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&taskbar));
   if (FAILED(result) || FAILED(taskbar->HrInit()))

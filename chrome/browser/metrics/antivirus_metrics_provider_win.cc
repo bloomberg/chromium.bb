@@ -4,12 +4,13 @@
 
 #include "chrome/browser/metrics/antivirus_metrics_provider_win.h"
 
+#include <windows.h>
 #include <iwscapi.h>
 #include <objbase.h>
 #include <stddef.h>
 #include <wbemidl.h>
-#include <windows.h>
 #include <wscapi.h>
+#include <wrl/client.h>
 
 #include <algorithm>
 #include <string>
@@ -31,7 +32,6 @@
 #include "base/version.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/channel_info.h"
@@ -237,7 +237,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
   if (!com_initializer.succeeded())
     return RESULT_FAILED_TO_INITIALIZE_COM;
 
-  base::win::ScopedComPtr<IWSCProductList> product_list;
+  Microsoft::WRL::ComPtr<IWSCProductList> product_list;
   HRESULT result =
       CoCreateInstance(__uuidof(WSCProductList), nullptr, CLSCTX_INPROC_SERVER,
                        IID_PPV_ARGS(&product_list));
@@ -338,14 +338,14 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   if (!com_initializer.succeeded())
     return RESULT_FAILED_TO_INITIALIZE_COM;
 
-  base::win::ScopedComPtr<IWbemLocator> wmi_locator;
+  Microsoft::WRL::ComPtr<IWbemLocator> wmi_locator;
   HRESULT hr =
       ::CoCreateInstance(CLSID_WbemLocator, nullptr, CLSCTX_INPROC_SERVER,
                          IID_PPV_ARGS(&wmi_locator));
   if (FAILED(hr))
     return RESULT_FAILED_TO_CREATE_INSTANCE;
 
-  base::win::ScopedComPtr<IWbemServices> wmi_services;
+  Microsoft::WRL::ComPtr<IWbemServices> wmi_services;
   hr = wmi_locator->ConnectServer(
       base::win::ScopedBstr(L"ROOT\\SecurityCenter2"), nullptr, nullptr,
       nullptr, 0, nullptr, nullptr, wmi_services.GetAddressOf());
@@ -362,7 +362,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   // undocumented.
   base::win::ScopedBstr query_language(L"WQL");
   base::win::ScopedBstr query(L"SELECT * FROM AntiVirusProduct");
-  base::win::ScopedComPtr<IEnumWbemClassObject> enumerator;
+  Microsoft::WRL::ComPtr<IEnumWbemClassObject> enumerator;
 
   hr = wmi_services->ExecQuery(
       query_language, query,
@@ -374,7 +374,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
   // Iterate over the results of the WMI query. Each result will be an
   // AntiVirusProduct instance.
   while (true) {
-    base::win::ScopedComPtr<IWbemClassObject> class_object;
+    Microsoft::WRL::ComPtr<IWbemClassObject> class_object;
     ULONG items_returned = 0;
     hr = enumerator->Next(WBEM_INFINITE, 1, class_object.GetAddressOf(),
                           &items_returned);
