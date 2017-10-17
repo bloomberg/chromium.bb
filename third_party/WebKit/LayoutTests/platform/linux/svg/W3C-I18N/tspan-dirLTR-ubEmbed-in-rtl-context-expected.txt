@@ -3,10 +3,10 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (20,133.19) size 390x85.81
-      LayoutSVGText {text} at (92.66,133.19) size 274.67x21 contains 1 chunk(s)
+      LayoutSVGText {text} at (92.66,133.19) size 274.66x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (284.53,133.19) size 82.80x21
           chunk 1 (middle anchor) text run 1 at (284.53,150.00) startOffset 0 endOffset 14 width 82.80 RTL: "\x{646}\x{634}\x{627}\x{637} \x{627}\x{644}\x{62A}\x{62F}\x{648}\x{64A}\x{644} \""
-        LayoutSVGTSpan {tspan} at (92.66,133.19) size 274.67x21
+        LayoutSVGTSpan {tspan} at (92.66,133.19) size 274.66x21
           LayoutSVGInlineText {#text} at (104.06,133.19) size 180.45x21
             chunk 1 (middle anchor) text run 1 at (104.07,150.00) startOffset 0 endOffset 16 width 145.66: "dirLTR ubEmbed, "
             chunk 1 (middle anchor) text run 1 at (249.73,150.00) startOffset 0 endOffset 6 width 34.80 RTL: "\x{627}\x{62E}\x{62A}\x{628}\x{627}\x{631}"

@@ -23,11 +23,11 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (150,388.47) size 213.75x15.36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (150,388.47) size 213.75x15.36
           chunk 1 text run 1 at (150.00,400.00) startOffset 0 endOffset 38 width 213.76: "Loading Rose Image, Please be patient!"
-      LayoutSVGText {text} at (240,735.47) size 268.78x30.36 contains 1 chunk(s)
+      LayoutSVGText {text} at (240,735.47) size 268.80x30.36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (240,735.47) size 268.78x15.36
           chunk 1 text run 1 at (240.00,747.00) startOffset 0 endOffset 38 width 202.24: "Click this text to remove the Flowers "
           chunk 1 text run 1 at (442.24,747.00) startOffset 0 endOffset 13 width 66.56: "selectionList"
-        LayoutSVGTSpan {tspan} at (240,735.47) size 268.78x30.36
+        LayoutSVGTSpan {tspan} at (240,735.47) size 268.80x30.36
           LayoutSVGInlineText {#text} at (240,750.47) size 194.55x15.36
             chunk 1 text run 1 at (240.00,762.00) startOffset 0 endOffset 38 width 194.56: "This list does not react on user input"
       LayoutSVGText {text} at (240,50.47) size 30.72x15.36 contains 1 chunk(s)
@@ -49,20 +49,20 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (765,100.47) size 99.83x15.36
           chunk 1 text run 1 at (765.00,112.00) startOffset 0 endOffset 18 width 99.84: "This is selnumber2"
     LayoutSVGImage {image} at (50,150) size 410x307
-    LayoutSVGContainer {g} at (220,200.47) size 469.73x75.36 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(550.00,20.00)}]
-      LayoutSVGText {text} at (220,200.47) size 469.73x75.36 contains 1 chunk(s)
+    LayoutSVGContainer {g} at (220,200.47) size 469.75x75.36 [transform={m=((0.87,0.50)(-0.50,0.87)) t=(550.00,20.00)}]
+      LayoutSVGText {text} at (220,200.47) size 469.75x75.36 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (220,200.47) size 216.31x15.36
           chunk 1 text run 1 at (220.00,212.00) startOffset 0 endOffset 39 width 216.32: "Communities of Kt. Aargau (Switzerland)"
-        LayoutSVGTSpan {tspan} at (220,200.47) size 469.73x75.36
+        LayoutSVGTSpan {tspan} at (220,200.47) size 469.75x75.36
           LayoutSVGInlineText {#text} at (220,220.47) size 380.16x15.36
             chunk 1 text run 1 at (220.00,232.00) startOffset 0 endOffset 23 width 125.44: "Note that one can also "
             chunk 1 text run 1 at (345.44,232.00) startOffset 0 endOffset 49 width 254.72: "transform the group containing the selection list"
-        LayoutSVGTSpan {tspan} at (220,200.47) size 469.73x75.36
+        LayoutSVGTSpan {tspan} at (220,200.47) size 469.75x75.36
           LayoutSVGInlineText {#text} at (220,240.47) size 441.64x15.36
             chunk 1 text run 1 at (220.00,252.00) startOffset 0 endOffset 5 width 25.60: "This "
             chunk 1 text run 1 at (245.60,252.00) startOffset 0 endOffset 74 width 382.78: "selectionlist does not react on user input (functionToCall is a undefined "
             chunk 1 text run 1 at (628.38,252.00) startOffset 0 endOffset 6 width 33.28: "value)"
-        LayoutSVGTSpan {tspan} at (220,200.47) size 469.73x75.36
+        LayoutSVGTSpan {tspan} at (220,200.47) size 469.75x75.36
           LayoutSVGInlineText {#text} at (220,260.47) size 469.73x15.36
             chunk 1 text run 1 at (220.00,272.00) startOffset 0 endOffset 14 width 70.40: "Click on this "
             chunk 1 text run 1 at (290.40,272.00) startOffset 0 endOffset 69 width 362.24: "text to toggle \"above\"/\"below\" mode to open the box either to top or "

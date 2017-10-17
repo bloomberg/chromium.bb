@@ -20,7 +20,7 @@ layer at (0,0) size 800x600
         LayoutSVGText {text} at (40,2.59) size 255.59x13.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (40,2.59) size 255.59x13.80
             chunk 1 text run 1 at (40.00,14.00) startOffset 0 endOffset 51 width 255.60: "Circle should be red not green; rectangle still red"
-        LayoutSVGText {text} at (40,24.59) size 322.72x13.80 contains 1 chunk(s)
+        LayoutSVGText {text} at (40,24.59) size 322.73x13.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (40,24.59) size 322.72x13.80
             chunk 1 text run 1 at (40.00,36.00) startOffset 0 endOffset 11 width 54.60: "This tests "
             chunk 1 text run 1 at (94.60,36.00) startOffset 0 endOffset 53 width 268.14: "ancestor, immediate-sibling and first-child selectors"

@@ -3,8 +3,8 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (20,133.80) size 390x85.20
-      LayoutSVGContainer {g} at (92.25,133.80) size 275.47x19.80
-        LayoutSVGText {text} at (92.25,133.80) size 275.47x19.80 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (92.25,133.80) size 275.48x19.80
+        LayoutSVGText {text} at (92.25,133.80) size 275.48x19.80 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (92.25,133.80) size 275.47x19.80
             chunk 1 (middle anchor) text run 1 at (92.26,150.00) startOffset 0 endOffset 1 width 5.00 RTL: "!"
             chunk 1 (middle anchor) text run 1 at (97.26,150.00) startOffset 0 endOffset 17 width 147.73: "dirRTL ubOverride"

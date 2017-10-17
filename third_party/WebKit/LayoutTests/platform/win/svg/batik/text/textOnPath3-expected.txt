@@ -88,11 +88,11 @@ layer at (0,0) size 450x500
           chunk 1 text run 1 at (-10.00,-120.00) startOffset 0 endOffset 48 width 281.02: "Text with one textPath child and x=\"-100\" y=\"10\""
       LayoutSVGContainer {use} at (100,-93.75) size 140x93.75
         LayoutSVGPath {path} at (100,-93.75) size 140x93.75 [stroke={[type=SOLID] [color=#0000FF]}] [data="M 100 0 c 0 -125 140 -125 140 0"]
-      LayoutSVGText {text} at (84.98,-108.83) size 157.92x109.13 contains 1 chunk(s)
-        LayoutSVGTextPath {textPath} at (84.98,-108.83) size 157.92x109.13
+      LayoutSVGText {text} at (84.98,-108.83) size 157.92x109.14 contains 1 chunk(s)
+        LayoutSVGTextPath {textPath} at (84.98,-108.83) size 157.92x109.14
           LayoutSVGInlineText {#text} at (84.98,-3.89) size 19.03x4.19
             chunk 1 (middle anchor) text run 1 at (100.01,-1.74) startOffset 9 endOffset 10 width 4.00: " "
-          LayoutSVGTSpan {tspan} at (84.98,-108.83) size 157.92x109.13
+          LayoutSVGTSpan {tspan} at (84.98,-108.83) size 157.92x109.14
             LayoutSVGInlineText {#text} at (128.02,-108.83) size 114.89x58.20
               chunk 1 (middle anchor) text run 1 at (139.14,-85.13) startOffset 0 endOffset 1 width 8.00: "p"
               chunk 1 (middle anchor) text run 2 at (145.76,-88.56) startOffset 1 endOffset 2 width 7.00: "a"

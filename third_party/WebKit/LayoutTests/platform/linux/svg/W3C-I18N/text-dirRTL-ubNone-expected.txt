@@ -3,7 +3,7 @@ layer at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
     LayoutSVGContainer {g} at (20,133.19) size 390x85.81
-      LayoutSVGText {text} at (105.36,133.19) size 249.25x21 contains 1 chunk(s)
+      LayoutSVGText {text} at (105.36,133.19) size 249.27x21 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (105.36,133.19) size 249.25x21
           chunk 1 (middle anchor) text run 1 at (105.36,150.00) startOffset 0 endOffset 1 width 4.80 RTL: "!"
           chunk 1 (middle anchor) text run 1 at (110.16,150.00) startOffset 0 endOffset 13 width 123.27: "dirRTL ubNone"

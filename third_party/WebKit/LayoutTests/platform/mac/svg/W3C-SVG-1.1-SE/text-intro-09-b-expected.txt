@@ -21,8 +21,8 @@ layer at (0,0) size 800x600
       LayoutSVGText {text} at (10,224.39) size 275.45x19.19 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (10,224.39) size 275.45x19.19
           chunk 1 text run 1 at (10.00,240.00) startOffset 0 endOffset 38 width 275.46: "unicode-bidi=\"normal\" direction=\"rtl\"."
-      LayoutSVGContainer {g} at (10,263.19) size 430.03x21.59
-        LayoutSVGText {text} at (10,263.19) size 430.03x21.59 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (10,263.19) size 430.05x21.59
+        LayoutSVGText {text} at (10,263.19) size 430.05x21.59 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (10,263.19) size 430.03x21.59
             chunk 1 (end anchor) text run 1 at (10.00,280.00) startOffset 0 endOffset 12 width 91.98: "is in Hebrew"
             chunk 1 (end anchor) text run 1 at (101.98,280.00) startOffset 0 endOffset 40 width 306.33 RTL: " \"\x{5D0}\x{5E0}\x{5D9} \x{5D9}\x{5DB}\x{5D5}\x{5DC} \x{5DC}\x{5D0}\x{5DB}\x{5D5}\x{5DC} \x{5D6}\x{5DB}\x{5D5}\x{5DB}\x{5D9}\x{5EA} \x{5D5}\x{5D6}\x{5D4} \x{5DC}\x{5D0} \x{5DE}\x{5D6}\x{5D9}\x{5E7} \x{5DC}\x{5D9}\" "

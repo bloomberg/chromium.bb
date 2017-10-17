@@ -26,13 +26,13 @@ layer at (0,0) size 800x600
           LayoutSVGInlineText {#text} at (65.25,110.84) size 84.47x18
             chunk 1 text run 1 at (65.25,125.25) startOffset 0 endOffset 13 width 84.48: "to red, bold."
       LayoutSVGContainer {g} at (225,128.59) size 245.50x104.50
-        LayoutSVGText {text} at (257.50,128.59) size 176.05x43.50 contains 1 chunk(s)
+        LayoutSVGText {text} at (257.50,128.59) size 176.06x43.50 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (257.50,139.34) size 54.23x18
             chunk 1 text run 1 at (257.50,153.75) startOffset 0 endOffset 7 width 54.24: "But you"
-          LayoutSVGTSpan {tspan} at (257.50,128.59) size 176.05x43.50
+          LayoutSVGTSpan {tspan} at (257.50,128.59) size 176.06x43.50
             LayoutSVGInlineText {#text} at (343.73,128.59) size 24.02x18
               chunk 1 text run 1 at (343.74,143.00) startOffset 0 endOffset 3 width 24.02: "are"
-          LayoutSVGTSpan {tspan} at (257.50,128.59) size 176.05x43.50
+          LayoutSVGTSpan {tspan} at (257.50,128.59) size 176.06x43.50
             LayoutSVGInlineText {#text} at (367.75,154.09) size 65.80x18
               chunk 1 text run 1 at (367.76,168.50) startOffset 0 endOffset 9 width 65.81: " a peach!"
         LayoutSVGRect {rect} at (225,179) size 245.50x53.50 [stroke={[type=SOLID] [color=#000000]}] [x=225.00] [y=179.00] [width=245.50] [height=53.50]

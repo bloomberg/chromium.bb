@@ -93,10 +93,10 @@ layer at (0,0) size 450x500
           chunk 1 text run 1 at (0.00,60.00) startOffset 0 endOffset 1 width 9.00: "a"
           chunk 1 text run 1 at (0.00,40.00) startOffset 0 endOffset 1 width 7.00: "r"
           chunk 1 text run 1 at (0.00,20.00) startOffset 0 endOffset 1 width 9.00: "e"
-      LayoutSVGText {text} at (154.52,435.97) size 140.95x19.17 contains 1 chunk(s)
+      LayoutSVGText {text} at (154.52,435.97) size 140.94x19.17 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (154.52,437) size 58.94x17
           chunk 1 (middle anchor) text run 1 at (154.52,450.00) startOffset 0 endOffset 10 width 58.95: "Text with "
-        LayoutSVGTSpan {tspan} at (154.52,435.97) size 140.95x19.17
+        LayoutSVGTSpan {tspan} at (154.52,435.97) size 140.94x19.17
           LayoutSVGInlineText {#text} at (212.78,435.97) size 43.84x19.17
             chunk 1 (middle anchor) text run 1 at (213.48,450.00) startOffset 0 endOffset 1 width 5.00: "r"
             chunk 1 (middle anchor) text run 2 at (218.48,450.00) startOffset 1 endOffset 2 width 7.00: "o"

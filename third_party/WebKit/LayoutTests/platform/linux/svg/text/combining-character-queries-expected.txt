@@ -450,7 +450,7 @@ layer at (0,0) size 800x521
             chunk 1 text run 1 at (82.00,125.00) startOffset 0 endOffset 1 width 0.00 RTL: "\x{200F}"
             chunk 1 text run 1 at (82.00,125.00) startOffset 0 endOffset 1 width 18.00: "a"
             chunk 1 text run 1 at (100.00,125.00) startOffset 0 endOffset 1 width 0.00 RTL: "\x{200F}"
-        LayoutSVGText {text} at (192.98,91.63) size 57.02x41.38 contains 1 chunk(s)
+        LayoutSVGText {text} at (192.98,91.63) size 57x41.36 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (192.98,91.63) size 57.02x41.38
             chunk 1 text run 1 at (193.00,125.00) startOffset 0 endOffset 3 width 19.00: "c\x{30C}\x{30C}"
             chunk 1 text run 1 at (212.00,125.00) startOffset 0 endOffset 1 width 0.00 RTL: "\x{200F}"
@@ -458,7 +458,7 @@ layer at (0,0) size 800x521
             chunk 1 text run 1 at (234.00,125.00) startOffset 0 endOffset 1 width 0.00 RTL: "\x{200F}"
             chunk 1 text run 1 at (234.00,125.00) startOffset 0 endOffset 1 width 16.00: "a"
             chunk 1 text run 1 at (250.00,125.00) startOffset 0 endOffset 1 width 0.00 RTL: "\x{200F}"
-        LayoutSVGText {text} at (339.98,91.63) size 60.02x41.38 contains 1 chunk(s)
+        LayoutSVGText {text} at (339.98,91.63) size 60x41.36 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (339.98,91.63) size 60.02x41.38
             chunk 1 text run 1 at (340.00,125.00) startOffset 0 endOffset 3 width 19.00: "c\x{30C}\x{30C}"
             chunk 1 text run 1 at (359.00,125.00) startOffset 0 endOffset 1 width 0.00 RTL: "\x{200F}"
@@ -477,12 +477,12 @@ layer at (0,0) size 800x521
             chunk 1 text run 1 at (50.00,275.00) startOffset 0 endOffset 3 width 30.00: "ff\x{30C}"
             chunk 1 text run 1 at (80.00,275.00) startOffset 0 endOffset 4 width 35.00 RTL: "\x{640}\x{640}\x{644}\x{627}"
             chunk 1 text run 1 at (115.00,275.00) startOffset 0 endOffset 3 width 30.00: "ff\x{30C}"
-        LayoutSVGText {text} at (200,241.63) size 84.30x41.38 contains 1 chunk(s)
+        LayoutSVGText {text} at (200,241.63) size 84.31x41.36 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (200,241.63) size 84.30x41.38
             chunk 1 text run 1 at (200.00,275.00) startOffset 0 endOffset 3 width 23.68: "ff\x{30C}"
             chunk 1 text run 1 at (223.68,275.00) startOffset 0 endOffset 4 width 35.00 RTL: "\x{640}\x{640}\x{644}\x{627}"
             chunk 1 text run 1 at (258.68,275.00) startOffset 0 endOffset 3 width 23.68: "ff\x{30C}"
-        LayoutSVGText {text} at (350,241.63) size 80.30x41.38 contains 1 chunk(s)
+        LayoutSVGText {text} at (350,241.63) size 80.31x41.36 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (350,241.63) size 80.30x41.38
             chunk 1 text run 1 at (350.00,275.00) startOffset 0 endOffset 3 width 21.68: "ff\x{30C}"
             chunk 1 text run 1 at (371.68,275.00) startOffset 0 endOffset 4 width 35.00 RTL: "\x{640}\x{640}\x{644}\x{627}"

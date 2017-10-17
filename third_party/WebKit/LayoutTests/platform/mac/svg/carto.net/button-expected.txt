@@ -61,14 +61,14 @@ layer at (0,0) size 800x600
         LayoutSVGRect {rect} at (199,299) size 150x60 [fill={[type=SOLID] [color=#FFFFFF]}] [x=199.00] [y=299.00] [width=150.00] [height=60.00]
         LayoutSVGRect {rect} at (201,301) size 150x60 [fill={[type=SOLID] [color=#000080]}] [x=201.00] [y=301.00] [width=150.00] [height=60.00]
         LayoutSVGRect {rect} at (200,300) size 150x60 [fill={[type=SOLID] [color=#B0C4DE]}] [x=200.00] [y=300.00] [width=150.00] [height=60.00]
-        LayoutSVGText {text} at (229,311.95) size 91.97x39.20 contains 1 chunk(s)
-          LayoutSVGTSpan {tspan} at (229,311.95) size 91.97x39.20
+        LayoutSVGText {text} at (229,311.95) size 91.97x39.19 contains 1 chunk(s)
+          LayoutSVGTSpan {tspan} at (229,311.95) size 91.97x39.19
             LayoutSVGInlineText {#text} at (229,311.95) size 91.97x12.80
               chunk 1 (middle anchor) text run 1 at (229.01,322.20) startOffset 0 endOffset 19 width 91.98: "This is a multiline"
-          LayoutSVGTSpan {tspan} at (229,311.95) size 91.97x39.20
+          LayoutSVGTSpan {tspan} at (229,311.95) size 91.97x39.19
             LayoutSVGInlineText {#text} at (236.33,325.16) size 77.33x12.80
               chunk 1 (middle anchor) text run 1 at (236.33,335.40) startOffset 0 endOffset 15 width 77.34: "textbutton with"
-          LayoutSVGTSpan {tspan} at (229,311.95) size 91.97x39.20
+          LayoutSVGTSpan {tspan} at (229,311.95) size 91.97x39.19
             LayoutSVGInlineText {#text} at (238,338.36) size 73.98x12.80
               chunk 1 (middle anchor) text run 1 at (238.00,348.60) startOffset 0 endOffset 13 width 74.00: "round corners"
     LayoutSVGContainer {g} at (299,144) size 77x27

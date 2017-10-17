@@ -2,7 +2,7 @@ layer at (0,0) size 800x600
   LayoutView at (0,0) size 800x600
 layer at (0,0) size 800x600
   LayoutSVGRoot {svg} at (0,0) size 800x600
-    LayoutSVGContainer {g} at (-5,4) size 483.58x262.58
+    LayoutSVGContainer {g} at (-5,4) size 483.59x262.58
       LayoutSVGText {text} at (5,4) size 347.16x45 contains 1 chunk(s)
         LayoutSVGInlineText {#text} at (5,4) size 347.16x45
           chunk 1 text run 1 at (5.00,40.00) startOffset 0 endOffset 21 width 347.17: "Test of 'text-anchor'"
@@ -15,17 +15,17 @@ layer at (0,0) size 800x600
         LayoutSVGInlineText {#text} at (20,52.39) size 216.86x34.19
           chunk 1 text run 1 at (20.00,80.00) startOffset 0 endOffset 17 width 216.87: "Tspan, tref, toap"
       LayoutSVGPath {line} at (220,120) size 0x140 [stroke={[type=SOLID] [color=#FF0000]}] [fill={[type=SOLID] [color=#000000]}] [x1=220.00] [y1=120.00] [x2=220.00] [y2=260.00]
-      LayoutSVGContainer {g} at (-5,112.39) size 483.58x154.19
-        LayoutSVGText {text} at (220,112.39) size 258.58x34.19 contains 1 chunk(s)
+      LayoutSVGContainer {g} at (-5,112.39) size 483.59x154.19
+        LayoutSVGText {text} at (220,112.39) size 258.59x34.19 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (220,112.39) size 124.19x34.19
             chunk 1 text run 1 at (220.00,140.00) startOffset 0 endOffset 11 width 124.20: "start text "
-          LayoutSVGTSpan {tspan} at (220,112.39) size 258.58x34.19
+          LayoutSVGTSpan {tspan} at (220,112.39) size 258.59x34.19
             LayoutSVGInlineText {#text} at (344.19,112.39) size 134.39x34.19
               chunk 1 text run 1 at (344.20,140.00) startOffset 0 endOffset 10 width 134.40: " red tspan"
-        LayoutSVGText {text} at (61.89,151.80) size 316.20x35.39 contains 1 chunk(s)
+        LayoutSVGText {text} at (61.89,151.80) size 316.19x35.39 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (61.89,152.39) size 154.19x34.19
             chunk 1 (middle anchor) text run 1 at (61.90,180.00) startOffset 0 endOffset 12 width 154.20: "middle text "
-          LayoutSVGTSpan {tspan} at (61.89,151.80) size 316.20x35.39
+          LayoutSVGTSpan {tspan} at (61.89,151.80) size 316.19x35.39
             LayoutSVGInlineText {#text} at (216.09,151.80) size 162x35.39
               chunk 1 (middle anchor) text run 1 at (216.10,180.00) startOffset 0 endOffset 11 width 162.00: " bold tspan"
         LayoutSVGText {text} at (0,0) size 0x0

@@ -60,37 +60,37 @@ layer at (0,0) size 450x500
           LayoutSVGTSpan {tspan} at (50,272) size 184.39x33
             LayoutSVGInlineText {#text} at (187.19,282) size 47.20x23
               chunk 1 text run 1 at (187.19,300.00) startOffset 0 endOffset 6 width 47.22: " tspan"
-        LayoutSVGText {text} at (50,322) size 217.56x23 contains 1 chunk(s)
+        LayoutSVGText {text} at (50,322) size 217.58x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (50,322) size 134.80x23
             chunk 1 text run 1 at (50.00,340.00) startOffset 0 endOffset 17 width 134.80: "Transparent text "
-          LayoutSVGTSpan {tspan} at (50,322) size 217.56x23
+          LayoutSVGTSpan {tspan} at (50,322) size 217.58x23
             LayoutSVGInlineText {#text} at (184.80,322) size 35.55x23
               chunk 1 text run 1 at (184.80,340.00) startOffset 0 endOffset 4 width 35.56: "with"
           LayoutSVGInlineText {#text} at (220.36,322) size 47.20x23
             chunk 1 text run 1 at (220.36,340.00) startOffset 0 endOffset 6 width 47.22: " tspan"
-        LayoutSVGText {text} at (50,362) size 216.86x23 contains 1 chunk(s)
+        LayoutSVGText {text} at (50,362) size 216.88x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (50,362) size 52.47x23
             chunk 1 text run 1 at (50.00,380.00) startOffset 0 endOffset 6 width 52.48: "Tspan "
-          LayoutSVGTSpan {tspan} at (50,362) size 216.86x23
+          LayoutSVGTSpan {tspan} at (50,362) size 216.88x23
             LayoutSVGInlineText {#text} at (102.47,362) size 75x23
               chunk 1 text run 1 at (102.48,380.00) startOffset 0 endOffset 8 width 75.00: "with own"
           LayoutSVGInlineText {#text} at (177.47,362) size 89.39x23
             chunk 1 text run 1 at (177.48,380.00) startOffset 0 endOffset 11 width 89.40: " decoration"
-        LayoutSVGText {text} at (50,402) size 202.42x23 contains 1 chunk(s)
+        LayoutSVGText {text} at (50,402) size 202.44x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (50,402) size 52.47x23
             chunk 1 text run 1 at (50.00,420.00) startOffset 0 endOffset 6 width 52.48: "Tspan "
-          LayoutSVGTSpan {tspan} at (50,402) size 202.42x23
+          LayoutSVGTSpan {tspan} at (50,402) size 202.44x23
             LayoutSVGInlineText {#text} at (102.47,402) size 60.55x23
               chunk 1 text run 1 at (102.48,420.00) startOffset 0 endOffset 7 width 60.56: "with no"
           LayoutSVGInlineText {#text} at (163.03,402) size 89.39x23
             chunk 1 text run 1 at (163.04,420.00) startOffset 0 endOffset 11 width 89.40: " decoration"
-        LayoutSVGText {text} at (50,442) size 199.92x23 contains 1 chunk(s)
+        LayoutSVGText {text} at (50,442) size 199.94x23 contains 1 chunk(s)
           LayoutSVGInlineText {#text} at (50,442) size 60.53x23
             chunk 1 text run 1 at (50.00,460.00) startOffset 0 endOffset 7 width 60.54: "Nested "
-          LayoutSVGTSpan {tspan} at (50,442) size 199.92x23
+          LayoutSVGTSpan {tspan} at (50,442) size 199.94x23
             LayoutSVGInlineText {#text} at (110.53,442) size 47.20x23
               chunk 1 text run 1 at (110.54,460.00) startOffset 0 endOffset 6 width 47.22: "tspan "
-            LayoutSVGTSpan {tspan} at (50,442) size 199.92x23
+            LayoutSVGTSpan {tspan} at (50,442) size 199.94x23
               LayoutSVGInlineText {#text} at (157.75,442) size 44.47x23
                 chunk 1 text run 1 at (157.75,460.00) startOffset 0 endOffset 5 width 44.41: "decor"
             LayoutSVGInlineText {#text} at (202.16,442) size 47.77x23
