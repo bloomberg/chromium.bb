@@ -21,10 +21,13 @@ class PageTestBase : public ::testing::Test {
   ~PageTestBase();
 
   void SetUp() override;
+  void TearDown() override;
+
   void SetupPageWithClients(Page::PageClients* = 0,
                             LocalFrameClient* = nullptr,
                             FrameSettingOverrideFunction = nullptr);
   Document& GetDocument() const;
+  Page& GetPage() const;
   LocalFrame& GetFrame() const;
   FrameSelection& Selection() const;
   DummyPageHolder& GetDummyPageHolder() const { return *dummy_page_holder_; }

@@ -48,10 +48,7 @@ void RenderingTest::SetUp() {
   Page::PageClients page_clients;
   FillWithEmptyClients(page_clients);
   page_clients.chrome_client = &GetChromeClient();
-  page_holder_ =
-      DummyPageHolder::Create(IntSize(800, 600), &page_clients,
-                              local_frame_client_, SettingOverrider());
-
+  SetupPageWithClients(&page_clients, local_frame_client_, SettingOverrider());
   Settings::SetMockScrollbarsEnabled(true);
   RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
   EXPECT_TRUE(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
@@ -69,7 +66,7 @@ void RenderingTest::TearDown() {
   // may restore RuntimeEnabledFeatures setting during teardown, which happens
   // before our destructor getting invoked, breaking the assumption that REF
   // can't change during Blink lifetime.
-  page_holder_ = nullptr;
+  PageTestBase::TearDown();
 
   // Clear memory cache, otherwise we can leak pruned resources.
   GetMemoryCache()->EvictResources();
@@ -81,7 +78,7 @@ void RenderingTest::SetChildFrameHTML(const String& html) {
 }
 
 void RenderingTest::LoadAhem() {
-  LoadAhem(page_holder_->GetFrame());
+  LoadAhem(GetFrame());
 }
 
 void RenderingTest::LoadAhem(LocalFrame& frame) {

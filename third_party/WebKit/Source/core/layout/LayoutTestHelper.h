@@ -16,7 +16,7 @@
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "platform/wtf/Allocator.h"
 
 namespace blink {
@@ -66,7 +66,7 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
   Member<LocalFrame> parent_;
 };
 
-class RenderingTest : public ::testing::Test {
+class RenderingTest : public PageTestBase {
   USING_FAST_MALLOC(RenderingTest);
 
  public:
@@ -87,7 +87,6 @@ class RenderingTest : public ::testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  Document& GetDocument() const { return page_holder_->GetDocument(); }
   LayoutView& GetLayoutView() const {
     return *ToLayoutView(LayoutAPIShim::LayoutObjectFrom(
         GetDocument().View()->GetLayoutViewItem()));
@@ -101,16 +100,14 @@ class RenderingTest : public ::testing::Test {
   }
 
   Document& ChildDocument() {
-    return *ToLocalFrame(page_holder_->GetFrame().Tree().FirstChild())
-                ->GetDocument();
+    return *ToLocalFrame(GetFrame().Tree().FirstChild())->GetDocument();
   }
 
   void SetChildFrameHTML(const String&);
 
   // Both enables compositing and runs the document lifecycle.
   void EnableCompositing() {
-    page_holder_->GetPage().GetSettings().SetAcceleratedCompositingEnabled(
-        true);
+    GetPage().GetSettings().SetAcceleratedCompositingEnabled(true);
     GetDocument().View()->SetParentVisible(true);
     GetDocument().View()->SetSelfVisible(true);
     GetDocument().View()->UpdateAllLifecyclePhases();
@@ -129,7 +126,6 @@ class RenderingTest : public ::testing::Test {
 
  private:
   Persistent<LocalFrameClient> local_frame_client_;
-  std::unique_ptr<DummyPageHolder> page_holder_;
 };
 
 }  // namespace blink

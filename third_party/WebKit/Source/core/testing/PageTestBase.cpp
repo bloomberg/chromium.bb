@@ -27,8 +27,16 @@ void PageTestBase::SetupPageWithClients(
       IntSize(800, 600), clients, local_frame_client, setting_overrider);
 }
 
+void PageTestBase::TearDown() {
+  dummy_page_holder_ = nullptr;
+}
+
 Document& PageTestBase::GetDocument() const {
   return dummy_page_holder_->GetDocument();
+}
+
+Page& PageTestBase::GetPage() const {
+  return dummy_page_holder_->GetPage();
 }
 
 LocalFrame& PageTestBase::GetFrame() const {
