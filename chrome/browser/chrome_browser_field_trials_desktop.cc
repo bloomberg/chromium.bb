@@ -11,6 +11,8 @@
 #include <map>
 #include <string>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/debug/activity_tracker.h"
 #include "base/feature_list.h"
@@ -19,6 +21,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/prerender/prerender_field_trial.h"
 #include "chrome/common/chrome_features.h"
@@ -177,15 +180,18 @@ void SetupStabilityDebugging() {
 
     // Trigger a flush of the memory mapped file to maximize the chances of
     // having a minimal amount of content in the stability file, even if
-    // the system crashes or loses power. Note: this does not flush the file
-    // metadata nor does it wait for the changes to be flushed to disk before
-    // returning. This is an expensive operation. Run as an experiment to
-    // measure the effect on performance and collection.
+    // the system crashes or loses power. Even running in the background,
+    // this is a potentially expensive operation, so done under an experiment
+    // to allow measuring the performance effects, if any.
     const bool should_flush = base::GetFieldTrialParamByFeatureAsBool(
         browser_watcher::kStabilityDebuggingFeature,
         browser_watcher::kInitFlushParam, false);
-    if (should_flush)
-      ::FlushViewOfFile(global_tracker->allocator()->data(), 0U);
+    if (should_flush) {
+      base::PostTaskWithTraits(
+          FROM_HERE, {base::MayBlock()},
+          base::Bind(&base::PersistentMemoryAllocator::Flush,
+                     base::Unretained(global_tracker->allocator()), true));
+    }
 
     // Store a copy of the system profile in this allocator. There will be some
     // delay before this gets populated, perhaps as much as a minute. Because
