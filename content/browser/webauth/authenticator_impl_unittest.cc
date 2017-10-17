@@ -32,11 +32,10 @@ using webauth::mojom::PublicKeyCredentialInfoPtr;
 using webauth::mojom::PublicKeyCredentialParameters;
 using webauth::mojom::PublicKeyCredentialParametersPtr;
 
-const char* kOrigin1 = "https://google.com";
-
 namespace {
 
-const int32_t algorithm_identifier = -7;
+constexpr char kOrigin1[] = "https://google.com";
+constexpr int32_t kES256 = -7;
 
 PublicKeyCredentialEntityPtr GetTestPublicKeyCredentialRPEntity() {
   auto entity = PublicKeyCredentialEntity::New();
@@ -59,7 +58,7 @@ GetTestPublicKeyCredentialParameters() {
   std::vector<PublicKeyCredentialParametersPtr> parameters;
   auto fake_parameter = PublicKeyCredentialParameters::New();
   fake_parameter->type = webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY;
-  fake_parameter->algorithm_identifier = algorithm_identifier;
+  fake_parameter->algorithm_identifier = kES256;
   parameters.push_back(std::move(fake_parameter));
   return parameters;
 }
@@ -163,4 +162,5 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOpaqueOrigin) {
   EXPECT_EQ(webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR,
             response.first);
 }
+
 }  // namespace content

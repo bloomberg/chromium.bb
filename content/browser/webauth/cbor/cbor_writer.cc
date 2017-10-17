@@ -80,12 +80,15 @@ void CBORWriter::EncodeCBOR(const CBORValue& node) {
 }
 
 void CBORWriter::StartItem(CborMajorType type, uint64_t size) {
-  encoded_cbor_->push_back(base::checked_cast<uint8_t>(type) << 5);
+  encoded_cbor_->push_back(
+      base::checked_cast<uint8_t>(static_cast<unsigned>(type) << 5));
   SetUint(size);
 }
 
 void CBORWriter::SetAdditionalInformation(uint8_t additional_information) {
   DCHECK(!encoded_cbor_->empty());
+  DCHECK_EQ(additional_information & kAdditionalInformationDataMask,
+            additional_information);
   encoded_cbor_->back() |=
       (additional_information & kAdditionalInformationDataMask);
 }
@@ -112,17 +115,17 @@ void CBORWriter::SetUint(uint64_t value) {
       SetAdditionalInformation(kAdditionalInformation4Bytes);
       shift = 3;
       break;
-      return;
     case 8:
       SetAdditionalInformation(kAdditionalInformation8Bytes);
       shift = 7;
       break;
+    default:
+      NOTREACHED();
+      break;
   }
   for (; shift >= 0; shift--) {
-    encoded_cbor_->push_back(
-        base::checked_cast<uint8_t>(0xFF & (value >> (shift * 8))));
+    encoded_cbor_->push_back(0xFF & (value >> (shift * 8)));
   }
-  return;
 }
 
 size_t CBORWriter::GetNumUintBytes(uint64_t value) {

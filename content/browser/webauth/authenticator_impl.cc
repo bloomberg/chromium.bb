@@ -25,14 +25,14 @@ constexpr char kChallengeKey[] = "challenge";
 constexpr char kOriginKey[] = "origin";
 constexpr char kCidPubkeyKey[] = "cid_pubkey";
 
-}  // namespace
-
 // Serializes the |value| to a JSON string and returns the result.
 std::string SerializeValueToJson(const base::Value& value) {
   std::string json;
   base::JSONWriter::Write(value, &json);
   return json;
 }
+
+}  // namespace
 
 // static
 void AuthenticatorImpl::Create(
