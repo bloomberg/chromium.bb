@@ -1,6 +1,10 @@
 # These tests currently fail when run with --enable-network-service
 # See https://crbug.com/729849
 
+# Skip the mojo-loading virtual tests because the Mojo Loading flag is implied
+# by the Network Service flag. Failures there are duplicates of failures below.
+Bug(none) virtual/mojo-loading [ Skip ]
+
 Bug(none) compositing/video-frame-size-change.html [ Timeout ]
 Bug(none) external/wpt/clear-site-data/storage.https.html [ Failure ]
 Bug(none) external/wpt/fetch/api/abort/general-serviceworker.https.html [ Failure ]
@@ -355,6 +359,7 @@ Bug(none) http/tests/security/secureContexts/unauthenticated_worker.html [ Timeo
 Bug(none) http/tests/security/suborigins/suborigin-service-worker-fetch-event.html [ Crash Failure Timeout ]
 Bug(none) http/tests/security/suborigins/suborigin-unsafe-cookies.php [ Timeout ]
 Bug(none) http/tests/sendbeacon/beacon-same-origin.html [ Failure ]
+Bug(none) virtual/stable/http/tests/sendbeacon/beacon-same-origin.html [ Failure ]
 Bug(none) http/tests/serviceworker [ Crash Failure Timeout ]
 Bug(none) http/tests/websocket/cookie-document-to-ws.html [ Failure ]
 Bug(none) http/tests/websocket/cookie-http-to-ws.pl [ Failure ]
@@ -372,14 +377,10 @@ Bug(none) http/tests/xmlhttprequest/workers/cross-origin-unsupported-url.html [ 
 Bug(none) http/tests/xmlhttprequest/workers/shared-worker-response-type-blob-sync.html [ Timeout ]
 Bug(none) http/tests/xmlhttprequest/workers/shared-worker-response-type-blob.html [ Timeout ]
 Bug(none) http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Timeout ]
-Bug(none) virtual/mojo-loading/http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-xhr.js [ Timeout ]
-Bug(none) virtual/mojo-loading/http/tests/xmlhttprequest/methods-lower-case.html [ Failure Timeout Pass Crash ]
 Bug(none) installedapp/getinstalledrelatedapps-empty.html [ Timeout ]
 Bug(none) installedapp/getinstalledrelatedapps.html [ Timeout ]
 Bug(none) paint/invalidation/video-paint-invalidation.html [ Failure ]
 Bug(none) plugins/iframe-plugin-bgcolor.html [ Timeout ]
-
-Bug(none) virtual [ Crash Failure Timeout ]
 
 # Blob support for request bodies.
 crbug.com/761117 external/wpt/XMLHttpRequest/formdata-blob.htm [ Failure ]
