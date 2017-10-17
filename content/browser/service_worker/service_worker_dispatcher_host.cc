@@ -64,7 +64,7 @@ const char kNoActiveWorkerErrorMessage[] =
     "The registration does not have an active worker.";
 const char kDatabaseErrorMessage[] = "Failed to access storage.";
 
-const uint32_t kFilteredMessageClasses[] = {
+const uint32_t kServiceWorkerFilteredMessageClasses[] = {
     ServiceWorkerMsgStart, EmbeddedWorkerMsgStart,
 };
 
@@ -84,8 +84,8 @@ WebContents* GetWebContents(int render_process_id, int render_frame_id) {
 ServiceWorkerDispatcherHost::ServiceWorkerDispatcherHost(
     int render_process_id,
     ResourceContext* resource_context)
-    : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kServiceWorkerFilteredMessageClasses,
+                           arraysize(kServiceWorkerFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::ServiceWorkerDispatcherHost>(this,
                                                                      this),
       render_process_id_(render_process_id),

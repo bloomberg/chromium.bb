@@ -54,7 +54,8 @@ namespace content {
 
 namespace {
 
-const uint32_t kFilteredMessageClasses[] = {FileSystemMsgStart, BlobMsgStart};
+const uint32_t kFileApiFilteredMessageClasses[] = {FileSystemMsgStart,
+                                                   BlobMsgStart};
 
 void RevokeFilePermission(int child_id, const base::FilePath& path) {
   ChildProcessSecurityPolicyImpl::GetInstance()->RevokeAllPermissionsForFile(
@@ -68,8 +69,8 @@ FileAPIMessageFilter::FileAPIMessageFilter(
     net::URLRequestContextGetter* request_context_getter,
     storage::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context)
-    : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kFileApiFilteredMessageClasses,
+                           arraysize(kFileApiFilteredMessageClasses)),
       process_id_(process_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),
@@ -86,8 +87,8 @@ FileAPIMessageFilter::FileAPIMessageFilter(
     net::URLRequestContext* request_context,
     storage::FileSystemContext* file_system_context,
     ChromeBlobStorageContext* blob_storage_context)
-    : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kFileApiFilteredMessageClasses,
+                           arraysize(kFileApiFilteredMessageClasses)),
       process_id_(process_id),
       context_(file_system_context),
       security_policy_(ChildProcessSecurityPolicyImpl::GetInstance()),

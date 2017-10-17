@@ -89,7 +89,7 @@
 namespace content {
 namespace {
 
-const uint32_t kFilteredMessageClasses[] = {
+const uint32_t kRenderFilteredMessageClasses[] = {
     ChildProcessMsgStart, RenderProcessMsgStart, ViewMsgStart,
 };
 
@@ -124,8 +124,8 @@ RenderMessageFilter::RenderMessageFilter(
     MediaInternals* media_internals,
     DOMStorageContextWrapper* dom_storage_context,
     CacheStorageContextImpl* cache_storage_context)
-    : BrowserMessageFilter(kFilteredMessageClasses,
-                           arraysize(kFilteredMessageClasses)),
+    : BrowserMessageFilter(kRenderFilteredMessageClasses,
+                           arraysize(kRenderFilteredMessageClasses)),
       BrowserAssociatedInterface<mojom::RenderMessageFilter>(this, this),
       resource_dispatcher_host_(ResourceDispatcherHostImpl::Get()),
       request_context_(request_context),
