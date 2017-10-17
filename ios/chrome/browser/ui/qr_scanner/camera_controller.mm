@@ -181,8 +181,23 @@
   DCHECK([self getAuthorizationStatus] == AVAuthorizationStatusAuthorized);
   dispatch_async(_sessionQueue, ^{
     // Get the back camera.
-    NSArray* videoCaptureDevices =
-        [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    NSArray* videoCaptureDevices = nil;
+    if (@available(iOS 10, *)) {
+      AVCaptureDeviceDiscoverySession* discoverySession =
+          [AVCaptureDeviceDiscoverySession
+              discoverySessionWithDeviceTypes:@[
+                AVCaptureDeviceTypeBuiltInWideAngleCamera
+              ]
+                                    mediaType:AVMediaTypeVideo
+                                     position:AVCaptureDevicePositionBack];
+      videoCaptureDevices = [discoverySession devices];
+    }
+#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+    else {
+      videoCaptureDevices =
+          [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
+    }
+#endif
     if ([videoCaptureDevices count] == 0) {
       [self setCameraState:qr_scanner::CAMERA_UNAVAILABLE];
       return;
