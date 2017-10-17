@@ -56,6 +56,7 @@ const char kWidevineCdmAdapterFileName[] =
 
 // The following strings are used to communicate supported codecs (from the
 // component manifest) via WebPluginInfo::WebPluginMimeType's additional params.
+// TODO(crbug.com/772160): Remove after pepper CDM is deprecated.
 const char kCdmSupportedCodecsParamName[] = "codecs";
 const char kCdmSupportedCodecsValueDelimiter = ',';
 const char kCdmSupportedCodecVp8[] = "vp8";
@@ -63,6 +64,10 @@ const char kCdmSupportedCodecVp9[] = "vp9.0";
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kCdmSupportedCodecAvc1[] = "avc1";
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
+const char kCdmPersistentLicenseSupportedParamName[] =
+    "persistent_license_supported";
+const char kCdmFeatureSupported[] = "true";
+const char kCdmFeatureNotSupported[] = "false";
 
 #if defined(OS_MACOSX) || defined(OS_WIN)
 // CDM is installed by the component installer instead of the Chrome installer.

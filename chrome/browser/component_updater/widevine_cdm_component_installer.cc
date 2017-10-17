@@ -104,6 +104,9 @@ const char kCdmHostVersionsName[] = "x-cdm-host-versions";
 //  The codecs list is a list of simple codec names (e.g. "vp8,vorbis").
 //  The list is passed to other parts of Chrome.
 const char kCdmCodecsListName[] = "x-cdm-codecs";
+//  Whether persistent license is supported by the CDM: "true" or "false".
+const char kCdmPersistentLicenseSupportName[] =
+    "x-cdm-persistent-license-support";
 
 // TODO(xhwang): Move this to a common place if needed.
 const base::FilePath::CharType kSignatureFileExtension[] =
@@ -122,6 +125,7 @@ base::FilePath GetPlatformDirectory(const base::FilePath& base_path) {
 bool MakeWidevineCdmPluginInfo(const base::Version& version,
                                const base::FilePath& cdm_install_dir,
                                const std::string& codecs,
+                               bool is_persistent_license_supported,
                                content::PepperPluginInfo* plugin_info) {
   if (!version.IsValid() ||
       version.components().size() !=
@@ -144,10 +148,19 @@ bool MakeWidevineCdmPluginInfo(const base::Version& version,
       kWidevineCdmPluginMimeType,
       kWidevineCdmPluginExtension,
       kWidevineCdmPluginMimeTypeDescription);
+
+  // Put codec support string in additional param.
   widevine_cdm_mime_type.additional_param_names.push_back(
       base::ASCIIToUTF16(kCdmSupportedCodecsParamName));
   widevine_cdm_mime_type.additional_param_values.push_back(
       base::ASCIIToUTF16(codecs));
+
+  // Put persistent license support string in additional param.
+  widevine_cdm_mime_type.additional_param_names.push_back(
+      base::ASCIIToUTF16(kCdmPersistentLicenseSupportedParamName));
+  widevine_cdm_mime_type.additional_param_values.push_back(base::ASCIIToUTF16(
+      is_persistent_license_supported ? kCdmFeatureSupported
+                                      : kCdmFeatureNotSupported));
 
   plugin_info->mime_types.push_back(widevine_cdm_mime_type);
   plugin_info->permissions = kWidevineCdmPluginPermissions;
@@ -210,15 +223,23 @@ std::string GetCodecs(const base::DictionaryValue& manifest) {
   return codecs;
 }
 
+bool GetPersistentLicenseSupport(const base::DictionaryValue& manifest) {
+  std::string supported;
+  const base::Value* value = manifest.FindKey(kCdmPersistentLicenseSupportName);
+  return value && value->is_bool() && value->GetBool();
+}
+
 void RegisterWidevineCdmWithChrome(
     const base::Version& cdm_version,
     const base::FilePath& cdm_install_dir,
     std::unique_ptr<base::DictionaryValue> manifest) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   const std::string codecs = GetCodecs(*manifest);
+  bool is_persistent_license_supported = GetPersistentLicenseSupport(*manifest);
 
   content::PepperPluginInfo plugin_info;
   if (!MakeWidevineCdmPluginInfo(cdm_version, cdm_install_dir, codecs,
+                                 is_persistent_license_supported,
                                  &plugin_info)) {
     return;
   }
@@ -234,6 +255,7 @@ void RegisterWidevineCdmWithChrome(
   PluginService::GetInstance()->PurgePluginListCache(NULL, false);
 
   // Also register Widevine with the CdmRegistry.
+  // TODO(xhwang): Add |is_persistent_license_supported| to CdmInfo.
   const base::FilePath cdm_path =
       GetPlatformDirectory(cdm_install_dir)
           .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
