@@ -90,6 +90,8 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_41;
     case QUIC_VERSION_42:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_42;
+    case QUIC_VERSION_43:
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_43;
   }
   NOTREACHED();
   return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;

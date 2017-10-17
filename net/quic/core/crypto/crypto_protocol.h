@@ -84,8 +84,8 @@ const QuicTag k1RTT = TAG('1', 'R', 'T', 'T');   // STARTUP in BBR for 1 RTT
 const QuicTag k2RTT = TAG('2', 'R', 'T', 'T');   // STARTUP in BBR for 2 RTTs
 const QuicTag kLRTT = TAG('L', 'R', 'T', 'T');   // Exit STARTUP in BBR on loss
 const QuicTag kBBRR = TAG('B', 'B', 'R', 'R');   // Rate-based recovery in BBR
-const QuicTag kBBR1 = TAG('B', 'B', 'R', '1');   // Ack aggregatation v1
-const QuicTag kBBR2 = TAG('B', 'B', 'R', '2');   // Ack aggregatation v2
+const QuicTag kBBR1 = TAG('B', 'B', 'R', '1');   // Ack aggregation v1
+const QuicTag kBBR2 = TAG('B', 'B', 'R', '2');   // Ack aggregation v2
 const QuicTag kRENO = TAG('R', 'E', 'N', 'O');   // Reno Congestion Control
 const QuicTag kTPCC = TAG('P', 'C', 'C', '\0');  // Performance-Oriented
                                                  // Congestion Control
@@ -113,7 +113,7 @@ const QuicTag kAKD3 = TAG('A', 'K', 'D', '3');   // Ack decimation style acking
 const QuicTag kAKD4 = TAG('A', 'K', 'D', '4');   // Ack decimation with 1/8 RTT
                                                  // tolerating out of order.
 const QuicTag kAKDU = TAG('A', 'K', 'D', 'U');   // Unlimited number of packets
-                                                 // receieved before acking
+                                                 // received before acking
 const QuicTag kSSLR = TAG('S', 'S', 'L', 'R');   // Slow Start Large Reduction.
 const QuicTag kNPRR = TAG('N', 'P', 'R', 'R');   // Pace at unity instead of PRR
 const QuicTag k5RTO = TAG('5', 'R', 'T', 'O');   // Close connection on 5 RTOs

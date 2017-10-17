@@ -177,6 +177,8 @@ TEST_F(QuicVersionsTest, ParseQuicVersionLabel) {
             ParseQuicVersionLabel(MakeVersionLabel('Q', '0', '4', '1')));
   EXPECT_EQ(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_42),
             ParseQuicVersionLabel(MakeVersionLabel('Q', '0', '4', '2')));
+  EXPECT_EQ(ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43),
+            ParseQuicVersionLabel(MakeVersionLabel('Q', '0', '4', '3')));
 
   // Test a TLS version:
   FLAGS_quic_supports_tls_handshake = true;
@@ -192,6 +194,8 @@ TEST_F(QuicVersionsTest, ParseQuicVersionLabel) {
             ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '1')));
   EXPECT_EQ(ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_42),
             ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '2')));
+  EXPECT_EQ(ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_43),
+            ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '3')));
 
   FLAGS_quic_supports_tls_handshake = false;
   EXPECT_EQ(ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
@@ -206,6 +210,8 @@ TEST_F(QuicVersionsTest, ParseQuicVersionLabel) {
             ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '1')));
   EXPECT_EQ(ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
             ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '2')));
+  EXPECT_EQ(ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
+            ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '3')));
 }
 
 TEST_F(QuicVersionsTest, CreateQuicVersionLabel) {
@@ -227,6 +233,9 @@ TEST_F(QuicVersionsTest, CreateQuicVersionLabel) {
   EXPECT_EQ(MakeVersionLabel('Q', '0', '4', '2'),
             CreateQuicVersionLabel(
                 ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_42)));
+  EXPECT_EQ(MakeVersionLabel('Q', '0', '4', '3'),
+            CreateQuicVersionLabel(
+                ParsedQuicVersion(PROTOCOL_QUIC_CRYPTO, QUIC_VERSION_43)));
 
   // Test a TLS version:
   FLAGS_quic_supports_tls_handshake = true;
@@ -248,6 +257,9 @@ TEST_F(QuicVersionsTest, CreateQuicVersionLabel) {
   EXPECT_EQ(MakeVersionLabel('T', '0', '4', '2'),
             CreateQuicVersionLabel(
                 ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_42)));
+  EXPECT_EQ(MakeVersionLabel('T', '0', '4', '3'),
+            CreateQuicVersionLabel(
+                ParsedQuicVersion(PROTOCOL_TLS1_3, QUIC_VERSION_43)));
 
   FLAGS_quic_supports_tls_handshake = false;
   EXPECT_EQ(ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
@@ -262,6 +274,8 @@ TEST_F(QuicVersionsTest, CreateQuicVersionLabel) {
             ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '1')));
   EXPECT_EQ(ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
             ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '2')));
+  EXPECT_EQ(ParsedQuicVersion(PROTOCOL_UNSUPPORTED, QUIC_VERSION_UNSUPPORTED),
+            ParseQuicVersionLabel(MakeVersionLabel('T', '0', '4', '3')));
 }
 
 TEST_F(QuicVersionsTest, QuicVersionToString) {
@@ -345,7 +359,20 @@ TEST_F(QuicVersionsTest, LookUpVersionByIndex) {
     }
   }
 }
-
+// This test may appear to be so simplistic as to be unnecessary,
+// yet a typo was made in doing the #defines and it was caught
+// only in some test far removed from here... Better safe than sorry.
+TEST_F(QuicVersionsTest, CheckVersionNumbersForTypos) {
+  static_assert(arraysize(net::kSupportedTransportVersions) == 7u,
+                "Supported versions out of sync");
+  EXPECT_EQ(QUIC_VERSION_35, 35);
+  EXPECT_EQ(QUIC_VERSION_37, 37);
+  EXPECT_EQ(QUIC_VERSION_38, 38);
+  EXPECT_EQ(QUIC_VERSION_39, 39);
+  EXPECT_EQ(QUIC_VERSION_41, 41);
+  EXPECT_EQ(QUIC_VERSION_42, 42);
+  EXPECT_EQ(QUIC_VERSION_43, 43);
+}
 }  // namespace
 }  // namespace test
 }  // namespace net

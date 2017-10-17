@@ -42,8 +42,6 @@ class QUIC_EXPORT_PRIVATE QuartcFactory : public QuartcFactoryInterface,
 
   QuicRandom* GetRandomGenerator() override;
 
-  QuicBufferAllocator* GetStreamFrameBufferAllocator() override;
-
   QuicBufferAllocator* GetStreamSendBufferAllocator() override;
 
  private:

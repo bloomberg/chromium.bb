@@ -22,7 +22,7 @@ class QUIC_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
   AeadBaseEncrypter(const EVP_AEAD* aead_alg,
                     size_t key_size,
                     size_t auth_tag_size,
-                    size_t nonce_prefix_size,
+                    size_t nonce_size,
                     bool use_ietf_nonce_construction);
   ~AeadBaseEncrypter() override;
 
@@ -44,8 +44,8 @@ class QUIC_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
   QuicStringPiece GetKey() const override;
   QuicStringPiece GetNoncePrefix() const override;
 
-  // Necessary so unit tests can explicitly specify a nonce, instead of a
-  // nonce prefix and packet number.
+  // Necessary so unit tests can explicitly specify a nonce, instead of an IV
+  // (or nonce prefix) and packet number.
   bool Encrypt(QuicStringPiece nonce,
                QuicStringPiece associated_data,
                QuicStringPiece plaintext,
@@ -53,23 +53,22 @@ class QUIC_EXPORT_PRIVATE AeadBaseEncrypter : public QuicEncrypter {
 
  protected:
   // Make these constants available to the subclasses so that the subclasses
-  // can assert at compile time their key_size_ and nonce_prefix_size_ do not
+  // can assert at compile time their key_size_ and nonce_size_ do not
   // exceed the maximum.
   static const size_t kMaxKeySize = 32;
-  static const size_t kMaxNoncePrefixSize = 4;
-  static const size_t kMaxIVSize = 12;
+  enum : size_t { kMaxNonceSize = 12 };
 
  private:
   const EVP_AEAD* const aead_alg_;
   const size_t key_size_;
   const size_t auth_tag_size_;
-  const size_t nonce_prefix_size_;
+  const size_t nonce_size_;
   const bool use_ietf_nonce_construction_;
 
   // The key.
   unsigned char key_[kMaxKeySize];
-  // The nonce prefix.
-  unsigned char iv_[kMaxIVSize];
+  // The IV used to construct the nonce.
+  unsigned char iv_[kMaxNonceSize];
 
   ScopedEVPAEADCtx ctx_;
 

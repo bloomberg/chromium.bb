@@ -74,7 +74,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   QuicPacketGenerator(QuicConnectionId connection_id,
                       QuicFramer* framer,
                       QuicRandom* random_generator,
-                      QuicBufferAllocator* buffer_allocator,
                       DelegateInterface* delegate);
 
   ~QuicPacketGenerator();

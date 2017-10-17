@@ -32,7 +32,6 @@ class NET_EXPORT_PRIVATE QuicChromiumConnectionHelper
   // QuicConnectionHelperInterface
   const QuicClock* GetClock() const override;
   QuicRandom* GetRandomGenerator() override;
-  QuicBufferAllocator* GetStreamFrameBufferAllocator() override;
   QuicBufferAllocator* GetStreamSendBufferAllocator() override;
 
  private:

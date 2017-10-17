@@ -33,23 +33,12 @@ class QUIC_EXPORT_PRIVATE StreamBufferDeleter {
   QuicBufferAllocator* allocator_;
 };
 
-using UniqueStreamBuffer = std::unique_ptr<char[], StreamBufferDeleter>;
-
-// Allocates memory of size |size| using |allocator| for a QUIC stream buffer.
-QUIC_EXPORT_PRIVATE UniqueStreamBuffer
-NewStreamBuffer(QuicBufferAllocator* allocator, size_t size);
-
 struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
   QuicStreamFrame();
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
                   QuicStringPiece data);
-  QuicStreamFrame(QuicStreamId stream_id,
-                  bool fin,
-                  QuicStreamOffset offset,
-                  QuicPacketLength data_length,
-                  UniqueStreamBuffer buffer);
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
@@ -64,19 +53,13 @@ struct QUIC_EXPORT_PRIVATE QuicStreamFrame {
   QuicPacketLength data_length;
   const char* data_buffer;
   QuicStreamOffset offset;  // Location of this data in the stream.
-  // TODO(fayang): (1) Remove buffer from QuicStreamFrame; (2) remove the
-  // constructor uses UniqueStreamBuffer and (3) Move definition of
-  // UniqueStreamBuffer to QuicStreamSendBuffer. nullptr when the
-  // QuicStreamFrame is received, and non-null when sent.
-  UniqueStreamBuffer buffer;
 
  private:
   QuicStreamFrame(QuicStreamId stream_id,
                   bool fin,
                   QuicStreamOffset offset,
                   const char* data_buffer,
-                  QuicPacketLength data_length,
-                  UniqueStreamBuffer buffer);
+                  QuicPacketLength data_length);
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamFrame);
 };

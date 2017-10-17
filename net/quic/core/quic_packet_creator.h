@@ -53,7 +53,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
 
   QuicPacketCreator(QuicConnectionId connection_id,
                     QuicFramer* framer,
-                    QuicBufferAllocator* buffer_allocator,
                     DelegateInterface* delegate);
 
   ~QuicPacketCreator();
@@ -265,8 +264,6 @@ class QUIC_EXPORT_PRIVATE QuicPacketCreator {
   DelegateInterface* delegate_;
   DebugDelegate* debug_delegate_;
   QuicFramer* framer_;
-
-  QuicBufferAllocator* const buffer_allocator_;
 
   // Controls whether version should be included while serializing the packet.
   bool send_version_in_packet_;
