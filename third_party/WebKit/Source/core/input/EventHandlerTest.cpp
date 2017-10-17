@@ -466,7 +466,7 @@ TEST_F(EventHandlerTest, ImagesCannotStartSelection) {
 }
 
 TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
-  SetHtmlInnerHTML("<a id='id' href=bala>Anchor Text</a>");
+  SetHtmlInnerHTML("<a href='bala'>link text</a>");
   Node* const link = GetDocument().body()->firstChild();
   LayoutPoint location = link->GetLayoutObject()->VisualRect().Center();
   HitTestResult hit =
@@ -475,9 +475,41 @@ TEST_F(EventHandlerTest, AnchorTextCannotStartSelection) {
   Node* const text = link->firstChild();
   EXPECT_FALSE(text->CanStartSelection());
   EXPECT_TRUE(hit.IsOverLink());
+  // ShouldShowIBeamForNode() returns |cursor: auto|'s value.
+  // In https://github.com/w3c/csswg-drafts/issues/1598 it was decided that:
+  // a { cursor: auto } /* gives I-beam over links */
   EXPECT_TRUE(
       GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
                                                                          hit));
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(hit)
+                .GetCursor()
+                .GetType(),
+            Cursor::Type::kHand);  // A hand signals ability to navigate.
+}
+
+TEST_F(EventHandlerTest, EditableAnchorTextCanStartSelection) {
+  SetHtmlInnerHTML("<a contenteditable='true' href='bala'>editable link</a>");
+  Node* const link = GetDocument().body()->firstChild();
+  LayoutPoint location = link->GetLayoutObject()->VisualRect().Center();
+  HitTestResult hit =
+      GetDocument().GetFrame()->GetEventHandler().HitTestResultAtPoint(
+          location);
+  Node* const text = link->firstChild();
+  EXPECT_TRUE(text->CanStartSelection());
+  EXPECT_TRUE(hit.IsOverLink());
+  EXPECT_TRUE(
+      GetDocument().GetFrame()->GetEventHandler().ShouldShowIBeamForNode(text,
+                                                                         hit));
+  EXPECT_EQ(GetDocument()
+                .GetFrame()
+                ->GetEventHandler()
+                .SelectCursor(hit)
+                .GetCursor()
+                .GetType(),
+            Cursor::Type::kIBeam);  // An I-beam signals editability.
 }
 
 // Regression test for http://crbug.com/641403 to verify we use up-to-date
