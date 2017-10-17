@@ -413,6 +413,14 @@ void StoreCurrentDisplayProperties() {
     if (info.touch_calibration_data_map().size()) {
       TouchDataMapToValue(info.touch_calibration_data_map(),
                           property_value.get());
+
+      // Ensure that the legacy data is still stored just in case.
+      uint32_t fallback_identifier =
+          display::TouchCalibrationData::GetFallbackTouchDeviceIdentifier();
+      if (info.HasTouchCalibrationData(fallback_identifier)) {
+        TouchDataToValue(info.GetTouchCalibrationData(fallback_identifier),
+                         property_value.get());
+      }
     }
 
     pref_data->Set(base::Int64ToString(id), std::move(property_value));
