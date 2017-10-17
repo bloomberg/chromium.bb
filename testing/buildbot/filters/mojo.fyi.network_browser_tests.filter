@@ -813,6 +813,7 @@
 -JavaScript/ExtensionBindingsApiTest.ApiEnums/0
 -JavaScript/ExtensionBindingsApiTest.EventOverriding/0
 -JavaScript/ExtensionBindingsApiTest.ExceptionInHandlerShouldNotCrash/0
+-JavaScript/ExtensionBindingsApiTest.ExtensionSubframeGetsBindings/0
 -JavaScript/ExtensionBindingsApiTest.InternalAPIsNotOnChromeObject/0
 -JavaScript/ExtensionBindingsApiTest.LastError/0
 -JavaScript/ExtensionBindingsApiTest.ModuleSystem/0
@@ -929,6 +930,7 @@
 -Native/ExtensionBindingsApiTest.ApiEnums/0
 -Native/ExtensionBindingsApiTest.EventOverriding/0
 -Native/ExtensionBindingsApiTest.ExceptionInHandlerShouldNotCrash/0
+-Native/ExtensionBindingsApiTest.ExtensionSubframeGetsBindings/0
 -Native/ExtensionBindingsApiTest.InternalAPIsNotOnChromeObject/0
 -Native/ExtensionBindingsApiTest.LastError/0
 -Native/ExtensionBindingsApiTest.ModuleSystem/0
