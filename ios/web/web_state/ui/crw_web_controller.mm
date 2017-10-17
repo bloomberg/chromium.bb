@@ -724,9 +724,6 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (BOOL)isCurrentNavigationItemPOST;
 // Returns YES if current navigation item is WKNavigationTypeBackForward.
 - (BOOL)isCurrentNavigationBackForward;
-// Returns whether the given navigation is triggered by a user link click.
-- (BOOL)isLinkNavigation:(WKNavigationType)navigationType;
-
 // Returns YES if the given WKBackForwardListItem is valid to use for
 // navigation.
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item;
@@ -737,8 +734,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (void)setNativeController:(id<CRWNativeContent>)nativeController;
 // Returns whether |url| should be opened.
 - (BOOL)shouldOpenURL:(const GURL&)url
-      mainDocumentURL:(const GURL&)mainDocumentURL
-          linkClicked:(BOOL)linkClicked;
+      mainDocumentURL:(const GURL&)mainDocumentURL;
 // Returns YES if the navigation action is associated with a main frame request.
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action;
 // Returns whether external URL navigation action should be opened.
@@ -1348,19 +1344,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   WKNavigationType currentNavigationType =
       [self currentBackForwardListItemHolder]->navigation_type();
   return currentNavigationType == WKNavigationTypeBackForward;
-}
-
-- (BOOL)isLinkNavigation:(WKNavigationType)navigationType {
-  switch (navigationType) {
-    case WKNavigationTypeLinkActivated:
-      return YES;
-    case WKNavigationTypeOther:
-      // Sometimes link navigation is not detected by navigation type, so
-      // check last user interaction with the page in the recent time.
-      return [self userClickedRecently];
-    default:
-      return NO;
-  }
 }
 
 - (BOOL)isBackForwardListItemValid:(WKBackForwardListItem*)item {
@@ -2850,26 +2833,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
 // method, which provides less information than the WKWebView version. Audit
 // this for things that should be handled in the subclass instead.
 - (BOOL)shouldAllowLoadWithNavigationAction:(WKNavigationAction*)action {
-  // External application launcher needs |isNavigationTypeLinkActivated| to
-  // decide if the user intended to open the application by clicking on a link.
-  BOOL isNavigationTypeLinkActivated =
-      action.navigationType == WKNavigationTypeLinkActivated;
-
   // The WebDelegate may instruct the CRWWebController to stop loading, and
   // instead instruct the next page to be loaded in an animation.
   NSURLRequest* request = action.request;
   GURL requestURL = net::GURLWithNSURL(request.URL);
   GURL mainDocumentURL = net::GURLWithNSURL(request.mainDocumentURL);
-  BOOL isPossibleLinkClick = [self isLinkNavigation:action.navigationType];
   DCHECK(_webView);
-  if (![self shouldOpenURL:requestURL
-           mainDocumentURL:mainDocumentURL
-               linkClicked:isPossibleLinkClick]) {
+  if (![self shouldOpenURL:requestURL mainDocumentURL:mainDocumentURL]) {
     return NO;
   }
 
-  // If the URL doesn't look like one we can show, try to open the link with an
-  // external application.
+  // If the URL doesn't look like one that can be shown as a web page, try to
+  // open the link with an external application.
   // TODO(droger):  Check transition type before opening an external
   // application? For example, only allow it for TYPED and LINK transitions.
   if (![CRWWebController webControllerCanShow:requestURL]) {
@@ -2898,6 +2873,11 @@ registerLoadRequestForURL:(const GURL&)requestURL
       }
     }
 
+    // External application launcher needs |isNavigationTypeLinkActivated| to
+    // decide if the user intended to open the application by clicking on a
+    // link.
+    BOOL isNavigationTypeLinkActivated =
+        action.navigationType == WKNavigationTypeLinkActivated;
     if ([_delegate openExternalURL:requestURL
                          sourceURL:sourceURL
                        linkClicked:isNavigationTypeLinkActivated]) {
@@ -3658,18 +3638,14 @@ registerLoadRequestForURL:(const GURL&)requestURL
 #pragma mark WebDelegate Calls
 
 - (BOOL)shouldOpenURL:(const GURL&)url
-      mainDocumentURL:(const GURL&)mainDocumentURL
-          linkClicked:(BOOL)linkClicked {
-  if (![_delegate respondsToSelector:@selector(webController:
-                                               shouldOpenURL:
-                                             mainDocumentURL:
-                                                 linkClicked:)]) {
+      mainDocumentURL:(const GURL&)mainDocumentURL {
+  if (![_delegate respondsToSelector:@selector
+                  (webController:shouldOpenURL:mainDocumentURL:)]) {
     return YES;
   }
   return [_delegate webController:self
                     shouldOpenURL:url
-                  mainDocumentURL:mainDocumentURL
-                      linkClicked:linkClicked];
+                  mainDocumentURL:mainDocumentURL];
 }
 
 - (BOOL)isMainFrameNavigationAction:(WKNavigationAction*)action {
