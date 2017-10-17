@@ -20,7 +20,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/public/browser/gpu_utils.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/config/gpu_feature_type.h"
@@ -64,7 +63,6 @@ const GpuFeatureInfo GetGpuFeatureInfo(size_t index, bool* eof) {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   GpuDataManagerImpl* manager = GpuDataManagerImpl::GetInstance();
-  gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
 
   const GpuFeatureInfo kGpuFeatureInfo[] = {
     {"2d_canvas",

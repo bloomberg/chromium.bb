@@ -29,6 +29,18 @@ group("command_buffer_traits") {
   }
 }
 
+group("gpu_preferences_util") {
+  if (is_component_build) {
+    public_deps = [
+      "//gpu:gpu_util",
+    ]
+  } else {
+    public_deps = [
+      ":gpu_preferences_util_sources",
+    ]
+  }
+}
+
 source_set("command_buffer_traits_sources") {
   # External code should depend on this via
   # //gpu/ipc/common:command_buffer_traits above rather than depending on this
@@ -180,5 +192,20 @@ source_set("struct_traits") {
     "//gpu/command_buffer/common",
     "//gpu/ipc/common",
     "//mojo/public/cpp/bindings:bindings",
+  ]
+}
+
+source_set("gpu_preferences_util_sources") {
+  # External code should depend on this via //gpu/ipc/gpu_preferences_util
+  # above rather than depending on this directly or the component build will
+  # break.
+  visibility = [ "//gpu/*" ]
+  sources = [
+    "gpu_preferences_util.cc",
+    "gpu_preferences_util.h",
+  ]
+  configs += [ "//gpu:gpu_util_implementation" ]
+  deps = [
+    ":interfaces",
   ]
 }

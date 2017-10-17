@@ -26,6 +26,9 @@ const char kEnableGpuRasterization[] = "enable-gpu-rasterization";
 // would have been used.  Enables the chromium_raster_transport extension.
 const char kEnableOOPRasterization[] = "enable-oop-rasterization";
 
+// Passes encoded GpuPreferences to GPU process.
+const char kGpuPreferences[] = "gpu-preferences";
+
 // Passes active gpu vendor id from browser process to GPU process.
 const char kGpuActiveVendorID[] = "gpu-active-vendor-id";
 
