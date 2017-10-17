@@ -31,8 +31,8 @@ public class AwStrictModeTest {
 
                 @Override
                 public boolean needsBrowserProcessStarted() {
-                    // Don't start the browser process in AwTestBase - we want to start it ourselves
-                    // with strictmode policies turned on.
+                    // Don't start the browser process in AwActivityTestRule - we want to start it
+                    // ourselves with strictmode policies turned on.
                     return false;
                 }
             }

@@ -4,7 +4,7 @@
 
 package org.chromium.android_webview.test;
 
-import static org.chromium.android_webview.test.AwTestCommon.WAIT_TIMEOUT_MS;
+import static org.chromium.android_webview.test.AwActivityTestRule.WAIT_TIMEOUT_MS;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -31,6 +31,7 @@ import org.chromium.android_webview.AwSwitches;
 import org.chromium.android_webview.renderer_priority.RendererPriority;
 import org.chromium.android_webview.test.TestAwContentsClient.OnDownloadStartHelper;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
@@ -586,8 +587,7 @@ public class AwContentsTest {
 
     private @RendererPriority int getRendererPriorityOnUiThread(final AwContents awContents)
             throws Exception {
-        return mActivityTestRule.runTestOnUiThreadAndGetResult(
-                () -> awContents.getEffectivePriorityForTesting());
+        return ThreadUtils.runOnUiThreadBlocking(() -> awContents.getEffectivePriorityForTesting());
     }
 
     private void setRendererPriorityOnUiThread(final AwContents awContents,

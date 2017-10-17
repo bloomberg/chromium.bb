@@ -63,14 +63,12 @@ public class AwQuotaManagerBridgeTest {
     }
 
     private void deleteAllData() throws Exception {
-        final AwQuotaManagerBridge bridge =
-                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(mActivityTestRule);
+        final AwQuotaManagerBridge bridge = AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> bridge.deleteAllData());
     }
 
     private void deleteOrigin(final String origin) throws Exception {
-        final AwQuotaManagerBridge bridge =
-                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(mActivityTestRule);
+        final AwQuotaManagerBridge bridge = AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
                 () -> bridge.deleteOrigin(origin));
     }
@@ -91,8 +89,7 @@ public class AwQuotaManagerBridgeTest {
 
     private long getQuotaForOrigin() throws Exception {
         final LongValueCallbackHelper callbackHelper = new LongValueCallbackHelper();
-        final AwQuotaManagerBridge bridge =
-                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(mActivityTestRule);
+        final AwQuotaManagerBridge bridge = AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge();
 
         int callCount = callbackHelper.getCallCount();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
@@ -105,8 +102,7 @@ public class AwQuotaManagerBridgeTest {
 
     private long getUsageForOrigin(final String origin) throws Exception {
         final LongValueCallbackHelper callbackHelper = new LongValueCallbackHelper();
-        final AwQuotaManagerBridge bridge =
-                AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge(mActivityTestRule);
+        final AwQuotaManagerBridge bridge = AwQuotaManagerBridgeTestUtil.getQuotaManagerBridge();
 
         int callCount = callbackHelper.getCallCount();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(
@@ -181,12 +177,10 @@ public class AwQuotaManagerBridgeTest {
     public void testGetResultsMatch() throws Exception {
         useAppCache();
 
-        AwActivityTestRule.pollInstrumentationThread(() -> AwQuotaManagerBridgeTestUtil.getOrigins(
-                mActivityTestRule).mOrigins.length
-                > 0);
+        AwActivityTestRule.pollInstrumentationThread(
+                () -> AwQuotaManagerBridgeTestUtil.getOrigins().mOrigins.length > 0);
 
-        AwQuotaManagerBridge.Origins origins =
-                AwQuotaManagerBridgeTestUtil.getOrigins(mActivityTestRule);
+        AwQuotaManagerBridge.Origins origins = AwQuotaManagerBridgeTestUtil.getOrigins();
         Assert.assertEquals(origins.mOrigins.length, origins.mUsages.length);
         Assert.assertEquals(origins.mOrigins.length, origins.mQuotas.length);
 

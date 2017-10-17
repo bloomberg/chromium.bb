@@ -21,6 +21,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -392,8 +393,7 @@ public class AwContentsClientFullScreenTest {
 
     private boolean getKeepScreenOnOnInstrumentationThread(final View view) {
         try {
-            return mActivityTestRule.runTestOnUiThreadAndGetResult(
-                    () -> getKeepScreenOnOnUiThread(view));
+            return ThreadUtils.runOnUiThreadBlocking(() -> getKeepScreenOnOnUiThread(view));
         } catch (Exception e) {
             Assert.fail(e.getMessage());
             return false;
@@ -480,8 +480,7 @@ public class AwContentsClientFullScreenTest {
 
     private WebContents getWebContentsOnUiThread() {
         try {
-            return mActivityTestRule.runTestOnUiThreadAndGetResult(
-                    () -> mContentViewCore.getWebContents());
+            return ThreadUtils.runOnUiThreadBlocking(() -> mContentViewCore.getWebContents());
         } catch (Exception e) {
             Assert.fail(e.getMessage());
             return null;

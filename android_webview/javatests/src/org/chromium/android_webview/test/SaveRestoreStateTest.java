@@ -17,6 +17,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Feature;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationHistory;
@@ -98,7 +99,7 @@ public class SaveRestoreStateTest {
 
     private NavigationHistory getNavigationHistoryOnUiThread(
             final TestVars vars) throws Throwable {
-        return mActivityTestRule.runTestOnUiThreadAndGetResult(
+        return ThreadUtils.runOnUiThreadBlocking(
                 () -> vars.navigationController.getNavigationHistory());
     }
 
@@ -155,7 +156,7 @@ public class SaveRestoreStateTest {
         final Bundle invalidState = new Bundle();
         invalidState.putByteArray(AwContents.SAVE_RESTORE_STATE_KEY,
                                   "invalid state".getBytes());
-        boolean result = mActivityTestRule.runTestOnUiThreadAndGetResult(
+        boolean result = ThreadUtils.runOnUiThreadBlocking(
                 () -> mVars.awContents.restoreState(invalidState));
         Assert.assertFalse(result);
     }
@@ -165,8 +166,8 @@ public class SaveRestoreStateTest {
     @Feature({"AndroidWebView"})
     public void testSaveStateForNoNavigationFails() throws Throwable {
         final Bundle state = new Bundle();
-        boolean result = mActivityTestRule.runTestOnUiThreadAndGetResult(
-                () -> mVars.awContents.restoreState(state));
+        boolean result =
+                ThreadUtils.runOnUiThreadBlocking(() -> mVars.awContents.restoreState(state));
         Assert.assertFalse(result);
     }
 }
