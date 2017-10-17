@@ -121,7 +121,7 @@ function connect_pcs(pc_a, pc_b) {
     return pc_b.setLocalDescription(answer);
   })
   .then(function() {
-    return pc_a.setRemoteDescription(pc2.localDescription);
+    return pc_a.setRemoteDescription(pc_b.localDescription);
   })
 }
 
