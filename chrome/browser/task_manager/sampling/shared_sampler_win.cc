@@ -583,7 +583,7 @@ void SharedSampler::OnRefreshDone(
     }
 
     if (TaskManagerObserver::IsResourceRefreshEnabled(
-        REFRESH_TYPE_PHYSICAL_MEMORY, refresh_flags_)) {
+            REFRESH_TYPE_PHYSICAL_MEMORY, refresh_flags_)) {
       DCHECK(callback_entry.second.on_physical_memory);
       callback_entry.second.on_physical_memory.Run(physical_bytes);
     }

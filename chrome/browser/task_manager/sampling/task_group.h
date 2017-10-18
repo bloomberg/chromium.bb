@@ -74,6 +74,8 @@ class TaskGroup {
   }
   base::Time start_time() const { return start_time_; }
   base::TimeDelta cpu_time() const { return cpu_time_; }
+  void set_footprint_bytes(int64_t footprint) { memory_footprint_ = footprint; }
+  int64_t footprint_bytes() const { return memory_footprint_; }
   int64_t private_bytes() const { return memory_usage_.private_bytes; }
   int64_t shared_bytes() const { return memory_usage_.shared_bytes; }
   int64_t physical_bytes() const { return memory_usage_.physical_bytes; }
@@ -164,6 +166,7 @@ class TaskGroup {
   base::Time start_time_;     // Only calculated On Windows now.
   base::TimeDelta cpu_time_;  // Only calculated On Windows now.
   MemoryUsageStats memory_usage_;
+  int64_t memory_footprint_;
   int64_t gpu_memory_;
   base::MemoryState memory_state_;
   // The network usage in bytes per second as the sum of all network usages of
