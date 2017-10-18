@@ -19,6 +19,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
+#include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
 #define FPL FILE_PATH_LITERAL
@@ -296,30 +297,6 @@ class ChromiumEnvDBTrackerTest : public ::testing::Test {
   base::ScopedTempDir scoped_temp_dir_;
 };
 
-TEST_F(ChromiumEnvDBTrackerTest, GetOrCreateAllocatorDump) {
-  Options options;
-  options.create_if_missing = true;
-  std::string name = temp_path().AsUTF8Unsafe();
-  DBTracker::TrackedDB* tracked_db;
-  Status s = DBTracker::GetInstance()->OpenDatabase(options, name, &tracked_db);
-  ASSERT_TRUE(s.ok()) << s.ToString();
-
-  const MemoryDumpArgs detailed_args = {MemoryDumpLevelOfDetail::DETAILED};
-  ProcessMemoryDump pmd(nullptr, detailed_args);
-  auto* mad =
-      DBTracker::GetInstance()->GetOrCreateAllocatorDump(&pmd, tracked_db);
-  delete tracked_db;
-  ASSERT_TRUE(mad != nullptr);
-
-  // Check that the size was added.
-  auto& entries = mad->entries();
-  ASSERT_EQ(1ul, entries.size());
-  EXPECT_EQ(base::trace_event::MemoryAllocatorDump::kNameSize, entries[0].name);
-  EXPECT_EQ(base::trace_event::MemoryAllocatorDump::kUnitsBytes,
-            entries[0].units);
-  EXPECT_GE(entries[0].value_uint64, 0ul);
-}
-
 TEST_F(ChromiumEnvDBTrackerTest, OpenDatabase) {
   struct KeyValue {
     const char* key;
@@ -442,6 +419,65 @@ TEST_F(ChromiumEnvDBTrackerTest, CheckMemEnv) {
 
   std::unique_ptr<leveldb::Env> memenv(leveldb_chrome::NewMemEnv(env));
   EXPECT_TRUE(leveldb_chrome::IsMemEnv(memenv.get()));
+}
+
+TEST_F(ChromiumEnvDBTrackerTest, MemoryDumpCreation) {
+  Options options;
+  options.create_if_missing = true;
+  leveldb::Cache* web_cache = leveldb_chrome::GetSharedWebBlockCache();
+  leveldb::Cache* browser_cache = leveldb_chrome::GetSharedBrowserBlockCache();
+  options.block_cache = web_cache;
+  std::unique_ptr<leveldb::DB> db1;
+  base::ScopedTempDir temp_dir1;
+  ASSERT_TRUE(temp_dir1.CreateUniqueTempDir());
+  base::ScopedTempDir temp_dir2;
+  ASSERT_TRUE(temp_dir2.CreateUniqueTempDir());
+  base::ScopedTempDir temp_dir3;
+  ASSERT_TRUE(temp_dir3.CreateUniqueTempDir());
+
+  auto status =
+      leveldb_env::OpenDB(options, temp_dir1.GetPath().AsUTF8Unsafe(), &db1);
+  ASSERT_TRUE(status.ok()) << status.ToString();
+
+  std::unique_ptr<leveldb::DB> db2;
+  status =
+      leveldb_env::OpenDB(options, temp_dir2.GetPath().AsUTF8Unsafe(), &db2);
+  ASSERT_TRUE(status.ok()) << status.ToString();
+
+  std::unique_ptr<leveldb::DB> db3;
+  options.block_cache = browser_cache;
+  status =
+      leveldb_env::OpenDB(options, temp_dir3.GetPath().AsUTF8Unsafe(), &db3);
+  ASSERT_TRUE(status.ok()) << status.ToString();
+
+  auto db_visitor = [](DBTracker::TrackedDB* db) {
+    leveldb::Cache* db_cache =
+        (db->block_cache_type() == DBTracker::SharedReadCacheUse_Browser)
+            ? leveldb_chrome::GetSharedBrowserBlockCache()
+            : leveldb_chrome::GetSharedWebBlockCache();
+    size_t initial_cache_size = db_cache->TotalCharge();
+    auto status = db->Put(WriteOptions(), "key", "value");
+    EXPECT_TRUE(status.ok()) << status.ToString();
+    db->CompactRange(nullptr, nullptr);
+    std::string value;
+    status = db->Get(ReadOptions(), "key", &value);
+    ASSERT_TRUE(status.ok()) << status.ToString();
+    EXPECT_GT(db_cache->TotalCharge(), initial_cache_size);
+  };
+  DBTracker::GetInstance()->VisitDatabases(base::BindRepeating(db_visitor));
+  ASSERT_EQ(browser_cache->TotalCharge() * 2, web_cache->TotalCharge());
+
+  MemoryDumpArgs dump_args = {MemoryDumpLevelOfDetail::BACKGROUND};
+  base::trace_event::ProcessMemoryDump pmd(nullptr, dump_args);
+  auto* mad1 = DBTracker::GetOrCreateAllocatorDump(&pmd, db1.get());
+  auto* mad2 = DBTracker::GetOrCreateAllocatorDump(&pmd, db2.get());
+  auto* mad3 = DBTracker::GetOrCreateAllocatorDump(&pmd, db3.get());
+
+  // All databases should have the same size since we made the same changes.
+  size_t db_size = mad1->GetSizeInternal();
+  EXPECT_GT(db_size, 0ul);
+  EXPECT_EQ(db_size, mad2->GetSizeInternal());
+  EXPECT_EQ(db_size, mad3->GetSizeInternal());
 }
 
 }  // namespace leveldb_env

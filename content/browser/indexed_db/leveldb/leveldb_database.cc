@@ -467,18 +467,20 @@ bool LevelDBDatabase::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
   if (!db_)
     return false;
-
-  std::string value;
-  uint64_t size;
-  bool res = db_->GetProperty("leveldb.approximate-memory-usage", &value);
-  DCHECK(res);
-  base::StringToUint64(value, &size);
+  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
+  // an edge to the existing database.
+  auto* tracker_dump =
+      leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db_.get());
+  if (!tracker_dump)
+    return true;
 
   auto* dump = pmd->CreateAllocatorDump(
       base::StringPrintf("site_storage/index_db/0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(db_.get())));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  tracker_dump->GetSizeInternal());
+  pmd->AddOwnershipEdge(dump->guid(), tracker_dump->guid());
 
   // Dumps in BACKGROUND mode cannot have strings or edges in order to minimize
   // trace size and instrumentation overhead.
@@ -488,14 +490,6 @@ bool LevelDBDatabase::OnMemoryDump(
   }
 
   dump->AddString("file_name", "", file_name_for_tracing);
-
-  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
-  // an edge to avoid double counting.
-  auto* tracker_dump =
-      leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db_.get());
-  if (tracker_dump)
-    pmd->AddOwnershipEdge(dump->guid(), tracker_dump->guid());
-
   return true;
 }
 

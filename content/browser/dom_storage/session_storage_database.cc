@@ -360,33 +360,23 @@ bool SessionStorageDatabase::ReadNamespacesAndOrigins(
 
 void SessionStorageDatabase::OnMemoryDump(
     base::trace_event::ProcessMemoryDump* pmd) {
-  std::string db_memory_usage;
-  {
-    base::AutoLock lock(db_lock_);
-    if (!db_)
-      return;
-
-    bool res =
-        db_->GetProperty("leveldb.approximate-memory-usage", &db_memory_usage);
-    DCHECK(res);
-  }
-
-  uint64_t size;
-  bool res = base::StringToUint64(db_memory_usage, &size);
-  DCHECK(res);
+  base::AutoLock lock(db_lock_);
+  if (!db_)
+    return;
+  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
+  // an edge to the existing dump.
+  auto* tracker_dump =
+      leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db_.get());
+  if (!tracker_dump)
+    return;
 
   auto* mad = pmd->CreateAllocatorDump(
       base::StringPrintf("site_storage/session_storage_0x%" PRIXPTR,
                          reinterpret_cast<uintptr_t>(this)));
+  pmd->AddOwnershipEdge(mad->guid(), tracker_dump->guid());
   mad->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                 base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
-
-  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
-  // an edge to avoid double counting.
-  auto* tracker_dump =
-      leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db_.get());
-  if (tracker_dump)
-    pmd->AddOwnershipEdge(mad->guid(), tracker_dump->guid());
+                 base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                 tracker_dump->GetSizeInternal());
 }
 
 bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
