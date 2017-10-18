@@ -8,6 +8,7 @@
 #include "base/test/simple_test_clock.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/ble_constants.h"
+#include "chromeos/components/tether/fake_ble_scanner.h"
 #include "chromeos/components/tether/proto/tether.pb.h"
 #include "chromeos/components/tether/timer_factory.h"
 #include "components/cryptauth/ble/bluetooth_low_energy_weave_client_connection.h"
@@ -145,28 +146,6 @@ class UnregisteringObserver : public BleConnectionManager::Observer {
   MessageType connection_reason_;
 };
 
-class MockBleScanner : public BleScanner {
- public:
-  explicit MockBleScanner(scoped_refptr<device::BluetoothAdapter> adapter)
-      : BleScanner(adapter, nullptr, nullptr) {}
-  ~MockBleScanner() override {}
-
-  MOCK_METHOD1(RegisterScanFilterForDevice,
-               bool(const cryptauth::RemoteDevice&));
-  MOCK_METHOD1(UnregisterScanFilterForDevice,
-               bool(const cryptauth::RemoteDevice&));
-
-  void NotifyReceivedAdvertisementFromDevice(
-      const std::string& bluetooth_address,
-      const cryptauth::RemoteDevice& remote_device) {
-    device::MockBluetoothDevice device(
-        static_cast<device::MockBluetoothAdapter*>(adapter().get()),
-        0u /* bluetooth_class */, "name", bluetooth_address, false /* paired */,
-        false /* connected */);
-    BleScanner::NotifyReceivedAdvertisementFromDevice(remote_device, &device);
-  }
-};
-
 class MockBleAdvertiser : public BleAdvertiser {
  public:
   MockBleAdvertiser() : BleAdvertiser(nullptr, nullptr, nullptr) {}
@@ -299,11 +278,8 @@ class BleConnectionManagerTest : public testing::Test {
     ON_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(_))
         .WillByDefault(Return(true));
 
-    mock_ble_scanner_ = base::WrapUnique(new MockBleScanner(mock_adapter_));
-    ON_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(_))
-        .WillByDefault(Return(true));
-    ON_CALL(*mock_ble_scanner_, UnregisterScanFilterForDevice(_))
-        .WillByDefault(Return(true));
+    fake_ble_scanner_ = base::MakeUnique<FakeBleScanner>(
+        true /* automatically_update_discovery_session */);
 
     fake_connection_factory_ = base::WrapUnique(new FakeConnectionFactory(
         mock_adapter_, device::BluetoothUUID(kGattServerUuid)));
@@ -317,7 +293,7 @@ class BleConnectionManagerTest : public testing::Test {
 
     manager_ = base::WrapUnique(new BleConnectionManager(
         fake_cryptauth_service_.get(), mock_adapter_, device_queue_.get(),
-        mock_ble_advertiser_.get(), mock_ble_scanner_.get()));
+        mock_ble_advertiser_.get(), fake_ble_scanner_.get()));
     test_observer_ = base::WrapUnique(new TestObserver());
     manager_->AddObserver(test_observer_.get());
 
@@ -416,6 +392,16 @@ class BleConnectionManagerTest : public testing::Test {
         ->Fire();
   }
 
+  void NotifyReceivedAdvertisementFromDevice(
+      const std::string& bluetooth_address,
+      const cryptauth::RemoteDevice& remote_device) {
+    device::MockBluetoothDevice device(
+        mock_adapter_.get(), 0u /* bluetooth_class */, "name",
+        bluetooth_address, false /* paired */, false /* connected */);
+    fake_ble_scanner_->NotifyReceivedAdvertisementFromDevice(remote_device,
+                                                             &device);
+  }
+
   FakeSecureChannel* GetChannelForDevice(
       const cryptauth::RemoteDevice& remote_device) {
     BleConnectionManager::ConnectionMetadata* connection_metadata =
@@ -466,8 +452,7 @@ class BleConnectionManagerTest : public testing::Test {
     VerifyDeviceRegistered(remote_device);
 
     fake_secure_channel_factory_->SetExpectedDeviceAddress(bluetooth_address);
-    mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(bluetooth_address,
-                                                             remote_device);
+    NotifyReceivedAdvertisementFromDevice(bluetooth_address, remote_device);
     return GetChannelForDevice(remote_device);
   }
 
@@ -541,7 +526,7 @@ class BleConnectionManagerTest : public testing::Test {
 
   std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service_;
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
-  std::unique_ptr<MockBleScanner> mock_ble_scanner_;
+  std::unique_ptr<FakeBleScanner> fake_ble_scanner_;
   std::unique_ptr<MockBleAdvertiser> mock_ble_advertiser_;
   std::unique_ptr<BleAdvertisementDeviceQueue> device_queue_;
   MockTimerFactory* mock_timer_factory_;
@@ -563,8 +548,7 @@ class BleConnectionManagerTest : public testing::Test {
 };
 
 TEST_F(BleConnectionManagerTest, TestCannotScan) {
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
-      .WillOnce(Return(false));
+  fake_ble_scanner_->set_should_fail_to_register(true);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
       .Times(0);
 
@@ -580,8 +564,6 @@ TEST_F(BleConnectionManagerTest, TestCannotScan) {
 }
 
 TEST_F(BleConnectionManagerTest, TestCannotAdvertise) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
       .WillOnce(Return(false));
 
@@ -597,8 +579,6 @@ TEST_F(BleConnectionManagerTest, TestCannotAdvertise) {
 }
 
 TEST_F(BleConnectionManagerTest, TestRegistersButNoResult) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
 
@@ -616,12 +596,8 @@ TEST_F(BleConnectionManagerTest, TestRegistersButNoResult) {
 TEST_F(BleConnectionManagerTest, TestRegistersAndUnregister_NoConnection) {
   // Expected to start a connection attempt after the device is registered and
   // to stop the attempt once the device is unregistered.
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   manager_->RegisterRemoteDevice(test_devices_[0],
@@ -645,12 +621,7 @@ TEST_F(BleConnectionManagerTest, TestRegisterWithNoConnection_TimeoutOccurs) {
   // Expected to start a connection attempt, then stop once the timer fires,
   // then start again, then stop when the device is unregistered; in total, 2
   // starts and 2 stops.
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
-      .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]))
       .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]))
       .Times(2);
@@ -680,12 +651,8 @@ TEST_F(BleConnectionManagerTest, TestRegisterWithNoConnection_TimeoutOccurs) {
 }
 
 TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_FailsAuthentication) {
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
       .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   manager_->RegisterRemoteDevice(test_devices_[0],
@@ -696,8 +663,7 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_FailsAuthentication) {
        cryptauth::SecureChannel::Status::CONNECTING}});
 
   fake_secure_channel_factory_->SetExpectedDeviceAddress(kBluetoothAddress1);
-  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
-                                                           test_devices_[0]);
+  NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1, test_devices_[0]);
   FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
 
   // Should not result in an additional "disconnected => connecting" broadcast.
@@ -726,12 +692,8 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_FailsAuthentication) {
 }
 
 TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   FakeSecureChannel* channel =
@@ -763,12 +725,8 @@ TEST_F(BleConnectionManagerTest, TestSuccessfulConnection_SendAndReceive) {
 // Test for fix to crbug.com/706640. This test will crash without the fix.
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_MultipleAdvertisementsReceived) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   manager_->RegisterRemoteDevice(test_devices_[0],
@@ -781,29 +739,22 @@ TEST_F(BleConnectionManagerTest,
   fake_secure_channel_factory_->SetExpectedDeviceAddress(kBluetoothAddress1);
 
   // Simulate multiple advertisements being received:
-  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
-                                                           test_devices_[0]);
+  NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1, test_devices_[0]);
   FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
 
-  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
-                                                           test_devices_[0]);
+  NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1, test_devices_[0]);
   // Verify that a new channel has not been created:
   EXPECT_EQ(channel, GetChannelForDevice(test_devices_[0]));
 
-  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
-                                                           test_devices_[0]);
+  NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1, test_devices_[0]);
   // Verify that a new channel has not been created:
   EXPECT_EQ(channel, GetChannelForDevice(test_devices_[0]));
 }
 
 TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_MultipleConnectionReasons) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   ConnectSuccessfully(test_devices_[0], kBluetoothAddress1,
@@ -830,12 +781,8 @@ TEST_F(BleConnectionManagerTest,
 }
 
 TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   cryptauth::SecureChannel::Status status;
@@ -855,8 +802,7 @@ TEST_F(BleConnectionManagerTest, TestGetStatusForDevice) {
   EXPECT_EQ(cryptauth::SecureChannel::Status::CONNECTING, status);
 
   fake_secure_channel_factory_->SetExpectedDeviceAddress(kBluetoothAddress1);
-  mock_ble_scanner_->NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1,
-                                                           test_devices_[0]);
+  NotifyReceivedAdvertisementFromDevice(kBluetoothAddress1, test_devices_[0]);
   FakeSecureChannel* channel = GetChannelForDevice(test_devices_[0]);
 
   channel->ChangeStatus(cryptauth::SecureChannel::Status::CONNECTING);
@@ -898,12 +844,8 @@ TEST_F(BleConnectionManagerTest,
        TestSuccessfulConnection_DisconnectsAfterConnection) {
   // A reconnection attempt is expected once the disconnection occurs, meaning
   // two separate connection attempts.
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
       .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
 
   FakeSecureChannel* channel =
@@ -919,12 +861,9 @@ TEST_F(BleConnectionManagerTest,
 }
 
 TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanScan) {
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
-      .WillOnce(Return(false));
+  fake_ble_scanner_->set_should_fail_to_register(true);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
       .Times(0);
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[1]))
-      .WillOnce(Return(false));
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[1]))
       .Times(0);
 
@@ -944,12 +883,8 @@ TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanScan) {
 }
 
 TEST_F(BleConnectionManagerTest, TwoDevices_NeitherCanAdvertise) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
       .WillOnce(Return(false));
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[1]));
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[1]))
       .WillOnce(Return(false));
 
@@ -976,21 +911,11 @@ TEST_F(BleConnectionManagerTest,
   // Expected to start a connection attempt, then stop once the timer fires,
   // then start again, then stop when the device is unregistered; in total, 2
   // starts and 2 stops.
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
-      .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]))
       .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]))
       .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[1]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[1]))
-      .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[1]))
       .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[1]))
       .Times(2);
@@ -1049,19 +974,10 @@ TEST_F(BleConnectionManagerTest, TwoDevices_OneConnects) {
   // Device 0 is expected to start the attempt and stop once a connection has
   // been achieved. Device 1 is expected to start, then stop once the tiemr
   // fires, then start again.
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[1]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[1]))
-      .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[1]))
       .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[1]))
       .Times(2);
@@ -1105,19 +1021,11 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
   // Device 0 is expected to start the attempt and stop once a connection has
   // been achieved. Device 1 is expected to start, then stop once the timer
   // fires, then start again.
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[1]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[1]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[1]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[1]));
 
   FakeSecureChannel* channel0 =
@@ -1173,37 +1081,19 @@ TEST_F(BleConnectionManagerTest, TwoDevices_BothConnectSendAndReceive) {
 }
 
 TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]));
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[1]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[1]))
-      .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[1]))
       .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[1]))
       .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[2]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[2]))
-      .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[2]))
       .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[2]))
       .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              RegisterScanFilterForDevice(test_devices_[3]));
   EXPECT_CALL(*mock_ble_advertiser_,
               StartAdvertisingToDevice(test_devices_[3]));
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[3]));
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[3]));
 
   // Register all devices. Since the maximum number of simultaneous connection
@@ -1327,12 +1217,7 @@ TEST_F(BleConnectionManagerTest, FourDevices_ComprehensiveTest) {
 // pass the parameters from the ConnectionMetadata to BleConnectionManager by
 // value instead.
 TEST_F(BleConnectionManagerTest, ObserverUnregisters) {
-  EXPECT_CALL(*mock_ble_scanner_, RegisterScanFilterForDevice(test_devices_[0]))
-      .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StartAdvertisingToDevice(test_devices_[0]))
-      .Times(2);
-  EXPECT_CALL(*mock_ble_scanner_,
-              UnregisterScanFilterForDevice(test_devices_[0]))
       .Times(2);
   EXPECT_CALL(*mock_ble_advertiser_, StopAdvertisingToDevice(test_devices_[0]))
       .Times(2);
