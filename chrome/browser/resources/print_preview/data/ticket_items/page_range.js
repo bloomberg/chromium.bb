@@ -20,7 +20,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     wouldValueBeValid(value) {
-      var result = pageRangeTextToPageRanges(
+      const result = pageRangeTextToPageRanges(
           value, this.getDocumentInfoInternal().pageCount);
       return Array.isArray(result);
     }
@@ -30,7 +30,7 @@ cr.define('print_preview.ticket_items', function() {
      *     page range string.
      */
     getPageNumberSet() {
-      var pageNumberList = pageRangeTextToPageList(
+      const pageNumberList = pageRangeTextToPageList(
           this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
       return new print_preview.PageNumberSet(pageNumberList);
     }
@@ -63,7 +63,7 @@ cr.define('print_preview.ticket_items', function() {
      *     ranges.
      */
     getPageRanges() {
-      var pageRanges = pageRangeTextToPageRanges(this.getValueAsString_());
+      const pageRanges = pageRangeTextToPageRanges(this.getValueAsString_());
       return Array.isArray(pageRanges) ? pageRanges : [];
     }
 
@@ -74,7 +74,7 @@ cr.define('print_preview.ticket_items', function() {
      *     page ranges.
      */
     getDocumentPageRanges() {
-      var pageRanges = pageRangeTextToPageRanges(
+      const pageRanges = pageRangeTextToPageRanges(
           this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
       return Array.isArray(pageRanges) ? pageRanges : [];
     }
@@ -90,7 +90,7 @@ cr.define('print_preview.ticket_items', function() {
      * @return {!PageRangeStatus}
      */
     checkValidity() {
-      var pageRanges = pageRangeTextToPageRanges(
+      const pageRanges = pageRangeTextToPageRanges(
           this.getValueAsString_(), this.getDocumentInfoInternal().pageCount);
       return Array.isArray(pageRanges) ? PageRangeStatus.NO_ERROR : pageRanges;
     }

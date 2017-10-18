@@ -131,7 +131,7 @@ cr.define('print_preview.ticket_items', function() {
      */
     updateValue(value) {
       // Use comparison with capabilities for event.
-      var sendUpdateEvent = !this.isValueEqual(value);
+      const sendUpdateEvent = !this.isValueEqual(value);
       // Don't lose requested value if capability is not available.
       this.updateValueInternal(value);
       if (this.appState_ && (this.field_ != null) &&

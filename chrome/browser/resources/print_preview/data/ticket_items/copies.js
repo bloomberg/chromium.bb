@@ -29,13 +29,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {number} The number of copies indicated by the ticket item. */
     getValueAsNumber() {
-      var value = this.getValue();
+      const value = this.getValue();
       return value == '' ? 0 : parseInt(value, 10);
     }
 
     /** @override */
     getDefaultValueInternal() {
-      var cap = this.getCopiesCapability_();
+      const cap = this.getCopiesCapability_();
       return cap.hasOwnProperty('default') ? cap.default : '1';
     }
 
@@ -49,7 +49,7 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     getCopiesCapability_() {
-      var dest = this.getSelectedDestInternal();
+      const dest = this.getSelectedDestInternal();
       return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.copies) ||
           null;

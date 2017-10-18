@@ -32,7 +32,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal() {
-      var capability = this.getCollateCapability_();
+      const capability = this.getCollateCapability_();
       return capability.hasOwnProperty('default') ? capability.default : true;
     }
 
@@ -46,7 +46,7 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     getCollateCapability_() {
-      var dest = this.getSelectedDestInternal();
+      const dest = this.getSelectedDestInternal();
       return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.collate) ||
           null;
