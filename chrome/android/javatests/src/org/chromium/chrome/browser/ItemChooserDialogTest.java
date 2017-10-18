@@ -55,8 +55,6 @@ public class ItemChooserDialogTest implements ItemChooserDialog.ItemSelectedCall
     Drawable mTestDrawable2;
     String mTestDrawableDescription2;
 
-    // ChromeActivityTestCaseBase:
-
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();

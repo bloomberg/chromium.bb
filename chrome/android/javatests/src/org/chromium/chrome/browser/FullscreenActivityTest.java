@@ -10,7 +10,6 @@ import android.content.Intent;
 import android.provider.Browser;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
-import android.support.test.rule.UiThreadTestRule;
 
 import org.junit.After;
 import org.junit.Assert;
@@ -20,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -46,8 +46,6 @@ public class FullscreenActivityTest {
     private static final String VIDEO_ID = "video";
 
     @Rule
-    public UiThreadTestRule mUiThreadTestRule = new UiThreadTestRule();
-    @Rule
     public ChromeActivityTestRule<ChromeTabbedActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeTabbedActivity.class);
 
@@ -57,7 +55,7 @@ public class FullscreenActivityTest {
     @Before
     public void setUp() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartServer(
-                mActivityTestRule.getInstrumentation().getContext());
+                InstrumentationRegistry.getInstrumentation().getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PATH));
         mActivity = mActivityTestRule.getActivity();
     }
@@ -91,7 +89,7 @@ public class FullscreenActivityTest {
      */
     private void moveTabToActivity(final Activity fromActivity, final Tab tab,
             final Class<? extends ChromeActivity> targetClass) throws Throwable {
-        mUiThreadTestRule.runOnUiThread(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Intent intent = new Intent(fromActivity, targetClass);
             intent.putExtra(
                     IntentHandler.EXTRA_PARENT_COMPONENT, fromActivity.getComponentName());
@@ -149,7 +147,7 @@ public class FullscreenActivityTest {
     public void testExitOnBack() throws Throwable {
         Activity original = mActivity;
         final FullscreenActivity fullscreenActivity = enterFullscreen();
-        mUiThreadTestRule.runOnUiThread(() -> fullscreenActivity.onBackPressed());
+        ThreadUtils.runOnUiThreadBlocking(() -> fullscreenActivity.onBackPressed());
 
         ChromeTabbedActivity activity = waitForActivity(ChromeTabbedActivity.class);
 
@@ -235,7 +233,7 @@ public class FullscreenActivityTest {
 
         // Launch a ChromeTabbedActivity2 to go foreground and put the FullscreenActivity in the
         // background.
-        mUiThreadTestRule.runOnUiThread(() -> {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
             Intent intent = new Intent(mActivity, ChromeTabbedActivity2.class);
             mActivity.startActivity(intent);
         });

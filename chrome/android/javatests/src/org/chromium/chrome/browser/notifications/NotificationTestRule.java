@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.notifications;
 import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
 
 import android.app.Notification;
+import android.support.test.InstrumentationRegistry;
 
 import org.junit.Assert;
 import org.junit.runner.Description;
@@ -50,7 +51,8 @@ public class NotificationTestRule extends ChromeActivityTestRule<ChromeTabbedAct
         mMockNotificationManager = new MockNotificationManagerProxy();
         NotificationPlatformBridge.overrideNotificationManagerForTesting(mMockNotificationManager);
         startMainActivityFromLauncher();
-        mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(
+                InstrumentationRegistry.getInstrumentation().getContext());
     }
 
     private void tearDown() throws Exception {

@@ -6,13 +6,13 @@ package org.chromium.chrome.test.util;
 
 import android.graphics.Rect;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.prerender.ExternalPrerenderHandler;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
+import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
@@ -60,23 +60,23 @@ public class PrerenderTestHelper {
     /**
      * Clears the omnibox.
      *
-     * @param testBase ChromeTabbedActivityTestBase instance.
+     * @param testRule ChromeActivityTestRule instance.
      */
-    public static void clearOmnibox(ChromeTabbedActivityTestBase testBase)
+    public static void clearOmnibox(ChromeActivityTestRule<?> testRule)
             throws InterruptedException {
-        testBase.typeInOmnibox("", false);
+        testRule.typeInOmnibox("", false);
     }
 
     /**
      * Clears the omnibox and types in the url character-by-character.
      *
      * @param url url to type into the omnibox.
-     * @param testBase ChromeTabbedActivityTestBase instance.
+     * @param testRule ChromeActivityTestRule<?> instance.
      */
-    public static void clearOmniboxAndTypeUrl(String url, ChromeTabbedActivityTestBase testBase)
+    public static void clearOmniboxAndTypeUrl(String url, ChromeActivityTestRule<?> testRule)
             throws InterruptedException {
-        clearOmnibox(testBase);
-        testBase.typeInOmnibox(url, true);
+        clearOmnibox(testRule);
+        testRule.typeInOmnibox(url, true);
     }
 
     /**

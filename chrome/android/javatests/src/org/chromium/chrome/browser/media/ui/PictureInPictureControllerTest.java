@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.media.ui;
 
 import android.annotation.TargetApi;
 import android.os.Build;
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.rule.UiThreadTestRule;
 
@@ -57,7 +58,7 @@ public class PictureInPictureControllerTest {
     @Before
     public void setUp() throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartServer(
-                mActivityTestRule.getInstrumentation().getContext());
+                InstrumentationRegistry.getInstrumentation().getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PATH));
         mActivity = mActivityTestRule.getActivity();
     }
@@ -196,8 +197,9 @@ public class PictureInPictureControllerTest {
     }
 
     private void triggerAutoPiP() throws Throwable{
-        mUiThreadTestRule.runOnUiThread(() ->
-                mActivityTestRule.getInstrumentation().callActivityOnUserLeaving(mActivity));
+        mUiThreadTestRule.runOnUiThread(
+                () -> InstrumentationRegistry.getInstrumentation().callActivityOnUserLeaving(
+                                mActivity));
     }
 
     private void enterFullscreen() throws Throwable {
