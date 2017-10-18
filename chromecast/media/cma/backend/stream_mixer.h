@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_H_
 
 #include <stdint.h>
 
@@ -16,10 +16,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "base/timer/timer.h"
-#include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input.h"
+#include "chromecast/media/cma/backend/stream_mixer_input.h"
 #include "chromecast/public/cast_media_shlib.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/volume_control.h"
+
+namespace base {
+class ListValue;
+}  // namespace base
 
 namespace media {
 class AudioBus;
@@ -31,30 +35,32 @@ namespace media {
 class MixerOutputStream;
 class FilterGroup;
 class PostProcessingPipelineParser;
+class PostProcessingPipelineFactory;
 
 // Mixer implementation. The mixer has one or more input queues; these can be
 // added/removed at any time. When an input source pushes frames to an input
-// queue, the queue should call StreamMixerAlsa::WriteFrames(); this causes
+// queue, the queue should call StreamMixer::WriteFrames(); this causes
 // the mixer to attempt to mix and write out as many frames as possible. To do
 // this, the mixer determines how many frames can be read from all inputs (ie,
 // it gets the maximum number of frames that can be read from each input, and
 // uses the minimum value). Assuming that all primary inputs have some data
 // available, the calculated number of frames are pulled from each input (maybe
 // resampled, if the input's incoming sample rate is not equal to the mixer's
-// output sample rate) and written to the ALSA stack.
+// output sample rate) and written to a MixerOutputStream.
 //
-// The rendering delay is recalculated after every successful write to the ALSA
-// stack. This delay is passed up to the input sources whenever some new data
-// is sucessfully added to the input queue (which happens whenever the amount
-// of data in the queue drops below the maximum limit, if data is pending). Note
-// that the rendering delay is not accurate while the mixer is gathering frames
-// to write, so the rendering delay and the queue size for each input must be
-// updated atomically after each write is complete (ie, in AfterWriteFrames()).
-class StreamMixerAlsa {
+// The rendering delay is recalculated after every successful write to the
+// output stream. This delay is passed up to the input sources whenever some new
+// data is sucessfully added to the input queue (which happens whenever the
+// amount of data in the queue drops below the maximum limit, if data is
+// pending). Note that the rendering delay is not accurate while the mixer is
+// gathering frames to write, so the rendering delay and the queue size for each
+// input must be updated atomically after each write is complete (ie, in
+// AfterWriteFrames()).
+class StreamMixer {
  public:
   // This mixer will pull data from InputQueues which are added to it, mix the
-  // data from the streams, and write the mixed data as a single stream to ALSA.
-  // These methods will be called on the mixer thread only.
+  // data from the streams, and write the mixed data as a single stream to the
+  // output. These methods will be called on the mixer thread only.
   class InputQueue {
    public:
     using OnReadyToDeleteCb = base::Callback<void(InputQueue*)>;
@@ -83,8 +89,9 @@ class StreamMixerAlsa {
 
     // Initializes the InputQueue after the mixer is set up. At this point the
     // input can correctly determine the mixer's output sample rate.
-    virtual void Initialize(const MediaPipelineBackendAlsa::RenderingDelay&
-                                mixer_rendering_delay) = 0;
+    virtual void Initialize(
+        const MediaPipelineBackend::AudioDecoder::RenderingDelay&
+            mixer_rendering_delay) = 0;
 
     // Sets and gets the FilterGroup the InputQueue matches.
     // This is determined at creation to save time matching the InputQueue
@@ -120,14 +127,14 @@ class StreamMixerAlsa {
     // from this stream.
     virtual void OnSkipped() = 0;
 
-    // This is called for every InputQueue when the mixer writes data to ALSA
+    // This is called for every InputQueue when the mixer writes data to output
     // for any of its input streams.
     virtual void AfterWriteFrames(
-        const MediaPipelineBackendAlsa::RenderingDelay&
+        const MediaPipelineBackend::AudioDecoder::RenderingDelay&
             mixer_rendering_delay) = 0;
 
     // This will be called when a fatal error occurs in the mixer.
-    virtual void SignalError(StreamMixerAlsaInput::MixerError error) = 0;
+    virtual void SignalError(StreamMixerInput::MixerError error) = 0;
 
     // Notifies the input that it is being removed by the upper layers, and
     // should do whatever is necessary to become ready to delete from the mixer.
@@ -154,7 +161,7 @@ class StreamMixerAlsa {
     kStateError,
   };
 
-  static StreamMixerAlsa* Get();
+  static StreamMixer* Get();
   static void MakeSingleThreadedForTest();
 
   int output_samples_per_second() const { return output_samples_per_second_; }
@@ -174,11 +181,13 @@ class StreamMixerAlsa {
   // after this is called. Can be called on any thread.
   void RemoveInput(InputQueue* input);
 
-  // Attempts to write some frames of audio to ALSA. Must only be called on the
-  // mixer thread.
+  // Attempts to write some frames of audio to the output. Must only be called
+  // on the mixer thread.
   void OnFramesQueued();
 
-  void ResetPostProcessorsForTest(const std::string& pipeline_json);
+  void ResetPostProcessorsForTest(
+      std::unique_ptr<PostProcessingPipelineFactory> pipeline_factory,
+      const std::string& pipeline_json);
   void SetMixerOutputStreamForTest(std::unique_ptr<MixerOutputStream> output);
   void WriteFramesForTest();  // Can be called on any thread.
   void ClearInputsForTest();  // Removes all inputs.
@@ -210,8 +219,8 @@ class StreamMixerAlsa {
   void SetFilterFrameAlignmentForTest(int filter_frame_alignment);
 
  protected:
-  StreamMixerAlsa();
-  virtual ~StreamMixerAlsa();
+  StreamMixer();
+  virtual ~StreamMixer();
 
  private:
   // Contains volume control information for an audio content type.
@@ -228,6 +237,12 @@ class StreamMixerAlsa {
   void FinishFinalize();
 
   void CreatePostProcessors(PostProcessingPipelineParser* pipeline_parser);
+  std::unique_ptr<FilterGroup> CreateFilterGroup(
+      bool mix_to_mono,
+      const std::string& name,
+      const base::ListValue* filter_list,
+      const std::unordered_set<std::string>& device_ids,
+      const std::vector<FilterGroup*>& mixed_inputs);
 
   bool Start();
   void Stop();
@@ -253,6 +268,8 @@ class StreamMixerAlsa {
   static bool single_threaded_for_test_;
 
   std::unique_ptr<MixerOutputStream> output_;
+  std::unique_ptr<PostProcessingPipelineFactory>
+      post_processing_pipeline_factory_;
   std::unique_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
 
@@ -285,10 +302,10 @@ class StreamMixerAlsa {
 
   std::map<AudioContentType, VolumeInfo> volume_info_;
 
-  DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsa);
+  DISALLOW_COPY_AND_ASSIGN(StreamMixer);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_H_

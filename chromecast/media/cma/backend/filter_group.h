@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_FILTER_GROUP_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_FILTER_GROUP_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_FILTER_GROUP_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_FILTER_GROUP_H_
 
 #include <stdint.h>
 
@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/aligned_memory.h"
 #include "base/values.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
+#include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/public/volume_control.h"
 
 namespace media {
@@ -27,7 +27,7 @@ namespace media {
 
 class PostProcessingPipeline;
 
-// FilterGroup mixes StreamMixerAlsa::InputQueues and/or FilterGroups,
+// FilterGroup mixes StreamMixer::InputQueues and/or FilterGroups,
 // mixes their outputs, and applies DSP to them.
 
 // FilterGroups are added at construction. These cannot be removed.
@@ -41,8 +41,7 @@ class FilterGroup {
   //    output channels will be 1 if it is set to true, otherwise it remains
   //    same as |num_channels|.
   // |name| is used for debug printing
-  // |filter_list| is a list of {"processor": LIBRARY_NAME, "configs": CONFIG}
-  //    that is used to create PostProcessingPipeline.
+  // |pipeline| - processing pipeline.
   // |device_ids| is a set of strings that is used as a filter to determine
   //   if an InputQueue belongs to this group (InputQueue->name() must exactly
   //   match an entry in |device_ids| to be processed by this group).
@@ -53,7 +52,7 @@ class FilterGroup {
   FilterGroup(int num_channels,
               bool mix_to_mono,
               const std::string& name,
-              const base::ListValue* filter_list,
+              std::unique_ptr<PostProcessingPipeline> pipeline,
               const std::unordered_set<std::string>& device_ids,
               const std::vector<FilterGroup*>& mixed_inputs);
 
@@ -63,10 +62,10 @@ class FilterGroup {
   void Initialize(int output_samples_per_second);
 
   // Returns |true| if this FilterGroup is appropriate to process |input|.
-  bool CanProcessInput(StreamMixerAlsa::InputQueue* input);
+  bool CanProcessInput(StreamMixer::InputQueue* input);
 
   // Adds |input| to |active_inputs_|.
-  void AddActiveInput(StreamMixerAlsa::InputQueue* input);
+  void AddActiveInput(StreamMixer::InputQueue* input);
 
   // Mixes all active inputs and passes them through the audio filter.
   // Returns the largest volume of all streams with data.
@@ -113,7 +112,7 @@ class FilterGroup {
   const std::string name_;
   const std::unordered_set<std::string> device_ids_;
   std::vector<FilterGroup*> mixed_inputs_;
-  std::vector<StreamMixerAlsa::InputQueue*> active_inputs_;
+  std::vector<StreamMixer::InputQueue*> active_inputs_;
 
   int output_samples_per_second_;
   int frames_zeroed_ = 0;
@@ -137,4 +136,4 @@ class FilterGroup {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_FILTER_GROUP_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_FILTER_GROUP_H_

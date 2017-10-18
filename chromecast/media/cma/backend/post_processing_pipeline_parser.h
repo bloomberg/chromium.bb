@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_PARSER_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_PARSER_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_PARSER_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_PARSER_H_
 
 #include <memory>
 #include <string>
@@ -64,7 +64,7 @@ class PostProcessingPipelineParser {
   DISALLOW_COPY_AND_ASSIGN(PostProcessingPipelineParser);
 };
 
-}  // namepsace media
+}  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_PARSER_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_PARSER_H_

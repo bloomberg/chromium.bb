@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_INPUT_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_INPUT_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
+#include "chromecast/public/media/media_pipeline_backend.h"
 #include "chromecast/public/media/media_pipeline_device_params.h"
 #include "chromecast/public/volume_control.h"
 
@@ -18,11 +18,11 @@ namespace chromecast {
 namespace media {
 
 class DecoderBufferBase;
-class StreamMixerAlsaInputImpl;
+class StreamMixerInputImpl;
 
 // Input handle to the mixer. All methods (including constructor and destructor)
 // must be called on the same thread.
-class StreamMixerAlsaInput {
+class StreamMixerInput {
  public:
   enum class MixerError {
     // This input is being ignored due to a sample rate changed.
@@ -33,13 +33,13 @@ class StreamMixerAlsaInput {
 
   class Delegate {
    public:
-    using MixerError = StreamMixerAlsaInput::MixerError;
+    using MixerError = StreamMixerInput::MixerError;
 
     // Called when the last data passed to WritePcm() has been successfully
     // added to the queue.
     virtual void OnWritePcmCompletion(
-        MediaPipelineBackendAlsa::BufferStatus status,
-        const MediaPipelineBackendAlsa::RenderingDelay& delay) = 0;
+        MediaPipelineBackend::BufferStatus status,
+        const MediaPipelineBackend::AudioDecoder::RenderingDelay& delay) = 0;
 
     // Called when a mixer error occurs. No further data should be written.
     virtual void OnMixerError(MixerError error) = 0;
@@ -50,19 +50,19 @@ class StreamMixerAlsaInput {
 
   // Adds a new input to the mixer, creating the mixer if it does not already
   // exist.
-  StreamMixerAlsaInput(Delegate* delegate,
-                       int samples_per_second,
-                       int playout_channel,
-                       bool primary,
-                       const std::string& device_id,
-                       AudioContentType content_type);
+  StreamMixerInput(Delegate* delegate,
+                   int samples_per_second,
+                   int playout_channel,
+                   bool primary,
+                   const std::string& device_id,
+                   AudioContentType content_type);
   // Removes this input from the mixer, destroying the mixer if there are no
   // remaining inputs.
-  ~StreamMixerAlsaInput();
+  ~StreamMixerInput();
 
   // Writes some PCM data to be mixed. |data| must be in planar float format.
   // Once the data has been written, the delegate's OnWritePcmCompletion()
-  // method will be called on the same thread that the StreamMixerAlsaInput was
+  // method will be called on the same thread that the StreamMixerInput was
   // created on. Note that no further calls to WritePcm() should be made until
   // OnWritePcmCompletion() has been called.
   void WritePcm(const scoped_refptr<DecoderBufferBase>& data);
@@ -78,13 +78,14 @@ class StreamMixerAlsaInput {
   void SetVolumeMultiplier(float multiplier);
 
  private:
-  StreamMixerAlsaInputImpl* impl_;
-  base::ThreadChecker thread_checker_;
+  StreamMixerInputImpl* impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsaInput);
+  THREAD_CHECKER(thread_checker_);
+
+  DISALLOW_COPY_AND_ASSIGN(StreamMixerInput);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_INPUT_H_

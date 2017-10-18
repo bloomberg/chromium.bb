@@ -2,16 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/filter_group.h"
+#include "chromecast/media/cma/backend/filter_group.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline.h"
+#include "chromecast/media/cma/backend/stream_mixer.h"
 #include "media/base/audio_bus.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {
 namespace media {
+
+namespace {
 
 // Total of Test damples including left and right channels.
 #define NUM_SAMPLES 64
@@ -19,6 +23,27 @@ namespace media {
 constexpr size_t kBytesPerSample = sizeof(int32_t);
 constexpr int kNumInputChannels = 2;
 constexpr int kInputSampleRate = 48000;
+
+class MockPostProcessor : public PostProcessingPipeline {
+ public:
+  MockPostProcessor() {}
+  ~MockPostProcessor() override {}
+  MOCK_METHOD4(
+      ProcessFrames,
+      int(float* data, int num_frames, float current_volume, bool is_silence));
+  bool SetSampleRate(int sample_rate) override { return false; }
+  bool IsRinging() override { return false; }
+  MOCK_METHOD2(SetPostProcessorConfig,
+               void(const std::string& name, const std::string& config));
+
+  int delay() { return 0; }
+  std::string name() const { return "mock"; }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPostProcessor);
+};
+
+}  // namespace
 
 // Note: Test data should be represented as 32-bit integers and copied into
 // ::media::AudioBus instances, rather than wrapping statically declared float
@@ -48,14 +73,14 @@ std::unique_ptr<::media::AudioBus> GetTestData() {
 }
 
 // TODO(erickung): Consolidate this mock class with the one used in
-// StreamMixerAlsaTest.
+// StreamMixerTest.
 // Class to provide a fake 64 audio samples.
-class MockInputQueue : public StreamMixerAlsa::InputQueue {
+class MockInputQueue : public StreamMixer::InputQueue {
  public:
   MockInputQueue() : data_(GetTestData()) {}
   ~MockInputQueue() override = default;
 
-  // StreamMixerAlsa::InputQueue implementations. Most of them are dummy except
+  // StreamMixer::InputQueue implementations. Most of them are dummy except
   // for
   int input_samples_per_second() const override { return kInputSampleRate; }
   bool primary() const override { return true; }
@@ -64,7 +89,7 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
     return AudioContentType::kMedia;
   }
   bool IsDeleting() const override { return false; }
-  void Initialize(const MediaPipelineBackendAlsa::RenderingDelay&
+  void Initialize(const MediaPipelineBackend::AudioDecoder::RenderingDelay&
                       mixer_rendering_delay) override {}
   void set_filter_group(FilterGroup* filter_group) override {
     filter_group_ = filter_group;
@@ -85,9 +110,10 @@ class MockInputQueue : public StreamMixerAlsa::InputQueue {
     std::memcpy(dest, src, frames * sizeof(float));
   }
   void OnSkipped() override {}
-  void AfterWriteFrames(const MediaPipelineBackendAlsa::RenderingDelay&
-                            mixer_rendering_delay) override {}
-  void SignalError(StreamMixerAlsaInput::MixerError error) override {}
+  void AfterWriteFrames(
+      const MediaPipelineBackend::AudioDecoder::RenderingDelay&
+          mixer_rendering_delay) override {}
+  void SignalError(StreamMixerInput::MixerError error) override {}
   void PrepareToDelete(const OnReadyToDeleteCb& delete_cb) override {}
   void SetContentTypeVolume(float volume, int fade_ms) override {}
   void SetMuted(bool muted) override {}
@@ -118,9 +144,10 @@ TEST_F(FilterGroupTest, Passthrough) {
   std::unique_ptr<MockInputQueue> input(new MockInputQueue());
   base::ListValue empty_filter_list;
   std::unordered_set<std::string> empty_device_ids;
-  std::unique_ptr<FilterGroup> filter_group(new FilterGroup(
+  auto filter_group = std::make_unique<FilterGroup>(
       kNumInputChannels, false /* mix to mono */, "pass_through_filter",
-      &empty_filter_list, empty_device_ids, std::vector<FilterGroup*>()));
+      std::make_unique<MockPostProcessor>(), empty_device_ids,
+      std::vector<FilterGroup*>());
   input->set_filter_group(filter_group.get());
   const int input_samples = NUM_SAMPLES / kNumInputChannels;
   filter_group->Initialize(kInputSampleRate);
@@ -147,9 +174,10 @@ TEST_F(FilterGroupTest, MonoMixer) {
   std::unique_ptr<MockInputQueue> input(new MockInputQueue());
   base::ListValue empty_filter_list;
   std::unordered_set<std::string> empty_device_ids;
-  std::unique_ptr<FilterGroup> filter_group(new FilterGroup(
+  auto filter_group = std::make_unique<FilterGroup>(
       kNumInputChannels, true /* mix to mono */, "mono_mix_filter",
-      &empty_filter_list, empty_device_ids, std::vector<FilterGroup*>()));
+      std::make_unique<MockPostProcessor>(), empty_device_ids,
+      std::vector<FilterGroup*>());
   input->set_filter_group(filter_group.get());
   filter_group->Initialize(kInputSampleRate);
 

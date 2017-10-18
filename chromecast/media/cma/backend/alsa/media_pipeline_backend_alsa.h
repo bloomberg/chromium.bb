@@ -26,8 +26,6 @@ class VideoDecoderNull;
 
 class MediaPipelineBackendAlsa : public MediaPipelineBackend {
  public:
-  using RenderingDelay = AudioDecoder::RenderingDelay;
-
   explicit MediaPipelineBackendAlsa(const MediaPipelineDeviceParams& params);
   ~MediaPipelineBackendAlsa() override;
 

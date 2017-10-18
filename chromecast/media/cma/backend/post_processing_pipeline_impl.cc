@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/post_processing_pipeline_impl.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline_impl.h"
 
 #include <cmath>
 #include <string>
@@ -25,7 +25,13 @@ const char kProcessorKey[] = "processor";
 const char kNameKey[] = "name";
 }  // namespace
 
-std::unique_ptr<PostProcessingPipeline> PostProcessingPipeline::Create(
+PostProcessingPipelineFactoryImpl::PostProcessingPipelineFactoryImpl() =
+    default;
+PostProcessingPipelineFactoryImpl::~PostProcessingPipelineFactoryImpl() =
+    default;
+
+std::unique_ptr<PostProcessingPipeline>
+PostProcessingPipelineFactoryImpl::CreatePipeline(
     const std::string& name,
     const base::ListValue* filter_description_list,
     int num_channels) {

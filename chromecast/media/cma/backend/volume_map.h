@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_VOLUME_MAP_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_VOLUME_MAP_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_VOLUME_MAP_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_VOLUME_MAP_H_
 
 #include <vector>
 
@@ -37,4 +37,4 @@ class VolumeMap {
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_VOLUME_MAP_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_VOLUME_MAP_H_

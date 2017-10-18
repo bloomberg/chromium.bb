@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/location.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input.h"
+#include "chromecast/media/cma/backend/stream_mixer_input.h"
 #include "chromecast/media/cma/decoder/cast_audio_decoder.h"
 #include "chromecast/public/media/decoder_config.h"
 #include "chromecast/public/media/media_pipeline_backend.h"
@@ -32,7 +32,7 @@ class DecoderBufferBase;
 class MediaPipelineBackendAlsa;
 
 class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
-                         public StreamMixerAlsaInput::Delegate {
+                         public StreamMixerInput::Delegate {
  public:
   using BufferStatus = MediaPipelineBackend::BufferStatus;
 
@@ -66,7 +66,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
     int64_t output_frames;
   };
 
-  // StreamMixerAlsaInput::Delegate implementation:
+  // StreamMixerInput::Delegate implementation:
   void OnWritePcmCompletion(BufferStatus status,
                             const RenderingDelay& delay) override;
   void OnMixerError(MixerError error) override;
@@ -110,7 +110,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   int64_t last_push_pts_length_;
   int64_t paused_pts_;
 
-  std::unique_ptr<StreamMixerAlsaInput> mixer_input_;
+  std::unique_ptr<StreamMixerInput> mixer_input_;
   RenderingDelay last_mixer_delay_;
   int64_t pending_output_frames_;
   float volume_multiplier_;

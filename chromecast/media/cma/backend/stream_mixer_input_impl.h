@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_IMPL_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_IMPL_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_INPUT_IMPL_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_INPUT_IMPL_H_
 
 #include <memory>
 #include <string>
@@ -15,9 +15,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "chromecast/media/base/slew_volume.h"
-#include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input.h"
+#include "chromecast/media/cma/backend/stream_mixer.h"
+#include "chromecast/media/cma/backend/stream_mixer_input.h"
 #include "chromecast/public/volume_control.h"
 
 namespace base {
@@ -34,10 +33,10 @@ namespace media {
 
 class FilterGroup;
 
-// Input queue implementation for StreamMixerAlsa. Each input source pushes
-// frames to an instance of StreamMixerAlsaInputImpl; this then signals the
+// Input queue implementation for StreamMixer. Each input source pushes
+// frames to an instance of StreamMixerInputImpl; this then signals the
 // mixer to pull as much data as possible from all input queues, and mix it and
-// write it out to the ALSA stack. The delegate's OnWritePcmCompletion() method
+// write it out to the output. The delegate's OnWritePcmCompletion() method
 // is called (on the caller thread) whenever data has been successfully added to
 // the queue (this may not happen immediately if the queue's maximum size limit
 // has been exceeded).
@@ -58,15 +57,15 @@ class FilterGroup;
 // start of playback, and faded out when the input is being removed. This
 // prevents sound distortions on track skip or seeking.
 //
-// The rendering delay is recalculated after every successful write to the ALSA
-// stack. This delay is passed up to the input sources whenever some new data
-// is sucessfully added to the input queue (which happens whenever the amount
-// of data in the queue drops below the maximum limit, if data is pending). Note
-// that the rendering delay is not accurate while the mixer is gathering frames
-// to write, so pending data is not added to an input queue until after a write
-// has completed (in AfterWriteFrames()).
+// The rendering delay is recalculated after every successful write to the
+// output stream. This delay is passed up to the input sources whenever some new
+// data is successfully added to the input queue (which happens whenever the
+// amount of data in the queue drops below the maximum limit, if data is
+// pending). Note that the rendering delay is not accurate while the mixer is
+// gathering frames to write, so pending data is not added to an input queue
+// until after a write has completed (in AfterWriteFrames()).
 //
-// This class is constructed on the caller thread, and the StreamMixerAlsaInput
+// This class is constructed on the caller thread, and the StreamMixerInput
 // methods (WritePcm(), SetPaused(), SetVolumeMultiplier(), and
 // PreventDelegateCalls()) must be called on the caller thread. These methods
 // must not be called after the input is being removed (ie, after
@@ -78,7 +77,7 @@ class FilterGroup;
 // fades out any remaining audio data. Once that is done (or if it is not
 // possible/necessary) then the impl calls the |delete_cb| to tell the mixer to
 // actually delete it.
-class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
+class StreamMixerInputImpl : public StreamMixer::InputQueue {
  public:
   enum State {
     kStateUninitialized,   // No data has been queued yet.
@@ -91,14 +90,14 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
     kStateError,           // A mixer error occurred, this is unusable now.
   };
 
-  StreamMixerAlsaInputImpl(StreamMixerAlsaInput::Delegate* delegate,
-                           int input_samples_per_second,
-                           bool primary,
-                           const std::string& device_id,
-                           AudioContentType content_type,
-                           StreamMixerAlsa* mixer);
+  StreamMixerInputImpl(StreamMixerInput::Delegate* delegate,
+                       int input_samples_per_second,
+                       bool primary,
+                       const std::string& device_id,
+                       AudioContentType content_type,
+                       StreamMixer* mixer);
 
-  ~StreamMixerAlsaInputImpl() override;
+  ~StreamMixerInputImpl() override;
 
   // Queues some PCM data to be mixed. |data| must be in planar float format.
   void WritePcm(const scoped_refptr<DecoderBufferBase>& data);
@@ -117,13 +116,13 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   State state() const { return state_; }
 
  private:
-  // StreamMixerAlsa::InputQueue implementation:
+  // StreamMixer::InputQueue implementation:
   int input_samples_per_second() const override;
   bool primary() const override;
   std::string device_id() const override;
   AudioContentType content_type() const override;
   bool IsDeleting() const override;
-  void Initialize(const MediaPipelineBackendAlsa::RenderingDelay&
+  void Initialize(const MediaPipelineBackend::AudioDecoder::RenderingDelay&
                       mixer_rendering_delay) override;
   void set_filter_group(FilterGroup* filter_group) override;
   FilterGroup* filter_group() override;
@@ -134,9 +133,10 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
                              const float* src,
                              int frames,
                              float* dest) override;
-  void AfterWriteFrames(const MediaPipelineBackendAlsa::RenderingDelay&
-                            mixer_rendering_delay) override;
-  void SignalError(StreamMixerAlsaInput::MixerError error) override;
+  void AfterWriteFrames(
+      const MediaPipelineBackend::AudioDecoder::RenderingDelay&
+          mixer_rendering_delay) override;
+  void SignalError(StreamMixerInput::MixerError error) override;
   void PrepareToDelete(const OnReadyToDeleteCb& delete_cb) override;
   void SetContentTypeVolume(float volume, int fade_ms) override;
   void SetMuted(bool muted) override;
@@ -145,23 +145,24 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   // Tells the mixer to delete |this|. Makes sure not to call |delete_cb_| more
   // than once for |this|.
   void DeleteThis();
-  MediaPipelineBackendAlsa::RenderingDelay QueueData(
+  MediaPipelineBackend::AudioDecoder::RenderingDelay QueueData(
       const scoped_refptr<DecoderBufferBase>& data);
-  void PostPcmCallback(const MediaPipelineBackendAlsa::RenderingDelay& delay);
+  void PostPcmCallback(
+      const MediaPipelineBackend::AudioDecoder::RenderingDelay& delay);
   void DidQueueData(bool end_of_stream);
   void ReadCB(int frame_delay, ::media::AudioBus* output);
   void FillFrames(int frame_delay, ::media::AudioBus* output, int frames);
   int NormalFadeFrames();
   void FadeIn(::media::AudioBus* dest, int frames);
   void FadeOut(::media::AudioBus* dest, int frames);
-  void PostError(StreamMixerAlsaInput::MixerError error);
+  void PostError(StreamMixerInput::MixerError error);
 
-  StreamMixerAlsaInput::Delegate* const delegate_;
+  StreamMixerInput::Delegate* const delegate_;
   const int input_samples_per_second_;
   const bool primary_;
   const std::string device_id_;
   const AudioContentType content_type_;
-  StreamMixerAlsa* const mixer_;
+  StreamMixer* const mixer_;
   FilterGroup* filter_group_;
   const scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
@@ -180,7 +181,7 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
   base::circular_deque<scoped_refptr<DecoderBufferBase>> queue_;
   int queued_frames_;
   double queued_frames_including_resampler_;
-  MediaPipelineBackendAlsa::RenderingDelay mixer_rendering_delay_;
+  MediaPipelineBackend::AudioDecoder::RenderingDelay mixer_rendering_delay_;
   // End of members that queue_lock_ controls access for.
 
   int current_buffer_offset_;
@@ -194,13 +195,13 @@ class StreamMixerAlsaInputImpl : public StreamMixerAlsa::InputQueue {
 
   std::unique_ptr<::media::MultiChannelResampler> resampler_;
 
-  base::WeakPtr<StreamMixerAlsaInputImpl> weak_this_;
-  base::WeakPtrFactory<StreamMixerAlsaInputImpl> weak_factory_;
+  base::WeakPtr<StreamMixerInputImpl> weak_this_;
+  base::WeakPtrFactory<StreamMixerInputImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsaInputImpl);
+  DISALLOW_COPY_AND_ASSIGN(StreamMixerInputImpl);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_INPUT_IMPL_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_STREAM_MIXER_INPUT_IMPL_H_

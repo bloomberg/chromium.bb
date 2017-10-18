@@ -127,7 +127,7 @@ void AudioDecoderAlsa::Initialize() {
 bool AudioDecoderAlsa::Start(int64_t start_pts) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(IsValidConfig(config_));
-  mixer_input_.reset(new StreamMixerAlsaInput(
+  mixer_input_.reset(new StreamMixerInput(
       this, config_.samples_per_second, config_.playout_channel,
       backend_->Primary(), backend_->DeviceId(), backend_->ContentType()));
   mixer_input_->SetVolumeMultiplier(volume_multiplier_);
@@ -272,7 +272,7 @@ bool AudioDecoderAlsa::SetConfig(const AudioConfig& config) {
     // Destroy the old input first to ensure that the mixer output sample rate
     // is updated.
     mixer_input_.reset();
-    mixer_input_.reset(new StreamMixerAlsaInput(
+    mixer_input_.reset(new StreamMixerInput(
         this, config.samples_per_second, config.playout_channel,
         backend_->Primary(), backend_->DeviceId(), backend_->ContentType()));
     mixer_input_->SetVolumeMultiplier(volume_multiplier_);

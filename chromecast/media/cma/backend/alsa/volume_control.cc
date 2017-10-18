@@ -30,10 +30,10 @@
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/cma/backend/alsa/alsa_features.h"
 #include "chromecast/media/cma/backend/alsa/alsa_volume_control.h"
-#include "chromecast/media/cma/backend/alsa/cast_audio_json.h"
-#include "chromecast/media/cma/backend/alsa/post_processing_pipeline_parser.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
-#include "chromecast/media/cma/backend/alsa/volume_map.h"
+#include "chromecast/media/cma/backend/cast_audio_json.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
+#include "chromecast/media/cma/backend/stream_mixer.h"
+#include "chromecast/media/cma/backend/volume_map.h"
 
 namespace chromecast {
 namespace media {
@@ -174,7 +174,7 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
       return;
     }
     limit = std::max(0.0f, std::min(limit, 1.0f));
-    StreamMixerAlsa::Get()->SetOutputLimit(
+    StreamMixer::Get()->SetOutputLimit(
         type, DbFsToScale(VolumeControl::VolumeToDbFS(limit)));
   }
 
@@ -191,9 +191,9 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
       if (BUILDFLAG(ALSA_OWNS_VOLUME)) {
         // If ALSA owns volume, our internal mixer should not apply any scaling
         // multiplier.
-        StreamMixerAlsa::Get()->SetVolume(type, 1.0f);
+        StreamMixer::Get()->SetVolume(type, 1.0f);
       } else {
-        StreamMixerAlsa::Get()->SetVolume(type, DbFsToScale(dbfs));
+        StreamMixer::Get()->SetVolume(type, DbFsToScale(dbfs));
       }
 
       // Note that mute state is not persisted across reboots.
@@ -232,7 +232,7 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
 
     float dbfs = VolumeControl::VolumeToDbFS(level);
     if (!BUILDFLAG(ALSA_OWNS_VOLUME)) {
-      StreamMixerAlsa::Get()->SetVolume(type, DbFsToScale(dbfs));
+      StreamMixer::Get()->SetVolume(type, DbFsToScale(dbfs));
     }
 
     if (!from_alsa && type == AudioContentType::kMedia) {
@@ -261,7 +261,7 @@ class VolumeControlInternal : public AlsaVolumeControl::Delegate {
     }
 
     if (!BUILDFLAG(ALSA_OWNS_VOLUME)) {
-      StreamMixerAlsa::Get()->SetMuted(type, muted);
+      StreamMixer::Get()->SetMuted(type, muted);
     }
 
     if (!from_alsa && type == AudioContentType::kMedia) {

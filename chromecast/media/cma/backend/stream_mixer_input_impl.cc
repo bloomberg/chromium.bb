@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
+#include "chromecast/media/cma/backend/stream_mixer_input_impl.h"
 
 #include <algorithm>
 #include <limits>
@@ -14,27 +14,26 @@
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
+#include "chromecast/media/cma/backend/stream_mixer.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "media/base/audio_bus.h"
 #include "media/base/multi_channel_resampler.h"
 
-#define RUN_ON_MIXER_THREAD(callback, ...)                         \
-  if (!mixer_task_runner_->BelongsToCurrentThread()) {             \
-    POST_TASK_TO_MIXER_THREAD(&StreamMixerAlsaInputImpl::callback, \
-                              ##__VA_ARGS__);                      \
-    return;                                                        \
+#define RUN_ON_MIXER_THREAD(callback, ...)                                     \
+  if (!mixer_task_runner_->BelongsToCurrentThread()) {                         \
+    POST_TASK_TO_MIXER_THREAD(&StreamMixerInputImpl::callback, ##__VA_ARGS__); \
+    return;                                                                    \
   }
 
 #define POST_TASK_TO_MIXER_THREAD(task, ...) \
   mixer_task_runner_->PostTask(              \
       FROM_HERE, base::Bind(task, base::Unretained(this), ##__VA_ARGS__));
 
-#define RUN_ON_CALLER_THREAD(callback, ...)                         \
-  if (!caller_task_runner_->BelongsToCurrentThread()) {             \
-    POST_TASK_TO_CALLER_THREAD(&StreamMixerAlsaInputImpl::callback, \
-                               ##__VA_ARGS__);                      \
-    return;                                                         \
+#define RUN_ON_CALLER_THREAD(callback, ...)                     \
+  if (!caller_task_runner_->BelongsToCurrentThread()) {         \
+    POST_TASK_TO_CALLER_THREAD(&StreamMixerInputImpl::callback, \
+                               ##__VA_ARGS__);                  \
+    return;                                                     \
   }
 
 #define POST_TASK_TO_CALLER_THREAD(task, ...) \
@@ -75,13 +74,12 @@ int RoundUpMultiple(int value, int multiple) {
 
 }  // namespace
 
-StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
-    StreamMixerAlsaInput::Delegate* delegate,
-    int input_samples_per_second,
-    bool primary,
-    const std::string& device_id,
-    AudioContentType content_type,
-    StreamMixerAlsa* mixer)
+StreamMixerInputImpl::StreamMixerInputImpl(StreamMixerInput::Delegate* delegate,
+                                           int input_samples_per_second,
+                                           bool primary,
+                                           const std::string& device_id,
+                                           AudioContentType content_type,
+                                           StreamMixer* mixer)
     : delegate_(delegate),
       input_samples_per_second_(input_samples_per_second),
       primary_(primary),
@@ -114,34 +112,35 @@ StreamMixerAlsaInputImpl::StreamMixerAlsaInputImpl(
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
-StreamMixerAlsaInputImpl::~StreamMixerAlsaInputImpl() {
+StreamMixerInputImpl::~StreamMixerInputImpl() {
   LOG(INFO) << "Destroy " << device_id_ << " (" << this << ")";
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 }
 
-int StreamMixerAlsaInputImpl::input_samples_per_second() const {
+int StreamMixerInputImpl::input_samples_per_second() const {
   return input_samples_per_second_;
 }
 
-bool StreamMixerAlsaInputImpl::primary() const {
+bool StreamMixerInputImpl::primary() const {
   return primary_;
 }
 
-std::string StreamMixerAlsaInputImpl::device_id() const {
+std::string StreamMixerInputImpl::device_id() const {
   return device_id_;
 }
 
-AudioContentType StreamMixerAlsaInputImpl::content_type() const {
+AudioContentType StreamMixerInputImpl::content_type() const {
   return content_type_;
 }
 
-bool StreamMixerAlsaInputImpl::IsDeleting() const {
+bool StreamMixerInputImpl::IsDeleting() const {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   return (state_ == kStateFinalFade || state_ == kStateDeleted);
 }
 
-void StreamMixerAlsaInputImpl::Initialize(
-    const MediaPipelineBackendAlsa::RenderingDelay& mixer_rendering_delay) {
+void StreamMixerInputImpl::Initialize(
+    const MediaPipelineBackend::AudioDecoder::RenderingDelay&
+        mixer_rendering_delay) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(!IsDeleting());
   if (mixer_->output_samples_per_second() != input_samples_per_second_) {
@@ -149,7 +148,7 @@ void StreamMixerAlsaInputImpl::Initialize(
                       mixer_->output_samples_per_second();
     resampler_.reset(new ::media::MultiChannelResampler(
         kNumOutputChannels, resample_ratio_, kDefaultReadSize,
-        base::Bind(&StreamMixerAlsaInputImpl::ReadCB, base::Unretained(this))));
+        base::Bind(&StreamMixerInputImpl::ReadCB, base::Unretained(this))));
     resampler_->PrimeWithSilence();
   }
   slew_volume_.SetSampleRate(mixer_->output_samples_per_second());
@@ -158,15 +157,15 @@ void StreamMixerAlsaInputImpl::Initialize(
   fade_frames_remaining_ = NormalFadeFrames();
 }
 
-void StreamMixerAlsaInputImpl::set_filter_group(FilterGroup* filter_group) {
+void StreamMixerInputImpl::set_filter_group(FilterGroup* filter_group) {
   filter_group_ = filter_group;
 }
 
-FilterGroup* StreamMixerAlsaInputImpl::filter_group() {
+FilterGroup* StreamMixerInputImpl::filter_group() {
   return filter_group_;
 }
 
-void StreamMixerAlsaInputImpl::PreventDelegateCalls() {
+void StreamMixerInputImpl::PreventDelegateCalls() {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   weak_factory_.InvalidateWeakPtrs();
 
@@ -174,8 +173,7 @@ void StreamMixerAlsaInputImpl::PreventDelegateCalls() {
   pending_data_ = nullptr;
 }
 
-void StreamMixerAlsaInputImpl::PrepareToDelete(
-    const OnReadyToDeleteCb& delete_cb) {
+void StreamMixerInputImpl::PrepareToDelete(const OnReadyToDeleteCb& delete_cb) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(!delete_cb.is_null());
   DCHECK(!IsDeleting());
@@ -213,16 +211,16 @@ void StreamMixerAlsaInputImpl::PrepareToDelete(
   }
 }
 
-void StreamMixerAlsaInputImpl::DeleteThis() {
+void StreamMixerInputImpl::DeleteThis() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   state_ = kStateDeleted;
   if (!delete_cb_.is_null())
     base::ResetAndReturn(&delete_cb_).Run(this);
 }
 
-void StreamMixerAlsaInputImpl::WritePcm(
+void StreamMixerInputImpl::WritePcm(
     const scoped_refptr<DecoderBufferBase>& data) {
-  MediaPipelineBackendAlsa::RenderingDelay delay;
+  MediaPipelineBackend::AudioDecoder::RenderingDelay delay;
   {
     base::AutoLock lock(queue_lock_);
     if (queued_frames_ >= max_queued_frames_) {
@@ -238,8 +236,8 @@ void StreamMixerAlsaInputImpl::WritePcm(
 }
 
 // Must only be called when queue_lock_ is locked.
-MediaPipelineBackendAlsa::RenderingDelay StreamMixerAlsaInputImpl::QueueData(
-    const scoped_refptr<DecoderBufferBase>& data) {
+MediaPipelineBackend::AudioDecoder::RenderingDelay
+StreamMixerInputImpl::QueueData(const scoped_refptr<DecoderBufferBase>& data) {
   queue_lock_.AssertAcquired();
   if (!data->end_of_stream()) {
     int frames = data->data_size() / (kNumOutputChannels * sizeof(float));
@@ -249,10 +247,11 @@ MediaPipelineBackendAlsa::RenderingDelay StreamMixerAlsaInputImpl::QueueData(
   }
 
   if (is_underflowing_) {
-    return MediaPipelineBackendAlsa::RenderingDelay();
+    return MediaPipelineBackend::AudioDecoder::RenderingDelay();
   }
 
-  MediaPipelineBackendAlsa::RenderingDelay delay = mixer_rendering_delay_;
+  MediaPipelineBackend::AudioDecoder::RenderingDelay delay =
+      mixer_rendering_delay_;
   if (delay.timestamp_microseconds != kNoTimestamp) {
     delay.delay_microseconds += static_cast<int64_t>(
         queued_frames_including_resampler_ *
@@ -261,14 +260,13 @@ MediaPipelineBackendAlsa::RenderingDelay StreamMixerAlsaInputImpl::QueueData(
   return delay;
 }
 
-void StreamMixerAlsaInputImpl::PostPcmCallback(
-    const MediaPipelineBackendAlsa::RenderingDelay& delay) {
+void StreamMixerInputImpl::PostPcmCallback(
+    const MediaPipelineBackend::AudioDecoder::RenderingDelay& delay) {
   RUN_ON_CALLER_THREAD(PostPcmCallback, delay);
-  delegate_->OnWritePcmCompletion(MediaPipelineBackendAlsa::kBufferSuccess,
-                                  delay);
+  delegate_->OnWritePcmCompletion(MediaPipelineBackend::kBufferSuccess, delay);
 }
 
-void StreamMixerAlsaInputImpl::DidQueueData(bool end_of_stream) {
+void StreamMixerInputImpl::DidQueueData(bool end_of_stream) {
   RUN_ON_MIXER_THREAD(DidQueueData, end_of_stream);
   DCHECK(!IsDeleting());
   if (end_of_stream) {
@@ -280,7 +278,7 @@ void StreamMixerAlsaInputImpl::DidQueueData(bool end_of_stream) {
   mixer_->OnFramesQueued();
 }
 
-void StreamMixerAlsaInputImpl::OnSkipped() {
+void StreamMixerInputImpl::OnSkipped() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (!is_underflowing_) {
     LOG(WARNING) << "Underflow for " << this;
@@ -293,14 +291,15 @@ void StreamMixerAlsaInputImpl::OnSkipped() {
   slew_volume_.Interrupted();
 }
 
-void StreamMixerAlsaInputImpl::AfterWriteFrames(
-    const MediaPipelineBackendAlsa::RenderingDelay& mixer_rendering_delay) {
+void StreamMixerInputImpl::AfterWriteFrames(
+    const MediaPipelineBackend::AudioDecoder::RenderingDelay&
+        mixer_rendering_delay) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   double resampler_queued_frames =
       (resampler_ ? resampler_->BufferedFrames() : 0);
 
   bool queued_more_data = false;
-  MediaPipelineBackendAlsa::RenderingDelay total_delay;
+  MediaPipelineBackend::AudioDecoder::RenderingDelay total_delay;
   {
     base::AutoLock lock(queue_lock_);
     mixer_rendering_delay_ = mixer_rendering_delay;
@@ -330,7 +329,7 @@ void StreamMixerAlsaInputImpl::AfterWriteFrames(
     PostPcmCallback(total_delay);
 }
 
-int StreamMixerAlsaInputImpl::MaxReadSize() {
+int StreamMixerInputImpl::MaxReadSize() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (state_ == kStatePaused || state_ == kStateDeleted)
     return kPausedReadSamples;
@@ -364,8 +363,8 @@ int StreamMixerAlsaInputImpl::MaxReadSize() {
   return std::max(0, available_frames - NormalFadeFrames());
 }
 
-void StreamMixerAlsaInputImpl::GetResampledData(::media::AudioBus* dest,
-                                                int frames) {
+void StreamMixerInputImpl::GetResampledData(::media::AudioBus* dest,
+                                            int frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(dest);
   DCHECK_EQ(kNumOutputChannels, dest->channels());
@@ -392,16 +391,15 @@ void StreamMixerAlsaInputImpl::GetResampledData(::media::AudioBus* dest,
 
 // This is the signature expected by the resampler. |output| should be filled
 // completely by FillFrames.
-void StreamMixerAlsaInputImpl::ReadCB(int frame_delay,
-                                      ::media::AudioBus* output) {
+void StreamMixerInputImpl::ReadCB(int frame_delay, ::media::AudioBus* output) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(output);
   FillFrames(frame_delay, output, output->frames());
 }
 
-void StreamMixerAlsaInputImpl::FillFrames(int frame_delay,
-                                          ::media::AudioBus* output,
-                                          int frames) {
+void StreamMixerInputImpl::FillFrames(int frame_delay,
+                                      ::media::AudioBus* output,
+                                      int frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(output);
   DCHECK_GE(output->frames(), frames);
@@ -461,7 +459,7 @@ void StreamMixerAlsaInputImpl::FillFrames(int frame_delay,
   DCHECK_EQ(frames, frames_filled);
 }
 
-int StreamMixerAlsaInputImpl::NormalFadeFrames() {
+int StreamMixerInputImpl::NormalFadeFrames() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   int frames = (mixer_->output_samples_per_second() * kMinFadeMs /
                 base::Time::kMillisecondsPerSecond) -
@@ -471,7 +469,7 @@ int StreamMixerAlsaInputImpl::NormalFadeFrames() {
              : RoundUpMultiple(frames, mixer_->filter_frame_alignment());
 }
 
-void StreamMixerAlsaInputImpl::FadeIn(::media::AudioBus* dest, int frames) {
+void StreamMixerInputImpl::FadeIn(::media::AudioBus* dest, int frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   float fade_in_frames = mixer_->output_samples_per_second() * kMinFadeMs /
                          base::Time::kMillisecondsPerSecond;
@@ -483,7 +481,7 @@ void StreamMixerAlsaInputImpl::FadeIn(::media::AudioBus* dest, int frames) {
   }
 }
 
-void StreamMixerAlsaInputImpl::FadeOut(::media::AudioBus* dest, int frames) {
+void StreamMixerInputImpl::FadeOut(::media::AudioBus* dest, int frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   int f = 0;
   for (; f < frames && fade_frames_remaining_; ++f) {
@@ -508,8 +506,7 @@ void StreamMixerAlsaInputImpl::FadeOut(::media::AudioBus* dest, int frames) {
   }
 }
 
-void StreamMixerAlsaInputImpl::SignalError(
-    StreamMixerAlsaInput::MixerError error) {
+void StreamMixerInputImpl::SignalError(StreamMixerInput::MixerError error) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (state_ == kStateFinalFade) {
     DeleteThis();
@@ -519,13 +516,12 @@ void StreamMixerAlsaInputImpl::SignalError(
   PostError(error);
 }
 
-void StreamMixerAlsaInputImpl::PostError(
-    StreamMixerAlsaInput::MixerError error) {
+void StreamMixerInputImpl::PostError(StreamMixerInput::MixerError error) {
   RUN_ON_CALLER_THREAD(PostError, error);
   delegate_->OnMixerError(error);
 }
 
-void StreamMixerAlsaInputImpl::SetPaused(bool paused) {
+void StreamMixerInputImpl::SetPaused(bool paused) {
   RUN_ON_MIXER_THREAD(SetPaused, paused);
   DCHECK(!IsDeleting());
   if (paused) {
@@ -558,7 +554,7 @@ void StreamMixerAlsaInputImpl::SetPaused(bool paused) {
   }
 }
 
-void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float multiplier) {
+void StreamMixerInputImpl::SetVolumeMultiplier(float multiplier) {
   RUN_ON_MIXER_THREAD(SetVolumeMultiplier, multiplier);
   DCHECK(!IsDeleting());
   stream_volume_multiplier_ = std::max(0.0f, multiplier);
@@ -570,7 +566,7 @@ void StreamMixerAlsaInputImpl::SetVolumeMultiplier(float multiplier) {
   slew_volume_.SetVolume(effective_volume);
 }
 
-void StreamMixerAlsaInputImpl::SetContentTypeVolume(float volume, int fade_ms) {
+void StreamMixerInputImpl::SetContentTypeVolume(float volume, int fade_ms) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   type_volume_multiplier_ = std::max(0.0f, std::min(volume, 1.0f));
   float effective_volume = EffectiveVolume();
@@ -586,7 +582,7 @@ void StreamMixerAlsaInputImpl::SetContentTypeVolume(float volume, int fade_ms) {
   slew_volume_.SetVolume(effective_volume);
 }
 
-void StreamMixerAlsaInputImpl::SetMuted(bool muted) {
+void StreamMixerInputImpl::SetMuted(bool muted) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   mute_volume_multiplier_ = muted ? 0.0f : 1.0f;
   float effective_volume = EffectiveVolume();
@@ -597,16 +593,16 @@ void StreamMixerAlsaInputImpl::SetMuted(bool muted) {
   slew_volume_.SetVolume(effective_volume);
 }
 
-float StreamMixerAlsaInputImpl::EffectiveVolume() {
+float StreamMixerInputImpl::EffectiveVolume() {
   float volume = stream_volume_multiplier_ * type_volume_multiplier_ *
                  mute_volume_multiplier_;
   return std::max(0.0f, std::min(volume, 1.0f));
 }
 
-void StreamMixerAlsaInputImpl::VolumeScaleAccumulate(bool repeat_transition,
-                                                     const float* src,
-                                                     int frames,
-                                                     float* dest) {
+void StreamMixerInputImpl::VolumeScaleAccumulate(bool repeat_transition,
+                                                 const float* src,
+                                                 int frames,
+                                                 float* dest) {
   slew_volume_.ProcessFMAC(repeat_transition, src, frames, 1, dest);
 }
 

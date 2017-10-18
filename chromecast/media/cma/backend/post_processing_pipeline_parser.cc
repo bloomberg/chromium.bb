@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/post_processing_pipeline_parser.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -10,7 +10,7 @@
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
 #include "chromecast/media/base/audio_device_ids.h"
-#include "chromecast/media/cma/backend/alsa/cast_audio_json.h"
+#include "chromecast/media/cma/backend/cast_audio_json.h"
 #include "media/audio/audio_device_description.h"
 
 namespace chromecast {
@@ -121,5 +121,5 @@ const base::ListValue* PostProcessingPipelineParser::GetPipelineByKey(
   return out_list;
 }
 
-}  // namepsace media
+}  // namespace media
 }  // namespace chromecast

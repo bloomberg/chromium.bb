@@ -6,8 +6,8 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "chromecast/media/cma/backend/alsa/post_processor_factory.h"
-#include "chromecast/media/cma/backend/alsa/post_processors/post_processor_unittest.h"
+#include "chromecast/media/cma/backend/post_processor_factory.h"
+#include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 
 namespace chromecast {
 namespace media {
