@@ -370,9 +370,17 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
   // printf("Dec: ");
   if (k_eob_offset_bits[eob_pt] > 0) {
-    for (int i = 0; i < k_eob_offset_bits[eob_pt]; i++) {
-      int eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
-      int bit = av1_read_record_bit(counts, r, ACCT_STR);
+    int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+    int bit = av1_read_record_bin(
+        counts, r, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt], 2,
+        ACCT_STR);
+    if (bit) {
+      eob_extra += (1 << eob_shift);
+    }
+
+    for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
+      eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
+      bit = av1_read_record_bit(counts, r, ACCT_STR);
       if (bit) {
         eob_extra += (1 << eob_shift);
       }

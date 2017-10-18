@@ -168,6 +168,10 @@ typedef struct frame_contexts {
                          [CDF_SIZE(2)];
   aom_cdf_prob eob_flag_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
                            [CDF_SIZE(2)];
+#if CONFIG_EOB_FIRST
+  aom_cdf_prob eob_extra_cdf[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS]
+                            [CDF_SIZE(2)];
+#endif
   aom_cdf_prob dc_sign_cdf[PLANE_TYPES][DC_SIGN_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob coeff_base_cdf[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                              [COEFF_BASE_CONTEXTS][CDF_SIZE(2)];

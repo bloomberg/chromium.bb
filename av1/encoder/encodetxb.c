@@ -152,6 +152,14 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE txsize,
       break;
     }
   }
+  if (k_eob_offset_bits[eob_pt] > 0) {
+    int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+    int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+// TODO(angiebird): update count as well
+#if LV_MAP_PROB
+    update_cdf(ec_ctx->eob_extra_cdf[txsize][plane][eob_pt], bit, 2);
+#endif
+  }
 }
 
 static int get_eob_cost(int eob, int seg_eob,
@@ -171,9 +179,12 @@ static int get_eob_cost(int eob, int seg_eob,
     }
   }
   if (k_eob_offset_bits[eob_pt] > 0) {
-    for (int i = 0; i < k_eob_offset_bits[eob_pt]; i++) {
-      int eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
-      int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+    int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+    int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+    eob_cost += txb_costs->eob_extra_cost[eob_pt][bit];
+    for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
+      eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
+      bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
       eob_cost += av1_cost_bit(128, bit);
     }
   }
@@ -475,9 +486,13 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   }
 
   if (k_eob_offset_bits[eob_pt] > 0) {
-    for (int i = 0; i < k_eob_offset_bits[eob_pt]; i++) {
-      int eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
-      int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+    int eob_shift = k_eob_offset_bits[eob_pt] - 1;
+    int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
+    aom_write_bin(w, bit, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt],
+                  2);
+    for (int i = 1; i < k_eob_offset_bits[eob_pt]; i++) {
+      eob_shift = k_eob_offset_bits[eob_pt] - 1 - i;
+      bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
       aom_write_bit(w, bit);
       // printf("%d ", bit);
     }
