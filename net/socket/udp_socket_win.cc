@@ -981,7 +981,6 @@ int UDPSocketWin::DoBind(const IPEndPoint& address) {
   if (rv == 0)
     return OK;
   int last_error = WSAGetLastError();
-  UMA_HISTOGRAM_SPARSE_SLOWLY("Net.UdpSocketBindErrorFromWinOS", last_error);
   // Map some codes that are special to bind() separately.
   // * WSAEACCES: If a port is already bound to a socket, WSAEACCES may be
   //   returned instead of WSAEADDRINUSE, depending on whether the socket
