@@ -131,7 +131,10 @@ namespace feedbackPrivate {
     lspci,
 
     // Info about system network interface.
-    ifconfig
+    ifconfig,
+
+    // Info about system uptime.
+    uptime
   };
 
   // Input parameters for a readLogSource() call.
