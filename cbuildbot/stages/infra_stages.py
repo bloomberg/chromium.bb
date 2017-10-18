@@ -21,7 +21,7 @@ from chromite.lib import path_util
 _GO_BINDIR = '/usr/bin'
 _GO_PACKAGES = {
     'lucifer': (
-        'job_shepherd',
+        'lucifer_run_job',
         'lucifer_watcher',
     ),
 }
