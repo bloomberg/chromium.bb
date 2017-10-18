@@ -4,6 +4,8 @@
 
 static_library("machine_intelligence") {
   sources = [
+    "ranker_example_util.cc",
+    "ranker_example_util.h",
     "ranker_model.cc",
     "ranker_model.h",
     "ranker_model_loader.cc",
@@ -25,6 +27,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "ranker_example_util_unittest.cc",
     "ranker_model_loader_unittest.cc",
     "ranker_model_unittest.cc",
   ]
