@@ -19,7 +19,8 @@ namespace headless {
 class HEADLESS_EXPORT VirtualTimeController
     : public emulation::ExperimentalObserver {
  public:
-  explicit VirtualTimeController(HeadlessDevToolsClient* devtools_client);
+  VirtualTimeController(HeadlessDevToolsClient* devtools_client,
+                        int max_task_starvation_count = 0);
   ~VirtualTimeController() override;
 
   // Grants |budget_ms| milliseconds of virtual time by applying the provided
@@ -93,7 +94,8 @@ class HEADLESS_EXPORT VirtualTimeController
   void SetVirtualTimePolicyDone(
       std::unique_ptr<emulation::SetVirtualTimePolicyResult>);
 
-  HeadlessDevToolsClient* devtools_client_;  // NOT OWNED
+  HeadlessDevToolsClient* const devtools_client_;  // NOT OWNED
+  const int max_task_starvation_count_;
 
   emulation::VirtualTimePolicy virtual_time_policy_ =
       emulation::VirtualTimePolicy::ADVANCE;
