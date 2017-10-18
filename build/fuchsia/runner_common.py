@@ -379,17 +379,18 @@ def _GetResultsFromImg(dry_run, test_launcher_summary_output):
                          'cp', '::/output.json', test_launcher_summary_output])
 
 
-def RunFuchsia(bootfs_data, use_device, dry_run, test_launcher_summary_output):
-  # TODO(wez): Parameterize this on the |target_cpu| from GN.
-  kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
-                             'zircon.bin')
+def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
+               test_launcher_summary_output):
+  if not kernel_path:
+    # TODO(wez): Parameterize this on the |target_cpu| from GN.
+    kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
+                               'zircon.bin')
 
   if use_device:
     # TODO(fuchsia): This doesn't capture stdout as there's no way to do so
     # currently. See https://crbug.com/749242.
     bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
-    # TODO(jamesr): Remove the '--netboot' flag once tftp is stable.
-    bootserver_command = [bootserver_path, '-1', kernel_path, '--netboot',
+    bootserver_command = [bootserver_path, '-1', kernel_path,
                           bootfs_data.bootfs]
     return _RunAndCheck(dry_run, bootserver_command)
 
