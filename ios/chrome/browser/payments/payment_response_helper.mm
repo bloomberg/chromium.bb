@@ -43,8 +43,8 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
   if (payment_request_->request_shipping()) {
     DCHECK(payment_request_->selected_shipping_profile());
     shipping_address_ = *payment_request_->selected_shipping_profile();
-    payment_request_->GetAddressNormalizationManager()->StartNormalizingAddress(
-        &shipping_address_);
+    payment_request_->GetAddressNormalizationManager()
+        ->NormalizeAddressUntilFinalized(&shipping_address_);
   }
 
   if (payment_request_->request_payer_name() ||
@@ -52,12 +52,12 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
       payment_request_->request_payer_phone()) {
     DCHECK(payment_request_->selected_contact_profile());
     contact_info_ = *payment_request_->selected_contact_profile();
-    payment_request_->GetAddressNormalizationManager()->StartNormalizingAddress(
-        &contact_info_);
+    payment_request_->GetAddressNormalizationManager()
+        ->NormalizeAddressUntilFinalized(&contact_info_);
   }
 
   payment_request_->GetAddressNormalizationManager()
-      ->FinalizePendingRequestsWithCompletionCallback(base::Bind(
+      ->FinalizeWithCompletionCallback(base::Bind(
           &PaymentResponseHelper::AddressNormalizationCompleted, AsWeakPtr()));
 }
 
