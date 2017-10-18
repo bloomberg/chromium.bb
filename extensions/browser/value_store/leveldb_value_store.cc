@@ -246,25 +246,20 @@ bool LeveldbValueStore::OnMemoryDump(
   if (!db())
     return true;
 
-  std::string value;
-  uint64_t size;
-  bool res = db()->GetProperty("leveldb.approximate-memory-usage", &value);
-  DCHECK(res);
-  res = base::StringToUint64(value, &size);
-  DCHECK(res);
+  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
+  // an edge to the existing dump.
+  auto* tracker_dump =
+      leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db());
+  if (!tracker_dump)
+    return true;
 
   auto* dump = pmd->CreateAllocatorDump(base::StringPrintf(
       "extensions/value_store/%s/0x%" PRIXPTR, open_histogram_name().c_str(),
       reinterpret_cast<uintptr_t>(this)));
   dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameSize,
-                  base::trace_event::MemoryAllocatorDump::kUnitsBytes, size);
-
-  // All leveldb databases are already dumped by leveldb_env::DBTracker. Add
-  // an edge to avoid double counting.
-  auto* tracker_db =
-      leveldb_env::DBTracker::GetOrCreateAllocatorDump(pmd, db());
-  if (tracker_db)
-    pmd->AddOwnershipEdge(dump->guid(), tracker_db->guid());
+                  base::trace_event::MemoryAllocatorDump::kUnitsBytes,
+                  tracker_dump->GetSizeInternal());
+  pmd->AddOwnershipEdge(dump->guid(), tracker_dump->guid());
 
   return true;
 }
