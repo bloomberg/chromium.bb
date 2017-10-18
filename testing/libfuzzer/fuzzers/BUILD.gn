@@ -494,3 +494,52 @@ if (is_linux) {
     ]
   }
 }
+
+action("gen_javascript_parser_proto") {
+  # Only targets in this file and the top-level visibility target can
+  # depend on this.
+  visibility = [
+    ":*",
+    "//:gn_visibility",
+  ]
+
+  script = "generate_javascript_parser_proto.py"
+
+  sources = [
+    "dicts/javascript_parser_proto.dict",
+  ]
+
+  outputs = [
+    "$target_gen_dir/javascript_parser.proto",
+    "$target_gen_dir/javascript_parser_proto_to_string.cc",
+  ]
+
+  args = rebase_path(outputs, root_build_dir) +
+         rebase_path(sources, root_build_dir)
+}
+
+proto_library("javascript_parser_proto") {
+  sources = [
+    "$target_gen_dir/javascript_parser.proto",
+  ]
+  deps = [
+    ":gen_javascript_parser_proto",
+  ]
+  proto_out_dir = ""
+}
+
+fuzzer_test("javascript_parser_proto_fuzzer") {
+  sources = [
+    "$target_gen_dir/javascript_parser_proto_to_string.cc",
+    "javascript_parser_proto_fuzzer.cc",
+    "javascript_parser_proto_to_string.h",
+  ]
+  deps = [
+    ":gen_javascript_parser_proto",
+    ":javascript_parser_proto",
+    "//third_party/libprotobuf-mutator",
+    "//v8:v8",
+    "//v8:v8_libplatform",
+  ]
+  include_dirs = [ "$root_build_dir/$target_gen_dir" ]
+}
