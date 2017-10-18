@@ -3432,7 +3432,7 @@
       }
     ]
   },
-  "Fuchsia Compile": {
+  "Fuchsia x64": {
     "additional_compile_targets": [
       "base_unittests",
       "content_unittests",

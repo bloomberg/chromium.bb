@@ -320,7 +320,8 @@
       'Linux Builder (dbg)(32)': 'debug_bot_x86',
       'Linux Builder': 'release_bot',
       'Deterministic Linux': 'release_bot',
-      'Fuchsia Compile': 'release_bot_fuchsia',
+      'Fuchsia x64': 'release_bot_fuchsia',
+      'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
     },
 
     'chromium.lkgr': {
@@ -392,7 +393,7 @@
     'chromium.sandbox': {
       'Linux Builder SANDBOX': 'release_bot',
       'Deterministic Linux SANDBOX': 'release_bot',
-      'Fuchsia Compile SANDBOX': 'release_bot_fuchsia',
+      'Fuchsia x64 SANDBOX': 'release_bot_fuchsia',
     },
 
     'chromium.swarm': {
