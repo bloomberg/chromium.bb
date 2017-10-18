@@ -83,4 +83,6 @@ fuzzer_test("safe_browsing_hfs_fuzzer") {
   ]
 
   seed_corpus = "$root_out_dir/test_data/chrome/safe_browsing_dmg"
+
+  libfuzzer_options = [ "max_len=1488576" ]
 }
