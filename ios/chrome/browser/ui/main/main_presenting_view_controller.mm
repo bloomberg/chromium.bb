@@ -10,58 +10,138 @@
 #error "This file requires ARC support."
 #endif
 
+@interface BVCContainerViewController : UIViewController
+
+@property(nonatomic, weak) UIViewController* currentBVC;
+
+@end
+
+@implementation BVCContainerViewController
+
+- (UIViewController*)currentBVC {
+  return [self.childViewControllers firstObject];
+}
+
+- (void)setCurrentBVC:(UIViewController*)bvc {
+  DCHECK(bvc);
+  if (self.currentBVC == bvc) {
+    return;
+  }
+
+  // Remove the current bvc, if any.
+  if (self.currentBVC) {
+    [self.currentBVC willMoveToParentViewController:nil];
+    [self.currentBVC.view removeFromSuperview];
+    [self.currentBVC removeFromParentViewController];
+  }
+
+  DCHECK_EQ(nil, self.currentBVC);
+  DCHECK_EQ(0U, self.view.subviews.count);
+
+  // Add the new active view controller.
+  [self addChildViewController:bvc];
+  bvc.view.frame = self.view.bounds;
+  [self.view addSubview:bvc.view];
+  [bvc didMoveToParentViewController:self];
+
+  // Let the system know that the child has changed so appearance updates can
+  // be made.
+  [self setNeedsStatusBarAppearanceUpdate];
+
+  DCHECK(self.currentBVC == bvc);
+}
+
+- (UIViewController*)childViewControllerForStatusBarHidden {
+  return self.currentBVC;
+}
+
+- (UIViewController*)childViewControllerForStatusBarStyle {
+  return self.currentBVC;
+}
+
+- (BOOL)shouldAutorotate {
+  return self.currentBVC ? [self.currentBVC shouldAutorotate]
+                         : [super shouldAutorotate];
+}
+
+@end
+
+@interface MainPresentingViewController ()
+
+@property(nonatomic, weak) UIViewController<TabSwitcher>* tabSwitcher;
+@property(nonatomic, strong) BVCContainerViewController* bvcContainer;
+
+@end
+
 @implementation MainPresentingViewController
+@synthesize tabSwitcher = _tabSwitcher;
+@synthesize bvcContainer = _bvcContainer;
 
 - (UIViewController*)activeViewController {
-  return self.presentedViewController;
+  if (self.bvcContainer) {
+    DCHECK_EQ(self.bvcContainer, self.presentedViewController);
+    DCHECK(self.bvcContainer.currentBVC);
+    return self.bvcContainer.currentBVC;
+  } else if (self.tabSwitcher) {
+    DCHECK_EQ(self.tabSwitcher, [self.childViewControllers firstObject]);
+    return self.tabSwitcher;
+  }
+
+  return nil;
 }
 
 - (void)showTabSwitcher:(UIViewController<TabSwitcher>*)tabSwitcher
              completion:(ProceduralBlock)completion {
-  [self setActiveViewController:tabSwitcher completion:completion];
+  DCHECK(tabSwitcher);
+
+  // Don't remove and re-add the tabSwitcher if it hasn't changed.
+  if (self.tabSwitcher != tabSwitcher) {
+    // Remove any existing tab switchers first.
+    if (self.tabSwitcher) {
+      [self.tabSwitcher willMoveToParentViewController:nil];
+      [self.tabSwitcher.view removeFromSuperview];
+      [self.tabSwitcher removeFromParentViewController];
+    }
+
+    // Add the new tab switcher as a child VC.
+    [self addChildViewController:tabSwitcher];
+    tabSwitcher.view.frame = self.view.bounds;
+    [self.view addSubview:tabSwitcher.view];
+    [tabSwitcher didMoveToParentViewController:self];
+    self.tabSwitcher = tabSwitcher;
+  }
+
+  // If a BVC is currently being presented, dismiss it.  This will trigger any
+  // necessary animations.
+  if (self.bvcContainer) {
+    self.bvcContainer = nil;
+    [super dismissViewControllerAnimated:YES completion:completion];
+  } else {
+    if (completion) {
+      completion();
+    }
+  }
 }
 
 - (void)showTabViewController:(UIViewController*)viewController
                    completion:(ProceduralBlock)completion {
-  [self setActiveViewController:viewController completion:completion];
-}
+  DCHECK(viewController);
 
-// Presents the given view controller, first dismissing any other view
-// controllers that are currently presented.  Runs the given |completion| block
-// after the view controller is visible.
-- (void)setActiveViewController:(UIViewController*)activeViewController
-                     completion:(void (^)())completion {
-  DCHECK(activeViewController);
-  if (self.activeViewController == activeViewController) {
+  // If another BVC is already being presented, swap this one into the
+  // container.
+  if (self.bvcContainer) {
+    self.bvcContainer.currentBVC = viewController;
     if (completion) {
       completion();
     }
     return;
   }
 
-  // TODO(crbug.com/546189): DCHECK here that there isn't a modal view
-  // controller showing once the known violations of that are fixed.
-
-  if (self.activeViewController) {
-    // This call must be to super, as the override of
-    // dismissViewControllerAnimated:completion: below tries to dismiss using
-    // self.activeViewController, but this call explicitly needs to present
-    // using the MainPresentingViewController itself.
-    [super dismissViewControllerAnimated:NO completion:nil];
-  }
-
-  // This call must be to super, as the override of
-  // presentViewController:animated:completion: below tries to present using
-  // self.activeViewController, but this call explicitly needs to present
-  // using the MainPresentingViewController itself.
-  [super presentViewController:activeViewController
-                      animated:NO
-                    completion:^{
-                      DCHECK(self.activeViewController == activeViewController);
-                      if (completion) {
-                        completion();
-                      }
-                    }];
+  self.bvcContainer = [[BVCContainerViewController alloc] init];
+  self.bvcContainer.currentBVC = viewController;
+  [super presentViewController:self.bvcContainer
+                      animated:(self.tabSwitcher != nil)
+                    completion:completion];
 }
 
 #pragma mark - UIViewController methods
