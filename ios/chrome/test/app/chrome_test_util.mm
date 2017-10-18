@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/main/view_controller_swapping.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_controller.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_switcher.h"
+#import "ios/chrome/test/app/tab_test_util.h"
 #import "ios/web/public/test/native_controller_test_util.h"
 #import "third_party/breakpad/breakpad/src/client/ios/BreakpadController.h"
 
@@ -50,26 +51,6 @@
 @end
 
 namespace {
-// Returns the current tab model.
-TabModel* GetCurrentTabModel() {
-  MainController* main_controller = chrome_test_util::GetMainController();
-  DCHECK(main_controller);
-  BrowserViewController* main_bvc =
-      [[main_controller browserViewInformation] mainBVC];
-  BrowserViewController* current_bvc =
-      [[main_controller browserViewInformation] currentBVC];
-
-  return current_bvc == main_bvc
-             ? [[main_controller browserViewInformation] mainTabModel]
-             : [[main_controller browserViewInformation] otrTabModel];
-}
-
-// Returns the current tab.
-Tab* GetCurrentTab() {
-  TabModel* tab_model = GetCurrentTabModel();
-  return [tab_model currentTab];
-}
-
 // Returns the original ChromeBrowserState if |incognito| is false. If
 // |ingonito| is true, returns an off-the-record ChromeBrowserState.
 ios::ChromeBrowserState* GetBrowserState(bool incognito) {
