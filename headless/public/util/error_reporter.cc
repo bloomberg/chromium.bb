@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 
 namespace headless {
 
@@ -47,6 +48,10 @@ void ErrorReporter::AddError(base::StringPiece description) {
 
 bool ErrorReporter::HasErrors() const {
   return !errors_.empty();
+}
+
+std::string ErrorReporter::ToString() const {
+  return base::JoinString(errors_, ", ");
 }
 #endif  // DCHECK_IS_ON()
 

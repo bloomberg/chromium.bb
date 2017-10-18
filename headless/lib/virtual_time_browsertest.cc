@@ -86,11 +86,8 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
     // We expect the arguments always to be a single string.
     const std::vector<std::unique_ptr<runtime::RemoteObject>>& args =
         *params.GetArgs();
-    std::string message;
-    if (args.size() == 1u && args[0]->HasValue() &&
-        args[0]->GetValue()->GetAsString(&message)) {
-      log_.push_back(message);
-    }
+    if (args.size() == 1u && args[0]->HasValue())
+      log_.push_back(args[0]->GetValue()->GetString());
   }
 
   // emulation::Observer implementation:

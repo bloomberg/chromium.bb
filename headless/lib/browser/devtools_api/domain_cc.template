@@ -110,7 +110,7 @@ void Domain::Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{
   }
   ErrorReporter errors;
   std::unique_ptr<{{method_name}}Result> result = {{method_name}}Result::Parse(response, &errors);
-  DCHECK(!errors.HasErrors());
+  DCHECK(!errors.HasErrors()) << errors.ToString();
   callback.Run(std::move(result));
 }
 {% endfor %}
@@ -121,7 +121,7 @@ void Domain::Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{
 void Domain::Dispatch{{event.name | to_title_case}}Event(const base::Value& params) {
   ErrorReporter errors;
   std::unique_ptr<{{event.name | to_title_case}}Params> parsed_params({{event.name | to_title_case}}Params::Parse(params, &errors));
-  DCHECK(!errors.HasErrors());
+  DCHECK(!errors.HasErrors()) << errors.ToString();
   for (ExperimentalObserver& observer : observers_) {
     observer.On{{event.name | to_title_case}}(*parsed_params);
   }

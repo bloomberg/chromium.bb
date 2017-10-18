@@ -77,23 +77,30 @@ class HeadlessJsBindingsTest
     EXPECT_EQ(main_world_execution_context_id_, v8_execution_context_id);
     std::unique_ptr<base::Value> message =
         base::JSONReader::Read(json_message, base::JSON_PARSE_RFC);
-    const base::DictionaryValue* message_dict;
-    const base::DictionaryValue* params_dict;
-    std::string method;
-    int id;
-    if (!message || !message->GetAsDictionary(&message_dict) ||
-        !message_dict->GetString("method", &method) ||
-        !message_dict->GetDictionary("params", &params_dict) ||
-        !message_dict->GetInteger("id", &id)) {
+    const base::Value* method_value = message->FindKey("method");
+    if (!method_value) {
       FinishAsynchronousTest();
       FAIL() << "Badly formed message " << json_message;
       return;
     }
 
-    if (method == "__Result") {
-      std::string result;
-      params_dict->GetString("result", &result);
-      EXPECT_EQ(GetExpectedResult(), result);
+    const base::Value* params_value = message->FindKey("params");
+    if (!params_value) {
+      FinishAsynchronousTest();
+      FAIL() << "Badly formed message " << json_message;
+      return;
+    }
+
+    const base::Value* id_value = message->FindKey("id");
+    if (!id_value) {
+      FinishAsynchronousTest();
+      FAIL() << "Badly formed message " << json_message;
+      return;
+    }
+
+    if (method_value->GetString() == "__Result") {
+      EXPECT_EQ(GetExpectedResult(),
+                params_value->FindKey("result")->GetString());
       FinishAsynchronousTest();
       return;
     }
@@ -104,9 +111,10 @@ class HeadlessJsBindingsTest
   bool OnProtocolMessage(const std::string& devtools_agent_host_id,
                          const std::string& json_message,
                          const base::DictionaryValue& parsed_message) override {
-    int id;
+    const base::Value* id_value = parsed_message.FindKey("id");
     // If |parsed_message| contains an id we know this is a message reply.
-    if (parsed_message.GetInteger("id", &id)) {
+    if (id_value) {
+      int id = id_value->GetInt();
       // We are only interested in message replies (ones with an id) where the
       // id is odd. The reason is HeadlessDevToolsClientImpl uses even/oddness
       // to distinguish between commands send from the C++ bindings and those
@@ -119,8 +127,8 @@ class HeadlessJsBindingsTest
       return true;
     }
 
-    std::string method;
-    if (!parsed_message.GetString("method", &method))
+    const base::Value* method_value = parsed_message.FindKey("method");
+    if (!method_value)
       return false;
 
     headless_tab_socket_->SendMessageToContext(
@@ -128,8 +136,9 @@ class HeadlessJsBindingsTest
 
     // Check which domain the event belongs to, if it's the DOM domain then
     // assume js handled it.
-    std::vector<base::StringPiece> sections = SplitStringPiece(
-        method, ".", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+    std::vector<base::StringPiece> sections =
+        SplitStringPiece(method_value->GetString(), ".", base::KEEP_WHITESPACE,
+                         base::SPLIT_WANT_ALL);
     return sections[0] == "DOM" || sections[0] == "Runtime";
   }
 

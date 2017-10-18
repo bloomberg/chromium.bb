@@ -339,9 +339,8 @@ void HeadlessShell::PollReadyState() {
 
 void HeadlessShell::OnReadyState(
     std::unique_ptr<runtime::EvaluateResult> result) {
-  std::string ready_state_and_url;
-  if (result->GetResult()->GetValue()->GetAsString(&ready_state_and_url)) {
-    std::stringstream stream(ready_state_and_url);
+  if (result->GetResult()->GetValue()->is_string()) {
+    std::stringstream stream(result->GetResult()->GetValue()->GetString());
     std::string ready_state;
     std::string url;
     stream >> ready_state;
@@ -424,10 +423,7 @@ void HeadlessShell::OnDomFetched(
     LOG(ERROR) << "Failed to serialize document: "
                << result->GetExceptionDetails()->GetText();
   } else {
-    std::string dom;
-    if (result->GetResult()->GetValue()->GetAsString(&dom)) {
-      printf("%s\n", dom.c_str());
-    }
+    printf("%s\n", result->GetResult()->GetValue()->GetString().c_str());
   }
   Shutdown();
 }

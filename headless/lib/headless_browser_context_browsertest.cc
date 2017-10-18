@@ -100,9 +100,7 @@ class HeadlessBrowserContextIsolationTest
   }
 
   void OnFirstSetCookieResult(std::unique_ptr<runtime::EvaluateResult> result) {
-    std::string cookie;
-    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
-    EXPECT_EQ(kMainPageCookie, cookie);
+    EXPECT_EQ(kMainPageCookie, result->GetResult()->GetValue()->GetString());
 
     devtools_client2_->GetRuntime()->Evaluate(
         base::StringPrintf("document.cookie = '%s'", kIsolatedPageCookie),
@@ -113,9 +111,8 @@ class HeadlessBrowserContextIsolationTest
 
   void OnSecondSetCookieResult(
       std::unique_ptr<runtime::EvaluateResult> result) {
-    std::string cookie;
-    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
-    EXPECT_EQ(kIsolatedPageCookie, cookie);
+    EXPECT_EQ(kIsolatedPageCookie,
+              result->GetResult()->GetValue()->GetString());
 
     devtools_client_->GetRuntime()->Evaluate(
         "document.cookie",
@@ -124,9 +121,7 @@ class HeadlessBrowserContextIsolationTest
   }
 
   void OnFirstGetCookieResult(std::unique_ptr<runtime::EvaluateResult> result) {
-    std::string cookie;
-    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
-    EXPECT_EQ(kMainPageCookie, cookie);
+    EXPECT_EQ(kMainPageCookie, result->GetResult()->GetValue()->GetString());
 
     devtools_client2_->GetRuntime()->Evaluate(
         "document.cookie",
@@ -137,9 +132,8 @@ class HeadlessBrowserContextIsolationTest
 
   void OnSecondGetCookieResult(
       std::unique_ptr<runtime::EvaluateResult> result) {
-    std::string cookie;
-    EXPECT_TRUE(result->GetResult()->GetValue()->GetAsString(&cookie));
-    EXPECT_EQ(kIsolatedPageCookie, cookie);
+    EXPECT_EQ(kIsolatedPageCookie,
+              result->GetResult()->GetValue()->GetString());
     FinishTest();
   }
 
@@ -178,12 +172,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
-  std::string inner_html;
-  EXPECT_TRUE(EvaluateScript(web_contents, "document.body.innerHTML")
-                  ->GetResult()
-                  ->GetValue()
-                  ->GetAsString(&inner_html));
-  EXPECT_EQ(kResponseBody, inner_html);
+  EXPECT_EQ(kResponseBody,
+            EvaluateScript(web_contents, "document.body.innerHTML")
+                ->GetResult()
+                ->GetValue()
+                ->GetString());
   web_contents->Close();
 
   HeadlessBrowserContext* another_browser_context =
@@ -197,11 +190,10 @@ IN_PROC_BROWSER_TEST_F(HeadlessBrowserTest, ContextProtocolHandler) {
           .SetInitialURL(GURL("http://not-an-actual-domain.tld/hello.html"))
           .Build();
   EXPECT_FALSE(WaitForLoad(web_contents));
-  EXPECT_TRUE(EvaluateScript(web_contents, "document.body.innerHTML")
-                  ->GetResult()
-                  ->GetValue()
-                  ->GetAsString(&inner_html));
-  EXPECT_EQ("", inner_html);
+  EXPECT_EQ("", EvaluateScript(web_contents, "document.body.innerHTML")
+                    ->GetResult()
+                    ->GetValue()
+                    ->GetString());
   web_contents->Close();
 }
 
