@@ -8,10 +8,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "tools/battor_agent/battor_connection_impl.h"
 #include "tools/battor_agent/battor_sample_converter.h"
 
+using base::StringPrintf;
 using std::vector;
 
 namespace battor {
@@ -65,43 +67,6 @@ std::unique_ptr<BattOrEEPROM> ParseEEPROM(BattOrMessageType message_type,
   memcpy(eeprom.get(), msg.data(), sizeof(BattOrEEPROM));
   return eeprom;
 }
-
-// Returns true if the specified vector of bytes decodes to a valid BattOr
-// samples frame. The frame header and samples are returned via the frame_header
-// and samples paramaters.
-bool ParseSampleFrame(BattOrMessageType type,
-                      const vector<char>& msg,
-                      uint32_t expected_sequence_number,
-                      BattOrFrameHeader* frame_header,
-                      vector<RawBattOrSample>* samples) {
-  if (type != BATTOR_MESSAGE_TYPE_SAMPLES)
-    return false;
-
-  // Each frame should contain a header and an integer number of BattOr samples.
-  if ((msg.size() - sizeof(BattOrFrameHeader)) % sizeof(RawBattOrSample) != 0)
-    return false;
-
-  // The first bytes in the frame contain the frame header.
-  const char* frame_ptr = reinterpret_cast<const char*>(msg.data());
-  memcpy(frame_header, frame_ptr, sizeof(BattOrFrameHeader));
-  frame_ptr += sizeof(BattOrFrameHeader);
-
-  if (frame_header->sequence_number != expected_sequence_number) {
-    LOG(WARNING) << "Unexpected sequence number: wanted "
-                 << expected_sequence_number << ", but got "
-                 << frame_header->sequence_number << ".";
-    return false;
-  }
-
-  size_t remaining_bytes = msg.size() - sizeof(BattOrFrameHeader);
-  if (remaining_bytes != frame_header->length)
-    return false;
-
-  samples->resize(remaining_bytes / sizeof(RawBattOrSample));
-  memcpy(samples->data(), frame_ptr, remaining_bytes);
-
-  return true;
-}
 }  // namespace
 
 BattOrResults::BattOrResults() {}
@@ -139,6 +104,8 @@ BattOrAgent::~BattOrAgent() {
 void BattOrAgent::StartTracing() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  connection_->LogSerial("Starting command StartTracing.");
+
   // When tracing is restarted, all previous clock sync markers are invalid.
   clock_sync_markers_.clear();
   last_clock_sync_time_ = base::TimeTicks();
@@ -150,12 +117,16 @@ void BattOrAgent::StartTracing() {
 void BattOrAgent::StopTracing() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  connection_->LogSerial("Starting command StopTracing.");
+
   command_ = Command::STOP_TRACING;
   PerformAction(Action::REQUEST_CONNECTION);
 }
 
 void BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  connection_->LogSerial("Starting command RecordClockSyncMarker.");
 
   command_ = Command::RECORD_CLOCK_SYNC_MARKER;
   pending_clock_sync_marker_ = marker;
@@ -164,6 +135,8 @@ void BattOrAgent::RecordClockSyncMarker(const std::string& marker) {
 
 void BattOrAgent::GetFirmwareGitHash() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  connection_->LogSerial("Starting command GetFirmwareGitHash.");
 
   command_ = Command::GET_FIRMWARE_GIT_HASH;
   PerformAction(Action::REQUEST_CONNECTION);
@@ -351,8 +324,6 @@ void BattOrAgent::OnMessageRead(bool success,
       // Check for the empty frame the BattOr uses to indicate it's done
       // streaming samples.
       if (frame.empty()) {
-        // Cancel the next data frame timeout.
-        timeout_callback_.Cancel();
         CompleteCommand(BATTOR_ERROR_NONE);
         return;
       }
@@ -469,8 +440,8 @@ void BattOrAgent::PerformAction(Action action) {
       return;
 
     case Action::SEND_GIT_HASH_REQUEST:
-      SendControlMessage(
-          BATTOR_CONTROL_MESSAGE_TYPE_GET_FIRMWARE_GIT_HASH, 0, 0);
+      SendControlMessage(BATTOR_CONTROL_MESSAGE_TYPE_GET_FIRMWARE_GIT_HASH, 0,
+                         0);
       return;
 
     case Action::READ_GIT_HASH:
@@ -518,11 +489,71 @@ void BattOrAgent::SendControlMessage(BattOrControlMessageType type,
   connection_->SendBytes(BATTOR_MESSAGE_TYPE_CONTROL, &msg, sizeof(msg));
 }
 
+// Returns true if the specified vector of bytes decodes to a valid BattOr
+// samples frame. The frame header and samples are returned via the frame_header
+// and samples paramaters.
+bool BattOrAgent::ParseSampleFrame(BattOrMessageType type,
+                                   const vector<char>& msg,
+                                   uint32_t expected_sequence_number,
+                                   BattOrFrameHeader* frame_header,
+                                   vector<RawBattOrSample>* samples) {
+  if (type != BATTOR_MESSAGE_TYPE_SAMPLES) {
+    connection_->LogSerial(
+        StringPrintf("ParseSampleFrame failed due to unexpected message type "
+                     "number (wanted BATTOR_MESSAGE_TYPE_SAMPLES, but got %d).",
+                     type));
+    return false;
+  }
+
+  // Each frame should contain a header and an integer number of BattOr samples.
+  if ((msg.size() - sizeof(BattOrFrameHeader)) % sizeof(RawBattOrSample) != 0) {
+    connection_->LogSerial(
+        "ParseSampleFrame failed due to containing a noninteger number of "
+        "BattOr samples.");
+    return false;
+  }
+
+  // The first bytes in the frame contain the frame header.
+  const char* frame_ptr = reinterpret_cast<const char*>(msg.data());
+  memcpy(frame_header, frame_ptr, sizeof(BattOrFrameHeader));
+  frame_ptr += sizeof(BattOrFrameHeader);
+
+  if (frame_header->sequence_number != expected_sequence_number) {
+    connection_->LogSerial(
+        StringPrintf("ParseSampleFrame failed due to unexpected sequence "
+                     "number (wanted %d, but got %d).",
+                     expected_sequence_number, frame_header->sequence_number));
+    return false;
+  }
+
+  size_t remaining_bytes = msg.size() - sizeof(BattOrFrameHeader);
+  if (remaining_bytes != frame_header->length) {
+    connection_->LogSerial(StringPrintf(
+        "ParseSampleFrame failed due to to a mismatch between the length of "
+        "the frame as stated in the frame header and the actual length of the "
+        "frame (frame header %d, actual length %zu).",
+        frame_header->length, remaining_bytes));
+    return false;
+  }
+
+  samples->resize(remaining_bytes / sizeof(RawBattOrSample));
+  memcpy(samples->data(), frame_ptr, remaining_bytes);
+
+  return true;
+}
+
 void BattOrAgent::RetryCommand() {
   if (++num_command_attempts_ >= kMaxCommandAttempts) {
+    connection_->LogSerial(StringPrintf(
+        "Exhausted retry attempts (would have been attempt %d of %d).",
+        num_command_attempts_ + 1, kMaxCommandAttempts));
     CompleteCommand(BATTOR_ERROR_TOO_MANY_COMMAND_RETRIES);
     return;
   }
+
+  connection_->LogSerial(StringPrintf("Retrying command (attempt %d of %d).",
+                                      num_command_attempts_ + 1,
+                                      kMaxCommandAttempts));
 
   // Restart the serial connection to guarantee that the connection gets flushed
   // before retrying the command.
@@ -550,6 +581,9 @@ void BattOrAgent::RetryCommand() {
 }
 
 void BattOrAgent::CompleteCommand(BattOrError error) {
+  connection_->LogSerial(
+      StringPrintf("Completing command with error code: %d.", error));
+
   switch (command_) {
     case Command::START_TRACING:
       base::SequencedTaskRunnerHandle::Get()->PostTask(

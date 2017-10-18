@@ -162,6 +162,12 @@ class BattOrAgent : public BattOrConnection::Listener,
                           uint16_t param1,
                           uint16_t param2);
 
+  bool ParseSampleFrame(BattOrMessageType type,
+                        const std::vector<char>& msg,
+                        uint32_t expected_sequence_number,
+                        BattOrFrameHeader* frame_header,
+                        std::vector<RawBattOrSample>* samples);
+
   // Retry the last command.
   void RetryCommand();
 
