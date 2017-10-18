@@ -651,6 +651,7 @@ def _SaveDeviceCaches(devices, output_directory):
 class _Command(object):
   name = None
   description = None
+  long_description = None
   needs_package_name = False
   needs_output_directory = False
   needs_apk_path = False
@@ -676,7 +677,10 @@ class _Command(object):
     pass
 
   def RegisterArgs(self, parser):
-    subp = parser.add_parser(self.name, help=self.description)
+    subp = parser.add_parser(
+        self.name, help=self.description,
+        description=self.long_description or self.description,
+        formatter_class=argparse.RawDescriptionHelpFormatter)
     self._parser = subp
     subp.set_defaults(command=self)
     subp.add_argument('--all',
@@ -913,7 +917,25 @@ class _GdbCommand(_Command):
 
 class _LogcatCommand(_Command):
   name = 'logcat'
-  description = 'Runs "adb logcat" filtering to just the current APK processes'
+  description = 'Runs "adb logcat" with filters relevant the current APK.'
+  long_description = description + """
+
+"Relevant filters" means:
+  * Log messages from processes belonging to the apk,
+  * Plus log messages from log tags: ActivityManager|DEBUG,
+  * Plus fatal logs from any process,
+  * Minus spamy dalvikvm logs (for pre-L devices).
+
+Colors:
+  * Primary process is white
+  * Other processes (gpu, renderer) are yellow
+  * Non-apk processes are grey
+  * UI thread has a bolded Thread-ID
+
+Java stack traces are detected and deobfuscated (for release builds).
+
+To disable filtering, (but keep coloring), use --verbose.
+"""
   needs_package_name = True
   supports_multiple_devices = False
 
