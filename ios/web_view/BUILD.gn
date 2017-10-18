@@ -58,6 +58,8 @@ ios_web_view_sources = [
   "internal/app/application_context.h",
   "internal/app/web_view_io_thread.h",
   "internal/app/web_view_io_thread.mm",
+  "internal/autofill/web_view_personal_data_manager_factory.cc",
+  "internal/autofill/web_view_personal_data_manager_factory.h",
   "internal/content_settings/web_view_cookie_settings_factory.cc",
   "internal/content_settings/web_view_cookie_settings_factory.h",
   "internal/content_settings/web_view_host_content_settings_map_factory.cc",
@@ -134,6 +136,8 @@ ios_web_view_sources = [
   "internal/web_view_web_main_parts.mm",
   "internal/web_view_web_state_policy_decider.h",
   "internal/web_view_web_state_policy_decider.mm",
+  "internal/webdata_services/web_view_web_data_service_wrapper_factory.cc",
+  "internal/webdata_services/web_view_web_data_service_wrapper_factory.h",
 ]
 ios_web_view_sources += ios_web_view_public_headers
 if (ios_web_view_enable_sync) {
@@ -148,6 +152,8 @@ if (ios_web_view_enable_sync) {
 ios_web_view_deps = [
   ":packed_resources",
   "//base",
+  "//components/autofill/core/browser",
+  "//components/autofill/core/common",
   "//components/content_settings/core/browser",
   "//components/flags_ui",
   "//components/infobars/core",
@@ -161,10 +167,12 @@ ios_web_view_deps = [
   "//components/signin/ios/browser",
   "//components/signin/ios/browser:active_state_manager",
   "//components/ssl_config",
+  "//components/sync",
   "//components/translate/core/browser",
   "//components/translate/core/common",
   "//components/translate/ios/browser",
   "//components/web_resource",
+  "//components/webdata_services",
   "//google_apis",
   "//ios/components/io_thread",
   "//ios/net",
