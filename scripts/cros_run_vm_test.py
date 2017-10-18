@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import argparse
 import datetime
 import os
 import re
@@ -116,7 +117,7 @@ class VMTest(object):
     return self._vm.RemoteCommand([self.SANITY_TEST])
 
   def ProcessResult(self, result, output):
-    """Process the CommandResult object from RunCmd/RunTests.
+    """Process the CommandResult object from RunVMCmd/RunTests.
 
     Args:
       result: cros_build_lib.CommandResult object.
@@ -137,6 +138,43 @@ class VMTest(object):
           if not re.search(suppress, line):
             f.write(line)
 
+  def RunVMCmd(self, cmd, files, cwd):
+    """Run cmd in the VM.
+
+    Copy src files to /usr/local/vm_test/, change working directory to
+    |cwd|, run the command |cmd|, and cleanup.
+
+    Args:
+      cmd: Command to run in the VM.
+      files: List of files to scp over to the VM.
+      cwd: Working directory in the VM for the cmd.
+
+    Returns:
+      cros_build_lib.CommandResult object.
+    """
+    # Some sanity checks.
+    for f in files:
+      if os.path.isabs(f):
+        raise ValueError('%s should be a relative path' % f)
+      if not os.path.exists(f):
+        raise ValueError('%s does not exist' % f)
+
+    DEST_BASE = '/usr/local/vm_test'
+    # Copy files, preserving the directory structure.
+    for f in files:
+      dirname = os.path.join(DEST_BASE, os.path.dirname(f))
+      self._vm.RemoteCommand(['mkdir', '-p', dirname])
+      self._vm.remote.CopyToDevice(src=f, dest=dirname, mode='scp',
+                                   debug_level=logging.INFO)
+
+    # Run the remote command with cwd.
+    cwd = os.path.join(DEST_BASE, cwd) if cwd else DEST_BASE
+    cmd = '"cd %s; %s"' % (cwd, ' '.join(cmd))
+    result = self._vm.RemoteCommand(cmd, shell=True)
+
+    # Cleanup.
+    self._vm.RemoteCommand(['rm', '-rf', DEST_BASE])
+    return result
 
 def ParseCommandLine(argv):
   """Parse the command line.
@@ -164,15 +202,54 @@ def ParseCommandLine(argv):
   parser.add_argument('--deploy', action='store_true', default=False,
                       help='Before running tests, deploy chrome to the VM, '
                       '--build-dir must be specified.')
+  parser.add_argument('--cwd', help='Change working directory.')
+  parser.add_argument('--files', default=[], action='append',
+                      help='Files to scp to the VM.')
+  parser.add_argument('--files-from', type='path',
+                      help='File with list of files to copy to the VM.')
+  parser.add_argument('--cmd', action='store_true', default=False,
+                      help='Run a command in the VM.')
+  parser.add_argument('args', nargs=argparse.REMAINDER,
+                      help='Command to run in the VM.')
 
   opts, vm_args = parser.parse_known_args(argv)
+
   if opts.build or opts.deploy:
     if not opts.build_dir:
       parser.error('Must specifiy --build-dir with --build or --deploy.')
     if not os.path.isdir(opts.build_dir):
       parser.error('%s is not a directory.' % opts.build_dir)
+
+  # Ensure command is provided. For eg, to copy out to the VM and run
+  # out/unittest:
+  # cros_run_vm_test --files out --cwd out --cmd -- ./unittest
+  if opts.cmd and len(opts.args) < 2:
+    parser.error('Must specify test command to run.')
+  # Verify additional args.
+  if opts.args:
+    if not opts.cmd:
+      parser.error('Additional args may only be specified with --cmd: %s'
+                   % opts.args)
+    if opts.args[0] != '--':
+      parser.error('Additional args must start with \'--\': %s' % opts.args)
+
   return opts, vm_args
 
+
+def FileList(files, files_from):
+  """Get list of files from command line args --files and --files-from.
+
+  Args:
+    files: files specified directly on the command line.
+    files_from: files specified in a file.
+
+  Returns:
+    Contents of files_from if it exists, otherwise files.
+  """
+  if files_from and os.path.isfile(files_from):
+    with open(files_from) as f:
+      files = [line.rstrip() for line in f]
+  return files
 
 def main(argv):
   opts, vm_args = ParseCommandLine(argv)
@@ -188,7 +265,11 @@ def main(argv):
   if opts.build or opts.deploy:
     vm_test.Deploy(opts.build_dir)
 
-  result = vm_test.RunTests()
+  if opts.cmd:
+    files = FileList(opts.files, opts.files_from)
+    result = vm_test.RunVMCmd(opts.args[1:], files, opts.cwd)
+  else:
+    result = vm_test.RunTests()
   vm_test.ProcessResult(result, opts.output)
 
   vm_test.StopVM()
