@@ -38,6 +38,7 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.NativePageHost;
 import org.chromium.chrome.browser.TabLoadStatus;
@@ -180,14 +181,11 @@ public class BottomSheet
     /** The height of the shadow that sits above the toolbar. */
     private final int mToolbarShadowHeight;
 
-    /** The height of the bottom navigation bar that appears when the bottom sheet is expanded. */
-    private final int mBottomNavHeight;
-
-    /** Whether a tall bottom navigation bar should be used */
-    private final boolean mUseTallBottomNav;
-
     /** The {@link BottomSheetMetrics} used to record user actions and histograms. */
     private final BottomSheetMetrics mMetrics;
+
+    /** The height of the bottom navigation bar that appears when the bottom sheet is expanded. */
+    private int mBottomNavHeight;
 
     /** The {@link BottomSheetNewTabController} used to present the new tab UI. */
     private BottomSheetNewTabController mNtpController;
@@ -495,15 +493,6 @@ public class BottomSheet
         mToolbarShadowHeight =
                 getResources().getDimensionPixelOffset(R.dimen.toolbar_shadow_height);
 
-        DisplayMetrics metrics =
-                ContextUtils.getApplicationContext().getResources().getDisplayMetrics();
-        mUseTallBottomNav =
-                Float.compare(Math.max(metrics.heightPixels, metrics.widthPixels) / metrics.density,
-                        TALL_BOTTOM_NAV_THRESHOLD_DP)
-                >= 0;
-        mBottomNavHeight = getResources().getDimensionPixelSize(
-                mUseTallBottomNav ? R.dimen.bottom_nav_height_tall : R.dimen.bottom_nav_height);
-
         mVelocityTracker = VelocityTracker.obtain();
 
         mGestureDetector = new GestureDetector(context, new BottomSheetSwipeDetector());
@@ -516,12 +505,41 @@ public class BottomSheet
                 .addStartupCompletedObserver(new BrowserStartupController.StartupCallback() {
                     @Override
                     public void onSuccess(boolean alreadyStarted) {
-                        mIsTouchEnabled = true;
+                        postBrowserStartupInit();
                     }
 
                     @Override
                     public void onFailure() {}
                 });
+    }
+
+    /**
+     * Takes care of initialization that has to happen after the browser has fully fired up.
+     */
+    private void postBrowserStartupInit() {
+        mIsTouchEnabled = true;
+        initBottomNav();
+    }
+
+    /**
+     * Initializes the height of the bottom navigation menu based on the device's screen dp density,
+     * and whether or not we're showing labels beneath the icons in the menu.
+     */
+    private void initBottomNav() {
+        assert ChromeFeatureList.isInitialized();
+
+        DisplayMetrics metrics =
+                ContextUtils.getApplicationContext().getResources().getDisplayMetrics();
+        boolean useTallBottomNav =
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_BOTTOM_NAV_LABELS)
+                || Float.compare(
+                           Math.max(metrics.heightPixels, metrics.widthPixels) / metrics.density,
+                           TALL_BOTTOM_NAV_THRESHOLD_DP)
+                        >= 0;
+        mBottomNavHeight = getResources().getDimensionPixelSize(
+                useTallBottomNav ? R.dimen.bottom_nav_height_tall : R.dimen.bottom_nav_height);
+
+        mActivity.getBottomSheetContentController().initializeMenuView();
     }
 
     /**
@@ -1679,13 +1697,6 @@ public class BottomSheet
      */
     public boolean shouldShowGoogleGInLocationBar() {
         return mNtpController.shouldShowGoogleGInLocationBar();
-    }
-
-    /**
-     * @return Whether a tall bottom navigation bar should be used.
-     */
-    public boolean useTallBottomNav() {
-        return mUseTallBottomNav;
     }
 
     /**

@@ -490,6 +490,8 @@
     <dimen name="bottom_sheet_help_bubble_inset">10dp</dimen>
     <dimen name="bottom_nav_height">40dp</dimen>
     <dimen name="bottom_nav_height_tall">48dp</dimen>
+    <dimen name="bottom_nav_menu_label_size">10sp</dimen>
+    <dimen name="bottom_nav_shadow_height">8dp</dimen>
 
     <!-- Chrome Home dimensions -->
     <dimen name="chrome_home_empty_view_top_padding">72dp</dimen>
