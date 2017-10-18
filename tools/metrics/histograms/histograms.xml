@@ -58210,6 +58210,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.PageCount" units="pages">
+  <owner>hnakashima@chromium.org</owner>
+  <summary>
+    Tracks the number of pages in PDF documents opened in the PDF viewer.
+  </summary>
+</histogram>
+
 <histogram name="Pepper.Graphics3DHasShareGroup" units="BooleanShareGroup">
   <owner>jbauman@chromium.org</owner>
   <summary>
