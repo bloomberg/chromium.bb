@@ -59,6 +59,7 @@ target(link_target_type, "gpu_sources") {
     "//content/public/common:common_sources",
     "//gpu:gpu",
     "//gpu/ipc/common:command_buffer_traits",
+    "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/service",
     "//ipc",
     "//media/gpu",

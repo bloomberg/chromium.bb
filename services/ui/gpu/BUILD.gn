@@ -22,6 +22,7 @@ source_set("gpu") {
     "//components/viz/service",
     "//gpu/ipc:command_buffer",
     "//gpu/ipc/common",
+    "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/service",
     "//ipc",
     "//mojo/public/cpp/system",

@@ -4,7 +4,6 @@
 
 module ui.mojom;
 
-import "gpu/ipc/common/gpu_preferences.mojom";
 import "services/viz/privileged/interfaces/gl/gpu_host.mojom";
 import "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom";
 import "services/viz/privileged/interfaces/gl/gpu_service.mojom";
@@ -18,6 +17,5 @@ interface GpuMain {
 
   CreateGpuService(viz.mojom.GpuService& gpu_service,
                    viz.mojom.GpuHost gpu_host,
-                   gpu.mojom.GpuPreferences preferences,
                    handle<shared_buffer>? activity_flags);
 };

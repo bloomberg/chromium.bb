@@ -99,7 +99,9 @@ GpuInit::~GpuInit() {
   gpu::StopForceDiscreteGPU();
 }
 
-bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line) {
+bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
+                                        const GpuPreferences& gpu_preferences) {
+  gpu_preferences_ = gpu_preferences;
 #if defined(OS_ANDROID)
   // Android doesn't have PCI vendor/device IDs, so collecting GL strings early
   // is necessary.
@@ -258,8 +260,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line) {
 }
 
 void GpuInit::InitializeInProcess(base::CommandLine* command_line,
-                                  const gpu::GPUInfo* gpu_info,
-                                  const gpu::GpuFeatureInfo* gpu_feature_info) {
+                                  const GpuPreferences& gpu_preferences,
+                                  const GPUInfo* gpu_info,
+                                  const GpuFeatureInfo* gpu_feature_info) {
+  gpu_preferences_ = gpu_preferences;
   init_successful_ = true;
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;

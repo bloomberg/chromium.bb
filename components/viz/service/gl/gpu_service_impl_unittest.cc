@@ -50,7 +50,7 @@ class GpuServiceTest : public testing::Test {
     ASSERT_TRUE(io_thread_.Start());
     gpu_service_ = base::MakeUnique<GpuServiceImpl>(
         gpu::GPUInfo(), nullptr /* watchdog_thread */, io_thread_.task_runner(),
-        gpu::GpuFeatureInfo());
+        gpu::GpuFeatureInfo(), gpu::GpuPreferences());
   }
 
   void TearDown() override {
