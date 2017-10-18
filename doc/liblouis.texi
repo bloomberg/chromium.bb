@@ -853,7 +853,15 @@ Braille dot pattern to indicate the beginning of a phrase.
 begemphphrase bold 456-46-46
 @end example
 
-@opcode{endemphphrase before, <emphasis class> before <dot pattern>}
+@c define a special opcode macro that can handle the two-word nature
+@c of the endemphphrase opcode
+@macro endemphphraseopcode{where}
+@opcodeindex endemphphrase \where\
+@anchor{endemphphrase \where\ opcode}
+@item endemphphrase <emphasis class> \where\ <dot pattern>
+@end macro
+
+@endemphphraseopcode{before}
 Braille dot pattern to indicate the end of a phrase. The closing indicator
 will be placed before the last word of the phrase.
 
@@ -861,7 +869,7 @@ will be placed before the last word of the phrase.
 endemphphrase bold before 456-46
 @end example
 
-@opcode{endemphphrase after, <emphasis class> after <dot pattern>}
+@endemphphraseopcode{after}
 Braille dot pattern to indicate the end of a phrase. The closing
 indicator will be placed after the last word of the phrase. If both
 @code{endemphphrase <emphasis class> before} and @code{endemphphrase
