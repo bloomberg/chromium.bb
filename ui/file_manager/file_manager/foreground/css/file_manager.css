@@ -207,6 +207,10 @@ div.splitter {
   color: rgb(51, 103, 214);
 }
 
+#directory-tree:focus .tree-row[selected] {
+  background-color: rgb(216, 223, 240);
+}
+
 #directory-tree .tree-row > .root-eject {
   background: -webkit-image-set(
       url(../images/files/ui/eject.png) 1x,
