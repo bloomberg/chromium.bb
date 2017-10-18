@@ -14,7 +14,9 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/subresource_filter/chrome_subresource_filter_client.h"
 #include "chrome/browser/ui/blocked_content/blocked_window_params.h"
+#include "chrome/browser/ui/blocked_content/console_logger.h"
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
+#include "chrome/browser/ui/blocked_content/safe_browsing_triggered_popup_blocker.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/common/chrome_render_frame.mojom.h"
@@ -50,10 +52,12 @@ struct PopupBlockerTabHelper::BlockedRequest {
   blink::mojom::WindowFeatures window_features;
 };
 
-PopupBlockerTabHelper::PopupBlockerTabHelper(
-    content::WebContents* web_contents)
-    : content::WebContentsObserver(web_contents) {
-}
+PopupBlockerTabHelper::PopupBlockerTabHelper(content::WebContents* web_contents)
+    : content::WebContentsObserver(web_contents),
+      safe_browsing_triggered_popup_blocker_(
+          base::MakeUnique<SafeBrowsingTriggeredPopupBlocker>(
+              web_contents,
+              base::MakeUnique<ConsoleLogger>())) {}
 
 PopupBlockerTabHelper::~PopupBlockerTabHelper() {
 }
@@ -144,15 +148,22 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
     return false;
   }
 
-  // The subresource_filter triggers an extra aggressive popup blocker on
-  // pages where ads are being blocked, even if there is a user gesture.
   if (user_gesture) {
     auto* driver_factory = subresource_filter::
         ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
-    if (!driver_factory ||
-        !driver_factory->ShouldDisallowNewWindow(open_url_params)) {
+
+    // TODO(crbug.com/761385): The subresource_filter popup blocker is
+    // deprecated. Remove the subresource_filter code here once the
+    // safe_browsing popup blocker is operational.
+    bool allowed_subresource_filter =
+        !driver_factory ||
+        !driver_factory->ShouldDisallowNewWindow(open_url_params);
+    DCHECK(popup_blocker->safe_browsing_triggered_popup_blocker_);
+    bool allowed_safe_browsing =
+        !popup_blocker->safe_browsing_triggered_popup_blocker_
+             ->ShouldApplyStrongPopupBlocker(open_url_params);
+    if (allowed_subresource_filter && allowed_safe_browsing)
       return false;
-    }
     ChromeSubresourceFilterClient::LogAction(kActionPopupBlocked);
   }
 
