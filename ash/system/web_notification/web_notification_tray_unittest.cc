@@ -24,6 +24,7 @@
 #include "ash/system/web_notification/ash_popup_alignment_delegate.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
+#include "ash/wm/window_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/display/display.h"
@@ -408,6 +409,39 @@ TEST_F(WebNotificationTrayTest, VisibleSmallIcon) {
   RunAllPendingInMessageLoop();
   EXPECT_EQ(1u, GetTray()->visible_small_icons_.size());
   EXPECT_EQ(3, GetTray()->tray_container()->child_count());
+}
+
+// Makes sure that the system tray bubble closes when another window is
+// activated, and does not crash regardless of the initial activation state.
+TEST_F(WebNotificationTrayTest, CloseOnActivation) {
+  WebNotificationTray* tray = GetTray();
+
+  // Show the web notification bubble.
+  tray->ShowBubble(false /* show_by_click */);
+  EXPECT_FALSE(tray->GetBubbleView()->GetWidget()->IsActive());
+
+  // Test 1: no crash when there's no active window to begin with.
+  EXPECT_FALSE(wm::GetActiveWindow());
+
+  // Showing a new window and activating it will close the system bubble.
+  std::unique_ptr<views::Widget> widget(CreateTestWidget());
+  EXPECT_TRUE(widget->IsActive());
+  EXPECT_FALSE(tray->message_center_bubble());
+
+  // Show a second widget.
+  std::unique_ptr<views::Widget> second_widget(CreateTestWidget());
+  EXPECT_TRUE(second_widget->IsActive());
+
+  // Re-show the system bubble.
+  tray->ShowBubble(false /* show_by_click */);
+  EXPECT_FALSE(tray->GetBubbleView()->GetWidget()->IsActive());
+
+  // Test 2: also no crash when there is a previously active window.
+  EXPECT_TRUE(wm::GetActiveWindow());
+
+  // Re-activate the first widget. The system bubble should hide again.
+  widget->Activate();
+  EXPECT_FALSE(tray->message_center_bubble());
 }
 
 }  // namespace ash

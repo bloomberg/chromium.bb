@@ -120,6 +120,7 @@ class ASH_EXPORT WebNotificationTray
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, PopupAndSystemTray);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, PopupAndAutoHideShelf);
   FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, VisibleSmallIcon);
+  FRIEND_TEST_ALL_PREFIXES(WebNotificationTrayTest, CloseOnActivation);
 
   void UpdateTrayContent();
 
