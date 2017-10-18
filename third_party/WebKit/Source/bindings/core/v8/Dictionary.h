@@ -162,16 +162,6 @@ struct DictionaryHelper {
   template <typename T>
   static bool Get(const Dictionary&, const StringView& key, T& value);
   template <typename T>
-  static bool GetWithUndefinedCheck(const Dictionary& dictionary,
-                                    const StringView& key,
-                                    T& value) {
-    v8::Local<v8::Value> v8_value;
-    if (!dictionary.Get(key, v8_value) || v8_value.IsEmpty() ||
-        v8_value->IsUndefined())
-      return false;
-    return DictionaryHelper::Get(dictionary, key, value);
-  }
-  template <typename T>
   static bool Get(const Dictionary&, const StringView& key, Nullable<T>& value);
 };
 
