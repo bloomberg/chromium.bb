@@ -594,6 +594,8 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size) override;
+  void SetOnRedirectCallback(
+      const OnRedirectCallback& on_redirect_callback) override;
   void SetAllowPartialResults(bool allow_partial_results) override;
   void SetAllowHttpErrorResults(bool allow_http_error_results) override;
   void SetRetryOptions(int max_retries, int retry_mode) override;
@@ -681,6 +683,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   // closed.
   void MaybeComplete();
 
+  OnRedirectCallback on_redirect_callback_;
   bool allow_partial_results_ = false;
   bool allow_http_error_results_ = false;
 
@@ -811,6 +814,11 @@ void SimpleURLLoaderImpl::DownloadToTempFile(
       this, std::move(download_to_file_complete_callback), base::FilePath(),
       true /* create_temp_file */, max_body_size, resource_request.priority);
   Start(resource_request, url_loader_factory, annotation_tag);
+}
+
+void SimpleURLLoaderImpl::SetOnRedirectCallback(
+    const OnRedirectCallback& on_redirect_callback) {
+  on_redirect_callback_ = on_redirect_callback;
 }
 
 void SimpleURLLoaderImpl::SetAllowPartialResults(bool allow_partial_results) {
@@ -987,6 +995,16 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
     FinishWithResult(net::ERR_UNEXPECTED);
     return;
   }
+
+  if (on_redirect_callback_) {
+    base::WeakPtr<SimpleURLLoaderImpl> weak_this =
+        weak_ptr_factory_.GetWeakPtr();
+    on_redirect_callback_.Run(redirect_info, response_head);
+    // If deleted by the callback, bail now.
+    if (!weak_this)
+      return;
+  }
+
   url_loader_->FollowRedirect();
 }
 

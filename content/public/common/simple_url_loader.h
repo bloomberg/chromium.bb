@@ -20,6 +20,7 @@ class FilePath;
 
 namespace net {
 struct NetworkTrafficAnnotationTag;
+struct RedirectInfo;
 }  // namespace net
 
 namespace content {
@@ -42,7 +43,6 @@ class URLLoaderFactory;
 //
 // TODO(mmenke): Support the following:
 // * Consumer-provided methods to receive streaming (with backpressure).
-// * Monitoring (And cancelling during) redirects.
 // * Uploads (Fixed strings, files, data streams (with backpressure), chunked
 // uploads). ResourceRequest may already have some support, but should make it
 // simple.
@@ -73,6 +73,12 @@ class CONTENT_EXPORT SimpleURLLoader {
   // will be empty.
   using DownloadToFileCompleteCallback =
       base::OnceCallback<void(const base::FilePath& path)>;
+
+  // Callback used when a redirect is being followed. It is safe to delete the
+  // SimpleURLLoader during the callback.
+  using OnRedirectCallback =
+      base::RepeatingCallback<void(const net::RedirectInfo& redirect_info,
+                                   const ResourceResponseHead& response_head)>;
 
   static std::unique_ptr<SimpleURLLoader> Create();
 
@@ -136,6 +142,11 @@ class CONTENT_EXPORT SimpleURLLoader {
       const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
+
+  // Sets callback to be invoked during redirects. Callback may delete the
+  // SimpleURLLoader.
+  virtual void SetOnRedirectCallback(
+      const OnRedirectCallback& on_redirect_callback) = 0;
 
   // Sets whether partially received results are allowed. Defaults to false.
   // When true, if an error is received after reading the body starts or the max

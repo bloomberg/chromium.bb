@@ -446,6 +446,78 @@ TEST_P(SimpleURLLoaderTest, Redirect) {
   EXPECT_EQ("Echo", *test_helper()->response_body());
 }
 
+// Make sure OnRedirectCallback is invoked on a redirect.
+TEST_P(SimpleURLLoaderTest, OnRedirectCallback) {
+  int num_redirects = 0;
+  net::RedirectInfo redirect_info;
+  ResourceResponseHead response_head;
+  test_helper()->simple_url_loader()->SetOnRedirectCallback(base::Bind(
+      [](int* num_redirects, net::RedirectInfo* redirect_info_ptr,
+         ResourceResponseHead* response_head_ptr,
+         const net::RedirectInfo& redirect_info,
+         const ResourceResponseHead& response_head) {
+        ++*num_redirects;
+        *redirect_info_ptr = redirect_info;
+        *response_head_ptr = response_head;
+      },
+      base::Unretained(&num_redirects), base::Unretained(&redirect_info),
+      base::Unretained(&response_head)));
+
+  test_helper()->RunRequestForURL(
+      url_loader_factory_.get(),
+      test_server_.GetURL("/server-redirect?" +
+                          test_server_.GetURL("/echo").spec()));
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("Echo", *test_helper()->response_body());
+
+  EXPECT_EQ(1, num_redirects);
+  EXPECT_EQ(test_server_.GetURL("/echo"), redirect_info.new_url);
+  ASSERT_TRUE(response_head.headers);
+  EXPECT_EQ(301, response_head.headers->response_code());
+}
+
+// Make sure OnRedirectCallback is invoked on each redirect.
+TEST_P(SimpleURLLoaderTest, OnRedirectCallbackTwoRedirects) {
+  int num_redirects = 0;
+  test_helper()->simple_url_loader()->SetOnRedirectCallback(base::Bind(
+      [](int* num_redirects, const net::RedirectInfo& redirect_info,
+         const ResourceResponseHead& response_head) { ++*num_redirects; },
+      base::Unretained(&num_redirects)));
+
+  test_helper()->RunRequestForURL(
+      url_loader_factory_.get(),
+      test_server_.GetURL(
+          "/server-redirect?" +
+          test_server_
+              .GetURL("/server-redirect?" + test_server_.GetURL("/echo").spec())
+              .spec()));
+  ASSERT_TRUE(test_helper()->response_body());
+  EXPECT_EQ("Echo", *test_helper()->response_body());
+
+  EXPECT_EQ(2, num_redirects);
+}
+
+TEST_P(SimpleURLLoaderTest, DeleteInOnRedirectCallback) {
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      std::make_unique<SimpleLoaderTestHelper>(GetParam());
+
+  SimpleLoaderTestHelper* unowned_test_helper = test_helper.get();
+  base::RunLoop run_loop;
+  unowned_test_helper->simple_url_loader()->SetOnRedirectCallback(base::Bind(
+      [](std::unique_ptr<SimpleLoaderTestHelper> test_helper,
+         base::RunLoop* run_loop, const net::RedirectInfo& redirect_info,
+         const ResourceResponseHead& response_head) { run_loop->Quit(); },
+      base::Passed(std::move(test_helper)), &run_loop));
+
+  ResourceRequest resource_request;
+  resource_request.url = test_server_.GetURL(
+      "/server-redirect?" + test_server_.GetURL("/echo").spec());
+  unowned_test_helper->StartRequest(url_loader_factory_.get(),
+                                    resource_request);
+
+  run_loop.Run();
+}
+
 // Check that no body is returned with an HTTP error response.
 TEST_P(SimpleURLLoaderTest, HttpErrorStatusCodeResponse) {
   test_helper()->RunRequestForURL(url_loader_factory_.get(),
@@ -1340,12 +1412,19 @@ TEST_P(SimpleURLLoaderTest, RetryAfterRedirect) {
        TestLoaderEvent::kBodyBufferReceived, TestLoaderEvent::kBodyBufferClosed,
        TestLoaderEvent::kResponseComplete});
 
+  int num_redirects = 0;
+
   test_helper()->simple_url_loader()->SetRetryOptions(
       1, SimpleURLLoader::RETRY_ON_5XX);
+  test_helper()->simple_url_loader()->SetOnRedirectCallback(base::Bind(
+      [](int* num_redirects, const net::RedirectInfo& redirect_info,
+         const ResourceResponseHead& response_head) { ++*num_redirects; },
+      base::Unretained(&num_redirects)));
   test_helper()->RunRequestForURL(&loader_factory, kInitialURL);
 
   EXPECT_EQ(200, test_helper()->GetResponseCode());
   EXPECT_TRUE(test_helper()->response_body());
+  EXPECT_EQ(2, num_redirects);
 
   EXPECT_EQ(2u, loader_factory.requested_urls().size());
   for (const auto& url : loader_factory.requested_urls()) {
