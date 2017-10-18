@@ -14,19 +14,18 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "device/geolocation/access_token_store.h"
 #include "device/geolocation/geolocation_export.h"
 #include "device/geolocation/geolocation_provider.h"
 #include "device/geolocation/geoposition.h"
 #include "device/geolocation/location_provider.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "url/gurl.h"
 
 namespace net {
 class URLRequestContextGetter;
 }
 
 namespace device {
-class AccessTokenStore;
 class GeolocationDelegate;
 class LocationProvider;
 
@@ -60,7 +59,6 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
  protected:
   // These functions are useful for injection of dependencies in derived
   // testing classes.
-  virtual scoped_refptr<AccessTokenStore> NewAccessTokenStore();
   virtual std::unique_ptr<LocationProvider> NewNetworkLocationProvider(
       scoped_refptr<net::URLRequestContextGetter> context,
       const std::string& api_key);
@@ -69,8 +67,6 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
 
  private:
   friend class TestingLocationArbitrator;
-
-  scoped_refptr<AccessTokenStore> GetAccessTokenStore();
 
   // Provider will either be added to |providers_| or
   // deleted on error (e.g. it fails to start).
@@ -102,7 +98,6 @@ class DEVICE_GEOLOCATION_EXPORT LocationArbitrator : public LocationProvider {
   const GeolocationProvider::RequestContextProducer request_context_producer_;
   const std::string api_key_;
 
-  scoped_refptr<AccessTokenStore> access_token_store_;
   LocationProvider::LocationProviderUpdateCallback arbitrator_update_callback_;
 
   // CancelableCallback to prevent OnRequestContextReponse from being called

@@ -12,7 +12,6 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
-#include "device/geolocation/access_token_store.h"
 #include "device/geolocation/geolocation_delegate.h"
 #include "device/geolocation/network_location_provider.h"
 
@@ -53,12 +52,8 @@ void LocationArbitrator::StartProvider(bool enable_high_accuracy) {
   if (providers_.empty()) {
     RegisterSystemProvider();
 
-    // Create a network location provider if the embedder provided an
-    // AccessTokenStore.
-    // TODO(amoylan): Replace this usage of GetAccessTokenStore() (i.e., as a
-    // flag controlling whether to use network location providers) with a check
-    // on whether the return value of |request_context_producer_| is null.
-    if (GetAccessTokenStore() && !request_context_producer_.is_null()) {
+    // Request a URLRequestContextGetter to use for network geolocation.
+    if (!request_context_producer_.is_null()) {
       // Note: .Reset() will cancel any previous callback.
       request_context_response_callback_.Reset(
           base::Bind(&LocationArbitrator::OnRequestContextResponse,
@@ -99,9 +94,11 @@ void LocationArbitrator::StopProvider() {
 
 void LocationArbitrator::OnRequestContextResponse(
     scoped_refptr<net::URLRequestContextGetter> context_getter) {
-  // Create a NetworkLocationProvider using the provided request context.
-  RegisterProvider(
-      NewNetworkLocationProvider(std::move(context_getter), api_key_));
+  if (context_getter != nullptr) {
+    // Create a NetworkLocationProvider using the provided request context.
+    RegisterProvider(
+        NewNetworkLocationProvider(std::move(context_getter), api_key_));
+  }
   DoStartProviders();
 }
 
@@ -146,20 +143,11 @@ void LocationArbitrator::SetUpdateCallback(
   arbitrator_update_callback_ = callback;
 }
 
-scoped_refptr<AccessTokenStore> LocationArbitrator::NewAccessTokenStore() {
-  return delegate_->CreateAccessTokenStore();
-}
-
-scoped_refptr<AccessTokenStore> LocationArbitrator::GetAccessTokenStore() {
-  if (!access_token_store_)
-    access_token_store_ = NewAccessTokenStore();
-  return access_token_store_;
-}
-
 std::unique_ptr<LocationProvider>
 LocationArbitrator::NewNetworkLocationProvider(
     scoped_refptr<net::URLRequestContextGetter> context,
     const std::string& api_key) {
+  DCHECK(context != nullptr);
 #if defined(OS_ANDROID)
   // Android uses its own SystemLocationProvider.
   return nullptr;
