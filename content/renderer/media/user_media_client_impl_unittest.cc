@@ -11,9 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/common/media/media_devices.h"
 #include "content/renderer/media/media_stream_audio_processor_options.h"
@@ -461,7 +461,6 @@ class UserMediaClientImplTest : public ::testing::Test {
 
   void SetUp() override {
     // Create our test object.
-    child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
 
     ms_dispatcher_ = new MockMediaStreamDispatcher();
@@ -614,8 +613,10 @@ class UserMediaClientImplTest : public ::testing::Test {
   RequestState request_state() const { return state_; }
 
  protected:
-  base::MessageLoop message_loop_;
-  std::unique_ptr<ChildProcess> child_process_;
+  // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
+  // TaskScheduler.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ChildProcess child_process_;
   MockMediaStreamDispatcher* ms_dispatcher_ =
       nullptr;  // Owned by |used_media_processor_|.
   MockMojoMediaStreamDispatcherHost mock_dispatcher_host_;

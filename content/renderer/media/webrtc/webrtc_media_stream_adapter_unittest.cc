@@ -9,10 +9,10 @@
 #include <memory>
 #include <string>
 
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_source.h"
@@ -38,7 +38,6 @@ namespace content {
 class WebRtcMediaStreamAdapterTest : public ::testing::Test {
  public:
   void SetUp() override {
-    child_process_.reset(new ChildProcess());
     dependency_factory_.reset(new MockPeerConnectionDependencyFactory());
     track_adapter_map_ =
         new WebRtcMediaStreamTrackAdapterMap(dependency_factory_.get());
@@ -50,8 +49,10 @@ class WebRtcMediaStreamAdapterTest : public ::testing::Test {
   }
 
  protected:
-  base::MessageLoop message_loop_;
-  std::unique_ptr<ChildProcess> child_process_;
+  // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
+  // TaskScheduler.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  ChildProcess child_process_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
   scoped_refptr<WebRtcMediaStreamTrackAdapterMap> track_adapter_map_;
 };

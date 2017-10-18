@@ -44,8 +44,9 @@ class PepperToVideoTrackAdapterTest : public PpapiUnittest {
   }
 
  protected:
-  // A ChildProcess and a MessageLoop are both needed to fool the Tracks and
-  // Sources inside |registry_| into believing they are on the right threads.
+  // A ChildProcess is needed to fool the Tracks and Sources into believing they
+  // are on the right threads. The ScopedTaskEnvironment provided by
+  // PpapiUnittest prevents the ChildProcess from leaking a TaskScheduler.
   const ChildProcess child_process_;
   const MockRenderThread render_thread_;
   std::unique_ptr<MockMediaStreamRegistry> registry_;
