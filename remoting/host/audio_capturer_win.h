@@ -7,6 +7,7 @@
 
 #include <audioclient.h>
 #include <mmdeviceapi.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -14,7 +15,6 @@
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "base/win/scoped_co_mem.h"
-#include "base/win/scoped_comptr.h"
 #include "remoting/host/audio_capturer.h"
 #include "remoting/host/win/audio_volume_filter_win.h"
 #include "remoting/proto/audio.pb.h"
@@ -69,9 +69,9 @@ class AudioCapturerWin : public AudioCapturer {
   AudioVolumeFilterWin volume_filter_;
 
   base::win::ScopedCoMem<WAVEFORMATEX> wave_format_ex_;
-  base::win::ScopedComPtr<IAudioCaptureClient> audio_capture_client_;
-  base::win::ScopedComPtr<IAudioClient> audio_client_;
-  base::win::ScopedComPtr<IMMDevice> mm_device_;
+  Microsoft::WRL::ComPtr<IAudioCaptureClient> audio_capture_client_;
+  Microsoft::WRL::ComPtr<IAudioClient> audio_client_;
+  Microsoft::WRL::ComPtr<IMMDevice> mm_device_;
 
   std::unique_ptr<DefaultAudioDeviceChangeDetector> default_device_detector_;
 

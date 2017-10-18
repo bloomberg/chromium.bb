@@ -260,10 +260,10 @@ void RdpClientWindow::OnClose() {
 
 LRESULT RdpClientWindow::OnCreate(CREATESTRUCT* create_struct) {
   CAxWindow2 activex_window;
-  base::win::ScopedComPtr<IUnknown> control;
+  Microsoft::WRL::ComPtr<IUnknown> control;
   HRESULT result = E_FAIL;
-  base::win::ScopedComPtr<mstsc::IMsTscSecuredSettings> secured_settings;
-  base::win::ScopedComPtr<mstsc::IMsRdpClientSecuredSettings> secured_settings2;
+  Microsoft::WRL::ComPtr<mstsc::IMsTscSecuredSettings> secured_settings;
+  Microsoft::WRL::ComPtr<mstsc::IMsRdpClientSecuredSettings> secured_settings2;
   base::win::ScopedBstr server_name(
       base::UTF8ToUTF16(server_endpoint_.ToStringWithoutPort()).c_str());
   base::win::ScopedBstr terminal_id(base::UTF8ToUTF16(terminal_id_).c_str());
@@ -465,7 +465,7 @@ HRESULT RdpClientWindow::OnDisconnected(long reason) {
 
   // Get the error message as well.
   base::win::ScopedBstr error_message;
-  base::win::ScopedComPtr<mstsc::IMsRdpClient5> client5;
+  Microsoft::WRL::ComPtr<mstsc::IMsRdpClient5> client5;
   result = client_.CopyTo(client5.GetAddressOf());
   if (SUCCEEDED(result)) {
     result = client5->GetErrorDescription(reason, extended_code,

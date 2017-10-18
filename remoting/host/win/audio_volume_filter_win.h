@@ -7,8 +7,8 @@
 
 #include <endpointvolume.h>
 #include <mmdeviceapi.h>
+#include <wrl/client.h>
 
-#include "base/win/scoped_comptr.h"
 #include "remoting/host/audio_volume_filter.h"
 
 namespace remoting {
@@ -28,7 +28,7 @@ class AudioVolumeFilterWin : public AudioVolumeFilter {
   float GetAudioLevel() override;
 
  private:
-  base::win::ScopedComPtr<IAudioEndpointVolume> audio_volume_;
+  Microsoft::WRL::ComPtr<IAudioEndpointVolume> audio_volume_;
 };
 
 }  // namespace remoting

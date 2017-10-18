@@ -8,10 +8,10 @@
 #include <atlbase.h>
 #include <atlcom.h>
 #include <atlctl.h>
+#include <wrl/client.h>
 
 #include <memory>
 
-#include "base/win/scoped_comptr.h"
 // chromoting_lib.h contains MIDL-generated declarations.
 #include "remoting/host/win/chromoting_lib.h"
 #include "remoting/host/win/rdp_client.h"
@@ -71,7 +71,7 @@ class __declspec(uuid(RDP_DESKTOP_SESSION_CLSID)) RdpDesktopSession
 
   // Holds a reference to the caller's EventHandler, through which notifications
   // are dispatched. Released in Disconnect(), to prevent further notifications.
-  base::win::ScopedComPtr<IRdpDesktopSessionEventHandler> event_handler_;
+  Microsoft::WRL::ComPtr<IRdpDesktopSessionEventHandler> event_handler_;
 
   DECLARE_PROTECT_FINAL_CONSTRUCT()
 };
