@@ -9,6 +9,7 @@
 #include <mfidl.h>
 #include <stdint.h>
 #include <strmif.h>
+#include <wrl/client.h>
 
 #include <memory>
 
@@ -17,7 +18,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread.h"
-#include "base/win/scoped_comptr.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/video/video_encode_accelerator.h"
 
@@ -129,17 +129,17 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
   size_t u_stride_;
   size_t v_stride_;
 
-  base::win::ScopedComPtr<IMFTransform> encoder_;
-  base::win::ScopedComPtr<ICodecAPI> codec_api_;
+  Microsoft::WRL::ComPtr<IMFTransform> encoder_;
+  Microsoft::WRL::ComPtr<ICodecAPI> codec_api_;
 
   DWORD input_stream_id_;
   DWORD output_stream_id_;
 
-  base::win::ScopedComPtr<IMFMediaType> imf_input_media_type_;
-  base::win::ScopedComPtr<IMFMediaType> imf_output_media_type_;
+  Microsoft::WRL::ComPtr<IMFMediaType> imf_input_media_type_;
+  Microsoft::WRL::ComPtr<IMFMediaType> imf_output_media_type_;
 
-  base::win::ScopedComPtr<IMFSample> input_sample_;
-  base::win::ScopedComPtr<IMFSample> output_sample_;
+  Microsoft::WRL::ComPtr<IMFSample> input_sample_;
+  Microsoft::WRL::ComPtr<IMFSample> output_sample_;
 
   // To expose client callbacks from VideoEncodeAccelerator.
   // NOTE: all calls to this object *MUST* be executed on

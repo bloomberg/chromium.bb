@@ -15,9 +15,9 @@
 
 namespace {
 
-// DeckLink SDK uses ScopedComPtr-style APIs. Chrome ScopedComPtr is only
-// available for Windows builds. This is a verbatim knock-off of the needed
-// parts of base::win::ScopedComPtr<> for ref counting.
+// DeckLink SDK uses ComPtr-style APIs. Microsoft::WRL::ComPtr<> is only
+// available for Windows builds. This provides a subset of the methods required
+// for ref counting.
 template <class T>
 class ScopedDeckLinkPtr : public scoped_refptr<T> {
  private:

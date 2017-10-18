@@ -8,10 +8,10 @@
 #include <d3d11.h>
 #include <d3d9.h>
 #include <dxva.h>
+#include <wrl/client.h>
 
 #include <vector>
 
-#include "base/win/scoped_comptr.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/h264_decoder.h"
@@ -38,8 +38,8 @@ class D3D11PictureBuffer {
       const MailboxHolderArray& mailbox_holders);
   ~D3D11PictureBuffer();
 
-  bool Init(base::win::ScopedComPtr<ID3D11VideoDevice> video_device,
-            base::win::ScopedComPtr<ID3D11Texture2D> texture,
+  bool Init(Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+            Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
             const GUID& decoder_guid);
 
   size_t level() const { return level_; }
@@ -61,11 +61,11 @@ class D3D11PictureBuffer {
   friend class D3D11H264Accelerator;
 
   PictureBuffer picture_buffer_;
-  base::win::ScopedComPtr<ID3D11Texture2D> texture_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> texture_;
   bool in_picture_use_ = false;
   bool in_client_use_ = false;
   size_t level_;
-  base::win::ScopedComPtr<ID3D11VideoDecoderOutputView> output_view_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDecoderOutputView> output_view_;
   EGLStreamKHR stream_;
   scoped_refptr<gl::GLImage> gl_image_;
 
@@ -88,9 +88,9 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
  public:
   D3D11H264Accelerator(
       D3D11VideoDecoderClient* client,
-      base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder,
-      base::win::ScopedComPtr<ID3D11VideoDevice> video_device,
-      base::win::ScopedComPtr<ID3D11VideoContext> video_context);
+      Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
+      Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+      Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context);
   ~D3D11H264Accelerator() override;
 
   // H264Decoder::H264Accelerator implementation.
@@ -119,9 +119,9 @@ class D3D11H264Accelerator : public H264Decoder::H264Accelerator {
 
   D3D11VideoDecoderClient* client_;
 
-  base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder_;
-  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
-  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
 
   // This information set at the beginning of a frame and saved for processing
   // all the slices.

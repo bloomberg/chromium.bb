@@ -104,7 +104,7 @@ void D3D11VideoDecoderImpl::Initialize(const VideoDecoderConfig& config,
   }
 
   // TODO(liberato): dxva does this.  don't know if we need to.
-  base::win::ScopedComPtr<ID3D11Multithread> multi_threaded;
+  Microsoft::WRL::ComPtr<ID3D11Multithread> multi_threaded;
   hr = device_->QueryInterface(IID_PPV_ARGS(&multi_threaded));
   if (!SUCCEEDED(hr)) {
     init_cb.Run(false);
@@ -137,7 +137,7 @@ void D3D11VideoDecoderImpl::Initialize(const VideoDecoderConfig& config,
   }
   memcpy(&decoder_guid_, &decoder_guid, sizeof decoder_guid_);
 
-  base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder;
+  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device_->CreateVideoDecoder(&desc, &dec_config,
                                          video_decoder.GetAddressOf());
   if (!video_decoder.Get()) {
@@ -263,7 +263,7 @@ void D3D11VideoDecoderImpl::CreatePictureBuffers() {
   texture_desc.BindFlags = D3D11_BIND_DECODER | D3D11_BIND_SHADER_RESOURCE;
   texture_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
-  base::win::ScopedComPtr<ID3D11Texture2D> out_texture;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> out_texture;
   HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
                                         out_texture.GetAddressOf());
   CHECK(SUCCEEDED(hr));

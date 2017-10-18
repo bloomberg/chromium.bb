@@ -11,9 +11,9 @@
 // Avoid including strsafe.h via dshow as it will cause build warnings.
 #define NO_DSHOW_STRSAFE
 #include <dshow.h>
+#include <wrl/client.h>
 
 #include "base/memory/ref_counted.h"
-#include "base/win/scoped_comptr.h"
 
 namespace media {
 
@@ -100,7 +100,7 @@ class PinBase : public IPin,
 
  private:
   AM_MEDIA_TYPE current_media_type_;
-  base::win::ScopedComPtr<IPin> connected_pin_;
+  Microsoft::WRL::ComPtr<IPin> connected_pin_;
   // owner_ is the filter owning this pin. We don't reference count it since
   // that would create a circular reference count.
   IBaseFilter* owner_;

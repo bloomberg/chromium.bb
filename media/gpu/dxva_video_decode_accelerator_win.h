@@ -9,6 +9,7 @@
 #include <d3d9.h>
 #include <initguid.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 // Work around bug in this header by disabling the relevant warning for it.
 // https://connect.microsoft.com/VisualStudio/feedback/details/911260/dxva2api-h-in-win8-sdk-triggers-c4201-with-w4
@@ -29,7 +30,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
-#include "base/win/scoped_comptr.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/video_color_space.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -126,7 +126,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   friend class PbufferPictureBuffer;
   typedef void* EGLConfig;
   typedef void* EGLSurface;
-  typedef std::list<base::win::ScopedComPtr<IMFSample>> PendingInputs;
+  typedef std::list<Microsoft::WRL::ComPtr<IMFSample>> PendingInputs;
 
   enum class PictureBufferMechanism {
     // Copy to either a BGRA8 or FP16 texture using the video processor.
@@ -210,7 +210,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Invoked when we have a valid decoded output sample. Retrieves the D3D
   // surface and maintains a copy of it which is passed eventually to the
   // client when we have a picture buffer to copy the surface contents to.
-  bool ProcessOutputSample(base::win::ScopedComPtr<IMFSample> sample,
+  bool ProcessOutputSample(Microsoft::WRL::ComPtr<IMFSample> sample,
                            const gfx::ColorSpace& color_space);
 
   // Processes pending output samples by copying them to available picture
@@ -257,7 +257,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   void FlushInternal();
 
   // Helper for handling the Decode operation.
-  void DecodeInternal(const base::win::ScopedComPtr<IMFSample>& input_sample);
+  void DecodeInternal(const Microsoft::WRL::ComPtr<IMFSample>& input_sample);
 
   // Handles mid stream resolution changes.
   void HandleResolutionChanged(int width, int height);
@@ -301,7 +301,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
                            int picture_buffer_id,
                            int input_buffer_id);
 
-  void BindPictureBufferToSample(base::win::ScopedComPtr<IMFSample> sample,
+  void BindPictureBufferToSample(Microsoft::WRL::ComPtr<IMFSample> sample,
                                  int picture_buffer_id,
                                  int input_buffer_id);
 
@@ -309,7 +309,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // The copying is done on the decoder thread.
   void CopyTexture(ID3D11Texture2D* src_texture,
                    ID3D11Texture2D* dest_texture,
-                   base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
+                   Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
                    uint64_t keyed_mutex_value,
                    int picture_buffer_id,
                    int input_buffer_id,
@@ -318,9 +318,9 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Copies the |video_frame| to the destination |dest_texture|.
   void CopyTextureOnDecoderThread(
       ID3D11Texture2D* dest_texture,
-      base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
+      Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
       uint64_t keyed_mutex_value,
-      base::win::ScopedComPtr<IMFSample> input_sample,
+      Microsoft::WRL::ComPtr<IMFSample> input_sample,
       int picture_buffer_id,
       int input_buffer_id);
 
@@ -382,31 +382,31 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // To expose client callbacks from VideoDecodeAccelerator.
   VideoDecodeAccelerator::Client* client_;
 
-  base::win::ScopedComPtr<IMFTransform> decoder_;
+  Microsoft::WRL::ComPtr<IMFTransform> decoder_;
 
-  base::win::ScopedComPtr<IDirect3D9Ex> d3d9_;
-  base::win::ScopedComPtr<IDirect3DDevice9Ex> d3d9_device_ex_;
-  base::win::ScopedComPtr<IDirect3DDeviceManager9> device_manager_;
-  base::win::ScopedComPtr<IDirect3DQuery9> query_;
+  Microsoft::WRL::ComPtr<IDirect3D9Ex> d3d9_;
+  Microsoft::WRL::ComPtr<IDirect3DDevice9Ex> d3d9_device_ex_;
+  Microsoft::WRL::ComPtr<IDirect3DDeviceManager9> device_manager_;
+  Microsoft::WRL::ComPtr<IDirect3DQuery9> query_;
 
-  base::win::ScopedComPtr<ID3D11Device> d3d11_device_;
-  base::win::ScopedComPtr<ID3D11Device> angle_device_;
-  base::win::ScopedComPtr<IMFDXGIDeviceManager> d3d11_device_manager_;
-  base::win::ScopedComPtr<ID3D10Multithread> multi_threaded_;
-  base::win::ScopedComPtr<ID3D11DeviceContext> d3d11_device_context_;
-  base::win::ScopedComPtr<ID3D11Query> d3d11_query_;
+  Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device_;
+  Microsoft::WRL::ComPtr<ID3D11Device> angle_device_;
+  Microsoft::WRL::ComPtr<IMFDXGIDeviceManager> d3d11_device_manager_;
+  Microsoft::WRL::ComPtr<ID3D10Multithread> multi_threaded_;
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> d3d11_device_context_;
+  Microsoft::WRL::ComPtr<ID3D11Query> d3d11_query_;
 
-  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
-  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
-  base::win::ScopedComPtr<ID3D11VideoProcessorEnumerator> enumerator_;
-  base::win::ScopedComPtr<ID3D11VideoProcessor> d3d11_processor_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessorEnumerator> enumerator_;
+  Microsoft::WRL::ComPtr<ID3D11VideoProcessor> d3d11_processor_;
 
   int processor_width_ = 0;
   int processor_height_ = 0;
 
-  base::win::ScopedComPtr<IDirectXVideoProcessorService>
+  Microsoft::WRL::ComPtr<IDirectXVideoProcessorService>
       video_processor_service_;
-  base::win::ScopedComPtr<IDirectXVideoProcessor> processor_;
+  Microsoft::WRL::ComPtr<IDirectXVideoProcessor> processor_;
   DXVA2_ProcAmpValues default_procamp_values_;
 
   // Ideally the reset token would be a stack variable which is used while
@@ -433,7 +433,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
   // Contains information about a decoded sample.
   struct PendingSampleInfo {
     PendingSampleInfo(int32_t buffer_id,
-                      base::win::ScopedComPtr<IMFSample> sample,
+                      Microsoft::WRL::ComPtr<IMFSample> sample,
                       const gfx::ColorSpace& color_space);
     PendingSampleInfo(const PendingSampleInfo& other);
     ~PendingSampleInfo();
@@ -447,7 +447,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
     // The color space of this picture.
     gfx::ColorSpace color_space;
 
-    base::win::ScopedComPtr<IMFSample> output_sample;
+    Microsoft::WRL::ComPtr<IMFSample> output_sample;
   };
 
   typedef std::list<PendingSampleInfo> PendingOutputSamples;

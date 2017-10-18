@@ -6,6 +6,7 @@
 #define MEDIA_AUDIO_WIN_AUDIO_DEVICE_LISTENER_WIN_H_
 
 #include <MMDeviceAPI.h>
+#include <wrl/client.h>
 
 #include <memory>
 #include <string>
@@ -14,10 +15,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "base/win/scoped_comptr.h"
 #include "media/base/media_export.h"
-
-using base::win::ScopedComPtr;
 
 namespace base {
 class TickClock;
@@ -59,7 +57,7 @@ class MEDIA_EXPORT AudioDeviceListenerWin : public IMMNotificationClient {
                                     LPCWSTR new_default_device_id) override;
 
   base::Closure listener_cb_;
-  ScopedComPtr<IMMDeviceEnumerator> device_enumerator_;
+  Microsoft::WRL::ComPtr<IMMDeviceEnumerator> device_enumerator_;
 
   // Used to rate limit device change events.
   base::TimeTicks last_device_change_time_;

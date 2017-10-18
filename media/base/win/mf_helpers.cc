@@ -16,17 +16,17 @@ void LogDXVAError(int line) {
   UMA_HISTOGRAM_SPARSE_SLOWLY("Media.DXVAVDA.ErrorLine", line);
 }
 
-base::win::ScopedComPtr<IMFSample> CreateEmptySampleWithBuffer(
+Microsoft::WRL::ComPtr<IMFSample> CreateEmptySampleWithBuffer(
     uint32_t buffer_length,
     int align) {
   CHECK_GT(buffer_length, 0U);
 
-  base::win::ScopedComPtr<IMFSample> sample;
+  Microsoft::WRL::ComPtr<IMFSample> sample;
   HRESULT hr = MFCreateSample(sample.GetAddressOf());
   RETURN_ON_HR_FAILURE(hr, "MFCreateSample failed",
-                       base::win::ScopedComPtr<IMFSample>());
+                       Microsoft::WRL::ComPtr<IMFSample>());
 
-  base::win::ScopedComPtr<IMFMediaBuffer> buffer;
+  Microsoft::WRL::ComPtr<IMFMediaBuffer> buffer;
   if (align == 0) {
     // Note that MFCreateMemoryBuffer is same as MFCreateAlignedMemoryBuffer
     // with the align argument being 0.
@@ -36,11 +36,11 @@ base::win::ScopedComPtr<IMFSample> CreateEmptySampleWithBuffer(
                                      buffer.GetAddressOf());
   }
   RETURN_ON_HR_FAILURE(hr, "Failed to create memory buffer for sample",
-                       base::win::ScopedComPtr<IMFSample>());
+                       Microsoft::WRL::ComPtr<IMFSample>());
 
   hr = sample->AddBuffer(buffer.Get());
   RETURN_ON_HR_FAILURE(hr, "Failed to add buffer to sample",
-                       base::win::ScopedComPtr<IMFSample>());
+                       Microsoft::WRL::ComPtr<IMFSample>());
 
   buffer->SetCurrentLength(0);
   return sample;

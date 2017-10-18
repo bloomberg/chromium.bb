@@ -12,10 +12,10 @@
 #define NO_DSHOW_STRSAFE
 #include <dshow.h>
 #include <stddef.h>
+#include <wrl/client.h>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/win/scoped_comptr.h"
 
 namespace media {
 
@@ -66,7 +66,7 @@ class FilterBase : public IBaseFilter, public base::RefCounted<FilterBase> {
 
  private:
   FILTER_STATE state_;
-  base::win::ScopedComPtr<IFilterGraph> owning_graph_;
+  Microsoft::WRL::ComPtr<IFilterGraph> owning_graph_;
 
   DISALLOW_COPY_AND_ASSIGN(FilterBase);
 };

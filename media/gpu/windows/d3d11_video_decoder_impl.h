@@ -6,6 +6,7 @@
 #define MEDIA_GPU_D3D11_VIDEO_DECODER_IMPL_H_
 
 #include <d3d11.h>
+#include <wrl/client.h>
 
 #include <list>
 #include <memory>
@@ -14,7 +15,6 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/win/scoped_comptr.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
 #include "media/base/video_decoder.h"
 #include "media/gpu/d3d11_h264_accelerator.h"
@@ -67,10 +67,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   // A helper for creating textures. Only valid while |stub_| is valid.
   std::unique_ptr<GLES2DecoderHelper> decoder_helper_;
 
-  base::win::ScopedComPtr<ID3D11Device> device_;
-  base::win::ScopedComPtr<ID3D11DeviceContext> device_context_;
-  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
-  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
+  Microsoft::WRL::ComPtr<ID3D11Device> device_;
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
 
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   std::unique_ptr<D3D11H264Accelerator> h264_accelerator_;

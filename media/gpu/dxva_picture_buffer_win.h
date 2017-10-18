@@ -8,11 +8,11 @@
 #include <d3d11.h>
 #include <d3d9.h>
 #include <mfidl.h>
+#include <wrl/client.h>
 
 #include <memory>
 
 #include "base/memory/linked_ptr.h"
-#include "base/win/scoped_comptr.h"
 #include "media/video/picture.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
@@ -79,7 +79,7 @@ class DXVAPictureBuffer {
   virtual bool CopySurfaceComplete(IDirect3DSurface9* src_surface,
                                    IDirect3DSurface9* dest_surface);
   virtual bool BindSampleToTexture(DXVAVideoDecodeAccelerator* decoder,
-                                   base::win::ScopedComPtr<IMFSample> sample);
+                                   Microsoft::WRL::ComPtr<IMFSample> sample);
 
  protected:
   explicit DXVAPictureBuffer(const PictureBuffer& buffer);
@@ -122,11 +122,11 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
   std::unique_ptr<gl::GLFence> reuse_fence_;
 
   HANDLE texture_share_handle_;
-  base::win::ScopedComPtr<IDirect3DTexture9> decoding_texture_;
-  base::win::ScopedComPtr<ID3D11Texture2D> dx11_decoding_texture_;
+  Microsoft::WRL::ComPtr<IDirect3DTexture9> decoding_texture_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> dx11_decoding_texture_;
 
-  base::win::ScopedComPtr<IDXGIKeyedMutex> egl_keyed_mutex_;
-  base::win::ScopedComPtr<IDXGIKeyedMutex> dx11_keyed_mutex_;
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> egl_keyed_mutex_;
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dx11_keyed_mutex_;
 
   // This is the last value that was used to release the keyed mutex.
   uint64_t keyed_mutex_value_;
@@ -135,13 +135,13 @@ class PbufferPictureBuffer : public DXVAPictureBuffer {
   // references on the surfaces during the course of a StretchRect operation
   // to copy the source surface to the target. The references are released
   // when the StretchRect operation i.e. the copy completes.
-  base::win::ScopedComPtr<IDirect3DSurface9> decoder_surface_;
-  base::win::ScopedComPtr<IDirect3DSurface9> target_surface_;
+  Microsoft::WRL::ComPtr<IDirect3DSurface9> decoder_surface_;
+  Microsoft::WRL::ComPtr<IDirect3DSurface9> target_surface_;
 
   // This ID3D11Texture2D interface pointer is used to hold a reference to the
   // decoder texture during the course of a copy operation. This reference is
   // released when the copy completes.
-  base::win::ScopedComPtr<ID3D11Texture2D> decoder_dx11_texture_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> decoder_dx11_texture_;
 
   // Set to true if RGB is supported by the texture.
   // Defaults to true.
@@ -157,15 +157,15 @@ class EGLStreamPictureBuffer : public DXVAPictureBuffer {
   bool Initialize();
   bool ReusePictureBuffer() override;
   bool BindSampleToTexture(DXVAVideoDecodeAccelerator* decoder,
-                           base::win::ScopedComPtr<IMFSample> sample) override;
+                           Microsoft::WRL::ComPtr<IMFSample> sample) override;
   bool AllowOverlay() const override;
   bool CanBindSamples() const override;
 
  private:
   EGLStreamKHR stream_;
 
-  base::win::ScopedComPtr<IMFSample> current_d3d_sample_;
-  base::win::ScopedComPtr<ID3D11Texture2D> dx11_decoding_texture_;
+  Microsoft::WRL::ComPtr<IMFSample> current_d3d_sample_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> dx11_decoding_texture_;
 };
 
 // Shares the decoded texture with ANGLE without copying by using an EGL stream.
@@ -177,15 +177,15 @@ class EGLStreamDelayedCopyPictureBuffer : public DXVAPictureBuffer {
   bool Initialize(const DXVAVideoDecodeAccelerator& decoder);
   bool ReusePictureBuffer() override;
   bool BindSampleToTexture(DXVAVideoDecodeAccelerator* decoder,
-                           base::win::ScopedComPtr<IMFSample> sample) override;
+                           Microsoft::WRL::ComPtr<IMFSample> sample) override;
   bool AllowOverlay() const override;
   bool CanBindSamples() const override;
 
  private:
   EGLStreamKHR stream_;
 
-  base::win::ScopedComPtr<IMFSample> current_d3d_sample_;
-  base::win::ScopedComPtr<ID3D11Texture2D> dx11_decoding_texture_;
+  Microsoft::WRL::ComPtr<IMFSample> current_d3d_sample_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> dx11_decoding_texture_;
 };
 
 // Creates an NV12 texture and copies to it, then shares that with ANGLE.
@@ -212,18 +212,18 @@ class EGLStreamCopyPictureBuffer : public DXVAPictureBuffer {
   // This ID3D11Texture2D interface pointer is used to hold a reference to the
   // MFT decoder texture during the course of a copy operation. This reference
   // is released when the copy completes.
-  base::win::ScopedComPtr<ID3D11Texture2D> dx11_decoding_texture_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> dx11_decoding_texture_;
 
-  base::win::ScopedComPtr<IDXGIKeyedMutex> egl_keyed_mutex_;
-  base::win::ScopedComPtr<IDXGIKeyedMutex> dx11_keyed_mutex_;
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> egl_keyed_mutex_;
+  Microsoft::WRL::ComPtr<IDXGIKeyedMutex> dx11_keyed_mutex_;
 
   HANDLE texture_share_handle_;
   // This is the texture (created on ANGLE's device) that will be put in the
   // EGLStream.
-  base::win::ScopedComPtr<ID3D11Texture2D> angle_copy_texture_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> angle_copy_texture_;
   // This is another copy of that shared resource that will be copied to from
   // the decoder.
-  base::win::ScopedComPtr<ID3D11Texture2D> decoder_copy_texture_;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> decoder_copy_texture_;
 
   // This is the last value that was used to release the keyed mutex.
   uint64_t keyed_mutex_value_ = 0;
