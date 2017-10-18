@@ -327,34 +327,18 @@ TEST_F(CastMediaSinkServiceImplTest, TestOpenChannelFails) {
 
   media_sink_service_impl_.SetTaskRunnerForTest(mock_time_task_runner_);
 
-  ExpectOpenSocketInternal(&socket);
-  std::unique_ptr<net::BackoffEntry> backoff_entry(
-      new net::BackoffEntry(&media_sink_service_impl_.backoff_policy_));
-  media_sink_service_impl_.retry_params_.max_retry_attempts = 3;
-  auto* backoff_entry_ptr = backoff_entry.get();
+  EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(ip_endpoint, _, _))
+      .WillRepeatedly(
+          Invoke([&](const auto& ip_endpoint1, auto* net_log, auto open_cb) {
+            std::move(open_cb).Run(&socket);
+            return socket.id();
+          }));
   media_sink_service_impl_.OpenChannel(
-      ip_endpoint, cast_sink, std::move(backoff_entry),
+      ip_endpoint, cast_sink, nullptr,
       CastMediaSinkServiceImpl::SinkSource::kMdns);
 
-  // 1st retry attempt
-  ExpectOpenSocketInternal(&socket);
-  base::TimeDelta delay = backoff_entry_ptr->GetTimeUntilRelease() +
-                          base::TimeDelta::FromSeconds(1);
-  mock_time_task_runner_->FastForwardBy(delay);
-  // 2nd retry attempt
-  ExpectOpenSocketInternal(&socket);
-  delay = backoff_entry_ptr->GetTimeUntilRelease() +
-          base::TimeDelta::FromSeconds(1);
-  mock_time_task_runner_->FastForwardBy(delay);
-  // 3rd retry attempt
-  ExpectOpenSocketInternal(&socket);
-  delay = backoff_entry_ptr->GetTimeUntilRelease() +
-          base::TimeDelta::FromSeconds(1);
-  mock_time_task_runner_->FastForwardBy(delay);
-  // No more retry.
-  EXPECT_CALL(*mock_cast_socket_service_, OpenSocketInternal(ip_endpoint, _, _))
-      .Times(0);
-  mock_time_task_runner_->FastForwardBy(delay);
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(4, media_sink_service_impl_.failure_count_map_[ip_endpoint]);
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestMultipleOpenChannels) {
@@ -435,15 +419,10 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelOpenFailed) {
       cast_sink, &socket, CastMediaSinkServiceImpl::SinkSource::kMdns);
 
   EXPECT_EQ(1u, media_sink_service_impl_.current_sinks_map_.size());
-  EXPECT_TRUE(media_sink_service_impl_.failure_count_map_.empty());
 
   socket.SetIPEndpoint(ip_endpoint1);
   media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1);
   EXPECT_TRUE(media_sink_service_impl_.current_sinks_map_.empty());
-  EXPECT_EQ(1, media_sink_service_impl_.failure_count_map_[ip_endpoint1]);
-
-  media_sink_service_impl_.OnChannelOpenFailed(ip_endpoint1);
-  EXPECT_EQ(2, media_sink_service_impl_.failure_count_map_[ip_endpoint1]);
 }
 
 TEST_F(CastMediaSinkServiceImplTest,
@@ -477,6 +456,7 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorMayRetryForCastSink) {
   cast_channel::MockCastSocket socket;
   socket.set_id(1);
   socket.SetIPEndpoint(ip_endpoint1);
+  socket.SetErrorState(cast_channel::ChannelError::CHANNEL_NOT_OPEN);
 
   media_sink_service_impl_.SetTaskRunnerForTest(mock_time_task_runner_);
 
@@ -484,15 +464,20 @@ TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorMayRetryForCastSink) {
   media_sink_service_impl_.current_sinks_map_[ip_endpoint1] = cast_sink;
   EXPECT_CALL(socket, ready_state())
       .WillRepeatedly(Return(cast_channel::ReadyState::CLOSED));
+  EXPECT_CALL(*mock_cast_socket_service_,
+              OpenSocketInternal(ip_endpoint1, _, _))
+      .WillRepeatedly(
+          Invoke([&](const auto& ip_endpoint, auto* net_log, auto open_cb) {
+            std::move(open_cb).Run(&socket);
+            return socket.id();
+          }));
+
   media_sink_service_impl_.OnError(
       socket, cast_channel::ChannelError::CHANNEL_NOT_OPEN);
 
-  EXPECT_CALL(*mock_cast_socket_service_,
-              OpenSocketInternal(ip_endpoint1, _, _));
-  mock_time_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(16));
+  mock_time_task_runner_->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(4, media_sink_service_impl_.failure_count_map_[ip_endpoint1]);
   EXPECT_TRUE(media_sink_service_impl_.current_sinks_map_.empty());
-
-  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(CastMediaSinkServiceImplTest, TestOnChannelErrorNoRetryForMissingSink) {
