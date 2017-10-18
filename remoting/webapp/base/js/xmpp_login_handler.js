@@ -130,8 +130,10 @@ remoting.XmppLoginHandler.State = {
 };
 
 remoting.XmppLoginHandler.prototype.start = function() {
+  console.log('XmppLoginHandler: start(' + this.tlsMode_ + ')');
   switch (this.tlsMode_) {
     case remoting.TlsMode.NO_TLS:
+      console.log('XmppLoginHandler: Waiting for stream header after TLS');
       this.state_ =
           remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_TLS;
       this.startAuthStream_();
@@ -139,11 +141,13 @@ remoting.XmppLoginHandler.prototype.start = function() {
                      'NO_TLS should only be used in Dev builds.');
       break;
     case remoting.TlsMode.WITH_HANDSHAKE:
+      console.log('XmppLoginHandler: Waiting for stream header');
       this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER;
       this.startStream_('<starttls xmlns="urn:ietf:params:xml:ns:xmpp-tls"/>');
       break;
     case remoting.TlsMode.WITHOUT_HANDSHAKE:
       this.state_ = remoting.XmppLoginHandler.State.STARTING_TLS;
+      console.log('XmppLoginHandler: Starting TLS');
       this.startTlsCallback_();
       break;
     default:
@@ -166,9 +170,11 @@ remoting.XmppLoginHandler.prototype.onDataReceived = function(data) {
  * @private
  */
 remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
+  console.log('XmppLoginHandler: state=' + this.state_);
   switch (this.state_) {
     case remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER:
       if (stanza.querySelector('features>starttls')) {
+        console.log('XmppLoginHandler: Waiting for startttls response');
         this.state_ = remoting.XmppLoginHandler.State.WAIT_STARTTLS_RESPONSE;
       } else {
         this.onError_(
@@ -179,6 +185,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
 
     case remoting.XmppLoginHandler.State.WAIT_STARTTLS_RESPONSE:
       if (stanza.localName == "proceed") {
+        console.log('XmppLoginHandler: Starting TLS');
         this.state_ = remoting.XmppLoginHandler.State.STARTING_TLS;
         this.startTlsCallback_();
       } else {
@@ -199,12 +206,14 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
         return;
       }
 
+      console.log('XmppLoginHandler: Waiting for auth result');
       this.state_ = remoting.XmppLoginHandler.State.WAIT_AUTH_RESULT;
 
       break;
 
     case remoting.XmppLoginHandler.State.WAIT_AUTH_RESULT:
       if (stanza.localName == 'success') {
+        console.log('XmppLoginHandler: Waiting for stream header after auth');
         this.state_ =
             remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_AUTH;
         this.startStream_(
@@ -226,6 +235,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
 
     case remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_AUTH:
       if (stanza.querySelector('features>bind')) {
+        console.log('XmppLoginHandler: Waiting for bind result');
         this.state_ = remoting.XmppLoginHandler.State.WAIT_BIND_RESULT;
       } else {
         this.onError_(remoting.Error.unexpected(),
@@ -243,6 +253,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
         return;
       }
       this.jid_ = jidElement.textContent;
+      console.log('XmppLoginHandler: Waiting for IQ result');
       this.state_ = remoting.XmppLoginHandler.State.WAIT_SESSION_IQ_RESULT;
       break;
 
@@ -254,6 +265,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
                           (new XMLSerializer().serializeToString(stanza)));
         return;
       }
+      console.log('XmppLoginHandler: Handshake complete');
       this.state_ = remoting.XmppLoginHandler.State.DONE;
       this.onHandshakeDoneCallback_(this.jid_, this.streamParser_);
       break;
@@ -267,6 +279,7 @@ remoting.XmppLoginHandler.prototype.onStanza_ = function(stanza) {
 remoting.XmppLoginHandler.prototype.onTlsStarted = function() {
   console.assert(this.state_ == remoting.XmppLoginHandler.State.STARTING_TLS,
                  'onTlsStarted() called in state ' + this.state_ + '.');
+  console.log('XmppLoginHandler: Waiting for stream header after TLS');
   this.state_ = remoting.XmppLoginHandler.State.WAIT_STREAM_HEADER_AFTER_TLS;
   this.startAuthStream_();
 };
@@ -275,6 +288,7 @@ remoting.XmppLoginHandler.prototype.onTlsStarted = function() {
 remoting.XmppLoginHandler.prototype.startAuthStream_ = function() {
   var cookie = window.btoa('\0' + this.username_ + '\0' + this.authToken_);
 
+  console.log('XmppLoginHandler: startAuthStream');
   this.startStream_(
       '<auth xmlns="urn:ietf:params:xml:ns:xmpp-sasl" ' +
              'mechanism="X-OAUTH2" auth:service="oauth2" ' +
@@ -314,11 +328,11 @@ remoting.XmppLoginHandler.prototype.startStream_ = function(firstMessage) {
  * @private
  */
 remoting.XmppLoginHandler.prototype.onError_ = function(error, text) {
+  console.error('XmppLoginHandler: Error ' + error.toString() +
+                ' (' + text + ') in state ' + this.state_);
   if (this.state_ != remoting.XmppLoginHandler.State.ERROR) {
     this.onErrorCallback_(error, text);
     this.state_ = remoting.XmppLoginHandler.State.ERROR;
-  } else {
-    console.error(text);
   }
 };
 
