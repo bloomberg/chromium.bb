@@ -270,7 +270,7 @@ void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
     case ProviderStatus::DEAD_HOST:
       Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
           thread_id, request_id, blink::mojom::ServiceWorkerErrorType::kAbort,
-          base::ASCIIToUTF16(kServiceWorkerUpdateErrorPrefix) +
+          base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) +
               base::ASCIIToUTF16(kShutdownErrorMessage)));
       return;
     case ProviderStatus::NO_HOST:
