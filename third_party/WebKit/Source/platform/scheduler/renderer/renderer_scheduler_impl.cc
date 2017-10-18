@@ -2026,7 +2026,7 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
 AutoAdvancingVirtualTimeDomain* RendererSchedulerImpl::GetVirtualTimeDomain() {
   if (!virtual_time_domain_) {
     virtual_time_domain_.reset(
-        new AutoAdvancingVirtualTimeDomain(tick_clock()->NowTicks()));
+        new AutoAdvancingVirtualTimeDomain(tick_clock()->NowTicks(), &helper_));
     RegisterTimeDomain(virtual_time_domain_.get());
   }
   return virtual_time_domain_.get();

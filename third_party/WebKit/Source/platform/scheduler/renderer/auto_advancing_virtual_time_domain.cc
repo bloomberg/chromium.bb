@@ -4,16 +4,26 @@
 
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
 
+#include "platform/scheduler/child/scheduler_helper.h"
+
 namespace blink {
 namespace scheduler {
 
 AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
-    base::TimeTicks initial_time)
+    base::TimeTicks initial_time,
+    SchedulerHelper* helper)
     : VirtualTimeDomain(initial_time),
+      task_starvation_count_(0),
+      max_task_starvation_count_(0),
       can_advance_virtual_time_(true),
-      observer_(nullptr) {}
+      observer_(nullptr),
+      helper_(helper) {
+  helper_->AddTaskObserver(this);
+}
 
-AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {}
+AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {
+  helper_->RemoveTaskObserver(this);
+}
 
 base::Optional<base::TimeDelta>
 AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
@@ -21,6 +31,7 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   if (!can_advance_virtual_time_ || !NextScheduledRunTime(&run_time))
     return base::nullopt;
 
+  task_starvation_count_ = 0;
   AdvanceTo(run_time);
   if (observer_)
     observer_->OnVirtualTimeAdvanced();
@@ -50,8 +61,34 @@ void AutoAdvancingVirtualTimeDomain::SetCanAdvanceVirtualTime(
     RequestDoWork();
 }
 
+void AutoAdvancingVirtualTimeDomain::SetMaxVirtualTimeTaskStarvationCount(
+    int max_task_starvation_count) {
+  max_task_starvation_count_ = max_task_starvation_count;
+  if (max_task_starvation_count_ == 0)
+    task_starvation_count_ = 0;
+}
+
 const char* AutoAdvancingVirtualTimeDomain::GetName() const {
   return "AutoAdvancingVirtualTimeDomain";
+}
+
+void AutoAdvancingVirtualTimeDomain::WillProcessTask(
+    const base::PendingTask& pending_task) {}
+
+void AutoAdvancingVirtualTimeDomain::DidProcessTask(
+    const base::PendingTask& pending_task) {
+  if (max_task_starvation_count_ == 0 ||
+      ++task_starvation_count_ < max_task_starvation_count_) {
+    return;
+  }
+
+  // Delayed tasks are being excessively starved, so allow virtual time to
+  // advance.
+  base::TimeTicks run_time;
+  if (NextScheduledRunTime(&run_time)) {
+    AdvanceTo(run_time);
+    task_starvation_count_ = 0;
+  }
 }
 
 AutoAdvancingVirtualTimeDomain::Observer::Observer() {}

@@ -107,6 +107,13 @@ class PLATFORM_EXPORT WebViewScheduler {
       base::TimeDelta budget,
       WTF::Closure budget_exhausted_callback) = 0;
 
+  // It's possible for pages to send infinite messages which can arbitrarily
+  // block virtual time.  We can prevent this by setting an upper limit on the
+  // number of tasks that can run before virtual time is advanced.
+  // NB this anti-starvation logic doesn't apply to VirtualTimePolicy::PAUSE.
+  virtual void SetMaxVirtualTimeTaskStarvationCount(
+      int max_task_starvation_count) = 0;
+
   virtual void AudioStateChanged(bool is_audio_playing) = 0;
 
   virtual bool HasActiveConnectionForTest() const = 0;
