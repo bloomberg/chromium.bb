@@ -29,11 +29,13 @@
 namespace {
 
 #if defined(OS_CHROMEOS)
-const int kShadowCornerRadius = 2;
+const int kBorderThickness = 1;
+const int kBorderCorderRadius = 2;
+const SkColor kBorderColor = SkColorSetARGB(0x1F, 0x0, 0x0, 0x0);
 #else
 const int kShadowCornerRadius = 0;
-#endif
 const int kShadowElevation = 2;
+#endif
 
 // Creates a text for spoken feedback from the data contained in the
 // notification.
@@ -92,15 +94,13 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
   slide_out_controller_.set_enabled(!GetPinned());
 }
 
-// static
-gfx::Insets MessageView::GetShadowInsets() {
-  return -gfx::ShadowValue::GetMargin(
-      gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius).values);
-}
-
 void MessageView::SetIsNested() {
   is_nested_ = true;
 
+#if defined(OS_CHROMEOS)
+  SetBorder(views::CreateRoundedRectBorder(kBorderThickness,
+                                           kBorderCorderRadius, kBorderColor));
+#else
   const auto& shadow =
       gfx::ShadowDetails::Get(kShadowElevation, kShadowCornerRadius);
   gfx::Insets ninebox_insets = gfx::ShadowValue::GetBlurRegion(shadow.values) +
@@ -109,6 +109,7 @@ void MessageView::SetIsNested() {
       std::unique_ptr<views::Painter>(views::Painter::CreateImagePainter(
           shadow.ninebox_image, ninebox_insets)),
       -gfx::ShadowValue::GetMargin(shadow.values)));
+#endif
 }
 
 void MessageView::SetExpanded(bool expanded) {

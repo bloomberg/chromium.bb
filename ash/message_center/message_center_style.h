@@ -18,6 +18,8 @@ constexpr SkColor kBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
 constexpr int kVectorIconSize = 20;
 constexpr gfx::Insets kVectorIconPadding(14);
 
+constexpr int kMarginBetweenItems = 8;
+
 // Return FontList for the given absolute font size and font weight.
 gfx::FontList GetFontListForSizeAndWeight(int font_size,
                                           gfx::Font::Weight weight);

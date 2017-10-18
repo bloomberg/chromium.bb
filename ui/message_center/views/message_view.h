@@ -44,9 +44,6 @@ class MESSAGE_CENTER_EXPORT MessageView
   // Updates this view with the new data contained in the notification.
   virtual void UpdateWithNotification(const Notification& notification);
 
-  // Returns the insets for the shadow it will have for rich notification.
-  static gfx::Insets GetShadowInsets();
-
   // Creates a shadow around the notification and changes slide-out behavior.
   void SetIsNested();
 

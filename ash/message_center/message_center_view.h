@@ -73,7 +73,9 @@ class ASH_EXPORT MessageCenterView
   void OnWillChangeFocus(views::View* before, views::View* now) override {}
   void OnDidChangeFocus(views::View* before, views::View* now) override;
 
+  // Fallback background color when the device does not support blur.
   static const SkColor kBackgroundColor;
+
   static const size_t kMaxVisibleNotifications;
 
  protected:
