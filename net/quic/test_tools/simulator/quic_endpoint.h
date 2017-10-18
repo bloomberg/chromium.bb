@@ -9,8 +9,8 @@
 #include "net/quic/core/crypto/null_encrypter.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_packets.h"
+#include "net/quic/core/quic_stream_frame_data_producer.h"
 #include "net/quic/platform/api/quic_containers.h"
-#include "net/quic/test_tools/simple_data_producer.h"
 #include "net/quic/test_tools/simulator/link.h"
 #include "net/quic/test_tools/simulator/queue.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
@@ -119,6 +119,16 @@ class QuicEndpoint : public Endpoint,
     bool is_blocked_;
   };
 
+  // The producer outputs the repetition of the same byte.  That sequence is
+  // verified by the receiver.
+  class DataProducer : public QuicStreamFrameDataProducer {
+   public:
+    bool WriteStreamData(QuicStreamId id,
+                         QuicStreamOffset offset,
+                         QuicByteCount data_length,
+                         QuicDataWriter* writer) override;
+  };
+
   // Write stream data until |bytes_to_transfer_| is zero or the connection is
   // write-blocked.
   void WriteStreamData();
@@ -126,6 +136,7 @@ class QuicEndpoint : public Endpoint,
   std::string peer_name_;
 
   Writer writer_;
+  DataProducer producer_;
   // The queue for the outgoing packets.  In reality, this might be either on
   // the network card, or in the kernel, but for concreteness we assume it's on
   // the network card.
@@ -141,10 +152,6 @@ class QuicEndpoint : public Endpoint,
   // Set to true if the endpoint receives stream data different from what it
   // expects.
   bool wrong_data_received_;
-
-  std::unique_ptr<char[]> transmission_buffer_;
-
-  net::test::SimpleDataProducer producer_;
 };
 
 // Multiplexes multiple connections at the same host on the network.
