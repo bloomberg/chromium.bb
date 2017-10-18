@@ -13,6 +13,8 @@ if (build_with_chromium) {
       "zip_internal.h",
       "zip_reader.cc",
       "zip_reader.h",
+      "zip_writer.cc",
+      "zip_writer.h",
     ]
     deps = [
       "//base",

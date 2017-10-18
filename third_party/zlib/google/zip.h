@@ -23,6 +23,7 @@ namespace zip {
 // Can be passed to the ZipParams for providing custom access to the files,
 // for example over IPC.
 // If none is provided, the files are accessed directly.
+// All parameters paths are expected to be absolute.
 class FileAccessor {
  public:
   virtual ~FileAccessor() = default;
@@ -34,7 +35,11 @@ class FileAccessor {
     bool is_directory = false;
   };
 
-  virtual base::File OpenFileForReading(const base::FilePath& path) = 0;
+  // Opens files specified in |paths|.
+  // Directories should be mapped to invalid files.
+  virtual std::vector<base::File> OpenFilesForReading(
+      const std::vector<base::FilePath>& paths) = 0;
+
   virtual bool DirectoryExists(const base::FilePath& path) = 0;
   virtual std::vector<DirectoryContentEntry> ListDirectoryContent(
       const base::FilePath& dir_path) = 0;
