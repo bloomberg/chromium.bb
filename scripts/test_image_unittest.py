@@ -73,7 +73,7 @@ class MainTest(TestImageTest):
   def testChdir(self):
     """Verify the CWD is in a temp directory."""
 
-    class CwdTest(image_test_lib.NonForgivingImageTestCase):
+    class CwdTest(image_test_lib.ImageTestCase):
       """A dummy test class to verify current working directory."""
 
       _expected_dir = None
@@ -91,7 +91,7 @@ class MainTest(TestImageTest):
     suite = image_test_lib.ImageTestSuite()
     suite.addTest(test)
     self.PatchObject(unittest.TestLoader, 'loadTestsFromName', autospec=True,
-                     return_value=[suite])
+                     return_value=suite)
 
     # Set up the expected directory.
     expected_dir = os.path.join(self.tempdir, 'my-subdir')
@@ -104,44 +104,10 @@ class MainTest(TestImageTest):
     self.assertEqual(0, test_image.main(argv))
     self.assertEqual('/tmp', os.getcwd())
 
-  def _testForgiveness(self, forgiveness, expected_result):
-
-    class ForgivenessTest(image_test_lib.ImageTestCase):
-      """A dummy test that is sometime forgiving, sometime not.
-
-      Its only test (testFail) always fail.
-      """
-
-      _forgiving = True
-
-      def SetForgiving(self, value):
-        self._forgiving = value
-
-      def IsForgiving(self):
-        return self._forgiving
-
-      def testFail(self):
-        self.fail()
-
-    test = ForgivenessTest('testFail')
-    test.SetForgiving(forgiveness)
-    suite = image_test_lib.ImageTestSuite()
-    suite.addTest(test)
-    self.PatchObject(unittest.TestLoader, 'loadTestsFromName', autospec=True,
-                     return_value=[suite])
-    argv = [self.tempdir]
-    self.assertEqual(expected_result, test_image.main(argv))
-
-  def testForgiving(self):
-    self._testForgiveness(True, 0)
-
-  def testNonForgiving(self):
-    self._testForgiveness(False, 1)
-
   def testBoardAndDirectory(self):
     """Verify that "--board", "--test_results_root" are passed to the tests."""
 
-    class AttributeTest(image_test_lib.ForgivingImageTestCase):
+    class AttributeTest(image_test_lib.ImageTestCase):
       """Dummy test class to hold board and directory."""
 
       def testOkay(self):
@@ -151,7 +117,7 @@ class MainTest(TestImageTest):
     suite = image_test_lib.ImageTestSuite()
     suite.addTest(test)
     self.PatchObject(unittest.TestLoader, 'loadTestsFromName', autospec=True,
-                     return_value=[suite])
+                     return_value=suite)
     argv = [
         '--board',
         'my-board',

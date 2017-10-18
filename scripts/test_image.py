@@ -12,7 +12,6 @@ import unittest
 
 from chromite.lib import constants
 from chromite.lib import commandline
-from chromite.lib import cros_logging as logging
 from chromite.lib import image_test_lib
 from chromite.lib import osutils
 from chromite.lib import path_util
@@ -68,14 +67,6 @@ def main(args):
   # image tests automatically because they depend on a proper environment.
   loader.testMethodPrefix = 'Test'
   all_tests = loader.loadTestsFromName('chromite.cros.test.image_test')
-  forgiving = image_test_lib.ImageTestSuite()
-  non_forgiving = image_test_lib.ImageTestSuite()
-  for suite in all_tests:
-    for test in suite.GetTests():
-      if test.IsForgiving():
-        forgiving.addTest(test)
-      else:
-        non_forgiving.addTest(test)
 
   # Run them in the image directory.
   runner = image_test_lib.ImageTestRunner()
@@ -86,12 +77,7 @@ def main(args):
   with osutils.TempDir(base_dir=tmp_in_chroot) as temp_dir:
     with osutils.MountImageContext(image_file, temp_dir):
       with osutils.ChdirContext(temp_dir):
-        # Run non-forgiving tests first so that exceptions in forgiving tests
-        # do not skip any required tests.
-        logging.info('Running NON-forgiving tests.')
-        result = runner.run(non_forgiving)
-        logging.info('Running forgiving tests.')
-        runner.run(forgiving)
+        result = runner.run(all_tests)
 
   if result and not result.wasSuccessful():
     return 1

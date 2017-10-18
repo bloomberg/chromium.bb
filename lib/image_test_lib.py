@@ -42,9 +42,6 @@ class _BoardAndDirectoryMixin(object):
 class ImageTestCase(unittest.TestCase, _BoardAndDirectoryMixin):
   """Subclass unittest.TestCase to provide utility methods for image tests.
 
-  Tests should not directly inherit this class. They should instead inherit
-  from ForgivingImageTestCase, or NonForgivingImageTestCase.
-
   Tests MUST use prefix "Test" (e.g.: TestLinkage, TestDiskSpace), not "test"
   prefix, in order to be picked up by the test runner.
 
@@ -66,16 +63,6 @@ class ImageTestCase(unittest.TestCase, _BoardAndDirectoryMixin):
         + var_overlay
         ...
   """
-
-  def IsForgiving(self):
-    """Indicate if this test is forgiving.
-
-    The test runner will classify tests into two buckets, forgiving and non-
-    forgiving. Forgiving tests DO NOT affect the result of the test runner;
-    non-forgiving tests do. In either case, test runner will still output the
-    result of each individual test.
-    """
-    raise NotImplementedError()
 
   def _GeneratePerfFileName(self):
     """Return a perf file name for this test.
@@ -134,25 +121,8 @@ class ImageTestCase(unittest.TestCase, _BoardAndDirectoryMixin):
                                   higher_is_better, graph)
 
 
-class ForgivingImageTestCase(ImageTestCase):
-  """Concrete base class of forgiving tests."""
-
-  def IsForgiving(self):
-    return True
-
-
-class NonForgivingImageTestCase(ImageTestCase):
-  """Concrete base class of non forgiving tests."""
-
-  def IsForgiving(self):
-    return False
-
-
 class ImageTestSuite(unittest.TestSuite, _BoardAndDirectoryMixin):
   """Wrap around unittest.TestSuite to pass more info to the actual tests."""
-
-  def GetTests(self):
-    return self._tests
 
   def run(self, result, debug=False):
     for t in self._tests:

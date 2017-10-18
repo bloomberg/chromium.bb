@@ -19,6 +19,7 @@ import mimetypes
 import os
 import re
 import stat
+import unittest
 
 from elftools.elf import elffile
 from elftools.common import exceptions
@@ -31,7 +32,7 @@ from chromite.lib import osutils
 from chromite.lib import parseelf
 
 
-class LocaltimeTest(image_test_lib.NonForgivingImageTestCase):
+class LocaltimeTest(image_test_lib.ImageTestCase):
   """Verify that /etc/localtime is a symlink to /var/lib/timezone/localtime.
 
   This is an example of an image test. The image is already mounted. The
@@ -66,7 +67,7 @@ def _GuessMimeType(magic_obj, file_name):
   return mime_type
 
 
-class BlacklistTest(image_test_lib.NonForgivingImageTestCase):
+class BlacklistTest(image_test_lib.ImageTestCase):
   """Verify that rootfs does not contain blacklisted items."""
 
   def TestBlacklistedDirectories(self):
@@ -161,7 +162,7 @@ class BlacklistTest(image_test_lib.NonForgivingImageTestCase):
     self.assertFalse(failures, '\n'.join(failures))
 
 
-class LinkageTest(image_test_lib.NonForgivingImageTestCase):
+class LinkageTest(image_test_lib.ImageTestCase):
   """Verify that all binaries and libraries have proper linkage."""
 
   def setUp(self):
@@ -242,7 +243,8 @@ class LinkageTest(image_test_lib.NonForgivingImageTestCase):
         self.fail('Fail linkage test for %s: %s' % (to_test, e))
 
 
-class FileSystemMetaDataTest(image_test_lib.ForgivingImageTestCase):
+@unittest.expectedFailure
+class FileSystemMetaDataTest(image_test_lib.ImageTestCase):
   """A test class to gather file system stats such as free inodes, blocks."""
 
   def TestStats(self):
@@ -304,7 +306,7 @@ class FileSystemMetaDataTest(image_test_lib.ForgivingImageTestCase):
                          higher_is_better=False, graph='filesystem_stats')
 
 
-class SymbolsTest(image_test_lib.NonForgivingImageTestCase):
+class SymbolsTest(image_test_lib.ImageTestCase):
   """Tests related to symbols in ELF files."""
 
   def setUp(self):
