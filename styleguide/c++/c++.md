@@ -162,7 +162,7 @@ Place platform-specific #includes in their own section below the "normal"
 
   #if defined(OS_WIN)
   #include <windows.h>
-  #include "base/win/scoped_comptr.h"
+  #include "base/win/com_init_util.h"
   #elif defined(OS_POSIX)
   #include "base/posix/global_descriptors.h"
   #endif
