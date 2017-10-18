@@ -2,9 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import py_utils
 import logging
+import time
 
+import py_utils
 from telemetry.core import exceptions
 from telemetry.page import page as page_module
 from telemetry.page import shared_page_state
@@ -16,12 +17,14 @@ from contrib.cros_benchmarks import cros_utils
 class CrosMultiTabStory(page_module.Page):
   """Base class for multi-tab stories."""
 
-  def __init__(self, story_set, cros_remote, tabset_repeat=1):
+  def __init__(self, story_set, cros_remote, tabset_repeat=1,
+               pause_after_creation=0):
     super(CrosMultiTabStory, self).__init__(
         shared_page_state_class=shared_page_state.SharedPageState,
         page_set=story_set, name=self.NAME, url=self.URL)
     self._cros_remote = cros_remote
     self._tabset_repeat = tabset_repeat
+    self._pause_after_creation = pause_after_creation
 
   def RunNavigateSteps(self, action_runner):
     """Opening tabs and waiting for them to load."""
@@ -57,6 +60,7 @@ class CrosMultiTabStory(page_module.Page):
 
   def RunPageInteractions(self, action_runner):
     """Tab switching to each tabs."""
+    time.sleep(self._pause_after_creation)
     url_list = self.URL_LIST * self._tabset_repeat
     browser = action_runner.tab.browser
 
