@@ -1,8 +1,10 @@
 # These tests currently fail when run with --enable-network-service
 # See https://crbug.com/729849
 
-# Skip the mojo-loading virtual tests because the Mojo Loading flag is implied
-# by the Network Service flag. Failures there are duplicates of failures below.
+# Skip the mojo-blobs and mojo-loading virtual test suites because these flags
+# are implied by the Network Service flag. Failures there are therefore
+# duplicates of failures below.
+Bug(none) virtual/mojo-blobs [ Skip ]
 Bug(none) virtual/mojo-loading [ Skip ]
 
 Bug(none) compositing/video-frame-size-change.html [ Timeout ]
