@@ -230,14 +230,15 @@ def main():
   parser.add_argument('--keystore_path', required=True, type=os.path.abspath)
   parser.add_argument('--key_name', required=True)
   parser.add_argument('--key_password', required=True)
-  parser.add_argument('--shared_library')
+  group = parser.add_mutually_exclusive_group(required=True)
+  group.add_argument('--component-build', action='store_true')
+  group.add_argument('--shared_library')
   parser.add_argument('--page-align-shared-libraries', action='store_true',
                       help='Obsolete, but remains for backwards compatibility')
   parser.add_argument('--uncompress-shared-libraries', action='store_true')
   parser.add_argument('--debug', action='store_true')
   # This option shall only used in debug build, see http://crbug.com/631494.
   parser.add_argument('--ignore-classes-dex', action='store_true')
-  parser.add_argument('--component-build', action='store_true')
   args = parser.parse_args()
 
   if (args.zipalign_path is not None and
@@ -250,7 +251,7 @@ def main():
   if args.zipalign_path is None:
     # When no path given, try the default.
     if not os.path.isfile(DEFAULT_ZIPALIGN_PATH):
-      return 'zipalign path not found: %s' % DEFAULT_ZIPALIGN_PATH
+      return 'ERROR: zipalign path not found: %s' % DEFAULT_ZIPALIGN_PATH
     args.zipalign_path = DEFAULT_ZIPALIGN_PATH
 
   tmp_dir = tempfile.mkdtemp()
@@ -261,21 +262,12 @@ def main():
   new_apk = args.out_apk
 
   try:
-    if args.component_build and args.shared_library:
-      raise ApkMergeFailure('--component-build and shared-library shouldn\'t'
-                            ' be specified at same time.')
-    if not args.component_build and not args.shared_library:
-      raise ApkMergeFailure('Either --component-build or shared-library should'
-                            ' be specified.')
-
     MergeApk(args, tmp_apk, tmp_dir_32, tmp_dir_64)
 
     SignAndAlignApk(tmp_apk, signed_tmp_apk, new_apk, args.zipalign_path,
                     args.keystore_path, args.key_name, args.key_password)
-
-  except ApkMergeFailure as e:
-    print e
-    return 1
+  except ApkMergeFailure as exc:
+    return 'ERROR: %s' % exc
   finally:
     shutil.rmtree(tmp_dir)
   return 0
