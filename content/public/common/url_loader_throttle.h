@@ -15,6 +15,7 @@ struct RedirectInfo;
 namespace content {
 
 struct ResourceRequest;
+struct ResourceResponseHead;
 
 // A URLLoaderThrottle gets notified at various points during the process of
 // loading a resource. At each stage, it has the opportunity to defer the
@@ -69,7 +70,8 @@ class CONTENT_EXPORT URLLoaderThrottle {
                                    bool* defer);
 
   // Called when the response headers and meta data are available.
-  virtual void WillProcessResponse(bool* defer);
+  virtual void WillProcessResponse(const ResourceResponseHead& response_head,
+                                   bool* defer);
 
   void set_delegate(Delegate* delegate) { delegate_ = delegate; }
 
