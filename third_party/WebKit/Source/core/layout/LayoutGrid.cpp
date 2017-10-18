@@ -236,12 +236,8 @@ LayoutUnit LayoutGrid::ComputeTrackBasedLogicalHeight() const {
 void LayoutGrid::ComputeTrackSizesForDefiniteSize(
     GridTrackSizingDirection direction,
     LayoutUnit available_space) {
-  LayoutUnit free_space =
-      available_space - GuttersSize(grid_, direction, 0,
-                                    grid_.NumTracks(direction),
-                                    available_space);
   track_sizing_algorithm_.Setup(direction, NumTracks(direction, grid_),
-                                available_space, free_space);
+                                available_space);
   track_sizing_algorithm_.Run();
 
 #if DCHECK_IS_ON()
@@ -533,7 +529,7 @@ void LayoutGrid::ComputeTrackSizesForIndefiniteSize(
     Grid& grid,
     LayoutUnit& min_intrinsic_size,
     LayoutUnit& max_intrinsic_size) const {
-  algo.Setup(direction, NumTracks(direction, grid), WTF::nullopt, WTF::nullopt);
+  algo.Setup(direction, NumTracks(direction, grid), WTF::nullopt);
   algo.Run();
 
   min_intrinsic_size = algo.MinContentSize();

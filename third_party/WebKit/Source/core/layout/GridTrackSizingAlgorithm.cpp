@@ -1390,10 +1390,8 @@ bool GridTrackSizingAlgorithm::IsValidTransition() const {
 
 void GridTrackSizingAlgorithm::Setup(GridTrackSizingDirection direction,
                                      size_t num_tracks,
-                                     Optional<LayoutUnit> available_space,
-                                     Optional<LayoutUnit> free_space) {
+                                     Optional<LayoutUnit> available_space) {
   DCHECK(needs_setup_);
-  DCHECK_EQ(!!available_space, !!free_space);
   direction_ = direction;
   SetAvailableSpace(
       direction, available_space ? available_space.value().ClampNegativeToZero()
@@ -1408,7 +1406,13 @@ void GridTrackSizingAlgorithm::Setup(GridTrackSizingDirection direction,
   flexible_sized_tracks_index_.Shrink(0);
   auto_sized_tracks_for_stretch_index_.Shrink(0);
 
-  SetFreeSpace(direction, free_space);
+  if (available_space) {
+    LayoutUnit gutters_size = layout_grid_->GuttersSize(
+        grid_, direction, 0, grid_.NumTracks(direction), available_space);
+    SetFreeSpace(direction, available_space.value() - gutters_size);
+  } else {
+    SetFreeSpace(direction, WTF::nullopt);
+  }
   Tracks(direction).resize(num_tracks);
 
   needs_setup_ = false;
