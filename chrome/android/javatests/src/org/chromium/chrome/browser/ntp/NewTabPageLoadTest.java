@@ -57,8 +57,7 @@ public class NewTabPageLoadTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         mMostVisitedSites = new AutoVerifyingMostVisitedSites();
         mMostVisitedSites.setTileSuggestions(mTestServer.getURLs("/site1", "/site2"));

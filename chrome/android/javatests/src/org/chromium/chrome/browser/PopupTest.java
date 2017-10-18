@@ -60,8 +60,7 @@ public class PopupTest {
 
         ThreadUtils.runOnUiThread(() -> Assert.assertTrue(getNumInfobarsShowing() == 0));
 
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mPopupHtmlUrl = mTestServer.getURL(POPUP_HTML_PATH);
     }
 

@@ -90,8 +90,7 @@ public class NewTabPageRecyclerViewTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         FakeMostVisitedSites mostVisitedSites = new FakeMostVisitedSites();
         mostVisitedSites.setTileSuggestions(mTestServer.getURL(TEST_PAGE));
@@ -246,8 +245,7 @@ public class NewTabPageRecyclerViewTest {
     public void testSnapScroll_noCondensedLayout() {
         setSuggestionsAndWaitForUpdate(0);
 
-        Resources res =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
+        Resources res = InstrumentationRegistry.getTargetContext().getResources();
         int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         View searchBox = getNtpView().findViewById(R.id.search_box);
@@ -283,8 +281,7 @@ public class NewTabPageRecyclerViewTest {
     public void testSnapScroll_condensedLayout() {
         setSuggestionsAndWaitForUpdate(0);
 
-        Resources res =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
+        Resources res = InstrumentationRegistry.getTargetContext().getResources();
         int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         View searchBox = getNtpView().findViewById(R.id.search_box);
@@ -311,8 +308,7 @@ public class NewTabPageRecyclerViewTest {
     public void testSnapScroll_tablet() {
         setSuggestionsAndWaitForUpdate(0);
 
-        Resources res =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getResources();
+        Resources res = InstrumentationRegistry.getTargetContext().getResources();
         int toolbarHeight = res.getDimensionPixelSize(R.dimen.toolbar_height_no_shadow)
                 + res.getDimensionPixelSize(R.dimen.toolbar_progress_bar_height);
         View searchBox = getNtpView().findViewById(R.id.search_box);

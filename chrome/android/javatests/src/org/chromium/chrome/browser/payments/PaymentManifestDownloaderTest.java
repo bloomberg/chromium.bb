@@ -92,8 +92,7 @@ public class PaymentManifestDownloaderTest implements ManifestDownloadCallback {
     @Before
     public void setUp() throws Throwable {
         mRule.startMainActivityOnBlankPage();
-        mServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mRule.runOnUiThread((Runnable) () -> {
             mDownloader.initialize(
                     mRule.getActivity().getCurrentContentViewCore().getWebContents());

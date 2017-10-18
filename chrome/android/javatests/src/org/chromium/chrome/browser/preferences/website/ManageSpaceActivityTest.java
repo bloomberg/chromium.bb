@@ -53,8 +53,7 @@ public class ManageSpaceActivityTest {
         if (!mActivityTestRule.getName().equals("testClearUnimporantWithoutChromeStart")) {
             mActivityTestRule.startMainActivityOnBlankPage();
         }
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
@@ -63,8 +62,8 @@ public class ManageSpaceActivityTest {
     }
 
     private ManageSpaceActivity startManageSpaceActivity() {
-        Intent intent = new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                ManageSpaceActivity.class);
+        Intent intent =
+                new Intent(InstrumentationRegistry.getTargetContext(), ManageSpaceActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         return (ManageSpaceActivity) InstrumentationRegistry.getInstrumentation().startActivitySync(

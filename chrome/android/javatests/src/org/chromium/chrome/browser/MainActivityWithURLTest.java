@@ -42,8 +42,8 @@ public class MainActivityWithURLTest {
     @SmallTest
     @Feature({"Navigation"})
     public void testLaunchActivityWithURL() throws Exception {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
             // Launch chrome
             mActivityTestRule.startMainActivityWithURL(

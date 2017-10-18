@@ -101,8 +101,7 @@ public final class DownloadForegroundServiceManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        mContext = new AdvancedMockContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        mContext = new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
         mDownloadServiceManager = new MockDownloadForegroundServiceManager();
 
         mNotification =

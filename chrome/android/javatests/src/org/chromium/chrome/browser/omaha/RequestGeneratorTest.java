@@ -90,7 +90,7 @@ public class RequestGeneratorTest {
      * Checks that the XML is being created properly.
      */
     private RequestGenerator createAndCheckXML(DeviceType deviceType, boolean sendInstallEvent) {
-        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getTargetContext();
         AdvancedMockContext context = new AdvancedMockContext(targetContext);
 
         String sessionId = "random_session_id";

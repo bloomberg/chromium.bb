@@ -95,8 +95,8 @@ public class TabThemeTest {
     @RetryOnFailure
     public void testThemeColorIsCorrect()
             throws ExecutionException, InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
 

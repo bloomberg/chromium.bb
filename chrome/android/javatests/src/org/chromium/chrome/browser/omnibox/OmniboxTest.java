@@ -660,8 +660,8 @@ public class OmniboxTest {
     @MediumTest
     @SkipCommandLineParameterization
     public void testSecurityIconOnHTTP() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
             final String testUrl = testServer.getURL("/chrome/test/data/android/omnibox/one.html");
 
@@ -695,7 +695,7 @@ public class OmniboxTest {
     @SkipCommandLineParameterization
     public void testSecurityIconOnHTTPS() throws Exception {
         EmbeddedTestServer httpsTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
-                InstrumentationRegistry.getInstrumentation().getContext(),
+                InstrumentationRegistry.getContext(),
                 ServerCertificate.CERT_OK);
         CallbackHelper onSSLStateUpdatedCallbackHelper = new CallbackHelper();
         TabObserver observer = new EmptyTabObserver() {

@@ -104,8 +104,7 @@ public class ContextMenuTest implements CustomMainActivityStart {
 
     @Override
     public void customMainActivityStart() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestUrl = mTestServer.getURL(TEST_PATH);
         deleteTestFiles();
         mDownloadTestRule.startMainActivityWithURL(mTestUrl);

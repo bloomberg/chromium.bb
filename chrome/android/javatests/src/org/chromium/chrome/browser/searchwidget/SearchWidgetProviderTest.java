@@ -108,8 +108,7 @@ public class SearchWidgetProviderTest {
 
     @Before
     public void setUp() throws Exception {
-        ApplicationTestUtils.setUp(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(), true);
+        ApplicationTestUtils.setUp(InstrumentationRegistry.getTargetContext(), true);
         SearchActivity.setDelegateForTests(new TestSearchDelegate());
 
         mContext = new TestContext();
@@ -119,8 +118,7 @@ public class SearchWidgetProviderTest {
 
     @After
     public void tearDown() throws Exception {
-        ApplicationTestUtils.tearDown(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        ApplicationTestUtils.tearDown(InstrumentationRegistry.getTargetContext());
     }
 
     @Test

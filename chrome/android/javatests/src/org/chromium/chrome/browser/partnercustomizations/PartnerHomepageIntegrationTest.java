@@ -99,8 +99,8 @@ public class PartnerHomepageIntegrationTest {
     @MediumTest
     @Feature({"Homepage"})
     public void testHomepageButtonClick() throws InterruptedException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
             // Load non-homepage URL.
             mActivityTestRule.loadUrl(testServer.getURL(TEST_PAGE));

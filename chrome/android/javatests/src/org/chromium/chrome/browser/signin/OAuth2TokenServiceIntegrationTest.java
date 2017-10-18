@@ -55,8 +55,7 @@ public class OAuth2TokenServiceIntegrationTest {
     @Before
     public void setUp() {
         mapAccountNamesToIds();
-        ApplicationData.clearAppData(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        ApplicationData.clearAppData(InstrumentationRegistry.getTargetContext());
 
         // loadNativeLibraryAndInitBrowserProcess will access AccountManagerFacade, so it should
         // be initialized beforehand.

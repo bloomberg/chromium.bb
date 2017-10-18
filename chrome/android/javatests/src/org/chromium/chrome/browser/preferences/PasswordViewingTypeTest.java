@@ -53,7 +53,7 @@ public class PasswordViewingTypeTest {
     public void setUp() throws Exception {
         setupTestAccount();
         mSyncContentResolverDelegate = new MockSyncContentResolverDelegate();
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
         mMainPreferences = (MainPreferences) startMainPreferences(
                 InstrumentationRegistry.getInstrumentation(), mContext)
                                    .getFragmentForTest();

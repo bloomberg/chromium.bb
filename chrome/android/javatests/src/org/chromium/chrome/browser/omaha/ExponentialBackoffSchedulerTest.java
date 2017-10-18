@@ -32,7 +32,7 @@ public class ExponentialBackoffSchedulerTest {
     @SmallTest
     @Feature({"Omaha", "Sync"})
     public void testExponentialBackoffSchedulerFailureSetting() {
-        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getTargetContext();
         TestContext context = new TestContext(targetContext);
 
         ExponentialBackoffScheduler writer =
@@ -57,7 +57,7 @@ public class ExponentialBackoffSchedulerTest {
     @SmallTest
     @Feature({"Omaha", "Sync"})
     public void testExponentialBackoffSchedulerDelayCalculation() {
-        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getTargetContext();
         TestContext context = new TestContext(targetContext);
         MockExponentialBackoffScheduler scheduler =
                 new MockExponentialBackoffScheduler(PREFERENCE_NAME, context, BACKOFF_MS, MAX_MS);
@@ -89,7 +89,7 @@ public class ExponentialBackoffSchedulerTest {
     @SmallTest
     @Feature({"Omaha", "Sync"})
     public void testExponentialBackoffSchedulerAlarmCreation() {
-        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getTargetContext();
         TestContext context = new TestContext(targetContext);
 
         MockExponentialBackoffScheduler scheduler =

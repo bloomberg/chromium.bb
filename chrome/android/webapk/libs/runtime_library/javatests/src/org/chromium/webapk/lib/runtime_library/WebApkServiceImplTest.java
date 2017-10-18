@@ -65,8 +65,8 @@ public class WebApkServiceImplTest {
 
     @Before
     public void setUp() {
-        mContext = InstrumentationRegistry.getInstrumentation().getContext();
-        mTargetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getContext();
+        mTargetContext = InstrumentationRegistry.getTargetContext();
         mTargetUid = getUid(mTargetContext);
     }
 

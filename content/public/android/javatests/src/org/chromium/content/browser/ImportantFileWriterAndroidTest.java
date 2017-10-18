@@ -62,7 +62,7 @@ public class ImportantFileWriterAndroidTest {
         byte[] data1 = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
         Assert.assertFalse("Writing bad file succeeded",
                 ImportantFileWriterAndroid.writeFileAtomically("/junk/junk", data1));
-        File dir = InstrumentationRegistry.getInstrumentation().getTargetContext().getFilesDir();
+        File dir = InstrumentationRegistry.getTargetContext().getFilesDir();
         File testFile = new File(dir, "ImportantFileTest");
 
         // Make sure the file doesn't already exist

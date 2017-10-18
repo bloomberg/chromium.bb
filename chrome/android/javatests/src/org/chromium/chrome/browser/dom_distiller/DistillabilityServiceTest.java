@@ -60,8 +60,8 @@ public class DistillabilityServiceTest {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testServiceAliveAfterNativePage() throws InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         final CallbackHelper readerShownCallbackHelper = new CallbackHelper();
 

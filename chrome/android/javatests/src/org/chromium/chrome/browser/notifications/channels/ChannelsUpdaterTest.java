@@ -62,7 +62,7 @@ public class ChannelsUpdaterTest {
         // UrlFormatter.formatUrlForSecurityDisplay() is stand-alone.
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         mNotificationManagerProxy = new NotificationManagerProxyImpl(
                 (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE));
 

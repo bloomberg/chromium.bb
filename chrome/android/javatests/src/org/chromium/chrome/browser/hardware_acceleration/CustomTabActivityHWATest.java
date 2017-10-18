@@ -37,8 +37,7 @@ public class CustomTabActivityHWATest {
     public void testHardwareAcceleration() throws Exception {
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                        "about:blank"));
+                        InstrumentationRegistry.getTargetContext(), "about:blank"));
         Utils.assertHardwareAcceleration(mCustomTabActivityTestRule.getActivity());
     }
 }

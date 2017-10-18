@@ -45,8 +45,8 @@ public class VideoTest {
     @LargeTest
     @RetryOnFailure
     public void testLoadMediaUrl() throws InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
             TabTitleObserver titleObserver = new TabTitleObserver(tab, "ready_to_play");

@@ -364,8 +364,7 @@ public class PreferencesTest {
 
     private void assertFontSizePrefs(final boolean expectedForceEnableZoom,
             final float expectedFontScale) {
-        final Context targetContext =
-                InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final Context targetContext = InstrumentationRegistry.getTargetContext();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

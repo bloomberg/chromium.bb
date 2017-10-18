@@ -61,7 +61,7 @@ public class LauncherActivityTest {
 
     @Before
     public void setUp() throws Exception {
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
     }
 
     @Test

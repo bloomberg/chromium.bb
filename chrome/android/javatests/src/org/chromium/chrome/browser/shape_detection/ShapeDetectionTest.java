@@ -58,8 +58,8 @@ public class ShapeDetectionTest {
     @LargeTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testBarcodeDetection() throws InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
             TabTitleObserver titleObserver =
@@ -83,8 +83,8 @@ public class ShapeDetectionTest {
     @LargeTest
     @Restriction(ChromeRestriction.RESTRICTION_TYPE_GOOGLE_PLAY_SERVICES)
     public void testTextDetection() throws InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         try {
             Tab tab = mActivityTestRule.getActivity().getActivityTab();
             TabTitleObserver titleObserver =

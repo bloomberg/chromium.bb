@@ -36,7 +36,7 @@ public class ViewHighlighterTest {
 
     @Before
     public void setUp() throws Exception {
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
         mContext.setTheme(R.style.MainTheme);
     }
 

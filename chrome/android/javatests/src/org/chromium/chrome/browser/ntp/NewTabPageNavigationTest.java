@@ -44,8 +44,7 @@ public class NewTabPageNavigationTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityWithURL(null);
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After

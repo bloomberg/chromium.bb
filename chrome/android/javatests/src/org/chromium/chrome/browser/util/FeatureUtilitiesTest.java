@@ -57,8 +57,8 @@ public class FeatureUtilitiesTest {
     public void setUp() {
         // GetInstrumentation().getTargetContext() cannot be called in
         // constructor due to external dependencies.
-        mAccountTestingContext = new AdvancedMockContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        mAccountTestingContext =
+                new AdvancedMockContext(InstrumentationRegistry.getTargetContext());
     }
 
     @After

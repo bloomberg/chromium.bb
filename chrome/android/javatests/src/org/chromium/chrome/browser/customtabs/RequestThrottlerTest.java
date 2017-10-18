@@ -37,7 +37,7 @@ public class RequestThrottlerTest {
 
     @Before
     public void setUp() throws Exception {
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
         RequestThrottler.purgeAllEntriesForTesting(mContext);
     }
 

@@ -44,7 +44,7 @@ public class DownloadUtilsTest {
     @SmallTest
     @Feature({"Download"})
     public void testFormatRemainingTime() {
-        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final Context context = InstrumentationRegistry.getTargetContext();
         Assert.assertEquals("0 secs left", DownloadUtils.formatRemainingTime(context, 0));
         Assert.assertEquals(
                 "1 sec left", DownloadUtils.formatRemainingTime(context, MILLIS_PER_SECOND));
@@ -79,7 +79,7 @@ public class DownloadUtilsTest {
     @SmallTest
     @Feature({"Download"})
     public void testFormatBytesReceived() {
-        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final Context context = InstrumentationRegistry.getTargetContext();
         Assert.assertEquals("Downloaded 0.0 KB",
                 DownloadUtils.getStringForBytes(
                         context, DownloadUtils.BYTES_DOWNLOADED_STRINGS, 0));
@@ -101,7 +101,7 @@ public class DownloadUtilsTest {
     @SmallTest
     @Feature({"Download"})
     public void testFormatRemainingFiles() {
-        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final Context context = InstrumentationRegistry.getTargetContext();
         Progress progress = new Progress(3, Long.valueOf(5), OfflineItemProgressUnit.FILES);
         Assert.assertEquals(60, progress.getPercentage());
         Assert.assertEquals("2 files left", DownloadUtils.formatRemainingFiles(context, progress));

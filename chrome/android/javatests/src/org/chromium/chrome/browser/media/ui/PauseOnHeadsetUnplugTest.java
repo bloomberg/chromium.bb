@@ -68,8 +68,7 @@ public class PauseOnHeadsetUnplugTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PATH));
     }
 
@@ -89,10 +88,10 @@ public class PauseOnHeadsetUnplugTest {
     }
 
     private void simulateHeadsetUnplug() {
-        Intent i = new Intent(InstrumentationRegistry.getInstrumentation().getTargetContext(),
+        Intent i = new Intent(InstrumentationRegistry.getTargetContext(),
                 MediaNotificationManager.PlaybackListenerService.class);
         i.setAction(AudioManager.ACTION_AUDIO_BECOMING_NOISY);
 
-        InstrumentationRegistry.getInstrumentation().getContext().startService(i);
+        InstrumentationRegistry.getContext().startService(i);
     }
 }

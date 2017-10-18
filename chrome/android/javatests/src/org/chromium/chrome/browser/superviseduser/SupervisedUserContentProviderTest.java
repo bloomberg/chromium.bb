@@ -65,9 +65,7 @@ public class SupervisedUserContentProviderTest {
                             .getTargetContext()
                             .getContentResolver();
         Assert.assertNotNull(mResolver);
-        mAuthority =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName()
-                + AUTHORITY_SUFFIX;
+        mAuthority = InstrumentationRegistry.getTargetContext().getPackageName() + AUTHORITY_SUFFIX;
         mUri = new Uri.Builder()
                        .scheme(ContentResolver.SCHEME_CONTENT)
                        .authority(mAuthority)

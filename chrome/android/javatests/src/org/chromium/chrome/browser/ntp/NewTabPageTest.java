@@ -102,8 +102,7 @@ public class NewTabPageTest {
         // Disable peeking card animation.
         ChromePreferenceManager.getInstance().setNewTabPageFirstCardAnimationRunCount(100);
 
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         mSiteSuggestions = new ArrayList<>();
         mSiteSuggestions.add(new SiteSuggestion("TOP_SITES", mTestServer.getURL(TEST_PAGE) + "#1",

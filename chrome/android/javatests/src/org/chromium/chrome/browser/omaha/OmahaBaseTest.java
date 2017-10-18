@@ -164,7 +164,7 @@ public class OmahaBaseTest {
 
     @Before
     public void setUp() throws Exception {
-        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getTargetContext();
         OmahaBase.setIsDisabledForTesting(false);
         mContext = new AdvancedMockContext(targetContext);
     }
