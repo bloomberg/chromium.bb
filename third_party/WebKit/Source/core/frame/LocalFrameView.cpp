@@ -4720,6 +4720,8 @@ LayoutRect LocalFrameView::ScrollIntoView(const LayoutRect& rect_in_content,
                                           bool is_smooth,
                                           ScrollType scroll_type,
                                           bool is_for_scroll_sequence) {
+  GetLayoutBox()->SetPendingOffsetToScroll(LayoutSize());
+
   LayoutRect view_rect(VisibleContentRect());
   LayoutRect expose_rect = ScrollAlignment::GetRectToExpose(
       view_rect, rect_in_content, align_x, align_y);
