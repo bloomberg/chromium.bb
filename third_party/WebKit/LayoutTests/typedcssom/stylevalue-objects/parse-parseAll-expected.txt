@@ -1,0 +1,19 @@
+This is a testharness.js-based test.
+PASS Calling CSSStyleValue.parse with an empty string throws a TypeError
+PASS Calling CSSStyleValue.parse with an unsupported CSS property throws a TypeError
+PASS Calling CSSStyleValue.parse with a CSS shorthand throws a TypeError
+FAIL Calling CSSStyleValue.parse with an invalid cssText for the given property throws a SyntaxError assert_throws: function "() => CSSStyleValue[parseMethod]('width', '10deg')" did not throw
+PASS Calling CSSStyleValue.parse with a valid cssText for the given property returns a valid CSSStyleValue
+PASS Calling CSSStyleValue.parse with a mixed case cssText returns a valid CSSStyleValue
+FAIL Calling CSSStyleValue.parse with a custom property returns a valid CSSStyleValue Failed to execute 'parse' on 'CSSStyleValue': Invalid property name
+PASS Calling CSSStyleValue.parseAll with an empty string throws a TypeError
+PASS Calling CSSStyleValue.parseAll with an unsupported CSS property throws a TypeError
+PASS Calling CSSStyleValue.parseAll with a CSS shorthand throws a TypeError
+FAIL Calling CSSStyleValue.parseAll with an invalid cssText for the given property throws a SyntaxError assert_throws: function "() => CSSStyleValue[parseMethod]('width', '10deg')" threw object "TypeError: CSSStyleValue[parseMethod] is not a function" ("TypeError") expected object "SyntaxError" ("SyntaxError")
+FAIL Calling CSSStyleValue.parseAll with a valid cssText for the given property returns a valid CSSStyleValue CSSStyleValue[parseMethod] is not a function
+FAIL Calling CSSStyleValue.parseAll with a mixed case cssText returns a valid CSSStyleValue CSSStyleValue[parseMethod] is not a function
+FAIL Calling CSSStyleValue.parseAll with a custom property returns a valid CSSStyleValue CSSStyleValue[parseMethod] is not a function
+FAIL Calling CSSStyleValue.parse with a list-value property returns first list value Cannot read property 'constructor' of null
+FAIL Calling CSSStyleValue.parseAll with a list-value property returns a sequence of values CSSStyleValue.parseAll is not a function
+Harness: the test ran to completion.
+
