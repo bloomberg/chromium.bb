@@ -39,7 +39,12 @@ class CSSPropertyAPIHeadersWriter(CSSPropertyAPIWriter):
         self.validate_input()
 
         self._outputs = {}
+        output_dir = sys.argv[sys.argv.index('--output_dir') + 1]
         for property_ in self.properties().values():
+            if 'longhands' in output_dir and property_['longhands']:
+                continue
+            if 'shorthands' in output_dir and not property_['longhands']:
+                continue
             if property_['api_class'] is None:
                 continue
             methods = []

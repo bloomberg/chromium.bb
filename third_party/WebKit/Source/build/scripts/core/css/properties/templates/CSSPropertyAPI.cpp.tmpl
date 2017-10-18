@@ -8,8 +8,13 @@
 
 #include "core/css/properties/CSSPropertyAPI.h"
 
-{% for api_class in api_classnames %}
-#include "core/css/properties/{{api_class}}.h"
+{% for api_class in longhand_api_classnames %}
+  {% if api_class != "CSSPropertyAPI" %}
+#include "core/css/properties/longhands/{{api_class}}.h"
+  {% endif %}
+{% endfor %}
+{% for api_class in shorthand_api_classnames %}
+#include "core/css/properties/shorthands/{{api_class}}.h"
 {% endfor %}
 
 namespace blink {
