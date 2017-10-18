@@ -22,6 +22,7 @@ void CastWindowManagerDefault::TearDown() {}
 void CastWindowManagerDefault::AddWindow(gfx::NativeView window) {}
 void CastWindowManagerDefault::SetWindowId(gfx::NativeView window,
                                            WindowId window_id) {}
+void CastWindowManagerDefault::InjectEvent(ui::Event* event) {}
 gfx::NativeView CastWindowManagerDefault::GetRootWindow() {
   return nullptr;
 }

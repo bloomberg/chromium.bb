@@ -119,6 +119,9 @@ const char kLoopbackI2sRateHz[] = "loopback-i2s-rate-hz";
 // resolution is high enough).  Otherwise, cast_shell defaults to 720p.
 const char kDesktopWindow1080p[] = "desktop-window-1080p";
 
+// Enables input event handling by the window manager.
+const char kEnableInput[] = "enable-input";
+
 }  // namespace switches
 
 namespace chromecast {

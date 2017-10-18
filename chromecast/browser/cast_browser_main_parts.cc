@@ -517,8 +517,9 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
                  base::Unretained(video_plane_controller_.get())));
 #endif
 
-  window_manager_ =
-      CastWindowManager::Create(CAST_IS_DEBUG_BUILD() /* enable input */);
+  window_manager_ = CastWindowManager::Create(
+      CAST_IS_DEBUG_BUILD() ||
+      GetSwitchValueBoolean(switches::kEnableInput, false));
 
   cast_browser_process_->SetCastService(
       cast_browser_process_->browser_client()->CreateCastService(
