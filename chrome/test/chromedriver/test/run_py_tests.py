@@ -163,6 +163,8 @@ _ANDROID_NEGATIVE_FILTER['chrome'] = (
         # Page cannot be loaded from file:// URI in Android unless it
         # is stored in device.
         'ChromeDriverTest.testCanClickAlertInIframes',
+        # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2081
+        'ChromeDriverTest.testCloseWindowUsingJavascript',
     ]
 )
 _ANDROID_NEGATIVE_FILTER['chrome_stable'] = (
