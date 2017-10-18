@@ -228,7 +228,7 @@ class WebRtcInternalsPerfBrowserTest : public WebRtcTestBase {
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp8) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioVideoCall60SecsAndLogsInternalMetrics(
       "VP8", false /* prefer_hw_video_codec */);
 }
@@ -236,7 +236,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsVp9) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioVideoCall60SecsAndLogsInternalMetrics(
       "VP9", false /* prefer_hw_video_codec */);
 }
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsAudioVideoCall60SecsAndLogsInternalMetricsH264) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
@@ -264,13 +264,13 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsOneWayCall60SecsAndLogsInternalMetricsDefault) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsOneWayCall60SecsAndLogsInternalMetrics("", false);
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcInternalsPerfBrowserTest,
     MANUAL_RunsOneWayCall60SecsAndLogsInternalMetricsWithOpusDtx) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsOneWayCall60SecsAndLogsInternalMetrics("", true);
 }

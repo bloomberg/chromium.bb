@@ -263,7 +263,7 @@ const extensions::Extension* AppShimInteractiveTest::InstallAppWithShim(
   // (always) in tests. If it wasn't the case, the following test would fail
   // (but flakily since the creation happens on the FILE thread).
   shim_path_ = GetAppShimPath(profile(), app);
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_FALSE(base::PathExists(shim_path_));
 
   // To create a shim in a test, instead call UpdateAllShortcuts, which has been

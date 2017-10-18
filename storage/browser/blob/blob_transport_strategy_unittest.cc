@@ -365,7 +365,7 @@ TEST_F(BlobTransportStrategyTest, Files_WriteFailed) {
 
   FileInfoVector files(1);
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath path;
     ASSERT_TRUE(base::CreateTemporaryFileInDir(data_dir_.GetPath(), &path));
     files[0].file =
@@ -409,7 +409,7 @@ TEST_F(BlobTransportStrategyTest, Files_ValidBytesOneElement) {
       1 + data.size() / kTestBlobStorageMaxFileSizeBytes;
   FileInfoVector files(expected_file_count);
   for (size_t i = 0; i < expected_file_count; ++i) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath path;
     ASSERT_TRUE(base::CreateTemporaryFileInDir(data_dir_.GetPath(), &path));
     files[i].file =
@@ -472,7 +472,7 @@ TEST_F(BlobTransportStrategyTest, Files_ValidBytesMultipleElements) {
       1 + 4 * data.size() / kTestBlobStorageMaxFileSizeBytes;
   FileInfoVector files(expected_file_count);
   for (size_t i = 0; i < expected_file_count; ++i) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath path;
     ASSERT_TRUE(base::CreateTemporaryFileInDir(data_dir_.GetPath(), &path));
     files[i].file =

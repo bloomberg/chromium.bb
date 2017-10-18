@@ -57,7 +57,7 @@ constexpr base::FilePath::CharType kTestFileExtension[] = FILE_PATH_LITERAL(
 class BrowsingDataLocalStorageHelperTest : public InProcessBrowserTest {
  protected:
   void CreateLocalStorageFilesForTest() {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     // Note: This helper depends on details of how the dom_storage library
     // stores data in the host file system.
     base::FilePath storage_path = GetLocalStoragePathForTestingProfile();
@@ -131,7 +131,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   content::RunAllTasksUntilIdle();
 
   // Ensure the file has been deleted.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::FileEnumerator file_enumerator(
       GetLocalStoragePathForTestingProfile(),
       false,

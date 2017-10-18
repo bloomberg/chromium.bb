@@ -29,14 +29,14 @@ constexpr int64_t kTestFileSize = 1 << 15;  // 32 kB
 class ImageWriterUtilityClientTest : public InProcessBrowserTest {
  public:
   ImageWriterUtilityClientTest() {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     test_device_ = base::FilePath().AppendASCII(
         extensions::mojom::RemovableStorageWriter::kTestDevice);
     EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
   }
 
   void FillImageFileWithPattern(char pattern) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::CreateTemporaryFileInDir(temp_dir_.GetPath(), &image_));
 
     base::RunLoop run_loop;

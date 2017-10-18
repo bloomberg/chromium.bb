@@ -29,7 +29,7 @@ static_assert(CHAR_BIT == 8, "Assumed char was 8 bits.");
 
 void WriteRulesetContents(const std::vector<uint8_t>& contents,
                           base::FilePath path) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   int ruleset_size_as_int = base::checked_cast<int>(contents.size());
   int num_bytes_written =
       base::WriteFile(path, reinterpret_cast<const char*>(contents.data()),
@@ -70,7 +70,7 @@ TestRuleset::~TestRuleset() = default;
 
 // static
 base::File TestRuleset::Open(const TestRuleset& ruleset) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::File file;
   file.Initialize(ruleset.path, base::File::FLAG_OPEN | base::File::FLAG_READ |
                                     base::File::FLAG_SHARE_DELETE);
@@ -115,7 +115,7 @@ TestRulesetCreator::TestRulesetCreator()
     : scoped_temp_dir_(base::MakeUnique<base::ScopedTempDir>()) {}
 
 TestRulesetCreator::~TestRulesetCreator() {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   scoped_temp_dir_.reset();
 }
 
@@ -172,7 +172,7 @@ void TestRulesetCreator::CreateUnindexedRulesetWithRules(
 
 void TestRulesetCreator::GetUniqueTemporaryPath(base::FilePath* path) {
   DCHECK(path);
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(scoped_temp_dir_->IsValid() ||
               scoped_temp_dir_->CreateUniqueTempDir());
   *path = scoped_temp_dir_->GetPath().AppendASCII(

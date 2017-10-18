@@ -107,7 +107,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
         test_data_dir_.AppendASCII(kTestDir + extension_name);
     from_dir = from_dir.NormalizePathSeparators();
 
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::ScopedTempDir temp_dir;
     if (!temp_dir.CreateUniqueTempDir())
       return false;
@@ -168,7 +168,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   // with no default media galleries, such as CHROMEOS. This fake gallery is
   // pre-populated with a test.jpg and test.txt.
   void MakeSingleFakeGallery(MediaGalleryPrefId* pref_id) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_FALSE(fake_gallery_temp_dir_.IsValid());
     ASSERT_TRUE(fake_gallery_temp_dir_.CreateUniqueTempDir());
 
@@ -200,7 +200,7 @@ class MediaGalleriesPlatformAppBrowserTest : public PlatformAppBrowserTest {
   }
 
   void AddFileToSingleFakeGallery(const base::FilePath& source_path) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(fake_gallery_temp_dir_.IsValid());
 
     ASSERT_TRUE(base::CopyFile(

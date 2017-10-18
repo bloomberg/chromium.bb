@@ -103,7 +103,7 @@ bool WriteJPEGFile(const base::FilePath& path,
                    int width,
                    int height,
                    SkColor color) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::vector<unsigned char> output;
   if (!CreateJPEGImage(width, height, color, &output))
     return false;

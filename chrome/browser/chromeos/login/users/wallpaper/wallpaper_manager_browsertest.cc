@@ -129,7 +129,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
       const char* sub_dir,
       const wallpaper::WallpaperFilesId& wallpaper_files_id,
       const std::string& id) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath wallpaper_path =
         WallpaperManager::Get()->GetCustomWallpaperPath(sub_dir,
                                                         wallpaper_files_id, id);
@@ -141,7 +141,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
 
   // Logs in |account_id|.
   void LogIn(const AccountId& account_id, const std::string& user_id_hash) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     SessionManager::Get()->CreateSession(account_id, user_id_hash);
     SessionManager::Get()->SessionStarted();
     // Flush to ensure the created session and ACTIVE state reaches ash.
@@ -181,7 +181,7 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
   // Only needs to be called (once) by tests that want to test loading of
   // default wallpapers.
   void CreateCmdlineWallpapers() {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     wallpaper_dir_.reset(new base::ScopedTempDir);
     ASSERT_TRUE(wallpaper_dir_->CreateUniqueTempDir());
     wallpaper_manager_test_utils::CreateCmdlineWallpapers(

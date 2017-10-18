@@ -101,7 +101,7 @@ class PrinterProviderApiTest : public ShellApiTest {
 
   PrinterProviderApiTest() {}
   ~PrinterProviderApiTest() override {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ignore_result(data_dir_.Delete());
   }
 
@@ -244,7 +244,7 @@ class PrinterProviderApiTest : public ShellApiTest {
         break;
       case PRINT_REQUEST_DATA_TYPE_FILE_DELETED: {
         ASSERT_TRUE(StartPrintRequestUsingFileInfo(extension_id, callback));
-        base::ThreadRestrictions::ScopedAllowIO allow_io;
+        base::ScopedAllowBlockingForTesting allow_blocking;
         ASSERT_TRUE(data_dir_.Delete());
         break;
       }
@@ -355,7 +355,7 @@ class PrinterProviderApiTest : public ShellApiTest {
                                   int size,
                                   base::FilePath* path,
                                   base::File::Info* file_info) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     if (!data_dir_.IsValid() && !data_dir_.CreateUniqueTempDir())
       return false;
 

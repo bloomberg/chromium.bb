@@ -1665,7 +1665,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITestWithClientCert, TestWSSClientCert) {
   base::FilePath cert_path = net::GetTestCertsDirectory().Append(
       FILE_PATH_LITERAL("websocket_client_cert.p12"));
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::ReadFileToString(cert_path, &pkcs12_data));
   }
   EXPECT_EQ(net::OK,
@@ -1744,7 +1744,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadHTTPSDownload) {
   GURL url_non_dangerous = embedded_test_server()->GetURL("/title1.html");
   GURL url_dangerous =
       https_server_expired_.GetURL("/downloads/dangerous/dangerous.exe");
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir downloads_directory_;
 
   // Need empty temp dir to avoid having Chrome ask us for a new filename
@@ -2775,7 +2775,7 @@ class SSLUIWorkerFetchTest
  protected:
   void WriteFile(const base::FilePath::StringType& filename,
                  base::StringPiece contents) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_EQ(base::checked_cast<int>(contents.size()),
               base::WriteFile(tmp_dir_.GetPath().Append(filename),
                               contents.data(), contents.size()));
@@ -6178,7 +6178,7 @@ class SymantecMessageSSLUITest : public CertVerifierBrowserTest {
   void SetUpCertVerifier(bool use_chrome_66_date) {
     net::CertVerifyResult verify_result;
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       verify_result.verified_cert = net::CreateCertificateChainFromFile(
           net::GetTestCertsDirectory(),
           use_chrome_66_date ? "pre_june_2016.pem" : "post_june_2016.pem",

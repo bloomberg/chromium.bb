@@ -19,7 +19,7 @@ namespace chrome {
 scoped_refptr<extensions::Extension> LoadInstallPromptExtension(
     const char* extension_dir_name,
     const char* manifest_file) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   scoped_refptr<Extension> extension;
 
   base::FilePath path;
@@ -51,7 +51,7 @@ scoped_refptr<Extension> LoadInstallPromptExtension() {
 }
 
 gfx::Image LoadInstallPromptIcon() {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath path;
   PathService::Get(chrome::DIR_TEST_DATA, &path);
   path = path.AppendASCII("extensions")

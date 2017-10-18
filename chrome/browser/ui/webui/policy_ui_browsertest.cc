@@ -274,7 +274,7 @@ void PolicyUITest::VerifyExportingPolicies(
 
   base::TaskScheduler::GetInstance()->FlushForTesting();
   // Open the created file.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::string file_contents;
   EXPECT_TRUE(
       base::ReadFileToString(export_policies_test_file_path, &file_contents));
@@ -478,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
 
 IN_PROC_BROWSER_TEST_F(PolicyUITest, ExtensionLoadAndSendPolicy) {
   ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUIPolicyURL));
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir_;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
 

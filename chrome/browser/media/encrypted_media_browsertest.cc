@@ -231,7 +231,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       return;
     license_server_.reset(new TestLicenseServer(std::move(config)));
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       EXPECT_TRUE(license_server_->Start());
     }
     query_params->push_back(

@@ -57,7 +57,7 @@ class NaClGdbTest : public PPAPINaClNewlibTest {
         return;
     }
 #endif
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     EXPECT_TRUE(base::CreateTemporaryFile(&mock_nacl_gdb_file));
     env->SetVar("MOCK_NACL_GDB", mock_nacl_gdb_file.AsUTF8Unsafe());
     RunTestViaHTTP(test_name);

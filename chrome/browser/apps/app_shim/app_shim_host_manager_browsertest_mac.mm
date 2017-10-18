@@ -69,7 +69,7 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
       user_data_dir.Append(app_mode::kAppShimSocketSymlinkName);
 
   base::FilePath socket_path;
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   CHECK(base::ReadSymbolicLink(symlink_path, &socket_path));
   app_mode::VerifySocketPermissions(socket_path);
 
@@ -84,7 +84,7 @@ TestShimClient::TestShimClient() : io_thread_("TestShimClientIO") {
 }
 
 TestShimClient::~TestShimClient() {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   io_thread_.Stop();
 }
 
@@ -286,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(AppShimHostManagerBrowserTestSocketFiles,
   directory_in_tmp_ = test_api.directory_in_tmp();
 
   // Check that socket files have been created.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(directory_in_tmp_));
   EXPECT_TRUE(base::PathExists(symlink_path_));
 

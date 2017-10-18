@@ -92,7 +92,7 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceBrowsertest,
   chrome::GetUserCacheDirectory(browser()->profile()->GetPath(),
                                 &expected_cache_path);
   expected_cache_path = expected_cache_path.Append(chrome::kCacheDirname);
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
 
@@ -174,7 +174,7 @@ IN_PROC_BROWSER_TEST_P(ProfileNetworkContextServiceDiskCacheDirBrowsertest,
       TempPath()
           .Append(browser()->profile()->GetPath().BaseName())
           .Append(chrome::kCacheDirname);
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   EXPECT_TRUE(base::PathExists(expected_cache_path));
 }
 

@@ -89,7 +89,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
  protected:
   base::FilePath TempFilePath(const std::string& destination_name,
                               bool copy_gold) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     if (!temp_dir_.CreateUniqueTempDir()) {
       ADD_FAILURE() << "CreateUniqueTempDir failed";
       return base::FilePath();
@@ -109,7 +109,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
   std::vector<base::FilePath> TempFilePaths(
       const std::vector<std::string>& destination_names,
       bool copy_gold) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     if (!temp_dir_.CreateUniqueTempDir()) {
       ADD_FAILURE() << "CreateUniqueTempDir failed";
       return std::vector<base::FilePath>();
@@ -132,7 +132,7 @@ class FileSystemApiTest : public PlatformAppBrowserTest {
   }
 
   void CheckStoredDirectoryMatches(const base::FilePath& filename) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     const Extension* extension = GetSingleLoadedExtension();
     ASSERT_TRUE(extension);
     std::string extension_id = extension->id();
@@ -162,7 +162,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPath) {
 #if defined(OS_WIN) || defined(OS_POSIX)
 IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiGetDisplayPathPrettify) {
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         base::DIR_HOME, test_root_folder_, false, false));
   }
@@ -180,7 +180,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
     FileSystemApiGetDisplayPathPrettifyMac) {
   base::FilePath test_file;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     // On Mac, "test.localized" will be localized into just "test".
     base::FilePath test_path = TempFilePath("test.localized", false);
     ASSERT_TRUE(base::CreateDirectory(test_path));
@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   }
@@ -253,7 +253,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   }
@@ -268,7 +268,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest, FileSystemApiOpenMultipleSuggested) {
   base::FilePath test_file = TempFilePath("open_existing.txt", true);
   ASSERT_FALSE(test_file.empty());
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         chrome::DIR_USER_DOCUMENTS, test_file.DirName(), false, false));
   }
@@ -350,7 +350,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, test_directory, false, false));
   }
@@ -368,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   ASSERT_FALSE(test_file.empty());
   base::FilePath test_directory = test_file.DirName();
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, test_directory, false, false));
   }
@@ -387,7 +387,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   base::FilePath parent_directory = test_directory.DirName();
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, test_directory, false, false));
   }
@@ -409,7 +409,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemApiTest,
   base::FilePath test_directory = test_file.DirName();
   base::FilePath parent_directory = test_directory.DirName();
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathService::OverrideAndCreateIfNeeded(
         kGraylistedPath, parent_directory, false, false));
   }

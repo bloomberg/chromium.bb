@@ -73,7 +73,7 @@ void ExecuteExtensionAction(Browser* browser, const Extension* extension) {
 
 std::unique_ptr<base::ScopedTempDir> CreateAndSetDownloadsDirectory(
     PrefService* pref_service) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<base::ScopedTempDir> dir(new base::ScopedTempDir);
 
   if (!dir->CreateUniqueTempDir())
@@ -999,7 +999,7 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
   // Override the default downloads directory, so that the test can cleanup
   // after itself.  This section is based on CreateAndSetDownloadsDirectory
   // method defined in a few other source files with tests.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   std::unique_ptr<base::ScopedTempDir> downloads_directory =
       CreateAndSetDownloadsDirectory(browser()->profile()->GetPrefs());
   ASSERT_TRUE(downloads_directory);

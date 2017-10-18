@@ -69,7 +69,7 @@ const char ScopedTestNativeMessagingHost::kExtensionId[] =
 ScopedTestNativeMessagingHost::ScopedTestNativeMessagingHost() {}
 
 void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   ScopedTestNativeMessagingHost test_host;
 
@@ -102,7 +102,7 @@ void ScopedTestNativeMessagingHost::RegisterTestHost(bool user_level) {
 }
 
 ScopedTestNativeMessagingHost::~ScopedTestNativeMessagingHost() {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ignore_result(temp_dir_.Delete());
 }
 

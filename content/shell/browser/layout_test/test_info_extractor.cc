@@ -72,7 +72,7 @@ std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
   test_url = GURL(path_or_url);
   if (!(test_url.is_valid() && test_url.has_scheme())) {
     // We're outside of the message loop here, and this is a test.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
 #if defined(OS_WIN)
     base::FilePath::StringType wide_path_or_url =
         base::SysNativeMBToWide(path_or_url);
@@ -94,7 +94,7 @@ std::unique_ptr<TestInfo> GetTestInfoFromLayoutTestName(
   base::FilePath current_working_directory;
 
   // We're outside of the message loop here, and this is a test.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   if (net::FileURLToFilePath(test_url, &local_path))
     current_working_directory = local_path.DirName();
   else

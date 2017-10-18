@@ -315,7 +315,7 @@ IN_PROC_BROWSER_TEST_F(ComponentCloudPolicyTest, SignOutAndBackIn) {
   base::Base64UrlEncode(
       kTestExtension, base::Base64UrlEncodePolicy::INCLUDE_PADDING,
       &cache_subkey);
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::FilePath cache_path = browser()->profile()->GetPath()
       .Append(FILE_PATH_LITERAL("Policy"))
       .Append(FILE_PATH_LITERAL("Components"))

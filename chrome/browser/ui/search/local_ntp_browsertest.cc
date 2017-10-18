@@ -89,7 +89,7 @@ content::WebContents* OpenNewTab(Browser* browser, const GURL& url) {
 
 // Switches the browser language to French, and returns true iff successful.
 bool SwitchToFrench() {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   // Make sure the default language is not French.
   std::string default_locale = g_browser_process->GetApplicationLocale();
   EXPECT_NE("fr", default_locale);
@@ -149,7 +149,7 @@ class LocalNTPTest : public InProcessBrowserTest {
 
   void SetUserSelectedDefaultSearchProvider(const std::string& base_url,
                                             const std::string& ntp_url) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     TemplateURLData data;
     data.SetShortName(base::UTF8ToUTF16(base_url));
     data.SetKeyword(base::UTF8ToUTF16(base_url));

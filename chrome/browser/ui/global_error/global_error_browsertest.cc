@@ -148,7 +148,7 @@ void GlobalErrorBubbleTest::ShowDialog(const std::string& name) {
     // To trigger a bubble alert (rather than a menu alert), the extension must
     // come from the webstore, which needs the update to come from a signed crx.
     const char kExtensionWithUpdateUrl[] = "akjooamlhcgeopfifcmlggaebeocgokj";
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::ScopedTempDir temp_dir;
     base::FilePath crx_path = PackCRXInTempDir(
         &temp_dir, "update_from_webstore", "update_from_webstore.pem");

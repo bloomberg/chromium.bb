@@ -324,7 +324,7 @@ IN_PROC_BROWSER_TEST_F(AppApiTest, MAYBE_BookmarkAppGetsNormalProcess) {
   std::string error;
   scoped_refptr<const Extension> extension;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     extension = extensions::file_util::LoadExtension(
         test_data_dir_.AppendASCII("app_process"),
         extensions::Manifest::UNPACKED, Extension::FROM_BOOKMARK, &error);

@@ -75,7 +75,7 @@ int RunTests(const std::unique_ptr<content::BrowserMainRunner>& main_runner) {
   content::BlinkTestController test_controller;
   {
     // We're outside of the message loop here, and this is a test.
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath temp_path;
     base::GetTempDir(&temp_path);
     test_controller.SetTempPath(temp_path);

@@ -592,7 +592,7 @@ class DevToolsExtensionTest : public DevToolsSanityTest,
   const Extension* GetExtensionByPath(
       const extensions::ExtensionSet& extensions,
       const base::FilePath& path) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath extension_path = base::MakeAbsoluteFilePath(path);
     EXPECT_TRUE(!extension_path.empty());
     for (const scoped_refptr<const Extension>& extension : extensions) {

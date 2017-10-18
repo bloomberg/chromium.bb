@@ -29,7 +29,7 @@ typedef InProcessBrowserTest StartupBrowserCreatorTest;
 // And this test is useless without that functionality.
 #if !defined(OS_CHROMEOS) && !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, LastUsedProfileActivated) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ProfileManager* profile_manager = g_browser_process->profile_manager();
 
   // Create 4 profiles, they will be scheduled for destruction when the last

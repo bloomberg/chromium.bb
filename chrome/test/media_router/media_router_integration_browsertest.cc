@@ -393,7 +393,7 @@ void MediaRouterIntegrationBrowserTest::SetTestData(
   std::unique_ptr<base::Value> value;
   {
     // crbug.com/724573
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     value = deserializer.Deserialize(&error_code, &error_message);
   }
   CHECK(value.get()) << "Deserialize failed: " << error_message;
@@ -431,7 +431,7 @@ base::FilePath MediaRouterIntegrationBrowserTest::GetResourceFile(
       base_dir.Append(kResourcePath).Append(relative_path);
   {
     // crbug.com/724573
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     CHECK(PathExists(full_path));
   }
   return full_path;

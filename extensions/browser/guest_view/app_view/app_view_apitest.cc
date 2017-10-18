@@ -114,7 +114,7 @@ class AppViewTest : public AppShellTest,
   }
 
   const Extension* LoadApp(const std::string& app_location) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath test_data_dir;
     PathService::Get(DIR_TEST_DATA, &test_data_dir);
     test_data_dir = test_data_dir.AppendASCII(app_location.c_str());

@@ -562,7 +562,7 @@ void InterceptNetworkTransactions(net::URLRequestContextGetter* getter,
 // button to launch a network diagnostics tool.
 IN_PROC_BROWSER_TEST_F(ErrorPageTest, FileNotFound) {
   // Create an empty temp directory, to be sure there's no file in it.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   GURL non_existent_file_url =
