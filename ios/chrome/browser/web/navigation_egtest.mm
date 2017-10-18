@@ -21,6 +21,7 @@
 
 using chrome_test_util::BackButton;
 using chrome_test_util::ForwardButton;
+using chrome_test_util::OmniboxText;
 using chrome_test_util::TapWebViewElementWithId;
 
 namespace {
@@ -221,15 +222,13 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Tap button to go back 3 pages.
   [ChromeEarlGrey tapWebViewElementWithID:@"goBack3"];
   [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          firstURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap button to go forward 2 pages.
   [ChromeEarlGrey tapWebViewElementWithID:kGoTwoID];
   [ChromeEarlGrey waitForWebViewContainingText:"pony"];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          thirdURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(thirdURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -271,15 +270,13 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
   // Tap the back button in the HTML and verify the first URL is loaded.
   [ChromeEarlGrey tapWebViewElementWithID:kGoBackID];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          firstURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the toolbar and verify the second URL is loaded.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          secondURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -298,15 +295,13 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // is loaded.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [ChromeEarlGrey waitForWebViewContainingText:kOnLoadText];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          firstURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(firstURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap the forward button in the HTML and verify the second URL is loaded.
   [ChromeEarlGrey tapWebViewElementWithID:kGoForwardID];
   [ChromeEarlGrey waitForWebViewContainingText:"pony"];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          secondURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(secondURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Verify that the forward button is not enabled.
@@ -349,8 +344,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
   // Go back to page 1 by clicking back button.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          forwardURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(forwardURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Go forward to page 2 by calling window.history.forward() and assert that
@@ -380,8 +374,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   std::string backHashChangeContent = "backHashChange";
   [self addHashChangeListenerWithContent:backHashChangeContent];
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          page1URL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(page1URL.GetContent())]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebViewContainingText:backHashChangeContent];
 
@@ -391,7 +384,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::OmniboxText(
+      selectElementWithMatcher:OmniboxText(
                                    hashChangedWithHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
   [ChromeEarlGrey waitForWebViewContainingText:forwardHashChangeContent];
@@ -420,14 +413,14 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Tap link to replace the location value.
   TapWebViewElementWithId(kHashChangeWithoutHistoryLabel);
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::OmniboxText(
+      selectElementWithMatcher:OmniboxText(
                                    hashChangedWithoutHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Tap link to update the location.hash with a new value.
   TapWebViewElementWithId(kHashChangeWithHistoryLabel);
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::OmniboxText(
+      selectElementWithMatcher:OmniboxText(
                                    hashChangedWithHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -435,7 +428,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // has been reached.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::OmniboxText(
+      selectElementWithMatcher:OmniboxText(
                                    hashChangedWithoutHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -455,7 +448,7 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // Tap link to update location.hash with a new value.
   TapWebViewElementWithId(kHashChangeWithHistoryLabel);
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::OmniboxText(
+      selectElementWithMatcher:OmniboxText(
                                    hashChangedWithHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
@@ -464,15 +457,14 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
   // Tap back once to return to original URL.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          page1URL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(page1URL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigate forward and verify the URL.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
   [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::OmniboxText(
+      selectElementWithMatcher:OmniboxText(
                                    hashChangedWithHistoryURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
@@ -492,21 +484,18 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
 
   [ChromeEarlGrey loadURL:initialURL];
   [ChromeEarlGrey loadURL:originURL];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          destinationURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigating back takes the user to the new tab page.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          initialURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(initialURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigating forward take the user to destination page.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          destinationURL.GetContent())]
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
@@ -562,30 +551,30 @@ std::unique_ptr<net::test_server::HttpResponse> WindowLocationHashHandlers(
   // to the proper destination.
   [ChromeEarlGrey loadURL:indexURL];
   TapWebViewElementWithId(redirectLabel);
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          destinationURL.GetContent())]
+  [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigate to a new URL, navigate back and assert that the resulting page is
   // the proper destination.
   [ChromeEarlGrey loadURL:lastURL];
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          destinationURL.GetContent())]
+  [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigate back and assert that the resulting page is the initial index.
   [[EarlGrey selectElementWithMatcher:BackButton()] performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          indexURL.GetContent())]
+  [ChromeEarlGrey waitForWebViewContainingText:redirectLabel];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(indexURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 
   // Navigate forward and assert the the resulting page is the proper
   // destination.
   [[EarlGrey selectElementWithMatcher:ForwardButton()]
       performAction:grey_tap()];
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(
-                                          destinationURL.GetContent())]
+  [ChromeEarlGrey waitForWebViewContainingText:"You've arrived"];
+  [[EarlGrey selectElementWithMatcher:OmniboxText(destinationURL.GetContent())]
       assertWithMatcher:grey_notNil()];
 }
 
