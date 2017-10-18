@@ -368,16 +368,13 @@ void GenerateMicV2(const uint8_t* session_key,
   HMAC_Final(ctx.get(), mic, nullptr);
 }
 
-#if defined(__clang__)
-[[clang::optnone]]  // TODO(crbug.com/769759) Clang crashes on this function.
-#endif
-    NET_EXPORT_PRIVATE Buffer
-    GenerateUpdatedTargetInfo(bool is_mic_enabled,
-                              bool is_epa_enabled,
-                              const std::string& channel_bindings,
-                              const std::string& spn,
-                              const std::vector<AvPair>& av_pairs,
-                              uint64_t* server_timestamp) {
+NET_EXPORT_PRIVATE Buffer
+GenerateUpdatedTargetInfo(bool is_mic_enabled,
+                          bool is_epa_enabled,
+                          const std::string& channel_bindings,
+                          const std::string& spn,
+                          const std::vector<AvPair>& av_pairs,
+                          uint64_t* server_timestamp) {
   size_t updated_target_info_len = 0;
   std::vector<AvPair> updated_av_pairs(av_pairs);
   UpdateTargetInfoAvPairs(is_mic_enabled, is_epa_enabled, channel_bindings, spn,
