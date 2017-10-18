@@ -21,29 +21,34 @@
 #include "components/arc/test/fake_voice_interaction_framework_instance.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
+#include "services/service_manager/public/cpp/service.h"
+#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
 
 namespace {
 
-class TestHighlighterController : public ash::mojom::HighlighterController {
+class TestHighlighterController : public ash::mojom::HighlighterController,
+                                  public service_manager::Service {
  public:
-  TestHighlighterController() : binding_(this), weak_factory_(this) {}
+  TestHighlighterController()
+      : binding_(this),
+        connector_factory_(this),
+        connector_(connector_factory_.CreateConnector()) {}
+
   ~TestHighlighterController() override = default;
 
-  ash::mojom::HighlighterControllerPtr CreateInterfacePtrAndBind() {
-    ash::mojom::HighlighterControllerPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
-  }
+  service_manager::Connector* connector() { return connector_.get(); }
 
   void CallHandleSelection(const gfx::Rect& rect) {
     client_->HandleSelection(rect);
+    client_.FlushForTesting();
   }
 
   void CallHandleEnabledStateChange(bool enabled) {
     client_->HandleEnabledStateChange(enabled);
+    client_.FlushForTesting();
   }
 
   bool client_attached() const { return static_cast<bool>(client_); }
@@ -52,18 +57,32 @@ class TestHighlighterController : public ash::mojom::HighlighterController {
   void SetClient(ash::mojom::HighlighterControllerClientPtr client) override {
     DCHECK(!client_);
     client_ = std::move(client);
+    // Okay to use base::Unretained(this), as |client_| will be destroyed before
+    // |this|.
     client_.set_connection_error_handler(
         base::Bind(&TestHighlighterController::OnClientConnectionLost,
-                   weak_factory_.GetWeakPtr()));
+                   base::Unretained(this)));
   }
 
-  void OnClientConnectionLost() { client_.reset(); }
+  // service_manager::Service:
+  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
+                       const std::string& interface_name,
+                       mojo::ScopedMessagePipeHandle interface_pipe) override {
+    DCHECK(interface_name == ash::mojom::HighlighterController::Name_);
+    binding_.Bind(
+        ash::mojom::HighlighterControllerRequest(std::move(interface_pipe)));
+  }
 
  private:
-  mojo::Binding<ash::mojom::HighlighterController> binding_;
-  ash::mojom::HighlighterControllerClientPtr client_;
+  void OnClientConnectionLost() {
+    client_.reset();
+    binding_.Close();
+  }
 
-  base::WeakPtrFactory<TestHighlighterController> weak_factory_;
+  mojo::Binding<ash::mojom::HighlighterController> binding_;
+  service_manager::TestConnectorFactory connector_factory_;
+  std::unique_ptr<service_manager::Connector> connector_;
+  ash::mojom::HighlighterControllerClientPtr client_;
 
   DISALLOW_COPY_AND_ASSIGN(TestHighlighterController);
 };
@@ -93,8 +112,7 @@ class ArcVoiceInteractionFrameworkServiceTest : public ash::AshTestBase {
     framework_service_ = std::make_unique<ArcVoiceInteractionFrameworkService>(
         profile_.get(), arc_bridge_service_.get());
     framework_service_->GetHighlighterClientForTesting()
-        ->SetControllerForTesting(
-            highlighter_controller_->CreateInterfacePtrAndBind());
+        ->SetConnectorForTesting(highlighter_controller_->connector());
     framework_instance_ =
         std::make_unique<FakeVoiceInteractionFrameworkInstance>();
     arc_bridge_service_->voice_interaction_framework()->SetInstance(
@@ -203,21 +221,18 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
 
   // Enabled state should propagate to the framework instance.
   highlighter_controller()->CallHandleEnabledStateChange(true);
-  FlushHighlighterControllerMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_TRUE(framework_instance()->metalayer_visible());
 
   // Disabled state should propagate to the framework instance.
   framework_instance()->ResetCounters();
   highlighter_controller()->CallHandleEnabledStateChange(false);
-  FlushHighlighterControllerMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_FALSE(framework_instance()->metalayer_visible());
 
   // Enable the state again.
   framework_instance()->ResetCounters();
   highlighter_controller()->CallHandleEnabledStateChange(true);
-  FlushHighlighterControllerMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_TRUE(framework_instance()->metalayer_visible());
 
@@ -226,7 +241,6 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
   const gfx::Rect selection(100, 200, 300, 400);
   highlighter_controller()->CallHandleSelection(selection);
   highlighter_controller()->CallHandleEnabledStateChange(false);
-  FlushHighlighterControllerMojo();
   // Neither the selected region nor the state update should reach the
   // framework instance yet.
   EXPECT_EQ(0u, framework_instance()->start_session_for_region_count());
@@ -235,7 +249,6 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
   framework_service()
       ->GetHighlighterClientForTesting()
       ->SimulateSelectionTimeoutForTesting();
-  FlushHighlighterControllerMojo();
   // After a timeout, the selected region should reach the framework instance.
   EXPECT_EQ(1u, framework_instance()->start_session_for_region_count());
   EXPECT_EQ(selection.ToString(),
@@ -260,7 +273,6 @@ TEST_F(ArcVoiceInteractionFrameworkServiceTest, HighlighterControllerClient) {
   // State update should reach the client normally.
   framework_instance()->ResetCounters();
   highlighter_controller()->CallHandleEnabledStateChange(true);
-  FlushHighlighterControllerMojo();
   EXPECT_EQ(1u, framework_instance()->set_metalayer_visibility_count());
   EXPECT_TRUE(framework_instance()->metalayer_visible());
 }
