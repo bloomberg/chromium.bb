@@ -5,11 +5,12 @@
 #ifndef CSSNumberInterpolationType_h
 #define CSSNumberInterpolationType_h
 
+#include "core/CoreExport.h"
 #include "core/animation/CSSInterpolationType.h"
 
 namespace blink {
 
-class CSSNumberInterpolationType : public CSSInterpolationType {
+class CORE_EXPORT CSSNumberInterpolationType : public CSSInterpolationType {
  public:
   CSSNumberInterpolationType(PropertyHandle property,
                              const PropertyRegistration* registration = nullptr,

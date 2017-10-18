@@ -5,9 +5,7 @@
 #ifndef AnimationTestHelper_h
 #define AnimationTestHelper_h
 
-#include "core/animation/InterpolableValue.h"
 #include "core/animation/Interpolation.h"
-#include "core/animation/LegacyStyleInterpolation.h"
 #include "platform/wtf/text/StringView.h"
 #include "platform/wtf/text/WTFString.h"
 #include "v8/include/v8.h"
@@ -34,24 +32,6 @@ void SetV8ObjectPropertyAsNumber(v8::Isolate*,
 void EnsureInterpolatedValueCached(const ActiveInterpolations&,
                                    Document&,
                                    Element*);
-
-class SampleTestInterpolation : public LegacyStyleInterpolation {
- public:
-  static RefPtr<LegacyStyleInterpolation> Create(
-      std::unique_ptr<InterpolableValue> start,
-      std::unique_ptr<InterpolableValue> end) {
-    return WTF::AdoptRef(
-        new SampleTestInterpolation(std::move(start), std::move(end)));
-  }
-
- private:
-  SampleTestInterpolation(std::unique_ptr<InterpolableValue> start,
-                          std::unique_ptr<InterpolableValue> end)
-      : LegacyStyleInterpolation(std::move(start),
-                                 std::move(end),
-                                 CSSPropertyBackgroundColor) {}
-};
-
 }  // namespace blink
 
 #endif  // AnimationTestHelper_h

@@ -4,8 +4,9 @@
 
 #include <memory>
 #include "core/animation/AnimationTestHelper.h"
+#include "core/animation/CSSNumberInterpolationType.h"
 #include "core/animation/InterpolationEffect.h"
-#include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/TransitionInterpolation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -14,28 +15,34 @@ namespace {
 
 const double kInterpolationTestDuration = 1.0;
 
+double GetInterpolableNumber(RefPtr<Interpolation> value) {
+  TransitionInterpolation& interpolation =
+      ToTransitionInterpolation(*value.get());
+  std::unique_ptr<TypedInterpolationValue> interpolated_value =
+      interpolation.GetInterpolatedValue();
+  return ToInterpolableNumber(interpolated_value->GetInterpolableValue())
+      .Value();
+}
+
+RefPtr<Interpolation> CreateInterpolation(int from, int to) {
+  // We require a property that maps to CSSNumberInterpolationType. 'z-index'
+  // suffices for this, and also means we can ignore the AnimatableValues for
+  // the compositor (as z-index isn't compositor-compatible).
+  PropertyHandle property_handle(CSSPropertyZIndex);
+  CSSNumberInterpolationType interpolation_type(property_handle);
+  InterpolationValue start(InterpolableNumber::Create(from));
+  InterpolationValue end(InterpolableNumber::Create(to));
+  return TransitionInterpolation::Create(property_handle, interpolation_type,
+                                         std::move(start), std::move(end),
+                                         nullptr, nullptr);
+}
+
 }  // namespace
 
-class AnimationInterpolationEffectTest : public ::testing::Test {
- protected:
-  InterpolableValue* InterpolationValue(
-      LegacyStyleInterpolation& interpolation) {
-    return interpolation.GetCachedValueForTesting();
-  }
-
-  double GetInterpolableNumber(RefPtr<Interpolation> value) {
-    LegacyStyleInterpolation& interpolation =
-        ToLegacyStyleInterpolation(*value.get());
-    return ToInterpolableNumber(InterpolationValue(interpolation))->Value();
-  }
-};
-
-TEST_F(AnimationInterpolationEffectTest, SingleInterpolation) {
+TEST(AnimationInterpolationEffectTest, SingleInterpolation) {
   InterpolationEffect interpolation_effect;
-  interpolation_effect.AddInterpolation(
-      SampleTestInterpolation::Create(InterpolableNumber::Create(0),
-                                      InterpolableNumber::Create(10)),
-      RefPtr<TimingFunction>(), 0, 1, -1, 2);
+  interpolation_effect.AddInterpolation(CreateInterpolation(0, 10),
+                                        RefPtr<TimingFunction>(), 0, 1, -1, 2);
 
   Vector<RefPtr<Interpolation>> active_interpolations;
   interpolation_effect.GetActiveInterpolations(-2, kInterpolationTestDuration,
@@ -62,19 +69,14 @@ TEST_F(AnimationInterpolationEffectTest, SingleInterpolation) {
   EXPECT_EQ(0ul, active_interpolations.size());
 }
 
-TEST_F(AnimationInterpolationEffectTest, MultipleInterpolations) {
+TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
   InterpolationEffect interpolation_effect;
+  interpolation_effect.AddInterpolation(CreateInterpolation(10, 15),
+                                        RefPtr<TimingFunction>(), 1, 2, 1, 3);
   interpolation_effect.AddInterpolation(
-      SampleTestInterpolation::Create(InterpolableNumber::Create(10),
-                                      InterpolableNumber::Create(15)),
-      RefPtr<TimingFunction>(), 1, 2, 1, 3);
+      CreateInterpolation(0, 1), LinearTimingFunction::Shared(), 0, 1, 0, 1);
   interpolation_effect.AddInterpolation(
-      SampleTestInterpolation::Create(InterpolableNumber::Create(0),
-                                      InterpolableNumber::Create(1)),
-      LinearTimingFunction::Shared(), 0, 1, 0, 1);
-  interpolation_effect.AddInterpolation(
-      SampleTestInterpolation::Create(InterpolableNumber::Create(1),
-                                      InterpolableNumber::Create(6)),
+      CreateInterpolation(1, 6),
       CubicBezierTimingFunction::Preset(
           CubicBezierTimingFunction::EaseType::EASE),
       0.5, 1.5, 0.5, 1.5);

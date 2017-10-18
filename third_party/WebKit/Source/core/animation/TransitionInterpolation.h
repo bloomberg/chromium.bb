@@ -5,6 +5,7 @@
 #ifndef TransitionInterpolation_h
 #define TransitionInterpolation_h
 
+#include "core/CoreExport.h"
 #include "core/animation/CompositorAnimations.h"
 #include "core/animation/Interpolation.h"
 #include "core/animation/InterpolationType.h"
@@ -36,7 +37,7 @@ class InterpolationType;
 // During the effect application phase of animation computation, the current
 // value of the property is applied to the element by calling the Apply
 // function.
-class TransitionInterpolation : public Interpolation {
+class CORE_EXPORT TransitionInterpolation : public Interpolation {
  public:
   static RefPtr<TransitionInterpolation> Create(
       const PropertyHandle& property,
