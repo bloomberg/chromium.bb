@@ -21,19 +21,21 @@
     },
 
     // - api_class: true|"classname"
-    // Specifies the existence (and optionally name) of a CSSPropertyAPI for this
-    // property.
+    // Specifies the existence (and optionally name) of a CSSPropertyAPI for
+    // this property.
     // * Add this flag if a property API has been implemented for this property.
-    // * If the classname for this is different to the name of the property, specify a
-    //   value for this flag. e.g. api_class=CSSPropertyAPIWebkitPadding.
-    // TODO(meade): When most properties have been implemented, modify this so that
-    // properties with default classnames do not get this flag, and introduce a
-    // 'not_implemented' flag instead.
+    // * If the classname for this is different to the name of the property,
+    //   specify a value for this flag.
+    //   e.g. api_class=CSSPropertyAPIWebkitPadding.
+    // TODO(meade): When most properties have been implemented, modify this so
+    // that properties with default classnames do not get this flag, and
+    // introduce a 'not_implemented' flag instead.
     api_class: {
     },
 
     // - api_methods: ["method1", "method2"]
-    // List of methods that are implemented in the CSSPropertyAPI for this property.
+    // List of methods that are implemented in the CSSPropertyAPI for this
+    // property.
     api_methods: {
       default: [],
       valid_type: "list",
@@ -81,9 +83,9 @@
     },
 
     // - interpolable
-    // The interpolable flag indicates whether a property can be animated smoothly.
-    // If this flag is set, the property should also be added to the switch
-    // statements in AnimatedStyleBuilder, CSSPropertyEquality and
+    // The interpolable flag indicates whether a property can be animated
+    // smoothly. If this flag is set, the property should also be added to the
+    // switch statements in AnimatedStyleBuilder, CSSPropertyEquality and
     // CSSAnimatableValueFactory.
     // - inherited
     // The property will inherit by default if no value is specified, typically
@@ -107,13 +109,16 @@
     },
 
     // - field_group
-    // Name of the group that this field belongs to. Fields in the same group are stored
-    // together as a nested class inside ComputedStyle and dynamically allocated on use.
+    // Name of the group that this field belongs to. Fields in the same group
+    // are stored together as a nested class inside ComputedStyle and
+    // dynamically allocated on use.
     // Leave this out if the field is stored directly on ComputedStyle.
-    // If you want to auto group this property use: field_group: "*[->subgroup]".
-    // If you use the auto grouping function check if your property is in CSSPropertiesRanking.json5
+    // If you want to auto group this property use: field_group: "*[->subgroup]"
+    // If you use the auto grouping function check if your property is in
+    // CSSPropertiesRanking.json5
     // -  If yes, only provide: field_group: "*"
-    // -  If no, you can specify a subgroup following the asterisk: field_group: "*[->subgroup]"
+    // -  If no, you can specify a subgroup following the asterisk:
+    //    field_group: "*[->subgroup]"
     field_group: {
       valid_type: "str",
     },
@@ -136,8 +141,8 @@
         "keyword",
         // Field can take on any subset of values from a list of keywords.
         "multi_keyword",
-        // Field stores a primitive value like int/bool. The type is specified by
-        // type_name. The interface has a initial/getter/setter/resetter.
+        // Field stores a primitive value like int/bool. The type is specified
+        // by type_name. The interface has a initial/getter/setter/resetter.
         "primitive",
         // Field is stored as a bool, whose default value is false
         // and can only be set to true. Has a initial/getter/setter.
@@ -148,9 +153,9 @@
         // Field is stored as a wrapper_pointer_name to a class.
         "pointer",
         // Preset "length" for external and Length class
-        // This preset represents alias templates that will be replace by entries
-        // in CSSFieldAlias.json5.
-        "<[a-z]+>",
+        // This preset represents alias templates that will be replace by
+        // entries in CSSFieldAlias.json5.
+        "<[a-z]+>"
       ],
     },
 
@@ -188,7 +193,8 @@
     // Flags which go into CSSOMTypes:
     // - typedom_types: ["Type", "OtherType"]
     // The property can take types specified in typedom_types for CSS Typed OM.
-    // Keyword does not need to be specified as every property can take keywords.
+    // Keyword does not need to be specified as every property can take
+    // keywords.
     // - separator
     // The property supports a list of values, and when there is more than one,
     // it is separated with this character.
@@ -215,15 +221,16 @@
     },
 
     // The remaining arguments are used for the StyleBuilder and allow us to
-    // succinctly describe how to apply properties. When default handlers are not
-    // sufficient, we should prefer to use converter, and failing that define
-    // custom property handlers in StyleBuilderCustom.cpp. We only should use
-    // StyleBuilderFunctions.cpp.tmpl to define handlers when there are multiple
-    // properties requiring the same handling, but converter doesn't suffice.
+    // succinctly describe how to apply properties. When default handlers are
+    // not sufficient, we should prefer to use converter, and failing that
+    // define custom property handlers in StyleBuilderCustom.cpp. We only should
+    // use StyleBuilderFunctions.cpp.tmpl to define handlers when there are
+    // multiple properties requiring the same handling, but converter doesn't
+    // suffice.
 
     // - font
-    // The default property handlers call into the FontBuilder instead of setting
-    // values directly onto the ComputedStyle
+    // The default property handlers call into the FontBuilder instead of
+    // setting values directly onto the ComputedStyle
     // - svg
     // The default property handlers access the SVGComputedStyle
     font: {
@@ -237,9 +244,11 @@
 
     // - name_for_methods: "BlendMode"
     // Tweaks how we choose defaults for getter, setter, initial and type_name.
-    // For example, setting this to BlendMode will make us use a setter of setBlendMode
+    // For example, setting this to BlendMode will make us use a setter of
+    // setBlendMode
     // - initial
-    // The initial value accessor on the ComputedStyle, defaults to e.g. initialBoxShadow
+    // The initial value accessor on the ComputedStyle, defaults to
+    // e.g. initialBoxShadow
     // - getter
     // The ComputedStyle getter, defaults to e.g. borderBottomLeft
     // - setter
@@ -258,8 +267,9 @@
     type_name: {
     },
 
-    // - custom_function: Any function specified in the list is not automatically
-    // generated in ComputedStyle. Use this when a generated function is not correct.
+    // - custom_function: Any function specified in the list is not
+    // automatically generated in ComputedStyle. Use this when a generated
+    // function is not correct.
     computed_style_custom_functions: {
       default: [],
       valid_type: "list",
@@ -267,8 +277,9 @@
     },
 
     // - converter: "ConvertRadius"
-    // The StyleBuilder will call the specified function on StyleBuilderConverter
-    // to convert a CSSValue to an appropriate platform value
+    // The StyleBuilder will call the specified function on
+    // StyleBuilderConverter to convert a CSSValue to an appropriate platform
+    // value
     converter: {
     },
 
@@ -307,12 +318,11 @@
       valid_type: "bool",
     },
 
-    // - shorthand_for_physical_side
-    // Shorthand to be used for resolving direction-dependent properties to physical
-    // properties
     // - logical_side
-    // The logical side represented by a longhand property in a direction-dependent
-    // shorthand
+    // The logical side represented by a direction-dependent property
+    // - shorthand_for_physical_side
+    // Shorthand to be used for resolving direction-dependent properties to
+    // physical properties
     direction_aware_options: {
       logical_side: {
         valid_type: "str",
@@ -431,7 +441,8 @@
     },
 
     // High Priority and all other font properties.
-    // Other properties can depend upon high priority properties (e.g. font-size / ems)
+    // Other properties can depend upon high priority properties
+    // (e.g. font-size / ems)
     {
       name: "color",
       api_class: true,
@@ -681,7 +692,6 @@
       custom_all: true,
       priority: "High",
     },
-
     {
       name: "align-content",
       api_class: "CSSPropertyAPIAlignOrJustifyContent",
@@ -866,7 +876,10 @@
       name: "border-bottom-style",
       field_group: "surround",
       field_template: "keyword",
-      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      keywords: [
+        "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
+        "dashed", "solid", "double"
+      ],
       default_value: "none",
       typedom_types: ["Image"],
       type_name: "EBorderStyle",
@@ -948,7 +961,10 @@
       name: "border-left-style",
       field_group: "surround",
       field_template: "keyword",
-      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      keywords: [
+        "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
+        "dashed", "solid", "double"
+      ],
       default_value: "none",
       typedom_types: ["Image"],
       type_name: "EBorderStyle",
@@ -985,7 +1001,10 @@
       name: "border-right-style",
       field_group: "surround",
       field_template: "keyword",
-      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      keywords: [
+        "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
+        "dashed", "solid", "double"
+      ],
       default_value: "none",
       typedom_types: ["Image"],
       type_name: "EBorderStyle",
@@ -1046,7 +1065,10 @@
       name: "border-top-style",
       field_group: "surround",
       field_template: "keyword",
-      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      keywords: [
+        "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
+        "dashed", "solid", "double"
+      ],
       default_value: "none",
       typedom_types: ["Image"],
       type_name: "EBorderStyle",
@@ -1104,7 +1126,8 @@
       // page-break-after, -webkit-column-break-after
       field_template: "keyword",
       keywords: [
-        "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page", "recto", "right", "verso"
+        "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page",
+        "recto", "right", "verso"
       ],
       default_value: "auto",
       type_name: "EBreakBetween",
@@ -1115,7 +1138,8 @@
       // page-break-before, -webkit-column-break-before
       field_template: "keyword",
       keywords: [
-        "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page", "recto", "right", "verso"
+        "auto", "avoid", "avoid-column", "avoid-page", "column", "left", "page",
+        "recto", "right", "verso"
       ],
       default_value: "auto",
       type_name: "EBreakBetween",
@@ -1268,11 +1292,13 @@
       inherited: true,
       field_template: "keyword",
       keywords: [
-        "auto", "default", "none", "context-menu", "help", "pointer", "progress", "wait", "cell", "crosshair",
-        "text", "vertical-text", "alias", "copy", "move", "no-drop", "not-allowed", "e-resize", "n-resize",
-        "ne-resize", "nw-resize", "s-resize", "se-resize", "sw-resize", "w-resize", "ew-resize", "ns-resize",
-        "nesw-resize", "nwse-resize", "col-resize", "row-resize", "all-scroll", "zoom-in", "zoom-out",
-        "-webkit-grab", "-webkit-grabbing"
+        "auto", "default", "none", "context-menu", "help", "pointer",
+        "progress", "wait", "cell", "crosshair", "text", "vertical-text",
+        "alias", "copy", "move", "no-drop", "not-allowed", "e-resize",
+        "n-resize", "ne-resize", "nw-resize", "s-resize", "se-resize",
+        "sw-resize", "w-resize", "ew-resize", "ns-resize", "nesw-resize",
+        "nwse-resize", "col-resize", "row-resize", "all-scroll", "zoom-in",
+        "zoom-out", "-webkit-grab", "-webkit-grabbing"
       ],
       default_value: "auto",
       custom_all: true,
@@ -1305,9 +1331,11 @@
       name: "display",
       field_template: 'keyword',
       keywords: [
-        "inline", "block", "list-item", "inline-block", "table", "inline-table", "table-row-group", "table-header-group",
-        "table-footer-group", "table-row", "table-column-group", "table-column", "table-cell", "table-caption", "-webkit-box",
-        "-webkit-inline-box", "flex", "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none",
+        "inline", "block", "list-item", "inline-block", "table", "inline-table",
+        "table-row-group", "table-header-group", "table-footer-group",
+        "table-row", "table-column-group", "table-column", "table-cell",
+        "table-caption", "-webkit-box", "-webkit-inline-box", "flex",
+        "inline-flex", "grid", "inline-grid", "contents", "flow-root", "none"
       ],
       default_value: "inline",
     },
@@ -1587,7 +1615,10 @@
       inherited: true,
       field_group: "*",
       field_template: "keyword",
-      keywords: ["auto", "optimizeSpeed", "optimizeQuality", "-webkit-optimize-contrast", "pixelated"],
+      keywords: [
+        "auto", "optimizeSpeed", "optimizeQuality",
+        "-webkit-optimize-contrast", "pixelated"
+      ],
       default_value: "auto",
     },
     {
@@ -1728,7 +1759,19 @@
       inherited: true,
       field_template: "keyword",
       keywords: [
-        "disc", "circle", "square", "decimal", "decimal-leading-zero", "arabic-indic", "bengali", "cambodian", "khmer", "devanagari", "gujarati", "gurmukhi", "kannada", "lao", "malayalam", "mongolian", "myanmar", "oriya", "persian", "urdu", "telugu", "tibetan", "thai", "lower-roman", "upper-roman", "lower-greek", "lower-alpha", "lower-latin", "upper-alpha", "upper-latin", "cjk-earthly-branch", "cjk-heavenly-stem", "ethiopic-halehame", "ethiopic-halehame-am", "ethiopic-halehame-ti-er", "ethiopic-halehame-ti-et", "hangul", "hangul-consonant", "korean-hangul-formal", "korean-hanja-formal", "korean-hanja-informal", "hebrew", "armenian", "lower-armenian", "upper-armenian", "georgian", "cjk-ideographic", "simp-chinese-formal", "simp-chinese-informal", "trad-chinese-formal", "trad-chinese-informal", "hiragana", "katakana", "hiragana-iroha", "katakana-iroha", "none",
+        "disc", "circle", "square", "decimal", "decimal-leading-zero",
+        "arabic-indic", "bengali", "cambodian", "khmer", "devanagari",
+        "gujarati", "gurmukhi", "kannada", "lao", "malayalam", "mongolian",
+        "myanmar", "oriya", "persian", "urdu", "telugu", "tibetan", "thai",
+        "lower-roman", "upper-roman", "lower-greek", "lower-alpha",
+        "lower-latin", "upper-alpha", "upper-latin", "cjk-earthly-branch",
+        "cjk-heavenly-stem", "ethiopic-halehame", "ethiopic-halehame-am",
+        "ethiopic-halehame-ti-er", "ethiopic-halehame-ti-et", "hangul",
+        "hangul-consonant", "korean-hangul-formal", "korean-hanja-formal",
+        "korean-hanja-informal", "hebrew", "armenian", "lower-armenian",
+        "upper-armenian", "georgian", "cjk-ideographic", "simp-chinese-formal",
+        "simp-chinese-informal", "trad-chinese-formal", "trad-chinese-informal",
+        "hiragana", "katakana", "hiragana-iroha", "katakana-iroha", "none"
       ],
       default_value: "disc",
     },
@@ -1867,9 +1910,11 @@
       field_group: "*",
       field_template: "keyword",
       include_paths: ["public/platform/WebBlendMode.h"],
-      keywords: ["normal", "multiply", "screen", "overlay", "darken", "lighten",
-       "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
-       "exclusion", "hue", "saturation", "color", "luminosity"],
+      keywords: [
+        "normal", "multiply", "screen", "overlay", "darken", "lighten",
+        "color-dodge", "color-burn", "hard-light", "soft-light", "difference",
+        "exclusion", "hue", "saturation", "color", "luminosity"
+      ],
       default_value: "normal",
       name_for_methods: "BlendMode",
       type_name: "WebBlendMode",
@@ -2017,7 +2062,10 @@
       name: "outline-style",
       field_group: "*",
       field_template: "keyword",
-      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      keywords: [
+        "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
+        "dashed", "solid", "double"
+      ],
       default_value: "none",
       type_name: "EBorderStyle",
       custom_all: true,
@@ -2042,7 +2090,7 @@
       runtime_flag: "ScrollAnchoring",
       field_template: "keyword",
       keywords: [
-        "visible", "none", "auto",
+        "visible", "none", "auto"
       ],
       default_value: "auto",
     },
@@ -2059,7 +2107,8 @@
       name: "overflow-x",
       field_template: "keyword",
       keywords: [
-        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x", "-webkit-paged-y",
+        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
+        "-webkit-paged-y"
       ],
       default_value: "visible",
       type_name: "EOverflow",
@@ -2068,7 +2117,8 @@
       name: "overflow-y",
       field_template: "keyword",
       keywords: [
-        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x", "-webkit-paged-y",
+        "visible", "hidden", "scroll", "auto", "overlay", "-webkit-paged-x",
+        "-webkit-paged-y"
       ],
       default_value: "visible",
       type_name: "EOverflow",
@@ -2151,7 +2201,8 @@
       inherited: true,
       field_template: "keyword",
       keywords: [
-        "none", "auto", "stroke", "fill", "painted", "visible", "visibleStroke", "visibleFill", "visiblePainted", "bounding-box", "all",
+        "none", "auto", "stroke", "fill", "painted", "visible", "visibleStroke",
+        "visibleFill", "visiblePainted", "bounding-box", "all"
       ],
       default_value: "auto",
     },
@@ -2159,7 +2210,7 @@
       name: "position",
       field_template: "keyword",
       keywords: [
-        "static", "relative", "absolute", "fixed", "sticky",
+        "static", "relative", "absolute", "fixed", "sticky"
       ],
       default_value: "static",
       getter: "GetPosition",
@@ -2538,7 +2589,10 @@
       inherited: true,
       field_group: "*",
       field_template: "keyword",
-      keywords: ["none", "normal", "spell-out", "digits", "literal-punctuation", "no-punctuation"],
+      keywords: [
+        "none", "normal", "spell-out", "digits", "literal-punctuation",
+        "no-punctuation"
+      ],
       default_value: "normal",
     },
     {
@@ -2659,7 +2713,8 @@
       inherited: true,
       field_template: "keyword",
       keywords: [
-        "left", "right", "center", "justify", "-webkit-left", "-webkit-right", "-webkit-center", "start", "end",
+        "left", "right", "center", "justify", "-webkit-left", "-webkit-right",
+        "-webkit-center", "start", "end"
       ],
       default_value: "start",
       getter: "GetTextAlign",
@@ -2929,7 +2984,8 @@
       field_template: "keyword",
       include_paths: ["platform/text/UnicodeBidi.h"],
       keywords: [
-        "normal", "embed", "bidi-override", "isolate", "plaintext", "isolate-override",
+        "normal", "embed", "bidi-override", "isolate", "plaintext",
+        "isolate-override"
       ],
       default_value: "normal",
       type_name: "UnicodeBidi",
@@ -3162,7 +3218,10 @@
       name: "column-rule-style",
       field_group: "*",
       field_template: "keyword",
-      keywords: ["none", "hidden", "inset", "groove", "outset", "ridge", "dotted", "dashed", "solid", "double"],
+      keywords: [
+        "none", "hidden", "inset", "groove", "outset", "ridge", "dotted",
+        "dashed", "solid", "double"
+      ],
       default_value: "none",
       type_name: "EBorderStyle",
     },
@@ -3560,7 +3619,9 @@
       independent: true,
       inherited: true,
       field_template: "keyword",
-      keywords: ["normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap"],
+      keywords: [
+        "normal", "pre", "pre-wrap", "pre-line", "nowrap", "-webkit-nowrap"
+      ],
       default_value: "normal",
     },
     {
@@ -3612,7 +3673,8 @@
       initial: "InitialLetterWordSpacing",
       converter: "ConvertSpacing",
     },
-    // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap' property. So using the same handlers.
+    // UAs must treat 'word-wrap' as an alternate name for the 'overflow-wrap'
+    // property. So using the same handlers.
     {
       name: "word-wrap",
       api_class: "CSSPropertyAPIInherited",
@@ -3918,8 +3980,8 @@
     },
 
     // Properties that we ignore in the StyleBuilder.
-    // TODO(timloh): This seems wrong, most of these shouldn't reach the StyleBuilder
-
+    // TODO(timloh): This seems wrong, most of these shouldn't reach the
+    // StyleBuilder
     {
       name: "all",
       api_class: true,
@@ -3947,7 +4009,6 @@
     },
 
     // Descriptor only names
-
     {
       name: "font-display",
       api_class: true,
@@ -3992,16 +4053,24 @@
     },
 
     // Shorthands
-
     {
       name: "animation",
-      longhands: ["animation-name", "animation-duration", "animation-timing-function", "animation-delay", "animation-iteration-count", "animation-direction", "animation-fill-mode", "animation-play-state"],
+      longhands: [
+        "animation-name", "animation-duration", "animation-timing-function",
+        "animation-delay", "animation-iteration-count", "animation-direction",
+        "animation-fill-mode", "animation-play-state"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "background",
-      longhands: ["background-image", "background-position-x", "background-position-y", "background-size", "background-repeat-x", "background-repeat-y", "background-attachment", "background-origin", "background-clip", "background-color"],
+      longhands: [
+        "background-image", "background-position-x", "background-position-y",
+        "background-size", "background-repeat-x", "background-repeat-y",
+        "background-attachment", "background-origin", "background-clip",
+        "background-color"
+      ],
       api_class: "CSSShorthandPropertyAPIBackground",
       api_methods: ["ParseShorthand"],
     },
@@ -4019,55 +4088,82 @@
     },
     {
       name: "border",
-      longhands: ["border-top-color", "border-top-style", "border-top-width", "border-right-color", "border-right-style", "border-right-width", "border-bottom-color", "border-bottom-style", "border-bottom-width", "border-left-color", "border-left-style", "border-left-width", "border-image-source", "border-image-slice", "border-image-width", "border-image-outset", "border-image-repeat"],
+      longhands: [
+        "border-top-color", "border-top-style", "border-top-width",
+        "border-right-color", "border-right-style", "border-right-width",
+        "border-bottom-color", "border-bottom-style", "border-bottom-width",
+        "border-left-color", "border-left-style", "border-left-width",
+        "border-image-source", "border-image-slice", "border-image-width",
+        "border-image-outset", "border-image-repeat"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-bottom",
-      longhands: ["border-bottom-width", "border-bottom-style", "border-bottom-color"],
+      longhands: [
+        "border-bottom-width", "border-bottom-style", "border-bottom-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-color",
-      longhands: ["border-top-color", "border-right-color", "border-bottom-color", "border-left-color"],
+      longhands: [
+        "border-top-color", "border-right-color", "border-bottom-color",
+        "border-left-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-image",
-      longhands: ["border-image-source", "border-image-slice", "border-image-width", "border-image-outset", "border-image-repeat"],
+      longhands: [
+        "border-image-source", "border-image-slice", "border-image-width",
+        "border-image-outset", "border-image-repeat"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-left",
-      longhands: ["border-left-width", "border-left-style", "border-left-color"],
+      longhands: [
+        "border-left-width", "border-left-style", "border-left-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-radius",
-      longhands: ["border-top-left-radius", "border-top-right-radius", "border-bottom-right-radius", "border-bottom-left-radius"],
+      longhands: [
+        "border-top-left-radius", "border-top-right-radius",
+        "border-bottom-right-radius", "border-bottom-left-radius"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-right",
-      longhands: ["border-right-width", "border-right-style", "border-right-color"],
+      longhands: [
+        "border-right-width", "border-right-style", "border-right-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-spacing",
-      longhands: ["-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing"],
+      longhands: [
+        "-webkit-border-horizontal-spacing", "-webkit-border-vertical-spacing"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "border-style",
-      longhands: ["border-top-style", "border-right-style", "border-bottom-style", "border-left-style"],
+      longhands: [
+        "border-top-style", "border-right-style", "border-bottom-style",
+        "border-left-style"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
       keywords: ["none"],
@@ -4081,7 +4177,10 @@
     },
     {
       name: "border-width",
-      longhands: ["border-top-width", "border-right-width", "border-bottom-width", "border-left-width"],
+      longhands: [
+        "border-top-width", "border-right-width", "border-bottom-width",
+        "border-left-width"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4099,20 +4198,30 @@
     },
     {
       name: "font",
-      longhands: ["font-style", "font-variant-ligatures", "font-variant-caps", "font-variant-numeric", "font-variant-east-asian", "font-weight", "font-stretch", "font-size", "line-height", "font-family"],
+      longhands: [
+        "font-style", "font-variant-ligatures", "font-variant-caps",
+        "font-variant-numeric", "font-variant-east-asian", "font-weight",
+        "font-stretch", "font-size", "line-height", "font-family"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "font-variant",
-      longhands: ["font-variant-ligatures", "font-variant-caps", "font-variant-numeric", "font-variant-east-asian"],
+      longhands: [
+        "font-variant-ligatures", "font-variant-caps",
+        "font-variant-numeric", "font-variant-east-asian"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
       is_descriptor: true,
     },
     {
       name: "grid",
-      longhands: ["grid-template-rows", "grid-template-columns", "grid-template-areas", "grid-auto-flow", "grid-auto-rows", "grid-auto-columns"],
+      longhands: [
+        "grid-template-rows", "grid-template-columns", "grid-template-areas",
+        "grid-auto-flow", "grid-auto-rows", "grid-auto-columns"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4136,7 +4245,10 @@
     },
     {
       name: "grid-area",
-      longhands: ["grid-row-start", "grid-column-start", "grid-row-end", "grid-column-end"],
+      longhands: [
+        "grid-row-start", "grid-column-start", "grid-row-end",
+        "grid-column-end"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4160,7 +4272,9 @@
     },
     {
       name: "grid-template",
-      longhands: ["grid-template-rows", "grid-template-columns", "grid-template-areas"],
+      longhands: [
+        "grid-template-rows", "grid-template-columns", "grid-template-areas"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4184,7 +4298,10 @@
     },
     {
       name: "offset",
-      longhands: ["offset-position", "offset-path", "offset-distance", "offset-rotate", "offset-anchor"],
+      longhands: [
+        "offset-position", "offset-path", "offset-distance", "offset-rotate",
+        "offset-anchor"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4209,7 +4326,9 @@
     },
     {
       name: "padding",
-      longhands: ["padding-top", "padding-right", "padding-bottom", "padding-left"],
+      longhands: [
+        "padding-top", "padding-right", "padding-bottom", "padding-left"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4233,7 +4352,10 @@
     },
     {
       name: "scroll-padding",
-      longhands: ["scroll-padding-top", "scroll-padding-right", "scroll-padding-bottom", "scroll-padding-left"],
+      longhands: [
+        "scroll-padding-top", "scroll-padding-right", "scroll-padding-bottom",
+        "scroll-padding-left"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
       runtime_flag: "CSSScrollSnapPoints",
@@ -4282,13 +4404,19 @@
     },
     {
       name: "transition",
-      longhands: ["transition-property", "transition-duration", "transition-timing-function", "transition-delay"],
+      longhands: [
+        "transition-property", "transition-duration",
+        "transition-timing-function", "transition-delay"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-border-after",
-      longhands: ["-webkit-border-after-width", "-webkit-border-after-style", "-webkit-border-after-color"],
+      longhands: [
+        "-webkit-border-after-width", "-webkit-border-after-style",
+        "-webkit-border-after-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
       direction_aware_options: {
@@ -4298,7 +4426,10 @@
     },
     {
       name: "-webkit-border-before",
-      longhands: ["-webkit-border-before-width", "-webkit-border-before-style", "-webkit-border-before-color"],
+      longhands: [
+        "-webkit-border-before-width", "-webkit-border-before-style",
+        "-webkit-border-before-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
       direction_aware_options: {
@@ -4308,7 +4439,10 @@
     },
     {
       name: "-webkit-border-end",
-      longhands: ["-webkit-border-end-width", "-webkit-border-end-style", "-webkit-border-end-color"],
+      longhands: [
+        "-webkit-border-end-width", "-webkit-border-end-style",
+        "-webkit-border-end-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
       direction_aware_options: {
@@ -4318,7 +4452,10 @@
     },
     {
       name: "-webkit-border-start",
-      longhands: ["-webkit-border-start-width", "-webkit-border-start-style", "-webkit-border-start-color"],
+      longhands: [
+        "-webkit-border-start-width", "-webkit-border-start-style",
+        "-webkit-border-start-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
       direction_aware_options: {
@@ -4346,7 +4483,9 @@
     },
     {
       name: "column-rule",
-      longhands: ["column-rule-width", "column-rule-style", "column-rule-color"],
+      longhands: [
+        "column-rule-width", "column-rule-style", "column-rule-color"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4358,19 +4497,29 @@
     },
     {
       name: "-webkit-margin-collapse",
-      longhands: ["-webkit-margin-before-collapse", "-webkit-margin-after-collapse"],
+      longhands: [
+        "-webkit-margin-before-collapse", "-webkit-margin-after-collapse"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-mask",
-      longhands: ["-webkit-mask-image", "-webkit-mask-position-x", "-webkit-mask-position-y", "-webkit-mask-size", "-webkit-mask-repeat-x", "-webkit-mask-repeat-y", "-webkit-mask-origin", "-webkit-mask-clip"],
+      longhands: [
+        "-webkit-mask-image", "-webkit-mask-position-x",
+        "-webkit-mask-position-y", "-webkit-mask-size", "-webkit-mask-repeat-x",
+        "-webkit-mask-repeat-y", "-webkit-mask-origin", "-webkit-mask-clip"
+      ],
       api_class: "CSSShorthandPropertyAPIBackground",
       api_methods: ["ParseShorthand"],
     },
     {
       name: "-webkit-mask-box-image",
-      longhands: ["-webkit-mask-box-image-source", "-webkit-mask-box-image-slice", "-webkit-mask-box-image-width", "-webkit-mask-box-image-outset", "-webkit-mask-box-image-repeat"],
+      longhands: [
+        "-webkit-mask-box-image-source", "-webkit-mask-box-image-slice",
+        "-webkit-mask-box-image-width", "-webkit-mask-box-image-outset",
+        "-webkit-mask-box-image-repeat"
+      ],
       api_class: true,
       api_methods: ["ParseShorthand"],
     },
@@ -4400,7 +4549,6 @@
     },
 
     // Aliases; these map to the same CSSPropertyID
-
     {
       name: "-epub-caption-side",
       alias_for: "caption-side",
