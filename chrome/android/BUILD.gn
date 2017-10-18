@@ -1147,6 +1147,7 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     "//chrome/test/android:chrome_java_test_support",
     "//components/bookmarks/common/android:bookmarks_java",
     "//components/policy/android:policy_java",
+    "//components/signin/core/browser/android:java",
     "//components/signin/core/browser/android:signin_java_test_support",
     "//components/sync:sync_java_test_support",
     "//components/sync:test_support_proto_java",

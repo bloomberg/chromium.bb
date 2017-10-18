@@ -1020,7 +1020,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/share/ShareHelper.java",
   "java/src/org/chromium/chrome/browser/share/ShareParams.java",
   "java/src/org/chromium/chrome/browser/signin/AccountAdder.java",
-  "java/src/org/chromium/chrome/browser/signin/AccountIdProvider.java",
   "java/src/org/chromium/chrome/browser/signin/AccountManagementFragment.java",
   "java/src/org/chromium/chrome/browser/signin/AccountManagementScreenHelper.java",
   "java/src/org/chromium/chrome/browser/signin/AccountSigninActivity.java",
