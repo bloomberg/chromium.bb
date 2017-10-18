@@ -41,7 +41,6 @@ class URLLoaderFactory;
 // Each SimpleURLLoader can only be used for a single request.
 //
 // TODO(mmenke): Support the following:
-// * Save to temp file.
 // * Consumer-provided methods to receive streaming (with backpressure).
 // * Monitoring (And cancelling during) redirects.
 // * Uploads (Fixed strings, files, data streams (with backpressure), chunked
@@ -127,6 +126,15 @@ class CONTENT_EXPORT SimpleURLLoader {
       const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       const base::FilePath& file_path,
+      int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
+
+  // Same as DownloadToFile, but creates a temporary file instead of taking a
+  // FilePath.
+  virtual void DownloadToTempFile(
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderFactory* url_loader_factory,
+      const net::NetworkTrafficAnnotationTag& annotation_tag,
+      DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size = std::numeric_limits<int64_t>::max()) = 0;
 
   // Sets whether partially received results are allowed. Defaults to false.

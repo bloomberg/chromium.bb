@@ -252,17 +252,21 @@ class SaveToFileBodyHandler : public BodyHandler {
  public:
   // |net_priority| is the priority from the ResourceRequest, and is used to
   // determine the TaskPriority of the sequence used to read from the response
-  // body and write to the file.
+  // body and write to the file. If |create_temp_file| is true, a temp file is
+  // created instead of using |path|.
   SaveToFileBodyHandler(SimpleURLLoaderImpl* simple_url_loader,
                         SimpleURLLoader::DownloadToFileCompleteCallback
                             download_to_file_complete_callback,
                         const base::FilePath& path,
+                        bool create_temp_file,
                         uint64_t max_body_size,
                         net::RequestPriority request_priority)
       : BodyHandler(simple_url_loader),
         download_to_file_complete_callback_(
             std::move(download_to_file_complete_callback)),
         weak_ptr_factory_(this) {
+    DCHECK(create_temp_file || !path.empty());
+
     // Choose the TaskPriority based on the net request priority.
     // TODO(mmenke): Can something better be done here?
     base::TaskPriority task_priority;
@@ -275,8 +279,8 @@ class SaveToFileBodyHandler : public BodyHandler {
     }
 
     // Can only do this after initializing the WeakPtrFactory.
-    file_writer_ =
-        std::make_unique<FileWriter>(path, max_body_size, task_priority);
+    file_writer_ = std::make_unique<FileWriter>(path, create_temp_file,
+                                                max_body_size, task_priority);
   }
 
   ~SaveToFileBodyHandler() override {
@@ -356,16 +360,19 @@ class SaveToFileBodyHandler : public BodyHandler {
                                                    int64_t total_bytes,
                                                    const base::FilePath& path)>;
 
-    explicit FileWriter(const base::FilePath& path,
-                        int64_t max_body_size,
-                        base::TaskPriority priority)
+    FileWriter(const base::FilePath& path,
+               bool create_temp_file,
+               int64_t max_body_size,
+               base::TaskPriority priority)
         : body_handler_task_runner_(base::SequencedTaskRunnerHandle::Get()),
           file_writer_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), priority,
                base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
           path_(path),
+          create_temp_file_(create_temp_file),
           max_body_size_(max_body_size) {
       DCHECK(body_handler_task_runner_->RunsTasksInCurrentSequence());
+      DCHECK(create_temp_file_ || !path_.empty());
     }
 
     // Starts reading from |body_data_pipe| and writing to the file.
@@ -420,9 +427,22 @@ class SaveToFileBodyHandler : public BodyHandler {
       DCHECK(!file_.IsValid());
       DCHECK(!body_reader_);
 
-      // Try to create the file.
-      file_.Initialize(path_,
-                       base::File::FLAG_WRITE | base::File::FLAG_CREATE_ALWAYS);
+      bool have_path = !create_temp_file_;
+      if (!have_path) {
+        DCHECK(create_temp_file_);
+        have_path = base::CreateTemporaryFile(&path_);
+        // CreateTemporaryFile() creates an empty file.
+        if (have_path)
+          owns_file_ = true;
+      }
+
+      if (have_path) {
+        // Try to initialize |file_|, creating the file if needed.
+        file_.Initialize(
+            path_, base::File::FLAG_WRITE | base::File::FLAG_CREATE_ALWAYS);
+      }
+
+      // If CreateTemporaryFile() or File::Initialize() failed, report failure.
       if (!file_.IsValid()) {
         body_handler_task_runner_->PostTask(
             FROM_HERE, base::BindOnce(std::move(on_done_callback),
@@ -502,6 +522,7 @@ class SaveToFileBodyHandler : public BodyHandler {
     // |file_writer_task_runner_|.
 
     base::FilePath path_;
+    const bool create_temp_file_;
     const int64_t max_body_size_;
 
     // File being downloaded to. Created just before reading from the data pipe.
@@ -566,6 +587,12 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
       const net::NetworkTrafficAnnotationTag& annotation_tag,
       DownloadToFileCompleteCallback download_to_file_complete_callback,
       const base::FilePath& file_path,
+      int64_t max_body_size) override;
+  void DownloadToTempFile(
+      const ResourceRequest& resource_request,
+      mojom::URLLoaderFactory* url_loader_factory,
+      const net::NetworkTrafficAnnotationTag& annotation_tag,
+      DownloadToFileCompleteCallback download_to_file_complete_callback,
       int64_t max_body_size) override;
   void SetAllowPartialResults(bool allow_partial_results) override;
   void SetAllowHttpErrorResults(bool allow_http_error_results) override;
@@ -767,9 +794,22 @@ void SimpleURLLoaderImpl::DownloadToFile(
     DownloadToFileCompleteCallback download_to_file_complete_callback,
     const base::FilePath& file_path,
     int64_t max_body_size) {
+  DCHECK(!file_path.empty());
   body_handler_ = std::make_unique<SaveToFileBodyHandler>(
       this, std::move(download_to_file_complete_callback), file_path,
-      max_body_size, resource_request.priority);
+      false /* create_temp_file */, max_body_size, resource_request.priority);
+  Start(resource_request, url_loader_factory, annotation_tag);
+}
+
+void SimpleURLLoaderImpl::DownloadToTempFile(
+    const ResourceRequest& resource_request,
+    mojom::URLLoaderFactory* url_loader_factory,
+    const net::NetworkTrafficAnnotationTag& annotation_tag,
+    DownloadToFileCompleteCallback download_to_file_complete_callback,
+    int64_t max_body_size) {
+  body_handler_ = std::make_unique<SaveToFileBodyHandler>(
+      this, std::move(download_to_file_complete_callback), base::FilePath(),
+      true /* create_temp_file */, max_body_size, resource_request.priority);
   Start(resource_request, url_loader_factory, annotation_tag);
 }
 

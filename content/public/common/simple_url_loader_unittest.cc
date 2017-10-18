@@ -66,8 +66,9 @@ const char kTruncatedBody[] = "Truncated Body";
 // and check the result.
 class SimpleLoaderTestHelper {
  public:
-  // What the response should be downloaded to.
-  enum class DownloadType { TO_STRING, TO_FILE };
+  // What the response should be downloaded to. Running all tests for all types
+  // is more than strictly needed, but simplest just to cover all cases.
+  enum class DownloadType { TO_STRING, TO_FILE, TO_TEMP_FILE };
 
   explicit SimpleLoaderTestHelper(DownloadType download_type)
       : download_type_(download_type),
@@ -128,6 +129,22 @@ class SimpleLoaderTestHelper {
               base::BindOnce(&SimpleLoaderTestHelper::DownloadedToFile,
                              base::Unretained(this)),
               dest_path_, max_body_size);
+        }
+        break;
+      case DownloadType::TO_TEMP_FILE:
+        if (max_body_size < 0) {
+          simple_url_loader_->DownloadToTempFile(
+              resource_request, url_loader_factory,
+              TRAFFIC_ANNOTATION_FOR_TESTS,
+              base::BindOnce(&SimpleLoaderTestHelper::DownloadedToFile,
+                             base::Unretained(this)));
+        } else {
+          simple_url_loader_->DownloadToTempFile(
+              resource_request, url_loader_factory,
+              TRAFFIC_ANNOTATION_FOR_TESTS,
+              base::BindOnce(&SimpleLoaderTestHelper::DownloadedToFile,
+                             base::Unretained(this)),
+              max_body_size);
         }
         break;
     }
@@ -224,19 +241,33 @@ class SimpleLoaderTestHelper {
   void DownloadedToFile(const base::FilePath& file_path) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     EXPECT_FALSE(done_);
-    EXPECT_EQ(DownloadType::TO_FILE, download_type_);
+    EXPECT_TRUE(download_type_ == DownloadType::TO_FILE ||
+                download_type_ == DownloadType::TO_TEMP_FILE);
     EXPECT_FALSE(response_body_);
 
-    // Make sure the destination file exists if |file_path| is non-empty, or the
-    // file is expected to exist on error.
-    EXPECT_EQ(!file_path.empty() || expect_path_exists_on_error_,
-              base::PathExists(dest_path_));
-
     if (!file_path.empty()) {
-      EXPECT_EQ(dest_path_, file_path);
+      EXPECT_TRUE(base::PathExists(file_path));
       response_body_ = std::make_unique<std::string>();
-      EXPECT_TRUE(base::ReadFileToString(dest_path_, response_body_.get()));
+      EXPECT_TRUE(base::ReadFileToString(file_path, response_body_.get()));
     }
+
+    // Can do some additional checks in the TO_FILE case. Unfortunately, in the
+    // temp file case, can't check that temp files were cleaned up, since it's
+    // a shared directory.
+    if (download_type_ == DownloadType::TO_FILE) {
+      // Make sure the destination file exists if |file_path| is non-empty, or
+      // the file is expected to exist on error.
+      EXPECT_EQ(!file_path.empty() || expect_path_exists_on_error_,
+                base::PathExists(dest_path_));
+
+      if (!file_path.empty())
+        EXPECT_EQ(dest_path_, file_path);
+    }
+
+    // Clean up file, so tests don't leave around files in the temp directory.
+    // Only matters in the TO_TEMP_FILE case.
+    if (!file_path.empty())
+      base::DeleteFile(file_path, false);
 
     done_ = true;
     run_loop_.Quit();
@@ -1457,7 +1488,8 @@ INSTANTIATE_TEST_CASE_P(
     /* No prefix */,
     SimpleURLLoaderTest,
     testing::Values(SimpleLoaderTestHelper::DownloadType::TO_STRING,
-                    SimpleLoaderTestHelper::DownloadType::TO_FILE));
+                    SimpleLoaderTestHelper::DownloadType::TO_FILE,
+                    SimpleLoaderTestHelper::DownloadType::TO_TEMP_FILE));
 
 class SimpleURLLoaderFileTest : public SimpleURLLoaderTestBase,
                                 public testing::Test {
