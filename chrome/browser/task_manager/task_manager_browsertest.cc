@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -181,16 +182,15 @@ class TaskManagerUtilityProcessBrowserTest : public TaskManagerBrowserTest {
 
 class TaskManagerMemoryCoordinatorBrowserTest : public TaskManagerBrowserTest {
  public:
-  TaskManagerMemoryCoordinatorBrowserTest() {}
-  ~TaskManagerMemoryCoordinatorBrowserTest() override {}
-
- protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    features::kMemoryCoordinator.name);
+  TaskManagerMemoryCoordinatorBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
   }
 
+  ~TaskManagerMemoryCoordinatorBrowserTest() override {}
+
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(TaskManagerMemoryCoordinatorBrowserTest);
 };
 

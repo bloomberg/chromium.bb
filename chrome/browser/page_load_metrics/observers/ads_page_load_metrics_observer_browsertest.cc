@@ -4,16 +4,16 @@
 
 #include <string>
 
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "components/subresource_filter/core/common/activation_level.h"
 #include "components/subresource_filter/core/common/activation_scope.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -21,19 +21,18 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-const char kAdsMetricsFeature[] = "AdsMetrics";
-
 class AdsPageLoadMetricsObserverBrowserTest
     : public subresource_filter::SubresourceFilterBrowserTest {
  public:
   AdsPageLoadMetricsObserverBrowserTest()
       : subresource_filter::SubresourceFilterBrowserTest() {
-    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    cmd_line->AppendSwitchASCII(switches::kEnableFeatures, kAdsMetricsFeature);
+    scoped_feature_list_.InitAndEnableFeature(features::kAdsFeature);
   }
   ~AdsPageLoadMetricsObserverBrowserTest() override {}
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(AdsPageLoadMetricsObserverBrowserTest);
 };
 

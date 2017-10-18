@@ -204,10 +204,10 @@ void ResetSchemesAndOriginsWhitelist() {
   url::Initialize();
 }
 
-void EnableFeatureWithParam(const base::Feature& feature,
-                            const std::string& param_name,
-                            const std::string& param_value,
-                            base::CommandLine* command_line) {
+void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
+                                      const std::string& param_name,
+                                      const std::string& param_value,
+                                      base::CommandLine* command_line) {
   static const char kFakeTrialName[] = "TrialNameForTesting";
   static const char kFakeTrialGroupName[] = "TrialGroupForTesting";
 

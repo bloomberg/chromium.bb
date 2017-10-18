@@ -3,14 +3,13 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -21,6 +20,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/buffer.h"
+#include "services/device/public/cpp/device_features.h"
 #include "services/device/public/cpp/generic_sensor/platform_sensor_configuration.h"
 #include "services/device/public/cpp/generic_sensor/sensor_reading.h"
 #include "services/device/public/cpp/generic_sensor/sensor_traits.h"
@@ -173,10 +173,11 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
       : io_loop_finished_event_(
             base::WaitableEvent::ResetPolicy::AUTOMATIC,
             base::WaitableEvent::InitialState::NOT_SIGNALED) {
-    base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-    cmd_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                "GenericSensor, GenericSensorExtraClasses");
+    scoped_feature_list_.InitWithFeatures(
+        {features::kGenericSensor, features::kGenericSensorExtraClasses}, {});
   }
+
+  ~GenericSensorBrowserTest() override {}
 
   void SetUpOnMainThread() override {
     fake_sensor_provider_ = base::MakeUnique<FakeSensorProvider>();
@@ -201,6 +202,7 @@ class GenericSensorBrowserTest : public ContentBrowserTest {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::WaitableEvent io_loop_finished_event_;
   std::unique_ptr<FakeSensorProvider> fake_sensor_provider_;
 
