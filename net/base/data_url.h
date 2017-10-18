@@ -7,8 +7,6 @@
 
 #include <string>
 
-#include "base/strings/string_piece.h"
-#include "build/build_config.h"
 #include "net/base/net_export.h"
 
 class GURL;
@@ -62,14 +60,6 @@ class NET_EXPORT DataURL {
                     std::string* mime_type,
                     std::string* charset,
                     std::string* data);
-
-  // Similar to Parse(), but accepts the data URL as a StringPiece which must
-  // already be canonicalized. This is mainly useful as an escape hatch for data
-  // URLs which exceed the size limit for GURLs.
-  static bool ParseCanonicalized(base::StringPiece data_url,
-                                 std::string* mime_type,
-                                 std::string* charset,
-                                 std::string* data);
 };
 
 }  // namespace net
