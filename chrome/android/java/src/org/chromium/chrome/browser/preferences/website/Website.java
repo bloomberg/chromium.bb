@@ -282,6 +282,13 @@ public class Website implements Serializable {
     }
 
     /**
+     * Returns the JavaScript exception info for this Website.
+     */
+    public ContentSettingException getJavaScriptException() {
+        return mJavaScriptException;
+    }
+
+    /**
      * Returns what permission governs Sound access.
      */
     public ContentSetting getSoundPermission() {
@@ -302,6 +309,13 @@ public class Website implements Serializable {
      */
     public void setSoundException(ContentSettingException exception) {
         mSoundException = exception;
+    }
+
+    /**
+     * Returns the Sound exception info for this Website.
+     */
+    public ContentSettingException getSoundException() {
+        return mSoundException;
     }
 
     /**
