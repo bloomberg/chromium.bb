@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/service_worker/service_worker_event_dispatcher.mojom";
 import "content/common/service_worker/service_worker_installed_scripts_manager.mojom";
 import "content/common/service_worker/service_worker_provider.mojom";
@@ -32,8 +33,15 @@ struct EmbeddedWorkerStartTiming {
 interface EmbeddedWorkerInstanceClient {
   // Called back as various functions in EmbeddedWorkerInstanceHost, such
   // as OnThreadStarted(), OnStarted().
+  // |dispatcher_request| is used to dispatch events from (via) the browser
+  // process.
+  //
+  // S13nServiceWorker:
+  // |controller_request| is cloned and passed to each
+  // controllee to directly dispatch events from the controllees.
   StartWorker(EmbeddedWorkerStartParams params,
               ServiceWorkerEventDispatcher& dispatcher_request,
+              ControllerServiceWorker& controller_request,
               ServiceWorkerInstalledScriptsInfo? installed_scripts_info,
               associated EmbeddedWorkerInstanceHost instance_host,
               ServiceWorkerProviderInfoForStartWorker provider_info,

@@ -1565,7 +1565,8 @@ void ServiceWorkerVersion::StartWorkerInternal() {
       // |embedded_worker_| whose owner is |this|.
       base::BindOnce(&CompleteProviderHostPreparation, base::Unretained(this),
                      std::move(pending_provider_host), context()),
-      mojo::MakeRequest(&event_dispatcher_), std::move(installed_scripts_info),
+      mojo::MakeRequest(&event_dispatcher_),
+      mojo::MakeRequest(&controller_ptr_), std::move(installed_scripts_info),
       base::BindOnce(&ServiceWorkerVersion::OnStartSentAndScriptEvaluated,
                      weak_factory_.GetWeakPtr()));
   event_dispatcher_.set_connection_error_handler(base::BindOnce(
@@ -1723,14 +1724,23 @@ void ServiceWorkerVersion::OnPingTimeout() {
 }
 
 void ServiceWorkerVersion::StopWorkerIfIdle() {
-  if (HasWork() && !ping_controller_->IsTimedOut())
-    return;
   if (running_status() == EmbeddedWorkerStatus::STOPPED ||
       running_status() == EmbeddedWorkerStatus::STOPPING ||
       !stop_callbacks_.empty()) {
     return;
   }
 
+  // StopWorkerIfIdle() may be called for two reasons: "idle-timeout" or
+  // "ping-timeout". For idle-timeout (i.e. ping hasn't timed out), first check
+  // if the worker really is idle.
+  if (!ping_controller_->IsTimedOut()) {
+    // S13nServiceWorker: We don't stop the service worker for idle-timeout
+    // in the browser process when Servicification is enabled, as events
+    // might be dispatched directly without going through the browser-process.
+    // TODO(kinuko): Re-implement timers. (crbug.com/774374)
+    if (HasWork() || ServiceWorkerUtils::IsServicificationEnabled())
+      return;
+  }
   embedded_worker_->StopIfIdle();
 }
 
@@ -1936,6 +1946,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   pending_requests_.Clear();
   external_request_uuid_to_request_id_.clear();
   event_dispatcher_.reset();
+  controller_ptr_.reset();
   installed_scripts_sender_.reset();
 
   for (auto& observer : listeners_)

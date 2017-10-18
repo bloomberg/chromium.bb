@@ -74,10 +74,6 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
   FakeControllerServiceWorker() = default;
   ~FakeControllerServiceWorker() override = default;
 
-  void AddBinding(mojom::ControllerServiceWorkerRequest request) {
-    bindings_.AddBinding(this, std::move(request));
-  }
-
   void CloseAllBindings() { bindings_.CloseAllBindings(); }
 
   // Tells this controller to respond to fetch events with network fallback.
@@ -179,6 +175,10 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     NOTREACHED();
   }
 
+  void Clone(mojom::ControllerServiceWorkerRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
   int fetch_event_count() const { return fetch_event_count_; }
   const ServiceWorkerFetchRequest& fetch_event_request() const {
     return fetch_event_request_;
@@ -241,7 +241,7 @@ class FakeServiceWorkerContainerHost
   void GetControllerServiceWorker(
       mojom::ControllerServiceWorkerRequest request) override {
     get_controller_service_worker_count_++;
-    fake_controller_->AddBinding(std::move(request));
+    fake_controller_->Clone(std::move(request));
   }
 
   int get_controller_service_worker_count_ = 0;

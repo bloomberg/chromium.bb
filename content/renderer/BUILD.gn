@@ -347,6 +347,8 @@ target(link_target_type, "renderer") {
     "screen_orientation/screen_orientation_dispatcher.h",
     "seccomp_sandbox_status_android.cc",
     "seccomp_sandbox_status_android.h",
+    "service_worker/controller_service_worker_impl.cc",
+    "service_worker/controller_service_worker_impl.h",
     "service_worker/embedded_worker_devtools_agent.cc",
     "service_worker/embedded_worker_devtools_agent.h",
     "service_worker/embedded_worker_instance_client_impl.cc",

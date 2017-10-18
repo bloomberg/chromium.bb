@@ -47,7 +47,6 @@ class ServiceWorkerContextCore;
 class ServiceWorkerDispatcherHost;
 class ServiceWorkerRequestHandler;
 class ServiceWorkerVersion;
-class BrowserSideControllerServiceWorker;
 class WebContents;
 
 // This class is the browser-process representation of a service worker
@@ -478,10 +477,8 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // 3. |*get_ready_callback_| is a null OnceCallback after the callback has
   //    been run.
   std::unique_ptr<GetRegistrationForReadyCallback> get_ready_callback_;
-  scoped_refptr<ServiceWorkerVersion> controller_;
-  std::unique_ptr<BrowserSideControllerServiceWorker>
-      controller_service_worker_;
 
+  scoped_refptr<ServiceWorkerVersion> controller_;
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 

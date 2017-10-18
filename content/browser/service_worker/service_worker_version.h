@@ -35,6 +35,7 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_script_cache_map.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -294,6 +295,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   mojom::ServiceWorkerEventDispatcher* event_dispatcher() {
     DCHECK(event_dispatcher_.is_bound());
     return event_dispatcher_.get();
+  }
+
+  // This must be called when the worker is running.
+  // Returns the 'controller' interface of this worker.
+  mojom::ControllerServiceWorker* controller() {
+    DCHECK(controller_ptr_.is_bound());
+    return controller_ptr_.get();
   }
 
   // Adds and removes |provider_host| as a controllee of this ServiceWorker.
@@ -719,6 +727,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Connected to ServiceWorkerContextClient while the worker is running.
   mojom::ServiceWorkerEventDispatcherPtr event_dispatcher_;
+  mojom::ControllerServiceWorkerPtr controller_ptr_;
 
   std::unique_ptr<ServiceWorkerInstalledScriptsSender>
       installed_scripts_sender_;

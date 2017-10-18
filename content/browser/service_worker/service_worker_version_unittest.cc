@@ -270,7 +270,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
       const GURL& scope,
       const GURL& script_url,
       bool pause_after_download,
-      mojom::ServiceWorkerEventDispatcherRequest request,
+      mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+      mojom::ControllerServiceWorkerRequest controller_request,
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info)
@@ -281,19 +282,24 @@ class MessageReceiverDisallowStart : public MessageReceiver {
         instance_host_ptr_map_[embedded_worker_id].Bind(
             std::move(instance_host));
         // Just keep the connection alive.
-        event_dispatcher_request_map_[embedded_worker_id] = std::move(request);
+        event_dispatcher_request_map_[embedded_worker_id] =
+            std::move(dispatcher_request);
+        controller_request_map_[embedded_worker_id] =
+            std::move(controller_request);
         break;
       case StartMode::FAIL:
         ASSERT_EQ(current_mock_instance_index_ + 1,
                   mock_instance_clients()->size());
         // Remove the connection by peer
         mock_instance_clients()->at(current_mock_instance_index_).reset();
-        std::move(request);
+        std::move(dispatcher_request);
+        std::move(controller_request);
         break;
       case StartMode::SUCCEED:
         MessageReceiver::OnStartWorker(
             embedded_worker_id, service_worker_version_id, scope, script_url,
-            pause_after_download, std::move(request), std::move(instance_host),
+            pause_after_download, std::move(dispatcher_request),
+            std::move(controller_request), std::move(instance_host),
             std::move(provider_info), std::move(installed_scripts_info));
         break;
     }
@@ -322,6 +328,8 @@ class MessageReceiverDisallowStart : public MessageReceiver {
   std::map<int /* embedded_worker_id */,
            mojom::ServiceWorkerEventDispatcherRequest>
       event_dispatcher_request_map_;
+  std::map<int /* embedded_worker_id */, mojom::ControllerServiceWorkerRequest>
+      controller_request_map_;
   DISALLOW_COPY_AND_ASSIGN(MessageReceiverDisallowStart);
 };
 
