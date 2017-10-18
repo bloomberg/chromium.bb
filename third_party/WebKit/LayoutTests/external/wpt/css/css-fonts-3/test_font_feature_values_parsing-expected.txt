@@ -1,6 +1,5 @@
 This is a testharness.js-based test.
-Harness Error. harness_status.status = 1 , harness_status.message = 1 duplicate test name: "basic parse tests - @font-feature-values bongo { @styleset { abc:; 1 2 3 } }"
-Found 117 tests; 10 PASS, 107 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 116 tests; 10 PASS, 106 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS basic parse tests - @font-feature-values;
 PASS basic parse tests - @font-feature-values bongo;
 PASS basic parse tests - @font-feature-value {;}
@@ -27,7 +26,6 @@ FAIL basic parse tests - @font-feature-values bongo { @styleset { a:,;b: } } ass
 FAIL basic parse tests - @font-feature-values bongo { @styleset { a:1,;b: } } assert_true: unexpected syntax error expected true got false
 FAIL basic parse tests - @font-feature-values bongo { @styleset { abc 1 2 3 } } assert_true: unexpected syntax error expected true got false
 FAIL basic parse tests - @font-feature-values bongo { @styleset { abc:, 1 2 3 } } assert_true: unexpected syntax error expected true got false
-FAIL basic parse tests - @font-feature-values bongo { @styleset { abc:; 1 2 3 } } assert_true: unexpected syntax error expected true got false
 FAIL basic parse tests - @font-feature-values bongo { @styleset { abc:; 1 2 3 } } assert_true: unexpected syntax error expected true got false
 FAIL basic parse tests - @font-feature-values bongo { @styleset { abc: 1 2 3a } } assert_true: unexpected syntax error expected true got false
 FAIL basic parse tests - @font-feature-values bongo { @styleset { abc: 1 2 3, def: 1; } } assert_true: unexpected syntax error expected true got false
