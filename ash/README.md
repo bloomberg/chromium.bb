@@ -22,7 +22,7 @@ Test support code (TestFooDelegate, FooControllerTestApi, etc.) lives in the
 same directory as the class under test (e.g. //ash/foo rather than //ash/test).
 Test code uses namespace ash; there is no special "test" namespace.
 
-Mus+ash
+Mustash
 ----------
 Ash is transitioning to use the mus window server and gpu process, found in
 //services/ui. Ash continues to use aura, but aura is backed by mus. Code to
@@ -42,6 +42,23 @@ In the few cases where chrome code is allowed to call into ash (e.g. code that
 will only ever run in classic ash) the #include lines have "// mash-ok"
 appended. This makes it easier to use grep to determine which parts of chrome
 have not yet been adapted to mash.
+
+Mustash Tests
+-----
+ash_unittests --mus runs the test suite in mus mode. ash_unittests --mash runs
+in mash mode. Some tests will fail because the underlying code has not yet been
+ported to work with mash. We use filter files to skip these tests, because it
+makes it easier to run the entire suite without the filter to see what passes.
+
+To simulate what the bots run (e.g. to check if you broke an existing test that
+works under mash) you can run:
+
+`ash_unittests --mash --test-launcher-filter-file=testing/buildbot/filters/ash_unittests_mash.filter`
+
+Any new feature you add (and its tests) should work under mash. If your test
+cannot pass under mash due to some dependency being broken you may add the test
+to the filter file. Make sure there is a bug for the underlying issue and cite
+it in the filter file.
 
 Prefs
 -----
