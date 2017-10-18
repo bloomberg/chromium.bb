@@ -113,7 +113,7 @@ class OwnerSettingsServiceChromeOSTest : public DeviceSettingsTestBase {
     device_policy_.policy_data().set_management_mode(
         em::PolicyData::LOCAL_OWNER);
     device_policy_.Build();
-    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
   }
 
@@ -165,7 +165,7 @@ TEST_F(OwnerSettingsServiceChromeOSTest, MultipleSetTest) {
 }
 
 TEST_F(OwnerSettingsServiceChromeOSTest, FailedSetRequest) {
-  device_settings_test_helper_.set_store_device_policy_success(false);
+  session_manager_client_.set_store_device_policy_success(false);
   std::string current_channel;
   ASSERT_TRUE(provider_->Get(kReleaseChannel)->GetAsString(&current_channel));
   ASSERT_NE(current_channel, "stable-channel");
