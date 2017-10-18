@@ -3133,6 +3133,42 @@ TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest, SurfaceChanges) {
             view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
 }
 
+// This test verifies that the primary SurfaceInfo is updated on device scale
+// factor changes.
+TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
+       DeviceScaleFactorChanges) {
+  view_->InitAsChild(nullptr);
+  aura::client::ParentWindowWithContext(
+      view_->GetNativeView(), parent_view_->GetNativeView()->GetRootWindow(),
+      gfx::Rect());
+
+  // Prevent the DelegatedFrameHost from skipping frames.
+  view_->DisableResizeLock();
+  EXPECT_FALSE(view_->HasPrimarySurface());
+
+  view_->SetSize(gfx::Size(300, 300));
+  ASSERT_TRUE(view_->HasPrimarySurface());
+  EXPECT_EQ(gfx::Size(300, 300),
+            view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
+  EXPECT_EQ(
+      1.0f,
+      view_->window_->layer()->GetPrimarySurfaceInfo()->device_scale_factor());
+  viz::SurfaceId initial_surface_id =
+      view_->window_->layer()->GetPrimarySurfaceInfo()->id();
+  EXPECT_FALSE(view_->window_->layer()->GetFallbackSurfaceId()->is_valid());
+
+  // Resizing should update the primary SurfaceInfo.
+  aura_test_helper_->test_screen()->SetDeviceScaleFactor(2.0f);
+  viz::SurfaceId new_surface_id =
+      view_->window_->layer()->GetPrimarySurfaceInfo()->id();
+  EXPECT_NE(new_surface_id, initial_surface_id);
+  EXPECT_EQ(gfx::Size(600, 600),
+            view_->window_->layer()->GetPrimarySurfaceInfo()->size_in_pixels());
+  EXPECT_EQ(
+      2.0f,
+      view_->window_->layer()->GetPrimarySurfaceInfo()->device_scale_factor());
+}
+
 // This test verifies that changing the CompositorFrameSink (and thus evicting
 // the current surface) does not crash,
 TEST_F(RenderWidgetHostViewAuraSurfaceSynchronizationTest,
