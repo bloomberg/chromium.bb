@@ -1,3 +1,5 @@
+[cfi-unrelated-cast|cfi-derived-cast]
+
 # e.g. RolloverProtectedTickClock
 fun:*MutableInstance*
 
@@ -26,15 +28,8 @@ src:*nacl_message_scanner.cc*
 # src/base/win/event_trace_provider_unittest.cc
 type:*EtwTraceProvider*
 
-# These classes are used to communicate between chrome.exe and
-# chrome_child.dll (see src/sandbox/win/src/sandbox.h,
-# src/chrome/app/chrome_main.cc).
-type:sandbox::BrokerServices
-type:sandbox::TargetPolicy
-type:sandbox::TargetServices
-
-# Likewise (base/win/scoped_handle.cc).
-type:*ActiveVerifier*
+# b/64003142
+fun:*internal_default_instance*
 
 #############################################################################
 # Base class's constructor accesses a derived class.
@@ -66,6 +61,8 @@ src:*wtf/PartitionAllocator.h*
 
 #############################################################################
 # Methods disabled due to perf considerations.
+
+[cfi-vcall]
 
 # Skia
 
@@ -111,5 +108,17 @@ fun:*nextBreakablePosition*
 fun:*supportsCachedOffsets*
 fun:*traceImpl*
 
-# b/64003142
-fun:*internal_default_instance*
+#############################################################################
+# Cross-DSO vcalls
+
+[cfi-vcall|cfi-unrelated-cast|cfi-derived-cast]
+
+# These classes are used to communicate between chrome.exe and
+# chrome_child.dll (see src/sandbox/win/src/sandbox.h,
+# src/chrome/app/chrome_main.cc).
+type:sandbox::BrokerServices
+type:sandbox::TargetPolicy
+type:sandbox::TargetServices
+
+# Likewise (base/win/scoped_handle.cc).
+type:*ActiveVerifier*
