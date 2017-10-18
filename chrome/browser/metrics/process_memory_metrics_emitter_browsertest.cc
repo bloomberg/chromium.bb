@@ -8,6 +8,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "base/trace_event/trace_config_memory_test_util.h"
@@ -20,7 +21,6 @@
 #include "components/ukm/ukm_source.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/features/features.h"
 #include "net/dns/mock_host_resolver.h"
@@ -197,8 +197,12 @@ void CheckAllMemoryMetrics(const base::HistogramTester& histogram_tester,
 
 class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
  public:
-  ProcessMemoryMetricsEmitterTest() {}
+  ProcessMemoryMetricsEmitterTest() {
+    scoped_feature_list_.InitAndEnableFeature(ukm::kUkmFeature);
+  }
+
   ~ProcessMemoryMetricsEmitterTest() override {}
+
   void SetUpOnMainThread() override {
     ExtensionBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
@@ -208,12 +212,6 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
     InProcessBrowserTest::PreRunTestOnMainThread();
 
     test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    InProcessBrowserTest::SetUpCommandLine(command_line);
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    ukm::kUkmFeature.name);
   }
 
  protected:
@@ -403,9 +401,11 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
 #endif
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   std::vector<std::unique_ptr<TestExtensionDir>> temp_dirs_;
 #endif
+
   DISALLOW_COPY_AND_ASSIGN(ProcessMemoryMetricsEmitterTest);
 };
 

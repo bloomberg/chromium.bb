@@ -6,6 +6,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/permissions/permissions_browsertest.h"
 #include "chrome/browser/ui/permission_bubble/mock_permission_prompt_factory.h"
 #include "chrome/common/chrome_features.h"
@@ -58,12 +59,17 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
     // throttling make it harder to test if Flash was succcessfully enabled.
     command_line->AppendSwitchASCII(
         switches::kOverridePluginPowerSaverForTesting, "never");
+  }
 
+  void SetUpOnMainThread() override {
     // Set a high engagement threshhold so it doesn't interfere with testing the
     // permission.
-    content::EnableFeatureWithParam(features::kPreferHtmlOverPlugins,
-                                    "engagement_threshold_for_flash", "100",
-                                    command_line);
+    std::map<std::string, std::string> parameters;
+    parameters["engagement_threshold_for_flash"] = "100";
+    scoped_feature_list_.InitAndEnableFeatureWithParameters(
+        features::kPreferHtmlOverPlugins, parameters);
+
+    PermissionsBrowserTest::SetUpOnMainThread();
   }
 
   void TriggerPrompt() override {
@@ -97,6 +103,11 @@ class FlashPermissionBrowserTest : public PermissionsBrowserTest {
     return RunScriptReturnBool("flashIsEnabled();") ||
            RunScriptReturnBool("flashIsEnabledForPluginWithoutFallback();");
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(FlashPermissionBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(FlashPermissionBrowserTest,

@@ -12,14 +12,13 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
+#include "chrome/common/chrome_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "url/gurl.h"
 
 namespace {
-
-const base::Feature kAdsFeature{"AdsMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
 
 #define ADS_HISTOGRAM(suffix, hist_macro, ad_type, value)                  \
   switch (ad_type) {                                                       \
@@ -88,7 +87,7 @@ AdsPageLoadMetricsObserver::AdFrameData::AdFrameData(
 // static
 std::unique_ptr<AdsPageLoadMetricsObserver>
 AdsPageLoadMetricsObserver::CreateIfNeeded() {
-  if (!base::FeatureList::IsEnabled(kAdsFeature))
+  if (!base::FeatureList::IsEnabled(features::kAdsFeature))
     return nullptr;
   return base::MakeUnique<AdsPageLoadMetricsObserver>();
 }

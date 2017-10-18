@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "content/browser/webrtc/webrtc_webcam_browsertest.h"
 #include "content/public/browser/browser_child_process_host.h"
@@ -46,10 +47,14 @@ static const char kVerifyHasReceivedTrackEndedEvent[] =
 // JavaScript level.
 class WebRtcVideoCaptureBrowserTest : public ContentBrowserTest {
  protected:
+  WebRtcVideoCaptureBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(video_capture::kMojoVideoCapture);
+  }
+
+  ~WebRtcVideoCaptureBrowserTest() override {}
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    video_capture::kMojoVideoCapture.name);
     command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kEnableBlinkFeatures, "GetUserMedia");
@@ -60,6 +65,11 @@ class WebRtcVideoCaptureBrowserTest : public ContentBrowserTest {
     EnablePixelOutput();
     ContentBrowserTest::SetUp();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebRtcVideoCaptureBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WebRtcVideoCaptureBrowserTest,

@@ -853,6 +853,7 @@ test("content_browsertests") {
     "//net:test_support",
     "//ppapi/features",
     "//services/catalog:lib",
+    "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/interfaces",
     "//services/device/public/interfaces:generic_sensor",

@@ -3,20 +3,19 @@
 // found in the LICENSE file.
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/sys_info.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_timeouts.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -111,16 +110,20 @@ class WorkerTest : public ContentBrowserTest {
 class WorkerFetchTest : public testing::WithParamInterface<bool>,
                         public WorkerTest {
  public:
-  ~WorkerFetchTest() override {}
-  void SetUpCommandLine(base::CommandLine* command_line) override {
+  WorkerFetchTest() {
     if (GetParam()) {
-      command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                      features::kOffMainThreadFetch.name);
+      scoped_feature_list_.InitAndEnableFeature(features::kOffMainThreadFetch);
     } else {
-      command_line->AppendSwitchASCII(switches::kDisableFeatures,
-                                      features::kOffMainThreadFetch.name);
+      scoped_feature_list_.InitAndDisableFeature(features::kOffMainThreadFetch);
     }
   }
+
+  ~WorkerFetchTest() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WorkerFetchTest);
 };
 
 IN_PROC_BROWSER_TEST_F(WorkerTest, SingleWorker) {

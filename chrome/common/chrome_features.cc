@@ -14,6 +14,9 @@ namespace features {
 
 // All features in alphabetical order.
 
+// Enables Ads Metrics.
+const base::Feature kAdsFeature{"AdsMetrics", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 const base::Feature kAllowAutoplayUnmutedInWebappManifestScope{
     "AllowAutoplayUnmutedInWebappManifestScope",
@@ -360,6 +363,11 @@ const base::Feature kDisablePostScriptPrinting{
 const base::Feature kPolicyTool{"PolicyTool",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
+
+// Triggers the preconnector on renderer-initiated navigations. This captures
+// more navigations.
+const base::Feature kPreconnectMore{"PreconnectMore",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 // Prefer HTML content by hiding Flash from the list of plugins.

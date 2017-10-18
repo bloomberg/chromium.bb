@@ -91,10 +91,12 @@ void ResetSchemesAndOriginsWhitelist();
 //
 // Note that a dummy trial and trial group will be registered behind the scenes.
 // See also variations::testing::VariationsParamsManager class.
-void EnableFeatureWithParam(const base::Feature& feature,
-                            const std::string& param_name,
-                            const std::string& param_value,
-                            base::CommandLine* command_line);
+// This method is deprecated because we want to unify the FeatureList change to
+// ScopedFeatureList. See crbug.com/713390
+void DeprecatedEnableFeatureWithParam(const base::Feature& feature,
+                                      const std::string& param_name,
+                                      const std::string& param_value,
+                                      base::CommandLine* command_line);
 
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run

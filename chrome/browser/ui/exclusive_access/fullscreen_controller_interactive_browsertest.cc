@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,7 +20,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -82,18 +81,15 @@ class ParamaterizedFullscreenControllerInteractiveTest
     : public FullscreenControllerInteractiveTest,
       public ::testing::WithParamInterface<int> {
  public:
-  ParamaterizedFullscreenControllerInteractiveTest() {}
-
-  // content::BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
+  ParamaterizedFullscreenControllerInteractiveTest() {
     switch (GetParam()) {
       case PROMPTING:
-        command_line->AppendSwitchASCII(switches::kDisableFeatures,
-                                        features::kSimplifiedFullscreenUI.name);
+        scoped_feature_list_.InitAndDisableFeature(
+            features::kSimplifiedFullscreenUI);
         break;
       case SIMPLIFIED:
-        command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                        features::kSimplifiedFullscreenUI.name);
+        scoped_feature_list_.InitAndEnableFeature(
+            features::kSimplifiedFullscreenUI);
         break;
       default:
         NOTREACHED();
@@ -101,6 +97,8 @@ class ParamaterizedFullscreenControllerInteractiveTest
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(ParamaterizedFullscreenControllerInteractiveTest);
 };
 

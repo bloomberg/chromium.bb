@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "base/base_switches.h"
-#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -22,7 +22,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/test_launcher_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
@@ -305,6 +304,13 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
     : public EncryptedMediaSupportedTypesTest {
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
  protected:
+  EncryptedMediaSupportedTypesExternalClearKeyTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        media::kExternalClearKeyForTesting);
+  }
+
+  ~EncryptedMediaSupportedTypesExternalClearKeyTest() override {}
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
     // TODO(crbug.com/764143): Replace RegisterPepperCdm() with
@@ -314,10 +320,13 @@ class EncryptedMediaSupportedTypesExternalClearKeyTest
                       media::kClearKeyCdmAdapterFileName,
                       media::kClearKeyCdmDisplayName,
                       media::kClearKeyCdmPepperMimeType);
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    media::kExternalClearKeyForTesting.name);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
+
+  DISALLOW_COPY_AND_ASSIGN(EncryptedMediaSupportedTypesExternalClearKeyTest);
 };
 
 // By default, the External Clear Key (ECK) key system is not supported even if
@@ -357,15 +366,27 @@ class EncryptedMediaSupportedTypesWidevineTest
 class EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest
     : public EncryptedMediaSupportedTypesTest {
  protected:
+  EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        media::kExternalClearKeyForTesting);
+  }
+
+  ~EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest()
+      override {}
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaSupportedTypesTest::SetUpCommandLine(command_line);
     RegisterPepperCdm(command_line, media::kClearKeyCdmBaseDirectory,
                       "clearkeycdmadapterwrongname.dll",
                       media::kClearKeyCdmDisplayName,
                       media::kClearKeyCdmPepperMimeType, false);
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    media::kExternalClearKeyForTesting.name);
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      EncryptedMediaSupportedTypesClearKeyCDMRegisteredWithWrongPathTest);
 };
 
 // Registers Widevine CDM with the wrong path (filename).

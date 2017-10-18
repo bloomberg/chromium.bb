@@ -4,7 +4,6 @@
 
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -12,6 +11,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/subresource_filter/subresource_filter_browser_test_harness.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -19,7 +19,6 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -36,29 +35,25 @@ class SubresourceFilterWorkerFetchBrowserTest
     : public SubresourceFilterBrowserTest,
       public ::testing::WithParamInterface<OffMainThreadFetchPolicy> {
  public:
-  SubresourceFilterWorkerFetchBrowserTest() {}
+  SubresourceFilterWorkerFetchBrowserTest() {
+    if (GetParam() == OffMainThreadFetchPolicy::kEnabled) {
+      scoped_feature_list_.InitAndEnableFeature(features::kOffMainThreadFetch);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(features::kOffMainThreadFetch);
+    }
+  }
+
   ~SubresourceFilterWorkerFetchBrowserTest() override {}
 
  protected:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    std::vector<base::StringPiece> features =
-        SubresourceFilterBrowserTest::RequiredFeatures();
-    if (GetParam() == OffMainThreadFetchPolicy::kEnabled) {
-      features.push_back(features::kOffMainThreadFetch.name);
-    } else {
-      command_line->AppendSwitchASCII(switches::kDisableFeatures,
-                                      features::kOffMainThreadFetch.name);
-    }
-    command_line->AppendSwitchASCII(switches::kEnableFeatures,
-                                    base::JoinString(features, ","));
-  }
-
   void ClearTitle() {
     ASSERT_TRUE(content::ExecuteScript(web_contents()->GetMainFrame(),
                                        "document.title = \"\";"));
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterWorkerFetchBrowserTest);
 };
 
