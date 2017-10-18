@@ -262,7 +262,7 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns whether the new experimental flow and UI is enabled.
   static bool IsExperimentalAppBannersEnabled();
 
-  // Voids all outstanding weak pointers and service pointers.
+  // Voids all outstanding service pointers.
   void ResetBindings();
 
   // Record that the banner could be shown at this point, if the triggering
@@ -276,8 +276,8 @@ class AppBannerManager : public content::WebContentsObserver,
   // Called after the manager sends a message to the renderer regarding its
   // intention to show a prompt. The renderer will send a message back with the
   // opportunity to cancel.
-  void OnBannerPromptReply(blink::mojom::AppBannerPromptReply reply,
-                           const std::string& referrer);
+  virtual void OnBannerPromptReply(blink::mojom::AppBannerPromptReply reply,
+                                   const std::string& referrer);
 
   // Does the non-platform specific parts of showing the app banner.
   void ShowBanner();
