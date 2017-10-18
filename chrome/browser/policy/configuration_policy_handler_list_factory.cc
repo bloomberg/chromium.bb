@@ -283,6 +283,11 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kAllowCrossOriginAuthPrompt,
     prefs::kAllowCrossOriginAuthPrompt,
     base::Value::Type::BOOLEAN },
+#if defined(OS_POSIX)
+  { key::kNtlmV2Enabled,
+    prefs::kNtlmV2Enabled,
+    base::Value::Type::BOOLEAN },
+#endif  // defined(OS_POSIX)
   { key::kDisable3DAPIs,
     prefs::kDisable3DAPIs,
     base::Value::Type::BOOLEAN },

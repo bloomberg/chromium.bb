@@ -318,6 +318,12 @@ const base::Feature kNativeNotifications{"NativeNotifications",
 const base::Feature kNetworkPrediction{"NetworkPrediction",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
+#if defined(OS_POSIX)
+// Enables NTLMv2, which implicitly disables NTLMv1.
+const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 // If enabled, the list of content suggestions on the New Tab page will contain
 // pages that the user downloaded for later use.
 // DO NOT check directly whether this feature is enabled (i.e. do not use

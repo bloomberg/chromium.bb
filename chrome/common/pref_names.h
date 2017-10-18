@@ -684,6 +684,10 @@ extern const char kGSSAPILibraryName[];
 extern const char kAuthAndroidNegotiateAccountType[];
 extern const char kAllowCrossOriginAuthPrompt[];
 
+#if defined(OS_POSIX)
+extern const char kNtlmV2Enabled[];
+#endif  // defined(OS_POSIX)
+
 extern const char kBuiltInDnsClientEnabled[];
 
 extern const char kRegisteredProtocolHandlers[];

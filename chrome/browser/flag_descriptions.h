@@ -535,6 +535,11 @@ extern const char kNostatePrefetchDescription[];
 extern const char kNotificationsNativeFlagName[];
 extern const char kNotificationsNativeFlagDescription[];
 
+#if defined(OS_POSIX)
+extern const char kNtlmV2EnabledName[];
+extern const char kNtlmV2EnabledDescription[];
+#endif
+
 extern const char kNumRasterThreadsName[];
 extern const char kNumRasterThreadsDescription[];
 extern const char kNumRasterThreadsOne[];

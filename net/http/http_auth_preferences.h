@@ -38,6 +38,9 @@ class NET_EXPORT HttpAuthPreferences {
   virtual bool IsSupportedScheme(const std::string& scheme) const;
   virtual bool NegotiateDisableCnameLookup() const;
   virtual bool NegotiateEnablePort() const;
+#if defined(OS_POSIX)
+  virtual bool NtlmV2Enabled() const;
+#endif
 #if defined(OS_ANDROID)
   virtual std::string AuthAndroidNegotiateAccountType() const;
 #endif
@@ -58,6 +61,12 @@ class NET_EXPORT HttpAuthPreferences {
     negotiate_enable_port_ = negotiate_enable_port;
   }
 
+#if defined(OS_POSIX)
+  void set_ntlm_v2_enabled(bool ntlm_v2_enabled) {
+    ntlm_v2_enabled_ = ntlm_v2_enabled;
+  }
+#endif
+
   void set_server_whitelist(const std::string& server_whitelist);
 
   void set_delegate_whitelist(const std::string& delegate_whitelist);
@@ -75,6 +84,10 @@ class NET_EXPORT HttpAuthPreferences {
   const std::set<std::string> auth_schemes_;
   bool negotiate_disable_cname_lookup_;
   bool negotiate_enable_port_;
+
+#if defined(OS_POSIX)
+  bool ntlm_v2_enabled_;
+#endif
 
 #if defined(OS_ANDROID)
   std::string auth_android_negotiate_account_type_;

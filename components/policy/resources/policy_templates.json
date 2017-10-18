@@ -143,7 +143,7 @@
 #   persistent IDs for all fields (but not for groups!) are needed. These are
 #   specified by the 'id' keys of each policy. NEVER CHANGE EXISTING IDs,
 #   because doing so would break the deployed wire format!
-#   For your editing convenience: highest ID currently used: 392
+#   For your editing convenience: highest ID currently used: 393
 #   And don't forget to also update the EnterprisePolicies enum of
 #   histograms.xml (run 'python tools/metrics/histograms/update_policies.py').
 #
@@ -2326,6 +2326,25 @@
           'desc': '''Controls whether third-party sub-content on a page is allowed to pop-up an HTTP Basic Auth dialog box.
 
           Typically this is disabled as a phishing defense. If this policy is not set, this is disabled and third-party sub-content will not be allowed to pop up a HTTP Basic Auth dialog box.''',
+        },
+        {
+          'name': 'NtlmV2Enabled',
+          'type': 'main',
+          'schema': { 'type': 'boolean' },
+          'supported_on': ['chrome.linux:63-','chrome.mac:63-','chrome_os:63-','android:63-','webview_android:63-'],
+          'features': {
+            'dynamic_refresh': True,
+            'per_profile': False,
+          },
+          'example_value': True,
+          'id': 393,
+          'caption': '''Whether NTLMv2 authentication is enabled.''',
+          'tags': ['website-sharing'],
+          'desc': '''Controls whether NTLMv2 is enabled.
+
+          All recent versions of Samba and Windows servers support NTLMv2. This should only be disabled for backwards compatability and reduces the security of authentication.
+
+          The default value when this policy is not defined is currently false for backwards compatability, but will change to true in the future.''',
         },
       ],
     },
