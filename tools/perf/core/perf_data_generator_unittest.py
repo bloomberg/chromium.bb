@@ -334,3 +334,13 @@ class PerfDataGeneratorTest(unittest.TestCase):
     self.assertFalse(
         perf_data_generator.ShouldBenchmarksBeScheduled(
             RegularBenchmark, 'bot_name', 'mac', None))
+
+  def testListsAlphabetical(self):
+    keys = [
+        'BENCHMARKS_TO_UPLOAD_TO_FLAKINESS_DASHBOARD',
+        'BENCHMARK_REF_BUILD_BLACKLIST',
+        'SVELTE_DEVICE_LIST'
+    ]
+    for key in keys:
+      lst = getattr(perf_data_generator, key)
+      self.assertEqual(sorted(lst), lst, 'please sort %s' % key)
