@@ -44,7 +44,7 @@ Section Headers:
   [10] .rel.plt          REL             0029fbec 29fbec 000b00 08   A  3   0  4
   [11] .plt              PROGBITS        002a06ec 2a06ec 001094 00  AX  0   0  4
   [12] .text             PROGBITS       002a1780 2a1780 223cd28 00  AX  0   0 64
-  [13] .rodata           PROGBITS      02605000 2605000 5a72e4 00   A  0   0 256
+  [13] .rodata           PROGBITS      0266e5f0 000084 5a72e4 00   A  0   0 256
   [14] .ARM.exidx        ARM_EXIDX      02bd3d10 2bd3d10 1771c8 08  AL 12   0  4
   [15] .ARM.extab        PROGBITS       02bd5858 2bd5858 02cd50 00   A  0   0  4
   [16] .data.rel.ro.local PROGBITS      02bdac40 2bd9c40 0c0e08 00  WA  0   0 16
@@ -77,9 +77,161 @@ Displaying notes found at file offset 0x226c41e8 with length 0x0000001c:
   GNU                   0x00000009\tNT_GNU_GOLD_VERSION (gold version)
 """
 
+_OBJECT_OUTPUTS = {
+    'obj/third_party/icu/icuuc/ucnv_ext.o': """\
+There are 71 section headers, starting at offset 0x3114:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .strtab           STRTAB          00000000 0029ac 000765 00      0   0  1
+  [ 2] .text             PROGBITS        00000000 000034 000000 00  AX  0   0  4
+  [ 3] .text.ucnv_extIni PROGBITS        00000000 000034 0000c6 00  AX  0   0  2
+  [ 4] .rel.text.ucnv_ex REL             00000000 0023f4 000010 08     70   3  4
+  [ 5] .ARM.exidx.text.u ARM_EXIDX       00000000 0000fc 000008 00  AL  3   0  4
+  [60] .rodata.str1.1    PROGBITS        00000000 000015 000015 01 AMS  0   0  1
+  [56] .debug_str        PROGBITS        00000000 000c50 0003c5 01  MS  0   0  1
+  [57] .debug_abbrev     PROGBITS        00000000 001015 0000a1 00      0   0  1
+  [58] .debug_info       PROGBITS        00000000 0010b6 000151 00      0   0  1
+  [59] .rel.debug_info   REL             00000000 002544 0001e8 08     70  58  4
+  [60] .debug_ranges     PROGBITS        00000000 001207 0000b0 00      0   0  1
+  [61] .rel.debug_ranges REL             00000000 00272c 000130 08     70  60  4
+  [62] .debug_macinfo    PROGBITS        00000000 0012b7 000001 00      0   0  1
+  [63] .comment          PROGBITS        00000000 0012b8 000024 01  MS  0   0  1
+  [64] .note.GNU-stack   PROGBITS        00000000 0012dc 000000 00      0   0  1
+  [65] .ARM.attributes   ARM_ATTRIBUTES  00000000 0012dc 00003c 00      0   0  1
+  [66] .debug_frame      PROGBITS        00000000 001318 0001e4 00      0   0  4
+  [67] .rel.debug_frame  REL             00000000 00285c 0000e0 08     70  66  4
+  [68] .debug_line       PROGBITS        00000000 0014fc 000965 00      0   0  1
+  [69] .rel.debug_line   REL             00000000 00293c 000070 08     70  68  4
+  [70] .symtab           SYMTAB          00000000 001e64 000590 10      1  74  4
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+""",
+    'obj/third_party/WebKit.a': """\
+
+File: obj/third_party/WebKit.a(PaintChunker.o)
+There are 68 section headers, starting at offset 0x5650:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+File: obj/third_party/WebKit.a(ContiguousContainer.o)
+There are 68 section headers, starting at offset 0x5650:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+""",
+    'obj/base/base/page_allocator.o': """\
+There are 68 section headers, starting at offset 0x5650:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+  [ 1] .rodata.str1.1    PROGBITS        00000000 000015 000005 01 AMS  0   0  1
+""",
+    'obj/third_party/ffmpeg/libffmpeg_internal.a': """\
+
+File: obj/third_party/ffmpeg/libffmpeg_internal.a(fft_float.o)
+There are 68 section headers, starting at offset 0x5650:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+File: obj/third_party/ffmpeg/libffmpeg_internal.a(fft_fixed.o)
+There are 68 section headers, starting at offset 0x5650:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+""",
+    '../../third_party/gvr-android-sdk/libgvr_shim_static_arm.a': """\
+
+File: ../../third_party/gvr-android-sdk/libgvr_shim_static_arm.a(\
+libcontroller_api_impl.a_controller_api_impl.o)
+There are 68 section headers, starting at offset 0x5650:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+
+File: ../../third_party/gvr-android-sdk/libgvr_shim_static_arm.a(\
+libport_android_jni.a_jni_utils.o)
+There are 68 section headers, starting at offset 0x5650:
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+
+Section Headers:
+  [Nr] Name              Type            Addr     Off    Size   ES Flg Lk Inf Al
+  [ 0]                   NULL            00000000 000000 000000 00      0   0  0
+Key to Flags:
+  W (write), A (alloc), X (execute), M (merge), S (strings)
+  I (info), L (link order), G (group), T (TLS), E (exclude), x (unknown)
+  O (extra OS processing required) o (OS specific), p (processor specific)
+""",
+}
+
+def _PrintHeader(path):
+  sys.stdout.write('\n')
+  sys.stdout.write('File: ' + path + '\n')
+
+
+def _PrintOutput(path):
+  payload = _OBJECT_OUTPUTS.get(path)
+  assert payload, 'No mock_nm.py entry for: ' + path
+  sys.stdout.write(payload)
+  sys.stdout.write('\n')
+
 
 def main():
-  if sys.argv[1] == '-h':
+  paths = [p for p in sys.argv[1:] if not p.startswith('-')]
+  if paths[0].endswith('.o') or paths[0].endswith('.a'):
+    if len(paths) > 1:
+      for path in paths:
+        _PrintHeader(path)
+        _PrintOutput(path)
+    else:
+      _PrintOutput(paths[0])
+  elif sys.argv[1] == '-h':
     sys.stdout.write(_HEADERS)
   elif sys.argv[1] == '-S':
     sys.stdout.write(_SECTIONS)

@@ -29,6 +29,8 @@ _OBJECT_OUTPUTS = {
         '01010101 t _GLOBAL__sub_I_SkDeviceProfile.cpp',
         '01010101 t foo_bar',
         '002a0000 t BazAlias(bool)',
+        '00000000 r .L.str',
+        '00000005 r .L.str.1',
         '01010101 r vtable for ChromeMainDelegate',
         '01010101 r vtable for chrome::mojom::FieldTrialRecorder',
         ('01010101 t ucnv_extMatchFromU(int const*, int, unsigned short const*,'
@@ -63,6 +65,7 @@ _OBJECT_OUTPUTS = {
         '01010101 t _GLOBAL__sub_I_bbr_sender.cc',
         '01010101 t _GLOBAL__sub_I_pacing_sender.cc',
         '01010101 t _GLOBAL__sub_I_bbr_sender.cc',
+        '00000000 r .L.str',
         '01010101 t extFromUUseMapping(aj, int)',
         '01010101 t extFromUUseMapping(signed char, unsigned int, int)',
         '01010101 t Name',

@@ -4,19 +4,24 @@ Section .text: has 100.0% of 35900712 bytes accounted for from 15 symbols. 0 byt
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .rodata: has 100.0% of 5927652 bytes accounted for from 10 symbols. 0 bytes are unaccounted for.
-* Padding accounts for 11 bytes (0.0%)
-* 5 placeholders (symbols that start with **) account for 5927509 bytes (100.0%)
+* Padding accounts for 675996 bytes (11.4%)
+* 5 placeholders (symbols that start with **) account for 5251524 bytes (88.6%)
+* Contains 0 string literals. Total size=0, padding=0
+* Contains 0 aliases
 * 0 symbols have shared ownership
 Section .data.rel.ro: has 100.0% of 1065224 bytes accounted for from 4 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 1 placeholders (symbols that start with **) account for 1065132 bytes (100.0%)
+* Contains 0 aliases
 * 0 symbols have shared ownership
 Section .data: has 100.0% of 101768 bytes accounted for from 6 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 0 bytes (0.0%)
 * 1 placeholders (symbols that start with **) account for 101600 bytes (99.8%)
+* Contains 0 aliases
 * 0 symbols have shared ownership
 Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 bytes are unaccounted for.
 * Padding accounts for 196 bytes (0.0%)
+* Contains 0 aliases
 * 0 symbols have shared ownership
 .text@28d900(size_without_padding=16,padding=0,full_name=_GLOBAL__sub_I_page_allocator.cc,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={startup},num_aliases=1)
 .text@28d910(size_without_padding=56,padding=0,full_name=_GLOBAL__sub_I_bbr_sender.cc,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={startup},num_aliases=1)
@@ -33,14 +38,14 @@ Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 byt
 .text@2a1000(size_without_padding=0,padding=4040,full_name=** symbol gap 1,object_path=,source_path=,flags={},num_aliases=1)
 .text@2a1000(size_without_padding=94,padding=0,full_name=blink::PaintChunker::releasePaintChunks(),object_path=third_party/WebKit.a/ContiguousContainer.o,source_path=third_party/container.c,flags={anon,clone},num_aliases=1)
 .text@24ca628(size_without_padding=0,padding=35821002,full_name=** symbol gap 2 (end of section),object_path=,source_path=,flags={},num_aliases=1)
-.rodata@266e600(size_without_padding=1961984,padding=0,full_name=** merge strings,object_path=,source_path=,flags={},num_aliases=1)
-.rodata@284d600(size_without_padding=3425,padding=0,full_name=** merge constants,object_path=,source_path=,flags={},num_aliases=1)
+.rodata@266e600(size_without_padding=32,padding=0,full_name=** merge strings,object_path=,source_path=,flags={},num_aliases=1)
+.rodata@266e630(size_without_padding=16,padding=16,full_name=** merge strings,object_path=,source_path=,flags={},num_aliases=1)
+.rodata@284d600(size_without_padding=3425,padding=1961920,full_name=** merge constants,object_path=,source_path=,flags={},num_aliases=1)
 .rodata@284e364(size_without_padding=0,padding=3,full_name=** symbol gap 0,object_path=,source_path=,flags={},num_aliases=1)
 .rodata@284e364(size_without_padding=8,padding=0,full_name=,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=1)
 .rodata@284e370(size_without_padding=40,padding=4,full_name=Name,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=1)
 .rodata@284e398(size_without_padding=32,padding=0,full_name=chrome::mojom::FilePatcher::Name_,object_path=third_party/WebKit.a/ContiguousContainer.o,source_path=third_party/container.c,flags={},num_aliases=1)
-.rodata@284e518(size_without_padding=675633,padding=352,full_name=** merge strings,object_path=,source_path=,flags={},num_aliases=1)
-.rodata@28f3450(size_without_padding=48,padding=7,full_name=kAnimationFrameTimeHistogramClassPath,object_path=third_party/WebKit.a/PaintChunker.o,source_path=third_party/paint.cc,flags={anon},num_aliases=1)
+.rodata@28f3450(size_without_padding=48,padding=675992,full_name=kAnimationFrameTimeHistogramClassPath,object_path=third_party/WebKit.a/PaintChunker.o,source_path=third_party/paint.cc,flags={anon},num_aliases=1)
 .rodata@28f3480(size_without_padding=4,padding=0,full_name=blink::CSSValueKeywordsHash::findValueImpl(char const*, unsigned int)::value_word_list,object_path=third_party/WebKit.a/PaintChunker.o,source_path=third_party/paint.cc,flags={anon},num_aliases=1)
 .rodata@2c158e4(size_without_padding=0,padding=3286112,full_name=** symbol gap 1 (end of section),object_path=,source_path=,flags={},num_aliases=1)
 .data.rel.ro.local@2c176f0(size_without_padding=56,padding=0,full_name=ChromeMainDelegate [vtable],object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1)

@@ -9,6 +9,7 @@ import calendar
 import collections
 import datetime
 import gzip
+import itertools
 import logging
 import os
 import posixpath
@@ -289,6 +290,80 @@ def _DiscoverMissedObjectPaths(raw_symbols, elf_object_paths):
   return missed_inputs
 
 
+def _CreateMergeStringsReplacements(merge_string_syms,
+                                    list_of_positions_by_object_path,
+                                    source_mapper):
+  """Creates replacement symbols for |merge_syms|."""
+  ret = []
+  NAME_PREFIX = models.STRING_LITERAL_NAME_PREFIX
+  assert len(merge_string_syms) == len(list_of_positions_by_object_path)
+  tups = itertools.izip((str(x) for x in xrange(len(merge_string_syms))),
+                        merge_string_syms,
+                        list_of_positions_by_object_path)
+  for name_suffix, merge_sym, positions_by_object_path in tups:
+    merge_sym_address = merge_sym.address
+    new_symbols = []
+    ret.append(new_symbols)
+    for object_path, positions in positions_by_object_path.iteritems():
+      for offset, size in positions:
+        address = merge_sym_address + offset
+        symbol = models.Symbol('.rodata', size, address,
+                               NAME_PREFIX + name_suffix,
+                               object_path=_NormalizeObjectPath(object_path))
+        if source_mapper:
+          symbol.generated_source, symbol.source_path = (
+              _SourcePathForObjectPath(object_path, source_mapper))
+        new_symbols.append(symbol)
+
+  logging.debug('Created %d string literal symbols', sum(len(x) for x in ret))
+  logging.debug('Sorting string literals')
+  for symbols in ret:
+    symbols.sort(key=lambda x: x.address)
+
+  logging.debug('Deduping string literals')
+  num_removed = 0
+  size_removed = 0
+  num_aliases = 0
+  for i, symbols in enumerate(ret):
+    if not symbols:
+      continue
+    prev_symbol = symbols[0]
+    new_symbols = [prev_symbol]
+    for symbol in symbols[1:]:
+      padding = symbol.address - prev_symbol.end_address
+      if (prev_symbol.address == symbol.address and
+          prev_symbol.size == symbol.size):
+        # String is an alias.
+        num_aliases += 1
+        aliases = prev_symbol.aliases
+        if aliases:
+          aliases.append(symbol)
+          symbol.aliases = aliases
+        else:
+          aliases = [prev_symbol, symbol]
+          prev_symbol.aliases = aliases
+          symbol.aliases = aliases
+      elif padding + symbol.size <= 0:
+        # String is a substring of prior one.
+        num_removed += 1
+        size_removed += symbol.size
+        continue
+      elif padding < 0:
+        # String overlaps previous one. Adjust to not overlap.
+        symbol.address -= padding
+        symbol.size += padding
+      new_symbols.append(symbol)
+      prev_symbol = symbol
+    ret[i] = new_symbols
+    # Aliases come out in random order, so sort to be deterministic.
+    ret[i].sort(key=lambda s: (s.address, s.object_path))
+
+  logging.debug(
+      'Removed %d overlapping string literals (%d bytes) & created %d aliases',
+                num_removed, size_removed, num_aliases)
+  return ret
+
+
 def _CalculatePadding(raw_symbols):
   """Populates the |padding| field based on symbol addresses.
 
@@ -319,9 +394,10 @@ def _CalculatePadding(raw_symbols):
     # E.g.: Set them to 0 and see what warnings get logged, then take max value.
     # TODO(agrieve): See if these thresholds make sense for architectures
     #     other than arm32.
-    if not symbol.full_name.startswith('*') and (
+    if (not symbol.full_name.startswith('*') and
+        not symbol.full_name.startswith(models.STRING_LITERAL_NAME_PREFIX) and (
         symbol.section in 'rd' and padding >= 256 or
-        symbol.section in 't' and padding >= 64):
+        symbol.section in 't' and padding >= 64)):
       # Should not happen.
       logging.warning('Large padding of %d between:\n  A) %r\n  B) %r' % (
                       padding, prev_symbol, symbol))
@@ -431,7 +507,7 @@ def CreateMetadata(map_path, elf_path, apk_path, tool_prefix, output_directory):
 
 
 def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
-                   normalize_names=True):
+                   normalize_names=True, track_string_literals=True):
   """Creates a SizeInfo.
 
   Args:
@@ -441,6 +517,9 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     tool_prefix: Prefix for c++filt & nm (required).
     output_directory: Build output directory. If None, source_paths and symbol
         alias information will not be recorded.
+    normalize_names: Whether to normalize symbol names.
+    track_string_literals: Whether to break down "** merge string" sections into
+        smaller symbols (requires output_directory).
   """
   source_mapper = None
   if output_directory:
@@ -493,7 +572,14 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     missed_object_paths = _DiscoverMissedObjectPaths(
         raw_symbols, elf_object_paths)
     bulk_analyzer.AnalyzePaths(missed_object_paths)
-    bulk_analyzer.Close()
+    if track_string_literals:
+      merge_string_syms = [
+          s for s in raw_symbols if s.full_name == '** merge strings']
+      # More likely for there to be a bug in supersize than an ELF to not have a
+      # single string literal.
+      assert merge_string_syms
+      string_positions = [(s.address, s.size) for s in merge_string_syms]
+      bulk_analyzer.AnalyzeStringLiterals(elf_path, string_positions)
 
   if source_mapper:
     logging.info('Looking up source paths from ninja files')
@@ -515,16 +601,33 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     _AddSymbolAliases(raw_symbols, aliases_by_address)
 
     if output_directory:
-      # For aliases, this provides path information where there wasn't any.
-      logging.info('Computing ancestor paths for inline functions and '
-                   'normalizing object paths')
-
-      object_paths_by_name = bulk_analyzer.Get()
+      object_paths_by_name = bulk_analyzer.GetSymbolNames()
       logging.debug('Fetched path information for %d symbols from %d files',
                     len(object_paths_by_name),
                     len(elf_object_paths) + len(missed_object_paths))
+
+      # For aliases, this provides path information where there wasn't any.
+      logging.info('Computing ancestor paths for inline functions and '
+                   'normalizing object paths')
       _ComputeAncestorPathsAndNormalizeObjectPaths(
           raw_symbols, object_paths_by_name, source_mapper)
+
+      if track_string_literals:
+        logging.info('Waiting for string literal extraction to complete.')
+        list_of_positions_by_object_path = bulk_analyzer.GetStringPositions()
+      bulk_analyzer.Close()
+
+      if track_string_literals:
+        logging.info('Deconstructing ** merge strings into literals')
+        replacements = _CreateMergeStringsReplacements(merge_string_syms,
+            list_of_positions_by_object_path, source_mapper)
+        for merge_sym, literal_syms in itertools.izip(
+            merge_string_syms, replacements):
+          # Don't replace if no literals were found.
+          if literal_syms:
+            # Re-find the symbols since aliases cause their indices to change.
+            idx = raw_symbols.index(merge_sym)
+            raw_symbols[idx:idx + 1] = literal_syms
 
   if not elf_path or not output_directory:
     logging.info('Normalizing object paths.')
@@ -640,6 +743,10 @@ def AddArguments(parser):
                       help='Path prefix for c++filt, nm, readelf.')
   parser.add_argument('--output-directory',
                       help='Path to the root build directory.')
+  parser.add_argument('--no-string-literals', dest='track_string_literals',
+                      default=True, action='store_false',
+                      help='Disable breaking down "** merge strings" into more '
+                           'granular symbols.')
 
 
 def Run(args, parser):
@@ -695,7 +802,8 @@ def Run(args, parser):
         _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
 
   size_info = CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
-                             normalize_names=False)
+                             normalize_names=False,
+                             track_string_literals=args.track_string_literals)
 
   if metadata:
     size_info.metadata = metadata
@@ -728,4 +836,4 @@ def Run(args, parser):
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
   logging.info('Saving result to %s', args.size_file)
   file_format.SaveSizeInfo(size_info, args.size_file)
-  logging.info('Done')
+  logging.info('Done. File size is %d bytes.', os.path.getsize(args.size_file))

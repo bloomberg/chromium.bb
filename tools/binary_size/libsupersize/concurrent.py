@@ -6,6 +6,7 @@
 
 import __builtin__  # __builtins__ does not have exception types.
 import atexit
+import itertools
 import logging
 import multiprocessing
 import multiprocessing.dummy
@@ -215,7 +216,12 @@ def CallOnThread(func, *args, **kwargs):
 
 
 def EncodeDictOfLists(d, key_transform=None):
-  """Serializes a dict where values are lists of strings."""
+  """Serializes a dict where values are lists of strings.
+
+  Does not support '' as keys, nor [''] as values.
+  """
+  assert '' not in d
+  assert [''] not in d.itervalues()
   keys = iter(d)
   if key_transform:
     keys = (key_transform(k) for k in keys)
@@ -225,11 +231,13 @@ def EncodeDictOfLists(d, key_transform=None):
 
 
 def JoinEncodedDictOfLists(encoded_values):
+  assert isinstance(encoded_values, list), 'Does not work with generators'
   return ('\x01'.join(x[0] for x in encoded_values if x[0]),
           '\x01'.join(x[1] for x in encoded_values if x[1]))
 
 
-def DecodeDictOfLists(encoded_keys_and_values, key_transform=None):
+def DecodeDictOfLists(encoded_keys_and_values, key_transform=None,
+                      value_transform=None):
   """Deserializes a dict where values are lists of strings."""
   encoded_keys, encoded_values = encoded_keys_and_values
   if not encoded_keys:
@@ -237,8 +245,18 @@ def DecodeDictOfLists(encoded_keys_and_values, key_transform=None):
   keys = encoded_keys.split('\x01')
   if key_transform:
     keys = (key_transform(k) for k in keys)
-  values = encoded_values.split('\x01')
+  encoded_lists = encoded_values.split('\x01')
   ret = {}
-  for i, key in enumerate(keys):
-    ret[key] = values[i].split('\x02')
+  for key, encoded_list in itertools.izip(keys, encoded_lists):
+    if not encoded_list:
+      values = []
+    else:
+      values = encoded_list.split('\x02')
+      if value_transform:
+        for i in xrange(len(values)):
+          values[i] = value_transform(values[i])
+    ret[key] = values
   return ret
+
+
+EMPTY_ENCODED_DICT = EncodeDictOfLists({})

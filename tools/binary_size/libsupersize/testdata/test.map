@@ -113,7 +113,9 @@ Memory map
 
 .rodata         0x0266e600   0x5a72e4
  ** merge strings
-                0x0266e600   0x1df000
+                0x0266e600   0x20
+ ** merge strings
+                0x0266e630   0x10
  ** merge constants
                 0x0284d600      0xd61
  .rodata        0x0284e364        0x8 obj/base/base/page_allocator.o
@@ -123,8 +125,6 @@ Memory map
  .rodata._ZN6chrome5mojom11FilePatcher5Name_E
                 0x0284e398       0x20 obj/third_party/WebKit.a(ContiguousContainer.o)
                 0x0284e398                chrome::mojom::FilePatcher::Name_
- ** merge strings
-                0x0284e518    0xa4f31
  .rodata._ZN12_GLOBAL__N_1L37kAnimationFrameTimeHistogramClassPathE
                 0x028f3450       0x30 obj/third_party/WebKit.a(PaintChunker.o)
  .rodata._ZZN5blink20CSSValueKeywordsHash13findValueImplEPKcjE15value_word_list

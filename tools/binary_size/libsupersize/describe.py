@@ -149,6 +149,10 @@ class Describer(object):
   def _DescribeSymbol(self, sym, single_line=False):
     pass
 
+  def _DescribeList(self, obj):
+    for i, x in enumerate(obj):
+      yield '{}: {!r}'.format(i, x)
+
   def GenerateLines(self, obj):
     if isinstance(obj, models.DeltaSizeInfo):
       return self._DescribeDeltaSizeInfo(obj)
@@ -158,8 +162,10 @@ class Describer(object):
       return self._DescribeDeltaSymbolGroup(obj)
     if isinstance(obj, models.SymbolGroup):
       return self._DescribeSymbolGroup(obj)
-    if isinstance(obj, models.Symbol) or isinstance(obj, models.DeltaSymbol):
+    if isinstance(obj, (models.Symbol, models.DeltaSymbol)):
       return self._DescribeSymbol(obj)
+    if isinstance(obj, list):
+      return self._DescribeList(obj)
     return (repr(obj),)
 
 
@@ -481,15 +487,22 @@ def DescribeSizeInfoCoverage(size_info):
           len(anonymous_syms), int(anonymous_syms.pss),
           _Divide(star_syms.size, in_section.size))
 
+    if section == 'r':
+      STRING_LITERAL = models.STRING_LITERAL_NAME_PREFIX
+      string_literals = in_section.Filter(
+          lambda s: s.full_name.startswith(STRING_LITERAL))
+      yield '* Contains {} string literals. Total size={}, padding={}'.format(
+          len(string_literals), string_literals.size_without_padding,
+          string_literals.padding)
+
     aliased_symbols = in_section.Filter(lambda s: s.aliases)
-    if section == 't':
-      if len(aliased_symbols):
-        uniques = sum(1 for s in aliased_symbols.IterUniqueSymbols())
-        yield ('* Contains {} aliases, mapped to {} unique addresses '
-               '({} bytes)').format(
-                   len(aliased_symbols), uniques, aliased_symbols.size)
-      else:
-        yield '* Contains 0 aliases'
+    if len(aliased_symbols):
+      uniques = sum(1 for s in aliased_symbols.IterUniqueSymbols())
+      yield ('* Contains {} aliases, mapped to {} unique addresses '
+             '({} bytes)').format(
+                 len(aliased_symbols), uniques, aliased_symbols.size)
+    else:
+      yield '* Contains 0 aliases'
 
     inlined_symbols = in_section.WhereObjectPathMatches('{shared}')
     if len(inlined_symbols):
