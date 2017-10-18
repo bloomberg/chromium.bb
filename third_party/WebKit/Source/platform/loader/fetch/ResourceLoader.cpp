@@ -742,6 +742,10 @@ void ResourceLoader::ActivateCacheAwareLoadingIfNeeded(
   if (request.GetCachePolicy() != WebCachePolicy::kUseProtocolCachePolicy)
     return;
 
+  // Don't activate if the page is controlled by service worker.
+  if (fetcher_->IsControlledByServiceWorker())
+    return;
+
   is_cache_aware_loading_activated_ = true;
 }
 
