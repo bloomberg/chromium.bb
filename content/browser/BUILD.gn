@@ -533,6 +533,8 @@ source_set("browser") {
     # needed on all platforms.
     "compositor/surface_utils.cc",
     "compositor/surface_utils.h",
+    "dedicated_worker/dedicated_worker_host.cc",
+    "dedicated_worker/dedicated_worker_host.h",
     "devtools/browser_devtools_agent_host.cc",
     "devtools/browser_devtools_agent_host.h",
     "devtools/devtools_agent_host_impl.cc",

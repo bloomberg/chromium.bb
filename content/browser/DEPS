@@ -87,6 +87,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h",
   "+third_party/WebKit/public/platform/WebTouchEvent.h",
   "+third_party/WebKit/public/platform/WebTextInputType.h",
+  "+third_party/WebKit/public/platform/dedicated_worker_factory.mojom.h",
   "+third_party/WebKit/public/platform/input_host.mojom.h",
   "+third_party/WebKit/public/platform/input_messages.mojom.h",
   "+third_party/WebKit/public/platform/mac/WebScrollbarTheme.h",
