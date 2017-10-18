@@ -47,6 +47,13 @@ class CORE_EXPORT NGPhysicalFragment
     // When adding new values, make sure the bit size of |type_| is large
     // enough to store.
   };
+  enum NGBoxType {
+    kNormalBox,
+    kInlineBlock,
+    kFloating,
+    kOutOfFlowPositioned,
+    kAnonymousBox
+  };
 
   ~NGPhysicalFragment();
 
@@ -58,6 +65,21 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsBox() const { return Type() == NGFragmentType::kFragmentBox; }
   bool IsText() const { return Type() == NGFragmentType::kFragmentText; }
   bool IsLineBox() const { return Type() == NGFragmentType::kFragmentLineBox; }
+
+  // Returns the box type of this fragment.
+  NGBoxType BoxType() const;
+  // An inline block is represented as a kFragmentBox.
+  // TODO(eae): This isn't true for replaces elements at the moment.
+  bool IsInlineBlock() const;
+  bool IsFloating() const;
+  bool IsOutOfFlowPositioned() const;
+  // A box fragment that do not exist in LayoutObject tree. Its LayoutObject is
+  // co-owned by other fragments.
+  bool IsAnonymousBox() const;
+  // A block sub-layout starts on this fragment. Inline blocks, floats, out of
+  // flow positioned objects are such examples. This may be false on NG/legacy
+  // boundary.
+  bool IsBlockLayoutRoot() const;
 
   // The accessors in this class shouldn't be used by layout code directly,
   // instead should be accessed by the NGFragmentBase classes. These accessors
