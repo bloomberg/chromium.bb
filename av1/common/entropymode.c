@@ -6367,6 +6367,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->delta_lf_prob, default_delta_lf_probs);
   av1_copy(fc->delta_lf_cdf, default_delta_lf_cdf);
 #if CONFIG_LOOPFILTER_LEVEL
+  av1_copy(fc->delta_lf_multi_prob, default_delta_lf_multi_probs);
   av1_copy(fc->delta_lf_multi_cdf, default_delta_lf_multi_cdf);
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #endif
@@ -6608,9 +6609,9 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
 #if CONFIG_EXT_DELTA_Q
 #if CONFIG_LOOPFILTER_LEVEL
   for (i = 0; i < FRAME_LF_COUNT; ++i)
-    for (int j = 0; j < DELTA_LF_PROBS; ++j)
-      fc->delta_lf_multi_prob[i][j] = mode_mv_merge_probs(
-          pre_fc->delta_lf_multi_prob[i][j], counts->delta_lf_multi[i][j]);
+    for (int k = 0; k < DELTA_LF_PROBS; ++k)
+      fc->delta_lf_multi_prob[i][k] = mode_mv_merge_probs(
+          pre_fc->delta_lf_multi_prob[i][k], counts->delta_lf_multi[i][k]);
 #endif  // CONFIG_LOOPFILTER_LEVEL
   for (i = 0; i < DELTA_LF_PROBS; ++i)
     fc->delta_lf_prob[i] =
