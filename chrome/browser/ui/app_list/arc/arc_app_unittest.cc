@@ -634,8 +634,8 @@ class ArcVoiceInteractionTest : public ArcPlayStoreAppTest {
   }
 
   void TearDown() override {
-    voice_service_.reset();
     ArcPlayStoreAppTest::TearDown();
+    voice_service_.reset();
   }
 
  protected:
