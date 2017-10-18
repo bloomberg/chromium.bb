@@ -355,7 +355,8 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
         this, is_emoji_enabled_, is_handwriting_enabled_, is_voice_enabled_));
   }
 
-  bubble_.reset(new TrayBubbleWrapper(this, bubble_view));
+  bubble_ = std::make_unique<TrayBubbleWrapper>(this, bubble_view,
+                                                false /* is_persistent */);
   SetIsActive(true);
 }
 

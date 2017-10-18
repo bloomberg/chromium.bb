@@ -4,17 +4,24 @@
 
 #include "ash/system/tray/tray_bubble_wrapper.h"
 
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "ash/system/tray/tray_background_view.h"
 #include "ash/system/tray/tray_event_filter.h"
+#include "ash/wm/container_finder.h"
+#include "ash/wm/widget_finder.h"
 #include "ui/aura/window.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
+#include "ui/wm/public/activation_client.h"
 
 namespace ash {
 
 TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
-                                     views::TrayBubbleView* bubble_view)
-    : tray_(tray), bubble_view_(bubble_view) {
+                                     views::TrayBubbleView* bubble_view,
+                                     bool is_persistent)
+    : tray_(tray), bubble_view_(bubble_view), is_persistent_(is_persistent) {
   bubble_widget_ = views::BubbleDialogDelegateView::CreateBubble(bubble_view_);
   bubble_widget_->AddObserver(this);
 
@@ -23,9 +30,15 @@ TrayBubbleWrapper::TrayBubbleWrapper(TrayBackgroundView* tray,
   bubble_view_->InitializeAndShowBubble();
 
   tray->tray_event_filter()->AddWrapper(this);
+
+  if (!is_persistent_)
+    Shell::Get()->activation_client()->AddObserver(this);
 }
 
 TrayBubbleWrapper::~TrayBubbleWrapper() {
+  if (!is_persistent_)
+    Shell::Get()->activation_client()->RemoveObserver(this);
+
   tray_->tray_event_filter()->RemoveWrapper(this);
   if (bubble_widget_) {
     bubble_widget_->RemoveObserver(this);
@@ -51,6 +64,34 @@ void TrayBubbleWrapper::OnWidgetBoundsChanged(views::Widget* widget,
                                               const gfx::Rect& new_bounds) {
   DCHECK_EQ(bubble_widget_, widget);
   tray_->BubbleResized(bubble_view_);
+}
+
+void TrayBubbleWrapper::OnWindowActivated(ActivationReason reason,
+                                          aura::Window* gained_active,
+                                          aura::Window* lost_active) {
+  if (!gained_active)
+    return;
+
+  int container_id = wm::GetContainerForWindow(gained_active)->id();
+
+  // Don't close the bubble if a popup notification is activated.
+  if (container_id == kShellWindowId_StatusContainer ||
+      container_id == kShellWindowId_SettingBubbleContainer) {
+    return;
+  }
+
+  views::Widget* bubble_widget = bubble_view()->GetWidget();
+  // Don't close the bubble if a transient child is gaining or losing
+  // activation.
+  if (bubble_widget == GetInternalWidgetForWindow(gained_active) ||
+      ::wm::HasTransientAncestor(gained_active,
+                                 bubble_widget->GetNativeWindow()) ||
+      (lost_active && ::wm::HasTransientAncestor(
+                          lost_active, bubble_widget->GetNativeWindow()))) {
+    return;
+  }
+
+  tray_->CloseBubble();
 }
 
 }  // namespace ash

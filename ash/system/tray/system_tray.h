@@ -152,7 +152,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
 
  private:
   friend class SystemTrayTestApi;
-  class ActivationObserver;
 
   // Activates the bubble and starts key navigation with the |key_event|.
   void ActivateAndStartNavigation(const ui::KeyEvent& key_event);
@@ -230,8 +229,6 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView {
   // A reference to the Screen share and capture item.
   ScreenTrayItem* screen_capture_tray_item_ = nullptr;  // not owned
   ScreenTrayItem* screen_share_tray_item_ = nullptr;    // not owned
-
-  std::unique_ptr<ActivationObserver> activation_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTray);
 };
