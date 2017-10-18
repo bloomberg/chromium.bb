@@ -1529,10 +1529,9 @@ void RenderWidgetHostViewAura::OnDeviceScaleFactorChanged(
   if (!window_->GetRootWindow())
     return;
 
-  RenderWidgetHostImpl* host =
-      RenderWidgetHostImpl::From(GetRenderWidgetHost());
-  if (host && host->delegate())
-    host->WasResized();
+  host_->WasResized();
+  if (delegated_frame_host_)
+    delegated_frame_host_->WasResized();
 
   device_scale_factor_ = new_device_scale_factor;
   const display::Display display =
