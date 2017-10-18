@@ -23797,6 +23797,7 @@ from previous Chrome versions.
   <int value="-1262152606" label="disable-lock-screen-apps"/>
   <int value="-1254070521" label="enable-slimming-paint-invalidation"/>
   <int value="-1251411236" label="disable-new-md-input-view"/>
+  <int value="-1248478422" label="enable-zip-archiver-packer"/>
   <int value="-1246840031" label="OptInImeMenu:disabled"/>
   <int value="-1241747717" label="enable-android-password-link"/>
   <int value="-1235586511" label="enable-datasaver-prompt"/>
@@ -23995,6 +23996,7 @@ from previous Chrome versions.
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-671992446" label="TranslateRankerEnforcement:disabled"/>
+  <int value="-670188266" label="enable-zip-archiver-unpacker"/>
   <int value="-667517406" label="overscroll-history-navigation"/>
   <int value="-666508951" label="CrOSContainer:enabled"/>
   <int value="-663476391" label="enable-pixel-canvas-recording:enabled"/>

@@ -18,6 +18,11 @@ function setUp() {
   // Behavior of window.chrome depends on each test case. window.chrome should
   // be initialized properly inside each test function.
   window.chrome = {
+    commandLinePrivate: {
+      hasSwitch: function(name, callback) {
+        callback(false);
+      }
+    },
     runtime: {id: 'test-extension-id', lastError: null},
 
     storage: {

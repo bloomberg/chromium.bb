@@ -2411,9 +2411,13 @@ const char kEnableTabletSplitViewName[] = "Split view in Tablet mode";
 const char kEnableTabletSplitViewDescription[] =
     "Enable split view for Chrome OS tablet mode.";
 
-const char kEnableZipArchiverOnFileManagerName[] = "ZIP archiver for Drive";
-const char kEnableZipArchiverOnFileManagerDescription[] =
-    "Enable the ability to archive and unpack files on Drive in the Files app";
+const char kEnableZipArchiverPackerName[] = "ZIP archiver - Packer";
+const char kEnableZipArchiverPackerDescription[] =
+    "Enable the ability to archive files on Drive in the Files app";
+
+const char kEnableZipArchiverUnpackerName[] = "ZIP archiver - Unpacker";
+const char kEnableZipArchiverUnpackerDescription[] =
+    "Enable the ability to unpack archives in incognito mode";
 
 const char kEolNotificationName[] = "Disable Device End of Life notification.";
 const char kEolNotificationDescription[] =

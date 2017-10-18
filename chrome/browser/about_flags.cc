@@ -3100,10 +3100,17 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshDisableSmoothScreenRotationName,
      flag_descriptions::kAshDisableSmoothScreenRotationDescription, kOsCrOS,
      SINGLE_DISABLE_VALUE_TYPE(ash::switches::kAshDisableSmoothScreenRotation)},
-    {"enable-zip-archiver-on-file-manager",
-     flag_descriptions::kEnableZipArchiverOnFileManagerName,
-     flag_descriptions::kEnableZipArchiverOnFileManagerDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kEnableZipArchiverOnFileManager)},
+#endif  // OS_CHROMEOS
+
+#if defined(OS_CHROMEOS)
+    {"enable-zip-archiver-packer",
+     flag_descriptions::kEnableZipArchiverPackerName,
+     flag_descriptions::kEnableZipArchiverPackerDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableZipArchiverPacker)},
+    {"enable-zip-archiver-unpacker",
+     flag_descriptions::kEnableZipArchiverUnpackerName,
+     flag_descriptions::kEnableZipArchiverUnpackerDescription, kOsCrOS,
+     SINGLE_VALUE_TYPE(chromeos::switches::kEnableZipArchiverUnpacker)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)
