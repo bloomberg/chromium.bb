@@ -161,7 +161,7 @@ function checkExpectedValues(t, node, prefix)
     return output.checked;
 }
 
-window.checkLayout = function(selectorList, outputContainer)
+window.checkLayout = function(selectorList)
 {
     if (!selectorList) {
         console.error("You must provide a CSS selector of nodes to check.");

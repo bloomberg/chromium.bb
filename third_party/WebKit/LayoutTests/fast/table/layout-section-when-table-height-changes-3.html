@@ -18,12 +18,11 @@ table {
     </tbody>
   </table>
 </div>
-<div id="results"></div>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/check-layout-th.js"></script>
 <script>
   document.body.offsetTop;
   document.getElementById("container").style.height = "200px";
-  checkLayout('#table', results);
+  checkLayout('#table');
 </script>
