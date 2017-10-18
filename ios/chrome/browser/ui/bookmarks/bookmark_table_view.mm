@@ -181,6 +181,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
           UIScrollViewContentInsetAdjustmentNever;
     }
     self.tableView.estimatedRowHeight = kCellHeightPt;
+    self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
     // Remove extra rows.
     self.tableView.tableFooterView = [[UIView alloc] initWithFrame:CGRectZero];
     self.tableView.autoresizingMask =
@@ -343,8 +344,6 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
 
 - (UITableViewCell*)tableView:(UITableView*)tableView
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
-  // TODO(crbug.com/695749): Introduce a custom separator for bookmarks
-  // section, so that we don't show a separator after promo section.
   if (indexPath.section == self.promoSection) {
     BookmarkTableSigninPromoCell* signinPromoCell = [self.tableView
         dequeueReusableCellWithIdentifier:[BookmarkTableSigninPromoCell
