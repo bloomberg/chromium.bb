@@ -28,8 +28,8 @@ class NetworkActivityIndicatorTabHelper
   NetworkActivityIndicatorTabHelper(web::WebState* web_state, NSString* tab_id);
 
   // web::WebStateObserver overrides:
-  void DidStartLoading() override;
-  void DidStopLoading() override;
+  void DidStartLoading(web::WebState* web_state) override;
+  void DidStopLoading(web::WebState* web_state) override;
 
   // Clears any network activity state associated with this activity.
   void Stop();

@@ -43,11 +43,9 @@ PrintTabHelper::PrintTabHelper(web::WebState* web_state,
       kPrintCommandPrefix);
 }
 
-void PrintTabHelper::WebStateDestroyed() {
+void PrintTabHelper::WebStateDestroyed(web::WebState* web_state) {
   // Stops handling print requests from the web page.
-  if (web_state()) {
-    web_state()->RemoveScriptCommandCallback(kPrintCommandPrefix);
-  }
+  web_state->RemoveScriptCommandCallback(kPrintCommandPrefix);
 }
 
 bool PrintTabHelper::OnPrintCommand(const base::DictionaryValue&,

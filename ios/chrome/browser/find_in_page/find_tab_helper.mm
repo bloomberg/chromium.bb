@@ -94,10 +94,11 @@ void FindTabHelper::RestoreSearchTerm() {
 }
 
 void FindTabHelper::NavigationItemCommitted(
+    web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {
   StopFinding(nil);
 }
 
-void FindTabHelper::WebStateDestroyed() {
+void FindTabHelper::WebStateDestroyed(web::WebState* web_state) {
   [controller_ detachFromWebState];
 }

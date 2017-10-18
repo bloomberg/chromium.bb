@@ -39,7 +39,7 @@ TestWebState::TestWebState()
 
 TestWebState::~TestWebState() {
   for (auto& observer : observers_)
-    observer.WebStateDestroyed();
+    observer.WebStateDestroyed(this);
   for (auto& observer : observers_)
     observer.ResetWebState();
 };
@@ -77,13 +77,13 @@ UIView* TestWebState::GetView() {
 void TestWebState::WasShown() {
   is_visible_ = true;
   for (auto& observer : observers_)
-    observer.WasShown();
+    observer.WasShown(this);
 }
 
 void TestWebState::WasHidden() {
   is_visible_ = false;
   for (auto& observer : observers_)
-    observer.WasHidden();
+    observer.WasHidden(this);
 }
 
 const NavigationManager* TestWebState::GetNavigationManager() const {
@@ -213,32 +213,32 @@ void TestWebState::SetLoading(bool is_loading) {
 
   if (is_loading) {
     for (auto& observer : observers_)
-      observer.DidStartLoading();
+      observer.DidStartLoading(this);
   } else {
     for (auto& observer : observers_)
-      observer.DidStopLoading();
+      observer.DidStopLoading(this);
   }
 }
 
 void TestWebState::OnPageLoaded(
     PageLoadCompletionStatus load_completion_status) {
   for (auto& observer : observers_)
-    observer.PageLoaded(load_completion_status);
+    observer.PageLoaded(this, load_completion_status);
 }
 
 void TestWebState::OnNavigationStarted(NavigationContext* navigation_context) {
   for (auto& observer : observers_)
-    observer.DidStartNavigation(navigation_context);
+    observer.DidStartNavigation(this, navigation_context);
 }
 
 void TestWebState::OnNavigationFinished(NavigationContext* navigation_context) {
   for (auto& observer : observers_)
-    observer.DidFinishNavigation(navigation_context);
+    observer.DidFinishNavigation(this, navigation_context);
 }
 
 void TestWebState::OnRenderProcessGone() {
   for (auto& observer : observers_)
-    observer.RenderProcessGone();
+    observer.RenderProcessGone(this);
 }
 
 void TestWebState::ShowTransientContentView(CRWContentView* content_view) {

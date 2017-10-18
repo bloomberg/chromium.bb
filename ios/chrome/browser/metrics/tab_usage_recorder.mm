@@ -81,10 +81,12 @@ class TabUsageRecorder::WebStateObserver : public web::WebStateObserver {
 
  private:
   // web::WebStateObserver implementation.
-  void DidStartNavigation(web::NavigationContext* navigation_context) override;
+  void DidStartNavigation(web::WebState* web_state,
+                          web::NavigationContext* navigation_context) override;
   void PageLoaded(
+      web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
-  void RenderProcessGone() override;
+  void RenderProcessGone(web::WebState* web_state) override;
 
   TabUsageRecorder* tab_usage_recorder_;
 
@@ -102,23 +104,26 @@ TabUsageRecorder::WebStateObserver::WebStateObserver(
 TabUsageRecorder::WebStateObserver::~WebStateObserver() = default;
 
 void TabUsageRecorder::WebStateObserver::DidStartNavigation(
+    web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (PageTransitionCoreTypeIs(navigation_context->GetPageTransition(),
                                ui::PAGE_TRANSITION_RELOAD)) {
-    tab_usage_recorder_->RecordReload(web_state());
+    tab_usage_recorder_->RecordReload(web_state);
   }
 }
 
 void TabUsageRecorder::WebStateObserver::PageLoaded(
+    web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   tab_usage_recorder_->RecordPageLoadDone(
-      web_state(),
+      web_state,
       load_completion_status == web::PageLoadCompletionStatus::SUCCESS);
 }
 
-void TabUsageRecorder::WebStateObserver::RenderProcessGone() {
+void TabUsageRecorder::WebStateObserver::RenderProcessGone(
+    web::WebState* web_state) {
   tab_usage_recorder_->RendererTerminated(
-      web_state(), web_state()->IsVisible(),
+      web_state, web_state->IsVisible(),
       [UIApplication sharedApplication].applicationState);
 }
 

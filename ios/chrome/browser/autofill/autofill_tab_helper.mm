@@ -44,7 +44,7 @@ AutofillTabHelper::AutofillTabHelper(
   DCHECK(web::WebStateObserver::web_state());
 }
 
-void AutofillTabHelper::WebStateDestroyed() {
+void AutofillTabHelper::WebStateDestroyed(web::WebState* web_state) {
   [controller_ detachFromWebState];
   controller_ = nil;
 }

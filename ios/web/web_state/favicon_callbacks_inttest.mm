@@ -27,7 +27,8 @@ class FaviconUrlObserver : public web::WebStateObserver {
   // Returns true if FaviconUrlUpdated was called.
   bool favicon_url_updated() const { return favicon_url_updated_; }
   // WebStateObserver overrides:
-  void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) override {
+  void FaviconUrlUpdated(web::WebState* web_state,
+                         const std::vector<FaviconURL>& candidates) override {
     favicon_url_candidates_ = candidates;
     favicon_url_updated_ = true;
   }

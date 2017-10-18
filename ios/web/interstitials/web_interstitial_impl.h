@@ -48,7 +48,7 @@ class WebInterstitialImpl : public WebInterstitial, public WebStateObserver {
   void Proceed() override;
 
   // WebStateObserver implementation:
-  void WebStateDestroyed() override;
+  void WebStateDestroyed(WebState* web_state) override;
 
  protected:
   // Called before the WebInterstitialImpl is shown, giving subclasses a chance

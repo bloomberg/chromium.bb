@@ -19,7 +19,7 @@
 DEFINE_WEB_STATE_USER_DATA_KEY(HistoryTabHelper);
 
 HistoryTabHelper::HistoryTabHelper(web::WebState* web_state)
-    : web::WebStateObserver(web_state) {}
+    : web_state_(web_state) {}
 
 HistoryTabHelper::~HistoryTabHelper() {}
 
@@ -37,7 +37,7 @@ void HistoryTabHelper::UpdateHistoryPageTitle(const web::NavigationItem& item) {
 
 history::HistoryService* HistoryTabHelper::GetHistoryService() {
   ios::ChromeBrowserState* browser_state =
-      ios::ChromeBrowserState::FromBrowserState(web_state()->GetBrowserState());
+      ios::ChromeBrowserState::FromBrowserState(web_state_->GetBrowserState());
 
   if (browser_state->IsOffTheRecord()) {
     return nullptr;

@@ -218,6 +218,7 @@ OverlayScheduler::WebStateVisibilityObserver::WebStateVisibilityObserver(
   DCHECK(scheduler);
 }
 
-void OverlayScheduler::WebStateVisibilityObserver::WasShown() {
-  scheduler_->OnWebStateShown(web_state());
+void OverlayScheduler::WebStateVisibilityObserver::WasShown(
+    web::WebState* web_state) {
+  scheduler_->OnWebStateShown(web_state);
 }

@@ -160,12 +160,14 @@ void LanguageDetectionController::ExtractContentLanguageHeader(
 // web::WebStateObserver implementation:
 
 void LanguageDetectionController::PageLoaded(
+    web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   if (load_completion_status == web::PageLoadCompletionStatus::SUCCESS)
     StartLanguageDetection();
 }
 
 void LanguageDetectionController::DidFinishNavigation(
+    web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (navigation_context->IsSameDocument()) {
     StartLanguageDetection();
@@ -174,8 +176,8 @@ void LanguageDetectionController::DidFinishNavigation(
   }
 }
 
-void LanguageDetectionController::WebStateDestroyed() {
-  web_state()->RemoveScriptCommandCallback(kCommandPrefix);
+void LanguageDetectionController::WebStateDestroyed(web::WebState* web_state) {
+  web_state->RemoveScriptCommandCallback(kCommandPrefix);
 }
 
 }  // namespace translate

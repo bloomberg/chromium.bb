@@ -32,15 +32,18 @@ class WebStateEventForwarder : public WebStateUserData<WebStateEventForwarder>,
   friend class WebStateUserData<WebStateEventForwarder>;
 
   // WebContentsObserver:
-  void NavigationItemsPruned(size_t pruned_item_count) override;
-  void NavigationItemChanged() override;
+  void NavigationItemsPruned(WebState* web_state,
+                             size_t pruned_item_count) override;
+  void NavigationItemChanged(WebState* web_state) override;
   void NavigationItemCommitted(
+      WebState* web_state,
       const LoadCommittedDetails& load_details) override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
-  void PageLoaded(PageLoadCompletionStatus load_completion_status) override;
-  void RenderProcessGone() override;
-  void WebStateDestroyed() override;
+  void DidStartLoading(WebState* web_state) override;
+  void DidStopLoading(WebState* web_state) override;
+  void PageLoaded(WebState* web_state,
+                  PageLoadCompletionStatus load_completion_status) override;
+  void RenderProcessGone(WebState* web_state) override;
+  void WebStateDestroyed(WebState* web_state) override;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateEventForwarder);
 };
@@ -52,43 +55,44 @@ WebStateEventForwarder::WebStateEventForwarder(web::WebState* web_state)
 
 WebStateEventForwarder::~WebStateEventForwarder() {}
 
-void WebStateEventForwarder::NavigationItemsPruned(size_t pruned_item_count) {
+void WebStateEventForwarder::NavigationItemsPruned(WebState* web_state,
+                                                   size_t pruned_item_count) {
   GlobalWebStateEventTracker::GetInstance()->NavigationItemsPruned(
-      web_state(), pruned_item_count);
+      web_state, pruned_item_count);
 }
 
-void WebStateEventForwarder::NavigationItemChanged() {
-  GlobalWebStateEventTracker::GetInstance()->NavigationItemChanged(web_state());
+void WebStateEventForwarder::NavigationItemChanged(WebState* web_state) {
+  GlobalWebStateEventTracker::GetInstance()->NavigationItemChanged(web_state);
 }
 
 void WebStateEventForwarder::NavigationItemCommitted(
+    WebState* web_state,
     const LoadCommittedDetails& load_details) {
   GlobalWebStateEventTracker::GetInstance()->NavigationItemCommitted(
-      web_state(), load_details);
+      web_state, load_details);
 }
 
-void WebStateEventForwarder::DidStartLoading() {
-  GlobalWebStateEventTracker::GetInstance()->WebStateDidStartLoading(
-      web_state());
+void WebStateEventForwarder::DidStartLoading(WebState* web_state) {
+  GlobalWebStateEventTracker::GetInstance()->WebStateDidStartLoading(web_state);
 }
 
-void WebStateEventForwarder::DidStopLoading() {
-  GlobalWebStateEventTracker::GetInstance()->WebStateDidStopLoading(
-      web_state());
+void WebStateEventForwarder::DidStopLoading(WebState* web_state) {
+  GlobalWebStateEventTracker::GetInstance()->WebStateDidStopLoading(web_state);
 }
 
 void WebStateEventForwarder::PageLoaded(
+    WebState* web_state,
     PageLoadCompletionStatus load_completion_status) {
-  GlobalWebStateEventTracker::GetInstance()->PageLoaded(web_state(),
+  GlobalWebStateEventTracker::GetInstance()->PageLoaded(web_state,
                                                         load_completion_status);
 }
 
-void WebStateEventForwarder::RenderProcessGone() {
-  GlobalWebStateEventTracker::GetInstance()->RenderProcessGone(web_state());
+void WebStateEventForwarder::RenderProcessGone(WebState* web_state) {
+  GlobalWebStateEventTracker::GetInstance()->RenderProcessGone(web_state);
 }
 
-void WebStateEventForwarder::WebStateDestroyed() {
-  GlobalWebStateEventTracker::GetInstance()->WebStateDestroyed(web_state());
+void WebStateEventForwarder::WebStateDestroyed(WebState* web_state) {
+  GlobalWebStateEventTracker::GetInstance()->WebStateDestroyed(web_state);
 }
 
 #pragma mark - GlobalWebStateEventTracker

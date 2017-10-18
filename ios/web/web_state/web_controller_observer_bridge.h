@@ -41,7 +41,8 @@ class WebControllerObserverBridge : public WebStateObserver {
 
  private:
   // WebStateObserver implementation.
-  void PageLoaded(PageLoadCompletionStatus load_completion_status) override;
+  void PageLoaded(WebState* web_state,
+                  PageLoadCompletionStatus load_completion_status) override;
 
   __weak id<CRWWebControllerObserver> web_controller_observer_ = nil;
   __weak CRWWebController* web_controller_ = nil;

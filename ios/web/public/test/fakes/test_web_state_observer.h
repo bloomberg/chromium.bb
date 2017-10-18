@@ -98,31 +98,39 @@ class TestWebStateObserver : public WebStateObserver {
 
  private:
   // WebStateObserver implementation:
-  void WasShown() override;
-  void WasHidden() override;
-  void NavigationItemCommitted(const LoadCommittedDetails&) override;
-  void PageLoaded(PageLoadCompletionStatus load_completion_status) override;
-  void InterstitialDismissed() override;
-  void LoadProgressChanged(double progress) override;
-  void NavigationItemsPruned(size_t pruned_item_count) override;
-  void NavigationItemChanged() override;
-  void DidStartNavigation(NavigationContext* context) override;
-  void DidFinishNavigation(NavigationContext* context) override;
-  void TitleWasSet() override;
-  void DidChangeVisibleSecurityState() override;
-  void DidSuppressDialog() override;
-  void DocumentSubmitted(const std::string& form_name,
+  void WasShown(WebState* web_state) override;
+  void WasHidden(WebState* web_state) override;
+  void NavigationItemCommitted(WebState* web_state,
+                               const LoadCommittedDetails&) override;
+  void PageLoaded(WebState* web_state,
+                  PageLoadCompletionStatus load_completion_status) override;
+  void InterstitialDismissed(WebState* web_state) override;
+  void LoadProgressChanged(WebState* web_state, double progress) override;
+  void NavigationItemsPruned(WebState* web_state,
+                             size_t pruned_item_count) override;
+  void NavigationItemChanged(WebState* web_state) override;
+  void DidStartNavigation(WebState* web_state,
+                          NavigationContext* context) override;
+  void DidFinishNavigation(WebState* web_state,
+                           NavigationContext* context) override;
+  void TitleWasSet(WebState* web_state) override;
+  void DidChangeVisibleSecurityState(WebState* web_state) override;
+  void DidSuppressDialog(WebState* web_state) override;
+  void DocumentSubmitted(WebState* web_state,
+                         const std::string& form_name,
                          bool user_initiated) override;
-  void FormActivityRegistered(const std::string& form_name,
+  void FormActivityRegistered(WebState* web_state,
+                              const std::string& form_name,
                               const std::string& field_name,
                               const std::string& type,
                               const std::string& value,
                               bool input_missing) override;
-  void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) override;
-  void RenderProcessGone() override;
-  void WebStateDestroyed() override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
+  void FaviconUrlUpdated(WebState* web_state,
+                         const std::vector<FaviconURL>& candidates) override;
+  void RenderProcessGone(WebState* web_state) override;
+  void WebStateDestroyed(WebState* web_state) override;
+  void DidStartLoading(WebState* web_state) override;
+  void DidStopLoading(WebState* web_state) override;
 
   std::unique_ptr<web::TestWasShownInfo> was_shown_info_;
   std::unique_ptr<web::TestWasHiddenInfo> was_hidden_info_;

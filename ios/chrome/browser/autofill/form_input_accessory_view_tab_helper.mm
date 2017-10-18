@@ -41,15 +41,16 @@ FormInputAccessoryViewTabHelper::FormInputAccessoryViewTabHelper(
   DCHECK(web::WebStateObserver::web_state());
 }
 
-void FormInputAccessoryViewTabHelper::WasShown() {
+void FormInputAccessoryViewTabHelper::WasShown(web::WebState* web_state) {
   [controller_ wasShown];
 }
 
-void FormInputAccessoryViewTabHelper::WasHidden() {
+void FormInputAccessoryViewTabHelper::WasHidden(web::WebState* web_state) {
   [controller_ wasHidden];
 }
 
-void FormInputAccessoryViewTabHelper::WebStateDestroyed() {
+void FormInputAccessoryViewTabHelper::WebStateDestroyed(
+    web::WebState* web_state) {
   [controller_ detachFromWebState];
   controller_ = nil;
 }

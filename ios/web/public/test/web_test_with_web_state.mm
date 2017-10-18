@@ -63,13 +63,14 @@ void WebTestWithWebState::LoadHtml(NSString* html, const GURL& url) {
     explicit MimeTypeUpdater(WebState* web_state)
         : WebStateObserver(web_state) {}
     // WebStateObserver overrides:
-    void NavigationItemCommitted(const LoadCommittedDetails&) override {
+    void NavigationItemCommitted(WebState* web_state,
+                                 const LoadCommittedDetails&) override {
       // loadHTML:forURL: does not notify web view delegate about received
       // response, so web controller does not get a chance to properly update
       // MIME type and it should be set manually after navigation is committed
       // but before WebState signal load completion and clients will start
       // checking if MIME type is in fact HTML.
-      static_cast<WebStateImpl*>(web_state())->SetContentsMimeType("text/html");
+      static_cast<WebStateImpl*>(web_state)->SetContentsMimeType("text/html");
     }
   };
   MimeTypeUpdater mime_type_updater(web_state());

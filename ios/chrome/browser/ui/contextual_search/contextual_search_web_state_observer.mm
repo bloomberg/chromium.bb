@@ -21,25 +21,27 @@ void ContextualSearchWebStateObserver::ObserveWebState(
 }
 
 void ContextualSearchWebStateObserver::NavigationItemCommitted(
+    web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {
   if (loaded_ && [delegate_ respondsToSelector:@selector(webState:
                                                    navigatedWithDetails:)]) {
-    [delegate_ webState:web_state() navigatedWithDetails:load_details];
+    [delegate_ webState:web_state navigatedWithDetails:load_details];
   }
 }
 
 void ContextualSearchWebStateObserver::PageLoaded(
+    web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   if ([delegate_
           respondsToSelector:@selector(webState:pageLoadedWithStatus:)]) {
-    [delegate_ webState:web_state()
-        pageLoadedWithStatus:load_completion_status];
+    [delegate_ webState:web_state pageLoadedWithStatus:load_completion_status];
   }
   loaded_ = true;
 }
 
-void ContextualSearchWebStateObserver::WebStateDestroyed() {
+void ContextualSearchWebStateObserver::WebStateDestroyed(
+    web::WebState* web_state) {
   if ([delegate_ respondsToSelector:@selector(webStateDestroyed:)]) {
-    [delegate_ webStateDestroyed:web_state()];
+    [delegate_ webStateDestroyed:web_state];
   }
 }

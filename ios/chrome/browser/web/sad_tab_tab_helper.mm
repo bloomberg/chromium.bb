@@ -72,15 +72,15 @@ void SadTabTabHelper::SetDelegate(id<SadTabTabHelperDelegate> delegate) {
   delegate_ = delegate;
 }
 
-void SadTabTabHelper::WasShown() {
+void SadTabTabHelper::WasShown(web::WebState* web_state) {
   if (requires_reload_on_becoming_visible_) {
     ReloadTab();
     requires_reload_on_becoming_visible_ = false;
   }
 }
 
-void SadTabTabHelper::RenderProcessGone() {
-  if (!web_state()->IsVisible()) {
+void SadTabTabHelper::RenderProcessGone(web::WebState* web_state) {
+  if (!web_state->IsVisible()) {
     requires_reload_on_becoming_visible_ = true;
     return;
   }
@@ -93,10 +93,11 @@ void SadTabTabHelper::RenderProcessGone() {
   // Only show Sad Tab if renderer has crashed in a tab currently visible to the
   // user and only if application is active. Otherwise simpy reloading the page
   // is a better user experience.
-  PresentSadTab(web_state()->GetLastCommittedURL());
+  PresentSadTab(web_state->GetLastCommittedURL());
 }
 
 void SadTabTabHelper::DidFinishNavigation(
+    web::WebState* web_state,
     web::NavigationContext* navigation_context) {
   if (navigation_context->GetUrl().host() == kChromeUICrashHost &&
       navigation_context->GetUrl().scheme() == kChromeUIScheme) {
@@ -104,7 +105,7 @@ void SadTabTabHelper::DidFinishNavigation(
   }
 }
 
-void SadTabTabHelper::WebStateDestroyed() {
+void SadTabTabHelper::WebStateDestroyed(web::WebState* web_state) {
   RemoveApplicationDidBecomeActiveObserver();
 }
 

@@ -86,7 +86,7 @@ void WebInterstitialImpl::Proceed() {
   delete this;
 }
 
-void WebInterstitialImpl::WebStateDestroyed() {
+void WebInterstitialImpl::WebStateDestroyed(WebState* web_state) {
   DontProceed();
 }
 
