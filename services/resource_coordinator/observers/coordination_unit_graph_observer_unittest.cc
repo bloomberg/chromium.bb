@@ -25,25 +25,17 @@ class CoordinationUnitGraphObserverTest : public CoordinationUnitTestHarness {};
 class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
  public:
   TestCoordinationUnitGraphObserver()
-      : child_added_count_(0u),
-        parent_added_count_(0u),
-        coordination_unit_created_count_(0u),
-        property_changed_count_(0u),
-        child_removed_count_(0u),
-        parent_removed_count_(0u),
-        coordination_unit_destroyed_count_(0u) {}
+      : coordination_unit_created_count_(0u),
+        coordination_unit_destroyed_count_(0u),
+        property_changed_count_(0u) {}
 
-  size_t child_added_count() { return child_added_count_; }
-  size_t parent_added_count() { return parent_added_count_; }
   size_t coordination_unit_created_count() {
     return coordination_unit_created_count_;
   }
-  size_t property_changed_count() { return property_changed_count_; }
-  size_t child_removed_count() { return child_removed_count_; }
-  size_t parent_removed_count() { return parent_removed_count_; }
   size_t coordination_unit_destroyed_count() {
     return coordination_unit_destroyed_count_;
   }
+  size_t property_changed_count() { return property_changed_count_; }
 
   // Overridden from CoordinationUnitGraphObserver.
   bool ShouldObserve(const CoordinationUnitBase* coordination_unit) override {
@@ -57,26 +49,6 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
       const CoordinationUnitBase* coordination_unit) override {
     ++coordination_unit_destroyed_count_;
   }
-  void OnChildAdded(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* child_coordination_unit) override {
-    ++child_added_count_;
-  }
-  void OnChildRemoved(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* former_child_coordination_unit) override {
-    ++child_removed_count_;
-  }
-  void OnParentAdded(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* parent_coordination_unit) override {
-    ++parent_added_count_;
-  }
-  void OnParentRemoved(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* former_parent_coordination_unit) override {
-    ++parent_removed_count_;
-  }
   void OnFramePropertyChanged(
       const FrameCoordinationUnitImpl* frame_coordination_unit,
       const mojom::PropertyType property_type,
@@ -85,13 +57,9 @@ class TestCoordinationUnitGraphObserver : public CoordinationUnitGraphObserver {
   }
 
  private:
-  size_t child_added_count_;
-  size_t parent_added_count_;
   size_t coordination_unit_created_count_;
-  size_t property_changed_count_;
-  size_t child_removed_count_;
-  size_t parent_removed_count_;
   size_t coordination_unit_destroyed_count_;
+  size_t property_changed_count_;
 };
 
 }  // namespace
@@ -123,32 +91,6 @@ TEST_F(CoordinationUnitGraphObserverTest, CallbacksInvoked) {
   coordination_unit_manager().OnCoordinationUnitCreated(
       frame_coordination_unit.get());
   EXPECT_EQ(2u, observer->coordination_unit_created_count());
-
-  // The registered observer will only observe the events that happen to
-  // |root_frame_coordination_unit| and |frame_coordination_unit| because
-  // they are CoordinationUnitType::kFrame.
-  // OnAddParent will called for |root_frame_coordination_unit|.
-  process_coordination_unit->AddChild(root_frame_coordination_unit->id());
-  // OnAddParent will called for |frame_coordination_unit|.
-  process_coordination_unit->AddChild(frame_coordination_unit->id());
-  // OnAddChild will called for |root_frame_coordination_unit| and
-  // OnAddParent will called for |frame_coordination_unit|.
-  root_frame_coordination_unit->AddChild(frame_coordination_unit->id());
-  EXPECT_EQ(1u, observer->child_added_count());
-  EXPECT_EQ(3u, observer->parent_added_count());
-
-  // The registered observer will only observe the events that happen to
-  // |root_frame_coordination_unit| and |frame_coordination_unit| because
-  // they are CoordinationUnitType::kFrame.
-  // OnRemoveParent will called for |root_frame_coordination_unit|.
-  process_coordination_unit->RemoveChild(root_frame_coordination_unit->id());
-  // OnRemoveParent will called for |frame_coordination_unit|.
-  process_coordination_unit->RemoveChild(frame_coordination_unit->id());
-  // OnRemoveChild will called for |root_frame_coordination_unit| and
-  // OnRemoveParent will called for |frame_coordination_unit|.
-  root_frame_coordination_unit->RemoveChild(frame_coordination_unit->id());
-  EXPECT_EQ(1u, observer->child_removed_count());
-  EXPECT_EQ(3u, observer->parent_removed_count());
 
   // The registered observer will only observe the events that happen to
   // |root_frame_coordination_unit| and |frame_coordination_unit| because

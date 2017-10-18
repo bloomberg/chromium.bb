@@ -166,12 +166,6 @@ void CoordinationUnitBase::AddChild(const CoordinationUnitID& child_id) {
 bool CoordinationUnitBase::AddChild(CoordinationUnitBase* child) {
   bool success =
       children_.count(child) ? false : children_.insert(child).second;
-
-  if (success) {
-    for (auto& observer : observers_)
-      observer.OnChildAdded(this, child);
-  }
-
   return success;
 }
 
@@ -193,30 +187,17 @@ void CoordinationUnitBase::RemoveChild(const CoordinationUnitID& child_id) {
 
 bool CoordinationUnitBase::RemoveChild(CoordinationUnitBase* child) {
   size_t children_removed = children_.erase(child);
-  bool success = children_removed > 0;
-
-  if (success) {
-    for (auto& observer : observers_)
-      observer.OnChildRemoved(this, child);
-  }
-
-  return success;
+  return children_removed > 0;
 }
 
 void CoordinationUnitBase::AddParent(CoordinationUnitBase* parent) {
   DCHECK_EQ(0u, parents_.count(parent));
   parents_.insert(parent);
-
-  for (auto& observer : observers_)
-    observer.OnParentAdded(this, parent);
 }
 
 void CoordinationUnitBase::RemoveParent(CoordinationUnitBase* parent) {
   size_t parents_removed = parents_.erase(parent);
   DCHECK_EQ(1u, parents_removed);
-
-  for (auto& observer : observers_)
-    observer.OnParentRemoved(this, parent);
 }
 
 bool CoordinationUnitBase::HasAncestor(CoordinationUnitBase* ancestor) {

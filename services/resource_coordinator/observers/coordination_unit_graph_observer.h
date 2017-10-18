@@ -46,30 +46,6 @@ class CoordinationUnitGraphObserver {
   virtual void OnBeforeCoordinationUnitDestroyed(
       const CoordinationUnitBase* coordination_unit) {}
 
-  // Called whenever a new parent-child relationship occurs where the
-  // |coordination_unit| is the parent of |child_coordination_unit|
-  virtual void OnChildAdded(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* child_coordination_unit) {}
-
-  // Called whenever parent-child relationship ends where the
-  // |coordination_unit| was the parent and the |child_coordination_unit|.
-  virtual void OnChildRemoved(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* child_coordination_unit) {}
-
-  // Called whenever a new parent-child relationship occurs where the
-  // |coordination_unit| is the child of |parent_coordination_unit|.
-  virtual void OnParentAdded(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* parent_coordination_unit) {}
-
-  // Called whenever parent-child relationship ends where the
-  // |coordination_unit| was the child and the |child_coordination_unit|.
-  virtual void OnParentRemoved(
-      const CoordinationUnitBase* coordination_unit,
-      const CoordinationUnitBase* parent_coordination_unit) {}
-
   // Called whenever a property of the |coordination_unit| is changed if the
   // |coordination_unit| doesn't implement its own PropertyChanged handler.
   virtual void OnPropertyChanged(const CoordinationUnitBase* coordination_unit,
