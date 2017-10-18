@@ -5,7 +5,6 @@
 #ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_H_
 #define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_STREAM_MIXER_ALSA_H_
 
-#include <alsa/asoundlib.h>
 #include <stdint.h>
 
 #include <map>
@@ -28,7 +27,8 @@ class AudioBus;
 
 namespace chromecast {
 namespace media {
-class AlsaWrapper;
+
+class MixerOutputStream;
 class FilterGroup;
 class PostProcessingPipelineParser;
 
@@ -179,7 +179,7 @@ class StreamMixerAlsa {
   void OnFramesQueued();
 
   void ResetPostProcessorsForTest(const std::string& pipeline_json);
-  void SetAlsaWrapperForTest(std::unique_ptr<AlsaWrapper> alsa_wrapper);
+  void SetMixerOutputStreamForTest(std::unique_ptr<MixerOutputStream> output);
   void WriteFramesForTest();  // Can be called on any thread.
   void ClearInputsForTest();  // Removes all inputs.
 
@@ -228,23 +228,12 @@ class StreamMixerAlsa {
   void FinishFinalize();
 
   void CreatePostProcessors(PostProcessingPipelineParser* pipeline_parser);
-  // Reads the buffer size, period size, start threshold, and avail min value
-  // from the provided command line flags or uses default values if no flags are
-  // provided.
-  void DefineAlsaParameters();
 
-  // Takes the provided ALSA config and sets all ALSA output hardware/software
-  // playback parameters.  It will try to select sane fallback parameters based
-  // on what the output hardware supports and will log warnings if it does so.
-  // If any ALSA function returns an unexpected error code, the error code will
-  // be returned by this function. Otherwise, it will return 0.
-  int SetAlsaPlaybackParams();
-  void Start();
+  bool Start();
   void Stop();
   void Close();
   void SignalError();
   void CheckChangeOutputRate(int input_samples_per_second);
-  unsigned int DetermineOutputRate(unsigned int requested_rate);
 
   // Deletes an input queue that has finished preparing to delete itself.
   // May be called on any thread.
@@ -259,39 +248,23 @@ class StreamMixerAlsa {
   bool TryWriteFrames();
   void WriteMixedPcm(int frames);
   void UpdateRenderingDelay(int newly_pushed_frames);
-  size_t InterleavedSize(int frames);
-  ssize_t BytesPerOutputFormatSample();
   void ResizeBuffersIfNecessary(int chunk_size);
 
   static bool single_threaded_for_test_;
 
-  std::unique_ptr<AlsaWrapper> alsa_;
+  std::unique_ptr<MixerOutputStream> output_;
   std::unique_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
 
-  unsigned int fixed_output_samples_per_second_;
-  int num_output_channels_;
-  unsigned int low_sample_rate_cutoff_;
-  int requested_output_samples_per_second_;
-  int output_samples_per_second_;
-  snd_pcm_t* pcm_;
-  snd_pcm_hw_params_t* pcm_hw_params_;
-  snd_pcm_status_t* pcm_status_;
-  snd_pcm_format_t pcm_format_;
-
-  // User-configurable ALSA parameters. This caches the results, so the code
-  // only has to interact with the command line parameters once.
-  std::string alsa_device_name_;
-  snd_pcm_uframes_t alsa_buffer_size_;
-  snd_pcm_uframes_t alsa_period_size_;
-  snd_pcm_uframes_t alsa_start_threshold_;
-  snd_pcm_uframes_t alsa_avail_min_;
+  int num_output_channels_ = 0;
+  int requested_output_samples_per_second_ = 0;
+  int output_samples_per_second_ = 0;
+  int low_sample_rate_cutoff_ = 0;
 
   State state_;
 
   std::vector<std::unique_ptr<InputQueue>> inputs_;
   std::vector<std::unique_ptr<InputQueue>> ignored_inputs_;
-  MediaPipelineBackendAlsa::RenderingDelay alsa_rendering_delay_;
 
   std::unique_ptr<base::Timer> retry_write_frames_timer_;
 
@@ -302,7 +275,6 @@ class StreamMixerAlsa {
   FilterGroup* default_filter_;
   FilterGroup* mix_filter_;
   FilterGroup* linearize_filter_;
-  std::vector<uint8_t> interleaved_;
 
   // Force data to be filtered in multiples of |filter_frame_alignment_| frames.
   // Must be a multiple of 4 for some NEON implementations. Some

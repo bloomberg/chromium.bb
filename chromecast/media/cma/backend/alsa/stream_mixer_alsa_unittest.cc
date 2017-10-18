@@ -16,6 +16,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
+#include "chromecast/media/cma/backend/alsa/mixer_output_stream_alsa.h"
 #include "chromecast/media/cma/backend/alsa/mock_alsa_wrapper.h"
 #include "chromecast/media/cma/backend/alsa/post_processing_pipeline.h"
 #include "media/audio/audio_device_description.h"
@@ -468,12 +469,14 @@ class StreamMixerAlsaTest : public testing::Test {
     StreamMixerAlsa::Get()->ResetPostProcessorsForTest(test_pipeline_json);
     CHECK_EQ(MockPostProcessor::instances()->size(),
              static_cast<size_t>(kNumPostProcessors));
-    StreamMixerAlsa::Get()->SetAlsaWrapperForTest(base::WrapUnique(mock_alsa_));
+
+    auto output = std::make_unique<MixerOutputStreamAlsa>();
+    output->SetAlsaWrapperForTest(base::WrapUnique(mock_alsa_));
+    StreamMixerAlsa::Get()->SetMixerOutputStreamForTest(std::move(output));
   }
 
   ~StreamMixerAlsaTest() override {
     StreamMixerAlsa::Get()->ClearInputsForTest();
-    StreamMixerAlsa::Get()->SetAlsaWrapperForTest(nullptr);
   }
 
   MockAlsaWrapper* mock_alsa() { return mock_alsa_; }
