@@ -9,6 +9,7 @@
     OriginTrialEnabled=Sensor,
     Constructor(optional SensorOptions sensorOptions),
     ConstructorCallWith=ExecutionContext,
+    SecureContext,
     RaisesException=Constructor,
     MeasureAs=AbsoluteOrientationSensorConstructor
 ] interface AbsoluteOrientationSensor : OrientationSensor {
