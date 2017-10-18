@@ -251,7 +251,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void MaybeAllowImagePlaceholder(FetchParameters&) const;
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
-                                                WebTaskRunner*);
+                                                RefPtr<WebTaskRunner>);
 
   bool IsInert() const { return is_inert_; }
 
