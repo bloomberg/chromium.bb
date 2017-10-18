@@ -78,7 +78,9 @@ void RendererURLLoaderThrottle::WillRedirectRequest(
                      base::Unretained(this)));
 }
 
-void RendererURLLoaderThrottle::WillProcessResponse(bool* defer) {
+void RendererURLLoaderThrottle::WillProcessResponse(
+    const content::ResourceResponseHead& response_head,
+    bool* defer) {
   // If |blocked_| is true, the resource load has been canceled and there
   // shouldn't be such a notification.
   DCHECK(!blocked_);

@@ -323,7 +323,7 @@ void ThrottlingURLLoader::OnReceiveResponse(
     for (auto& entry : throttles_) {
       auto* throttle = entry.throttle.get();
       bool throttle_deferred = false;
-      throttle->WillProcessResponse(&throttle_deferred);
+      throttle->WillProcessResponse(response_head, &throttle_deferred);
       if (!HandleThrottleResult(throttle, throttle_deferred, &deferred))
         return;
     }

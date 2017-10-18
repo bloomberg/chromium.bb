@@ -40,7 +40,8 @@ class BrowserURLLoaderThrottle : public content::URLLoaderThrottle {
                         bool* defer) override;
   void WillRedirectRequest(const net::RedirectInfo& redirect_info,
                            bool* defer) override;
-  void WillProcessResponse(bool* defer) override;
+  void WillProcessResponse(const content::ResourceResponseHead& response_head,
+                           bool* defer) override;
 
   void set_net_event_logger(NetEventLogger* net_event_logger);
 
