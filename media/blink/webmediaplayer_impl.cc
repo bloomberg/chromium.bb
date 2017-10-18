@@ -142,6 +142,9 @@ gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
 constexpr base::TimeDelta kPrerollAttemptTimeout =
     base::TimeDelta::FromSeconds(3);
 
+// Maximum number, per-WMPI, of media logs of playback rate changes.
+constexpr int kMaxNumPlaybackRateLogs = 10;
+
 }  // namespace
 
 class BufferedDataSourceHostImpl;
@@ -187,6 +190,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
       load_type_(kLoadTypeURL),
       opaque_(false),
       playback_rate_(0.0),
+      num_playback_rate_logs_(0),
       paused_(true),
       paused_when_hidden_(false),
       seeking_(false),
@@ -698,6 +702,13 @@ void WebMediaPlayerImpl::DoSeek(base::TimeDelta time, bool time_updated) {
 void WebMediaPlayerImpl::SetRate(double rate) {
   DVLOG(1) << __func__ << "(" << rate << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  if (rate != playback_rate_) {
+    LIMITED_MEDIA_LOG(INFO, media_log_.get(), num_playback_rate_logs_,
+                      kMaxNumPlaybackRateLogs)
+        << "Effective playback rate changed from " << playback_rate_ << " to "
+        << rate;
+  }
 
   playback_rate_ = rate;
   if (!paused_) {
