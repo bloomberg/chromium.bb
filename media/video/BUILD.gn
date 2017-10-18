@@ -29,6 +29,7 @@ source_set("video") {
     "half_float_maker.h",
     "jpeg_decode_accelerator.cc",
     "jpeg_decode_accelerator.h",
+    "jpeg_encode_accelerator.h",
     "picture.cc",
     "picture.h",
     "video_decode_accelerator.cc",
