@@ -6,9 +6,9 @@
 #define REMOTING_HOST_WIN_DEFAULT_AUDIO_DEVICE_CHANGE_DETECTOR_H_
 
 #include <mmdeviceapi.h>
+#include <wrl/client.h>
 
 #include "base/synchronization/lock.h"
-#include "base/win/scoped_comptr.h"
 
 namespace remoting {
 
@@ -21,7 +21,7 @@ namespace remoting {
 class DefaultAudioDeviceChangeDetector final : public IMMNotificationClient {
  public:
   explicit DefaultAudioDeviceChangeDetector(
-      const base::win::ScopedComPtr<IMMDeviceEnumerator>& enumerator);
+      const Microsoft::WRL::ComPtr<IMMDeviceEnumerator>& enumerator);
   ~DefaultAudioDeviceChangeDetector();
 
   bool GetAndReset();
@@ -44,7 +44,7 @@ class DefaultAudioDeviceChangeDetector final : public IMMNotificationClient {
   ULONG __stdcall AddRef() override;
   ULONG __stdcall Release() override;
 
-  const base::win::ScopedComPtr<IMMDeviceEnumerator> enumerator_;
+  const Microsoft::WRL::ComPtr<IMMDeviceEnumerator> enumerator_;
   bool changed_ = false;
   base::Lock lock_;
 };

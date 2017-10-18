@@ -11,7 +11,7 @@
 namespace remoting {
 
 DefaultAudioDeviceChangeDetector::DefaultAudioDeviceChangeDetector(
-    const base::win::ScopedComPtr<IMMDeviceEnumerator>& enumerator)
+    const Microsoft::WRL::ComPtr<IMMDeviceEnumerator>& enumerator)
     : enumerator_(enumerator) {
   DCHECK(enumerator_);
   HRESULT hr = enumerator_->RegisterEndpointNotificationCallback(this);

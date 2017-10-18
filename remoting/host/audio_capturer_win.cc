@@ -101,7 +101,7 @@ bool AudioCapturerWin::Initialize() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   HRESULT hr = S_OK;
-  base::win::ScopedComPtr<IMMDeviceEnumerator> mm_device_enumerator;
+  Microsoft::WRL::ComPtr<IMMDeviceEnumerator> mm_device_enumerator;
   hr = ::CoCreateInstance(__uuidof(MMDeviceEnumerator), nullptr, CLSCTX_ALL,
                           IID_PPV_ARGS(&mm_device_enumerator));
   if (FAILED(hr)) {

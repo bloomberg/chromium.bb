@@ -7,6 +7,7 @@
 
 #include <ole2.h>
 #include <exdisp.h>
+#include <wrl/client.h>
 
 #include <string>
 
@@ -14,7 +15,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/timer/timer.h"
-#include "base/win/scoped_comptr.h"
 
 namespace remoting {
 
@@ -43,7 +43,7 @@ class AuthCodeGetter {
   // The authorization code callback.
   base::Callback<void(const std::string&)> on_auth_code_;
   // The browser through which the user requests an authorization code.
-  base::win::ScopedComPtr<IWebBrowser2> browser_;
+  Microsoft::WRL::ComPtr<IWebBrowser2> browser_;
   // A timer used to poll the browser's URL.
   base::OneShotTimer timer_;
   // The interval at which the timer fires.
