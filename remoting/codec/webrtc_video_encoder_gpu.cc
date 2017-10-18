@@ -109,6 +109,11 @@ void WebrtcVideoEncoderGpu::Encode(std::unique_ptr<webrtc::DesktopFrame> frame,
 
   callbacks_[video_frame->timestamp()] = std::move(done);
 
+  if (params.bitrate_kbps > 0) {
+    // TODO(zijiehe): Forward frame_rate from FrameParams.
+    video_encode_accelerator_->RequestEncodingParametersChange(
+        params.bitrate_kbps * 1024, 30);
+  }
   video_encode_accelerator_->Encode(video_frame, params.key_frame);
 }
 
