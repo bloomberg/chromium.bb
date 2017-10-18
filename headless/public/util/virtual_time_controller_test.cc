@@ -29,7 +29,7 @@ class VirtualTimeControllerTest : public ::testing::Test {
     EXPECT_CALL(*mock_host_, IsAttached()).WillOnce(Return(false));
     EXPECT_CALL(*mock_host_, AttachClient(&client_));
     client_.AttachToHost(mock_host_.get());
-    controller_ = base::MakeUnique<VirtualTimeController>(&client_);
+    controller_ = base::MakeUnique<VirtualTimeController>(&client_, 0);
   }
 
   ~VirtualTimeControllerTest() override {}
@@ -75,11 +75,28 @@ class VirtualTimeControllerTest : public ::testing::Test {
 };
 
 TEST_F(VirtualTimeControllerTest, AdvancesTimeWithoutTasks) {
+  controller_ = base::MakeUnique<VirtualTimeController>(&client_, 1000);
+
   EXPECT_CALL(*mock_host_,
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
-                  "\"params\":{\"budget\":5000,\"policy\":\"advance\"}}"))
+                  "\"params\":{\"budget\":5000,"
+                  "\"maxVirtualTimeTaskStarvationCount\":1000,"
+                  "\"policy\":\"advance\"}}"))
+      .WillOnce(Return(true));
+
+  GrantVirtualTimeBudget(5000);
+}
+
+TEST_F(VirtualTimeControllerTest, MaxVirtualTimeTaskStarvationCount) {
+  EXPECT_CALL(*mock_host_,
+              DispatchProtocolMessage(
+                  &client_,
+                  "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
+                  "\"params\":{\"budget\":5000,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,"
+                  "\"policy\":\"advance\"}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(5000);
@@ -129,7 +146,9 @@ TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
-                  "\"params\":{\"budget\":1000,\"policy\":\"advance\"}}"))
+                  "\"params\":{\"budget\":1000,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,"
+                  "\"policy\":\"advance\"}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(3000);
@@ -155,7 +174,9 @@ TEST_F(VirtualTimeControllerTest, InterleavesTasksWithVirtualTime) {
             &client_,
             base::StringPrintf(
                 "{\"id\":%d,\"method\":\"Emulation.setVirtualTimePolicy\","
-                "\"params\":{\"budget\":1000,\"policy\":\"advance\"}}",
+                "\"params\":{\"budget\":1000,"
+                "\"maxVirtualTimeTaskStarvationCount\":0,"
+                "\"policy\":\"advance\"}}",
                 i * 2)))
         .WillOnce(Return(true));
 
@@ -192,7 +213,9 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":0,\"method\":\"Emulation.setVirtualTimePolicy\","
-                  "\"params\":{\"budget\":1000,\"policy\":\"advance\"}}"))
+                  "\"params\":{\"budget\":1000,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,"
+                  "\"policy\":\"advance\"}}"))
       .WillOnce(Return(true));
 
   GrantVirtualTimeBudget(5000);
@@ -214,7 +237,9 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":2,\"method\":\"Emulation.setVirtualTimePolicy\","
-                  "\"params\":{\"budget\":1000,\"policy\":\"advance\"}}"))
+                  "\"params\":{\"budget\":1000,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,"
+                  "\"policy\":\"advance\"}}"))
       .WillOnce(Return(true));
 
   SendVirtualTimeBudgetExpiredEvent();
@@ -234,7 +259,9 @@ TEST_F(VirtualTimeControllerTest, CanceledTask) {
               DispatchProtocolMessage(
                   &client_,
                   "{\"id\":4,\"method\":\"Emulation.setVirtualTimePolicy\","
-                  "\"params\":{\"budget\":3000,\"policy\":\"advance\"}}"))
+                  "\"params\":{\"budget\":3000,"
+                  "\"maxVirtualTimeTaskStarvationCount\":0,"
+                  "\"policy\":\"advance\"}}"))
       .WillOnce(Return(true));
 
   SendVirtualTimeBudgetExpiredEvent();
