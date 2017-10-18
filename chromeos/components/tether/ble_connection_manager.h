@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/clock.h"
 #include "base/timer/timer.h"
@@ -26,6 +27,7 @@ class CryptAuthService;
 }  // namespace cryptauth
 
 namespace device {
+class BluetoothAdapter;
 class BluetoothDevice;
 }  // namespace device
 
