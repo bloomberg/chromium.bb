@@ -28,6 +28,7 @@
 -CursorWindowControllerTest.DSF
 -CursorWindowControllerTest.MoveToDifferentDisplay
 -CursorWindowControllerTest.VisibilityTest
+-CursorWindowControllerTest.ShouldEnableCursorCompositing
 # TODO: fails because of no screenshot in mash. http://crbug.com/698033.
 -ClamshellPowerButtonScreenshotControllerTest.PowerButtonPressedFirst_NonUserSessionWaitForVolumeDownKey
 -ClamshellPowerButtonScreenshotControllerTest.PowerButtonPressedFirst_StopClamshellPowerButtonTimer

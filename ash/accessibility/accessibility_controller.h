@@ -39,10 +39,6 @@ class ASH_EXPORT AccessibilityController : public SessionObserver {
   void SetHighContrastEnabled(bool enabled);
   bool IsHighContrastEnabled() const;
 
-  // Returns true if an accessibility feature is enabled that requires cursor
-  // compositing.
-  static bool RequiresCursorCompositing(PrefService* prefs);
-
   // SessionObserver:
   void OnSigninScreenPrefServiceInitialized(PrefService* prefs) override;
   void OnActiveUserPrefServiceChanged(PrefService* prefs) override;
