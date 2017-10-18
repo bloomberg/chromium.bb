@@ -356,7 +356,7 @@ using IntegerPair = std::pair<NSInteger, NSInteger>;
     [[_signinPromoViewMediator createConfigurator]
         configureSigninPromoView:signinPromoCell.signinPromoView];
     __weak BookmarkTableView* weakSelf = self;
-    signinPromoCell.closeButtonAction = ^() {
+    signinPromoCell.signinPromoView.closeButtonAction = ^() {
       [weakSelf signinPromoCloseButtonAction];
     };
     signinPromoCell.selectionStyle = UITableViewCellSelectionStyleNone;
