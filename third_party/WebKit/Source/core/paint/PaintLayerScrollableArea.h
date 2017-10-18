@@ -519,6 +519,12 @@ class CORE_EXPORT PaintLayerScrollableArea final
       bool& needs_vertical_scrollbar,
       ComputeScrollbarExistenceOption = kDefault) const;
 
+  // If the content fits entirely in the area without auto scrollbars, returns
+  // true to try to remove them. This is a heuristic and can be incorrect if the
+  // content size depends on the scrollbar size (e.g., percentage sizing).
+  bool TryRemovingAutoScrollbars(const bool& needs_horizontal_scrollbar,
+                                 const bool& needs_vertical_scrollbar);
+
   // Returns true iff scrollbar existence changed.
   bool SetHasHorizontalScrollbar(bool has_scrollbar);
   bool SetHasVerticalScrollbar(bool has_scrollbar);
@@ -556,7 +562,11 @@ class CORE_EXPORT PaintLayerScrollableArea final
   unsigned in_resize_mode_ : 1;
   unsigned scrolls_overflow_ : 1;
 
+  // True if we are in an overflow scrollbar relayout.
   unsigned in_overflow_relayout_ : 1;
+
+  // True if a second overflow scrollbar relayout is permitted.
+  unsigned allow_second_overflow_relayout_ : 1;
 
   // FIXME: once cc can handle composited scrolling with clip paths, we will
   // no longer need this bit.
