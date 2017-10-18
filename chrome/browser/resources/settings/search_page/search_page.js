@@ -14,6 +14,12 @@ Polymer({
   properties: {
     prefs: Object,
 
+    // <if expr="chromeos">
+    arcEnabled: Boolean,
+
+    voiceInteractionValuePropAccepted: Boolean,
+    // </if>
+
     /**
      * List of default search engines available.
      * @private {!Array<!SearchEngine>}
@@ -50,6 +56,13 @@ Polymer({
       value: function() {
         return loadTimeData.getBoolean('enableVoiceInteraction');
       },
+    },
+
+    /** @private */
+    assistantOn_: {
+      type: Boolean,
+      computed:
+          'isAssistantTurnedOn_(arcEnabled, voiceInteractionValuePropAccepted)',
     }
     // </if>
   },
@@ -112,7 +125,17 @@ Polymer({
   /** @private */
   onGoogleAssistantTap_: function() {
     assert(this.voiceInteractionFeatureEnabled_);
+
+    if (!this.assistantOn_) {
+      return;
+    }
+
     settings.navigateTo(settings.routes.GOOGLE_ASSISTANT);
+  },
+
+  /** @private */
+  onAssistantTurnOnTap_: function(event) {
+    this.browserProxy_.turnOnGoogleAssistant();
   },
   // </if>
 
@@ -190,15 +213,13 @@ Polymer({
                       'searchGoogleAssistantDisabled');
   },
 
-  /**
-   * @param {boolean} featureAvailable
-   * @param {boolean} arcEnabled
-   * @return {boolean}
-   * @private
+  /** @private
+   *  @param {boolean} arcEnabled
+   *  @param {boolean} valuePropAccepted
+   *  @return {boolean}
    */
-  showAssistantSection_: function(
-      featureAvailable, arcEnabled, valuePropAccepted) {
-    return featureAvailable && arcEnabled && valuePropAccepted;
+  isAssistantTurnedOn_: function(arcEnabled, valuePropAccepted) {
+    return arcEnabled && valuePropAccepted;
   },
   // </if>
 

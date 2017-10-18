@@ -29,6 +29,8 @@ class GoogleAssistantHandler : public ::settings::SettingsPageUIHandler {
   void HandleSetGoogleAssistantContextEnabled(const base::ListValue* args);
   // WebUI call to launch into the Google Assistant app settings.
   void HandleShowGoogleAssistantSettings(const base::ListValue* args);
+  // WebUI call to launch assistant runtime flow.
+  void HandleTurnOnGoogleAssistant(const base::ListValue* args);
 
   Profile* const profile_;
 

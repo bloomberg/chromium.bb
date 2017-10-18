@@ -1612,6 +1612,7 @@ void AddSearchStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_ENABLED},
     {"searchGoogleAssistantDisabled",
      IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED},
+    {"assistantTurnOn", IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_TURN_ON},
 #endif
     {"searchOkGoogleSubtextAlwaysOn",
      IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON},
