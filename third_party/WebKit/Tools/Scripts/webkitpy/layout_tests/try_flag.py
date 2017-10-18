@@ -10,7 +10,7 @@ This is a work in progress.  It currently supports the following flow for
 regenerating a flag-specific expectations file from scratch:
 
 1. make a local git branch
-2. echo '--your-flag' > third_party/WebKit/LayoutTests/rwt.flag
+2. echo '--your-flag' > third_party/WebKit/LayoutTests/additional-driver-flag.setting
 3. rm third_party/WebKit/LayoutTests/FlagExpectations/your-flag
 4. git cl upload
 5. git cl try -b linux_chromium_rel_ng -b win_chromium_rel_ng -b mac_chromium_rel_ng
