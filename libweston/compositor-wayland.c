@@ -873,8 +873,11 @@ wayland_output_set_windowed(struct wayland_output *output)
 
 	wayland_output_resize_surface(output);
 
-	if (output->parent.shell_surface)
+	if (output->parent.xdg_toplevel) {
+		zxdg_toplevel_v6_unset_fullscreen(output->parent.xdg_toplevel);
+	} else if (output->parent.shell_surface) {
 		wl_shell_surface_set_toplevel(output->parent.shell_surface);
+	}
 
 	return 0;
 }
