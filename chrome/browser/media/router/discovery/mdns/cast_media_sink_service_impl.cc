@@ -163,6 +163,9 @@ bool IsNetworkIdUnknownOrDisconnected(const std::string& network_id) {
 
 }  // namespace
 
+// static
+constexpr int CastMediaSinkServiceImpl::kMaxDialSinkFailureCount;
+
 CastMediaSinkServiceImpl::CastMediaSinkServiceImpl(
     const OnSinksDiscoveredCallback& callback,
     cast_channel::CastSocketService* cast_socket_service,
@@ -269,7 +272,7 @@ void CastMediaSinkServiceImpl::RecordDeviceCounts() {
 }
 
 void CastMediaSinkServiceImpl::OpenChannels(
-    std::vector<MediaSinkInternal> cast_sinks,
+    const std::vector<MediaSinkInternal>& cast_sinks,
     SinkSource sink_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -314,16 +317,15 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
     return;
   }
 
-  std::unique_ptr<net::BackoffEntry> backoff_entry(
-      new net::BackoffEntry(&backoff_policy_));
-
   DVLOG(2) << "OnError starts reopening cast channel: "
            << ip_endpoint.ToString();
   // Find existing cast sink from |current_sinks_map_|.
   auto cast_sink_it = current_sinks_map_.find(ip_endpoint);
   if (cast_sink_it != current_sinks_map_.end()) {
-    OnChannelErrorMayRetry(cast_sink_it->second, std::move(backoff_entry),
-                           error_state, SinkSource::kConnectionRetry);
+    OnChannelErrorMayRetry(
+        cast_sink_it->second,
+        std::make_unique<net::BackoffEntry>(&backoff_policy_), error_state,
+        SinkSource::kConnectionRetry);
     return;
   }
 
@@ -339,6 +341,7 @@ void CastMediaSinkServiceImpl::OnNetworksChanged(
     const std::string& network_id) {
   std::string last_network_id = current_network_id_;
   current_network_id_ = network_id;
+  dial_sink_failure_count_.clear();
   if (IsNetworkIdUnknownOrDisconnected(network_id)) {
     if (!IsNetworkIdUnknownOrDisconnected(last_network_id)) {
       // Collect current sinks even if OnFetchCompleted hasn't collected the
@@ -398,6 +401,12 @@ void CastMediaSinkServiceImpl::OpenChannel(
     std::unique_ptr<net::BackoffEntry> backoff_entry,
     SinkSource sink_source) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Erase the entry from |dial_sink_failure_count_| since the device is now
+  // known to be a Cast device.
+  if (sink_source != SinkSource::kDial)
+    dial_sink_failure_count_.erase(ip_endpoint.address());
+
   if (!pending_for_open_ip_endpoints_.insert(ip_endpoint).second) {
     DVLOG(2) << "Pending opening request for " << ip_endpoint.ToString()
              << " name: " << cast_sink.sink().name();
@@ -449,6 +458,9 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
+  if (sink_source == SinkSource::kDial)
+    ++dial_sink_failure_count_[ip_endpoint.address()];
+
   OnChannelOpenFailed(ip_endpoint);
 
   if (!backoff_entry ||
@@ -517,6 +529,7 @@ void CastMediaSinkServiceImpl::OnChannelOpenFailed(
 
   int failure_count = ++failure_count_map_[ip_endpoint];
   failure_count_map_[ip_endpoint] = std::min(failure_count, kMaxFailureCount);
+
   MediaSinkServiceBase::RestartTimer();
 }
 
@@ -533,9 +546,22 @@ void CastMediaSinkServiceImpl::OnDialSinkAdded(const MediaSinkInternal& sink) {
 
   // TODO(crbug.com/753175): Dual discovery should not try to open cast channel
   // for non-Cast device.
+  if (IsProbablyNonCastDevice(sink)) {
+    DVLOG(2) << "Skip open channel for DIAL-discovered device because it "
+             << "is probably not a Cast device: " << sink.sink().name();
+    return;
+  }
+
   OpenChannel(ip_endpoint, CreateCastSinkFromDialSink(sink),
               base::MakeUnique<net::BackoffEntry>(&backoff_policy_),
               SinkSource::kDial);
+}
+
+bool CastMediaSinkServiceImpl::IsProbablyNonCastDevice(
+    const MediaSinkInternal& dial_sink) const {
+  auto it = dial_sink_failure_count_.find(dial_sink.dial_data().ip_address);
+  return it != dial_sink_failure_count_.end() &&
+         it->second >= kMaxDialSinkFailureCount;
 }
 
 void CastMediaSinkServiceImpl::AttemptConnection(

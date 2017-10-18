@@ -30,6 +30,14 @@ class TestDialRegistry : public DialRegistry {
   MOCK_METHOD0(OnListenerRemoved, void());
 };
 
+class MockDialMediaSinkServiceObserver : public DialMediaSinkServiceObserver {
+ public:
+  MockDialMediaSinkServiceObserver() {}
+  ~MockDialMediaSinkServiceObserver() = default;
+
+  MOCK_METHOD1(OnDialSinkAdded, void(const MediaSinkInternal& sink));
+};
+
 class MockDeviceDescriptionService : public DeviceDescriptionService {
  public:
   MockDeviceDescriptionService(DeviceDescriptionParseSuccessCallback success_cb,
@@ -102,10 +110,11 @@ TEST_F(DialMediaSinkServiceImplTest, TestOnDeviceDescriptionAvailable) {
                                                     device_description);
   EXPECT_TRUE(media_sink_service_->current_sinks_.empty());
 
-  std::vector<DialDeviceData> deviceList{device_data};
-  EXPECT_CALL(*mock_description_service_, GetDeviceDescriptions(deviceList, _));
+  std::vector<DialDeviceData> device_list = {device_data};
+  EXPECT_CALL(*mock_description_service_,
+              GetDeviceDescriptions(device_list, _));
 
-  media_sink_service_->OnDialDeviceEvent(deviceList);
+  media_sink_service_->OnDialDeviceEvent(device_list);
   media_sink_service_->OnDeviceDescriptionAvailable(device_data,
                                                     device_description);
 
@@ -121,11 +130,12 @@ TEST_F(DialMediaSinkServiceImplTest, TestTimer) {
   device_description.app_url = GURL("http://192.168.1.1/apps");
   device_description.unique_id = "unique id";
 
-  std::vector<DialDeviceData> deviceList{device_data};
-  EXPECT_CALL(*mock_description_service_, GetDeviceDescriptions(deviceList, _));
+  std::vector<DialDeviceData> device_list = {device_data};
+  EXPECT_CALL(*mock_description_service_,
+              GetDeviceDescriptions(device_list, _));
 
   EXPECT_FALSE(mock_timer_->IsRunning());
-  media_sink_service_->OnDialDeviceEvent(deviceList);
+  media_sink_service_->OnDialDeviceEvent(device_list);
   media_sink_service_->OnDeviceDescriptionAvailable(device_data,
                                                     device_description);
   EXPECT_TRUE(mock_timer_->IsRunning());
@@ -161,6 +171,46 @@ TEST_F(DialMediaSinkServiceImplTest, TestRestartAfterStop) {
   EXPECT_CALL(test_dial_registry_,
               UnregisterObserver(media_sink_service_.get()));
   EXPECT_CALL(test_dial_registry_, OnListenerRemoved());
+}
+
+TEST_F(DialMediaSinkServiceImplTest, DialMediaSinkServiceObserver) {
+  MockDialMediaSinkServiceObserver observer;
+  media_sink_service_->SetObserver(&observer);
+
+  DialDeviceData device_data1("first", GURL("http://127.0.0.1/dd.xml"),
+                              base::Time::Now());
+  ParsedDialDeviceDescription device_description1;
+  device_description1.model_name = "model name";
+  device_description1.friendly_name = "friendly name";
+  device_description1.app_url = GURL("http://192.168.1.1/apps");
+  device_description1.unique_id = "unique id 1";
+
+  DialDeviceData device_data2("second", GURL("http://127.0.0.2/dd.xml"),
+                              base::Time::Now());
+  ParsedDialDeviceDescription device_description2;
+  device_description2.model_name = "model name";
+  device_description2.friendly_name = "friendly name";
+  device_description2.app_url = GURL("http://192.168.1.2/apps");
+  device_description2.unique_id = "unique id 2";
+
+  std::vector<DialDeviceData> device_list = {device_data1, device_data2};
+  EXPECT_CALL(*mock_description_service_,
+              GetDeviceDescriptions(device_list, _));
+  media_sink_service_->OnDialDeviceEvent(device_list);
+
+  EXPECT_CALL(observer, OnDialSinkAdded(_)).Times(1);
+  media_sink_service_->OnDeviceDescriptionAvailable(device_data1,
+                                                    device_description1);
+
+  EXPECT_CALL(observer, OnDialSinkAdded(_)).Times(1);
+  media_sink_service_->OnDeviceDescriptionAvailable(device_data2,
+                                                    device_description2);
+
+  // OnUserGesture will "re-sync" all existing sinks to observer.
+  EXPECT_CALL(observer, OnDialSinkAdded(_)).Times(2);
+  media_sink_service_->OnUserGesture();
+
+  media_sink_service_->ClearObserver();
 }
 
 }  // namespace media_router

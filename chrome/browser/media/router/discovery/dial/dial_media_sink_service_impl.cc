@@ -54,6 +54,20 @@ void DialMediaSinkServiceImpl::Stop() {
   MediaSinkServiceBase::StopTimer();
 }
 
+void DialMediaSinkServiceImpl::OnUserGesture() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  // Re-sync sinks to CastMediaSinkService. It's possible that a DIAL-discovered
+  // sink was added to CastMediaSinkService earlier, but was removed due to
+  // flaky network. This gives CastMediaSinkService an opportunity to recover
+  // even if mDNS is not working for some reason.
+  DVLOG(2) << "OnUserGesture: re-syncing " << current_sinks_.size()
+           << " sinks to CastMediaSinkService";
+  if (observer_) {
+    for (const auto& sink : current_sinks_)
+      observer_->OnDialSinkAdded(sink);
+  }
+}
+
 DeviceDescriptionService* DialMediaSinkServiceImpl::GetDescriptionService() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (!description_service_.get()) {
@@ -72,8 +86,7 @@ void DialMediaSinkServiceImpl::SetObserver(
   observer_ = observer;
 }
 
-void DialMediaSinkServiceImpl::ClearObserver(
-    DialMediaSinkServiceObserver* observer) {
+void DialMediaSinkServiceImpl::ClearObserver() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   observer_ = nullptr;
 }
