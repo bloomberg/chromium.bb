@@ -5384,8 +5384,6 @@ static int cfl_rd_pick_alpha(MACROBLOCK *const x, const AV1_COMP *const cpi,
   bsize = scale_chroma_bsize(bsize, xd->plane[AOM_PLANE_U].subsampling_x,
                              xd->plane[AOM_PLANE_U].subsampling_y);
 
-  cfl_compute_parameters(xd, tx_size);
-
   int rates[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   int64_t dists[CFL_PRED_PLANES][CFL_MAGS_SIZE];
   mbmi->cfl_alpha_idx = 0;

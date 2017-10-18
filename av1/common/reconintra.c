@@ -2314,22 +2314,16 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
   const PREDICTION_MODE mode = (plane == AOM_PLANE_Y)
                                    ? get_y_mode(mi, block_raster_idx)
                                    : get_uv_mode(mbmi->uv_mode);
-#if CONFIG_CFL
-  if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
-    if (plane == AOM_PLANE_U && blk_col == 0 && blk_row == 0) {
-      // Avoid computing the CfL parameters twice, if they have already been
-      // computed in cfl_rd_pick_alpha.
-      if (!xd->cfl->are_parameters_computed)
-        cfl_compute_parameters(xd, tx_size);
-    }
-    cfl_predict_block(xd, dst, dst_stride, blk_row, blk_col, tx_size, plane);
-    return;
-  }
-#endif
 
   av1_predict_intra_block(cm, xd, pd->width, pd->height,
                           txsize_to_bsize[tx_size], mode, dst, dst_stride, dst,
                           dst_stride, blk_col, blk_row, plane);
+
+#if CONFIG_CFL
+  if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
+    cfl_predict_block(xd, dst, dst_stride, blk_row, blk_col, tx_size, plane);
+  }
+#endif
 }
 
 #if INTRA_USES_EXT_TRANSFORMS

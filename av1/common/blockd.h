@@ -608,10 +608,6 @@ typedef struct cfl_ctx {
   // Chroma subsampling
   int subsampling_x, subsampling_y;
 
-  // Block level DC_PRED for each chromatic plane
-  // 16 bits are used, but only the pixel bit depth is required
-  int16_t dc_pred[CFL_PRED_PLANES][MAX_SB_SQUARE];
-
   int mi_row, mi_col;
 
   // Whether the reconstructed luma pixels need to be stored
