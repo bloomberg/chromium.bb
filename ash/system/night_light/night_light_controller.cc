@@ -288,7 +288,7 @@ void NightLightController::RefreshLayersTemperature() {
   // animations.
   last_animation_duration_ = animation_duration_;
   animation_duration_ = AnimationDuration::kShort;
-  Shell::Get()->SetCursorCompositingEnabled(GetEnabled());
+  Shell::Get()->UpdateCursorCompositingEnabled();
 }
 
 void NightLightController::StartWatchingPrefsChanges() {

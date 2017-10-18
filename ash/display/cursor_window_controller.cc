@@ -7,9 +7,12 @@
 #include "ash/ash_constants.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/window_tree_host_manager.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
+#include "components/prefs/pref_service.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window_delegate.h"
@@ -114,6 +117,19 @@ void CursorWindowController::SetLargeCursorSizeInDip(
 
   if (display_.is_valid())
     UpdateCursorImage();
+}
+
+bool CursorWindowController::ShouldEnableCursorCompositing() {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetActivePrefService();
+  if (!prefs) {
+    // The active pref service can be null early in startup.
+    return false;
+  }
+  return prefs->GetBoolean(prefs::kAccessibilityLargeCursorEnabled) ||
+         prefs->GetBoolean(prefs::kAccessibilityHighContrastEnabled) ||
+         prefs->GetBoolean(prefs::kAccessibilityScreenMagnifierEnabled) ||
+         prefs->GetBoolean(prefs::kNightLightEnabled);
 }
 
 void CursorWindowController::SetCursorCompositingEnabled(bool enabled) {

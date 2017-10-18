@@ -474,6 +474,12 @@ void Shell::SetLargeCursorSizeInDip(int large_cursor_size_in_dip) {
       ->SetLargeCursorSizeInDip(large_cursor_size_in_dip);
 }
 
+void Shell::UpdateCursorCompositingEnabled() {
+  SetCursorCompositingEnabled(
+      window_tree_host_manager_->cursor_window_controller()
+          ->ShouldEnableCursorCompositing());
+}
+
 void Shell::SetCursorCompositingEnabled(bool enabled) {
   if (GetAshConfig() != Config::MASH) {
     // TODO: needs to work in mash. http://crbug.com/705592.

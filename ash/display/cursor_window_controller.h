@@ -34,6 +34,11 @@ class ASH_EXPORT CursorWindowController {
 
   void SetLargeCursorSizeInDip(int large_cursor_size_in_dip);
 
+  // If at least one of the features that use cursor compositing is enabled, it
+  // should not be disabled. Future features that require cursor compositing
+  // should be added in this function.
+  bool ShouldEnableCursorCompositing();
+
   // Sets cursor compositing mode on/off.
   void SetCursorCompositingEnabled(bool enabled);
 
