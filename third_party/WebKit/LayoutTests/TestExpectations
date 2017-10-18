@@ -3469,7 +3469,8 @@ crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-text.html [ Ski
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-blending-transforms.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-composite-video.html [ Skip ]
-crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
+#This is currently skipped on all OSes due to crbug.com/775957
+#crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-scale-drawImage-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/canvas-strokeRect-alpha-shadow.html [ Skip ]
 crbug.com/757165 [ Win ] virtual/gpu/fast/canvas/image-object-in-canvas.html [ Skip ]
@@ -3619,6 +3620,16 @@ crbug.com/749965 [ Mac ] media/controls/controls-video-keynav.html [ Failure Pas
 crbug.com/749965 [ Mac ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure Pass ]
 crbug.com/746128 [ Win7 Debug ] virtual/new-remote-playback-pipeline/media/controls/controls-video-keynav.html [ Failure ]
 crbug.com/749965 [ Win7 Debug ] media/controls/controls-video-keynav.html [ Failure ]
+
+#Layout test changed in insignficant way due to Skia rect tessellation change
+crbug.com/775958 virtual/gpu-rasterization/images/color-profile-svg-fill-text.html [ NeedsManualRebaseline ]
+crbug.com/775958 [ Mac ] compositing/masks/mask-with-added-filters.html [ NeedsManualRebaseline ]
+crbug.com/775958 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video-shadow.html [ NeedsManualRebaseline ]
+crbug.com/775958 [ Mac ] virtual/gpu/fast/canvas/canvas-composite-video.html [ NeedsManualRebaseline ]
+
+#Layout test corrupted after Skia rect tessellation change due to apparent SwiftShader bug.
+#This was previously skipped on Windows in the section for crbug.com/757165
+crbug.com/775957 virtual/gpu/fast/canvas/canvas-incremental-repaint.html [ Skip ]
 
 # Sheriff failures 2017-09-20
 # Timeouts flakily on chromium.webkit/WebKit Win7 and WebKit Win10
