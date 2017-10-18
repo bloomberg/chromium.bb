@@ -472,10 +472,10 @@ DECLS(ssse3);
   FN(4, 4, 4, 2, 2, opt, (int32_t), (int32_t));     \
   FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t));    \
   FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t));   \
-  FN(8, 32, 8, 3, 5, opt, (int32_t), (int32_t));    \
-  FN(32, 8, 16, 5, 3, opt, (int32_t), (int32_t));   \
-  FN(16, 64, 16, 4, 6, opt, (int32_t), (int32_t));  \
-  FN(64, 16, 16, 6, 4, opt, (int32_t), (int32_t))
+  FN(8, 32, 8, 3, 5, opt, (uint32_t), (int64_t));   \
+  FN(32, 8, 16, 5, 3, opt, (uint32_t), (int64_t));  \
+  FN(16, 64, 16, 4, 6, opt, (int64_t), (int64_t));  \
+  FN(64, 16, 16, 6, 4, opt, (int64_t), (int64_t))
 #else
 #define FNS(opt)                                    \
   FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));  \
@@ -566,10 +566,10 @@ DECLS(ssse3);
   FN(4, 4, 4, 2, 2, opt, (uint32_t), (int32_t));    \
   FN(4, 16, 4, 2, 4, opt, (int32_t), (int32_t));    \
   FN(16, 4, 16, 4, 2, opt, (int32_t), (int32_t));   \
-  FN(8, 32, 8, 3, 5, opt, (int32_t), (int32_t));    \
-  FN(32, 8, 16, 5, 3, opt, (int32_t), (int32_t));   \
-  FN(16, 64, 16, 4, 6, opt, (int32_t), (int32_t));  \
-  FN(64, 16, 16, 6, 4, opt, (int32_t), (int32_t))
+  FN(8, 32, 8, 3, 5, opt, (uint32_t), (int64_t));   \
+  FN(32, 8, 16, 5, 3, opt, (uint32_t), (int64_t));  \
+  FN(16, 64, 16, 4, 6, opt, (int64_t), (int64_t));  \
+  FN(64, 16, 16, 6, 4, opt, (int64_t), (int64_t))
 #else
 #define FNS(opt)                                    \
   FN(64, 64, 16, 6, 6, opt, (int64_t), (int64_t));  \
