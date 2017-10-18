@@ -379,7 +379,7 @@ WorkerGlobalScope::WorkerGlobalScope(
       event_queue_(WorkerEventQueue::Create(this)),
       timers_(TaskRunnerHelper::Get(TaskType::kJavascriptTimer, this)),
       time_origin_(time_origin),
-      font_selector_(OffscreenFontSelector::Create()) {
+      font_selector_(OffscreenFontSelector::Create(this)) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
   SetSecurityOrigin(SecurityOrigin::Create(url_));

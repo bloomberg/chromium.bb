@@ -12,7 +12,7 @@
 namespace blink {
 
 class CSSFontFace;
-class CSSFontSelector;
+class FontSelector;
 class FontCustomPlatformData;
 
 enum FontDisplay {
@@ -32,10 +32,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
  public:
   enum DisplayPeriod { kBlockPeriod, kSwapPeriod, kFailurePeriod };
 
-  RemoteFontFaceSource(CSSFontFace*,
-                       FontResource*,
-                       CSSFontSelector*,
-                       FontDisplay);
+  RemoteFontFaceSource(CSSFontFace*, FontResource*, FontSelector*, FontDisplay);
   ~RemoteFontFaceSource() override;
   void Dispose();
 
@@ -127,8 +124,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   Member<CSSFontFace> face_;
   // Cleared once load is finished.
   Member<FontResource> font_;
-
-  Member<CSSFontSelector> font_selector_;
+  Member<FontSelector> font_selector_;
 
   // |nullptr| if font is not loaded or failed to decode.
   RefPtr<FontCustomPlatformData> custom_font_data_;
