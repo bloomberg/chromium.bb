@@ -3902,6 +3902,54 @@ TEST_F(PersonalDataManagerTest,
   ASSERT_EQ(0U, suggestions.size());
 }
 
+// Test that local and server cards are not loaded into memory on start-up if
+// |kAutofillCreditCardEnabled| is set to |false|.
+TEST_F(PersonalDataManagerTest,
+       GetCreditCardSuggestions_NoCardsLoadedIfDisabled) {
+  EnableWalletCardImport();
+  SetUpReferenceLocalCreditCards();
+
+  // Add some server cards.
+  std::vector<CreditCard> server_cards;
+  server_cards.push_back(CreditCard(CreditCard::MASKED_SERVER_CARD, "b459"));
+  test::SetCreditCardInfo(&server_cards.back(), "Emmet Dalton", "2110", "12",
+                          "2999", "1");
+  server_cards.back().set_use_count(2);
+  server_cards.back().set_use_date(AutofillClock::Now() -
+                                   base::TimeDelta::FromDays(1));
+  server_cards.back().SetNetworkForMaskedCard(kVisaCard);
+
+  server_cards.push_back(CreditCard(CreditCard::FULL_SERVER_CARD, "b460"));
+  test::SetCreditCardInfo(&server_cards.back(), "Jesse James", "2109", "12",
+                          "2999", "1");
+  server_cards.back().set_use_count(6);
+  server_cards.back().set_use_date(AutofillClock::Now() -
+                                   base::TimeDelta::FromDays(1));
+
+  test::SetServerCreditCards(autofill_table_, server_cards);
+
+  personal_data_->Refresh();
+  WaitForOnPersonalDataChanged();
+
+  // Expect 5 autofilled values or suggestions.
+  EXPECT_EQ(5U, personal_data_->GetCreditCards().size());
+
+  // Disable Credit card autofill.
+  personal_data_->pref_service_->SetBoolean(prefs::kAutofillCreditCardEnabled,
+                                            false);
+  // Reload the database.
+  ResetPersonalDataManager(USER_MODE_NORMAL);
+
+  // Expect no credit card values or suggestions were loaded.
+  EXPECT_EQ(0U, personal_data_->GetCreditCards().size());
+
+  std::vector<Suggestion> suggestions =
+      personal_data_->GetCreditCardSuggestions(
+          AutofillType(CREDIT_CARD_NAME_FULL),
+          /* field_contents= */ base::string16());
+  ASSERT_EQ(0U, suggestions.size());
+}
+
 // Test that expired cards are ordered by frecency and are always suggested
 // after non expired cards even if they have a higher frecency score.
 TEST_F(PersonalDataManagerTest, GetCreditCardSuggestions_ExpiredCards) {
