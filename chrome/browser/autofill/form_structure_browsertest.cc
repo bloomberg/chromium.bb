@@ -105,7 +105,7 @@ class FormStructureBrowserTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     // Suppress most output logs because we can't really control the output for
     // arbitrary test sites.
-    command_line->AppendSwitch(switches::kDisableLogging);
+    command_line->AppendSwitchASCII(switches::kLoggingLevel, "2");
   }
 
   // DataDrivenTest:

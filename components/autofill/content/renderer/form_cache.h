@@ -29,7 +29,7 @@ struct FormDataPredictions;
 // Manages the forms in a single RenderFrame.
 class FormCache {
  public:
-  explicit FormCache(const blink::WebLocalFrame& frame);
+  explicit FormCache(blink::WebLocalFrame* frame);
   ~FormCache();
 
   // Scans the DOM in |frame_| extracting and storing forms that have not been
@@ -43,10 +43,13 @@ class FormCache {
   // |element|.  Returns false if the form is not found.
   bool ClearFormWithElement(const blink::WebFormControlElement& element);
 
-  // For each field in the |form|, sets the title to include the field's
-  // heuristic type, server type, and signature; as well as the form's signature
-  // and the experiment id for the server predictions.
-  bool ShowPredictions(const FormDataPredictions& form);
+  // For each field in the |form|, if |attach_predictions_to_dom| is true, sets
+  // the title to include the field's heuristic type, server type, and
+  // signature; as well as the form's signature and the experiment id for the
+  // server predictions. In all cases, may emit console warnings regarding the
+  // use of autocomplete attributes.
+  bool ShowPredictions(const FormDataPredictions& form,
+                       bool attach_predictions_to_dom);
 
  private:
   // Scans |control_elements| and returns the number of editable elements.
@@ -61,8 +64,8 @@ class FormCache {
   void SaveInitialValues(
       const std::vector<blink::WebFormControlElement>& control_elements);
 
-  // The frame this FormCache is associated with.
-  const blink::WebLocalFrame& frame_;
+  // The frame this FormCache is associated with. Weak reference.
+  blink::WebLocalFrame* frame_;
 
   // The cached forms. Used to prevent re-extraction of forms.
   std::set<FormData> parsed_forms_;

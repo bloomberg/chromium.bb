@@ -144,7 +144,7 @@ AutofillAgent::AutofillAgent(content::RenderFrame* render_frame,
                              PasswordGenerationAgent* password_generation_agent,
                              service_manager::BinderRegistry* registry)
     : content::RenderFrameObserver(render_frame),
-      form_cache_(*render_frame->GetWebFrame()),
+      form_cache_(render_frame->GetWebFrame()),
       password_autofill_agent_(password_autofill_agent),
       password_generation_agent_(password_generation_agent),
       autofill_query_id_(0),
@@ -483,8 +483,11 @@ void AutofillAgent::PreviewForm(int32_t id, const FormData& form) {
 
 void AutofillAgent::FieldTypePredictionsAvailable(
     const std::vector<FormDataPredictions>& forms) {
+  bool attach_predictions_to_dom =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kShowAutofillTypePredictions);
   for (const auto& form : forms) {
-    form_cache_.ShowPredictions(form);
+    form_cache_.ShowPredictions(form, attach_predictions_to_dom);
   }
 }
 

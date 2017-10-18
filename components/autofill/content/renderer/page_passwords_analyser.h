@@ -10,26 +10,7 @@
 
 namespace autofill {
 
-using ConsoleLevel = blink::WebConsoleMessage::Level;
-
-// An interface for logging warnings relating to the Password Manager.
-// Abstracted for testing purposes.
-class PagePasswordsAnalyserLogger {
- public:
-  static const ConsoleLevel kError = blink::WebConsoleMessage::kLevelError;
-  static const ConsoleLevel kWarning = blink::WebConsoleMessage::kLevelWarning;
-  static const ConsoleLevel kVerbose = blink::WebConsoleMessage::kLevelVerbose;
-
-  virtual void Send(const std::string& message,
-                    ConsoleLevel level,
-                    const blink::WebNode& node) = 0;
-
-  virtual void Send(const std::string& message,
-                    ConsoleLevel level,
-                    const std::vector<blink::WebNode>& nodes) = 0;
-
-  virtual void Flush() = 0;
-};
+class PageFormAnalyserLogger;
 
 // This class provides feedback to web developers about the password forms on
 // their webpages, in order to increase the accessibility of web forms to the
@@ -54,7 +35,7 @@ class PagePasswordsAnalyser {
   // identification of fields on the web-page for the Password Manager.
   // Warning and error messages are logged to |logger|.
   void AnalyseDocumentDOM(blink::WebLocalFrame* frame,
-                          PagePasswordsAnalyserLogger* logger);
+                          PageFormAnalyserLogger* logger);
 
   // By default, the analyser will log to the DevTools console.
   void AnalyseDocumentDOM(blink::WebLocalFrame* frame);

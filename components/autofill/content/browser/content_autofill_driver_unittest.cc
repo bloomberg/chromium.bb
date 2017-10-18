@@ -372,21 +372,6 @@ TEST_F(ContentAutofillDriverTest, FormDataSentToRenderer_PreviewForm) {
   EXPECT_TRUE(input_form_data.SameFormAs(output_form_data));
 }
 
-TEST_F(ContentAutofillDriverTest,
-       TypePredictionsNotSentToRendererWhenDisabled) {
-  FormData form;
-  test::CreateTestAddressFormData(&form);
-  FormStructure form_structure(form);
-  std::vector<FormStructure*> forms(1, &form_structure);
-
-  base::RunLoop run_loop;
-  fake_agent_.SetQuitLoopClosure(run_loop.QuitClosure());
-  driver_->SendAutofillTypePredictionsToRenderer(forms);
-  run_loop.RunUntilIdle();
-
-  EXPECT_FALSE(fake_agent_.GetFieldTypePredictionsAvailable(NULL));
-}
-
 TEST_F(ContentAutofillDriverTest, TypePredictionsSentToRendererWhenEnabled) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kShowAutofillTypePredictions);

@@ -1090,7 +1090,8 @@ void AutofillManager::OnLoadedServerPredictions(
   // account creation forms.
   driver()->PropagateAutofillPredictions(queried_forms);
 
-  // If the corresponding flag is set, annotate forms with the predicted types.
+  // Send field type predictions to the renderer so that it can possibly
+  // annotate forms with the predicted types or add console warnings.
   driver()->SendAutofillTypePredictionsToRenderer(queried_forms);
 }
 
