@@ -126,6 +126,8 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   const Node* foo_node = layout_object_->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
+  EXPECT_EQ("foo", result.GetText());
+
   ASSERT_EQ(1u, result.GetUnits().size());
   TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo_node,
             0u, 3u, 0u, 3u);
@@ -172,6 +174,8 @@ TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
   const Node* foo_node = foo->GetNode();
   const Node* bar_node = bar->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
+
+  EXPECT_EQ("foobar", result.GetText());
 
   ASSERT_EQ(2u, result.GetUnits().size());
   TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo_node,
@@ -234,6 +238,8 @@ TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
   const Node* bar_node = bar->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
+  EXPECT_EQ("foo\nbar", result.GetText());
+
   ASSERT_EQ(3u, result.GetUnits().size());
   TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo_node,
             0u, 3u, 0u, 3u);
@@ -270,6 +276,8 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   SetupHtml("t", "<div id=t>foo  bar</div>");
   const Node* node = layout_object_->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
+
+  EXPECT_EQ("foo bar", result.GetText());
 
   ASSERT_EQ(3u, result.GetUnits().size());
   TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, node, 0u,
@@ -345,6 +353,8 @@ TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   const Node* bar_node = bar->GetNode();
   const Node* space_node = space->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
+
+  EXPECT_EQ("foo bar", result.GetText());
 
   ASSERT_EQ(3u, result.GetUnits().size());
   TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo_node,

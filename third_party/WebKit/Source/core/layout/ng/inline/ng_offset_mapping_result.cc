@@ -51,12 +51,14 @@ const NGOffsetMappingResult* GetNGOffsetMappingFor(const Node& node,
 }
 
 NGOffsetMappingResult::NGOffsetMappingResult(NGOffsetMappingResult&& other)
-    : NGOffsetMappingResult(std::move(other.units_), std::move(other.ranges_)) {
-}
+    : NGOffsetMappingResult(std::move(other.units_),
+                            std::move(other.ranges_),
+                            other.text_) {}
 
 NGOffsetMappingResult::NGOffsetMappingResult(UnitVector&& units,
-                                             RangeMap&& ranges)
-    : units_(units), ranges_(ranges) {}
+                                             RangeMap&& ranges,
+                                             String text)
+    : units_(units), ranges_(ranges), text_(text) {}
 
 NGOffsetMappingResult::~NGOffsetMappingResult() = default;
 
