@@ -133,7 +133,6 @@ grit("resources") {
     "//content/public/app:plugin_manifest",
     "//content/public/app:renderer_manifest",
     "//content/public/app:utility_manifest",
-    "//mojo/public/js:bindings",
     "//services/catalog:manifest",
   ]
 }

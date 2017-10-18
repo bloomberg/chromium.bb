@@ -37,10 +37,6 @@ class CONTENT_EXPORT BlinkConnectorJsWrapper
       v8::Isolate* isolate) override;
 
   // JS interface implementation.
-  void AddOverrideForTesting(const std::string& service_name,
-                             const std::string& interface_name,
-                             v8::Local<v8::Function> interface_factory);
-  void ClearOverridesForTesting();
   mojo::Handle BindInterface(const std::string& service_name,
                              const std::string& interface_name);
 

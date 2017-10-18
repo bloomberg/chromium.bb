@@ -33,10 +33,6 @@ grit("extensions_browser_resources") {
     "extensions_browser_resources_100_percent.pak",
     "extensions_browser_resources_200_percent.pak",
   ]
-  grit_flags = [
-    "-E",
-    "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
-  ]
 }
 
 grit("extensions_renderer_resources") {
@@ -50,9 +46,13 @@ grit("extensions_renderer_resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
 
+  # Files included from ${mojom_root} are generated.
+  source_is_generated = true
+
   deps = [
     "//extensions/common:mojo_js",
     "//extensions/common/api:mojom_js",
+    "//mojo/public/js:bindings",
     "//services/device/public/interfaces:interfaces_js",
   ]
 }

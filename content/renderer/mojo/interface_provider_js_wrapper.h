@@ -42,9 +42,6 @@ class CONTENT_EXPORT InterfaceProviderJsWrapper
       v8::Isolate* isolate) override;
 
   // JS interface implementation.
-  void AddOverrideForTesting(const std::string& interface_name,
-                             v8::Local<v8::Function> interface_factory);
-  void ClearOverridesForTesting();
   mojo::Handle GetInterface(const std::string& interface_name);
 
   static gin::WrapperInfo kWrapperInfo;

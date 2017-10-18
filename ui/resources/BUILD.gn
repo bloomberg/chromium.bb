@@ -50,7 +50,7 @@ grit("webui_resources_grd") {
     "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//mojo/public/js:bindings",
+    "//mojo/public/js:new_bindings",
   ]
 }
 

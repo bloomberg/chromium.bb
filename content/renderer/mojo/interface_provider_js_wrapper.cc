@@ -11,7 +11,6 @@
 #include "mojo/edk/js/handle.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {
 
@@ -50,13 +49,8 @@ gin::Handle<InterfaceProviderJsWrapper> InterfaceProviderJsWrapper::Create(
 gin::ObjectTemplateBuilder
 InterfaceProviderJsWrapper::GetObjectTemplateBuilder(v8::Isolate* isolate) {
   return Wrappable<InterfaceProviderJsWrapper>::GetObjectTemplateBuilder(
-      isolate)
-      .SetMethod("getInterface",
-                 &InterfaceProviderJsWrapper::GetInterface)
-      .SetMethod("addInterfaceOverrideForTesting",
-                 &InterfaceProviderJsWrapper::AddOverrideForTesting)
-      .SetMethod("clearInterfaceOverridesForTesting",
-                 &InterfaceProviderJsWrapper::ClearOverridesForTesting);
+             isolate)
+      .SetMethod("getInterface", &InterfaceProviderJsWrapper::GetInterface);
 }
 
 mojo::Handle InterfaceProviderJsWrapper::GetInterface(
@@ -72,34 +66,6 @@ mojo::Handle InterfaceProviderJsWrapper::GetInterface(
         interface_name, std::move(pipe.handle0));
   }
   return pipe.handle1.release();
-}
-
-void InterfaceProviderJsWrapper::AddOverrideForTesting(
-    const std::string& interface_name,
-    v8::Local<v8::Function> service_factory) {
-  ScopedJsFactory factory(v8::Isolate::GetCurrent(), service_factory);
-  BindCallback callback = base::Bind(&InterfaceProviderJsWrapper::CallJsFactory,
-                                     weak_factory_.GetWeakPtr(), factory);
-  if (remote_interfaces_) {
-    service_manager::InterfaceProvider::TestApi test_api(
-        remote_interfaces_.get());
-    test_api.SetBinderForName(interface_name, callback);
-  } else if (connector_) {
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.OverrideBinderForTesting(mojom::kBrowserServiceName,
-                                      interface_name, callback);
-  }
-}
-
-void InterfaceProviderJsWrapper::ClearOverridesForTesting() {
-  if (remote_interfaces_) {
-    service_manager::InterfaceProvider::TestApi test_api(
-        remote_interfaces_.get());
-    test_api.ClearBinders();
-  } else if (connector_) {
-    service_manager::Connector::TestApi test_api(connector_.get());
-    test_api.ClearBinderOverrides();
-  }
 }
 
 InterfaceProviderJsWrapper::InterfaceProviderJsWrapper(
@@ -124,22 +90,6 @@ InterfaceProviderJsWrapper::InterfaceProviderJsWrapper(
       weak_factory_(this) {
   context_.SetWeak(this, &InterfaceProviderJsWrapper::ClearContext,
                    v8::WeakCallbackType::kParameter);
-}
-
-void InterfaceProviderJsWrapper::CallJsFactory(
-    const ScopedJsFactory& factory,
-    mojo::ScopedMessagePipeHandle pipe) {
-  if (context_.IsEmpty())
-    return;
-
-  v8::HandleScope handle_scope(isolate_);
-  v8::Local<v8::Context> context = context_.Get(isolate_);
-  v8::Context::Scope context_scope(context);
-  v8::Local<v8::Value> argv[] = {
-      gin::ConvertToV8(isolate_, mojo::Handle(pipe.release().value()))};
-  blink::WebLocalFrame::FrameForContext(context)
-      ->CallFunctionEvenIfScriptDisabled(factory.Get(isolate_),
-                                         v8::Undefined(isolate_), 1, argv);
 }
 
 // static

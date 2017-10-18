@@ -34,11 +34,7 @@ gin::Handle<BlinkConnectorJsWrapper> BlinkConnectorJsWrapper::Create(
 gin::ObjectTemplateBuilder BlinkConnectorJsWrapper::GetObjectTemplateBuilder(
     v8::Isolate* isolate) {
   return Wrappable<BlinkConnectorJsWrapper>::GetObjectTemplateBuilder(isolate)
-      .SetMethod("bindInterface", &BlinkConnectorJsWrapper::BindInterface)
-      .SetMethod("addInterfaceOverrideForTesting",
-                 &BlinkConnectorJsWrapper::AddOverrideForTesting)
-      .SetMethod("clearInterfaceOverridesForTesting",
-                 &BlinkConnectorJsWrapper::ClearOverridesForTesting);
+      .SetMethod("bindInterface", &BlinkConnectorJsWrapper::BindInterface);
 }
 
 mojo::Handle BlinkConnectorJsWrapper::BindInterface(
@@ -54,23 +50,6 @@ mojo::Handle BlinkConnectorJsWrapper::BindInterface(
   return pipe.handle1.release();
 }
 
-void BlinkConnectorJsWrapper::AddOverrideForTesting(
-    const std::string& service_name,
-    const std::string& interface_name,
-    v8::Local<v8::Function> service_factory) {
-  ScopedJsFactory factory(v8::Isolate::GetCurrent(), service_factory);
-  service_manager::Connector::TestApi test_api(connector_.get());
-  test_api.OverrideBinderForTesting(
-      service_name, interface_name,
-      base::Bind(&BlinkConnectorJsWrapper::CallJsFactory,
-                 weak_factory_.GetWeakPtr(), factory));
-}
-
-void BlinkConnectorJsWrapper::ClearOverridesForTesting() {
-  service_manager::Connector::TestApi test_api(connector_.get());
-  test_api.ClearBinderOverrides();
-}
-
 BlinkConnectorJsWrapper::BlinkConnectorJsWrapper(
     v8::Isolate* isolate,
     v8::Local<v8::Context> context,
@@ -81,22 +60,6 @@ BlinkConnectorJsWrapper::BlinkConnectorJsWrapper(
       weak_factory_(this) {
   context_.SetWeak(this, &BlinkConnectorJsWrapper::ClearContext,
                    v8::WeakCallbackType::kParameter);
-}
-
-void BlinkConnectorJsWrapper::CallJsFactory(
-    const ScopedJsFactory& factory,
-    mojo::ScopedMessagePipeHandle pipe) {
-  if (context_.IsEmpty())
-    return;
-
-  v8::HandleScope handle_scope(isolate_);
-  v8::Local<v8::Context> context = context_.Get(isolate_);
-  v8::Context::Scope context_scope(context);
-  v8::Local<v8::Value> argv[] = {
-      gin::ConvertToV8(isolate_, mojo::Handle(pipe.release().value()))};
-  blink::WebLocalFrame::FrameForContext(context)
-      ->CallFunctionEvenIfScriptDisabled(factory.Get(isolate_),
-                                         v8::Undefined(isolate_), 1, argv);
 }
 
 // static
