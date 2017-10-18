@@ -11,22 +11,13 @@
 
 namespace cc {
 
-class LayerTreeMutatorClient {
- public:
-  // This is necessary because it forces an impl frame. We couldn't, for
-  // example, just assume that we will "always mutate" and early-out in the
-  // mutator if there was nothing to do because we won't always be producing
-  // impl frames.
-  virtual void SetNeedsMutate() = 0;
-};
-
 class CC_EXPORT LayerTreeMutator {
  public:
   virtual ~LayerTreeMutator() {}
 
-  // Returns true if the mutator should be rescheduled.
-  virtual bool Mutate(base::TimeTicks now) = 0;
-  virtual void SetClient(LayerTreeMutatorClient* client) = 0;
+  virtual void Mutate(base::TimeTicks now) = 0;
+  // TODO(majidvp): Remove when timeline inputs are known.
+  virtual bool HasAnimators() = 0;
 };
 
 }  // namespace cc
