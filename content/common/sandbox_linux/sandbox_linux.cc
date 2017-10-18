@@ -37,7 +37,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
-#include "gpu/config/gpu_info.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/services/proc_util.h"
@@ -46,7 +45,6 @@
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
-#include "third_party/angle/src/gpu_info_util/SystemInfo.h"
 
 #if defined(ANY_OF_AMTLU_SANITIZER)
 #include <sanitizer/common_interface_defs.h>
@@ -202,14 +200,13 @@ std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
   return fds;
 }
 
-bool LinuxSandbox::InitializeSandbox(const gpu::GPUInfo* gpu_info) {
-  LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
-  return linux_sandbox->InitializeSandboxImpl(gpu_info);
+bool LinuxSandbox::InitializeSandbox(
+    const SandboxSeccompBPF::Options& options) {
+  return LinuxSandbox::GetInstance()->InitializeSandboxImpl(options);
 }
 
 void LinuxSandbox::StopThread(base::Thread* thread) {
-  LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
-  linux_sandbox->StopThreadImpl(thread);
+  LinuxSandbox::GetInstance()->StopThreadImpl(thread);
 }
 
 int LinuxSandbox::GetStatus() {
@@ -277,24 +274,23 @@ sandbox::SetuidSandboxClient*
 
 // For seccomp-bpf, we use the SandboxSeccompBPF class.
 bool LinuxSandbox::StartSeccompBPF(service_manager::SandboxType sandbox_type,
-                                   const gpu::GPUInfo* gpu_info) {
+                                   const SandboxSeccompBPF::Options& opts) {
   CHECK(!seccomp_bpf_started_);
   CHECK(pre_initialized_);
   if (!seccomp_bpf_supported())
     return false;
 
-  SandboxSeccompBPF::Options opts;
-  opts.use_amd_specific_policies =
-      gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id);
-  if (!SandboxSeccompBPF::StartSandbox(sandbox_type, OpenProc(proc_fd_), opts))
+  if (!SandboxSeccompBPF::StartSandbox(sandbox_type, OpenProc(proc_fd_),
+                                       opts)) {
     return false;
-
+  }
   seccomp_bpf_started_ = true;
   LogSandboxStarted("seccomp-bpf");
   return true;
 }
 
-bool LinuxSandbox::InitializeSandboxImpl(const gpu::GPUInfo* gpu_info) {
+bool LinuxSandbox::InitializeSandboxImpl(
+    const SandboxSeccompBPF::Options& options) {
   DCHECK(!initialize_sandbox_ran_);
   initialize_sandbox_ran_ = true;
 
@@ -363,10 +359,7 @@ bool LinuxSandbox::InitializeSandboxImpl(const gpu::GPUInfo* gpu_info) {
   // Attempt to limit the future size of the address space of the process.
   LimitAddressSpace(process_type);
 
-  // Try to enable seccomp-bpf.
-  bool seccomp_bpf_started = StartSeccompBPF(sandbox_type, gpu_info);
-
-  return seccomp_bpf_started;
+  return StartSeccompBPF(sandbox_type, options);
 }
 
 void LinuxSandbox::StopThreadImpl(base::Thread* thread) {

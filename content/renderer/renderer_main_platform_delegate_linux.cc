@@ -33,7 +33,7 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // https://chromium.googlesource.com/chromium/src/+/master/docs/linux_suid_sandbox.md
   //
   // Anything else is started in InitializeSandbox().
-  LinuxSandbox::InitializeSandbox();
+  LinuxSandbox::InitializeSandbox(SandboxSeccompBPF::Options());
   // about:sandbox uses a value returned from LinuxSandbox::GetStatus() before
   // any renderer has been started.
   // Here, we test that the status of SeccompBpf in the renderer is consistent
