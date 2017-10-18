@@ -116,8 +116,10 @@ NetworkLocationRequest::NetworkLocationRequest(
 
 NetworkLocationRequest::~NetworkLocationRequest() {}
 
-bool NetworkLocationRequest::MakeRequest(const WifiData& wifi_data,
-                                         const base::Time& wifi_timestamp) {
+bool NetworkLocationRequest::MakeRequest(
+    const WifiData& wifi_data,
+    const base::Time& wifi_timestamp,
+    const net::PartialNetworkTrafficAnnotationTag& partial_traffic_annotation) {
   RecordUmaEvent(NETWORK_LOCATION_REQUEST_EVENT_REQUEST_START);
   RecordUmaAccessPoints(wifi_data.access_point_data.size());
   if (url_fetcher_ != NULL) {
@@ -129,9 +131,10 @@ bool NetworkLocationRequest::MakeRequest(const WifiData& wifi_data,
   wifi_timestamp_ = wifi_timestamp;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::DefineNetworkTrafficAnnotation("device_geolocation_request", R"(
+      net::CompleteNetworkTrafficAnnotation("device_geolocation_request",
+                                            partial_traffic_annotation,
+                                            R"(
         semantics {
-          sender: "Network Location Provider"
           description:
             "Obtains geo position based on current IP address."
           trigger:
@@ -142,16 +145,7 @@ bool NetworkLocationRequest::MakeRequest(const WifiData& wifi_data,
         }
         policy {
           cookies_allowed: NO
-          setting:
-            "Users can control this feature via the Location setting under "
-            "'Privacy', 'Content Settings...'."
-          chrome_policy {
-            DefaultGeolocationSetting {
-              policy_options {mode: MANDATORY}
-              DefaultGeolocationSetting: 2
-            }
-          }
-        })");
+      })");
   const GURL request_url = FormRequestURL(api_key_);
   DCHECK(request_url.is_valid());
   url_fetcher_ =

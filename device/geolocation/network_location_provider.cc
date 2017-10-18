@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request_context_getter.h"
 
 namespace device {
@@ -227,7 +228,25 @@ void NetworkLocationProvider::RequestPosition() {
          "with new data. Wifi APs: "
       << wifi_data_.access_point_data.size();
 
-  request_->MakeRequest(wifi_data_, wifi_timestamp_);
+  net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
+      net::DefinePartialNetworkTrafficAnnotation("network_location_provider",
+                                                 "device_geolocation_request",
+                                                 R"(
+      semantics {
+        sender: "Network Location Provider"
+      }
+      policy {
+        setting:
+          "Users can control this feature via the Location setting under "
+          "'Privacy', 'Content Settings', 'Location'."
+        chrome_policy {
+          DefaultGeolocationSetting {
+            DefaultGeolocationSetting: 2
+          }
+        }
+      })");
+  request_->MakeRequest(wifi_data_, wifi_timestamp_,
+                        partial_traffic_annotation);
 }
 
 bool NetworkLocationProvider::IsStarted() const {
