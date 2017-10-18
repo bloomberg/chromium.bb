@@ -1332,6 +1332,18 @@ RefPtr<Gradient> CSSRadialGradientValue::CreateGradient(
   return gradient;
 }
 
+namespace {
+
+bool EqualIdentifiersWithDefault(const CSSIdentifierValue* id_a,
+                                 const CSSIdentifierValue* id_b,
+                                 CSSValueID default_id) {
+  CSSValueID value_a = id_a ? id_a->GetValueID() : default_id;
+  CSSValueID value_b = id_b ? id_b->GetValueID() : default_id;
+  return value_a == value_b;
+}
+
+}  // namespace
+
 bool CSSRadialGradientValue::Equals(const CSSRadialGradientValue& other) const {
   if (gradient_type_ == kCSSDeprecatedRadialGradient)
     return other.gradient_type_ == gradient_type_ &&
@@ -1346,42 +1358,29 @@ bool CSSRadialGradientValue::Equals(const CSSRadialGradientValue& other) const {
   if (repeating_ != other.repeating_)
     return false;
 
-  bool equal_xand_y = false;
-  if (first_x_ && first_y_) {
-    equal_xand_y = DataEquivalent(first_x_, other.first_x_) &&
-                   DataEquivalent(first_y_, other.first_y_);
-  } else if (first_x_) {
-    equal_xand_y = DataEquivalent(first_x_, other.first_x_) && !other.first_y_;
-  } else if (first_y_) {
-    equal_xand_y = DataEquivalent(first_y_, other.first_y_) && !other.first_x_;
-  } else {
-    equal_xand_y = !other.first_x_ && !other.first_y_;
-  }
-
-  if (!equal_xand_y)
+  if (!DataEquivalent(first_x_, other.first_x_) ||
+      !DataEquivalent(first_y_, other.first_y_))
     return false;
 
-  bool equal_shape = true;
-  bool equal_sizing_behavior = true;
-  bool equal_horizontal_and_vertical_size = true;
-
-  if (shape_) {
-    equal_shape = DataEquivalent(shape_, other.shape_);
-  } else if (sizing_behavior_) {
-    equal_sizing_behavior =
-        DataEquivalent(sizing_behavior_, other.sizing_behavior_);
-  } else if (end_horizontal_size_ && end_vertical_size_) {
-    equal_horizontal_and_vertical_size =
-        DataEquivalent(end_horizontal_size_, other.end_horizontal_size_) &&
-        DataEquivalent(end_vertical_size_, other.end_vertical_size_);
+  // There's either a size keyword or an explicit size specification.
+  if (end_horizontal_size_) {
+    // Explicit size specification. One <length> or two <length-percentage>.
+    if (!DataEquivalent(end_horizontal_size_, other.end_horizontal_size_))
+      return false;
+    if (!DataEquivalent(end_vertical_size_, other.end_vertical_size_))
+      return false;
   } else {
-    equal_shape = !other.shape_;
-    equal_sizing_behavior = !other.sizing_behavior_;
-    equal_horizontal_and_vertical_size =
-        !other.end_horizontal_size_ && !other.end_vertical_size_;
+    if (other.end_horizontal_size_)
+      return false;
+    // There's a size keyword.
+    if (!EqualIdentifiersWithDefault(sizing_behavior_, other.sizing_behavior_,
+                                     CSSValueFarthestCorner))
+      return false;
+    // Here the shape is 'ellipse' unless explicitly set to 'circle'.
+    if (!EqualIdentifiersWithDefault(shape_, other.shape_, CSSValueEllipse))
+      return false;
   }
-  return equal_shape && equal_sizing_behavior &&
-         equal_horizontal_and_vertical_size && stops_ == other.stops_;
+  return stops_ == other.stops_;
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(CSSRadialGradientValue) {
