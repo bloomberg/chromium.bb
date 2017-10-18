@@ -48,6 +48,8 @@ source_set("alsa_cma_backend") {
     "filter_group.h",
     "media_pipeline_backend_alsa.cc",
     "media_pipeline_backend_alsa.h",
+    "mixer_output_stream_alsa.cc",
+    "mixer_output_stream_alsa.h",
     "post_processing_pipeline.h",
     "post_processing_pipeline_parser.cc",
     "post_processing_pipeline_parser.h",
