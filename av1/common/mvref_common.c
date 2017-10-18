@@ -1970,7 +1970,7 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
   }
 
   motion_field_projection(cm, ALTREF_FRAME);
-
+  motion_field_projection(cm, ALTREF2_FRAME);
   motion_field_projection(cm, BWDREF_FRAME);
 }
 #endif  // CONFIG_MFMV
