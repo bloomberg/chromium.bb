@@ -76,13 +76,6 @@ class QuicStreamFactoryPeer;
 // When a connection is idle for 30 seconds it will be closed.
 const int kIdleConnectionTimeoutSeconds = 30;
 
-// Result of a session migration attempt.
-enum class MigrationResult {
-  SUCCESS,         // Migration succeeded.
-  NO_NEW_NETWORK,  // Migration failed since no new network was found.
-  FAILURE          // Migration failed for other reasons.
-};
-
 enum QuicConnectionMigrationStatus {
   MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
   MIGRATION_STATUS_ALREADY_MIGRATED,
@@ -337,6 +330,12 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                                       IPEndPoint peer_address,
                                       const NetLogWithSource& net_log);
 
+  // Creates a datagram socket. |source| is the NetLogSource for the entity
+  // trying to create the socket, if it has one.
+  std::unique_ptr<DatagramClientSocket> CreateSocket(
+      NetLog* net_log,
+      const NetLogSource& source);
+
   // NetworkChangeNotifier::IPAddressObserver methods:
 
   // Called when local IP address changes. Must not be called if
@@ -471,17 +470,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   void ProcessGoingAwaySession(QuicChromiumClientSession* session,
                                const QuicServerId& server_id,
                                bool was_session_active);
-
-  // Internal method that migrates |session| over to using
-  // |peer_address| and |network|. If |network| is
-  // kInvalidNetworkHandle, default network is used. If the migration
-  // fails and |close_session_on_error| is true, connection is closed.
-  MigrationResult MigrateSessionInner(
-      QuicChromiumClientSession* session,
-      IPEndPoint peer_address,
-      NetworkChangeNotifier::NetworkHandle network,
-      bool close_session_on_error,
-      const NetLogWithSource& net_log);
 
   bool require_confirmation_;
   NetLog* net_log_;
