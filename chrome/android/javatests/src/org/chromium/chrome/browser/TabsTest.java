@@ -49,10 +49,12 @@ import org.chromium.chrome.browser.compositor.layouts.eventfilter.ScrollDirectio
 import org.chromium.chrome.browser.compositor.layouts.phone.StackLayout;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.Stack;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackTab;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -658,7 +660,7 @@ public class TabsTest {
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         final int startCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         for (int tabCount = startCount; tabCount < STRESSFUL_TAB_COUNT; tabCount += burstSize)  {
-            mActivityTestRule.loadUrlInManyNewTabs(url, burstSize);
+            loadUrlInManyNewTabs(url, burstSize);
             Assert.assertEquals(tabCount + burstSize,
                     mActivityTestRule.getActivity().getCurrentTabModel().getCount());
         }
@@ -686,7 +688,7 @@ public class TabsTest {
         mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         int startCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
-        mActivityTestRule.loadUrlInManyNewTabs(url, num);
+        loadUrlInManyNewTabs(url, num);
         Assert.assertEquals(
                 startCount + num, mActivityTestRule.getActivity().getCurrentTabModel().getCount());
     }
@@ -1937,5 +1939,56 @@ public class TabsTest {
             throws InterruptedException {
         CriteriaHelper.pollInstrumentationThread(
                 Criteria.equals(expected, () -> fileToCheck.exists()));
+    }
+
+    /**
+     * Load a url in multiple new tabs in parallel. Each {@link Tab} will pretend to be
+     * created from a link.
+     *
+     * @param url The url of the page to load.
+     * @param numTabs The number of tabs to open.
+     */
+    private void loadUrlInManyNewTabs(final String url, final int numTabs)
+            throws InterruptedException {
+        final CallbackHelper[] pageLoadedCallbacks = new CallbackHelper[numTabs];
+        final int[] tabIds = new int[numTabs];
+        for (int i = 0; i < numTabs; ++i) {
+            final int index = i;
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+                @Override
+                public void run() {
+                    Tab currentTab =
+                            mActivityTestRule.getActivity().getCurrentTabCreator().launchUrl(
+                                    url, TabLaunchType.FROM_LINK);
+                    final CallbackHelper pageLoadCallback = new CallbackHelper();
+                    pageLoadedCallbacks[index] = pageLoadCallback;
+                    currentTab.addObserver(new EmptyTabObserver() {
+                        @Override
+                        public void onPageLoadFinished(Tab tab) {
+                            pageLoadCallback.notifyCalled();
+                            tab.removeObserver(this);
+                        }
+                    });
+                    tabIds[index] = currentTab.getId();
+                }
+            });
+        }
+        //  When opening many tabs some may be frozen due to memory pressure and won't send
+        //  PAGE_LOAD_FINISHED events. Iterate over the newly opened tabs and wait for each to load.
+        for (int i = 0; i < numTabs; ++i) {
+            final TabModel tabModel = mActivityTestRule.getActivity().getCurrentTabModel();
+            final Tab tab = TabModelUtils.getTabById(tabModel, tabIds[i]);
+            InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
+                @Override
+                public void run() {
+                    TabModelUtils.setIndex(tabModel, tabModel.indexOf(tab));
+                }
+            });
+            try {
+                pageLoadedCallbacks[i].waitForCallback(0);
+            } catch (TimeoutException e) {
+                Assert.fail("PAGE_LOAD_FINISHED was not received for tabId=" + tabIds[i]);
+            }
+        }
     }
 }
