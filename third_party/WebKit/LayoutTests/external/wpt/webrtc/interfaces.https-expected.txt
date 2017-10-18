@@ -1,9 +1,8 @@
 This is a testharness.js-based test.
-Found 498 tests; 203 PASS, 295 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Main test driver
 PASS Test driver for asyncInitCertificate
 FAIL Test driver for asyncInitTransports assert_unreached: Failed to run asyncInitTransports: ReferenceError: RTCSctpTransport is not defined Reached unreachable code
-FAIL Test driver for asyncInitMediaStreamTrack assert_unreached: Failed to run asyncInitMediaStreamTrack: NotSupportedError: Only secure origins are allowed (see: https://goo.gl/Y0ZkNV). Reached unreachable code
+PASS Test driver for asyncInitMediaStreamTrack
 FAIL MediaStreamTrack interface: existence and properties of interface object Cannot read property 'has_extended_attribute' of undefined
 PASS MediaStreamTrack interface object length
 PASS MediaStreamTrack interface object name
@@ -11,10 +10,10 @@ FAIL MediaStreamTrack interface: existence and properties of interface prototype
 PASS MediaStreamTrack interface: existence and properties of interface prototype object's "constructor" property
 FAIL MediaStreamTrack interface: attribute isolated assert_true: The prototype object must have a property "isolated" expected true got false
 FAIL MediaStreamTrack interface: attribute onisolationchange assert_true: The prototype object must have a property "onisolationchange" expected true got false
-FAIL MediaStreamTrack must be primary interface of idlTestObjects.mediaStreamTrack assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL Stringification of idlTestObjects.mediaStreamTrack assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL MediaStreamTrack interface: idlTestObjects.mediaStreamTrack must inherit property "isolated" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
-FAIL MediaStreamTrack interface: idlTestObjects.mediaStreamTrack must inherit property "onisolationchange" with the proper type assert_equals: wrong typeof object expected "object" but got "undefined"
+PASS MediaStreamTrack must be primary interface of idlTestObjects.mediaStreamTrack
+FAIL Stringification of idlTestObjects.mediaStreamTrack Cannot read property 'has_stringifier' of undefined
+FAIL MediaStreamTrack interface: idlTestObjects.mediaStreamTrack must inherit property "isolated" with the proper type assert_inherits: property "isolated" not found in prototype chain
+FAIL MediaStreamTrack interface: idlTestObjects.mediaStreamTrack must inherit property "onisolationchange" with the proper type assert_inherits: property "onisolationchange" not found in prototype chain
 FAIL MediaStreamTrack must be primary interface of generateMediaStreamTrack('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "Error: assert_idl_attribute: Expect pc to have addTransceiver() method property "addTransceiver" not found in prototype chain"
 FAIL Stringification of generateMediaStreamTrack('audio') assert_equals: Unexpected exception when evaluating object expected null but got object "Error: assert_idl_attribute: Expect pc to have addTransceiver() method property "addTransceiver" not found in prototype chain"
 FAIL MediaStreamTrack interface: generateMediaStreamTrack('audio') must inherit property "isolated" with the proper type assert_equals: Unexpected exception when evaluating object expected null but got object "Error: assert_idl_attribute: Expect pc to have addTransceiver() method property "addTransceiver" not found in prototype chain"
