@@ -451,10 +451,8 @@ unsigned HTMLImageElement::width() {
     // if the image is available, use its width
     if (ImageResourceContent* image_content = GetImageLoader().GetContent()) {
       return image_content
-          ->ImageSize(LayoutObject::ShouldRespectImageOrientation(nullptr),
-                      1.0f)
-          .Width()
-          .ToUnsigned();
+          ->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(nullptr))
+          .Width();
     }
   }
 
@@ -474,10 +472,8 @@ unsigned HTMLImageElement::height() {
     // if the image is available, use its height
     if (ImageResourceContent* image_content = GetImageLoader().GetContent()) {
       return image_content
-          ->ImageSize(LayoutObject::ShouldRespectImageOrientation(nullptr),
-                      1.0f)
-          .Height()
-          .ToUnsigned();
+          ->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(nullptr))
+          .Height();
     }
   }
 
@@ -495,8 +491,8 @@ LayoutSize HTMLImageElement::DensityCorrectedIntrinsicDimensions() const {
 
   RespectImageOrientationEnum respect_image_orientation =
       LayoutObject::ShouldRespectImageOrientation(GetLayoutObject());
-  LayoutSize natural_size =
-      image_resource->ImageSize(respect_image_orientation, 1);
+  LayoutSize natural_size(
+      image_resource->IntrinsicSize(respect_image_orientation));
   natural_size.Scale(pixel_density);
   return natural_size;
 }
@@ -652,9 +648,8 @@ FloatSize HTMLImageElement::DefaultDestinationSize(
     return ToSVGImage(CachedImage()->GetImage())
         ->ConcreteObjectSize(default_object_size);
 
-  LayoutSize size;
-  size = image->ImageSize(
-      LayoutObject::ShouldRespectImageOrientation(GetLayoutObject()), 1.0f);
+  LayoutSize size(image->IntrinsicSize(
+      LayoutObject::ShouldRespectImageOrientation(GetLayoutObject())));
   if (GetLayoutObject() && GetLayoutObject()->IsLayoutImage() &&
       image->GetImage() && !image->GetImage()->HasRelativeSize())
     size.Scale(ToLayoutImage(GetLayoutObject())->ImageDevicePixelRatio());

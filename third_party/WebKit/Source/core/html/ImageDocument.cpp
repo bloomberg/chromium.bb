@@ -213,10 +213,9 @@ DocumentParser* ImageDocument::CreateParser() {
 IntSize ImageDocument::ImageSize() const {
   DCHECK(image_element_);
   DCHECK(image_element_->CachedImage());
-  return FlooredIntSize(image_element_->CachedImage()->ImageSize(
+  return image_element_->CachedImage()->IntrinsicSize(
       LayoutObject::ShouldRespectImageOrientation(
-          image_element_->GetLayoutObject()),
-      1.0f));
+          image_element_->GetLayoutObject()));
 }
 
 void ImageDocument::CreateDocumentStructure() {

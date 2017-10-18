@@ -89,9 +89,9 @@ FloatSize ImageElementBase::ElementSize(
         ->ConcreteObjectSize(default_object_size);
   }
 
-  return FloatSize(image->ImageSize(LayoutObject::ShouldRespectImageOrientation(
-                                        GetElement().GetLayoutObject()),
-                                    1.0f));
+  return FloatSize(
+      image->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
+          GetElement().GetLayoutObject())));
 }
 
 FloatSize ImageElementBase::DefaultDestinationSize(
@@ -105,11 +105,9 @@ FloatSize ImageElementBase::DefaultDestinationSize(
         ->ConcreteObjectSize(default_object_size);
   }
 
-  LayoutSize size;
-  size = image->ImageSize(LayoutObject::ShouldRespectImageOrientation(
-                              GetElement().GetLayoutObject()),
-                          1.0f);
-  return FloatSize(size);
+  return FloatSize(
+      image->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
+          GetElement().GetLayoutObject())));
 }
 
 bool ImageElementBase::IsAccelerated() const {
@@ -129,12 +127,8 @@ IntSize ImageElementBase::BitmapSourceSize() const {
   ImageResourceContent* image = CachedImage();
   if (!image)
     return IntSize();
-  LayoutSize lSize =
-      image->ImageSize(LayoutObject::ShouldRespectImageOrientation(
-                           GetElement().GetLayoutObject()),
-                       1.0f);
-  DCHECK(lSize.Fraction().IsZero());
-  return IntSize(lSize.Width().ToInt(), lSize.Height().ToInt());
+  return image->IntrinsicSize(LayoutObject::ShouldRespectImageOrientation(
+      GetElement().GetLayoutObject()));
 }
 
 ScriptPromise ImageElementBase::CreateImageBitmap(
