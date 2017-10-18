@@ -422,10 +422,6 @@ void PrintPreviewHandler::RegisterMessages() {
       base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
                  base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getExtensionOrPrivetPrinterCapabilities",
-      base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(
       "setupPrinter", base::Bind(&PrintPreviewHandler::HandlePrinterSetup,
                                  base::Unretained(this)));
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
@@ -1238,12 +1234,6 @@ void PrintPreviewHandler::OnPrintPreviewCancelled() {
 void PrintPreviewHandler::OnPrintRequestCancelled() {
   HandleCancelPendingPrintRequest(nullptr);
 }
-
-#if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
-void PrintPreviewHandler::ShowSystemDialog() {
-  HandleShowSystemDialog(NULL);
-}
-#endif
 
 void PrintPreviewHandler::ClearInitiatorDetails() {
   WebContents* initiator = GetInitiator();
