@@ -60,11 +60,15 @@ const char kPermissionBlockedRepeatedIgnoresMessage[] =
 const char kPermissionBlockedBlacklistMessage[] =
     "this origin is not allowed to request %s permission.";
 
+const char kPermissionBlockedFeaturePolicyMessage[] =
+    "%s permission has been blocked because of a Feature Policy applied to the "
+    "current document. See https://goo.gl/EuHzyv for more details.";
+
 void LogPermissionBlockedMessage(content::WebContents* web_contents,
                                  const char* message,
                                  ContentSettingsType type) {
   web_contents->GetMainFrame()->AddMessageToConsole(
-      content::CONSOLE_MESSAGE_LEVEL_INFO,
+      content::CONSOLE_MESSAGE_LEVEL_WARNING,
       base::StringPrintf(message,
                          PermissionUtil::GetPermissionString(type).c_str()));
 }
@@ -147,6 +151,11 @@ void PermissionContextBase::RequestPermission(
       case PermissionStatusSource::SAFE_BROWSING_BLACKLIST:
         LogPermissionBlockedMessage(web_contents,
                                     kPermissionBlockedBlacklistMessage,
+                                    content_settings_type_);
+        break;
+      case PermissionStatusSource::FEATURE_POLICY:
+        LogPermissionBlockedMessage(web_contents,
+                                    kPermissionBlockedFeaturePolicyMessage,
                                     content_settings_type_);
         break;
       case PermissionStatusSource::INSECURE_ORIGIN:
@@ -245,7 +254,7 @@ PermissionResult PermissionContextBase::GetPermissionStatus(
   if (render_frame_host &&
       !PermissionAllowedByFeaturePolicy(render_frame_host)) {
     return PermissionResult(CONTENT_SETTING_BLOCK,
-                            PermissionStatusSource::UNSPECIFIED);
+                            PermissionStatusSource::FEATURE_POLICY);
   }
 
   ContentSetting content_setting = GetPermissionStatusInternal(

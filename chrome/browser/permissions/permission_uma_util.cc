@@ -403,6 +403,7 @@ void PermissionUmaUtil::RecordEmbargoPromptSuppressionFromSource(
     case PermissionStatusSource::UNSPECIFIED:
     case PermissionStatusSource::KILL_SWITCH:
     case PermissionStatusSource::INSECURE_ORIGIN:
+    case PermissionStatusSource::FEATURE_POLICY:
       // The permission wasn't under embargo, so don't record anything. We may
       // embargo it later.
       break;
