@@ -115,6 +115,8 @@ remoting.XmppConnection.prototype.connect =
     this.socket_ = new remoting.TcpSocket();
   }
   var that = this;
+  console.log(
+      'XmppConnection: Connecting to ' + this.server_ + ':' + this.port_);
   this.socket_.connect(this.server_, this.port_)
       .then(this.onSocketConnected_.bind(this))
       .catch(function(error) {
@@ -159,14 +161,17 @@ remoting.XmppConnection.prototype.dispose = function() {
 /** @private */
 remoting.XmppConnection.prototype.onSocketConnected_ = function() {
   // Check if connection was destroyed.
+  console.log('XmppConnection: Socket connected.');
   if (this.state_ != remoting.SignalStrategy.State.CONNECTING) {
     return;
   }
 
   this.setState_(remoting.SignalStrategy.State.HANDSHAKE);
+  console.log('XmppConnection: Starting login handler.');
   this.loginHandler_.start();
 
   if (!this.startTlsPending_) {
+    console.log('XmppConnection: Start receiving.');
     this.socket_.startReceiving(this.onReceive_.bind(this),
                                 this.onReceiveError_.bind(this));
   }
@@ -338,6 +343,7 @@ remoting.XmppConnection.prototype.onError_ = function(error, text) {
  */
 remoting.XmppConnection.prototype.setState_ = function(newState) {
   if (this.state_ != newState) {
+    console.log('XmppConnection: setState(' + newState + ')');
     this.state_ = newState;
     this.onStateChangedCallback_(this.state_);
   }
