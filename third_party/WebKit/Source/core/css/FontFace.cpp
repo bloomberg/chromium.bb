@@ -696,8 +696,9 @@ void FontFace::InitCSSFontFace(Document* document, const CSSValue* src) {
         if (fetched) {
           CSSFontSelector* font_selector =
               document->GetStyleEngine().GetFontSelector();
-          source = new RemoteFontFaceSource(
-              fetched, font_selector, CSSValueToFontDisplay(display_.Get()));
+          source =
+              new RemoteFontFaceSource(css_font_face_, fetched, font_selector,
+                                       CSSValueToFontDisplay(display_.Get()));
         }
       }
     } else {

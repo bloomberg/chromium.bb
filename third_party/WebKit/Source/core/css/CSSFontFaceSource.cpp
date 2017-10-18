@@ -33,8 +33,6 @@
 
 namespace blink {
 
-CSSFontFaceSource::CSSFontFaceSource() : face_(nullptr) {}
-
 CSSFontFaceSource::~CSSFontFaceSource() {}
 
 RefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
@@ -60,8 +58,16 @@ RefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
   return font_data;
 }
 
-DEFINE_TRACE(CSSFontFaceSource) {
-  visitor->Trace(face_);
+void CSSFontFaceSource::PruneTable() {
+  if (font_data_table_.IsEmpty())
+    return;
+
+  for (const auto& item : font_data_table_) {
+    SimpleFontData* font_data = item.value.get();
+    if (font_data && font_data->GetCustomFontData())
+      font_data->GetCustomFontData()->ClearFontFaceSource();
+  }
+  font_data_table_.clear();
 }
 
 }  // namespace blink
