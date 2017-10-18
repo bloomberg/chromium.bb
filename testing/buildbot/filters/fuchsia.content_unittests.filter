@@ -37,3 +37,6 @@
 -RenderWidgetHostViewAuraCopyRequestTest.DedupeFrameSubscriberRequests
 -RenderWidgetHostViewAuraCopyRequestTest.DestroyedAfterCopyRequest
 -RenderWidgetHostViewAuraCopyRequestTest.PresentTime
+
+# Failing: https://crbug.com/771701.
+-IndexedDBFactoryTest.DataFormatVersion
