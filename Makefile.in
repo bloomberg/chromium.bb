@@ -691,7 +691,8 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 	src/common/dwarf_line_to_module_unittest.cc \
 	src/common/language.cc src/common/memory_range_unittest.cc \
 	src/common/module.cc src/common/module_unittest.cc \
-	src/common/stabs_reader.cc src/common/stabs_reader_unittest.cc \
+	src/common/path_helper.cc src/common/stabs_reader.cc \
+	src/common/stabs_reader_unittest.cc \
 	src/common/stabs_to_module.cc \
 	src/common/stabs_to_module_unittest.cc \
 	src/common/test_assembler.cc src/common/dwarf/bytereader.cc \
@@ -738,6 +739,7 @@ am__src_common_dumper_unittest_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-memory_range_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-module_unittest.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-path_helper.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-stabs_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-stabs_reader_unittest.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_dumper_unittest-stabs_to_module.$(OBJEXT) \
@@ -795,8 +797,9 @@ am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
 	src/common/dwarf_cu_to_module.cc \
 	src/common/dwarf_line_to_module.cc src/common/language.cc \
 	src/common/md5.cc src/common/module.cc \
-	src/common/stabs_reader.cc src/common/stabs_to_module.cc \
-	src/common/test_assembler.cc src/common/dwarf/bytereader.cc \
+	src/common/path_helper.cc src/common/stabs_reader.cc \
+	src/common/stabs_to_module.cc src/common/test_assembler.cc \
+	src/common/dwarf/bytereader.cc \
 	src/common/dwarf/cfi_assembler.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
@@ -812,6 +815,7 @@ am__src_common_mac_macho_reader_unittest_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_mac_macho_reader_unittest-language.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_mac_macho_reader_unittest-md5.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_mac_macho_reader_unittest-module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_mac_macho_reader_unittest-path_helper.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_mac_macho_reader_unittest-stabs_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_mac_macho_reader_unittest-stabs_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_common_mac_macho_reader_unittest-test_assembler.$(OBJEXT) \
@@ -1006,6 +1010,7 @@ am__src_processor_microdump_stackwalk_SOURCES_DIST =  \
 src_processor_microdump_stackwalk_OBJECTS =  \
 	$(am_src_processor_microdump_stackwalk_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_stackwalk_DEPENDENCIES =  \
+@DISABLE_PROCESSOR_FALSE@	src/common/path_helper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
@@ -1095,6 +1100,7 @@ am__src_processor_minidump_stackwalk_SOURCES_DIST =  \
 src_processor_minidump_stackwalk_OBJECTS =  \
 	$(am_src_processor_minidump_stackwalk_OBJECTS)
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_stackwalk_DEPENDENCIES =  \
+@DISABLE_PROCESSOR_FALSE@	src/common/path_helper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
@@ -1386,8 +1392,9 @@ am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST =  \
 	src/common/dwarf_cfi_to_module.cc \
 	src/common/dwarf_cu_to_module.cc \
 	src/common/dwarf_line_to_module.cc src/common/language.cc \
-	src/common/module.cc src/common/stabs_reader.cc \
-	src/common/stabs_to_module.cc src/common/dwarf/bytereader.cc \
+	src/common/module.cc src/common/path_helper.cc \
+	src/common/stabs_reader.cc src/common/stabs_to_module.cc \
+	src/common/dwarf/bytereader.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/dwarf/elf_reader.cc src/common/linux/crc32.cc \
@@ -1405,6 +1412,7 @@ am__src_tools_linux_dump_syms_dump_syms_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-language.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-path_helper.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_linux_dump_syms_dump_syms-stabs_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_linux_dump_syms_dump_syms-bytereader.$(OBJEXT) \
@@ -1429,9 +1437,11 @@ src_tools_linux_dump_syms_dump_syms_LINK = $(CXXLD) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 am__src_tools_linux_md2core_minidump_2_core_SOURCES_DIST =  \
 	src/common/linux/memory_mapped_file.cc \
+	src/common/path_helper.cc \
 	src/tools/linux/md2core/minidump-2-core.cc \
 	src/tools/linux/md2core/minidump_memory_range.h
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@am_src_tools_linux_md2core_minidump_2_core_OBJECTS = src/common/linux/memory_mapped_file.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/path_helper.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump-2-core.$(OBJEXT)
 src_tools_linux_md2core_minidump_2_core_OBJECTS =  \
 	$(am_src_tools_linux_md2core_minidump_2_core_OBJECTS)
@@ -1467,8 +1477,8 @@ am__src_tools_mac_dump_syms_dump_syms_mac_SOURCES_DIST =  \
 	src/common/dwarf_cu_to_module.cc \
 	src/common/dwarf_line_to_module.cc src/common/language.cc \
 	src/common/md5.cc src/common/module.cc \
-	src/common/stabs_reader.cc src/common/stabs_to_module.cc \
-	src/common/dwarf/bytereader.cc \
+	src/common/path_helper.cc src/common/stabs_reader.cc \
+	src/common/stabs_to_module.cc src/common/dwarf/bytereader.cc \
 	src/common/dwarf/dwarf2diehandler.cc \
 	src/common/dwarf/dwarf2reader.cc \
 	src/common/dwarf/elf_reader.cc \
@@ -1487,6 +1497,7 @@ am__src_tools_mac_dump_syms_dump_syms_mac_SOURCES_DIST =  \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-language.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-md5.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-module.$(OBJEXT) \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/src_tools_mac_dump_syms_dump_syms_mac-stabs_to_module.$(OBJEXT) \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/src_tools_mac_dump_syms_dump_syms_mac-bytereader.$(OBJEXT) \
@@ -2020,7 +2031,6 @@ pdfdir = @pdfdir@
 prefix = @prefix@
 program_transform_name = @program_transform_name@
 psdir = @psdir@
-runstatedir = @runstatedir@
 sbindir = @sbindir@
 sharedstatedir = @sharedstatedir@
 srcdir = @srcdir@
@@ -2389,6 +2399,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf_line_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/language.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/path_helper.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/bytereader.cc \
@@ -2415,6 +2426,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@src_tools_linux_md2core_minidump_2_core_SOURCES = \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/linux/memory_mapped_file.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/path_helper.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump-2-core.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/tools/linux/md2core/minidump_memory_range.h
 
@@ -2438,6 +2450,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/language.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/md5.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/path_helper.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/dwarf/bytereader.cc \
@@ -2479,6 +2492,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/memory_range_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module_unittest.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/path_helper.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_reader_unittest.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_to_module.cc \
@@ -2538,6 +2552,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/language.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/md5.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/module.cc \
+@DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/path_helper.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_reader.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/stabs_to_module.cc \
 @DISABLE_TOOLS_FALSE@@LINUX_HOST_TRUE@	src/common/test_assembler.cc \
@@ -3068,6 +3083,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/microdump_stackwalk.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_microdump_stackwalk_LDADD = \
+@DISABLE_PROCESSOR_FALSE@	src/common/path_helper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
@@ -3102,6 +3118,7 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 @DISABLE_PROCESSOR_FALSE@	src/processor/minidump_stackwalk.cc
 
 @DISABLE_PROCESSOR_FALSE@src_processor_minidump_stackwalk_LDADD = \
+@DISABLE_PROCESSOR_FALSE@	src/common/path_helper.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_code_modules.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/basic_source_line_resolver.o \
 @DISABLE_PROCESSOR_FALSE@	src/processor/call_stack.o \
@@ -4019,6 +4036,9 @@ src/common/src_common_dumper_unittest-module.$(OBJEXT):  \
 src/common/src_common_dumper_unittest-module_unittest.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/src_common_dumper_unittest-path_helper.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_common_dumper_unittest-stabs_reader.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
@@ -4157,6 +4177,9 @@ src/common/src_common_mac_macho_reader_unittest-md5.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_common_mac_macho_reader_unittest-module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/src_common_mac_macho_reader_unittest-path_helper.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_common_mac_macho_reader_unittest-stabs_reader.$(OBJEXT):  \
@@ -4514,6 +4537,9 @@ src/common/src_tools_linux_dump_syms_dump_syms-language.$(OBJEXT):  \
 src/common/src_tools_linux_dump_syms_dump_syms-module.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/src_tools_linux_dump_syms_dump_syms-path_helper.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
@@ -4569,6 +4595,8 @@ src/tools/linux/dump_syms/src_tools_linux_dump_syms_dump_syms-dump_syms.$(OBJEXT
 src/tools/linux/dump_syms/dump_syms$(EXEEXT): $(src_tools_linux_dump_syms_dump_syms_OBJECTS) $(src_tools_linux_dump_syms_dump_syms_DEPENDENCIES) $(EXTRA_src_tools_linux_dump_syms_dump_syms_DEPENDENCIES) src/tools/linux/dump_syms/$(am__dirstamp)
 	@rm -f src/tools/linux/dump_syms/dump_syms$(EXEEXT)
 	$(AM_V_CXXLD)$(src_tools_linux_dump_syms_dump_syms_LINK) $(src_tools_linux_dump_syms_dump_syms_OBJECTS) $(src_tools_linux_dump_syms_dump_syms_LDADD) $(LIBS)
+src/common/path_helper.$(OBJEXT): src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
 src/tools/linux/md2core/$(am__dirstamp):
 	@$(MKDIR_P) src/tools/linux/md2core
 	@: > src/tools/linux/md2core/$(am__dirstamp)
@@ -4631,6 +4659,9 @@ src/common/src_tools_mac_dump_syms_dump_syms_mac-md5.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_tools_mac_dump_syms_dump_syms_mac-module.$(OBJEXT):  \
+	src/common/$(am__dirstamp) \
+	src/common/$(DEPDIR)/$(am__dirstamp)
+src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.$(OBJEXT):  \
 	src/common/$(am__dirstamp) \
 	src/common/$(DEPDIR)/$(am__dirstamp)
 src/common/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.$(OBJEXT):  \
@@ -4742,6 +4773,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/client/linux/minidump_writer/$(DEPDIR)/src_client_linux_linux_dumper_unittest_helper-linux_dumper_unittest_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/convert_UTF.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/md5.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/path_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_client_linux_linux_client_unittest_shlib-memory_allocator_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-byte_cursor_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-dwarf_cfi_to_module.Po@am__quote@
@@ -4754,6 +4786,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-memory_range_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-module_unittest.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-path_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-stabs_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-stabs_reader_unittest.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_dumper_unittest-stabs_to_module.Po@am__quote@
@@ -4765,6 +4798,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-language.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-md5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-path_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-stabs_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-stabs_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-test_assembler.Po@am__quote@
@@ -4784,6 +4818,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-dwarf_line_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-language.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-dwarf_cfi_to_module.Po@am__quote@
@@ -4792,6 +4827,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-language.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-md5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-module.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-path_helper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-stabs_to_module.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@src/common/$(DEPDIR)/string_conversion.Po@am__quote@
@@ -5635,6 +5671,20 @@ src/common/src_common_dumper_unittest-module_unittest.obj: src/common/module_uni
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-module_unittest.obj `if test -f 'src/common/module_unittest.cc'; then $(CYGPATH_W) 'src/common/module_unittest.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/module_unittest.cc'; fi`
 
+src/common/src_common_dumper_unittest-path_helper.o: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-path_helper.o -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-path_helper.Tpo -c -o src/common/src_common_dumper_unittest-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-path_helper.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_common_dumper_unittest-path_helper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+
+src/common/src_common_dumper_unittest-path_helper.obj: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-path_helper.obj -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-path_helper.Tpo -c -o src/common/src_common_dumper_unittest-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-path_helper.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_common_dumper_unittest-path_helper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_dumper_unittest-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
+
 src/common/src_common_dumper_unittest-stabs_reader.o: src/common/stabs_reader.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_dumper_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_dumper_unittest-stabs_reader.o -MD -MP -MF src/common/$(DEPDIR)/src_common_dumper_unittest-stabs_reader.Tpo -c -o src/common/src_common_dumper_unittest-stabs_reader.o `test -f 'src/common/stabs_reader.cc' || echo '$(srcdir)/'`src/common/stabs_reader.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_dumper_unittest-stabs_reader.Tpo src/common/$(DEPDIR)/src_common_dumper_unittest-stabs_reader.Po
@@ -6222,6 +6272,20 @@ src/common/src_common_mac_macho_reader_unittest-module.obj: src/common/module.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/module.cc' object='src/common/src_common_mac_macho_reader_unittest-module.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_mac_macho_reader_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_mac_macho_reader_unittest-module.obj `if test -f 'src/common/module.cc'; then $(CYGPATH_W) 'src/common/module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/module.cc'; fi`
+
+src/common/src_common_mac_macho_reader_unittest-path_helper.o: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_mac_macho_reader_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_mac_macho_reader_unittest-path_helper.o -MD -MP -MF src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-path_helper.Tpo -c -o src/common/src_common_mac_macho_reader_unittest-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-path_helper.Tpo src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_common_mac_macho_reader_unittest-path_helper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_mac_macho_reader_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_mac_macho_reader_unittest-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+
+src/common/src_common_mac_macho_reader_unittest-path_helper.obj: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_mac_macho_reader_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_mac_macho_reader_unittest-path_helper.obj -MD -MP -MF src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-path_helper.Tpo -c -o src/common/src_common_mac_macho_reader_unittest-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-path_helper.Tpo src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_common_mac_macho_reader_unittest-path_helper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_mac_macho_reader_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_common_mac_macho_reader_unittest-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
 
 src/common/src_common_mac_macho_reader_unittest-stabs_reader.o: src/common/stabs_reader.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(src_common_mac_macho_reader_unittest_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_common_mac_macho_reader_unittest-stabs_reader.o -MD -MP -MF src/common/$(DEPDIR)/src_common_mac_macho_reader_unittest-stabs_reader.Tpo -c -o src/common/src_common_mac_macho_reader_unittest-stabs_reader.o `test -f 'src/common/stabs_reader.cc' || echo '$(srcdir)/'`src/common/stabs_reader.cc
@@ -7035,6 +7099,20 @@ src/common/src_tools_linux_dump_syms_dump_syms-module.obj: src/common/module.cc
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-module.obj `if test -f 'src/common/module.cc'; then $(CYGPATH_W) 'src/common/module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/module.cc'; fi`
 
+src/common/src_tools_linux_dump_syms_dump_syms-path_helper.o: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-path_helper.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-path_helper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+
+src/common/src_tools_linux_dump_syms_dump_syms-path_helper.obj: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-path_helper.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_tools_linux_dump_syms_dump_syms-path_helper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_linux_dump_syms_dump_syms-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
+
 src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o: src/common/stabs_reader.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_linux_dump_syms_dump_syms_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Tpo -c -o src/common/src_tools_linux_dump_syms_dump_syms-stabs_reader.o `test -f 'src/common/stabs_reader.cc' || echo '$(srcdir)/'`src/common/stabs_reader.cc
 @am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Tpo src/common/$(DEPDIR)/src_tools_linux_dump_syms_dump_syms-stabs_reader.Po
@@ -7342,6 +7420,20 @@ src/common/src_tools_mac_dump_syms_dump_syms_mac-module.obj: src/common/module.c
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/module.cc' object='src/common/src_tools_mac_dump_syms_dump_syms_mac-module.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-module.obj `if test -f 'src/common/module.cc'; then $(CYGPATH_W) 'src/common/module.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/module.cc'; fi`
+
+src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.o: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-path_helper.Tpo -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-path_helper.Tpo src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.o `test -f 'src/common/path_helper.cc' || echo '$(srcdir)/'`src/common/path_helper.cc
+
+src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.obj: src/common/path_helper.cc
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.obj -MD -MP -MF src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-path_helper.Tpo -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
+@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-path_helper.Tpo src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-path_helper.Po
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='src/common/path_helper.cc' object='src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-path_helper.obj `if test -f 'src/common/path_helper.cc'; then $(CYGPATH_W) 'src/common/path_helper.cc'; else $(CYGPATH_W) '$(srcdir)/src/common/path_helper.cc'; fi`
 
 src/common/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.o: src/common/stabs_reader.cc
 @am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(src_tools_mac_dump_syms_dump_syms_mac_CXXFLAGS) $(CXXFLAGS) -MT src/common/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.o -MD -MP -MF src/common/$(DEPDIR)/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.Tpo -c -o src/common/src_tools_mac_dump_syms_dump_syms_mac-stabs_reader.o `test -f 'src/common/stabs_reader.cc' || echo '$(srcdir)/'`src/common/stabs_reader.cc

@@ -38,6 +38,7 @@
 #include <string>
 #include <vector>
 
+#include "common/path_helper.h"
 #include "common/scoped_ptr.h"
 #include "common/using_std_string.h"
 #include "google_breakpad/processor/basic_source_line_resolver.h"
@@ -130,7 +131,7 @@ static void Usage(int argc, const char *argv[], bool error) {
           "\n"
           "  -m         Output in machine-readable format\n"
           "  -s         Output stack contents\n",
-          basename(argv[0]));
+          google_breakpad::BaseName(argv[0]).c_str());
 }
 
 static void SetupOptions(int argc, const char *argv[], Options* options) {
