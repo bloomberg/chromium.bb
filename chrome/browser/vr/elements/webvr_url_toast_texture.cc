@@ -73,11 +73,11 @@ void WebVrUrlToastTexture::Draw(SkCanvas* canvas,
   // Site security state icon.
   if ((state_.security_level != security_state::NONE || state_.offline_page) &&
       state_.vector_icon != nullptr && state_.should_display_url) {
-    DrawVectorIcon(&gfx_canvas, *state_.vector_icon,
-                   ToPixels(kSecurityIconSize),
-                   {ToPixels(kSecurityIconOffsetLeft),
-                    ToPixels((kHeight - kSecurityIconSize) / 2)},
-                   color_scheme().transient_warning_foreground);
+    VectorIcon::DrawVectorIcon(&gfx_canvas, *state_.vector_icon,
+                               ToPixels(kSecurityIconSize),
+                               {ToPixels(kSecurityIconOffsetLeft),
+                                ToPixels((kHeight - kSecurityIconSize) / 2)},
+                               color_scheme().transient_warning_foreground);
   }
 
   if (state_.should_display_url) {

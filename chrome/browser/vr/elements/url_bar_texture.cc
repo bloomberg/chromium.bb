@@ -195,7 +195,7 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   canvas->drawRRect(round_rect, paint);
 
   // Back button icon.
-  DrawVectorIcon(
+  VectorIcon::DrawVectorIcon(
       &gfx_canvas, vector_icons::kBackArrowIcon, ToPixels(kBackIconSize),
       {ToPixels(kBackButtonWidth / 2 + kBackIconOffset - kBackIconSize / 2),
        ToPixels(kHeight - kBackIconSize) / 2},
@@ -222,11 +222,11 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
       state_.vector_icon != nullptr && state_.should_display_url) {
     gfx::RectF icon_region(left_edge, kHeight / 2 - kSecurityIconSize / 2,
                            kSecurityIconSize, kSecurityIconSize);
-    DrawVectorIcon(&gfx_canvas, *state_.vector_icon,
-                   ToPixels(kSecurityIconSize),
-                   {ToPixels(icon_region.x()), ToPixels(icon_region.y())},
-                   GetSecurityChipColor(state_.security_level,
-                                        state_.offline_page, color_scheme()));
+    VectorIcon::DrawVectorIcon(
+        &gfx_canvas, *state_.vector_icon, ToPixels(kSecurityIconSize),
+        {ToPixels(icon_region.x()), ToPixels(icon_region.y())},
+        GetSecurityChipColor(state_.security_level, state_.offline_page,
+                             color_scheme()));
     security_hit_region_ = icon_region;
     left_edge += kSecurityIconSize + kFieldSpacing;
   }
