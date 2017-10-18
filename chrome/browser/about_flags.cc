@@ -243,15 +243,6 @@ const FeatureEntry::Choice kPassiveListenersChoices[] = {
 
 const FeatureEntry::Choice kMarkHttpAsChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
-    {flag_descriptions::kMarkHttpAsNonSecureAfterEditing,
-     security_state::switches::kMarkHttpAs,
-     security_state::switches::kMarkHttpAsNonSecureAfterEditing},
-    {flag_descriptions::kMarkHttpAsNonSecureWhileIncognito,
-     security_state::switches::kMarkHttpAs,
-     security_state::switches::kMarkHttpAsNonSecureWhileIncognito},
-    {flag_descriptions::kMarkHttpAsNonSecureWhileIncognitoOrEditing,
-     security_state::switches::kMarkHttpAs,
-     security_state::switches::kMarkHttpAsNonSecureWhileIncognitoOrEditing},
     {flag_descriptions::kMarkHttpAsDangerous,
      security_state::switches::kMarkHttpAs,
      security_state::switches::kMarkHttpAsDangerous}};

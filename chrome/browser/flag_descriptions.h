@@ -481,9 +481,6 @@ extern const char kManualPasswordSavingDescription[];
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
 extern const char kMarkHttpAsDangerous[];
-extern const char kMarkHttpAsNonSecureAfterEditing[];
-extern const char kMarkHttpAsNonSecureWhileIncognito[];
-extern const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[];
 
 extern const char kMaterialDesignIncognitoNTPName[];
 extern const char kMaterialDesignIncognitoNTPDescription[];
