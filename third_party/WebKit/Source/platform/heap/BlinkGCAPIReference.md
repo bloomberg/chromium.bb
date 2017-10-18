@@ -373,8 +373,6 @@ The function implementation must contain:
 
 It is recommended that the delegation call, if any, is put at the end of a tracing method.
 
-If the class does not contain any on-heap object, the tracing method is not needed.
-
 If you want to define your tracing method inline or need to have your tracing method polymorphic, you can use the
 following variants of the tracing macros:
 
