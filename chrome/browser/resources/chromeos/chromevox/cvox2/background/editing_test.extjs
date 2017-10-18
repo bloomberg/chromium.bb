@@ -424,12 +424,14 @@ TEST_F('EditingTest', 'RichTextImageByCharacter', function() {
       var lineText = 'dog is a cat test';
       var lineOnDogText = 'dog img is a cat test';
       var lineOnCatText = 'dog is a cat img test';
-      mockFeedback.call(moveByChar)
-          // Note that this isn't quite correct. This should be the second
-          // character which is a space ' '.
+      mockFeedback
+          // This is initial output from focusing the contenteditable (which has
+          // no role).
+          .expectSpeech('dog', 'Image', ' is a ', 'cat', 'Image', ' test')
+          .expectBraille('dog img is a cat img test')
+          .call(moveByChar)
           .expectSpeech('dog', 'Image')
-          // Ditto.
-          .expectBraille(lineOnDogText, {startIndex: 0, endIndex: 0})
+          .expectBraille(lineText, {startIndex: 3, endIndex: 3})
           .call(moveByChar)
           .expectSpeech('i')
           .expectBraille(lineText, {startIndex: 4, endIndex: 4})
