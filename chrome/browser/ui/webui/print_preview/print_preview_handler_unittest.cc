@@ -45,6 +45,20 @@ PrinterInfo GetSimplePrinterInfo(const std::string& name, bool is_default) {
   return simple_printer;
 }
 
+PrinterInfo GetEmptyPrinterInfo() {
+  PrinterInfo empty_printer;
+  empty_printer.id = "EmptyPrinter";
+  empty_printer.is_default = false;
+  empty_printer.basic_info.SetKey("printer_name",
+                                  base::Value(empty_printer.id));
+  empty_printer.basic_info.SetKey("printer_description",
+                                  base::Value("Printer with no capabilities"));
+  empty_printer.basic_info.SetKey("printer_status", base::Value(0));
+  empty_printer.capabilities.SetKey("printer",
+                                    empty_printer.basic_info.Clone());
+  return empty_printer;
+}
+
 class TestPrinterHandler : public PrinterHandler {
  public:
   explicit TestPrinterHandler(const std::vector<PrinterInfo>& printers) {
@@ -86,7 +100,6 @@ class TestPrinterHandler : public PrinterHandler {
     callback.Run(true, base::Value());
   }
 
- private:
   void SetPrinters(const std::vector<PrinterInfo>& printers) {
     base::Value::ListStorage printer_list;
     for (const auto& printer : printers) {
@@ -99,6 +112,7 @@ class TestPrinterHandler : public PrinterHandler {
     printers_ = base::ListValue(printer_list);
   }
 
+ private:
   std::string default_printer_;
   base::ListValue printers_;
   std::map<std::string, std::unique_ptr<base::DictionaryValue>>
@@ -248,9 +262,8 @@ class PrintPreviewHandlerTest : public testing::Test {
   const Profile* profile() { return profile_.get(); }
   content::TestWebUI* web_ui() { return web_ui_.get(); }
   printing::TestPrintPreviewHandler* handler() { return handler_; }
-  const printing::TestPrinterHandler* printer_handler() {
-    return printer_handler_;
-  }
+  printing::TestPrinterHandler* printer_handler() { return printer_handler_; }
+  std::vector<printing::PrinterInfo>& printers() { return printers_; }
 
  private:
   content::TestBrowserThreadBundle thread_bundle_;
@@ -297,9 +310,11 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
                           printing::kDummyPrinterName,
                           printing::kDummyInitiatorName);
 
-  printing::PrinterType types[3] = {printing::kPrivetPrinter,
-                                    printing::kExtensionPrinter,
-                                    printing::kLocalPrinter};
+  // Check all three printer types that implement
+  // PrinterHandler::StartGetPrinters().
+  const printing::PrinterType types[] = {printing::kPrivetPrinter,
+                                         printing::kExtensionPrinter,
+                                         printing::kLocalPrinter};
   for (size_t i = 0; i < arraysize(types); i++) {
     printing::PrinterType type = types[i];
     handler()->reset_calls();
@@ -337,5 +352,89 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
     bool success = false;
     ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
     EXPECT_TRUE(success);
+  }
+}
+
+TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
+  // Add an empty printer to the handler.
+  printers().push_back(printing::GetEmptyPrinterInfo());
+  printer_handler()->SetPrinters(printers());
+
+  // Initial settings first to enable javascript.
+  base::ListValue list_args;
+  list_args.AppendString("test-callback-id-0");
+  handler()->HandleGetInitialSettings(&list_args);
+  // In response to get initial settings, the initial settings are sent back
+  // and a use-cloud-print event is dispatched.
+  ASSERT_EQ(2u, web_ui()->call_data().size());
+
+  // Verify initial settings were sent.
+  ValidateInitialSettings(*web_ui()->call_data().back(),
+                          printing::kDummyPrinterName,
+                          printing::kDummyInitiatorName);
+
+  // Check all four printer types that implement
+  // PrinterHandler::StartGetCapability().
+  const printing::PrinterType types[] = {
+      printing::kPrivetPrinter, printing::kExtensionPrinter,
+      printing::kPdfPrinter, printing::kLocalPrinter};
+  for (size_t i = 0; i < arraysize(types); i++) {
+    printing::PrinterType type = types[i];
+    handler()->reset_calls();
+    base::ListValue args;
+    std::string callback_id_in =
+        "test-callback-id-" + base::UintToString(i + 1);
+    args.AppendString(callback_id_in);
+    args.AppendString(printing::kDummyPrinterName);
+    args.AppendInteger(type);
+    handler()->HandleGetPrinterCapabilities(&args);
+    EXPECT_TRUE(handler()->CalledOnlyForType(type));
+
+    // Start with 2 calls from initial settings, then add 1 more for each loop
+    // iteration.
+    ASSERT_EQ(2u + (i + 1), web_ui()->call_data().size());
+
+    // Verify printers done webui response
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    std::string callback_id;
+    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+    EXPECT_EQ(callback_id_in, callback_id);
+    bool success = false;
+    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
+    EXPECT_TRUE(success);
+    const base::Value* settings = data.arg3();
+    ASSERT_TRUE(settings);
+    EXPECT_TRUE(settings->FindPathOfType({printing::kSettingCapabilities},
+                                         base::Value::Type::DICTIONARY));
+  }
+
+  // Run through the loop again, this time with a printer that has no
+  // capabilities.
+  for (size_t i = 0; i < arraysize(types); i++) {
+    printing::PrinterType type = types[i];
+    handler()->reset_calls();
+    base::ListValue args;
+    std::string callback_id_in =
+        "test-callback-id-" + base::UintToString(i + arraysize(types) + 1);
+    args.AppendString(callback_id_in);
+    args.AppendString("EmptyPrinter");
+    args.AppendInteger(type);
+    handler()->HandleGetPrinterCapabilities(&args);
+    EXPECT_TRUE(handler()->CalledOnlyForType(type));
+
+    // Start with 2 calls from initial settings plus arraysize(types) from
+    // first loop, then add 1 more for each loop iteration.
+    ASSERT_EQ(2u + arraysize(types) + (i + 1), web_ui()->call_data().size());
+
+    // Verify printers done webui response
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    std::string callback_id;
+    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+    EXPECT_EQ(callback_id_in, callback_id);
+    bool success = true;
+    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
+    EXPECT_FALSE(success);
   }
 }
