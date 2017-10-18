@@ -98,12 +98,12 @@ void AppShortcutLauncherItemController::ItemSelected(
       return;
     }
 
-    // Launching some items replaces this item controller instance, which
-    // destroys its ShelfID string pair; making copies avoid crashes.
-    ChromeLauncherController::instance()->LaunchApp(
-        ash::ShelfID(shelf_id()), source, ui::EF_NONE, display_id);
+    // LaunchApp may replace and destroy this item controller instance. Run the
+    // callback before |binding_| is destroyed and copy the id to avoid crashes.
     std::move(callback).Run(ash::SHELF_ACTION_NEW_WINDOW_CREATED,
                             base::nullopt);
+    ChromeLauncherController::instance()->LaunchApp(
+        ash::ShelfID(shelf_id()), source, ui::EF_NONE, display_id);
     return;
   }
 

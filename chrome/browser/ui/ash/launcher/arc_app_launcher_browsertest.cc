@@ -4,6 +4,9 @@
 
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_button.h"
+#include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shell.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
@@ -23,10 +26,13 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 #include "components/arc/arc_util.h"
 #include "content/public/test/browser_test_utils.h"
 #include "ui/app_list/app_list_features.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/events/event_constants.h"
+#include "ui/events/test/event_generator.h"
 
 namespace mojo {
 
@@ -281,12 +287,68 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(ArcAppLauncherBrowserTest);
 };
 
-class ArcAppDeferredLauncherBrowserTest
-    : public ArcAppLauncherBrowserTest,
+class ArcAppDeferredLauncherBrowserTest : public ArcAppLauncherBrowserTest {
+ public:
+  ArcAppDeferredLauncherBrowserTest() = default;
+  ~ArcAppDeferredLauncherBrowserTest() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(ArcAppDeferredLauncherBrowserTest,
+                       StartAppDeferredFromShelfButton) {
+  StartInstance();
+  InstallTestApps(kTestAppPackage, false);
+  SendPackageAdded(kTestAppPackage, false);
+
+  // Restart ARC and ARC apps are in disabled state.
+  StopInstance();
+  StartInstance();
+
+  ChromeLauncherController* const controller =
+      ChromeLauncherController::instance();
+  const std::string app_id = GetTestApp1Id(kTestAppPackage);
+  controller->PinAppWithID(app_id);
+
+  aura::Window* const root_window = ash::Shell::GetPrimaryRootWindow();
+  ash::ShelfViewTestAPI test_api(
+      ash::Shelf::ForWindow(root_window)->GetShelfViewForTesting());
+  const int item_index =
+      controller->shelf_model()->ItemIndexByID(ash::ShelfID(app_id));
+  ASSERT_GE(item_index, 0);
+
+  controller->FlushForTesting();
+
+  ash::ShelfButton* const button = test_api.GetButton(item_index);
+  ASSERT_TRUE(button);
+
+  views::InkDrop* const ink_drop = button->GetInkDropForTesting();
+  ASSERT_TRUE(ink_drop);
+
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop->GetTargetInkDropState());
+
+  ui::test::EventGenerator event_generator(root_window);
+  event_generator.MoveMouseTo(button->GetBoundsInScreen().CenterPoint());
+  base::RunLoop().RunUntilIdle();
+  event_generator.ClickLeftButton();
+
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            ink_drop->GetTargetInkDropState());
+
+  // Flush RemoteShelfItemDelegate::ItemSelected and callback mojo messages.
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(views::InkDropState::ACTION_TRIGGERED,
+            ink_drop->GetTargetInkDropState());
+}
+
+class ArcAppDeferredLauncherWithParamsBrowserTest
+    : public ArcAppDeferredLauncherBrowserTest,
       public testing::WithParamInterface<TestParameter> {
  public:
-  ArcAppDeferredLauncherBrowserTest() {}
-  ~ArcAppDeferredLauncherBrowserTest() override {}
+  ArcAppDeferredLauncherWithParamsBrowserTest() = default;
+  ~ArcAppDeferredLauncherWithParamsBrowserTest() override = default;
 
  protected:
   bool is_pinned() const { return std::tr1::get<1>(GetParam()); }
@@ -294,11 +356,12 @@ class ArcAppDeferredLauncherBrowserTest
   TestAction test_action() const { return std::tr1::get<0>(GetParam()); }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcAppDeferredLauncherWithParamsBrowserTest);
 };
 
 // This tests simulates normal workflow for starting ARC app in deferred mode.
-IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
+IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherWithParamsBrowserTest,
+                       StartAppDeferred) {
   // Install app to remember existing apps.
   StartInstance();
   InstallTestApps(kTestAppPackage, false);
@@ -329,7 +392,14 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   EXPECT_EQ(is_pinned(), controller->GetItem(shelf_id) != nullptr);
 
   // Launching non-ready ARC app creates item on shelf and spinning animation.
-  arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
+  if (is_pinned()) {
+    EXPECT_EQ(ash::SHELF_ACTION_NEW_WINDOW_CREATED,
+              SelectShelfItem(shelf_id, ui::ET_MOUSE_PRESSED,
+                              display::kInvalidDisplayId));
+  } else {
+    arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON);
+  }
+
   const ash::ShelfItem* item = controller->GetItem(shelf_id);
   EXPECT_EQ(base::UTF8ToUTF16(kTestAppName), item->title);
   AppAnimatedWaiter(app_id).Wait();
@@ -362,8 +432,8 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
   }
 }
 
-INSTANTIATE_TEST_CASE_P(ArcAppDeferredLauncherBrowserTestInstance,
-                        ArcAppDeferredLauncherBrowserTest,
+INSTANTIATE_TEST_CASE_P(ArcAppDeferredLauncherWithParamsBrowserTestInstance,
+                        ArcAppDeferredLauncherWithParamsBrowserTest,
                         ::testing::ValuesIn(build_test_parameter));
 
 // This tests validates pin state on package update and remove.

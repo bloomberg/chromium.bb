@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/ash/app_list/test/app_list_service_ash_test_api.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
+#include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_test_util.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -78,7 +79,6 @@
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
-#include "ui/events/base_event_utils.h"
 #include "ui/events/event.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/test/event_generator.h"
@@ -90,40 +90,10 @@ using content::WebContents;
 
 namespace {
 
-// A callback that records the action taken when a shelf item is selected.
-void ItemSelectedCallback(ash::ShelfAction* action_taken,
-                          base::RunLoop* run_loop,
-                          ash::ShelfAction action,
-                          base::Optional<ash::MenuItemList>) {
-  *action_taken = action;
-  run_loop->Quit();
-}
-
-// Calls ShelfItemDelegate::ItemSelected for the item with the given |id|, using
-// an event corresponding to the requested |event_type| (defaults to mouse) and
-// plumbs the requested |display_id| (invalid defaults to the primary display).
 ash::ShelfAction SelectItem(const ash::ShelfID& id,
                             ui::EventType event_type = ui::ET_MOUSE_PRESSED,
                             int64_t display_id = display::kInvalidDisplayId) {
-  std::unique_ptr<ui::Event> event;
-  if (event_type == ui::ET_MOUSE_PRESSED) {
-    event =
-        std::make_unique<ui::MouseEvent>(event_type, gfx::Point(), gfx::Point(),
-                                         ui::EventTimeForNow(), ui::EF_NONE, 0);
-  } else if (event_type == ui::ET_KEY_RELEASED) {
-    event = base::MakeUnique<ui::KeyEvent>(event_type, ui::VKEY_UNKNOWN,
-                                           ui::EF_NONE);
-  }
-
-  base::RunLoop run_loop;
-  ash::ShelfAction action = ash::SHELF_ACTION_NONE;
-  ash::ShelfModel* model = ChromeLauncherController::instance()->shelf_model();
-  ash::ShelfItemDelegate* delegate = model->GetShelfItemDelegate(id);
-  delegate->ItemSelected(
-      std::move(event), display_id, ash::LAUNCH_FROM_UNKNOWN,
-      base::BindOnce(&ItemSelectedCallback, &action, &run_loop));
-  run_loop.Run();
-  return action;
+  return SelectShelfItem(id, event_type, display_id);
 }
 
 class TestEvent : public ui::Event {
