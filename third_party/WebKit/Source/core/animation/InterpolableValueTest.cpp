@@ -4,24 +4,36 @@
 
 #include <memory>
 #include "core/animation/AnimationTestHelper.h"
+#include "core/animation/CSSLengthInterpolationType.h"
+#include "core/animation/CSSNumberInterpolationType.h"
 #include "core/animation/InterpolableValue.h"
-#include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/InterpolationValue.h"
+#include "core/animation/StringKeyframe.h"
+#include "core/animation/TransitionInterpolation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
 class AnimationInterpolableValueTest : public ::testing::Test {
  protected:
-  InterpolableValue* InterpolationValue(
-      LegacyStyleInterpolation& interpolation) {
-    return interpolation.GetCachedValueForTesting();
-  }
+  double InterpolateNumbers(int a, int b, double progress) {
+    // We require a property that maps to CSSNumberInterpolationType. 'z-index'
+    // suffices for this, and also means we can ignore the AnimatableValues for
+    // the compositor (as z-index isn't compositor-compatible).
+    PropertyHandle property_handle(CSSPropertyZIndex);
+    CSSNumberInterpolationType interpolation_type(property_handle);
+    InterpolationValue start(InterpolableNumber::Create(a));
+    InterpolationValue end(InterpolableNumber::Create(b));
+    RefPtr<TransitionInterpolation> i = TransitionInterpolation::Create(
+        property_handle, interpolation_type, std::move(start), std::move(end),
+        nullptr, nullptr);
 
-  double InterpolateNumbers(double a, double b, double progress) {
-    RefPtr<LegacyStyleInterpolation> i = SampleTestInterpolation::Create(
-        InterpolableNumber::Create(a), InterpolableNumber::Create(b));
     i->Interpolate(0, progress);
-    return ToInterpolableNumber(InterpolationValue(*i.get()))->Value();
+    std::unique_ptr<TypedInterpolationValue> interpolated_value =
+        i->GetInterpolatedValue();
+    EXPECT_TRUE(interpolated_value);
+    return ToInterpolableNumber(interpolated_value->GetInterpolableValue())
+        .Value();
   }
 
   void ScaleAndAdd(InterpolableValue& base,
@@ -30,14 +42,22 @@ class AnimationInterpolableValueTest : public ::testing::Test {
     base.ScaleAndAdd(scale, add);
   }
 
-  RefPtr<LegacyStyleInterpolation> InterpolateLists(
+  std::unique_ptr<TypedInterpolationValue> InterpolateLists(
       std::unique_ptr<InterpolableList> list_a,
       std::unique_ptr<InterpolableList> list_b,
       double progress) {
-    RefPtr<LegacyStyleInterpolation> i =
-        SampleTestInterpolation::Create(std::move(list_a), std::move(list_b));
+    // We require a property that maps to CSSLengthInterpolationType. 'left'
+    // suffices for this, and also means we can ignore the AnimatableValues for
+    // the compositor (as left isn't compositor-compatible).
+    PropertyHandle property_handle(CSSPropertyLeft);
+    CSSLengthInterpolationType interpolation_type(property_handle);
+    InterpolationValue start(std::move(list_a));
+    InterpolationValue end(std::move(list_b));
+    RefPtr<TransitionInterpolation> i = TransitionInterpolation::Create(
+        property_handle, interpolation_type, std::move(start), std::move(end),
+        nullptr, nullptr);
     i->Interpolate(0, progress);
-    return i;
+    return i->GetInterpolatedValue();
   }
 };
 
@@ -61,12 +81,14 @@ TEST_F(AnimationInterpolableValueTest, SimpleList) {
   list_b->Set(1, InterpolableNumber::Create(-200));
   list_b->Set(2, InterpolableNumber::Create(300));
 
-  RefPtr<LegacyStyleInterpolation> i =
+  std::unique_ptr<TypedInterpolationValue> interpolated_value =
       InterpolateLists(std::move(list_a), std::move(list_b), 0.3);
-  InterpolableList* out_list = ToInterpolableList(InterpolationValue(*i.get()));
-  EXPECT_FLOAT_EQ(30, ToInterpolableNumber(out_list->Get(0))->Value());
-  EXPECT_FLOAT_EQ(-30.6f, ToInterpolableNumber(out_list->Get(1))->Value());
-  EXPECT_FLOAT_EQ(104.35f, ToInterpolableNumber(out_list->Get(2))->Value());
+  const InterpolableList& out_list =
+      ToInterpolableList(interpolated_value->GetInterpolableValue());
+
+  EXPECT_FLOAT_EQ(30, ToInterpolableNumber(out_list.Get(0))->Value());
+  EXPECT_FLOAT_EQ(-30.6f, ToInterpolableNumber(out_list.Get(1))->Value());
+  EXPECT_FLOAT_EQ(104.35f, ToInterpolableNumber(out_list.Get(2))->Value());
 }
 
 TEST_F(AnimationInterpolableValueTest, NestedList) {
@@ -84,14 +106,16 @@ TEST_F(AnimationInterpolableValueTest, NestedList) {
   list_b->Set(1, std::move(sub_list_b));
   list_b->Set(2, InterpolableNumber::Create(1));
 
-  RefPtr<LegacyStyleInterpolation> i =
+  std::unique_ptr<TypedInterpolationValue> interpolated_value =
       InterpolateLists(std::move(list_a), std::move(list_b), 0.5);
-  InterpolableList* out_list = ToInterpolableList(InterpolationValue(*i.get()));
-  EXPECT_FLOAT_EQ(50, ToInterpolableNumber(out_list->Get(0))->Value());
+  const InterpolableList& out_list =
+      ToInterpolableList(interpolated_value->GetInterpolableValue());
+
+  EXPECT_FLOAT_EQ(50, ToInterpolableNumber(out_list.Get(0))->Value());
   EXPECT_FLOAT_EQ(
-      75, ToInterpolableNumber(ToInterpolableList(out_list->Get(1))->Get(0))
+      75, ToInterpolableNumber(ToInterpolableList(out_list.Get(1))->Get(0))
               ->Value());
-  EXPECT_FLOAT_EQ(0.5, ToInterpolableNumber(out_list->Get(2))->Value());
+  EXPECT_FLOAT_EQ(0.5, ToInterpolableNumber(out_list.Get(2))->Value());
 }
 
 TEST_F(AnimationInterpolableValueTest, ScaleAndAddNumbers) {

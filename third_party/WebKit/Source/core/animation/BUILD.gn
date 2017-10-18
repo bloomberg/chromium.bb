@@ -138,8 +138,6 @@ blink_core_sources("animation") {
     "KeyframeEffectModel.h",
     "KeyframeEffectReadOnly.cpp",
     "KeyframeEffectReadOnly.h",
-    "LegacyStyleInterpolation.cpp",
-    "LegacyStyleInterpolation.h",
     "LengthInterpolationFunctions.cpp",
     "LengthInterpolationFunctions.h",
     "LengthListPropertyFunctions.cpp",

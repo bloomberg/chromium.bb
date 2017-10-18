@@ -37,7 +37,6 @@
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/InvalidatableInterpolation.h"
 #include "core/animation/KeyframeEffect.h"
-#include "core/animation/LegacyStyleInterpolation.h"
 #include "core/animation/TransitionInterpolation.h"
 #include "core/animation/animatable/AnimatableValue.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
@@ -1265,10 +1264,8 @@ void StyleResolver::ApplyAnimatedStandardProperties(
       CSSInterpolationTypesMap map(state.GetDocument().GetPropertyRegistry());
       CSSInterpolationEnvironment environment(map, state, nullptr);
       InvalidatableInterpolation::ApplyStack(entry.value, environment);
-    } else if (interpolation.IsTransitionInterpolation()) {
-      ToTransitionInterpolation(interpolation).Apply(state);
     } else {
-      ToLegacyStyleInterpolation(interpolation).Apply(state);
+      ToTransitionInterpolation(interpolation).Apply(state);
     }
   }
 }

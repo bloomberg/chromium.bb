@@ -64,7 +64,6 @@ class CORE_EXPORT Interpolation : public RefCounted<Interpolation> {
   virtual void Interpolate(int iteration, double fraction) = 0;
 
   virtual bool IsInvalidatableInterpolation() const { return false; }
-  virtual bool IsLegacyStyleInterpolation() const { return false; }
   virtual bool IsTransitionInterpolation() const { return false; }
 
   virtual const PropertyHandle& GetProperty() const = 0;
