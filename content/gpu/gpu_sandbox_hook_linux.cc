@@ -2,22 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/sandbox_init_gpu_linux.h"
+#include "content/gpu/gpu_sandbox_hook_linux.h"
 
 #include <dlfcn.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/scoped_file.h"
-#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
@@ -270,9 +266,7 @@ std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
   return result;
 }
 
-}  // namespace
-
-bool GpuPreSandboxHook(GpuProcessPolicy* policy) {
+bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
   // Warm up resources needed by the policy we're about to enable and
   // eventually start a broker process.
   const bool chromeos_arm_gpu = IsChromeOS() && IsArchitectureArm();
@@ -280,11 +274,12 @@ bool GpuPreSandboxHook(GpuProcessPolicy* policy) {
   DCHECK(!chromeos_arm_gpu);
 
   // Create a new broker process with no extra files in whitelist.
-  policy->set_broker_process(InitGpuBrokerProcess(
-      []() -> std::unique_ptr<Policy> {
-        return std::make_unique<GpuBrokerProcessPolicy>();
-      },
-      std::vector<BrokerFilePermission>()));
+  static_cast<GpuProcessPolicy*>(policy)->set_broker_process(
+      InitGpuBrokerProcess(
+          []() -> std::unique_ptr<Policy> {
+            return std::make_unique<GpuBrokerProcessPolicy>();
+          },
+          std::vector<BrokerFilePermission>()));
 
   if (IsArchitectureX86_64() || IsArchitectureI386()) {
     // Accelerated video dlopen()'s some shared objects
@@ -316,17 +311,18 @@ bool GpuPreSandboxHook(GpuProcessPolicy* policy) {
   return true;
 }
 
-bool CrosArmGpuPreSandboxHook(GpuProcessPolicy* policy) {
+bool CrosArmGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
   DCHECK(IsChromeOS() && IsArchitectureArm());
 
   // Add ARM-specific files to whitelist in the broker.
   std::vector<BrokerFilePermission> permissions;
   AddArmGpuWhitelist(&permissions);
-  policy->set_broker_process(InitGpuBrokerProcess(
-      []() -> std::unique_ptr<Policy> {
-        return std::make_unique<CrosArmGpuBrokerProcessPolicy>();
-      },
-      permissions));
+  static_cast<GpuProcessPolicy*>(policy)->set_broker_process(
+      InitGpuBrokerProcess(
+          []() -> std::unique_ptr<Policy> {
+            return std::make_unique<CrosArmGpuBrokerProcessPolicy>();
+          },
+          permissions));
 
   const int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 
@@ -341,18 +337,19 @@ bool CrosArmGpuPreSandboxHook(GpuProcessPolicy* policy) {
   return true;
 }
 
-bool CrosAmdGpuPreSandboxHook(GpuProcessPolicy* policy) {
+bool CrosAmdGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
   DCHECK(IsChromeOS());
 
   // Add AMD-specific files to whitelist in the broker.
   std::vector<BrokerFilePermission> permissions;
   AddAmdGpuWhitelist(&permissions);
 
-  policy->set_broker_process(InitGpuBrokerProcess(
-      []() -> std::unique_ptr<Policy> {
-        return std::make_unique<CrosAmdGpuBrokerProcessPolicy>();
-      },
-      permissions));
+  static_cast<GpuProcessPolicy*>(policy)->set_broker_process(
+      InitGpuBrokerProcess(
+          []() -> std::unique_ptr<Policy> {
+            return std::make_unique<CrosAmdGpuBrokerProcessPolicy>();
+          },
+          permissions));
 
   const int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 
@@ -368,6 +365,19 @@ bool CrosAmdGpuPreSandboxHook(GpuProcessPolicy* policy) {
   }
 
   return true;
+}
+
+}  // namespace
+
+base::OnceCallback<bool(sandbox::bpf_dsl::Policy*)> GetGpuProcessPreSandboxHook(
+    bool use_amd_specific_policies) {
+  if (IsChromeOS()) {
+    if (IsArchitectureArm())
+      return base::BindOnce(&CrosArmGpuPreSandboxHook);
+    if (use_amd_specific_policies)
+      return base::BindOnce(&CrosAmdGpuPreSandboxHook);
+  }
+  return base::BindOnce(&GpuPreSandboxHook);
 }
 
 }  // namespace content

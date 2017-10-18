@@ -22,8 +22,6 @@ class GpuProcessPolicy : public SandboxBPFBasePolicy {
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
 
-  bool PreSandboxHook() override;
-
   sandbox::syscall_broker::BrokerProcess* broker_process() const {
     return broker_process_;
   }

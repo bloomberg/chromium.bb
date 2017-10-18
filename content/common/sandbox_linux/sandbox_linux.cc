@@ -200,9 +200,8 @@ std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
   return fds;
 }
 
-bool LinuxSandbox::InitializeSandbox(
-    const SandboxSeccompBPF::Options& options) {
-  return LinuxSandbox::GetInstance()->InitializeSandboxImpl(options);
+bool LinuxSandbox::InitializeSandbox(SandboxSeccompBPF::Options options) {
+  return LinuxSandbox::GetInstance()->InitializeSandboxImpl(std::move(options));
 }
 
 void LinuxSandbox::StopThread(base::Thread* thread) {
@@ -274,14 +273,14 @@ sandbox::SetuidSandboxClient*
 
 // For seccomp-bpf, we use the SandboxSeccompBPF class.
 bool LinuxSandbox::StartSeccompBPF(service_manager::SandboxType sandbox_type,
-                                   const SandboxSeccompBPF::Options& opts) {
+                                   SandboxSeccompBPF::Options opts) {
   CHECK(!seccomp_bpf_started_);
   CHECK(pre_initialized_);
   if (!seccomp_bpf_supported())
     return false;
 
   if (!SandboxSeccompBPF::StartSandbox(sandbox_type, OpenProc(proc_fd_),
-                                       opts)) {
+                                       std::move(opts))) {
     return false;
   }
   seccomp_bpf_started_ = true;
@@ -289,8 +288,7 @@ bool LinuxSandbox::StartSeccompBPF(service_manager::SandboxType sandbox_type,
   return true;
 }
 
-bool LinuxSandbox::InitializeSandboxImpl(
-    const SandboxSeccompBPF::Options& options) {
+bool LinuxSandbox::InitializeSandboxImpl(SandboxSeccompBPF::Options options) {
   DCHECK(!initialize_sandbox_ran_);
   initialize_sandbox_ran_ = true;
 
@@ -359,7 +357,7 @@ bool LinuxSandbox::InitializeSandboxImpl(
   // Attempt to limit the future size of the address space of the process.
   LimitAddressSpace(process_type);
 
-  return StartSeccompBPF(sandbox_type, options);
+  return StartSeccompBPF(sandbox_type, std::move(options));
 }
 
 void LinuxSandbox::StopThreadImpl(base::Thread* thread) {
