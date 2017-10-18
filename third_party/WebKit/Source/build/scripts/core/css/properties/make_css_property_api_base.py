@@ -30,7 +30,8 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
         # A list of (enum_value, property_id, api_class_name) tuples.
         self._api_classes_by_property_id = []
         # Just a set of class names.
-        self._api_classes = set()
+        self._shorthand_api_classes = set()
+        self._longhand_api_classes = set()
         for property_ in self.properties().values():
             api_class = self.get_classname(property_)
             if api_class is None:
@@ -41,7 +42,10 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
                     enum_value=property_['enum_value'],
                     property_id=property_['property_id'],
                     classname=api_class))
-            self._api_classes.add(api_class)
+            if property_['longhands']:
+                self._shorthand_api_classes.add(api_class)
+            else:
+                self._longhand_api_classes.add(api_class)
 
         # Manually add CSSPropertyVariable and CSSPropertyAtApply.
         self._api_classes_by_property_id.append(
@@ -49,13 +53,13 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
                 enum_value=1,
                 property_id="CSSPropertyApplyAtRule",
                 classname="CSSPropertyAPIApplyAtRule"))
-        self._api_classes.add("CSSPropertyAPIApplyAtRule")
+        self._longhand_api_classes.add("CSSPropertyAPIApplyAtRule")
         self._api_classes_by_property_id.append(
             ApiClassData(
                 enum_value=2,
                 property_id="CSSPropertyVariable",
                 classname="CSSPropertyAPIVariable"))
-        self._api_classes.add("CSSPropertyAPIVariable")
+        self._longhand_api_classes.add("CSSPropertyAPIVariable")
 
         # Sort by enum value.
         self._api_classes_by_property_id.sort(key=lambda t: t.enum_value)
@@ -99,7 +103,8 @@ class CSSPropertyAPIWriter(css_properties.CSSProperties):
     def generate_property_api_implementation(self):
         return {
             'input_files': self._input_files,
-            'api_classnames': self._api_classes,
+            'longhand_api_classnames': self._longhand_api_classes,
+            'shorthand_api_classnames': self._shorthand_api_classes,
             'api_classes_by_property_id': self._api_classes_by_property_id,
             'last_property_id': (self._first_enum_value +
                                  len(self._properties) - 1)
