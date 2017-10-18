@@ -430,7 +430,7 @@ config("compiler") {
       "-Xclang",
       "-mllvm",
       "-Xclang",
-      "-instcombine-lower-dbg-declare=1",
+      "-instcombine-lower-dbg-declare=0",
     ]
   }
 
