@@ -42045,7 +42045,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.OSErrorsForGetAddrinfo" enum="ErrorCodesGetaddrinfo_All">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Positive error code that was returned by the system library
     &quot;getaddrinfo()&quot;. This error code is platform specific, so when
@@ -42055,7 +42055,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.OSErrorsForGetAddrinfo_Linux"
     enum="ErrorCodesGetaddrinfo_Linux">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Positive error code that was returned by the system library
     &quot;getaddrinfo()&quot;.
@@ -42064,7 +42064,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.OSErrorsForGetAddrinfo_Mac"
     enum="ErrorCodesGetaddrinfo_Mac">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Positive error code that was returned by the system library
     &quot;getaddrinfo()&quot;.
@@ -42073,7 +42073,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Net.OSErrorsForGetAddrinfo_Win"
     enum="ErrorCodesGetaddrinfo_Win">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>
     Positive error code that was returned by the system library
     &quot;getaddrinfo()&quot;.
@@ -45893,22 +45893,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Net.UdpSocketBindErrorFromPosix" units="PosixError">
+  <obsolete>
+    Deprecated as of 10/2017.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Posix error code from call to bind() UDP socket.</summary>
 </histogram>
 
 <histogram name="Net.UdpSocketBindErrorFromWinOS" units="WinError">
+  <obsolete>
+    Deprecated as of 10/2017.
+  </obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <summary>Windows error code from call to bind() UDP socket.</summary>
 </histogram>
 
 <histogram name="Net.UdpSocketRandomBindErrorCode" enum="NetErrorCodes">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>mgersh@chromium.org</owner>
   <summary>Chromium error code from call to RandomBind() UDP socket.</summary>
 </histogram>
 
 <histogram name="Net.UDPSocketWinClose" units="ms">
-  <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
+  <owner>rch@chromium.org</owner>
   <summary>The time spent in closesocket call in UDPSocketWin::Close.</summary>
 </histogram>
 
