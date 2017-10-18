@@ -50,7 +50,7 @@ namespace ash {
 
 // static
 const SkColor MessageCenterView::kBackgroundColor =
-    SkColorSetRGB(0xee, 0xee, 0xee);
+    SkColorSetARGB(0xF2, 0xf0, 0xf0, 0xf2);
 
 // static
 const size_t MessageCenterView::kMaxVisibleNotifications = 100;

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/message_center/message_center_button_bar.h"
+#include "ash/message_center/message_center_style.h"
 #include "ash/message_center/message_list_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/logging.h"
@@ -29,7 +30,6 @@
 namespace ash {
 
 using message_center::FakeMessageCenter;
-using message_center::kMarginBetweenItems;
 using message_center::MessageCenter;
 using message_center::MessageCenterController;
 using message_center::MessageCenterTray;
@@ -480,7 +480,7 @@ TEST_F(MessageCenterViewTest, Size) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          (kMarginBetweenItems - MessageView::GetShadowInsets().bottom()) +
+          message_center_style::kMarginBetweenItems +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
@@ -504,7 +504,7 @@ TEST_F(MessageCenterViewTest, DISABLED_SizeAfterUpdate) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          (kMarginBetweenItems - MessageView::GetShadowInsets().bottom()) +
+          message_center_style::kMarginBetweenItems +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 
@@ -524,7 +524,7 @@ TEST_F(MessageCenterViewTest, DISABLED_SizeAfterUpdate) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          (kMarginBetweenItems - MessageView::GetShadowInsets().bottom()) +
+          message_center_style::kMarginBetweenItems +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
@@ -554,7 +554,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateBelowWithRepositionTarget) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          (kMarginBetweenItems - MessageView::GetShadowInsets().bottom()) +
+          message_center_style::kMarginBetweenItems +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
@@ -584,7 +584,7 @@ TEST_F(MessageCenterViewTest, SizeAfterUpdateOfRepositionTarget) {
   EXPECT_EQ(
       GetMessageListView()->height(),
       GetNotificationView(kNotificationId1)->GetHeightForWidth(width) +
-          (kMarginBetweenItems - MessageView::GetShadowInsets().bottom()) +
+          message_center_style::kMarginBetweenItems +
           GetNotificationView(kNotificationId2)->GetHeightForWidth(width) +
           GetMessageListView()->GetInsets().height());
 }
