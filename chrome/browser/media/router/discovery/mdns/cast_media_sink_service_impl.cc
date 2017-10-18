@@ -281,9 +281,7 @@ void CastMediaSinkServiceImpl::OpenChannels(
   for (const auto& cast_sink : cast_sinks) {
     const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
     known_ip_endpoints_.insert(ip_endpoint);
-    OpenChannel(ip_endpoint, cast_sink,
-                base::MakeUnique<net::BackoffEntry>(&backoff_policy_),
-                sink_source);
+    OpenChannel(ip_endpoint, cast_sink, nullptr, sink_source);
   }
 
   MediaSinkServiceBase::RestartTimer();
@@ -322,10 +320,11 @@ void CastMediaSinkServiceImpl::OnError(const cast_channel::CastSocket& socket,
   // Find existing cast sink from |current_sinks_map_|.
   auto cast_sink_it = current_sinks_map_.find(ip_endpoint);
   if (cast_sink_it != current_sinks_map_.end()) {
-    OnChannelErrorMayRetry(
-        cast_sink_it->second,
-        std::make_unique<net::BackoffEntry>(&backoff_policy_), error_state,
-        SinkSource::kConnectionRetry);
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CastMediaSinkServiceImpl::OpenChannel, AsWeakPtr(),
+                       ip_endpoint, cast_sink_it->second, nullptr,
+                       SinkSource::kConnectionRetry));
     return;
   }
 
@@ -461,14 +460,18 @@ void CastMediaSinkServiceImpl::OnChannelErrorMayRetry(
   if (sink_source == SinkSource::kDial)
     ++dial_sink_failure_count_[ip_endpoint.address()];
 
-  OnChannelOpenFailed(ip_endpoint);
+  int failure_count = ++failure_count_map_[ip_endpoint];
+  failure_count_map_[ip_endpoint] = std::min(failure_count, kMaxFailureCount);
 
-  if (!backoff_entry ||
-      backoff_entry->failure_count() > retry_params_.max_retry_attempts) {
+  if (!backoff_entry)
+    backoff_entry = base::MakeUnique<net::BackoffEntry>(&backoff_policy_);
+
+  if (backoff_entry->failure_count() >= retry_params_.max_retry_attempts) {
     DVLOG(1) << "Fail to open channel after all retry attempts: "
              << ip_endpoint.ToString() << " [error_state]: "
              << cast_channel::ChannelErrorToString(error_state);
 
+    OnChannelOpenFailed(ip_endpoint);
     CastAnalytics::RecordCastChannelConnectResult(false);
     return;
   }
@@ -526,10 +529,6 @@ void CastMediaSinkServiceImpl::OnChannelOpenSucceeded(
 void CastMediaSinkServiceImpl::OnChannelOpenFailed(
     const net::IPEndPoint& ip_endpoint) {
   current_sinks_map_.erase(ip_endpoint);
-
-  int failure_count = ++failure_count_map_[ip_endpoint];
-  failure_count_map_[ip_endpoint] = std::min(failure_count, kMaxFailureCount);
-
   MediaSinkServiceBase::RestartTimer();
 }
 
@@ -552,8 +551,7 @@ void CastMediaSinkServiceImpl::OnDialSinkAdded(const MediaSinkInternal& sink) {
     return;
   }
 
-  OpenChannel(ip_endpoint, CreateCastSinkFromDialSink(sink),
-              base::MakeUnique<net::BackoffEntry>(&backoff_policy_),
+  OpenChannel(ip_endpoint, CreateCastSinkFromDialSink(sink), nullptr,
               SinkSource::kDial);
 }
 
@@ -571,8 +569,7 @@ void CastMediaSinkServiceImpl::AttemptConnection(
   for (const auto& cast_sink : cast_sinks) {
     const net::IPEndPoint& ip_endpoint = cast_sink.cast_data().ip_endpoint;
     if (!base::ContainsKey(current_sinks_map_, ip_endpoint)) {
-      OpenChannel(ip_endpoint, cast_sink,
-                  base::MakeUnique<net::BackoffEntry>(&backoff_policy_),
+      OpenChannel(ip_endpoint, cast_sink, nullptr,
                   SinkSource::kConnectionRetry);
     }
   }
