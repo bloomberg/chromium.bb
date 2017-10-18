@@ -18,7 +18,6 @@ class CrosAmdGpuProcessPolicy : public GpuProcessPolicy {
 
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
-  bool PreSandboxHook() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CrosAmdGpuProcessPolicy);

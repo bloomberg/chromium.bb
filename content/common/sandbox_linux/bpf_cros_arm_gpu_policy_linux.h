@@ -18,7 +18,6 @@ class CrosArmGpuProcessPolicy : public GpuProcessPolicy {
 
   sandbox::bpf_dsl::ResultExpr EvaluateSyscall(
       int system_call_number) const override;
-  bool PreSandboxHook() override;
 
  private:
 #if defined(__arm__) || defined(__aarch64__)

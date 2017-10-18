@@ -27,14 +27,6 @@ class SandboxBPFBasePolicy : public sandbox::bpf_dsl::Policy {
       int system_call_number) const override;
   sandbox::bpf_dsl::ResultExpr InvalidSyscall() const override;
 
-  // A policy can implement this hook to run code right before the policy
-  // is passed to the BPF compiler and the sandbox is engaged.
-  // If PreSandboxHook() returns true, the sandbox is guaranteed to be
-  // engaged afterwards.
-  // This will be used when enabling the sandbox though
-  // SandboxSeccompBPF::StartSandbox().
-  virtual bool PreSandboxHook();
-
   // Get the errno(3) to return for filesystem errors.
   static int GetFSDeniedErrno();
 

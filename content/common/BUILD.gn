@@ -278,8 +278,6 @@ source_set("common") {
     "resize_params.h",
     "resource_messages.cc",
     "resource_messages.h",
-    "sandbox_init_gpu_linux.cc",
-    "sandbox_init_gpu_linux.h",
     "sandbox_init_linux.cc",
     "sandbox_init_mac.cc",
     "sandbox_init_win.cc",
