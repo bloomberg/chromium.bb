@@ -117,6 +117,7 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'results_directory': None,
             'test_name_file': None,
             'verbose': False,
+            'builders': [],
         }
         options.update(kwargs)
         return optparse.Values(dict(**options))
@@ -491,3 +492,18 @@ class RebaselineCLTest(BaseTestCase, LoggingTestCase):
             'INFO: Using "MOCK Foo12" build 100 for foo-foo45.\n',
             'INFO: Using "MOCK Bar4" build 200 for bar-bar3.\n',
         ])
+
+    def test_explicit_builder_list(self):
+        builders = ['MOCK Try Linux', 'MOCK Try Mac']
+        options = self.command_options(builders=builders)
+        exit_code = self.command.execute(options, [], self.tool)
+        self.assertLog([
+            'INFO: Finished try jobs found for all try bots.\n',
+            'INFO: Rebaselining one/flaky-fail.html\n',
+            'INFO: Rebaselining one/missing.html\n',
+            'INFO: Rebaselining one/slow-fail.html\n',
+            'INFO: Rebaselining one/text-fail.html\n',
+            'INFO: Rebaselining two/image-fail.html\n',
+        ])
+        self.assertEqual(exit_code, 0)
+        self.assertEqual(self.command.selected_try_bots, frozenset(builders))

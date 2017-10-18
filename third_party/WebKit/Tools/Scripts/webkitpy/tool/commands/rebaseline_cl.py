@@ -56,10 +56,15 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
                 '--test-name-file', dest='test_name_file', default=None,
                 help='Read names of tests to rebaseline from this file, one '
                      'test per line.'),
+            optparse.make_option(
+                '--builders', default=None, action='append',
+                help=('Comma-separated-list of builders to pull new baselines '
+                      'from (can also be provided multiple times).')),
             self.no_optimize_option,
             self.results_directory_option,
         ])
         self.git_cl = None
+        self._selected_try_bots = None
 
     def execute(self, options, args, tool):
         self._tool = tool
@@ -79,9 +84,15 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         if not self.check_ok_to_run():
             return 1
 
-        jobs = self.git_cl.latest_try_jobs(self._try_bots())
+        if options.builders:
+            try_builders = set()
+            for builder_names in options.builders:
+                try_builders.update(builder_names.split(','))
+            self._selected_try_bots = frozenset(try_builders)
+
+        jobs = self.git_cl.latest_try_jobs(self.selected_try_bots)
         self._log_jobs(jobs)
-        builders_with_no_jobs = self._try_bots() - {b.builder_name for b in jobs}
+        builders_with_no_jobs = self.selected_try_bots - {b.builder_name for b in jobs}
 
         if not options.trigger_jobs and not jobs:
             _log.info('Aborted: no try jobs and --no-trigger-jobs passed.')
@@ -94,7 +105,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         jobs_to_results = self._fetch_results(jobs)
 
         builders_with_results = {b.builder_name for b in jobs_to_results}
-        builders_without_results = set(self._try_bots()) - builders_with_results
+        builders_without_results = set(self.selected_try_bots) - builders_with_results
         if builders_without_results:
             _log.info('There are some builders with no results:')
             self._log_builder_list(builders_without_results)
@@ -144,6 +155,12 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             return False
         return True
 
+    @property
+    def selected_try_bots(self):
+        if self._selected_try_bots:
+            return self._selected_try_bots
+        return frozenset(self._tool.builders.all_try_builder_names())
+
     def _get_issue_number(self):
         """Returns the current CL issue number, or None."""
         issue = self.git_cl.get_issue_number()
@@ -170,7 +187,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
             jobs: A dict mapping Build objects to TryJobStatus objects.
         """
         finished_jobs = {b for b, s in jobs.items() if s.status == 'COMPLETED'}
-        if len(finished_jobs) == len(self._try_bots()):
+        if self.selected_try_bots.issubset({b.builder_name for b in finished_jobs}):
             _log.info('Finished try jobs found for all try bots.')
             return
 
@@ -188,10 +205,6 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
     def _log_builder_list(self, builders):
         for builder in sorted(builders):
             _log.info('  %s', builder)
-
-    def _try_bots(self):
-        """Returns a set of builder names to fetch results from."""
-        return set(self._tool.builders.all_try_builder_names())
 
     def _fetch_results(self, jobs):
         """Fetches results for all of the given builds.
@@ -348,7 +361,7 @@ class RebaselineCL(AbstractParallelRebaselineCommand):
         is an entry for the "win-win10" port, then an entry might be added
         for "win-win7" using the results from "win-win10".
         """
-        all_ports = {self._tool.builders.port_name_for_builder_name(b) for b in self._try_bots()}
+        all_ports = {self._tool.builders.port_name_for_builder_name(b) for b in self.selected_try_bots}
         for test_prefix in test_baseline_set.test_prefixes():
             build_port_pairs = test_baseline_set.build_port_pairs(test_prefix)
             missing_ports = all_ports - {p for _, p in build_port_pairs}
