@@ -4,13 +4,10 @@
 
 #include "media/gpu/d3d11_h264_accelerator.h"
 
-#include <d3d11.h>
-#include <dxva.h>
 #include <windows.h>
 
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/scoped_comptr.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "third_party/angle/include/EGL/egl.h"
@@ -50,8 +47,8 @@ D3D11PictureBuffer::D3D11PictureBuffer(
 D3D11PictureBuffer::~D3D11PictureBuffer() {}
 
 bool D3D11PictureBuffer::Init(
-    base::win::ScopedComPtr<ID3D11VideoDevice> video_device,
-    base::win::ScopedComPtr<ID3D11Texture2D> texture,
+    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> texture,
     const GUID& decoder_guid) {
   texture_ = texture;
   D3D11_VIDEO_DECODER_OUTPUT_VIEW_DESC view_desc = {};
@@ -138,9 +135,9 @@ class D3D11H264Picture : public H264Picture {
 
 D3D11H264Accelerator::D3D11H264Accelerator(
     D3D11VideoDecoderClient* client,
-    base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder,
-    base::win::ScopedComPtr<ID3D11VideoDevice> video_device,
-    base::win::ScopedComPtr<ID3D11VideoContext> video_context)
+    Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder,
+    Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device,
+    Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context)
     : client_(client),
       video_decoder_(video_decoder),
       video_device_(video_device),

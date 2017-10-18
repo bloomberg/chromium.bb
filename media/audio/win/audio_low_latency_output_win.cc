@@ -25,7 +25,6 @@
 #include "media/base/limits.h"
 #include "media/base/media_switches.h"
 
-using base::win::ScopedComPtr;
 using base::win::ScopedCOMInitializer;
 using base::win::ScopedCoMem;
 
@@ -140,12 +139,13 @@ bool WASAPIAudioOutputStream::Open() {
   bool communications_device = false;
 
   // Create an IAudioClient interface for the default rendering IMMDevice.
-  ScopedComPtr<IAudioClient> audio_client;
+  Microsoft::WRL::ComPtr<IAudioClient> audio_client;
   if (device_id_.empty()) {
     audio_client = CoreAudioUtil::CreateDefaultClient(eRender, device_role_);
     communications_device = (device_role_ == eCommunications);
   } else {
-    ScopedComPtr<IMMDevice> device(CoreAudioUtil::CreateDevice(device_id_));
+    Microsoft::WRL::ComPtr<IMMDevice> device =
+        CoreAudioUtil::CreateDevice(device_id_);
     DLOG_IF(ERROR, !device.Get()) << "Failed to open device: " << device_id_;
     if (device.Get())
       audio_client = CoreAudioUtil::CreateClient(device.Get());
@@ -232,7 +232,7 @@ bool WASAPIAudioOutputStream::Open() {
   // Create an IAudioRenderClient client for an initialized IAudioClient.
   // The IAudioRenderClient interface enables us to write output data to
   // a rendering endpoint buffer.
-  ScopedComPtr<IAudioRenderClient> audio_render_client =
+  Microsoft::WRL::ComPtr<IAudioRenderClient> audio_render_client =
       CoreAudioUtil::CreateRenderClient(audio_client.Get());
   if (!audio_render_client.Get())
     return false;

@@ -8,14 +8,11 @@
 #include "media/gpu/d3d11_video_decode_accelerator_win.h"
 #undef INITGUID
 
-#include <d3d11.h>
-
 #include "base/bits.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
-#include "base/win/scoped_comptr.h"
 #include "media/gpu/d3d11_h264_accelerator.h"
 #include "media/gpu/h264_decoder.h"
 #include "media/gpu/h264_dpb.h"
@@ -103,7 +100,7 @@ bool D3D11VideoDecodeAccelerator::Initialize(const Config& config,
   }
   memcpy(&decoder_guid_, &decoder_guid, sizeof decoder_guid_);
 
-  base::win::ScopedComPtr<ID3D11VideoDecoder> video_decoder;
+  Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
   hr = video_device_->CreateVideoDecoder(&desc, &dec_config,
                                          video_decoder.GetAddressOf());
   CHECK(video_decoder.Get());
@@ -178,7 +175,7 @@ void D3D11VideoDecodeAccelerator::AssignPictureBuffers(
   texture_desc.BindFlags = D3D11_BIND_DECODER | D3D11_BIND_SHADER_RESOURCE;
   texture_desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
-  base::win::ScopedComPtr<ID3D11Texture2D> out_texture;
+  Microsoft::WRL::ComPtr<ID3D11Texture2D> out_texture;
   HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
                                         out_texture.GetAddressOf());
   CHECK(SUCCEEDED(hr));

@@ -97,6 +97,7 @@
 #include <MMDeviceAPI.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include <memory>
 #include <string>
@@ -107,7 +108,6 @@
 #include "base/threading/simple_thread.h"
 #include "base/win/scoped_co_mem.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_handle.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
@@ -221,11 +221,11 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
 
   // An IAudioClient interface which enables a client to create and initialize
   // an audio stream between an audio application and the audio engine.
-  base::win::ScopedComPtr<IAudioClient> audio_client_;
+  Microsoft::WRL::ComPtr<IAudioClient> audio_client_;
 
   // The IAudioRenderClient interface enables a client to write output
   // data to a rendering endpoint buffer.
-  base::win::ScopedComPtr<IAudioRenderClient> audio_render_client_;
+  Microsoft::WRL::ComPtr<IAudioRenderClient> audio_render_client_;
 
   // The audio engine will signal this event each time a buffer becomes
   // ready to be filled by the client.
@@ -237,7 +237,7 @@ class MEDIA_EXPORT WASAPIAudioOutputStream :
   // Container for retrieving data from AudioSourceCallback::OnMoreData().
   std::unique_ptr<AudioBus> audio_bus_;
 
-  base::win::ScopedComPtr<IAudioClock> audio_clock_;
+  Microsoft::WRL::ComPtr<IAudioClock> audio_clock_;
 
   DISALLOW_COPY_AND_ASSIGN(WASAPIAudioOutputStream);
 };

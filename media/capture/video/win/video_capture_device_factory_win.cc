@@ -8,6 +8,7 @@
 #include <mferror.h>
 #include <objbase.h>
 #include <stddef.h>
+#include <wrl/client.h>
 
 #include "base/command_line.h"
 #include "base/macros.h"
@@ -22,11 +23,11 @@
 #include "media/capture/video/win/video_capture_device_mf_win.h"
 #include "media/capture/video/win/video_capture_device_win.h"
 
-using base::win::ScopedCoMem;
-using base::win::ScopedComPtr;
-using base::win::ScopedVariant;
 using Descriptor = media::VideoCaptureDeviceDescriptor;
 using Descriptors = media::VideoCaptureDeviceDescriptors;
+using Microsoft::WRL::ComPtr;
+using base::win::ScopedCoMem;
+using base::win::ScopedVariant;
 
 namespace media {
 
@@ -99,7 +100,7 @@ static bool PrepareVideoCaptureAttributesMediaFoundation(
 
 static bool CreateVideoCaptureDeviceMediaFoundation(const char* sym_link,
                                                     IMFMediaSource** source) {
-  ScopedComPtr<IMFAttributes> attributes;
+  ComPtr<IMFAttributes> attributes;
   if (!PrepareVideoCaptureAttributesMediaFoundation(attributes.GetAddressOf(),
                                                     2))
     return false;
@@ -112,7 +113,7 @@ static bool CreateVideoCaptureDeviceMediaFoundation(const char* sym_link,
 
 static bool EnumerateVideoDevicesMediaFoundation(IMFActivate*** devices,
                                                  UINT32* count) {
-  ScopedComPtr<IMFAttributes> attributes;
+  ComPtr<IMFAttributes> attributes;
   if (!PrepareVideoCaptureAttributesMediaFoundation(attributes.GetAddressOf(),
                                                     1))
     return false;
@@ -159,13 +160,13 @@ static void GetDeviceDescriptorsDirectShow(Descriptors* device_descriptors) {
   DCHECK(device_descriptors);
   DVLOG(1) << __func__;
 
-  ScopedComPtr<ICreateDevEnum> dev_enum;
+  ComPtr<ICreateDevEnum> dev_enum;
   HRESULT hr = ::CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC,
                                   IID_PPV_ARGS(&dev_enum));
   if (FAILED(hr))
     return;
 
-  ScopedComPtr<IEnumMoniker> enum_moniker;
+  ComPtr<IEnumMoniker> enum_moniker;
   hr = dev_enum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory,
                                        enum_moniker.GetAddressOf(), 0);
   // CreateClassEnumerator returns S_FALSE on some Windows OS
@@ -174,10 +175,10 @@ static void GetDeviceDescriptorsDirectShow(Descriptors* device_descriptors) {
     return;
 
   // Enumerate all video capture devices.
-  for (ScopedComPtr<IMoniker> moniker;
+  for (ComPtr<IMoniker> moniker;
        enum_moniker->Next(1, moniker.GetAddressOf(), NULL) == S_OK;
        moniker.Reset()) {
-    ScopedComPtr<IPropertyBag> prop_bag;
+    ComPtr<IPropertyBag> prop_bag;
     hr = moniker->BindToStorage(0, 0, IID_PPV_ARGS(&prop_bag));
     if (FAILED(hr))
       continue;
@@ -268,13 +269,13 @@ static void GetDeviceSupportedFormatsMediaFoundation(
     VideoCaptureFormats* formats) {
   DVLOG(1) << "GetDeviceSupportedFormatsMediaFoundation for "
            << descriptor.display_name;
-  ScopedComPtr<IMFMediaSource> source;
+  ComPtr<IMFMediaSource> source;
   if (!CreateVideoCaptureDeviceMediaFoundation(descriptor.device_id.c_str(),
                                                source.GetAddressOf())) {
     return;
   }
 
-  base::win::ScopedComPtr<IMFSourceReader> reader;
+  ComPtr<IMFSourceReader> reader;
   HRESULT hr = MFCreateSourceReaderFromMediaSource(source.Get(), NULL,
                                                    reader.GetAddressOf());
   if (FAILED(hr)) {
@@ -284,7 +285,7 @@ static void GetDeviceSupportedFormatsMediaFoundation(
   }
 
   DWORD stream_index = 0;
-  ScopedComPtr<IMFMediaType> type;
+  ComPtr<IMFMediaType> type;
   while (SUCCEEDED(reader->GetNativeMediaType(kFirstVideoStream, stream_index,
                                               type.GetAddressOf()))) {
     UINT32 width, height;
@@ -350,7 +351,7 @@ std::unique_ptr<VideoCaptureDevice> VideoCaptureDeviceFactoryWin::CreateDevice(
     DCHECK(PlatformSupportsMediaFoundation());
     device.reset(new VideoCaptureDeviceMFWin(device_descriptor));
     DVLOG(1) << " MediaFoundation Device: " << device_descriptor.display_name;
-    ScopedComPtr<IMFMediaSource> source;
+    ComPtr<IMFMediaSource> source;
     if (!CreateVideoCaptureDeviceMediaFoundation(
             device_descriptor.device_id.c_str(), source.GetAddressOf())) {
       return std::unique_ptr<VideoCaptureDevice>();

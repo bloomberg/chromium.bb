@@ -6,11 +6,11 @@
 #define MEDIA_GPU_D3D11_VIDEO_DECODE_ACCELERATOR_WIN_H_
 
 #include <d3d11.h>
+#include <wrl/client.h>
 
 #include <list>
 #include <memory>
 
-#include "base/win/scoped_comptr.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/d3d11_h264_accelerator.h"
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
@@ -56,10 +56,10 @@ class MEDIA_GPU_EXPORT D3D11VideoDecodeAccelerator
   GetGLContextCallback get_gl_context_cb_;
   MakeGLContextCurrentCallback make_context_current_cb_;
   BindGLImageCallback bind_image_cb_;
-  base::win::ScopedComPtr<ID3D11Device> device_;
-  base::win::ScopedComPtr<ID3D11DeviceContext> device_context_;
-  base::win::ScopedComPtr<ID3D11VideoDevice> video_device_;
-  base::win::ScopedComPtr<ID3D11VideoContext> video_context_;
+  Microsoft::WRL::ComPtr<ID3D11Device> device_;
+  Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
+  Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
   std::unique_ptr<AcceleratedVideoDecoder> decoder_;
   std::unique_ptr<D3D11H264Accelerator> h264_accelerator_;
 

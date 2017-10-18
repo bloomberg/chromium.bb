@@ -14,19 +14,17 @@
 #include <audioclient.h>
 #include <mmdeviceapi.h>
 #include <stdint.h>
+#include <wrl/client.h>
+
 #include <string>
 
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "base/win/scoped_comptr.h"
 #include "media/audio/audio_device_name.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/media_export.h"
 
-using base::win::ScopedComPtr;
-
 namespace media {
-
 
 // Represents audio channel configuration constants as understood by Windows.
 // E.g. KSAUDIO_SPEAKER_MONO.  For a list of possible values see:
@@ -61,12 +59,13 @@ class MEDIA_EXPORT CoreAudioUtil {
 
   // Creates an IMMDeviceEnumerator interface which provides methods for
   // enumerating audio endpoint devices.
-  static ScopedComPtr<IMMDeviceEnumerator> CreateDeviceEnumerator();
+  static Microsoft::WRL::ComPtr<IMMDeviceEnumerator> CreateDeviceEnumerator();
 
   // Creates a default endpoint device that is specified by a data-flow
   // direction and role, e.g. default render device.
-  static ScopedComPtr<IMMDevice> CreateDefaultDevice(
-      EDataFlow data_flow, ERole role);
+  static Microsoft::WRL::ComPtr<IMMDevice> CreateDefaultDevice(
+      EDataFlow data_flow,
+      ERole role);
 
   // Returns the device id of the default output device or an empty string
   // if no such device exists or if the default device has been disabled.
@@ -74,7 +73,8 @@ class MEDIA_EXPORT CoreAudioUtil {
 
   // Creates an endpoint device that is specified by a unique endpoint device-
   // identification string.
-  static ScopedComPtr<IMMDevice> CreateDevice(const std::string& device_id);
+  static Microsoft::WRL::ComPtr<IMMDevice> CreateDevice(
+      const std::string& device_id);
 
   // Returns the unique ID and user-friendly name of a given endpoint device.
   // Example: "{0.0.1.00000000}.{8db6020f-18e3-4f25-b6f5-7726c9122574}", and
@@ -121,18 +121,19 @@ class MEDIA_EXPORT CoreAudioUtil {
   // audio stream between an audio application and the audio engine (for a
   // shared-mode stream) or the hardware buffer of an audio endpoint device
   // (for an exclusive-mode stream).
-  static ScopedComPtr<IAudioClient> CreateDefaultClient(EDataFlow data_flow,
-                                                        ERole role);
+  static Microsoft::WRL::ComPtr<IAudioClient> CreateDefaultClient(
+      EDataFlow data_flow,
+      ERole role);
 
   // Create an IAudioClient instance for a specific device _or_ the default
   // device if |device_id| is empty.
-  static ScopedComPtr<IAudioClient> CreateClient(const std::string& device_id,
-                                                 EDataFlow data_flow,
-                                                 ERole role);
+  static Microsoft::WRL::ComPtr<IAudioClient>
+  CreateClient(const std::string& device_id, EDataFlow data_flow, ERole role);
 
   // Create an IAudioClient interface for an existing IMMDevice given by
   // |audio_device|. Flow direction and role is define by the |audio_device|.
-  static ScopedComPtr<IAudioClient> CreateClient(IMMDevice* audio_device);
+  static Microsoft::WRL::ComPtr<IAudioClient> CreateClient(
+      IMMDevice* audio_device);
 
   // Get the mix format that the audio engine uses internally for processing
   // of shared-mode streams. This format is not necessarily a format that the
@@ -214,13 +215,13 @@ class MEDIA_EXPORT CoreAudioUtil {
   // Create an IAudioRenderClient client for an existing IAudioClient given by
   // |client|. The IAudioRenderClient interface enables a client to write
   // output data to a rendering endpoint buffer.
-  static ScopedComPtr<IAudioRenderClient> CreateRenderClient(
+  static Microsoft::WRL::ComPtr<IAudioRenderClient> CreateRenderClient(
       IAudioClient* client);
 
   // Create an IAudioCaptureClient client for an existing IAudioClient given by
   // |client|. The IAudioCaptureClient interface enables a client to read
   // input data from a capture endpoint buffer.
-  static ScopedComPtr<IAudioCaptureClient> CreateCaptureClient(
+  static Microsoft::WRL::ComPtr<IAudioCaptureClient> CreateCaptureClient(
       IAudioClient* client);
 
   // Fills up the endpoint rendering buffer with silence for an existing

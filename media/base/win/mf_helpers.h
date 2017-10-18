@@ -7,10 +7,10 @@
 
 #include <mfapi.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/win/scoped_comptr.h"
 #include "media/base/win/mf_initializer_export.h"
 
 namespace media {
@@ -49,7 +49,7 @@ MF_INITIALIZER_EXPORT void LogDXVAError(int line);
 
 // Creates a Media Foundation sample with one buffer of length |buffer_length|
 // on a |align|-byte boundary. Alignment must be a perfect power of 2 or 0.
-MF_INITIALIZER_EXPORT base::win::ScopedComPtr<IMFSample>
+MF_INITIALIZER_EXPORT Microsoft::WRL::ComPtr<IMFSample>
 CreateEmptySampleWithBuffer(uint32_t buffer_length, int align);
 
 // Provides scoped access to the underlying buffer in an IMFMediaBuffer
@@ -63,7 +63,7 @@ class MF_INITIALIZER_EXPORT MediaBufferScopedPointer {
   DWORD current_length() const { return current_length_; }
 
  private:
-  base::win::ScopedComPtr<IMFMediaBuffer> media_buffer_;
+  Microsoft::WRL::ComPtr<IMFMediaBuffer> media_buffer_;
   uint8_t* buffer_;
   DWORD max_length_;
   DWORD current_length_;
