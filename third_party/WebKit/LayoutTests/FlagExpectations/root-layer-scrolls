@@ -20,7 +20,6 @@ crbug.com/417782 compositing/geometry/limit-layer-bounds-positioned-transition.h
 crbug.com/417782 compositing/geometry/limit-layer-bounds-positioned.html [ Failure ]
 crbug.com/417782 compositing/geometry/limit-layer-bounds-transformed.html [ Failure ]
 crbug.com/417782 compositing/geometry/preserve-3d-switching.html [ Failure ]
-crbug.com/417782 [ Linux Win ] compositing/gestures/gesture-tapHighlight-1-iframe-scrolled.html [ Failure ]
 crbug.com/417782 compositing/iframes/become-composited-nested-iframes.html [ Failure ]
 crbug.com/417782 compositing/iframes/become-overlapped-iframe.html [ Failure ]
 crbug.com/417782 compositing/iframes/composited-iframe-scroll.html [ Failure ]

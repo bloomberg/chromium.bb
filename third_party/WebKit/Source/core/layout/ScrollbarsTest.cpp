@@ -1159,8 +1159,8 @@ TEST_P(ScrollbarsTest, WideBodyShouldNotHaveScrollbars) {
       "}");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
-  ASSERT_FALSE(layout_viewport->VerticalScrollbar());
-  ASSERT_FALSE(layout_viewport->HorizontalScrollbar());
+  EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+  EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
 
 // A body with height just under the window height should not have scrollbars.
@@ -1182,14 +1182,13 @@ TEST_P(ScrollbarsTest, TallBodyShouldNotHaveScrollbars) {
       "}");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
-  ASSERT_FALSE(layout_viewport->VerticalScrollbar());
-  ASSERT_FALSE(layout_viewport->HorizontalScrollbar());
+  EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+  EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
 
 // A body with dimensions just barely inside the window dimensions should not
 // have scrollbars.
 TEST_P(ScrollbarsTest, TallAndWideBodyShouldNotHaveScrollbars) {
-  // DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
@@ -1207,14 +1206,13 @@ TEST_P(ScrollbarsTest, TallAndWideBodyShouldNotHaveScrollbars) {
       "}");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
-  ASSERT_FALSE(layout_viewport->VerticalScrollbar());
-  ASSERT_FALSE(layout_viewport->HorizontalScrollbar());
+  EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+  EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
 }
 
 // A body with dimensions equal to the window dimensions should not have
 // scrollbars.
 TEST_P(ScrollbarsTest, BodySizeEqualWindowSizeShouldNotHaveScrollbars) {
-  // DCHECK(RuntimeEnabledFeatures::RootLayerScrollingEnabled());
   // This test requires that scrollbars take up space.
   ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
 
@@ -1232,8 +1230,133 @@ TEST_P(ScrollbarsTest, BodySizeEqualWindowSizeShouldNotHaveScrollbars) {
       "}");
   Compositor().BeginFrame();
   auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
-  ASSERT_FALSE(layout_viewport->VerticalScrollbar());
-  ASSERT_FALSE(layout_viewport->HorizontalScrollbar());
+  EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+  EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
+}
+
+// A body with percentage width extending beyond the window width should cause a
+// horizontal scrollbar.
+TEST_P(ScrollbarsTest, WidePercentageBodyShouldHaveScrollbar) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  html { height: 100%; }"
+      "  body {"
+      "    margin: 0;"
+      "    width: 101%;"
+      "    height: 10px;"
+      "  }"
+      "</style>");
+  Compositor().BeginFrame();
+  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+  EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
+}
+
+// Similar to |WidePercentageBodyShouldHaveScrollbar| but with a body height
+// equal to the window height.
+TEST_P(ScrollbarsTest, WidePercentageAndTallBodyShouldHaveScrollbar) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  html { height: 100%; }"
+      "  body {"
+      "    margin: 0;"
+      "    width: 101%;"
+      "    height: 100%;"
+      "  }"
+      "</style>");
+  Compositor().BeginFrame();
+  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  EXPECT_FALSE(layout_viewport->VerticalScrollbar());
+  EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
+}
+
+// A body with percentage height extending beyond the window height should cause
+// a vertical scrollbar.
+TEST_P(ScrollbarsTest, TallPercentageBodyShouldHaveScrollbar) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  html { height: 100%; }"
+      "  body {"
+      "    margin: 0;"
+      "    width: 10px;"
+      "    height: 101%;"
+      "  }"
+      "</style>");
+  Compositor().BeginFrame();
+  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  EXPECT_TRUE(layout_viewport->VerticalScrollbar());
+  EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
+}
+
+// Similar to |TallPercentageBodyShouldHaveScrollbar| but with a body width
+// equal to the window width.
+TEST_P(ScrollbarsTest, TallPercentageAndWideBodyShouldHaveScrollbar) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  html { height: 100%; }"
+      "  body {"
+      "    margin: 0;"
+      "    width: 100%;"
+      "    height: 101%;"
+      "  }"
+      "</style>");
+  Compositor().BeginFrame();
+  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  EXPECT_TRUE(layout_viewport->VerticalScrollbar());
+  EXPECT_FALSE(layout_viewport->HorizontalScrollbar());
+}
+
+// A body with percentage dimensions extending beyond the window dimensions
+// should cause scrollbars.
+TEST_P(ScrollbarsTest, TallAndWidePercentageBodyShouldHaveScrollbars) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest overlay_scrollbars(false);
+
+  WebView().Resize(WebSize(800, 600));
+  SimRequest request("https://example.com/test.html", "text/html");
+  LoadURL("https://example.com/test.html");
+  request.Complete(
+      "<!DOCTYPE html>"
+      "<style>"
+      "  html { height: 100%; }"
+      "  body {"
+      "    margin: 0;"
+      "    width: 101%;"
+      "    height: 101%;"
+      "  }"
+      "</style>");
+  Compositor().BeginFrame();
+  auto* layout_viewport = GetDocument().View()->LayoutViewportScrollableArea();
+  EXPECT_TRUE(layout_viewport->VerticalScrollbar());
+  EXPECT_TRUE(layout_viewport->HorizontalScrollbar());
 }
 
 }  // namespace
