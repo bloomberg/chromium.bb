@@ -120,6 +120,11 @@ jumbo_component("base") {
     # non-component case.
     static_component_type = "source_set"
   }
+  if (is_nacl) {
+    # Link errors related to malloc functions if libbase for nacl is
+    # compiled with jumbo.
+    never_build_jumbo = true
+  }
 
   sources = [
     "allocator/allocator_check.cc",
