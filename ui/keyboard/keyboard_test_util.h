@@ -5,6 +5,8 @@
 #ifndef UI_KEYBOARD_KEYBOARD_TEST_UTIL_
 #define UI_KEYBOARD_KEYBOARD_TEST_UTIL_
 
+#include "ui/aura/test/test_window_delegate.h"
+#include "ui/aura/window.h"
 #include "ui/base/ime/dummy_input_method.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_ui.h"
@@ -31,11 +33,12 @@ void WaitControllerStateChangesTo(const KeyboardControllerState state);
 gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                                        int keyboard_height);
 
-class FakeKeyboardUI : public KeyboardUI {
+class TestKeyboardUI : public KeyboardUI {
  public:
-  FakeKeyboardUI() : ime_() {}
-  ~FakeKeyboardUI() override {}
+  TestKeyboardUI(ui::InputMethod* input_method);
+  ~TestKeyboardUI() override;
 
+  // Overridden from KeyboardUI:
   bool HasContentsWindow() const override;
   bool ShouldWindowOverscroll(aura::Window* window) const override;
   aura::Window* GetContentsWindow() override;
@@ -45,9 +48,11 @@ class FakeKeyboardUI : public KeyboardUI {
   void ResetInsets() override {}
 
  private:
-  ui::DummyInputMethod ime_;
+  std::unique_ptr<aura::Window> window_;
+  aura::test::TestWindowDelegate delegate_;
+  ui::InputMethod* input_method_;
 
-  DISALLOW_COPY_AND_ASSIGN(FakeKeyboardUI);
+  DISALLOW_COPY_AND_ASSIGN(TestKeyboardUI);
 };
 
 }  // namespace keyboard

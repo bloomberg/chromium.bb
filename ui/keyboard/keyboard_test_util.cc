@@ -98,20 +98,33 @@ gfx::Rect KeyboardBoundsFromRootBounds(const gfx::Rect& root_bounds,
                    root_bounds.width(), keyboard_height);
 }
 
-bool FakeKeyboardUI::HasContentsWindow() const {
-  return false;
+TestKeyboardUI::TestKeyboardUI(ui::InputMethod* input_method)
+    : input_method_(input_method) {}
+
+TestKeyboardUI::~TestKeyboardUI() {
+  // Destroy the window before the delegate.
+  window_.reset();
 }
 
-bool FakeKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
+aura::Window* TestKeyboardUI::GetContentsWindow() {
+  if (!window_) {
+    window_.reset(new aura::Window(&delegate_));
+    window_->Init(ui::LAYER_NOT_DRAWN);
+    window_->set_owned_by_parent(false);
+  }
+  return window_.get();
+}
+
+ui::InputMethod* TestKeyboardUI::GetInputMethod() {
+  return input_method_;
+}
+
+bool TestKeyboardUI::HasContentsWindow() const {
+  return !!window_;
+}
+
+bool TestKeyboardUI::ShouldWindowOverscroll(aura::Window* window) const {
   return true;
-}
-
-aura::Window* FakeKeyboardUI::GetContentsWindow() {
-  return nullptr;
-}
-
-ui::InputMethod* FakeKeyboardUI::GetInputMethod() {
-  return &ime_;
 }
 
 }  // namespace keyboard
