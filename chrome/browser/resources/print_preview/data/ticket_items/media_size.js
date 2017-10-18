@@ -54,7 +54,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable() {
-      var knownSizeToSaveAsPdf =
+      const knownSizeToSaveAsPdf =
           (!this.getDocumentInfoInternal().isModifiable ||
            this.getDocumentInfoInternal().hasCssMediaStyles) &&
           this.getSelectedDestInternal() &&
@@ -65,7 +65,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isValueEqual(value) {
-      var myValue = this.getValue();
+      const myValue = this.getValue();
       return myValue.width_microns == value.width_microns &&
           myValue.height_microns == value.height_microns &&
           myValue.is_continuous_feed == value.is_continuous_feed &&
@@ -74,7 +74,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {Object} Media size capability of the selected destination. */
     get capability() {
-      var destination = this.getSelectedDestInternal();
+      const destination = this.getSelectedDestInternal();
       return (destination && destination.capabilities &&
               destination.capabilities.printer &&
               destination.capabilities.printer.media_size) ||
@@ -83,7 +83,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal() {
-      var defaultOptions = this.capability.option.filter(function(option) {
+      const defaultOptions = this.capability.option.filter(function(option) {
         return option.is_default;
       });
       return defaultOptions.length > 0 ? defaultOptions[0] : null;
@@ -96,7 +96,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     updateValueInternal(value) {
-      var updateMargins = !this.isValueEqual(value);
+      const updateMargins = !this.isValueEqual(value);
       print_preview.ticket_items.TicketItem.prototype.updateValueInternal.call(
           this, value);
       if (updateMargins) {

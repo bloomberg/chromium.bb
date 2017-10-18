@@ -49,7 +49,7 @@ cr.define('print_preview.ticket_items', function() {
     /** @return {boolean} Whether the ticket item was modified by the user. */
     isUserEdited() {
       // If there's at least one ticket item stored in values, it was edited.
-      for (var key in this.items_) {
+      for (const key in this.items_) {
         if (this.items_.hasOwnProperty(key))
           return true;
       }
@@ -58,7 +58,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {Object} Vendor capabilities of the selected destination. */
     get capability() {
-      var destination = this.destinationStore_ ?
+      const destination = this.destinationStore_ ?
           this.destinationStore_.selectedDestination :
           null;
       if (!destination)
@@ -86,7 +86,7 @@ cr.define('print_preview.ticket_items', function() {
     updateValue(values) {
       this.items_ = {};
       if (typeof values == 'object') {
-        for (var key in values) {
+        for (const key in values) {
           if (values.hasOwnProperty(key) && typeof values[key] == 'string') {
             // Let's empirically limit each value at 2K.
             this.items_[key] = values[key].substring(0, 2048);

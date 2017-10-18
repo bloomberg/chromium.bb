@@ -27,12 +27,12 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isCapabilityAvailable() {
-      var capability = this.capability;
+      const capability = this.capability;
       if (!capability) {
         return false;
       }
-      var hasColor = false;
-      var hasMonochrome = false;
+      let hasColor = false;
+      let hasMonochrome = false;
       capability.option.forEach(function(option) {
         hasColor = hasColor || (Color.COLOR_TYPES_.indexOf(option.type) >= 0);
         hasMonochrome = hasMonochrome ||
@@ -43,7 +43,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {Object} Color capability of the selected destination. */
     get capability() {
-      var dest = this.getSelectedDestInternal();
+      const dest = this.getSelectedDestInternal();
       return (dest && dest.capabilities && dest.capabilities.printer &&
               dest.capabilities.printer.color) ||
           null;
@@ -51,13 +51,13 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {Object} Color option corresponding to the current value. */
     getSelectedOption() {
-      var capability = this.capability;
-      var options = capability ? capability.option : null;
+      const capability = this.capability;
+      const options = capability ? capability.option : null;
       if (options) {
-        var typesToLookFor =
+        const typesToLookFor =
             this.getValue() ? Color.COLOR_TYPES_ : Color.MONOCHROME_TYPES_;
-        for (var i = 0; i < typesToLookFor.length; i++) {
-          var matchingOptions = options.filter(function(option) {
+        for (let i = 0; i < typesToLookFor.length; i++) {
+          const matchingOptions = options.filter(function(option) {
             return option.type == typesToLookFor[i];
           });
           if (matchingOptions.length > 0) {
@@ -70,8 +70,8 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal() {
-      var capability = this.capability;
-      var defaultOption =
+      const capability = this.capability;
+      const defaultOption =
           capability ? this.getDefaultColorOption_(capability.option) : null;
       return defaultOption &&
           (Color.COLOR_TYPES_.indexOf(defaultOption.type) >= 0);
@@ -82,7 +82,7 @@ cr.define('print_preview.ticket_items', function() {
       // TODO(rltoscano): Get rid of this check based on destination ID. These
       // destinations should really update their CDDs to have only one color
       // option that has type 'STANDARD_COLOR'.
-      var dest = this.getSelectedDestInternal();
+      const dest = this.getSelectedDestInternal();
       if (dest) {
         if (dest.id == print_preview.Destination.GooglePromotedId.DOCS ||
             dest.type == print_preview.DestinationType.MOBILE) {
@@ -101,7 +101,7 @@ cr.define('print_preview.ticket_items', function() {
      * @private
      */
     getDefaultColorOption_(options) {
-      var defaultOptions = options.filter(function(option) {
+      const defaultOptions = options.filter(function(option) {
         return option.is_default;
       });
       return (defaultOptions.length == 0) ? null : defaultOptions[0];

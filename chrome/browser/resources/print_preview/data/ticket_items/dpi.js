@@ -36,7 +36,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     isValueEqual(value) {
-      var myValue = this.getValue();
+      const myValue = this.getValue();
       return myValue.horizontal_dpi == value.horizontal_dpi &&
           myValue.vertical_dpi == value.vertical_dpi &&
           myValue.vendor_id == value.vendor_id;
@@ -44,7 +44,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @return {Object} DPI capability of the selected destination. */
     get capability() {
-      var destination = this.getSelectedDestInternal();
+      const destination = this.getSelectedDestInternal();
       return (destination && destination.capabilities &&
               destination.capabilities.printer &&
               destination.capabilities.printer.dpi) ||
@@ -53,7 +53,7 @@ cr.define('print_preview.ticket_items', function() {
 
     /** @override */
     getDefaultValueInternal() {
-      var defaultOptions = this.capability.option.filter(function(option) {
+      const defaultOptions = this.capability.option.filter(function(option) {
         return option.is_default;
       });
       return defaultOptions.length > 0 ? defaultOptions[0] : null;
