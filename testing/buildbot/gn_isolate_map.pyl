@@ -1042,6 +1042,16 @@
       "--test-launcher-jobs=1"
     ],
   },
+  "vr_common_perftests": {
+    "label": "//chrome/browser/vr:vr_common_perftests",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "vr_common_perftests",
+      "--adb-path",
+      "src/third_party/android_tools/sdk/platform-tools/adb",
+    ]
+  },
   "performance_browser_tests": {
     "label": "//chrome/test:performance_browser_tests",
     "type": "script",
