@@ -13,6 +13,8 @@
 
 namespace blink {
 
+// TODO(xiaochengh): Rename this test to NGOffsetMappingTest.
+
 class NGInlineNodeOffsetMappingTest : public RenderingTest {
  protected:
   void SetUp() override {
@@ -68,6 +70,10 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
 
   bool IsNonCollapsedCharacter(const Node& node, unsigned offset) const {
     return GetOffsetMapping().IsNonCollapsedCharacter(node, offset);
+  }
+
+  bool IsAfterNonCollapsedCharacter(const Node& node, unsigned offset) const {
+    return GetOffsetMapping().IsAfterNonCollapsedCharacter(node, offset);
   }
 
   RefPtr<const ComputedStyle> style_;
@@ -151,6 +157,12 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 1));
   EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 2));
   EXPECT_FALSE(IsNonCollapsedCharacter(*foo_node, 3));  // false at node end
+
+  // false at node start
+  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 3));
 }
 
 TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
@@ -198,6 +210,18 @@ TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
   EXPECT_TRUE(IsNonCollapsedCharacter(*bar_node, 1));
   EXPECT_TRUE(IsNonCollapsedCharacter(*bar_node, 2));
   EXPECT_FALSE(IsNonCollapsedCharacter(*bar_node, 3));  // false at node end
+
+  // false at node start
+  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*foo_node, 3));
+
+  // false at node start
+  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*bar_node, 0));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*bar_node, 1));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*bar_node, 2));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*bar_node, 3));
 }
 
 TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
@@ -295,6 +319,16 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_TRUE(IsNonCollapsedCharacter(*node, 6));
   EXPECT_TRUE(IsNonCollapsedCharacter(*node, 7));
   EXPECT_FALSE(IsNonCollapsedCharacter(*node, 8));
+
+  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*node, 0));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 1));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 2));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 3));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 4));
+  EXPECT_FALSE(IsAfterNonCollapsedCharacter(*node, 5));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 6));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 7));
+  EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 8));
 }
 
 TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {

@@ -170,4 +170,17 @@ bool NGOffsetMappingResult::IsNonCollapsedCharacter(const Node& node,
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
 }
 
+bool NGOffsetMappingResult::IsAfterNonCollapsedCharacter(
+    const Node& node,
+    unsigned offset) const {
+  if (!offset)
+    return false;
+  // In case we have one unit ending at |offset| and another starting at
+  // |offset|, we need to find the former. Hence, search with |offset - 1|.
+  const NGOffsetMappingUnit* unit =
+      GetMappingUnitForDOMOffset(node, offset - 1);
+  return unit && offset > unit->DOMStart() &&
+         unit->GetType() != NGOffsetMappingUnitType::kCollapsed;
+}
+
 }  // namespace blink
