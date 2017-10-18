@@ -19,9 +19,9 @@ class PLATFORM_EXPORT CompositorMutator
 
   // Called from compositor thread to run the animation frame callbacks from all
   // connected AnimationWorklets.
-  // Returns true if any animation callbacks requested an animation frame
-  // (i.e. should be reinvoked next frame).
-  virtual bool Mutate(double monotonic_time_now) = 0;
+  virtual void Mutate(double monotonic_time_now) = 0;
+  // Returns true if Mutate may do something if called 'now'.
+  virtual bool HasAnimators() = 0;
 };
 
 }  // namespace blink
