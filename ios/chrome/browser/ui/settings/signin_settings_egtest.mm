@@ -97,7 +97,7 @@ id<GREYMatcher> NavigationBarDoneButton() {
 
 // Tests that the sign-in promo should not be shown after been shown 5 times.
 - (void)testAutomaticSigninPromoDismiss {
-  const int displayedCount = 4;
+  const int displayedCount = 19;
   ios::ChromeBrowserState* browser_state =
       chrome_test_util::GetOriginalBrowserState();
   PrefService* prefs = browser_state->GetPrefs();
@@ -116,6 +116,24 @@ id<GREYMatcher> NavigationBarDoneButton() {
   [[EarlGrey selectElementWithMatcher:NavigationBarDoneButton()]
       performAction:grey_tap()];
   [ChromeEarlGreyUI openSettingsMenu];
+  // Check that the sign-in promo is not visible anymore.
+  [SigninEarlGreyUtils checkSigninPromoNotVisible];
+  [[EarlGrey
+      selectElementWithMatcher:grey_allOf(
+                                   grey_accessibilityID(kSettingsSignInCellId),
+                                   grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_notNil()];
+}
+
+- (void)testDissmissSigninPromo {
+  [ChromeEarlGreyUI openSettingsMenu];
+  // Check the sign-in promo view is visible.
+  [SigninEarlGreyUtils
+      checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
+  // Tap on dismiss button.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(kSigninPromoCloseButtonId)]
+      performAction:grey_tap()];
   // Check that the sign-in promo is not visible anymore.
   [SigninEarlGreyUtils checkSigninPromoNotVisible];
   [[EarlGrey

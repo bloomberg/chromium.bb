@@ -24,7 +24,6 @@ const NSInteger kSigninPromoMargin = 8;
 }
 
 @synthesize signinPromoView = _signinPromoView;
-@synthesize closeButtonAction = _closeButtonAction;
 
 + (NSString*)reuseIdentifier {
   return @"BookmarkSigninPromoCell";
@@ -51,11 +50,6 @@ const NSInteger kSigninPromoMargin = 8;
     NSDictionary* views = @{@"signin_promo_view" : _signinPromoView};
     NSDictionary* metrics = @{ @"margin" : @(kSigninPromoMargin) };
     ApplyVisualConstraintsWithMetrics(visualConstraints, views, metrics);
-    _signinPromoView.closeButton.hidden = NO;
-    [_signinPromoView.closeButton addTarget:self
-                                     action:@selector(closeButtonAction:)
-                           forControlEvents:UIControlEventTouchUpInside];
-
     _signinPromoView.backgroundColor = [UIColor whiteColor];
     _signinPromoView.textLabel.text =
         l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_BOOKMARKS);
@@ -77,13 +71,7 @@ const NSInteger kSigninPromoMargin = 8;
 
 - (void)prepareForReuse {
   [super prepareForReuse];
-  _closeButtonAction = nil;
-  _signinPromoView.delegate = nil;
-}
-
-- (void)closeButtonAction:(id)sender {
-  DCHECK(_closeButtonAction);
-  _closeButtonAction();
+  [_signinPromoView prepareForReuse];
 }
 
 @end

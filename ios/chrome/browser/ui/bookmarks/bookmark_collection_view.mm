@@ -803,7 +803,7 @@ CGFloat minFaviconSizePt = 16;
     [[_signinPromoViewMediator createConfigurator]
         configureSigninPromoView:signinPromoCell.signinPromoView];
     __weak BookmarkCollectionView* weakSelf = self;
-    signinPromoCell.closeButtonAction = ^() {
+    signinPromoCell.signinPromoView.closeButtonAction = ^() {
       [weakSelf signinPromoCloseButtonAction];
     };
     return signinPromoCell;
