@@ -2950,7 +2950,12 @@ static void set_lpf_parameters(
             if (TX_4X4 >= min_ts) {
               params->filter_length = 4;
             } else if (TX_8X8 == min_ts) {
-              params->filter_length = 8;
+#if PARALLEL_DEBLOCKING_5_TAP_CHROMA
+              if (plane != 0)
+                params->filter_length = 6;
+              else
+#endif
+                params->filter_length = 8;
             } else {
               params->filter_length = 16;
 #if PARALLEL_DEBLOCKING_15TAPLUMAONLY
