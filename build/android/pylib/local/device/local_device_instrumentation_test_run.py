@@ -103,7 +103,7 @@ def DidPackageCrashOnDevice(package_name, device):
   # loop or we are failing to dismiss.
   try:
     for _ in xrange(10):
-      package = device.DismissCrashDialogIfNeeded()
+      package = device.DismissCrashDialogIfNeeded(timeout=10, retries=1)
       if not package:
         return False
       # Assume test package convention of ".test" suffix
@@ -537,10 +537,16 @@ class LocalDeviceInstrumentationTestRun(
         for u in test_names.difference(results_names))
 
     # Update the result type if we detect a crash.
-    if DidPackageCrashOnDevice(self._test_instance.test_package, device):
-      for r in results:
-        if r.GetType() == base_test_result.ResultType.UNKNOWN:
-          r.SetType(base_test_result.ResultType.CRASH)
+    try:
+      if DidPackageCrashOnDevice(self._test_instance.test_package, device):
+        for r in results:
+          if r.GetType() == base_test_result.ResultType.UNKNOWN:
+            r.SetType(base_test_result.ResultType.CRASH)
+    except device_errors.CommandTimeoutError:
+      logging.warning('timed out when detecting/dismissing error dialogs')
+      # Attach screenshot to the test to help with debugging the dialog boxes.
+      self._SaveScreenshot(device, screenshot_device_file, test_display_name,
+                           results, 'dialog_box_screenshot')
 
     # Handle failures by:
     #   - optionally taking a screenshot
@@ -550,7 +556,7 @@ class LocalDeviceInstrumentationTestRun(
                                base_test_result.ResultType.SKIP)
            for r in results):
       self._SaveScreenshot(device, screenshot_device_file, test_display_name,
-                           results)
+                           results, 'post_test_screenshot')
 
       logging.info('detected failure in %s. raw output:', test_display_name)
       for l in output:
@@ -700,7 +706,8 @@ class LocalDeviceInstrumentationTestRun(
       with open(trace_host_file, 'a') as host_handle:
         host_handle.write(java_trace_json)
 
-  def _SaveScreenshot(self, device, screenshot_device_file, test_name, results):
+  def _SaveScreenshot(self, device, screenshot_device_file, test_name, results,
+                      link_name):
       screenshot_filename = '%s-%s.png' % (
           test_name, time.strftime('%Y%m%dT%H%M%S-UTC', time.gmtime()))
       if device.FileExists(screenshot_device_file.name):
@@ -713,7 +720,7 @@ class LocalDeviceInstrumentationTestRun(
           finally:
             screenshot_device_file.close()
         for result in results:
-          result.SetLink('post_test_screenshot', screenshot_host_file.Link())
+          result.SetLink(link_name, screenshot_host_file.Link())
 
   def _ProcessRenderTestResults(
       self, device, render_tests_device_output_dir, results):
