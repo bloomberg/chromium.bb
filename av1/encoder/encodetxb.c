@@ -389,7 +389,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 
       if (level <= i) continue;
 
-      ctx = get_base_ctx(levels, scan[c], bwl, i + 1);
+      ctx = get_base_ctx(levels, scan[c], bwl, i);
 
       if (level == i + 1) {
         aom_write_bin(w, 1, ec_ctx->coeff_base_cdf[txs_ctx][plane_type][i][ctx],
@@ -1367,7 +1367,7 @@ void update_level_down(const int coeff_idx, TxbCache *const txb_cache,
         txb_cache->base_ctx_arr[base_idx][nb_coeff_idx] =
             base_ctx_table[nb_row != 0][nb_col != 0][mag > level][count];
         // int ref_ctx = get_base_ctx(txb_info->qcoeff, nb_coeff_idx,
-        // txb_info->bwl, level);
+        // txb_info->bwl, level - 1);
         // if (ref_ctx != txb_cache->base_ctx_arr[base_idx][nb_coeff_idx]) {
         //   printf("base ctx %d ref_ctx %d\n",
         //   txb_cache->base_ctx_arr[base_idx][nb_coeff_idx], ref_ctx);
@@ -2103,7 +2103,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
       if (level <= i) continue;
 
-      ctx = get_base_ctx(levels, scan[c], bwl, i + 1);
+      ctx = get_base_ctx(levels, scan[c], bwl, i);
 
       if (level == i + 1) {
         ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][1];
