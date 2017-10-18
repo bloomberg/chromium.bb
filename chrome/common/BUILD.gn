@@ -246,8 +246,6 @@ static_library("common") {
     "//components/policy/core/common",
     "//components/prefs",
     "//components/safe_browsing/web_ui:constants",
-    "//components/signin/core/common",
-    "//components/signin/core/common:signin_features",
     "//components/strings",
     "//components/translate/content/common",
     "//components/translate/core/common",
