@@ -116,10 +116,12 @@ def RunRemote(options, patch_pool):
   # Figure out the cbuildbot command line to pass in.
   args = CbuildbotArgs(options)
 
+  # TODO: Support build config "build_group" here, when it exists, but
+  #       continue to use these values for branches.
   if options.production:
-    display_group = 'Production Tryjob'
+    build_group = 'production_tryjob'
   else:
-    display_group = 'Tryjob'
+    build_group = 'Tryjob'
 
   # Figure out the tryjob description.
   description = options.remote_description
@@ -131,11 +133,10 @@ def RunRemote(options, patch_pool):
   print('Submitting tryjob...')
   tryjob = remote_try.RemoteTryJob(
       build_configs=options.build_configs,
-      display_group=display_group,
+      build_group=build_group,
       remote_description=description,
       branch=options.branch,
       pass_through_args=args,
-      production_cidb=options.production,
       local_patches=patch_pool.local_patches,
       committer_email=options.committer_email,
       swarming=options.swarming,

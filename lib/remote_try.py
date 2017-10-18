@@ -89,11 +89,10 @@ class RemoteTryJob(object):
 
   def __init__(self,
                build_configs,
-               display_group,
+               build_group,
                remote_description,
                branch='master',
                pass_through_args=(),
-               production_cidb=False,
                local_patches=(),
                committer_email=None,
                swarming=False,
@@ -102,11 +101,10 @@ class RemoteTryJob(object):
 
     Args:
       build_configs: A list of configs to run tryjobs for.
-      display_group: String describing how build group on waterfall.
+      build_group: String describing how build group on waterfall.
       remote_description: Requested tryjob description.
       branch: Name of branch to build for.
       pass_through_args: Command line arguments to pass to cbuildbot in job.
-      production_cidb: Boolean. Use production CIDB or debug.
       local_patches: A list of LocalPatch objects.
       committer_email: Email address of person requesting job, or None.
       swarming: Boolean, do we use a swarming build?
@@ -122,11 +120,10 @@ class RemoteTryJob(object):
 
     # Name of the job that appears on the waterfall.
     self.build_configs = build_configs[:]
-    self.display_group = display_group
+    self.build_group = build_group
     self.extra_args = pass_through_args
     self.name = remote_description
     self.branch = branch
-    self.production_cidb = production_cidb
     self.local_patches = local_patches
     self.swarming = swarming
     self.master_buildbucket_id = master_buildbucket_id
@@ -232,12 +229,11 @@ class RemoteTryJob(object):
                 'cbb_config': bot,
                 'cbb_extra_args': self.extra_args,
                 'owners': [self.user_email],
-                'production_cidb': self.production_cidb,
             },
         }),
         # These tags are indexed and searchable in buildbucket.
         'tags': [
-            'cbb_display_group:%s' % self.display_group,
+            'cbb_build_group:%s' % self.build_group,
             'cbb_branch:%s' % self.branch,
             'cbb_config:%s' % bot,
             'cbb_master_build_id:%s' % self.master_buildbucket_id,

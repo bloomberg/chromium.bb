@@ -25,7 +25,7 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
   BRANCH = 'test-branch'
   PATCHES = ('5555', '6666')
   BUILD_CONFIGS = ('amd64-generic-paladin', 'arm-generic-paladin')
-  DISPLAY_GROUP = 'display'
+  BUILD_GROUP = 'display'
   PASS_THROUGH_ARGS = ['funky', 'cold', 'medina']
   TEST_EMAIL = 'explicit_email'
   MASTER_BUILDBUCKET_ID = 'master_bb_id'
@@ -37,17 +37,16 @@ class RemoteTryHelperTestsBase(cros_test_lib.MockTestCase):
   def _CreateJobMin(self):
     return remote_try.RemoteTryJob(
         self.BUILD_CONFIGS,
-        self.DISPLAY_GROUP,
+        self.BUILD_GROUP,
         'description')
 
   def _CreateJobMax(self):
     return remote_try.RemoteTryJob(
         self.BUILD_CONFIGS,
-        self.DISPLAY_GROUP,
+        self.BUILD_GROUP,
         'description',
         branch=self.BRANCH,
         pass_through_args=self.PASS_THROUGH_ARGS,
-        production_cidb=True,
         local_patches=(),  # TODO: Populate/test these, somehow.
         committer_email=self.TEST_EMAIL,
         swarming=True,
@@ -93,7 +92,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
         'parameters_json': mock.ANY,
         'bucket': 'master.chromiumos.tryserver',
         'tags': [
-            'cbb_display_group:display',
+            'cbb_build_group:display',
             'cbb_branch:master',
             'cbb_config:amd64-generic-paladin',
             'cbb_master_build_id:',
@@ -107,7 +106,6 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
         'builder_name': 'Generic',
         'properties': {
             'extra_args': [],
-            'production_cidb': False,
             'cbb_extra_args': [],
             'name': 'description',
             'owners': ['default_email'],
@@ -127,7 +125,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
         'parameters_json': mock.ANY,
         'bucket': 'luci.chromeos.general',
         'tags': [
-            'cbb_display_group:display',
+            'cbb_build_group:display',
             'cbb_branch:test-branch',
             'cbb_config:amd64-generic-paladin',
             'cbb_master_build_id:master_bb_id',
@@ -141,7 +139,6 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
         'builder_name': 'Generic',
         'properties': {
             'extra_args': ['funky', 'cold', 'medina'],
-            'production_cidb': True,
             'cbb_extra_args': ['funky', 'cold', 'medina'],
             'name': 'description',
             'owners': ['explicit_email'],
@@ -191,7 +188,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
 
     self.assertEqual(request['build']['id'], buildbucket_id)
     self.assertEqual(request['build']['bucket'], expected_bucket)
-    self.assertEqual(request['build']['tags'], expected_tags)
+    self.assertItemsEqual(request['build']['tags'], expected_tags)
 
     request_parameters = json.loads(request['build']['parameters_json'])
     self.assertEqual(request_parameters, expected_parameters)
@@ -210,8 +207,8 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:master',
+            'cbb_build_group:display',
             'cbb_config:amd64-generic-paladin',
-            'cbb_display_group:display',
             'cbb_email:default_email',
             'cbb_master_build_id:',
         ],
@@ -225,7 +222,6 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
                 'extra_args': [],
                 'name': 'description',
                 'owners': ['default_email'],
-                'production_cidb': False,
                 'user': mock.ANY,
             },
         })
@@ -236,8 +232,8 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:master',
+            'cbb_build_group:display',
             'cbb_config:arm-generic-paladin',
-            'cbb_display_group:display',
             'cbb_email:default_email',
             'cbb_master_build_id:',
         ],
@@ -251,7 +247,6 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
                 'extra_args': [],
                 'name': 'description',
                 'owners': ['default_email'],
-                'production_cidb': False,
                 'user': mock.ANY,
             },
         })
@@ -278,8 +273,8 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:test-branch',
+            'cbb_build_group:display',
             'cbb_config:amd64-generic-paladin',
-            'cbb_display_group:display',
             'cbb_email:explicit_email',
             'cbb_master_build_id:master_bb_id',
         ],
@@ -293,7 +288,6 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
                 'extra_args': ['funky', 'cold', 'medina'],
                 'name': 'description',
                 'owners': ['explicit_email'],
-                'production_cidb': True,
                 'user': mock.ANY,
             },
         })
@@ -304,8 +298,8 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:test-branch',
+            'cbb_build_group:display',
             'cbb_config:arm-generic-paladin',
-            'cbb_display_group:display',
             'cbb_email:explicit_email',
             'cbb_master_build_id:master_bb_id',
         ],
@@ -319,7 +313,6 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
                 'extra_args': ['funky', 'cold', 'medina'],
                 'name': 'description',
                 'owners': ['explicit_email'],
-                'production_cidb': True,
                 'user': mock.ANY,
             },
         })
