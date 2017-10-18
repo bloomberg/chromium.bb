@@ -172,11 +172,11 @@ class Port(object):
             self._name, self._version, self._architecture, self._test_configuration)
 
     def primary_driver_flag(self):
-        """Returns the driver flag that is used for flag-specific expectations
-           and baselines.  This is the flag in LayoutTests/rwt.flag if present,
-           otherwise the first flag passed by --additional-driver-flag.
+        """Returns the driver flag that is used for flag-specific expectations and baselines. This
+           is the flag in LayoutTests/additional-driver-flag.setting, if present, otherwise the
+           first flag passed by --additional-driver-flag.
         """
-        flag_file = self._filesystem.join(self.layout_tests_dir(), 'rwt.flag')
+        flag_file = self._filesystem.join(self.layout_tests_dir(), 'additional-driver-flag.setting')
         if self._filesystem.exists(flag_file):
             flag = self._filesystem.read_text_file(flag_file).strip()
             if flag:

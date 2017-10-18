@@ -203,8 +203,8 @@ class PortTest(unittest.TestCase):
         self.assertEqual('\n'.join(port.all_expectations_dict().values()), 'bb\naa')
 
     def test_driver_flag_from_file(self):
-        # primary_driver_flag() comes from rwt.flag or --additional-driver-flag
-        # additional_driver_flags() excludes primary_driver_flag()
+        # primary_driver_flag() comes from additional-driver-flag.setting file or
+        # --additional-driver-flag. additional_driver_flags() excludes primary_driver_flag().
 
         port_a = self.make_port(options=optparse.Values(
             {'additional_driver_flag': []}))
@@ -222,7 +222,7 @@ class PortTest(unittest.TestCase):
         self.assertEqual(port_c.additional_driver_flags(),
                          ['--cc'] + default_flags)
 
-        flag_file = '/mock-checkout/third_party/WebKit/LayoutTests/rwt.flag'
+        flag_file = '/mock-checkout/third_party/WebKit/LayoutTests/additional-driver-flag.setting'
         port_a.host.filesystem.write_text_file(flag_file, '--aa')
         port_b.host.filesystem.write_text_file(flag_file, '--aa')
         port_c.host.filesystem.write_text_file(flag_file, '--bb')
