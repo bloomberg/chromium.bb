@@ -20,4 +20,10 @@ cc_library_static {
         "-Wall",
         "-Werror",
     ],
+
+    target: {
+        windows: {
+            enabled: true,
+        },
+    },
 }
