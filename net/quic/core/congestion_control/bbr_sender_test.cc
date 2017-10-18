@@ -24,8 +24,6 @@
 #include "net/quic/test_tools/simulator/switch.h"
 
 // TODO(vasilvv): make this tests not time out on Android and iOS.
-#if !defined(OS_ANDROID) && !defined(OS_IOS)
-
 namespace net {
 namespace test {
 
@@ -831,5 +829,3 @@ TEST_F(BbrSenderTest, ResumeConnectionState) {
 
 }  // namespace test
 }  // namespace net
-
-#endif  // !defined(OS_ANDROID) && !defined(OS_IOS)
