@@ -237,10 +237,6 @@ TEST_F(LoginShelfViewTest, ShouldUpdateUiAfterLockScreenNoteState) {
   NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kActive);
   EXPECT_TRUE(ShowsShelfButtons({LoginShelfView::kCloseNote}));
 
-  NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kBackground);
-  EXPECT_TRUE(
-      ShowsShelfButtons({LoginShelfView::kShutdown, LoginShelfView::kSignOut}));
-
   NotifyLockScreenNoteStateChanged(mojom::TrayActionState::kAvailable);
   // When lock screen action background is animating to hidden state, the close
   // button should immediately be replaced by kShutdown and kSignout buttons.

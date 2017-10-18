@@ -1194,20 +1194,6 @@ TEST_F(LockScreenAppStateTest, StylusRemovedWhileActive) {
   EXPECT_EQ(0, app_manager()->launch_count());
 }
 
-TEST_F(LockScreenAppStateTest, StylusRemovedWhileInBackground) {
-  ui::test::DeviceDataManagerTestAPI devices_test_api;
-  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kBackground,
-                                      true /* enable_app_launch */));
-
-  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
-
-  EXPECT_EQ(0u, observer()->observed_states().size());
-  EXPECT_EQ(0u, tray_action()->observed_states().size());
-
-  ClearObservedStates();
-  EXPECT_EQ(0, app_manager()->launch_count());
-}
-
 TEST_F(LockScreenAppStateTest, AppWindowRegistration) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
                                       true /* enable_app_launch */));

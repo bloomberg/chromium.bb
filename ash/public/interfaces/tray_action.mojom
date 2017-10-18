@@ -19,11 +19,6 @@ enum TrayActionState {
 
   // The client is currently handling the action.
   kActive,
-
-  // The client is currently handling the action, but in background (e.g. the
-  // handler window for the lock screen action was moved to the background and
-  // appears underneath the login user pods).
-  kBackground,
 };
 
 // The user action that triggered a request for a new note.
