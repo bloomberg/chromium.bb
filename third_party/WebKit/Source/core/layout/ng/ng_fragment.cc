@@ -26,22 +26,6 @@ NGLogicalSize NGFragment::Size() const {
       static_cast<NGWritingMode>(writing_mode_));
 }
 
-LayoutUnit NGFragment::InlineOffset() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? physical_fragment_.Offset().left
-             : physical_fragment_.Offset().top;
-}
-
-LayoutUnit NGFragment::BlockOffset() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? physical_fragment_.Offset().top
-             : physical_fragment_.Offset().left;
-}
-
-NGLogicalOffset NGFragment::Offset() const {
-  return NGLogicalOffset(InlineOffset(), BlockOffset());
-}
-
 NGBorderEdges NGFragment::BorderEdges() const {
   return NGBorderEdges::FromPhysical(physical_fragment_.BorderEdges(),
                                      WritingMode());

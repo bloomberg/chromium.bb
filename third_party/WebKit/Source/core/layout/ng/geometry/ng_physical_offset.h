@@ -6,12 +6,15 @@
 #define NGPhysicalOffset_h
 
 #include "core/CoreExport.h"
-
+#include "core/layout/ng/ng_writing_mode.h"
 #include "platform/LayoutUnit.h"
+#include "platform/text/TextDirection.h"
 
 namespace blink {
 
 class LayoutPoint;
+struct NGLogicalOffset;
+struct NGPhysicalSize;
 
 // NGPhysicalOffset is the position of a rect (typically a fragment) relative to
 // its parent rect in the physical coordinate system.
@@ -21,6 +24,15 @@ struct CORE_EXPORT NGPhysicalOffset {
 
   LayoutUnit left;
   LayoutUnit top;
+
+  // Converts a physical offset to a logical offset. See:
+  // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
+  // @param outer_size the size of the rect (typically a fragment).
+  // @param inner_size the size of the inner rect (typically a child fragment).
+  NGLogicalOffset ConvertToLogical(NGWritingMode,
+                                   TextDirection,
+                                   NGPhysicalSize outer_size,
+                                   NGPhysicalSize inner_size) const;
 
   NGPhysicalOffset operator+(const NGPhysicalOffset& other) const;
   NGPhysicalOffset& operator+=(const NGPhysicalOffset& other);

@@ -13,7 +13,6 @@
 namespace blink {
 
 struct NGBorderEdges;
-struct NGLogicalOffset;
 struct NGLogicalSize;
 
 class CORE_EXPORT NGFragment {
@@ -32,11 +31,6 @@ class CORE_EXPORT NGFragment {
   LayoutUnit InlineSize() const;
   LayoutUnit BlockSize() const;
   NGLogicalSize Size() const;
-
-  // Returns the offset relative to the parent fragment's content-box.
-  LayoutUnit InlineOffset() const;
-  LayoutUnit BlockOffset() const;
-  NGLogicalOffset Offset() const;
 
   NGBorderEdges BorderEdges() const;
 

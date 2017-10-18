@@ -1591,6 +1591,7 @@ jumbo_source_set("unit_tests") {
     "layout/ng/geometry/ng_logical_offset_test.cc",
     "layout/ng/geometry/ng_logical_rect_test.cc",
     "layout/ng/geometry/ng_physical_offset_rect_test.cc",
+    "layout/ng/geometry/ng_physical_offset_test.cc",
     "layout/ng/geometry/ng_physical_rect_test.cc",
     "layout/ng/inline/ng_inline_items_builder_test.cc",
     "layout/ng/inline/ng_inline_layout_algorithm_test.cc",
