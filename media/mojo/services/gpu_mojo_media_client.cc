@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "build/build_config.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
@@ -28,6 +29,10 @@
 #include "media/mojo/services/mojo_provision_fetcher.h"
 #include "services/service_manager/public/cpp/connect.h"
 #endif  // defined(OS_ANDROID)
+
+#if defined(OS_WIN)
+#include "media/gpu/windows/d3d11_video_decoder.h"
+#endif  // defined(OS_WIN)
 
 namespace media {
 
@@ -53,8 +58,10 @@ std::unique_ptr<MediaDrmStorage> CreateMediaDrmStorage(
   return base::MakeUnique<MojoMediaDrmStorage>(
       std::move(media_drm_storage_ptr));
 }
+#endif  // defined(OS_ANDROID)
 
-#if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
+#if BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER) || \
+    BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
 gpu::GpuCommandBufferStub* GetGpuCommandBufferStub(
     base::WeakPtr<MediaGpuChannelManager> media_gpu_channel_manager,
     base::UnguessableToken channel_token,
@@ -69,8 +76,7 @@ gpu::GpuCommandBufferStub* GetGpuCommandBufferStub(
 
   return channel->LookupCommandBuffer(route_id);
 }
-#endif  // BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
-#endif  // defined(OS_ANDROID)
+#endif  // BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER || D3D11)
 
 }  // namespace
 
@@ -121,9 +127,15 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       base::MakeUnique<VideoFrameFactoryImpl>(gpu_task_runner_,
                                               std::move(get_stub_cb)),
       context_ref_factory_->CreateRef());
+#elif BUILDFLAG(ENABLE_D3D11_VIDEO_DECODER)
+  return base::MakeUnique<D3D11VideoDecoder>(
+      gpu_task_runner_,
+      base::Bind(&GetGpuCommandBufferStub, media_gpu_channel_manager_,
+                 command_buffer_id->channel_token, command_buffer_id->route_id),
+      std::move(output_cb));
 #else
   return nullptr;
-#endif  // BUILDFLAG(ENABLE_MEDIA_CODEC_VIDEO_DECODER)
+#endif  // BUILDFLAG(ENABLE_{MEDIA_CODEC | D3D11}_VIDEO_DECODER)
 }
 
 std::unique_ptr<CdmFactory> GpuMojoMediaClient::CreateCdmFactory(
