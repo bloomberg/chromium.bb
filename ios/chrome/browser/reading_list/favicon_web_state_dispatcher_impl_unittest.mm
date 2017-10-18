@@ -46,7 +46,9 @@ class TestFaviconWebStateDispatcherObserver : public web::WebStateObserver {
       : web::WebStateObserver(web_state), owner_(owner) {}
 
   // WebStateObserver implementation:
-  void WebStateDestroyed() override { owner_->WebStateDestroyed(); };
+  void WebStateDestroyed(web::WebState* web_state) override {
+    owner_->WebStateDestroyed();
+  };
 
  private:
   FaviconWebStateDispatcherTest* owner_;  // weak, owns this object.

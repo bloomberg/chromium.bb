@@ -73,7 +73,7 @@ class OverlayScheduler : public BrowserUserData<OverlayScheduler>,
 
    private:
     // WebStateObserver:
-    void WasShown() override;
+    void WasShown(web::WebState* web_state) override;
 
     // The OverlayScheduler that owns this observer.
     OverlayScheduler* scheduler_;

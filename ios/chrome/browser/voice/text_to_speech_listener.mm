@@ -41,8 +41,9 @@ class TextToSpeechWebStateObserver : public web::WebStateObserver {
 
   // web::WebStateObserver implementation:
   void PageLoaded(
+      web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
-  void WebStateDestroyed() override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
  private:
   TextToSpeechListener* listener_;
@@ -62,13 +63,14 @@ TextToSpeechWebStateObserver::TextToSpeechWebStateObserver(
 TextToSpeechWebStateObserver::~TextToSpeechWebStateObserver() {}
 
 void TextToSpeechWebStateObserver::PageLoaded(
+    web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
-  const GURL& url = web_state()->GetLastCommittedURL();
+  const GURL& url = web_state->GetLastCommittedURL();
   BOOL shouldParse = [listener_.delegate shouldTextToSpeechListener:listener_
                                                    parseDataFromURL:url];
   if (shouldParse) {
     __weak TextToSpeechListener* weakListener = listener_;
-    ExtractVoiceSearchAudioDataFromWebState(web_state(), ^(NSData* audioData) {
+    ExtractVoiceSearchAudioDataFromWebState(web_state, ^(NSData* audioData) {
       [[weakListener delegate] textToSpeechListener:weakListener
                                    didReceiveResult:audioData];
     });
@@ -77,7 +79,7 @@ void TextToSpeechWebStateObserver::PageLoaded(
   }
 }
 
-void TextToSpeechWebStateObserver::WebStateDestroyed() {
+void TextToSpeechWebStateObserver::WebStateDestroyed(web::WebState* web_state) {
   [listener_.delegate textToSpeechListenerWebStateWasDestroyed:listener_];
 }
 

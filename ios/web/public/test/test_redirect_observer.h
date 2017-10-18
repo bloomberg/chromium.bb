@@ -38,7 +38,8 @@ class TestRedirectObserver : public web::WebStateObserver {
   ~TestRedirectObserver() final;
 
   // WebStateObserver:
-  void DidStartNavigation(NavigationContext* navigation_context) override;
+  void DidStartNavigation(web::WebState* web_state,
+                          NavigationContext* navigation_context) override;
 
   // RedirectChains store the original and final redirect URLs for a given page
   // load.

@@ -112,10 +112,11 @@ class DistillerWebStateObserver : public web::WebStateObserver {
 
   // WebStateObserver implementation:
   void PageLoaded(
+      web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
-  void WebStateDestroyed() override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
+  void WebStateDestroyed(web::WebState* web_state) override;
+  void DidStartLoading(web::WebState* web_state) override;
+  void DidStopLoading(web::WebState* web_state) override;
 
  private:
   DistillerPageIOS* distiller_page_;  // weak, owns this object.
@@ -133,6 +134,7 @@ DistillerWebStateObserver::DistillerWebStateObserver(
 }
 
 void DistillerWebStateObserver::PageLoaded(
+    web::WebState* web_state,
     web::PageLoadCompletionStatus load_completion_status) {
   if (!loading_) {
     return;
@@ -141,20 +143,20 @@ void DistillerWebStateObserver::PageLoaded(
   distiller_page_->OnLoadURLDone(load_completion_status);
 }
 
-void DistillerWebStateObserver::WebStateDestroyed() {
+void DistillerWebStateObserver::WebStateDestroyed(web::WebState* web_state) {
   distiller_page_->DetachWebState();
 }
 
-void DistillerWebStateObserver::DidStartLoading() {
+void DistillerWebStateObserver::DidStartLoading(web::WebState* web_state) {
   loading_ = true;
 }
 
-void DistillerWebStateObserver::DidStopLoading() {
-  if (web_state()->IsShowingWebInterstitial()) {
+void DistillerWebStateObserver::DidStopLoading(web::WebState* web_state) {
+  if (web_state->IsShowingWebInterstitial()) {
     // If there is an interstitial, stop the distillation.
     // The interstitial is not displayed to the user who cannot choose to
     // continue.
-    PageLoaded(web::PageLoadCompletionStatus::FAILURE);
+    PageLoaded(web_state, web::PageLoadCompletionStatus::FAILURE);
   }
 }
 

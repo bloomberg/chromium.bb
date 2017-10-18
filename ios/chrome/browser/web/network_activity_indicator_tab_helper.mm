@@ -35,7 +35,8 @@ NetworkActivityIndicatorTabHelper::~NetworkActivityIndicatorTabHelper() {
   Stop();
 }
 
-void NetworkActivityIndicatorTabHelper::DidStartLoading() {
+void NetworkActivityIndicatorTabHelper::DidStartLoading(
+    web::WebState* web_state) {
   NetworkActivityIndicatorManager* shared_manager =
       [NetworkActivityIndicatorManager sharedInstance];
   // Verifies that there are not any network tasks associated with this instance
@@ -44,7 +45,8 @@ void NetworkActivityIndicatorTabHelper::DidStartLoading() {
     [shared_manager startNetworkTaskForGroup:network_activity_key_];
 }
 
-void NetworkActivityIndicatorTabHelper::DidStopLoading() {
+void NetworkActivityIndicatorTabHelper::DidStopLoading(
+    web::WebState* web_state) {
   Stop();
 }
 

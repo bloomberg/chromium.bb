@@ -108,32 +108,40 @@ class WebStateObserverBridge : public web::WebStateObserver {
   ~WebStateObserverBridge() override;
 
   // web::WebStateObserver methods.
-  void WasShown() override;
-  void WasHidden() override;
-  void NavigationItemsPruned(size_t pruned_item_count) override;
+  void WasShown(web::WebState* web_state) override;
+  void WasHidden(web::WebState* web_state) override;
+  void NavigationItemsPruned(web::WebState* web_state,
+                             size_t pruned_item_count) override;
   void NavigationItemCommitted(
+      web::WebState* web_state,
       const LoadCommittedDetails& load_details) override;
-  void DidStartNavigation(NavigationContext* navigation_context) override;
-  void DidFinishNavigation(NavigationContext* navigation_context) override;
+  void DidStartNavigation(web::WebState* web_state,
+                          NavigationContext* navigation_context) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           NavigationContext* navigation_context) override;
   void PageLoaded(
+      web::WebState* web_state,
       web::PageLoadCompletionStatus load_completion_status) override;
-  void InterstitialDismissed() override;
-  void LoadProgressChanged(double progress) override;
-  void TitleWasSet() override;
-  void DidChangeVisibleSecurityState() override;
-  void DidSuppressDialog() override;
-  void DocumentSubmitted(const std::string& form_name,
+  void InterstitialDismissed(web::WebState* web_state) override;
+  void LoadProgressChanged(web::WebState* web_state, double progress) override;
+  void TitleWasSet(web::WebState* web_state) override;
+  void DidChangeVisibleSecurityState(web::WebState* web_state) override;
+  void DidSuppressDialog(web::WebState* web_state) override;
+  void DocumentSubmitted(web::WebState* web_state,
+                         const std::string& form_name,
                          bool user_initiated) override;
-  void FormActivityRegistered(const std::string& form_name,
+  void FormActivityRegistered(web::WebState* web_state,
+                              const std::string& form_name,
                               const std::string& field_name,
                               const std::string& type,
                               const std::string& value,
                               bool input_missing) override;
-  void FaviconUrlUpdated(const std::vector<FaviconURL>& candidates) override;
-  void RenderProcessGone() override;
-  void WebStateDestroyed() override;
-  void DidStartLoading() override;
-  void DidStopLoading() override;
+  void FaviconUrlUpdated(web::WebState* web_state,
+                         const std::vector<FaviconURL>& candidates) override;
+  void RenderProcessGone(web::WebState* web_state) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
+  void DidStartLoading(web::WebState* web_state) override;
+  void DidStopLoading(web::WebState* web_state) override;
 
  private:
   __weak id<CRWWebStateObserver> observer_ = nil;

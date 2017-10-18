@@ -81,9 +81,10 @@ GURL TestRedirectObserver::GetFinalUrlForUrl(const GURL& url) {
   return GURL();
 }
 
-void TestRedirectObserver::DidStartNavigation(NavigationContext* context) {
+void TestRedirectObserver::DidStartNavigation(web::WebState* web_state,
+                                              NavigationContext* context) {
   GURL url = context->GetUrl();
-  NavigationItem* item = web_state()->GetNavigationManager()->GetVisibleItem();
+  NavigationItem* item = web_state->GetNavigationManager()->GetVisibleItem();
   DCHECK(item);
   if (redirect_chains_.find(item) != redirect_chains_.end()) {
     // If the redirect chain for the pending NavigationItem is already being

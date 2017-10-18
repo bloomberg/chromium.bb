@@ -68,10 +68,11 @@ class SadTabTabHelper : public web::WebStateUserData<SadTabTabHelper>,
   void RemoveApplicationDidBecomeActiveObserver();
 
   // WebStateObserver:
-  void WasShown() override;
-  void RenderProcessGone() override;
-  void DidFinishNavigation(web::NavigationContext* navigation_context) override;
-  void WebStateDestroyed() override;
+  void WasShown(web::WebState* web_state) override;
+  void RenderProcessGone(web::WebState* web_state) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // The default window of time a failure of the same URL needs to occur
   // to be considered a repeat failure.

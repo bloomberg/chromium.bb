@@ -28,6 +28,7 @@ WebControllerObserverBridge::~WebControllerObserverBridge() {
 }
 
 void WebControllerObserverBridge::PageLoaded(
+    WebState* web_state,
     PageLoadCompletionStatus load_completion_status) {
   if (load_completion_status == PageLoadCompletionStatus::SUCCESS &&
       [web_controller_observer_ respondsToSelector:@selector(pageLoaded:)])

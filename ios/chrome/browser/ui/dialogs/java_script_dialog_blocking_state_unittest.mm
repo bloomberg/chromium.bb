@@ -19,12 +19,14 @@ namespace {
 class JavaScriptBlockingTestWebState : public web::TestWebState {
  public:
   JavaScriptBlockingTestWebState() : web::TestWebState(), observer_(nullptr) {}
-  ~JavaScriptBlockingTestWebState() override { observer_->WebStateDestroyed(); }
+  ~JavaScriptBlockingTestWebState() override {
+    observer_->WebStateDestroyed(this);
+  }
 
   // Simulates committing a navigation by sending a WebStateObserver callback.
   void SimulateNavigationCommitted() {
     web::LoadCommittedDetails details;
-    observer_->NavigationItemCommitted(details);
+    observer_->NavigationItemCommitted(this, details);
   }
 
  protected:

@@ -90,7 +90,7 @@ class TranslateController : public web::WebStateObserver {
   bool OnTranslateComplete(const base::DictionaryValue& command);
 
   // web::WebStateObserver implementation:
-  void WebStateDestroyed() override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   Observer* observer_;
   base::scoped_nsobject<JsTranslateManager> js_manager_;

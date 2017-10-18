@@ -57,9 +57,12 @@ class WebFaviconDriver : public web::WebStateObserver,
                    history::HistoryService* history_service);
 
   // web::WebStateObserver implementation.
-  void DidStartNavigation(web::NavigationContext* navigation_context) override;
-  void DidFinishNavigation(web::NavigationContext* navigation_context) override;
+  void DidStartNavigation(web::WebState* web_state,
+                          web::NavigationContext* navigation_context) override;
+  void DidFinishNavigation(web::WebState* web_state,
+                           web::NavigationContext* navigation_context) override;
   void FaviconUrlUpdated(
+      web::WebState* web_state,
       const std::vector<web::FaviconURL>& candidates) override;
 
   // Invoked when new favicon URL candidates are received.

@@ -37,9 +37,9 @@ class FormInputAccessoryViewTabHelper
       NSArray<id<FormInputAccessoryViewProvider>>* providers);
 
   // web::WebStateObserver implementation.
-  void WasShown() override;
-  void WasHidden() override;
-  void WebStateDestroyed() override;
+  void WasShown(web::WebState* web_state) override;
+  void WasHidden(web::WebState* web_state) override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // The Objective-C form input accessory view controller instance.
   __strong FormInputAccessoryViewController* controller_;

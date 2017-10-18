@@ -28,7 +28,7 @@ class DialogPresenterTestWebState : public web::TestWebState {
   DialogPresenterTestWebState() : web::TestWebState(), observer_(nullptr) {}
   ~DialogPresenterTestWebState() override {
     if (observer_)
-      observer_->WebStateDestroyed();
+      observer_->WebStateDestroyed(this);
   }
 
  protected:

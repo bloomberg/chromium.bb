@@ -51,6 +51,7 @@ class IOSTranslateDriver : public TranslateDriver,
 
   // web::WebStateObserver methods.
   void NavigationItemCommitted(
+      web::WebState* web_state,
       const web::LoadCommittedDetails& load_details) override;
 
   // TranslateDriver methods.

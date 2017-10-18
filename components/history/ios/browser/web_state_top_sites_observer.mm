@@ -38,6 +38,7 @@ WebStateTopSitesObserver::~WebStateTopSitesObserver() {
 }
 
 void WebStateTopSitesObserver::NavigationItemCommitted(
+    web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {
   DCHECK(load_details.item);
   if (top_sites_)

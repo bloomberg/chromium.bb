@@ -40,8 +40,9 @@ class JavaScriptDialogBlockingState
 
   // WebStateObserver:
   void NavigationItemCommitted(
+      web::WebState* web_state,
       const web::LoadCommittedDetails& load_details) override;
-  void WebStateDestroyed() override;
+  void WebStateDestroyed(web::WebState* web_state) override;
 
   // Whether to show the blocking option.
   size_t dialog_count_;

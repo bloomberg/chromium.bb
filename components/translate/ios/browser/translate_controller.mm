@@ -142,8 +142,8 @@ bool TranslateController::OnTranslateComplete(
 
 // web::WebStateObserver implementation.
 
-void TranslateController::WebStateDestroyed() {
-  web_state()->RemoveScriptCommandCallback(kCommandPrefix);
+void TranslateController::WebStateDestroyed(web::WebState* web_state) {
+  web_state->RemoveScriptCommandCallback(kCommandPrefix);
 }
 
 }  // namespace translate

@@ -72,15 +72,16 @@ std::unique_ptr<infobars::InfoBar> InfoBarManagerImpl::CreateConfirmInfoBar(
 }
 
 void InfoBarManagerImpl::NavigationItemCommitted(
+    web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {
   OnNavigation(NavigationDetailsFromLoadCommittedDetails(load_details));
 }
 
-void InfoBarManagerImpl::WebStateDestroyed() {
+void InfoBarManagerImpl::WebStateDestroyed(web::WebState* web_state) {
   // The WebState is going away; be aggressively paranoid and delete this
   // InfoBarManagerImpl lest other parts of the system attempt to add infobars
   // or use it otherwise during the destruction.
-  web_state()->RemoveUserData(UserDataKey());
+  web_state->RemoveUserData(UserDataKey());
   // That was the equivalent of "delete this". This object is now destroyed;
   // returning from this function is the only safe thing to do.
 }

@@ -115,6 +115,7 @@ void IOSTranslateDriver::OnLanguageDetermined(
 // web::WebStateObserver methods
 
 void IOSTranslateDriver::NavigationItemCommitted(
+    web::WebState* web_state,
     const web::LoadCommittedDetails& load_details) {
   // Interrupt pending translations and reset various data when a navigation
   // happens. Desktop does it by tracking changes in the page ID, and
