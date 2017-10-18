@@ -13,6 +13,7 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
 ArcAppDeferredLauncherItemController::ArcAppDeferredLauncherItemController(
     const std::string& arc_app_id,
@@ -47,8 +48,17 @@ void ArcAppDeferredLauncherItemController::ExecuteCommand(
     int64_t command_id,
     int32_t event_flags,
     int64_t display_id) {
-  // This delegate does not show custom context or application menu items.
+  if (from_context_menu && ExecuteContextMenuCommand(command_id, event_flags))
+    return;
+
   NOTIMPLEMENTED();
+}
+
+std::unique_ptr<ui::MenuModel>
+ArcAppDeferredLauncherItemController::GetContextMenu(int64_t display_id) {
+  ChromeLauncherController* controller = ChromeLauncherController::instance();
+  const ash::ShelfItem* item = controller->GetItem(shelf_id());
+  return LauncherContextMenu::Create(controller, item, display_id);
 }
 
 void ArcAppDeferredLauncherItemController::Close() {
