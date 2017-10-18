@@ -140,7 +140,9 @@ static INLINE void av1_make_inter_predictor(
 #endif
     int xs, int ys, const MACROBLOCKD *xd) {
   (void)xd;
-
+#if !CONFIG_GLOBAL_MOTION && !CONFIG_WARPED_MOTION && CONFIG_MOTION_VAR
+  (void)build_for_obmc;
+#endif
 #if !CONFIG_MOTION_VAR
   const MODE_INFO *mi = xd->mi[0];
   (void)mi;

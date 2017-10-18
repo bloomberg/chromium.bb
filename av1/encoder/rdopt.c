@@ -8729,6 +8729,7 @@ int64_t interpolation_filter_search(
   return 0;
 }
 
+#if CONFIG_WARPED_MOTION || CONFIG_MOTION_VAR
 #if CONFIG_DUAL_FILTER
 static InterpFilters condition_interp_filters_on_mv(
     InterpFilters interp_filters, const MACROBLOCKD *xd) {
@@ -8741,6 +8742,7 @@ static InterpFilters condition_interp_filters_on_mv(
   return av1_make_interp_filters(filters[0], filters[1]);
 }
 #endif
+#endif  // CONFIG_WARPED_MOTION || CONFIG_MOTION_VAR
 
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
