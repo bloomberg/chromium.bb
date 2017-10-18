@@ -87,8 +87,8 @@ public class ToolbarTest {
     @Test
     @MediumTest
     public void testNTPNavigatesToErrorPageOnDisconnectedNetwork() throws Exception {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
 
         Tab tab = mActivityTestRule.getActivity().getActivityTab();

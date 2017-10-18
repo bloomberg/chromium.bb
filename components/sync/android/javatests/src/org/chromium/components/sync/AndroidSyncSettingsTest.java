@@ -113,7 +113,7 @@ public class AndroidSyncSettingsTest {
     public void setUp() throws Exception {
         mNumberOfCallsToWait = 0;
         mCallbackHelper = new CallbackHelper();
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
         setupTestAccounts();
         // Set signed in account to mAccount before initializing AndroidSyncSettings to let
         // AndroidSyncSettings establish correct assumptions.
@@ -373,7 +373,7 @@ public class AndroidSyncSettingsTest {
     @Feature({"Sync"})
     public void testGetContractAuthority() throws Exception {
         Assert.assertEquals("The contract authority should be the package name.",
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName(),
+                InstrumentationRegistry.getTargetContext().getPackageName(),
                 AndroidSyncSettings.getContractAuthority(mContext));
     }
 

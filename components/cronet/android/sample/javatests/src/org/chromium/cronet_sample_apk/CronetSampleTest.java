@@ -40,8 +40,7 @@ public class CronetSampleTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mUrl = mTestServer.getURL("/echo?status=200");
     }
 
@@ -90,9 +89,8 @@ public class CronetSampleTest {
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         intent.setData(Uri.parse(url));
-        intent.setComponent(
-                new ComponentName(InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                        CronetSampleActivity.class));
+        intent.setComponent(new ComponentName(
+                InstrumentationRegistry.getTargetContext(), CronetSampleActivity.class));
         return mActivityTestRule.launchActivity(intent);
     }
 }

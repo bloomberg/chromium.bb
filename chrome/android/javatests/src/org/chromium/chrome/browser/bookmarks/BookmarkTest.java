@@ -83,8 +83,7 @@ public class BookmarkTest {
                         mActivityTestRule.getActivity().getActivityTab().getProfile());
             }
         });
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mTestPage = mTestServer.getURL(TEST_PAGE_URL_GOOGLE);
         mTestPageFoo = mTestServer.getURL(TEST_PAGE_URL_FOO);
     }

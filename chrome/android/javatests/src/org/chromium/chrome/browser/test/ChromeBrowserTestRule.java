@@ -20,8 +20,7 @@ import org.chromium.content.browser.test.NativeLibraryTestRule;
  */
 public class ChromeBrowserTestRule extends NativeLibraryTestRule {
     private void setUp(Instrumentation instrumentation) {
-        ApplicationData.clearAppData(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        ApplicationData.clearAppData(InstrumentationRegistry.getTargetContext());
         SigninTestUtil.setUpAuthForTest(instrumentation);
         loadNativeLibraryAndInitBrowserProcess();
     }

@@ -38,7 +38,7 @@ public class GSAAccountChangeListenerTest {
     @Test
     @SmallTest
     public void testReceivesBroadcastIntents() throws Exception {
-        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final Context context = InstrumentationRegistry.getTargetContext();
         BroadcastReceiver receiver = new GSAAccountChangeListener.AccountChangeBroadcastReceiver();
         context.registerReceiver(receiver,
                 new IntentFilter(GSAAccountChangeListener.ACCOUNT_UPDATE_BROADCAST_INTENT));

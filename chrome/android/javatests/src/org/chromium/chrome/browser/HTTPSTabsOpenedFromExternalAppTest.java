@@ -54,8 +54,7 @@ public class HTTPSTabsOpenedFromExternalAppTest {
     public void testReferrerPolicyHttpReferrerHttpsNavigationsPolicyDefault()
             throws InterruptedException {
         mTestServer = EmbeddedTestServer.createAndStartHTTPSServer(
-                InstrumentationRegistry.getInstrumentation().getContext(),
-                ServerCertificate.CERT_OK);
+                InstrumentationRegistry.getContext(), ServerCertificate.CERT_OK);
         try {
             String url = mTestServer.getURL("/chrome/test/data/android/about.html");
             TabsOpenedFromExternalAppTest.launchAndVerifyReferrerWithPolicy(url, mActivityTestRule,

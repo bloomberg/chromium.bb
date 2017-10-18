@@ -56,8 +56,7 @@ public class SiteSettingsPreferencesTest {
     @Before
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
@@ -147,7 +146,7 @@ public class SiteSettingsPreferencesTest {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                InstrumentationRegistry.getTargetContext(),
                 SiteSettingsPreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
@@ -157,7 +156,7 @@ public class SiteSettingsPreferencesTest {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SingleCategoryPreferences.EXTRA_CATEGORY, category);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                InstrumentationRegistry.getTargetContext(),
                 SingleCategoryPreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);
@@ -167,7 +166,7 @@ public class SiteSettingsPreferencesTest {
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putSerializable(SingleWebsitePreferences.EXTRA_SITE, site);
         Intent intent = PreferencesLauncher.createIntentForSettingsPage(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(),
+                InstrumentationRegistry.getTargetContext(),
                 SingleWebsitePreferences.class.getName());
         intent.putExtra(Preferences.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
         return (Preferences) InstrumentationRegistry.getInstrumentation().startActivitySync(intent);

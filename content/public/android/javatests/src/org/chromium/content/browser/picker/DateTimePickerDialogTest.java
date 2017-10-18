@@ -25,8 +25,7 @@ public class DateTimePickerDialogTest {
     @SmallTest
     public void testOnTimeChanged() {
         int september = 8;
-        TimePicker picker =
-                new TimePicker(InstrumentationRegistry.getInstrumentation().getContext());
+        TimePicker picker = new TimePicker(InstrumentationRegistry.getContext());
         // 2015-09-16 00:00 UTC
         long min = 1442361600000L;
         // 2015-09-17 00:00 UTC

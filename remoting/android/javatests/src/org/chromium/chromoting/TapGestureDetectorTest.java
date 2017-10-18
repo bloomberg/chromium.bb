@@ -103,7 +103,7 @@ public class TapGestureDetectorTest {
             @Override
             public void run() {
                 mDetector = new TapGestureDetector(
-                        InstrumentationRegistry.getInstrumentation().getTargetContext(), mListener);
+                        InstrumentationRegistry.getTargetContext(), mListener);
             }
         });
         mEventGenerator = new TouchEventGenerator();
@@ -190,7 +190,7 @@ public class TapGestureDetectorTest {
                 // Ensure the gesture-detector is created on the UI thread, so that it uses the
                 // Handler for the UI thread for LongPress notifications.
                 mDetector = new TapGestureDetector(
-                        InstrumentationRegistry.getInstrumentation().getTargetContext(), mListener);
+                        InstrumentationRegistry.getTargetContext(), mListener);
 
                 injectDownEvent(0, 0, 0);
             }

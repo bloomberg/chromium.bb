@@ -94,8 +94,7 @@ public class DownloadTest implements CustomMainActivityStart {
     @Before
     public void setUp() throws Exception {
         deleteTestFiles();
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After

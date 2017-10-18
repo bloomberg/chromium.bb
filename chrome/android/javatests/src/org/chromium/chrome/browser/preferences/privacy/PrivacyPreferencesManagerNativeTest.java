@@ -39,8 +39,8 @@ public class PrivacyPreferencesManagerNativeTest {
     @UiThreadTest
     @Feature({"Android-AppBase"})
     public void testSyncUsageAndCrashReporting() throws Throwable {
-        PermissionContext context = new PermissionContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        PermissionContext context =
+                new PermissionContext(InstrumentationRegistry.getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);
@@ -60,8 +60,8 @@ public class PrivacyPreferencesManagerNativeTest {
     @UiThreadTest
     @DisabledTest(message = "crbug.com/700500")
     public void testSetUsageAndCrashReporting() throws Throwable {
-        PermissionContext context = new PermissionContext(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        PermissionContext context =
+                new PermissionContext(InstrumentationRegistry.getTargetContext());
         PrefServiceBridge prefBridge = PrefServiceBridge.getInstance();
         SharedPreferences pref = ContextUtils.getAppSharedPreferences();
         PrivacyPreferencesManager preferenceManager = new PrivacyPreferencesManager(context);

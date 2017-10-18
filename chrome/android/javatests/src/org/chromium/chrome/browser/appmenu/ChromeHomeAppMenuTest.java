@@ -57,8 +57,8 @@ public class ChromeHomeAppMenuTest {
     @SmallTest
     public void testPageMenu() throws IllegalArgumentException, InterruptedException {
         final Tab tab = mBottomSheet.getActiveTab();
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
         ChromeTabUtils.loadUrlOnUiThread(tab, testUrl);
         ChromeTabUtils.waitForTabPageLoaded(tab, testUrl);

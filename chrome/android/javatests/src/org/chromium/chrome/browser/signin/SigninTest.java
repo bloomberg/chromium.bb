@@ -222,7 +222,7 @@ public class SigninTest {
         SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
 
         mActivityTestRule.startMainActivityOnBlankPage();
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
         final TestSignInAllowedObserver signinAllowedObserver = new TestSignInAllowedObserver();
 
         ThreadUtils.runOnUiThreadBlocking(() -> {

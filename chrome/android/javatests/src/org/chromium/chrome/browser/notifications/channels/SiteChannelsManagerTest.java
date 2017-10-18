@@ -58,7 +58,7 @@ public class SiteChannelsManagerTest {
         // UrlFormatter.formatUrlForSecurityDisplay() is stand-alone.
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
-        Context mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context mContext = InstrumentationRegistry.getTargetContext();
         NotificationManagerProxy notificationManagerProxy = new NotificationManagerProxyImpl(
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE));
         clearExistingSiteChannels(notificationManagerProxy);

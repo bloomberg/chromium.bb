@@ -59,7 +59,7 @@ public class CustomNotificationBuilderTest {
     @Feature({"Browser", "Notifications"})
     @SuppressLint("NewApi")
     public void testSetAll() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
 
         PendingIntent contentIntent = createIntent(context, "Content");
         PendingIntent deleteIntent = createIntent(context, "Delete");
@@ -145,7 +145,7 @@ public class CustomNotificationBuilderTest {
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testZeroActionButtons() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         Notification notification =
                 new CustomNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES).build();
         View bigView = notification.bigContentView.apply(context, new LinearLayout(context));
@@ -162,7 +162,7 @@ public class CustomNotificationBuilderTest {
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testMaxActionButtons() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase builder =
                 new CustomNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES)
                         .addButtonAction(null /* iconBitmap */, "button",
@@ -189,7 +189,7 @@ public class CustomNotificationBuilderTest {
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testPaintIcons() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
 
         Bitmap largeIcon = Bitmap.createBitmap(
                 new int[] {Color.RED}, 1 /* width */, 1 /* height */, Bitmap.Config.ARGB_8888);
@@ -231,7 +231,7 @@ public class CustomNotificationBuilderTest {
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testCharSequenceLimits() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         int maxLength = CustomNotificationBuilder.MAX_CHARSEQUENCE_LENGTH;
         Notification notification =
                 new CustomNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES)
@@ -288,7 +288,7 @@ public class CustomNotificationBuilderTest {
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testGeneratesLargeIconFromOriginWhenNoLargeIconProvided() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES)
                         .setOrigin("https://www.google.com");
@@ -305,7 +305,7 @@ public class CustomNotificationBuilderTest {
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testGeneratesLargeIconFromOriginWhenLargeIconProvidedIsNull() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES)
                         .setOrigin("https://www.chromium.org")
@@ -331,7 +331,7 @@ public class CustomNotificationBuilderTest {
     @SmallTest
     @Feature({"Browser", "Notifications"})
     public void testAddTextActionSetsRemoteInput() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         NotificationBuilderBase notificationBuilder =
                 new CustomNotificationBuilder(context, ChannelDefinitions.CHANNEL_ID_SITES)
                         .addTextAction(null, "Action Title", null, "Placeholder");

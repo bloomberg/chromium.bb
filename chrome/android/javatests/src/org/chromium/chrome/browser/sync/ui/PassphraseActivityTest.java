@@ -44,7 +44,7 @@ public class PassphraseActivityTest {
 
     @Before
     public void setUp() throws Exception {
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
     }
 
     @After

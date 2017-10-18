@@ -73,8 +73,7 @@ public class FirstRunIntegrationTest {
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                final Context context =
-                        InstrumentationRegistry.getInstrumentation().getTargetContext();
+                final Context context = InstrumentationRegistry.getTargetContext();
                 Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://test.com"));
                 intent.setPackage(context.getPackageName());
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -90,7 +89,7 @@ public class FirstRunIntegrationTest {
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+                Context context = InstrumentationRegistry.getTargetContext();
                 CustomTabsIntent customTabIntent = new CustomTabsIntent.Builder().build();
                 customTabIntent.intent.setPackage(context.getPackageName());
                 customTabIntent.intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -106,8 +105,7 @@ public class FirstRunIntegrationTest {
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                final Context context =
-                        InstrumentationRegistry.getInstrumentation().getTargetContext();
+                final Context context = InstrumentationRegistry.getTargetContext();
                 Intent intent = new Intent();
                 intent.setClassName(context, asyncClassName);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -123,8 +121,7 @@ public class FirstRunIntegrationTest {
         runFirstRunRedirectTestForActivity(asyncClassName, new Runnable() {
             @Override
             public void run() {
-                final Context context =
-                        InstrumentationRegistry.getInstrumentation().getTargetContext();
+                final Context context = InstrumentationRegistry.getTargetContext();
                 Intent intent = new Intent();
                 intent.setClassName(context, asyncClassName);
                 intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);

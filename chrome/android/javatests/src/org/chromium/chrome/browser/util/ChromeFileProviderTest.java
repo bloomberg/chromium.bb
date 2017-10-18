@@ -47,8 +47,8 @@ public class ChromeFileProviderTest {
     @Test
     @SmallTest
     public void testOpenFileWhenReady() {
-        Uri uri = ChromeFileProvider.generateUriAndBlockAccess(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        Uri uri =
+                ChromeFileProvider.generateUriAndBlockAccess(InstrumentationRegistry.getContext());
         Uri fileUri = new Uri.Builder().path("1").build();
         ChromeFileProvider.notifyFileReady(uri, fileUri);
         Uri result = ChromeFileProvider.getFileUriWhenReady(uri);
@@ -58,7 +58,7 @@ public class ChromeFileProviderTest {
     @Test
     @LargeTest
     public void testOpenOnAsyncNotify() {
-        final Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        final Context context = InstrumentationRegistry.getContext();
         final Uri uri = ChromeFileProvider.generateUriAndBlockAccess(context);
         AsyncTask.THREAD_POOL_EXECUTOR.execute(new Runnable() {
             @Override
@@ -79,7 +79,7 @@ public class ChromeFileProviderTest {
     @Test
     @LargeTest
     public void testFileChanged() {
-        final Context context = InstrumentationRegistry.getInstrumentation().getContext();
+        final Context context = InstrumentationRegistry.getContext();
         Uri uri1 = ChromeFileProvider.generateUriAndBlockAccess(context);
         final Uri uri2 = ChromeFileProvider.generateUriAndBlockAccess(context);
         final Uri fileUri2 = new Uri.Builder().path("2").build();

@@ -48,7 +48,7 @@ public class ViewportTest {
         mActivityTestRule.launchContentShellWithUrl("about:blank");
         mActivityTestRule.waitForActiveShellToBeDoneLoading();
 
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         WindowManager winManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         DisplayMetrics metrics = new DisplayMetrics();
         winManager.getDefaultDisplay().getMetrics(metrics);

@@ -127,8 +127,7 @@ public class UrlOverridingTest {
         filter.addDataScheme("market");
         mActivityMonitor = InstrumentationRegistry.getInstrumentation().addMonitor(
                 filter, new Instrumentation.ActivityResult(Activity.RESULT_OK, null), true);
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
@@ -367,7 +366,7 @@ public class UrlOverridingTest {
     public void testRedirectionFromIntent() {
         Intent intent = new Intent(Intent.ACTION_VIEW,
                 Uri.parse(mTestServer.getURL(NAVIGATION_FROM_JAVA_REDIRECTION_PAGE)));
-        Context targetContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context targetContext = InstrumentationRegistry.getTargetContext();
         intent.setClassName(targetContext, ChromeLauncherActivity.class.getName());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         targetContext.startActivity(intent);

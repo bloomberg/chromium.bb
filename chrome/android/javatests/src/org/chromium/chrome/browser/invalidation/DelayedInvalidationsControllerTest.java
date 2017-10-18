@@ -73,7 +73,7 @@ public class DelayedInvalidationsControllerTest {
     @Before
     public void setUp() throws Exception {
         mController = new MockDelayedInvalidationsController();
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
 
         mPlaceholderActivity = new Activity();
         setApplicationState(ActivityState.CREATED);

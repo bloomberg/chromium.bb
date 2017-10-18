@@ -71,12 +71,10 @@ public class CustomTabExternalNavigationTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(
                 CustomTabsTestUtils.createMinimalCustomTabIntent(
-                        InstrumentationRegistry.getInstrumentation().getTargetContext(),
-                        mTestServer.getURL(TEST_PATH)));
+                        InstrumentationRegistry.getTargetContext(), mTestServer.getURL(TEST_PATH)));
         Tab tab = mCustomTabActivityTestRule.getActivity().getActivityTab();
         TabDelegateFactory delegateFactory = tab.getDelegateFactory();
         Assert.assertTrue(delegateFactory instanceof CustomTabDelegateFactory);

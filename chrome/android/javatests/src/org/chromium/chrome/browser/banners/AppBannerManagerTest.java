@@ -217,8 +217,7 @@ public class AppBannerManagerTest {
         });
 
         AppBannerManager.setTotalEngagementForTesting(10);
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mNativeAppUrl = mTestServer.getURL(NATIVE_APP_PATH);
         mWebAppUrl = mTestServer.getURL(WEB_APP_PATH);
     }
@@ -305,9 +304,8 @@ public class AppBannerManagerTest {
         TouchCommon.singleClickView(button);
 
         // Wait for the infobar to register that the app is installing.
-        final String installingText =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getString(
-                        R.string.app_banner_installing);
+        final String installingText = InstrumentationRegistry.getTargetContext().getString(
+                R.string.app_banner_installing);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -320,8 +318,7 @@ public class AppBannerManagerTest {
         // Say that the package is installed.  Infobar should say that the app is ready to open.
         mPackageManager.isInstalled = true;
         final String openText =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getString(
-                        R.string.app_banner_open);
+                InstrumentationRegistry.getTargetContext().getString(R.string.app_banner_open);
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

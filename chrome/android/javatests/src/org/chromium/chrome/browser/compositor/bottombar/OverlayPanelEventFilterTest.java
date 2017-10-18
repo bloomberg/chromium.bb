@@ -225,7 +225,7 @@ public class OverlayPanelEventFilterTest {
 
     @Before
     public void setUp() throws Exception {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
 
         mDpToPx = context.getResources().getDisplayMetrics().density;
         mTouchSlopDp = ViewConfiguration.get(context).getScaledTouchSlop() / mDpToPx;

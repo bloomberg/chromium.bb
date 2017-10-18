@@ -60,8 +60,7 @@ public class ConnectivityCheckerTestRule extends ChromeBrowserTestRule {
     }
 
     private void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mGenerated200Url = mTestServer.getURL("/echo?status=200");
         mGenerated204Url = mTestServer.getURL("/echo?status=204");
         mGenerated302Url = mTestServer.getURL("/echo?status=302");

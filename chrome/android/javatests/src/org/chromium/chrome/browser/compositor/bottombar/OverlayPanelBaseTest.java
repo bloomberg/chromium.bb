@@ -95,10 +95,10 @@ public class OverlayPanelBaseTest {
     @Before
     public void setUp() throws Exception {
         OverlayPanelManager panelManager = new OverlayPanelManager();
-        mExpandPanel = new MockOverlayPanel(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(), panelManager);
+        mExpandPanel =
+                new MockOverlayPanel(InstrumentationRegistry.getTargetContext(), panelManager);
         mNoExpandPanel = new NoExpandMockOverlayPanel(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(), panelManager);
+                InstrumentationRegistry.getTargetContext(), panelManager);
     }
 
     // Start OverlayPanelBase test suite.

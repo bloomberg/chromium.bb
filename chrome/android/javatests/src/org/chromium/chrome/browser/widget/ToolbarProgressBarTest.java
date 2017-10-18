@@ -67,8 +67,8 @@ public class ToolbarProgressBarTest {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testToolbarTraversesScreenOnce() throws InterruptedException, TimeoutException {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         final WebContents webContents =
                 mActivityTestRule.getActivity().getActivityTab().getWebContents();

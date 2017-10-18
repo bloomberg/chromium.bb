@@ -82,8 +82,8 @@ public class OfflinePageRequestTest {
     @SmallTest
     @RetryOnFailure
     public void testLoadOfflinePageOnDisconnectedNetwork() throws Exception {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
         String aboutUrl = testServer.getURL(ABOUT_PAGE);
 
@@ -118,8 +118,8 @@ public class OfflinePageRequestTest {
     @SmallTest
     @RetryOnFailure
     public void testLoadOfflinePageWithFragmentOnDisconnectedNetwork() throws Exception {
-        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        EmbeddedTestServer testServer =
+                EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         String testUrl = testServer.getURL(TEST_PAGE);
         String testUrlWithFragment = testUrl + "#ref";
 

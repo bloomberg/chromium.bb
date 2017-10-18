@@ -118,8 +118,7 @@ public class InterceptNavigationDelegateTest {
                 tab.setInterceptNavigationDelegate(mInterceptNavigationDelegate);
             }
         });
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After

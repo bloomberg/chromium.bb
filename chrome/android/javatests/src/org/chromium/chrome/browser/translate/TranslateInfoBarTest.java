@@ -63,8 +63,7 @@ public class TranslateInfoBarTest {
         mInfoBarContainer = mActivityTestRule.getActivity().getActivityTab().getInfoBarContainer();
         mListener =  new InfoBarTestAnimationListener();
         mInfoBarContainer.addAnimationListener(mListener);
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After

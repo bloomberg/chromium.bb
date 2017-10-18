@@ -72,7 +72,7 @@ public class ChildProcessLauncherHelperTest {
     @ChildProcessAllocatorSettings(
             sandboxedServiceCount = 4, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testAllocatorForPackage() {
-        Context appContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context appContext = InstrumentationRegistry.getTargetContext();
 
         ChildConnectionAllocator connectionAllocator = getChildConnectionAllocator(
                 appContext, appContext.getPackageName(), true /* sandboxed */);
@@ -96,7 +96,7 @@ public class ChildProcessLauncherHelperTest {
     @ChildProcessAllocatorSettings(
             sandboxedServiceCount = 2, sandboxedServiceName = DEFAULT_SANDBOXED_PROCESS_SERVICE)
     public void testBindServiceFromMultipleProcesses() throws RemoteException {
-        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final Context context = InstrumentationRegistry.getTargetContext();
 
         // Start the Helper service.
         class HelperConnection implements ServiceConnection {
@@ -250,7 +250,7 @@ public class ChildProcessLauncherHelperTest {
             ChildProcessCreationParams.registerDefault(creationParams);
         }
 
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         warmUpOnUiThreadBlocking(context);
 
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());
@@ -281,7 +281,7 @@ public class ChildProcessLauncherHelperTest {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testWarmUpWithBindToCaller() {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         ChildProcessCreationParams creationParams =
                 new ChildProcessCreationParams(context.getPackageName(),
                         false /* isExternalService */, LibraryProcessType.PROCESS_CHILD,
@@ -296,7 +296,7 @@ public class ChildProcessLauncherHelperTest {
     public void testWarmUpProcessCrashBeforeUse() throws RemoteException {
         Assert.assertEquals(0, getConnectedSandboxedServicesCount());
 
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         warmUpOnUiThreadBlocking(context);
 
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());
@@ -321,7 +321,7 @@ public class ChildProcessLauncherHelperTest {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testWarmUpProcessCrashAfterUse() throws RemoteException {
-        Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        Context context = InstrumentationRegistry.getTargetContext();
         warmUpOnUiThreadBlocking(context);
 
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());
@@ -345,8 +345,7 @@ public class ChildProcessLauncherHelperTest {
     @MediumTest
     @Feature({"ProcessManagement"})
     public void testSandboxedAllocatorFreed() {
-        final String packageName =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
+        final String packageName = InstrumentationRegistry.getTargetContext().getPackageName();
 
         ChildProcessLauncherHelper launcher = startSandboxedChildProcess(
                 null /* packageName */, BLOCK_UNTIL_SETUP, true /* doSetupConnection */);
@@ -382,8 +381,7 @@ public class ChildProcessLauncherHelperTest {
 
         // Wait for the allocator to be removed, so we know both connections' listeners have been
         // run.
-        final String packageName =
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName();
+        final String packageName = InstrumentationRegistry.getTargetContext().getPackageName();
         CriteriaHelper.pollInstrumentationThread(
                 new Criteria("The connection allocator was not removed.") {
                     @Override
@@ -399,12 +397,12 @@ public class ChildProcessLauncherHelperTest {
     @ChildProcessAllocatorSettings(sandboxedServiceCount = 4)
     public void testCustomCreationParamDoesNotReuseWarmupConnection() {
         // Since warmUp only uses default params.
-        final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        final Context context = InstrumentationRegistry.getTargetContext();
         ChildProcessCreationParams defaultCreationParams =
                 getDefaultChildProcessCreationParams(context.getPackageName());
         ChildProcessCreationParams.registerDefault(defaultCreationParams);
         ChildProcessCreationParams otherCreationParams = getDefaultChildProcessCreationParams(
-                InstrumentationRegistry.getInstrumentation().getContext().getPackageName());
+                InstrumentationRegistry.getContext().getPackageName());
 
         warmUpOnUiThreadBlocking(context);
         Assert.assertEquals(1, getConnectedSandboxedServicesCount());

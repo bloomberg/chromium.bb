@@ -66,7 +66,7 @@ public class ChannelsInitializerTest {
         // UrlFormatter.formatUrlForSecurityDisplay() is stand-alone.
         mNativeLibraryTestRule.loadNativeLibraryNoBrowserProcess();
 
-        mContext = InstrumentationRegistry.getInstrumentation().getTargetContext();
+        mContext = InstrumentationRegistry.getTargetContext();
         mNotificationManagerProxy = new NotificationManagerProxyImpl(
                 (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE));
         mChannelsInitializer =

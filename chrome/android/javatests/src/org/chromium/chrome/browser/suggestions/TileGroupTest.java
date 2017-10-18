@@ -74,8 +74,7 @@ public class TileGroupTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         mSiteSuggestionUrls = mTestServer.getURLs(FAKE_MOST_VISITED_URLS);
 

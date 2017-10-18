@@ -181,8 +181,7 @@ public class TabsTest {
     @CommandLineFlags.Add(ContentSwitches.DISABLE_POPUP_BLOCKING)
     @RetryOnFailure
     public void testSpawnPopupOnBackgroundTab() throws InterruptedException, TimeoutException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_PATH));
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
 
@@ -205,8 +204,7 @@ public class TabsTest {
     @MediumTest
     @RetryOnFailure
     public void testAlertDialogDoesNotChangeActiveModel() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.newIncognitoTabFromMenu();
         mActivityTestRule.loadUrl(mTestServer.getURL(TEST_FILE_PATH));
         final Tab tab = mActivityTestRule.getActivity().getActivityTab();
@@ -256,8 +254,7 @@ public class TabsTest {
     @Test
     @DisabledTest
     public void testOpenAndCloseNewTabButton() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_FILE_PATH));
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
             String title =
@@ -323,8 +320,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
     public void testHideKeyboard() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
 
         // Open a new tab(The 1st tab) and click node.
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
@@ -369,8 +365,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
     public void testHideKeyboardWhenOpeningWindow() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         // Open a new tab and click an editable node.
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
@@ -435,8 +430,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
     public void testTabSwitcherCollapseSelection() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         ChromeTabUtils.fullyLoadUrlInNewTab(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), mTestServer.getURL(TEST_FILE_PATH), false);
         DOMUtils.longPressNode(
@@ -659,8 +653,7 @@ public class TabsTest {
     @Test
     @FlakyTest
     public void testOpenManyTabsInBursts() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final int burstSize = 5;
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         final int startCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
@@ -690,8 +683,7 @@ public class TabsTest {
      * tab loads when selected.
      */
     private void openAndVerifyManyTestTabs(final int num) throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final String url = mTestServer.getURL(TEST_PAGE_FILE_PATH);
         int startCount = mActivityTestRule.getActivity().getCurrentTabModel().getCount();
         mActivityTestRule.loadUrlInManyNewTabs(url, num);
@@ -1154,8 +1146,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher", "Main"})
     @RetryOnFailure
     public void testCloseTabPortrait() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(
                 mTestServer.getURL("/chrome/test/data/android/test.html"));
 
@@ -1184,8 +1175,7 @@ public class TabsTest {
     @Restriction({UiRestriction.RESTRICTION_TYPE_PHONE, RESTRICTION_TYPE_NON_LOW_END_DEVICE})
     @RetryOnFailure
     public void testCloseTabLandscape() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(
                 mTestServer.getURL("/chrome/test/data/android/test.html"));
 
@@ -1388,8 +1378,7 @@ public class TabsTest {
     @Feature({"Android-TabSwitcher"})
     @RetryOnFailure
     public void testCloseTabDuringFling() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.loadUrlInNewTab(
                 mTestServer.getURL("/chrome/test/data/android/tabstest/text_page.html"));
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> {
@@ -1410,8 +1399,7 @@ public class TabsTest {
     @Test
     @FlakyTest
     public void testQuickSwitchBetweenTabAndSwitcherMode() throws InterruptedException {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         final String[] urls = {
                 mTestServer.getURL("/chrome/test/data/android/navigate/one.html"),
                 mTestServer.getURL("/chrome/test/data/android/navigate/two.html"),
@@ -1913,8 +1901,7 @@ public class TabsTest {
     //    @MediumTest
     //    @Feature({"Android-TabSwitcher"})
     public void testIncognitoTabsNotRestoredAfterSwipe() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityWithURL(mTestServer.getURL(TEST_PAGE_FILE_PATH));
 
         mActivityTestRule.newIncognitoTabFromMenu();

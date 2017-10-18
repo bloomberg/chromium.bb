@@ -258,7 +258,7 @@ public class BrowserActionActivityTest {
         // Force ChromeTabbedActivity dismissed to make sure it calls onStop then calls onStart next
         // time it is started by an Intent.
         Intent customTabIntent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(), mTestPage);
+                InstrumentationRegistry.getTargetContext(), mTestPage);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(customTabIntent);
 
         // The Intent of the Browser Actions notification should not toggle overview mode and should
@@ -312,7 +312,7 @@ public class BrowserActionActivityTest {
         // Force ChromeTabbedActivity dismissed to make sure it calls onStop then calls onStart next
         // time it is started by an Intent.
         Intent customTabIntent = CustomTabsTestUtils.createMinimalCustomTabIntent(
-                InstrumentationRegistry.getInstrumentation().getTargetContext(), mTestPage);
+                InstrumentationRegistry.getTargetContext(), mTestPage);
         mCustomTabActivityTestRule.startCustomTabActivityWithIntent(customTabIntent);
 
         // The Intent of the Browser Actions notification should toggle overview mode.

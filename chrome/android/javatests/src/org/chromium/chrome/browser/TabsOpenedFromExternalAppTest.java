@@ -183,8 +183,7 @@ public class TabsOpenedFromExternalAppTest {
 
     @Before
     public void setUp() throws Exception {
-        mTestServer = EmbeddedTestServer.createAndStartServer(
-                InstrumentationRegistry.getInstrumentation().getContext());
+        mTestServer = EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
     }
 
     @After
@@ -211,7 +210,7 @@ public class TabsOpenedFromExternalAppTest {
         if (extras != null) intent.putExtras(extras);
 
         if (firstParty) {
-            Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+            Context context = InstrumentationRegistry.getTargetContext();
             intent.setPackage(context.getPackageName());
             IntentHandler.addTrustedIntentExtras(intent);
         }
@@ -741,12 +740,11 @@ public class TabsOpenedFromExternalAppTest {
 
         // Open a tab via an external application.
         final Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(hrefLink));
-        intent.setClassName(
-                InstrumentationRegistry.getInstrumentation().getTargetContext().getPackageName(),
+        intent.setClassName(InstrumentationRegistry.getTargetContext().getPackageName(),
                 ChromeTabbedActivity.class.getName());
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, "com.legit.totes");
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        InstrumentationRegistry.getInstrumentation().getTargetContext().startActivity(intent);
+        InstrumentationRegistry.getTargetContext().startActivity(intent);
 
         CriteriaHelper.pollUiThread(Criteria.equals(1,
                 () -> mActivityTestRule.getActivity().getTabModelSelector().getTotalTabCount()));
