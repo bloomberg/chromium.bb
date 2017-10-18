@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/ble_advertiser.h"
+#include "chromeos/components/tether/ble_advertiser_impl.h"
 
 #include "base/bind.h"
 #include "base/callback_forward.h"
@@ -117,9 +117,9 @@ class TestObserver : public BleAdvertiser::Observer {
 
 }  // namespace
 
-class BleAdvertiserTest : public testing::Test {
+class BleAdvertiserImplTest : public testing::Test {
  protected:
-  BleAdvertiserTest()
+  BleAdvertiserImplTest()
       : fake_devices_(cryptauth::GenerateTestRemoteDevices(3)),
         fake_advertisements_(GenerateFakeAdvertisements()) {}
 
@@ -160,7 +160,7 @@ class BleAdvertiserTest : public testing::Test {
 
     test_observer_ = base::WrapUnique(new TestObserver());
 
-    ble_advertiser_ = base::MakeUnique<BleAdvertiser>(
+    ble_advertiser_ = base::MakeUnique<BleAdvertiserImpl>(
         mock_local_data_provider_.get(), mock_seed_fetcher_.get(),
         fake_ble_synchronizer_.get());
     ble_advertiser_->SetEidGeneratorForTest(std::move(eid_generator));
@@ -205,34 +205,34 @@ class BleAdvertiserTest : public testing::Test {
   std::unique_ptr<FakeErrorTolerantBleAdvertisementFactory>
       fake_advertisement_factory_;
 
-  std::unique_ptr<BleAdvertiser> ble_advertiser_;
+  std::unique_ptr<BleAdvertiserImpl> ble_advertiser_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(BleAdvertiserTest);
+  DISALLOW_COPY_AND_ASSIGN(BleAdvertiserImplTest);
 };
 
-TEST_F(BleAdvertiserTest, TestCannotFetchPublicKey) {
+TEST_F(BleAdvertiserImplTest, TestCannotFetchPublicKey) {
   mock_local_data_provider_->SetPublicKey(nullptr);
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
-TEST_F(BleAdvertiserTest, EmptyPublicKey) {
+TEST_F(BleAdvertiserImplTest, EmptyPublicKey) {
   mock_local_data_provider_->SetPublicKey(base::MakeUnique<std::string>(""));
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
-TEST_F(BleAdvertiserTest, NoBeaconSeeds) {
+TEST_F(BleAdvertiserImplTest, NoBeaconSeeds) {
   mock_seed_fetcher_->SetSeedsForDevice(fake_devices_[0], nullptr);
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
-TEST_F(BleAdvertiserTest, EmptyBeaconSeeds) {
+TEST_F(BleAdvertiserImplTest, EmptyBeaconSeeds) {
   std::vector<cryptauth::BeaconSeed> empty_seeds;
   mock_seed_fetcher_->SetSeedsForDevice(fake_devices_[0], &empty_seeds);
 
@@ -241,14 +241,14 @@ TEST_F(BleAdvertiserTest, EmptyBeaconSeeds) {
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
-TEST_F(BleAdvertiserTest, CannotGenerateAdvertisement) {
+TEST_F(BleAdvertiserImplTest, CannotGenerateAdvertisement) {
   mock_eid_generator_->set_advertisement(nullptr);
   EXPECT_FALSE(ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]));
   EXPECT_EQ(0u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(0u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
-TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully) {
+TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully) {
   mock_eid_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
 
@@ -276,7 +276,7 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully) {
   EXPECT_EQ(1u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
-TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
+TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   // Register device 0.
   mock_eid_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
@@ -314,7 +314,7 @@ TEST_F(BleAdvertiserTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   EXPECT_EQ(1u, test_observer_->num_times_all_advertisements_unregistered());
 }
 
-TEST_F(BleAdvertiserTest, TooManyDevicesRegistered) {
+TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
   ASSERT_EQ(2u, kMaxConcurrentAdvertisements);
 
   // Register device 0.
@@ -369,16 +369,16 @@ TEST_F(BleAdvertiserTest, TooManyDevicesRegistered) {
 
 // Regression test for crbug.com/739883. This issue arises when the following
 // occurs:
-//   (1) BleAdvertiser starts advertising to device A.
-//   (2) BleAdvertiser stops advertising to device A. The advertisement starts
-//       its asynchyronous unregistration flow.
-//   (3) BleAdvertiser starts advertising to device A again, but the previous
-//       advertisement has not yet been fully unregistered.
+//   (1) BleAdvertiserImpl starts advertising to device A.
+//   (2) BleAdvertiserImpl stops advertising to device A. The advertisement
+//       starts its asynchyronous unregistration flow.
+//   (3) BleAdvertiserImpl starts advertising to device A again, but the
+//       previous advertisement has not yet been fully unregistered.
 // Before the fix for crbug.com/739883, this would cause an error of type
 // ERROR_ADVERTISEMENT_ALREADY_EXISTS. However, the fix for this issue ensures
 // that the new advertisement in step (3) above does not start until the
 // previous one has been finished.
-TEST_F(BleAdvertiserTest, SameAdvertisementAdded_FirstHasNotBeenStopped) {
+TEST_F(BleAdvertiserImplTest, SameAdvertisementAdded_FirstHasNotBeenStopped) {
   mock_eid_generator_->set_advertisement(
       base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
 
