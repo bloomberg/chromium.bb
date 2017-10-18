@@ -65,6 +65,7 @@
 #include "third_party/webrtc/api/mediaconstraintsinterface.h"
 #include "third_party/webrtc/api/videosourceproxy.h"
 #include "third_party/webrtc/modules/video_coding/codecs/h264/include/h264.h"
+#include "third_party/webrtc/rtc_base/refcountedobject.h"
 #include "third_party/webrtc/rtc_base/ssladapter.h"
 
 #if defined(OS_ANDROID)
@@ -562,7 +563,7 @@ void PeerConnectionDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
   if (audio_device_.get())
     return;
 
-  audio_device_ = new WebRtcAudioDeviceImpl();
+  audio_device_ = new rtc::RefCountedObject<WebRtcAudioDeviceImpl>();
 }
 
 }  // namespace content

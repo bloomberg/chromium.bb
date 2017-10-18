@@ -260,12 +260,9 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   // Instances of this object are created on the main render thread.
   WebRtcAudioDeviceImpl();
 
-  // webrtc::RefCountedModule implementation.
-  // The creator must call AddRef() after construction and use Release()
-  // to release the reference and delete this object.
-  // Called on the main render thread.
-  int32_t AddRef() const override;
-  int32_t Release() const override;
+ protected:
+  // Make destructor protected, we should only be deleted by Release().
+  ~WebRtcAudioDeviceImpl() override;
 
  private:
   // webrtc::AudioDeviceModule implementation.
@@ -338,9 +335,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   typedef std::list<WebRtcPlayoutDataSource::Sink*> PlayoutDataSinkList;
   class RenderBuffer;
 
-  // Make destructor private to ensure that we can only be deleted by Release().
-  ~WebRtcAudioDeviceImpl() override;
-
   // WebRtcAudioRendererSource implementation.
 
   // Called on the AudioOutputDevice worker thread.
@@ -363,8 +357,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   base::ThreadChecker signaling_thread_checker_;
   base::ThreadChecker worker_thread_checker_;
   base::ThreadChecker audio_renderer_thread_checker_;
-
-  mutable int ref_count_;
 
   // List of captures which provides access to the native audio input layer
   // in the browser process.  The last capturer in this list is considered the

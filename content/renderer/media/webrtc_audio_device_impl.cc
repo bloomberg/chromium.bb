@@ -24,8 +24,7 @@ using media::ChannelLayout;
 namespace content {
 
 WebRtcAudioDeviceImpl::WebRtcAudioDeviceImpl()
-    : ref_count_(0),
-      audio_transport_callback_(NULL),
+    : audio_transport_callback_(NULL),
       output_delay_ms_(0),
       initialized_(false),
       playing_(false),
@@ -45,22 +44,6 @@ WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl() {
   DVLOG(1) << "WebRtcAudioDeviceImpl::~WebRtcAudioDeviceImpl()";
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK(!initialized_) << "Terminate must have been called.";
-}
-
-int32_t WebRtcAudioDeviceImpl::AddRef() const {
-  // We can be AddRefed and released on both the UI thread as well as
-  // libjingle's signaling thread.
-  return base::subtle::Barrier_AtomicIncrement(&ref_count_, 1);
-}
-
-int32_t WebRtcAudioDeviceImpl::Release() const {
-  // We can be AddRefed and released on both the UI thread as well as
-  // libjingle's signaling thread.
-  int ret = base::subtle::Barrier_AtomicIncrement(&ref_count_, -1);
-  if (ret == 0) {
-    delete this;
-  }
-  return ret;
 }
 
 void WebRtcAudioDeviceImpl::RenderData(media::AudioBus* audio_bus,
