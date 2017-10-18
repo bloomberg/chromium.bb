@@ -890,7 +890,7 @@ TEST_F(GLRendererTest, ActiveTextureState) {
 
   auto child_context_provider =
       cc::TestContextProvider::Create(std::move(child_context_owned));
-  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
           child_context_provider.get(), shared_bitmap_manager.get());
@@ -1950,7 +1950,7 @@ TEST_F(GLRendererTest, DontOverlayWithCopyRequests) {
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   auto child_context_provider = cc::TestContextProvider::Create();
-  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
           child_context_provider.get(), shared_bitmap_manager.get());
@@ -2140,7 +2140,7 @@ TEST_F(GLRendererTest, OverlaySyncTokensAreProcessed) {
       new TextureMailboxDeleter(base::ThreadTaskRunnerHandle::Get()));
 
   auto child_context_provider = cc::TestContextProvider::Create();
-  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
           child_context_provider.get(), shared_bitmap_manager.get());
@@ -2377,7 +2377,7 @@ TEST_F(GLRendererTest, DCLayerOverlaySwitch) {
           output_surface->context_provider(), nullptr);
 
   auto child_context_provider = cc::TestContextProvider::Create();
-  ASSERT_TRUE(child_context_provider->BindToCurrentThread());
+  child_context_provider->BindToCurrentThread();
   auto child_resource_provider =
       cc::FakeResourceProvider::CreateLayerTreeResourceProvider(
           child_context_provider.get(), nullptr);
@@ -2486,7 +2486,8 @@ class GLRendererWithMockContextTest : public ::testing::Test {
     context_support_ptr_ = context_support.get();
     auto context_provider = cc::TestContextProvider::Create(
         cc::TestWebGraphicsContext3D::Create(), std::move(context_support));
-    context_provider->BindToCurrentThread();
+    ASSERT_EQ(context_provider->BindToCurrentThread(),
+              gpu::ContextResult::kSuccess);
     output_surface_ =
         cc::FakeOutputSurface::Create3d(std::move(context_provider));
     output_surface_->BindToClient(&output_surface_client_);

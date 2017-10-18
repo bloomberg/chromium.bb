@@ -35,12 +35,12 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferAllowed) {
   init_params.stream_priority = SchedulingPriority::kNormal;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  bool result = false;
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
   ASSERT_TRUE(stub);
@@ -63,12 +63,12 @@ TEST_F(GpuChannelTest, CreateViewCommandBufferDisallowed) {
   init_params.stream_priority = SchedulingPriority::kNormal;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  bool result = false;
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_FALSE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kFatalFailure);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
   EXPECT_FALSE(stub);
@@ -87,12 +87,12 @@ TEST_F(GpuChannelTest, CreateOffscreenCommandBuffer) {
   init_params.stream_priority = SchedulingPriority::kNormal;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  bool result = false;
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId);
   EXPECT_TRUE(stub);
@@ -113,12 +113,12 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   init_params.stream_priority = SchedulingPriority::kNormal;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  bool result = false;
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId1, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kSuccess);
 
   GpuCommandBufferStub* stub = channel->LookupCommandBuffer(kRouteId1);
   EXPECT_TRUE(stub);
@@ -135,7 +135,7 @@ TEST_F(GpuChannelTest, IncompatibleStreamIds) {
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId2, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_FALSE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kFatalFailure);
 
   stub = channel->LookupCommandBuffer(kRouteId2);
   EXPECT_FALSE(stub);
@@ -157,12 +157,12 @@ TEST_F(GpuChannelTest, HighPriorityStreamsDisallowed) {
   init_params.stream_priority = SchedulingPriority::kHigh;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  bool result = false;
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_FALSE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kFatalFailure);
   EXPECT_FALSE(channel->LookupCommandBuffer(kRouteId));
 
   // High priority is also disallowed.
@@ -170,7 +170,7 @@ TEST_F(GpuChannelTest, HighPriorityStreamsDisallowed) {
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_FALSE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kFatalFailure);
   EXPECT_FALSE(channel->LookupCommandBuffer(kRouteId));
 }
 
@@ -189,23 +189,23 @@ TEST_F(GpuChannelTest, HighPriorityStreamsAllowed) {
   init_params.stream_priority = SchedulingPriority::kHigh;
   init_params.attribs = gles2::ContextCreationAttribHelper();
   init_params.active_url = GURL();
-  bool result = false;
+  gpu::ContextResult result = gpu::ContextResult::kSuccess;
   gpu::Capabilities capabilities;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId1, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kSuccess);
   EXPECT_TRUE(channel->LookupCommandBuffer(kRouteId1));
 
   // High priority is also allowed.
   int32_t kRouteId2 = 2;
   init_params.stream_id = 2;
   init_params.stream_priority = SchedulingPriority::kHigh;
-  result = false;
+  result = gpu::ContextResult::kSuccess;
   HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                              init_params, kRouteId2, GetSharedHandle(), &result,
                              &capabilities));
-  EXPECT_TRUE(result);
+  EXPECT_EQ(result, gpu::ContextResult::kSuccess);
   EXPECT_TRUE(channel->LookupCommandBuffer(kRouteId2));
 }
 
@@ -225,12 +225,12 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.stream_priority = SchedulingPriority::kNormal;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    bool result = false;
+    gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                                init_params, kSharedRouteId, GetSharedHandle(),
                                &result, &capabilities));
-    EXPECT_TRUE(result);
+    EXPECT_EQ(result, gpu::ContextResult::kSuccess);
   }
   EXPECT_TRUE(channel->LookupCommandBuffer(kSharedRouteId));
 
@@ -245,12 +245,12 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.stream_priority = SchedulingPriority::kNormal;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    bool result = false;
+    gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                                init_params, kFriendlyRouteId, GetSharedHandle(),
                                &result, &capabilities));
-    EXPECT_TRUE(result);
+    EXPECT_EQ(result, gpu::ContextResult::kSuccess);
   }
   EXPECT_TRUE(channel->LookupCommandBuffer(kFriendlyRouteId));
 
@@ -269,12 +269,12 @@ TEST_F(GpuChannelTest, CreateFailsIfSharedContextIsLost) {
     init_params.stream_priority = SchedulingPriority::kNormal;
     init_params.attribs = gles2::ContextCreationAttribHelper();
     init_params.active_url = GURL();
-    bool result = false;
+    gpu::ContextResult result = gpu::ContextResult::kSuccess;
     gpu::Capabilities capabilities;
     HandleMessage(channel, new GpuChannelMsg_CreateCommandBuffer(
                                init_params, kAnotherRouteId, GetSharedHandle(),
                                &result, &capabilities));
-    EXPECT_FALSE(result);
+    EXPECT_EQ(result, gpu::ContextResult::kTransientFailure);
   }
   EXPECT_FALSE(channel->LookupCommandBuffer(kAnotherRouteId));
 

@@ -771,7 +771,7 @@ class GPU_EXPORT TextureManager : public base::trace_event::MemoryDumpProvider {
   void RemoveFramebufferManager(FramebufferManager* framebuffer_manager);
 
   // Init the texture manager.
-  bool Initialize();
+  void Initialize();
 
   // Must call before destruction.
   void Destroy(bool have_context);

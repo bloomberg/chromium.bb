@@ -250,25 +250,24 @@ void FeatureInfo::InitializeBasicState(const base::CommandLine* command_line) {
       command_line->HasSwitch(switches::kDisableGLSLTranslator);
 }
 
-bool FeatureInfo::Initialize(ContextType context_type,
+void FeatureInfo::Initialize(ContextType context_type,
                              const DisallowedFeatures& disallowed_features) {
   disallowed_features_ = disallowed_features;
   context_type_ = context_type;
   InitializeFeatures();
-  return true;
 }
 
-bool FeatureInfo::InitializeForTesting(
+void FeatureInfo::InitializeForTesting(
     const DisallowedFeatures& disallowed_features) {
-  return Initialize(CONTEXT_TYPE_OPENGLES2, disallowed_features);
+  Initialize(CONTEXT_TYPE_OPENGLES2, disallowed_features);
 }
 
-bool FeatureInfo::InitializeForTesting() {
-  return Initialize(CONTEXT_TYPE_OPENGLES2, DisallowedFeatures());
+void FeatureInfo::InitializeForTesting() {
+  Initialize(CONTEXT_TYPE_OPENGLES2, DisallowedFeatures());
 }
 
-bool FeatureInfo::InitializeForTesting(ContextType context_type) {
-  return Initialize(context_type, DisallowedFeatures());
+void FeatureInfo::InitializeForTesting(ContextType context_type) {
+  Initialize(context_type, DisallowedFeatures());
 }
 
 bool IsGL_REDSupportedOnFBOs() {

@@ -42,12 +42,13 @@ class MockGLES2Decoder : public GLES2Decoder {
 
   base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
 
-  MOCK_METHOD5(Initialize,
-               bool(const scoped_refptr<gl::GLSurface>& surface,
-                    const scoped_refptr<gl::GLContext>& context,
-                    bool offscreen,
-                    const DisallowedFeatures& disallowed_features,
-                    const ContextCreationAttribHelper& attrib_helper));
+  MOCK_METHOD5(
+      Initialize,
+      gpu::ContextResult(const scoped_refptr<gl::GLSurface>& surface,
+                         const scoped_refptr<gl::GLContext>& context,
+                         bool offscreen,
+                         const DisallowedFeatures& disallowed_features,
+                         const ContextCreationAttribHelper& attrib_helper));
   MOCK_METHOD1(Destroy, void(bool have_context));
   MOCK_METHOD1(SetSurface, void(const scoped_refptr<gl::GLSurface>& surface));
   MOCK_METHOD0(ReleaseSurface, void());
@@ -145,6 +146,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_CONST_METHOD0(WasContextLost, bool());
   MOCK_CONST_METHOD0(WasContextLostByRobustnessExtension, bool());
   MOCK_METHOD1(MarkContextLost, void(gpu::error::ContextLostReason reason));
+  MOCK_METHOD0(CheckResetStatus, bool());
   MOCK_METHOD4(BindImage,
                void(uint32_t client_texture_id,
                     uint32_t texture_target,

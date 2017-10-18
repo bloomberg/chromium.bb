@@ -35,6 +35,7 @@ source_set("common_sources") {
     "command_buffer.h",
     "command_buffer_id.h",
     "constants.h",
+    "context_result.h",
     "debug_marker_manager.cc",
     "debug_marker_manager.h",
     "discardable_handle.cc",

@@ -19,6 +19,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/service/gpu_command_buffer_stub.h"
@@ -197,16 +198,11 @@ class GPU_EXPORT GpuChannel : public IPC::Listener, public FilteredSender {
   void OnCreateCommandBuffer(const GPUCreateCommandBufferConfig& init_params,
                              int32_t route_id,
                              base::SharedMemoryHandle shared_state_shm,
-                             bool* result,
+                             gpu::ContextResult* result,
                              gpu::Capabilities* capabilities);
   void OnDestroyCommandBuffer(int32_t route_id);
   void OnGetDriverBugWorkArounds(
       std::vector<std::string>* gpu_driver_bug_workarounds);
-
-  std::unique_ptr<GpuCommandBufferStub> CreateCommandBuffer(
-      const GPUCreateCommandBufferConfig& init_params,
-      int32_t route_id,
-      std::unique_ptr<base::SharedMemory> shared_state_shm);
 
   std::unique_ptr<FilteredSender> channel_;
 

@@ -124,11 +124,12 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   base::WeakPtr<GLES2Decoder> AsWeakPtr() override;
 
-  bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
-                  const scoped_refptr<gl::GLContext>& context,
-                  bool offscreen,
-                  const DisallowedFeatures& disallowed_features,
-                  const ContextCreationAttribHelper& attrib_helper) override;
+  gpu::ContextResult Initialize(
+      const scoped_refptr<gl::GLSurface>& surface,
+      const scoped_refptr<gl::GLContext>& context,
+      bool offscreen,
+      const DisallowedFeatures& disallowed_features,
+      const ContextCreationAttribHelper& attrib_helper) override;
 
   // Destroys the graphics context.
   void Destroy(bool have_context) override;
@@ -275,6 +276,10 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // Lose this context.
   void MarkContextLost(error::ContextLostReason reason) override;
 
+  // Update lost context state for use when making calls to the GL context
+  // directly, and needing to know if they failed due to loss.
+  bool CheckResetStatus() override;
+
   Logger* GetLogger() override;
 
   void BeginDecoding() override;
@@ -348,7 +353,6 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // call to glGetError
   void InjectDriverError(GLenum error);
 
-  bool CheckResetStatus();
   bool IsRobustnessSupported();
 
   bool IsEmulatedQueryTarget(GLenum target) const;
@@ -525,7 +529,7 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
         const EmulatedDefaultFramebufferFormat& format_in);
     ~EmulatedColorBuffer();
 
-    bool Resize(const gfx::Size& new_size);
+    void Resize(const gfx::Size& new_size);
     void Destroy(bool have_context);
 
     scoped_refptr<TexturePassthrough> texture;

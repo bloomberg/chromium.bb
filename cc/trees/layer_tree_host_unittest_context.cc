@@ -880,7 +880,8 @@ class LayerTreeHostContextTestDontUseLostResources
     context_should_support_io_surface_ = true;
 
     child_context_provider_ = TestContextProvider::Create();
-    CHECK(child_context_provider_->BindToCurrentThread());
+    auto result = child_context_provider_->BindToCurrentThread();
+    CHECK_EQ(result, gpu::ContextResult::kSuccess);
     shared_bitmap_manager_.reset(new TestSharedBitmapManager);
     child_resource_provider_ =
         FakeResourceProvider::CreateLayerTreeResourceProvider(

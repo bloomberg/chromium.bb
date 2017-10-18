@@ -40,7 +40,7 @@ class Surface;
 class Config;
 
 class Context : public base::RefCountedThreadSafe<Context>,
-                private gpu::GpuControl {
+                public gpu::GpuControl {
  public:
   Context(Display* display, const Config* config);
   bool is_current_in_some_thread() const { return is_current_in_some_thread_; }

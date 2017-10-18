@@ -117,12 +117,9 @@ void TransferBuffer::AllocateRingBuffer(unsigned int size) {
     if (id != -1) {
       DCHECK(buffer.get());
       buffer_ = buffer;
-      ring_buffer_.reset(new RingBuffer(
-          alignment_,
-          result_size_,
-          buffer_->size() - result_size_,
-          helper_,
-          static_cast<char*>(buffer_->memory()) + result_size_));
+      ring_buffer_ = std::make_unique<RingBuffer>(
+          alignment_, result_size_, buffer_->size() - result_size_, helper_,
+          static_cast<char*>(buffer_->memory()) + result_size_);
       buffer_id_ = id;
       result_buffer_ = buffer_->memory();
       result_shm_offset_ = 0;

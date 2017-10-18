@@ -19,6 +19,7 @@
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/context_result.h"
 #include "gpu/gpu_export.h"
 
 namespace gpu {
@@ -60,7 +61,7 @@ class GPU_EXPORT CommandBufferHelper
   // Parameters:
   //   ring_buffer_size: The size of the ring buffer portion of the command
   //       buffer.
-  bool Initialize(int32_t ring_buffer_size);
+  gpu::ContextResult Initialize(int32_t ring_buffer_size);
 
   // Sets whether the command buffer should automatically flush periodically
   // to try to increase performance. Defaults to true.

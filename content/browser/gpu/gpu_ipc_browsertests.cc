@@ -91,8 +91,8 @@ class ContextTestBase : public content::ContentBrowserTest {
     CHECK(gpu_channel_host);
 
     provider_ = CreateContext(std::move(gpu_channel_host));
-    bool bound = provider_->BindToCurrentThread();
-    CHECK(bound);
+    auto result = provider_->BindToCurrentThread();
+    CHECK_EQ(result, gpu::ContextResult::kSuccess);
     gl_ = provider_->ContextGL();
     context_support_ = provider_->ContextSupport();
 
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   // retain the host after provider is destroyed.
   scoped_refptr<ui::ContextProviderCommandBuffer> provider =
       CreateContext(GetGpuChannel());
-  EXPECT_TRUE(provider->BindToCurrentThread());
+  ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
 
   sk_sp<GrContext> gr_context = sk_ref_sp(provider->GrContext());
 
@@ -279,7 +279,7 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest,
   provider->SetLostContextCallback(
       base::Bind(&BrowserGpuChannelHostFactoryTest::OnContextLost,
                  base::Unretained(this), run_loop.QuitClosure(), &counter));
-  EXPECT_TRUE(provider->BindToCurrentThread());
+  ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
   GpuProcessHost::CallOnIO(GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
                            false /* force_create */,
                            base::Bind([](GpuProcessHost* host) {
@@ -320,10 +320,13 @@ IN_PROC_BROWSER_TEST_F(BrowserGpuChannelHostFactoryTest, CreateTransferBuffer) {
   attributes.sample_buffers = 0;
   attributes.bind_generates_resource = false;
 
-  auto impl = gpu::CommandBufferProxyImpl::Create(
-      GetGpuChannel(), gpu::kNullSurfaceHandle, nullptr,
-      content::kGpuStreamIdDefault, content::kGpuStreamPriorityDefault,
-      attributes, GURL(), base::ThreadTaskRunnerHandle::Get());
+  auto impl = std::make_unique<gpu::CommandBufferProxyImpl>(
+      GetGpuChannel(), content::kGpuStreamIdDefault,
+      base::ThreadTaskRunnerHandle::Get());
+  ASSERT_EQ(
+      impl->Initialize(gpu::kNullSurfaceHandle, nullptr,
+                       content::kGpuStreamPriorityDefault, attributes, GURL()),
+      gpu::ContextResult::kSuccess);
 
   // Creating a transfer buffer works normally.
   int32_t id = -1;

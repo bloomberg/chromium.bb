@@ -17,7 +17,7 @@ class ScopedGpuRasterTest : public testing::Test {
 // Releasing ScopedGpuRaster should restore GL_UNPACK_ALIGNMENT == 4.
 TEST(ScopedGpuRasterTest, RestoresUnpackAlignment) {
   scoped_refptr<TestContextProvider> provider = TestContextProvider::Create();
-  EXPECT_TRUE(provider->BindToCurrentThread());
+  ASSERT_EQ(provider->BindToCurrentThread(), gpu::ContextResult::kSuccess);
   gpu::gles2::GLES2Interface* gl = provider->ContextGL();
   GLint unpack_alignment = 0;
   gl->GetIntegerv(GL_UNPACK_ALIGNMENT, &unpack_alignment);

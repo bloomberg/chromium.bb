@@ -49,54 +49,93 @@ int GetChannelID(gpu::CommandBufferId command_buffer_id) {
 
 }  // namespace
 
-CommandBufferProxyImpl::CommandBufferProxyImpl(int channel_id,
-                                               int32_t route_id,
-                                               int32_t stream_id)
-    : command_buffer_id_(CommandBufferProxyID(channel_id, route_id)),
-      channel_id_(channel_id),
-      route_id_(route_id),
-      stream_id_(stream_id),
-      weak_ptr_factory_(this) {
-  DCHECK(route_id);
-}
-
-// static
-std::unique_ptr<CommandBufferProxyImpl> CommandBufferProxyImpl::Create(
-    scoped_refptr<GpuChannelHost> host,
-    gpu::SurfaceHandle surface_handle,
-    CommandBufferProxyImpl* share_group,
+CommandBufferProxyImpl::CommandBufferProxyImpl(
+    scoped_refptr<GpuChannelHost> channel,
     int32_t stream_id,
-    gpu::SchedulingPriority stream_priority,
-    const gpu::gles2::ContextCreationAttribHelper& attribs,
-    const GURL& active_url,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(!share_group || (stream_id == share_group->stream_id_));
-  TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",
-               "surface_handle", surface_handle);
-
-  GPUCreateCommandBufferConfig init_params;
-  init_params.surface_handle = surface_handle;
-  init_params.share_group_id =
-      share_group ? share_group->route_id_ : MSG_ROUTING_NONE;
-  init_params.stream_id = stream_id;
-  init_params.stream_priority = stream_priority;
-  init_params.attribs = attribs;
-  init_params.active_url = active_url;
-
-  int32_t route_id = host->GenerateRouteID();
-  std::unique_ptr<CommandBufferProxyImpl> command_buffer = base::WrapUnique(
-      new CommandBufferProxyImpl(host->channel_id(), route_id, stream_id));
-  if (!command_buffer->Initialize(std::move(host), std::move(init_params),
-                                  std::move(task_runner)))
-    return nullptr;
-
-  return command_buffer;
+    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+    : channel_(std::move(channel)),
+      channel_id_(channel_->channel_id()),
+      route_id_(channel_->GenerateRouteID()),
+      stream_id_(stream_id),
+      command_buffer_id_(CommandBufferProxyID(channel_id_, route_id_)),
+      callback_thread_(std::move(task_runner)),
+      weak_ptr_factory_(this) {
+  DCHECK(route_id_);
 }
 
 CommandBufferProxyImpl::~CommandBufferProxyImpl() {
   for (auto& observer : deletion_observers_)
     observer.OnWillDeleteImpl();
   DisconnectChannel();
+}
+
+ContextResult CommandBufferProxyImpl::Initialize(
+    gpu::SurfaceHandle surface_handle,
+    CommandBufferProxyImpl* share_group,
+    gpu::SchedulingPriority stream_priority,
+    const gpu::gles2::ContextCreationAttribHelper& attribs,
+    const GURL& active_url) {
+  DCHECK(!share_group || (stream_id_ == share_group->stream_id_));
+  TRACE_EVENT1("gpu", "GpuChannelHost::CreateViewCommandBuffer",
+               "surface_handle", surface_handle);
+
+  // Drop the |channel_| if this method does not succeed and early-outs, to
+  // prevent cleanup on destruction.
+  auto channel = std::move(channel_);
+
+  GPUCreateCommandBufferConfig init_params;
+  init_params.surface_handle = surface_handle;
+  init_params.share_group_id =
+      share_group ? share_group->route_id_ : MSG_ROUTING_NONE;
+  init_params.stream_id = stream_id_;
+  init_params.stream_priority = stream_priority;
+  init_params.attribs = attribs;
+  init_params.active_url = active_url;
+
+  TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
+  shared_state_shm_ =
+      channel->factory()->AllocateSharedMemory(sizeof(*shared_state()));
+  if (!shared_state_shm_)
+    return ContextResult::kFatalFailure;
+
+  if (!shared_state_shm_->Map(sizeof(*shared_state())))
+    return ContextResult::kFatalFailure;
+
+  shared_state()->Initialize();
+
+  // This handle is owned by the GPU process and must be passed to it or it
+  // will leak. In otherwords, do not early out on error between here and the
+  // sending of the CreateCommandBuffer IPC below.
+  base::SharedMemoryHandle handle =
+      channel->ShareToGpuProcess(shared_state_shm_->handle());
+  if (!base::SharedMemory::IsHandleValid(handle))
+    return ContextResult::kFatalFailure;
+
+  // Route must be added before sending the message, otherwise messages sent
+  // from the GPU process could race against adding ourselves to the filter.
+  channel->AddRouteWithTaskRunner(route_id_, weak_ptr_factory_.GetWeakPtr(),
+                                  callback_thread_);
+
+  // We're blocking the UI thread, which is generally undesirable.
+  // In this case we need to wait for this before we can show any UI /anyway/,
+  // so it won't cause additional jank.
+  // TODO(piman): Make this asynchronous (http://crbug.com/125248).
+  ContextResult result = ContextResult::kSuccess;
+  bool sent = channel->Send(new GpuChannelMsg_CreateCommandBuffer(
+      init_params, route_id_, handle, &result, &capabilities_));
+  if (!sent) {
+    DLOG(ERROR) << "Failed to send GpuChannelMsg_CreateCommandBuffer.";
+    channel->RemoveRoute(route_id_);
+    return ContextResult::kTransientFailure;
+  }
+  if (result != ContextResult::kSuccess) {
+    DLOG(ERROR) << "Failure processing GpuChannelMsg_CreateCommandBuffer.";
+    channel->RemoveRoute(route_id_);
+    return result;
+  }
+
+  channel_ = std::move(channel);
+  return result;
 }
 
 bool CommandBufferProxyImpl::OnMessageReceived(const IPC::Message& message) {
@@ -189,54 +228,6 @@ void CommandBufferProxyImpl::OnSignalAck(uint32_t id,
   base::Closure callback = it->second;
   signal_tasks_.erase(it);
   callback.Run();
-}
-
-bool CommandBufferProxyImpl::Initialize(
-    scoped_refptr<GpuChannelHost> channel,
-    const GPUCreateCommandBufferConfig& config,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  DCHECK(!channel_);
-  TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
-  shared_state_shm_ =
-      channel->factory()->AllocateSharedMemory(sizeof(*shared_state()));
-  if (!shared_state_shm_)
-    return false;
-
-  if (!shared_state_shm_->Map(sizeof(*shared_state())))
-    return false;
-
-  shared_state()->Initialize();
-
-  // This handle is owned by the GPU process and must be passed to it or it
-  // will leak. In otherwords, do not early out on error between here and the
-  // sending of the CreateCommandBuffer IPC below.
-  base::SharedMemoryHandle handle =
-      channel->ShareToGpuProcess(shared_state_shm_->handle());
-  if (!base::SharedMemory::IsHandleValid(handle))
-    return false;
-
-  // Route must be added before sending the message, otherwise messages sent
-  // from the GPU process could race against adding ourselves to the filter.
-  channel->AddRouteWithTaskRunner(route_id_, weak_ptr_factory_.GetWeakPtr(),
-                                  task_runner);
-
-  // We're blocking the UI thread, which is generally undesirable.
-  // In this case we need to wait for this before we can show any UI /anyway/,
-  // so it won't cause additional jank.
-  // TODO(piman): Make this asynchronous (http://crbug.com/125248).
-  bool result = false;
-  bool sent = channel->Send(new GpuChannelMsg_CreateCommandBuffer(
-      config, route_id_, handle, &result, &capabilities_));
-  if (!sent || !result) {
-    DLOG(ERROR) << "Failed to send GpuChannelMsg_CreateCommandBuffer.";
-    channel->RemoveRoute(route_id_);
-    return false;
-  }
-
-  channel_ = std::move(channel);
-  callback_thread_ = std::move(task_runner);
-
-  return true;
 }
 
 CommandBuffer::State CommandBufferProxyImpl::GetLastState() {

@@ -47,7 +47,7 @@ class InProcessContextProvider : public viz::ContextProvider {
       InProcessContextProvider* shared_context);
 
   // cc::ContextProvider implementation.
-  bool BindToCurrentThread() override;
+  gpu::ContextResult BindToCurrentThread() override;
   void DetachFromThread() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;
@@ -80,6 +80,9 @@ class InProcessContextProvider : public viz::ContextProvider {
   std::unique_ptr<gpu::GLInProcessContext> context_;
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<viz::ContextCacheController> cache_controller_;
+
+  bool bind_tried_ = false;
+  gpu::ContextResult bind_result_;
 
   gpu::gles2::ContextCreationAttribHelper attribs_;
   InProcessContextProvider* shared_context_;

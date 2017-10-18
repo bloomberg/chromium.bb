@@ -25,6 +25,7 @@
 #include "gpu/command_buffer/client/gpu_control.h"
 #include "gpu/command_buffer/common/activity_flags.h"
 #include "gpu/command_buffer/common/command_buffer.h"
+#include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
@@ -94,14 +95,15 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
   // If |surface| is not null, use it directly; in this case, the command
   // buffer gpu thread must be the same as the client thread. Otherwise create
   // a new GLSurface.
-  bool Initialize(scoped_refptr<gl::GLSurface> surface,
-                  bool is_offscreen,
-                  SurfaceHandle window,
-                  const gles2::ContextCreationAttribHelper& attribs,
-                  InProcessCommandBuffer* share_group,
-                  GpuMemoryBufferManager* gpu_memory_buffer_manager,
-                  ImageFactory* image_factory,
-                  scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+  gpu::ContextResult Initialize(
+      scoped_refptr<gl::GLSurface> surface,
+      bool is_offscreen,
+      SurfaceHandle window,
+      const gles2::ContextCreationAttribHelper& attribs,
+      InProcessCommandBuffer* share_group,
+      GpuMemoryBufferManager* gpu_memory_buffer_manager,
+      ImageFactory* image_factory,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // CommandBuffer implementation:
   State GetLastState() override;
@@ -277,7 +279,8 @@ class GPU_EXPORT InProcessCommandBuffer : public CommandBuffer,
           image_factory(image_factory) {}
   };
 
-  bool InitializeOnGpuThread(const InitializeOnGpuThreadParams& params);
+  gpu::ContextResult InitializeOnGpuThread(
+      const InitializeOnGpuThreadParams& params);
   void Destroy();
   bool DestroyOnGpuThread();
   void FlushOnGpuThread(int32_t put_offset,

@@ -265,11 +265,13 @@ bool PPB_Graphics3D_Impl::InitRaw(
     share_buffer = share_graphics->GetCommandBufferProxy();
   }
 
-  command_buffer_ = gpu::CommandBufferProxyImpl::Create(
-      std::move(channel), gpu::kNullSurfaceHandle, share_buffer,
-      kGpuStreamIdDefault, kGpuStreamPriorityDefault, attrib_helper,
-      GURL::EmptyGURL(), base::ThreadTaskRunnerHandle::Get());
-  if (!command_buffer_)
+  command_buffer_ = std::make_unique<gpu::CommandBufferProxyImpl>(
+      std::move(channel), kGpuStreamIdDefault,
+      base::ThreadTaskRunnerHandle::Get());
+  auto result = command_buffer_->Initialize(
+      gpu::kNullSurfaceHandle, share_buffer, kGpuStreamPriorityDefault,
+      attrib_helper, GURL::EmptyGURL());
+  if (result != gpu::ContextResult::kSuccess)
     return false;
 
   command_buffer_->SetGpuControlClient(this);
