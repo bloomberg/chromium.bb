@@ -37,6 +37,30 @@ TEST_F(SelectionSampleTest, GetSelectionTextFlatTree) {
           *GetDocument().body(), ConvertToSelectionInFlatTree(selection)));
 }
 
+TEST_F(SelectionSampleTest, SetCommentInBody) {
+  const SelectionInDOMTree& selection = SelectionSample::SetSelectionText(
+      GetDocument().body(), "<!--^-->foo<!--|-->");
+  EXPECT_EQ("foo", GetDocument().body()->InnerHTMLAsString());
+  EXPECT_EQ(SelectionInDOMTree::Builder()
+                .Collapse(Position(GetDocument().body(), 0))
+                .Extend(Position(GetDocument().body(), 1))
+                .Build(),
+            selection);
+}
+
+TEST_F(SelectionSampleTest, SetCommentInElement) {
+  const SelectionInDOMTree& selection = SelectionSample::SetSelectionText(
+      GetDocument().body(), "<span id=sample><!--^-->foo<!--|--></span>");
+  const Element* const sample = GetDocument().body()->getElementById("sample");
+  EXPECT_EQ("<span id=\"sample\">foo</span>",
+            GetDocument().body()->InnerHTMLAsString());
+  EXPECT_EQ(SelectionInDOMTree::Builder()
+                .Collapse(Position(sample, 0))
+                .Extend(Position(sample, 1))
+                .Build(),
+            selection);
+}
+
 TEST_F(SelectionSampleTest, SetEmpty1) {
   const SelectionInDOMTree& selection =
       SelectionSample::SetSelectionText(GetDocument().body(), "|");
