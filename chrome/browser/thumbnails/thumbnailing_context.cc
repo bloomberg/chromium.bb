@@ -13,7 +13,7 @@ ThumbnailingContext::ThumbnailingContext(content::WebContents* web_contents,
                                          ThumbnailService* receiving_service,
                                          bool load_interrupted)
     : service(receiving_service),
-      url(web_contents->GetURL()),
+      url(web_contents->GetLastCommittedURL()),
       clip_result(CLIP_RESULT_UNPROCESSED) {
   score.at_top =
       (web_contents->GetRenderWidgetHostView()->GetLastScrollOffset().y() == 0);
