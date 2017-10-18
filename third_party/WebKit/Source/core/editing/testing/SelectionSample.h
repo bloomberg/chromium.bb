@@ -20,6 +20,11 @@ class HTMLElement;
 // serializes DOM tree with selection markers.
 // Selection markers are represents by "^" for selection base and "|" for
 // selection extent like "assert_selection.js" in layout test.
+//
+// To set selection at before children or after children instead of start or
+// end of |Text| node, we should use selection marker only |Comment| node like:
+//  <span><!--^-->foo<!--|--></span>
+// This notation yields selection of base=SPAN@0 and extent=SPAN@1.
 class SelectionSample final {
   STATIC_ONLY(SelectionSample);
 
