@@ -658,6 +658,17 @@ BattOrResults BattOrAgent::SamplesToResults() {
     trace_stream << std::endl;
   }
 
+  for (auto it = clock_sync_markers_.begin(); it != clock_sync_markers_.end();
+       ++it) {
+    size_t total_sample_count = calibration_frame_.size() + samples_.size();
+    if (it->first >= total_sample_count) {
+      connection_->LogSerial(StringPrintf(
+          "Clock sync occurred at a sample not included in the result (clock "
+          "sync sample index: %d, total sample count: %zu).",
+          it->first, total_sample_count));
+    }
+  }
+
   // Convert to a vector of power in watts.
   std::vector<float> samples(samples_.size());
   for (size_t i = 0; i < samples_.size(); i++)
