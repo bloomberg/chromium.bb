@@ -85,9 +85,8 @@ class WebServiceWorkerInstalledScriptsManager {
 
   // Called on the main or worker thread.
   virtual bool IsScriptInstalled(const blink::WebURL& script_url) const = 0;
-  // Returns the script data for |script_url|. If the data has already been
-  // taken, returns nullptr. When an error happened during receiving the script,
-  // returns an invalid instance.
+  // Returns the script data for |script_url|. When an error happened during
+  // receiving the script, returns an invalid instance.
   // Called on the worker thread.
   virtual std::unique_ptr<RawScriptData> GetRawScriptData(
       const WebURL& script_url) = 0;

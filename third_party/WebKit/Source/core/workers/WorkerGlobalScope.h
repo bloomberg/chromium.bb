@@ -177,8 +177,7 @@ class CORE_EXPORT WorkerGlobalScope
       const Vector<CSPHeaderAndType>& headers);
 
   // |kNotHandled| is used when the script was not in
-  // InstalledScriptsManager, which means either it was not an installed script
-  // or it was already taken.
+  // InstalledScriptsManager, which means it was not an installed script.
   enum class LoadResult { kSuccess, kFailed, kNotHandled };
 
   // Tries to load the script synchronously from the

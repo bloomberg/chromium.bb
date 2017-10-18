@@ -1768,7 +1768,7 @@ void ServiceWorkerVersion::RecordStartWorkerResult(
 
   if (installed_scripts_sender_) {
     ServiceWorkerMetrics::RecordInstalledScriptsSenderStatus(
-        installed_scripts_sender_->finished_reason());
+        installed_scripts_sender_->last_finished_reason());
   }
   ServiceWorkerMetrics::RecordStartWorkerStatus(status, purpose,
                                                 IsInstalled(prestart_status));
