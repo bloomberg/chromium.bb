@@ -215,29 +215,12 @@ typedef struct {
   WienerInfo *wiener_info;
   // Selfguided proj filter
   SgrprojInfo *sgrproj_info;
-} RestorationInfo;
-
-typedef struct {
-  RestorationInfo *rsi;
-  int keyframe;
-  int ntiles;
-  int nhtiles, nvtiles;
-  int32_t *tmpbuf;
-  int subsampling_y;
 #if CONFIG_STRIPED_LOOP_RESTORATION
-  int component;
-  uint8_t *stripe_boundary_above[MAX_MB_PLANE];
-  uint8_t *stripe_boundary_below[MAX_MB_PLANE];
-  int stripe_boundary_stride[MAX_MB_PLANE];
-  // Temporary buffers to save/restore 2 lines above/below the restoration
-  // stripe
-  // Allow for filter margin to left and right
-  uint16_t
-      tmp_save_above[2][RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ];
-  uint16_t
-      tmp_save_below[2][RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ];
+  uint8_t *stripe_boundary_above;
+  uint8_t *stripe_boundary_below;
+  int stripe_boundary_stride;
 #endif
-} RestorationInternal;
+} RestorationInfo;
 
 static INLINE void set_default_sgrproj(SgrprojInfo *sgrproj_info) {
   sgrproj_info->xqd[0] = (SGRPROJ_PRJ_MIN0 + SGRPROJ_PRJ_MAX0) / 2;

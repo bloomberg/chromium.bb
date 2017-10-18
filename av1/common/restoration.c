@@ -45,6 +45,23 @@ const sgr_params_type sgr_params[SGRPROJ_PARAMS] = {
 #endif
 };
 
+typedef struct {
+  RestorationInfo *rsi;
+  int keyframe;
+  int ntiles, nhtiles, nvtiles;
+  int subsampling_y;
+  int32_t *tmpbuf;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  // Temporary buffers to save/restore 2 lines above/below the restoration
+  // stripe
+  // Allow for filter margin to left and right
+  uint16_t
+      tmp_save_above[2][RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ];
+  uint16_t
+      tmp_save_below[2][RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ];
+#endif
+} RestorationInternal;
+
 typedef void (*restore_func_type)(uint8_t *data8, int width, int height,
                                   int stride, RestorationInternal *rst,
                                   uint8_t *dst8, int dst_stride);
@@ -100,10 +117,6 @@ static void GenSgrprojVtable() {
 
 void av1_loop_restoration_precal() { GenSgrprojVtable(); }
 
-static void loop_restoration_init(RestorationInternal *rst, int kf) {
-  rst->keyframe = kf;
-}
-
 void extend_frame(uint8_t *data, int width, int height, int stride,
                   int border_horz, int border_vert) {
   uint8_t *data_p;
@@ -140,10 +153,9 @@ static int setup_processing_stripe_boundary(int y0, int v_end, int h_start,
   int y, y_stripe_topmost, stripe_index, i;
   int tile_offset = RESTORATION_TILE_OFFSET >> rst->subsampling_y;
   int stripe_height = rst->rsi->procunit_height;
-  int comp = rst->component;
-  uint8_t *boundary_above_buf = rst->stripe_boundary_above[comp];
-  uint8_t *boundary_below_buf = rst->stripe_boundary_below[comp];
-  int boundary_stride = rst->stripe_boundary_stride[comp];
+  uint8_t *boundary_above_buf = rst->rsi->stripe_boundary_above;
+  uint8_t *boundary_below_buf = rst->rsi->stripe_boundary_below;
+  int boundary_stride = rst->rsi->stripe_boundary_stride;
   int x0 = h_start - RESTORATION_EXTRA_HORZ;
   int x1 = h_end + RESTORATION_EXTRA_HORZ;
 
@@ -1545,14 +1557,6 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                                   YV12_BUFFER_CONFIG *dst) {
   const int ywidth = frame->y_crop_width;
   const int yheight = frame->y_crop_height;
-  const int uvwidth = frame->uv_crop_width;
-  const int uvheight = frame->uv_crop_height;
-  const int ystride = frame->y_stride;
-  const int uvstride = frame->uv_stride;
-  const int ystart = start_mi_row << MI_SIZE_LOG2;
-  const int uvstart = ystart >> cm->subsampling_y;
-  int yend = end_mi_row << MI_SIZE_LOG2;
-  int uvend = yend >> cm->subsampling_y;
   restore_func_type restore_funcs[RESTORE_TYPES] = {
     NULL, loop_wiener_filter, loop_sgrproj_filter, loop_switchable_filter
   };
@@ -1562,34 +1566,22 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     loop_switchable_filter_highbd
   };
 #endif  // CONFIG_HIGHBITDEPTH
-  restore_func_type restore_func;
-#if CONFIG_HIGHBITDEPTH
-  restore_func_highbd_type restore_func_highbd;
-#endif  // CONFIG_HIGHBITDEPTH
   YV12_BUFFER_CONFIG dst_;
 
-  yend = AOMMIN(yend, yheight);
-  uvend = AOMMIN(uvend, uvheight);
-  if (components_pattern == (1 << AOM_PLANE_Y)) {
-    // Only y
-    if (rsi[0].frame_restoration_type == RESTORE_NONE) {
-      if (dst) aom_yv12_copy_y(frame, dst);
+  typedef void (*copy_fun)(const YV12_BUFFER_CONFIG *src,
+                           YV12_BUFFER_CONFIG *dst);
+  static const copy_fun copy_funs[3] = { aom_yv12_copy_y, aom_yv12_copy_u,
+                                         aom_yv12_copy_v };
+
+  for (int plane = 0; plane < 3; ++plane) {
+    if ((components_pattern == 1 << plane) &&
+        (rsi[plane].frame_restoration_type == RESTORE_NONE)) {
+      if (dst) copy_funs[plane](frame, dst);
       return;
     }
-  } else if (components_pattern == (1 << AOM_PLANE_U)) {
-    // Only U
-    if (rsi[1].frame_restoration_type == RESTORE_NONE) {
-      if (dst) aom_yv12_copy_u(frame, dst);
-      return;
-    }
-  } else if (components_pattern == (1 << AOM_PLANE_V)) {
-    // Only V
-    if (rsi[2].frame_restoration_type == RESTORE_NONE) {
-      if (dst) aom_yv12_copy_v(frame, dst);
-      return;
-    }
-  } else if (components_pattern ==
-             ((1 << AOM_PLANE_Y) | (1 << AOM_PLANE_U) | (1 << AOM_PLANE_V))) {
+  }
+  if (components_pattern ==
+      ((1 << AOM_PLANE_Y) | (1 << AOM_PLANE_U) | (1 << AOM_PLANE_V))) {
     // All components
     if (rsi[0].frame_restoration_type == RESTORE_NONE &&
         rsi[1].frame_restoration_type == RESTORE_NONE &&
@@ -1612,100 +1604,55 @@ static void loop_restoration_rows(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                          "Failed to allocate restoration dst buffer");
   }
 
-  if ((components_pattern >> AOM_PLANE_Y) & 1) {
-    if (rsi[0].frame_restoration_type != RESTORE_NONE) {
-      cm->rst_internal.ntiles = av1_get_rest_ntiles(
-          ywidth, yheight, cm->rst_info[AOM_PLANE_Y].restoration_tilesize,
-          &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
-      cm->rst_internal.rsi = &rsi[0];
-      cm->rst_internal.subsampling_y = 0;
-#if CONFIG_STRIPED_LOOP_RESTORATION
-      cm->rst_internal.component = AOM_PLANE_Y;
-#endif
-      restore_func =
-          restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
-#if CONFIG_HIGHBITDEPTH
-      restore_func_highbd =
-          restore_funcs_highbd[cm->rst_internal.rsi->frame_restoration_type];
-      if (cm->use_highbitdepth)
-        restore_func_highbd(
-            frame->y_buffer + ystart * ystride, ywidth, yend - ystart, ystride,
-            &cm->rst_internal, cm->bit_depth,
-            dst->y_buffer + ystart * dst->y_stride, dst->y_stride);
-      else
-#endif  // CONFIG_HIGHBITDEPTH
-        restore_func(frame->y_buffer + ystart * ystride, ywidth, yend - ystart,
-                     ystride, &cm->rst_internal,
-                     dst->y_buffer + ystart * dst->y_stride, dst->y_stride);
-    } else {
-      aom_yv12_copy_y(frame, dst);
-    }
-  }
+  RestorationInternal rst;
+  for (int plane = 0; plane < 3; ++plane) {
+    if (!((components_pattern >> plane) & 1)) continue;
 
-  if ((components_pattern >> AOM_PLANE_U) & 1) {
-    if (rsi[AOM_PLANE_U].frame_restoration_type != RESTORE_NONE) {
-      cm->rst_internal.ntiles = av1_get_rest_ntiles(
-          uvwidth, uvheight, cm->rst_info[AOM_PLANE_U].restoration_tilesize,
-          &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
-      cm->rst_internal.rsi = &rsi[AOM_PLANE_U];
-      cm->rst_internal.subsampling_y = cm->subsampling_y;
-#if CONFIG_STRIPED_LOOP_RESTORATION
-      cm->rst_internal.component = AOM_PLANE_U;
-#endif
-      restore_func =
-          restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
-#if CONFIG_HIGHBITDEPTH
-      restore_func_highbd =
-          restore_funcs_highbd[cm->rst_internal.rsi->frame_restoration_type];
-      if (cm->use_highbitdepth)
-        restore_func_highbd(
-            frame->u_buffer + uvstart * uvstride, uvwidth, uvend - uvstart,
-            uvstride, &cm->rst_internal, cm->bit_depth,
-            dst->u_buffer + uvstart * dst->uv_stride, dst->uv_stride);
-      else
-#endif  // CONFIG_HIGHBITDEPTH
-        restore_func(frame->u_buffer + uvstart * uvstride, uvwidth,
-                     uvend - uvstart, uvstride, &cm->rst_internal,
-                     dst->u_buffer + uvstart * dst->uv_stride, dst->uv_stride);
-    } else {
-      aom_yv12_copy_u(frame, dst);
+    RestorationType rtype = rsi[plane].frame_restoration_type;
+    if (rtype == RESTORE_NONE) {
+      copy_funs[plane](frame, dst);
+      continue;
     }
-  }
 
-  if ((components_pattern >> AOM_PLANE_V) & 1) {
-    if (rsi[AOM_PLANE_V].frame_restoration_type != RESTORE_NONE) {
-      cm->rst_internal.ntiles = av1_get_rest_ntiles(
-          uvwidth, uvheight, cm->rst_info[AOM_PLANE_V].restoration_tilesize,
-          &cm->rst_internal.nhtiles, &cm->rst_internal.nvtiles);
-      cm->rst_internal.rsi = &rsi[AOM_PLANE_V];
-      cm->rst_internal.subsampling_y = cm->subsampling_y;
-#if CONFIG_STRIPED_LOOP_RESTORATION
-      cm->rst_internal.component = AOM_PLANE_V;
-#endif
-      restore_func =
-          restore_funcs[cm->rst_internal.rsi->frame_restoration_type];
+    const int is_uv = plane > 0;
+    const int ss_y = is_uv && cm->subsampling_y;
+
+    const int plane_width = frame->crop_widths[is_uv];
+    const int plane_height = frame->crop_heights[is_uv];
+    const int row0 = (start_mi_row << MI_SIZE_LOG2) >> ss_y;
+    const int row1 = AOMMIN((end_mi_row << MI_SIZE_LOG2) >> ss_y, plane_height);
+
+    rst.rsi = &rsi[plane];
+    rst.keyframe = cm->frame_type == KEY_FRAME;
+    rst.ntiles = av1_get_rest_ntiles(plane_width, plane_height,
+                                     rst.rsi->restoration_tilesize,
+                                     &rst.nhtiles, &rst.nvtiles);
+    rst.subsampling_y = ss_y;
+    rst.tmpbuf = cm->rst_tmpbuf;
+
+    restore_func_type restore_func = restore_funcs[rtype];
 #if CONFIG_HIGHBITDEPTH
-      restore_func_highbd =
-          restore_funcs_highbd[cm->rst_internal.rsi->frame_restoration_type];
-      if (cm->use_highbitdepth)
-        restore_func_highbd(
-            frame->v_buffer + uvstart * uvstride, uvwidth, uvend - uvstart,
-            uvstride, &cm->rst_internal, cm->bit_depth,
-            dst->v_buffer + uvstart * dst->uv_stride, dst->uv_stride);
-      else
+    restore_func_highbd_type restore_func_highbd = restore_funcs_highbd[rtype];
+    if (cm->use_highbitdepth)
+      restore_func_highbd(frame->buffers[plane] + row0 * frame->strides[is_uv],
+                          plane_width, row1 - row0, frame->strides[is_uv], &rst,
+                          cm->bit_depth,
+                          dst->buffers[plane] + row0 * dst->strides[is_uv],
+                          dst->strides[is_uv]);
+    else
 #endif  // CONFIG_HIGHBITDEPTH
-        restore_func(frame->v_buffer + uvstart * uvstride, uvwidth,
-                     uvend - uvstart, uvstride, &cm->rst_internal,
-                     dst->v_buffer + uvstart * dst->uv_stride, dst->uv_stride);
-    } else {
-      aom_yv12_copy_v(frame, dst);
-    }
+      restore_func(frame->buffers[plane] + row0 * frame->strides[is_uv],
+                   plane_width, row1 - row0, frame->strides[is_uv], &rst,
+                   dst->buffers[plane] + row0 * dst->strides[is_uv],
+                   dst->strides[is_uv]);
   }
 
   if (dst == &dst_) {
-    if ((components_pattern >> AOM_PLANE_Y) & 1) aom_yv12_copy_y(dst, frame);
-    if ((components_pattern >> AOM_PLANE_U) & 1) aom_yv12_copy_u(dst, frame);
-    if ((components_pattern >> AOM_PLANE_V) & 1) aom_yv12_copy_v(dst, frame);
+    for (int plane = 0; plane < 3; ++plane) {
+      if ((components_pattern >> plane) & 1) {
+        copy_funs[plane](dst, frame);
+      }
+    }
     aom_free_frame_buffer(dst);
   }
 }
@@ -1727,7 +1674,6 @@ void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
     mi_rows_to_filter = AOMMAX(mi_rows_to_filter / 8, 8);
   }
   end_mi_row = start_mi_row + mi_rows_to_filter;
-  loop_restoration_init(&cm->rst_internal, cm->frame_type == KEY_FRAME);
   loop_restoration_rows(frame, cm, start_mi_row, end_mi_row, components_pattern,
                         rsi, dst);
 }
@@ -1825,44 +1771,34 @@ static void extend_line(uint8_t *buf, int width, int extend,
 // rst_internal.stripe_boundary_lines
 void av1_loop_restoration_save_boundary_lines(YV12_BUFFER_CONFIG *frame,
                                               AV1_COMMON *cm) {
-  int p, boundary_stride;
-  int src_width, src_height, src_stride, stripe_height, stripe_offset, stripe_y,
-      yy;
-  uint8_t *src_buf, *boundary_below_buf, *boundary_above_buf;
-  int use_highbitdepth = 0;
-  for (p = 0; p < MAX_MB_PLANE; ++p) {
-    if (p == 0) {
-      src_buf = frame->y_buffer;
-      src_width = frame->y_crop_width;
-      src_height = frame->y_crop_height;
-      src_stride = frame->y_stride;
-      stripe_height = 64;
-      stripe_offset = 56 - 2;  // offset of first line to copy
-    } else {
-      src_buf = p == 1 ? frame->u_buffer : frame->v_buffer;
-      src_width = frame->uv_crop_width;
-      src_height = frame->uv_crop_height;
-      src_stride = frame->uv_stride;
-      stripe_height = 64 >> cm->subsampling_y;
-      stripe_offset = (56 >> cm->subsampling_y) - 2;
-    }
-    boundary_above_buf = cm->rst_internal.stripe_boundary_above[p];
-    boundary_below_buf = cm->rst_internal.stripe_boundary_below[p];
-    boundary_stride = cm->rst_internal.stripe_boundary_stride[p];
+  for (int p = 0; p < MAX_MB_PLANE; ++p) {
+    const int is_uv = p > 0;
+    const uint8_t *src_buf = frame->buffers[p];
+    const int src_width = frame->crop_widths[is_uv];
+    const int src_height = frame->crop_heights[is_uv];
+    const int src_stride = frame->strides[is_uv];
+    const int stripe_height = 64 >> (is_uv && cm->subsampling_y);
+    const int stripe_offset = (56 >> (is_uv && cm->subsampling_y)) - 2;
+
+    uint8_t *boundary_above_buf = cm->rst_info[p].stripe_boundary_above;
+    uint8_t *boundary_below_buf = cm->rst_info[p].stripe_boundary_below;
+    const int boundary_stride = cm->rst_info[p].stripe_boundary_stride;
 #if CONFIG_HIGHBITDEPTH
-    use_highbitdepth = cm->use_highbitdepth;
+    const int use_highbitdepth = cm->use_highbitdepth;
     if (use_highbitdepth) {
       src_buf = (uint8_t *)CONVERT_TO_SHORTPTR(src_buf);
     }
+#else
+    const int use_highbitdepth = 0;
 #endif
     src_buf += (stripe_offset * src_stride) << use_highbitdepth;
     boundary_above_buf += RESTORATION_EXTRA_HORZ << use_highbitdepth;
     boundary_below_buf += RESTORATION_EXTRA_HORZ << use_highbitdepth;
     // Loop over stripes
-    for (stripe_y = stripe_offset; stripe_y < src_height;
+    for (int stripe_y = stripe_offset; stripe_y < src_height;
          stripe_y += stripe_height) {
       // Save 2 lines above the LR stripe (offset -9, -10)
-      for (yy = 0; yy < 2; yy++) {
+      for (int yy = 0; yy < 2; yy++) {
         if (stripe_y + yy < src_height) {
           memcpy(boundary_above_buf, src_buf, src_width << use_highbitdepth);
           extend_line(boundary_above_buf, src_width, RESTORATION_EXTRA_HORZ,
@@ -1872,7 +1808,7 @@ void av1_loop_restoration_save_boundary_lines(YV12_BUFFER_CONFIG *frame,
         }
       }
       // Save 2 lines below the LR stripe (offset 56,57)
-      for (yy = 2; yy < 4; yy++) {
+      for (int yy = 2; yy < 4; yy++) {
         if (stripe_y + yy < src_height) {
           memcpy(boundary_below_buf, src_buf, src_width << use_highbitdepth);
           extend_line(boundary_below_buf, src_width, RESTORATION_EXTRA_HORZ,

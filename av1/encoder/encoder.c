@@ -4294,19 +4294,34 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
       cm->subsampling_x, cm->subsampling_y, cm->rst_info);
   for (int i = 0; i < MAX_MB_PLANE; ++i)
     cm->rst_info[i].frame_restoration_type = RESTORE_NONE;
-  av1_alloc_restoration_buffers(cm);
-  for (int i = 0; i < MAX_MB_PLANE; ++i) {
-    cpi->rst_search[i].restoration_tilesize =
-        cm->rst_info[i].restoration_tilesize;
-    cpi->rst_search[i].procunit_width = cm->rst_info[i].procunit_width;
-    cpi->rst_search[i].procunit_height = cm->rst_info[i].procunit_height;
-    av1_alloc_restoration_struct(cm, &cpi->rst_search[i],
+
 #if CONFIG_FRAME_SUPERRES
-                                 cm->superres_upscaled_width,
-                                 cm->superres_upscaled_height);
+  const int frame_width = cm->superres_upscaled_width;
+  const int frame_height = cm->superres_upscaled_height;
 #else
-                                 cm->width, cm->height);
-#endif  // CONFIG_FRAME_SUPERRES
+  const int frame_width = cm->width;
+  const int frame_height = cm->height;
+#endif
+
+  av1_alloc_restoration_buffers(cm);
+
+  // Set up the rst_search RestorationInfo structures. These are the same as
+  // the rst_info ones except need their own arrays of types and coefficients,
+  // allocated in av1_alloc_restoration_struct.
+  for (int i = 0; i < MAX_MB_PLANE; ++i) {
+    RestorationInfo *search = &cpi->rst_search[i];
+    RestorationInfo *rsi = &cm->rst_info[i];
+
+    search->restoration_tilesize = rsi->restoration_tilesize;
+    search->procunit_width = rsi->procunit_width;
+    search->procunit_height = rsi->procunit_height;
+    av1_alloc_restoration_struct(cm, search, frame_width, frame_height);
+#if CONFIG_STRIPED_LOOP_RESTORATION
+    // We can share boundary buffers between the search info and the main one
+    search->stripe_boundary_above = rsi->stripe_boundary_above;
+    search->stripe_boundary_below = rsi->stripe_boundary_below;
+    search->stripe_boundary_stride = rsi->stripe_boundary_stride;
+#endif
   }
 #endif                            // CONFIG_LOOP_RESTORATION
   alloc_util_frame_buffers(cpi);  // TODO(afergs): Remove? Gets called anyways.

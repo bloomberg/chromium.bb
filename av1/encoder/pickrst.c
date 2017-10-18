@@ -590,8 +590,7 @@ static void search_sgrproj_for_rtile(const struct rest_search_ctxt *ctxt,
       0, 8,
 #endif  // CONFIG_HIGHBITDEPTH
       rsi[ctxt->plane].procunit_width, rsi[ctxt->plane].procunit_height,
-      &rtile_sgrproj_info->ep, rtile_sgrproj_info->xqd,
-      cm->rst_internal.tmpbuf);
+      &rtile_sgrproj_info->ep, rtile_sgrproj_info->xqd, cm->rst_tmpbuf);
   plane_rsi->restoration_type[rtile_idx] = RESTORE_SGRPROJ;
   err = try_restoration_tile(ctxt->src, ctxt->cpi, rsi, (1 << ctxt->plane),
                              ctxt->partial_frame, rtile_idx, ctxt->dst_frame);

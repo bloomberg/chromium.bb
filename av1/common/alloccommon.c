@@ -157,8 +157,8 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     av1_alloc_restoration_struct(cm, &cm->rst_info[p],
                                  ROUND_POWER_OF_TWO(width, cm->subsampling_x),
                                  ROUND_POWER_OF_TWO(height, cm->subsampling_y));
-  aom_free(cm->rst_internal.tmpbuf);
-  CHECK_MEM_ERROR(cm, cm->rst_internal.tmpbuf,
+  aom_free(cm->rst_tmpbuf);
+  CHECK_MEM_ERROR(cm, cm->rst_tmpbuf,
                   (int32_t *)aom_memalign(16, RESTORATION_TMPBUF_SIZE));
 
 #if CONFIG_STRIPED_LOOP_RESTORATION
@@ -172,8 +172,8 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     int buf_size = num_stripes * 2 * stride;
     uint8_t *above_buf, *below_buf;
 
-    aom_free(cm->rst_internal.stripe_boundary_above[p]);
-    aom_free(cm->rst_internal.stripe_boundary_below[p]);
+    aom_free(cm->rst_info[p].stripe_boundary_above);
+    aom_free(cm->rst_info[p].stripe_boundary_below);
 
 #if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth) buf_size = buf_size * 2;
@@ -182,9 +182,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
                     (uint8_t *)aom_memalign(1 << align_bits, buf_size));
     CHECK_MEM_ERROR(cm, below_buf,
                     (uint8_t *)aom_memalign(1 << align_bits, buf_size));
-    cm->rst_internal.stripe_boundary_above[p] = above_buf;
-    cm->rst_internal.stripe_boundary_below[p] = below_buf;
-    cm->rst_internal.stripe_boundary_stride[p] = stride;
+    cm->rst_info[p].stripe_boundary_above = above_buf;
+    cm->rst_info[p].stripe_boundary_below = below_buf;
+    cm->rst_info[p].stripe_boundary_stride = stride;
   }
 #endif  // CONFIG_STRIPED_LOOP_RESTORATION
 }
@@ -193,8 +193,8 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
   int p;
   for (p = 0; p < MAX_MB_PLANE; ++p)
     av1_free_restoration_struct(&cm->rst_info[p]);
-  aom_free(cm->rst_internal.tmpbuf);
-  cm->rst_internal.tmpbuf = NULL;
+  aom_free(cm->rst_tmpbuf);
+  cm->rst_tmpbuf = NULL;
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
