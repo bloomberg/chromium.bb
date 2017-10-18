@@ -10,13 +10,13 @@ import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom";
 
 // S13nServiceWorker:
-// Represents a service worker that is a controller.  One of its Mojo end
-// points (i.e. the caller end) is passed to the controllee in the renderer
-// process, and used from there.  Its other Mojo end point (i.e. the destination
-// of the events) is currently implemented by BrowserSideControllerServiceWorker
-// in the browser-process, but eventually this should be implemented by the
-// controller service worker in the renderer-process so that the events
-// dispatched by the controllees can be directly sent there.
+// Represents a service worker that is a 'controller'.
+// (https://w3c.github.io/ServiceWorker/#navigator-service-worker-controller)
+// One of its Mojo end points (i.e. the caller end) is passed to the
+// controllee in the renderer process, and used from there.  Its other Mojo
+// end point (i.e. the destination of the events) is implemented by
+// ControllerServiceWorkerImpl in the renderer process where the controller
+// service worker runs.
 //
 // The controllees use this interface to directly talk to the controller. This
 // implements a small subset of ServiceWorkerEventDispatcher, namely dispatch
@@ -40,4 +40,7 @@ interface ControllerServiceWorker {
           mojo.common.mojom.Time dispatch_event_time);
 
   // TODO(kinuko): Add DispatchExtendableMessageEvent() as well.
+
+  // Connects a new pipe to this controller instance.
+  Clone(ControllerServiceWorker& controller);
 };

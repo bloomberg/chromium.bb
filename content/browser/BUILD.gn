@@ -1414,8 +1414,6 @@ source_set("browser") {
     "service_manager/common_browser_interfaces.h",
     "service_manager/service_manager_context.cc",
     "service_manager/service_manager_context.h",
-    "service_worker/browser_side_controller_service_worker.cc",
-    "service_worker/browser_side_controller_service_worker.h",
     "service_worker/embedded_worker_instance.cc",
     "service_worker/embedded_worker_instance.h",
     "service_worker/embedded_worker_registry.cc",

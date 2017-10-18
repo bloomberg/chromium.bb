@@ -23,6 +23,7 @@
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
+#include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -136,6 +137,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void Start(std::unique_ptr<EmbeddedWorkerStartParams> params,
              ProviderInfoGetter provider_info_getter,
              mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
+             mojom::ControllerServiceWorkerRequest controller_request,
              mojom::ServiceWorkerInstalledScriptsInfoPtr installed_scripts_info,
              StatusCallback callback);
 
@@ -317,14 +319,15 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Binding for EmbeddedWorkerInstanceHost, runs on IO thread.
   mojo::AssociatedBinding<EmbeddedWorkerInstanceHost> instance_host_binding_;
 
-  // |pending_dispatcher_request_| and |pending_installed_scripts_info_| are
-  // parameters of the StartWorker message. These are called "pending" because
-  // they are not used directly by this class and are just transferred to the
-  // renderer in SendStartWorker().
-  // TODO(shimazu): Remove |pending_dispatcher_request_| and
-  // |pending_installed_scripts_info_| when EmbeddedWorkerStartParams is
+  // |pending_dispatcher_request_|, |pending_controller_request_| and
+  // |pending_installed_scripts_info_| are parameters of the StartWorker
+  // message. These are called "pending" because they are not used directly
+  // by this class and are just transferred to the renderer in
+  // SendStartWorker().
+  // TODO(shimazu): Remove these when EmbeddedWorkerStartParams is
   // changed to a mojo struct and we put them in EmbeddedWorkerStartParams.
   mojom::ServiceWorkerEventDispatcherRequest pending_dispatcher_request_;
+  mojom::ControllerServiceWorkerRequest pending_controller_request_;
   mojom::ServiceWorkerInstalledScriptsInfoPtr pending_installed_scripts_info_;
 
   // This is set at Start and used on SendStartWorker.

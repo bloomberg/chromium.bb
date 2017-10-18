@@ -13,7 +13,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
-#include "content/browser/service_worker/browser_side_controller_service_worker.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_request_handler.h"
@@ -333,14 +332,9 @@ void ServiceWorkerProviderHost::SetControllerVersionAttribute(
   scoped_refptr<ServiceWorkerVersion> previous_version = controller_;
   controller_ = version;
 
-  // This will drop the message pipes to the client pages as well.
-  controller_service_worker_.reset();
-
-  if (version) {
+  if (version)
     version->AddControllee(this);
-    controller_service_worker_ =
-        base::MakeUnique<BrowserSideControllerServiceWorker>(version);
-  }
+
   if (previous_version.get())
     previous_version->RemoveControllee(this);
 
@@ -1226,15 +1220,15 @@ void ServiceWorkerProviderHost::GetRegistrationForReady(
 void ServiceWorkerProviderHost::GetControllerServiceWorker(
     mojom::ControllerServiceWorkerRequest controller_request) {
   // TODO(kinuko): Log the reasons we drop the request.
-  if (!dispatcher_host_ || !IsContextAlive() || !controller_service_worker_)
+  if (!dispatcher_host_ || !IsContextAlive() || !controller_)
     return;
 
-  // TODO(kinuko): Call version_->StartWorker() here and pass the
-  // controller_request to the ServiceWorker.
-  // (Note that this could get called multiple times before the service
-  // worker is started)
+  // TODO(kinuko): Call version_->StartWorker() here if the service
+  // is stopped. Currently it should be starting or running at this point.
   DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
-  controller_service_worker_->AddBinding(std::move(controller_request));
+  DCHECK(controller_->running_status() == EmbeddedWorkerStatus::STARTING ||
+         controller_->running_status() == EmbeddedWorkerStatus::RUNNING);
+  controller_->controller()->Clone(std::move(controller_request));
 }
 
 bool ServiceWorkerProviderHost::IsValidRegisterMessage(

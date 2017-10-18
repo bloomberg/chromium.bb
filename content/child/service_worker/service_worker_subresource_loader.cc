@@ -201,6 +201,8 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   // At this point controller should be non-null.
   // TODO(kinuko): re-start the request if we get connection error before we
   // get response for this.
+  // TODO(kinuko): Implement request timeout and ask the browser to kill
+  // the controller if it takes too long. (crbug.com/774374)
   controller_connector_->GetControllerServiceWorker()->DispatchFetchEvent(
       *request, std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
