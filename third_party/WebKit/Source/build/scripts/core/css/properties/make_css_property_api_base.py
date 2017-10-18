@@ -21,7 +21,7 @@ class ApiClassData(
 
 class CSSPropertyAPIWriter(css_properties.CSSProperties):
     def __init__(self, json5_file_paths):
-        super(CSSPropertyAPIWriter, self).__init__([json5_file_paths[0]])
+        super(CSSPropertyAPIWriter, self).__init__(json5_file_paths)
         self._outputs = {
             'CSSPropertyAPI.h': self.generate_property_api_header,
             'CSSPropertyAPI.cpp': self.generate_property_api_implementation,

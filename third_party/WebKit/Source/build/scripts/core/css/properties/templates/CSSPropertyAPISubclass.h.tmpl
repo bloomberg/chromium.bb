@@ -12,28 +12,27 @@
 {% if property.direction_aware_options %}
 #include "core/StylePropertyShorthand.h"
 {% endif %}
-#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/properties/CSSPropertyAPI.h"
-#include "core/css/resolver/StyleResolverState.h"
 {# conditional includes - only used in some APIs #}
-{% if property.converter == "CSSPrimitiveValue" %}
+{% if property.should_declare_application_functions %}
+#include "core/css/resolver/StyleResolverState.h"
+  {% if property.converter == "CSSPrimitiveValue" %}
 #include "core/css/CSSPrimitiveValue.h"
-{% elif property.converter == "CSSIdentifierValue" %}
+#include "core/css/CSSPrimitiveValueMappings.h"
+  {% elif property.converter == "CSSIdentifierValue" %}
 #include "core/css/CSSIdentifierValue.h"
-{% elif property.converter %}
+  {% elif property.converter %}
+#include "core/css/CSSPrimitiveValueMappings.h"
 #include "core/css/resolver/StyleBuilderConverter.h"
-{% endif %}
-{% if property.font %}
+  {% endif %}
+  {% if property.font %}
 #include "core/css/resolver/FontBuilder.h"
-{% else %}
+  {% elif property.svg %}
 #include "core/style/ComputedStyle.h"
 #include "core/style/SVGComputedStyle.h"
-{% endif %}
-{% if property.runtime_flag %}
-#include "platform/runtime_enabled_features.h"
-{% endif %}
-{% if property.svg %}
-#include "core/style/SVGComputedStyle.h"
+  {% else %}
+#include "core/style/ComputedStyle.h"
+  {% endif %}
 {% endif %}
 {% if property.runtime_flag %}
 #include "platform/runtime_enabled_features.h"

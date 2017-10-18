@@ -469,7 +469,6 @@ css_properties("make_core_generated_computed_style_base") {
     "css/CSSValueKeywords.json5",
     "css/CSSPropertiesRanking.json5",
     "css/CSSGroupConfig.json5",
-    "css/ComputedStyleFieldAliases.json5",
   ]
   other_inputs = [
     "../build/scripts/templates/fields/field.tmpl",
@@ -517,14 +516,11 @@ css_properties("make_core_generated_css_property_api_baseclass") {
 }
 
 # TODO(shend): Need a better way to specify generated output files
-code_generator("make_core_generated_css_property_apis") {
+css_properties("make_core_generated_css_property_apis") {
   script =
       "../build/scripts/core/css/properties/make_css_property_api_headers.py"
-  json_inputs = [
-    "css/CSSProperties.json5",
-    "css/properties/CSSPropertyAPIMethods.json5",
-  ]
-  templates = [ "../build/scripts/core/css/properties/templates/CSSPropertyAPISubclass.h.tmpl" ]
+  in_files = [ "css/properties/CSSPropertyAPIMethods.json5" ]
+  other_inputs = [ "../build/scripts/core/css/properties/templates/CSSPropertyAPISubclass.h.tmpl" ]
   outputs = [
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignItems.h",
     "$blink_core_output_dir/css/properties/CSSPropertyAPIAlignOrJustifyContent.h",
@@ -814,14 +810,12 @@ code_generator("make_core_generated_media_features") {
   ]
 }
 
-code_generator("make_core_generated_style_property_shorthand") {
+css_properties("make_core_generated_style_property_shorthand") {
   script = "../build/scripts/core/css/make_style_shorthands.py"
-  json_inputs = [ "css/CSSProperties.json5" ]
-  templates = [
+  other_inputs = [
     "../build/scripts/core/css/templates/StylePropertyShorthand.cpp.tmpl",
     "../build/scripts/core/css/templates/StylePropertyShorthand.h.tmpl",
   ]
-  other_inputs = [ "../build/scripts/core/css/css_properties.py" ]
   outputs = [
     "$blink_core_output_dir/StylePropertyShorthand.cpp",
     "$blink_core_output_dir/StylePropertyShorthand.h",
@@ -842,10 +836,9 @@ css_properties("make_core_generated_style_builder") {
   ]
 }
 
-code_generator("make_core_generated_cssom_types") {
+css_properties("make_core_generated_cssom_types") {
   script = "../build/scripts/core/css/make_cssom_types.py"
-  json_inputs = [ "css/CSSProperties.json5" ]
-  templates = [
+  other_inputs = [
     "../build/scripts/core/css/templates/CSSOMKeywords.cpp.tmpl",
     "../build/scripts/core/css/templates/CSSOMTypes.cpp.tmpl",
   ]
