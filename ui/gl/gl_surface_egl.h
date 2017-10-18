@@ -79,6 +79,7 @@ class GL_EXPORT GLSurfaceEGL : public GLSurface {
   static bool IsRobustResourceInitSupported();
   static bool IsDisplayTextureShareGroupSupported();
   static bool IsCreateContextClientArraysSupported();
+  static bool IsAndroidNativeFenceSyncSupported();
 
  protected:
   ~GLSurfaceEGL() override;
