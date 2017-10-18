@@ -256,7 +256,8 @@ void CommandBufferProxyImpl::Flush(int32_t put_offset) {
 
   OrderingBarrierHelper(put_offset);
 
-  if (channel_)
+  // Don't send messages once disconnected.
+  if (!disconnected_)
     channel_->EnsureFlush(last_flush_id_);
 }
 
@@ -278,12 +279,9 @@ void CommandBufferProxyImpl::OrderingBarrierHelper(int32_t put_offset) {
   if (last_put_offset_ == put_offset)
     return;
   last_put_offset_ = put_offset;
-
-  if (channel_) {
-    last_flush_id_ = channel_->OrderingBarrier(
-        route_id_, put_offset, std::move(latency_info_),
-        std::move(pending_sync_token_fences_));
-  }
+  last_flush_id_ =
+      channel_->OrderingBarrier(route_id_, put_offset, std::move(latency_info_),
+                                std::move(pending_sync_token_fences_));
 
   latency_info_.clear();
   pending_sync_token_fences_.clear();
@@ -396,9 +394,6 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
   base::AutoLock lock(last_state_lock_);
   *id = -1;
 
-  if (last_state_.error != gpu::error::kNoError)
-    return NULL;
-
   int32_t new_id = channel_->ReserveTransferBufferId();
 
   std::unique_ptr<base::SharedMemory> shared_memory(
@@ -416,19 +411,21 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
     return NULL;
   }
 
-  // This handle is owned by the GPU process and must be passed to it or it
-  // will leak. In otherwords, do not early out on error between here and the
-  // sending of the RegisterTransferBuffer IPC below.
-  base::SharedMemoryHandle handle =
-      channel_->ShareToGpuProcess(shared_memory->handle());
-  if (!base::SharedMemory::IsHandleValid(handle)) {
-    if (last_state_.error == gpu::error::kNoError)
-      OnClientError(gpu::error::kLostContext);
-    return NULL;
+  if (!disconnected_) {
+    // This handle is owned by the GPU process and must be passed to it or it
+    // will leak. In otherwords, do not early out on error between here and the
+    // sending of the RegisterTransferBuffer IPC below.
+    base::SharedMemoryHandle handle =
+        channel_->ShareToGpuProcess(shared_memory->handle());
+    if (!base::SharedMemory::IsHandleValid(handle)) {
+      if (last_state_.error == gpu::error::kNoError)
+        OnClientError(gpu::error::kLostContext);
+      return NULL;
+    }
+    Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_, new_id,
+                                                        handle, size));
   }
 
-  Send(new GpuCommandBufferMsg_RegisterTransferBuffer(route_id_, new_id, handle,
-                                                      size));
   *id = new_id;
   scoped_refptr<gpu::Buffer> buffer(
       gpu::MakeBufferFromSharedMemory(std::move(shared_memory), size));
@@ -548,7 +545,8 @@ void CommandBufferProxyImpl::SetLock(base::Lock* lock) {
 }
 
 void CommandBufferProxyImpl::EnsureWorkVisible() {
-  if (channel_)
+  // Don't send messages once disconnected.
+  if (!disconnected_)
     channel_->VerifyFlush(UINT32_MAX);
 }
 
@@ -561,7 +559,8 @@ gpu::CommandBufferId CommandBufferProxyImpl::GetCommandBufferID() const {
 }
 
 void CommandBufferProxyImpl::FlushPendingWork() {
-  if (channel_)
+  // Don't send messages once disconnected.
+  if (!disconnected_)
     channel_->EnsureFlush(UINT32_MAX);
 }
 
@@ -583,7 +582,8 @@ bool CommandBufferProxyImpl::IsFenceSyncFlushed(uint64_t release) {
 bool CommandBufferProxyImpl::IsFenceSyncFlushReceived(uint64_t release) {
   CheckLock();
   if (release > verified_fence_sync_release_) {
-    if (channel_)
+    // Don't send messages once disconnected.
+    if (!disconnected_)
       channel_->VerifyFlush(last_flush_id_);
     verified_fence_sync_release_ = flushed_fence_sync_release_;
   }
@@ -874,12 +874,12 @@ void CommandBufferProxyImpl::DisconnectChannel() {
   CheckLock();
   // Prevent any further messages from being sent, and ensure we only call
   // the client for lost context a single time.
-  if (!channel_)
+  if (!channel_ || disconnected_)
     return;
+  disconnected_ = true;
   channel_->VerifyFlush(UINT32_MAX);
   channel_->Send(new GpuChannelMsg_DestroyCommandBuffer(route_id_));
   channel_->RemoveRoute(route_id_);
-  channel_ = nullptr;
   if (gpu_control_client_)
     gpu_control_client_->OnGpuControlLostContext();
 }

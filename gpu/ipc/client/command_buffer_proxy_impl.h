@@ -255,6 +255,7 @@ class GPU_EXPORT CommandBufferProxyImpl : public gpu::CommandBuffer,
   base::ObserverList<DeletionObserver> deletion_observers_;
 
   scoped_refptr<GpuChannelHost> channel_;
+  bool disconnected_ = false;
   const gpu::CommandBufferId command_buffer_id_;
   const int channel_id_;
   const int32_t route_id_;
