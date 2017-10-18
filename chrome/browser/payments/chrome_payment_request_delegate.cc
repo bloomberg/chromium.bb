@@ -27,6 +27,7 @@
 #include "components/payments/core/payment_prefs.h"
 #include "components/signin/core/browser/signin_manager.h"
 #include "content/public/browser/web_contents.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/libaddressinput/chromium/chrome_metadata_source.h"
 #include "third_party/libaddressinput/chromium/chrome_storage_impl.h"
 
@@ -125,7 +126,7 @@ ChromePaymentRequestDelegate::GetAddressNormalizer() {
 }
 
 ukm::UkmRecorder* ChromePaymentRequestDelegate::GetUkmRecorder() {
-  return g_browser_process->ukm_recorder();
+  return ukm::UkmRecorder::Get();
 }
 
 std::string ChromePaymentRequestDelegate::GetAuthenticatedEmail() const {

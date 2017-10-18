@@ -445,7 +445,7 @@ void FromGWSPageLoadMetricsLogger::OnCommit(
     ukm::SourceId source_id) {
   if (!ShouldLogPostCommitMetrics(navigation_handle->GetURL()))
     return;
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (ukm_recorder) {
     ukm_recorder->GetEntryBuilder(source_id,
                                   internal::kUkmFromGoogleSearchName);

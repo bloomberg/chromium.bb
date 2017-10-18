@@ -530,7 +530,7 @@ void LocalNetworkRequestsPageLoadMetricsObserver::ResolveResourceTypes() {
 void LocalNetworkRequestsPageLoadMetricsObserver::RecordUkmMetrics(
     ukm::SourceId source_id) {
   if (page_domain_type_ == internal::DOMAIN_TYPE_LOCALHOST ||
-      g_browser_process->ukm_recorder() == nullptr) {
+      ukm::UkmRecorder::Get() == nullptr) {
     return;
   }
 
@@ -538,7 +538,7 @@ void LocalNetworkRequestsPageLoadMetricsObserver::RecordUkmMetrics(
 
   // Log an entry for each non-localhost resource (one per IP address).
   for (const auto& entry : resource_request_counts_) {
-    ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         ukm_recorder->GetEntryBuilder(
             source_id, internal::kUkmLocalNetworkRequestsEventName);
@@ -551,7 +551,7 @@ void LocalNetworkRequestsPageLoadMetricsObserver::RecordUkmMetrics(
 
   // Log an entry for each localhost resource (one per port).
   for (const auto& entry : localhost_request_counts_) {
-    ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         ukm_recorder->GetEntryBuilder(
             source_id, internal::kUkmLocalNetworkRequestsEventName);
@@ -566,7 +566,7 @@ void LocalNetworkRequestsPageLoadMetricsObserver::RecordUkmMetrics(
 
 void LocalNetworkRequestsPageLoadMetricsObserver::RecordUkmDomainType(
     ukm::SourceId source_id) {
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (!ukm_recorder) {
     return;
   }

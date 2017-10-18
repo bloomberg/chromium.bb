@@ -587,7 +587,7 @@ void PluginInfoMessageFilter::ReportMetrics(
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES));
 
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (!ukm_recorder)
     return;
   ukm_recorder->UpdateSourceURL(ukm_source_id,

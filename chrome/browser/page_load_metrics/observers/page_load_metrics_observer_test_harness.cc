@@ -29,7 +29,6 @@ PageLoadMetricsObserverTestHarness::~PageLoadMetricsObserverTestHarness() {}
 
 void PageLoadMetricsObserverTestHarness::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
-  TestingBrowserProcess::GetGlobal()->SetUkmRecorder(&test_ukm_recorder_);
   SetContents(CreateTestWebContents());
   NavigateAndCommit(GURL("http://www.google.com"));
   // Page load metrics depends on UKM source URLs being recorded, so make sure

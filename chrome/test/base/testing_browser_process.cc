@@ -81,7 +81,6 @@ TestingBrowserProcess::TestingBrowserProcess()
       io_thread_(nullptr),
       system_request_context_(nullptr),
       rappor_service_(nullptr),
-      ukm_recorder_(nullptr),
       platform_part_(new TestingBrowserProcessPlatformPart()) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   extensions_browser_client_.reset(
@@ -132,10 +131,6 @@ metrics::MetricsService* TestingBrowserProcess::metrics_service() {
 
 rappor::RapporServiceImpl* TestingBrowserProcess::rappor_service() {
   return rappor_service_;
-}
-
-ukm::UkmRecorder* TestingBrowserProcess::ukm_recorder() {
-  return ukm_recorder_;
 }
 
 IOThread* TestingBrowserProcess::io_thread() {
@@ -482,10 +477,6 @@ void TestingBrowserProcess::SetRulesetService(
 void TestingBrowserProcess::SetRapporServiceImpl(
     rappor::RapporServiceImpl* rappor_service) {
   rappor_service_ = rappor_service;
-}
-
-void TestingBrowserProcess::SetUkmRecorder(ukm::UkmRecorder* ukm_recorder) {
-  ukm_recorder_ = ukm_recorder;
 }
 
 void TestingBrowserProcess::SetShuttingDown(bool is_shutting_down) {

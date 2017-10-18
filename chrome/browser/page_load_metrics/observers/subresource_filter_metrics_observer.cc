@@ -192,7 +192,7 @@ SubresourceFilterMetricsObserver::OnCommit(
   LogActivationDecisionMetrics(navigation_handle, *activation_decision_);
   scoped_observer_.RemoveAll();
 
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (ukm_recorder) {
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         ukm_recorder->GetEntryBuilder(source_id,

@@ -15,6 +15,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 
 using base::TimeTicks;
 using content::WebContents;
@@ -235,7 +236,7 @@ void TabManager::WebContentsData::
   ukm::builders::TabManager_Background_ForegroundedOrClosed(ukm_source_id_)
       .SetTimeFromBackgrounded(duration.InMilliseconds())
       .SetIsForegrounded(is_foregrounded)
-      .Record(g_browser_process->ukm_recorder());
+      .Record(ukm::UkmRecorder::Get());
 }
 
 TabManager::WebContentsData::Data::Data()

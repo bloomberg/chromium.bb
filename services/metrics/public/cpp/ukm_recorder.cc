@@ -8,11 +8,10 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 
 namespace ukm {
-
-UkmRecorder* g_ukm_recorder = nullptr;
 
 #if defined(OS_IOS)
 const base::Feature kUkmFeature = {"Ukm", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -25,14 +24,8 @@ UkmRecorder::UkmRecorder() = default;
 UkmRecorder::~UkmRecorder() = default;
 
 // static
-void UkmRecorder::Set(UkmRecorder* recorder) {
-  DCHECK(!g_ukm_recorder || !recorder);
-  g_ukm_recorder = recorder;
-}
-
-// static
 UkmRecorder* UkmRecorder::Get() {
-  return g_ukm_recorder;
+  return DelegatingUkmRecorder::Get();
 }
 
 // static

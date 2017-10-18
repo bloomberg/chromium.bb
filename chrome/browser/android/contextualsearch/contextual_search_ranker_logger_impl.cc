@@ -29,7 +29,7 @@ void ContextualSearchRankerLoggerImpl::SetupLoggingAndRanker(
     const base::android::JavaParamRef<jstring>& j_base_page_url) {
   GURL page_url =
       GURL(base::android::ConvertJavaStringToUTF8(env, j_base_page_url));
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   SetUkmRecorder(ukm_recorder, page_url);
   // TODO(donnd): set up the model once inference is available.
 }

@@ -25,6 +25,7 @@
 #include "components/ukm/persisted_logs_metrics_impl.h"
 #include "components/ukm/ukm_pref_names.h"
 #include "components/ukm/ukm_rotation_scheduler.h"
+#include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 
 namespace ukm {
 
@@ -93,12 +94,12 @@ UkmService::UkmService(PrefService* pref_service,
 
   StoreWhitelistedEntries();
 
-  UkmRecorder::Set(this);
+  DelegatingUkmRecorder::Get()->AddDelegate(this);
 }
 
 UkmService::~UkmService() {
   DisableReporting();
-  UkmRecorder::Set(nullptr);
+  DelegatingUkmRecorder::Get()->RemoveDelegate(this);
 }
 
 void UkmService::Initialize() {

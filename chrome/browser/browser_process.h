@@ -122,10 +122,6 @@ namespace safe_browsing {
 class ClientSideDetectionService;
 }
 
-namespace ukm {
-class UkmRecorder;
-}
-
 // NOT THREAD SAFE, call only from the main thread.
 // These functions shouldn't return NULL unless otherwise noted.
 class BrowserProcess {
@@ -154,7 +150,6 @@ class BrowserProcess {
   // Services: any of these getters may return NULL
   virtual metrics::MetricsService* metrics_service() = 0;
   virtual rappor::RapporServiceImpl* rappor_service() = 0;
-  virtual ukm::UkmRecorder* ukm_recorder() = 0;
   virtual ProfileManager* profile_manager() = 0;
   virtual PrefService* local_state() = 0;
   virtual net::URLRequestContextGetter* system_request_context() = 0;

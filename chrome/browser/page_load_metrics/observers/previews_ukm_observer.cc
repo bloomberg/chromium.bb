@@ -88,7 +88,7 @@ void PreviewsUKMObserver::RecordPreviewsTypes(
   // Only record previews types when they occur.
   if (!server_lofi_seen_ && !client_lofi_seen_ && !lite_page_seen_)
     return;
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (!ukm_recorder)
     return;
   std::unique_ptr<ukm::UkmEntryBuilder> builder =
