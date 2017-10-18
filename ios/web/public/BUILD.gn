@@ -6,6 +6,7 @@ import("//ios/build/config.gni")
 
 source_set("public") {
   public_deps = [
+    ":user_agent",
     "//net",
   ]
 
@@ -55,8 +56,6 @@ source_set("public") {
     "url_schemes.h",
     "url_schemes.mm",
     "url_util.h",
-    "user_agent.h",
-    "user_agent.mm",
     "web_capabilities.cc",
     "web_capabilities.h",
     "web_client.h",
@@ -103,6 +102,20 @@ source_set("public") {
   ]
 
   libs = [ "WebKit.framework" ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+# This is a separate target as it is used by Cronet.
+source_set("user_agent") {
+  deps = [
+    "//base",
+  ]
+
+  sources = [
+    "user_agent.h",
+    "user_agent.mm",
+  ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
