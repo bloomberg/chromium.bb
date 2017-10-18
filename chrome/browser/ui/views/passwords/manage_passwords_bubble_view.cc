@@ -29,7 +29,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/models/simple_combobox_model.h"
+#include "ui/base/models/combobox_model.h"
+#include "ui/base/models/combobox_model_observer.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_features.h"
 #include "ui/gfx/color_palette.h"
@@ -104,6 +105,44 @@ enum ColumnSetType {
 };
 
 enum TextRowType { ROW_SINGLE, ROW_MULTILINE };
+
+// A combobox model for password dropdown that allows to mask/unmask values in
+// the combobox.
+class PasswordDropdownModel : public ui::ComboboxModel {
+ public:
+  explicit PasswordDropdownModel(const std::vector<base::string16>& items)
+      : masked_(true), passwords_(items) {}
+  ~PasswordDropdownModel() override {}
+
+  void SetMasked(bool masked) {
+    if (masked_ == masked)
+      return;
+    masked_ = masked;
+    for (auto& observer : observers_)
+      observer.OnComboboxModelChanged(this);
+  }
+
+  // ui::ComboboxModel:
+  int GetItemCount() const override { return passwords_.size(); }
+  base::string16 GetItemAt(int index) override {
+    return masked_ ? base::string16(passwords_[index].length(), kBulletChar)
+                   : passwords_[index];
+  }
+  void AddObserver(ui::ComboboxModelObserver* observer) override {
+    observers_.AddObserver(observer);
+  }
+  void RemoveObserver(ui::ComboboxModelObserver* observer) override {
+    observers_.RemoveObserver(observer);
+  }
+
+ private:
+  bool masked_;
+  const std::vector<base::string16> passwords_;
+  // To be called when |masked_| was changed;
+  base::ObserverList<ui::ComboboxModelObserver> observers_;
+
+  DISALLOW_COPY_AND_ASSIGN(PasswordDropdownModel);
+};
 
 // Construct an appropriate ColumnSet for the given |type|, and add it
 // to |layout|.
@@ -233,23 +272,11 @@ std::unique_ptr<views::ToggleImageButton> CreatePasswordViewButton(
 }
 
 // Creates a dropdown from the other possible passwords.
-// The items are made of kBulletChar if not visible.
 std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
-    const autofill::PasswordForm& form,
-    bool visible) {
+    const autofill::PasswordForm& form) {
   DCHECK(!form.all_possible_passwords.empty());
-  std::vector<base::string16> passwords;
-  if (visible) {
-    passwords = form.all_possible_passwords;
-  } else {
-    for (const base::string16& possible_password :
-         form.all_possible_passwords) {
-      passwords.push_back(
-          base::string16(possible_password.length(), kBulletChar));
-    }
-  }
   std::unique_ptr<views::Combobox> combobox = std::make_unique<views::Combobox>(
-      std::make_unique<ui::SimpleComboboxModel>(passwords));
+      std::make_unique<PasswordDropdownModel>(form.all_possible_passwords));
   size_t index = std::distance(
       form.all_possible_passwords.begin(),
       find(form.all_possible_passwords.begin(),
@@ -433,8 +460,11 @@ class ManagePasswordsBubbleView::PendingView : public views::View,
   views::Button* never_button_;
   views::View* username_field_;
   views::ToggleImageButton* password_view_button_;
-  // Can be recreated, thus owned by the client.
-  std::unique_ptr<views::View> password_field_;
+
+  // The view for the password value. Only one of |password_dropdown_| and
+  // |password_label_| should be available.
+  views::Combobox* password_dropdown_;
+  views::Label* password_label_;
 
   bool password_visible_;
 
@@ -448,6 +478,8 @@ ManagePasswordsBubbleView::PendingView::PendingView(
       never_button_(nullptr),
       username_field_(nullptr),
       password_view_button_(nullptr),
+      password_dropdown_(nullptr),
+      password_label_(nullptr),
       password_visible_(false) {
   // Create credentials row.
   const autofill::PasswordForm& password_form =
@@ -520,7 +552,10 @@ void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
 
-  BuildCredentialRows(layout, username_field_, password_field_.get(),
+  views::View* password_field =
+      password_dropdown_ ? static_cast<views::View*>(password_dropdown_)
+                         : static_cast<views::View*>(password_label_);
+  BuildCredentialRows(layout, username_field_, password_field,
                       password_view_button_);
   layout->AddPaddingRow(
       0, ChromeLayoutProvider::Get()->GetDistanceMetric(
@@ -540,33 +575,39 @@ void ManagePasswordsBubbleView::PendingView::CreatePasswordField() {
       parent_->model()->pending_password();
   if (enable_password_selection &&
       password_form.all_possible_passwords.size() > 1) {
-    password_field_ =
-        CreatePasswordDropdownView(password_form, password_visible_);
+    password_dropdown_ = CreatePasswordDropdownView(password_form).release();
   } else {
-    password_field_ = CreatePasswordLabel(password_form, password_visible_);
+    password_label_ =
+        CreatePasswordLabel(password_form, password_visible_).release();
   }
-  password_field_->set_owned_by_client();
 }
 
 void ManagePasswordsBubbleView::PendingView::TogglePasswordVisibility() {
   UpdateUsernameAndPasswordInModel();
   password_visible_ = !password_visible_;
   password_view_button_->SetToggled(password_visible_);
-  password_field_.reset();
-  CreatePasswordField();
-  CreateAndSetLayout();
-  Layout();
-  parent_->SizeToContents();
+  DCHECK(!password_dropdown_ || !password_label_);
+  if (password_dropdown_) {
+    static_cast<PasswordDropdownModel*>(password_dropdown_->model())
+        ->SetMasked(!password_visible_);
+    // TODO(crbug.com/775496): Remove SchedulePaint once the bug is fixed.
+    password_dropdown_->SchedulePaint();
+  } else {
+    password_label_->SetObscured(!password_visible_);
+  }
 }
 
 void ManagePasswordsBubbleView::PendingView::
     UpdateUsernameAndPasswordInModel() {
   const bool username_editable = base::FeatureList::IsEnabled(
       password_manager::features::kEnableUsernameCorrection);
-  const bool password_editable = base::FeatureList::IsEnabled(
-      password_manager::features::kEnablePasswordSelection);
+  const bool password_editable =
+      base::FeatureList::IsEnabled(
+          password_manager::features::kEnablePasswordSelection) &&
+      password_dropdown_;
   if (!username_editable && !password_editable)
     return;
+
   base::string16 new_username =
       parent_->model()->pending_password().username_value;
   base::string16 new_password =
@@ -574,12 +615,10 @@ void ManagePasswordsBubbleView::PendingView::
   if (username_editable) {
     new_username = static_cast<views::Textfield*>(username_field_)->text();
   }
-  if (password_editable &&
-      parent_->model()->pending_password().all_possible_passwords.size() > 1) {
+  if (password_editable) {
     new_password =
         parent_->model()->pending_password().all_possible_passwords.at(
-            static_cast<views::Combobox*>(password_field_.get())
-                ->selected_index());
+            password_dropdown_->selected_index());
   }
   parent_->model()->OnCredentialEdited(new_username, new_password);
 }
