@@ -138,7 +138,7 @@ template("fuzzer_test") {
       }
 
       if (is_mac) {
-        sources += [ "libfuzzer_exports.h" ]
+        sources += [ "//testing/libfuzzer/libfuzzer_exports.h" ]
       }
     }
   } else {
