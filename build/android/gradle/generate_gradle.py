@@ -27,6 +27,8 @@ sys.path.append(os.path.join(_BUILD_ANDROID, 'gyp'))
 import jinja_template
 from util import build_utils
 
+sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build'))
+import find_depot_tools  # pylint: disable=import-error
 
 _DEFAULT_ANDROID_MANIFEST_PATH = os.path.join(
     host_paths.DIR_SOURCE_ROOT, 'build', 'android', 'AndroidManifest.xml')
@@ -108,7 +110,12 @@ def _ReadPropertiesFile(path):
 
 
 def _RunNinja(output_dir, args):
-  cmd = ['ninja', '-C', output_dir, '-j1000']
+  cmd = [
+    os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'ninja'),
+    '-C',
+    output_dir,
+    '-j1000',
+  ]
   cmd.extend(args)
   logging.info('Running: %r', cmd)
   subprocess.check_call(cmd)
@@ -116,7 +123,13 @@ def _RunNinja(output_dir, args):
 
 def _QueryForAllGnTargets(output_dir):
   # Query ninja rather than GN since it's faster.
-  cmd = ['ninja', '-C', output_dir, '-t', 'targets']
+  cmd = [
+    os.path.join(find_depot_tools.DEPOT_TOOLS_PATH, 'ninja'),
+    '-C',
+    output_dir,
+    '-t',
+    'targets',
+  ]
   logging.info('Running: %r', cmd)
   ninja_output = build_utils.CheckOutput(cmd)
   ret = []
