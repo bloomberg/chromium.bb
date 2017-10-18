@@ -9231,14 +9231,15 @@
         'dynamic_refresh': True,
         'per_profile': True,
       },
-      'example_value': 'managedchrome.com,gmail.com',
+      'example_value': 'managedchrome.com,example.com',
       'id': 331,
       'caption': '''Define domains allowed to access Google Apps''',
       'tags': ['filtering'],
       'desc': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>'s restricted log in feature in Google Apps and prevents users from changing this setting.
 
-      If you define this setting, the user will only be able to access
-      Google Apps (such as Gmail) using accounts from the specified domains.
+      If you define this setting, the user will only be able to access Google
+      Apps using accounts from the specified domains (note that this does not
+      work for gmail.com/googlemail.com).
 
       This setting will NOT prevent the user from loging in on a managed device
       that requires Google authentication. The user will still be allowed to
