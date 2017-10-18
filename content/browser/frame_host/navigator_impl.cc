@@ -321,24 +321,24 @@ bool NavigatorImpl::NavigateToEntry(
   if (frame_tree_node->IsMainFrame()) {
     const GURL& virtual_url = entry.GetVirtualURL();
     if (!virtual_url.is_valid() && !virtual_url.is_empty()) {
-      DLOG(WARNING) << "Refusing to load for invalid virtual URL: "
-                    << virtual_url.possibly_invalid_spec().substr(0, 1024);
+      LOG(WARNING) << "Refusing to load for invalid virtual URL: "
+                   << virtual_url.possibly_invalid_spec();
       return false;
     }
   }
 
   // Don't attempt to navigate to non-empty invalid URLs.
   if (!dest_url.is_valid() && !dest_url.is_empty()) {
-    DLOG(WARNING) << "Refusing to load invalid URL: "
-                  << dest_url.possibly_invalid_spec().substr(0, 1024);
+    LOG(WARNING) << "Refusing to load invalid URL: "
+                 << dest_url.possibly_invalid_spec();
     return false;
   }
 
   // The renderer will reject IPC messages with URLs longer than
   // this limit, so don't attempt to navigate with a longer URL.
   if (dest_url.spec().size() > url::kMaxURLChars) {
-    DLOG(WARNING) << "Refusing to load URL as it exceeds " << url::kMaxURLChars
-                  << " characters.";
+    LOG(WARNING) << "Refusing to load URL as it exceeds " << url::kMaxURLChars
+                 << " characters.";
     return false;
   }
 
