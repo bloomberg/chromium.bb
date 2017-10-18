@@ -2680,7 +2680,9 @@ TEST_F(RenderWidgetHostViewAuraTest, DelegatedFrameGutter) {
   ASSERT_EQ(0u, parent_layer->children().size());
 }
 
-TEST_F(RenderWidgetHostViewAuraTest, Resize) {
+// Resizing is disabled due to flakiness. Commit might come before
+// DrawWaiterForTest looks for compositor frame. crbug.com/759653
+TEST_F(RenderWidgetHostViewAuraTest, DISABLED_Resize) {
   gfx::Size size1(100, 100);
   gfx::Size size2(200, 200);
   gfx::Size size3(300, 300);
