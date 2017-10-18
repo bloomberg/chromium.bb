@@ -187,8 +187,10 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
 
   Node* node = layout_image_.GetNode();
   Image::ImageDecodingMode decode_mode =
-      IsHTMLImageElement(node) ? ToHTMLImageElement(node)->GetDecodingMode()
-                               : Image::kUnspecifiedDecode;
+      IsHTMLImageElement(node)
+          ? ToHTMLImageElement(node)->GetDecodingModeForPainting(
+                image->paint_image_id())
+          : Image::kUnspecifiedDecode;
   context.DrawImage(
       image.get(), decode_mode, pixel_snapped_dest_rect, &src_rect,
       SkBlendMode::kSrcOver,
