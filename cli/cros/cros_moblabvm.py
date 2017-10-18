@@ -79,9 +79,16 @@ A typical moblabvm session looks so:
              'must contain all the files output by build_image.',
     )
     create_parser.add_argument(
+        '--source-vm-images',
+        action='store_true',
+        default=False,
+        help='Copy already created VM images from source folders. '
+             'Default behaviour is to convert the test images to VM images.',
+    )
+    create_parser.add_argument(
         '--clean',
         action='store_true',
-        default='False',
+        default=False,
         help='Destroy any previously setup moblabvm from the workspace. '
              'Default is False.',
     )
@@ -91,7 +98,7 @@ A typical moblabvm session looks so:
     start_parser.add_argument(
         '--restart',
         action='store_true',
-        default='False',
+        default=False,
         help='Stop the VMs if they\'re already running. Default is False.',
     )
 
@@ -121,7 +128,8 @@ A typical moblabvm session looks so:
     if cmd == 'create':
       if self.options.clean:
         vm.Destroy()
-      vm.Create(self.options.moblab_image_dir, self.options.dut_image_dir)
+      vm.Create(self.options.moblab_image_dir, self.options.dut_image_dir,
+                create_vm_images=not self.options.source_vm_images)
     elif cmd == 'start':
       if self.options.restart:
         vm.Stop()

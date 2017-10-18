@@ -126,7 +126,7 @@ class MoblabVm(object):
     """
     return self._config[_CONFIG_DUT_TAP_MAC]
 
-  def Create(self, moblab_image_dir, dut_image_dir=''):
+  def Create(self, moblab_image_dir, dut_image_dir='', create_vm_images=True):
     """Create a new moblabvm setup.
 
     Args:
@@ -137,6 +137,9 @@ class MoblabVm(object):
           required if a DUT should be attached to the moblab VM. This directory
           should ideally contain all the files output by build_image because
           they are needed to manipulate the image properly.
+      create_vm_images: If True, the source directories contain test images that
+          need to be converted to vm images. If False, the source directories
+          should already contain VM images to be used directly.
     """
     if self._config[_CONFIG_INITIALIZED]:
       raise SetupError('Cannot overwrite existing setup at %s' %
@@ -145,23 +148,31 @@ class MoblabVm(object):
     logging.notice('Initializing workspace in %s', self.workspace)
     logging.notice('This involves creating some VM images. '
                    'May take a few minutes.')
+
+    logging.notice('Preparing moblab image...')
     moblab_dir = os.path.join(self.workspace, _WORKSPACE_MOBLAB_DIR)
     osutils.SafeMakedirsNonRoot(moblab_dir)
-
-    logging.notice('Generating moblab image...')
-    moblab_vm_image = _CreateVMImage(moblab_image_dir, moblab_dir)
-    self._config[_CONFIG_MOBLAB_IMAGE] = moblab_vm_image
+    if create_vm_images:
+      self._config[_CONFIG_MOBLAB_IMAGE] = _CreateVMImage(
+          moblab_image_dir, moblab_dir)
+    else:
+      self._config[_CONFIG_MOBLAB_IMAGE] = self._CopyVMImage(
+          moblab_image_dir, moblab_dir)
 
     logging.notice('Generating moblab external disk...')
     moblab_disk = _CreateMoblabDisk(moblab_dir)
     self._config[_CONFIG_MOBLAB_DISK] = moblab_disk
 
     if dut_image_dir:
-      logging.notice('Generating dut image...')
+      logging.notice('Preparing dut image...')
       dut_dir = os.path.join(self.workspace, _WORKSPACE_DUT_DIR)
       osutils.SafeMakedirsNonRoot(dut_dir)
-      dut_vm_image = _CreateVMImage(dut_image_dir, dut_dir)
-      self._config[_CONFIG_DUT_IMAGE] = dut_vm_image
+      if create_vm_images:
+        self._config[_CONFIG_DUT_IMAGE] = _CreateVMImage(
+            dut_image_dir, dut_dir)
+      else:
+        self._config[_CONFIG_DUT_IMAGE] = self._CopyVMImage(
+            dut_image_dir, dut_dir)
 
     self._config[_CONFIG_INITIALIZED] = 'true'
     self._Persist()
@@ -270,6 +281,16 @@ class MoblabVm(object):
     if self._config[_CONFIG_DUT_IMAGE]:
       next_num = self._StartDutVm(next_num)
 
+  def _CopyVMImage(self, source_dir, target_dir):
+    """Converts or copies VM images from source_dir to target_dir."""
+    source_path = os.path.join(source_dir, constants.VM_IMAGE_BIN)
+    if not os.path.isfile(source_path):
+      raise SetupError('Could not find VM image at %s' % source_path)
+
+    target_path = os.path.join(target_dir, constants.VM_IMAGE_BIN)
+    shutil.copyfile(source_path, target_path)
+    return target_path
+
   def _StartMoblabVm(self, next_num):
     """Starts a VM running moblab.
 
@@ -374,8 +395,7 @@ def _CreateVMImage(src_dir, dest_dir):
 
     # Preserve all content, although we should need only the generated VM
     # image. Other files like boot.desc might be needed elsewhere.
-    for name in os.listdir(tempdir):
-      shutil.move(os.path.join(tempdir, name), dest_dir)
+    osutils.CopyDirContents(tempdir, dest_dir)
   # The exact name of the output image is hard-coded in image_to_vm.sh
   return os.path.join(dest_dir, constants.VM_IMAGE_BIN)
 

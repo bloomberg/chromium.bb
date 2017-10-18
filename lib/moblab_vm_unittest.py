@@ -11,8 +11,9 @@ import mock
 import os
 import unittest
 
-from chromite.lib import moblab_vm
 from chromite.lib import cros_test_lib
+from chromite.lib import moblab_vm
+from chromite.lib import osutils
 
 
 class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
@@ -96,6 +97,8 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
         self.moblab_from_path, self.moblab_workdir_path)
     self._mock_create_moblab_disk.assert_called_once_with(
         self.moblab_workdir_path)
+    self.assertExists(self.moblab_workdir_path)
+    self.assertNotExists(self.dut_workdir_path)
     self.assertTrue(vmsetup.initialized)
     self.assertFalse(vmsetup.running)
     self.assertFalse(vmsetup.dut_running)
@@ -116,6 +119,31 @@ class MoblabVmTestCase(cros_test_lib.MockTempDirTestCase):
             mock.call(self.dut_from_path, self.dut_workdir_path),
         ],
     )
+    self.assertExists(self.moblab_workdir_path)
+    self.assertExists(self.dut_workdir_path)
+    self._mock_create_moblab_disk.assert_called_once_with(
+        self.moblab_workdir_path)
+    self.assertTrue(vmsetup.initialized)
+    self.assertFalse(vmsetup.running)
+    self.assertFalse(vmsetup.dut_running)
+
+  def testCreateNoCreateVmRaisesWhenSourceImageMissing(self):
+    """A call to .Create w/o create_vm_images expects source image to exist."""
+    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    with self.assertRaises(moblab_vm.SetupError):
+      vmsetup.Create(self.moblab_from_path, create_vm_images=False)
+
+  def testSuccessfulCreateNoCreateVm(self):
+    """A successful call to .Create w/o create_vm_images."""
+    self._mock_create_moblab_disk.return_value = self.moblab_disk_path
+    osutils.SafeMakedirsNonRoot(self.moblab_from_path)
+    osutils.WriteFile(os.path.join(self.moblab_from_path,
+                                   'chromiumos_qemu_image.bin'),
+                      'fake_image')
+
+    vmsetup = moblab_vm.MoblabVm(self.tempdir)
+    vmsetup.Create(self.moblab_from_path, create_vm_images=False)
+    self.assertEqual(self._mock_create_vm_image.call_count, 0)
     self._mock_create_moblab_disk.assert_called_once_with(
         self.moblab_workdir_path)
     self.assertTrue(vmsetup.initialized)
