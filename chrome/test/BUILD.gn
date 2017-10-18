@@ -1418,6 +1418,7 @@ test("browser_tests") {
       "../browser/sessions/session_restore_observer_browsertest.cc",
       "../browser/sessions/tab_restore_browsertest.cc",
       "../browser/site_details_browsertest.cc",
+      "../browser/ui/blocked_content/safe_browsing_triggered_popup_blocker_browsertest.cc",
 
       # If this list is used on Android in the future, these browser/speech/*
       # files will probably not be applicable.

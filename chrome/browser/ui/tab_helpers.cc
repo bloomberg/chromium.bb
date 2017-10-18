@@ -224,6 +224,8 @@ void TabHelpers::AttachTabHelpers(WebContents* web_contents) {
   chrome::InitializePageLoadMetricsForWebContents(web_contents);
   PDFPluginPlaceholderObserver::CreateForWebContents(web_contents);
   PermissionRequestManager::CreateForWebContents(web_contents);
+  // The PopupBlockerTabHelper has an implicit dependency on
+  // ChromeSubresourceFilterClient being available in its constructor.
   PopupBlockerTabHelper::CreateForWebContents(web_contents);
   PopupOpenerTabHelper::CreateForWebContents(
       web_contents, base::MakeUnique<base::DefaultTickClock>());
