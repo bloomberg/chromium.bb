@@ -754,4 +754,70 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest,
   }
 }
 
+// Test that a same-document browser-initiated navigation doesn't prevent a
+// document from loading. See https://crbug.com/769645.
+IN_PROC_BROWSER_TEST_F(
+    ContentBrowserTest,
+    SameDocumentBrowserInitiatedNavigationWhileDocumentIsLoading) {
+  ControllableHttpResponse response(embedded_test_server(), "/main_document");
+  EXPECT_TRUE(embedded_test_server()->Start());
+
+  // 1) Load a new document. It reaches the ReadyToCommit stage and then is slow
+  //    to load.
+  GURL url(embedded_test_server()->GetURL("/main_document"));
+  TestNavigationManager observer_new_document(shell()->web_contents(), url);
+  shell()->LoadURL(url);
+
+  // The navigation starts
+  EXPECT_TRUE(observer_new_document.WaitForRequestStart());
+  observer_new_document.ResumeNavigation();
+
+  // The server sends the first part of the response and waits.
+  response.WaitForRequest();
+  response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<html>"
+      "  <body>"
+      "    <div id=\"anchor\"></div>"
+      "    <script>"
+      "      domAutomationController.send('First part received')"
+      "    </script>");
+
+  // The browser reaches the ReadyToCommit stage.
+  EXPECT_TRUE(observer_new_document.WaitForResponse());
+  RenderFrameHostImpl* main_rfh = static_cast<RenderFrameHostImpl*>(
+      shell()->web_contents()->GetMainFrame());
+  DOMMessageQueue dom_message_queue(WebContents::FromRenderFrameHost(main_rfh));
+  observer_new_document.ResumeNavigation();
+
+  // Wait for the renderer to load the first part of the response.
+  std::string first_part_received;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&first_part_received));
+  EXPECT_EQ("\"First part received\"", first_part_received);
+
+  // 2) In the meantime, a browser-initiated same-document navigation commits.
+  GURL anchor_url(url.spec() + "#anchor");
+  TestNavigationManager observer_same_document(shell()->web_contents(),
+                                               anchor_url);
+  shell()->LoadURL(anchor_url);
+  observer_same_document.WaitForNavigationFinished();
+
+  // 3) The last part of the response is received.
+  response.Send(
+      "    <script>"
+      "      domAutomationController.send('Second part received')"
+      "    </script>"
+      "  </body>"
+      "</html>");
+  response.Done();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  // The renderer should be able to load the end of the response.
+  std::string second_part_received;
+  EXPECT_TRUE(dom_message_queue.WaitForMessage(&second_part_received));
+  EXPECT_EQ("\"Second part received\"", second_part_received);
+}
+
 }  // namespace content
