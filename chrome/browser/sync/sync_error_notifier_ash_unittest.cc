@@ -127,7 +127,6 @@ class SyncErrorNotifierTest : public BrowserWithTestWindowTest {
       ASSERT_TRUE(notification);
       ASSERT_FALSE(notification->title().empty());
       ASSERT_FALSE(notification->message().empty());
-      ASSERT_EQ((size_t)1, notification->buttons().size());
     } else {
       ASSERT_FALSE(notification);
     }
