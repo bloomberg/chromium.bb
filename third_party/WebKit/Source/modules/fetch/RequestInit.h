@@ -5,11 +5,13 @@
 #ifndef RequestInit_h
 #define RequestInit_h
 
+#include "bindings/core/v8/NativeValueTraits.h"
 #include "bindings/modules/v8/byte_string_sequence_sequence_or_byte_string_byte_string_record.h"
 #include "modules/fetch/Headers.h"
 #include "platform/heap/Handle.h"
 #include "platform/network/EncodedFormData.h"
 #include "platform/weborigin/Referrer.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/RefPtr.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -41,6 +43,24 @@ class RequestInit {
   bool AreAnyMembersSet() const { return are_any_members_set_; }
 
  private:
+  // These are defined here to avoid JUMBO ambiguity.
+  class GetterHelper;
+  struct IDLPassThrough;
+  friend struct NativeValueTraits<IDLPassThrough>;
+  friend struct NativeValueTraitsBase<IDLPassThrough>;
+
+  void SetUpReferrer(const WTF::Optional<String>& referrer_string,
+                     const WTF::Optional<String>& referrer_policy_string,
+                     ExceptionState&);
+  void SetUpCredentials(ExecutionContext*,
+                        v8::Isolate*,
+                        v8::Local<v8::Value> v8_credentials,
+                        ExceptionState&);
+  void SetUpBody(ExecutionContext*,
+                 v8::Isolate*,
+                 v8::Local<v8::Value> v8_body,
+                 ExceptionState&);
+
   String method_;
   HeadersInit headers_;
   String content_type_;
