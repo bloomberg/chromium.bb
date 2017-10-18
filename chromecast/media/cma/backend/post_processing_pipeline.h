@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_H_
 
 #include <memory>
 #include <vector>
@@ -26,14 +26,19 @@ class PostProcessingPipeline {
   virtual bool IsRinging() = 0;
   virtual void SetPostProcessorConfig(const std::string& name,
                                       const std::string& config) = 0;
+};
 
-  static std::unique_ptr<PostProcessingPipeline> Create(
+class PostProcessingPipelineFactory {
+ public:
+  virtual ~PostProcessingPipelineFactory() = default;
+
+  virtual std::unique_ptr<PostProcessingPipeline> CreatePipeline(
       const std::string& name,
       const base::ListValue* filter_description_list,
-      int num_channels);
+      int num_channels) = 0;
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_H_

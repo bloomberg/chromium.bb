@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "chromecast/media/cma/backend/alsa/post_processor_factory.h"
-#include "chromecast/media/cma/backend/alsa/post_processors/governor.h"
-#include "chromecast/media/cma/backend/alsa/post_processors/post_processor_unittest.h"
+#include "chromecast/media/cma/backend/post_processor_factory.h"
+#include "chromecast/media/cma/backend/post_processors/governor.h"
+#include "chromecast/media/cma/backend/post_processors/post_processor_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromecast {

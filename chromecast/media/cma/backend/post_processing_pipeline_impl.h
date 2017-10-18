@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_IMPL_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_IMPL_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_IMPL_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_IMPL_H_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "base/macros.h"
-#include "chromecast/media/cma/backend/alsa/post_processing_pipeline.h"
-#include "chromecast/media/cma/backend/alsa/post_processor_factory.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline.h"
+#include "chromecast/media/cma/backend/post_processor_factory.h"
 
 namespace base {
 class ListValue;
@@ -71,7 +71,19 @@ class PostProcessingPipelineImpl : public PostProcessingPipeline {
   DISALLOW_COPY_AND_ASSIGN(PostProcessingPipelineImpl);
 };
 
+class PostProcessingPipelineFactoryImpl : public PostProcessingPipelineFactory {
+ public:
+  PostProcessingPipelineFactoryImpl();
+  ~PostProcessingPipelineFactoryImpl() override;
+
+  // PostProcessingPipelineFactory interface.
+  std::unique_ptr<PostProcessingPipeline> CreatePipeline(
+      const std::string& name,
+      const base::ListValue* filter_description_list,
+      int num_channels) override;
+};
+
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_POST_PROCESSING_PIPELINE_IMPL_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_POST_PROCESSING_PIPELINE_IMPL_H_

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/volume_map.h"
+#include "chromecast/media/cma/backend/volume_map.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromecast/base/serializers.h"
-#include "chromecast/media/cma/backend/alsa/cast_audio_json.h"
+#include "chromecast/media/cma/backend/cast_audio_json.h"
 
 namespace chromecast {
 namespace media {

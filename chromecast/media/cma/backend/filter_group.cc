@@ -2,24 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/filter_group.h"
+#include "chromecast/media/cma/backend/filter_group.h"
 
 #include <algorithm>
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
-#include "chromecast/media/cma/backend/alsa/post_processing_pipeline.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_sample_types.h"
 #include "media/base/vector_math.h"
 
 namespace chromecast {
 namespace media {
+
 FilterGroup::FilterGroup(int num_channels,
                          bool mix_to_mono,
                          const std::string& name,
-                         const base::ListValue* filter_list,
+                         std::unique_ptr<PostProcessingPipeline> pipeline,
                          const std::unordered_set<std::string>& device_ids,
                          const std::vector<FilterGroup*>& mixed_inputs)
     : num_channels_(num_channels),
@@ -29,8 +30,7 @@ FilterGroup::FilterGroup(int num_channels,
       device_ids_(device_ids),
       mixed_inputs_(mixed_inputs),
       output_samples_per_second_(0),
-      post_processing_pipeline_(
-          PostProcessingPipeline::Create(name_, filter_list, num_channels_)) {
+      post_processing_pipeline_(std::move(pipeline)) {
   for (auto* const m : mixed_inputs)
     DCHECK_EQ(m->GetOutputChannelCount(), num_channels);
   // Don't need mono mixer if input is single channel.
@@ -45,11 +45,11 @@ void FilterGroup::Initialize(int output_samples_per_second) {
   post_processing_pipeline_->SetSampleRate(output_samples_per_second);
 }
 
-bool FilterGroup::CanProcessInput(StreamMixerAlsa::InputQueue* input) {
+bool FilterGroup::CanProcessInput(StreamMixer::InputQueue* input) {
   return !(device_ids_.find(input->device_id()) == device_ids_.end());
 }
 
-void FilterGroup::AddActiveInput(StreamMixerAlsa::InputQueue* input) {
+void FilterGroup::AddActiveInput(StreamMixer::InputQueue* input) {
   active_inputs_.push_back(input);
 }
 
@@ -86,7 +86,7 @@ float FilterGroup::MixAndFilter(int chunk_size) {
 
   // Mix InputQueues
   mixed_->ZeroFramesPartial(0, chunk_size);
-  for (StreamMixerAlsa::InputQueue* input : active_inputs_) {
+  for (StreamMixer::InputQueue* input : active_inputs_) {
     input->GetResampledData(temp_.get(), chunk_size);
     for (int c = 0; c < num_channels_; ++c) {
       input->VolumeScaleAccumulate(c != 0, temp_->channel(c), chunk_size,

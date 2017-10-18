@@ -21,15 +21,13 @@ cast_shared_library("libcast_media_1.0_audio") {
   sources = [
     "cast_media_shlib.cc",
     "media_codec_support_cast_audio.cc",
-    "post_processing_pipeline_impl.cc",
-    "post_processing_pipeline_impl.h",
   ]
 
   deps = [
     ":alsa_cma_backend",
-    ":post_processor_factory",
     "//base",
     "//chromecast/base",
+    "//chromecast/media/cma/backend:audio",
     "//chromecast/public",
     "//chromecast/public/media",
     "//media",
@@ -44,21 +42,10 @@ source_set("alsa_cma_backend") {
     "alsa_wrapper.h",
     "audio_decoder_alsa.cc",
     "audio_decoder_alsa.h",
-    "filter_group.cc",
-    "filter_group.h",
     "media_pipeline_backend_alsa.cc",
     "media_pipeline_backend_alsa.h",
     "mixer_output_stream_alsa.cc",
     "mixer_output_stream_alsa.h",
-    "post_processing_pipeline.h",
-    "post_processing_pipeline_parser.cc",
-    "post_processing_pipeline_parser.h",
-    "stream_mixer_alsa.cc",
-    "stream_mixer_alsa.h",
-    "stream_mixer_alsa_input.cc",
-    "stream_mixer_alsa_input.h",
-    "stream_mixer_alsa_input_impl.cc",
-    "stream_mixer_alsa_input_impl.h",
     "volume_control.cc",
   ]
 
@@ -66,29 +53,14 @@ source_set("alsa_cma_backend") {
 
   deps = [
     ":alsa_features",
-    ":volume_map",
     "//base",
     "//chromecast/base",
     "//chromecast/media/base",
-    "//chromecast/media/cma/backend:null",
+    "//chromecast/media/cma/backend:audio",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
     "//chromecast/public/media",
     "//media",
-    "//media:shared_memory_support",
-  ]
-}
-
-source_set("volume_map") {
-  sources = [
-    "cast_audio_json.cc",
-    "cast_audio_json.h",
-    "volume_map.cc",
-    "volume_map.h",
-  ]
-  deps = [
-    "//base",
-    "//chromecast/base",
   ]
 }
 
@@ -103,24 +75,19 @@ buildflag_header("alsa_features") {
   ]
 }
 
-test("cast_alsa_cma_backend_unittests") {
+source_set("unit_tests") {
+  testonly = true
   sources = [
-    "filter_group_unittest.cc",
-    "post_processors/governor_unittest.cc",
-    "post_processors/saturated_gain_unittest.cc",
-    "stream_mixer_alsa_unittest.cc",
+    # TODO(sergeyu): Remove ALSA dependency from these tests and move them
+    # to media/cma/backend.
+    "stream_mixer_unittest.cc",
   ]
 
   deps = [
-    ":governor",
-    ":libcast_governor_1.0",
-    ":libcast_saturated_gain_1.0",
-    ":post_processor_factory",
-    ":post_processor_test_support",
     ":test_support",
     "//base",
-    "//base/test:run_all_unittests",
     "//chromecast/media",
+    "//chromecast/media/cma/backend:audio",
     "//chromecast/public",
     "//media",
     "//testing/gmock",
@@ -147,65 +114,10 @@ source_set("test_support") {
   ]
 }
 
-# This is separate from ":governor" because the associated unittest needs
-# to create a Governor directly (to use test functions).
-cast_shared_library("libcast_governor_1.0") {
-  sources = [
-    "post_processors/governor_create.cc",
-  ]
+# cast_alsa_cma_backend_unittests is an alias for cast_backend_unittests.
+# TODO(sergeyu): Remove all references to this target, then remove this target.
+test("cast_alsa_cma_backend_unittests") {
   deps = [
-    ":governor",
-    "//chromecast/public/media",
-  ]
-}
-
-source_set("governor") {
-  sources = [
-    "post_processors/governor.cc",
-    "post_processors/governor.h",
-  ]
-  deps = [
-    "//base",
-    "//chromecast/base",
-    "//chromecast/media/base",
-    "//chromecast/public/media",
-  ]
-  public_configs = [ "//chromecast/public:public_config" ]
-}
-
-cast_shared_library("libcast_saturated_gain_1.0") {
-  sources = [
-    "post_processors/saturated_gain.cc",
-    "post_processors/saturated_gain.h",
-  ]
-  deps = [
-    "//base",
-    "//chromecast/base",
-    "//chromecast/media/base",
-    "//chromecast/public/media",
-  ]
-}
-
-source_set("post_processor_test_support") {
-  testonly = true
-  sources = [
-    "post_processors/post_processor_unittest.cc",
-    "post_processors/post_processor_unittest.h",
-  ]
-  deps = [
-    "//base",
-    "//chromecast/public/media",
-    "//testing/gtest",
-  ]
-}
-
-source_set("post_processor_factory") {
-  sources = [
-    "post_processor_factory.cc",
-    "post_processor_factory.h",
-  ]
-  deps = [
-    "//base",
-    "//chromecast/public/media",
+    "//chromecast/media/cma/backend:unit_tests",
   ]
 }

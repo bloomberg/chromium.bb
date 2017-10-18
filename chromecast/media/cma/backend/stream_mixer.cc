@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa.h"
+#include "chromecast/media/cma/backend/stream_mixer.h"
 
 #include <algorithm>
 #include <cmath>
@@ -22,11 +22,12 @@
 #include "base/time/time.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/base/audio_device_ids.h"
-#include "chromecast/media/cma/backend/alsa/cast_audio_json.h"
-#include "chromecast/media/cma/backend/alsa/filter_group.h"
-#include "chromecast/media/cma/backend/alsa/post_processing_pipeline_parser.h"
-#include "chromecast/media/cma/backend/alsa/stream_mixer_alsa_input_impl.h"
+#include "chromecast/media/cma/backend/cast_audio_json.h"
+#include "chromecast/media/cma/backend/filter_group.h"
 #include "chromecast/media/cma/backend/mixer_output_stream.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline_impl.h"
+#include "chromecast/media/cma/backend/post_processing_pipeline_parser.h"
+#include "chromecast/media/cma/backend/stream_mixer_input_impl.h"
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 #include "media/audio/audio_device_description.h"
 
@@ -52,7 +53,7 @@ const int kNumInputChannels = 2;
 const int kPreventUnderrunChunkSize = 512;
 const int kDefaultCheckCloseTimeoutMs = 2000;
 
-// The minimum amount of data that we allow in the ALSA buffer before starting
+// The minimum amount of data that we allow in the output buffer before starting
 // to skip inputs with no available data.
 constexpr base::TimeDelta kMinBufferedData =
     base::TimeDelta::FromMilliseconds(20);
@@ -77,40 +78,42 @@ bool IsOutputDeviceId(const std::string& device) {
          device == kTtsAudioDeviceId;
 }
 
-class StreamMixerAlsaInstance : public StreamMixerAlsa {
+class StreamMixerInstance : public StreamMixer {
  public:
-  StreamMixerAlsaInstance() {}
-  ~StreamMixerAlsaInstance() override {}
+  StreamMixerInstance() {}
+  ~StreamMixerInstance() override {}
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(StreamMixerAlsaInstance);
+  DISALLOW_COPY_AND_ASSIGN(StreamMixerInstance);
 };
 
-base::LazyInstance<StreamMixerAlsaInstance>::DestructorAtExit g_mixer_instance =
+base::LazyInstance<StreamMixerInstance>::DestructorAtExit g_mixer_instance =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
 
-float StreamMixerAlsa::VolumeInfo::GetEffectiveVolume() {
+float StreamMixer::VolumeInfo::GetEffectiveVolume() {
   return std::min(volume, limit);
 }
 
 // static
-bool StreamMixerAlsa::single_threaded_for_test_ = false;
+bool StreamMixer::single_threaded_for_test_ = false;
 
 // static
-StreamMixerAlsa* StreamMixerAlsa::Get() {
+StreamMixer* StreamMixer::Get() {
   return g_mixer_instance.Pointer();
 }
 
 // static
-void StreamMixerAlsa::MakeSingleThreadedForTest() {
+void StreamMixer::MakeSingleThreadedForTest() {
   single_threaded_for_test_ = true;
-  StreamMixerAlsa::Get()->ResetTaskRunnerForTest();
+  StreamMixer::Get()->ResetTaskRunnerForTest();
 }
 
-StreamMixerAlsa::StreamMixerAlsa()
-    : mixer_thread_(new base::Thread("ALSA CMA mixer thread")),
+StreamMixer::StreamMixer()
+    : post_processing_pipeline_factory_(
+          std::make_unique<PostProcessingPipelineFactoryImpl>()),
+      mixer_thread_(new base::Thread("CMA mixer thread")),
       state_(kStateUninitialized),
       retry_write_frames_timer_(new base::Timer(false, false)),
       check_close_timeout_(kDefaultCheckCloseTimeoutMs),
@@ -153,7 +156,20 @@ StreamMixerAlsa::StreamMixerAlsa()
                                            default_close_timeout);
 }
 
-void StreamMixerAlsa::CreatePostProcessors(
+std::unique_ptr<FilterGroup> StreamMixer::CreateFilterGroup(
+    bool mix_to_mono,
+    const std::string& name,
+    const base::ListValue* filter_list,
+    const std::unordered_set<std::string>& device_ids,
+    const std::vector<FilterGroup*>& mixed_inputs) {
+  auto pipeline = post_processing_pipeline_factory_->CreatePipeline(
+      name, filter_list, kNumInputChannels);
+  return std::make_unique<FilterGroup>(kNumInputChannels, mix_to_mono, name,
+                                       std::move(pipeline), device_ids,
+                                       mixed_inputs);
+}
+
+void StreamMixer::CreatePostProcessors(
     PostProcessingPipelineParser* pipeline_parser) {
   std::unordered_set<std::string> used_streams;
   for (auto& stream_pipeline : pipeline_parser->GetStreamPipelines()) {
@@ -167,9 +183,9 @@ void StreamMixerAlsa::CreatePostProcessors(
           << "Multiple instances of stream type '" << stream_type << "' in "
           << kCastAudioJsonFilePath << ".";
     }
-    filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-        kNumInputChannels, false /* mono_mixer */,
-        *device_ids.begin() /* name */, stream_pipeline.pipeline, device_ids,
+    filter_groups_.push_back(CreateFilterGroup(
+        false /* mono_mixer */, *device_ids.begin() /* name */,
+        stream_pipeline.pipeline, device_ids,
         std::vector<FilterGroup*>() /* mixed_inputs */));
     if (device_ids.find(::media::AudioDeviceDescription::kDefaultDeviceId) !=
         device_ids.end()) {
@@ -181,9 +197,9 @@ void StreamMixerAlsa::CreatePostProcessors(
   if (!default_filter_) {
     std::string kDefaultDeviceId =
         ::media::AudioDeviceDescription::kDefaultDeviceId;
-    filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-        kNumInputChannels, false /* mono_mixer */, kDefaultDeviceId /* name */,
-        nullptr, std::unordered_set<std::string>({kDefaultDeviceId}),
+    filter_groups_.push_back(CreateFilterGroup(
+        false /* mono_mixer */, kDefaultDeviceId /* name */, nullptr,
+        std::unordered_set<std::string>({kDefaultDeviceId}),
         std::vector<FilterGroup*>() /* mixed_inputs */));
     default_filter_ = filter_groups_.back().get();
   }
@@ -195,55 +211,56 @@ void StreamMixerAlsa::CreatePostProcessors(
 
   // Enable Mono mixer in |mix_filter_| if necessary.
   bool enabled_mono_mixer = (num_output_channels_ == 1);
-  filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-      kNumInputChannels, enabled_mono_mixer, "mix",
-      pipeline_parser->GetMixPipeline(),
+  filter_groups_.push_back(CreateFilterGroup(
+      enabled_mono_mixer, "mix", pipeline_parser->GetMixPipeline(),
       std::unordered_set<std::string>() /* device_ids */, filter_group_ptrs));
   mix_filter_ = filter_groups_.back().get();
 
-  filter_groups_.push_back(base::MakeUnique<FilterGroup>(
-      kNumInputChannels, false /* mono_mixer */, "linearize",
-      pipeline_parser->GetLinearizePipeline(),
-      std::unordered_set<std::string>() /* device_ids */,
-      std::vector<FilterGroup*>({mix_filter_})));
+  filter_groups_.push_back(
+      CreateFilterGroup(false /* mono_mixer */, "linearize",
+                        pipeline_parser->GetLinearizePipeline(),
+                        std::unordered_set<std::string>() /* device_ids */,
+                        std::vector<FilterGroup*>({mix_filter_})));
   linearize_filter_ = filter_groups_.back().get();
 }
 
-void StreamMixerAlsa::ResetTaskRunnerForTest() {
+void StreamMixer::ResetTaskRunnerForTest() {
   mixer_task_runner_ = base::ThreadTaskRunnerHandle::Get();
 }
 
-void StreamMixerAlsa::ResetPostProcessorsForTest(
+void StreamMixer::ResetPostProcessorsForTest(
+    std::unique_ptr<PostProcessingPipelineFactory> pipeline_factory,
     const std::string& pipeline_json) {
   LOG(INFO) << __FUNCTION__ << " disregard previous PostProcessor messages.";
+  post_processing_pipeline_factory_ = std::move(pipeline_factory);
   filter_groups_.clear();
   default_filter_ = nullptr;
   PostProcessingPipelineParser parser(pipeline_json);
   CreatePostProcessors(&parser);
 }
 
-StreamMixerAlsa::~StreamMixerAlsa() {
+StreamMixer::~StreamMixer() {
   FinalizeOnMixerThread();
   mixer_thread_->Stop();
   mixer_task_runner_ = nullptr;
 }
 
-void StreamMixerAlsa::FinalizeOnMixerThread() {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::FinalizeOnMixerThread);
+void StreamMixer::FinalizeOnMixerThread() {
+  RUN_ON_MIXER_THREAD(&StreamMixer::FinalizeOnMixerThread);
   Close();
 
   // Post a task to allow any pending input deletions to run.
-  POST_TASK_TO_MIXER_THREAD(&StreamMixerAlsa::FinishFinalize);
+  POST_TASK_TO_MIXER_THREAD(&StreamMixer::FinishFinalize);
 }
 
-void StreamMixerAlsa::FinishFinalize() {
+void StreamMixer::FinishFinalize() {
   retry_write_frames_timer_.reset();
   check_close_timer_.reset();
   inputs_.clear();
   ignored_inputs_.clear();
 }
 
-bool StreamMixerAlsa::Start() {
+bool StreamMixer::Start() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 
   int requested_sample_rate = requested_output_samples_per_second_;
@@ -275,7 +292,7 @@ bool StreamMixerAlsa::Start() {
   return true;
 }
 
-void StreamMixerAlsa::Stop() {
+void StreamMixer::Stop() {
   for (auto* observer : loopback_observers_) {
     observer->OnLoopbackInterrupted();
   }
@@ -286,22 +303,22 @@ void StreamMixerAlsa::Stop() {
   output_samples_per_second_ = MixerOutputStream::kInvalidSampleRate;
 }
 
-void StreamMixerAlsa::Close() {
+void StreamMixer::Close() {
   Stop();
 }
 
-void StreamMixerAlsa::SignalError() {
+void StreamMixer::SignalError() {
   state_ = kStateError;
   retry_write_frames_timer_->Stop();
   for (auto&& input : inputs_) {
-    input->SignalError(StreamMixerAlsaInput::MixerError::kInternalError);
+    input->SignalError(StreamMixerInput::MixerError::kInternalError);
     ignored_inputs_.push_back(std::move(input));
   }
   inputs_.clear();
-  POST_TASK_TO_MIXER_THREAD(&StreamMixerAlsa::Close);
+  POST_TASK_TO_MIXER_THREAD(&StreamMixer::Close);
 }
 
-void StreamMixerAlsa::SetMixerOutputStreamForTest(
+void StreamMixer::SetMixerOutputStreamForTest(
     std::unique_ptr<MixerOutputStream> output) {
   if (output_) {
     Close();
@@ -310,19 +327,18 @@ void StreamMixerAlsa::SetMixerOutputStreamForTest(
   output_ = std::move(output);
 }
 
-void StreamMixerAlsa::WriteFramesForTest() {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::WriteFramesForTest);
+void StreamMixer::WriteFramesForTest() {
+  RUN_ON_MIXER_THREAD(&StreamMixer::WriteFramesForTest);
   WriteFrames();
 }
 
-void StreamMixerAlsa::ClearInputsForTest() {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::ClearInputsForTest);
+void StreamMixer::ClearInputsForTest() {
+  RUN_ON_MIXER_THREAD(&StreamMixer::ClearInputsForTest);
   inputs_.clear();
 }
 
-void StreamMixerAlsa::AddInput(std::unique_ptr<InputQueue> input) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::AddInput,
-                      base::Passed(std::move(input)));
+void StreamMixer::AddInput(std::unique_ptr<InputQueue> input) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::AddInput, base::Passed(std::move(input)));
   DCHECK(input);
 
   // If the new input is a primary one, we may need to change the output
@@ -379,7 +395,7 @@ void StreamMixerAlsa::AddInput(std::unique_ptr<InputQueue> input) {
       inputs_.push_back(std::move(input));
     } break;
     case kStateError:
-      input->SignalError(StreamMixerAlsaInput::MixerError::kInternalError);
+      input->SignalError(StreamMixerInput::MixerError::kInternalError);
       ignored_inputs_.push_back(std::move(input));
       break;
     default:
@@ -387,7 +403,7 @@ void StreamMixerAlsa::AddInput(std::unique_ptr<InputQueue> input) {
   }
 }
 
-void StreamMixerAlsa::CheckChangeOutputRate(int input_samples_per_second) {
+void StreamMixer::CheckChangeOutputRate(int input_samples_per_second) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   if (state_ != kStateNormalPlayback ||
       input_samples_per_second == requested_output_samples_per_second_ ||
@@ -408,7 +424,7 @@ void StreamMixerAlsa::CheckChangeOutputRate(int input_samples_per_second) {
               << " now being ignored due to output sample rate change from "
               << output_samples_per_second_ << " to "
               << input_samples_per_second;
-    input->SignalError(StreamMixerAlsaInput::MixerError::kInputIgnored);
+    input->SignalError(StreamMixerInput::MixerError::kInputIgnored);
     ignored_inputs_.push_back(std::move(input));
   }
   inputs_.clear();
@@ -420,21 +436,21 @@ void StreamMixerAlsa::CheckChangeOutputRate(int input_samples_per_second) {
   Start();
 }
 
-void StreamMixerAlsa::RemoveInput(InputQueue* input) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::RemoveInput, input);
+void StreamMixer::RemoveInput(InputQueue* input) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::RemoveInput, input);
   DCHECK(input);
   DCHECK(!input->IsDeleting());
   input->PrepareToDelete(
-      base::Bind(&StreamMixerAlsa::DeleteInputQueue, base::Unretained(this)));
+      base::Bind(&StreamMixer::DeleteInputQueue, base::Unretained(this)));
 }
 
-void StreamMixerAlsa::DeleteInputQueue(InputQueue* input) {
+void StreamMixer::DeleteInputQueue(InputQueue* input) {
   // Always post a task, in case an input calls this while we are iterating
   // through the |inputs_| list.
-  POST_TASK_TO_MIXER_THREAD(&StreamMixerAlsa::DeleteInputQueueInternal, input);
+  POST_TASK_TO_MIXER_THREAD(&StreamMixer::DeleteInputQueueInternal, input);
 }
 
-void StreamMixerAlsa::DeleteInputQueueInternal(InputQueue* input) {
+void StreamMixer::DeleteInputQueueInternal(InputQueue* input) {
   DCHECK(input);
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   auto match_input = [input](const std::unique_ptr<InputQueue>& item) {
@@ -455,19 +471,19 @@ void StreamMixerAlsa::DeleteInputQueueInternal(InputQueue* input) {
     if (check_close_timeout_ >= 0) {
       check_close_timer_->Start(
           FROM_HERE, base::TimeDelta::FromMilliseconds(check_close_timeout_),
-          base::Bind(&StreamMixerAlsa::CheckClose, base::Unretained(this)));
+          base::Bind(&StreamMixer::CheckClose, base::Unretained(this)));
     }
   }
 }
 
-void StreamMixerAlsa::CheckClose() {
+void StreamMixer::CheckClose() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(inputs_.empty());
   retry_write_frames_timer_->Stop();
   Close();
 }
 
-void StreamMixerAlsa::OnFramesQueued() {
+void StreamMixer::OnFramesQueued() {
   if (state_ != kStateNormalPlayback) {
     return;
   }
@@ -478,19 +494,19 @@ void StreamMixerAlsa::OnFramesQueued() {
 
   retry_write_frames_timer_->Start(
       FROM_HERE, base::TimeDelta(),
-      base::Bind(&StreamMixerAlsa::WriteFrames, base::Unretained(this)));
+      base::Bind(&StreamMixer::WriteFrames, base::Unretained(this)));
 }
 
-void StreamMixerAlsa::WriteFrames() {
+void StreamMixer::WriteFrames() {
   retry_write_frames_timer_->Stop();
   if (TryWriteFrames()) {
     retry_write_frames_timer_->Start(
         FROM_HERE, base::TimeDelta(),
-        base::Bind(&StreamMixerAlsa::WriteFrames, base::Unretained(this)));
+        base::Bind(&StreamMixer::WriteFrames, base::Unretained(this)));
   }
 }
 
-bool StreamMixerAlsa::TryWriteFrames() {
+bool StreamMixer::TryWriteFrames() {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK_GE(filter_groups_.size(), 1u);
 
@@ -528,7 +544,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
       // A primary input cannot provide any data, so wait until later.
       retry_write_frames_timer_->Start(
           FROM_HERE, kMinBufferedData / 2,
-          base::Bind(&StreamMixerAlsa::WriteFrames, base::Unretained(this)));
+          base::Bind(&StreamMixer::WriteFrames, base::Unretained(this)));
       return false;
     } else {
       input->OnSkipped();
@@ -548,7 +564,7 @@ bool StreamMixerAlsa::TryWriteFrames() {
   return true;
 }
 
-void StreamMixerAlsa::WriteMixedPcm(int frames) {
+void StreamMixer::WriteMixedPcm(int frames) {
   DCHECK(mixer_task_runner_->BelongsToCurrentThread());
 
   int64_t expected_playback_time;
@@ -621,7 +637,7 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
       linearize_filter_->GetRenderingDelayMicroseconds() +
       mix_filter_->GetRenderingDelayMicroseconds();
   for (auto&& input : inputs_) {
-    MediaPipelineBackendAlsa::RenderingDelay stream_rendering_delay =
+    MediaPipelineBackend::AudioDecoder::RenderingDelay stream_rendering_delay =
         common_rendering_delay;
     stream_rendering_delay.delay_microseconds +=
         input->filter_group()->GetRenderingDelayMicroseconds();
@@ -629,17 +645,17 @@ void StreamMixerAlsa::WriteMixedPcm(int frames) {
   }
 }
 
-void StreamMixerAlsa::AddLoopbackAudioObserver(
+void StreamMixer::AddLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::AddLoopbackAudioObserver, observer);
+  RUN_ON_MIXER_THREAD(&StreamMixer::AddLoopbackAudioObserver, observer);
   DCHECK(observer);
   DCHECK(!base::ContainsValue(loopback_observers_, observer));
   loopback_observers_.push_back(observer);
 }
 
-void StreamMixerAlsa::RemoveLoopbackAudioObserver(
+void StreamMixer::RemoveLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::RemoveLoopbackAudioObserver, observer);
+  RUN_ON_MIXER_THREAD(&StreamMixer::RemoveLoopbackAudioObserver, observer);
   DCHECK(base::ContainsValue(loopback_observers_, observer));
   loopback_observers_.erase(std::remove(loopback_observers_.begin(),
                                         loopback_observers_.end(), observer),
@@ -647,8 +663,8 @@ void StreamMixerAlsa::RemoveLoopbackAudioObserver(
   observer->OnRemoved();
 }
 
-void StreamMixerAlsa::SetVolume(AudioContentType type, float level) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetVolume, type, level);
+void StreamMixer::SetVolume(AudioContentType type, float level) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::SetVolume, type, level);
   volume_info_[type].volume = level;
   float effective_volume = volume_info_[type].GetEffectiveVolume();
   for (auto&& input : inputs_) {
@@ -663,8 +679,8 @@ void StreamMixerAlsa::SetVolume(AudioContentType type, float level) {
   }
 }
 
-void StreamMixerAlsa::SetMuted(AudioContentType type, bool muted) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetMuted, type, muted);
+void StreamMixer::SetMuted(AudioContentType type, bool muted) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::SetMuted, type, muted);
   volume_info_[type].muted = muted;
   for (auto&& input : inputs_) {
     if (input->content_type() == type) {
@@ -673,8 +689,8 @@ void StreamMixerAlsa::SetMuted(AudioContentType type, bool muted) {
   }
 }
 
-void StreamMixerAlsa::SetOutputLimit(AudioContentType type, float limit) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetOutputLimit, type, limit);
+void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::SetOutputLimit, type, limit);
   LOG(INFO) << "Set volume limit for " << static_cast<int>(type) << " to "
             << limit;
   volume_info_[type].limit = limit;
@@ -695,16 +711,16 @@ void StreamMixerAlsa::SetOutputLimit(AudioContentType type, float limit) {
   }
 }
 
-void StreamMixerAlsa::SetPostProcessorConfig(const std::string& name,
-                                             const std::string& config) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetPostProcessorConfig, name, config);
+void StreamMixer::SetPostProcessorConfig(const std::string& name,
+                                         const std::string& config) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::SetPostProcessorConfig, name, config);
   for (auto&& filter_group : filter_groups_) {
     filter_group->SetPostProcessorConfig(name, config);
   }
 }
 
-void StreamMixerAlsa::UpdatePlayoutChannel(int playout_channel) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::UpdatePlayoutChannel, playout_channel);
+void StreamMixer::UpdatePlayoutChannel(int playout_channel) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::UpdatePlayoutChannel, playout_channel);
   LOG(INFO) << "Update playout channel: " << playout_channel;
   DCHECK(mix_filter_);
   DCHECK(linearize_filter_);
@@ -714,9 +730,8 @@ void StreamMixerAlsa::UpdatePlayoutChannel(int playout_channel) {
   linearize_filter_->UpdatePlayoutChannel(playout_channel);
 }
 
-void StreamMixerAlsa::SetFilterFrameAlignmentForTest(
-    int filter_frame_alignment) {
-  RUN_ON_MIXER_THREAD(&StreamMixerAlsa::SetFilterFrameAlignmentForTest,
+void StreamMixer::SetFilterFrameAlignmentForTest(int filter_frame_alignment) {
+  RUN_ON_MIXER_THREAD(&StreamMixer::SetFilterFrameAlignmentForTest,
                       filter_frame_alignment);
   CHECK((filter_frame_alignment & (filter_frame_alignment - 1)) == 0)
       << "Frame alignment ( " << filter_frame_alignment

@@ -93,16 +93,126 @@ source_set("dummy") {
   ]
 }
 
-# Implementation of video decoder that discards decoder buffers.
-# Used on audio platforms for media streams containing video.
-source_set("null") {
+source_set("audio") {
   sources = [
+    "cast_audio_json.cc",
+    "cast_audio_json.h",
+    "filter_group.cc",
+    "filter_group.h",
+    "post_processing_pipeline.h",
+    "post_processing_pipeline_impl.cc",
+    "post_processing_pipeline_impl.h",
+    "post_processing_pipeline_parser.cc",
+    "post_processing_pipeline_parser.h",
+    "post_processor_factory.cc",
+    "post_processor_factory.h",
+    "stream_mixer.cc",
+    "stream_mixer.h",
+    "stream_mixer_input.cc",
+    "stream_mixer_input.h",
+    "stream_mixer_input_impl.cc",
+    "stream_mixer_input_impl.h",
     "video_decoder_null.cc",
     "video_decoder_null.h",
+    "volume_map.cc",
+    "volume_map.h",
   ]
 
   deps = [
     "//base",
+    "//chromecast/base",
+    "//chromecast/media/base",
+    "//chromecast/media/cma/base",
+    "//chromecast/public/media",
+    "//media",
+    "//media:shared_memory_support",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "filter_group_unittest.cc",
+    "post_processors/governor_unittest.cc",
+    "post_processors/post_processor_unittest.cc",
+    "post_processors/post_processor_unittest.h",
+    "post_processors/saturated_gain_unittest.cc",
+  ]
+
+  deps = [
+    ":audio",
+    ":governor",
+    ":libcast_governor_1.0",
+    ":libcast_saturated_gain_1.0",
+    ":saturated_gain",
+    "//base",
+    "//base/test:run_all_unittests",
+    "//chromecast/public/media",
+    "//media:shared_memory_support",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+
+  if (use_alsa) {
+    deps += [ "alsa:unit_tests" ]
+  }
+  if (is_fuchsia) {
+    deps += [ "fuchsia:unit_tests" ]
+  }
+}
+
+test("cast_audio_backend_unittests") {
+  deps = [
+    ":unit_tests",
+  ]
+}
+
+# This is separate from ":governor" because the associated unittest needs
+# to create a Governor directly (to use test functions).
+cast_shared_library("libcast_governor_1.0") {
+  sources = [
+    "post_processors/governor_create.cc",
+  ]
+  deps = [
+    ":governor",
     "//chromecast/public/media",
   ]
+}
+
+source_set("governor") {
+  sources = [
+    "post_processors/governor.cc",
+    "post_processors/governor.h",
+  ]
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/media/base",
+    "//chromecast/public/media",
+  ]
+  public_configs = [ "//chromecast/public:public_config" ]
+}
+
+cast_shared_library("libcast_saturated_gain_1.0") {
+  sources = [
+    "post_processors/saturated_gain_create.cc",
+  ]
+  deps = [
+    ":saturated_gain",
+    "//chromecast/public/media",
+  ]
+}
+
+source_set("saturated_gain") {
+  sources = [
+    "post_processors/saturated_gain.cc",
+    "post_processors/saturated_gain.h",
+  ]
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/media/base",
+    "//chromecast/public/media",
+  ]
+  public_configs = [ "//chromecast/public:public_config" ]
 }
