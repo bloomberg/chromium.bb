@@ -2,17 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.signin;
+package org.chromium.components.signin;
 
 import com.google.android.gms.auth.GoogleAuthException;
 import com.google.android.gms.auth.GoogleAuthUtil;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GoogleApiAvailability;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
-import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
 
 import java.io.IOException;
 
@@ -53,8 +54,12 @@ public class AccountIdProvider {
      * Google Play services is available.
      */
     public boolean canBeUsed() {
-        return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
-                ContextUtils.getApplicationContext(), new UserRecoverableErrorHandler.Silent());
+        // TODO(http://crbug.com/577190): Remove StrictMode override.
+        try (StrictModeContext unused = StrictModeContext.allowDiskWrites()) {
+            int resultCode = GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(
+                    ContextUtils.getApplicationContext());
+            return resultCode == ConnectionResult.SUCCESS;
+        }
     }
 
     /**
@@ -76,4 +81,3 @@ public class AccountIdProvider {
         sProvider = provider;
     }
 }
-
