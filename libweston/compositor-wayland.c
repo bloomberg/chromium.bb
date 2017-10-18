@@ -877,6 +877,8 @@ wayland_output_set_windowed(struct wayland_output *output)
 		zxdg_toplevel_v6_unset_fullscreen(output->parent.xdg_toplevel);
 	} else if (output->parent.shell_surface) {
 		wl_shell_surface_set_toplevel(output->parent.shell_surface);
+	} else {
+		abort();
 	}
 
 	return 0;
@@ -887,9 +889,6 @@ wayland_output_set_fullscreen(struct wayland_output *output,
 			      enum wl_shell_surface_fullscreen_method method,
 			      uint32_t framerate, struct wl_output *target)
 {
-	struct wayland_backend *b =
-		to_wayland_backend(output->base.compositor);
-
 	if (output->frame) {
 		frame_destroy(output->frame);
 		output->frame = NULL;
@@ -902,10 +901,8 @@ wayland_output_set_fullscreen(struct wayland_output *output,
 	} else if (output->parent.shell_surface) {
 		wl_shell_surface_set_fullscreen(output->parent.shell_surface,
 						method, framerate, target);
-	} else if (b->parent.fshell) {
-		zwp_fullscreen_shell_v1_present_surface(b->parent.fshell,
-							output->parent.surface,
-							method, target);
+	} else {
+		abort();
 	}
 }
 
