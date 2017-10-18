@@ -643,8 +643,8 @@ void MemoryDumpManager::SetupNextMemoryDump(
   // The utility thread is normally shutdown when disabling the trace and
   // getting here in this case is expected.
   if (mdpinfo->task_runner) {
-    LOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name
-               << "\". Failed to post task on the task runner provided.";
+    DLOG(ERROR) << "Disabling MemoryDumpProvider \"" << mdpinfo->name
+                << "\". Failed to post task on the task runner provided.";
 
     // A locked access is required to R/W |disabled| (for the
     // UnregisterAndDeleteDumpProviderSoon() case).
