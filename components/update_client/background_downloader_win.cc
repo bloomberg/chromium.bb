@@ -35,8 +35,8 @@
 #include "components/update_client/utils.h"
 #include "url/gurl.h"
 
-using base::win::ScopedCoMem;
 using Microsoft::WRL::ComPtr;
+using base::win::ScopedCoMem;
 
 // The class BackgroundDownloader in this module is an adapter between
 // the CrxDownloader interface and the BITS service interfaces.

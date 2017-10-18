@@ -7,6 +7,7 @@
 #include <oleacc.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include <string>
 #include <utility>
@@ -21,7 +22,6 @@
 #include "base/values.h"
 #include "base/win/scoped_bstr.h"
 #include "base/win/scoped_com_initializer.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
@@ -70,13 +70,13 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTreeForProcess(
       base::ProcessId pid) override;
   std::unique_ptr<base::DictionaryValue> BuildAccessibilityTree(
-      base::win::ScopedComPtr<IAccessible> start,
+      Microsoft::WRL::ComPtr<IAccessible> start,
       LONG window_x = 0,
       LONG window_y = 0);
 
  private:
   void RecursiveBuildAccessibilityTree(
-      const base::win::ScopedComPtr<IAccessible> node,
+      const Microsoft::WRL::ComPtr<IAccessible> node,
       base::DictionaryValue* dict,
       LONG root_x,
       LONG root_y);
@@ -85,27 +85,27 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatter {
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
-  void AddProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                      base::DictionaryValue* dict,
                      LONG root_x,
                      LONG root_y);
-  void AddMSAAProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddMSAAProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                          base::DictionaryValue* dict,
                          LONG root_x,
                          LONG root_y);
-  void AddSimpleDOMNodeProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddSimpleDOMNodeProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                                   base::DictionaryValue* dict);
-  bool AddIA2Properties(const base::win::ScopedComPtr<IAccessible>,
+  bool AddIA2Properties(const Microsoft::WRL::ComPtr<IAccessible>,
                         base::DictionaryValue* dict);
-  void AddIA2ActionProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddIA2ActionProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                               base::DictionaryValue* dict);
-  void AddIA2HypertextProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddIA2HypertextProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                                  base::DictionaryValue* dict);
-  void AddIA2TextProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddIA2TextProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                             base::DictionaryValue* dict);
-  void AddIA2TableProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddIA2TableProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                              base::DictionaryValue* dict);
-  void AddIA2ValueProperties(const base::win::ScopedComPtr<IAccessible>,
+  void AddIA2ValueProperties(const Microsoft::WRL::ComPtr<IAccessible>,
                              base::DictionaryValue* dict);
   base::string16 ToString(const base::DictionaryValue& node) override;
 
@@ -129,7 +129,7 @@ static HRESULT QuerySimpleDOMNode(IAccessible* accessible,
                                   ISimpleDOMNode** simple_dom_node) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving IAccessible2.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -140,7 +140,7 @@ static HRESULT QueryIAccessible2(IAccessible* accessible,
                                  IAccessible2** accessible2) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving IAccessible2.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -151,7 +151,7 @@ static HRESULT QueryIAccessibleAction(IAccessible* accessible,
                                       IAccessibleAction** accessibleAction) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving alternate interfaces.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -165,7 +165,7 @@ static HRESULT QueryIAccessibleHypertext(
     IAccessibleHypertext** accessibleHypertext) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving alternate interfaces.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -177,7 +177,7 @@ static HRESULT QueryIAccessibleTable(IAccessible* accessible,
                                      IAccessibleTable** accessibleTable) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving alternate interfaces.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -188,7 +188,7 @@ static HRESULT QueryIAccessibleText(IAccessible* accessible,
                                     IAccessibleText** accessibleText) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving alternate interfaces.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -199,7 +199,7 @@ static HRESULT QueryIAccessibleValue(IAccessible* accessible,
                                      IAccessibleValue** accessibleValue) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving alternate interfaces.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   if (FAILED(hr))
     return hr;
@@ -219,7 +219,7 @@ AccessibilityTreeFormatterWin::BuildAccessibilityTree(
       &root_x, &root_y, &root_width, &root_height, variant_self);
   DCHECK(SUCCEEDED(hr));
 
-  base::win::ScopedComPtr<IAccessible> start_ia =
+  Microsoft::WRL::ComPtr<IAccessible> start_ia =
       ToBrowserAccessibilityComWin(start_node);
 
   return BuildAccessibilityTree(start_ia, root_x, root_y);
@@ -227,7 +227,7 @@ AccessibilityTreeFormatterWin::BuildAccessibilityTree(
 
 std::unique_ptr<base::DictionaryValue>
 AccessibilityTreeFormatterWin::BuildAccessibilityTree(
-    base::win::ScopedComPtr<IAccessible> start,
+    Microsoft::WRL::ComPtr<IAccessible> start,
     LONG root_x,
     LONG root_y) {
   CHECK(start);
@@ -245,7 +245,7 @@ AccessibilityTreeFormatterWin::BuildAccessibilityTreeForWindow(
     return nullptr;
 
   // Get IAccessible* for window
-  base::win::ScopedComPtr<IAccessible> start;
+  Microsoft::WRL::ComPtr<IAccessible> start;
   HRESULT hr = ::AccessibleObjectFromWindow(
       hwnd, static_cast<DWORD>(OBJID_CLIENT), IID_PPV_ARGS(&start));
   if (FAILED(hr))
@@ -266,7 +266,7 @@ AccessibilityTreeFormatterWin::BuildAccessibilityTreeForProcess(
 }
 
 void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict,
     LONG root_x,
     LONG root_y) {
@@ -291,7 +291,7 @@ void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
         children_array[index]);  // Sets without adding another reference.
     std::unique_ptr<base::DictionaryValue> child_dict(
         new base::DictionaryValue);
-    base::win::ScopedComPtr<IDispatch> dispatch;
+    Microsoft::WRL::ComPtr<IDispatch> dispatch;
     if (child_variant.type() == VT_DISPATCH) {
       dispatch = V_DISPATCH(child_variant.ptr());
     } else if (child_variant.type() == VT_I4) {
@@ -321,7 +321,7 @@ void AccessibilityTreeFormatterWin::RecursiveBuildAccessibilityTree(
                             base::ASCIIToUTF16("<Unknown child type>"));
     }
     if (dispatch) {
-      base::win::ScopedComPtr<IAccessible> accessible;
+      Microsoft::WRL::ComPtr<IAccessible> accessible;
       if (SUCCEEDED(dispatch.As(&accessible)))
         RecursiveBuildAccessibilityTree(accessible, child_dict.get(), root_x,
                                         root_y);
@@ -366,7 +366,7 @@ const char* const ALL_ATTRIBUTES[] = {
 };
 
 void AccessibilityTreeFormatterWin::AddProperties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict,
     LONG root_x,
     LONG root_y) {
@@ -392,7 +392,7 @@ base::string16 RoleVariantToString(const base::win::ScopedVariant& role) {
 }
 
 void AccessibilityTreeFormatterWin::AddMSAAProperties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict,
     LONG root_x,
     LONG root_y) {
@@ -471,9 +471,9 @@ void AccessibilityTreeFormatterWin::AddMSAAProperties(
 }
 
 void AccessibilityTreeFormatterWin::AddSimpleDOMNodeProperties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict) {
-  base::win::ScopedComPtr<ISimpleDOMNode> simple_dom_node;
+  Microsoft::WRL::ComPtr<ISimpleDOMNode> simple_dom_node;
 
   if (S_OK != QuerySimpleDOMNode(node.Get(), simple_dom_node.GetAddressOf()))
     return;  // No IA2Value, we are finished with this node.
@@ -488,9 +488,9 @@ void AccessibilityTreeFormatterWin::AddSimpleDOMNodeProperties(
 }
 
 bool AccessibilityTreeFormatterWin::AddIA2Properties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict) {
-  base::win::ScopedComPtr<IAccessible2> ia2;
+  Microsoft::WRL::ComPtr<IAccessible2> ia2;
   if (S_OK != QueryIAccessible2(node.Get(), ia2.GetAddressOf()))
     return false;  // No IA2, we are finished with this node.
 
@@ -554,9 +554,9 @@ bool AccessibilityTreeFormatterWin::AddIA2Properties(
 }
 
 void AccessibilityTreeFormatterWin::AddIA2ActionProperties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict) {
-  base::win::ScopedComPtr<IAccessibleAction> ia2action;
+  Microsoft::WRL::ComPtr<IAccessibleAction> ia2action;
   if (S_OK != QueryIAccessibleAction(node.Get(), ia2action.GetAddressOf()))
     return;  // No IA2Value, we are finished with this node.
 
@@ -571,9 +571,9 @@ void AccessibilityTreeFormatterWin::AddIA2ActionProperties(
 }
 
 void AccessibilityTreeFormatterWin::AddIA2HypertextProperties(
-    base::win::ScopedComPtr<IAccessible> node,
+    Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict) {
-  base::win::ScopedComPtr<IAccessibleHypertext> ia2hyper;
+  Microsoft::WRL::ComPtr<IAccessibleHypertext> ia2hyper;
   if (S_OK != QueryIAccessibleHypertext(node.Get(), ia2hyper.GetAddressOf()))
     return;  // No IA2, we are finished with this node
 
@@ -610,11 +610,11 @@ void AccessibilityTreeFormatterWin::AddIA2HypertextProperties(
       LONG child_index = -1;
       if (hr == S_OK) {
         DCHECK_GE(index_of_embed, 0);
-        base::win::ScopedComPtr<IAccessibleHyperlink> embedded_object;
+        Microsoft::WRL::ComPtr<IAccessibleHyperlink> embedded_object;
         hr = ia2hyper->get_hyperlink(index_of_embed,
                                      embedded_object.GetAddressOf());
         DCHECK(SUCCEEDED(hr));
-        base::win::ScopedComPtr<IAccessible2> ax_embed;
+        Microsoft::WRL::ComPtr<IAccessible2> ax_embed;
         hr = embedded_object.CopyTo(ax_embed.GetAddressOf());
         DCHECK(SUCCEEDED(hr));
         hr = ax_embed->get_indexInParent(&child_index);
@@ -640,9 +640,9 @@ void AccessibilityTreeFormatterWin::AddIA2HypertextProperties(
 }
 
 void AccessibilityTreeFormatterWin::AddIA2TableProperties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict) {
-  base::win::ScopedComPtr<IAccessibleTable> ia2table;
+  Microsoft::WRL::ComPtr<IAccessibleTable> ia2table;
   if (S_OK != QueryIAccessibleTable(node.Get(), ia2table.GetAddressOf()))
     return;  // No IA2Text, we are finished with this node.
 
@@ -656,9 +656,9 @@ void AccessibilityTreeFormatterWin::AddIA2TableProperties(
 }
 
 void AccessibilityTreeFormatterWin::AddIA2TextProperties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict) {
-  base::win::ScopedComPtr<IAccessibleText> ia2text;
+  Microsoft::WRL::ComPtr<IAccessibleText> ia2text;
   if (S_OK != QueryIAccessibleText(node.Get(), ia2text.GetAddressOf()))
     return;  // No IA2Text, we are finished with this node.
 
@@ -722,9 +722,9 @@ void AccessibilityTreeFormatterWin::AddIA2TextProperties(
 }
 
 void AccessibilityTreeFormatterWin::AddIA2ValueProperties(
-    const base::win::ScopedComPtr<IAccessible> node,
+    const Microsoft::WRL::ComPtr<IAccessible> node,
     base::DictionaryValue* dict) {
-  base::win::ScopedComPtr<IAccessibleValue> ia2value;
+  Microsoft::WRL::ComPtr<IAccessibleValue> ia2value;
   if (S_OK != QueryIAccessibleValue(node.Get(), ia2value.GetAddressOf()))
     return;  // No IA2Value, we are finished with this node.
 

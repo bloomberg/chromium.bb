@@ -194,7 +194,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
     if (!manager || !manager->GetRoot())
       return static_cast<LRESULT>(0L);
 
-    base::win::ScopedComPtr<IAccessible> root(
+    Microsoft::WRL::ComPtr<IAccessible> root(
         ToBrowserAccessibilityWin(manager->GetRoot())->GetCOM());
     return LresultFromObject(IID_IAccessible, w_param,
                              static_cast<IAccessible*>(root.Detach()));
@@ -202,7 +202,7 @@ LRESULT LegacyRenderWidgetHostHWND::OnGetObject(UINT message,
 
   if (static_cast<DWORD>(OBJID_CARET) == obj_id && host_->HasFocus()) {
     DCHECK(ax_system_caret_);
-    base::win::ScopedComPtr<IAccessible> ax_system_caret_accessible =
+    Microsoft::WRL::ComPtr<IAccessible> ax_system_caret_accessible =
         ax_system_caret_->GetCaret();
     return LresultFromObject(IID_IAccessible, w_param,
                              ax_system_caret_accessible.Detach());
