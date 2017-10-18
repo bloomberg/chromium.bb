@@ -9,32 +9,35 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
 
-class BrowserSideSender {
+class BrowserSideSender : mojom::ServiceWorkerInstalledScriptsManagerHost {
  public:
-  explicit BrowserSideSender(std::vector<GURL> installed_urls)
-      : installed_urls_(std::move(installed_urls)) {}
+  BrowserSideSender() : binding_(this) {}
+  ~BrowserSideSender() override = default;
 
-  mojom::ServiceWorkerInstalledScriptsInfoPtr CreateAndBind() {
+  mojom::ServiceWorkerInstalledScriptsInfoPtr CreateAndBind(
+      const std::vector<GURL>& installed_urls) {
     EXPECT_FALSE(manager_.is_bound());
     EXPECT_FALSE(body_handle_.is_valid());
     EXPECT_FALSE(meta_data_handle_.is_valid());
     auto scripts_info = mojom::ServiceWorkerInstalledScriptsInfo::New();
-    scripts_info->installed_urls = installed_urls_;
+    scripts_info->installed_urls = installed_urls;
     scripts_info->manager_request = mojo::MakeRequest(&manager_);
+    binding_.Bind(mojo::MakeRequest(&scripts_info->manager_host_ptr));
     return scripts_info;
   }
 
-  const GURL& TransferInstalledScript(int64_t body_size,
-                                      int64_t meta_data_size) {
+  void TransferInstalledScript(const GURL& script_url,
+                               int64_t body_size,
+                               int64_t meta_data_size) {
     EXPECT_FALSE(body_handle_.is_valid());
     EXPECT_FALSE(meta_data_handle_.is_valid());
     auto script_info = mojom::ServiceWorkerScriptInfo::New();
-    const GURL& transferring_url = installed_urls()[next_transfer_index_];
-    script_info->script_url = transferring_url;
+    script_info->script_url = script_url;
     EXPECT_EQ(MOJO_RESULT_OK,
               mojo::CreateDataPipe(nullptr, &body_handle_, &script_info->body));
     EXPECT_EQ(MOJO_RESULT_OK, mojo::CreateDataPipe(nullptr, &meta_data_handle_,
@@ -42,8 +45,6 @@ class BrowserSideSender {
     script_info->body_size = body_size;
     script_info->meta_data_size = meta_data_size;
     manager_->TransferInstalledScript(std::move(script_info));
-    next_transfer_index_++;
-    return transferring_url;
   }
 
   void PushBody(const std::string& data) {
@@ -60,9 +61,20 @@ class BrowserSideSender {
 
   void ResetManager() { manager_.reset(); }
 
-  const std::vector<GURL>& installed_urls() const { return installed_urls_; }
+  void WaitForRequestInstalledScript(const GURL& script_url) {
+    waiting_requested_url_ = script_url;
+    base::RunLoop loop;
+    requested_script_closure_ = loop.QuitClosure();
+    loop.Run();
+  }
 
  private:
+  void RequestInstalledScript(const GURL& script_url) override {
+    EXPECT_EQ(waiting_requested_url_, script_url);
+    ASSERT_TRUE(requested_script_closure_);
+    std::move(requested_script_closure_).Run();
+  }
+
   void PushDataPipe(const std::string& data,
                     const mojo::DataPipeProducerHandle& handle) {
     // Send |data| with null terminator.
@@ -74,10 +86,11 @@ class BrowserSideSender {
     ASSERT_EQ(data.size() + 1, written_bytes);
   }
 
-  const std::vector<GURL> installed_urls_;
-  size_t next_transfer_index_ = 0;
+  base::OnceClosure requested_script_closure_;
+  GURL waiting_requested_url_;
 
   mojom::ServiceWorkerInstalledScriptsManagerPtr manager_;
+  mojo::Binding<mojom::ServiceWorkerInstalledScriptsManagerHost> binding_;
 
   mojo::ScopedDataPipeProducerHandle body_handle_;
   mojo::ScopedDataPipeProducerHandle meta_data_handle_;
@@ -175,8 +188,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
   const GURL kScriptUrl = GURL("https://example.com/installed1.js");
   const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
 
-  BrowserSideSender sender({kScriptUrl});
-  CreateInstalledScriptsManager(sender.CreateAndBind());
+  BrowserSideSender sender;
+  CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
 
   {
     bool result = false;
@@ -202,9 +215,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
         GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
 
     // Start transferring the script. +1 for null terminator.
-    EXPECT_EQ(kScriptUrl,
-              sender.TransferInstalledScript(kExpectedBody.size() + 1,
-                                             kExpectedMetaData.size() + 1));
+    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 1,
+                                   kExpectedMetaData.size() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
     // GetRawScriptData should be blocked until body and meta data transfer are
@@ -231,10 +243,41 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest, GetRawScriptData) {
 
   {
     std::unique_ptr<RawScriptData> script_data;
-    GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data)->Wait();
-    // This should not be blocked because the script has already been received.
-    // nullptr will be returned after the data has already been taken.
-    EXPECT_EQ(nullptr, script_data.get());
+    const std::string kExpectedBody = "This is another script body.";
+    const std::string kExpectedMetaData = "This is another meta data.";
+
+    // Request the same script again.
+    base::WaitableEvent* get_raw_script_data_waiter =
+        GetRawScriptDataOnWorkerThread(kScriptUrl, &script_data);
+
+    // It should call a Mojo IPC "RequestInstalledScript()" to the browser.
+    sender.WaitForRequestInstalledScript(kScriptUrl);
+
+    // Start transferring the script. +1 for null terminator.
+    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 1,
+                                   kExpectedMetaData.size() + 1);
+    sender.PushBody(kExpectedBody);
+    sender.PushMetaData(kExpectedMetaData);
+    // GetRawScriptData should be blocked until body and meta data transfer are
+    // finished.
+    EXPECT_FALSE(get_raw_script_data_waiter->IsSignaled());
+    sender.FinishTransferBody();
+    sender.FinishTransferMetaData();
+
+    // Wait for the script's arrival.
+    get_raw_script_data_waiter->Wait();
+    ASSERT_TRUE(script_data);
+    EXPECT_TRUE(script_data->IsValid());
+    ASSERT_EQ(1u, script_data->ScriptTextChunks().size());
+    ASSERT_EQ(kExpectedBody.size() + 1,
+              script_data->ScriptTextChunks()[0].size());
+    EXPECT_STREQ(kExpectedBody.data(),
+                 script_data->ScriptTextChunks()[0].Data());
+    ASSERT_EQ(1u, script_data->MetaDataChunks().size());
+    ASSERT_EQ(kExpectedMetaData.size() + 1,
+              script_data->MetaDataChunks()[0].size());
+    EXPECT_STREQ(kExpectedMetaData.data(),
+                 script_data->MetaDataChunks()[0].Data());
   }
 }
 
@@ -243,8 +286,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   const GURL kScriptUrl = GURL("https://example.com/installed1.js");
   const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
 
-  BrowserSideSender sender({kScriptUrl});
-  CreateInstalledScriptsManager(sender.CreateAndBind());
+  BrowserSideSender sender;
+  CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
 
   {
     std::unique_ptr<RawScriptData> script_data;
@@ -257,9 +300,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
     // Body is expected to be 100 bytes larger than kExpectedBody, but sender
     // only sends kExpectedBody and a null byte (kExpectedBody.size() + 1 bytes
     // in total).
-    EXPECT_EQ(kScriptUrl,
-              sender.TransferInstalledScript(kExpectedBody.size() + 100,
-                                             kExpectedMetaData.size() + 1));
+    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 100,
+                                   kExpectedMetaData.size() + 1);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
     // GetRawScriptData should be blocked until body and meta data transfer are
@@ -291,8 +333,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   const GURL kScriptUrl = GURL("https://example.com/installed1.js");
   const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
 
-  BrowserSideSender sender({kScriptUrl});
-  CreateInstalledScriptsManager(sender.CreateAndBind());
+  BrowserSideSender sender;
+  CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
 
   {
     std::unique_ptr<RawScriptData> script_data;
@@ -305,9 +347,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
     // Meta data is expected to be 100 bytes larger than kExpectedMetaData, but
     // sender only sends kExpectedMetaData and a null byte
     // (kExpectedMetaData.size() + 1 bytes in total).
-    EXPECT_EQ(kScriptUrl,
-              sender.TransferInstalledScript(kExpectedBody.size() + 1,
-                                             kExpectedMetaData.size() + 100));
+    sender.TransferInstalledScript(kScriptUrl, kExpectedBody.size() + 1,
+                                   kExpectedMetaData.size() + 100);
     sender.PushBody(kExpectedBody);
     sender.PushMetaData(kExpectedMetaData);
     // GetRawScriptData should be blocked until body and meta data transfer are
@@ -339,8 +380,8 @@ TEST_F(WebServiceWorkerInstalledScriptsManagerImplTest,
   const GURL kScriptUrl = GURL("https://example.com/installed1.js");
   const GURL kUnknownScriptUrl = GURL("https://example.com/not_installed.js");
 
-  BrowserSideSender sender({kScriptUrl});
-  CreateInstalledScriptsManager(sender.CreateAndBind());
+  BrowserSideSender sender;
+  CreateInstalledScriptsManager(sender.CreateAndBind({kScriptUrl}));
 
   {
     std::unique_ptr<RawScriptData> script_data;

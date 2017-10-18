@@ -254,8 +254,6 @@ WorkerGlobalScope::LoadingScriptFromInstalledScriptsManager(
       GetThread()->GetInstalledScriptsManager()->GetScriptData(script_url,
                                                                &script_data);
   switch (status) {
-    case InstalledScriptsManager::ScriptStatus::kTaken:
-      return LoadResult::kNotHandled;
     case InstalledScriptsManager::ScriptStatus::kFailed:
       return LoadResult::kFailed;
     case InstalledScriptsManager::ScriptStatus::kSuccess:

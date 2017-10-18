@@ -130,7 +130,7 @@ class ThreadSafeScriptContainerTest : public testing::Test {
 TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   const GURL kKey("https://example.com/key");
   {
-    ScriptStatus result = ScriptStatus::kSuccess;
+    ScriptStatus result = ScriptStatus::kReceived;
     GetStatusOnReaderThread(kKey, &result)->Wait();
     EXPECT_EQ(ScriptStatus::kPending, result);
   }
@@ -150,7 +150,7 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
   {
     ScriptStatus result = ScriptStatus::kFailed;
     GetStatusOnReaderThread(kKey, &result)->Wait();
-    EXPECT_EQ(ScriptStatus::kSuccess, result);
+    EXPECT_EQ(ScriptStatus::kReceived, result);
   }
 
   {
@@ -163,7 +163,7 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
     ScriptStatus result = ScriptStatus::kFailed;
     GetStatusOnReaderThread(kKey, &result)->Wait();
     // The record of |kKey| should be exist though it's already taken.
-    EXPECT_EQ(ScriptStatus::kSuccess, result);
+    EXPECT_EQ(ScriptStatus::kTaken, result);
   }
 
   {
@@ -197,7 +197,7 @@ TEST_F(ThreadSafeScriptContainerTest, WaitExistingKey) {
 TEST_F(ThreadSafeScriptContainerTest, WaitNonExistingKey) {
   const GURL kKey("https://example.com/key");
   {
-    ScriptStatus result = ScriptStatus::kSuccess;
+    ScriptStatus result = ScriptStatus::kReceived;
     GetStatusOnReaderThread(kKey, &result)->Wait();
     EXPECT_EQ(ScriptStatus::kPending, result);
   }

@@ -246,13 +246,14 @@ class ServiceWorkerInstalledScriptsSender::Sender {
   // |this| will be removed by |owner_| as a result. Errors are notified
   // immediately, but when the transfer has been succeeded, it's notified when
   // sending both of body and meta data is finished.
-  void CompleteSendIfNeeded(FinishedReason status) {
-    if (status != FinishedReason::kSuccess) {
-      owner_->OnAbortSendingScript(status);
+  void CompleteSendIfNeeded(FinishedReason reason) {
+    if (reason != FinishedReason::kSuccess) {
+      owner_->OnFinishSendingScript(reason);
       return;
     }
+
     if (WasMetadataWritten() && WasBodyWritten())
-      owner_->OnFinishSendingScript();
+      owner_->OnFinishSendingScript(reason);
   }
 
   bool WasMetadataWritten() const { return !meta_data_sender_; }
@@ -285,8 +286,10 @@ ServiceWorkerInstalledScriptsSender::ServiceWorkerInstalledScriptsSender(
       main_script_url_(owner_->script_url()),
       main_script_id_(
           owner_->script_cache_map()->LookupResourceId(main_script_url_)),
+      sent_main_script_(false),
+      binding_(this),
       state_(State::kNotStarted),
-      finished_reason_(FinishedReason::kNotFinished) {
+      last_finished_reason_(FinishedReason::kNotFinished) {
   DCHECK(ServiceWorkerVersion::IsInstalled(owner_->status()));
   DCHECK_NE(kInvalidServiceWorkerResourceId, main_script_id_);
 }
@@ -304,7 +307,7 @@ ServiceWorkerInstalledScriptsSender::CreateInfoAndBind() {
     installed_urls.emplace_back(resource.url);
     if (resource.url == main_script_url_)
       continue;
-    imported_scripts_.emplace(resource.resource_id, resource.url);
+    pending_scripts_.emplace(resource.resource_id, resource.url);
   }
   DCHECK(!installed_urls.empty())
       << "At least the main script should be installed.";
@@ -312,11 +315,8 @@ ServiceWorkerInstalledScriptsSender::CreateInfoAndBind() {
   auto info = mojom::ServiceWorkerInstalledScriptsInfo::New();
   info->manager_request = mojo::MakeRequest(&manager_);
   info->installed_urls = std::move(installed_urls);
+  binding_.Bind(mojo::MakeRequest(&info->manager_host_ptr));
   return info;
-}
-
-bool ServiceWorkerInstalledScriptsSender::IsFinished() const {
-  return state_ == State::kFinished;
 }
 
 void ServiceWorkerInstalledScriptsSender::Start() {
@@ -325,18 +325,20 @@ void ServiceWorkerInstalledScriptsSender::Start() {
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
                                     "ServiceWorkerInstalledScriptsSender", this,
                                     "main_script_url", main_script_url_.spec());
-  UpdateState(State::kSendingMainScript);
-  StartSendingScript(main_script_id_);
+  StartSendingScript(main_script_id_, main_script_url_);
 }
 
 void ServiceWorkerInstalledScriptsSender::StartSendingScript(
-    int64_t resource_id) {
+    int64_t resource_id,
+    const GURL& script_url) {
   DCHECK(!running_sender_);
-  DCHECK(state_ == State::kSendingMainScript ||
-         state_ == State::kSendingImportedScript);
+  DCHECK(current_sending_url_.is_empty());
+  state_ = State::kSendingScripts;
+  current_sending_url_ = script_url;
+
   auto reader = owner_->context()->storage()->CreateResponseReader(resource_id);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker", "SendingScript", this,
-                                    "script_url", CurrentSendingURL().spec());
+                                    "script_url", current_sending_url_.spec());
   running_sender_ = base::MakeUnique<Sender>(std::move(reader), this);
   running_sender_->Start();
 }
@@ -349,13 +351,12 @@ void ServiceWorkerInstalledScriptsSender::SendScriptInfoToRenderer(
     mojo::ScopedDataPipeConsumerHandle meta_data_handle,
     uint64_t meta_data_size) {
   DCHECK(running_sender_);
-  DCHECK(state_ == State::kSendingMainScript ||
-         state_ == State::kSendingImportedScript);
+  DCHECK_EQ(State::kSendingScripts, state_);
   TRACE_EVENT_NESTABLE_ASYNC_INSTANT2(
       "ServiceWorker", "SendScriptInfoToRenderer", this, "body_size", body_size,
       "meta_data_size", meta_data_size);
   auto script_info = mojom::ServiceWorkerScriptInfo::New();
-  script_info->script_url = CurrentSendingURL();
+  script_info->script_url = current_sending_url_;
   script_info->headers = std::move(headers);
   script_info->encoding = std::move(encoding);
   script_info->body = std::move(body_handle);
@@ -368,51 +369,55 @@ void ServiceWorkerInstalledScriptsSender::SendScriptInfoToRenderer(
 void ServiceWorkerInstalledScriptsSender::OnHttpInfoRead(
     scoped_refptr<HttpResponseInfoIOBuffer> http_info) {
   DCHECK(running_sender_);
-  DCHECK(state_ == State::kSendingMainScript ||
-         state_ == State::kSendingImportedScript);
-  if (state_ == State::kSendingMainScript)
+  DCHECK_EQ(State::kSendingScripts, state_);
+  if (IsSendingMainScript())
     owner_->SetMainScriptHttpResponseInfo(*http_info->http_info);
 }
 
-void ServiceWorkerInstalledScriptsSender::OnFinishSendingScript() {
+void ServiceWorkerInstalledScriptsSender::OnFinishSendingScript(
+    FinishedReason reason) {
   DCHECK(running_sender_);
-  DCHECK(state_ == State::kSendingMainScript ||
-         state_ == State::kSendingImportedScript);
+  DCHECK_EQ(State::kSendingScripts, state_);
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "SendingScript", this);
   running_sender_.reset();
-  if (state_ == State::kSendingMainScript) {
-    // Imported scripts are served after the main script.
-    imported_script_iter_ = imported_scripts_.begin();
-    UpdateState(State::kSendingImportedScript);
-  } else {
-    ++imported_script_iter_;
+  current_sending_url_ = GURL();
+
+  if (IsSendingMainScript())
+    sent_main_script_ = true;
+
+  if (reason != FinishedReason::kSuccess) {
+    Abort(reason);
+    return;
   }
-  if (imported_script_iter_ == imported_scripts_.end()) {
-    // All scripts have been sent to the renderer.
-    // ServiceWorkerInstalledScriptsSender's work is done now.
-    DCHECK_EQ(State::kSendingImportedScript, state_);
-    DCHECK(!IsFinished());
-    Finish(FinishedReason::kSuccess);
+
+  if (pending_scripts_.empty()) {
+    UpdateFinishedReasonAndBecomeIdle(FinishedReason::kSuccess);
     TRACE_EVENT_NESTABLE_ASYNC_END0(
         "ServiceWorker", "ServiceWorkerInstalledScriptsSender", this);
     return;
   }
+
   // Start sending the next script.
-  StartSendingScript(imported_script_iter_->first);
+  int64_t next_id = pending_scripts_.front().first;
+  GURL next_url = pending_scripts_.front().second;
+  pending_scripts_.pop();
+  StartSendingScript(next_id, next_url);
 }
 
-void ServiceWorkerInstalledScriptsSender::OnAbortSendingScript(
-    FinishedReason reason) {
-  DCHECK(running_sender_);
-  DCHECK(state_ == State::kSendingMainScript ||
-         state_ == State::kSendingImportedScript);
+void ServiceWorkerInstalledScriptsSender::Abort(FinishedReason reason) {
+  DCHECK_EQ(State::kSendingScripts, state_);
   DCHECK_NE(FinishedReason::kSuccess, reason);
-  DCHECK(!IsFinished());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker",
                                   "ServiceWorkerInstalledScriptsSender", this,
                                   "FinishedReason", static_cast<int>(reason));
-  running_sender_.reset();
-  Finish(reason);
+
+  // Remove all pending scripts.
+  // Note that std::queue doesn't have clear(), and also base::STLClearObject is
+  // not applicable for std::queue since it doesn't have reserve().
+  std::queue<std::pair<int64_t, GURL>> empty;
+  pending_scripts_.swap(empty);
+
+  UpdateFinishedReasonAndBecomeIdle(reason);
 
   switch (reason) {
     case FinishedReason::kNotFinished:
@@ -438,40 +443,52 @@ void ServiceWorkerInstalledScriptsSender::OnAbortSendingScript(
       // failure means the renderer gets killed, and the error handler of
       // EmbeddedWorkerInstance is invoked soon.
       manager_.reset();
+      binding_.Close();
       return;
   }
 }
 
-const GURL& ServiceWorkerInstalledScriptsSender::CurrentSendingURL() {
-  if (state_ == State::kSendingMainScript)
-    return main_script_url_;
-  return imported_script_iter_->second;
-}
-
-void ServiceWorkerInstalledScriptsSender::UpdateState(State state) {
-  DCHECK_NE(State::kFinished, state) << "Use Finish() for state kFinished.";
-
-  switch (state_) {
-    case State::kNotStarted:
-      DCHECK_EQ(State::kSendingMainScript, state);
-      state_ = state;
-      return;
-    case State::kSendingMainScript:
-      DCHECK_EQ(State::kSendingImportedScript, state);
-      state_ = state;
-      return;
-    case State::kSendingImportedScript:
-    case State::kFinished:
-      NOTREACHED();
-      return;
-  }
-}
-
-void ServiceWorkerInstalledScriptsSender::Finish(FinishedReason reason) {
-  DCHECK_NE(State::kFinished, state_);
+void ServiceWorkerInstalledScriptsSender::UpdateFinishedReasonAndBecomeIdle(
+    FinishedReason reason) {
+  DCHECK_EQ(State::kSendingScripts, state_);
   DCHECK_NE(FinishedReason::kNotFinished, reason);
-  state_ = State::kFinished;
-  finished_reason_ = reason;
+  DCHECK(current_sending_url_.is_empty());
+  state_ = State::kIdle;
+  last_finished_reason_ = reason;
+}
+
+void ServiceWorkerInstalledScriptsSender::RequestInstalledScript(
+    const GURL& script_url) {
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerInstalledScriptsSender::RequestInstalledScript",
+               "script_url", script_url.spec());
+  int64_t resource_id =
+      owner_->script_cache_map()->LookupResourceId(script_url);
+
+  if (resource_id == kInvalidServiceWorkerResourceId) {
+    mojo::ReportBadMessage("Requested script was not installed.");
+    return;
+  }
+
+  if (state_ == State::kSendingScripts) {
+    // The sender is now sending other scripts. Push the requested script into
+    // the waiting queue.
+    pending_scripts_.emplace(resource_id, script_url);
+    return;
+  }
+
+  DCHECK_EQ(State::kIdle, state_);
+  TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
+                                    "ServiceWorkerInstalledScriptsSender", this,
+                                    "main_script_url", main_script_url_.spec());
+  StartSendingScript(resource_id, script_url);
+}
+
+bool ServiceWorkerInstalledScriptsSender::IsSendingMainScript() const {
+  // |current_sending_url_| could match |main_script_url_| even though
+  // |sent_main_script_| is false if calling importScripts for the main
+  // script.
+  return !sent_main_script_ && current_sending_url_ == main_script_url_;
 }
 
 }  // namespace content

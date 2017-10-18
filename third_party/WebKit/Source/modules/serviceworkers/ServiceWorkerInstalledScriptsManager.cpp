@@ -29,10 +29,11 @@ ServiceWorkerInstalledScriptsManager::GetScriptData(
   // This blocks until the script is received from the browser.
   std::unique_ptr<WebServiceWorkerInstalledScriptsManager::RawScriptData>
       raw_script_data = manager_->GetRawScriptData(script_url);
-  if (!raw_script_data)
-    return ScriptStatus::kTaken;
-  if (!raw_script_data->IsValid())
+  DCHECK(raw_script_data);
+  if (!raw_script_data->IsValid()) {
+    *out_script_data = InstalledScriptsManager::ScriptData();
     return ScriptStatus::kFailed;
+  }
 
   // This is from WorkerScriptLoader::DidReceiveData.
   std::unique_ptr<TextResourceDecoder> decoder;
