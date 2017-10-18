@@ -329,6 +329,9 @@ void CupsPrintersHandler::RegisterMessages() {
       "addDiscoveredPrinter",
       base::Bind(&CupsPrintersHandler::HandleAddDiscoveredPrinter,
                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "cancelPrinterSetUp", base::Bind(&CupsPrintersHandler::HandleSetUpCancel,
+                                       base::Unretained(this)));
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {
@@ -764,6 +767,14 @@ void CupsPrintersHandler::HandleStopDiscovery(const base::ListValue* args) {
   discovered_printers_.shrink_to_fit();
   automatic_printers_.shrink_to_fit();
   discovery_active_ = false;
+}
+
+void CupsPrintersHandler::HandleSetUpCancel(const base::ListValue* args) {
+  const base::DictionaryValue* printer_dict;
+  CHECK(args->GetDictionary(0, &printer_dict));
+
+  const Printer printer = DictToPrinter(*printer_dict);
+  printers_manager_->RecordSetupAbandoned(printer);
 }
 
 void CupsPrintersHandler::OnPrintersChanged(

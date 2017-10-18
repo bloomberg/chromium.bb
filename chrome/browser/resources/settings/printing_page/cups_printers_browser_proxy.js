@@ -151,6 +151,12 @@ cr.define('settings', function() {
      * @param{string} printerId
      */
     addDiscoveredPrinter(printerId) {}
+
+    /**
+     * Report to the handler that setup was cancelled.
+     * @param {!CupsPrinterInfo} newPrinter
+     */
+    cancelPrinterSetUp(newPrinter) {}
   }
 
   /**
@@ -215,6 +221,11 @@ cr.define('settings', function() {
     /** @override */
     addDiscoveredPrinter(printerId) {
       chrome.send('addDiscoveredPrinter', [printerId]);
+    }
+
+    /** @override */
+    cancelPrinterSetUp(newPrinter) {
+      chrome.send('cancelPrinterSetUp', [newPrinter]);
     }
   }
 

@@ -114,6 +114,9 @@ class CupsPrintersHandler : public ::settings::SettingsPageUIHandler,
   void HandleStartDiscovery(const base::ListValue* args);
   void HandleStopDiscovery(const base::ListValue* args);
 
+  // Logs printer set ups that are abandoned.
+  void HandleSetUpCancel(const base::ListValue* args);
+
   // Given a printer id, find the corresponding ppdManufacturer and ppdModel.
   void HandleGetPrinterPpdManufacturerAndModel(const base::ListValue* args);
   void OnGetPrinterPpdManufacturerAndModel(
