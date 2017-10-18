@@ -246,6 +246,11 @@ class TabHistoryContext : public history::Context {
 // Handles exportable files if possible.
 - (void)handleExportableFile:(net::HttpResponseHeaders*)headers;
 
+// Returns YES if TabUsageRecorder::RecordPageLoadStart should be called for the
+// given navigation.
+- (BOOL)shouldRecordPageLoadStartForNavigation:
+    (web::NavigationContext*)navigation;
+
 @end
 
 namespace {
@@ -635,9 +640,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     }
   }
 
-  if ([_parentTabModel tabUsageRecorder])
-    [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self.webState);
-
   web::NavigationItem* navigationItem =
       [self navigationManager]->GetPendingItem();
 
@@ -869,6 +871,51 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   base::RecordAction(base::UserMetricsAction("MobilePageLoaded"));
 }
 
+- (BOOL)shouldRecordPageLoadStartForNavigation:
+    (web::NavigationContext*)navigation {
+  web::NavigationItem* lastCommittedItem =
+      [self navigationManager]->GetLastCommittedItem();
+  if (!lastCommittedItem) {
+    // Opening a child window and loading URL there (crbug.com/773160).
+    return NO;
+  }
+
+  web::NavigationItem* pendingItem = [self navigationManager]->GetPendingItem();
+  if (pendingItem) {
+    using web::UserAgentType;
+    UserAgentType committedUserAgent = lastCommittedItem->GetUserAgentType();
+    UserAgentType pendingUserAgent = pendingItem->GetUserAgentType();
+    if (committedUserAgent != web::UserAgentType::NONE &&
+        pendingUserAgent != web::UserAgentType::NONE &&
+        committedUserAgent != pendingUserAgent) {
+      // Switching to Desktop or Mobile User Agent.
+      return YES;
+    }
+  }
+
+  ui::PageTransition transition = navigation->GetPageTransition();
+  if (!ui::PageTransitionIsNewNavigation(transition)) {
+    // Back forward navigation or reload.
+    return NO;
+  }
+
+  if ((ui::PageTransition::PAGE_TRANSITION_CLIENT_REDIRECT & transition) != 0) {
+    // Client redirect.
+    return NO;
+  }
+
+  using ui::PageTransitionCoreTypeIs;
+  return (
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_TYPED) ||
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_LINK) ||
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_GENERATED) ||
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_AUTO_BOOKMARK) ||
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_FORM_SUBMIT) ||
+      PageTransitionCoreTypeIs(transition, ui::PAGE_TRANSITION_KEYWORD) ||
+      PageTransitionCoreTypeIs(transition,
+                               ui::PAGE_TRANSITION_KEYWORD_GENERATED));
+}
+
 #pragma mark -
 #pragma mark FindInPageControllerDelegate
 
@@ -968,21 +1015,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 // confusion in that event (e.g. progress bar starting unexpectedly).
 - (void)webWillAddPendingURL:(const GURL&)url
                   transition:(ui::PageTransition)transition {
-  DCHECK(self.webController.loadPhase == web::LOAD_REQUESTED);
-  DCHECK([self navigationManager]);
-
-  BOOL isUserNavigationEvent =
-      (transition & ui::PAGE_TRANSITION_IS_REDIRECT_MASK) == 0;
-  // Record start of page load when a user taps a link. A user initiated link
-  // tap is indicated when the page transition is not a redirect, there is no
-  // pending entry (since that means the change wasn't caused by this class),
-  // and when the URL changes (to avoid counting page resurrection).
-  if (isUserNavigationEvent && !_isPrerenderTab &&
-      ![self navigationManager]->GetPendingItem() &&
-      url != self.webState->GetLastCommittedURL()) {
-    if ([_parentTabModel tabUsageRecorder])
-      [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self.webState);
-  }
+  // TODO(crbug.com/674991): Remove this method.
 }
 
 - (void)webState:(web::WebState*)webState
@@ -990,6 +1023,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (!navigation->IsSameDocument()) {
     // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
     self.isVoiceSearchResultsTab = NO;
+  }
+
+  if ([self shouldRecordPageLoadStartForNavigation:navigation] &&
+      [_parentTabModel tabUsageRecorder] && !_isPrerenderTab) {
+    [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(webState);
   }
 
   // Move the toolbar to visible during page load.
