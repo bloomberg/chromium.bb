@@ -41,15 +41,27 @@ class URLLoaderFactory;
 // Each SimpleURLLoader can only be used for a single request.
 //
 // TODO(mmenke): Support the following:
-// * Save to (temp) file.
+// * Save to temp file.
 // * Consumer-provided methods to receive streaming (with backpressure).
 // * Monitoring (And cancelling during) redirects.
 // * Uploads (Fixed strings, files, data streams (with backpressure), chunked
 // uploads). ResourceRequest may already have some support, but should make it
 // simple.
-// * Retrying.
+// * Maybe some sort of retry backoff or delay?  ServiceURLLoaderContext enables
+// throttling for its URLFetchers.  Could additionally/alternatively support
+// 503 + Retry-After.
 class CONTENT_EXPORT SimpleURLLoader {
  public:
+  // When a failed request should automatically be retried. These are intended
+  // to be ORed together.
+  enum RetryMode {
+    RETRY_NEVER = 0x0,
+    // Retries whenever the server returns a 5xx response code.
+    RETRY_ON_5XX = 0x1,
+    // Retries on net::ERR_NETWORK_CHANGED.
+    RETRY_ON_NETWORK_CHANGE = 0x2,
+  };
+
   // The maximum size DownloadToString will accept.
   const size_t kMaxBoundedStringDownloadSize = 1024 * 1024;
 
@@ -141,6 +153,21 @@ class CONTENT_EXPORT SimpleURLLoader {
   // Defaults to false.
   // TODO(mmenke): Consider adding a new error code for this.
   virtual void SetAllowHttpErrorResults(bool allow_http_error_results) = 0;
+
+  // Sets the when to try and the max number of times to retry a request, if
+  // any. |max_retries| is the number of times to retry the request, not
+  // counting the initial request. |retry_mode| is a combination of one or more
+  // RetryModes, indicating when the request should be retried. If it is
+  // RETRY_NEVER, |max_retries| must be 0.
+  //
+  // By default, a request will not be retried.
+  //
+  // When a request is retried, the the request will start again using the
+  // initial content::ResourceRequest, even if the request was redirected.
+  //
+  // Calling this multiple times will overwrite the values previously passed to
+  // this method. May only be called before the request is started.
+  virtual void SetRetryOptions(int max_retries, int retry_mode) = 0;
 
   // Returns the net::Error representing the final status of the request. May
   // only be called once the loader has informed the caller of completion.
