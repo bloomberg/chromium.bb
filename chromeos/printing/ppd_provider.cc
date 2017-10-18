@@ -5,6 +5,7 @@
 #include "chromeos/printing/ppd_provider.h"
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <unordered_map>
 #include <utility>
@@ -16,7 +17,6 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/json/json_parser.h"
-#include "base/memory/ptr_util.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
@@ -513,7 +513,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
                              net::LOAD_DO_NOT_SEND_AUTH_DATA);
       fetcher_->Start();
     } else if (url.SchemeIs("file")) {
-      auto file_contents = base::MakeUnique<std::string>();
+      auto file_contents = std::make_unique<std::string>();
       std::string* content_ptr = file_contents.get();
       base::PostTaskAndReplyWithResult(
           disk_task_runner_.get(), FROM_HERE,
@@ -626,7 +626,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       FailQueuedMetadataResolutions(code);
       return;
     }
-    cached_metadata_ = base::MakeUnique<
+    cached_metadata_ = std::make_unique<
         std::unordered_map<std::string, ManufacturerMetadata>>();
 
     for (const auto& entry : contents) {
@@ -673,7 +673,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       auto& manufacturer_metadata = it->second;
       CHECK(manufacturer_metadata.printers.get() == nullptr);
       manufacturer_metadata.printers =
-          base::MakeUnique<std::unordered_map<std::string, std::string>>();
+          std::make_unique<std::unordered_map<std::string, std::string>>();
 
       for (const auto& entry : contents) {
         manufacturer_metadata.printers->insert({entry.first, entry.second});
@@ -698,7 +698,7 @@ class PpdProviderImpl : public PpdProvider, public net::URLFetcherDelegate {
       FailQueuedServerPpdResolutions(code);
     } else {
       cached_ppd_index_ =
-          base::MakeUnique<std::unordered_map<std::string, std::string>>();
+          std::make_unique<std::unordered_map<std::string, std::string>>();
       // This should be a list of lists of 2-element strings, where the first
       // element is the |effective_make_and_model| of the printer and the second
       // element is the filename of the ppd in the ppds/ directory on the

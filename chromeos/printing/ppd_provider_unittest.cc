@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <map>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -84,7 +85,7 @@ class PpdProviderTest : public ::testing::Test {
   // Create an interceptor that serves a small fileset of ppd server files.
   void StartFakePpdServer() {
     ASSERT_TRUE(interceptor_temp_dir_.CreateUniqueTempDir());
-    interceptor_ = base::MakeUnique<net::TestURLRequestInterceptor>(
+    interceptor_ = std::make_unique<net::TestURLRequestInterceptor>(
         "https", kPpdServer, scoped_task_environment_.GetMainThreadTaskRunner(),
         scoped_task_environment_.GetMainThreadTaskRunner());
     // Use brace initialization to express the desired server contents as "url",

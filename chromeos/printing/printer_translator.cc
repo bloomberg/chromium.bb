@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/memory/ptr_util.h"
 #include "base/values.h"
 #include "chromeos/printing/printer_configuration.h"
 
@@ -90,7 +89,7 @@ std::unique_ptr<Printer> RecommendedPrinterToPrinter(
     return nullptr;
   }
 
-  std::unique_ptr<Printer> printer = base::MakeUnique<Printer>(id);
+  auto printer = std::make_unique<Printer>(id);
   if (!DictionaryToPrinter(pref, printer.get())) {
     LOG(WARNING) << "Failed to parse policy printer.";
     return nullptr;
