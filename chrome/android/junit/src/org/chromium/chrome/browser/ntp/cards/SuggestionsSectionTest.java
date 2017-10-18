@@ -27,6 +27,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import static org.chromium.chrome.browser.ntp.cards.ContentSuggestionsUnitTestUtils.bindViewHolders;
+import static org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge.createOfflinePageItem;
 import static org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.createDummySuggestions;
 
 import org.junit.After;
@@ -58,6 +59,7 @@ import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.chrome.test.util.browser.offlinepages.FakeOfflinePageBridge;
 import org.chromium.chrome.test.util.browser.suggestions.ContentSuggestionsTestUtils.CategoryInfoBuilder;
 import org.chromium.chrome.test.util.browser.suggestions.FakeSuggestionsSource;
 import org.chromium.testing.local.LocalRobolectricTestRunner;
@@ -948,10 +950,6 @@ public class SuggestionsSectionTest {
                 mDelegate, mUiDelegate, mock(SuggestionsRanker.class), mBridge, info);
         section.setParent(mParent);
         return section;
-    }
-
-    private OfflinePageItem createOfflinePageItem(String url, long offlineId) {
-        return new OfflinePageItem(url, offlineId, "", "", "", "", 0, 0, 0, 0, "");
     }
 
     private void verifyAction(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.ntp.cards;
+package org.chromium.chrome.test.util.browser.offlinepages;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
@@ -16,11 +16,14 @@ import java.util.List;
  */
 public class FakeOfflinePageBridge extends OfflinePageBridge {
     private boolean mIsOfflinePageModelLoaded;
-    private final List<OfflinePageItem> mItems;
+    private final List<OfflinePageItem> mItems = new ArrayList<>();
 
-    FakeOfflinePageBridge() {
+    public FakeOfflinePageBridge() {
         super(0);
-        mItems = new ArrayList<OfflinePageItem>();
+    }
+
+    public static OfflinePageItem createOfflinePageItem(String url, long offlineId) {
+        return new OfflinePageItem(url, offlineId, "", "", "", "", 0, 0, 0, 0, "");
     }
 
     public void setIsOfflinePageModelLoaded(boolean isOfflinePageModelLoaded) {
