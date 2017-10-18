@@ -136,6 +136,13 @@ FileTasks.TaskPickerType = {
 };
 
 /**
+ * A promise to obtain 'enable-zip-archiver-unpacker' switch.
+ * @type {Promise<boolean>}
+ * @private
+ */
+FileTasks.zipArchiverUnpackerEnabledPromise_ = null;
+
+/**
  * Creates an instance of FileTasks for the specified list of entries with mime
  * types.
  *
@@ -170,7 +177,28 @@ FileTasks.create = function(
         return item.taskId !== FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID;
       });
 
-      fulfill(FileTasks.annotateTasks_(assert(taskItems), entries));
+      // Filters out Unpack with Zip Archiver task if switch is not enabled.
+      // TODO(klemenko): Remove this when http://crbug/359837 is finished.
+      if (!FileTasks.zipArchiverUnpackerEnabledPromise_) {
+        FileTasks.zipArchiverUnpackerEnabledPromise_ =
+            new Promise(function(resolve, reject) {
+              chrome.commandLinePrivate.hasSwitch(
+                  'enable-zip-archiver-unpacker', function(enabled) {
+                    resolve(enabled);
+                  });
+            });
+      }
+
+      FileTasks.zipArchiverUnpackerEnabledPromise_.then(function(
+          zipArchiverUnpackerEnabled) {
+        if (!zipArchiverUnpackerEnabled) {
+          taskItems = taskItems.filter(function(item) {
+            return item.taskId !== FileTasks.ZIP_ARCHIVER_UNZIP_TASK_ID;
+          });
+        }
+
+        fulfill(FileTasks.annotateTasks_(assert(taskItems), entries));
+      });
     });
   });
 

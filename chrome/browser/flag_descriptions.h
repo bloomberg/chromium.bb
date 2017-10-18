@@ -1486,8 +1486,11 @@ extern const char kEnableImeMenuDescription[];
 extern const char kEnableTabletSplitViewName[];
 extern const char kEnableTabletSplitViewDescription[];
 
-extern const char kEnableZipArchiverOnFileManagerName[];
-extern const char kEnableZipArchiverOnFileManagerDescription[];
+extern const char kEnableZipArchiverPackerName[];
+extern const char kEnableZipArchiverPackerDescription[];
+
+extern const char kEnableZipArchiverUnpackerName[];
+extern const char kEnableZipArchiverUnpackerDescription[];
 
 extern const char kEolNotificationName[];
 extern const char kEolNotificationDescription[];

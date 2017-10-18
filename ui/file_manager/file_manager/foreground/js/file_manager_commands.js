@@ -353,8 +353,8 @@ var CommandHandler = function(fileManager, selectionHandler) {
       }.bind(this));
 
   chrome.commandLinePrivate.hasSwitch(
-      'enable-zip-archiver-on-file-manager', function(enabled) {
-        CommandHandler.IS_ZIP_ARCHIVER_ENABLED_ = enabled;
+      'enable-zip-archiver-packer', function(enabled) {
+        CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = enabled;
       }.bind(this));
 };
 
@@ -367,11 +367,11 @@ var CommandHandler = function(fileManager, selectionHandler) {
 CommandHandler.IS_EXTERNAL_DISK_RENAME_ENABLED_ = false;
 
 /**
- * A flag that determines whether zip archiver is enabled or no.
+ * A flag that determines whether zip archiver - packer is enabled or no.
  * @type {boolean}
  * @private
  */
-CommandHandler.IS_ZIP_ARCHIVER_ENABLED_ = false;
+CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ = false;
 
 /**
  * Supported disk file system types for renaming.
@@ -1309,7 +1309,7 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
     if (!dirEntry)
       return;
 
-    if (CommandHandler.IS_ZIP_ARCHIVER_ENABLED_) {
+    if (CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_) {
       fileManager.taskController.getFileTasks()
           .then(function(tasks) {
             tasks.execute(FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID);
@@ -1332,13 +1332,13 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
     var dirEntry = fileManager.getCurrentDirectoryEntry();
     var selection = fileManager.getSelection();
 
-    var isOnEligibleLocation = CommandHandler.IS_ZIP_ARCHIVER_ENABLED_ ?
+    var isOnEligibleLocation = CommandHandler.IS_ZIP_ARCHIVER_PACKER_ENABLED_ ?
         true :
-        !fileManager.directoryModel.isOnDrive() &&
-            !fileManager.directoryModel.isOnMTP();
+        !fileManager.directoryModel.isOnDrive();
 
     event.canExecute = dirEntry && !fileManager.directoryModel.isReadOnly() &&
-        isOnEligibleLocation && selection && selection.totalCount > 0;
+        !fileManager.directoryModel.isOnMTP() && isOnEligibleLocation &&
+        selection && selection.totalCount > 0;
   }
 });
 
