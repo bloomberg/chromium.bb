@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_CSS_AGENT_H_
-#define COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_CSS_AGENT_H_
+#ifndef COMPONENTS_UI_DEVTOOLS_VIEWS_CSS_AGENT_H_
+#define COMPONENTS_UI_DEVTOOLS_VIEWS_CSS_AGENT_H_
 
 #include "base/macros.h"
 #include "components/ui_devtools/CSS.h"
@@ -13,12 +13,12 @@ namespace ui_devtools {
 
 class UIElement;
 
-class UIDevToolsCSSAgent : public ui_devtools::UiDevToolsBaseAgent<
-                               ui_devtools::protocol::CSS::Metainfo>,
-                           public UIDevToolsDOMAgentObserver {
+class CSSAgent : public ui_devtools::UiDevToolsBaseAgent<
+                     ui_devtools::protocol::CSS::Metainfo>,
+                 public UIDevToolsDOMAgentObserver {
  public:
-  explicit UIDevToolsCSSAgent(UIDevToolsDOMAgent* dom_agent);
-  ~UIDevToolsCSSAgent() override;
+  explicit CSSAgent(UIDevToolsDOMAgent* dom_agent);
+  ~CSSAgent() override;
 
   // CSS::Backend:
   ui_devtools::protocol::Response enable() override;
@@ -49,9 +49,9 @@ class UIDevToolsCSSAgent : public ui_devtools::UiDevToolsBaseAgent<
                                  bool visible);
   UIDevToolsDOMAgent* const dom_agent_;
 
-  DISALLOW_COPY_AND_ASSIGN(UIDevToolsCSSAgent);
+  DISALLOW_COPY_AND_ASSIGN(CSSAgent);
 };
 
 }  // namespace ui_devtools
 
-#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_UI_DEVTOOLS_CSS_AGENT_H_
+#endif  // COMPONENTS_UI_DEVTOOLS_VIEWS_CSS_AGENT_H_

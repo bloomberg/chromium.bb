@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/ui_devtools/views/ui_devtools_css_agent.h"
+#include "components/ui_devtools/views/css_agent.h"
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -118,26 +118,25 @@ Response ParseProperties(const std::string& style_text,
 
 }  // namespace
 
-UIDevToolsCSSAgent::UIDevToolsCSSAgent(UIDevToolsDOMAgent* dom_agent)
-    : dom_agent_(dom_agent) {
+CSSAgent::CSSAgent(UIDevToolsDOMAgent* dom_agent) : dom_agent_(dom_agent) {
   DCHECK(dom_agent_);
 }
 
-UIDevToolsCSSAgent::~UIDevToolsCSSAgent() {
+CSSAgent::~CSSAgent() {
   disable();
 }
 
-ui_devtools::protocol::Response UIDevToolsCSSAgent::enable() {
+ui_devtools::protocol::Response CSSAgent::enable() {
   dom_agent_->AddObserver(this);
   return ui_devtools::protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response UIDevToolsCSSAgent::disable() {
+ui_devtools::protocol::Response CSSAgent::disable() {
   dom_agent_->RemoveObserver(this);
   return ui_devtools::protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response UIDevToolsCSSAgent::getMatchedStylesForNode(
+ui_devtools::protocol::Response CSSAgent::getMatchedStylesForNode(
     int node_id,
     ui_devtools::protocol::Maybe<ui_devtools::protocol::CSS::CSSStyle>*
         inline_style) {
@@ -148,7 +147,7 @@ ui_devtools::protocol::Response UIDevToolsCSSAgent::getMatchedStylesForNode(
   return ui_devtools::protocol::Response::OK();
 }
 
-ui_devtools::protocol::Response UIDevToolsCSSAgent::setStyleTexts(
+ui_devtools::protocol::Response CSSAgent::setStyleTexts(
     std::unique_ptr<ui_devtools::protocol::Array<
         ui_devtools::protocol::CSS::StyleDeclarationEdit>> edits,
     std::unique_ptr<
@@ -184,12 +183,12 @@ ui_devtools::protocol::Response UIDevToolsCSSAgent::setStyleTexts(
   return ui_devtools::protocol::Response::OK();
 }
 
-void UIDevToolsCSSAgent::OnElementBoundsChanged(UIElement* ui_element) {
+void CSSAgent::OnElementBoundsChanged(UIElement* ui_element) {
   InvalidateStyleSheet(ui_element);
 }
 
 std::unique_ptr<ui_devtools::protocol::CSS::CSSStyle>
-UIDevToolsCSSAgent::GetStylesForUIElement(UIElement* ui_element) {
+CSSAgent::GetStylesForUIElement(UIElement* ui_element) {
   gfx::Rect bounds;
   bool visible = false;
   return GetPropertiesForUIElement(ui_element, &bounds, &visible)
@@ -197,14 +196,14 @@ UIDevToolsCSSAgent::GetStylesForUIElement(UIElement* ui_element) {
              : nullptr;
 }
 
-void UIDevToolsCSSAgent::InvalidateStyleSheet(UIElement* ui_element) {
+void CSSAgent::InvalidateStyleSheet(UIElement* ui_element) {
   // The stylesheetId for each node is equivalent to its node_id (as a string).
   frontend()->styleSheetChanged(base::IntToString(ui_element->node_id()));
 }
 
-bool UIDevToolsCSSAgent::GetPropertiesForUIElement(UIElement* ui_element,
-                                                   gfx::Rect* bounds,
-                                                   bool* visible) {
+bool CSSAgent::GetPropertiesForUIElement(UIElement* ui_element,
+                                         gfx::Rect* bounds,
+                                         bool* visible) {
   if (ui_element) {
     ui_element->GetBounds(bounds);
     ui_element->GetVisible(visible);
@@ -213,9 +212,9 @@ bool UIDevToolsCSSAgent::GetPropertiesForUIElement(UIElement* ui_element,
   return false;
 }
 
-bool UIDevToolsCSSAgent::SetPropertiesForUIElement(UIElement* ui_element,
-                                                   const gfx::Rect& bounds,
-                                                   bool visible) {
+bool CSSAgent::SetPropertiesForUIElement(UIElement* ui_element,
+                                         const gfx::Rect& bounds,
+                                         bool visible) {
   if (ui_element) {
     ui_element->SetBounds(bounds);
     ui_element->SetVisible(visible);
