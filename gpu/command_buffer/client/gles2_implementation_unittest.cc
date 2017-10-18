@@ -499,7 +499,7 @@ class GLES2ImplementationTest : public testing::Test {
       // The client should be set to something non-null.
       EXPECT_CALL(*gpu_control_, SetGpuControlClient(gl_.get())).Times(1);
 
-      if (!gl_->Initialize(limits))
+      if (gl_->Initialize(limits) != gpu::ContextResult::kSuccess)
         return false;
 
       helper_->CommandBufferHelper::Finish();

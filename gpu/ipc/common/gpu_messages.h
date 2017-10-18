@@ -105,7 +105,7 @@ IPC_SYNC_MESSAGE_CONTROL3_2(GpuChannelMsg_CreateCommandBuffer,
                             GPUCreateCommandBufferConfig /* init_params */,
                             int32_t /* route_id */,
                             base::SharedMemoryHandle /* shared_state */,
-                            bool /* result */,
+                            gpu::ContextResult,
                             gpu::Capabilities /* capabilities */)
 
 // The CommandBufferProxy sends this to the GpuCommandBufferStub in its

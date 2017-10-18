@@ -21,6 +21,7 @@
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 #include "gpu/gpu_export.h"
 
@@ -175,11 +176,12 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
   //  offscreen_size: the size if the GL context is offscreen.
   // Returns:
   //   true if successful.
-  virtual bool Initialize(const scoped_refptr<gl::GLSurface>& surface,
-                          const scoped_refptr<gl::GLContext>& context,
-                          bool offscreen,
-                          const DisallowedFeatures& disallowed_features,
-                          const ContextCreationAttribHelper& attrib_helper) = 0;
+  virtual gpu::ContextResult Initialize(
+      const scoped_refptr<gl::GLSurface>& surface,
+      const scoped_refptr<gl::GLContext>& context,
+      bool offscreen,
+      const DisallowedFeatures& disallowed_features,
+      const ContextCreationAttribHelper& attrib_helper) = 0;
 
   // Destroys the graphics context.
   virtual void Destroy(bool have_context) = 0;
@@ -330,6 +332,13 @@ class GPU_EXPORT GLES2Decoder : public CommonDecoder, public AsyncAPIInterface {
 
   // Lose this context.
   virtual void MarkContextLost(error::ContextLostReason reason) = 0;
+
+  // Updates context lost state and returns true if lost. Most callers can use
+  // WasContextLost() as the GLES2Decoder will update the state internally. But
+  // if making GL calls directly, to the context then this state would not be
+  // updated and the caller can use this to determine if their calls failed due
+  // to context loss.
+  virtual bool CheckResetStatus() = 0;
 
   virtual Logger* GetLogger() = 0;
 

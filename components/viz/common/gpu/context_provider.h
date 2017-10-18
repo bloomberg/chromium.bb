@@ -14,6 +14,7 @@
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/context_result.h"
 
 class GrContext;
 
@@ -60,7 +61,7 @@ class VIZ_COMMON_EXPORT ContextProvider
   // from the same thread unless the function has some explicitly specified
   // rules for access on a different thread. See SetupLockOnMainThread(), which
   // can be used to provide access from multiple threads.
-  virtual bool BindToCurrentThread() = 0;
+  virtual gpu::ContextResult BindToCurrentThread() = 0;
 
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual gpu::ContextSupport* ContextSupport() = 0;

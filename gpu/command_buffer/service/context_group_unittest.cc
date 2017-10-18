@@ -124,16 +124,21 @@ TEST_F(ContextGroupTest, MultipleContexts) {
   TestHelper::SetupContextGroupInitExpectations(
       gl_.get(), DisallowedFeatures(), "", "",
       CONTEXT_TYPE_OPENGLES2, kBindGeneratesResource);
-  EXPECT_TRUE(group_->Initialize(decoder_.get(), CONTEXT_TYPE_OPENGLES2,
-                                 DisallowedFeatures()));
-  EXPECT_FALSE(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_WEBGL1,
-                                  DisallowedFeatures()));
-  EXPECT_FALSE(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_WEBGL2,
-                                  DisallowedFeatures()));
-  EXPECT_FALSE(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_OPENGLES3,
-                                  DisallowedFeatures()));
-  EXPECT_TRUE(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_OPENGLES2,
-                                 DisallowedFeatures()));
+  EXPECT_EQ(group_->Initialize(decoder_.get(), CONTEXT_TYPE_OPENGLES2,
+                               DisallowedFeatures()),
+            gpu::ContextResult::kSuccess);
+  EXPECT_EQ(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_WEBGL1,
+                               DisallowedFeatures()),
+            gpu::ContextResult::kFatalFailure);
+  EXPECT_EQ(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_WEBGL2,
+                               DisallowedFeatures()),
+            gpu::ContextResult::kFatalFailure);
+  EXPECT_EQ(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_OPENGLES3,
+                               DisallowedFeatures()),
+            gpu::ContextResult::kFatalFailure);
+  EXPECT_EQ(group_->Initialize(decoder2_.get(), CONTEXT_TYPE_OPENGLES2,
+                               DisallowedFeatures()),
+            gpu::ContextResult::kSuccess);
 
   EXPECT_TRUE(group_->buffer_manager() != NULL);
   EXPECT_TRUE(group_->renderbuffer_manager() != NULL);

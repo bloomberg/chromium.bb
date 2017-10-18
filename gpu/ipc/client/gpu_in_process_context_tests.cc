@@ -35,15 +35,18 @@ class ContextTestBase : public testing::Test {
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
 
-    return base::WrapUnique(gpu::GLInProcessContext::Create(
-        nullptr,                 /* service */
-        nullptr,                 /* surface */
-        true,                    /* offscreen */
-        gpu::kNullSurfaceHandle, /* window */
-        nullptr,                 /* share_context */
-        attributes, gpu::SharedMemoryLimits(), gpu_memory_buffer_manager_.get(),
-        nullptr, /* image_factory */
-        base::ThreadTaskRunnerHandle::Get()));
+    auto context = gpu::GLInProcessContext::CreateWithoutInit();
+    auto result = context->Initialize(nullptr,                 /* service */
+                                      nullptr,                 /* surface */
+                                      true,                    /* offscreen */
+                                      gpu::kNullSurfaceHandle, /* window */
+                                      nullptr, /* share_context */
+                                      attributes, gpu::SharedMemoryLimits(),
+                                      gpu_memory_buffer_manager_.get(),
+                                      nullptr, /* image_factory */
+                                      base::ThreadTaskRunnerHandle::Get());
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
+    return context;
   }
 
   void SetUp() override {

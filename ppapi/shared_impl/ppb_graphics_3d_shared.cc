@@ -123,29 +123,27 @@ bool PPB_Graphics3D_Shared::CreateGLES2Impl(
   DCHECK(command_buffer);
 
   // Create the GLES2 helper, which writes the command buffer protocol.
-  gles2_helper_.reset(new gpu::gles2::GLES2CmdHelper(command_buffer));
-  if (!gles2_helper_->Initialize(limits.command_buffer_size))
+  gles2_helper_ = std::make_unique<gpu::gles2::GLES2CmdHelper>(command_buffer);
+  if (gles2_helper_->Initialize(limits.command_buffer_size) !=
+      gpu::ContextResult::kSuccess)
     return false;
 
   // Create a transfer buffer used to copy resources between the renderer
   // process and the GPU process.
-  transfer_buffer_.reset(new gpu::TransferBuffer(gles2_helper_.get()));
+  transfer_buffer_ = std::make_unique<gpu::TransferBuffer>(gles2_helper_.get());
 
   const bool bind_creates_resources = true;
   const bool lose_context_when_out_of_memory = false;
   const bool support_client_side_arrays = true;
 
   // Create the object exposing the OpenGL API.
-  gles2_impl_.reset(new gpu::gles2::GLES2Implementation(
-      gles2_helper_.get(),
-      share_gles2 ? share_gles2->share_group() : NULL,
-      transfer_buffer_.get(),
-      bind_creates_resources,
-      lose_context_when_out_of_memory,
-      support_client_side_arrays,
-      GetGpuControl()));
+  gles2_impl_ = std::make_unique<gpu::gles2::GLES2Implementation>(
+      gles2_helper_.get(), share_gles2 ? share_gles2->share_group() : nullptr,
+      transfer_buffer_.get(), bind_creates_resources,
+      lose_context_when_out_of_memory, support_client_side_arrays,
+      GetGpuControl());
 
-  if (!gles2_impl_->Initialize(limits))
+  if (gles2_impl_->Initialize(limits) != gpu::ContextResult::kSuccess)
     return false;
 
   gles2_impl_->TraceBeginCHROMIUM("gpu_toplevel", "PPAPIContext");

@@ -46,7 +46,7 @@ class TestContextProvider : public viz::ContextProvider {
   static scoped_refptr<TestContextProvider> Create(
       std::unique_ptr<TestGLES2Interface> gl);
 
-  bool BindToCurrentThread() override;
+  gpu::ContextResult BindToCurrentThread() override;
   void DetachFromThread() override;
   const gpu::Capabilities& ContextCapabilities() const override;
   const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const override;

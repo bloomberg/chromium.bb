@@ -41,20 +41,21 @@ class YUVReadbackTest : public testing::Test {
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
 
-    context_.reset(
-        gpu::GLInProcessContext::Create(nullptr,                 /* service */
-                                        nullptr,                 /* surface */
-                                        true,                    /* offscreen */
-                                        gpu::kNullSurfaceHandle, /* window */
-                                        nullptr, /* share_context */
-                                        attributes, gpu::SharedMemoryLimits(),
-                                        nullptr, /* gpu_memory_buffer_manager */
-                                        nullptr, /* image_factory */
-                                        base::ThreadTaskRunnerHandle::Get()));
+    context_ = gpu::GLInProcessContext::CreateWithoutInit();
+    auto result = context_->Initialize(nullptr,                 /* service */
+                                       nullptr,                 /* surface */
+                                       true,                    /* offscreen */
+                                       gpu::kNullSurfaceHandle, /* window */
+                                       nullptr, /* share_context */
+                                       attributes, gpu::SharedMemoryLimits(),
+                                       nullptr, /* gpu_memory_buffer_manager */
+                                       nullptr, /* image_factory */
+                                       base::ThreadTaskRunnerHandle::Get());
+    DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     gl_ = context_->GetImplementation();
     gpu::ContextSupport* support = context_->GetImplementation();
 
-    helper_.reset(new GLHelper(gl_, support));
+    helper_ = std::make_unique<GLHelper>(gl_, support);
   }
 
   void TearDown() override {

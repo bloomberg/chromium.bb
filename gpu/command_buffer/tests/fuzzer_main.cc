@@ -184,10 +184,10 @@ class CommandBufferSetup {
     attrib_helper.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
 #endif
 
-    bool result =
+    auto result =
         decoder_->Initialize(surface_.get(), context_.get(), true,
                              gles2::DisallowedFeatures(), attrib_helper);
-    CHECK(result);
+    CHECK_EQ(result, gpu::ContextResult::kSuccess);
     decoder_->set_max_bucket_size(8 << 20);
     context_group->buffer_manager()->set_max_buffer_size(8 << 20);
     if (!vertex_translator_) {

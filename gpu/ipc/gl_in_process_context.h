@@ -29,9 +29,13 @@ class GLES2Implementation;
 
 class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
  public:
-  virtual ~GLInProcessContext() {}
+  virtual ~GLInProcessContext() = default;
 
-  // Create a GLInProcessContext, if |is_offscreen| is true, renders to an
+  // TODO(danakj): Devirtualize this class and remove this, just call the
+  // constructor.
+  static std::unique_ptr<GLInProcessContext> CreateWithoutInit();
+
+  // Initialize the GLInProcessContext, if |is_offscreen| is true, renders to an
   // offscreen context. |attrib_list| must be NULL or a NONE-terminated list
   // of attribute/value pairs.
   // If |surface| is not NULL, then it must match |is_offscreen|,
@@ -39,7 +43,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // service must run on the same thread as this client because GLSurface is
   // not thread safe. If |surface| is NULL, then the other parameters are used
   // to correctly create a surface.
-  static GLInProcessContext* Create(
+  virtual gpu::ContextResult Initialize(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> service,
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
@@ -49,7 +53,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
       const SharedMemoryLimits& memory_limits,
       GpuMemoryBufferManager* gpu_memory_buffer_manager,
       ImageFactory* image_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner) = 0;
 
   virtual const gpu::Capabilities& GetCapabilities() const = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;

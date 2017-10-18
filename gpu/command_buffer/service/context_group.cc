@@ -125,15 +125,16 @@ ContextGroup::ContextGroup(
                                  gpu_preferences_.use_passthrough_cmd_decoder;
 }
 
-bool ContextGroup::Initialize(GLES2Decoder* decoder,
-                              ContextType context_type,
-                              const DisallowedFeatures& disallowed_features) {
+gpu::ContextResult ContextGroup::Initialize(
+    GLES2Decoder* decoder,
+    ContextType context_type,
+    const DisallowedFeatures& disallowed_features) {
   switch (context_type) {
     case CONTEXT_TYPE_WEBGL1:
       if (kGpuFeatureStatusBlacklisted ==
           gpu_feature_info_.status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL]) {
         DLOG(ERROR) << "ContextGroup::Initialize failed: WebGL1 baclklisted";
-        return false;
+        return gpu::ContextResult::kFatalFailure;
       }
       break;
     case CONTEXT_TYPE_WEBGL2:
@@ -141,7 +142,7 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
           gpu_feature_info_
               .status_values[GPU_FEATURE_TYPE_ACCELERATED_WEBGL2]) {
         DLOG(ERROR) << "ContextGroup::Initialize failed: WebGL2 blacklisted";
-        return false;
+        return gpu::ContextResult::kFatalFailure;
       }
       break;
     default:
@@ -151,21 +152,17 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     if (context_type != feature_info_->context_type()) {
       DLOG(ERROR) << "ContextGroup::Initialize failed because the type of "
                   << "the context does not fit with the group.";
-      return false;
+      return gpu::ContextResult::kFatalFailure;
     }
     // If we've already initialized the group just add the context.
     decoders_.push_back(decoder->AsWeakPtr());
-    return true;
+    return gpu::ContextResult::kSuccess;
   }
 
   DisallowedFeatures adjusted_disallowed_features =
       AdjustDisallowedFeatures(context_type, disallowed_features);
 
-  if (!feature_info_->Initialize(context_type, adjusted_disallowed_features)) {
-    DLOG(ERROR) << "ContextGroup::Initialize failed because FeatureInfo "
-                << "initialization failed.";
-    return false;
-  }
+  feature_info_->Initialize(context_type, adjusted_disallowed_features);
 
   const GLint kMinRenderbufferSize = 512;  // GL says 1 pixel!
   GLint max_renderbuffer_size = 0;
@@ -175,7 +172,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     DLOG(ERROR) << "ContextGroup::Initialize failed because maximum "
                 << "renderbuffer size too small (" << max_renderbuffer_size
                 << ", should be " << kMinRenderbufferSize << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
   GLint max_samples = 0;
   if (feature_info_->feature_flags().chromium_framebuffer_multisample ||
@@ -217,7 +216,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                   << "transform feedback separate attribs is too small ("
                   << max_transform_feedback_separate_attribs_ << ", should be "
                   << kMinTransformFeedbackSeparateAttribs << ").";
-      return false;
+      bool was_lost = decoder->CheckResetStatus();
+      return was_lost ? gpu::ContextResult::kTransientFailure
+                      : gpu::ContextResult::kFatalFailure;
     }
 
     const GLint kMinUniformBufferBindings = 24;
@@ -228,7 +229,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                   << "uniform buffer bindings is too small ("
                   << max_uniform_buffer_bindings_ << ", should be "
                   << kMinUniformBufferBindings << ").";
-      return false;
+      bool was_lost = decoder->CheckResetStatus();
+      return was_lost ? gpu::ContextResult::kTransientFailure
+                      : gpu::ContextResult::kFatalFailure;
     }
 
     // TODO(zmo): Should we check max UNIFORM_BUFFER_OFFSET_ALIGNMENT is 256?
@@ -252,7 +255,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     DLOG(ERROR) << "ContextGroup::Initialize failed because too few "
                 << "vertex attributes supported (" << max_vertex_attribs_
                 << ", should be " << kGLES2RequiredMinimumVertexAttribs << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
 
   const GLuint kGLES2RequiredMinimumTextureUnits = 8u;
@@ -262,7 +267,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     DLOG(ERROR) << "ContextGroup::Initialize failed because too few "
                 << "texture units supported (" << max_texture_units_
                 << ", should be " << kGLES2RequiredMinimumTextureUnits << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
 
   GLint max_texture_size = 0;
@@ -282,7 +289,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     DLOG(ERROR) << "ContextGroup::Initialize failed because maximum "
                 << "2d texture size is too small (" << max_texture_size
                 << ", should be " << kMinTextureSize << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
   if (!QueryGLFeature(GL_MAX_CUBE_MAP_TEXTURE_SIZE, kMinCubeMapSize,
                       &max_cube_map_texture_size)) {
@@ -290,7 +299,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << "cube texture size is too small ("
                 << max_cube_map_texture_size << ", should be "
                 << kMinCubeMapSize << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
   if (feature_info_->gl_version_info().is_es3_capable &&
       !QueryGLFeature(GL_MAX_3D_TEXTURE_SIZE, kMin3DTextureSize,
@@ -298,7 +309,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
     DLOG(ERROR) << "ContextGroup::Initialize failed because maximum "
                 << "3d texture size is too small (" << max_3d_texture_size
                 << ", should be " << kMin3DTextureSize << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
   if (feature_info_->gl_version_info().is_es3_capable &&
       !QueryGLFeature(GL_MAX_ARRAY_TEXTURE_LAYERS, kMinArrayTextureLayers,
@@ -307,7 +320,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << "array texture layers is too small ("
                 << max_array_texture_layers
                 << ", should be " << kMinArrayTextureLayers << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
   if (feature_info_->feature_flags().arb_texture_rectangle &&
       !QueryGLFeature(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB,
@@ -316,7 +331,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << "rectangle texture size is too small ("
                 << max_rectangle_texture_size << ", should be "
                 << kMinRectangleTextureSize << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
 
   if (feature_info_->workarounds().max_texture_size) {
@@ -342,6 +359,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << "texture image units supported ("
                 << max_texture_image_units_
                 << ", should be " << kMinTextureImageUnits << ").";
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
   if (!QueryGLFeatureU(GL_MAX_VERTEX_TEXTURE_IMAGE_UNITS,
                        kMinVertexTextureImageUnits,
@@ -350,7 +370,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                 << "vertex texture image units supported ("
                 << max_vertex_texture_image_units_ << ", should be "
                 << kMinTextureImageUnits << ").";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
 
   if (feature_info_->gl_version_info().BehavesLikeGLES()) {
@@ -378,7 +400,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
       kMinVertexUniformVectors, &max_vertex_uniform_vectors_)) {
     DLOG(ERROR) << "ContextGroup::Initialize failed because too few "
                 << "uniforms or varyings supported.";
-    return false;
+    bool was_lost = decoder->CheckResetStatus();
+    return was_lost ? gpu::ContextResult::kTransientFailure
+                    : gpu::ContextResult::kFatalFailure;
   }
 
   // Some shaders in Skia need more than the min available vertex and
@@ -416,7 +440,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                   << "vertex output components is too small ("
                   << max_vertex_output_components_ << ", should be "
                   << kMinVertexOutputComponents << ").";
-      return false;
+      bool was_lost = decoder->CheckResetStatus();
+      return was_lost ? gpu::ContextResult::kTransientFailure
+                      : gpu::ContextResult::kFatalFailure;
     }
     if (!QueryGLFeatureU(GL_MAX_FRAGMENT_INPUT_COMPONENTS,
                          kMinFragmentInputComponents,
@@ -425,7 +451,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                   << "fragment input components is too small ("
                   << max_fragment_input_components_ << ", should be "
                   << kMinFragmentInputComponents << ").";
-      return false;
+      bool was_lost = decoder->CheckResetStatus();
+      return was_lost ? gpu::ContextResult::kTransientFailure
+                      : gpu::ContextResult::kFatalFailure;
     }
     if (!QueryGLFeature(GL_MAX_PROGRAM_TEXEL_OFFSET, kMin_MaxProgramTexelOffset,
                         &max_program_texel_offset_)) {
@@ -433,7 +461,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                   << "program texel offset is too small ("
                   << max_program_texel_offset_ << ", should be "
                   << kMin_MaxProgramTexelOffset << ").";
-      return false;
+      bool was_lost = decoder->CheckResetStatus();
+      return was_lost ? gpu::ContextResult::kTransientFailure
+                      : gpu::ContextResult::kFatalFailure;
     }
     glGetIntegerv(GL_MIN_PROGRAM_TEXEL_OFFSET, &min_program_texel_offset_);
     if (enforce_gl_minimums_) {
@@ -445,7 +475,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                   << "program texel offset is too big ("
                   << min_program_texel_offset_ << ", should be "
                   << kMax_MinProgramTexelOffset << ").";
-      return false;
+      bool was_lost = decoder->CheckResetStatus();
+      return was_lost ? gpu::ContextResult::kTransientFailure
+                      : gpu::ContextResult::kFatalFailure;
     }
 
     const GLint kES3MinCubeMapSize = 2048;
@@ -454,7 +486,9 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
                   << "cube texture size is too small ("
                   << max_cube_map_texture_size << ", should be "
                   << kES3MinCubeMapSize << ").";
-      return false;
+      bool was_lost = decoder->CheckResetStatus();
+      return was_lost ? gpu::ContextResult::kTransientFailure
+                      : gpu::ContextResult::kFatalFailure;
     }
   }
 
@@ -465,14 +499,10 @@ bool ContextGroup::Initialize(GLES2Decoder* decoder,
       max_dual_source_draw_buffers_, max_vertex_attribs_, gpu_preferences_,
       feature_info_.get(), progress_reporter_));
 
-  if (!texture_manager_->Initialize()) {
-    DLOG(ERROR) << "Context::Group::Initialize failed because texture manager "
-                << "failed to initialize.";
-    return false;
-  }
+  texture_manager_->Initialize();
 
   decoders_.push_back(decoder->AsWeakPtr());
-  return true;
+  return gpu::ContextResult::kSuccess;
 }
 
 namespace {

@@ -17,7 +17,8 @@ namespace {
 TEST(ScopedResourceTest, NewScopedResource) {
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
-  ASSERT_TRUE(context_provider->BindToCurrentThread());
+  ASSERT_EQ(context_provider->BindToCurrentThread(),
+            gpu::ContextResult::kSuccess);
 
   std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -38,7 +39,8 @@ TEST(ScopedResourceTest, NewScopedResource) {
 TEST(ScopedResourceTest, CreateScopedResource) {
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
-  ASSERT_TRUE(context_provider->BindToCurrentThread());
+  ASSERT_EQ(context_provider->BindToCurrentThread(),
+            gpu::ContextResult::kSuccess);
 
   std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());
@@ -62,7 +64,8 @@ TEST(ScopedResourceTest, CreateScopedResource) {
 TEST(ScopedResourceTest, ScopedResourceIsDeleted) {
   scoped_refptr<TestContextProvider> context_provider =
       TestContextProvider::Create();
-  ASSERT_TRUE(context_provider->BindToCurrentThread());
+  ASSERT_EQ(context_provider->BindToCurrentThread(),
+            gpu::ContextResult::kSuccess);
 
   std::unique_ptr<viz::SharedBitmapManager> shared_bitmap_manager(
       new TestSharedBitmapManager());

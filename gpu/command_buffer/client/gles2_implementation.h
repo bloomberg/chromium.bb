@@ -31,6 +31,7 @@
 #include "gpu/command_buffer/client/ref_counted.h"
 #include "gpu/command_buffer/client/share_group.h"
 #include "gpu/command_buffer/common/capabilities.h"
+#include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/debug_marker_manager.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
@@ -171,7 +172,7 @@ class GLES2_IMPL_EXPORT GLES2Implementation
 
   ~GLES2Implementation() override;
 
-  bool Initialize(const SharedMemoryLimits& limits);
+  gpu::ContextResult Initialize(const SharedMemoryLimits& limits);
 
   // The GLES2CmdHelper being used by this GLES2Implementation. You can use
   // this to issue cmds at a lower level for certain kinds of optimization.

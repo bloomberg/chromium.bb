@@ -3141,13 +3141,9 @@ error::Error GLES2DecoderPassthroughImpl::DoSwapBuffers() {
         emulated_front_buffer_ = std::move(available_color_textures_.back());
         available_color_textures_.pop_back();
       } else {
-        emulated_front_buffer_.reset(
-            new EmulatedColorBuffer(emulated_default_framebuffer_format_));
-        if (!emulated_front_buffer_->Resize(emulated_back_buffer_->size)) {
-          DLOG(ERROR)
-              << "Failed to create a new emulated front buffer texture.";
-          return error::kLostContext;
-        }
+        emulated_front_buffer_ = std::make_unique<EmulatedColorBuffer>(
+            emulated_default_framebuffer_format_);
+        emulated_front_buffer_->Resize(emulated_back_buffer_->size);
       }
     }
 
@@ -3371,10 +3367,8 @@ error::Error GLES2DecoderPassthroughImpl::DoRequestExtensionCHROMIUM(
 
   // Make sure newly enabled extensions are exposed and usable.
   context_->ReinitializeDynamicBindings();
-  if (!feature_info_->Initialize(feature_info_->context_type(),
-                                 feature_info_->disallowed_features())) {
-    return error::kLostContext;
-  }
+  feature_info_->Initialize(feature_info_->context_type(),
+                            feature_info_->disallowed_features());
 
   return error::kNoError;
 }

@@ -6,6 +6,7 @@
 #define GPU_IPC_COMMON_GPU_PARAM_TRAITS_MACROS_H_
 
 #include "gpu/command_buffer/common/constants.h"
+#include "gpu/command_buffer/common/context_result.h"
 #include "gpu/command_buffer/common/scheduling_priority.h"
 #include "gpu/gpu_export.h"
 #include "gpu/ipc/common/flush_params.h"
@@ -27,5 +28,7 @@ IPC_STRUCT_TRAITS_END()
 
 IPC_ENUM_TRAITS_MAX_VALUE(gpu::SchedulingPriority,
                           gpu::SchedulingPriority::kLast)
+IPC_ENUM_TRAITS_MAX_VALUE(gpu::ContextResult,
+                          gpu::ContextResult::kLastContextResult);
 
 #endif  // GPU_IPC_COMMON_GPU_PARAM_TRAITS_MACROS_H_

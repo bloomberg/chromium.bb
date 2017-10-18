@@ -462,7 +462,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
             false /* support_stencil */, support_locking, nullptr,
             ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
-        if (!shared_worker_context_provider_->BindToCurrentThread())
+        auto result = shared_worker_context_provider_->BindToCurrentThread();
+        // TODO(danakj): Only retry context creation if kTransientFailure. Don't
+        // retry at all if kFatalFailure.
+        if (result != gpu::ContextResult::kSuccess)
           shared_worker_context_provider_ = nullptr;
       }
 
@@ -485,7 +488,10 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         // On Mac, GpuCommandBufferMsg_SwapBuffersCompleted must be handled in
         // a nested run loop during resize.
         context_provider->SetDefaultTaskRunner(resize_task_runner_);
-        if (!context_provider->BindToCurrentThread())
+        auto result = context_provider->BindToCurrentThread();
+        // TODO(danakj): Only retry context creation if kTransientFailure. Don't
+        // retry at all if kFatalFailure.
+        if (result != gpu::ContextResult::kSuccess)
           context_provider = nullptr;
       }
     }
@@ -943,7 +949,8 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   shared_main_thread_contexts_->SetLostContextCallback(base::Bind(
       &GpuProcessTransportFactory::OnLostMainThreadSharedContextInsideCallback,
       callback_factory_.GetWeakPtr()));
-  if (!shared_main_thread_contexts_->BindToCurrentThread())
+  auto result = shared_main_thread_contexts_->BindToCurrentThread();
+  if (result != gpu::ContextResult::kSuccess)
     shared_main_thread_contexts_ = nullptr;
   return shared_main_thread_contexts_;
 }

@@ -40,7 +40,7 @@ class TestInProcessContextProvider : public viz::ContextProvider {
   explicit TestInProcessContextProvider(
       TestInProcessContextProvider* shared_context);
 
-  bool BindToCurrentThread() override;
+  gpu::ContextResult BindToCurrentThread() override;
   gpu::gles2::GLES2Interface* ContextGL() override;
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;

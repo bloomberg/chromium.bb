@@ -87,7 +87,9 @@ class PerfContextProvider : public viz::ContextProvider {
     capabilities_.sync_query = true;
   }
 
-  bool BindToCurrentThread() override { return true; }
+  gpu::ContextResult BindToCurrentThread() override {
+    return gpu::ContextResult::kSuccess;
+  }
   const gpu::Capabilities& ContextCapabilities() const override {
     return capabilities_;
   }
