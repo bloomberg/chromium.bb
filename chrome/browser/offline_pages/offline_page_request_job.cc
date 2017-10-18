@@ -140,19 +140,22 @@ NetworkState GetNetworkState(net::URLRequest* request,
   if (net::NetworkChangeNotifier::IsOffline())
     return NetworkState::DISCONNECTED_NETWORK;
 
-  // If offline header contains a reason other than RELOAD, the offline page
-  // should be forced to load even when the network is connected.
-  if (offline_header.reason != OfflinePageHeader::Reason::NONE &&
-      offline_header.reason != OfflinePageHeader::Reason::RELOAD) {
+  // If RELOAD is present in the offline header, load the live page.
+  if (offline_header.reason == OfflinePageHeader::Reason::RELOAD)
+    return NetworkState::CONNECTED_NETWORK;
+
+  // If other reason is present in the offline header, force loading the offline
+  // page even when the network is connected.
+  if (offline_header.reason != OfflinePageHeader::Reason::NONE) {
     return NetworkState::FORCE_OFFLINE_ON_CONNECTED_NETWORK;
   }
 
   // Checks if previews are allowed, the network is slow, and the request is
-  // allowed to be shown for previews.
-  if (offline_header.reason != OfflinePageHeader::Reason::RELOAD &&
-      previews_decider &&
-      previews_decider->ShouldAllowPreview(*request,
-                                           previews::PreviewsType::OFFLINE)) {
+  // allowed to be shown for previews. When reloading from an offline page or
+  // through other force checks, previews should not be considered; previews
+  // eligiblity is only checked when |offline_header.reason| is Reason::NONE.
+  if (previews_decider && previews_decider->ShouldAllowPreview(
+                              *request, previews::PreviewsType::OFFLINE)) {
     return NetworkState::PROHIBITIVELY_SLOW_NETWORK;
   }
 

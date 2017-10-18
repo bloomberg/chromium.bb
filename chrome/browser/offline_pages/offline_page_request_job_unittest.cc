@@ -880,6 +880,8 @@ TEST_F(OfflinePageRequestJobTest,
                    content::RESOURCE_TYPE_MAIN_FRAME);
   base::RunLoop().Run();
 
+  EXPECT_EQ(0, bytes_read());
+  EXPECT_FALSE(offline_page_tab_helper()->GetOfflinePageForTest());
   ExpectNoAccessEntryPoint();
   ExpectNoSamplesInAggregatedRequestResult();
   ExpectOfflinePageSizeTotalSuffixCount(0);
