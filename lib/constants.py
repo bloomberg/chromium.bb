@@ -328,6 +328,9 @@ ANDROID_MASTER_ARC_DEV_BUILD_BRANCH = 'git_master-arc-dev'
 ANDROID_MNC_BUILD_BRANCH = 'git_mnc-dr-arc-dev'
 ANDROID_NYC_BUILD_BRANCH = 'git_nyc-mr1-arc'
 ANDROID_MASTER_ARC_DEV_BUILD_TARGETS = {
+    'ARM_USERDEBUG': ('linux-cheets_arm-userdebug', r'\.zip$'),
+    'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
+    'X86_64_USERDEBUG': ('linux-cheets_x86_64-userdebug', r'\.zip$'),
     'AOSP_ARM_USERDEBUG': ('linux-aosp_bertha_arm-userdebug', r'\.zip$'),
     'AOSP_X86_USERDEBUG': ('linux-aosp_bertha_x86-userdebug', r'\.zip$'),
     'AOSP_X86_64_USERDEBUG': ('linux-aosp_bertha_x86_64-userdebug', r'\.zip$'),
@@ -370,6 +373,7 @@ ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
     'X86_64': 'googlestorage_acl_x86.txt',
+    'ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'X86_64_USERDEBUG': 'googlestorage_acl_x86.txt',
     'AOSP_ARM_USERDEBUG': 'googlestorage_acl_arm.txt',
@@ -397,6 +401,7 @@ ANDROID_SYMBOLS_FILE = 'android-symbols.zip'
 # targets will have their artifacts renamed when the PFQ copies them from the
 # the Android bucket to the ARC++ bucket (b/33072485).
 ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
+    'ARM_USERDEBUG',
     'X86_USERDEBUG',
     'X86_64_USERDEBUG',
     'AOSP_ARM_USERDEBUG',
