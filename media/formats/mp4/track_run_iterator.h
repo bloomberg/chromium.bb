@@ -47,10 +47,12 @@ class MEDIA_EXPORT TrackRunIterator {
   bool IsRunValid() const;
   bool IsSampleValid() const;
 
-  // Advance the properties to refer to the next run or sample. Requires that
-  // the current sample be valid.
-  void AdvanceRun();
-  void AdvanceSample();
+  // Advance the properties to refer to the next run or sample. These return
+  // |false| on failure, but note that advancing to the end (IsRunValid() or
+  // IsSampleValid() return false) is not a failure, and the properties are not
+  // guaranteed to be consistent in that case.
+  bool AdvanceRun();
+  bool AdvanceSample();
 
   // Returns true if this track run has auxiliary information and has not yet
   // been cached. Only valid if IsRunValid().
@@ -91,7 +93,8 @@ class MEDIA_EXPORT TrackRunIterator {
   std::unique_ptr<DecryptConfig> GetDecryptConfig();
 
  private:
-  void ResetRun();
+  bool UpdateCts();
+  bool ResetRun();
   const TrackEncryption& track_encryption() const;
 
   uint32_t GetGroupDescriptionIndex(uint32_t sample_index) const;
@@ -112,6 +115,7 @@ class MEDIA_EXPORT TrackRunIterator {
   std::vector<SampleInfo>::const_iterator sample_itr_;
 
   int64_t sample_dts_;
+  int64_t sample_cts_;
   int64_t sample_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(TrackRunIterator);
