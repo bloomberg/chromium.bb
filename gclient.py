@@ -1724,6 +1724,8 @@ def CMDrecurse(parser, args):
 
   options.nohooks = True
   client = GClient.LoadCurrentConfig(options)
+  if not client:
+    raise gclient_utils.Error('client not configured; see \'gclient config\'')
   return client.RunOnDeps('recurse', args, ignore_requirements=True,
                           progress=not options.no_progress)
 
