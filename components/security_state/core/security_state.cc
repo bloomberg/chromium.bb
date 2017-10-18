@@ -24,8 +24,8 @@ enum MarkHttpStatus {
   NEUTRAL = 0,  // Deprecated
   NON_SECURE = 1,
   HTTP_SHOW_WARNING_ON_SENSITIVE_FIELDS = 2,  // Deprecated as of Chrome 64
-  NON_SECURE_AFTER_EDITING = 3,
-  NON_SECURE_WHILE_INCOGNITO = 4,
+  NON_SECURE_AFTER_EDITING = 3,               // Deprecated as of Chrome 64
+  NON_SECURE_WHILE_INCOGNITO = 4,             // Deprecated as of Chrome 64
   NON_SECURE_WHILE_INCOGNITO_OR_EDITING = 5,
   LAST_STATUS
 };
@@ -39,35 +39,6 @@ bool GetSecurityLevelAndHistogramValueForNonSecureFieldTrial(
     const InsecureInputEventData& input_events,
     SecurityLevel* level,
     MarkHttpStatus* mark_http_as) {
-  if (switch_or_field_trial_group ==
-      switches::kMarkHttpAsNonSecureWhileIncognito) {
-    *mark_http_as = NON_SECURE_WHILE_INCOGNITO;
-    *level = (is_incognito || input_events.password_field_shown ||
-              input_events.credit_card_field_edited)
-                 ? security_state::HTTP_SHOW_WARNING
-                 : NONE;
-    return true;
-  }
-  if (switch_or_field_trial_group ==
-      switches::kMarkHttpAsNonSecureWhileIncognitoOrEditing) {
-    *mark_http_as = NON_SECURE_WHILE_INCOGNITO_OR_EDITING;
-    *level = (is_incognito || input_events.insecure_field_edited ||
-              input_events.password_field_shown ||
-              input_events.credit_card_field_edited)
-                 ? security_state::HTTP_SHOW_WARNING
-                 : NONE;
-    return true;
-  }
-  if (switch_or_field_trial_group ==
-      switches::kMarkHttpAsNonSecureAfterEditing) {
-    *mark_http_as = NON_SECURE_AFTER_EDITING;
-    *level = (input_events.insecure_field_edited ||
-              input_events.password_field_shown ||
-              input_events.credit_card_field_edited)
-                 ? security_state::HTTP_SHOW_WARNING
-                 : NONE;
-    return true;
-  }
   if (switch_or_field_trial_group == switches::kMarkHttpAsDangerous) {
     *mark_http_as = NON_SECURE;
     *level = DANGEROUS;
@@ -285,14 +256,12 @@ void SecurityInfoForRequest(
       (visible_security_state.is_incognito &&
        !visible_security_state.is_error_page &&
        security_info->security_level == HTTP_SHOW_WARNING &&
-       (mark_http_as == NON_SECURE_WHILE_INCOGNITO ||
-        mark_http_as == NON_SECURE_WHILE_INCOGNITO_OR_EDITING));
+       (mark_http_as == NON_SECURE_WHILE_INCOGNITO_OR_EDITING));
 
   security_info->field_edit_downgraded_security_level =
       (security_info->security_level == HTTP_SHOW_WARNING &&
        visible_security_state.insecure_input_events.insecure_field_edited &&
-       (mark_http_as == NON_SECURE_AFTER_EDITING ||
-        mark_http_as == NON_SECURE_WHILE_INCOGNITO_OR_EDITING));
+       (mark_http_as == NON_SECURE_WHILE_INCOGNITO_OR_EDITING));
 
   security_info->insecure_input_events =
       visible_security_state.insecure_input_events;

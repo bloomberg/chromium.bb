@@ -25989,8 +25989,12 @@ from previous Chrome versions.
   <int value="2"
       label="Neutral with a verbose warning on sensitive fields (deprecated
              October 2017)"/>
-  <int value="3" label="Neutral with a verbose warning after editing a form"/>
-  <int value="4" label="Neutral with a verbose warning in Incognito mode"/>
+  <int value="3"
+      label="Neutral with a verbose warning after editing a form (deprecated
+             October 2017)"/>
+  <int value="4"
+      label="Neutral with a verbose warning in Incognito mode (deprecated
+             October 2017)"/>
   <int value="5"
       label="Neutral with a verbose warning after editing a form or in
              Incognito mode"/>

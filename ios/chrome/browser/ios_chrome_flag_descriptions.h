@@ -34,9 +34,6 @@ extern const char kInProductHelpDemoModeDescription[];
 extern const char kMarkHttpAsName[];
 extern const char kMarkHttpAsDescription[];
 extern const char kMarkHttpAsDangerous[];
-extern const char kMarkHttpAsNonSecureAfterEditing[];
-extern const char kMarkHttpAsNonSecureWhileIncognito[];
-extern const char kMarkHttpAsNonSecureWhileIncognitoOrEditing[];
 
 // Title and descript for the flag to enable a prompt asking user to choose
 // which mail client app to use to handle mailto:// URLs.
