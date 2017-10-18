@@ -99,7 +99,7 @@ TEST_F(DeviceSettingsServiceTest, LoadNoKey) {
 }
 
 TEST_F(DeviceSettingsServiceTest, LoadNoPolicy) {
-  device_settings_test_helper_.set_device_policy(std::string());
+  session_manager_client_.set_device_policy(std::string());
   ReloadDeviceSettings();
 
   EXPECT_EQ(DeviceSettingsService::STORE_NO_POLICY,
@@ -110,7 +110,7 @@ TEST_F(DeviceSettingsServiceTest, LoadNoPolicy) {
 
 TEST_F(DeviceSettingsServiceTest, LoadValidationError) {
   device_policy_.policy().set_policy_data_signature("bad");
-  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
+  session_manager_client_.set_device_policy(device_policy_.GetBlob());
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   ReloadDeviceSettings();
 
@@ -126,7 +126,7 @@ TEST_F(DeviceSettingsServiceTest, LoadValidationErrorFutureTimestamp) {
   device_policy_.policy_data().set_timestamp(
       (timestamp - base::Time::UnixEpoch()).InMilliseconds());
   device_policy_.Build();
-  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
+  session_manager_client_.set_device_policy(device_policy_.GetBlob());
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   ReloadDeviceSettings();
 
@@ -147,12 +147,12 @@ TEST_F(DeviceSettingsServiceTest, LoadSuccess) {
 
 TEST_F(DeviceSettingsServiceTest, StoreFailure) {
   owner_key_util_->Clear();
-  device_settings_test_helper_.set_device_policy(std::string());
+  session_manager_client_.set_device_policy(std::string());
   ReloadDeviceSettings();
   EXPECT_EQ(DeviceSettingsService::STORE_KEY_UNAVAILABLE,
             device_settings_service_.status());
 
-  device_settings_test_helper_.set_store_device_policy_success(false);
+  session_manager_client_.set_store_device_policy_success(false);
   device_settings_service_.Store(
       device_policy_.GetCopy(),
       base::Bind(&DeviceSettingsServiceTest::SetOperationCompleted,
@@ -165,7 +165,7 @@ TEST_F(DeviceSettingsServiceTest, StoreFailure) {
 
 TEST_F(DeviceSettingsServiceTest, StoreSuccess) {
   owner_key_util_->Clear();
-  device_settings_test_helper_.set_device_policy(std::string());
+  session_manager_client_.set_device_policy(std::string());
   ReloadDeviceSettings();
   EXPECT_EQ(DeviceSettingsService::STORE_KEY_UNAVAILABLE,
             device_settings_service_.status());

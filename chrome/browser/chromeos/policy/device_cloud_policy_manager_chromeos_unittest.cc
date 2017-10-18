@@ -321,7 +321,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, EnrolledDevice) {
 TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   device_policy_.policy_data().set_state(em::PolicyData::UNMANAGED);
   device_policy_.Build();
-  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
+  session_manager_client_.set_device_policy(device_policy_.GetBlob());
 
   LockDevice();
   FlushDeviceSettings();
@@ -352,7 +352,7 @@ TEST_F(DeviceCloudPolicyManagerChromeOSTest, UnmanagedDevice) {
   // Switch back to ACTIVE, service the policy fetch and let it propagate.
   device_policy_.policy_data().set_state(em::PolicyData::ACTIVE);
   device_policy_.Build();
-  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
+  session_manager_client_.set_device_policy(device_policy_.GetBlob());
   em::DeviceManagementResponse policy_fetch_response;
   policy_fetch_response.mutable_policy_response()->add_response()->CopyFrom(
       device_policy_.policy());
@@ -584,22 +584,19 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       url_fetcher->delegate()->OnURLFetchComplete(url_fetcher);
     }
 
+    // Process robot refresh token store and policy store.
     base::RunLoop().RunUntilIdle();
-
-    if (done_)
-      return;
-
-    // Process robot refresh token store.
-    chromeos::DeviceOAuth2TokenService* token_service =
-        chromeos::DeviceOAuth2TokenServiceFactory::Get();
-    EXPECT_TRUE(token_service->RefreshTokenIsAvailable(
-        token_service->GetRobotAccountId()));
-
-    // Process policy store.
-    device_settings_test_helper_.FlushStore();
-    EXPECT_EQ(device_policy_.GetBlob(),
-              device_settings_test_helper_.device_policy());
-
+    if (!done_ || status_.status() == EnrollmentStatus::SUCCESS) {
+      // Verify the state only if the task is not yet failed.
+      // Note that, if the flow is not yet |done_| here, assume that it is
+      // in the "succeeding" flow, so verify here, too.
+      chromeos::DeviceOAuth2TokenService* token_service =
+          chromeos::DeviceOAuth2TokenServiceFactory::Get();
+      EXPECT_TRUE(token_service->RefreshTokenIsAvailable(
+          token_service->GetRobotAccountId()));
+      EXPECT_EQ(device_policy_.GetBlob(),
+                session_manager_client_.device_policy());
+    }
     if (done_)
       return;
 
@@ -616,7 +613,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         .Times(AtMost(1));
 
     // Key installation and policy load.
-    device_settings_test_helper_.set_device_policy(loaded_blob_);
+    session_manager_client_.set_device_policy(loaded_blob_);
     owner_key_util_->SetPublicKeyFromPrivateKey(
         *device_policy_.GetNewSigningKey());
     ReloadDeviceSettings();
@@ -746,7 +743,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, StoreError) {
-  device_settings_test_helper_.set_store_device_policy_success(false);
+  session_manager_client_.set_store_device_policy_success(false);
   RunTest();
   ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
   EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR,

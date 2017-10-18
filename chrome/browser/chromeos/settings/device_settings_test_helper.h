@@ -5,10 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_TEST_HELPER_H_
 #define CHROME_BROWSER_CHROMEOS_SETTINGS_DEVICE_SETTINGS_TEST_HELPER_H_
 
-#include <map>
 #include <memory>
-#include <string>
-#include <vector>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -30,83 +27,15 @@ namespace chromeos {
 
 class DBusThreadManagerSetter;
 
-// A helper class for tests faking session_manager's device settings
-// interface. The pattern is to initialize DeviceSettingsService with the helper
-// for the SessionManagerClient pointer. The helper records calls made by
-// DeviceSettingsService. The test can then verify state, after which it should
-// call one of the Flush() variants that will resume processing.
-class DeviceSettingsTestHelper : public FakeSessionManagerClient {
- public:
-  // Wraps a device settings service instance for testing.
-  DeviceSettingsTestHelper();
-  ~DeviceSettingsTestHelper() override;
-
-  // Runs all pending store callbacks.
-  void FlushStore();
-
-  // Runs all pending retrieve callbacks.
-  void FlushRetrieve();
-
-  // Flushes all pending operations.
-  void Flush();
-
-  const std::string& device_local_account_policy_blob(
-      const std::string& id) const {
-    const std::map<std::string, PolicyState>::const_iterator entry =
-        device_local_account_policy_.find(id);
-    return entry == device_local_account_policy_.end() ?
-        base::EmptyString() : entry->second.policy_blob_;
-  }
-
-  void set_device_local_account_policy_blob(const std::string& id,
-                                            const std::string& policy_blob) {
-    device_local_account_policy_[id].policy_blob_ = policy_blob;
-  }
-
-  // SessionManagerClient:
-  void RetrieveDeviceLocalAccountPolicy(
-      const std::string& account_id,
-      const RetrievePolicyCallback& callback) override;
-  RetrievePolicyResponseType BlockingRetrieveDeviceLocalAccountPolicy(
-      const std::string& account_id,
-      std::string* policy_out) override;
-  void StoreDeviceLocalAccountPolicy(
-      const std::string& account_id,
-      const std::string& policy_blob,
-      const StorePolicyCallback& callback) override;
-
- private:
-  struct PolicyState {
-    bool store_result_;
-    std::string policy_blob_;
-    std::vector<StorePolicyCallback> store_callbacks_;
-    std::vector<RetrievePolicyCallback> retrieve_callbacks_;
-
-    PolicyState();
-    PolicyState(const PolicyState& other);
-    ~PolicyState();
-
-    bool HasPendingOperations() const {
-      return !store_callbacks_.empty() || !retrieve_callbacks_.empty();
-    }
-  };
-
-  // Checks whether any asynchronous Store/Retrieve operations are pending.
-  bool HasPendingOperations() const;
-
-  std::map<std::string, PolicyState> device_local_account_policy_;
-
-  DISALLOW_COPY_AND_ASSIGN(DeviceSettingsTestHelper);
-};
-
 // Wraps the singleton device settings and initializes it to the point where it
 // reports OWNERSHIP_NONE for the ownership status.
-class ScopedDeviceSettingsTestHelper : public DeviceSettingsTestHelper {
+class ScopedDeviceSettingsTestHelper {
  public:
   ScopedDeviceSettingsTestHelper();
-  ~ScopedDeviceSettingsTestHelper() override;
+  ~ScopedDeviceSettingsTestHelper();
 
  private:
+  FakeSessionManagerClient session_manager_client_;
   DISALLOW_COPY_AND_ASSIGN(ScopedDeviceSettingsTestHelper);
 };
 
@@ -135,7 +64,7 @@ class DeviceSettingsTestBase : public testing::Test {
 
   policy::DevicePolicyBuilder device_policy_;
 
-  DeviceSettingsTestHelper device_settings_test_helper_;
+  FakeSessionManagerClient session_manager_client_;
   // Note that FakeUserManager is used by ProfileHelper, which some of the
   // tested classes depend on implicitly.
   FakeChromeUserManager* user_manager_;

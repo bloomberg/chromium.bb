@@ -20,107 +20,18 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_utils.h"
 
-using RetrievePolicyResponseType =
-    chromeos::DeviceSettingsTestHelper::RetrievePolicyResponseType;
-
 namespace chromeos {
-
-DeviceSettingsTestHelper::DeviceSettingsTestHelper() {}
-
-DeviceSettingsTestHelper::~DeviceSettingsTestHelper() {}
-
-void DeviceSettingsTestHelper::FlushStore() {
-  std::vector<StorePolicyCallback> callbacks;
-  std::map<std::string, PolicyState>::iterator device_local_account_state;
-  for (device_local_account_state = device_local_account_policy_.begin();
-       device_local_account_state != device_local_account_policy_.end();
-       ++device_local_account_state) {
-    callbacks.swap(device_local_account_state->second.store_callbacks_);
-    for (std::vector<StorePolicyCallback>::iterator cb(callbacks.begin());
-         cb != callbacks.end(); ++cb) {
-      cb->Run(device_local_account_state->second.store_result_);
-    }
-  }
-}
-
-void DeviceSettingsTestHelper::FlushRetrieve() {
-  std::map<std::string, PolicyState>::iterator device_local_account_state;
-  for (device_local_account_state = device_local_account_policy_.begin();
-       device_local_account_state != device_local_account_policy_.end();
-       ++device_local_account_state) {
-    std::vector<RetrievePolicyCallback> callbacks;
-    callbacks.swap(device_local_account_state->second.retrieve_callbacks_);
-    for (std::vector<RetrievePolicyCallback>::iterator cb(callbacks.begin());
-         cb != callbacks.end(); ++cb) {
-      cb->Run(device_local_account_state->second.policy_blob_,
-              RetrievePolicyResponseType::SUCCESS);
-    }
-  }
-}
-
-void DeviceSettingsTestHelper::Flush() {
-  do {
-    content::RunAllTasksUntilIdle();
-    FlushStore();
-    content::RunAllTasksUntilIdle();
-    FlushRetrieve();
-    content::RunAllTasksUntilIdle();
-  } while (HasPendingOperations());
-}
-
-bool DeviceSettingsTestHelper::HasPendingOperations() const {
-  std::map<std::string, PolicyState>::const_iterator device_local_account_state;
-  for (device_local_account_state = device_local_account_policy_.begin();
-       device_local_account_state != device_local_account_policy_.end();
-       ++device_local_account_state) {
-    if (device_local_account_state->second.HasPendingOperations())
-      return true;
-  }
-
-  return false;
-}
-
-void DeviceSettingsTestHelper::RetrieveDeviceLocalAccountPolicy(
-    const std::string& account_id,
-    const RetrievePolicyCallback& callback) {
-  device_local_account_policy_[account_id].retrieve_callbacks_.push_back(
-      callback);
-}
-
-RetrievePolicyResponseType
-DeviceSettingsTestHelper::BlockingRetrieveDeviceLocalAccountPolicy(
-    const std::string& account_id,
-    std::string* policy_out) {
-  *policy_out = "";
-  return RetrievePolicyResponseType::SUCCESS;
-}
-
-void DeviceSettingsTestHelper::StoreDeviceLocalAccountPolicy(
-    const std::string& account_id,
-    const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
-  device_local_account_policy_[account_id].policy_blob_ = policy_blob;
-  device_local_account_policy_[account_id].store_callbacks_.push_back(callback);
-}
-
-DeviceSettingsTestHelper::PolicyState::PolicyState()
-    : store_result_(true) {}
-
-DeviceSettingsTestHelper::PolicyState::PolicyState(const PolicyState& other) =
-    default;
-
-DeviceSettingsTestHelper::PolicyState::~PolicyState() {}
 
 ScopedDeviceSettingsTestHelper::ScopedDeviceSettingsTestHelper() {
   DeviceSettingsService::Initialize();
   DeviceSettingsService::Get()->SetSessionManager(
-      this, new ownership::MockOwnerKeyUtil());
+      &session_manager_client_, new ownership::MockOwnerKeyUtil());
   DeviceSettingsService::Get()->Load();
-  Flush();
+  content::RunAllTasksUntilIdle();
 }
 
 ScopedDeviceSettingsTestHelper::~ScopedDeviceSettingsTestHelper() {
-  Flush();
+  content::RunAllTasksUntilIdle();
   DeviceSettingsService::Get()->UnsetSessionManager();
   DeviceSettingsService::Shutdown();
 }
@@ -150,8 +61,8 @@ void DeviceSettingsTestBase::SetUp() {
       false);
   owner_key_util_->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   device_policy_.Build();
-  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
-  device_settings_service_.SetSessionManager(&device_settings_test_helper_,
+  session_manager_client_.set_device_policy(device_policy_.GetBlob());
+  device_settings_service_.SetSessionManager(&session_manager_client_,
                                              owner_key_util_);
   profile_.reset(new TestingProfile());
 }
@@ -164,7 +75,7 @@ void DeviceSettingsTestBase::TearDown() {
 }
 
 void DeviceSettingsTestBase::FlushDeviceSettings() {
-  device_settings_test_helper_.Flush();
+  content::RunAllTasksUntilIdle();
 }
 
 void DeviceSettingsTestBase::ReloadDeviceSettings() {

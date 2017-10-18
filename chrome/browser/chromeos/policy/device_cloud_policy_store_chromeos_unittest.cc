@@ -138,7 +138,7 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, LoadNoKey) {
 }
 
 TEST_F(DeviceCloudPolicyStoreChromeOSTest, LoadNoPolicy) {
-  device_settings_test_helper_.set_device_policy(std::string());
+  session_manager_client_.set_device_policy(std::string());
   store_->Load();
   FlushDeviceSettings();
   ExpectFailure(CloudPolicyStore::STATUS_LOAD_ERROR);
@@ -198,7 +198,6 @@ TEST_F(DeviceCloudPolicyStoreChromeOSTest, StoreKeyRotation) {
   device_policy_.Build();
   store_->Store(device_policy_.policy());
   content::RunAllTasksUntilIdle();
-  device_settings_test_helper_.FlushStore();
   owner_key_util_->SetPublicKeyFromPrivateKey(
       *device_policy_.GetNewSigningKey());
   ReloadDeviceSettings();

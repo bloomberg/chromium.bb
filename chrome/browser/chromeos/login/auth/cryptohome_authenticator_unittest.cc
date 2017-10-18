@@ -46,6 +46,7 @@
 #include "chromeos/login/login_state.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "crypto/nss_key_util.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
@@ -479,7 +480,7 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededFailedMount) {
 
   // Flush all the pending operations. The operations should induce an owner
   // verification.
-  device_settings_test_helper_.Flush();
+  content::RunAllTasksUntilIdle();
 
   state_.reset(new TestAttemptState(user_context_, false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);
@@ -529,7 +530,7 @@ TEST_F(CryptohomeAuthenticatorTest, ResolveOwnerNeededSuccess) {
 
   // Flush all the pending operations. The operations should induce an owner
   // verification.
-  device_settings_test_helper_.Flush();
+  content::RunAllTasksUntilIdle();
 
   state_.reset(new TestAttemptState(user_context_, false));
   state_->PresetCryptohomeStatus(true, cryptohome::MOUNT_ERROR_NONE);

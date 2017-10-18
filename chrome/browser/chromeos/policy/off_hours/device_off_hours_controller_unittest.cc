@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/policy/off_hours/device_off_hours_controller.h"
 
+#include <string>
 #include <utility>
 
 #include "base/time/time.h"
@@ -46,7 +47,7 @@ class DeviceOffHoursControllerTest : public DeviceSettingsTestBase {
 
   void SetDeviceSettings() {
     device_policy_.Build();
-    device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
+    session_manager_client_.set_device_policy(device_policy_.GetBlob());
     ReloadDeviceSettings();
   }
 

@@ -11,22 +11,24 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_manager_chromeos.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/policy/server_backed_device_state.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
-#include "chrome/browser/chromeos/settings/device_settings_test_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -275,7 +277,7 @@ class DeviceDisablingManagerTest : public DeviceDisablingManagerTestBase,
  private:
   void SimulatePolicyFetch();
 
-  chromeos::DeviceSettingsTestHelper device_settings_test_helper_;
+  FakeSessionManagerClient session_manager_client_;
   policy::DevicePolicyBuilder device_policy_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDisablingManagerTest);
@@ -305,8 +307,7 @@ void DeviceDisablingManagerTest::MakeCrosSettingsTrusted() {
       new ownership::MockOwnerKeyUtil);
   owner_key_util->SetPublicKeyFromPrivateKey(*device_policy_.GetSigningKey());
   chromeos::DeviceSettingsService::Get()->SetSessionManager(
-      &device_settings_test_helper_,
-      owner_key_util);
+      &session_manager_client_, owner_key_util);
   SimulatePolicyFetch();
 }
 
@@ -329,9 +330,9 @@ void DeviceDisablingManagerTest::SetDisabledMessage(
 
 void DeviceDisablingManagerTest::SimulatePolicyFetch() {
   device_policy_.Build();
-  device_settings_test_helper_.set_device_policy(device_policy_.GetBlob());
+  session_manager_client_.set_device_policy(device_policy_.GetBlob());
   chromeos::DeviceSettingsService::Get()->OwnerKeySet(true);
-  device_settings_test_helper_.Flush();
+  content::RunAllTasksUntilIdle();
 }
 
 // Verifies that the device is not considered disabled by default when it is
