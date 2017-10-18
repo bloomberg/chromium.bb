@@ -1,5 +1,5 @@
 {
-  "Fuchsia Compile SANDBOX": {
+  "Fuchsia x64 SANDBOX": {
     "additional_compile_targets": [
       "base_unittests",
       "content_unittests",
