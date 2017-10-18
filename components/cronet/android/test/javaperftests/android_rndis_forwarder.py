@@ -107,9 +107,11 @@ class AndroidRndisForwarder(object):
     (e.g. Telemetry crashes). A power cycle or "adb reboot" is a simple
     workaround around in that case.
     """
+    # NOTE(pauljensen): On Nougat this can produce a weird message and return
+    # a non-zero value, but routing still seems fine, so don't check_return.
     self._device.RunShellCommand(
         ['route', 'add', 'default', 'gw', self.host_ip,
-         'dev', self._device_iface], check_return=True)
+         'dev', self._device_iface])
 
   def _RestoreDefaultGateway(self):
     self._device.RunShellCommand(
@@ -191,6 +193,10 @@ class AndroidRndisConfigurator(object):
         interface_name = line.split(':')[-2].strip()
       elif ether_address in line:
         return interface_name
+      # NOTE(pauljensen): |ether_address| seems incorrect on Nougat devices,
+      # but just going by the host interface name seems safe enough.
+      elif interface_name == 'usb0':
+        return interface_name
 
   def _WriteProtectedFile(self, file_path, contents):
     subprocess.check_call(
@@ -227,11 +233,8 @@ class AndroidRndisConfigurator(object):
         ['/usr/bin/sudo', 'installer', '-pkg', pkg_path, '-target', '/'])
 
   def _DisableRndis(self):
-    try:
-      self._device.SetProp('sys.usb.config', 'adb')
-    except device_errors.AdbCommandFailedError:
-      # Ignore exception due to USB connection being reset.
-      pass
+    # Set expect_status=None as this will temporarily break the adb connection.
+    self._device.adb.Shell('setprop sys.usb.config adb', expect_status=None)
     self._device.WaitUntilFullyBooted()
 
   def _EnableRndis(self):
@@ -263,7 +266,7 @@ function doit() {
   # For some combinations of devices and host kernels, adb won't work unless the
   # interface is up, but if we bring it up immediately, it will break adb.
   #sleep 1
-  #ifconfig rndis0 192.168.123.2 netmask 255.255.255.0 up
+  ifconfig rndis0 192.168.123.2 netmask 255.255.255.0 up
   echo DONE >> %(prefix)s.log
 }
 
