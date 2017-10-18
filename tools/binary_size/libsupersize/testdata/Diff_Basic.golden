@@ -63,7 +63,7 @@ Index | Running Total | Section@Address | ...
 = 2)         10 (100.0%) r@0x284d600  +0 (3425->3425)  num_aliases=1
                source_path= 	object_path=
                flags={}  name=** merge constants
-= 3)         10 (100.0%) r@Group      +0 (2637617->2637617)  count=2
+= 3)         10 (100.0%) r@Group      +0 (48->48)  count=2
                source_path= 	object_path=
                flags={}  name=** merge strings
 = 4)         10 (100.0%) R@0x2ddc608  +0 (0->0)  num_aliases=1

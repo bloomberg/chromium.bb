@@ -83,6 +83,9 @@ DIFF_STATUS_REMOVED = 3
 DIFF_PREFIX_BY_STATUS = ['= ', '~ ', '+ ', '- ']
 
 
+STRING_LITERAL_NAME_PREFIX = 'string literal '
+
+
 class SizeInfo(object):
   """Represents all size information for a single binary.
 
@@ -816,6 +819,8 @@ class SymbolGroup(BaseSymbol):
         # min_count=2 will ensure order is maintained while not being grouped.
         # "&" to distinguish from real symbol names, id() to ensure uniqueness.
         name = '&' + hex(id(symbol))
+      elif name.startswith(STRING_LITERAL_NAME_PREFIX):
+        name = 'string literals'
       elif name.startswith('*'):
         # "symbol gap 3" -> "symbol gaps"
         name = re.sub(r'\s+\d+( \(.*\))?$', 's', name)

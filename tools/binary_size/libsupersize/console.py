@@ -23,6 +23,7 @@ import diff
 import file_format
 import match_util
 import models
+import nm
 import paths
 
 
@@ -73,6 +74,7 @@ class _Session(object):
         'Print': self._PrintFunc,
         'Csv': self._CsvFunc,
         'Diff': self._DiffFunc,
+        'ReadStringLiterals': self._ReadStringLiterals,
         'Disassemble': self._DisassembleFunc,
         'ExpandRegex': match_util.ExpandRegexIdentifierPlaceholder,
         'ShowExamples': self._ShowExamplesFunc,
@@ -89,6 +91,44 @@ class _Session(object):
     else:
       for i, size_info in enumerate(size_infos):
         self._variables['size_info%d' % (i + 1)] = size_info
+
+  def _ReadStringLiterals(self, thing=None, elf_path=None):
+    """Returns a list of (symbol, string value) for all string literal symbols.
+
+    E.g.:
+      # Print sorted list of all string literals:
+      Print(sorted(x[1] for x in ReadStringLiterals()))
+    Args:
+      thing: Can be a Symbol, iterable of symbols, or SizeInfo.
+           Defaults to the current SizeInfo.
+      elf_path: Path to the executable containing the symbol. Required only
+          when auto-detection fails.
+    """
+    if thing is None:
+      thing = self._size_infos[-1]
+    if isinstance(thing, models.SizeInfo):
+      thing = thing.raw_symbols.IterUniqueSymbols()
+    elif isinstance(thing, models.BaseSymbol):
+      thing = thing.IterLeafSymbols()
+
+    thing, thing_clone = itertools.tee(thing)
+    first_sym = next(thing_clone, None)
+    if not first_sym:
+      return []
+    size_info = self._SizeInfoForSymbol(first_sym)
+    elf_path, tool_prefix = self._ElfPathAndToolPrefixForSymbol(
+        size_info, elf_path)
+
+    address, offset, _ = nm.LookupElfRodataInfo(elf_path, tool_prefix)
+    adjust = offset - address
+    ret = []
+    with open(elf_path) as f:
+      for symbol in thing:
+        if symbol.full_name.startswith(models.STRING_LITERAL_NAME_PREFIX):
+          f.seek(symbol.address + adjust)
+          data = f.read(symbol.size_without_padding)
+          ret.append((symbol, data))
+    return ret
 
   def _DiffFunc(self, before=None, after=None, sort=True):
     """Diffs two SizeInfo objects. Returns a DeltaSizeInfo.
@@ -227,6 +267,12 @@ class _Session(object):
     logging.warning('Found no source paths in objdump output.')
     return None
 
+  def _SizeInfoForSymbol(self, symbol):
+    for size_info in self._size_infos:
+      if symbol in size_info.raw_symbols:
+        return size_info
+    assert False, 'Symbol does not belong to a size_info.'
+
   def _DisassembleFunc(self, symbol, elf_path=None, use_pager=None,
                        to_file=None):
     """Shows objdump disassembly for the given symbol.
@@ -240,12 +286,7 @@ class _Session(object):
     assert symbol.address and symbol.section_name == '.text'
     assert not symbol.IsDelta(), ('Cannot disasseble a Diff\'ed symbol. Try '
                                   'passing .before_symbol or .after_symbol.')
-    size_info = None
-    for size_info in self._size_infos:
-      if symbol in size_info.raw_symbols:
-        break
-    else:
-      assert False, 'Symbol does not belong to a size_info.'
+    size_info = self._SizeInfoForSymbol(symbol)
 
     elf_path, tool_prefix = self._ElfPathAndToolPrefixForSymbol(
         size_info, elf_path)
@@ -291,6 +332,9 @@ class _Session(object):
         '',
         '# Dump section info and all symbols in CSV format:',
         'Csv(size_info)',
+        '',
+        '# Print sorted list of all string literals:',
+        'Print(sorted(x[1] for x in ReadStringLiterals()))',
         '',
         '# Show two levels of .text, grouped by first two subdirectories',
         'text_syms = size_info.symbols.WhereInSection("t")',

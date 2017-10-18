@@ -28,6 +28,12 @@ class ConcurrentTest(unittest.TestCase):
     decoded = concurrent.DecodeDictOfLists(encoded)
     self.assertEquals(test_dict, decoded)
 
+  def testEncodeDictOfLists_EmptyValue(self):
+    test_dict = {'foo': []}
+    encoded = concurrent.EncodeDictOfLists(test_dict)
+    decoded = concurrent.DecodeDictOfLists(encoded)
+    self.assertEquals(test_dict, decoded)
+
   def testEncodeDictOfLists_AllStrings(self):
     test_dict = {'foo': ['a', 'b', 'c'], 'foo2': ['a', 'b']}
     encoded = concurrent.EncodeDictOfLists(test_dict)
@@ -40,15 +46,11 @@ class ConcurrentTest(unittest.TestCase):
     decoded = concurrent.DecodeDictOfLists(encoded, key_transform=int)
     self.assertEquals(test_dict, decoded)
 
-  def testEncodeDictOfLists_Join(self):
-    test_dict1 = {'key1': ['a']}
-    test_dict2 = {'key2': ['b']}
-    expected = {'key1': ['a'], 'key2': ['b']}
-    encoded1 = concurrent.EncodeDictOfLists(test_dict1)
-    encoded2 = concurrent.EncodeDictOfLists({})
-    encoded3 = concurrent.EncodeDictOfLists(test_dict2)
-    encoded = concurrent.JoinEncodedDictOfLists([encoded1, encoded2, encoded3])
-    decoded = concurrent.DecodeDictOfLists(encoded)
+  def testEncodeDictOfLists_ValueTransform(self):
+    test_dict = {'a': ['0', '1', '2'], 'b': ['3', '4']}
+    expected = {'a': [0, 1, 2], 'b': [3, 4]}
+    encoded = concurrent.EncodeDictOfLists(test_dict)
+    decoded = concurrent.DecodeDictOfLists(encoded, value_transform=int)
     self.assertEquals(expected, decoded)
 
   def testEncodeDictOfLists_Join_Empty(self):
@@ -58,6 +60,24 @@ class ConcurrentTest(unittest.TestCase):
     encoded1 = concurrent.EncodeDictOfLists(test_dict1)
     encoded2 = concurrent.EncodeDictOfLists(test_dict2)
     encoded = concurrent.JoinEncodedDictOfLists([encoded1, encoded2])
+    decoded = concurrent.DecodeDictOfLists(encoded)
+    self.assertEquals(expected, decoded)
+
+  def testEncodeDictOfLists_Join_Singl(self):
+    test_dict1 = {'key1': ['a']}
+    encoded1 = concurrent.EncodeDictOfLists(test_dict1)
+    encoded = concurrent.JoinEncodedDictOfLists([encoded1])
+    decoded = concurrent.DecodeDictOfLists(encoded)
+    self.assertEquals(test_dict1, decoded)
+
+  def testEncodeDictOfLists_JoinMultiple(self):
+    test_dict1 = {'key1': ['a']}
+    test_dict2 = {'key2': ['b']}
+    expected = {'key1': ['a'], 'key2': ['b']}
+    encoded1 = concurrent.EncodeDictOfLists(test_dict1)
+    encoded2 = concurrent.EncodeDictOfLists({})
+    encoded3 = concurrent.EncodeDictOfLists(test_dict2)
+    encoded = concurrent.JoinEncodedDictOfLists([encoded1, encoded2, encoded3])
     decoded = concurrent.DecodeDictOfLists(encoded)
     self.assertEquals(expected, decoded)
 

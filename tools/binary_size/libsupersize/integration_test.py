@@ -173,6 +173,7 @@ class IntegrationTest(unittest.TestCase):
           'canned_queries.CategorizeGenerated()',
           'canned_queries.CategorizeByChromeComponent()',
           'canned_queries.TemplatesByName()',
+          'Print(ReadStringLiterals(elf_path={}))'.format(repr(_TEST_ELF_PATH)),
           'Print(size_info, to_file=%r)' % output_file.name,
       ]
       ret = _RunApp('console', [size_file.name, '--query', '; '.join(query)])
