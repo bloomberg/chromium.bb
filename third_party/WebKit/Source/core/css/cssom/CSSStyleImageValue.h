@@ -55,13 +55,13 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   CSSStyleImageValue(const CSSImageValue* image_value)
       : image_value_(image_value) {}
 
-  virtual LayoutSize ImageLayoutSize() const {
+  virtual IntSize ImageSize() const {
     DCHECK(!IsCachePending());
     ImageResourceContent* resource_content =
         image_value_->CachedImage()->CachedImage();
     return resource_content
-               ? resource_content->ImageSize(kDoNotRespectImageOrientation, 1)
-               : LayoutSize(0, 0);
+               ? resource_content->IntrinsicSize(kDoNotRespectImageOrientation)
+               : IntSize(0, 0);
   }
 
   virtual bool IsCachePending() const { return image_value_->IsCachePending(); }

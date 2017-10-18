@@ -10,14 +10,14 @@ double CSSStyleImageValue::intrinsicWidth(bool& is_null) const {
   is_null = IsCachePending();
   if (is_null)
     return 0;
-  return ImageLayoutSize().Width().ToDouble();
+  return ImageSize().Width();
 }
 
 double CSSStyleImageValue::intrinsicHeight(bool& is_null) const {
   is_null = IsCachePending();
   if (is_null)
     return 0;
-  return ImageLayoutSize().Height().ToDouble();
+  return ImageSize().Height();
 }
 
 double CSSStyleImageValue::intrinsicRatio(bool& is_null) {
