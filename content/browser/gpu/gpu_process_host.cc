@@ -596,16 +596,17 @@ bool GpuProcessHost::Init() {
 
   process_->GetHost()->CreateChannelMojo();
 
-  gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
-  GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(&gpu_preferences);
   if (in_process_) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(GetGpuMainThreadFactory());
-    in_process_gpu_thread_.reset(
-        GetGpuMainThreadFactory()(InProcessChildThreadParams(
+    gpu::GpuPreferences gpu_preferences = GetGpuPreferencesFromCommandLine();
+    GpuDataManagerImpl::GetInstance()->UpdateGpuPreferences(&gpu_preferences);
+    in_process_gpu_thread_.reset(GetGpuMainThreadFactory()(
+        InProcessChildThreadParams(
             base::ThreadTaskRunnerHandle::Get(),
             process_->GetInProcessBrokerClientInvitation(),
-            process_->child_connection()->service_token())));
+            process_->child_connection()->service_token()),
+        gpu_preferences));
     base::Thread::Options options;
 #if defined(OS_WIN)
     // WGL needs to create its own window and pump messages on it.
@@ -627,7 +628,7 @@ bool GpuProcessHost::Init() {
   viz::mojom::GpuHostPtr host_proxy;
   gpu_host_binding_.Bind(mojo::MakeRequest(&host_proxy));
   gpu_main_ptr_->CreateGpuService(mojo::MakeRequest(&gpu_service_ptr_),
-                                  std::move(host_proxy), gpu_preferences,
+                                  std::move(host_proxy),
                                   activity_flags_.CloneHandle());
 
 #if defined(USE_OZONE)

@@ -15,7 +15,9 @@
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/common/activity_flags.h"
+#include "gpu/config/gpu_switches.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/common/gpu_preferences_util.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
@@ -80,12 +82,20 @@ GpuMain::GpuMain(Delegate* delegate,
   }
 
   if (!gpu_init_) {
+    base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+    gpu::GpuPreferences gpu_preferences;
+    if (command_line->HasSwitch(switches::kGpuPreferences)) {
+      std::string value =
+          command_line->GetSwitchValueASCII(switches::kGpuPreferences);
+      bool success = gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
+      CHECK(success);
+    }
     // Initialize GpuInit before starting the IO or compositor threads.
     gpu_init_ = std::make_unique<gpu::GpuInit>();
     gpu_init_->set_sandbox_helper(this);
     // TODO(crbug.com/609317): Use InitializeAndStartSandbox() when gpu-mus is
     // split into a separate process.
-    gpu_init_->InitializeInProcess(base::CommandLine::ForCurrentProcess());
+    gpu_init_->InitializeInProcess(command_line, gpu_preferences);
   }
 
   if (!dependencies_.io_thread_task_runner)
@@ -99,7 +109,7 @@ GpuMain::GpuMain(Delegate* delegate,
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(),
       io_thread_ ? io_thread_->task_runner()
                  : dependencies_.io_thread_task_runner,
-      gpu_init_->gpu_feature_info());
+      gpu_init_->gpu_feature_info(), gpu_init_->gpu_preferences());
 }
 
 GpuMain::~GpuMain() {
@@ -153,10 +163,9 @@ void GpuMain::TearDown() {
 
 void GpuMain::CreateGpuService(viz::mojom::GpuServiceRequest request,
                                viz::mojom::GpuHostPtr gpu_host,
-                               const gpu::GpuPreferences& preferences,
                                mojo::ScopedSharedBufferHandle activity_flags) {
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
-  gpu_service_->UpdateGPUInfoFromPreferences(preferences);
+  gpu_service_->UpdateGPUInfo();
   for (const LogMessage& log : log_messages_)
     gpu_host->RecordLogMessage(log.severity, log.header, log.message);
   log_messages_.clear();

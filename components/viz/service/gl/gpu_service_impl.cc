@@ -98,12 +98,14 @@ GpuServiceImpl::GpuServiceImpl(
     const gpu::GPUInfo& gpu_info,
     std::unique_ptr<gpu::GpuWatchdogThread> watchdog_thread,
     scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-    const gpu::GpuFeatureInfo& gpu_feature_info)
+    const gpu::GpuFeatureInfo& gpu_feature_info,
+    const gpu::GpuPreferences& gpu_preferences)
     : main_runner_(base::ThreadTaskRunnerHandle::Get()),
       io_runner_(std::move(io_runner)),
       watchdog_thread_(std::move(watchdog_thread)),
       gpu_memory_buffer_factory_(
           gpu::GpuMemoryBufferFactory::CreateNativeType()),
+      gpu_preferences_(gpu_preferences),
       gpu_info_(gpu_info),
       gpu_feature_info_(gpu_feature_info),
       bindings_(base::MakeUnique<mojo::BindingSet<mojom::GpuService>>()),
@@ -136,11 +138,9 @@ GpuServiceImpl::~GpuServiceImpl() {
     owned_shutdown_event_->Signal();
 }
 
-void GpuServiceImpl::UpdateGPUInfoFromPreferences(
-    const gpu::GpuPreferences& preferences) {
+void GpuServiceImpl::UpdateGPUInfo() {
   DCHECK(main_runner_->BelongsToCurrentThread());
   DCHECK(!gpu_host_);
-  gpu_preferences_ = preferences;
   gpu::GpuDriverBugWorkarounds gpu_workarounds(
       gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   gpu_info_.video_decode_accelerator_capabilities =

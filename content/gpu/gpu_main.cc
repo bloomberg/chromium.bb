@@ -36,6 +36,7 @@
 #include "gpu/config/gpu_switches.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "gpu/ipc/common/gpu_preferences_util.h"
 #include "gpu/ipc/service/gpu_config.h"
 #include "gpu/ipc/service/gpu_init.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
@@ -267,6 +268,13 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_init->set_sandbox_helper(&sandbox_helper);
 
+  gpu::GpuPreferences gpu_preferences;
+  if (command_line.HasSwitch(switches::kGpuPreferences)) {
+    std::string value =
+        command_line.GetSwitchValueASCII(switches::kGpuPreferences);
+    bool success = gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
+    CHECK(success);
+  }
   // Gpu initialization may fail for various reasons, in which case we will need
   // to tear down this process. However, we can not do so safely until the IPC
   // channel is set up, because the detection of early return of a child process
@@ -276,7 +284,7 @@ int GpuMain(const MainFunctionParams& parameters) {
   // defer tearing down the GPU process until receiving the initialization
   // message from the browser (through mojom::GpuMain::CreateGpuService()).
   const bool init_success = gpu_init->InitializeAndStartSandbox(
-      const_cast<base::CommandLine*>(&command_line));
+      const_cast<base::CommandLine*>(&command_line), gpu_preferences);
   const bool dead_on_arrival = !init_success;
 
   logging::SetLogMessageHandler(NULL);
