@@ -50,13 +50,7 @@ void NodeEventContext::HandleLocalEvents(Event& event) const {
   if (TouchEventContext* touch_context = GetTouchEventContext()) {
     touch_context->HandleLocalEvents(event);
   } else if (RelatedTarget()) {
-    if (event.IsMouseEvent()) {
-      ToMouseEvent(event).SetRelatedTarget(RelatedTarget());
-    } else if (event.IsPointerEvent()) {
-      ToPointerEvent(event).SetRelatedTarget(RelatedTarget());
-    } else if (event.IsFocusEvent()) {
-      ToFocusEvent(event).SetRelatedTarget(RelatedTarget());
-    }
+    event.SetRelatedTargetIfExists(RelatedTarget());
   }
   event.SetTarget(Target());
   event.SetCurrentTarget(current_target_.Get());

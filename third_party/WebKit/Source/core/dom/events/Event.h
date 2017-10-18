@@ -123,6 +123,8 @@ class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
   // is dangerous.
   virtual void DoneDispatchingEventAtCurrentTarget() {}
 
+  void SetRelatedTargetIfExists(EventTarget* related_target);
+
   unsigned short eventPhase() const { return event_phase_; }
   void SetEventPhase(unsigned short event_phase) { event_phase_ = event_phase; }
 

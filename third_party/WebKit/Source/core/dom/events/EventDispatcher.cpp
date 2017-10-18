@@ -186,12 +186,6 @@ DispatchEventResult EventDispatcher::Dispatch() {
   }
   DispatchEventPostProcess(activation_target,
                            pre_dispatch_event_handler_result);
-
-  // Ensure that after event dispatch, the event's target object is the
-  // outermost shadow DOM boundary.
-  event_->SetTarget(event_->GetEventPath().GetWindowEventContext().Target());
-  event_->SetCurrentTarget(nullptr);
-
   return EventTarget::GetDispatchEventResult(*event_);
 }
 
@@ -272,7 +266,8 @@ inline void EventDispatcher::DispatchEventPostProcess(
   event_->SetStopImmediatePropagation(false);
   // 15. Set event’s eventPhase attribute to NONE.
   event_->SetEventPhase(0);
-  // 16. Set event’s currentTarget attribute to null.
+  // TODO(rakina): investigate this and move it to the bottom of step 16
+  // 17. Set event’s currentTarget attribute to null.
   event_->SetCurrentTarget(nullptr);
 
   bool is_click = event_->IsMouseEvent() &&
@@ -346,6 +341,11 @@ inline void EventDispatcher::DispatchEventPostProcess(
     UseCounter::Count(node_->GetDocument(),
                       WebFeature::kUntrustedMouseDownEventDispatchedToSelect);
   }
+  // 16. If target's root is a shadow root, then set event's target attribute
+  // and event's relatedTarget to null.
+  event_->SetTarget(event_->GetEventPath().GetWindowEventContext().Target());
+  if (!event_->target())
+    event_->SetRelatedTargetIfExists(nullptr);
 }
 
 }  // namespace blink
