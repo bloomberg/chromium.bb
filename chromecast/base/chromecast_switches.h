@@ -69,6 +69,9 @@ extern const char kLoopbackI2sRateHz[];
 // Graphics switches
 extern const char kDesktopWindow1080p[];
 
+// UI switches
+extern const char kEnableInput[];
+
 }  // namespace switches
 
 namespace chromecast {

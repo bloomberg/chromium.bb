@@ -10,6 +10,10 @@
 #include "base/macros.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace ui {
+class Event;
+}  // namespace ui
+
 namespace chromecast {
 
 // Chromecast's window-manager interface.
@@ -49,6 +53,9 @@ class CastWindowManager {
 
   // Return the root window that holds all top-level windows.
   virtual gfx::NativeView GetRootWindow() = 0;
+
+  // Inject a UI event into the Cast window.
+  virtual void InjectEvent(ui::Event* event) = 0;
 };
 
 }  // namespace chromecast

@@ -32,6 +32,7 @@ class CastWindowManagerAura : public CastWindowManager,
   void AddWindow(gfx::NativeView window) override;
   gfx::NativeView GetRootWindow() override;
   void SetWindowId(gfx::NativeView window, WindowId window_id) override;
+  void InjectEvent(ui::Event* event) override;
 
   // aura::client::WindowParentingClient implementation:
   aura::Window* GetDefaultParent(aura::Window* window,

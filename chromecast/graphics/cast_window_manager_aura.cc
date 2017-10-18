@@ -223,6 +223,13 @@ void CastWindowManagerAura::SetWindowId(gfx::NativeView window,
   window->set_id(window_id);
 }
 
+void CastWindowManagerAura::InjectEvent(ui::Event* event) {
+  if (!window_tree_host_) {
+    return;
+  }
+  window_tree_host_->DispatchEvent(event);
+}
+
 gfx::NativeView CastWindowManagerAura::GetRootWindow() {
   Setup();
   return window_tree_host_->window();
