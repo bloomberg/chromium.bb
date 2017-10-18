@@ -2384,25 +2384,19 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 void av1_update_txb_context(const AV1_COMP *cpi, ThreadData *td,
                             RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
                             int mi_row, int mi_col) {
-  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int ctx = av1_get_skip_context(xd);
-  const int skip_inc =
-      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
   struct tokenize_b_args arg = { cpi, td, NULL, 0 };
   (void)rate;
   (void)mi_row;
   (void)mi_col;
   if (mbmi->skip) {
-    if (!dry_run) td->counts->skip[ctx][1] += skip_inc;
     av1_reset_skip_context(xd, mi_row, mi_col, bsize);
     return;
   }
 
   if (!dry_run) {
-    td->counts->skip[ctx][0] += skip_inc;
     av1_foreach_transformed_block(xd, bsize, mi_row, mi_col,
                                   av1_update_and_record_txb_context, &arg);
   } else if (dry_run == DRY_RUN_NORMAL) {

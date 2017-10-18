@@ -704,15 +704,11 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 #else
   TOKENEXTRA *t_backup = *t;
 #endif
-  const int ctx = av1_get_skip_context(xd);
-  const int skip_inc =
-      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
   struct tokenize_b_args arg = { cpi, td, t, 0 };
   int plane;
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   if (mbmi->skip) {
-    if (!dry_run) td->counts->skip[ctx][1] += skip_inc;
     av1_reset_skip_context(xd, mi_row, mi_col, bsize);
 #if !CONFIG_LV_MAP
     if (dry_run) *t = t_backup;
@@ -720,7 +716,6 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     return;
   }
 
-  if (!dry_run) td->counts->skip[ctx][0] += skip_inc;
 #if !CONFIG_LV_MAP
   else
     *t = t_backup;
@@ -795,28 +790,21 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
                      RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,
                      const int mi_row, const int mi_col) {
-  const AV1_COMMON *const cm = &cpi->common;
   MACROBLOCK *const x = &td->mb;
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int ctx = av1_get_skip_context(xd);
-  const int skip_inc =
-      !segfeature_active(&cm->seg, mbmi->segment_id, SEG_LVL_SKIP);
   struct tokenize_b_args arg = { cpi, td, t, 0 };
   if (mbmi->skip) {
-    if (!dry_run) td->counts->skip[ctx][1] += skip_inc;
     av1_reset_skip_context(xd, mi_row, mi_col, bsize);
     return;
   }
 
   if (!dry_run) {
 #if CONFIG_COEF_INTERLEAVE
-    td->counts->skip[ctx][0] += skip_inc;
     av1_foreach_transformed_block_interleave(xd, bsize, tokenize_b, &arg);
 #else
     int plane;
 
-    td->counts->skip[ctx][0] += skip_inc;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
 #if CONFIG_CB4X4
       if (!is_chroma_reference(mi_row, mi_col, bsize,
