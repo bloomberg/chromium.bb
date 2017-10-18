@@ -152,6 +152,9 @@ ChromeFeedbackPrivateDelegate::CreateSingleLogSource(
     case api::feedback_private::LOG_SOURCE_IFCONFIG:
       return std::make_unique<system_logs::SingleDebugDaemonLogSource>(
           SupportedDebugDaemonSource::kIfconfig);
+    case api::feedback_private::LOG_SOURCE_UPTIME:
+      return std::make_unique<system_logs::SingleDebugDaemonLogSource>(
+          SupportedDebugDaemonSource::kUptime);
 
     case api::feedback_private::LOG_SOURCE_NONE:
     default:
