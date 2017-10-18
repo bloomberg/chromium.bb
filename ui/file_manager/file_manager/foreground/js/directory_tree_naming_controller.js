@@ -127,8 +127,10 @@ DirectoryTreeNamingController.prototype.commitRename_ = function() {
   var entry = this.currentDirectoryItem_.entry;
   var newName = this.inputElement_.value;
 
-  // If new name is same with current name, do nothing.
-  if (newName === this.currentDirectoryItem_.label) {
+  // If new name is the same as current name or empty (only for removable
+  // devices), do nothing.
+  if (newName === this.currentDirectoryItem_.label ||
+      (newName.length == 0 && this.isRemovableRoot_)) {
     this.detach_();
     return;
   }
