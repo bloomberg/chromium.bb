@@ -613,7 +613,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
   av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size, a,
-                 l, 0);
+                 l, 1);
 
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
@@ -884,7 +884,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l, 0);
+                   a, l, 1);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_B);
