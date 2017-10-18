@@ -198,6 +198,7 @@ blink_core_sources("html") {
     "TableConstants.h",
     "TextDocument.cpp",
     "TextDocument.h",
+    "TextMetrics.cpp",
     "TextMetrics.h",
     "TimeRanges.cpp",
     "TimeRanges.h",
