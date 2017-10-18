@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/autofill/core/browser/autofill_manager.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/in_memory_pref_store.h"
@@ -117,6 +118,8 @@ void WebViewBrowserState::RegisterPrefs(
 
   BrowserStateDependencyManager::GetInstance()
       ->RegisterBrowserStatePrefsForServices(this, pref_registry);
+
+  autofill::AutofillManager::RegisterProfilePrefs(pref_registry);
 }
 
 }  // namespace ios_web_view

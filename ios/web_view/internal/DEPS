@@ -1,5 +1,6 @@
 include_rules = [
   "+base",
+  "+components/autofill",
   "+components/content_settings/core",
   "+components/flags_ui",
   "+components/infobars/core",
@@ -12,8 +13,10 @@ include_rules = [
   "+components/signin/core",
   "+components/signin/ios",
   "+components/ssl_config",
+  "+components/sync",
   "+components/translate/core",
   "+components/translate/ios",
+  "+components/webdata_services",
   "+components/web_resource",
   "+google_apis",
   "+ios/components/io_thread",
