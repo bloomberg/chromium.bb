@@ -9,11 +9,11 @@
 #include <atlcrack.h>
 #include <atlwin.h>
 #include <oleacc.h>
+#include <wrl/client.h>
 
 #include <memory>
 
 #include "base/macros.h"
-#include "base/win/scoped_comptr.h"
 #include "content/common/content_export.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -157,7 +157,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
   LRESULT OnSize(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnWindowPosChanged(UINT message, WPARAM w_param, LPARAM l_param);
 
-  base::win::ScopedComPtr<IAccessible> window_accessible_;
+  Microsoft::WRL::ComPtr<IAccessible> window_accessible_;
 
   // Set to true if we turned on mouse tracking.
   bool mouse_tracking_enabled_;

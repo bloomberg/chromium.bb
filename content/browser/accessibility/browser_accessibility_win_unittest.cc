@@ -6,6 +6,7 @@
 
 #include <objbase.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include <memory>
 #include <utility>
@@ -13,7 +14,6 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
@@ -141,13 +141,13 @@ TEST_F(BrowserAccessibilityTest, TestChildrenChange) {
   // Query for the text IAccessible and verify that it returns "old text" as its
   // value.
   base::win::ScopedVariant one(1);
-  base::win::ScopedComPtr<IDispatch> text_dispatch;
+  Microsoft::WRL::ComPtr<IDispatch> text_dispatch;
   HRESULT hr = ToBrowserAccessibilityWin(manager->GetRoot())
                    ->GetCOM()
                    ->get_accChild(one, text_dispatch.GetAddressOf());
   ASSERT_EQ(S_OK, hr);
 
-  base::win::ScopedComPtr<IAccessible> text_accessible;
+  Microsoft::WRL::ComPtr<IAccessible> text_accessible;
   hr = text_dispatch.CopyTo(text_accessible.GetAddressOf());
   ASSERT_EQ(S_OK, hr);
 
@@ -447,7 +447,7 @@ TEST_F(BrowserAccessibilityTest, TestSimpleHypertext) {
   EXPECT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
   EXPECT_EQ(0, hyperlink_count);
 
-  base::win::ScopedComPtr<IAccessibleHyperlink> hyperlink;
+  Microsoft::WRL::ComPtr<IAccessibleHyperlink> hyperlink;
   EXPECT_EQ(E_INVALIDARG,
             root_obj->get_hyperlink(-1, hyperlink.GetAddressOf()));
   EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(0, hyperlink.GetAddressOf()));
@@ -561,8 +561,8 @@ TEST_F(BrowserAccessibilityTest, TestComplexHypertext) {
   EXPECT_EQ(S_OK, root_obj->get_nHyperlinks(&hyperlink_count));
   EXPECT_EQ(4, hyperlink_count);
 
-  base::win::ScopedComPtr<IAccessibleHyperlink> hyperlink;
-  base::win::ScopedComPtr<IAccessibleText> hypertext;
+  Microsoft::WRL::ComPtr<IAccessibleHyperlink> hyperlink;
+  Microsoft::WRL::ComPtr<IAccessibleText> hypertext;
   EXPECT_EQ(E_INVALIDARG,
             root_obj->get_hyperlink(-1, hyperlink.GetAddressOf()));
   EXPECT_EQ(E_INVALIDARG, root_obj->get_hyperlink(4, hyperlink.GetAddressOf()));
@@ -1046,11 +1046,11 @@ TEST_F(BrowserAccessibilityTest, TestWordBoundariesInTextControls) {
       ToBrowserAccessibilityWin(root_accessible->PlatformGetChild(1));
   ASSERT_NE(nullptr, text_field_accessible);
 
-  base::win::ScopedComPtr<IAccessibleText> textarea_object;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_object;
   EXPECT_HRESULT_SUCCEEDED(textarea_accessible->GetCOM()->QueryInterface(
       IID_IAccessibleText,
       reinterpret_cast<void**>(textarea_object.GetAddressOf())));
-  base::win::ScopedComPtr<IAccessibleText> text_field_object;
+  Microsoft::WRL::ComPtr<IAccessibleText> text_field_object;
   EXPECT_HRESULT_SUCCEEDED(text_field_accessible->GetCOM()->QueryInterface(
       IID_IAccessibleText,
       reinterpret_cast<void**>(text_field_object.GetAddressOf())));
@@ -1524,7 +1524,7 @@ TEST_F(BrowserAccessibilityTest, TestIAccessibleHyperlink) {
   LONG start_index = -1;
   LONG end_index = -1;
 
-  base::win::ScopedComPtr<IAccessibleHyperlink> hyperlink;
+  Microsoft::WRL::ComPtr<IAccessibleHyperlink> hyperlink;
   base::win::ScopedVariant anchor;
   base::win::ScopedVariant anchor_target;
   base::win::ScopedBstr bstr;
@@ -2209,26 +2209,26 @@ TEST_F(BrowserAccessibilityTest, UniqueIdWinInvalidAfterDeletingTree) {
 
   // Trying to access the unique IDs of the old, deleted objects should fail.
   base::win::ScopedVariant old_root_variant(-root_unique_id);
-  base::win::ScopedComPtr<IDispatch> old_root_dispatch;
+  Microsoft::WRL::ComPtr<IDispatch> old_root_dispatch;
   HRESULT hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
       old_root_variant, old_root_dispatch.GetAddressOf());
   EXPECT_EQ(E_INVALIDARG, hr);
 
   base::win::ScopedVariant old_child_variant(-child_unique_id);
-  base::win::ScopedComPtr<IDispatch> old_child_dispatch;
+  Microsoft::WRL::ComPtr<IDispatch> old_child_dispatch;
   hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
       old_child_variant, old_child_dispatch.GetAddressOf());
   EXPECT_EQ(E_INVALIDARG, hr);
 
   // Trying to access the unique IDs of the new objects should succeed.
   base::win::ScopedVariant new_root_variant(-root_unique_id_2);
-  base::win::ScopedComPtr<IDispatch> new_root_dispatch;
+  Microsoft::WRL::ComPtr<IDispatch> new_root_dispatch;
   hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
       new_root_variant, new_root_dispatch.GetAddressOf());
   EXPECT_EQ(S_OK, hr);
 
   base::win::ScopedVariant new_child_variant(-child_unique_id_2);
-  base::win::ScopedComPtr<IDispatch> new_child_dispatch;
+  Microsoft::WRL::ComPtr<IDispatch> new_child_dispatch;
   hr = ToBrowserAccessibilityWin(root)->GetCOM()->get_accChild(
       new_child_variant, new_child_dispatch.GetAddressOf());
   EXPECT_EQ(S_OK, hr);
@@ -2252,7 +2252,7 @@ TEST_F(BrowserAccessibilityTest, AccChildOnlyReturnsDescendants) {
   BrowserAccessibility* child = root->PlatformGetChild(0);
 
   base::win::ScopedVariant root_unique_id_variant(-GetUniqueId(root));
-  base::win::ScopedComPtr<IDispatch> result;
+  Microsoft::WRL::ComPtr<IDispatch> result;
   EXPECT_EQ(E_INVALIDARG,
             ToBrowserAccessibilityWin(child)->GetCOM()->get_accChild(
                 root_unique_id_variant, result.GetAddressOf()));
@@ -2299,10 +2299,10 @@ TEST_F(BrowserAccessibilityTest, TestIAccessible2Relations) {
   LONG n_targets = 0;
   LONG unique_id = 0;
   base::win::ScopedBstr relation_type;
-  base::win::ScopedComPtr<IAccessibleRelation> describedby_relation;
-  base::win::ScopedComPtr<IAccessibleRelation> description_for_relation;
-  base::win::ScopedComPtr<IUnknown> target;
-  base::win::ScopedComPtr<IAccessible2> ax_target;
+  Microsoft::WRL::ComPtr<IAccessibleRelation> describedby_relation;
+  Microsoft::WRL::ComPtr<IAccessibleRelation> description_for_relation;
+  Microsoft::WRL::ComPtr<IUnknown> target;
+  Microsoft::WRL::ComPtr<IAccessible2> ax_target;
 
   EXPECT_HRESULT_SUCCEEDED(ax_root->GetCOM()->get_nRelations(&n_relations));
   EXPECT_EQ(1, n_relations);

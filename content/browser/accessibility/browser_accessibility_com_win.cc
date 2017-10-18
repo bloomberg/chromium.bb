@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/enum_variant.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/windows_version.h"
 #include "content/browser/accessibility/browser_accessibility_event_win.h"
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"

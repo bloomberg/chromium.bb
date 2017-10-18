@@ -67,7 +67,7 @@
 #if defined(OS_WIN) && !defined(NDEBUG)
 #include <XpsObjectModel.h>
 #include <objbase.h>
-#include "base/win/scoped_comptr.h"
+#include <wrl/client.h>
 #endif
 
 using blink::WebCanvas;
@@ -513,7 +513,7 @@ static sk_sp<SkDocument> MakeXPSDocument(SkWStream* s) {
                        COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
   // In non-sandboxed mode, we will need to create and hold on to the
   // factory before entering the sandbox.
-  base::win::ScopedComPtr<IXpsOMObjectFactory> factory;
+  Microsoft::WRL::ComPtr<IXpsOMObjectFactory> factory;
   HRESULT hr = ::CoCreateInstance(CLSID_XpsOMObjectFactory, nullptr,
                                   CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&factory));
   if (FAILED(hr) || !factory) {

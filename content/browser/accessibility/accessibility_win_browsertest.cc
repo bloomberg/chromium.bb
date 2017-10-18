@@ -5,6 +5,7 @@
 #include <objbase.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <wrl/client.h>
 
 #include <memory>
 #include <vector>
@@ -13,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/win/scoped_bstr.h"
-#include "base/win/scoped_comptr.h"
 #include "base/win/scoped_variant.h"
 #include "content/browser/accessibility/accessibility_tree_formatter.h"
 #include "content/browser/accessibility/accessibility_tree_formatter_utils_win.h"
@@ -67,20 +67,19 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
   IAccessible* GetRendererAccessible();
   void ExecuteScript(const std::wstring& script);
-  void SetUpInputField(
-      base::win::ScopedComPtr<IAccessibleText>* input_text);
+  void SetUpInputField(Microsoft::WRL::ComPtr<IAccessibleText>* input_text);
   void SetUpTextareaField(
-      base::win::ScopedComPtr<IAccessibleText>* textarea_text);
+      Microsoft::WRL::ComPtr<IAccessibleText>* textarea_text);
   void SetUpSampleParagraph(
-      base::win::ScopedComPtr<IAccessibleText>* accessible_text,
+      Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
   void SetUpSampleParagraphWithScroll(
-      base::win::ScopedComPtr<IAccessibleText>* accessible_text,
+      Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
       ui::AXMode accessibility_mode = ui::kAXModeComplete);
   void SetUpSampleParagraphHelper(
-      base::win::ScopedComPtr<IAccessibleText>* accessible_text);
+      Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text);
 
-  static base::win::ScopedComPtr<IAccessible> GetAccessibleFromVariant(
+  static Microsoft::WRL::ComPtr<IAccessible> GetAccessibleFromVariant(
       IAccessible* parent,
       VARIANT* var);
   static HRESULT QueryIAccessible2(IAccessible* accessible,
@@ -90,13 +89,12 @@ class AccessibilityWinBrowserTest : public ContentBrowserTest {
                                           const std::wstring& expected_name,
                                           int32_t depth,
                                           bool* found);
-  static void CheckTextAtOffset(
-      base::win::ScopedComPtr<IAccessibleText>& object,
-      LONG offset,
-      IA2TextBoundaryType boundary_type,
-      LONG expected_start_offset,
-      LONG expected_end_offset,
-      const std::wstring& expected_text);
+  static void CheckTextAtOffset(Microsoft::WRL::ComPtr<IAccessibleText>& object,
+                                LONG offset,
+                                IA2TextBoundaryType boundary_type,
+                                LONG expected_start_offset,
+                                LONG expected_end_offset,
+                                const std::wstring& expected_text);
   static std::vector<base::win::ScopedVariant> GetAllAccessibleChildren(
       IAccessible* element);
 
@@ -134,7 +132,7 @@ void AccessibilityWinBrowserTest::ExecuteScript(const std::wstring& script) {
 // Loads a page with  an input text field and places sample text in it. Also,
 // places the caret on the last character.
 void AccessibilityWinBrowserTest::SetUpInputField(
-    base::win::ScopedComPtr<IAccessibleText>* input_text) {
+    Microsoft::WRL::ComPtr<IAccessibleText>* input_text) {
   ASSERT_NE(nullptr, input_text);
   LoadInitialAccessibilityTreeFromHtml(std::string("<!DOCTYPE html><html><body>"
       "<form><label for='textField'>Browser name:</label>"
@@ -143,12 +141,12 @@ void AccessibilityWinBrowserTest::SetUpInputField(
       "'></form></body></html>"));
 
   // Retrieve the IAccessible interface for the web page.
-  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.Get());
   ASSERT_EQ(1u, document_children.size());
 
-  base::win::ScopedComPtr<IAccessible2> form;
+  Microsoft::WRL::ComPtr<IAccessible2> form;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
@@ -158,7 +156,7 @@ void AccessibilityWinBrowserTest::SetUpInputField(
   ASSERT_EQ(2u, form_children.size());
 
   // Find the input text field.
-  base::win::ScopedComPtr<IAccessible2> input;
+  Microsoft::WRL::ComPtr<IAccessible2> input;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(form.Get(), form_children[1].AsInput()).Get(),
       input.GetAddressOf()));
@@ -186,7 +184,7 @@ void AccessibilityWinBrowserTest::SetUpInputField(
 // Loads a page with  a textarea text field and places sample text in it. Also,
 // places the caret on the last character.
 void AccessibilityWinBrowserTest::SetUpTextareaField(
-    base::win::ScopedComPtr<IAccessibleText>* textarea_text) {
+    Microsoft::WRL::ComPtr<IAccessibleText>* textarea_text) {
   ASSERT_NE(nullptr, textarea_text);
   LoadInitialAccessibilityTreeFromHtml(std::string("<!DOCTYPE html><html><body>"
       "<textarea id='textField' rows='3' cols='60'>") +
@@ -194,12 +192,12 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
       "</textarea></body></html>"));
 
   // Retrieve the IAccessible interface for the web page.
-  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.Get());
   ASSERT_EQ(1u, document_children.size());
 
-  base::win::ScopedComPtr<IAccessible2> section;
+  Microsoft::WRL::ComPtr<IAccessible2> section;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
@@ -209,7 +207,7 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
   ASSERT_EQ(1u, section_children.size());
 
   // Find the textarea text field.
-  base::win::ScopedComPtr<IAccessible2> textarea;
+  Microsoft::WRL::ComPtr<IAccessible2> textarea;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(section.Get(), section_children[0].AsInput())
           .Get(),
@@ -237,7 +235,7 @@ void AccessibilityWinBrowserTest::SetUpTextareaField(
 
 // Loads a page with  a paragraph of sample text.
 void AccessibilityWinBrowserTest::SetUpSampleParagraph(
-    base::win::ScopedComPtr<IAccessibleText>* accessible_text,
+    Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
     ui::AXMode accessibility_mode) {
   LoadInitialAccessibilityTreeFromHtml(
       "<!DOCTYPE html><html>"
@@ -254,7 +252,7 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraph(
 // Loads a page with a paragraph of sample text which is below the
 // bottom of the screen.
 void AccessibilityWinBrowserTest::SetUpSampleParagraphWithScroll(
-    base::win::ScopedComPtr<IAccessibleText>* accessible_text,
+    Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text,
     ui::AXMode accessibility_mode) {
   LoadInitialAccessibilityTreeFromHtml(
       "<!DOCTYPE html><html>"
@@ -269,16 +267,16 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphWithScroll(
 }
 
 void AccessibilityWinBrowserTest::SetUpSampleParagraphHelper(
-    base::win::ScopedComPtr<IAccessibleText>* accessible_text) {
+    Microsoft::WRL::ComPtr<IAccessibleText>* accessible_text) {
   ASSERT_NE(nullptr, accessible_text);
 
   // Retrieve the IAccessible interface for the web page.
-  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.Get());
   ASSERT_EQ(1u, document_children.size());
 
-  base::win::ScopedComPtr<IAccessible2> paragraph;
+  Microsoft::WRL::ComPtr<IAccessible2> paragraph;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
@@ -291,11 +289,10 @@ void AccessibilityWinBrowserTest::SetUpSampleParagraphHelper(
 
 // Static helpers ------------------------------------------------
 
-base::win::ScopedComPtr<IAccessible>
-AccessibilityWinBrowserTest::GetAccessibleFromVariant(
-    IAccessible* parent,
-    VARIANT* var) {
-  base::win::ScopedComPtr<IAccessible> ptr;
+Microsoft::WRL::ComPtr<IAccessible>
+AccessibilityWinBrowserTest::GetAccessibleFromVariant(IAccessible* parent,
+                                                      VARIANT* var) {
+  Microsoft::WRL::ComPtr<IAccessible> ptr;
   switch (V_VT(var)) {
     case VT_DISPATCH: {
       IDispatch* dispatch = V_DISPATCH(var);
@@ -305,7 +302,7 @@ AccessibilityWinBrowserTest::GetAccessibleFromVariant(
     }
 
     case VT_I4: {
-      base::win::ScopedComPtr<IDispatch> dispatch;
+      Microsoft::WRL::ComPtr<IDispatch> dispatch;
       HRESULT hr = parent->get_accChild(*var, dispatch.GetAddressOf());
       EXPECT_TRUE(SUCCEEDED(hr));
       if (dispatch.Get())
@@ -321,7 +318,7 @@ HRESULT AccessibilityWinBrowserTest::QueryIAccessible2(
     IAccessible2** accessible2) {
   // IA2 Spec dictates that IServiceProvider should be used instead of
   // QueryInterface when retrieving IAccessible2.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = accessible->QueryInterface(service_provider.GetAddressOf());
   return SUCCEEDED(hr) ?
       service_provider->QueryService(IID_IAccessible2, accessible2) : hr;
@@ -360,7 +357,7 @@ void AccessibilityWinBrowserTest::FindNodeInAccessibilityTree(
   std::vector<base::win::ScopedVariant> children = GetAllAccessibleChildren(
       node);
   for (size_t i = 0; i < children.size(); ++i) {
-    base::win::ScopedComPtr<IAccessible> child_accessible(
+    Microsoft::WRL::ComPtr<IAccessible> child_accessible(
         GetAccessibleFromVariant(node, children[i].AsInput()));
     if (child_accessible) {
       FindNodeInAccessibilityTree(
@@ -375,7 +372,7 @@ void AccessibilityWinBrowserTest::FindNodeInAccessibilityTree(
 // Ensures that the text and the start and end offsets retrieved using
 // get_textAtOffset match the expected values.
 void AccessibilityWinBrowserTest::CheckTextAtOffset(
-    base::win::ScopedComPtr<IAccessibleText>& object,
+    Microsoft::WRL::ComPtr<IAccessibleText>& object,
     LONG offset,
     IA2TextBoundaryType boundary_type,
     LONG expected_start_offset,
@@ -574,7 +571,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleRole(
 
 void AccessibilityWinBrowserTest::AccessibleChecker::CheckIA2Role(
     IAccessible* accessible) {
-  base::win::ScopedComPtr<IAccessible2> accessible2;
+  Microsoft::WRL::ComPtr<IAccessible2> accessible2;
   HRESULT hr = QueryIAccessible2(accessible, accessible2.GetAddressOf());
   ASSERT_EQ(S_OK, hr);
   long ia2_role = 0;
@@ -640,7 +637,7 @@ void AccessibilityWinBrowserTest::AccessibleChecker::CheckAccessibleChildren(
        child_checker != children_.end()
        && child != obtained_children.end();
        ++child_checker, ++child) {
-    base::win::ScopedComPtr<IAccessible> child_accessible(
+    Microsoft::WRL::ComPtr<IAccessible> child_accessible(
         GetAccessibleFromVariant(parent, child->AsInput()));
     ASSERT_TRUE(child_accessible.Get());
     (*child_checker)->CheckAccessible(child_accessible.Get());
@@ -847,7 +844,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   // Focus the document accessible. This will un-focus the current node.
   waiter.reset(new AccessibilityNotificationWaiter(
       shell()->web_contents(), ui::kAXModeComplete, ui::AX_EVENT_BLUR));
-  base::win::ScopedComPtr<IAccessible> document_accessible(
+  Microsoft::WRL::ComPtr<IAccessible> document_accessible(
       GetRendererAccessible());
   ASSERT_NE(document_accessible.Get(), reinterpret_cast<IAccessible*>(NULL));
   base::win::ScopedVariant childid_self(CHILDID_SELF);
@@ -913,7 +910,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   CHECK(window_tree_host);
   HWND hwnd = window_tree_host->GetAcceleratedWidget();
   CHECK(hwnd);
-  base::win::ScopedComPtr<IAccessible> browser_accessible;
+  Microsoft::WRL::ComPtr<IAccessible> browser_accessible;
   HRESULT hr = AccessibleObjectFromWindow(
       hwnd, OBJID_WINDOW, IID_IAccessible,
       reinterpret_cast<void**>(browser_accessible.GetAddressOf()));
@@ -931,12 +928,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
       "<body><input type='checkbox'></body>");
 
   // Get the IAccessible object for the document.
-  base::win::ScopedComPtr<IAccessible> document_accessible(
+  Microsoft::WRL::ComPtr<IAccessible> document_accessible(
       GetRendererAccessible());
   ASSERT_NE(document_accessible.Get(), reinterpret_cast<IAccessible*>(NULL));
 
   // Get the ISimpleDOM object for the document.
-  base::win::ScopedComPtr<IServiceProvider> service_provider;
+  Microsoft::WRL::ComPtr<IServiceProvider> service_provider;
   HRESULT hr = static_cast<IAccessible*>(document_accessible.Get())
                    ->QueryInterface(service_provider.GetAddressOf());
   ASSERT_EQ(S_OK, hr);
@@ -944,7 +941,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                         0x12e4,
                         0x11cf,
                         {0xb6, 0x61, 0x00, 0xaa, 0x00, 0x4c, 0xd6, 0xd8}};
-  base::win::ScopedComPtr<ISimpleDOMNode> document_isimpledomnode;
+  Microsoft::WRL::ComPtr<ISimpleDOMNode> document_isimpledomnode;
   hr = service_provider->QueryService(refguid,
                                       IID_PPV_ARGS(&document_isimpledomnode));
   ASSERT_EQ(S_OK, hr);
@@ -964,7 +961,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   node_name.Reset();
   node_value.Reset();
 
-  base::win::ScopedComPtr<ISimpleDOMNode> body_isimpledomnode;
+  Microsoft::WRL::ComPtr<ISimpleDOMNode> body_isimpledomnode;
   hr = document_isimpledomnode->get_firstChild(
       body_isimpledomnode.GetAddressOf());
   ASSERT_EQ(S_OK, hr);
@@ -978,7 +975,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
   node_name.Reset();
   node_value.Reset();
 
-  base::win::ScopedComPtr<ISimpleDOMNode> checkbox_isimpledomnode;
+  Microsoft::WRL::ComPtr<ISimpleDOMNode> checkbox_isimpledomnode;
   hr = body_isimpledomnode->get_firstChild(
       checkbox_isimpledomnode.GetAddressOf());
   ASSERT_EQ(S_OK, hr);
@@ -1009,7 +1006,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestRoleGroup) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestCharacterExtentsWithInvalidArguments) {
-  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
 
   LONG invalid_offset = -3;
@@ -1053,7 +1050,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestCharacterExtents) {
-  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
 
   const LONG newline_offset = 46;
@@ -1109,7 +1106,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestCharacterExtents) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestCharacterExtentsWithAccessibilityModeChange) {
-  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text, ui::AXMode::kNativeAPIs |
                                             ui::AXMode::kWebContents |
                                             ui::AXMode::kScreenReader);
@@ -1140,9 +1137,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
-  base::win::ScopedComPtr<IAccessibleText> accessible_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> accessible_text;
   SetUpSampleParagraphWithScroll(&accessible_text);
-  base::win::ScopedComPtr<IAccessible2> paragraph;
+  Microsoft::WRL::ComPtr<IAccessible2> paragraph;
   ASSERT_HRESULT_SUCCEEDED(
       accessible_text.CopyTo(IID_PPV_ARGS(&paragraph)));
 
@@ -1174,7 +1171,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestScrollToPoint) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCaretOffset) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
   LONG caret_offset = 0;
@@ -1197,7 +1194,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetCaretOffset) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestMultiLineSetCaretOffset) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
     LONG caret_offset = 0;
@@ -1219,7 +1216,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelection) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
   LONG start_offset, end_offset;
@@ -1258,7 +1255,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestSetSelection) {
 }
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestMultiLineSetSelection) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
   LONG start_offset, end_offset;
@@ -1299,7 +1296,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestMultiLineSetSelection) {
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestStaticTextSetSelection) {
-  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
 
   LONG n_characters;
@@ -1337,7 +1334,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestTextAtOffsetWithInvalidArguments) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
   HRESULT hr = input_text->get_textAtOffset(
       0, IA2_TEXT_BOUNDARY_CHAR, NULL, NULL, NULL);
@@ -1430,7 +1427,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestMultiLineTextAtOffsetWithInvalidArguments) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
   HRESULT hr = textarea_text->get_textAtOffset(
       0, IA2_TEXT_BOUNDARY_CHAR, NULL, NULL, NULL);
@@ -1523,7 +1520,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestTextAtOffsetWithBoundaryCharacter) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
   for (LONG offset = 0; offset < CONTENTS_LENGTH; ++offset) {
     std::wstring expected_text(1, INPUT_CONTENTS[offset]);
@@ -1547,7 +1544,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     TestMultiLineTextAtOffsetWithBoundaryCharacter) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
   for (LONG offset = 0; offset < CONTENTS_LENGTH; ++offset) {
     std::wstring expected_text(1, TEXTAREA_CONTENTS[offset]);
@@ -1571,7 +1568,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestTextAtOffsetWithBoundaryWord) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
   // Trailing punctuation should be included as part of the previous word.
@@ -1643,7 +1640,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     TestMultiLineTextAtOffsetWithBoundaryWord) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
   // Trailing punctuation should be included as part of the previous word.
@@ -1715,7 +1712,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestStaticTextAtOffsetWithBoundaryWord) {
-  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
   base::string16 embedded_character(
       1, BrowserAccessibilityComWin::kEmbeddedCharacter);
@@ -1755,7 +1752,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestTextAtOffsetWithBoundarySentence) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
   // Sentence navigation is not currently implemented.
@@ -1770,7 +1767,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestMultiLineTextAtOffsetWithBoundarySentence) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
   // Sentence navigation is not currently implemented.
@@ -1785,7 +1782,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestTextAtOffsetWithBoundaryLine) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
   // Single line text fields should return the whole text.
@@ -1801,7 +1798,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
     TestMultiLineTextAtOffsetWithBoundaryLine) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
   CheckTextAtOffset(textarea_text, 0, IA2_TEXT_BOUNDARY_LINE,
@@ -1828,7 +1825,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestParagraphTextAtOffsetWithBoundaryLine) {
-  base::win::ScopedComPtr<IAccessibleText> paragraph_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> paragraph_text;
   SetUpSampleParagraph(&paragraph_text);
 
   // There should be two lines in this paragraph.
@@ -1856,7 +1853,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestTextAtOffsetWithBoundaryAll) {
-  base::win::ScopedComPtr<IAccessibleText> input_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> input_text;
   SetUpInputField(&input_text);
 
   CheckTextAtOffset(input_text, 0, IA2_TEXT_BOUNDARY_ALL,
@@ -1865,7 +1862,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest,
                        TestMultiLineTextAtOffsetWithBoundaryAll) {
-  base::win::ScopedComPtr<IAccessibleText> textarea_text;
+  Microsoft::WRL::ComPtr<IAccessibleText> textarea_text;
   SetUpTextareaField(&textarea_text);
 
   CheckTextAtOffset(textarea_text, CONTENTS_LENGTH - 1, IA2_TEXT_BOUNDARY_ALL,
@@ -1880,12 +1877,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
       "</body></html>");
 
   // Retrieve the IAccessible interface for the web page.
-  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.Get());
   ASSERT_EQ(1u, document_children.size());
 
-  base::win::ScopedComPtr<IAccessible2> div;
+  Microsoft::WRL::ComPtr<IAccessible2> div;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
@@ -1894,7 +1891,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
       GetAllAccessibleChildren(div.Get());
   ASSERT_EQ(1u, div_children.size());
 
-  base::win::ScopedComPtr<IAccessible2> image;
+  Microsoft::WRL::ComPtr<IAccessible2> image;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(div.Get(), div_children[0].AsInput()).Get(),
       image.GetAddressOf()));
@@ -1902,7 +1899,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestIAccessibleAction) {
   ASSERT_HRESULT_SUCCEEDED(image->role(&image_role));
   ASSERT_EQ(ROLE_SYSTEM_GRAPHIC, image_role);
 
-  base::win::ScopedComPtr<IAccessibleAction> image_action;
+  Microsoft::WRL::ComPtr<IAccessibleAction> image_action;
   ASSERT_HRESULT_SUCCEEDED(image.CopyTo(image_action.GetAddressOf()));
 
   LONG n_actions = 0;
@@ -1978,13 +1975,13 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
                              "/accessibility/html/table-spans.html"));
   waiter.WaitForNotification();
 
-  base::win::ScopedComPtr<IAccessible> document(GetRendererAccessible());
+  Microsoft::WRL::ComPtr<IAccessible> document(GetRendererAccessible());
   std::vector<base::win::ScopedVariant> document_children =
       GetAllAccessibleChildren(document.Get());
   // There are two tables in this test file. Use only the first one.
   ASSERT_EQ(2u, document_children.size());
 
-  base::win::ScopedComPtr<IAccessible2> table;
+  Microsoft::WRL::ComPtr<IAccessible2> table;
   ASSERT_HRESULT_SUCCEEDED(QueryIAccessible2(
       GetAccessibleFromVariant(document.Get(), document_children[0].AsInput())
           .Get(),
@@ -1994,16 +1991,16 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   ASSERT_EQ(ROLE_SYSTEM_TABLE, role);
 
   // Retrieve the first cell.
-  base::win::ScopedComPtr<IAccessibleTable2> table2;
-  base::win::ScopedComPtr<IUnknown> cell;
-  base::win::ScopedComPtr<IAccessible2> cell1;
+  Microsoft::WRL::ComPtr<IAccessibleTable2> table2;
+  Microsoft::WRL::ComPtr<IUnknown> cell;
+  Microsoft::WRL::ComPtr<IAccessible2> cell1;
   EXPECT_HRESULT_SUCCEEDED(table.CopyTo(table2.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(table2->get_cellAt(0, 0, cell.GetAddressOf()));
   EXPECT_HRESULT_SUCCEEDED(cell.CopyTo(cell1.GetAddressOf()));
 
   base::win::ScopedBstr name;
   base::win::ScopedVariant childid_self(CHILDID_SELF);
-  base::win::ScopedComPtr<IAccessibleTableCell> accessible_cell;
+  Microsoft::WRL::ComPtr<IAccessibleTableCell> accessible_cell;
   LONG row_index = -1;
   LONG column_index = -1;
   EXPECT_HRESULT_SUCCEEDED(cell1->role(&role));
@@ -2026,7 +2023,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   ASSERT_EQ(VT_EMPTY, variant.type());
 
   // Try navigating to the cell in the first row, 2nd column.
-  base::win::ScopedComPtr<IAccessible2> cell2;
+  Microsoft::WRL::ComPtr<IAccessible2> cell2;
   EXPECT_HRESULT_SUCCEEDED(
       cell1->accNavigate(NAVDIR_RIGHT, childid_self, variant.Receive()));
   ASSERT_NE(nullptr, V_DISPATCH(variant.AsInput()));
@@ -2046,7 +2043,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityWinBrowserTest, TestAccNavigateInTables) {
   accessible_cell.Reset();
 
   // Try navigating to the cell in the second row, 2nd column.
-  base::win::ScopedComPtr<IAccessible2> cell3;
+  Microsoft::WRL::ComPtr<IAccessible2> cell3;
   EXPECT_HRESULT_SUCCEEDED(
       cell2->accNavigate(NAVDIR_DOWN, childid_self, variant.Receive()));
   ASSERT_NE(nullptr, V_DISPATCH(variant.AsInput()));
