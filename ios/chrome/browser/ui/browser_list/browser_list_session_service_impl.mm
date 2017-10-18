@@ -256,7 +256,7 @@ bool BrowserListSessionServiceImpl::RestoreSession() {
     if (navigation_item->GetURL() != kChromeUINewTabURL)
       continue;
 
-    web_state_list.CloseWebStateAt(0);
+    web_state_list.CloseWebStateAt(0, WebStateList::CLOSE_USER_ACTION);
   }
 
   return true;

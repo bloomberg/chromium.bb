@@ -43,8 +43,6 @@ class ApplicationContextImpl : public ApplicationContext {
   void OnAppEnterForeground() override;
   void OnAppEnterBackground() override;
   bool WasLastShutdownClean() override;
-  void SetIsShuttingDown() override;
-  bool IsShuttingDown() override;
   PrefService* GetLocalState() override;
   net::URLRequestContextGetter* GetSystemURLRequestContext() override;
   const std::string& GetApplicationLocale() override;
@@ -91,7 +89,6 @@ class ApplicationContextImpl : public ApplicationContext {
   const scoped_refptr<base::SequencedTaskRunner> local_state_task_runner_;
 
   bool was_last_shutdown_clean_;
-  bool is_shutting_down_;
 
   DISALLOW_COPY_AND_ASSIGN(ApplicationContextImpl);
 };

@@ -91,7 +91,7 @@ TEST_F(OverlayQueueManagerTest, AddAndRemoveWebState) {
   EXPECT_TRUE(observer()->did_add_called());
   // Remove the WebState from the WebStateList and verify that its queue is
   // removed and that the observer callback is received.
-  web_state_list()->CloseWebStateAt(0);
+  web_state_list()->CloseWebStateAt(0, WebStateList::CLOSE_USER_ACTION);
   EXPECT_EQ(queues.size(), 1U);
   EXPECT_FALSE(GetQueueForWebState(queues, inserted_web_state));
   EXPECT_TRUE(observer()->will_remove_called());

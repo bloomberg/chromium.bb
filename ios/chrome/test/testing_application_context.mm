@@ -20,8 +20,7 @@ TestingApplicationContext::TestingApplicationContext()
     : application_locale_("en"),
       local_state_(nullptr),
       chrome_browser_state_manager_(nullptr),
-      was_last_shutdown_clean_(false),
-      is_shutting_down_(false) {
+      was_last_shutdown_clean_(false) {
   DCHECK(!GetApplicationContext());
   SetApplicationContext(this);
 }
@@ -55,14 +54,6 @@ void TestingApplicationContext::SetLocalState(PrefService* local_state) {
 
 void TestingApplicationContext::SetLastShutdownClean(bool clean) {
   was_last_shutdown_clean_ = clean;
-}
-
-void TestingApplicationContext::SetIsShuttingDown() {
-  is_shutting_down_ = true;
-}
-
-bool TestingApplicationContext::IsShuttingDown() {
-  return is_shutting_down_;
 }
 
 void TestingApplicationContext::SetChromeBrowserStateManager(

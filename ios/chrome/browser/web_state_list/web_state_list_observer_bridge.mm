@@ -90,14 +90,17 @@ void WebStateListObserverBridge::WebStateDetachedAt(
 void WebStateListObserverBridge::WillCloseWebStateAt(
     WebStateList* web_state_list,
     web::WebState* web_state,
-    int index) {
-  const SEL selector = @selector(webStateList:willCloseWebState:atIndex:);
+    int index,
+    bool user_action) {
+  const SEL selector =
+      @selector(webStateList:willCloseWebState:atIndex:userAction:);
   if (![observer_ respondsToSelector:selector])
     return;
 
   [observer_ webStateList:web_state_list
         willCloseWebState:web_state
-                  atIndex:index];
+                  atIndex:index
+               userAction:(user_action ? YES : NO)];
 }
 
 void WebStateListObserverBridge::WebStateActivatedAt(
