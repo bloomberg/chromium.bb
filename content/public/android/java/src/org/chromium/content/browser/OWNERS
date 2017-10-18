@@ -5,7 +5,6 @@ per-file DeviceSensors.java=timvolodine@chromium.org
 per-file ScreenOrientation*.java=mlamouri@chromium.org
 
 # Media Session API related
-per-file AudioFocus*.java=avayvod@chromium.org
 per-file AudioFocus*.java=mlamouri@chromium.org
 
 # Process management related

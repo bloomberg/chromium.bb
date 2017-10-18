@@ -5,7 +5,6 @@ per-file DeviceSensorsTest.java=timvolodine@chromium.org
 per-file ScreenOrientation*.java=mlamouri@chromium.org
 
 # Media Session API related
-per-file MediaSession*.java=avayvod@chromium.org
 per-file MediaSession*.java=mlamouri@chromium.org
 
 # Process management related
