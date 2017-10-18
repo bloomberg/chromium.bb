@@ -1057,7 +1057,6 @@ jumbo_component("base") {
     "win/scoped_bstr.h",
     "win/scoped_co_mem.h",
     "win/scoped_com_initializer.h",
-    "win/scoped_comptr.h",
     "win/scoped_gdi_object.h",
     "win/scoped_handle.cc",
     "win/scoped_handle.h",
