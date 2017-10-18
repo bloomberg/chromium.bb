@@ -3,37 +3,37 @@ Tests that console sidebar behaves properly.
 
 Running: beforeFilter
 SIDEBAR:
-> message
-> error
-> warning
-> info
-> verbose
+> No messages
+> No errors
+> No warnings
+> No info
+> No verbose
 
 Running: addLogsFromMultipleUrls
 SIDEBAR:
-> message
+> 2 messages
 > > log-source.js
 > > console-filter-sidebar.js
-> error
-> warning
-> info
+> No errors
+> No warnings
+> 2 info
 > > log-source.js
 > > console-filter-sidebar.js
-> verbose
+> No verbose
 
 Running: addLogsFromMultipleLevels
 SIDEBAR:
-> message
+> 4 messages
 > > log-source.js
 > > console-filter-sidebar.js
-> error
+> 1 error
 > > console-filter-sidebar.js
-> warning
+> 1 warning
 > > log-source.js
-> info
+> 2 info
 > > log-source.js
 > > console-filter-sidebar.js
-> verbose
+> No verbose
 
 Running: selectingGroup
 Selecting item: log-source.js
@@ -44,23 +44,23 @@ warn2 @ log-source.js:8
 (anonymous) @ console-filter-sidebar.js:48
 
 SIDEBAR:
-> message
+> 4 messages
 > > log-source.js
 > > console-filter-sidebar.js
-> error
+> 1 error
 > > console-filter-sidebar.js
-> warning
+> 1 warning
 > > log-source.js
-> info
+> 2 info
 > > log-source.js
 > > console-filter-sidebar.js
-> verbose
+> No verbose
 
 Running: clearConsole
 SIDEBAR:
-> message
-> error
-> warning
-> info
-> verbose
+> No messages
+> No errors
+> No warnings
+> No info
+> No verbose
 
