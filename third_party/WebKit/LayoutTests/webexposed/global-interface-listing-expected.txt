@@ -9120,7 +9120,6 @@ interface webkitURL
     attribute eventSender
     attribute frames
     attribute gamepadController
-    attribute gin
     attribute internals
     attribute layoutTestController
     attribute length

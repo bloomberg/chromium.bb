@@ -130,7 +130,6 @@
 #include "content/renderer/mojo/blink_connector_js_wrapper.h"
 #include "content/renderer/mojo/blink_interface_registry_impl.h"
 #include "content/renderer/mojo/interface_provider_js_wrapper.h"
-#include "content/renderer/mojo_bindings_controller.h"
 #include "content/renderer/navigation_state_impl.h"
 #include "content/renderer/pepper/pepper_audio_controller.h"
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
@@ -192,6 +191,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerNetworkProvider.h"
 #include "third_party/WebKit/public/web/WebColorSuggestion.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
+#include "third_party/WebKit/public/web/WebContextFeatures.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFindOptions.h"
 #include "third_party/WebKit/public/web/WebFrameOwnerProperties.h"
@@ -2932,8 +2932,6 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 
   // Keep track of the total bindings accumulated in this process.
   RenderProcess::current()->AddBindings(enabled_bindings_flags);
-
-  MaybeEnableMojoBindings();
 }
 
 // mojom::HostZoom implementation ----------------------------------------------
@@ -3879,16 +3877,6 @@ void RenderFrameImpl::DidCreateDocumentElement() {
 }
 
 void RenderFrameImpl::RunScriptsAtDocumentElementAvailable() {
-  base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
-
-  MojoBindingsController* mojo_bindings_controller =
-      MojoBindingsController::Get(this);
-  if (mojo_bindings_controller)
-    mojo_bindings_controller->RunScriptsAtDocumentStart();
-
-  if (!weak_self.get())
-    return;
-
   GetContentClient()->renderer()->RunScriptsAtDocumentStart(this);
   // Do not use |this|! ContentClient might have deleted them by now!
 }
@@ -3949,14 +3937,6 @@ void RenderFrameImpl::DidFinishDocumentLoad() {
 
 void RenderFrameImpl::RunScriptsAtDocumentReady(bool document_is_empty) {
   base::WeakPtr<RenderFrameImpl> weak_self = weak_factory_.GetWeakPtr();
-
-  MojoBindingsController* mojo_bindings_controller =
-      MojoBindingsController::Get(this);
-  if (mojo_bindings_controller)
-    mojo_bindings_controller->RunScriptsAtDocumentReady();
-
-  if (!weak_self.get())
-    return;
 
   GetContentClient()->renderer()->RunScriptsAtDocumentEnd(this);
 
@@ -4641,6 +4621,17 @@ void RenderFrameImpl::DidObserveNewFeatureUsage(
 
 void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
                                              int world_id) {
+  if ((enabled_bindings_ & BINDINGS_POLICY_WEB_UI) && IsMainFrame() &&
+      world_id == ISOLATED_WORLD_ID_GLOBAL) {
+    // We only allow these bindings to be installed when creating the main
+    // world context of the main frame.
+    blink::WebContextFeatures::EnableMojoJS(context, true);
+    // The test bindings are only needed by WebUI browser tests but the test
+    // runner does not currently inform the renderer if it is being started
+    // by a test.
+    blink::WebContextFeatures::EnableMojoJSTest(context, true);
+  }
+
   for (auto& observer : observers_)
     observer.DidCreateScriptContext(context, world_id);
 }
@@ -6616,42 +6607,6 @@ void RenderFrameImpl::SendUpdateState() {
 
   Send(new FrameHostMsg_UpdateState(
       routing_id_, SingleHistoryItemToPageState(current_history_item_)));
-}
-
-void RenderFrameImpl::MaybeEnableMojoBindings() {
-  // BINDINGS_POLICY_WEB_UI and BINDINGS_POLICY_MOJO are mutually exclusive.
-  // They provide access to Mojo bindings, but do so in incompatible ways.
-  const int kAllBindingsTypes = BINDINGS_POLICY_WEB_UI | BINDINGS_POLICY_MOJO;
-
-  // Make sure that at most one of BINDINGS_POLICY_WEB_UI and
-  // BINDINGS_POLICY_MOJO have been set.
-  // NOTE x & (x - 1) == 0 is true iff x is zero or a power of two.
-  DCHECK_EQ((enabled_bindings_ & kAllBindingsTypes) &
-                ((enabled_bindings_ & kAllBindingsTypes) - 1),
-            0);
-
-  // In single process, multiple RenderFrames share a RenderProcess. The
-  // RenderProcess's bindings may not be the same as an individual RenderFrame's
-  // bindings. In multiprocess, such RenderFrames are enforced to be in
-  // different RenderProcesses.
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (!command_line.HasSwitch(switches::kSingleProcess)) {
-    DCHECK_EQ(RenderProcess::current()->GetEnabledBindings(),
-              enabled_bindings_);
-  }
-
-  // If an MojoBindingsController already exists for this RenderFrameImpl, avoid
-  // creating another one. It is not kept as a member, as it deletes itself when
-  // the frame is destroyed.
-  if (RenderFrameObserverTracker<MojoBindingsController>::Get(this))
-    return;
-
-  if (IsMainFrame() && enabled_bindings_ & BINDINGS_POLICY_WEB_UI) {
-    new MojoBindingsController(this, MojoBindingsType::FOR_WEB_UI);
-  } else if (enabled_bindings_ & BINDINGS_POLICY_MOJO) {
-    new MojoBindingsController(this, MojoBindingsType::FOR_LAYOUT_TESTS);
-  }
 }
 
 void RenderFrameImpl::SendFailedProvisionalLoad(

@@ -85,6 +85,26 @@
 
       <!-- Extension styles. -->
       <include name="IDR_EXTENSION_FONTS_CSS" file="extension_fonts.css" type="BINDATA"/>
+
+      <!-- Old Mojo JS bindings library. -->
+      <include name="IDR_MOJO_ASSOCIATED_BINDINGS_JS" file="../../../mojo/public/js/associated_bindings.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_BINDINGS_JS" file="../../../mojo/public/js/bindings.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_BUFFER_JS" file="../../../mojo/public/js/buffer.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_CODEC_JS" file="../../../mojo/public/js/codec.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_CONNECTOR_JS" file="../../../mojo/public/js/connector.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_CONTROL_MESSAGE_HANDLER_JS" file="../../../mojo/public/js/lib/control_message_handler.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_CONTROL_MESSAGE_PROXY_JS" file="../../../mojo/public/js/lib/control_message_proxy.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_INTERFACE_CONTROL_MESSAGES_MOJOM_JS" file="${mojom_root}/mojo/public/interfaces/bindings/interface_control_messages.mojom.js" use_base_dir="false" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_PIPE_CONTROL_MESSAGES_MOJOM_JS" file="${mojom_root}/mojo/public/interfaces/bindings/pipe_control_messages.mojom.js" use_base_dir="false" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_INTERFACE_TYPES_JS" file="../../../mojo/public/js/interface_types.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_ROUTER_JS" file="../../../mojo/public/js/router.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_UNICODE_JS" file="../../../mojo/public/js/unicode.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_VALIDATOR_JS" file="../../../mojo/public/js/validator.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_INTERFACE_ENDPOINT_CLIENT_JS" file="../../../mojo/public/js/lib/interface_endpoint_client.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_INTERFACE_ENDPOINT_HANDLE_JS" file="../../../mojo/public/js/lib/interface_endpoint_handle.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_PIPE_CONTROL_MESSAGE_HANDLER_JS" file="../../../mojo/public/js/lib/pipe_control_message_handler.js" flattenhtml="true" type="BINDATA" />
+      <include name="IDR_MOJO_PIPE_CONTROL_MESSAGE_PROXY_JS" file="../../../mojo/public/js/lib/pipe_control_message_proxy.js" flattenhtml="true" type="BINDATA" />
+
     </includes>
     <structures>
       <!-- Extension styles. -->
