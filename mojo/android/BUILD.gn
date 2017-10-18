@@ -84,6 +84,7 @@ android_library("mojo_javatests") {
     "javatests/src/org/chromium/mojo/bindings/ExecutorFactoryTest.java",
     "javatests/src/org/chromium/mojo/bindings/InterfacesTest.java",
     "javatests/src/org/chromium/mojo/bindings/MessageHeaderTest.java",
+    "javatests/src/org/chromium/mojo/bindings/NameGeneratorTest.java",
     "javatests/src/org/chromium/mojo/bindings/ReadAndDispatchMessageTest.java",
     "javatests/src/org/chromium/mojo/bindings/RouterTest.java",
     "javatests/src/org/chromium/mojo/bindings/SerializationTest.java",
