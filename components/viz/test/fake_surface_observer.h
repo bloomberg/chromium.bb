@@ -24,7 +24,7 @@ class FakeSurfaceObserver : public SurfaceObserver {
 
   bool IsSurfaceDamaged(const SurfaceId& surface_id) const;
 
-  bool SurfaceWillDrawCalled(const SurfaceId& surface_id) const;
+  bool IsSurfaceSubtreeDamaged(const SurfaceId& surface_id) const;
 
   const SurfaceId& last_created_surface_id() const {
     return last_created_surface_id_;
@@ -44,12 +44,12 @@ class FakeSurfaceObserver : public SurfaceObserver {
   void OnSurfaceDestroyed(const SurfaceId& surface_id) override {}
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override {}
-  void OnSurfaceWillDraw(const SurfaceId& surface_id) override;
+  void OnSurfaceSubtreeDamaged(const SurfaceId& surface_id) override;
 
   bool damage_display_;
   BeginFrameAck last_ack_;
   base::flat_set<SurfaceId> damaged_surfaces_;
-  base::flat_set<SurfaceId> will_draw_surfaces_;
+  base::flat_set<SurfaceId> surface_subtree_damaged_;
   SurfaceId last_created_surface_id_;
   SurfaceInfo last_surface_info_;
 };

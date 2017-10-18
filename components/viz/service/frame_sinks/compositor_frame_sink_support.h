@@ -43,7 +43,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
       public SurfaceClient,
       public mojom::CompositorFrameSink {
  public:
-  using WillDrawCallback =
+  using AggregatedDamageCallback =
       base::RepeatingCallback<void(const LocalSurfaceId& local_surface_id,
                                    const gfx::Rect& damage_rect)>;
 
@@ -64,8 +64,9 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
 
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
 
-  // Sets callback that will be provided to Surface::QueueFrame().
-  void SetWillDrawSurfaceCallback(WillDrawCallback callback);
+  // The provided callback will be run every time a surface owned by this object
+  // or one of its descendents is determined to be damaged at aggregation time.
+  void SetAggregatedDamageCallback(AggregatedDamageCallback callback);
 
   // Sets callback called on destruction.
   void SetDestructionCallback(base::OnceCallback<void()> callback);
@@ -171,8 +172,7 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // A callback that will be run at the start of the destructor if set.
   base::OnceCallback<void()> destruction_callback_;
 
-  // A callback that will be provided to Surface::QueueFrame().
-  WillDrawCallback will_draw_callback_;
+  AggregatedDamageCallback aggregated_damage_callback_;
 
   uint64_t last_frame_index_ = kFrameIndexStart;
 

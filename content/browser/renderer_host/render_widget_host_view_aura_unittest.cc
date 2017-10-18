@@ -3762,7 +3762,7 @@ class RenderWidgetHostViewAuraCopyRequestTest
     viz::SurfaceId surface_id =
         view_->GetDelegatedFrameHost()->SurfaceIdForTesting();
     if (surface_id.is_valid())
-      view_->GetDelegatedFrameHost()->WillDrawSurface(
+      view_->GetDelegatedFrameHost()->OnAggregatedSurfaceDamage(
           surface_id.local_surface_id(), view_rect_);
     ASSERT_TRUE(view_->last_copy_request_);
   }
