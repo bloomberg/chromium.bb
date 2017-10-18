@@ -41,3 +41,16 @@ def CheckChangeOnUpload(input_api, output_api):
   results = []
   results.extend(_CheckBugInToDo(input_api, output_api))
   return results
+
+def PostUploadHook(cl, change, output_api):
+  """git cl upload will call this hook after the issue is created/modified.
+
+  This hook adds an extra try bot to the CL description in order to run Cronet
+  tests in addition to CQ try bots.
+  """
+
+  # TODO(crbug.com/712733): Remove this once Cronet bots are deployed on CQ.
+  try_bots = ['master.tryserver.chromium.mac:ios-simulator-cronet']
+
+  return output_api.EnsureCQIncludeTrybotsAreAdded(
+    cl, try_bots, 'Automatically added Cronet trybots to run tests on CQ.')
