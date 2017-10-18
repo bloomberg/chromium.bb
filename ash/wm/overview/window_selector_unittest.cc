@@ -2137,8 +2137,9 @@ TEST_F(SplitViewWindowSelectorTest, WindowGridSizeWhileDraggingWithSplitView) {
   window_selector()->Drag(selector_item, center);
   EXPECT_EQ(GetSplitViewRightWindowBounds(window1.get()), GetGridBounds());
 
-  // TODO(crbug.com/766725): There is a memory leak if we tear down while
-  // overview and splitview mode is active. Investigate.
+  // TODO(sammiequon|xdai): Exit overview as a stop gap solution to avoid memory
+  // leak during shutdown. Fix and remove the ToggleOverview. See
+  // crbug.com/766725
   ToggleOverview();
 }
 
@@ -2543,8 +2544,9 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewBothActiveTest) {
   EXPECT_NE(overview_grid_bounds, overview_grid_bounds_after_resize);
   EXPECT_NE(divider_bounds, divider_bounds_after_resize);
 
-  // TODO(crbug.com/766725): There is a memory leak if we tear down while
-  // overview and splitview mode is both active. Investigate.
+  // TODO(sammiequon|xdai): Exit overview as a stop gap solution to avoid memory
+  // leak during shutdown. Fix and remove the ToggleOverview. See
+  // crbug.com/766725
   ToggleOverview();
 }
 

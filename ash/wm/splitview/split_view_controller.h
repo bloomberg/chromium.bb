@@ -192,9 +192,9 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                  gfx::Rect* left_or_top_rect,
                  gfx::Rect* right_or_bottom_rect);
 
-  // Finds the closest fix location for |divider_postion_| and updates its
+  // Finds the closest fix location for |divider_position_| and updates its
   // value.
-  void MoveDividerToClosestFixedPostion();
+  void MoveDividerToClosestFixedPosition();
 
   // Returns true if we should end split view mode after resizing, i.e., the
   // split view divider is near to the edge of the screen.
