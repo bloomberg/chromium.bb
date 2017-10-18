@@ -20,8 +20,8 @@ class CSSOMTypesWriter(css_properties.CSSProperties):
     CSSKeywordValue is valid for a given CSS property. The header files live in
     core/css/cssom.
     """
-    def __init__(self, json5_file_path):
-        super(CSSOMTypesWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_paths):
+        super(CSSOMTypesWriter, self).__init__(json5_file_paths)
 
         for property_ in self._properties.values():
             types = []

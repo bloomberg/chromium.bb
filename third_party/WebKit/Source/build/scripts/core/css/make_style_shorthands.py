@@ -41,8 +41,8 @@ import template_expander
 class StylePropertyShorthandWriter(css_properties.CSSProperties):
     class_name = 'StylePropertyShorthand'
 
-    def __init__(self, json5_file_path):
-        super(StylePropertyShorthandWriter, self).__init__(json5_file_path)
+    def __init__(self, json5_file_paths):
+        super(StylePropertyShorthandWriter, self).__init__(json5_file_paths)
         self._outputs = {
             ('StylePropertyShorthand.cpp'): self.generate_style_property_shorthand_cpp,
             ('StylePropertyShorthand.h'): self.generate_style_property_shorthand_h}

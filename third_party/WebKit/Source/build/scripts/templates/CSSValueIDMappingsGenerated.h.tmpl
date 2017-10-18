@@ -37,7 +37,7 @@ inline {{enum_name}} cssValueIDToPlatformEnumGenerated(CSSValueID v) {
   {% endfor %}
     default:
       NOTREACHED();
-      return {{enum_name}}::{{mapping['default_value']}};
+      return {{mapping['default_value']}};
   }
 }
 
