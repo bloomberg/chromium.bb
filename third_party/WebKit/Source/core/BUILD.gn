@@ -1342,6 +1342,7 @@ jumbo_source_set("unit_tests") {
     "css/AffectedByPseudoTest.cpp",
     "css/CSSCalculationValueTest.cpp",
     "css/CSSFontFaceSourceTest.cpp",
+    "css/CSSGradientValueTest.cpp",
     "css/CSSPageRuleTest.cpp",
     "css/CSSSelectorTest.cpp",
     "css/CSSSelectorWatchTest.cpp",
