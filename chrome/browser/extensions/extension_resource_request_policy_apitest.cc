@@ -83,7 +83,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest, OriginPrivileges) {
   // resources.
   std::string file_source;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::ReadFileToString(
         test_data_dir_.AppendASCII("extension_resource_request_policy")
             .AppendASCII("index.html"),

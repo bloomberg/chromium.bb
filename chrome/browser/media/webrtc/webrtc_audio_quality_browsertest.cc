@@ -684,13 +684,13 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestWithFakeDeviceGetUserMedia(
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestCallQualityWithAudioFromFakeDevice) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   TestWithFakeDeviceGetUserMedia(kAudioOnlyCallConstraints, "_getusermedia");
 }
 
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestCallQualityWithAudioFromWebAudio) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   if (OnWin8OrHigher()) {
     // http://crbug.com/379798.
     LOG(ERROR) << "This test is not implemented for Win8 or higher.";
@@ -806,7 +806,7 @@ void MAYBE_WebRtcAudioQualityBrowserTest::TestAutoGainControl(
 // The AGC should apply non-zero gain here.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestAutoGainControlOnLowAudio) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(
       kReferenceFile, kAudioOnlyCallConstraints, "_with_agc"));
 }
@@ -814,7 +814,7 @@ IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
 // Since the AGC is off here there should be no gain at all.
 IN_PROC_BROWSER_TEST_F(MAYBE_WebRtcAudioQualityBrowserTest,
                        MANUAL_TestAutoGainIsOffWithAudioProcessingOff) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   const char* kAudioCallWithoutAudioProcessing =
       "{audio: { mandatory: { echoCancellation: false } } }";
   ASSERT_NO_FATAL_FAILURE(TestAutoGainControl(

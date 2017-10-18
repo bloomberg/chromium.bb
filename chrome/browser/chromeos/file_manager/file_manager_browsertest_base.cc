@@ -625,7 +625,7 @@ void FileManagerBrowserTestBase::RunTestMessageLoop() {
 void FileManagerBrowserTestBase::OnMessage(const std::string& name,
                                            const base::DictionaryValue& value,
                                            std::string* output) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   if (name == "getTestName") {
     // Pass the test case name.
     *output = GetTestCaseNameParam();

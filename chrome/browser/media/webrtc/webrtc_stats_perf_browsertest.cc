@@ -249,42 +249,42 @@ class WebRtcStatsPerfBrowserTest : public WebRtcTestBase {
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_opus) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithAudioCodec("opus");
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_ISAC) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithAudioCodec("ISAC");
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_G722) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithAudioCodec("G722");
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_PCMU) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithAudioCodec("PCMU");
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_AudioCodec_PCMA) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithAudioCodec("PCMA");
 }
 
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP8) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithVideoCodec(
       "VP8", false /* prefer_hw_video_codec */);
 }
@@ -292,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_VP9) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallCollectingMetricsWithVideoCodec(
       "VP9", false /* prefer_hw_video_codec */);
 }
@@ -302,7 +302,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallCollectingMetrics_VideoCodec_H264) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(content::kWebRtcH264WithOpenH264FFmpeg)) {
     LOG(WARNING) << "Run-time feature WebRTC-H264WithOpenH264FFmpeg disabled. "
@@ -320,7 +320,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallMeasuringGetStatsPerformance_Promise) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallMeasuringGetStatsPerformance(
       GetStatsVariation::PROMISE_BASED);
 }
@@ -328,7 +328,7 @@ IN_PROC_BROWSER_TEST_F(
 IN_PROC_BROWSER_TEST_F(
     WebRtcStatsPerfBrowserTest,
     MANUAL_RunsAudioAndVideoCallMeasuringGetStatsPerformance_Callback) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   RunsAudioAndVideoCallMeasuringGetStatsPerformance(
       GetStatsVariation::CALLBACK_BASED);
 }

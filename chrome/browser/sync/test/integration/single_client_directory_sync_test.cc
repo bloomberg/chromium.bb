@@ -34,7 +34,7 @@ namespace {
 // will avoid seeing any of those, and return iff Directory database files still
 // exist.
 bool FolderContainsFiles(const FilePath& folder) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   if (base::DirectoryExists(folder)) {
     return !FileEnumerator(folder, false, FileEnumerator::FILES).Next().empty();
   } else {

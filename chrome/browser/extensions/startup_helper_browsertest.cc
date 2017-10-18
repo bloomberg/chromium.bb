@@ -50,7 +50,7 @@ IN_PROC_BROWSER_TEST_F(StartupHelperBrowserTest, ValidateCrx) {
 
     std::string error;
     extensions::StartupHelper helper;
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     bool result = helper.ValidateCrx(command_line, &error);
     if (i->second) {
       EXPECT_TRUE(result) << path.LossyDisplayName()

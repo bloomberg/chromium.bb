@@ -152,7 +152,7 @@ class PDFExtensionTest : public ExtensionApiTest,
     std::string mock_interactions_js;
 
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       base::FilePath test_data_dir;
       PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
       test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));
@@ -209,7 +209,7 @@ class PDFExtensionTest : public ExtensionApiTest,
   // the test if base::Hash(filename) mod kNumberLoadTestParts == k in order
   // to shard the files evenly across values of k in [0, kNumberLoadTestParts).
   void LoadAllPdfsTest(const std::string& dir_name, int k) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     base::FileEnumerator file_enumerator(test_data_dir.AppendASCII(dir_name),
@@ -500,7 +500,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, BlockDirectAccess) {
 IN_PROC_BROWSER_TEST_F(PDFExtensionTest, EnsurePDFFromLocalFileLoads) {
   GURL test_pdf_url;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath test_data_dir;
     ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir));
     test_data_dir = test_data_dir.Append(FILE_PATH_LITERAL("pdf"));

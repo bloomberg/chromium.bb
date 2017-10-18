@@ -203,7 +203,7 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporter) {
 
   base::FilePath temp_path = temp_dir_.GetPath();
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::CopyDirectory(data_path, temp_path, true));
     ASSERT_TRUE(DecompressDatabase(temp_path.AppendASCII("edge_profile")));
   }
@@ -246,7 +246,7 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporterLegacyFallback) {
   data_path = data_path.AppendASCII("edge_profile");
 
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(base::CopyDirectory(data_path, temp_dir_.GetPath(), true));
     ASSERT_TRUE(importer::IsEdgeFavoritesLegacyMode());
   }
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(EdgeImporterBrowserTest, EdgeImporterLegacyFallback) {
   source_profile.importer_type = importer::TYPE_EDGE;
   base::FilePath source_path = temp_dir_.GetPath().AppendASCII("edge_profile");
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_NE(
         -1, base::WriteFile(
                 source_path.AppendASCII("Favorites\\Google.url:favicon:$DATA"),

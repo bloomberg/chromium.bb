@@ -542,7 +542,7 @@ class ContentVerifierTest : public ExtensionBrowserTest {
     base::FilePath scriptfile = extension->path().AppendASCII(script_relpath);
     std::string extra = "some_extra_function_call();";
     {
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
+      base::ScopedAllowBlockingForTesting allow_blocking;
       ASSERT_TRUE(base::AppendToFile(scriptfile, extra.data(), extra.size()));
     }
     DisableExtension(id);

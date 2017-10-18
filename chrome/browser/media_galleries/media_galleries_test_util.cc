@@ -94,7 +94,7 @@ EnsureMediaDirectoriesExists::EnsureMediaDirectoriesExists()
 }
 
 EnsureMediaDirectoriesExists::~EnsureMediaDirectoriesExists() {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   ignore_result(fake_dir_.Delete());
 }
 
@@ -131,7 +131,7 @@ void EnsureMediaDirectoriesExists::ChangeMediaPathOverrides() {
 }
 
 base::FilePath EnsureMediaDirectoriesExists::GetFakeAppDataPath() const {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   DCHECK(fake_dir_.IsValid());
   return fake_dir_.GetPath().AppendASCII("appdata");
 }

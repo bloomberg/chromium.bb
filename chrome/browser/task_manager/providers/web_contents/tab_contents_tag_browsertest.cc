@@ -297,7 +297,7 @@ IN_PROC_BROWSER_TEST_F(TabContentsTagTest, NavigateToPageNoFavicon) {
   PathService::Get(chrome::DIR_TEST_DATA, &test_dir);
   std::string favicon_string;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::ReadFileToString(
         test_dir.AppendASCII("favicon").AppendASCII("icon.png"),
         &favicon_string);

@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(CastStreamingApiTestWithPixelOutput, MAYBE_EndToEnd) {
   receiver->Stop();
 
   delete receiver;
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   cast_environment->Shutdown();
 }
 

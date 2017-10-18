@@ -38,7 +38,7 @@ ChromeTestExtensionLoader::ChromeTestExtensionLoader(
 ChromeTestExtensionLoader::~ChromeTestExtensionLoader() {
   // If there was a temporary directory created for a CRX, we need to clean it
   // up before the member is destroyed so we can explicitly allow IO.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   if (temp_dir_.IsValid())
     EXPECT_TRUE(temp_dir_.Delete());
 }
@@ -109,7 +109,7 @@ bool ChromeTestExtensionLoader::WaitForExtensionReady() {
 
 base::FilePath ChromeTestExtensionLoader::PackExtension(
     const base::FilePath& unpacked_path) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   if (!base::PathExists(unpacked_path)) {
     ADD_FAILURE() << "Unpacked path does not exist: " << unpacked_path.value();
     return base::FilePath();

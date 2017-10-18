@@ -344,7 +344,7 @@ class ProfileBrowserTest : public InProcessBrowserTest {
 // Test OnProfileCreate is called with is_new_profile set to true when
 // creating a new profile synchronously.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateNewProfileSynchronous) {
 // Test OnProfileCreate is called with is_new_profile set to false when
 // creating a profile synchronously with an existing prefs file.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.GetPath());
@@ -392,7 +392,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, CreateOldProfileSynchronous) {
 // creating a new profile asynchronously.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        DISABLED_CreateNewProfileAsynchronous) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -427,7 +427,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 // creating a profile asynchronously with an existing prefs file.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        DISABLED_CreateOldProfileAsynchronous) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
   CreatePrefsFileInDirectory(temp_dir.GetPath());
@@ -454,7 +454,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 // Flaky: http://crbug.com/393177
 // Test that a README file is created for profiles that didn't have it.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -482,7 +482,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DISABLED_ProfileReadmeCreated) {
 
 // Test that repeated setting of exit type is handled correctly.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, ExitType) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -578,7 +578,7 @@ void CompareURLRequestContexts(
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -618,7 +618,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, URLRequestContextIsolation) {
 
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        OffTheRecordURLRequestContextIsolation) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -688,7 +688,7 @@ std::string GetExitTypePreferenceFromDisk(Profile* profile) {
 
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
                        WritesProfilesSynchronouslyOnEndSession) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
@@ -779,7 +779,7 @@ IN_PROC_BROWSER_TEST_F(ProfileBrowserTest,
 // Verifies the cache directory supports multiple profiles when it's overriden
 // by group policy or command line switches.
 IN_PROC_BROWSER_TEST_F(ProfileBrowserTest, DiskCacheDirOverride) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   int size;
   const base::FilePath::StringPieceType profile_name =
       FILE_PATH_LITERAL("Profile 1");

@@ -240,7 +240,7 @@ void TestURLFetcher::Start() {
   // If the response should go into a file, write it out now.
   if (fake_status_.is_success() && fake_response_code_ == net::HTTP_OK &&
       write_response_file_ && !fake_response_file_path_.empty()) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     size_t written_bytes =
         base::WriteFile(fake_response_file_path_, fake_response_string_.c_str(),
                         fake_response_string_.size());

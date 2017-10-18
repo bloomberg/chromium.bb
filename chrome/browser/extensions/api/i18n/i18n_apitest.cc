@@ -22,7 +22,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18N) {
 IN_PROC_BROWSER_TEST_F(ExtensionApiTest, I18NUpdate) {
   ASSERT_TRUE(embedded_test_server()->Start());
   // Create an Extension whose messages.json file will be updated.
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   base::ScopedTempDir extension_dir;
   ASSERT_TRUE(extension_dir.CreateUniqueTempDir());
   base::CopyFile(

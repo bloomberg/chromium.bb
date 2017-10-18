@@ -41,7 +41,7 @@ void QUnitBrowserTestRunner::QUnitStart(content::WebContents* web_contents) {
 
 void QUnitBrowserTestRunner::RunTest(const base::FilePath& file) {
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     ASSERT_TRUE(PathExists(file)) << "Error: The QUnit test suite <"
                                   << file.value() << "> does not exist.";
   }

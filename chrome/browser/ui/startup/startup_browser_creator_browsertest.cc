@@ -494,7 +494,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, StartupURLsForTwoProfiles) {
 
   Profile* other_profile = nullptr;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     other_profile = profile_manager->GetProfile(dest_path);
   }
   ASSERT_TRUE(other_profile);
@@ -682,7 +682,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest,
   base::FilePath dest_path4 = profile_manager->user_data_dir().Append(
       FILE_PATH_LITERAL("New Profile 4"));
 
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   Profile* profile_home1 = profile_manager->GetProfile(dest_path1);
   ASSERT_TRUE(profile_home1);
   Profile* profile_home2 = profile_manager->GetProfile(dest_path2);
@@ -795,7 +795,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorTest, ProfilesLaunchedAfterCrash) {
   Profile* profile_last = nullptr;
   Profile* profile_urls = nullptr;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     profile_home = profile_manager->GetProfile(dest_path1);
     ASSERT_TRUE(profile_home);
     profile_last = profile_manager->GetProfile(dest_path2);
@@ -1162,7 +1162,7 @@ IN_PROC_BROWSER_TEST_F(StartupBrowserCreatorFirstRunTest, MAYBE_WelcomePages) {
 
   Profile* profile1 = nullptr;
   {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     profile1 = Profile::CreateProfile(
         dest_path.Append(FILE_PATH_LITERAL("New Profile 1")), nullptr,
         Profile::CreateMode::CREATE_MODE_SYNCHRONOUS);

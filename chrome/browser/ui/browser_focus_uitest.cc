@@ -172,7 +172,7 @@ class BrowserFocusTest : public InProcessBrowserTest {
 class TestInterstitialPage : public content::InterstitialPageDelegate {
  public:
   explicit TestInterstitialPage(WebContents* tab) {
-    base::ThreadRestrictions::ScopedAllowIO allow_io;
+    base::ScopedAllowBlockingForTesting allow_blocking;
     base::FilePath file_path;
     bool success = PathService::Get(chrome::DIR_TEST_DATA, &file_path);
     EXPECT_TRUE(success);

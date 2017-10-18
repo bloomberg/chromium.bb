@@ -101,7 +101,7 @@ bool CorruptSizeInHeader(const base::FilePath& db_path) {
 }
 
 bool CorruptSizeInHeaderWithLock(const base::FilePath& db_path) {
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
+  base::ScopedAllowBlockingForTesting allow_blocking;
   sql::Connection db;
   if (!db.Open(db_path))
     return false;
