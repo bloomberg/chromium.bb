@@ -134,6 +134,12 @@ def main():
                       help='Arguments for the test process.')
   parser.add_argument('-d', '--device', action='store_true', default=False,
                       help='Run on hardware device instead of QEMU.')
+  parser.add_argument('--bootdata', type=os.path.realpath,
+                      help='Path to a bootdata to use instead of the default '
+                           'one from the SDK')
+  parser.add_argument('--kernel', type=os.path.realpath,
+                      help='Path to a kernel to use instead of the default '
+                           'one from the SDK')
   args = parser.parse_args()
 
   child_args = ['--test-launcher-retry-limit=0']
@@ -191,13 +197,13 @@ def main():
   try:
     bootfs = BuildBootfs(
         args.output_directory, runtime_deps, args.exe_name, child_args,
-        args.dry_run, bootdata=None,
+        args.dry_run, bootdata=args.bootdata,
         summary_output=args.test_launcher_summary_output,
         power_off=not args.device, target_cpu=args.target_cpu)
     if not bootfs:
       return 2
 
-    return RunFuchsia(bootfs, args.device, args.dry_run,
+    return RunFuchsia(bootfs, args.device, args.kernel, args.dry_run,
                       args.test_launcher_summary_output)
   finally:
     # Stop the spawner to make sure it doesn't leave testserver running, in
