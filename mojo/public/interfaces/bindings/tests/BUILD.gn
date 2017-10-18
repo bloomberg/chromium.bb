@@ -57,6 +57,7 @@ mojom("test_interfaces") {
     "test_bad_messages.mojom",
     "test_constants.mojom",
     "test_data_view.mojom",
+    "test_name_generator.mojom",
     "test_native_types.mojom",
     "test_structs.mojom",
     "test_sync_methods.mojom",

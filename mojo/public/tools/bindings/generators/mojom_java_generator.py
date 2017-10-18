@@ -95,12 +95,15 @@ _java_primitive_to_boxed_type = {
 
 
 def NameToComponent(name):
-  # insert '_' between anything and a Title name (e.g, HTTPEntry2FooBar ->
-  # HTTP_Entry2_FooBar)
-  name = re.sub('([^_])([A-Z][^A-Z_]+)', r'\1_\2', name)
-  # insert '_' between non upper and start of upper blocks (e.g.,
-  # HTTP_Entry2_FooBar -> HTTP_Entry2_Foo_Bar)
-  name = re.sub('([^A-Z_])([A-Z])', r'\1_\2', name)
+  """ Returns a list of lowercase words corresponding to a given name. """
+  # Add underscores after uppercase letters when appropriate. An uppercase
+  # letter is considered the end of a word if it is followed by an upper and a
+  # lower. E.g. URLLoaderFactory -> URL_LoaderFactory
+  name = re.sub('([A-Z][0-9]*)(?=[A-Z][0-9]*[a-z])', r'\1_', name)
+  # Add underscores after lowercase letters when appropriate. A lowercase letter
+  # is considered the end of a word if it is followed by an upper.
+  # E.g. URLLoaderFactory -> URLLoader_Factory
+  name = re.sub('([a-z][0-9]*)(?=[A-Z])', r'\1_', name)
   return [x.lower() for x in name.split('_')]
 
 def UpperCamelCase(name):
