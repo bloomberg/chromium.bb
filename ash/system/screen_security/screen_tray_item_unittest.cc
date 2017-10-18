@@ -9,7 +9,6 @@
 #include "ash/system/screen_security/screen_share_tray_item.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_item_view.h"
 #include "ash/test/ash_test_base.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -45,11 +44,6 @@ class ScreenTrayItemTest : public AshTestBase {
   void set_tray_item(ScreenTrayItem* tray_item) { tray_item_ = tray_item; }
 
   int stop_callback_hit_count() const { return stop_callback_hit_count_; }
-
-  void SetUp() override {
-    AshTestBase::SetUp();
-    TrayItemView::DisableAnimationsForTest();
-  }
 
   void StartSession() {
     tray_item_->Start(
