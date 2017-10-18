@@ -39212,6 +39212,36 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.QUIC"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each QUIC connection with the Certificate Transparency
+    policy, for connections for which CT compliance is required for the
+    connection to succeed. (For example, CT compliance is required for certain
+    Certificate Authorities, or a site can opt in to having CT be required.)
+    Recorded once on connection setup for applicable connections unless CT
+    evaluation has been disabled for that connection or the certificate is
+    otherwise invalid.
+  </summary>
+</histogram>
+
+<histogram
+    name="Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The compliance of each SSL connection with the Certificate Transparency
+    policy, for connections for which CT compliance is required for the
+    connection to succeed. (For example, CT compliance is required for certain
+    Certificate Authorities, or a site can opt in to having CT be required.)
+    Recorded once on connection setup for applicable connections unless CT
+    evaluation has been disabled for that connection or the certificate is
+    otherwise invalid.
+  </summary>
+</histogram>
+
 <histogram name="Net.CertificateTransparency.DnsQueryDuration" units="ms">
   <owner>robpercival@chromium.org</owner>
   <summary>
@@ -39228,6 +39258,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     The status of each attempt to obtain an inclusion proof from a Certificate
     Transparency log over DNS. This can consist of more than one DNS request.
     Emitted at the end of an attempt.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertificateTransparency.EVCompliance.QUIC"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The state of compliance with Certificate Transparency presence requirements
+    for each EV certificate. Recorded once on QUIC connection setup when the
+    connection uses an EV certificate unless CT evaluation has been disabled for
+    that connection or the certificate is invalid.
+  </summary>
+</histogram>
+
+<histogram name="Net.CertificateTransparency.EVCompliance.SSL"
+    enum="CTComplianceStatus">
+  <owner>estark@chromium.org</owner>
+  <summary>
+    The state of compliance with Certificate Transparency presence requirements
+    for each EV certificate. Recorded once on SSL connection setup when the
+    connection uses an EV certificate unless CT evaluation has been disabled for
+    that connection or the certificate is invalid.
   </summary>
 </histogram>
 

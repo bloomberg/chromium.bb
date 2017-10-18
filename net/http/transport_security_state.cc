@@ -886,14 +886,11 @@ TransportSecurityState::CheckCTRequirements(
   using CTRequirementLevel = RequireCTDelegate::CTRequirementLevel;
   std::string hostname = host_port_pair.host();
 
-  // If the connection complies with CT policy, then no further checks are
-  // necessary.
-  if (cert_policy_compliance ==
-          ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS ||
-      cert_policy_compliance ==
-          ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY) {
-    return CT_REQUIREMENTS_MET;
-  }
+  bool complies =
+      (cert_policy_compliance ==
+           ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS ||
+       cert_policy_compliance ==
+           ct::CertPolicyCompliance::CERT_POLICY_BUILD_NOT_TIMELY);
 
   // Check Expect-CT first so that other CT requirements do not prevent
   // Expect-CT reports from being sent.
@@ -908,26 +905,28 @@ TransportSecurityState::CheckCTRequirements(
                                 signed_certificate_timestamps);
     }
     if (state.enforce)
-      return CT_REQUIREMENTS_NOT_MET;
+      return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
   }
 
   CTRequirementLevel ct_required = CTRequirementLevel::DEFAULT;
   if (require_ct_delegate_)
     ct_required = require_ct_delegate_->IsCTRequiredForHost(hostname);
-  if (ct_required != CTRequirementLevel::DEFAULT)
-    return (ct_required == CTRequirementLevel::REQUIRED
-                ? CT_REQUIREMENTS_NOT_MET
-                : CT_REQUIREMENTS_MET);
+  if (ct_required != CTRequirementLevel::DEFAULT) {
+    if (ct_required == CTRequirementLevel::REQUIRED)
+      return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
+    return CT_NOT_REQUIRED;
+  }
 
   // Allow unittests to override the default result.
   if (g_ct_required_for_testing)
-    return (g_ct_required_for_testing == 1 ? CT_REQUIREMENTS_NOT_MET
-                                           : CT_REQUIREMENTS_MET);
+    return (g_ct_required_for_testing == 1
+                ? (complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET)
+                : CT_NOT_REQUIRED);
 
   // Until CT is required for all secure hosts on the Internet, this should
-  // remain CT_REQUIREMENTS_MET. It is provided to simplify the various
+  // remain CT_NOT_REQUIRED. It is provided to simplify the various
   // short-circuit returns below.
-  const CTRequirementsStatus default_response = CT_REQUIREMENTS_MET;
+  const CTRequirementsStatus default_response = CT_NOT_REQUIRED;
 
 // FieldTrials are not supported in Native Client apps.
 #if !defined(OS_NACL)
@@ -968,7 +967,7 @@ TransportSecurityState::CheckCTRequirements(
       return default_response;
     }
     // No exception found. This certificate must conform to the CT policy.
-    return CT_REQUIREMENTS_NOT_MET;
+    return complies ? CT_REQUIREMENTS_MET : CT_REQUIREMENTS_NOT_MET;
   }
 
   return default_response;

@@ -702,15 +702,19 @@ bool SpdySession::CanPool(TransportSecurityState* transport_security_state,
   }
 
   // As with CheckPublicKeyPins above, disable Expect-CT reports.
-  if (transport_security_state->CheckCTRequirements(
-          HostPortPair(new_hostname, 0), ssl_info.is_issued_by_known_root,
-          ssl_info.public_key_hashes, ssl_info.cert.get(),
-          ssl_info.unverified_cert.get(),
-          ssl_info.signed_certificate_timestamps,
-          TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
-          ssl_info.ct_cert_policy_compliance) !=
-      TransportSecurityState::CT_REQUIREMENTS_MET) {
-    return false;
+  switch (transport_security_state->CheckCTRequirements(
+      HostPortPair(new_hostname, 0), ssl_info.is_issued_by_known_root,
+      ssl_info.public_key_hashes, ssl_info.cert.get(),
+      ssl_info.unverified_cert.get(), ssl_info.signed_certificate_timestamps,
+      TransportSecurityState::DISABLE_EXPECT_CT_REPORTS,
+      ssl_info.ct_cert_policy_compliance)) {
+    case TransportSecurityState::CT_REQUIREMENTS_NOT_MET:
+      return false;
+    case TransportSecurityState::CT_REQUIREMENTS_MET:
+    case TransportSecurityState::CT_NOT_REQUIRED:
+      // Intentional fallthrough; this case is just here to make sure that all
+      // possible values of CheckCTRequirements() are handled.
+      break;
   }
 
   return true;

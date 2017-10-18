@@ -2227,14 +2227,14 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
         .WillRepeatedly(Return(CTRequirementLevel::NOT_REQUIRED));
     state.SetRequireCTDelegate(&never_require_delegate);
     EXPECT_EQ(
-        TransportSecurityState::CT_REQUIREMENTS_MET,
+        TransportSecurityState::CT_NOT_REQUIRED,
         state.CheckCTRequirements(
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
             TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
             ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
     EXPECT_EQ(
-        TransportSecurityState::CT_REQUIREMENTS_MET,
+        TransportSecurityState::CT_NOT_REQUIRED,
         state.CheckCTRequirements(
             HostPortPair("www.example.com", 443), true, hashes, cert.get(),
             cert.get(), SignedCertificateTimestampAndStatusList(),
@@ -2312,7 +2312,7 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
   // Certificates issued by Symantec prior to 1 June 2016 should not
   // be required to be disclosed via CT.
   EXPECT_EQ(
-      TransportSecurityState::CT_REQUIREMENTS_MET,
+      TransportSecurityState::CT_NOT_REQUIRED,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, before_cert.get(),
           before_cert.get(), SignedCertificateTimestampAndStatusList(),
@@ -2352,14 +2352,14 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
   // ... unless they were issued by an excluded intermediate.
   hashes.push_back(HashValue(google_hash_value));
   EXPECT_EQ(
-      TransportSecurityState::CT_REQUIREMENTS_MET,
+      TransportSecurityState::CT_NOT_REQUIRED,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, before_cert.get(),
           before_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
           ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(
-      TransportSecurityState::CT_REQUIREMENTS_MET,
+      TransportSecurityState::CT_NOT_REQUIRED,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
@@ -2371,14 +2371,14 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
   HashValueVector unrelated_hashes;
   unrelated_hashes.push_back(HashValue(unrelated_hash_value));
 
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("www.example.com", 443), true, unrelated_hashes,
                 before_cert.get(), before_cert.get(),
                 SignedCertificateTimestampAndStatusList(),
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
                 ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("www.example.com", 443), true, unrelated_hashes,
                 after_cert.get(), after_cert.get(),
@@ -2396,14 +2396,14 @@ TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
                                          "disabled");
 
   EXPECT_EQ(
-      TransportSecurityState::CT_REQUIREMENTS_MET,
+      TransportSecurityState::CT_NOT_REQUIRED,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, before_cert.get(),
           before_cert.get(), SignedCertificateTimestampAndStatusList(),
           TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
           ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
   EXPECT_EQ(
-      TransportSecurityState::CT_REQUIREMENTS_MET,
+      TransportSecurityState::CT_NOT_REQUIRED,
       state.CheckCTRequirements(
           HostPortPair("www.example.com", 443), true, hashes, after_cert.get(),
           after_cert.get(), SignedCertificateTimestampAndStatusList(),
@@ -2711,8 +2711,8 @@ TEST_F(TransportSecurityStateTest,
             reporter.signed_certificate_timestamps()[0].sct);
 }
 
-// Tests that CheckCTRequirements() returns false if a connection to a host
-// violates an Expect-CT header, and that it reports violations.
+// Tests that CheckCTRequirements() returns the correct response if a connection
+// to a host violates an Expect-CT header, and that it reports violations.
 TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   const base::Time current_time(base::Time::Now());
   const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
@@ -2742,13 +2742,13 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
                     GURL());
 
   // Test that a connection to an unrelated host is not affected.
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("example2.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
                 TransportSecurityState::ENABLE_EXPECT_CT_REPORTS,
                 ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("example2.test", 443), true, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,
@@ -2792,7 +2792,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   EXPECT_EQ(1u, reporter.num_failures());
 
   // A connection to a report-only host should be reported only.
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("example-report-only.test", 443), true,
                 HashValueVector(), cert1.get(), cert2.get(), sct_list,
@@ -2818,7 +2818,7 @@ TEST_F(TransportSecurityStateTest, CheckCTRequirementsWithExpectCT) {
   EXPECT_EQ(2u, reporter.num_failures());
 
   // A connection with a private root should be neither enforced nor reported.
-  EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_MET,
+  EXPECT_EQ(TransportSecurityState::CT_NOT_REQUIRED,
             state.CheckCTRequirements(
                 HostPortPair("example.test", 443), false, HashValueVector(),
                 cert1.get(), cert2.get(), sct_list,

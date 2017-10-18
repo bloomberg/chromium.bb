@@ -346,6 +346,95 @@ TEST_F(ProofVerifierChromiumTest, StripsEVIfNotAllowed) {
                 (CERT_STATUS_CT_COMPLIANCE_FAILED | CERT_STATUS_IS_EV));
 }
 
+// Tests that the when a certificate's EV status is stripped to EV
+// non-compliance, the correct histogram is recorded.
+TEST_F(ProofVerifierChromiumTest, CTEVHistogramNonCompliant) {
+  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance.QUIC";
+  base::HistogramTester histograms;
+
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.cert_status = CERT_STATUS_IS_EV;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  EXPECT_CALL(ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_SUCCESS, status);
+
+  ASSERT_TRUE(details_.get());
+  ProofVerifyDetailsChromium* verify_details =
+      static_cast<ProofVerifyDetailsChromium*>(details_.get());
+  EXPECT_EQ(CERT_STATUS_CT_COMPLIANCE_FAILED,
+            verify_details->cert_verify_result.cert_status &
+                (CERT_STATUS_CT_COMPLIANCE_FAILED | CERT_STATUS_IS_EV));
+
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS),
+      1);
+}
+
+// Tests that when a connection is CT-compliant and its EV status is preserved,
+// the correct histogram is recorded.
+TEST_F(ProofVerifierChromiumTest, CTEVHistogramCompliant) {
+  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance.QUIC";
+  base::HistogramTester histograms;
+
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.cert_status = CERT_STATUS_IS_EV;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  EXPECT_CALL(ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_SUCCESS, status);
+
+  ASSERT_TRUE(details_.get());
+  ProofVerifyDetailsChromium* verify_details =
+      static_cast<ProofVerifyDetailsChromium*>(details_.get());
+  EXPECT_TRUE(verify_details->cert_verify_result.cert_status &
+              CERT_STATUS_IS_EV);
+
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
+      1);
+}
+
 HashValueVector MakeHashValueVector(uint8_t tag) {
   HashValue hash(HASH_VALUE_SHA256);
   memset(hash.data(), tag, hash.size());
@@ -477,6 +566,142 @@ TEST_F(ProofVerifierChromiumTest, CTIsRequired) {
       static_cast<ProofVerifyDetailsChromium*>(details_.get());
   EXPECT_TRUE(verify_details->cert_verify_result.cert_status &
               CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED);
+}
+
+// Test that when CT is required (in this case, by the delegate) and CT
+// information is not compliant, then the CT-required histogram is recorded
+// properly.
+TEST_F(ProofVerifierChromiumTest, CTIsRequiredHistogramNonCompliant) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.QUIC";
+  base::HistogramTester histograms;
+
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.is_issued_by_known_root = true;
+  dummy_result.public_key_hashes = MakeHashValueVector(0x01);
+  dummy_result.cert_status = 0;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  // Set up CT.
+  MockRequireCTDelegate require_ct_delegate;
+  transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::NOT_REQUIRED));
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::REQUIRED));
+  EXPECT_CALL(ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_FAILURE, status);
+
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS),
+      1);
+}
+
+// Test that when CT is required (in this case, by the delegate) and CT
+// information is compliant, then the CT-required histogram is recorded
+// properly.
+TEST_F(ProofVerifierChromiumTest, CTIsRequiredHistogramCompliant) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.QUIC";
+  base::HistogramTester histograms;
+
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.is_issued_by_known_root = true;
+  dummy_result.public_key_hashes = MakeHashValueVector(0x01);
+  dummy_result.cert_status = 0;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  // Set up CT.
+  MockRequireCTDelegate require_ct_delegate;
+  transport_security_state_.SetRequireCTDelegate(&require_ct_delegate);
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(_))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::NOT_REQUIRED));
+  EXPECT_CALL(require_ct_delegate, IsCTRequiredForHost(kTestHostname))
+      .WillRepeatedly(Return(TransportSecurityState::RequireCTDelegate::
+                                 CTRequirementLevel::REQUIRED));
+  EXPECT_CALL(ct_policy_enforcer_, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_SUCCESS, status);
+
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
+      1);
+}
+
+// Test that when CT is not required (because of a private root, in this case),
+// the CT-required histogram is not recorded.
+TEST_F(ProofVerifierChromiumTest, CTIsNotRequiredHistogram) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.QUIC";
+  base::HistogramTester histograms;
+
+  scoped_refptr<X509Certificate> test_cert = GetTestServerCertificate();
+  ASSERT_TRUE(test_cert);
+
+  CertVerifyResult dummy_result;
+  dummy_result.verified_cert = test_cert;
+  dummy_result.is_issued_by_known_root = false;
+  dummy_result.public_key_hashes = MakeHashValueVector(0x01);
+  dummy_result.cert_status = 0;
+
+  MockCertVerifier dummy_verifier;
+  dummy_verifier.AddResultForCert(test_cert.get(), dummy_result, OK);
+
+  ProofVerifierChromium proof_verifier(&dummy_verifier, &ct_policy_enforcer_,
+                                       &transport_security_state_,
+                                       ct_verifier_.get());
+
+  std::unique_ptr<DummyProofVerifierCallback> callback(
+      new DummyProofVerifierCallback);
+  QuicAsyncStatus status = proof_verifier.VerifyProof(
+      kTestHostname, kTestPort, kTestConfig, QUIC_VERSION_35, kTestChloHash,
+      certs_, kTestEmptySCT, GetTestSignature(), verify_context_.get(),
+      &error_details_, &details_, std::move(callback));
+  ASSERT_EQ(QUIC_SUCCESS, status);
+
+  histograms.ExpectTotalCount(kHistogramName, 0);
 }
 
 // Test that CT is considered even when HPKP fails.
