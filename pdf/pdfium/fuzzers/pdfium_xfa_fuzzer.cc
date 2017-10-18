@@ -4,12 +4,6 @@
 
 #include "pdf/pdfium/fuzzers/pdfium_fuzzer_helper.h"
 
-// TODO(mmoroz,rharrison): remove this after landing of
-// https://chromium-review.googlesource.com/c/chromium/src/+/724021
-#ifndef DOCTYPE_PDF
-#define DOCTYPE_PDF 0
-#endif
-
 class PDFiumXFAFuzzer : public PDFiumFuzzerHelper {
  public:
   PDFiumXFAFuzzer() : PDFiumFuzzerHelper() {}
@@ -20,8 +14,8 @@ class PDFiumXFAFuzzer : public PDFiumFuzzerHelper {
   // Return false if XFA doesn't load as otherwise we're duplicating the work
   // done by the non-xfa fuzzer.
   bool OnFormFillEnvLoaded(FPDF_DOCUMENT doc) override {
-    int doc_type = DOCTYPE_PDF;
-    if (!FPDF_HasXFAField(doc, &doc_type) || doc_type == DOCTYPE_PDF)
+    int form_type = FPDF_GetFormType(doc);
+    if (form_type != FORMTYPE_XFA_FULL && form_type != FORMTYPE_XFA_FOREGROUND)
       return false;
     return FPDF_LoadXFA(doc);
   }
