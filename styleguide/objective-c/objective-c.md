@@ -3,7 +3,7 @@
 _For other languages, please see the [Chromium style guides](https://chromium.googlesource.com/chromium/src/+/master/styleguide/styleguide.md)._
 
 Chromium follows the
-[Google Objective-C style guide](https://google.github.io/styleguide/objcguide.xml)
+[Google Objective-C style guide](https://github.com/google/styleguide/blob/gh-pages/objcguide.md)
 unless an exception is listed below.
 
 A checkout should give you
@@ -19,9 +19,8 @@ Objective-C and Objective-C++ code also has an 80 character line length.
 
 ## Chromium C++ style
 
-Just as [Google Objective-C style](https://google.github.io/styleguide/objcguide.xml)
-follows [Google C++ Style](https://google.github.io/styleguide/cppguide.html),
-Chromium Objective-C and Objective-C++ follows [Chromium C++ style](../c++/c++.md).
+Where appropriate, the [Chromium C++ style](../c++/c++.md) style guide applies
+to Chromium Objective-C and (especially) Objective-C++
 
 ## Code Formatting
 
