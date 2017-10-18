@@ -19693,7 +19693,7 @@ uploading your change for review.  These are checked by presubmit scripts.
              AMD"/>
 </enum>
 
-<enum name="GpuImageDecodeState">
+<enum name="GpuImageUsageState">
   <int value="0" label="Wasted, once"/>
   <int value="1" label="Used, once"/>
   <int value="2" label="Wasted, relocked"/>

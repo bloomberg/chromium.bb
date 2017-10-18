@@ -7615,7 +7615,6 @@ class GpuRasterizationSucceedsWithLargeImage : public LayerTreeHostTest {
 
     // Set to 0 to force at-raster GPU image decode.
     settings->decoded_image_working_set_budget_bytes = 0;
-    settings->decoded_image_cache_budget_bytes = 0;
   }
 
   void SetupTree() override {

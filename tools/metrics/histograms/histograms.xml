@@ -66778,7 +66778,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Renderer4.GpuImageDecodeState" enum="GpuImageDecodeState">
+<histogram name="Renderer4.GpuImageDecodeState" enum="GpuImageUsageState">
   <owner>vmpstr@chromium.org</owner>
   <summary>
     Gpu image decode usage statistics. Images are decoded and locked prior to
@@ -66796,8 +66796,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Renderer4.GpuImageUploadState" enum="GpuImageUsageState">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Gpu image upload usage statistics. Images are uploaded and locked prior to
+    use; this indicates how that upload is used during tile management.
+  </summary>
+</histogram>
+
+<histogram name="Renderer4.GpuImageUploadState.FirstLockWasted"
+    enum="BooleanWasted">
+  <owner>ericrk@chromium.org</owner>
+  <summary>
+    Indication whether the first lock of an image upload was wasted (image was
+    not used). Images are uploaded and locked prior to raster; this indicates
+    whether the upload was used or not during the first lock.
+  </summary>
+</histogram>
+
 <histogram name="Renderer4.GpuImageUploadState.FirstRefWasted"
     enum="BooleanWasted">
+  <obsolete>
+    Deprecated as of 06/2017.  No longer generated.
+  </obsolete>
   <owner>vmpstr@chromium.org</owner>
   <summary>
     Indication whether the first ref of a GPU image upload was wasted (not used
@@ -66807,6 +66828,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Renderer4.GpuImageUploadState.Used" enum="BooleanUsage">
+  <obsolete>
+    Deprecated as of 06/2017.  No longer generated.
+  </obsolete>
   <owner>vmpstr@chromium.org</owner>
   <summary>
     Indication whether the GPU image upload was used in raster. Images are

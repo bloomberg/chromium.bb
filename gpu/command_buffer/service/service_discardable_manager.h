@@ -64,9 +64,9 @@ class GPU_EXPORT ServiceDiscardableManager {
       uint32_t texture_id,
       gles2::TextureManager* texture_manager) const;
 
-  // TODO(ericrk): Arbitrary limit, refine this once we actually use this class
-  // in production. crbug.com/706456
-  static const size_t kMaxSize = 256 * 1024 * 1024;
+  void SetCacheSizeLimitForTesting(size_t cache_size_limit) {
+    cache_size_limit_ = cache_size_limit;
+  }
 
  private:
   void EnforceLimits();
@@ -105,6 +105,9 @@ class GPU_EXPORT ServiceDiscardableManager {
   // Total size of all |entries_|. The same as summing
   // GpuDiscardableEntry::size for each entry.
   size_t total_size_ = 0;
+
+  // The limit above which the cache will start evicting resources.
+  size_t cache_size_limit_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceDiscardableManager);
 };
