@@ -43,6 +43,7 @@ class ArcAppDeferredLauncherItemController : public ash::ShelfItemDelegate {
                       int64_t command_id,
                       int32_t event_flags,
                       int64_t display_id) override;
+  std::unique_ptr<ui::MenuModel> GetContextMenu(int64_t display_id) override;
   void Close() override;
 
  private:
