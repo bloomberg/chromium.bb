@@ -355,7 +355,7 @@ class SSLErrorHandlerNameMismatchNoSANTest
 // A class to test the captive portal certificate list feature. Creates an error
 // handler with a name mismatch error by default. The error handler can be
 // recreated by calling ResetErrorHandler() with an appropriate cert status.
-class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
+class SSLErrorAssistantProtoTest : public ChromeRenderViewHostTestHarness {
  public:
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
@@ -378,8 +378,8 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
   const net::SSLInfo& ssl_info() { return ssl_info_; }
 
  protected:
-  SSLErrorAssistantTest() {}
-  ~SSLErrorAssistantTest() override {}
+  SSLErrorAssistantProtoTest() {}
+  ~SSLErrorAssistantProtoTest() override {}
 
   void SetCaptivePortalFeatureEnabled(bool enabled) {
     if (enabled) {
@@ -583,7 +583,7 @@ class SSLErrorAssistantTest : public ChromeRenderViewHostTestHarness {
   TestSSLErrorHandlerDelegate* delegate_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(SSLErrorAssistantTest);
+  DISALLOW_COPY_AND_ASSIGN(SSLErrorAssistantProtoTest);
 };
 
 class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
@@ -1112,7 +1112,7 @@ TEST_F(SSLErrorHandlerDateInvalidTest, TimeQueryHangs) {
 
 // Tests that a certificate marked as a known captive portal certificate causes
 // the captive portal interstitial to be shown.
-TEST_F(SSLErrorAssistantTest, CaptivePortal_FeatureEnabled) {
+TEST_F(SSLErrorAssistantProtoTest, CaptivePortal_FeatureEnabled) {
   SetCaptivePortalFeatureEnabled(true);
 
   base::HistogramTester histograms;
@@ -1150,7 +1150,7 @@ TEST_F(SSLErrorAssistantTest, CaptivePortal_FeatureEnabled) {
 // Tests that a certificate marked as a known captive portal certificate does
 // not cause the captive portal interstitial to be shown, if the feature is
 // disabled.
-TEST_F(SSLErrorAssistantTest, CaptivePortal_FeatureDisabled) {
+TEST_F(SSLErrorAssistantProtoTest, CaptivePortal_FeatureDisabled) {
   SetCaptivePortalFeatureEnabled(false);
 
   // Default error for SSLErrorHandlerNameMismatchTest tests is name mismatch.
@@ -1160,7 +1160,7 @@ TEST_F(SSLErrorAssistantTest, CaptivePortal_FeatureDisabled) {
 // Tests that an error other than name mismatch does not cause a captive portal
 // interstitial to be shown, even if the certificate is marked as a known
 // captive portal certificate.
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        CaptivePortal_AuthorityInvalidError_NoInterstitial) {
   SetCaptivePortalFeatureEnabled(true);
 
@@ -1172,7 +1172,7 @@ TEST_F(SSLErrorAssistantTest,
 // not cause a captive portal interstitial to be shown, even if the certificate
 // is marked as a known captive portal certificate. The resulting error is
 // authority-invalid.
-TEST_F(SSLErrorAssistantTest, CaptivePortal_TwoErrors_NoInterstitial) {
+TEST_F(SSLErrorAssistantProtoTest, CaptivePortal_TwoErrors_NoInterstitial) {
   SetCaptivePortalFeatureEnabled(true);
 
   const net::CertStatus cert_status =
@@ -1188,7 +1188,7 @@ TEST_F(SSLErrorAssistantTest, CaptivePortal_TwoErrors_NoInterstitial) {
 // captive portal interstitial to be shown, even if the certificate is marked as
 // a known captive portal certificate. Similar to
 // NameMismatchAndAuthorityInvalid, except the resulting error is name mismatch.
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        CaptivePortal_TwoErrorsIncludingNameMismatch_NoInterstitial) {
   SetCaptivePortalFeatureEnabled(true);
 
@@ -1206,7 +1206,7 @@ TEST_F(SSLErrorAssistantTest,
 // Tests that if a certificate matches the issuer common name regex of a MITM
 // software entry but not the issuer organization name a MITM software
 // interstitial will not be displayed.
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        MITMSoftware_CertificateDoesNotMatchOrganizationName_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
@@ -1228,7 +1228,7 @@ TEST_F(SSLErrorAssistantTest,
 // Tests that if a certificate matches the issuer organization name regex of a
 // MITM software entry but not the issuer common name a MITM software
 // interstitial will not be displayed.
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        MITMSoftware_CertificateDoesNotMatchCommonName_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
@@ -1249,7 +1249,7 @@ TEST_F(SSLErrorAssistantTest,
 
 // Tests that a certificate with no organization name or common name will not
 // trigger a MITM software interstitial.
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        MITMSoftware_CertificateWithNoOrganizationOrCommonName_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
@@ -1261,7 +1261,7 @@ TEST_F(SSLErrorAssistantTest,
 
 // Tests that when everything else is in order, a matching MITM software
 // certificate will trigger the MITM software interstitial.
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        MITMSoftware_CertificateMatchesCommonNameAndOrganizationName) {
   SetMITMSoftwareFeatureEnabled(true);
 
@@ -1274,7 +1274,7 @@ TEST_F(SSLErrorAssistantTest,
 // Tests that a known MITM software entry in the SSL error assistant proto that
 // has a common name regex but not an organization name regex can still trigger
 // a MITM software interstitial.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_CertificateMatchesCommonName) {
+TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_CertificateMatchesCommonName) {
   SetMITMSoftwareFeatureEnabled(true);
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_AUTHORITY_INVALID);
@@ -1294,7 +1294,8 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_CertificateMatchesCommonName) {
 // Tests that a known MITM software entry in the SSL error assistant proto that
 // has an organization name regex but not a common name name regex can still
 // trigger a MITM software interstitial.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_CertificateMatchesOrganizationName) {
+TEST_F(SSLErrorAssistantProtoTest,
+       MITMSoftware_CertificateMatchesOrganizationName) {
   SetMITMSoftwareFeatureEnabled(true);
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_AUTHORITY_INVALID);
@@ -1315,7 +1316,8 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_CertificateMatchesOrganizationName) {
 // interstitial. For example, a common name regex "Match" should not trigger the
 // MITM software interstitial on a certificate that's common name is
 // "Full Match".
-TEST_F(SSLErrorAssistantTest, MITMSoftware_PartialRegexMatch_NoInterstitial) {
+TEST_F(SSLErrorAssistantProtoTest,
+       MITMSoftware_PartialRegexMatch_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
                               net::CERT_STATUS_AUTHORITY_INVALID);
@@ -1336,7 +1338,7 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_PartialRegexMatch_NoInterstitial) {
 
 // Tests that a MITM software interstitial is not triggered when neither the
 // common name or the organization name match.
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        MITMSoftware_NonMatchingCertificate_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
@@ -1347,7 +1349,7 @@ TEST_F(SSLErrorAssistantTest,
 
 // Tests that when a user's machine is enterprise managed the correct MITM
 // software interstitial is triggered.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_EnterpriseManaged) {
+TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_EnterpriseManaged) {
   SetMITMSoftwareFeatureEnabled(true);
 
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
@@ -1362,7 +1364,7 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_EnterpriseManaged) {
 
 // Tests that when a user's machine is not enterprise managed the correct MITM
 // software interstitial is triggered.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_NotEnterpriseManaged) {
+TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_NotEnterpriseManaged) {
   SetMITMSoftwareFeatureEnabled(true);
 
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
@@ -1377,7 +1379,7 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_NotEnterpriseManaged) {
 
 // Tests that the MITM software interstitial is not triggered when the feature
 // is disabled by Finch.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_FeatureDisabled) {
+TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_FeatureDisabled) {
   SetMITMSoftwareFeatureEnabled(false);
 
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
@@ -1388,7 +1390,7 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_FeatureDisabled) {
 
 // Tests that the MITM software interstitial is not triggered when an error
 // other than net::CERT_STATUS_AUTHORITY_INVALID is thrown.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_WrongError_NoInterstitial) {
+TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_WrongError_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
@@ -1399,7 +1401,7 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_WrongError_NoInterstitial) {
 
 // Tests that the MITM software interstitial is not triggered when more than one
 // error is thrown.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_TwoErrors_NoInterstitial) {
+TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_TwoErrors_NoInterstitial) {
   SetMITMSoftwareFeatureEnabled(true);
 
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
@@ -1411,7 +1413,7 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_TwoErrors_NoInterstitial) {
 
 // Tests that the MITM software interstitial is not triggered if the error
 // thrown is overridable.
-TEST_F(SSLErrorAssistantTest, MITMSoftware_Overridable_NoInterstitial) {
+TEST_F(SSLErrorAssistantProtoTest, MITMSoftware_Overridable_NoInterstitial) {
   base::HistogramTester histograms;
 
   SetMITMSoftwareFeatureEnabled(true);
@@ -1439,7 +1441,7 @@ TEST_F(SSLErrorAssistantTest, MITMSoftware_Overridable_NoInterstitial) {
                                0);
 }
 
-TEST_F(SSLErrorAssistantTest,
+TEST_F(SSLErrorAssistantProtoTest,
        MITMSoftware_IgnoreDynamicUpdateWithSmallVersionId) {
   SetMITMSoftwareFeatureEnabled(true);
   ResetErrorHandlerFromString(kMisconfiguredFirewallCert,
