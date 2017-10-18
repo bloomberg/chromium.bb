@@ -51,6 +51,7 @@
 #include "printing/pdf_transform.h"
 #include "printing/units.h"
 #include "third_party/pdfium/public/fpdf_annot.h"
+#include "third_party/pdfium/public/fpdf_attachment.h"
 #include "third_party/pdfium/public/fpdf_edit.h"
 #include "third_party/pdfium/public/fpdf_ext.h"
 #include "third_party/pdfium/public/fpdf_flatten.h"
@@ -1281,6 +1282,9 @@ void PDFiumEngine::FinishLoadingDocument() {
   if (doc_) {
     DocumentFeatures document_features;
     document_features.page_count = pages_.size();
+    document_features.has_attachments = (FPDFDoc_GetAttachmentCount(doc_) > 0);
+    document_features.is_linearized =
+        (FPDFAvail_IsLinearized(fpdf_availability_) == PDF_LINEARIZED);
     client_->DocumentLoadComplete(document_features);
   }
 }
