@@ -27,6 +27,12 @@ def ParseArgs(args):
   parser.add_argument('image_dir', type='path',
                       help='Image directory (or file) with mount_image.sh and '
                            'umount_image.sh')
+
+  parser.add_argument('-l', '--list', default=False, action='store_true',
+                      help='List all the available tests')
+  parser.add_argument('tests', nargs='*', metavar='test',
+                      help='Specific tests to run (default runs all)')
+
   opts = parser.parse_args(args)
   opts.Freeze()
   return opts
@@ -66,7 +72,29 @@ def main(args):
   # We use a different prefix here so that unittest DO NOT pick up the
   # image tests automatically because they depend on a proper environment.
   loader.testMethodPrefix = 'Test'
-  all_tests = loader.loadTestsFromName('chromite.cros.test.image_test')
+  tests_namespace = 'chromite.cros.test.image_test'
+  if opts.tests:
+    tests = ['%s.%s' % (tests_namespace, x) for x in opts.tests]
+  else:
+    tests = (tests_namespace,)
+  all_tests = loader.loadTestsFromNames(tests)
+
+  # If they just want to see the lists of tests, show them now.
+  if opts.list:
+    def _WalkSuite(suite):
+      for test in suite:
+        if isinstance(test, unittest.BaseTestSuite):
+          for result in _WalkSuite(test):
+            yield result
+        else:
+          yield (test.id()[len(tests_namespace) + 1:],
+                 test.shortDescription() or '')
+
+    test_list = list(_WalkSuite(all_tests))
+    maxlen = max(len(x[0]) for x in test_list)
+    for name, desc in test_list:
+      print('%-*s  %s' % (maxlen, name, desc))
+    return
 
   # Run them in the image directory.
   runner = image_test_lib.ImageTestRunner()
