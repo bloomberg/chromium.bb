@@ -41,6 +41,23 @@ bool AppendFragmentOffsetAndSize(const NGPhysicalFragment* fragment,
   return has_content;
 }
 
+String StringForBoxType(NGPhysicalFragment::NGBoxType box_type) {
+  switch (box_type) {
+    case NGPhysicalFragment::NGBoxType::kNormalBox:
+      return String();
+    case NGPhysicalFragment::NGBoxType::kInlineBlock:
+      return "inline-block";
+    case NGPhysicalFragment::NGBoxType::kFloating:
+      return "floating";
+    case NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned:
+      return "out-of-flow-positioned";
+    case NGPhysicalFragment::NGBoxType::kAnonymousBox:
+      return "anonymous";
+  }
+  NOTREACHED();
+  return String();
+}
+
 void AppendFragmentToString(const NGPhysicalFragment* fragment,
                             StringBuilder* builder,
                             NGPhysicalFragment::DumpFlags flags,
@@ -54,6 +71,12 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
   if (fragment->IsBox()) {
     if (flags & NGPhysicalFragment::DumpType) {
       builder->Append("Box");
+      String box_type = StringForBoxType(fragment->BoxType());
+      if (!box_type.IsEmpty()) {
+        builder->Append(" (");
+        builder->Append(box_type);
+        builder->Append(")");
+      }
       has_content = true;
     }
     has_content =
@@ -170,6 +193,43 @@ Node* NGPhysicalFragment::GetNode() const {
   return layout_object_ ? layout_object_->GetNode() : nullptr;
 }
 
+// TODO(kojii): This series of Is*() functions rely on LayoutObject for now, but
+// should be set by fragment builder.
+bool NGPhysicalFragment::IsInlineBlock() const {
+  return layout_object_ && layout_object_->IsAtomicInlineLevel();
+}
+
+bool NGPhysicalFragment::IsFloating() const {
+  return layout_object_ && layout_object_->IsFloating();
+}
+
+bool NGPhysicalFragment::IsOutOfFlowPositioned() const {
+  return layout_object_ && layout_object_->IsOutOfFlowPositioned();
+}
+
+bool NGPhysicalFragment::IsAnonymousBox() const {
+  return !layout_object_ || layout_object_->Style() != style_.get();
+}
+
+bool NGPhysicalFragment::IsBlockLayoutRoot() const {
+  if (IsAnonymousBox())
+    return false;
+  return layout_object_->IsAtomicInlineLevel() ||
+         layout_object_->IsFloatingOrOutOfFlowPositioned();
+}
+
+NGPhysicalFragment::NGBoxType NGPhysicalFragment::BoxType() const {
+  if (IsInlineBlock())
+    return NGPhysicalFragment::NGBoxType::kInlineBlock;
+  if (IsFloating())
+    return NGPhysicalFragment::NGBoxType::kFloating;
+  if (IsOutOfFlowPositioned())
+    return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
+  if (IsAnonymousBox())
+    return NGPhysicalFragment::NGBoxType::kAnonymousBox;
+  return NGPhysicalFragment::NGBoxType::kNormalBox;
+}
+
 NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
   unsigned edges = BorderEdges();
   NGPhysicalBoxStrut box_strut(
@@ -232,9 +292,10 @@ RefPtr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset() const {
 }
 
 String NGPhysicalFragment::ToString() const {
-  return String::Format("Type: '%d' Size: '%s' Offset: '%s' Placed: '%d'",
-                        Type(), Size().ToString().Ascii().data(),
-                        Offset().ToString().Ascii().data(), IsPlaced());
+  return String::Format(
+      "Type: '%d' Size: '%s' Offset: '%s' Placed: '%d', BoxType: '%s'", Type(),
+      Size().ToString().Ascii().data(), Offset().ToString().Ascii().data(),
+      IsPlaced(), StringForBoxType(BoxType()).Ascii().data());
 }
 
 String NGPhysicalFragment::DumpFragmentTree(DumpFlags flags) const {
