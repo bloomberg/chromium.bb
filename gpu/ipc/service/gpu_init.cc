@@ -283,6 +283,10 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #endif
     gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
   }
+  if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
+    gpu::InitializeSwitchableGPUs(
+        gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
+  }
 
   if (!gl::init::InitializeGLNoExtensionsOneOff()) {
     VLOG(1) << "gl::init::InitializeGLNoExtensionsOneOff failed";
