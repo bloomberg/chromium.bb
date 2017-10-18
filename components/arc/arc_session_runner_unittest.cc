@@ -170,7 +170,7 @@ TEST_F(ArcSessionRunnerTest, Basic) {
 
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
+  EXPECT_TRUE(arc_session()->is_running());
 
   arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
@@ -186,7 +186,7 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup) {
 
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_FALSE(arc_session()->IsRunning());
+  EXPECT_FALSE(arc_session()->is_running());
 
   arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
@@ -201,7 +201,7 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup_MiniInstance) {
 
   arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_FALSE(arc_session()->IsRunning());
+  EXPECT_FALSE(arc_session()->is_running());
 
   arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
@@ -239,7 +239,7 @@ TEST_F(ArcSessionRunnerTest, BootFailure_MiniInstance) {
   ResetArcSessionFactory(base::Bind(FakeArcSession::Create));
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
+  EXPECT_TRUE(arc_session()->is_running());
 }
 
 // Similary, CRASH should do same for GENERIC_BOOT_FAILURE case, because
@@ -264,11 +264,11 @@ TEST_F(ArcSessionRunnerTest, Upgrade) {
 
   arc_session_runner()->RequestStart(ArcInstanceMode::MINI_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_FALSE(arc_session()->IsRunning());
+  EXPECT_FALSE(arc_session()->is_running());
 
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
+  EXPECT_TRUE(arc_session()->is_running());
 }
 
 // We expect mini instance starts to run if EmitLoginPromptVisible signal is
@@ -280,7 +280,7 @@ TEST_F(ArcSessionRunnerTest, EmitLoginPromptVisible) {
       ->GetSessionManagerClient()
       ->EmitLoginPromptVisible();
   ASSERT_TRUE(arc_session());
-  EXPECT_FALSE(arc_session()->IsRunning());
+  EXPECT_FALSE(arc_session()->is_running());
 }
 
 // If the instance is stopped, it should be re-started.
@@ -290,7 +290,7 @@ TEST_F(ArcSessionRunnerTest, Restart) {
 
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
+  EXPECT_TRUE(arc_session()->is_running());
 
   // Simulate a connection loss.
   ASSERT_TRUE(arc_session());
@@ -300,7 +300,7 @@ TEST_F(ArcSessionRunnerTest, Restart) {
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(restarting_called());
   ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
+  EXPECT_TRUE(arc_session()->is_running());
 
   arc_session_runner()->RequestStop();
   EXPECT_FALSE(arc_session());
@@ -312,7 +312,7 @@ TEST_F(ArcSessionRunnerTest, GracefulStop) {
 
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
+  EXPECT_TRUE(arc_session()->is_running());
 
   // Graceful stop.
   arc_session_runner()->RequestStop();
@@ -328,7 +328,7 @@ TEST_F(ArcSessionRunnerTest, Shutdown) {
 
   arc_session_runner()->RequestStart(ArcInstanceMode::FULL_INSTANCE);
   ASSERT_TRUE(arc_session());
-  EXPECT_TRUE(arc_session()->IsRunning());
+  EXPECT_TRUE(arc_session()->is_running());
 
   // Simulate shutdown.
   arc_session_runner()->OnShutdown();

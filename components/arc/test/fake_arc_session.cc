@@ -34,10 +34,6 @@ base::Optional<ArcInstanceMode> FakeArcSession::GetTargetMode() {
   return target_mode_;
 }
 
-bool FakeArcSession::IsRunning() {
-  return running_;
-}
-
 bool FakeArcSession::IsStopRequested() {
   return stop_requested_;
 }

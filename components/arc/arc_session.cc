@@ -225,7 +225,6 @@ class ArcSessionImpl : public ArcSession,
   void Start(ArcInstanceMode request_mode) override;
   void Stop() override;
   base::Optional<ArcInstanceMode> GetTargetMode() override;
-  bool IsRunning() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
 
@@ -699,10 +698,6 @@ base::Optional<ArcInstanceMode> ArcSessionImpl::GetTargetMode() {
   return target_mode_;
 }
 
-bool ArcSessionImpl::IsRunning() {
-  return state_ == State::RUNNING_FULL_INSTANCE;
-}
-
 bool ArcSessionImpl::IsStopRequested() {
   return stop_requested_;
 }
@@ -712,7 +707,7 @@ void ArcSessionImpl::OnStopped(ArcStopReason reason) {
   // OnStopped() should be called once per instance.
   DCHECK_NE(state_, State::STOPPED);
   VLOG(2) << "ARC session is stopped.";
-  const bool was_running = IsRunning();
+  const bool was_running = (state_ == State::RUNNING_FULL_INSTANCE);
   arc_bridge_host_.reset();
   state_ = State::STOPPED;
   for (auto& observer : observer_list_)

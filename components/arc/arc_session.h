@@ -59,11 +59,6 @@ class ArcSession {
   // If the instance is not yet started, this returns nullopt.
   virtual base::Optional<ArcInstanceMode> GetTargetMode() = 0;
 
-  // Returns true if this instance is fully set up successfully, and running.
-  // Currently, this means, this is a fully functional instance, and
-  // Mojo connection is already connected successfully.
-  virtual bool IsRunning() = 0;
-
   // Returns true if Stop() has been called already.
   virtual bool IsStopRequested() = 0;
 

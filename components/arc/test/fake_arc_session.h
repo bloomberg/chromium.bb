@@ -25,7 +25,6 @@ class FakeArcSession : public ArcSession {
   void Start(ArcInstanceMode request_mode) override;
   void Stop() override;
   base::Optional<ArcInstanceMode> GetTargetMode() override;
-  bool IsRunning() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
 
@@ -40,6 +39,9 @@ class FakeArcSession : public ArcSession {
 
   // Emulate Start() is suspended at some phase.
   void SuspendBoot();
+
+  // Returns true if the session is considered as running.
+  bool is_running() const { return running_; }
 
   // Returns FakeArcSession instance. This can be used for a factory
   // in ArcBridgeServiceImpl.
