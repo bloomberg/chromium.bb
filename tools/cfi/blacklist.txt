@@ -122,3 +122,87 @@ type:sandbox::TargetServices
 
 # Likewise (base/win/scoped_handle.cc).
 type:*ActiveVerifier*
+
+#############################################################################
+# Disabled indirect calls
+
+[cfi-icall]
+
+######### Cross-DSO icalls using dynamically resolved symbols
+
+# ANGLE
+src:*third_party/angle/src/libANGLE/*
+src:*third_party/angle/src/third_party/libXNVCtrl/NVCtrl.c
+src:*ui/gl/angle_platform_impl.cc
+# third_party/angle/src/gpu_info_util/SystemInfo_libpci.cpp
+fun:*GetPCIDevicesWithLibPCI*
+# third_party/angle/src/common/event_tracer.cpp
+fun:*GetTraceCategoryEnabledFlag*
+fun:*AddTraceEvent*
+
+# PPAPI
+src:*ppapi/*
+src:*content/renderer/pepper*
+fun:*PpapiThread*
+fun:*BrokerProcessDispatcher*
+# ppapi code uses base::Callback to call into libppappi_test.so.
+# base/bind_internal.h
+fun:*FunctorTraits*
+
+# Calls to auto-generated stubs by generate_stubs.py
+src:*audio/pulse/pulse_stubs.cc
+
+# Calls to auto-generated stubs by generate_library_loader.py
+src:*device/udev_linux/udev1_loader.cc
+src:*net/proxy/proxy_config_service_linux.cc
+
+# Calls to auto-generated stubs by ui/gl/generate_bindings.py
+src:*ui/gl/gl_bindings_autogen_*
+# ui/gl/gl_implementation.c
+fun:*GetGLProcAddress*
+
+src:*components/os_crypt/*
+src:*chrome/browser/password_manager/native_backend_libsecret*
+
+src:*content/browser/accessibility/browser_accessibility_auralinux.cc
+src:*ui/accessibility/platform/ax_platform_node_auralinux.cc
+
+src:*chrome/browser/ui/zoom/chrome_zoom_level_prefs.cc
+src:*third_party/webrtc/modules/desktop_capture/x11/x_server_pixel_buffer.cc
+src:*content/zygote/zygote_main_linux.cc
+src:*media/cdm/*
+src:*third_party/swiftshader/*
+src:*base/native_library_unittest.cc
+
+# chrome/browser/ui/libgtkui/gtk_ui.cc GtkUi::GtkUi()
+fun:*GtkUi*
+# chrome/browser/ui/views/frame/global_menu_bar_x11.cc
+fun:*GlobalMenuBarX11*
+# net/cert/cert_verify_proc_nss.cc
+fun:*CertVerifyProcNSS*VerifyInternalImpl*
+
+######### Function pointers cast to incorrect type signatures
+
+# libicu is currently compiled such that in libicu the 'UChar' type is a
+# defined as a char16_t internally, but for the rest of chromium it's an
+# unsigned short, causing mismatched type signatures for icalls to/from icu
+src:*third_party/icu/source/common/*
+src:*third_party/WebKit/Source/platform/wtf/*
+# v8/src/intl.cc
+fun:*LocaleConvertCase*
+
+src:*components/keyed_service/core/keyed_service_factory.cc
+src:*components/keyed_service/core/refcounted_keyed_service_factory.cc
+
+src:*third_party/boringssl/*
+src:*third_party/freetype/*
+src:*third_party/harfbuzz-ng/*
+src:*third_party/libsrtp/*
+src:*third_party/libvpx/*
+src:*third_party/libxml/*
+src:*third_party/pdfium/third_party/lcms/*
+src:*third_party/mesa/*
+src:*third_party/sqlite/*
+src:*third_party/webrtc/*
+src:*third_party/yasm/*
+src:*v8/*
