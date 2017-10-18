@@ -4,6 +4,12 @@
 
 #include "pdf/pdfium/fuzzers/pdfium_fuzzer_helper.h"
 
+// TODO(mmoroz,rharrison): remove this after landing of
+// https://chromium-review.googlesource.com/c/chromium/src/+/724021
+#ifndef DOCTYPE_PDF
+#define DOCTYPE_PDF 0
+#endif
+
 class PDFiumXFAFuzzer : public PDFiumFuzzerHelper {
  public:
   PDFiumXFAFuzzer() : PDFiumFuzzerHelper() {}
