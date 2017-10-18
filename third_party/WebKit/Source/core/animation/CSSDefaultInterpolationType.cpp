@@ -10,30 +10,13 @@
 
 namespace blink {
 
-class CSSDefaultNonInterpolableValue : public NonInterpolableValue {
- public:
-  ~CSSDefaultNonInterpolableValue() final {}
-
-  static RefPtr<CSSDefaultNonInterpolableValue> Create(
-      const CSSValue* css_value) {
-    return WTF::AdoptRef(new CSSDefaultNonInterpolableValue(css_value));
-  }
-
-  const CSSValue* CssValue() const { return css_value_.Get(); }
-
-  DECLARE_NON_INTERPOLABLE_VALUE_TYPE();
-
- private:
-  CSSDefaultNonInterpolableValue(const CSSValue* css_value)
-      : css_value_(css_value) {
-    DCHECK(css_value_);
-  }
-
-  Persistent<const CSSValue> css_value_;
-};
+CSSDefaultNonInterpolableValue::CSSDefaultNonInterpolableValue(
+    const CSSValue* css_value)
+    : css_value_(css_value) {
+  DCHECK(css_value_);
+}
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSDefaultNonInterpolableValue);
-DEFINE_NON_INTERPOLABLE_VALUE_TYPE_CASTS(CSSDefaultNonInterpolableValue);
 
 InterpolationValue CSSDefaultInterpolationType::MaybeConvertSingle(
     const PropertySpecificKeyframe& keyframe,

@@ -21,8 +21,7 @@ class StyleResolverState;
 // The LegacyStyleInterpolation subclass stores the start and end keyframes as
 // InterpolableAnimatableValue objects. As the name implies, this class is
 // legacy code and should not be used in new code.
-// TODO(crbug.com/442163): Delete this class once no interpolation code depends
-// on AnimatableValues.
+// TODO(crbug.com/725385): This class is now only used in tests; fix and delete.
 //
 // During the effect application phase of animation computation, the current
 // value of the property is applied to the element by calling the Apply

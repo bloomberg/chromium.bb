@@ -95,9 +95,8 @@ class AnimationDocumentTimelineTest : public ::testing::Test {
 };
 
 TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation) {
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(
-          AnimatableValueKeyframeVector());
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(StringKeyframeVector());
   KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(element.Get(), effect, timing);
 
@@ -112,9 +111,8 @@ TEST_F(AnimationDocumentTimelineTest, EmptyKeyframeAnimation) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, EmptyForwardsKeyframeAnimation) {
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(
-          AnimatableValueKeyframeVector());
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(StringKeyframeVector());
   timing.fill_mode = Timing::FillMode::FORWARDS;
   KeyframeEffect* keyframe_effect =
       KeyframeEffect::Create(element.Get(), effect, timing);
@@ -349,16 +347,12 @@ TEST_F(AnimationDocumentTimelineTest, PlaybackRateFastWithOriginTime) {
 TEST_F(AnimationDocumentTimelineTest, PauseForTesting) {
   float seek_time = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  KeyframeEffect* anim1 =
-      KeyframeEffect::Create(element.Get(),
-                             AnimatableValueKeyframeEffectModel::Create(
-                                 AnimatableValueKeyframeVector()),
-                             timing);
-  KeyframeEffect* anim2 =
-      KeyframeEffect::Create(element.Get(),
-                             AnimatableValueKeyframeEffectModel::Create(
-                                 AnimatableValueKeyframeVector()),
-                             timing);
+  KeyframeEffect* anim1 = KeyframeEffect::Create(
+      element.Get(), StringKeyframeEffectModel::Create(StringKeyframeVector()),
+      timing);
+  KeyframeEffect* anim2 = KeyframeEffect::Create(
+      element.Get(), StringKeyframeEffectModel::Create(StringKeyframeVector()),
+      timing);
   Animation* animation1 = timeline->Play(anim1);
   Animation* animation2 = timeline->Play(anim2);
   timeline->PauseAnimationsForTesting(seek_time);

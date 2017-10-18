@@ -30,14 +30,66 @@
 
 #include "core/animation/KeyframeEffectModel.h"
 
-#include "core/animation/LegacyStyleInterpolation.h"
+#include "core/animation/AnimationTestHelper.h"
+#include "core/animation/CSSDefaultInterpolationType.h"
+#include "core/animation/InvalidatableInterpolation.h"
+#include "core/animation/StringKeyframe.h"
 #include "core/animation/animatable/AnimatableDouble.h"
 #include "core/animation/animatable/AnimatableUnknown.h"
 #include "core/css/CSSPrimitiveValue.h"
 #include "core/dom/Element.h"
+#include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
+
+class AnimationKeyframeEffectModel : public ::testing::Test {
+ protected:
+  void SetUp() override {
+    page_holder = DummyPageHolder::Create();
+    document = &page_holder->GetDocument();
+    element = document->createElement("foo");
+  }
+
+  void ExpectLengthValue(double expected_value,
+                         RefPtr<Interpolation> interpolation_value) {
+    ActiveInterpolations interpolations;
+    interpolations.push_back(interpolation_value);
+    EnsureInterpolatedValueCached(interpolations, *document, element);
+
+    const TypedInterpolationValue* typed_value =
+        ToInvalidatableInterpolation(interpolation_value.get())
+            ->GetCachedValueForTesting();
+    // Length values are stored as a list of values; here we assume pixels.
+    EXPECT_TRUE(typed_value->GetInterpolableValue().IsList());
+    const InterpolableList* list =
+        ToInterpolableList(&typed_value->GetInterpolableValue());
+    EXPECT_FLOAT_EQ(expected_value,
+                    ToInterpolableNumber(list->Get(0))->Value());
+  }
+
+  void ExpectNonInterpolableValue(const String& expected_value,
+                                  RefPtr<Interpolation> interpolation_value) {
+    ActiveInterpolations interpolations;
+    interpolations.push_back(interpolation_value);
+    EnsureInterpolatedValueCached(interpolations, *document, element);
+
+    const TypedInterpolationValue* typed_value =
+        ToInvalidatableInterpolation(interpolation_value.get())
+            ->GetCachedValueForTesting();
+    const NonInterpolableValue* non_interpolable_value =
+        typed_value->GetNonInterpolableValue();
+    ASSERT_TRUE(IsCSSDefaultNonInterpolableValue(non_interpolable_value));
+
+    const CSSValue* css_value =
+        ToCSSDefaultNonInterpolableValue(non_interpolable_value)->CssValue();
+    EXPECT_EQ(expected_value, css_value->CssText());
+  }
+
+  std::unique_ptr<DummyPageHolder> page_holder;
+  Persistent<Document> document;
+  Persistent<Element> element;
+};
 
 const double kDuration = 1.0;
 
@@ -46,437 +98,398 @@ RefPtr<AnimatableValue> UnknownAnimatableValue(double n) {
       CSSPrimitiveValue::Create(n, CSSPrimitiveValue::UnitType::kUnknown));
 }
 
-AnimatableValueKeyframeVector KeyframesAtZeroAndOne(
-    RefPtr<AnimatableValue> zero_value,
-    RefPtr<AnimatableValue> one_value) {
-  AnimatableValueKeyframeVector keyframes(2);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+StringKeyframeVector KeyframesAtZeroAndOne(CSSPropertyID property,
+                                           const String& zero_value,
+                                           const String& one_value) {
+  StringKeyframeVector keyframes(2);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft, zero_value.get());
-  keyframes[1] = AnimatableValueKeyframe::Create();
+  keyframes[0]->SetCSSPropertyValue(property, zero_value, nullptr);
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft, one_value.get());
+  keyframes[1]->SetCSSPropertyValue(property, one_value, nullptr);
   return keyframes;
 }
 
 void ExpectProperty(CSSPropertyID property,
                     RefPtr<Interpolation> interpolation_value) {
-  LegacyStyleInterpolation* interpolation =
-      ToLegacyStyleInterpolation(interpolation_value.get());
-  ASSERT_EQ(property, interpolation->Id());
-}
-
-void ExpectDoubleValue(double expected_value,
-                       RefPtr<Interpolation> interpolation_value) {
-  LegacyStyleInterpolation* interpolation =
-      ToLegacyStyleInterpolation(interpolation_value.get());
-  RefPtr<AnimatableValue> value = interpolation->CurrentValue();
-
-  ASSERT_TRUE(value->IsDouble() || value->IsUnknown());
-
-  double actual_value;
-  if (value->IsDouble())
-    actual_value = ToAnimatableDouble(value.get())->ToDouble();
-  else
-    actual_value =
-        ToCSSPrimitiveValue(ToAnimatableUnknown(value.get())->ToCSSValue())
-            ->GetDoubleValue();
-
-  EXPECT_FLOAT_EQ(static_cast<float>(expected_value), actual_value);
+  InvalidatableInterpolation* interpolation =
+      ToInvalidatableInterpolation(interpolation_value.get());
+  const PropertyHandle& property_handle = interpolation->GetProperty();
+  ASSERT_TRUE(property_handle.IsCSSProperty());
+  ASSERT_EQ(property, property_handle.CssProperty());
 }
 
 Interpolation* FindValue(Vector<RefPtr<Interpolation>>& values,
                          CSSPropertyID id) {
   for (auto& value : values) {
-    if (ToLegacyStyleInterpolation(value.get())->Id() == id)
+    const PropertyHandle& property =
+        ToInvalidatableInterpolation(value.get())->GetProperty();
+    if (property.IsCSSProperty() && property.CssProperty() == id)
       return value.get();
   }
-  return 0;
+  return nullptr;
 }
 
-TEST(AnimationKeyframeEffectModel, BasicOperation) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      UnknownAnimatableValue(3.0), UnknownAnimatableValue(5.0));
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+TEST_F(AnimationKeyframeEffectModel, BasicOperation) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyFontFamily, "serif", "cursive");
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
   ASSERT_EQ(1UL, values.size());
-  ExpectProperty(CSSPropertyLeft, values.at(0));
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectProperty(CSSPropertyFontFamily, values.at(0));
+  ExpectNonInterpolableValue("cursive", values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, CompositeReplaceNonInterpolable) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      UnknownAnimatableValue(3.0), UnknownAnimatableValue(5.0));
+TEST_F(AnimationKeyframeEffectModel, CompositeReplaceNonInterpolable) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyFontFamily, "serif", "cursive");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectNonInterpolableValue("cursive", values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, CompositeReplace) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(3.0), AnimatableDouble::Create(5.0));
+TEST_F(AnimationKeyframeEffectModel, CompositeReplace) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(3.0 * 0.4 + 5.0 * 0.6, values.at(0));
+  ExpectLengthValue(3.0 * 0.4 + 5.0 * 0.6, values.at(0));
 }
 
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
-TEST(AnimationKeyframeEffectModel, DISABLED_CompositeAdd) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(3.0), AnimatableDouble::Create(5.0));
+TEST_F(AnimationKeyframeEffectModel, DISABLED_CompositeAdd) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue((7.0 + 3.0) * 0.4 + (7.0 + 5.0) * 0.6, values.at(0));
+  ExpectLengthValue((7.0 + 3.0) * 0.4 + (7.0 + 5.0) * 0.6, values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, CompositeEaseIn) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(3.0), AnimatableDouble::Create(5.0));
+TEST_F(AnimationKeyframeEffectModel, CompositeEaseIn) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[0]->SetEasing(CubicBezierTimingFunction::Preset(
       CubicBezierTimingFunction::EaseType::EASE_IN));
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(3.8579516, values.at(0));
+  ExpectLengthValue(3.8579516, values.at(0));
   effect->Sample(0, 0.6, kDuration * 100, values);
-  ExpectDoubleValue(3.8582394, values.at(0));
+  ExpectLengthValue(3.8582394, values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, CompositeCubicBezier) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(3.0), AnimatableDouble::Create(5.0));
+TEST_F(AnimationKeyframeEffectModel, CompositeCubicBezier) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[0]->SetEasing(CubicBezierTimingFunction::Create(0.42, 0, 0.58, 1));
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(4.3363357, values.at(0));
+  ExpectLengthValue(4.3363357, values.at(0));
   effect->Sample(0, 0.6, kDuration * 1000, values);
-  ExpectDoubleValue(4.3362322, values.at(0));
+  ExpectLengthValue(4.3362322, values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      UnknownAnimatableValue(3.0), UnknownAnimatableValue(5.0));
+TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplaceNonInterpolable) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyFontFamily, "serif", "cursive");
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 1.6, kDuration, values);
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectNonInterpolableValue("cursive", values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, ExtrapolateReplace) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(3.0), AnimatableDouble::Create(5.0));
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+TEST_F(AnimationKeyframeEffectModel, ExtrapolateReplace) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   keyframes[0]->SetComposite(EffectModel::kCompositeReplace);
   keyframes[1]->SetComposite(EffectModel::kCompositeReplace);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 1.6, kDuration, values);
-  ExpectDoubleValue(3.0 * -0.6 + 5.0 * 1.6, values.at(0));
+  ExpectLengthValue(3.0 * -0.6 + 5.0 * 1.6, values.at(0));
 }
 
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
-TEST(AnimationKeyframeEffectModel, DISABLED_ExtrapolateAdd) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(3.0), AnimatableDouble::Create(5.0));
+TEST_F(AnimationKeyframeEffectModel, DISABLED_ExtrapolateAdd) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 1.6, kDuration, values);
-  ExpectDoubleValue((7.0 + 3.0) * -0.6 + (7.0 + 5.0) * 1.6, values.at(0));
+  ExpectLengthValue((7.0 + 3.0) * -0.6 + (7.0 + 5.0) * 1.6, values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, ZeroKeyframes) {
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(
-          AnimatableValueKeyframeVector());
+TEST_F(AnimationKeyframeEffectModel, ZeroKeyframes) {
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(StringKeyframeVector());
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.5, kDuration, values);
   EXPECT_TRUE(values.IsEmpty());
 }
 
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
-TEST(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetZero) {
-  AnimatableValueKeyframeVector keyframes(1);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetZero) {
+  StringKeyframeVector keyframes(1);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).get());
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(3.0, values.at(0));
+  ExpectNonInterpolableValue("serif", values.at(0));
 }
 
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
-TEST(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetOne) {
-  AnimatableValueKeyframeVector keyframes(1);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, DISABLED_SingleKeyframeAtOffsetOne) {
+  StringKeyframeVector keyframes(1);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(1.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(5.0).get());
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyLeft, "5px", nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(7.0 * 0.4 + 5.0 * 0.6, values.at(0));
+  ExpectLengthValue(7.0 * 0.4 + 5.0 * 0.6, values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, MoreThanTwoKeyframes) {
-  AnimatableValueKeyframeVector keyframes(3);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, MoreThanTwoKeyframes) {
+  StringKeyframeVector keyframes(3);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).get());
-  keyframes[1] = AnimatableValueKeyframe::Create();
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).get());
-  keyframes[2] = AnimatableValueKeyframe::Create();
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "sans-serif",
+                                    nullptr);
+  keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
-  keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).get());
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive", nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.3, kDuration, values);
-  ExpectDoubleValue(4.0, values.at(0));
+  ExpectNonInterpolableValue("sans-serif", values.at(0));
   effect->Sample(0, 0.8, kDuration, values);
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectNonInterpolableValue("cursive", values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, EndKeyframeOffsetsUnspecified) {
-  AnimatableValueKeyframeVector keyframes(3);
-  keyframes[0] = AnimatableValueKeyframe::Create();
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).get());
-  keyframes[1] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, EndKeyframeOffsetsUnspecified) {
+  StringKeyframeVector keyframes(3);
+  keyframes[0] = StringKeyframe::Create();
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).get());
-  keyframes[2] = AnimatableValueKeyframe::Create();
-  keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).get());
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive", nullptr);
+  keyframes[2] = StringKeyframe::Create();
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.1, kDuration, values);
-  ExpectDoubleValue(3.0, values.at(0));
+  ExpectNonInterpolableValue("serif", values.at(0));
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(4.0, values.at(0));
+  ExpectNonInterpolableValue("cursive", values.at(0));
   effect->Sample(0, 0.9, kDuration, values);
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectNonInterpolableValue("serif", values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, SampleOnKeyframe) {
-  AnimatableValueKeyframeVector keyframes(3);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, SampleOnKeyframe) {
+  StringKeyframeVector keyframes(3);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).get());
-  keyframes[1] = AnimatableValueKeyframe::Create();
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).get());
-  keyframes[2] = AnimatableValueKeyframe::Create();
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive", nullptr);
+  keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
-  keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).get());
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.0, kDuration, values);
-  ExpectDoubleValue(3.0, values.at(0));
+  ExpectNonInterpolableValue("serif", values.at(0));
   effect->Sample(0, 0.5, kDuration, values);
-  ExpectDoubleValue(4.0, values.at(0));
+  ExpectNonInterpolableValue("cursive", values.at(0));
   effect->Sample(0, 1.0, kDuration, values);
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectNonInterpolableValue("serif", values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, MultipleKeyframesWithSameOffset) {
-  AnimatableValueKeyframeVector keyframes(9);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, MultipleKeyframesWithSameOffset) {
+  StringKeyframeVector keyframes(9);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(0.0).get());
-  keyframes[1] = AnimatableValueKeyframe::Create();
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.1);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(1.0).get());
-  keyframes[2] = AnimatableValueKeyframe::Create();
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "sans-serif",
+                                    nullptr);
+  keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(0.1);
-  keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(2.0).get());
-  keyframes[3] = AnimatableValueKeyframe::Create();
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyFontFamily, "monospace",
+                                    nullptr);
+  keyframes[3] = StringKeyframe::Create();
   keyframes[3]->SetOffset(0.5);
-  keyframes[3]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).get());
-  keyframes[4] = AnimatableValueKeyframe::Create();
+  keyframes[3]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive", nullptr);
+  keyframes[4] = StringKeyframe::Create();
   keyframes[4]->SetOffset(0.5);
-  keyframes[4]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(4.0).get());
-  keyframes[5] = AnimatableValueKeyframe::Create();
+  keyframes[4]->SetCSSPropertyValue(CSSPropertyFontFamily, "fantasy", nullptr);
+  keyframes[5] = StringKeyframe::Create();
   keyframes[5]->SetOffset(0.5);
-  keyframes[5]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).get());
-  keyframes[6] = AnimatableValueKeyframe::Create();
+  keyframes[5]->SetCSSPropertyValue(CSSPropertyFontFamily, "system-ui",
+                                    nullptr);
+  keyframes[6] = StringKeyframe::Create();
   keyframes[6]->SetOffset(0.9);
-  keyframes[6]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(6.0).get());
-  keyframes[7] = AnimatableValueKeyframe::Create();
+  keyframes[6]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
+  keyframes[7] = StringKeyframe::Create();
   keyframes[7]->SetOffset(0.9);
-  keyframes[7]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(7.0).get());
-  keyframes[8] = AnimatableValueKeyframe::Create();
+  keyframes[7]->SetCSSPropertyValue(CSSPropertyFontFamily, "sans-serif",
+                                    nullptr);
+  keyframes[8] = StringKeyframe::Create();
   keyframes[8]->SetOffset(1.0);
-  keyframes[8]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(7.0).get());
+  keyframes[8]->SetCSSPropertyValue(CSSPropertyFontFamily, "monospace",
+                                    nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.0, kDuration, values);
-  ExpectDoubleValue(0.0, values.at(0));
+  ExpectNonInterpolableValue("serif", values.at(0));
   effect->Sample(0, 0.2, kDuration, values);
-  ExpectDoubleValue(2.0, values.at(0));
+  ExpectNonInterpolableValue("monospace", values.at(0));
   effect->Sample(0, 0.4, kDuration, values);
-  ExpectDoubleValue(3.0, values.at(0));
+  ExpectNonInterpolableValue("cursive", values.at(0));
   effect->Sample(0, 0.5, kDuration, values);
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectNonInterpolableValue("system-ui", values.at(0));
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(5.0, values.at(0));
+  ExpectNonInterpolableValue("system-ui", values.at(0));
   effect->Sample(0, 0.8, kDuration, values);
-  ExpectDoubleValue(6.0, values.at(0));
+  ExpectNonInterpolableValue("serif", values.at(0));
   effect->Sample(0, 1.0, kDuration, values);
-  ExpectDoubleValue(7.0, values.at(0));
+  ExpectNonInterpolableValue("monospace", values.at(0));
 }
 
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
-TEST(AnimationKeyframeEffectModel, DISABLED_PerKeyframeComposite) {
-  AnimatableValueKeyframeVector keyframes(2);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, DISABLED_PerKeyframeComposite) {
+  StringKeyframeVector keyframes(2);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(3.0).get());
-  keyframes[1] = AnimatableValueKeyframe::Create();
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyLeft, "3px", nullptr);
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(5.0).get());
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyLeft, "5px", nullptr);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue(3.0 * 0.4 + (7.0 + 5.0) * 0.6, values.at(0));
+  ExpectLengthValue(3.0 * 0.4 + (7.0 + 5.0) * 0.6, values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, MultipleProperties) {
-  AnimatableValueKeyframeVector keyframes(2);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, MultipleProperties) {
+  StringKeyframeVector keyframes(2);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(3.0).get());
-  keyframes[0]->SetPropertyValue(CSSPropertyRight,
-                                 UnknownAnimatableValue(4.0).get());
-  keyframes[1] = AnimatableValueKeyframe::Create();
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontFamily, "serif", nullptr);
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyFontStyle, "normal", nullptr);
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(1.0);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 UnknownAnimatableValue(5.0).get());
-  keyframes[1]->SetPropertyValue(CSSPropertyRight,
-                                 UnknownAnimatableValue(6.0).get());
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontFamily, "cursive", nullptr);
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyFontStyle, "oblique", nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
   EXPECT_EQ(2UL, values.size());
-  Interpolation* left_value = FindValue(values, CSSPropertyLeft);
+  Interpolation* left_value = FindValue(values, CSSPropertyFontFamily);
   ASSERT_TRUE(left_value);
-  ExpectDoubleValue(5.0, left_value);
-  Interpolation* right_value = FindValue(values, CSSPropertyRight);
+  ExpectNonInterpolableValue("cursive", left_value);
+  Interpolation* right_value = FindValue(values, CSSPropertyFontStyle);
   ASSERT_TRUE(right_value);
-  ExpectDoubleValue(6.0, right_value);
+  ExpectNonInterpolableValue("oblique", right_value);
 }
 
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
-TEST(AnimationKeyframeEffectModel, DISABLED_RecompositeCompositableValue) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(3.0), AnimatableDouble::Create(5.0));
+TEST_F(AnimationKeyframeEffectModel, DISABLED_RecompositeCompositableValue) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "3px", "5px");
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
   keyframes[1]->SetComposite(EffectModel::kCompositeAdd);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.6, kDuration, values);
-  ExpectDoubleValue((7.0 + 3.0) * 0.4 + (7.0 + 5.0) * 0.6, values.at(0));
-  ExpectDoubleValue((9.0 + 3.0) * 0.4 + (9.0 + 5.0) * 0.6, values.at(1));
+  ExpectLengthValue((7.0 + 3.0) * 0.4 + (7.0 + 5.0) * 0.6, values.at(0));
+  ExpectLengthValue((9.0 + 3.0) * 0.4 + (9.0 + 5.0) * 0.6, values.at(1));
 }
 
-TEST(AnimationKeyframeEffectModel, MultipleIterations) {
-  AnimatableValueKeyframeVector keyframes = KeyframesAtZeroAndOne(
-      AnimatableDouble::Create(1.0), AnimatableDouble::Create(3.0));
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+TEST_F(AnimationKeyframeEffectModel, MultipleIterations) {
+  StringKeyframeVector keyframes =
+      KeyframesAtZeroAndOne(CSSPropertyLeft, "1px", "3px");
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0.5, kDuration, values);
-  ExpectDoubleValue(2.0, values.at(0));
+  ExpectLengthValue(2.0, values.at(0));
   effect->Sample(1, 0.5, kDuration, values);
-  ExpectDoubleValue(2.0, values.at(0));
+  ExpectLengthValue(2.0, values.at(0));
   effect->Sample(2, 0.5, kDuration, values);
-  ExpectDoubleValue(2.0, values.at(0));
+  ExpectLengthValue(2.0, values.at(0));
 }
 
 // FIXME: Re-enable this test once compositing of CompositeAdd is supported.
-TEST(AnimationKeyframeEffectModel, DISABLED_DependsOnUnderlyingValue) {
-  AnimatableValueKeyframeVector keyframes(3);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+TEST_F(AnimationKeyframeEffectModel, DISABLED_DependsOnUnderlyingValue) {
+  StringKeyframeVector keyframes(3);
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.0);
-  keyframes[0]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(1.0).get());
+  keyframes[0]->SetCSSPropertyValue(CSSPropertyLeft, "1px", nullptr);
   keyframes[0]->SetComposite(EffectModel::kCompositeAdd);
-  keyframes[1] = AnimatableValueKeyframe::Create();
+  keyframes[1] = StringKeyframe::Create();
   keyframes[1]->SetOffset(0.5);
-  keyframes[1]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(1.0).get());
-  keyframes[2] = AnimatableValueKeyframe::Create();
+  keyframes[1]->SetCSSPropertyValue(CSSPropertyLeft, "1px", nullptr);
+  keyframes[2] = StringKeyframe::Create();
   keyframes[2]->SetOffset(1.0);
-  keyframes[2]->SetPropertyValue(CSSPropertyLeft,
-                                 AnimatableDouble::Create(1.0).get());
+  keyframes[2]->SetCSSPropertyValue(CSSPropertyLeft, "1px", nullptr);
 
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
   Vector<RefPtr<Interpolation>> values;
   effect->Sample(0, 0, kDuration, values);
   EXPECT_TRUE(values.at(0));
@@ -498,7 +511,7 @@ TEST(AnimationKeyframeEffectModel, DISABLED_DependsOnUnderlyingValue) {
   EXPECT_FALSE(values.at(0));
 }
 
-TEST(AnimationKeyframeEffectModel, AddSyntheticKeyframes) {
+TEST_F(AnimationKeyframeEffectModel, AddSyntheticKeyframes) {
   StringKeyframeVector keyframes(1);
   keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.5);
@@ -514,13 +527,13 @@ TEST(AnimationKeyframeEffectModel, AddSyntheticKeyframes) {
   EXPECT_DOUBLE_EQ(1.0, property_specific_keyframes[2]->Offset());
 }
 
-TEST(AnimationKeyframeEffectModel, ToKeyframeEffectModel) {
-  AnimatableValueKeyframeVector keyframes(0);
-  AnimatableValueKeyframeEffectModel* effect =
-      AnimatableValueKeyframeEffectModel::Create(keyframes);
+TEST_F(AnimationKeyframeEffectModel, ToKeyframeEffectModel) {
+  StringKeyframeVector keyframes(0);
+  StringKeyframeEffectModel* effect =
+      StringKeyframeEffectModel::Create(keyframes);
 
   EffectModel* base_effect = effect;
-  EXPECT_TRUE(ToAnimatableValueKeyframeEffectModel(base_effect));
+  EXPECT_TRUE(ToStringKeyframeEffectModel(base_effect));
 }
 
 }  // namespace blink
@@ -536,12 +549,12 @@ class KeyframeEffectModelTest : public ::testing::Test {
 
 TEST_F(KeyframeEffectModelTest, EvenlyDistributed1) {
   KeyframeVector keyframes(5);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0.125);
-  keyframes[1] = AnimatableValueKeyframe::Create();
-  keyframes[2] = AnimatableValueKeyframe::Create();
-  keyframes[3] = AnimatableValueKeyframe::Create();
-  keyframes[4] = AnimatableValueKeyframe::Create();
+  keyframes[1] = StringKeyframe::Create();
+  keyframes[2] = StringKeyframe::Create();
+  keyframes[3] = StringKeyframe::Create();
+  keyframes[4] = StringKeyframe::Create();
   keyframes[4]->SetOffset(0.625);
 
   const KeyframeVector result = NormalizedKeyframes(keyframes);
@@ -555,13 +568,13 @@ TEST_F(KeyframeEffectModelTest, EvenlyDistributed1) {
 
 TEST_F(KeyframeEffectModelTest, EvenlyDistributed2) {
   KeyframeVector keyframes(6);
-  keyframes[0] = AnimatableValueKeyframe::Create();
-  keyframes[1] = AnimatableValueKeyframe::Create();
-  keyframes[2] = AnimatableValueKeyframe::Create();
-  keyframes[3] = AnimatableValueKeyframe::Create();
+  keyframes[0] = StringKeyframe::Create();
+  keyframes[1] = StringKeyframe::Create();
+  keyframes[2] = StringKeyframe::Create();
+  keyframes[3] = StringKeyframe::Create();
   keyframes[3]->SetOffset(0.75);
-  keyframes[4] = AnimatableValueKeyframe::Create();
-  keyframes[5] = AnimatableValueKeyframe::Create();
+  keyframes[4] = StringKeyframe::Create();
+  keyframes[5] = StringKeyframe::Create();
 
   const KeyframeVector result = NormalizedKeyframes(keyframes);
   EXPECT_EQ(6U, result.size());
@@ -575,21 +588,21 @@ TEST_F(KeyframeEffectModelTest, EvenlyDistributed2) {
 
 TEST_F(KeyframeEffectModelTest, EvenlyDistributed3) {
   KeyframeVector keyframes(12);
-  keyframes[0] = AnimatableValueKeyframe::Create();
+  keyframes[0] = StringKeyframe::Create();
   keyframes[0]->SetOffset(0);
-  keyframes[1] = AnimatableValueKeyframe::Create();
-  keyframes[2] = AnimatableValueKeyframe::Create();
-  keyframes[3] = AnimatableValueKeyframe::Create();
-  keyframes[4] = AnimatableValueKeyframe::Create();
+  keyframes[1] = StringKeyframe::Create();
+  keyframes[2] = StringKeyframe::Create();
+  keyframes[3] = StringKeyframe::Create();
+  keyframes[4] = StringKeyframe::Create();
   keyframes[4]->SetOffset(0.5);
-  keyframes[5] = AnimatableValueKeyframe::Create();
-  keyframes[6] = AnimatableValueKeyframe::Create();
-  keyframes[7] = AnimatableValueKeyframe::Create();
+  keyframes[5] = StringKeyframe::Create();
+  keyframes[6] = StringKeyframe::Create();
+  keyframes[7] = StringKeyframe::Create();
   keyframes[7]->SetOffset(0.8);
-  keyframes[8] = AnimatableValueKeyframe::Create();
-  keyframes[9] = AnimatableValueKeyframe::Create();
-  keyframes[10] = AnimatableValueKeyframe::Create();
-  keyframes[11] = AnimatableValueKeyframe::Create();
+  keyframes[8] = StringKeyframe::Create();
+  keyframes[9] = StringKeyframe::Create();
+  keyframes[10] = StringKeyframe::Create();
+  keyframes[11] = StringKeyframe::Create();
 
   const KeyframeVector result = NormalizedKeyframes(keyframes);
   EXPECT_EQ(12U, result.size());
