@@ -39,6 +39,9 @@ static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
   /* clang-format on*/
 };
 
+// TODO(linfengz): Some functions have coeff_is_byte_flag to handle different
+// types of input coefficients. If possible, unify types to uint8_t* later.
+
 static INLINE int get_level_count(const tran_low_t *tcoeffs, int bwl,
                                   int height, int row, int col, int level,
                                   int (*nb_offset)[2], int nb_num) {
@@ -306,8 +309,10 @@ static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
 };
 
 #if REDUCE_CONTEXT_DEPENDENCY
-static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
-                               int row, int col, int prev_row, int prev_col) {
+static INLINE int get_nz_count(const void *const tcoeffs, const int bwl,
+                               const int height, const int row, const int col,
+                               const int coeff_is_byte_flag, const int prev_row,
+                               const int prev_col) {
   int count = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
     const int ref_row = row + sig_ref_offset[idx][0];
@@ -316,13 +321,16 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
         ref_col >= (1 << bwl) || (prev_row == ref_row && prev_col == ref_col))
       continue;
     const int nb_pos = (ref_row << bwl) + ref_col;
-    count += (tcoeffs[nb_pos] != 0);
+    count +=
+        ((coeff_is_byte_flag ? ((const uint8_t *)tcoeffs)[nb_pos]
+                             : ((const tran_low_t *)tcoeffs)[nb_pos]) != 0);
   }
   return count;
 }
 #else
-static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
-                               int row, int col) {
+static INLINE int get_nz_count(const void *const tcoeffs, const int bwl,
+                               const int height, const int row, const int col,
+                               const int coeff_is_byte_flag) {
   int count = 0;
   for (int idx = 0; idx < SIG_REF_OFFSET_NUM; ++idx) {
     const int ref_row = row + sig_ref_offset[idx][0];
@@ -331,7 +339,9 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
         ref_col >= (1 << bwl))
       continue;
     const int nb_pos = (ref_row << bwl) + ref_col;
-    count += (tcoeffs[nb_pos] != 0);
+    count +=
+        ((coeff_is_byte_flag ? ((const uint8_t *)tcoeffs)[nb_pos]
+                             : ((const tran_low_t *)tcoeffs)[nb_pos]) != 0);
   }
   return count;
 }
@@ -408,9 +418,10 @@ static INLINE int get_nz_map_ctx_from_count(int count,
   return offset + 12 + ctx;
 }
 
-static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs, const int scan_idx,
-                                 const int16_t *scan, const int bwl,
-                                 const int height, TX_TYPE tx_type) {
+static INLINE int get_nz_map_ctx(const void *const tcoeffs, const int scan_idx,
+                                 const int16_t *const scan, const int bwl,
+                                 const int height, const TX_TYPE tx_type,
+                                 const int coeff_is_byte_flag) {
   const int coeff_idx = scan[scan_idx];
   const int row = coeff_idx >> bwl;
   const int col = coeff_idx - (row << bwl);
@@ -427,9 +438,11 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs, const int scan_idx,
     prev_row = -1;
     prev_col = -1;
   }
-  int count = get_nz_count(tcoeffs, bwl, height, row, col, prev_row, prev_col);
+  const int count = get_nz_count(tcoeffs, bwl, height, row, col,
+                                 coeff_is_byte_flag, prev_row, prev_col);
 #else
-  int count = get_nz_count(tcoeffs, bwl, height, row, col);
+  const int count =
+      get_nz_count(tcoeffs, bwl, height, row, col, coeff_is_byte_flag);
 #endif
   return get_nz_map_ctx_from_count(count, coeff_idx, bwl, tx_type);
 }
