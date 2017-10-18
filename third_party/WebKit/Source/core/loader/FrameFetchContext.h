@@ -153,7 +153,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   MHTMLArchive* Archive() const override;
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
-                                                WebTaskRunner*) override;
+                                                RefPtr<WebTaskRunner>) override;
 
   bool IsDetached() const override { return frozen_state_; }
 

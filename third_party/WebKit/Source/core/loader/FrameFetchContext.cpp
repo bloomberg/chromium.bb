@@ -1155,7 +1155,7 @@ void FrameFetchContext::ParseAndPersistClientHints(
 
 std::unique_ptr<WebURLLoader> FrameFetchContext::CreateURLLoader(
     const ResourceRequest& request,
-    WebTaskRunner* task_runner) {
+    RefPtr<WebTaskRunner> task_runner) {
   DCHECK(!IsDetached());
   if (MasterDocumentLoader()->GetServiceWorkerNetworkProvider()) {
     WrappedResourceRequest webreq(request);
