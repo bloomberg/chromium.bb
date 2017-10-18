@@ -45,7 +45,7 @@ class VIZ_SERVICE_EXPORT HitTestManager : public SurfaceObserver {
   void OnSurfaceDiscarded(const SurfaceId& surface_id) override;
   void OnSurfaceDamageExpected(const SurfaceId& surface_id,
                                const BeginFrameArgs& args) override {}
-  void OnSurfaceWillDraw(const SurfaceId& surface_id) override {}
+  void OnSurfaceSubtreeDamaged(const SurfaceId& surface_id) override {}
 
  private:
   friend class TestHitTestManager;

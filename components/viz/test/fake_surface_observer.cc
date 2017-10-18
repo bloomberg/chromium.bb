@@ -14,7 +14,7 @@ FakeSurfaceObserver::~FakeSurfaceObserver() {}
 void FakeSurfaceObserver::Reset() {
   last_ack_ = BeginFrameAck();
   damaged_surfaces_.clear();
-  will_draw_surfaces_.clear();
+  surface_subtree_damaged_.clear();
   last_surface_info_ = SurfaceInfo();
   last_created_surface_id_ = SurfaceId();
 }
@@ -23,9 +23,9 @@ bool FakeSurfaceObserver::IsSurfaceDamaged(const SurfaceId& surface_id) const {
   return damaged_surfaces_.count(surface_id) > 0;
 }
 
-bool FakeSurfaceObserver::SurfaceWillDrawCalled(
+bool FakeSurfaceObserver::IsSurfaceSubtreeDamaged(
     const SurfaceId& surface_id) const {
-  return will_draw_surfaces_.count(surface_id) > 0;
+  return surface_subtree_damaged_.count(surface_id) > 0;
 }
 
 bool FakeSurfaceObserver::OnSurfaceDamaged(const SurfaceId& surface_id,
@@ -36,8 +36,8 @@ bool FakeSurfaceObserver::OnSurfaceDamaged(const SurfaceId& surface_id,
   return ack.has_damage && damage_display_;
 }
 
-void FakeSurfaceObserver::OnSurfaceWillDraw(const SurfaceId& surface_id) {
-  will_draw_surfaces_.insert(surface_id);
+void FakeSurfaceObserver::OnSurfaceSubtreeDamaged(const SurfaceId& surface_id) {
+  surface_subtree_damaged_.insert(surface_id);
 }
 
 void FakeSurfaceObserver::OnFirstSurfaceActivation(

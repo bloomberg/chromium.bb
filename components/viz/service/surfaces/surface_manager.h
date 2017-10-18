@@ -73,9 +73,9 @@ class VIZ_SERVICE_EXPORT SurfaceManager {
   // Destroy the Surface once a set of sequence numbers has been satisfied.
   void DestroySurface(const SurfaceId& surface_id);
 
-  // Called when a surface has been added to the aggregated CompositorFrame
-  // and will notify observers with SurfaceObserver::OnSurfaceWillDraw.
-  void SurfaceWillDraw(const SurfaceId& surface_id);
+  // Called when |surface_id| or one of its descendents is determined to be
+  // damaged at aggregation time.
+  void SurfaceSubtreeDamaged(const SurfaceId& surface_id);
 
   Surface* GetSurfaceForId(const SurfaceId& surface_id);
 

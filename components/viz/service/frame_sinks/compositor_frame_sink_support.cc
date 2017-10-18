@@ -51,9 +51,9 @@ CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
   frame_sink_manager_->UnregisterFrameSinkManagerClient(frame_sink_id_);
 }
 
-void CompositorFrameSinkSupport::SetWillDrawSurfaceCallback(
-    WillDrawCallback callback) {
-  will_draw_callback_ = std::move(callback);
+void CompositorFrameSinkSupport::SetAggregatedDamageCallback(
+    AggregatedDamageCallback callback) {
+  aggregated_damage_callback_ = std::move(callback);
 }
 
 void CompositorFrameSinkSupport::SetDestructionCallback(
@@ -204,7 +204,7 @@ bool CompositorFrameSinkSupport::SubmitCompositorFrame(
       std::move(frame), frame_index,
       base::BindOnce(&CompositorFrameSinkSupport::DidReceiveCompositorFrameAck,
                      weak_factory_.GetWeakPtr()),
-      will_draw_callback_);
+      aggregated_damage_callback_);
 
   if (!result) {
     EvictCurrentSurface();

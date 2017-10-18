@@ -250,8 +250,9 @@ bool DelegatedFrameHost::ShouldSkipFrame(const gfx::Size& size_in_dip) {
   return size_in_dip != resize_lock_->expected_size();
 }
 
-void DelegatedFrameHost::WillDrawSurface(const viz::LocalSurfaceId& id,
-                                         const gfx::Rect& damage_rect) {
+void DelegatedFrameHost::OnAggregatedSurfaceDamage(
+    const viz::LocalSurfaceId& id,
+    const gfx::Rect& damage_rect) {
   if (id != local_surface_id_)
     return;
   AttemptFrameSubscriberCapture(damage_rect);
@@ -903,8 +904,9 @@ void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
                  ->GetHostFrameSinkManager()
                  ->CreateCompositorFrameSinkSupport(this, frame_sink_id_,
                                                     is_root, needs_sync_points);
-  support_->SetWillDrawSurfaceCallback(base::BindRepeating(
-      &DelegatedFrameHost::WillDrawSurface, weak_ptr_factory_.GetWeakPtr()));
+  support_->SetAggregatedDamageCallback(
+      base::BindRepeating(&DelegatedFrameHost::OnAggregatedSurfaceDamage,
+                          weak_ptr_factory_.GetWeakPtr()));
   if (compositor_)
     compositor_->AddFrameSink(frame_sink_id_);
   if (needs_begin_frame_)
