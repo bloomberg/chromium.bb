@@ -19,6 +19,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "components/viz/test/begin_frame_args_test.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/input/legacy_input_router_impl.h"
 #include "content/browser/renderer_host/input/touch_emulator.h"
@@ -341,6 +342,10 @@ class TestView : public TestRenderWidgetHostView {
     use_fake_physical_backing_size_ = false;
   }
 
+  const viz::BeginFrameAck& last_did_not_produce_frame_ack() {
+    return last_did_not_produce_frame_ack_;
+  }
+
   // RenderWidgetHostView override.
   gfx::Rect GetViewBounds() const override { return bounds_; }
   float GetTopControlsHeight() const override { return top_controls_height_; }
@@ -369,6 +374,9 @@ class TestView : public TestRenderWidgetHostView {
       return mock_physical_backing_size_;
     return TestRenderWidgetHostView::GetPhysicalBackingSize();
   }
+  void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override {
+    last_did_not_produce_frame_ack_ = ack;
+  }
 
  protected:
   WebMouseWheelEvent unhandled_wheel_event_;
@@ -382,6 +390,7 @@ class TestView : public TestRenderWidgetHostView {
   InputEventAckState ack_result_;
   float top_controls_height_;
   float bottom_controls_height_;
+  viz::BeginFrameAck last_did_not_produce_frame_ack_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestView);
@@ -1803,6 +1812,9 @@ TEST_F(RenderWidgetHostTest, SwapCompositorFrameWithBadSourceId) {
                                  0);
     EXPECT_FALSE(
         static_cast<TestView*>(host_->GetView())->did_swap_compositor_frame());
+    EXPECT_EQ(viz::BeginFrameAck(0, 1, false),
+              static_cast<TestView*>(host_->GetView())
+                  ->last_did_not_produce_frame_ack());
     static_cast<TestView*>(host_->GetView())->reset_did_swap_compositor_frame();
   }
 
