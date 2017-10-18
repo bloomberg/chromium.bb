@@ -25,18 +25,19 @@ function testTextMetrics(textMetrics, expected)
     var aa = textMetrics.actualBoundingBoxAscent;
     var ad = textMetrics.actualBoundingBoxDescent;
 
-    var epsilon = 0.000001;
-    assert_equals(rb, Math.round(w), "testing width");
-    assert_approx_equals(ab, expected[0], epsilon, "testing alphabeticBaseline");
-    assert_approx_equals(hb, expected[1], epsilon, "testing hangingBaseline");
-    assert_approx_equals(ib, expected[2], epsilon, "testing ideographicBaseline");
-    assert_approx_equals(fa, expected[3], epsilon, "testing fontBoundingBoxAscent");
-    assert_approx_equals(fd, expected[4], epsilon, "testing fontBoundingBoxDescent");
-    assert_approx_equals(ea, expected[5], epsilon, "testing emHeightAscent");
-    assert_approx_equals(ed, expected[6], epsilon, "testing emHeightDescent");
-    assert_approx_equals(lb, expected[7], epsilon, "testing actualBoundingBoxLeft");
-    assert_approx_equals(aa, expected[8], epsilon, "testing actualBoundingBoxAscent");
-    assert_approx_equals(ad, expected[9], epsilon, "testing actualBoundingBoxDescent");
+    var epsilon = 1.0;
+    assert_approx_equals(w,  expected[0], epsilon, "testing width");
+    assert_approx_equals(ab, expected[1], epsilon, "testing alphabeticBaseline");
+    assert_approx_equals(hb, expected[2], epsilon, "testing hangingBaseline");
+    assert_approx_equals(ib, expected[3], epsilon, "testing ideographicBaseline");
+    assert_approx_equals(fa, expected[4], epsilon, "testing fontBoundingBoxAscent");
+    assert_approx_equals(fd, expected[5], epsilon, "testing fontBoundingBoxDescent");
+    assert_approx_equals(ea, expected[6], epsilon, "testing emHeightAscent");
+    assert_approx_equals(ed, expected[7], epsilon, "testing emHeightDescent");
+    assert_approx_equals(lb, expected[8], epsilon, "testing actualBoundingBoxLeft");
+    assert_approx_equals(rb, expected[9], epsilon, "testing actualBoundingBoxRight");
+    assert_approx_equals(aa, expected[10], epsilon, "testing actualBoundingBoxAscent");
+    assert_approx_equals(ad, expected[11], epsilon, "testing actualBoundingBoxDescent");
 }
 
 function measureMetrics(ctx)
@@ -45,32 +46,32 @@ function measureMetrics(ctx)
 
     ctx.textBaseline = "top";
     var textMetrics = ctx.measureText(text);
-    var expected = [-45, -9, -57, 0, 57, 0, 0, 0, -45, 95];
+    var expected = [248.5, -44, -8.8, -57, 0, 57, 13, 44, -0, 249, 0, 57];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "hanging";
     var textMetrics = ctx.measureText(text);
-    expected = [-36, 0, -48, 9, 48, 0, 0, 0, -36, 86];
+    expected = [248.5, -35, 0.2, -48, 9, 48, 22, 35, -0, 249, 9, 48];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "middle";
     var textMetrics = ctx.measureText(text);
-    expected = [-16, 20, -28, 29, 28, 0, 0, 0, -16, 66];
+    expected = [248.5, -15, 20.2, -28, 29, 28, 42, 15, -0, 249, 29, 28];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "alphabetic";
     var textMetrics = ctx.measureText(text);
-    expected = [0, 36, -12, 45, 12, 0, 0, 0, 0, 50];
+    expected = [248.5, -0, 35.2, -13, 44, 13, 57, 0, -0, 249, 44, 13];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "ideographic";
     var textMetrics = ctx.measureText(text);
-    expected = [12, 48, 0, 57, 0, 0, 0, 0, 12, 38];
+    expected = [248.5, 13, 48.2, 0, 57, 0, 70, -13, -0, 249, 57, 0];
     testTextMetrics(textMetrics, expected);
 
     ctx.textBaseline = "bottom";
     var textMetrics = ctx.measureText(text);
-    expected = [12, 48, 0, 57, 0, 0, 0, 0, 12, 38];
+    expected = [248.5, 13, 48.2, 0, 57, 0, 70, -13, -0, 249, 57, 0];
     testTextMetrics(textMetrics, expected);
 }
 

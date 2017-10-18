@@ -736,19 +736,14 @@ void CanvasRenderingContext2D::strokeText(const String& text,
 }
 
 TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
-  TextMetrics* metrics = TextMetrics::Create();
-
   // The style resolution required for fonts is not available in frame-less
   // documents.
   if (!canvas()->GetDocument().GetFrame())
-    return metrics;
+    return TextMetrics::Create();
 
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
+
   const Font& font = AccessFont();
-  const SimpleFontData* font_data = font.PrimaryFont();
-  DCHECK(font_data);
-  if (!font_data)
-    return metrics;
 
   TextDirection direction;
   if (GetState().GetDirection() ==
@@ -756,40 +751,9 @@ TextMetrics* CanvasRenderingContext2D::measureText(const String& text) {
     direction = DetermineDirectionality(text);
   else
     direction = ToTextDirection(GetState().GetDirection(), canvas());
-  TextRun text_run(
-      text, 0, 0,
-      TextRun::kAllowTrailingExpansion | TextRun::kForbidLeadingExpansion,
-      direction, false);
-  text_run.SetNormalizeSpace(true);
-  FloatRect text_bounds = font.SelectionRectForText(
-      text_run, FloatPoint(), font.GetFontDescription().ComputedSize(), 0, -1);
 
-  // x direction
-  metrics->SetWidth(font.Width(text_run));
-  metrics->SetActualBoundingBoxLeft(-text_bounds.X());
-  metrics->SetActualBoundingBoxRight(text_bounds.MaxX());
-
-  // y direction
-  const FontMetrics& font_metrics = font_data->GetFontMetrics();
-  const double ascent = font_metrics.FloatAscent();
-  const double descent = font_metrics.FloatDescent();
-  const double baseline_y = GetFontBaseline(font_metrics);
-
-  metrics->SetFontBoundingBoxAscent(ascent - baseline_y);
-  metrics->SetFontBoundingBoxDescent(descent + baseline_y);
-  metrics->SetActualBoundingBoxAscent(-text_bounds.Y() - baseline_y);
-  metrics->SetActualBoundingBoxDescent(text_bounds.MaxY() + baseline_y);
-
-  // Note : top/bottom and ascend/descend are currently the same, so there's no
-  // difference between the EM box's top and bottom and the font's ascend and
-  // descend
-  metrics->SetEmHeightAscent(0);
-  metrics->SetEmHeightDescent(0);
-
-  metrics->SetHangingBaseline(0.8f * ascent - baseline_y);
-  metrics->SetAlphabeticBaseline(-baseline_y);
-  metrics->SetIdeographicBaseline(-descent - baseline_y);
-  return metrics;
+  return TextMetrics::Create(font, direction, GetState().GetTextBaseline(),
+                             GetState().GetTextAlign(), text);
 }
 
 void CanvasRenderingContext2D::DrawTextInternal(
