@@ -28,6 +28,9 @@ class SingleDebugDaemonLogSource : public SystemLogsSource {
 
     // For "ifconfig" command.
     kIfconfig,
+
+    // For "/proc/uptime" entry.
+    kUptime,
   };
 
   explicit SingleDebugDaemonLogSource(SupportedSource source);
