@@ -94,7 +94,6 @@ HTMLImageElement::HTMLImageElement(Document& document, bool created_by_parser)
       image_device_pixel_ratio_(1.0f),
       source_(nullptr),
       layout_disposition_(LayoutDisposition::kPrimaryContent),
-      decoding_mode_(Image::kUnspecifiedDecode),
       form_was_set_by_parser_(false),
       element_created_by_parser_(created_by_parser),
       is_fallback_image_(false),

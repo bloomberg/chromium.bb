@@ -171,4 +171,22 @@ ScriptPromise ImageElementBase::CreateImageBitmap(
                         event_target.ToLocalDOMWindow()->document(), options));
 }
 
+Image::ImageDecodingMode ImageElementBase::GetDecodingModeForPainting(
+    PaintImage::Id new_id) {
+  const bool content_transitioned =
+      last_painted_image_id_ != PaintImage::kInvalidId &&
+      new_id != PaintImage::kInvalidId && last_painted_image_id_ != new_id;
+  last_painted_image_id_ = new_id;
+
+  // If the image for the element was transitioned, and no preference has been
+  // specified by the author, prefer sync decoding to avoid flickering the
+  // element. Async decoding of this image would cause us to display
+  // intermediate frames with no image while the decode is in progress which
+  // creates a visual flicker in the transition.
+  if (content_transitioned &&
+      decoding_mode_ == Image::ImageDecodingMode::kUnspecifiedDecode)
+    return Image::ImageDecodingMode::kSyncDecode;
+  return decoding_mode_;
+}
+
 }  // namespace blink
