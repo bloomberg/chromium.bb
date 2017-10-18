@@ -35,7 +35,7 @@
 
 namespace blink {
 
-class Document;
+class ExecutionContext;
 
 class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
  public:
@@ -68,7 +68,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
 
   bool HasFailedOrCanceledSubresources() const;
 
-  FontResource* Fetch(Document*) const;
+  FontResource* Fetch(ExecutionContext*) const;
 
   bool Equals(const CSSFontFaceSrcValue&) const;
 
@@ -92,7 +92,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
         should_check_content_security_policy_(
             should_check_content_security_policy) {}
 
-  void RestoreCachedResourceIfNeeded(Document*) const;
+  void RestoreCachedResourceIfNeeded(ExecutionContext*) const;
 
   String absolute_resource_;
   String specified_resource_;

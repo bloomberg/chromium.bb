@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "core/css/FontFaceCache.h"
+#include "core/dom/Document.h"
 #include "platform/fonts/FontSelector.h"
 #include "platform/fonts/GenericFontFamilySettings.h"
 #include "platform/heap/Handle.h"
@@ -37,7 +38,6 @@
 
 namespace blink {
 
-class Document;
 class FontDescription;
 
 class CORE_EXPORT CSSFontSelector : public FontSelector {
@@ -70,7 +70,7 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
   void RegisterForInvalidationCallbacks(FontSelectorClient*) override;
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override;
 
-  Document* GetDocument() const { return document_; }
+  ExecutionContext* GetExecutionContext() const override { return document_; }
   FontFaceCache* GetFontFaceCache() { return &font_face_cache_; }
 
   const GenericFontFamilySettings& GetGenericFontFamilySettings() const {

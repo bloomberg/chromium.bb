@@ -146,9 +146,9 @@ class CORE_EXPORT FontFace : public GarbageCollectedFinalized<FontFace>,
            const AtomicString& family,
            const FontFaceDescriptors&);
 
-  void InitCSSFontFace(Document*, const CSSValue* src);
+  void InitCSSFontFace(ExecutionContext*, const CSSValue* src);
   void InitCSSFontFace(const unsigned char* data, size_t);
-  void SetPropertyFromString(const Document*,
+  void SetPropertyFromString(const ExecutionContext*,
                              const String&,
                              CSSPropertyID,
                              ExceptionState* = nullptr);

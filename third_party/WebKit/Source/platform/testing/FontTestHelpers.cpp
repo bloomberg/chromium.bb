@@ -52,6 +52,7 @@ class TestFontSelector : public FontSelector {
   unsigned Version() const override { return 0; }
   void FontCacheInvalidated() override {}
   void ReportNotDefGlyph() const override {}
+  ExecutionContext* GetExecutionContext() const { return nullptr; }
 
   void RegisterForInvalidationCallbacks(FontSelectorClient*) override {}
   void UnregisterForInvalidationCallbacks(FontSelectorClient*) override {}
