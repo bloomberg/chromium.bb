@@ -1021,7 +1021,7 @@ TEST_F(VolumeManagerTest, OnRenameEvent_CompletedFailed) {
   EXPECT_EQ("device1", event.device_path);
   EXPECT_FALSE(event.success);
 
-  EXPECT_EQ(0U, disk_mount_manager_->mount_requests().size());
+  EXPECT_EQ(1U, disk_mount_manager_->mount_requests().size());
 
   volume_manager()->RemoveObserver(&observer);
 }
