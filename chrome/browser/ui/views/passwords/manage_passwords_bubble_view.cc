@@ -293,9 +293,8 @@ void BuildCredentialRows(views::GridLayout* layout,
   layout->AddView(username_field, 1, 1, views::GridLayout::FILL,
                   views::GridLayout::FILL, 0, 0);
 
-  layout->AddPaddingRow(
-      0, ChromeLayoutProvider::Get()->GetDistanceMetric(
-             views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
+  layout->AddPaddingRow(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
+                               DISTANCE_CONTROL_LIST_VERTICAL));
 
   // Password row.
   ColumnSetType type = password_view_button ? TRIPLE_VIEW_COLUMN_SET
