@@ -19,6 +19,7 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/installable/installable_logging.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -256,22 +257,28 @@ InstallableStatusCode AppBannerSettingsHelper::ShouldShowBanner(
   if (!added_time.is_null())
     return ALREADY_INSTALLED;
 
-  base::Time blocked_time =
-      GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
-                           APP_BANNER_EVENT_DID_BLOCK);
+  // Showing of experimental app banners is under developer control, and
+  // requires a user gesture. In contrast, showing of traditional app banners
+  // is automatic, so we throttle it if the user has recently ignored or
+  // blocked the banner.
+  if (!base::FeatureList::IsEnabled(features::kExperimentalAppBanners)) {
+    base::Time blocked_time = GetSingleBannerEvent(web_contents, origin_url,
+                                                   package_name_or_start_url,
+                                                   APP_BANNER_EVENT_DID_BLOCK);
 
-  // Null times are in the distant past, so the delta between real times and
-  // null events will always be greater than the limits.
-  if (time - blocked_time <
-      base::TimeDelta::FromDays(gDaysAfterDismissedToShow)) {
-    return PREVIOUSLY_BLOCKED;
+    // Null times are in the distant past, so the delta between real times and
+    // null events will always be greater than the limits.
+    if (time - blocked_time <
+        base::TimeDelta::FromDays(gDaysAfterDismissedToShow)) {
+      return PREVIOUSLY_BLOCKED;
+    }
+
+    base::Time shown_time = GetSingleBannerEvent(web_contents, origin_url,
+                                                 package_name_or_start_url,
+                                                 APP_BANNER_EVENT_DID_SHOW);
+    if (time - shown_time < base::TimeDelta::FromDays(gDaysAfterIgnoredToShow))
+      return PREVIOUSLY_IGNORED;
   }
-
-  base::Time shown_time =
-      GetSingleBannerEvent(web_contents, origin_url, package_name_or_start_url,
-                           APP_BANNER_EVENT_DID_SHOW);
-  if (time - shown_time < base::TimeDelta::FromDays(gDaysAfterIgnoredToShow))
-    return PREVIOUSLY_IGNORED;
 
   return NO_ERROR_DETECTED;
 }
