@@ -9,6 +9,7 @@ import("//build/config/ui.gni")
 import("//build/split_static_library.gni")
 import("//chrome/common/features.gni")
 import("//components/nacl/features.gni")
+import("//components/offline_pages/features/features.gni")
 import("//components/signin/features.gni")
 import("//extensions/features/features.gni")
 import("//media/media_options.gni")
@@ -409,9 +410,6 @@ split_static_library("ui") {
     "//components/net_log",
     "//components/ntp_snippets",
     "//components/ntp_tiles",
-    "//components/offline_pages/core",
-    "//components/offline_pages/core/background:background_offliner",
-    "//components/offline_pages/core/prefetch",
     "//components/offline_pages/features:features",
     "//components/omnibox/browser",
     "//components/onc",
@@ -3566,6 +3564,14 @@ split_static_library("ui") {
 
   if (use_udev) {
     deps += [ "//device/udev_linux" ]
+  }
+
+  if (enable_offline_pages) {
+    deps += [
+      "//components/offline_pages/core",
+      "//components/offline_pages/core/background:background_offliner",
+      "//components/offline_pages/core/prefetch",
+    ]
   }
 }
 
