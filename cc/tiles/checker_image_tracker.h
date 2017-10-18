@@ -96,6 +96,10 @@ class CC_EXPORT CheckerImageTracker {
     force_disabled_ = force_disabled;
   }
 
+  void UpdateImageDecodingHints(
+      base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+          decoding_mode_map);
+
   bool has_locked_decodes_for_testing() const {
     return !image_id_to_decode_.empty();
   }
@@ -105,6 +109,11 @@ class CC_EXPORT CheckerImageTracker {
   }
   bool no_decodes_allowed_for_testing() const {
     return decode_priority_allowed_ == kNoDecodeAllowedPriority;
+  }
+  PaintImage::DecodingMode get_decoding_mode_hint_for_testing(
+      PaintImage::Id id) {
+    CHECK(decoding_mode_map_.find(id) != decoding_mode_map_.end());
+    return decoding_mode_map_[id];
   }
 
  private:
@@ -192,6 +201,8 @@ class CC_EXPORT CheckerImageTracker {
   // A map of image id to image decode request id for images to be unlocked.
   std::unordered_map<PaintImage::Id, std::unique_ptr<ScopedDecodeHolder>>
       image_id_to_decode_;
+
+  base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
 
   base::WeakPtrFactory<CheckerImageTracker> weak_factory_;
 

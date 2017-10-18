@@ -3567,6 +3567,13 @@ bool LayerTreeHostImpl::CanConsumeDelta(const ScrollNode& scroll_node,
   return false;
 }
 
+void LayerTreeHostImpl::UpdateImageDecodingHints(
+    base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+        decoding_mode_map) {
+  tile_manager_.checker_image_tracker().UpdateImageDecodingHints(
+      std::move(decoding_mode_map));
+}
+
 InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     ScrollState* scroll_state) {
   DCHECK(scroll_state);

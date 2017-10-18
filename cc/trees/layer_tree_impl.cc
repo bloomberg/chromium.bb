@@ -2080,6 +2080,12 @@ VideoFrameControllerClient* LayerTreeImpl::GetVideoFrameControllerClient()
   return host_impl_;
 }
 
+void LayerTreeImpl::UpdateImageDecodingHints(
+    base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+        decoding_mode_map) {
+  host_impl_->UpdateImageDecodingHints(std::move(decoding_mode_map));
+}
+
 void LayerTreeImpl::SetPendingPageScaleAnimation(
     std::unique_ptr<PendingPageScaleAnimation> pending_animation) {
   pending_page_scale_animation_ = std::move(pending_animation);

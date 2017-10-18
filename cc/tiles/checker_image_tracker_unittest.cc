@@ -562,5 +562,77 @@ TEST_F(CheckerImageTrackerTest, DisableForSoftwareRaster) {
   EXPECT_FALSE(ShouldCheckerImage(image2, WhichTree::PENDING_TREE));
 }
 
+TEST_F(CheckerImageTrackerTest, DecodingModeHints) {
+  SetUpTracker(true);
+
+  base::flat_map<PaintImage::Id, PaintImage::DecodingMode> hints = {
+      {1, PaintImage::DecodingMode::kUnspecified},
+      {2, PaintImage::DecodingMode::kSync},
+      {3, PaintImage::DecodingMode::kAsync}};
+  checker_image_tracker_->UpdateImageDecodingHints(hints);
+
+  EXPECT_EQ(PaintImage::DecodingMode::kUnspecified,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(1));
+  EXPECT_EQ(PaintImage::DecodingMode::kSync,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(2));
+  EXPECT_EQ(PaintImage::DecodingMode::kAsync,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(3));
+
+  hints = {{1, PaintImage::DecodingMode::kAsync},
+           {2, PaintImage::DecodingMode::kAsync},
+           {3, PaintImage::DecodingMode::kAsync}};
+  checker_image_tracker_->UpdateImageDecodingHints(hints);
+
+  // The more conservative state should persist.
+  EXPECT_EQ(PaintImage::DecodingMode::kUnspecified,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(1));
+  EXPECT_EQ(PaintImage::DecodingMode::kSync,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(2));
+  EXPECT_EQ(PaintImage::DecodingMode::kAsync,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(3));
+
+  hints = {{1, PaintImage::DecodingMode::kUnspecified},
+           {2, PaintImage::DecodingMode::kUnspecified},
+           {3, PaintImage::DecodingMode::kUnspecified}};
+  checker_image_tracker_->UpdateImageDecodingHints(hints);
+
+  EXPECT_EQ(PaintImage::DecodingMode::kUnspecified,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(1));
+  EXPECT_EQ(PaintImage::DecodingMode::kSync,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(2));
+  EXPECT_EQ(PaintImage::DecodingMode::kUnspecified,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(3));
+
+  hints = {{1, PaintImage::DecodingMode::kSync}};
+  checker_image_tracker_->UpdateImageDecodingHints(hints);
+
+  EXPECT_EQ(PaintImage::DecodingMode::kSync,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(1));
+  EXPECT_EQ(PaintImage::DecodingMode::kSync,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(2));
+  EXPECT_EQ(PaintImage::DecodingMode::kUnspecified,
+            checker_image_tracker_->get_decoding_mode_hint_for_testing(3));
+}
+
+TEST_F(CheckerImageTrackerTest, UsageHintsMakeImagesSync) {
+  SetUpTracker(true);
+
+  DrawImage image = CreateImage(ImageType::CHECKERABLE);
+  EXPECT_TRUE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
+
+  base::flat_map<PaintImage::Id, PaintImage::DecodingMode> hints = {
+      {image.paint_image().stable_id(), PaintImage::DecodingMode::kSync}};
+  checker_image_tracker_->UpdateImageDecodingHints(hints);
+
+  auto invalidated = checker_image_tracker_->TakeImagesToInvalidateOnSyncTree();
+  ASSERT_EQ(invalidated.size(), 1u);
+  EXPECT_EQ(*invalidated.begin(), image.paint_image().stable_id());
+
+  EXPECT_FALSE(ShouldCheckerImage(image, WhichTree::PENDING_TREE));
+  // We should still continue checkering on the active tree, since we want
+  // atomic updates from the pending tree.
+  EXPECT_TRUE(ShouldCheckerImage(image, WhichTree::ACTIVE_TREE));
+}
+
 }  // namespace
 }  // namespace cc
