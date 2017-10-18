@@ -572,6 +572,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // SetPlaybackRate(0) is being executed.
   double playback_rate_;
 
+  // Counter that limits spam to |media_log_| of |playback_rate_| changes.
+  int num_playback_rate_logs_;
+
   // Set while paused. |paused_time_| is only valid when |paused_| is true.
   bool paused_;
   base::TimeDelta paused_time_;
