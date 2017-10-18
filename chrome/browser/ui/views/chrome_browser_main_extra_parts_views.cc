@@ -16,7 +16,7 @@
 #if defined(USE_AURA)
 #include "base/run_loop.h"
 #include "components/ui_devtools/devtools_server.h"
-#include "components/ui_devtools/views/ui_devtools_css_agent.h"
+#include "components/ui_devtools/views/css_agent.h"
 #include "components/ui_devtools/views/ui_devtools_dom_agent.h"
 #include "components/ui_devtools/views/ui_devtools_overlay_agent.h"
 #include "content/public/browser/browser_thread.h"
@@ -118,7 +118,7 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
         base::MakeUnique<ui_devtools::UIDevToolsOverlayAgent>(
             dom_backend.get());
     auto css_backend =
-        base::MakeUnique<ui_devtools::UIDevToolsCSSAgent>(dom_backend.get());
+        base::MakeUnique<ui_devtools::CSSAgent>(dom_backend.get());
     auto devtools_client = base::MakeUnique<ui_devtools::UiDevToolsClient>(
         "UiDevToolsClient", devtools_server_.get());
     devtools_client->AddAgent(std::move(dom_backend));
