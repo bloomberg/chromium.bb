@@ -235,6 +235,9 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // Called when the snapshot of the content will be taken.
 - (void)willUpdateSnapshot;
 
+// Requests deletion of the Tab snapshot.
+- (void)removeSnapshot;
+
 // Called when this tab is shown.
 - (void)wasShown;
 

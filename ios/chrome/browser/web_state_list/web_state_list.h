@@ -44,6 +44,16 @@ class WebStateList {
     INSERT_INHERIT_OPENER = 1 << 2,
   };
 
+  // Constants used when closing WebStates.
+  enum ClosingFlags {
+    // Used to indicate that nothing special should happen to the closed
+    // WebState.
+    CLOSE_NO_FLAGS = 0,
+
+    // Used to indicate that the WebState was closed due to user action.
+    CLOSE_USER_ACTION = 1 << 0,
+  };
+
   explicit WebStateList(WebStateListDelegate* delegate);
   ~WebStateList();
 
@@ -98,7 +108,7 @@ class WebStateList {
 
   // Inserts the specified WebState at the best position in the WebStateList
   // given the specified opener, recommended index, insertion flags, ... The
-  // |insertion_flags| is a bitwise combination of InsertionFlags  values.
+  // |insertion_flags| is a bitwise combination of InsertionFlags values.
   // Returns the effective insertion index.
   int InsertWebState(int index,
                      std::unique_ptr<web::WebState> web_state,
@@ -119,11 +129,13 @@ class WebStateList {
   // to the caller (abandon ownership of the returned WebState).
   std::unique_ptr<web::WebState> DetachWebStateAt(int index);
 
-  // Closes and destroys the WebState at the specified index.
-  void CloseWebStateAt(int index);
+  // Closes and destroys the WebState at the specified index. The |close_flags|
+  // is a bitwise combination of ClosingFlags values.
+  void CloseWebStateAt(int index, int close_flags);
 
-  // Closes and destroys all WebStates.
-  void CloseAllWebStates();
+  // Closes and destroys all WebStates. The |close_flags| is a bitwise
+  // combination of ClosingFlags values.
+  void CloseAllWebStates(int close_flags);
 
   // Makes the WebState at the specified index the active WebState.
   void ActivateWebStateAt(int index);

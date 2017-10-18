@@ -50,10 +50,12 @@
               atIndex:(int)atIndex;
 
 // Invoked before the specified WebState is destroyed via the WebStateList.
-// The WebState is still valid but is no longer in the WebStateList.
+// The WebState is still valid but is no longer in the WebStateList. If the
+// WebState is closed due to user action, |userAction| will be true.
 - (void)webStateList:(WebStateList*)webStateList
     willCloseWebState:(web::WebState*)webState
-              atIndex:(int)atIndex;
+              atIndex:(int)atIndex
+           userAction:(BOOL)userAction;
 
 // Invoked after |newWebState| was activated at the specified index. Both
 // WebState are either valid or null (if there was no selection or there is
@@ -96,7 +98,8 @@ class WebStateListObserverBridge : public WebStateListObserver {
                           int index) override;
   void WillCloseWebStateAt(WebStateList* web_state_list,
                            web::WebState* web_state,
-                           int index) override;
+                           int index,
+                           bool user_action) override;
   void WebStateActivatedAt(WebStateList* web_state_list,
                            web::WebState* old_web_state,
                            web::WebState* new_web_state,

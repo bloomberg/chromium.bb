@@ -47,6 +47,14 @@
 #pragma mark - WebStateListObserving
 
 - (void)webStateList:(WebStateList*)webStateList
+    didReplaceWebState:(web::WebState*)oldWebState
+          withWebState:(web::WebState*)newWebState
+               atIndex:(int)atIndex {
+  Tab* oldTab = LegacyTabHelper::GetTabForWebState(oldWebState);
+  [oldTab removeSnapshot];
+}
+
+- (void)webStateList:(WebStateList*)webStateList
     willDetachWebState:(web::WebState*)webState
                atIndex:(int)atIndex {
   _lastDetachedWebStateWasActive = webStateList->active_index() == atIndex;
@@ -55,10 +63,15 @@
 
 - (void)webStateList:(WebStateList*)webStateList
     willCloseWebState:(web::WebState*)webState
-              atIndex:(int)atIndex {
+              atIndex:(int)atIndex
+           userAction:(BOOL)userAction {
   if (_lastDetachedWebStateWasActive) {
     _lastDetachedWebStateWasActive = NO;
     [_tabModel saveSessionImmediately:NO];
+  }
+  if (userAction) {
+    Tab* tab = LegacyTabHelper::GetTabForWebState(webState);
+    [tab removeSnapshot];
   }
 }
 

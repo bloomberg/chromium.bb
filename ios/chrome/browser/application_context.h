@@ -82,12 +82,6 @@ class ApplicationContext {
   // the application was backgrounded).
   virtual bool WasLastShutdownClean() = 0;
 
-  // Indicates that shutdown is happening.
-  virtual void SetIsShuttingDown() = 0;
-
-  // Returns whether the application is shutting down.
-  virtual bool IsShuttingDown() = 0;
-
   // Gets the local state associated with this application.
   virtual PrefService* GetLocalState() = 0;
 

@@ -902,8 +902,6 @@ const int kExternalFilesCleanupDelaySeconds = 60;
 }
 
 - (void)stopChromeMain {
-  GetApplicationContext()->SetIsShuttingDown();
-
   [_spotlightManager shutdown];
   _spotlightManager = nil;
 

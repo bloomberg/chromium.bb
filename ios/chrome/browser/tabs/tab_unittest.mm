@@ -410,18 +410,25 @@ TEST_F(TabTest, GetSuggestedFilenameFromDefaultName) {
 }
 
 TEST_F(TabTest, SnapshotIsNotRemovedDuringShutdown) {
-  GetApplicationContext()->SetIsShuttingDown();
   id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
   tab_.snapshotManager = mockSnapshotManager;
   [[mockSnapshotManager reject] removeImageWithSessionID:[OCMArg any]];
   web_state_impl_.reset();
 }
 
-TEST_F(TabTest, ClosingWebStateRemovesSnapshot) {
+TEST_F(TabTest, ClosingWebStateDoesNotRemoveSnapshot) {
   id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
   tab_.snapshotManager = mockSnapshotManager;
+  [[mockSnapshotManager reject] removeImageWithSessionID:[OCMArg any]];
   web_state_impl_.reset();
+}
+
+TEST_F(TabTest, CallingRemoveSnapshotRemovesSnapshot) {
+  id mockSnapshotManager = OCMClassMock([SnapshotManager class]);
+  tab_.snapshotManager = mockSnapshotManager;
+  [tab_ removeSnapshot];
   [[mockSnapshotManager verify] removeImageWithSessionID:[OCMArg any]];
+  web_state_impl_.reset();
 }
 
 }  // namespace
