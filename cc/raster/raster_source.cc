@@ -198,6 +198,11 @@ void RasterSource::GetDiscardableImagesInRect(
                                                                     images);
 }
 
+base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+RasterSource::TakeDecodingModeMap() {
+  return display_list_->TakeDecodingModeMap();
+}
+
 gfx::Rect RasterSource::GetRectForImage(PaintImage::Id image_id) const {
   if (!display_list_)
     return gfx::Rect();

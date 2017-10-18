@@ -138,6 +138,9 @@ class CC_EXPORT LayerTreeImpl {
   bool SmoothnessTakesPriority() const;
   VideoFrameControllerClient* GetVideoFrameControllerClient() const;
   MutatorHost* mutator_host() const { return host_impl_->mutator_host(); }
+  void UpdateImageDecodingHints(
+      base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+          decoding_mode_map);
 
   // Tree specific methods exposed to layer-impl tree.
   // ---------------------------------------------------------------------------

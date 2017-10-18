@@ -628,6 +628,10 @@ class CC_EXPORT LayerTreeHostImpl
   bool CanConsumeDelta(const ScrollNode& scroll_node,
                        const ScrollState& scroll_state);
 
+  void UpdateImageDecodingHints(
+      base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+          decoding_mode_map);
+
  protected:
   LayerTreeHostImpl(
       const LayerTreeSettings& settings,

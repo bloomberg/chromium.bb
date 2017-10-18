@@ -8128,5 +8128,62 @@ class LayerTreeHostTestImageAnimation : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestImageAnimation);
 
+class LayerTreeHostTestImageDecodingHints : public LayerTreeHostTest {
+ public:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void SetupTree() override {
+    gfx::Size layer_size(100, 100);
+    content_layer_client_.set_bounds(layer_size);
+    content_layer_client_.set_fill_with_nonsolid_color(true);
+    PaintImage async_image =
+        PaintImageBuilder::WithCopy(
+            CreateDiscardablePaintImage(gfx::Size(10, 10)))
+            .set_id(1)
+            .set_decoding_mode(PaintImage::DecodingMode::kAsync)
+            .TakePaintImage();
+    PaintImage sync_image =
+        PaintImageBuilder::WithCopy(
+            CreateDiscardablePaintImage(gfx::Size(10, 10)))
+            .set_id(2)
+            .set_decoding_mode(PaintImage::DecodingMode::kSync)
+            .TakePaintImage();
+    PaintImage unspecified_image =
+        PaintImageBuilder::WithCopy(
+            CreateDiscardablePaintImage(gfx::Size(10, 10)))
+            .set_id(3)
+            .set_decoding_mode(PaintImage::DecodingMode::kUnspecified)
+            .TakePaintImage();
+    content_layer_client_.add_draw_image(async_image, gfx::Point(0, 0),
+                                         PaintFlags());
+    content_layer_client_.add_draw_image(sync_image, gfx::Point(1, 2),
+                                         PaintFlags());
+    content_layer_client_.add_draw_image(unspecified_image, gfx::Point(3, 4),
+                                         PaintFlags());
+
+    layer_tree_host()->SetRootLayer(
+        FakePictureLayer::Create(&content_layer_client_));
+    layer_tree_host()->root_layer()->SetBounds(layer_size);
+    LayerTreeTest::SetupTree();
+  }
+
+  void WillPrepareToDrawOnThread(LayerTreeHostImpl* host_impl) override {
+    auto& tracker = host_impl->tile_manager()->checker_image_tracker();
+    EXPECT_EQ(tracker.get_decoding_mode_hint_for_testing(1),
+              PaintImage::DecodingMode::kAsync);
+    EXPECT_EQ(tracker.get_decoding_mode_hint_for_testing(2),
+              PaintImage::DecodingMode::kSync);
+    EXPECT_EQ(tracker.get_decoding_mode_hint_for_testing(3),
+              PaintImage::DecodingMode::kUnspecified);
+    EndTest();
+  }
+
+  void AfterTest() override {}
+
+ private:
+  FakeContentLayerClient content_layer_client_;
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestImageDecodingHints);
 }  // namespace
 }  // namespace cc

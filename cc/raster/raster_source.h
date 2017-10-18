@@ -115,6 +115,9 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   SkColor background_color() const { return background_color_; }
 
+  base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+  TakeDecodingModeMap();
+
  protected:
   // RecordingSource is the only class that can create a raster source.
   friend class RecordingSource;

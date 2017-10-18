@@ -91,6 +91,10 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, gfx::Rect> TakeImageIdToRectMap() {
     return std::move(image_id_to_rect_);
   }
+  base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+  TakeDecodingModeMap() {
+    return std::move(decoding_mode_map_);
+  }
   std::vector<DiscardableImageMap::AnimatedImageMetadata>
   TakeAnimatedImagesMetadata() {
     return std::move(animated_images_metadata_);
@@ -291,6 +295,15 @@ class DiscardableImageGenerator {
     }
 
     image_id_to_rect_[paint_image.stable_id()].Union(image_rect);
+    auto decoding_mode_it = decoding_mode_map_.find(paint_image.stable_id());
+    // Use the decoding mode if we don't have one yet, otherwise use the more
+    // conservative one of the two existing ones.
+    if (decoding_mode_it == decoding_mode_map_.end()) {
+      decoding_mode_map_[paint_image.stable_id()] = paint_image.decoding_mode();
+    } else {
+      decoding_mode_it->second = PaintImage::GetConservative(
+          decoding_mode_it->second, paint_image.decoding_mode());
+    }
 
     if (paint_image.ShouldAnimate()) {
       animated_images_metadata_.emplace_back(
@@ -308,6 +321,7 @@ class DiscardableImageGenerator {
   base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
   std::vector<DiscardableImageMap::AnimatedImageMetadata>
       animated_images_metadata_;
+  base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
 
   // Statistics about the number of images and pixels that will require color
   // conversion if the target color space is not sRGB.
@@ -334,6 +348,7 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
   generator.RecordColorHistograms();
   image_id_to_rect_ = generator.TakeImageIdToRectMap();
   animated_images_metadata_ = generator.TakeAnimatedImagesMetadata();
+  decoding_mode_map_ = generator.TakeDecodingModeMap();
   all_images_are_srgb_ = generator.all_images_are_srgb();
   auto images = generator.TakeImages();
   images_rtree_.Build(
@@ -342,6 +357,11 @@ void DiscardableImageMap::Generate(const PaintOpBuffer* paint_op_buffer,
          size_t index) { return items[index].second; },
       [](const std::vector<std::pair<DrawImage, gfx::Rect>>& items,
          size_t index) { return items[index].first; });
+}
+
+base::flat_map<PaintImage::Id, PaintImage::DecodingMode>
+DiscardableImageMap::TakeDecodingModeMap() {
+  return std::move(decoding_mode_map_);
 }
 
 void DiscardableImageMap::GetDiscardableImagesInRect(

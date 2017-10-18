@@ -693,6 +693,10 @@ void PictureLayerImpl::UpdateRasterSource(
     tilings_->UpdateTilingsToCurrentRasterSourceForCommit(
         raster_source_, invalidation_, MinimumContentsScale(),
         MaximumContentsScale());
+    // We're in a commit, make sure to update the state of the checker image
+    // tracker with the new async attribute data.
+    layer_tree_impl()->UpdateImageDecodingHints(
+        raster_source_->TakeDecodingModeMap());
   }
 }
 

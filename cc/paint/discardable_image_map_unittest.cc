@@ -791,6 +791,127 @@ TEST_F(DiscardableImageMapTest, CapturesImagesInPaintRecordShaders) {
   EXPECT_EQ(SkSize::Make(4.f, 4.f), draw_images[0].scale);
 }
 
+TEST_F(DiscardableImageMapTest, DecodingModeHintsBasic) {
+  gfx::Rect visible_rect(100, 100);
+  PaintImage unspecified_image =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(1)
+          .set_decoding_mode(PaintImage::DecodingMode::kUnspecified)
+          .TakePaintImage();
+  PaintImage async_image =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(2)
+          .set_decoding_mode(PaintImage::DecodingMode::kAsync)
+          .TakePaintImage();
+  PaintImage sync_image =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(3)
+          .set_decoding_mode(PaintImage::DecodingMode::kSync)
+          .TakePaintImage();
+
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+  content_layer_client.add_draw_image(unspecified_image, gfx::Point(0, 0),
+                                      PaintFlags());
+  content_layer_client.add_draw_image(async_image, gfx::Point(10, 10),
+                                      PaintFlags());
+  content_layer_client.add_draw_image(sync_image, gfx::Point(20, 20),
+                                      PaintFlags());
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  auto decode_hints = display_list->TakeDecodingModeMap();
+  ASSERT_EQ(decode_hints.size(), 3u);
+  ASSERT_TRUE(decode_hints.find(1) != decode_hints.end());
+  ASSERT_TRUE(decode_hints.find(2) != decode_hints.end());
+  ASSERT_TRUE(decode_hints.find(3) != decode_hints.end());
+  EXPECT_EQ(decode_hints[1], PaintImage::DecodingMode::kUnspecified);
+  EXPECT_EQ(decode_hints[2], PaintImage::DecodingMode::kAsync);
+  EXPECT_EQ(decode_hints[3], PaintImage::DecodingMode::kSync);
+
+  decode_hints = display_list->TakeDecodingModeMap();
+  EXPECT_EQ(decode_hints.size(), 0u);
+}
+
+TEST_F(DiscardableImageMapTest, DecodingModeHintsDuplicates) {
+  gfx::Rect visible_rect(100, 100);
+  PaintImage unspecified_image1 =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(1)
+          .set_decoding_mode(PaintImage::DecodingMode::kUnspecified)
+          .TakePaintImage();
+  PaintImage async_image1 =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(1)
+          .set_decoding_mode(PaintImage::DecodingMode::kAsync)
+          .TakePaintImage();
+
+  PaintImage unspecified_image2 =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(2)
+          .set_decoding_mode(PaintImage::DecodingMode::kUnspecified)
+          .TakePaintImage();
+  PaintImage sync_image2 =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(2)
+          .set_decoding_mode(PaintImage::DecodingMode::kSync)
+          .TakePaintImage();
+
+  PaintImage async_image3 =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(3)
+          .set_decoding_mode(PaintImage::DecodingMode::kAsync)
+          .TakePaintImage();
+  PaintImage sync_image3 =
+      PaintImageBuilder::WithCopy(
+          CreateDiscardablePaintImage(gfx::Size(10, 10)))
+          .set_id(3)
+          .set_decoding_mode(PaintImage::DecodingMode::kSync)
+          .TakePaintImage();
+
+  FakeContentLayerClient content_layer_client;
+  content_layer_client.set_bounds(visible_rect.size());
+  content_layer_client.add_draw_image(unspecified_image1, gfx::Point(0, 0),
+                                      PaintFlags());
+  content_layer_client.add_draw_image(async_image1, gfx::Point(10, 10),
+                                      PaintFlags());
+  content_layer_client.add_draw_image(unspecified_image2, gfx::Point(20, 20),
+                                      PaintFlags());
+  content_layer_client.add_draw_image(sync_image2, gfx::Point(30, 30),
+                                      PaintFlags());
+  content_layer_client.add_draw_image(async_image3, gfx::Point(40, 40),
+                                      PaintFlags());
+  content_layer_client.add_draw_image(sync_image3, gfx::Point(50, 50),
+                                      PaintFlags());
+  scoped_refptr<DisplayItemList> display_list =
+      content_layer_client.PaintContentsToDisplayList(
+          ContentLayerClient::PAINTING_BEHAVIOR_NORMAL);
+  display_list->GenerateDiscardableImagesMetadata();
+  auto decode_hints = display_list->TakeDecodingModeMap();
+  ASSERT_EQ(decode_hints.size(), 3u);
+  ASSERT_TRUE(decode_hints.find(1) != decode_hints.end());
+  ASSERT_TRUE(decode_hints.find(2) != decode_hints.end());
+  ASSERT_TRUE(decode_hints.find(3) != decode_hints.end());
+  // 1 was unspecified and async, so the result should be unspecified.
+  EXPECT_EQ(decode_hints[1], PaintImage::DecodingMode::kUnspecified);
+  // 2 was unspecified and sync, so the result should be sync.
+  EXPECT_EQ(decode_hints[2], PaintImage::DecodingMode::kSync);
+  // 3 was async and sync, so the result should be sync
+  EXPECT_EQ(decode_hints[3], PaintImage::DecodingMode::kSync);
+
+  decode_hints = display_list->TakeDecodingModeMap();
+  EXPECT_EQ(decode_hints.size(), 0u);
+}
+
 class DiscardableImageMapColorSpaceTest
     : public DiscardableImageMapTest,
       public testing::WithParamInterface<gfx::ColorSpace> {};

@@ -91,6 +91,9 @@ class CC_PAINT_EXPORT PaintImage {
     kAsync
   };
 
+  // Returns the more conservative mode out of the two given ones.
+  static DecodingMode GetConservative(DecodingMode one, DecodingMode two);
+
   static Id GetNextId();
   static ContentId GetNextContentId();
 

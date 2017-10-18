@@ -42,10 +42,26 @@ bool PaintImage::operator==(const PaintImage& other) const {
          is_multipart_ == other.is_multipart_;
 }
 
+// static
+PaintImage::DecodingMode PaintImage::GetConservative(DecodingMode one,
+                                                     DecodingMode two) {
+  if (one == two)
+    return one;
+  if (one == DecodingMode::kSync || two == DecodingMode::kSync)
+    return DecodingMode::kSync;
+  if (one == DecodingMode::kUnspecified || two == DecodingMode::kUnspecified)
+    return DecodingMode::kUnspecified;
+  DCHECK_EQ(one, DecodingMode::kAsync);
+  DCHECK_EQ(two, DecodingMode::kAsync);
+  return DecodingMode::kAsync;
+}
+
+// static
 PaintImage::Id PaintImage::GetNextId() {
   return s_next_id_.GetNext();
 }
 
+// static
 PaintImage::ContentId PaintImage::GetNextContentId() {
   return s_next_content_id_.GetNext();
 }
