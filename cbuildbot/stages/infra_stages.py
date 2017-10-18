@@ -126,6 +126,7 @@ def _StageChrootFilesIntoDir(target_path, paths):
     install_parent = os.path.dirname(install_path)
     osutils.SafeMakedirs(install_parent, 0o775)
     shutil.copyfile(chroot_path, install_path)
+    shutil.copymode(chroot_path, install_path)
 
 
 def _GetPackageDir(archive_path):
