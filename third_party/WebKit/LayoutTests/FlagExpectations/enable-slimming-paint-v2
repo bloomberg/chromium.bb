@@ -903,6 +903,7 @@ Bug(none) paint/invalidation/overflow-changed-on-child-of-composited-layer.html 
 Bug(none) paint/invalidation/overflow-hidden-yet-scrolled-with-custom-scrollbar.html [ Failure ]
 Bug(none) paint/invalidation/overflow-hidden-yet-scrolled.html [ Failure ]
 Bug(none) paint/invalidation/paint-invalidation-with-reparent-across-frame-boundaries.html [ Failure ]
+Bug(none) paint/invalidation/scrollbar-ancestor-clip-change.html [ Failure ]
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children-2.html [ Failure ]
 Bug(none) paint/invalidation/svg/resize-svg-invalidate-children.html [ Failure ]
 

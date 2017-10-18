@@ -189,6 +189,7 @@ TEST_P(BoxPaintInvalidatorTest, ComputePaintInvalidationReasonBasic) {
   target.setAttribute(HTMLNames::styleAttr, "background: blue");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
+  box.SetMayNeedPaintInvalidation();
   LayoutRect visual_rect = box.VisualRect();
   EXPECT_EQ(LayoutRect(0, 0, 50, 100), visual_rect);
 
