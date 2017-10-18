@@ -186,21 +186,23 @@ class HeadlessWindowOpenTabSocketTest : public HeadlessBrowserTest,
   // runtime::Observer implementation.
   void OnExecutionContextCreated(
       const runtime::ExecutionContextCreatedParams& params) override {
-    const base::DictionaryValue* dictionary;
     std::string frame_id;
-    if (params.GetContext()->HasAuxData() &&
-        params.GetContext()->GetAuxData()->GetAsDictionary(&dictionary) &&
-        dictionary->GetString("frameId", &frame_id) &&
-        frame_id == *child_frame_id_) {
-      child_frame_execution_context_id_ = params.GetContext()->GetId();
+    if (!params.GetContext()->HasAuxData())
+      return;
 
-      HeadlessTabSocket* tab_socket = child_->GetHeadlessTabSocket();
-      CHECK(tab_socket);
-      tab_socket->InstallHeadlessTabSocketBindings(
-          *child_frame_execution_context_id_,
-          base::Bind(&HeadlessWindowOpenTabSocketTest::OnTabSocketInstalled,
-                     base::Unretained(this)));
-    }
+    const base::Value* frame_id_value =
+        params.GetContext()->GetAuxData()->FindKey("frameId");
+    if (!frame_id_value || frame_id_value->GetString() != *child_frame_id_)
+      return;
+
+    child_frame_execution_context_id_ = params.GetContext()->GetId();
+
+    HeadlessTabSocket* tab_socket = child_->GetHeadlessTabSocket();
+    CHECK(tab_socket);
+    tab_socket->InstallHeadlessTabSocketBindings(
+        *child_frame_execution_context_id_,
+        base::Bind(&HeadlessWindowOpenTabSocketTest::OnTabSocketInstalled,
+                   base::Unretained(this)));
   }
 
   void OnTabSocketInstalled(bool success) {
@@ -328,12 +330,9 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Focus) {
           .Build();
   EXPECT_TRUE(WaitForLoad(web_contents));
 
-  bool result;
-  EXPECT_TRUE(EvaluateScript(web_contents, "document.hasFocus()")
-                  ->GetResult()
-                  ->GetValue()
-                  ->GetAsBoolean(&result));
-  EXPECT_TRUE(result);
+  std::unique_ptr<runtime::EvaluateResult> has_focus =
+      EvaluateScript(web_contents, "document.hasFocus()");
+  EXPECT_TRUE(has_focus->GetResult()->GetValue()->GetBool());
 
   HeadlessWebContents* web_contents2 =
       browser_context->CreateWebContentsBuilder()
@@ -342,16 +341,11 @@ IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, Focus) {
   EXPECT_TRUE(WaitForLoad(web_contents2));
 
   // Focus of different WebContents is independent.
-  EXPECT_TRUE(EvaluateScript(web_contents, "document.hasFocus()")
-                  ->GetResult()
-                  ->GetValue()
-                  ->GetAsBoolean(&result));
-  EXPECT_TRUE(result);
-  EXPECT_TRUE(EvaluateScript(web_contents2, "document.hasFocus()")
-                  ->GetResult()
-                  ->GetValue()
-                  ->GetAsBoolean(&result));
-  EXPECT_TRUE(result);
+  has_focus = EvaluateScript(web_contents, "document.hasFocus()");
+  EXPECT_TRUE(has_focus->GetResult()->GetValue()->GetBool());
+
+  has_focus = EvaluateScript(web_contents2, "document.hasFocus()");
+  EXPECT_TRUE(has_focus->GetResult()->GetValue()->GetBool());
 }
 
 IN_PROC_BROWSER_TEST_F(HeadlessWebContentsTest, HandleSSLError) {

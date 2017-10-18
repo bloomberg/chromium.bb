@@ -39,6 +39,9 @@ class HEADLESS_EXPORT ErrorReporter {
 
   // Returns a list of reported errors.
   const std::vector<std::string>& errors() const { return errors_; }
+
+  // Returns a string containing all the errors concatenated together.
+  std::string ToString() const;
 #else  // DCHECK_IS_ON()
   inline void Push() {}
   inline void Pop() {}
@@ -46,6 +49,7 @@ class HEADLESS_EXPORT ErrorReporter {
   inline void AddError(base::StringPiece description) {}
   inline bool HasErrors() const { return false; }
   std::vector<std::string> errors() const { return std::vector<std::string>(); }
+  std::string ToString() const { return ""; }
 #endif  // DCHECK_IS_ON()
 
  private:

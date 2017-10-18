@@ -31,8 +31,7 @@ namespace {{domain.domain | camelcase_to_hacker_style}} {
 std::unique_ptr<{{type.id}}> {{type.id}}::Parse(const base::Value& value, ErrorReporter* errors) {
   errors->Push();
   errors->SetName("{{type.id}}");
-  const base::DictionaryValue* object;
-  if (!value.GetAsDictionary(&object)) {
+  if (!value.is_dict()) {
     errors->AddError("object expected");
     errors->Pop();
     return nullptr;
@@ -43,8 +42,8 @@ std::unique_ptr<{{type.id}}> {{type.id}}::Parse(const base::Value& value, ErrorR
   errors->SetName("{{type.id}}");
   {% for property in type.properties %}
     {% set value_name = property.name | camelcase_to_hacker_style + "_value" %}
-  const base::Value* {{value_name}};
-  if (object->Get("{{property.name}}", &{{value_name}})) {
+  const base::Value* {{value_name}} = value.FindKey("{{property.name}}");
+  if ({{value_name}}) {
     errors->SetName("{{property.name}}");
     {% if property.optional %}
     result->{{property.name | camelcase_to_hacker_style}}_ = internal::FromValue<{{resolve_type(property).raw_type}}>::Parse(*{{value_name}}, errors);

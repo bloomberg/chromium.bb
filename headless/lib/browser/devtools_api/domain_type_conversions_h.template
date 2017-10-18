@@ -20,14 +20,13 @@ template <>
 struct FromValue<{{namespace}}::{{type.id}}> {
   static {{namespace}}::{{type.id}} Parse(const base::Value& value, ErrorReporter* errors) {
     {% set default = namespace + '::' + type.id + '::' + type.enum[0] | sanitize_literal | dash_to_camelcase | camelcase_to_hacker_style | upper %}
-    std::string string_value;
-    if (!value.GetAsString(&string_value)) {
+    if (!value.is_string()) {
       errors->AddError("string enum value expected");
       {# Return an arbitrary enum member -- the caller will just ignore it. #}
       return {{default}};
     }
     {% for literal in type.enum %}
-    if (string_value == "{{literal}}")
+    if (value.GetString() == "{{literal}}")
       return {{namespace}}::{{type.id}}::{{literal | sanitize_literal | dash_to_camelcase | camelcase_to_hacker_style | upper }};
     {% endfor %}
     errors->AddError("invalid enum value");
