@@ -72,7 +72,7 @@ static INLINE int read_nz_map(aom_reader *r, tran_low_t *tcoeffs, int plane,
   for (c = 0; c < seg_eob; ++c) {
     int is_nz;
     int coeff_ctx = get_nz_map_ctx(tcoeffs, c, scan, bwl, height, tx_type);
-    int eob_ctx = get_eob_ctx(tcoeffs, scan[c], txs_ctx, tx_type);
+    int eob_ctx = get_eob_ctx(scan[c], txs_ctx, tx_type);
 
     if (c < seg_eob - 1) {
 #if LV_MAP_PROB

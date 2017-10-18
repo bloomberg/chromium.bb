@@ -434,13 +434,11 @@ static INLINE int get_nz_map_ctx(const tran_low_t *tcoeffs, const int scan_idx,
   return get_nz_map_ctx_from_count(count, coeff_idx, bwl, tx_type);
 }
 
-static INLINE int get_eob_ctx(const tran_low_t *tcoeffs,
-                              const int coeff_idx,  // raster order
-                              const TX_SIZE txs_ctx, TX_TYPE tx_type) {
-  (void)tcoeffs;
+static INLINE int get_eob_ctx(const int coeff_idx,  // raster order
+                              const TX_SIZE txs_ctx, const TX_TYPE tx_type) {
   int offset = 0;
 #if CONFIG_CTX1D
-  TX_CLASS tx_class = get_tx_class(tx_type);
+  const TX_CLASS tx_class = get_tx_class(tx_type);
   if (tx_class == TX_CLASS_VERT)
     offset = EOB_COEF_CONTEXTS_2D;
   else if (tx_class == TX_CLASS_HORIZ)
