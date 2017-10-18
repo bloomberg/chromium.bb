@@ -10,7 +10,7 @@ html {
 }
 body {
   font-family: sans-serif;
-  min-height: 200vh;
+  min-height: 120vh;
 }
 button {
   margin-top: 4px;
@@ -40,6 +40,7 @@ p, h2, h3, h4 {
   padding: 16px;
   box-shadow: 0 0 20px;
   overflow: auto;
+  z-index: 1;
 }
 #summary > p {
   margin: 0.2em 0 0 0;
@@ -160,6 +161,27 @@ p, h2, h3, h4 {
   margin-bottom: 0;
 }
 
+.flag {
+  display: inline-block;
+  vertical-align:middle;
+  width: 1.2em;
+  height: 1.2em;
+  border: 1px solid #DDD;
+  cursor: default;
+  user-select: none;
+  margin-right: 8px;
+}
+.flag.flagged::after {
+  content: "⚑";
+  user-select: none;
+  font-size: x-large;
+  position: relative;
+  top: -0.1em;
+  left: 0.1em;
+  line-height: 100%;
+  color: gray;
+}
+
 </style>
 <body>
 <h3>Test run summary <span id="builder_name"></span></h3>
@@ -170,7 +192,7 @@ p, h2, h3, h4 {
 </div>
 
 <div id="help" class="hidden hide-on-esc">
-  <button style="position:fixed;right:30px;" onclick="GUI.toggleVisibility('help')">Close</button>
+  <button style="position:fixed;right:40px;" onclick="GUI.toggleVisibility('help')">Close</button>
   <h3>Keyboard navigation</h3>
 
   <ul>
@@ -178,11 +200,13 @@ p, h2, h3, h4 {
   <li><b>Tab</b> to select the next test.
   <li><b>Enter</b> to see test details. This will automatically close other details.
   <li><b>ctrl A</b> to select text of all tests for easy copying.
+  <li><b>f</b> to flag.
   </ul>
   <p>Modifiers:</p>
   <ul>
   <li><b>Shift</b> hold shift key to keep other details open.
   <li><b>Alt|Option</b> hold alt key to open details on all results (limit: 100)
+  <li><b>Meta</b> hold meta key down (alt on unix, control on Mac) to toggle all flags.
   </ul>
   <p>This page lets you query and display test results.</p>
 
@@ -236,11 +260,16 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
 </pre>
   <p>Text mistmatch groups "Text failure" tests together.
   </p>
+  <h4>5. Rebaseline</h4>
+  <p>Generates a bash script to rebaseline based on new results. @xiaochengh knows
+  the details on how to use it.</p>
   <h3>Viewing results of a single test</h3>
   <p>Click on images to zoom in. Select image viewing mode from the popup.</p>
   <p>When viewing images for the first time, red flash highlights enclosing
   rectangle that was colored red in the diff. Diff flash and color eyedropper
   will not be available on file:// urls because of CSP.</p>
+  <h3>Flagging</h3>
+  <p>Tests can be flagged by clicking on that square box on the right hand side. View all flagged tests with "Flagged" filter. "F" is the keyboard shortcut.
   <h3>Bugs</h3>
   <p>If you are unhappy with results, please file a bug, or fix it <a href="https://cs.chromium.org/chromium/src/third_party/WebKit/LayoutTests/fast/harness/test-expectations.html">here</a>.</p>
 </div>
@@ -274,6 +303,9 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
       Flaky
       <span id="count_flaky"></span>
     </button>
+    <button onclick="javascript:Query.query('Flagged', Filters.flagged, true)">
+      Flagged
+    </button>
   </div>
   <div id="filters">
     <span class="fix-width">Filters</span>
@@ -298,33 +330,19 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
       <option value="expectation">TestExpectations</option>
       <option value="crashsite">Crash site</option>
       <option value="textmismatch">Text mismatch</option>
+      <option value="rebaseline">Rebaseline</option>
     </select>
 </div>
 
-<div id="rebaseline_panel" style="margin-top:8px">
-  <span class="fix-width">Select tests to rebaseline</span>
-  <button onclick="javascript:RebaselineTool.showRebaselineCheckboxes()">Select</button>
-  <button onclick="javascript:RebaselineTool.clearRebaselineCheckboxes()">Clear</button>
-  <button onclick="javascript:RebaselineTool.doneRebaselineSelection()">Done</button>
-</div>
 <hr id="progress" align="left">
-<div id="report" style="margin-top:8px">
-</div>
-
-<div id="rebaseline" class="hidden">
-  <button style="position:fixed;right:30px;" onclick="javascript:GUI.toggleVisibility('rebaseline')">Close</button>
-  <div style="text-align:center">
-    Script below has been copied to clipboard.
-    Paste to terminal to rebaseline the selected tests.
-  </div>
-  <pre id="rebaseline_script"></pre>
-</div>
+<div id="report" style="margin-top:8px"></div>
 
 <script>
 "use strict";
 
 // Results loaded from full_results_jsonp.js.
 let globalResults = {};
+let globalTestMap = new Map();  // id => test
 
 const TestResultInformation = {
   "CRASH":      { index: 1, text: "Crash", isFailure: true, isSuccess: false },
@@ -448,21 +466,26 @@ const Report = {
       case "expectation":
         return {print: Report.printExpectation, render: Report.renderResultList};
       case "crashsite":
-       return {print: Report.printCrashSite, render: Report.renderGroupCrashSite};
+        return {print: Report.printCrashSite, render: Report.renderGroupCrashSite};
       case "textmismatch":
-       return {print: Report.printTextMismatch, render: Report.renderGroupTextMismatch};
+        return {print: Report.printTextMismatch, render: Report.renderGroupTextMismatch};
+      case "rebaseline":
+        return {print: Report.printRebaseline, render: Report.renderResultList};
       case "plain":
       default:
         return {print: Report.printPlainTest, render: Report.renderResultList};
     }
   },
 
+  printFlag: (test) => {
+   return `<div class="flag ${test.flagged ? "flagged" : ""}"></div>`;
+  },
+
   printPlainTest: (test, path, traversal) => {
     let pathParser = new PathParser(path);
     let html = `
     <div class='expect' tabindex='0' data-id='${test.expectId}'>
-      <div class='details'></div>
-      <input type='checkbox' class='rebaseline-checkbox' style='display:none'>
+      <div class='details'></div>${Report.printFlag(test)}
      ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
     </div>`;
     traversal.html.push(html);
@@ -506,8 +529,7 @@ const Report = {
       }
     }
     let html = `
-      <div class='expect' tabindex='0' data-id='${test.expectId}'><div class='details'></div>${bug}
-        <input type='checkbox' class='rebaseline-checkbox' style='display:none'>
+      <div class='expect' tabindex='0' data-id='${test.expectId}'><div class='details'></div>${Report.printFlag(test)}${bug}
         ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
         [ ${status} ]
     </div>
@@ -519,7 +541,7 @@ const Report = {
     let pathParser = new PathParser(path);
     let key = test[key_title];
     let html = ""
-      + "<input type='checkbox' class='rebaseline-checkbox' style='display:none'>"
+      + `${Report.printFlag(test)}`
       + pathParser.dir + "/"
       + "<a target='test' tabindex='-1' href='" + pathParser.testHref + "'>"
       + pathParser.file + "</a>";
@@ -533,6 +555,44 @@ const Report = {
 
   printTextMismatch: (test, path, traversal) => {
     Report.printWithKey(test, path, traversal, "text_mismatch");
+  },
+
+  printRebaseline: (test, path, traversal) => {
+    let parser = new PathParser(path);
+    let actualNames = [];
+    let expectedNames = [];
+    switch (test.actualFinal) {
+      case "IMAGE+TEXT":
+        actualNames.push("-actual.txt");
+        expectedNames.push("-expected.txt");
+        // fall through IMAGE
+      case "IMAGE":
+        actualNames.push("-actual.png");
+        expectedNames.push("-expected.png");
+      break;
+      case "TEXT":
+        actualNames.push("-actual.txt");
+        expectedNames.push("-expected.txt");
+      break;
+      default:
+        return;
+    }
+    // Change directory if in wrong place
+    let dir = parser.dir;
+    if (dir != traversal.rebaselineDir) {
+      if (traversal.rebaselineDir) {
+        let depth = (traversal.rebaselineDir.match(/\//g) || []).length;
+        traversal.html.push(`<div>cd ${'..' + '/..'.repeat(depth)};</div>`);
+      }
+      traversal.html.push(`<div>mkdir -p ${dir};</div>`);
+      traversal.html.push(`<div>cd ${dir};</div>`);
+      traversal.rebaselineDir = dir;
+    }
+    for (let i=0; i<actualNames.length; i++) {
+      let url = new URL(parser.resultLink(actualNames[i]), window.location.href);
+      traversal.html.push(`<div>wget ${url.href};</div>`);
+      traversal.html.push(`<div>mv ${parser.basename + actualNames[i]} ${parser.basename + expectedNames[i]};</div>`);
+    }
   },
 
   indicateNone: (report) => {
@@ -615,16 +675,10 @@ const Report = {
   },
 
   getTestById: (testId) => {
-    let test;
-    (new Traversal(globalResults.tests)).traverse(function(thisTest) {
-      if (thisTest.expectId == testId)
-        test = thisTest;
-        return false;
-    });
-    return test;
+    return globalTestMap.get(parseInt(testId));
   },
 
-   // Returns links to test results [ {text:, link:}, ... ]
+   // Returns toolbar DOM
   getResultToolbars: (test) => {
     let toolbars = [];
     let pathParser = new PathParser(test.expectPath);
@@ -863,7 +917,8 @@ const Filters = {
   },
   wontfix: test => test.expected == "WONTFIX",
   all: _ => true,
-  flaky: test => test.actualMap.size > 1
+  flaky: test => test.actualMap.size > 1,
+  flagged: test => test.flagged
 }; // Filters
 
 // Event handling, initialization.
@@ -915,6 +970,7 @@ const GUI = {
       test => true,
       (test, path) => {
         test.expectId = nextId++;
+        globalTestMap.set(test.expectId, test);
         test.expectPath = path;
         test.actualMap = new Map();
         for (let result of test.actual.split(" ")) {
@@ -979,29 +1035,42 @@ const GUI = {
   },
 
   initEvents: function() {
-    document.addEventListener("click", function(ev) {
-      if (GUI.isExpectation(ev.target)) {
-        GUI.toggleResults(ev.target, ev);
+    document.querySelector("#report").addEventListener("mousedown",
+      (ev) => { if (GUI.isFlag(ev.target)) ev.preventDefault() }
+    );
+    document.querySelector("#report").addEventListener("click", function(ev) {
+      let expectation = GUI.getExpectation(ev.target);
+      if (ev.target.nodeName == "A" || ev.target.nodeName == "INPUT")
+        ; // anchor clicks should perform default action
+      else if (GUI.isFlag(ev.target)) {
+        GUI.toggleFlag(ev.target, ev);
+      } else if (expectation) {
+        GUI.toggleResults(expectation, ev);
         ev.preventDefault();
         ev.stopPropagation();
       }
     });
     document.addEventListener("keydown", ev => {
       {
+        if (ev.target.nodeName == "INPUT")
+          return;
         switch(ev.key) {
-          case "Escape": // Close/hide divs.
-            for (let el of Array.from(document.querySelectorAll(".close-on-esc")))
-              el.remove();
-            for (let el of Array.from(document.querySelectorAll(".hide-on-esc")))
-              el.classList.add("hidden");
-            if (document.activeElement && document.activeElement.classList.contains("expect"))
-              GUI.hideResults(document.activeElement);
+          case "Escape": {
+              // Close/hide divs.
+              for (let el of Array.from(document.querySelectorAll(".close-on-esc")))
+                el.remove();
+              for (let el of Array.from(document.querySelectorAll(".hide-on-esc")))
+                el.classList.add("hidden");
+              if (document.activeElement && document.activeElement.classList.contains("expect"))
+                GUI.hideResults(document.activeElement);
+              document.getSelection().removeAllRanges();
+            }
             break;
           case " ": // Scroll to next expectation.
             let nextExpectation;
             let openDetails = document.querySelector(".details.open");
             if (openDetails) {
-              let openExpectation = GUI.closest(openDetails, "expect");
+              let openExpectation = GUI.getExpectation(openDetails, "expect");
               nextExpectation = ev.shiftKey ?
                 GUI.previousExpectation(openExpectation) :
                 GUI.nextExpectation(openExpectation);
@@ -1019,8 +1088,9 @@ const GUI = {
             ev.preventDefault();
             break;
           case "Enter":
-            if (GUI.isExpectation(ev.target))
-              GUI.toggleResults(ev.target, ev);
+            let expectation = GUI.getExpectation(ev.target);
+            if (expectation)
+              GUI.toggleResults(expectation, ev);
             break;
           case "a":
           case "A":
@@ -1029,10 +1099,17 @@ const GUI = {
               ev.preventDefault();
             }
             break;
+          case "f":
+          case "F": {
+              let expectation = GUI.getExpectation(ev.target);
+              if (expectation)
+                GUI.toggleFlag(expectation.querySelector(".flag"), ev);
+            }
+            break;
         }
       }
     });
-    for (let checkbox of Array.from(document.querySelectorAll("#filters input"))) {
+    for (let checkbox of Array.from(document.querySelectorAll("#filters input[type=checkbox]"))) {
       checkbox.addEventListener("change", ev => Query.filterChanged(ev));
     }
   },
@@ -1044,10 +1121,6 @@ const GUI = {
     let selection = document.getSelection();
     selection.removeAllRanges();
     selection.addRange(range);
-  },
-
-  isExpectation: function(el) {
-    return el.classList.contains("expect");
   },
 
   printSummary: function (fullResults) {
@@ -1089,8 +1162,41 @@ const GUI = {
     document.querySelector("#count_all").innerText = fullResults.num_passes + fullResults.num_regressions;
   },
 
+  getExpectation: function(el) {
+    return GUI.closest(el, "expect");
+  },
+
+  isFlag: function(el) {
+    return el.classList.contains("flag");
+  },
+
   toggleVisibility: function(id) {
     document.querySelector("#" + id).classList.toggle("hidden");
+  },
+
+  toggleFlag: function(el, ev) {
+    let expectation = GUI.getExpectation(el);
+    let test = Report.getTestById(expectation.getAttribute("data-id"));
+    if (!test)
+      throw "could not find test by id";
+    el.classList.toggle("flagged");
+    if (el.classList.contains("flagged"))
+      test.flagged = true;
+    else
+      test.flagged = false;
+    if (ev.metaKey) { // apply to all
+      for (let expectation of Array.from(document.querySelectorAll(".expect"))) {
+        let newTest = Report.getTestById(expectation.getAttribute("data-id"));
+        let toggleEl = expectation.querySelector(".flag");
+        if (test.flagged) {
+          toggleEl.classList.add("flagged");
+          newTest.flagged = true;
+        } else {
+          toggleEl.classList.remove("flagged");
+          newTest.flagged = false;
+        }
+      }
+    }
   },
 
   toggleResults: function(expectation, event) {
@@ -1133,7 +1239,7 @@ const GUI = {
   },
 
   closest: function (el, className) {
-    while (el) {
+    while (el && el.classList) {
       if (el.classList.contains(className))
         return el;
       else
@@ -1180,95 +1286,6 @@ const GUI = {
     expectation.nextSibling.remove();
   }
 }; // GUI
-
-const RebaselineTool = {
-  getCheckboxes: function() {
-    return document.querySelectorAll(".rebaseline-checkbox");
-  },
-
-  selectAll: function() {
-    let scriptPre = document.querySelector('#rebaseline_script');
-    getSelection().selectAllChildren(scriptPre);
-    document.execCommand('copy');
-  },
-
-  showRebaselineCheckboxes: function() {
-    RebaselineTool.getCheckboxes().forEach(checkbox => {
-      checkbox.style.display = "";
-    });
-  },
-
-  clearRebaselineCheckboxes: function() {
-    RebaselineTool.getCheckboxes().forEach(checkbox => {
-      checkbox.checked = false;
-    });
-  },
-
-  hideRebaselineCheckboxes: function() {
-    RebaselineTool.getCheckboxes().forEach(checkbox => {
-      checkbox.style.display = "none";
-    });
-  },
-
-  getRebaselineList: function() {
-    let rebaselinedTests = [];
-    RebaselineTool.getCheckboxes().forEach(checkbox => {
-      if (!checkbox.checked)
-        return;
-      let testId = parseInt(checkbox.parentElement.getAttribute("data-id"));
-      let test = Report.getTestById(testId);
-      if (!test) {
-        console.error("could not find test by id");
-        return;
-      }
-      for (let toolbar of Report.getResultToolbars(test)) {
-        for (let anchor of toolbar.querySelectorAll(".actual")) {
-          rebaselinedTests.push(anchor.href);
-        }
-      }
-    });
-    return rebaselinedTests;
-  },
-
-  resetDir: function(lines, dir) {
-    let depth = dir ? dir.split('/').length : 0;
-    if (depth > 0)
-      lines.push(`cd ${'..' + '/..'.repeat(depth - 1)}`);
-  },
-
-  ensureDir: function(lines, dir) {
-    lines.push(`mkdir -p ${dir}`);
-    lines.push(`cd ${dir}`);
-  },
-
-  generateRebaselineScript: function(list) {
-    let lines = [];
-    let dir = '';
-    list.forEach(file => {
-      let parser = new PathParser(file.startsWith('/') ? file : '/' + file);
-      if (parser.dir !== dir) {
-        RebaselineTool.resetDir(lines, dir);
-        RebaselineTool.ensureDir(lines, parser.dir);
-        dir = parser.dir;
-      }
-      let anchor = document.createElement('a');
-      anchor.href = file;
-      lines.push(`wget ${anchor.href}`);
-      lines.push(`mv ${parser.file} ${parser.file.replace('-actual.', '-expected.')}`);
-    });
-    RebaselineTool.resetDir(lines, dir);
-    return lines.join(';\n') + '\n\n';
-  },
-
-  doneRebaselineSelection: function() {
-    RebaselineTool.hideRebaselineCheckboxes();
-    document.querySelector('#rebaseline_script').innerHTML =
-        RebaselineTool.generateRebaselineScript(
-            RebaselineTool.getRebaselineList());
-    GUI.toggleVisibility('rebaseline');
-    RebaselineTool.selectAll();
-  }
-}; // RebaselineTool
 
 </script>
 
