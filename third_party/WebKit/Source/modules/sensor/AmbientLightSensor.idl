@@ -9,6 +9,7 @@
     RuntimeEnabled=SensorExtraClasses,
     Constructor(optional SensorOptions sensorOptions),
     ConstructorCallWith=ExecutionContext,
+    SecureContext,
     RaisesException=Constructor,
     MeasureAs=AmbientLightSensorConstructor
 ] interface AmbientLightSensor : Sensor {
