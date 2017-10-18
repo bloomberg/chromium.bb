@@ -114,7 +114,6 @@ TEST(VideoFrameMac, CheckWrapperFrame) {
       {PIXEL_FORMAT_NV12, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange},
   };
 
-  const gfx::Size size(kWidth, kHeight);
   for (const auto& format_pair : format_pairs) {
     base::ScopedCFTypeRef<CVPixelBufferRef> pb;
     CVPixelBufferCreate(nullptr, kWidth, kHeight, format_pair.corevideo,
