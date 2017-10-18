@@ -2389,8 +2389,7 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
         layer_tree_frame_sink_->worker_context_provider(),
         viz::ResourceFormatToClosestSkColorType(
             settings_.preferred_tile_format),
-        settings_.decoded_image_working_set_budget_bytes,
-        settings_.decoded_image_cache_budget_bytes);
+        settings_.decoded_image_working_set_budget_bytes);
   } else {
     image_decode_cache_ = std::make_unique<SoftwareImageDecodeCache>(
         viz::ResourceFormatToClosestSkColorType(
