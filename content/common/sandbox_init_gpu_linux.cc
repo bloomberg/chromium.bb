@@ -362,10 +362,6 @@ bool CrosAmdGpuPreSandboxHook(GpuProcessPolicy* policy) {
     LOG(ERROR) << "dlopen(libglapi.so) failed with error: " << dlerror();
     return false;
   }
-  if (NULL == dlopen("/usr/lib64/dri/swrast_dri.so", dlopen_flag)) {
-    LOG(ERROR) << "dlopen(swrast_dri.so) failed with error: " << dlerror();
-    return false;
-  }
   if (NULL == dlopen("/usr/lib64/dri/radeonsi_dri.so", dlopen_flag)) {
     LOG(ERROR) << "dlopen(radeonsi_dri.so) failed with error: " << dlerror();
     return false;
