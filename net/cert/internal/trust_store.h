@@ -56,6 +56,8 @@ class NET_EXPORT TrustStore : public CertIssuerSource {
  public:
   TrustStore();
 
+  // Writes the trustedness of |cert| into |*trust|. Both |cert| and |trust|
+  // must be non-null.
   virtual void GetTrust(const scoped_refptr<ParsedCertificate>& cert,
                         CertificateTrust* trust) const = 0;
 

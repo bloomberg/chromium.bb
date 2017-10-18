@@ -70,6 +70,8 @@ class NET_EXPORT TestRootCerts {
   // certificates stored in |temporary_roots_|. If IsEmpty() is true, this
   // does not modify |trust_ref|.
   OSStatus FixupSecTrustRef(SecTrustRef trust_ref) const;
+
+  TrustStore* test_trust_store() { return &test_trust_store_; }
 #elif defined(OS_WIN)
   HCERTSTORE temporary_roots() const { return temporary_roots_; }
 
@@ -123,6 +125,7 @@ class NET_EXPORT TestRootCerts {
   HCERTSTORE temporary_roots_;
 #elif defined(OS_MACOSX)
   base::ScopedCFTypeRef<CFMutableArrayRef> temporary_roots_;
+  TrustStoreInMemory test_trust_store_;
 #elif defined(OS_FUCHSIA)
   TrustStoreInMemory test_trust_store_;
 #endif
