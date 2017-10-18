@@ -98,6 +98,7 @@
 #include "public/platform/WebThread.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "public/web/WebAutofillClient.h"
+#include "public/web/WebConsoleMessage.h"
 #include "public/web/WebDateTimeChooserCompletion.h"
 #include "public/web/WebDeviceEmulationParams.h"
 #include "public/web/WebDocument.h"
@@ -4929,6 +4930,69 @@ TEST_P(WebViewTest, SetZoomLevelWhilePluginFocused) {
   // Even though the plugin is focused, the entire frame's zoom factor should
   // still be updated.
   EXPECT_FLOAT_EQ(5.0f / 6.0f, main_frame->PageZoomFactor());
+  web_view_helper_.Reset();  // Remove dependency on locally scoped client.
+}
+
+// Tests that a layout update that detaches a plugin doesn't crash if the
+// plugin tries to execute script while being destroyed.
+TEST_P(WebViewTest, DetachPluginInLayout) {
+  class ScriptInDestroyPlugin : public FakeWebPlugin {
+   public:
+    ScriptInDestroyPlugin(WebLocalFrame* frame, const WebPluginParams& params)
+        : FakeWebPlugin(params), frame_(frame) {}
+
+    // WebPlugin overrides:
+    void Destroy() override {
+      frame_->ExecuteScript(WebScriptSource("console.log('done')"));
+      // Deletes this.
+      FakeWebPlugin::Destroy();
+    }
+
+   private:
+    WebLocalFrame* frame_;  // Unowned
+  };
+
+  class PluginCreatingWebFrameClient
+      : public FrameTestHelpers::TestWebFrameClient {
+   public:
+    // WebFrameClient overrides:
+    WebPlugin* CreatePlugin(const WebPluginParams& params) override {
+      return new ScriptInDestroyPlugin(Frame(), params);
+    }
+
+    void DidAddMessageToConsole(const WebConsoleMessage& message,
+                                const WebString& source_name,
+                                unsigned source_line,
+                                const WebString& stack_trace) {
+      message_ = message.text;
+    }
+
+    const String& Message() const { return message_; }
+
+   private:
+    String message_;
+  };
+
+  PluginCreatingWebFrameClient frame_client;
+  WebViewImpl* web_view = web_view_helper_.Initialize(&frame_client);
+  WebURL base_url = URLTestHelpers::ToKURL("https://example.com/");
+  FrameTestHelpers::LoadHTMLString(
+      web_view->MainFrameImpl(),
+      "<!DOCTYPE html><html><body>"
+      "<object type='application/x-webkit-test-plugin'></object>"
+      "</body></html>",
+      base_url);
+  // Verify the plugin is loaded.
+  LocalFrame* main_frame = web_view->MainFrameImpl()->GetFrame();
+  HTMLObjectElement* plugin_element =
+      ToHTMLObjectElement(main_frame->GetDocument()->body()->firstChild());
+  EXPECT_TRUE(plugin_element->OwnedPlugin());
+
+  plugin_element->style()->setCSSText("display: none", ASSERT_NO_EXCEPTION);
+  EXPECT_TRUE(plugin_element->OwnedPlugin());
+  web_view->UpdateAllLifecyclePhases();
+  EXPECT_FALSE(plugin_element->OwnedPlugin());
+  EXPECT_EQ("done", frame_client.Message());
   web_view_helper_.Reset();  // Remove dependency on locally scoped client.
 }
 

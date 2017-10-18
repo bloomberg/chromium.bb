@@ -2100,12 +2100,8 @@ static void AssertLayoutTreeUpdated(Node& root) {
 void Document::UpdateStyleAndLayoutTree() {
   DCHECK(IsMainThread());
 
+  HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   ScriptForbiddenScope forbid_script;
-  // We should forbid script execution for plugins here because update while
-  // layout is changing, HTMLPlugin element can be reattached and plugin can be
-  // destroyed. Plugin can execute scripts on destroy. It produces crash without
-  // PluginScriptForbiddenScope: crbug.com/550427.
-  PluginScriptForbiddenScope plugin_forbid_script;
 
   if (!View() || !IsActive())
     return;
@@ -2204,7 +2200,6 @@ void Document::UpdateStyle() {
 
   unsigned initial_element_count = GetStyleEngine().StyleForElementCount();
 
-  HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   lifecycle_.AdvanceTo(DocumentLifecycle::kInStyleRecalc);
 
   StyleRecalcChange change = kNoChange;
@@ -2357,6 +2352,7 @@ void Document::UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node* node) {
 void Document::UpdateStyleAndLayout() {
   DCHECK(IsMainThread());
 
+  HTMLFrameOwnerElement::PluginDisposeSuspendScope suspend_plugin_dispose;
   ScriptForbiddenScope forbid_script;
 
   LocalFrameView* frame_view = View();
