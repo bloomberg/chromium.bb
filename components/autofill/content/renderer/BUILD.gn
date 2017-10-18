@@ -17,6 +17,8 @@ static_library("renderer") {
     "page_click_listener.h",
     "page_click_tracker.cc",
     "page_click_tracker.h",
+    "page_form_analyser_logger.cc",
+    "page_form_analyser_logger.h",
     "page_passwords_analyser.cc",
     "page_passwords_analyser.h",
     "password_autofill_agent.cc",

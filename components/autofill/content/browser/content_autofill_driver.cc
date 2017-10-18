@@ -7,14 +7,12 @@
 #include <utility>
 #include <vector>
 
-#include "base/command_line.h"
 #include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_client.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
 #include "components/autofill/core/browser/autofill_handler_proxy.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/form_structure.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
@@ -113,10 +111,6 @@ void ContentAutofillDriver::PropagateAutofillPredictions(
 
 void ContentAutofillDriver::SendAutofillTypePredictionsToRenderer(
     const std::vector<FormStructure*>& forms) {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kShowAutofillTypePredictions))
-    return;
-
   if (!RendererIsAvailable())
     return;
 
