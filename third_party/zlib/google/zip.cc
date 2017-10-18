@@ -12,80 +12,14 @@
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/logging.h"
-#include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "third_party/zlib/google/zip_internal.h"
 #include "third_party/zlib/google/zip_reader.h"
-
-#if defined(USE_SYSTEM_MINIZIP)
-#include <minizip/unzip.h>
-#include <minizip/zip.h>
-#else
-#include "third_party/zlib/contrib/minizip/unzip.h"
-#include "third_party/zlib/contrib/minizip/zip.h"
-#endif
+#include "third_party/zlib/google/zip_writer.h"
 
 namespace zip {
 namespace {
-
-bool AddFileToZip(zipFile zip_file,
-                  const base::FilePath& src_dir,
-                  FileAccessor* file_accessor) {
-  base::File file = file_accessor->OpenFileForReading(src_dir);
-  if (!file.IsValid()) {
-    DLOG(ERROR) << "Could not open file for path " << src_dir.value();
-    return false;
-  }
-
-  int num_bytes;
-  char buf[zip::internal::kZipBufSize];
-  do {
-    num_bytes = file.ReadAtCurrentPos(buf, zip::internal::kZipBufSize);
-    if (num_bytes > 0) {
-      if (ZIP_OK != zipWriteInFileInZip(zip_file, buf, num_bytes)) {
-        DLOG(ERROR) << "Could not write data to zip for path "
-                    << src_dir.value();
-        return false;
-      }
-    }
-  } while (num_bytes > 0);
-
-  return true;
-}
-
-bool AddEntryToZip(zipFile zip_file,
-                   const base::FilePath& path,
-                   const base::FilePath& root_path,
-                   FileAccessor* file_accessor) {
-  base::FilePath relative_path;
-  bool result = root_path.AppendRelativePath(path, &relative_path);
-  DCHECK(result);
-  std::string str_path = relative_path.AsUTF8Unsafe();
-#if defined(OS_WIN)
-  base::ReplaceSubstringsAfterOffset(&str_path, 0u, "\\", "/");
-#endif
-
-  bool is_directory = file_accessor->DirectoryExists(path);
-  if (is_directory)
-    str_path += "/";
-
-  if (!zip::internal::ZipOpenNewFileInZip(
-          zip_file, str_path, file_accessor->GetLastModifiedTime(path)))
-    return false;
-
-  bool success = true;
-  if (!is_directory) {
-    success = AddFileToZip(zip_file, path, file_accessor);
-  }
-
-  if (ZIP_OK != zipCloseFileInZip(zip_file)) {
-    DLOG(ERROR) << "Could not close zip file entry " << str_path;
-    return false;
-  }
-
-  return success;
-}
 
 bool IsHiddenFile(const base::FilePath& file_path) {
   return file_path.BaseName().value()[0] == '.';
@@ -101,10 +35,20 @@ bool ExcludeHiddenFilesFilter(const base::FilePath& file_path) {
 
 class DirectFileAccessor : public FileAccessor {
  public:
+  explicit DirectFileAccessor(base::FilePath src_dir) : src_dir_(src_dir) {}
   ~DirectFileAccessor() override = default;
 
-  base::File OpenFileForReading(const base::FilePath& file) override {
-    return base::File(file, base::File::FLAG_OPEN | base::File::FLAG_READ);
+  std::vector<base::File> OpenFilesForReading(
+      const std::vector<base::FilePath>& paths) override {
+    std::vector<base::File> files;
+    for (const auto& path : paths) {
+      base::File file;
+      if (base::PathExists(path) && !base::DirectoryExists(path)) {
+        file = base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+      }
+      files.push_back(std::move(file));
+    }
+    return files;
   }
 
   bool DirectoryExists(const base::FilePath& file) override {
@@ -132,6 +76,11 @@ class DirectFileAccessor : public FileAccessor {
     }
     return file_info.last_modified;
   }
+
+ private:
+  base::FilePath src_dir_;
+
+  DISALLOW_COPY_AND_ASSIGN(DirectFileAccessor);
 };
 
 }  // namespace
@@ -140,42 +89,17 @@ ZipParams::ZipParams(const base::FilePath& src_dir,
                      const base::FilePath& dest_file)
     : src_dir_(src_dir),
       dest_file_(dest_file),
-      file_accessor_(new DirectFileAccessor()) {}
+      file_accessor_(new DirectFileAccessor(src_dir)) {}
 
 #if defined(OS_POSIX)
 // Does not take ownership of |fd|.
 ZipParams::ZipParams(const base::FilePath& src_dir, int dest_fd)
     : src_dir_(src_dir),
       dest_fd_(dest_fd),
-      file_accessor_(new DirectFileAccessor()) {}
+      file_accessor_(new DirectFileAccessor(src_dir)) {}
 #endif
 
 bool Zip(const ZipParams& params) {
-  DCHECK(params.file_accessor()->DirectoryExists(params.src_dir()));
-
-  zipFile zip_file = nullptr;
-#if defined(OS_POSIX)
-  int dest_fd = params.dest_fd();
-  if (dest_fd != base::kInvalidPlatformFile) {
-    DCHECK(params.dest_file().empty());
-    zip_file = internal::OpenFdForZipping(dest_fd, APPEND_STATUS_CREATE);
-    if (!zip_file) {
-      DLOG(ERROR) << "Couldn't create ZIP file for FD " << dest_fd;
-      return false;
-    }
-  }
-#endif
-  if (!zip_file) {
-    const base::FilePath& dest_file = params.dest_file();
-    DCHECK(!dest_file.empty());
-    zip_file = internal::OpenForZipping(dest_file.AsUTF8Unsafe(),
-                                        APPEND_STATUS_CREATE);
-    if (!zip_file) {
-      DLOG(WARNING) << "Couldn't create ZIP file at path " << dest_file;
-      return false;
-    }
-  }
-
   // Using a pointer to avoid copies of a potentially large array.
   const std::vector<base::FilePath>* files_to_add = &params.files_to_zip();
   std::vector<base::FilePath> all_files;
@@ -214,23 +138,23 @@ bool Zip(const ZipParams& params) {
     }
   }
 
-  bool success = true;
-  for (auto iter = files_to_add->begin(); iter != files_to_add->end(); ++iter) {
-    const base::FilePath& path = params.src_dir().Append(*iter);
-    if (!AddEntryToZip(zip_file, path, params.src_dir(),
-                       params.file_accessor())) {
-      // TODO(hshi): clean up the partial zip file when error occurs.
-      success = false;
-      break;
-    }
+  std::unique_ptr<internal::ZipWriter> zip_writer;
+#if defined(OS_POSIX)
+  if (params.dest_fd() != base::kInvalidPlatformFile) {
+    DCHECK(params.dest_file().empty());
+    zip_writer = internal::ZipWriter::CreateWithFd(
+        params.dest_fd(), params.src_dir(), params.file_accessor());
+    if (!zip_writer)
+      return false;
   }
-
-  if (ZIP_OK != zipClose(zip_file, NULL)) {
-    DLOG(ERROR) << "Error closing zip file " << params.dest_file().value();
-    return false;
+#endif
+  if (!zip_writer) {
+    zip_writer = internal::ZipWriter::Create(
+        params.dest_file(), params.src_dir(), params.file_accessor());
+    if (!zip_writer)
+      return false;
   }
-
-  return success;
+  return zip_writer->WriteEntries(*files_to_add);
 }
 
 bool Unzip(const base::FilePath& src_file, const base::FilePath& dest_dir) {
