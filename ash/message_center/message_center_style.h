@@ -14,9 +14,13 @@ namespace ash {
 namespace message_center_style {
 
 constexpr SkColor kBackgroundColor = SkColorSetRGB(0xFF, 0xFF, 0xFF);
+constexpr SkColor kEmptyViewColor = SkColorSetARGB(0x8A, 0x0, 0x0, 0x0);
 
-constexpr int kVectorIconSize = 20;
-constexpr gfx::Insets kVectorIconPadding(14);
+constexpr int kActionIconSize = 20;
+constexpr int kEmptyIconSize = 24;
+constexpr int kEmptyLabelSize = 12;
+constexpr gfx::Insets kActionIconPadding(14);
+constexpr gfx::Insets kEmptyIconPadding(0, 0, 4, 0);
 
 constexpr int kMarginBetweenItems = 8;
 

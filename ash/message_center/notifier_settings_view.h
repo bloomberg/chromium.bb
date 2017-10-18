@@ -52,6 +52,7 @@ class ASH_EXPORT NotifierSettingsView
 
  private:
   FRIEND_TEST_ALL_PREFIXES(NotifierSettingsViewTest, TestLearnMoreButton);
+  FRIEND_TEST_ALL_PREFIXES(NotifierSettingsViewTest, TestEmptyNotifierView);
 
   class ASH_EXPORT NotifierButton : public views::Button,
                                     public views::ButtonListener {
@@ -109,7 +110,9 @@ class ASH_EXPORT NotifierSettingsView
   views::ImageButton* title_arrow_;
   views::ToggleButton* quiet_mode_toggle_;
   views::View* header_view_;
+  views::Label* top_label_;
   views::ScrollView* scroller_;
+  views::View* no_notifiers_view_;
   message_center::NotifierSettingsProvider* provider_;
   std::set<NotifierButton*> buttons_;
 

@@ -1188,6 +1188,9 @@ Subsequent notifications, windows and dialogs may be split between desktops.
       <message name="IDS_ASH_MESSAGE_CENTER_NO_MESSAGES" desc="The message displayed in the message center when there are no notifications.">
         All done
       </message>
+      <message name="IDS_ASH_MESSAGE_CENTER_NO_NOTIFIERS" desc="The message displayed in the message center when there are no notification sources.">
+        Nothing to see just yet
+      </message>
     </messages>
   </release>
 </grit>

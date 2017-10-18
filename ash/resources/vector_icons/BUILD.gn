@@ -80,6 +80,7 @@ aggregate_vector_icons("ash_vector_icons") {
     "notification_center_clear_all.icon",
     "notification_center_do_not_disturb_off.icon",
     "notification_center_do_not_disturb_on.icon",
+    "notification_center_empty.icon",
     "notification_center_settings.icon",
     "notification_charging_usb_c.icon",
     "notification_chromevox.icon",

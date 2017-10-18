@@ -85,7 +85,7 @@ void SetDefaultButtonStyle(views::Button* button) {
   button->SetFocusPainter(views::Painter::CreateSolidFocusPainter(
       message_center::kFocusBorderColor, gfx::Insets(1, 2, 2, 2)));
   button->SetBorder(
-      views::CreateEmptyBorder(message_center_style::kVectorIconPadding));
+      views::CreateEmptyBorder(message_center_style::kActionIconPadding));
 
   // TODO(tetsui): Add ripple effect to the buttons.
 }
@@ -145,12 +145,12 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   close_all_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationCenterClearAllIcon,
-                            message_center_style::kVectorIconSize,
+                            message_center_style::kActionIconSize,
                             kActiveButtonColor));
   close_all_button_->SetImage(
       views::Button::STATE_DISABLED,
       gfx::CreateVectorIcon(kNotificationCenterClearAllIcon,
-                            message_center_style::kVectorIconSize,
+                            message_center_style::kActionIconSize,
                             kInactiveButtonColor));
   close_all_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_CLEAR_ALL_BUTTON_TOOLTIP));
@@ -162,11 +162,11 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   quiet_mode_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationCenterDoNotDisturbOffIcon,
-                            message_center_style::kVectorIconSize,
+                            message_center_style::kActionIconSize,
                             kInactiveButtonColor));
   gfx::ImageSkia quiet_mode_toggle_icon = gfx::CreateVectorIcon(
       kNotificationCenterDoNotDisturbOnIcon,
-      message_center_style::kVectorIconSize, kActiveButtonColor);
+      message_center_style::kActionIconSize, kActiveButtonColor);
   quiet_mode_button_->SetToggledImage(views::Button::STATE_NORMAL,
                                       &quiet_mode_toggle_icon);
   quiet_mode_button_->SetTooltipText(l10n_util::GetStringUTF16(
@@ -180,7 +180,7 @@ MessageCenterButtonBar::MessageCenterButtonBar(
   settings_button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationCenterSettingsIcon,
-                            message_center_style::kVectorIconSize,
+                            message_center_style::kActionIconSize,
                             kActiveButtonColor));
   settings_button_->SetTooltipText(l10n_util::GetStringUTF16(
       IDS_ASH_MESSAGE_CENTER_SETTINGS_BUTTON_TOOLTIP));

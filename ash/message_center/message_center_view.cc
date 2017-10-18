@@ -65,10 +65,6 @@ constexpr int kDefaultFrameRateHz = 60;
 constexpr int kMinScrollViewHeight = 77;
 constexpr int kEmptyViewHeight = 96;
 constexpr gfx::Insets kEmptyViewPadding(0, 0, 24, 0);
-constexpr SkColor kEmptyViewColor = SkColorSetARGB(0x8A, 0x0, 0x0, 0x0);
-constexpr gfx::Insets kAllDoneIconPadding(0, 0, 4, 0);
-constexpr int kAllDoneIconSize = 24;
-constexpr int kEmptyLabelSize = 12;
 
 void SetViewHierarchyEnabled(views::View* view, bool enabled) {
   for (int i = 0; i < view->child_count(); i++)
@@ -88,17 +84,19 @@ class EmptyNotificationView : public views::View {
     SetLayoutManager(layout);
 
     views::ImageView* icon = new views::ImageView();
-    icon->SetImage(gfx::CreateVectorIcon(kNotificationCenterAllDoneIcon,
-                                         kAllDoneIconSize, kEmptyViewColor));
-    icon->SetBorder(views::CreateEmptyBorder(kAllDoneIconPadding));
+    icon->SetImage(gfx::CreateVectorIcon(
+        kNotificationCenterAllDoneIcon, message_center_style::kEmptyIconSize,
+        message_center_style::kEmptyViewColor));
+    icon->SetBorder(
+        views::CreateEmptyBorder(message_center_style::kEmptyIconPadding));
     AddChildView(icon);
 
     views::Label* label = new views::Label(
         l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_NO_MESSAGES));
-    label->SetEnabledColor(kEmptyViewColor);
+    label->SetEnabledColor(message_center_style::kEmptyViewColor);
     // "Roboto-Medium, 12sp" is specified in the mock.
     label->SetFontList(message_center_style::GetFontListForSizeAndWeight(
-        kEmptyLabelSize, gfx::Font::Weight::MEDIUM));
+        message_center_style::kEmptyLabelSize, gfx::Font::Weight::MEDIUM));
     label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
     AddChildView(label);
   }
