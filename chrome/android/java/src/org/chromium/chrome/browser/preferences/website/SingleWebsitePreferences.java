@@ -252,15 +252,21 @@ public class SingleWebsitePreferences extends PreferenceFragment
                     merged.addUsbInfo(usbInfo);
                 }
             }
+            if (merged.getJavaScriptException() == null && other.getJavaScriptException() != null
+                    && host.equals(other.getAddress().getHost())) {
+                merged.setJavaScriptException(other.getJavaScriptException());
+            }
+            if (merged.getSoundException() == null && other.getSoundException() != null
+                    && host.equals(other.getAddress().getHost())) {
+                merged.setSoundException(other.getSoundException());
+            }
 
             // TODO(crbug.com/763982): Deal with this TODO colony.
             // TODO(mvanouwerkerk): Make the various info types share a common interface that
             // supports reading the origin or host.
             // TODO(mvanouwerkerk): Merge in PopupExceptionInfo? It uses a pattern, and is never
             // set on Android.
-            // TODO(mvanouwerkerk): Merge in JavaScriptExceptionInfo? It uses a pattern.
             // TODO(lshang): Merge in CookieException? It will use patterns.
-            // TODO(steimel): Merge in SoundExceptionInfo? It uses a pattern.
         }
         return merged;
     }
