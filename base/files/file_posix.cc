@@ -410,6 +410,7 @@ File::Error File::OSErrorToFileError(int saved_errno) {
       return FILE_ERROR_IO;
     case ENOENT:
       return FILE_ERROR_NOT_FOUND;
+    case ENFILE:  // fallthrough
     case EMFILE:
       return FILE_ERROR_TOO_MANY_OPENED;
     case ENOMEM:
