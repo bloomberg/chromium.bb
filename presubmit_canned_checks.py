@@ -84,6 +84,11 @@ def CheckAuthorizedAuthor(input_api, output_api):
   """For non-googler/chromites committers, verify the author's email address is
   in AUTHORS.
   """
+  if input_api.is_committing:
+    error_type = output_api.PresubmitError
+  else:
+    error_type = output_api.PresubmitPromptWarning
+
   author = input_api.change.author_email
   if not author:
     input_api.logging.info('No author, skipping AUTHOR check')
@@ -97,7 +102,7 @@ def CheckAuthorizedAuthor(input_api, output_api):
   if not any(input_api.fnmatch.fnmatch(author.lower(), valid)
              for valid in valid_authors):
     input_api.logging.info('Valid authors are %s', ', '.join(valid_authors))
-    return [output_api.PresubmitPromptWarning(
+    return [error_type(
         ('%s is not in AUTHORS file. If you are a new contributor, please visit'
         '\n'
         'https://www.chromium.org/developers/contributing-code and read the '
