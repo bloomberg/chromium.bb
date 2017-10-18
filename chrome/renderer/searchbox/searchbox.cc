@@ -224,13 +224,12 @@ SearchBox::SearchBox(content::RenderFrame* render_frame)
       most_visited_items_cache_(kMaxInstantMostVisitedItemCacheSize),
       binding_(this),
       weak_ptr_factory_(this) {
-  // Connect to the embedded search interface in the browser.
-  chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
-  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
-  chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo embedded_search_client;
-  binding_.Bind(mojo::MakeRequest(&embedded_search_client));
-  connector->Connect(mojo::MakeRequest(&embedded_search_service_),
-                     std::move(embedded_search_client));
+  // Note: This class may execute JS in |render_frame| in response to IPCs (via
+  // the SearchBoxExtension::Dispatch* methods). However, for cross-process
+  // navigations, a "provisional frame" is created at first, and it's illegal
+  // to execute any JS in it before it's actually swapped in, i.e.m before the
+  // navigation has committed. So we only hook up the Mojo interfaces in
+  // RenderFrameObserver::DidCommitProvisionalLoad. See crbug.com/765101.
 }
 
 SearchBox::~SearchBox() = default;
@@ -410,9 +409,18 @@ GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
   return GetMostVisitedItemWithID(item_id, &item) ? item.url : GURL();
 }
 
-void SearchBox::Bind(
-    chrome::mojom::EmbeddedSearchClientAssociatedRequest request) {
-  binding_.Bind(std::move(request));
+void SearchBox::DidCommitProvisionalLoad(bool is_new_navigation,
+                                         bool is_same_document_navigation) {
+  if (binding_.is_bound())
+    return;
+
+  // Connect to the embedded search interface in the browser.
+  chrome::mojom::EmbeddedSearchConnectorAssociatedPtr connector;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&connector);
+  chrome::mojom::EmbeddedSearchClientAssociatedPtrInfo embedded_search_client;
+  binding_.Bind(mojo::MakeRequest(&embedded_search_client));
+  connector->Connect(mojo::MakeRequest(&embedded_search_service_),
+                     std::move(embedded_search_client));
 }
 
 void SearchBox::OnDestruct() {
