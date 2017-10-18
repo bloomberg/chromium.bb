@@ -62,9 +62,8 @@ int GetSimilarLanguageGroupCode(const std::string& language) {
 // TODO(toyoshim): Remove these static tables and caller functions to
 // translate/common, and implement them as std::set<>.
 const char* kWellKnownCodesOnWrongConfiguration[] = {
-    "es", "pt", "ja", "ru", "de", "zh-CN", "zh-TW", "ar",
-    "id", "fr", "it", "th", "hi", "ms",    "vi",    "fa",
-    "ro", "da", "el", "nl", "hu", "tr",    "sv",    "pl"};
+  "es", "pt", "ja", "ru", "de", "zh-CN", "zh-TW", "ar", "id", "fr", "it", "th"
+};
 
 // Applies a series of language code modification in proper order.
 void ApplyLanguageCodeCorrection(std::string* code) {
