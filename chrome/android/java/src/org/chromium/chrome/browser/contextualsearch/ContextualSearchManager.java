@@ -1664,7 +1664,7 @@ public class ContextualSearchManager
                     // and the selection-pins show: The original tap processing may still be in
                     // progress or may have completed and the Bar is being shown.
                     hideContextualSearch(StateChangeReason.UNKNOWN);
-                    // TODO(donnd): add user action
+                    RecordUserAction.record("ContextualSearch.SmartSelectionSuppressed");
                 } else {
                     showContextualSearch(StateChangeReason.TEXT_SELECT_LONG_PRESS);
                 }

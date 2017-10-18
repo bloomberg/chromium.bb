@@ -3699,6 +3699,15 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContextualSearch.SmartSelectionSuppressed">
+  <owner>donnd@chromium.org</owner>
+  <description>
+    The user did a long-press that would normally trigger Contextual Search but
+    the UX was suppressed to allow Smart Selection to handle the gesture
+    instead.
+  </description>
+</action>
+
 <action name="ContextualSearch.SwipeOrFlingClose">
   <owner>donnd@chromium.org</owner>
   <description>
