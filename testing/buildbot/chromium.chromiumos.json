@@ -95,12 +95,13 @@
         "args": [
           "--mash",
           "--override-use-software-gl-for-tests",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/single.mash.browser_tests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter"
         ],
-        "name": "single-mash_browser_test",
+        "name": "mash_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
-          "hard_timeout": 1800
+          "hard_timeout": 1800,
+          "shards": 5
         },
         "test": "browser_tests"
       },
