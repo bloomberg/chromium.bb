@@ -150,20 +150,29 @@
 
 <if expr="chromeos">
         <!-- Google Assistant -->
-        <template is="dom-if" if="[[showAssistantSection_(
-            voiceInteractionFeatureEnabled_, prefs.arc.enabled.value,
-            prefs.arc.voice_interaction_value_prop.accepted.value)]]">
+        <template is="dom-if" if="[[voiceInteractionFeatureEnabled_]]">
           <div id="assistant-subpage-trigger" class="settings-box two-line"
             on-tap="onGoogleAssistantTap_" actionable>
-          <div class="start">
-            $i18n{searchGoogleAssistant}
-            <div class="secondary">
-              [[getAssistantEnabledDisabledLabel_(
-                  prefs.settings.voice_interaction.enabled.value)]]
+            <div class="start">
+              $i18n{searchGoogleAssistant}
+              <div class="secondary">
+                [[getAssistantEnabledDisabledLabel_(
+                    prefs.settings.voice_interaction.enabled.value)]]
+              </div>
             </div>
-          </div>
-          <button class="subpage-arrow" is="paper-icon-button-light"
-              aria-label="$i18n{searchGoogleAssistant}"></button>
+            <template is="dom-if" if="[[assistantOn_]]">
+              <button class="subpage-arrow" is="paper-icon-button-light"
+                  aria-label="$i18n{searchGoogleAssistant}"></button>
+            </template>
+            <template is="dom-if" if="[[!assistantOn_]]">
+              <div class="separator"></div>
+              <paper-button id="enable" class="secondary-button"
+                  on-tap="onAssistantTurnOnTap_"
+                  aria-label="$i18n{searchPageTitle}"
+                  aria-describedby="secondaryText">
+                $i18n{assistantTurnOn}
+              </paper-button>
+            </template>
           </div>
         </template>
 </if>

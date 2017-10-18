@@ -2202,6 +2202,9 @@
   <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_DISABLED" desc="Sub label for the Google Assistant button when Assistant is disabled.">
     Disabled
   </message>
+  <message name="IDS_SETTINGS_SEARCH_GOOGLE_ASSISTANT_TURN_ON" desc="Label for the Google Assistant button when ARC is disabled or value prop is not accepted.">
+    Enable
+  </message>
 </if>
 
   <!-- Search Engines Page -->

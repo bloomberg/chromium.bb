@@ -85,6 +85,8 @@ cr.define('settings', function() {
 
     /** @param {boolean} enabled */
     setHotwordSearchEnabled(enabled) {}
+
+    turnOnGoogleAssistant() {}
   }
 
   /**
@@ -139,6 +141,11 @@ cr.define('settings', function() {
     /** @override */
     setHotwordSearchEnabled(enabled) {
       chrome.send('setHotwordSearchEnabled', [enabled]);
+    }
+
+    /** @override */
+    turnOnGoogleAssistant() {
+      chrome.send('turnOnGoogleAssistant');
     }
   }
 

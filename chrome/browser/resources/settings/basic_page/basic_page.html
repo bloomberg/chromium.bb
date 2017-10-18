@@ -162,7 +162,16 @@
         <template is="dom-if" if="[[showPage_(pageVisibility.search)]]" restamp>
           <settings-section page-title="$i18n{searchPageTitle}"
               section="search">
+<if expr="chromeos">
+            <settings-search-page prefs="{{prefs}}"
+                 arc-enabled="[[prefs.arc.enabled.value]]"
+                 voice-interaction-value-prop-accepted="[[
+                     prefs.arc.voice_interaction_value_prop.accepted.value]]">
+            </settings-search-page>
+</if>
+<if expr="not chromeos">
             <settings-search-page prefs="{{prefs}}"></settings-search-page>
+</if>
           </settings-section>
         </template>
 <if expr="chromeos">
