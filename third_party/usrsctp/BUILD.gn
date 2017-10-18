@@ -13,8 +13,15 @@ config("usrsctp_config") {
 
 config("usrsctp_warnings") {
   if (is_clang) {
-    # atomic_init in user_atomic.h is a static function in a header.
-    cflags = [ "-Wno-unused-function" ]
+    cflags = [
+      # atomic_init in user_atomic.h is a static function in a header.
+      "-Wno-unused-function",
+
+      # Use of deprecated OSAtomic* functions in user_atomic.h. This is
+      # what they did in configure.ac. We can remove this once
+      # https://github.com/sctplab/usrsctp/issues/177 is fixed.
+      "-Wno-deprecated-declarations",
+    ]
   }
 }
 
