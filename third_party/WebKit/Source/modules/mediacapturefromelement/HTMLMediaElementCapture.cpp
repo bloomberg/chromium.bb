@@ -144,6 +144,7 @@ DEFINE_TRACE(MediaElementEventListener) {
 
 // static
 MediaStream* HTMLMediaElementCapture::captureStream(
+    ScriptState* script_state,
     HTMLMediaElement& element,
     ExceptionState& exception_state) {
   // Avoid capturing from EME-protected Media Elements.
@@ -155,9 +156,9 @@ MediaStream* HTMLMediaElementCapture::captureStream(
     return nullptr;
   }
 
+  ExecutionContext* context = ExecutionContext::From(script_state);
   if (!element.currentSrc().IsEmpty() &&
-      !element.IsMediaDataCORSSameOrigin(
-          element.GetExecutionContext()->GetSecurityOrigin())) {
+      !element.IsMediaDataCORSSameOrigin(context->GetSecurityOrigin())) {
     exception_state.ThrowSecurityError(
         "Cannot capture from element with cross-origin data");
     return nullptr;
@@ -168,8 +169,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
                         WebVector<WebMediaStreamTrack>());
 
   // Create() duplicates the MediaStreamTracks inside |webStream|.
-  MediaStream* stream =
-      MediaStream::Create(element.GetExecutionContext(), web_stream);
+  MediaStream* stream = MediaStream::Create(context, web_stream);
 
   MediaElementEventListener* listener =
       new MediaElementEventListener(&element, stream);
@@ -184,7 +184,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
             : MediaStreamRegistry::Registry().LookupMediaStreamDescriptor(
                   element.currentSrc().GetString());
     DCHECK(descriptor);
-    return MediaStream::Create(element.GetExecutionContext(), descriptor);
+    return MediaStream::Create(context, descriptor);
   }
 
   if (element.HasVideo()) {
@@ -195,7 +195,7 @@ MediaStream* HTMLMediaElementCapture::captureStream(
     Platform::Current()->CreateHTMLAudioElementCapturer(
         &web_stream, element.GetWebMediaPlayer());
   }
-  listener->UpdateSources(element.GetExecutionContext());
+  listener->UpdateSources(context);
 
   // If element.currentSrc().isNull() then |stream| will have no tracks, those
   // will be added eventually afterwards via MediaElementEventListener.

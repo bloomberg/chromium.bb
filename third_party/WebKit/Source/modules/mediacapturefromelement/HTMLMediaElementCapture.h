@@ -12,12 +12,15 @@ namespace blink {
 class ExceptionState;
 class HTMLMediaElement;
 class MediaStream;
+class ScriptState;
 
 class HTMLMediaElementCapture {
   STATIC_ONLY(HTMLMediaElementCapture);
 
  public:
-  static MediaStream* captureStream(HTMLMediaElement&, ExceptionState&);
+  static MediaStream* captureStream(ScriptState*,
+                                    HTMLMediaElement&,
+                                    ExceptionState&);
 };
 
 }  // namespace blink
