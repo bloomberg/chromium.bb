@@ -230,8 +230,6 @@ blink_core_sources("animation") {
     "animatable/AnimatableUnknown.h",
     "animatable/AnimatableValue.cpp",
     "animatable/AnimatableValue.h",
-    "animatable/AnimatableValueKeyframe.cpp",
-    "animatable/AnimatableValueKeyframe.h",
     "css/CSSAnimatableValueFactory.cpp",
     "css/CSSAnimatableValueFactory.h",
     "css/CSSAnimationData.cpp",

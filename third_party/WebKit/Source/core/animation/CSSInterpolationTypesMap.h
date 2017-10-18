@@ -5,6 +5,7 @@
 #ifndef CSSInterpolationTypesMap_h
 #define CSSInterpolationTypesMap_h
 
+#include "core/CoreExport.h"
 #include "core/animation/CSSInterpolationType.h"
 #include "core/animation/InterpolationTypesMap.h"
 #include "platform/heap/Handle.h"
@@ -14,7 +15,7 @@ namespace blink {
 class CSSSyntaxDescriptor;
 class PropertyRegistry;
 
-class CSSInterpolationTypesMap : public InterpolationTypesMap {
+class CORE_EXPORT CSSInterpolationTypesMap : public InterpolationTypesMap {
  public:
   CSSInterpolationTypesMap(const PropertyRegistry* registry)
       : registry_(registry) {}

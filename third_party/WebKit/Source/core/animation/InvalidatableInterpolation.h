@@ -47,6 +47,10 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
 
   virtual bool IsInvalidatableInterpolation() const { return true; }
 
+  const TypedInterpolationValue* GetCachedValueForTesting() const {
+    return cached_value_.get();
+  }
+
  private:
   InvalidatableInterpolation(const PropertyHandle& property,
                              RefPtr<PropertySpecificKeyframe> start_keyframe,
