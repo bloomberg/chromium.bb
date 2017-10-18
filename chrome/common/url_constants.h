@@ -14,7 +14,6 @@
 
 #include "build/build_config.h"
 #include "chrome/common/features.h"
-#include "components/signin/core/common/signin_features.h"
 #include "content/public/common/url_constants.h"
 #include "media/media_features.h"
 #include "ppapi/features/features.h"
