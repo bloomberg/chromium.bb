@@ -69,7 +69,7 @@ class MockCastMediaSinkServiceImpl : public CastMediaSinkServiceImpl {
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD2(OpenChannels,
-               void(std::vector<MediaSinkInternal> cast_sinks,
+               void(const std::vector<MediaSinkInternal>& cast_sinks,
                     CastMediaSinkServiceImpl::SinkSource sink_source));
 };
 
@@ -164,15 +164,15 @@ TEST_F(CastMediaSinkServiceTest, TestMultipleStartAndStop) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(CastMediaSinkServiceTest, TestForceDiscovery) {
+TEST_F(CastMediaSinkServiceTest, OnUserGesture) {
   EXPECT_CALL(test_dns_sd_registry_, ForceDiscovery()).Times(0);
-  media_sink_service_->ForceDiscovery();
+  media_sink_service_->OnUserGesture();
 
   EXPECT_CALL(test_dns_sd_registry_, AddObserver(media_sink_service_.get()));
   EXPECT_CALL(test_dns_sd_registry_, RegisterDnsSdListener(_));
   EXPECT_CALL(test_dns_sd_registry_, ForceDiscovery());
   media_sink_service_->SetDnsSdRegistryForTest(&test_dns_sd_registry_);
-  media_sink_service_->ForceDiscovery();
+  media_sink_service_->OnUserGesture();
 }
 
 TEST_F(CastMediaSinkServiceTest, TestOnDnsSdEvent) {

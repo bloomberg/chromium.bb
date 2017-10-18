@@ -8,6 +8,7 @@
 #include <memory>
 #include <set>
 
+#include "base/containers/small_map.h"
 #include "base/gtest_prod_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -39,6 +40,10 @@ class CastMediaSinkServiceImpl
   // Default Cast control port to open Cast Socket from DIAL sink.
   static constexpr int kCastControlPort = 8009;
 
+  // The max number of cast channel open failure for a DIAL-discovered sink
+  // before we can say confidently that it is unlikely to be a Cast device.
+  static constexpr int kMaxDialSinkFailureCount = 10;
+
   CastMediaSinkServiceImpl(
       const OnSinksDiscoveredCallback& callback,
       cast_channel::CastSocketService* cast_socket_service,
@@ -61,7 +66,7 @@ class CastMediaSinkServiceImpl
   void RecordDeviceCounts() override;
 
   // Opens cast channels on the IO thread.
-  virtual void OpenChannels(std::vector<MediaSinkInternal> cast_sinks,
+  virtual void OpenChannels(const std::vector<MediaSinkInternal>& cast_sinks,
                             SinkSource sink_source);
 
   void OnDialSinkAdded(const MediaSinkInternal& sink);
@@ -122,6 +127,8 @@ class CastMediaSinkServiceImpl
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest, TestInitParameters);
   FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
                            TestInitRetryParametersWithDefaultValue);
+  FRIEND_TEST_ALL_PREFIXES(CastMediaSinkServiceImplTest,
+                           TestOnDialSinkAddedSkipsIfNonCastDevice);
 
   // CastSocket::Observer implementation.
   void OnError(const cast_channel::CastSocket& socket,
@@ -185,7 +192,18 @@ class CastMediaSinkServiceImpl
   // Invoked when opening cast channel on IO thread fails after all retry
   // attempts.
   // |ip_endpoint|: ip endpoint of cast channel failing to connect to.
+  // |sink_source|: Method of sink discovery.
   void OnChannelOpenFailed(const net::IPEndPoint& ip_endpoint);
+
+  // Returns whether the given DIAL-discovered |sink| is probably a non-Cast
+  // device. This is heuristically determined by two things: |sink| has been
+  // discovered via DIAL exclusively, and we failed to open a cast channel to
+  // |sink| a number of times past a pre-determined threshold.
+  // TODO(crbug.com/774233): This is a temporary and not a definitive way to
+  // tell if a device is a Cast/non-Cast device. We need to collect some metrics
+  // for the device description URL advertised by Cast devices to determine the
+  // long term solution for restricting dual discovery.
+  bool IsProbablyNonCastDevice(const MediaSinkInternal& sink) const;
 
   // Holds Finch field trial parameters controlling Cast channel retry strategy.
   struct RetryParams {
@@ -269,6 +287,12 @@ class CastMediaSinkServiceImpl
   // failure counts for each IP endpoint. Used to dynamically adjust timeout
   // values. If a Cast channel opens successfully, it is removed from the map.
   std::map<net::IPEndPoint, int> failure_count_map_;
+
+  // Used by |IsProbablyNonCastDevice()| to keep track of how many times we
+  // failed to open a cast channel for a sink that is discovered via DIAL
+  // exclusively. The count is reset for a sink when it is discovered via mDNS,
+  // or if we detected a network change.
+  base::small_map<std::map<net::IPAddress, int>> dial_sink_failure_count_;
 
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
 

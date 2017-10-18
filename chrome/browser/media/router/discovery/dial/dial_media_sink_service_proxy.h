@@ -51,14 +51,16 @@ class DialMediaSinkServiceProxy
   // Start() is cleared.
   void Stop() override;
 
+  // MediaSinkService implementation.
   void ForceSinkDiscoveryCallback() override;
+  void OnUserGesture() override;
 
   // Does not take ownership of |observer|. Caller should make sure |observer|
   // object outlives |this|.
   void SetObserver(DialMediaSinkServiceObserver* observer);
 
   // Sets |observer_| to nullptr.
-  void ClearObserver(DialMediaSinkServiceObserver* observer);
+  void ClearObserver();
 
   void SetDialMediaSinkServiceForTest(
       std::unique_ptr<DialMediaSinkServiceImpl> dial_media_sink_service);
