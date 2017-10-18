@@ -504,14 +504,6 @@ void PaintInvalidator::InvalidatePaint(
   UpdateEmptyVisualRectFlag(object, context);
   UpdateVisualRectIfNeeded(object, tree_builder_context, context);
 
-  if (!object.ShouldCheckForPaintInvalidation() &&
-      !(context.subtree_flags &
-        ~PaintInvalidatorContext::kSubtreeVisualRectUpdate)) {
-    // We are done updating anything needed. No other paint invalidation work to
-    // do for this object.
-    return;
-  }
-
   PaintInvalidationReason reason = object.InvalidatePaint(context);
   switch (reason) {
     case PaintInvalidationReason::kDelayedFull:
