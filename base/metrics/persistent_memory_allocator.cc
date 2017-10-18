@@ -1025,12 +1025,7 @@ FilePersistentMemoryAllocator::FilePersistentMemoryAllocator(
           id,
           name,
           read_only),
-      mapped_file_(std::move(file)) {
-  // Ensure the disk-copy of the data reflects the fully-initialized memory as
-  // there is no guarantee as to what order the pages might be auto-flushed by
-  // the OS in the future.
-  Flush(true);
-}
+      mapped_file_(std::move(file)) {}
 
 FilePersistentMemoryAllocator::~FilePersistentMemoryAllocator() {}
 
@@ -1048,7 +1043,8 @@ void FilePersistentMemoryAllocator::FlushPartial(size_t length, bool sync) {
     return;
 
 #if defined(OS_WIN)
-  // Windows doesn't support a synchronous flush.
+  // Windows doesn't support asynchronous flush.
+  ThreadRestrictions::AssertIOAllowed();
   BOOL success = ::FlushViewOfFile(data(), length);
   DPCHECK(success);
 #elif defined(OS_MACOSX)
