@@ -30,7 +30,6 @@
 #ifndef Document_h
 #define Document_h
 
-#include <memory>
 #include <string>
 #include <utility>
 
