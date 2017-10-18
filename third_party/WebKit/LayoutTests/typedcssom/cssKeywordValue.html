@@ -4,10 +4,6 @@
 <script>
 
 test(function() {
-  assert_throws(TypeError(), function() { new CSSKeywordValue("") });
-}, "Constructor should throw an error if given an empty string");
-
-test(function() {
   assert_equals(new CSSKeywordValue('initial').toString(), 'initial');
   assert_equals(new CSSKeywordValue('center').toString(), 'center');
   assert_equals(new CSSKeywordValue('customLemon').toString(), 'customLemon');
@@ -15,14 +11,6 @@ test(function() {
   assert_equals(new CSSKeywordValue('3').toString(), CSS.escape('3'));
 }, 'toString() returns a string with a format similar to CSS.escape. This test also ' +
     'implies that toCSSValue supports all keywords including custom identifiers');
-
-test(function() {
-  assert_equals(new CSSKeywordValue('initial').value, 'initial');
-  assert_equals(new CSSKeywordValue('center').value, 'center');
-  assert_equals(new CSSKeywordValue('customLemon').value, 'customLemon');
-  assert_equals(new CSSKeywordValue(' Hello World').value, ' Hello World');
-  assert_equals(new CSSKeywordValue('3').value, '3');
-}, 'value returns a string equal to the string used in the constructor');
 
 test(function() {
   let keywordValue = new CSSKeywordValue('foo');
