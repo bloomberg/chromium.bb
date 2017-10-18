@@ -158,8 +158,9 @@ class MediaStreamVideoCapturerSourceTest : public testing::Test {
                             MediaStreamRequestResult result,
                             const blink::WebString& result_name) {}
 
-  // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
-  // and Sources below into believing they are on the right threads.
+  // A ChildProcess is needed to fool the Tracks and Sources into believing they
+  // are on the right threads. A ScopedTaskEnvironment must be instantiated
+  // before ChildProcess to prevent it from leaking a TaskScheduler.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ChildProcess> child_process_;
 

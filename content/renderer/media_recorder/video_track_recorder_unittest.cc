@@ -13,9 +13,10 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_track.h"
 #include "content/renderer/media/mock_media_stream_video_source.h"
@@ -61,7 +62,10 @@ class VideoTrackRecorderTest
     : public TestWithParam<
           testing::tuple<VideoTrackRecorder::CodecId, gfx::Size, bool>> {
  public:
-  VideoTrackRecorderTest() : mock_source_(new MockMediaStreamVideoSource()) {
+  VideoTrackRecorderTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+        mock_source_(new MockMediaStreamVideoSource()) {
     const blink::WebString webkit_track_id(
         blink::WebString::FromASCII("dummy"));
     blink_source_.Initialize(webkit_track_id,
@@ -78,7 +82,8 @@ class VideoTrackRecorderTest
     // Paranoia checks.
     EXPECT_EQ(blink_track_.Source().GetExtraData(),
               blink_source_.GetExtraData());
-    EXPECT_TRUE(message_loop_.IsCurrent());
+    EXPECT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
+                    ->BelongsToCurrentThread());
   }
 
   ~VideoTrackRecorderTest() {
@@ -114,7 +119,8 @@ class VideoTrackRecorderTest
 
   void Encode(const scoped_refptr<VideoFrame>& frame,
               base::TimeTicks capture_time) {
-    EXPECT_TRUE(message_loop_.IsCurrent());
+    EXPECT_TRUE(scoped_task_environment_.GetMainThreadTaskRunner()
+                    ->BelongsToCurrentThread());
     video_track_recorder_->OnVideoFrameForTesting(frame, capture_time);
   }
 
@@ -132,9 +138,10 @@ class VideoTrackRecorderTest
     return video_track_recorder_->encoder_->num_frames_in_encode_;
   }
 
-  // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
-  // and Sources below into believing they are on the right threads.
-  const base::MessageLoopForUI message_loop_;
+  // A ChildProcess is needed to fool the Tracks and Sources into believing they
+  // are on the right threads. A ScopedTaskEnvironment must be instantiated
+  // before ChildProcess to prevent it from leaking a TaskScheduler.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   const ChildProcess child_process_;
 
   // All members are non-const due to the series of initialize() calls needed.

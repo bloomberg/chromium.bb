@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
+
 #include "base/bind.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/threading/thread_task_runner_handle.h"
+#include "base/test/scoped_task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/media_stream_video_capturer_source.h"
-#include "content/renderer/media_capture_from_element/canvas_capture_handler.h"
 #include "media/base/limits.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -48,13 +48,15 @@ ACTION_P(RunClosure, closure) {
 class CanvasCaptureHandlerTest
     : public TestWithParam<testing::tuple<bool, int, int>> {
  public:
-  CanvasCaptureHandlerTest() {}
+  CanvasCaptureHandlerTest()
+      : scoped_task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     canvas_capture_handler_ = CanvasCaptureHandler::CreateCanvasCaptureHandler(
         blink::WebSize(kTestCanvasCaptureWidth, kTestCanvasCaptureHeight),
-        kTestCanvasCaptureFramesPerSecond, message_loop_.task_runner(),
-        &track_);
+        kTestCanvasCaptureFramesPerSecond,
+        scoped_task_environment_.GetMainThreadTaskRunner(), &track_);
   }
 
   void TearDown() override {
@@ -127,9 +129,10 @@ class CanvasCaptureHandlerTest
     return ms_source->source_.get();
   }
 
-  // A ChildProcess and a MessageLoopForUI are both needed to fool the Tracks
-  // and Sources into believing they are on the right threads.
-  base::MessageLoopForUI message_loop_;
+  // A ChildProcess is needed to fool the Tracks and Sources believing they are
+  // on the right threads. A ScopedTaskEnvironment must be instantiated before
+  // ChildProcess to prevent it from leaking a TaskScheduler.
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ChildProcess child_process_;
 
  private:
