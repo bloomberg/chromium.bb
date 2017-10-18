@@ -45,10 +45,6 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
   if (candidate_window_view_)
     return;
 
-  // TODO(moshayedi): crbug.com/684658. Setting parent is nullptr in mash is
-  // just for the sake of not crashing. It doesn't provide the same behaviour
-  // as we have in ChromeOS. For example, candidate pop-up disappears when
-  // dragging the window in mash, but it shouldn't.
   gfx::NativeView parent = nullptr;
   if (!ash_util::IsRunningInMash()) {
     aura::Window* active_window = ash::wm::GetActiveWindow();
@@ -57,7 +53,8 @@ void CandidateWindowControllerImpl::InitCandidateWindowView() {
                       : ash::Shell::GetRootWindowForNewWindows(),
         ash::kShellWindowId_SettingBubbleContainer);
   }
-  candidate_window_view_ = new ui::ime::CandidateWindowView(parent);
+  candidate_window_view_ = new ui::ime::CandidateWindowView(
+      parent, ash::kShellWindowId_SettingBubbleContainer);
   candidate_window_view_->AddObserver(this);
   candidate_window_view_->SetCursorBounds(cursor_bounds_, composition_head_);
   views::Widget* widget = candidate_window_view_->InitWidget();

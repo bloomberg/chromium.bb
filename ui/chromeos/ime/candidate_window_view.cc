@@ -11,10 +11,14 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mojo/public/cpp/bindings/type_converter.h"
+#include "services/ui/public/cpp/property_type_converters.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "ui/chromeos/ime/candidate_view.h"
 #include "ui/chromeos/ime/candidate_window_constants.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/display/types/display_constants.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
@@ -147,11 +151,13 @@ class InformationTextArea : public views::View {
   DISALLOW_COPY_AND_ASSIGN(InformationTextArea);
 };
 
-CandidateWindowView::CandidateWindowView(gfx::NativeView parent)
+CandidateWindowView::CandidateWindowView(gfx::NativeView parent,
+                                         int window_shell_id)
     : selected_candidate_index_in_page_(-1),
       should_show_at_composition_head_(false),
       should_show_upper_side_(false),
-      was_candidate_window_open_(false) {
+      was_candidate_window_open_(false),
+      window_shell_id_(window_shell_id) {
   set_can_activate(false);
   set_parent_window(parent);
   set_margins(gfx::Insets());
@@ -401,6 +407,15 @@ const char* CandidateWindowView::GetClassName() const {
 
 int CandidateWindowView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
+}
+
+void CandidateWindowView::OnBeforeBubbleWidgetInit(
+    views::Widget::InitParams* params,
+    views::Widget* widget) const {
+  using ui::mojom::WindowManager;
+  params->mus_properties[WindowManager::kContainerId_InitProperty] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<int32_t>(window_shell_id_));
 }
 
 void CandidateWindowView::ButtonPressed(views::Button* sender,
