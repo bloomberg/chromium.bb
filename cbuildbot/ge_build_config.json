@@ -1586,6 +1586,18 @@
       ]
     },
     {
+      "name": "x30evb",
+      "configs": [
+        {
+          "builder": "RELEASE",
+          "experimental": true,
+          "leader_board": false,
+          "board_group": "lassen",
+          "arch": "ARM_INTERNAL"
+        }
+      ]
+    },
+    {
       "name": "zako",
       "configs": [
         {

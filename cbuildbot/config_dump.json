@@ -16764,6 +16764,7 @@
             "wizpig-release",
             "wolf-release",
             "wooten-release",
+            "x30evb-release",
             "zako-release",
             "zoombini-release"
         ],
@@ -30446,6 +30447,82 @@
         "upload_hw_test_artifacts": false,
         "useflags": [
             "chrome_internal"
+        ]
+    },
+    "x30evb-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "x30evb"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x30evb-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "x30evb"
+        ]
+    },
+    "x30evb-full": {
+        "_template": "full",
+        "boards": [
+            "x30evb"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x30evb-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "x30evb"
+        ]
+    },
+    "x30evb-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "x30evb"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "x30evb-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "x30evb"
+        ],
+        "vm_tests": []
+    },
+    "x30evb-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "x30evb"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "x30evb-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "x30evb"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "x30evb-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "x30evb"
         ]
     },
     "x32-generic-chromium-pfq": {
