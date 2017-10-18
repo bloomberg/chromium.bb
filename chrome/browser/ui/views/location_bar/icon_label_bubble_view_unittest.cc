@@ -46,6 +46,7 @@ class TestIconLabelBubbleView : public IconLabelBubbleView {
         is_bubble_showing_(false) {
     GetImageView()->SetImageSize(gfx::Size(kImageSize, kImageSize));
     SetLabel(base::ASCIIToUTF16("Label"));
+    separator_view()->set_disable_animation_for_test(true);
   }
 
   void SetCurrentAnimationValue(int value) {
@@ -325,6 +326,32 @@ TEST_F(IconLabelBubbleViewTest, MouseInkDropState) {
   generator()->PressLeftButton();
   EXPECT_NE(views::InkDropState::ACTION_PENDING,
             ink_drop()->GetTargetInkDropState());
+}
+
+// Tests the separator opacity. The separator should disappear when there's
+// an ink drop. Otherwise, it should be visible.
+TEST_F(IconLabelBubbleViewTest, SeparatorOpacity) {
+  views::View* separator_view = view()->separator_view();
+  separator_view->SetPaintToLayer();
+  view()->SetLabel(base::ASCIIToUTF16("x"));
+  EXPECT_EQ(1.0f, separator_view->layer()->opacity());
+
+  AttachInkDrop();
+  generator()->PressLeftButton();
+  view()->InkDropAnimationStarted();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            ink_drop()->GetTargetInkDropState());
+  EXPECT_EQ(0.0f, separator_view->layer()->opacity());
+
+  generator()->ReleaseLeftButton();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            ink_drop()->GetTargetInkDropState());
+  EXPECT_EQ(0.0f, separator_view->layer()->opacity());
+
+  view()->HideBubble();
+  view()->InkDropAnimationStarted();
+  EXPECT_EQ(views::InkDropState::HIDDEN, ink_drop()->GetTargetInkDropState());
+  EXPECT_EQ(1.0f, separator_view->layer()->opacity());
 }
 
 #if !defined(OS_MACOSX)
