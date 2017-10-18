@@ -189,6 +189,8 @@ TrustStoreMac::~TrustStoreMac() = default;
 void TrustStoreMac::SyncGetIssuersOf(const ParsedCertificate* cert,
                                      ParsedCertificateList* issuers) {
   base::ScopedCFTypeRef<CFDataRef> name_data = GetMacNormalizedIssuer(cert);
+  if (!name_data)
+    return;
 
   base::ScopedCFTypeRef<CFArrayRef> matching_items =
       FindMatchingCertificatesForMacNormalizedSubject(name_data);
@@ -234,6 +236,10 @@ void TrustStoreMac::GetTrust(const scoped_refptr<ParsedCertificate>& cert,
   base::ScopedCFTypeRef<SecCertificateRef> cert_handle =
       x509_util::CreateSecCertificateFromBytes(cert->der_cert().UnsafeData(),
                                                cert->der_cert().Length());
+  if (!cert_handle) {
+    *trust = CertificateTrust::ForUnspecified();
+    return;
+  }
 
   TrustStatus trust_status =
       IsSecCertificateTrustedForPolicy(cert_handle, policy_oid_);

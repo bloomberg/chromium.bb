@@ -7,7 +7,9 @@
 #include <Security/Security.h>
 
 #include "base/logging.h"
+#include "net/cert/internal/cert_errors.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 
 #if defined(OS_IOS)
 #include "net/cert/x509_util_ios.h"
@@ -28,11 +30,26 @@ bool TestRootCerts::Add(X509Certificate* certificate) {
                            os_cert.get()))
     return true;
   CFArrayAppendValue(temporary_roots_, os_cert.get());
+
+  // Add the certificate to the parallel |test_trust_store_|.
+  CertErrors errors;
+  std::string cert_bytes;
+  if (!X509Certificate::GetDEREncoded(certificate->os_cert_handle(),
+                                      &cert_bytes))
+    return false;
+  scoped_refptr<ParsedCertificate> parsed = ParsedCertificate::Create(
+      x509_util::CreateCryptoBuffer(cert_bytes),
+      x509_util::DefaultParseCertificateOptions(), &errors);
+  if (!parsed)
+    return false;
+  test_trust_store_.AddTrustAnchor(parsed);
+
   return true;
 }
 
 void TestRootCerts::Clear() {
   CFArrayRemoveAllValues(temporary_roots_);
+  test_trust_store_.Clear();
 }
 
 bool TestRootCerts::IsEmpty() const {

@@ -113,12 +113,21 @@ std::unique_ptr<SystemTrustStore> CreateSslSystemTrustStore() {
 
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
 
-// TODO(eroman): Compose with test roots added via cert/test_roots.h
 class SystemTrustStoreMac : public BaseSystemTrustStore {
  public:
   explicit SystemTrustStoreMac() : trust_store_mac_(kSecPolicyAppleSSL) {
     InitializeKnownRoots();
     trust_store_.AddTrustStore(&trust_store_mac_);
+
+    // When running in test mode, also layer in the test-only root certificates.
+    //
+    // Note that this integration requires TestRootCerts::HasInstance() to be
+    // true by the time SystemTrustStoreMac is created - a limitation which is
+    // acceptable for the test-only code that consumes this.
+    if (TestRootCerts::HasInstance()) {
+      trust_store_.AddTrustStore(
+          TestRootCerts::GetInstance()->test_trust_store());
+    }
   }
 
   bool UsesSystemTrustStore() const override { return true; }
