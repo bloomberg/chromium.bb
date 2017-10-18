@@ -122,47 +122,6 @@ void ScrollMetricsTest::SetUpHtml(const char* html_content) {
   Compositor().BeginFrame();
 }
 
-TEST_F(ScrollMetricsTest, ScrollerSizeOnPageLoadHistogramRecordingTest) {
-  HistogramTester histogram_tester;
-  SetUpHtml(
-      "<!DOCTYPE html>"
-      "<style>"
-      " .smallBox { overflow: scroll; width: 100px; height: 100px; }"
-      " .largeBox { overflow: auto; width: 500px; height: 500px; }"
-      " .nonScrollableBox { overflow: auto; width: 200px; height: 200px; }"
-      " .spacer { height: 1000px; }"
-      " body { height: 2000px; width: 1000px; }"
-      "</style>"
-      "<div class='smallBox'><div class='spacer'></div></div>"
-      "<div class='largeBox'><div class='spacer'></div></div>"
-      "<div class='notScrollableBox'></div>"
-      "<div style='width: 300px; height: 300px;'>"
-      " <div class='spacer'></div>"
-      "</div>");
-
-  testing::RunPendingTasks();
-
-  // SmallBox added to count.
-  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnLoad", 10000,
-                                     1);
-  // LargeBox added to count.
-  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnLoad",
-                                     kScrollerSizeLargestBucket, 1);
-
-  // Non-scrollable box is not added to count.
-  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnLoad", 40000,
-                                     0);
-
-  // The fourth div without "overflow: scroll" is not supposed to be added to
-  // count.
-  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnLoad", 90000,
-                                     0);
-  // Root scroller is not added to count.
-  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnLoad",
-                                     kScrollerSizeLargestBucket, 1);
-  histogram_tester.ExpectTotalCount("Event.Scroll.ScrollerSize.OnLoad", 2);
-}
-
 TEST_F(ScrollMetricsTest,
        ScrollerSizeOfMainThreadScrollingHistogramRecordingTest) {
   HistogramTester histogram_tester;

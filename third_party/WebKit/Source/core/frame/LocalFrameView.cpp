@@ -127,7 +127,6 @@
 #include "platform/runtime_enabled_features.h"
 #include "platform/scroll/ScrollAnimatorBase.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/scroll/ScrollerSizeMetrics.h"
 #include "platform/text/TextStream.h"
 #include "platform/wtf/CheckedNumeric.h"
 #include "platform/wtf/CurrentTime.h"
@@ -2222,26 +2221,6 @@ void LocalFrameView::HandleLoadCompleted() {
   // finishes.
   if (!NeedsLayout())
     ClearFragmentAnchor();
-
-  if (!scrollable_areas_)
-    return;
-  for (const auto& scrollable_area : *scrollable_areas_) {
-    if (!scrollable_area->IsPaintLayerScrollableArea())
-      continue;
-    PaintLayerScrollableArea* paint_layer_scrollable_area =
-        ToPaintLayerScrollableArea(scrollable_area);
-    if (paint_layer_scrollable_area->ScrollsOverflow() &&
-        !paint_layer_scrollable_area->Layer()->IsRootLayer() &&
-        paint_layer_scrollable_area->VisibleContentRect().Size().Area() > 0) {
-      CheckedNumeric<int> size =
-          paint_layer_scrollable_area->VisibleContentRect().Width();
-      size *= paint_layer_scrollable_area->VisibleContentRect().Height();
-      UMA_HISTOGRAM_CUSTOM_COUNTS(
-          "Event.Scroll.ScrollerSize.OnLoad",
-          size.ValueOrDefault(std::numeric_limits<int>::max()), 1,
-          kScrollerSizeLargestBucket, kScrollerSizeBucketCount);
-    }
-  }
 }
 
 void LocalFrameView::ClearLayoutSubtreeRoot(const LayoutObject& root) {
