@@ -708,13 +708,6 @@ void VolumeManager::OnRenameEvent(
       }
       return;
     case chromeos::disks::DiskMountManager::RENAME_COMPLETED:
-      if (error_code != chromeos::RENAME_ERROR_NONE) {
-        for (auto& observer : observers_)
-          observer.OnRenameCompleted(device_path, false);
-
-        return;
-      }
-
       // Find previous mount point label if it exists
       std::string mount_label = "";
       auto disk_map_iter = disk_mount_manager_->disks().find(device_path);
@@ -725,17 +718,17 @@ void VolumeManager::OnRenameEvent(
                           .AsUTF8Unsafe();
       }
 
-      // If rename is completed successfully, try to mount the device.
-      // MountPath auto-detects filesystem format if second argument is
-      // empty. Third argument is a mount point name of the disk when it was
-      // first time mounted (to preserve mount point regardless of the volume
-      // name).
+      // Try to mount the device. MountPath auto-detects filesystem format if
+      // second argument is empty. Third argument is a mount point name of the
+      // disk when it was first time mounted (to preserve mount point regardless
+      // of the volume name).
       disk_mount_manager_->MountPath(device_path, std::string(), mount_label,
                                      chromeos::MOUNT_TYPE_DEVICE,
                                      GetExternalStorageAccessMode(profile_));
 
+      bool successfully_renamed = error_code == chromeos::RENAME_ERROR_NONE;
       for (auto& observer : observers_)
-        observer.OnRenameCompleted(device_path, true);
+        observer.OnRenameCompleted(device_path, successfully_renamed);
 
       return;
   }
