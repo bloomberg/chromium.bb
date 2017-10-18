@@ -2601,6 +2601,72 @@ TEST_F(SSLClientSocketTest, EVCertStatusRemovedForNonCompliantCert) {
   EXPECT_TRUE(result.cert_status & CERT_STATUS_CT_COMPLIANCE_FAILED);
 }
 
+// Test that when an EV certificate does not conform to the CT policy and its EV
+// status is removed, the corresponding histogram is recorded correctly.
+TEST_F(SSLClientSocketTest, NonCTCompliantEVHistogram) {
+  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance.SSL";
+  base::HistogramTester histograms;
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig ssl_config;
+  AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
+
+  // Emulate non-compliance of the certificate to the policy.
+  MockCTPolicyEnforcer policy_enforcer;
+  SetCTPolicyEnforcer(&policy_enforcer);
+  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  SSLInfo result;
+  ASSERT_TRUE(sock_->GetSSLInfo(&result));
+
+  EXPECT_FALSE(result.cert_status & CERT_STATUS_IS_EV);
+  // The histogram should have been recorded with the CT compliance status.
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS),
+      1);
+}
+
+// Test that when an EV certificate does conform to the CT policy and its EV
+// status is not removed, the corresponding histogram is recorded correctly.
+TEST_F(SSLClientSocketTest, CTCompliantEVHistogram) {
+  const char kHistogramName[] = "Net.CertificateTransparency.EVCompliance.SSL";
+  base::HistogramTester histograms;
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+
+  SSLConfig ssl_config;
+  AddServerCertStatusToSSLConfig(CERT_STATUS_IS_EV, &ssl_config);
+
+  // Emulate non-compliance of the certificate to the policy.
+  MockCTPolicyEnforcer policy_enforcer;
+  SetCTPolicyEnforcer(&policy_enforcer);
+  EXPECT_CALL(policy_enforcer, DoesConformToCertPolicy(_, _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  EXPECT_THAT(rv, IsOk());
+
+  SSLInfo result;
+  ASSERT_TRUE(sock_->GetSSLInfo(&result));
+
+  EXPECT_TRUE(result.cert_status & CERT_STATUS_IS_EV);
+  // The histogram should have been recorded with the CT compliance status.
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
+      1);
+}
+
 // Test that enabling Signed Certificate Timestamps enables OCSP stapling.
 TEST_F(SSLClientSocketTest, ConnectSignedCertTimestampsEnabledOCSP) {
   SpawnedTestServer::SSLOptions ssl_options;
@@ -3494,6 +3560,145 @@ TEST_F(SSLClientSocketTest, CTComplianceStatusHistogram) {
   histograms.ExpectUniqueSample(
       kHistogramName,
       static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_DIVERSE_SCTS),
+      1);
+}
+
+// Test that when CT is required (in this case, by an Expect-CT opt-in) and the
+// connection is compliant, the histogram for CT-required connections is
+// recorded properly.
+TEST_F(SSLClientSocketTest, CTRequiredHistogramCompliant) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL";
+  base::HistogramTester histograms;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a public root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes = MakeHashValueVector(0);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up the Expect-CT opt-in.
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  transport_security_state_->AddExpectCT(
+      spawned_test_server()->host_port_pair().host(), expiry,
+      true /* enforce */, GURL("https://example-report.test"));
+  MockExpectCTReporter reporter;
+  transport_security_state_->SetExpectCTReporter(&reporter);
+
+  EXPECT_CALL(*ct_policy_enforcer_,
+              DoesConformToCertPolicy(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  // The histogram should have been recorded with the CT compliance status.
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS),
+      1);
+}
+
+// Test that when CT is not required and the connection is compliant, the
+// histogram for CT-required connections is not recorded.
+TEST_F(SSLClientSocketTest, CTNotRequiredHistogram) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL";
+  base::HistogramTester histograms;
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a private root, so CT is not required.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = false;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes = MakeHashValueVector(0);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  EXPECT_CALL(*ct_policy_enforcer_,
+              DoesConformToCertPolicy(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_COMPLIES_VIA_SCTS));
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  // The histogram should not have been recorded because CT was not required for
+  // the connection.
+  histograms.ExpectTotalCount(kHistogramName, 0);
+}
+
+// Test that when CT is required (in this case, by an Expect-CT opt-in), the
+// absence of CT information is recorded in the histogram for CT-required
+// connections.
+TEST_F(SSLClientSocketTest, CTRequiredHistogramNonCompliant) {
+  const char kHistogramName[] =
+      "Net.CertificateTransparency.CTRequiredConnectionComplianceStatus.SSL";
+  base::HistogramTester histograms;
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      TransportSecurityState::kDynamicExpectCTFeature);
+
+  SpawnedTestServer::SSLOptions ssl_options;
+  ASSERT_TRUE(StartTestServer(ssl_options));
+  scoped_refptr<X509Certificate> server_cert =
+      spawned_test_server()->GetCertificate();
+
+  // Certificate is trusted and chains to a public root.
+  CertVerifyResult verify_result;
+  verify_result.is_issued_by_known_root = true;
+  verify_result.verified_cert = server_cert;
+  verify_result.public_key_hashes = MakeHashValueVector(0);
+  cert_verifier_->AddResultForCert(server_cert.get(), verify_result, OK);
+
+  // Set up the Expect-CT opt-in.
+  const base::Time current_time(base::Time::Now());
+  const base::Time expiry = current_time + base::TimeDelta::FromSeconds(1000);
+  transport_security_state_->AddExpectCT(
+      spawned_test_server()->host_port_pair().host(), expiry,
+      true /* enforce */, GURL("https://example-report.test"));
+  MockExpectCTReporter reporter;
+  transport_security_state_->SetExpectCTReporter(&reporter);
+
+  EXPECT_CALL(*ct_policy_enforcer_,
+              DoesConformToCertPolicy(server_cert.get(), _, _))
+      .WillRepeatedly(
+          Return(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS));
+
+  SSLConfig ssl_config;
+  int rv;
+  ASSERT_TRUE(CreateAndConnectSSLClientSocket(ssl_config, &rv));
+  SSLInfo ssl_info;
+  ASSERT_TRUE(sock_->GetSSLInfo(&ssl_info));
+
+  EXPECT_THAT(rv, IsError(ERR_CERTIFICATE_TRANSPARENCY_REQUIRED));
+
+  // The histogram should have been recorded with the CT compliance status.
+  histograms.ExpectUniqueSample(
+      kHistogramName,
+      static_cast<int>(ct::CertPolicyCompliance::CERT_POLICY_NOT_ENOUGH_SCTS),
       1);
 }
 

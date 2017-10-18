@@ -340,8 +340,10 @@ class NET_EXPORT TransportSecurityState {
 
   // Indicates whether a connection met CT requirements.
   enum CTRequirementsStatus {
-    // CT was not required for the connection, or CT was required for the
-    // connection and valid Certificate Transparency information was provided.
+    // CT was not required for the connection.
+    CT_NOT_REQUIRED,
+    // CT was required for the connection and valid Certificate Transparency
+    // information was provided.
     CT_REQUIREMENTS_MET,
     // CT was required for the connection but valid CT info was not provided.
     CT_REQUIREMENTS_NOT_MET,
