@@ -17,6 +17,7 @@ buildflag_header("features") {
     "USE_V4L2_CODEC=$use_v4l2_codec",
     "USE_LIBV4L2=$use_v4lplugin",
     "ENABLE_MEDIA_CODEC_VIDEO_DECODER=$enable_media_codec_video_decoder",
+    "ENABLE_D3D11_VIDEO_DECODER=$enable_d3d11_video_decoder",
   ]
 }
 
@@ -376,6 +377,14 @@ component("gpu") {
       "/DELAYLOAD:mf.dll",
       "/DELAYLOAD:mfplat.dll",
     ]
+    if (enable_d3d11_video_decoder) {
+      sources += [
+        "windows/d3d11_video_decoder.cc",
+        "windows/d3d11_video_decoder.h",
+        "windows/d3d11_video_decoder_impl.cc",
+        "windows/d3d11_video_decoder_impl.h",
+      ]
+    }
   }
 }
 

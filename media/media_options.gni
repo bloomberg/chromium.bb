@@ -90,6 +90,9 @@ declare_args() {
   # A temporary arg for enabling MCVD while it's being implemented.
   # See http://crbug.com/660942
   enable_media_codec_video_decoder = false
+
+  # A temporary arg for enabling D3D11VideoDecoder
+  enable_d3d11_video_decoder = false
 }
 
 # enable_hls_sample_aes can only be true if enable_mse_mpeg2ts_stream_parser is.
@@ -140,7 +143,8 @@ declare_args() {
   # |mojo_media_services|). When enabled, selected mojo paths will be enabled in
   # the media pipeline and corresponding services will hosted in the selected
   # remote process (e.g. "utility" process, see |mojo_media_host|).
-  enable_mojo_media = is_android || is_chromecast || enable_library_cdms
+  enable_mojo_media = is_android || is_chromecast || enable_library_cdms ||
+                      enable_d3d11_video_decoder
 
   # Enable the TestMojoMediaClient to be used in mojo MediaService. This is for
   # testing only and will override the default platform MojoMediaClient, if any.
@@ -221,6 +225,18 @@ declare_args() {
     } else if (enable_library_cdms) {
       mojo_media_services = [ "cdm" ]
       enable_standalone_cdm_service = true
+    }
+
+    if (is_win) {
+      if (enable_d3d11_video_decoder) {
+        mojo_media_services += [
+          "cdm",
+          "video_decoder",
+        ]
+
+        # TODO(liberato): This is temporary.
+        mojo_media_host = "gpu"
+      }
     }
   }
 }
