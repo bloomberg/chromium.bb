@@ -532,12 +532,13 @@ function handlePostMessage(event) {
   var cmd = event.data.cmd;
   var args = event.data;
   if (cmd == 'loaded') {
-    if (configData.isGooglePage) {
+    if (configData.isGooglePage && !$('one-google-loader')) {
       // Load the OneGoogleBar script. It'll create a global variable name "og"
       // which is a dict corresponding to the native OneGoogleBarData type.
       // We do this only after all the tiles have loaded, to avoid slowing down
       // the main page load.
       var ogScript = document.createElement('script');
+      ogScript.id = 'one-google-loader';
       ogScript.src = 'chrome-search://local-ntp/one-google.js';
       document.body.appendChild(ogScript);
       ogScript.onload = function() {
