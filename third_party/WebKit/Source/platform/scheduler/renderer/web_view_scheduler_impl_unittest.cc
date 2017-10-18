@@ -773,6 +773,113 @@ TEST_F(WebViewSchedulerImplTest, VirtualTimeObserver) {
 }
 
 namespace {
+void RepostingTask(RefPtr<WebTaskRunner> task_runner,
+                   int max_count,
+                   int* count) {
+  if (++(*count) >= max_count)
+    return;
+
+  task_runner->PostTask(BLINK_FROM_HERE,
+                        WTF::Bind(&RepostingTask, task_runner, max_count,
+                                  WTF::Unretained(count)));
+}
+
+void DelayedTask(int* count_in, int* count_out) {
+  *count_out = *count_in;
+}
+
+}  // namespace
+
+TEST_F(WebViewSchedulerImplTest, MaxVirtualTimeTaskStarvationCountOneHundred) {
+  web_view_scheduler_->EnableVirtualTime();
+  web_view_scheduler_->SetMaxVirtualTimeTaskStarvationCount(100);
+  web_view_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::ADVANCE);
+
+  int count = 0;
+  int delayed_task_run_at_count = 0;
+  RepostingTask(web_frame_scheduler_->ThrottleableTaskRunner(), 1000, &count);
+  web_frame_scheduler_->ThrottleableTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(DelayedTask, WTF::Unretained(&count),
+                WTF::Unretained(&delayed_task_run_at_count)),
+      base::TimeDelta::FromMilliseconds(10));
+
+  web_view_scheduler_->GrantVirtualTimeBudget(
+      base::TimeDelta::FromMilliseconds(1000),
+      WTF::Bind(
+          [](WebViewScheduler* scheduler) {
+            scheduler->SetVirtualTimePolicy(VirtualTimePolicy::PAUSE);
+          },
+          WTF::Unretained(web_view_scheduler_.get())));
+
+  mock_task_runner_->RunUntilIdle();
+
+  // Two delayed tasks with a run of 100 tasks, plus initial call.
+  EXPECT_EQ(201, count);
+  EXPECT_EQ(102, delayed_task_run_at_count);
+}
+
+TEST_F(WebViewSchedulerImplTest,
+       MaxVirtualTimeTaskStarvationCountOneHundredNestedMessageLoop) {
+  web_view_scheduler_->EnableVirtualTime();
+  web_view_scheduler_->SetMaxVirtualTimeTaskStarvationCount(100);
+  web_view_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::ADVANCE);
+  web_view_scheduler_->OnBeginNestedRunLoop();
+
+  int count = 0;
+  int delayed_task_run_at_count = 0;
+  RepostingTask(web_frame_scheduler_->ThrottleableTaskRunner(), 1000, &count);
+  web_frame_scheduler_->ThrottleableTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(DelayedTask, WTF::Unretained(&count),
+                WTF::Unretained(&delayed_task_run_at_count)),
+      base::TimeDelta::FromMilliseconds(10));
+
+  web_view_scheduler_->GrantVirtualTimeBudget(
+      base::TimeDelta::FromMilliseconds(1000),
+      WTF::Bind(
+          [](WebViewScheduler* scheduler) {
+            scheduler->SetVirtualTimePolicy(VirtualTimePolicy::PAUSE);
+          },
+          WTF::Unretained(web_view_scheduler_.get())));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_EQ(1000, count);
+  EXPECT_EQ(1000, delayed_task_run_at_count);
+}
+
+TEST_F(WebViewSchedulerImplTest, MaxVirtualTimeTaskStarvationCountZero) {
+  web_view_scheduler_->EnableVirtualTime();
+  web_view_scheduler_->SetMaxVirtualTimeTaskStarvationCount(0);
+  web_view_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::ADVANCE);
+
+  int count = 0;
+  int delayed_task_run_at_count = 0;
+  RepostingTask(web_frame_scheduler_->ThrottleableTaskRunner(), 1000, &count);
+  web_frame_scheduler_->ThrottleableTaskRunner()->PostDelayedTask(
+      BLINK_FROM_HERE,
+      WTF::Bind(DelayedTask, WTF::Unretained(&count),
+                WTF::Unretained(&delayed_task_run_at_count)),
+      base::TimeDelta::FromMilliseconds(10));
+
+  web_view_scheduler_->GrantVirtualTimeBudget(
+      base::TimeDelta::FromMilliseconds(1000),
+      WTF::Bind(
+          [](WebViewScheduler* scheduler) {
+            scheduler->SetVirtualTimePolicy(VirtualTimePolicy::PAUSE);
+          },
+          WTF::Unretained(web_view_scheduler_.get())));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_EQ(1000, count);
+  // If the initial count had been higher, the delayed task could have been
+  // arbitrarily delayed.
+  EXPECT_EQ(1000, delayed_task_run_at_count);
+}
+
+namespace {
 
 using ScopedExpensiveBackgroundTimerThrottlingForTest =
     ScopedRuntimeEnabledFeatureForTest<

@@ -103,6 +103,7 @@ WebViewSchedulerImpl::WebViewSchedulerImpl(
       renderer_scheduler_(renderer_scheduler),
       virtual_time_policy_(VirtualTimePolicy::ADVANCE),
       background_parser_count_(0),
+      max_task_starvation_count_(0),
       page_visible_(true),
       disable_background_timer_throttling_(disable_background_timer_throttling),
       allow_virtual_time_to_advance_(true),
@@ -356,19 +357,32 @@ void WebViewSchedulerImpl::RequestBeginMainFrameNotExpected(bool new_state) {
 }
 
 void WebViewSchedulerImpl::ApplyVirtualTimePolicy() {
-  if (virtual_time_policy_ != VirtualTimePolicy::DETERMINISTIC_LOADING) {
-    return;
-  }
+  AutoAdvancingVirtualTimeDomain* virtual_time_domain =
+      renderer_scheduler_->GetVirtualTimeDomain();
 
-  // We pause virtual time until we've seen a loading task posted, because
-  // otherwise we could advance virtual time arbitarially far before the
-  // first load arrives.  We also pause virtual time while the run loop is
-  // nested because that implies something modal is happening such as the
-  // DevTools debugger pausing the system.
-  SetAllowVirtualTimeToAdvance(pending_loads_.size() == 0 &&
-                               background_parser_count_ == 0 &&
-                               provisional_loads_.empty() && !nested_runloop_ &&
-                               expect_backward_forwards_navigation_.empty());
+  switch (virtual_time_policy_) {
+    case VirtualTimePolicy::ADVANCE:
+      virtual_time_domain->SetMaxVirtualTimeTaskStarvationCount(
+          nested_runloop_ ? 0 : max_task_starvation_count_);
+      SetAllowVirtualTimeToAdvance(true);
+      break;
+    case VirtualTimePolicy::PAUSE:
+      virtual_time_domain->SetMaxVirtualTimeTaskStarvationCount(0);
+      break;
+    case VirtualTimePolicy::DETERMINISTIC_LOADING:
+      virtual_time_domain->SetMaxVirtualTimeTaskStarvationCount(
+          nested_runloop_ ? 0 : max_task_starvation_count_);
+
+      // We pause virtual time while the run loop is nested because that implies
+      // something modal is happening such as the DevTools debugger pausing the
+      // system.  We also pause while the renderer is either waiting for a
+      // resource load or a navigation is about to start.
+      SetAllowVirtualTimeToAdvance(
+          pending_loads_.size() == 0 && background_parser_count_ == 0 &&
+          provisional_loads_.empty() && !nested_runloop_ &&
+          expect_backward_forwards_navigation_.empty());
+      break;
+  }
 }
 
 bool WebViewSchedulerImpl::IsAudioPlaying() const {
@@ -493,6 +507,12 @@ void WebViewSchedulerImpl::UpdateBackgroundBudgetPoolThrottlingState() {
 
 size_t WebViewSchedulerImpl::FrameCount() const {
   return frame_schedulers_.size();
+}
+
+void WebViewSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
+    int max_task_starvation_count) {
+  max_task_starvation_count_ = max_task_starvation_count;
+  ApplyVirtualTimePolicy();
 }
 
 // static
