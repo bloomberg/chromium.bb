@@ -203,6 +203,7 @@ test("vr_common_unittests") {
     "elements/ui_element_iterator_unittest.cc",
     "elements/ui_element_unittest.cc",
     "elements/url_bar_texture_unittest.cc",
+    "elements/vector_icon_unittest.cc",
     "elements/viewport_aware_root_unittest.cc",
     "fps_meter_unittest.cc",
     "gltf_parser_unittest.cc",

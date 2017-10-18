@@ -73,8 +73,9 @@ void SystemIndicatorTexture::Draw(SkCanvas* sk_canvas,
   gfx::PointF icon_location(
       (IsRTL() ? size_.width() - border_pixels - icon_pixels : border_pixels),
       (size_.height() - icon_pixels) / 2.0);
-  DrawVectorIcon(canvas, icon_, size_.height() * kIconSizeFactor, icon_location,
-                 color_scheme().system_indicator_foreground);
+  VectorIcon::DrawVectorIcon(canvas, icon_, size_.height() * kIconSizeFactor,
+                             icon_location,
+                             color_scheme().system_indicator_foreground);
 
   if (rendered_text) {
     canvas->Save();
