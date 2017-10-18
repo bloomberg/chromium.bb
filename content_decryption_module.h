@@ -1187,10 +1187,10 @@ class CDM_CLASS_API Host_9 {
   // Requests a specific version of the storage ID. A storage ID is a stable,
   // device specific ID used by the CDM to securely store persistent data. The
   // ID will be returned by the host via ContentDecryptionModule::OnStorageId().
-  // If |version| is 0, the latest version will be returned. On some systems
-  // storage ID is not implemented, so the response will be |storage_id| = null.
-  // The CDM must not expose the ID outside the client device, even in encrypted
-  // form.
+  // If |version| is 0, the latest version will be returned. All |version|s
+  // that are greater than or equal to 0x80000000 are reserved for the CDM and
+  // should not be supported or returned by the host. The CDM must not expose
+  // the ID outside the client device, even in encrypted form.
   virtual void RequestStorageId(uint32_t version) = 0;
 
  protected:
