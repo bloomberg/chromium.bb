@@ -94,7 +94,7 @@ void DocumentWritePageLoadMetricsObserver::LogLoadingBehaviorMetrics(
       behavior != LOADING_BEHAVIOR_RELOAD) {
     return;
   }
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (ukm_recorder) {
     std::unique_ptr<ukm::UkmEntryBuilder> builder =
         ukm_recorder->GetEntryBuilder(source_id,
@@ -198,7 +198,7 @@ void DocumentWritePageLoadMetricsObserver::LogDocumentWriteBlockParseStop(
             ->parse_blocked_on_script_execution_from_document_write_duration
             .value());
 
-    ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+    ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
     if (ukm_recorder) {
       std::unique_ptr<ukm::UkmEntryBuilder> builder =
           ukm_recorder->GetEntryBuilder(info.source_id,

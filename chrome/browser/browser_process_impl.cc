@@ -560,11 +560,6 @@ rappor::RapporServiceImpl* BrowserProcessImpl::rappor_service() {
   return GetMetricsServicesManager()->GetRapporServiceImpl();
 }
 
-ukm::UkmRecorder* BrowserProcessImpl::ukm_recorder() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return GetMetricsServicesManager()->GetUkmService();
-}
-
 IOThread* BrowserProcessImpl::io_thread() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(io_thread_.get());

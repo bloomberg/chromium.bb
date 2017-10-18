@@ -6,6 +6,8 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 component("metrics_cpp") {
   sources = [
+    "delegating_ukm_recorder.cc",
+    "delegating_ukm_recorder.h",
     "metrics_export.h",
     "mojo_ukm_recorder.cc",
     "mojo_ukm_recorder.h",

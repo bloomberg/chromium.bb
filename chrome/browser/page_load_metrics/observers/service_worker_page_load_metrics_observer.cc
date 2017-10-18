@@ -354,7 +354,7 @@ void ServiceWorkerPageLoadMetricsObserver::OnLoadingBehaviorObserved(
     const page_load_metrics::PageLoadExtraInfo& info) {
   if (!IsServiceWorkerControlled(info) || logged_ukm_event_)
     return;
-  ukm::UkmRecorder* ukm_recorder = g_browser_process->ukm_recorder();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
   if (ukm_recorder) {
     ukm_recorder->GetEntryBuilder(info.source_id,
                                   internal::kUkmServiceWorkerName);

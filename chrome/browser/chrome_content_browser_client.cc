@@ -2935,7 +2935,7 @@ void ChromeContentBrowserClient::ExposeInterfacesToRenderer(
                  g_browser_process->rappor_service()),
       ui_task_runner);
   registry->AddInterface(
-      base::Bind(&ukm::UkmInterface::Create, g_browser_process->ukm_recorder()),
+      base::Bind(&ukm::UkmInterface::Create, ukm::UkmRecorder::Get()),
       ui_task_runner);
   if (NetBenchmarking::CheckBenchmarkingEnabled()) {
     Profile* profile =

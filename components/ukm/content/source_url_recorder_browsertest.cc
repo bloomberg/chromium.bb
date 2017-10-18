@@ -24,11 +24,6 @@ class SourceUrlRecorderWebContentsObserverBrowserTest
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    // UKM DCHECKs if the active UkmRecorder is changed from one instance
-    // to another, rather than being changed from a nullptr; browser_tests
-    // need to circumvent that to be able to intercept UKM calls with its
-    // own TestUkmRecorder instance rather than the default UkmRecorder.
-    ukm::UkmRecorder::Set(nullptr);
     test_ukm_recorder_ = base::MakeUnique<ukm::TestAutoSetUkmRecorder>();
     ukm::InitializeSourceUrlRecorderForWebContents(shell()->web_contents());
   }

@@ -5,8 +5,8 @@
 #include "chrome/browser/payments/android/journey_logger_android.h"
 
 #include "base/android/jni_string.h"
-#include "chrome/browser/browser_process.h"
 #include "jni/JourneyLogger_jni.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "url/gurl.h"
 
 namespace payments {
@@ -19,9 +19,7 @@ using ::base::android::ConvertJavaStringToUTF8;
 
 JourneyLoggerAndroid::JourneyLoggerAndroid(bool is_incognito,
                                            const std::string& url)
-    : journey_logger_(is_incognito,
-                      GURL(url),
-                      g_browser_process->ukm_recorder()) {}
+    : journey_logger_(is_incognito, GURL(url), ukm::UkmRecorder::Get()) {}
 
 JourneyLoggerAndroid::~JourneyLoggerAndroid() {}
 
