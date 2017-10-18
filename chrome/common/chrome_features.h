@@ -165,6 +165,10 @@ extern const base::Feature kNativeNotifications;
 
 extern const base::Feature kNetworkPrediction;
 
+#if defined(OS_POSIX)
+extern const base::Feature kNtlmV2Enabled;
+#endif
+
 extern const base::Feature kOfflinePageDownloadSuggestionsFeature;
 
 #if !defined(OS_ANDROID)

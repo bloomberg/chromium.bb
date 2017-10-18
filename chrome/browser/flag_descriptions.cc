@@ -853,6 +853,12 @@ const char kNotificationsNativeFlagDescription[] =
     "Enable support for using the native notification toasts and notification "
     "center on platforms where these are available.";
 
+#if defined(OS_POSIX)
+const char kNtlmV2EnabledName[] = "Enable NTLMv2 Authentication";
+const char kNtlmV2EnabledDescription[] =
+    "Enable NTLMv2 HTTP Authentication. This disables NTLMv1 support.";
+#endif
+
 const char kNumRasterThreadsName[] = "Number of raster threads";
 const char kNumRasterThreadsDescription[] =
     "Specify the number of raster threads.";

@@ -69,6 +69,25 @@ TEST(HttpAuthPreferencesTest, NegotiateEnablePort) {
   EXPECT_TRUE(http_auth_preferences.NegotiateEnablePort());
 }
 
+#if defined(OS_POSIX)
+TEST(HttpAuthPreferencesTest, EnableNtlmV2) {
+  std::vector<std::string> auth_schemes;
+  HttpAuthPreferences http_auth_preferences(auth_schemes
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+                                            ,
+                                            ""
+#endif
+#if defined(OS_CHROMEOS)
+                                            ,
+                                            true
+#endif
+                                            );
+  EXPECT_FALSE(http_auth_preferences.NtlmV2Enabled());
+  http_auth_preferences.set_ntlm_v2_enabled(true);
+  EXPECT_TRUE(http_auth_preferences.NtlmV2Enabled());
+}
+#endif
+
 #if defined(OS_ANDROID)
 TEST(HttpAuthPreferencesTest, AuthAndroidhNegotiateAccountType) {
   std::vector<std::string> auth_schemes;

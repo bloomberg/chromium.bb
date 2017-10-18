@@ -11689,6 +11689,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="390" label="DeviceTPMFirmwareUpdateSettings"/>
   <int value="391" label="RunAllFlashInAllowMode"/>
   <int value="392" label="AutoFillCreditCardEnabled"/>
+  <int value="393" label="NtlmV2Enabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -23876,6 +23877,7 @@ from previous Chrome versions.
   <int value="-1033738911" label="enable-mac-views-dialogs"/>
   <int value="-1029920490" label="IdleTimeSpellChecking:enabled"/>
   <int value="-1028733699" label="MacViewsWebUIDialogs:disabled"/>
+  <int value="-1027124889" label="NtlmV2Enabled:enabled"/>
   <int value="-1022971520" label="enable-search-button-in-omnibox-for-str"/>
   <int value="-1022165708" label="BreakingNewsPush:disabled"/>
   <int value="-1020450980" label="gesture-deletion"/>
@@ -24506,6 +24508,7 @@ from previous Chrome versions.
   <int value="908523940" label="PassiveEventListenersDueToFling:disabled"/>
   <int value="909439558" label="disable-device-discovery"/>
   <int value="916316159" label="disable-new-app-list-mixer"/>
+  <int value="918046854" label="NtlmV2Enabled:disabled"/>
   <int value="926852901" label="DataReductionProxyMainMenu:disabled"/>
   <int value="929462705" label="disable-link-disambiguation-popup"/>
   <int value="935655516" label="password-import-export:disabled"/>

@@ -249,6 +249,9 @@ class IOThread : public content::BrowserThreadDelegate {
   void UpdateAndroidAuthNegotiateAccountType();
   void UpdateNegotiateDisableCnameLookup();
   void UpdateNegotiateEnablePort();
+#if defined(OS_POSIX)
+  void UpdateNtlmV2Enabled();
+#endif
 
   extensions::EventRouterForwarder* extension_event_router_forwarder() {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -298,6 +301,9 @@ class IOThread : public content::BrowserThreadDelegate {
   std::string auth_schemes_;
   BooleanPrefMember negotiate_disable_cname_lookup_;
   BooleanPrefMember negotiate_enable_port_;
+#if defined(OS_POSIX)
+  BooleanPrefMember ntlm_v2_enabled_;
+#endif
   StringPrefMember auth_server_whitelist_;
   StringPrefMember auth_delegate_whitelist_;
 
