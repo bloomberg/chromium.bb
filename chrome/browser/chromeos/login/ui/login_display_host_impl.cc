@@ -1036,6 +1036,11 @@ void LoginDisplayHostImpl::OnDisplayMetricsChanged(
   }
 
   if (GetOobeUI()) {
+    // Reset widget size for voice interaction OOBE, since the screen rotation
+    // will break the widget size if it is not full screen.
+    if (is_voice_interaction_oobe_)
+      login_window_->SetSize(primary_display.work_area_size());
+
     const gfx::Size& size = primary_display.size();
     GetOobeUI()->GetCoreOobeView()->SetClientAreaSize(size.width(),
                                                       size.height());
