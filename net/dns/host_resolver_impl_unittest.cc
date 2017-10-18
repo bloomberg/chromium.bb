@@ -1738,6 +1738,12 @@ class HostResolverImplDnsTest : public HostResolverImplTest {
     base::RunLoop().RunUntilIdle();
   }
 
+  void SetInitialDnsConfig(const DnsConfig& config) {
+    NetworkChangeNotifier::SetInitialDnsConfig(config);
+    // Notification is delivered asynchronously.
+    base::RunLoop().RunUntilIdle();
+  }
+
   MockDnsClientRuleList dns_rules_;
   // Owned by |resolver_|.
   MockDnsClient* dns_client_;
@@ -2429,6 +2435,22 @@ TEST_F(HostResolverImplDnsTest, InvalidDnsConfigWithPendingRequests) {
   proc_->SignalMultiple(1u);
   EXPECT_THAT(requests_[2]->WaitForResult(), IsOk());
   EXPECT_TRUE(requests_[2]->HasOneAddress("192.168.0.3", 80));
+}
+
+// Test that initial DNS config read signals do not abort pending requests when
+// using DnsClient.
+TEST_F(HostResolverImplDnsTest, DontAbortOnInitialDNSConfigRead) {
+  // DnsClient is enabled, but there's no DnsConfig, so the request should start
+  // using ProcTask.
+  Request* req = CreateRequest("host1", 70);
+  EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
+
+  EXPECT_TRUE(proc_->WaitFor(1u));
+  // Send the initial config read signal, with a valid config.
+  SetInitialDnsConfig(CreateValidDnsConfig());
+  proc_->SignalAll();
+
+  EXPECT_THAT(req->WaitForResult(), IsOk());
 }
 
 // Tests the case that DnsClient is automatically disabled due to failures
