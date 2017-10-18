@@ -318,6 +318,10 @@ gfx::Rect ShelfButton::GetIconBounds() const {
   return icon_view_->bounds();
 }
 
+views::InkDrop* ShelfButton::GetInkDropForTesting() {
+  return GetInkDrop();
+}
+
 void ShelfButton::OnDragStarted(const ui::LocatedEvent* event) {
   AnimateInkDrop(views::InkDropState::HIDDEN, event);
 }
