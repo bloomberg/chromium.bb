@@ -89,6 +89,9 @@ typedef EGLBoolean(GL_BINDING_CALL* eglDestroySurfaceProc)(EGLDisplay dpy,
                                                            EGLSurface surface);
 typedef EGLBoolean(GL_BINDING_CALL* eglDestroySyncKHRProc)(EGLDisplay dpy,
                                                            EGLSyncKHR sync);
+typedef EGLint(GL_BINDING_CALL* eglDupNativeFenceFDANDROIDProc)(
+    EGLDisplay dpy,
+    EGLSyncKHR sync);
 typedef EGLBoolean(GL_BINDING_CALL* eglGetCompositorTimingANDROIDProc)(
     EGLDisplay dpy,
     EGLSurface surface,
@@ -259,6 +262,7 @@ struct ExtensionsEGL {
   bool b_EGL_EXT_platform_base;
   bool b_EGL_ANDROID_get_frame_timestamps;
   bool b_EGL_ANDROID_get_native_client_buffer;
+  bool b_EGL_ANDROID_native_fence_sync;
   bool b_EGL_ANGLE_d3d_share_handle_client_buffer;
   bool b_EGL_ANGLE_program_cache_control;
   bool b_EGL_ANGLE_query_surface_pointer;
@@ -276,6 +280,7 @@ struct ExtensionsEGL {
   bool b_EGL_KHR_wait_sync;
   bool b_EGL_NV_post_sub_buffer;
   bool b_EGL_NV_stream_consumer_gltexture_yuv;
+  bool b_GL_CHROMIUM_egl_android_native_fence_sync_hack;
   bool b_GL_CHROMIUM_egl_khr_fence_sync_hack;
 };
 
@@ -300,6 +305,7 @@ struct ProcsEGL {
   eglDestroyStreamKHRProc eglDestroyStreamKHRFn;
   eglDestroySurfaceProc eglDestroySurfaceFn;
   eglDestroySyncKHRProc eglDestroySyncKHRFn;
+  eglDupNativeFenceFDANDROIDProc eglDupNativeFenceFDANDROIDFn;
   eglGetCompositorTimingANDROIDProc eglGetCompositorTimingANDROIDFn;
   eglGetCompositorTimingSupportedANDROIDProc
       eglGetCompositorTimingSupportedANDROIDFn;
@@ -421,6 +427,8 @@ class GL_EXPORT EGLApi {
   virtual EGLBoolean eglDestroySurfaceFn(EGLDisplay dpy,
                                          EGLSurface surface) = 0;
   virtual EGLBoolean eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) = 0;
+  virtual EGLint eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
+                                              EGLSyncKHR sync) = 0;
   virtual EGLBoolean eglGetCompositorTimingANDROIDFn(
       EGLDisplay dpy,
       EGLSurface surface,
@@ -598,6 +606,8 @@ class GL_EXPORT EGLApi {
 #define eglDestroyStreamKHR ::gl::g_current_egl_context->eglDestroyStreamKHRFn
 #define eglDestroySurface ::gl::g_current_egl_context->eglDestroySurfaceFn
 #define eglDestroySyncKHR ::gl::g_current_egl_context->eglDestroySyncKHRFn
+#define eglDupNativeFenceFDANDROID \
+  ::gl::g_current_egl_context->eglDupNativeFenceFDANDROIDFn
 #define eglGetCompositorTimingANDROID \
   ::gl::g_current_egl_context->eglGetCompositorTimingANDROIDFn
 #define eglGetCompositorTimingSupportedANDROID \

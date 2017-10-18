@@ -44,6 +44,7 @@ extern "C" {
 
 #if defined(OS_ANDROID)
 #include <android/native_window_jni.h>
+#include "base/android/build_info.h"
 #endif
 
 #if !defined(EGL_FIXED_SIZE_ANGLE)
@@ -147,6 +148,7 @@ bool g_use_direct_composition = false;
 bool g_egl_robust_resource_init_supported = false;
 bool g_egl_display_texture_share_group_supported = false;
 bool g_egl_create_context_client_arrays_supported = false;
+bool g_egl_android_native_fence_sync_supported = false;
 
 const char kSwapEventTraceCategories[] = "gpu";
 
@@ -616,6 +618,22 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
   }
 #endif
 
+  // The native fence sync extension is a bit complicated. It's reported as
+  // present for ChromeOS, but Android currently doesn't report this extension
+  // even when it's present, and older devices may export a useless wrapper
+  // function. See crbug.com/775707 for details. In short, if the symbol is
+  // present and we're on Android N or newer, assume that it's usable even if
+  // the extension wasn't reported.
+  g_egl_android_native_fence_sync_supported =
+      g_driver_egl.ext.b_EGL_ANDROID_native_fence_sync;
+#if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+          base::android::SDK_VERSION_NOUGAT &&
+      g_driver_egl.fn.eglDupNativeFenceFDANDROIDFn) {
+    g_egl_android_native_fence_sync_supported = true;
+  }
+#endif
+
   initialized_ = true;
   return true;
 }
@@ -712,6 +730,10 @@ bool GLSurfaceEGL::IsDisplayTextureShareGroupSupported() {
 
 bool GLSurfaceEGL::IsCreateContextClientArraysSupported() {
   return g_egl_create_context_client_arrays_supported;
+}
+
+bool GLSurfaceEGL::IsAndroidNativeFenceSyncSupported() {
+  return g_egl_android_native_fence_sync_supported;
 }
 
 GLSurfaceEGL::~GLSurfaceEGL() {}

@@ -57,6 +57,9 @@ void DriverEGL::InitializeStaticBindings() {
       GetGLProcAddress("eglDestroySurface"));
   fn.eglDestroySyncKHRFn = reinterpret_cast<eglDestroySyncKHRProc>(
       GetGLProcAddress("eglDestroySyncKHR"));
+  fn.eglDupNativeFenceFDANDROIDFn =
+      reinterpret_cast<eglDupNativeFenceFDANDROIDProc>(
+          GetGLProcAddress("eglDupNativeFenceFDANDROID"));
   fn.eglGetCompositorTimingANDROIDFn = 0;
   fn.eglGetCompositorTimingSupportedANDROIDFn = 0;
   fn.eglGetConfigAttribFn = reinterpret_cast<eglGetConfigAttribProc>(
@@ -156,6 +159,8 @@ void DriverEGL::InitializeExtensionBindings() {
       HasExtension(extensions, "EGL_ANDROID_get_frame_timestamps");
   ext.b_EGL_ANDROID_get_native_client_buffer =
       HasExtension(extensions, "EGL_ANDROID_get_native_client_buffer");
+  ext.b_EGL_ANDROID_native_fence_sync =
+      HasExtension(extensions, "EGL_ANDROID_native_fence_sync");
   ext.b_EGL_ANGLE_d3d_share_handle_client_buffer =
       HasExtension(extensions, "EGL_ANGLE_d3d_share_handle_client_buffer");
   ext.b_EGL_ANGLE_program_cache_control =
@@ -185,6 +190,8 @@ void DriverEGL::InitializeExtensionBindings() {
       HasExtension(extensions, "EGL_NV_post_sub_buffer");
   ext.b_EGL_NV_stream_consumer_gltexture_yuv =
       HasExtension(extensions, "EGL_NV_stream_consumer_gltexture_yuv");
+  ext.b_GL_CHROMIUM_egl_android_native_fence_sync_hack = HasExtension(
+      extensions, "GL_CHROMIUM_egl_android_native_fence_sync_hack");
   ext.b_GL_CHROMIUM_egl_khr_fence_sync_hack =
       HasExtension(extensions, "GL_CHROMIUM_egl_khr_fence_sync_hack");
 
@@ -475,6 +482,11 @@ EGLBoolean EGLApiBase::eglDestroySurfaceFn(EGLDisplay dpy, EGLSurface surface) {
 
 EGLBoolean EGLApiBase::eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) {
   return driver_->fn.eglDestroySyncKHRFn(dpy, sync);
+}
+
+EGLint EGLApiBase::eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
+                                                EGLSyncKHR sync) {
+  return driver_->fn.eglDupNativeFenceFDANDROIDFn(dpy, sync);
 }
 
 EGLBoolean EGLApiBase::eglGetCompositorTimingANDROIDFn(
@@ -921,6 +933,12 @@ EGLBoolean TraceEGLApi::eglDestroySurfaceFn(EGLDisplay dpy,
 EGLBoolean TraceEGLApi::eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) {
   TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglDestroySyncKHR")
   return egl_api_->eglDestroySyncKHRFn(dpy, sync);
+}
+
+EGLint TraceEGLApi::eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
+                                                 EGLSyncKHR sync) {
+  TRACE_EVENT_BINARY_EFFICIENT0("gpu", "TraceGLAPI::eglDupNativeFenceFDANDROID")
+  return egl_api_->eglDupNativeFenceFDANDROIDFn(dpy, sync);
 }
 
 EGLBoolean TraceEGLApi::eglGetCompositorTimingANDROIDFn(
@@ -1503,6 +1521,15 @@ EGLBoolean DebugEGLApi::eglDestroySyncKHRFn(EGLDisplay dpy, EGLSyncKHR sync) {
   GL_SERVICE_LOG("eglDestroySyncKHR"
                  << "(" << dpy << ", " << sync << ")");
   EGLBoolean result = egl_api_->eglDestroySyncKHRFn(dpy, sync);
+  GL_SERVICE_LOG("GL_RESULT: " << result);
+  return result;
+}
+
+EGLint DebugEGLApi::eglDupNativeFenceFDANDROIDFn(EGLDisplay dpy,
+                                                 EGLSyncKHR sync) {
+  GL_SERVICE_LOG("eglDupNativeFenceFDANDROID"
+                 << "(" << dpy << ", " << sync << ")");
+  EGLint result = egl_api_->eglDupNativeFenceFDANDROIDFn(dpy, sync);
   GL_SERVICE_LOG("GL_RESULT: " << result);
   return result;
 }
