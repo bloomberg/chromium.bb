@@ -71,6 +71,7 @@ class MockBattOrConnection : public BattOrConnection {
   MOCK_METHOD1(ReadMessage, void(BattOrMessageType type));
   MOCK_METHOD0(CancelReadMessage, void());
   MOCK_METHOD0(Flush, void());
+  MOCK_METHOD1(LogSerial, void(const std::string& str));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockBattOrConnection);

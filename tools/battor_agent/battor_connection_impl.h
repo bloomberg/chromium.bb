@@ -48,6 +48,7 @@ class BattOrConnectionImpl
                  size_t bytes_to_send) override;
   void ReadMessage(BattOrMessageType type) override;
   void CancelReadMessage() override;
+  void LogSerial(const std::string& str) override;
 
  protected:
   // Overridden by the test to use a fake serial connection.
@@ -101,9 +102,6 @@ class BattOrConnectionImpl
 
   // Internal callback for when bytes are sent.
   void OnBytesSent(int bytes_sent, device::mojom::SerialSendError error);
-
-  // Appends |str| to the serial log file if it exists.
-  void LogSerial(const std::string& str);
 
   // The path of the BattOr.
   std::string path_;

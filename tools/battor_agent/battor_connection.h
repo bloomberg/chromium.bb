@@ -70,6 +70,9 @@ class BattOrConnection {
   // Cancels the current message read operation.
   virtual void CancelReadMessage() = 0;
 
+  // Appends |str| to the serial log file if it exists.
+  virtual void LogSerial(const std::string& str) = 0;
+
  protected:
   // The listener receiving the results of the commands being executed.
   Listener* listener_;
