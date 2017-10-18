@@ -38,17 +38,15 @@ when it has relative height and width auto.
   </div>
 </div>
 
-<div id="results"></div>
-
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../resources/check-layout-th.js"></script>
 <script>
 document.body.offsetTop;
 document.getElementById("parent1").style.height = "50px";
-checkLayout("#container", results);
+checkLayout("#container");
 
 document.body.offsetTop;
 document.getElementById("parent2").style.height = "50px";
-checkLayout("#stylefloat", results);
+checkLayout("#stylefloat");
 </script>
