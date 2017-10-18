@@ -58168,11 +58168,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.HasAttachment" enum="Boolean">
+  <owner>hnakashima@chromium.org</owner>
+  <summary>
+    Measures if PDFs opened in the PDF viewer have attachments. This is logged
+    whenever a document is opened in the PDF viewer.
+  </summary>
+</histogram>
+
 <histogram name="PDF.IsFontSubstituted" enum="Boolean">
   <owner>npm@chromium.org</owner>
   <summary>
-    Tracks documents opened in the PDF viewer where substitute fonts need to be
-    used.
+    Measures if PDFs opened in the PDF viewer require fonts to be substituted.
+    This is logged whenever a document is opened in the PDF viewer.
+  </summary>
+</histogram>
+
+<histogram name="PDF.IsLinearized" enum="Boolean">
+  <owner>hnakashima@chromium.org</owner>
+  <summary>
+    Measures if PDFs opened in the PDF viewer are Linearized PDFs. This is
+    logged whenever a document is opened in the PDF viewer.
   </summary>
 </histogram>
 
