@@ -10,6 +10,7 @@
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
 #include "platform/wtf/Vector.h"
+#include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
@@ -90,11 +91,12 @@ class CORE_EXPORT NGOffsetMappingResult {
       HashMap<Persistent<const Node>, std::pair<unsigned, unsigned>>;
 
   NGOffsetMappingResult(NGOffsetMappingResult&&);
-  NGOffsetMappingResult(UnitVector&&, RangeMap&&);
+  NGOffsetMappingResult(UnitVector&&, RangeMap&&, String);
   ~NGOffsetMappingResult();
 
   const UnitVector& GetUnits() const { return units_; }
   const RangeMap& GetRanges() const { return ranges_; }
+  const String& GetText() const { return text_; }
 
   // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
   // node. If there are multiple qualifying units, returns the last one.
@@ -134,6 +136,7 @@ class CORE_EXPORT NGOffsetMappingResult {
  private:
   UnitVector units_;
   RangeMap ranges_;
+  String text_;
 
   DISALLOW_COPY_AND_ASSIGN(NGOffsetMappingResult);
 };
