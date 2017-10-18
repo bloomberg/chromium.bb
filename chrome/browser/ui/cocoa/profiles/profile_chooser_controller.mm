@@ -1647,18 +1647,15 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
       if (browser->profile()->GetOriginalProfile() == current_profile)
         num_browsers++;
     }
-    if (num_browsers > 1) {
-      NSButton* closeAllWindowsButton =
-          [self hoverButtonWithRect:viewRect
-                               text:l10n_util::GetNSString(
-                                        IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON)
-                              image:NSImageFromImageSkia(gfx::CreateVectorIcon(
-                                        kCloseAllIcon, icon_size,
-                                        gfx::kChromeIconGrey))
-                             action:@selector(closeAllWindows:)];
-      [container addSubview:closeAllWindowsButton];
-      viewRect.origin.y = NSMaxY([closeAllWindowsButton frame]);
-    }
+    NSButton* closeAllWindowsButton = [self
+        hoverButtonWithRect:viewRect
+                       text:l10n_util::GetNSString(
+                                IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON)
+                      image:NSImageFromImageSkia(gfx::CreateVectorIcon(
+                                kCloseAllIcon, icon_size, gfx::kChromeIconGrey))
+                     action:@selector(closeAllWindows:)];
+    [container addSubview:closeAllWindowsButton];
+    viewRect.origin.y = NSMaxY([closeAllWindowsButton frame]);
   }
 
   // Create a manage users/exit guest button.
