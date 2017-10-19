@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/audio_decoder_alsa.h"
+#include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
 
 #include <time.h>
 
@@ -13,9 +13,9 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/backend/alsa/alsa_features.h"
-#include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_audio.h"
 #include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "chromecast/media/cma/base/decoder_buffer_base.h"
 #include "chromecast/public/media/cast_decoder_buffer.h"
@@ -24,6 +24,10 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/sample_format.h"
 #include "media/filters/audio_renderer_algorithm.h"
+
+#if defined(OS_LINUX)
+#include "chromecast/media/cma/backend/audio_features.h"
+#endif  // defined(OS_LINUX)
 
 #define TRACE_FUNCTION_ENTRY0() TRACE_EVENT0("cma", __FUNCTION__)
 
@@ -55,6 +59,7 @@ const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 
 const int64_t kNoPendingOutput = -1;
 
+#if defined(OS_LINUX)
 int64_t MonotonicClockNow() {
   timespec now = {0, 0};
 #if BUILDFLAG(ALSA_MONOTONIC_RAW_TSTAMPS)
@@ -64,13 +69,16 @@ int64_t MonotonicClockNow() {
 #endif
   return static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
 }
+#else
+#error Need MonotonicClockNow implementation.
+#endif
 
 }  // namespace
 
-AudioDecoderAlsa::RateShifterInfo::RateShifterInfo(float playback_rate)
+AudioDecoderForMixer::RateShifterInfo::RateShifterInfo(float playback_rate)
     : rate(playback_rate), input_frames(0), output_frames(0) {}
 
-AudioDecoderAlsa::AudioDecoderAlsa(MediaPipelineBackendAlsa* backend)
+AudioDecoderForMixer::AudioDecoderForMixer(MediaPipelineBackendAudio* backend)
     : backend_(backend),
       task_runner_(backend->GetTaskRunner()),
       delegate_(nullptr),
@@ -95,18 +103,18 @@ AudioDecoderAlsa::AudioDecoderAlsa(MediaPipelineBackendAlsa* backend)
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-AudioDecoderAlsa::~AudioDecoderAlsa() {
+AudioDecoderForMixer::~AudioDecoderForMixer() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
 }
 
-void AudioDecoderAlsa::SetDelegate(
+void AudioDecoderForMixer::SetDelegate(
     MediaPipelineBackend::Decoder::Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 }
 
-void AudioDecoderAlsa::Initialize() {
+void AudioDecoderForMixer::Initialize() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(delegate_);
   stats_ = Statistics();
@@ -124,7 +132,7 @@ void AudioDecoderAlsa::Initialize() {
   last_mixer_delay_.delay_microseconds = 0;
 }
 
-bool AudioDecoderAlsa::Start(int64_t start_pts) {
+bool AudioDecoderForMixer::Start(int64_t start_pts) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(IsValidConfig(config_));
   mixer_input_.reset(new StreamMixerInput(
@@ -142,7 +150,7 @@ bool AudioDecoderAlsa::Start(int64_t start_pts) {
   return true;
 }
 
-void AudioDecoderAlsa::Stop() {
+void AudioDecoderForMixer::Stop() {
   TRACE_FUNCTION_ENTRY0();
   decoder_.reset();
   mixer_input_.reset();
@@ -152,7 +160,7 @@ void AudioDecoderAlsa::Stop() {
   Initialize();
 }
 
-bool AudioDecoderAlsa::Pause() {
+bool AudioDecoderForMixer::Pause() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(mixer_input_);
   mixer_input_->SetPaused(true);
@@ -160,7 +168,7 @@ bool AudioDecoderAlsa::Pause() {
   return true;
 }
 
-bool AudioDecoderAlsa::Resume() {
+bool AudioDecoderForMixer::Resume() {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(mixer_input_);
   paused_pts_ = kInvalidTimestamp;
@@ -168,7 +176,7 @@ bool AudioDecoderAlsa::Resume() {
   return true;
 }
 
-bool AudioDecoderAlsa::SetPlaybackRate(float rate) {
+bool AudioDecoderForMixer::SetPlaybackRate(float rate) {
   if (std::abs(rate - 1.0) < kPlaybackRateEpsilon) {
     // AudioRendererAlgorithm treats values close to 1 as exactly 1.
     rate = 1.0f;
@@ -191,7 +199,7 @@ bool AudioDecoderAlsa::SetPlaybackRate(float rate) {
   return true;
 }
 
-int64_t AudioDecoderAlsa::GetCurrentPts() const {
+int64_t AudioDecoderForMixer::GetCurrentPts() const {
   if (paused_pts_ != kInvalidTimestamp)
     return paused_pts_;
   if (last_push_pts_ == kInvalidTimestamp)
@@ -207,7 +215,7 @@ int64_t AudioDecoderAlsa::GetCurrentPts() const {
   return (estimate < first_push_pts_ ? kInvalidTimestamp : estimate);
 }
 
-AudioDecoderAlsa::BufferStatus AudioDecoderAlsa::PushBuffer(
+AudioDecoderForMixer::BufferStatus AudioDecoderForMixer::PushBuffer(
     CastDecoderBuffer* buffer) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
@@ -226,34 +234,33 @@ AudioDecoderAlsa::BufferStatus AudioDecoderAlsa::PushBuffer(
     DCHECK(!decoder_);
     task_runner_->PostTask(
         FROM_HERE,
-        base::Bind(&AudioDecoderAlsa::OnBufferDecoded,
+        base::Bind(&AudioDecoderForMixer::OnBufferDecoded,
                    weak_factory_.GetWeakPtr(), input_bytes,
                    CastAudioDecoder::Status::kDecodeOk, buffer_base));
-    return MediaPipelineBackendAlsa::kBufferPending;
+    return MediaPipelineBackend::kBufferPending;
   }
 
   DCHECK(decoder_);
   // Decode the buffer.
   decoder_->Decode(buffer_base,
-                   base::Bind(&AudioDecoderAlsa::OnBufferDecoded,
-                              weak_factory_.GetWeakPtr(),
-                              input_bytes));
-  return MediaPipelineBackendAlsa::kBufferPending;
+                   base::Bind(&AudioDecoderForMixer::OnBufferDecoded,
+                              weak_factory_.GetWeakPtr(), input_bytes));
+  return MediaPipelineBackend::kBufferPending;
 }
 
-void AudioDecoderAlsa::UpdateStatistics(Statistics delta) {
+void AudioDecoderForMixer::UpdateStatistics(Statistics delta) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   stats_.decoded_bytes += delta.decoded_bytes;
 }
 
-void AudioDecoderAlsa::GetStatistics(Statistics* stats) {
+void AudioDecoderForMixer::GetStatistics(Statistics* stats) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(stats);
   DCHECK(task_runner_->BelongsToCurrentThread());
   *stats = stats_;
 }
 
-bool AudioDecoderAlsa::SetConfig(const AudioConfig& config) {
+bool AudioDecoderForMixer::SetConfig(const AudioConfig& config) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!IsValidConfig(config)) {
@@ -285,12 +292,12 @@ bool AudioDecoderAlsa::SetConfig(const AudioConfig& config) {
 
   if (pending_buffer_complete_ && changed_sample_rate) {
     pending_buffer_complete_ = false;
-    delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferSuccess);
+    delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferSuccess);
   }
   return true;
 }
 
-void AudioDecoderAlsa::CreateDecoder() {
+void AudioDecoderForMixer::CreateDecoder() {
   DCHECK(!decoder_);
   DCHECK(IsValidConfig(config_));
 
@@ -302,14 +309,12 @@ void AudioDecoderAlsa::CreateDecoder() {
 
   // Create a decoder.
   decoder_ = CastAudioDecoder::Create(
-      task_runner_,
-      config_,
-      kDecoderSampleFormat,
-      base::Bind(&AudioDecoderAlsa::OnDecoderInitialized,
+      task_runner_, config_, kDecoderSampleFormat,
+      base::Bind(&AudioDecoderForMixer::OnDecoderInitialized,
                  weak_factory_.GetWeakPtr()));
 }
 
-void AudioDecoderAlsa::CreateRateShifter(int samples_per_second) {
+void AudioDecoderForMixer::CreateRateShifter(int samples_per_second) {
   rate_shifter_info_.clear();
   rate_shifter_info_.push_back(RateShifterInfo(1.0f));
 
@@ -323,7 +328,7 @@ void AudioDecoderAlsa::CreateRateShifter(int samples_per_second) {
       is_encrypted);
 }
 
-bool AudioDecoderAlsa::SetVolume(float multiplier) {
+bool AudioDecoderForMixer::SetVolume(float multiplier) {
   TRACE_FUNCTION_ENTRY1(multiplier);
   DCHECK(task_runner_->BelongsToCurrentThread());
   volume_multiplier_ = multiplier;
@@ -332,9 +337,9 @@ bool AudioDecoderAlsa::SetVolume(float multiplier) {
   return true;
 }
 
-AudioDecoderAlsa::RenderingDelay AudioDecoderAlsa::GetRenderingDelay() {
+AudioDecoderForMixer::RenderingDelay AudioDecoderForMixer::GetRenderingDelay() {
   TRACE_FUNCTION_ENTRY0();
-  AudioDecoderAlsa::RenderingDelay delay = last_mixer_delay_;
+  AudioDecoderForMixer::RenderingDelay delay = last_mixer_delay_;
   if (delay.timestamp_microseconds != kInvalidTimestamp) {
     double usec_per_sample = 1000000.0 / config_.samples_per_second;
 
@@ -354,7 +359,7 @@ AudioDecoderAlsa::RenderingDelay AudioDecoderAlsa::GetRenderingDelay() {
   return delay;
 }
 
-void AudioDecoderAlsa::OnDecoderInitialized(bool success) {
+void AudioDecoderForMixer::OnDecoderInitialized(bool success) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
   LOG(INFO) << "Decoder initialization was "
@@ -363,7 +368,7 @@ void AudioDecoderAlsa::OnDecoderInitialized(bool success) {
     delegate_->OnDecoderError();
 }
 
-void AudioDecoderAlsa::OnBufferDecoded(
+void AudioDecoderForMixer::OnBufferDecoded(
     uint64_t input_bytes,
     CastAudioDecoder::Status status,
     const scoped_refptr<DecoderBufferBase>& decoded) {
@@ -375,11 +380,11 @@ void AudioDecoderAlsa::OnBufferDecoded(
 
   if (status == CastAudioDecoder::Status::kDecodeError) {
     LOG(ERROR) << "Decode error";
-    delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferFailed);
+    delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferFailed);
     return;
   }
   if (mixer_error_) {
-    delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferFailed);
+    delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferFailed);
     return;
   }
 
@@ -444,7 +449,7 @@ void AudioDecoderAlsa::OnBufferDecoded(
   CheckBufferComplete();
 }
 
-void AudioDecoderAlsa::CheckBufferComplete() {
+void AudioDecoderForMixer::CheckBufferComplete() {
   if (!pending_buffer_complete_) {
     return;
   }
@@ -461,11 +466,11 @@ void AudioDecoderAlsa::CheckBufferComplete() {
 
   if (pushed_eos_ || !rate_shifter_queue_full) {
     pending_buffer_complete_ = false;
-    delegate_->OnPushBufferComplete(MediaPipelineBackendAlsa::kBufferSuccess);
+    delegate_->OnPushBufferComplete(MediaPipelineBackend::kBufferSuccess);
   }
 }
 
-void AudioDecoderAlsa::PushRateShifted() {
+void AudioDecoderForMixer::PushRateShifted() {
   DCHECK(mixer_input_);
 
   if (pushed_eos_ || pending_output_frames_ != kNoPendingOutput) {
@@ -558,26 +563,27 @@ void AudioDecoderAlsa::PushRateShifted() {
   }
 }
 
-bool AudioDecoderAlsa::BypassDecoder() const {
+bool AudioDecoderForMixer::BypassDecoder() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
   // The mixer input requires planar float PCM data.
   return (config_.codec == kCodecPCM &&
           config_.sample_format == kSampleFormatPlanarF32);
 }
 
-void AudioDecoderAlsa::OnWritePcmCompletion(BufferStatus status,
-                                            const RenderingDelay& delay) {
+void AudioDecoderForMixer::OnWritePcmCompletion(BufferStatus status,
+                                                const RenderingDelay& delay) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK_EQ(MediaPipelineBackendAlsa::kBufferSuccess, status);
+  DCHECK_EQ(MediaPipelineBackend::kBufferSuccess, status);
   pending_output_frames_ = kNoPendingOutput;
   last_mixer_delay_ = delay;
 
-  task_runner_->PostTask(FROM_HERE, base::Bind(&AudioDecoderAlsa::PushMorePcm,
-                                               weak_factory_.GetWeakPtr()));
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&AudioDecoderForMixer::PushMorePcm,
+                                    weak_factory_.GetWeakPtr()));
 }
 
-void AudioDecoderAlsa::PushMorePcm() {
+void AudioDecoderForMixer::PushMorePcm() {
   PushRateShifted();
 
   DCHECK(!rate_shifter_info_.empty());
@@ -588,7 +594,7 @@ void AudioDecoderAlsa::PushMorePcm() {
   }
 }
 
-void AudioDecoderAlsa::OnMixerError(MixerError error) {
+void AudioDecoderForMixer::OnMixerError(MixerError error) {
   TRACE_FUNCTION_ENTRY0();
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (error != MixerError::kInputIgnored)

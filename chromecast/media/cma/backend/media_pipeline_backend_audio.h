@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_MEDIA_PIPELINE_BACKEND_ALSA_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_MEDIA_PIPELINE_BACKEND_ALSA_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_AUDIO_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_AUDIO_H_
 
 #include <memory>
 #include <string>
@@ -21,13 +21,15 @@ class SingleThreadTaskRunner;
 
 namespace chromecast {
 namespace media {
-class AudioDecoderAlsa;
+
+class AudioDecoderForMixer;
 class VideoDecoderNull;
 
-class MediaPipelineBackendAlsa : public MediaPipelineBackend {
+// CMA Backend implementation for audio devices.
+class MediaPipelineBackendAudio : public MediaPipelineBackend {
  public:
-  explicit MediaPipelineBackendAlsa(const MediaPipelineDeviceParams& params);
-  ~MediaPipelineBackendAlsa() override;
+  explicit MediaPipelineBackendAudio(const MediaPipelineDeviceParams& params);
+  ~MediaPipelineBackendAudio() override;
 
   // MediaPipelineBackend implementation:
   AudioDecoder* CreateAudioDecoder() override;
@@ -57,12 +59,12 @@ class MediaPipelineBackendAlsa : public MediaPipelineBackend {
 
   const MediaPipelineDeviceParams params_;
   std::unique_ptr<VideoDecoderNull> video_decoder_;
-  std::unique_ptr<AudioDecoderAlsa> audio_decoder_;
+  std::unique_ptr<AudioDecoderForMixer> audio_decoder_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendAlsa);
+  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendAudio);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_MEDIA_PIPELINE_BACKEND_ALSA_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_AUDIO_H_

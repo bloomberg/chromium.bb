@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_ALSA_AUDIO_DECODER_ALSA_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_ALSA_AUDIO_DECODER_ALSA_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_FOR_MIXER_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_FOR_MIXER_H_
 
 #include <memory>
 
@@ -29,15 +29,16 @@ class AudioRendererAlgorithm;
 namespace chromecast {
 namespace media {
 class DecoderBufferBase;
-class MediaPipelineBackendAlsa;
+class MediaPipelineBackendAudio;
 
-class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
-                         public StreamMixerInput::Delegate {
+// AudioDecoder implementation that streams decoded stream to the StreamMixer.
+class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
+                             public StreamMixerInput::Delegate {
  public:
   using BufferStatus = MediaPipelineBackend::BufferStatus;
 
-  explicit AudioDecoderAlsa(MediaPipelineBackendAlsa* backend);
-  ~AudioDecoderAlsa() override;
+  explicit AudioDecoderForMixer(MediaPipelineBackendAudio* backend);
+  ~AudioDecoderForMixer() override;
 
   void Initialize();
   bool Start(int64_t start_pts);
@@ -49,8 +50,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   int64_t GetCurrentPts() const;
 
   // MediaPipelineBackend::AudioDecoder implementation:
-  void SetDelegate(
-      MediaPipelineBackend::Decoder::Delegate* delegate) override;
+  void SetDelegate(MediaPipelineBackend::Decoder::Delegate* delegate) override;
   BufferStatus PushBuffer(CastDecoderBuffer* buffer) override;
   void GetStatistics(Statistics* statistics) override;
   bool SetConfig(const AudioConfig& config) override;
@@ -86,7 +86,7 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
   bool ShouldStartClock() const;
   void UpdateStatistics(Statistics delta);
 
-  MediaPipelineBackendAlsa* const backend_;
+  MediaPipelineBackendAudio* const backend_;
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   MediaPipelineBackend::Decoder::Delegate* delegate_;
 
@@ -117,12 +117,12 @@ class AudioDecoderAlsa : public MediaPipelineBackend::AudioDecoder,
 
   scoped_refptr<::media::AudioBufferMemoryPool> pool_;
 
-  base::WeakPtrFactory<AudioDecoderAlsa> weak_factory_;
+  base::WeakPtrFactory<AudioDecoderForMixer> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(AudioDecoderAlsa);
+  DISALLOW_COPY_AND_ASSIGN(AudioDecoderForMixer);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_ALSA_AUDIO_DECODER_ALSA_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_FOR_MIXER_H_

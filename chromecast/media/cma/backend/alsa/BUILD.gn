@@ -2,17 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/buildflag_header.gni")
 import("//build/config/chromecast_build.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
-
-declare_args() {
-  # Set true to use raw timestamps on non-desktop cast build.
-  # ALSA version equal or later than 1.0.29 support this function.
-  use_alsa_monotonic_raw_tstamps = !is_cast_desktop_build
-}
 
 # Alsa must be used for these targets to build.
 assert(use_alsa)
@@ -20,7 +13,6 @@ assert(use_alsa)
 cast_shared_library("libcast_media_1.0_audio") {
   sources = [
     "cast_media_shlib.cc",
-    "media_codec_support_cast_audio.cc",
   ]
 
   deps = [
@@ -40,10 +32,6 @@ source_set("alsa_cma_backend") {
     "alsa_volume_control.h",
     "alsa_wrapper.cc",
     "alsa_wrapper.h",
-    "audio_decoder_alsa.cc",
-    "audio_decoder_alsa.h",
-    "media_pipeline_backend_alsa.cc",
-    "media_pipeline_backend_alsa.h",
     "mixer_output_stream_alsa.cc",
     "mixer_output_stream_alsa.h",
     "volume_control.cc",
@@ -52,26 +40,15 @@ source_set("alsa_cma_backend") {
   libs = [ "asound" ]
 
   deps = [
-    ":alsa_features",
     "//base",
     "//chromecast/base",
     "//chromecast/media/base",
     "//chromecast/media/cma/backend:audio",
+    "//chromecast/media/cma/backend:audio_features",
     "//chromecast/media/cma/base",
     "//chromecast/media/cma/decoder",
     "//chromecast/public/media",
     "//media",
-  ]
-}
-
-alsa_owns_volume = !enable_assistant && chromecast_branding != "google"
-
-buildflag_header("alsa_features") {
-  header = "alsa_features.h"
-
-  flags = [
-    "ALSA_MONOTONIC_RAW_TSTAMPS=$use_alsa_monotonic_raw_tstamps",
-    "ALSA_OWNS_VOLUME=$alsa_owns_volume",
   ]
 }
 

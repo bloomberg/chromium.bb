@@ -2,44 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/alsa/media_pipeline_backend_alsa.h"
+#include "chromecast/media/cma/backend/media_pipeline_backend_audio.h"
 
 #include <limits>
 
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/backend/alsa/audio_decoder_alsa.h"
+#include "chromecast/media/cma/backend/audio_decoder_for_mixer.h"
 #include "chromecast/media/cma/backend/video_decoder_null.h"
 
 namespace chromecast {
 namespace media {
 
-MediaPipelineBackendAlsa::MediaPipelineBackendAlsa(
+MediaPipelineBackendAudio::MediaPipelineBackendAudio(
     const MediaPipelineDeviceParams& params)
-    : state_(kStateUninitialized), params_(params) {
-}
+    : state_(kStateUninitialized), params_(params) {}
 
-MediaPipelineBackendAlsa::~MediaPipelineBackendAlsa() {
-}
+MediaPipelineBackendAudio::~MediaPipelineBackendAudio() {}
 
-MediaPipelineBackendAlsa::AudioDecoder*
-MediaPipelineBackendAlsa::CreateAudioDecoder() {
+MediaPipelineBackendAudio::AudioDecoder*
+MediaPipelineBackendAudio::CreateAudioDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (audio_decoder_)
     return nullptr;
-  audio_decoder_.reset(new AudioDecoderAlsa(this));
+  audio_decoder_ = std::make_unique<AudioDecoderForMixer>(this);
   return audio_decoder_.get();
 }
 
-MediaPipelineBackendAlsa::VideoDecoder*
-MediaPipelineBackendAlsa::CreateVideoDecoder() {
+MediaPipelineBackendAudio::VideoDecoder*
+MediaPipelineBackendAudio::CreateVideoDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (video_decoder_)
     return nullptr;
-  video_decoder_.reset(new VideoDecoderNull());
+  video_decoder_ = std::make_unique<VideoDecoderNull>();
   return video_decoder_.get();
 }
 
-bool MediaPipelineBackendAlsa::Initialize() {
+bool MediaPipelineBackendAudio::Initialize() {
   DCHECK_EQ(kStateUninitialized, state_);
   if (audio_decoder_)
     audio_decoder_->Initialize();
@@ -47,7 +45,7 @@ bool MediaPipelineBackendAlsa::Initialize() {
   return true;
 }
 
-bool MediaPipelineBackendAlsa::Start(int64_t start_pts) {
+bool MediaPipelineBackendAudio::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
   if (audio_decoder_ && !audio_decoder_->Start(start_pts))
     return false;
@@ -55,16 +53,16 @@ bool MediaPipelineBackendAlsa::Start(int64_t start_pts) {
   return true;
 }
 
-void MediaPipelineBackendAlsa::Stop() {
-  DCHECK(state_ == kStatePlaying || state_ == kStatePaused) << "Invalid state "
-                                                            << state_;
+void MediaPipelineBackendAudio::Stop() {
+  DCHECK(state_ == kStatePlaying || state_ == kStatePaused)
+      << "Invalid state " << state_;
   if (audio_decoder_)
     audio_decoder_->Stop();
 
   state_ = kStateInitialized;
 }
 
-bool MediaPipelineBackendAlsa::Pause() {
+bool MediaPipelineBackendAudio::Pause() {
   DCHECK_EQ(kStatePlaying, state_);
   if (audio_decoder_ && !audio_decoder_->Pause())
     return false;
@@ -72,7 +70,7 @@ bool MediaPipelineBackendAlsa::Pause() {
   return true;
 }
 
-bool MediaPipelineBackendAlsa::Resume() {
+bool MediaPipelineBackendAudio::Resume() {
   DCHECK_EQ(kStatePaused, state_);
   if (audio_decoder_ && !audio_decoder_->Resume())
     return false;
@@ -80,34 +78,34 @@ bool MediaPipelineBackendAlsa::Resume() {
   return true;
 }
 
-bool MediaPipelineBackendAlsa::SetPlaybackRate(float rate) {
+bool MediaPipelineBackendAudio::SetPlaybackRate(float rate) {
   if (audio_decoder_) {
     return audio_decoder_->SetPlaybackRate(rate);
   }
   return true;
 }
 
-int64_t MediaPipelineBackendAlsa::GetCurrentPts() {
+int64_t MediaPipelineBackendAudio::GetCurrentPts() {
   if (audio_decoder_)
     return audio_decoder_->GetCurrentPts();
   return std::numeric_limits<int64_t>::min();
 }
 
-bool MediaPipelineBackendAlsa::Primary() const {
+bool MediaPipelineBackendAudio::Primary() const {
   return (params_.audio_type !=
           MediaPipelineDeviceParams::kAudioStreamSoundEffects);
 }
 
-std::string MediaPipelineBackendAlsa::DeviceId() const {
+std::string MediaPipelineBackendAudio::DeviceId() const {
   return params_.device_id;
 }
 
-AudioContentType MediaPipelineBackendAlsa::ContentType() const {
+AudioContentType MediaPipelineBackendAudio::ContentType() const {
   return params_.content_type;
 }
 
 const scoped_refptr<base::SingleThreadTaskRunner>&
-MediaPipelineBackendAlsa::GetTaskRunner() const {
+MediaPipelineBackendAudio::GetTaskRunner() const {
   return static_cast<TaskRunnerImpl*>(params_.task_runner)->runner();
 }
 
