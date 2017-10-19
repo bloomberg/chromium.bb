@@ -57,11 +57,6 @@ const char kGoogleSignoutResponseHeader[] = "Google-Accounts-SignOut";
 // Key for DiceURLRequestUserData.
 const void* const kDiceURLRequestUserDataKey = &kDiceURLRequestUserDataKey;
 
-// Resource type for the request containing the account consistency response
-// headers.
-constexpr content::ResourceType kAccountConsistencyResponseType =
-    content::RESOURCE_TYPE_MAIN_FRAME;
-
 // TODO(droger): Remove this delay when the Dice implementation is finished on
 // the server side.
 int g_dice_account_reconcilor_blocked_delay_ms = 1000;
@@ -115,14 +110,9 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
     if (!IsAccountConsistencyDiceEnabled())
       return;
 
-    const content::ResourceRequestInfo* info =
-        content::ResourceRequestInfo::ForRequest(request);
-    content::ResourceType resource_type = info->GetResourceType();
-    // Requests from the Dice flow are either main resources or XHR from a Gaia
-    // referer.
-    if ((resource_type == kAccountConsistencyResponseType) ||
-        ((resource_type == content::RESOURCE_TYPE_XHR) &&
-         gaia::IsGaiaSignonRealm(GURL(request->referrer()).GetOrigin()))) {
+    if (ShouldBlockReconcilorForRequest(request)) {
+      const content::ResourceRequestInfo* info =
+          content::ResourceRequestInfo::ForRequest(request);
       request->SetUserData(kDiceURLRequestUserDataKey,
                            base::MakeUnique<DiceURLRequestUserData>(
                                info->GetWebContentsGetterForRequest()));
@@ -156,6 +146,25 @@ class DiceURLRequestUserData : public base::SupportsUserData::Data {
   }
 
  private:
+  // Returns true if the account reconcilor needs be be blocked while a Gaia
+  // sign-in request is in progress.
+  //
+  // The account reconcilor must be blocked on all request that may change the
+  // Gaia authentication cookies. This includes:
+  // * Main frame  requests.
+  // * XHR requests having Gaia URL as referrer.
+  static bool ShouldBlockReconcilorForRequest(net::URLRequest* request) {
+    DCHECK(IsAccountConsistencyDiceEnabled());
+    const content::ResourceRequestInfo* info =
+        content::ResourceRequestInfo::ForRequest(request);
+    content::ResourceType resource_type = info->GetResourceType();
+
+    if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME)
+      return true;
+
+    return (resource_type == content::RESOURCE_TYPE_XHR) &&
+           gaia::IsGaiaSignonRealm(GURL(request->referrer()).GetOrigin());
+  }
   // Dummy function used to extend the lifetime of the wrapper by keeping a
   // reference on it.
   static void DoNothing(scoped_refptr<AccountReconcilorLockWrapper> wrapper) {}
@@ -259,7 +268,7 @@ void ProcessMirrorResponseHeaderIfExists(net::URLRequest* request,
 
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-  if (!info || (info->GetResourceType() != kAccountConsistencyResponseType))
+  if (!info || (info->GetResourceType() != content::RESOURCE_TYPE_MAIN_FRAME))
     return;
 
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
@@ -309,8 +318,6 @@ void ProcessDiceResponseHeaderIfExists(net::URLRequest* request,
 
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request);
-  if (!info || (info->GetResourceType() != kAccountConsistencyResponseType))
-    return;
 
   if (!gaia::IsGaiaSignonRealm(request->url().GetOrigin()))
     return;
