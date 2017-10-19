@@ -27,6 +27,7 @@ namespace media {
 namespace {
 const char kMediaEME[] = "Media.EME.";
 const char kDot[] = ".";
+const char kCreateCdmUMAName[] = "CreateCdm";
 const char kTimeToCreateCdmUMAName[] = "CreateCdmTime";
 }  // namespace
 
@@ -162,6 +163,11 @@ void CdmSessionAdapter::OnCdmCreated(
                          "success", (cdm ? "true" : "false"), "error_message",
                          error_message);
 
+  auto key_system_uma_prefix =
+      kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
+  base::UmaHistogramBoolean(key_system_uma_prefix + kCreateCdmUMAName,
+                            cdm ? true : false);
+
   if (!cdm) {
     cdm_created_result_->CompleteWithError(
         blink::kWebContentDecryptionModuleExceptionNotSupportedError, 0,
@@ -171,8 +177,7 @@ void CdmSessionAdapter::OnCdmCreated(
   }
 
   key_system_ = key_system;
-  key_system_uma_prefix_ =
-      kMediaEME + GetKeySystemNameForUMA(key_system) + kDot;
+  key_system_uma_prefix_ = std::move(key_system_uma_prefix);
 
   // Only report time for successful CDM creation.
   base::UmaHistogramTimes(key_system_uma_prefix_ + kTimeToCreateCdmUMAName,

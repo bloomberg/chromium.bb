@@ -32305,6 +32305,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>cancelKeyRequest result using the Clear Key key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.ClearKey.CreateCdm" enum="BooleanSuccess">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Whether the CDM instance for Clear Key key system is created successfully.
+    Reported each time a CDM instance creation is attempted, usually as a result
+    of Javascript call of createMediaKeys().
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.ClearKey.CreateCdmTime" units="ms">
   <owner>xhwang@chromium.org</owner>
   <summary>
@@ -32422,6 +32431,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>cancelKeyRequest result using an unknown key system.</summary>
 </histogram>
 
+<histogram name="Media.EME.Unknown.CreateCdm" enum="BooleanSuccess">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Whether the CDM instance for an unknown key system is created successfully.
+    Reported each time a CDM instance creation is attempted, usually as a result
+    of Javascript call of createMediaKeys().
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.Unknown.CreateCdmTime" units="ms">
   <owner>xhwang@chromium.org</owner>
   <summary>
@@ -32487,6 +32505,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </obsolete>
   <owner>xhwang@chromium.org</owner>
   <summary>cancelKeyRequest result using the Widevine key system.</summary>
+</histogram>
+
+<histogram name="Media.EME.Widevine.CreateCdm" enum="BooleanSuccess">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Whether the CDM instance for Widevine key system is created successfully.
+    Reported each time a CDM instance creation is attempted, usually as a result
+    of Javascript call of createMediaKeys().
+  </summary>
 </histogram>
 
 <histogram name="Media.EME.Widevine.CreateCdmTime" units="ms">
