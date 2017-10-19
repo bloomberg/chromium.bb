@@ -77,11 +77,9 @@ class ProcessMemoryMetricsEmitterFake : public ProcessMemoryMetricsEmitter {
 
   void ReceivedMemoryDump(
       bool success,
-      uint64_t dump_guid,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr) override {
     EXPECT_TRUE(success);
-    ProcessMemoryMetricsEmitter::ReceivedMemoryDump(success, dump_guid,
-                                                    std::move(ptr));
+    ProcessMemoryMetricsEmitter::ReceivedMemoryDump(success, std::move(ptr));
     finished_memory_dump_ = true;
     QuitIfFinished();
   }

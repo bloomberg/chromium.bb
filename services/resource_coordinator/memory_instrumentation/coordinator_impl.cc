@@ -158,51 +158,26 @@ void CoordinatorImpl::BindCoordinatorRequest(
 void CoordinatorImpl::RequestGlobalMemoryDump(
     const base::trace_event::MemoryDumpRequestArgs& args_in,
     const RequestGlobalMemoryDumpCallback& callback) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // This merely strips out the |dump_guid| argument.
+  auto callback_adapter = [](const RequestGlobalMemoryDumpCallback& callback,
+                             bool success, uint64_t,
+                             mojom::GlobalMemoryDumpPtr global_memory_dump) {
+    callback.Run(success, std::move(global_memory_dump));
+  };
+  RequestGlobalMemoryDumpInternal(args_in, false,
+                                  base::Bind(callback_adapter, callback));
+}
 
-  UMA_HISTOGRAM_COUNTS_1000("Memory.Experimental.Debug.GlobalDumpQueueLength",
-                            queued_memory_dump_requests_.size());
-
-  bool another_dump_is_queued = !queued_memory_dump_requests_.empty();
-
-  // TODO(primiano): remove dump_guid from the request. For the moment callers
-  // should just pass a zero |dump_guid| in input. It should be an out-only arg.
-  DCHECK_EQ(0u, args_in.dump_guid);
-  base::trace_event::MemoryDumpRequestArgs args = args_in;
-  args.dump_guid = ++next_dump_id_;
-
-  // If this is a periodic or peak memory dump request and there already is
-  // another request in the queue with the same level of detail, there's no
-  // point in enqueuing this request.
-  if (another_dump_is_queued &&
-      args.dump_type !=
-          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED &&
-      args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY &&
-      args.dump_type != base::trace_event::MemoryDumpType::VM_REGIONS_ONLY) {
-    for (const auto& request : queued_memory_dump_requests_) {
-      if (request.args.level_of_detail == args.level_of_detail) {
-        VLOG(1) << "RequestGlobalMemoryDump("
-                << base::trace_event::MemoryDumpTypeToString(args.dump_type)
-                << ") skipped because another dump request with the same "
-                   "level of detail ("
-                << base::trace_event::MemoryDumpLevelOfDetailToString(
-                       args.level_of_detail)
-                << ") is already in the queue";
-        callback.Run(false /* success */, args.dump_guid,
-                     nullptr /* global_memory_dump */);
-        return;
-      }
-    }
-  }
-
-  queued_memory_dump_requests_.emplace_back(args, callback);
-
-  // If another dump is already in queued, this dump will automatically be
-  // scheduled when the other dump finishes.
-  if (another_dump_is_queued)
-    return;
-
-  PerformNextQueuedGlobalMemoryDump();
+void CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTrace(
+    const base::trace_event::MemoryDumpRequestArgs& args_in,
+    const RequestGlobalMemoryDumpAndAppendToTraceCallback& callback) {
+  // This merely strips out the |dump_ptr| argument.
+  auto callback_adapter =
+      [](const RequestGlobalMemoryDumpAndAppendToTraceCallback& callback,
+         bool success, uint64_t dump_guid,
+         mojom::GlobalMemoryDumpPtr) { callback.Run(success, dump_guid); };
+  RequestGlobalMemoryDumpInternal(args_in, true,
+                                  base::Bind(callback_adapter, callback));
 }
 
 void CoordinatorImpl::GetVmRegionsForHeapProfiler(
@@ -210,16 +185,7 @@ void CoordinatorImpl::GetVmRegionsForHeapProfiler(
   base::trace_event::MemoryDumpRequestArgs args{
       0 /* dump_guid */, base::trace_event::MemoryDumpType::VM_REGIONS_ONLY,
       base::trace_event::MemoryDumpLevelOfDetail::DETAILED};
-
-  // This merely strips out the |dump_guid| argument, which is not used by
-  // the GetVmRegionsForHeapProfiler() callback.
-  auto callback_adapter =
-      [](const GetVmRegionsForHeapProfilerCallback& vm_regions_callback,
-         bool success, uint64_t,
-         mojom::GlobalMemoryDumpPtr global_memory_dump) {
-        vm_regions_callback.Run(success, std::move(global_memory_dump));
-      };
-  RequestGlobalMemoryDump(args, base::Bind(callback_adapter, callback));
+  RequestGlobalMemoryDump(args, callback);
 }
 
 void CoordinatorImpl::RegisterClientProcess(
@@ -260,6 +226,57 @@ void CoordinatorImpl::UnregisterClientProcess(
   }
   size_t num_deleted = clients_.erase(client_process);
   DCHECK(num_deleted == 1);
+}
+
+void CoordinatorImpl::RequestGlobalMemoryDumpInternal(
+    const base::trace_event::MemoryDumpRequestArgs& args_in,
+    bool add_to_trace,
+    const RequestGlobalMemoryDumpInternalCallback& callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  UMA_HISTOGRAM_COUNTS_1000("Memory.Experimental.Debug.GlobalDumpQueueLength",
+                            queued_memory_dump_requests_.size());
+
+  bool another_dump_is_queued = !queued_memory_dump_requests_.empty();
+
+  // TODO(primiano): remove dump_guid from the request. For the moment callers
+  // should just pass a zero |dump_guid| in input. It should be an out-only arg.
+  DCHECK_EQ(0u, args_in.dump_guid);
+  base::trace_event::MemoryDumpRequestArgs args = args_in;
+  args.dump_guid = ++next_dump_id_;
+
+  // If this is a periodic or peak memory dump request and there already is
+  // another request in the queue with the same level of detail, there's no
+  // point in enqueuing this request.
+  if (another_dump_is_queued &&
+      args.dump_type !=
+          base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED &&
+      args.dump_type != base::trace_event::MemoryDumpType::SUMMARY_ONLY &&
+      args.dump_type != base::trace_event::MemoryDumpType::VM_REGIONS_ONLY) {
+    for (const auto& request : queued_memory_dump_requests_) {
+      if (request.args.level_of_detail == args.level_of_detail) {
+        VLOG(1) << "RequestGlobalMemoryDump("
+                << base::trace_event::MemoryDumpTypeToString(args.dump_type)
+                << ") skipped because another dump request with the same "
+                   "level of detail ("
+                << base::trace_event::MemoryDumpLevelOfDetailToString(
+                       args.level_of_detail)
+                << ") is already in the queue";
+        callback.Run(false /* success */, 0 /* dump_guid */,
+                     nullptr /* global_memory_dump */);
+        return;
+      }
+    }
+  }
+
+  queued_memory_dump_requests_.emplace_back(args, callback);
+
+  // If another dump is already in queued, this dump will automatically be
+  // scheduled when the other dump finishes.
+  if (another_dump_is_queued)
+    return;
+
+  PerformNextQueuedGlobalMemoryDump();
 }
 
 void CoordinatorImpl::PerformNextQueuedGlobalMemoryDump() {
@@ -581,7 +598,7 @@ CoordinatorImpl::QueuedMemoryDumpRequest::Response::~Response() {}
 
 CoordinatorImpl::QueuedMemoryDumpRequest::QueuedMemoryDumpRequest(
     const base::trace_event::MemoryDumpRequestArgs& args,
-    const RequestGlobalMemoryDumpCallback callback)
+    const RequestGlobalMemoryDumpInternalCallback& callback)
     : args(args), callback(callback) {}
 
 CoordinatorImpl::QueuedMemoryDumpRequest::~QueuedMemoryDumpRequest() {}

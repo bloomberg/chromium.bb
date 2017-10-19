@@ -161,10 +161,10 @@ class MockClientProcess : public mojom::ClientProcess {
 class MockGlobalMemoryDumpCallback {
  public:
   MockGlobalMemoryDumpCallback() = default;
-  MOCK_METHOD3(OnCall, void(bool, uint64_t, GlobalMemoryDump*));
+  MOCK_METHOD2(OnCall, void(bool, GlobalMemoryDump*));
 
-  void Run(bool success, uint64_t dump_guid, GlobalMemoryDumpPtr ptr) {
-    OnCall(success, dump_guid, ptr.get());
+  void Run(bool success, GlobalMemoryDumpPtr ptr) {
+    OnCall(success, ptr.get());
   }
 
   RequestGlobalMemoryDumpCallback Get() {
@@ -217,7 +217,7 @@ TEST_F(CoordinatorImplTest, NoClients) {
       MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()));
+  EXPECT_CALL(callback, OnCall(true, NotNull()));
   RequestGlobalMemoryDump(args, callback.Get());
 }
 
@@ -236,7 +236,7 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
       MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()))
+  EXPECT_CALL(callback, OnCall(true, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -263,10 +263,10 @@ TEST_F(CoordinatorImplTest, MissingChromeDump) {
           }));
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback,
-              OnCall(true, Ne(0u),
-                     Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
-                                   IsEmpty()))))
+  EXPECT_CALL(
+      callback,
+      OnCall(true, Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
+                                 IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -291,10 +291,10 @@ TEST_F(CoordinatorImplTest, MissingOsDump) {
           }));
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback,
-              OnCall(true, Ne(0u),
-                     Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
-                                   IsEmpty()))))
+  EXPECT_CALL(
+      callback,
+      OnCall(true, Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
+                                 IsEmpty()))))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -339,7 +339,7 @@ TEST_F(CoordinatorImplTest, ClientCrashDuringGlobalDump) {
           }));
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(false, Ne(0u), NotNull()))
+  EXPECT_CALL(callback, OnCall(false, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -370,7 +370,7 @@ TEST_F(CoordinatorImplTest, SingleClientCrashDuringGlobalDump) {
           }));
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(false, Ne(0u), NotNull()))
+  EXPECT_CALL(callback, OnCall(false, NotNull()))
       .WillOnce(RunClosure(run_loop.QuitClosure()));
   RequestGlobalMemoryDump(args, callback.Get());
   run_loop.Run();
@@ -476,8 +476,8 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
 #endif  // defined(OS_LINUX)
 
   MockGlobalMemoryDumpCallback callback;
-  EXPECT_CALL(callback, OnCall(true, Ne(0u), NotNull()))
-      .WillOnce(Invoke([&run_loop](bool success, uint64_t dump_guid,
+  EXPECT_CALL(callback, OnCall(true, NotNull()))
+      .WillOnce(Invoke([&run_loop](bool success,
                                    GlobalMemoryDump* global_dump) {
         EXPECT_TRUE(success);
         EXPECT_EQ(2U, global_dump->process_dumps.size());

@@ -104,7 +104,7 @@ void BackgroundMemoryTracingObserver::OnTracingEnabled(
           base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
           base::trace_event::MemoryDumpLevelOfDetail::BACKGROUND,
           memory_instrumentation::MemoryInstrumentation::
-              RequestGlobalDumpAndAppendToTraceCallback());
+              RequestGlobalMemoryDumpAndAppendToTraceCallback());
 }
 
 }  // namespace content
