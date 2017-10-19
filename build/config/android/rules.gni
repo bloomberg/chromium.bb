@@ -2044,7 +2044,7 @@ if (enable_java_templates) {
       srcjar_path = "${target_gen_dir}/${target_name}.srcjar"
       r_text_out_path = "${target_gen_dir}/${target_name}_R.txt"
       android_manifest = _android_manifest
-      resource_dirs = [ "//build/android/ant/empty/res" ]
+      resource_dirs = [ "//build/android/empty" ]
       zip_path = resources_zip_path
       all_resources_zip_path = _all_resources_zip_path
       generate_constant_ids = true

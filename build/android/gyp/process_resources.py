@@ -548,8 +548,12 @@ def main(args):
   resource_names = []
   for resource_dir in options.resource_dirs:
     for resource_file in build_utils.FindInDirectory(resource_dir, '*'):
-      input_paths.append(resource_file)
-      depfile_deps.append(resource_file)
+      # Don't list the empty .keep file in depfile. Since it doesn't end up
+      # included in the .zip, it can lead to -w 'dupbuild=err' ninja errors
+      # if ever moved.
+      if not resource_file.endswith(os.path.join('empty', '.keep')):
+        input_paths.append(resource_file)
+        depfile_deps.append(resource_file)
       resource_names.append(os.path.relpath(resource_file, resource_dir))
 
   # Resource filenames matter to the output, so add them to strings as well.
