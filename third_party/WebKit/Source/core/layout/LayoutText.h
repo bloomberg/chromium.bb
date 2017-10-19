@@ -206,7 +206,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // or segment break in node with style white-space: pre/pre-line/pre-wrap).
   // TODO(editing-dev): The behavior is introduced by crrev.com/e3eb4e in
   // InlineTextBox::ContainsCaretOffset(). Try to understand it.
-  bool ContainsCaretOffset(int) const;
+  virtual bool ContainsCaretOffset(int) const;
 
   int CaretMinOffset() const override;
   int CaretMaxOffset() const override;
