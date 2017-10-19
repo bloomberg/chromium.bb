@@ -1399,12 +1399,9 @@ void ServiceWorkerContextClient::SetRegistrationInServiceWorkerGlobalScope(
 
   // Register a registration and its version attributes with the dispatcher
   // living on the worker thread.
-  scoped_refptr<WebServiceWorkerRegistrationImpl> registration(
+  proxy_->SetRegistration(WebServiceWorkerRegistrationImpl::CreateHandle(
       dispatcher->GetOrCreateRegistrationForServiceWorkerGlobalScope(
-          std::move(info), attrs, io_thread_task_runner_));
-
-  proxy_->SetRegistration(
-      WebServiceWorkerRegistrationImpl::CreateHandle(registration));
+          std::move(info), attrs, io_thread_task_runner_)));
 }
 
 void ServiceWorkerContextClient::DispatchActivateEvent(
