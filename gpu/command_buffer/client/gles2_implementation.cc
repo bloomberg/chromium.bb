@@ -207,6 +207,8 @@ gpu::ContextResult GLES2Implementation::Initialize(
           kAlignment, kSizeToFlush)) {
     // TransferBuffer::Initialize doesn't fail for transient reasons such as if
     // the context was lost. See http://crrev.com/c/720269
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+               << "TransferBuffer::Initailize() failed";
     return gpu::ContextResult::kFatalFailure;
   }
 
@@ -255,6 +257,8 @@ gpu::ContextResult GLES2Implementation::Initialize(
     SetGLError(GL_INVALID_OPERATION,
                "Initialize",
                "Service bind_generates_resource mismatch.");
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+               << "bind_generates_resource mismatch";
     return gpu::ContextResult::kFatalFailure;
   }
 

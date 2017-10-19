@@ -638,11 +638,15 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           IsWebGLContextType(attrib_helper.context_type) ||
       !feature_info_->feature_flags().angle_request_extension) {
     Destroy(true);
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "missing required extension";
     return gpu::ContextResult::kFatalFailure;
   }
 
   if (attrib_helper.enable_oop_rasterization) {
     Destroy(true);
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "oop rasterization not supported";
     return gpu::ContextResult::kFatalFailure;
   }
 
@@ -770,15 +774,20 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
                                        feature_info_.get())) {
       bool was_lost = CheckResetStatus();
       Destroy(true);
+      LOG(ERROR) << (was_lost ? "ContextResult::kTransientFailure: "
+                              : "ContextResult::kFatalFailure: ")
+                 << "Resize of emulated back buffer failed";
       return was_lost ? gpu::ContextResult::kTransientFailure
                       : gpu::ContextResult::kFatalFailure;
     }
 
     if (FlushErrors()) {
-      LOG(ERROR) << "Creation of the offscreen framebuffer failed because "
-                    "errors were generated.";
       Destroy(true);
       // Errors are considered fatal, including OOM.
+      LOG(ERROR)
+          << "ContextResult::kFatalFailure: "
+             "Creation of the offscreen framebuffer failed because errors were "
+             "generated.";
       return gpu::ContextResult::kFatalFailure;
     }
 

@@ -1080,8 +1080,9 @@ void GpuChannel::OnCreateCommandBuffer(
   *capabilities = gpu::Capabilities();
 
   if (init_params.surface_handle != kNullSurfaceHandle && !is_gpu_host_) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): attempt to create a "
-                   "view context on a non-privileged channel";
+    LOG(ERROR)
+        << "ContextResult::kFatalFailure: "
+           "attempt to create a view context on a non-privileged channel";
     return;
   }
 
@@ -1089,36 +1090,37 @@ void GpuChannel::OnCreateCommandBuffer(
   GpuCommandBufferStub* share_group = LookupCommandBuffer(share_group_id);
 
   if (!share_group && share_group_id != MSG_ROUTING_NONE) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): invalid share group id";
+    LOG(ERROR) << "ContextResult::kFatalFailure: invalid share group id";
     return;
   }
 
   int32_t stream_id = init_params.stream_id;
   if (share_group && stream_id != share_group->stream_id()) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): stream id does not "
-                   "match share group stream id";
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "stream id does not match share group stream id";
     return;
   }
 
   SchedulingPriority stream_priority = init_params.stream_priority;
   if (stream_priority <= SchedulingPriority::kHigh && !is_gpu_host_) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): high priority stream "
-                   "not allowed on a non-privileged channel";
+    LOG(ERROR)
+        << "ContextResult::kFatalFailure: "
+           "high priority stream not allowed on a non-privileged channel";
     return;
   }
 
   if (share_group && !share_group->decoder()) {
     // This should catch test errors where we did not Initialize the
     // share_group's CommandBuffer.
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): shared context was "
-                   "not initialized";
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "shared context was not initialized";
     return;
   }
 
   if (share_group && share_group->decoder()->WasContextLost()) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): shared context was "
-                   "already lost";
     // The caller should retry to get a context.
+    LOG(ERROR) << "ContextResult::kTransientFailure: "
+                  "shared context was already lost";
     *result = gpu::ContextResult::kTransientFailure;
     return;
   }
@@ -1149,7 +1151,7 @@ void GpuChannel::OnCreateCommandBuffer(
   }
 
   if (!AddRoute(route_id, sequence_id, stub.get())) {
-    DLOG(ERROR) << "GpuChannel::CreateCommandBuffer(): failed to add route";
+    LOG(ERROR) << "ContextResult::kFatalFailure: failed to add route";
     return;
   }
 

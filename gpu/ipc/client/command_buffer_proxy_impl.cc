@@ -95,11 +95,17 @@ ContextResult CommandBufferProxyImpl::Initialize(
   TRACE_EVENT0("gpu", "CommandBufferProxyImpl::Initialize");
   shared_state_shm_ =
       channel->factory()->AllocateSharedMemory(sizeof(*shared_state()));
-  if (!shared_state_shm_)
+  if (!shared_state_shm_) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "AllocateSharedMemory failed";
     return ContextResult::kFatalFailure;
+  }
 
-  if (!shared_state_shm_->Map(sizeof(*shared_state())))
+  if (!shared_state_shm_->Map(sizeof(*shared_state()))) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "Map shared memory failed";
     return ContextResult::kFatalFailure;
+  }
 
   shared_state()->Initialize();
 
@@ -108,8 +114,11 @@ ContextResult CommandBufferProxyImpl::Initialize(
   // sending of the CreateCommandBuffer IPC below.
   base::SharedMemoryHandle handle =
       channel->ShareToGpuProcess(shared_state_shm_->handle());
-  if (!base::SharedMemory::IsHandleValid(handle))
+  if (!base::SharedMemory::IsHandleValid(handle)) {
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "Shared memory handle is not valid";
     return ContextResult::kFatalFailure;
+  }
 
   // Route must be added before sending the message, otherwise messages sent
   // from the GPU process could race against adding ourselves to the filter.
@@ -124,8 +133,9 @@ ContextResult CommandBufferProxyImpl::Initialize(
   bool sent = channel->Send(new GpuChannelMsg_CreateCommandBuffer(
       init_params, route_id_, handle, &result, &capabilities_));
   if (!sent) {
-    DLOG(ERROR) << "Failed to send GpuChannelMsg_CreateCommandBuffer.";
     channel->RemoveRoute(route_id_);
+    LOG(ERROR) << "ContextResult::kTransientFailure: "
+                  "Failed to send GpuChannelMsg_CreateCommandBuffer.";
     return ContextResult::kTransientFailure;
   }
   if (result != ContextResult::kSuccess) {
