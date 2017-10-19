@@ -18,6 +18,7 @@
 #include "components/password_manager/core/common/password_manager_ui.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/range/range.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/button/image_button.h"
@@ -129,6 +130,8 @@ std::unique_ptr<views::Textfield> CreateUsernameEditable(
   editable->SetText(form.username_value);
   editable->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
+  // In case of long username, ensure that the beginning of value is visible.
+  editable->SelectRange(gfx::Range(0));
   return editable;
 }
 
