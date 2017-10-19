@@ -65,11 +65,9 @@ struct DISPLAY_MANAGER_EXPORT TouchCalibrationData {
 };
 
 // A class that represents the display's mode info.
-class DISPLAY_MANAGER_EXPORT ManagedDisplayMode
-    : public base::RefCounted<ManagedDisplayMode> {
+class DISPLAY_MANAGER_EXPORT ManagedDisplayMode {
  public:
   ManagedDisplayMode();
-
   explicit ManagedDisplayMode(const gfx::Size& size);
 
   ManagedDisplayMode(const gfx::Size& size,
@@ -83,11 +81,16 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode
                      bool native,
                      float ui_scale,
                      float device_scale_factor);
+
+  ~ManagedDisplayMode();
+  ManagedDisplayMode(const ManagedDisplayMode& other);
+  ManagedDisplayMode& operator=(const ManagedDisplayMode& other);
+
   // Returns the size in DIP which is visible to the user.
   gfx::Size GetSizeInDIP(bool is_internal) const;
 
   // Returns true if |other| has same size and scale factors.
-  bool IsEquivalent(const scoped_refptr<ManagedDisplayMode>& other) const;
+  bool IsEquivalent(const ManagedDisplayMode& other) const;
 
   const gfx::Size& size() const { return size_; }
   bool is_interlaced() const { return is_interlaced_; }
@@ -103,9 +106,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode
   float device_scale_factor() const { return device_scale_factor_; }
 
  private:
-  ~ManagedDisplayMode();
-  friend class base::RefCounted<ManagedDisplayMode>;
-
   gfx::Size size_;             // Physical pixel size of the display.
   float refresh_rate_;         // Refresh rate of the display, in Hz.
   bool is_interlaced_;         // True if mode is interlaced.
@@ -113,8 +113,6 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode
   bool is_default_ = false;    // True if mode is one with default UI scale.
   float ui_scale_;             // The UI scale factor of the mode.
   float device_scale_factor_;  // The device scale factor of the mode.
-
-  DISALLOW_COPY_AND_ASSIGN(ManagedDisplayMode);
 };
 
 // ManagedDisplayInfo contains metadata for each display. This is used to create
@@ -122,7 +120,7 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayMode
 // environment. This class is intentionally made copiable.
 class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
  public:
-  using ManagedDisplayModeList = std::vector<scoped_refptr<ManagedDisplayMode>>;
+  using ManagedDisplayModeList = std::vector<ManagedDisplayMode>;
 
   // Creates a ManagedDisplayInfo from string spec. 100+200-1440x800 creates
   // display

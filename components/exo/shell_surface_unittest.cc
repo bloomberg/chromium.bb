@@ -421,10 +421,9 @@ TEST_P(ShellSurfaceBoundsModeTest, DefaultDeviceScaleFactorFromDisplayManager) {
       ash::Shell::Get()->display_manager();
 
   double scale = 1.25;
-  scoped_refptr<display::ManagedDisplayMode> mode(
-      new display::ManagedDisplayMode(size, 60.f, false /* overscan */,
-                                      true /*native*/, 1.0, scale));
-  mode->set_is_default(true);
+  display::ManagedDisplayMode mode(size, 60.f, false /* overscan */,
+                                   true /*native*/, 1.0, scale);
+  mode.set_is_default(true);
 
   display::ManagedDisplayInfo::ManagedDisplayModeList mode_list;
   mode_list.push_back(mode);

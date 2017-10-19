@@ -1293,8 +1293,8 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
   // Get the currently active mode and one other mode to switch to.
   int64_t id;
   base::StringToInt64(primary_info.id, &id);
-  scoped_refptr<display::ManagedDisplayMode> active_mode =
-      GetDisplayManager()->GetActiveModeForDisplayId(id);
+  display::ManagedDisplayMode active_mode;
+  EXPECT_TRUE(GetDisplayManager()->GetActiveModeForDisplayId(id, &active_mode));
   const api::system_display::DisplayMode* cur_mode = nullptr;
   const api::system_display::DisplayMode* other_mode = nullptr;
   for (const auto& mode : primary_info.modes) {
@@ -1310,14 +1310,13 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
   ASSERT_NE(other_mode, cur_mode);
 
   // Verify that other_mode differs from the active mode.
-  scoped_refptr<display::ManagedDisplayMode> other_mode_ash(
-      new display::ManagedDisplayMode(
-          gfx::Size(other_mode->width_in_native_pixels,
-                    other_mode->height_in_native_pixels),
-          active_mode->refresh_rate(), active_mode->is_interlaced(),
-          active_mode->native(), other_mode->ui_scale,
-          other_mode->device_scale_factor));
-  EXPECT_FALSE(active_mode->IsEquivalent(other_mode_ash));
+  display::ManagedDisplayMode other_mode_ash(
+      gfx::Size(other_mode->width_in_native_pixels,
+                other_mode->height_in_native_pixels),
+      active_mode.refresh_rate(), active_mode.is_interlaced(),
+      active_mode.native(), other_mode->ui_scale,
+      other_mode->device_scale_factor);
+  EXPECT_FALSE(active_mode.IsEquivalent(other_mode_ash));
 
   // Switch modes.
   api::system_display::DisplayProperties info;
@@ -1330,8 +1329,8 @@ TEST_F(DisplayInfoProviderChromeosTest, DisplayMode) {
   ASSERT_TRUE(success);
 
   // Verify that other_mode now matches the active mode.
-  active_mode = GetDisplayManager()->GetActiveModeForDisplayId(id);
-  EXPECT_TRUE(active_mode->IsEquivalent(other_mode_ash));
+  EXPECT_TRUE(GetDisplayManager()->GetActiveModeForDisplayId(id, &active_mode));
+  EXPECT_TRUE(active_mode.IsEquivalent(other_mode_ash));
 }
 
 TEST_F(DisplayInfoProviderChromeosTest, CustomTouchCalibrationInternal) {

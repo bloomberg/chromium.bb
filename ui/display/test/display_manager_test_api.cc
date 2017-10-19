@@ -40,19 +40,44 @@ DisplayInfoList CreateDisplayInfoListFromString(
   return display_info_list;
 }
 
-scoped_refptr<ManagedDisplayMode> GetDisplayModeForUIScale(
-    const ManagedDisplayInfo& info,
-    float ui_scale) {
+bool GetDisplayModeForUIScale(const ManagedDisplayInfo& info,
+                              float ui_scale,
+                              ManagedDisplayMode* mode) {
   const ManagedDisplayInfo::ManagedDisplayModeList& modes =
       info.display_modes();
-  auto iter =
-      std::find_if(modes.begin(), modes.end(),
-                   [ui_scale](const scoped_refptr<ManagedDisplayMode>& mode) {
-                     return mode->ui_scale() == ui_scale;
-                   });
+  auto iter = std::find_if(modes.begin(), modes.end(),
+                           [ui_scale](const ManagedDisplayMode& mode) {
+                             return mode.ui_scale() == ui_scale;
+                           });
   if (iter == modes.end())
-    return scoped_refptr<ManagedDisplayMode>();
-  return *iter;
+    return false;
+  *mode = *iter;
+  return true;
+}
+
+// Gets the display |mode| for |resolution|. Returns false if no display
+// mode matches the resolution, or the display is an internal display.
+bool GetDisplayModeForResolution(const ManagedDisplayInfo& info,
+                                 const gfx::Size& resolution,
+                                 ManagedDisplayMode* mode) {
+  if (Display::IsInternalDisplayId(info.id()))
+    return false;
+
+  const ManagedDisplayInfo::ManagedDisplayModeList& modes =
+      info.display_modes();
+  DCHECK_NE(0u, modes.size());
+  ManagedDisplayInfo::ManagedDisplayModeList::const_iterator iter =
+      std::find_if(modes.begin(), modes.end(),
+                   [resolution](const ManagedDisplayMode& mode) {
+                     return mode.size() == resolution;
+                   });
+  if (iter == modes.end()) {
+    DLOG(WARNING) << "Unsupported resolution was requested:"
+                  << resolution.ToString();
+    return false;
+  }
+  *mode = *iter;
+  return true;
 }
 
 }  // namespace
@@ -126,9 +151,8 @@ bool DisplayManagerTestApi::SetDisplayUIScale(int64_t id, float ui_scale) {
   }
   const ManagedDisplayInfo& info = display_manager_->GetDisplayInfo(id);
 
-  scoped_refptr<ManagedDisplayMode> mode =
-      GetDisplayModeForUIScale(info, ui_scale);
-  if (!mode)
+  ManagedDisplayMode mode;
+  if (!GetDisplayModeForUIScale(info, ui_scale, &mode))
     return false;
   return display_manager_->SetDisplayMode(id, mode);
 }
@@ -154,9 +178,8 @@ bool SetDisplayResolution(DisplayManager* display_manager,
                           int64_t display_id,
                           const gfx::Size& resolution) {
   const ManagedDisplayInfo& info = display_manager->GetDisplayInfo(display_id);
-  scoped_refptr<ManagedDisplayMode> mode =
-      GetDisplayModeForResolution(info, resolution);
-  if (!mode)
+  ManagedDisplayMode mode;
+  if (!GetDisplayModeForResolution(info, resolution, &mode))
     return false;
   return display_manager->SetDisplayMode(display_id, mode);
 }
