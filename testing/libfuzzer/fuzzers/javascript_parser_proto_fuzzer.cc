@@ -18,7 +18,7 @@ std::string protobuf_to_string(
     const javascript_parser_proto_fuzzer::Source& source_protobuf) {
   std::string source;
   for (const auto& token : source_protobuf.tokens()) {
-    source += token_to_string(token) + std::string(" ");
+    source += token_to_string(token, 0) + std::string(" ");
   }
   return source;
 }
