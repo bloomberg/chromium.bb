@@ -4,19 +4,25 @@
 
 #include "content/network/network_service_impl.h"
 
+#include <utility>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "content/network/network_context.h"
 #include "content/public/common/content_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/logging_network_change_observer.h"
+#include "net/base/network_change_notifier.h"
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
 #include "net/url_request/url_request_context_builder.h"
+
+#if defined(OS_ANDROID)
+#include "net/android/network_change_notifier_factory_android.h"
+#endif
 
 namespace content {
 
@@ -62,11 +68,33 @@ NetworkServiceImpl::NetworkServiceImpl(
     : registry_(std::move(registry)), binding_(this) {
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly. The latter is done in concert with using
-  // CreateNetworkContextWithBuilder to ease the transition to using the network
-  // service.
+  // CreateNetworkContextWithBuilder to ease the transition to using the
+  // network service.
   if (registry_) {
     registry_->AddInterface<mojom::NetworkService>(
         base::Bind(&NetworkServiceImpl::Create, base::Unretained(this)));
+
+    // Set up net::NetworkChangeNotifier to watch for network change events.
+    std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier;
+#if defined(OS_ANDROID)
+    network_change_notifier_factory_ =
+        std::make_unique<net::NetworkChangeNotifierFactoryAndroid>();
+    network_change_notifier =
+        base::WrapUnique(network_change_notifier_factory_->CreateInstance());
+#elif defined(OS_CHROMEOS) || defined(OS_IOS)
+    // ChromeOS has its own implementation of NetworkChangeNotifier that lives
+    // outside of //net and iOS doesn't embed //content.
+    // TODO(xunjieli): Figure out what to do for these two platforms.
+    NOTIMPLEMENTED();
+#else
+    network_change_notifier =
+        base::WrapUnique(net::NetworkChangeNotifier::Create());
+#endif
+    network_change_manager_ = std::make_unique<NetworkChangeManagerImpl>(
+        std::move(network_change_notifier));
+  } else {
+    network_change_manager_ =
+        std::make_unique<NetworkChangeManagerImpl>(nullptr);
   }
 
   if (net_log) {
@@ -159,6 +187,11 @@ bool NetworkServiceImpl::HasRawHeadersAccess(uint32_t process_id) const {
 
 net::NetLog* NetworkServiceImpl::net_log() const {
   return net_log_;
+}
+
+void NetworkServiceImpl::GetNetworkChangeManager(
+    mojom::NetworkChangeManagerRequest request) {
+  network_change_manager_->AddRequest(std::move(request));
 }
 
 void NetworkServiceImpl::OnBindInterface(
