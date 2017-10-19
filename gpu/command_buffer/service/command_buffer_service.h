@@ -120,6 +120,10 @@ class GPU_EXPORT CommandBufferService : public CommandBufferServiceBase {
 
   int32_t put_offset() const { return put_offset_; }
 
+  void SetGetOffsetForTest(int32_t get_offset) {
+    state_.get_offset = get_offset;
+  }
+
  private:
   CommandBufferServiceClient* client_;
   TransferBufferManager* transfer_buffer_manager_;
