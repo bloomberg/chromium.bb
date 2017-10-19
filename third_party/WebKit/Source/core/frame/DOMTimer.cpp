@@ -183,7 +183,7 @@ void DOMTimer::Fired() {
   action->Dispose();
 }
 
-RefPtr<WebTaskRunner> DOMTimer::TimerTaskRunner() const {
+scoped_refptr<WebTaskRunner> DOMTimer::TimerTaskRunner() const {
   return GetExecutionContext()->Timers()->TimerTaskRunner();
 }
 

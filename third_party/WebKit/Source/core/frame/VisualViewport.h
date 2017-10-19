@@ -216,7 +216,7 @@ class CORE_EXPORT VisualViewport final
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
-  RefPtr<WebTaskRunner> GetTimerTaskRunner() const final;
+  scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final;
 
   // VisualViewport scrolling may involve pinch zoom and gets routed through
   // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll

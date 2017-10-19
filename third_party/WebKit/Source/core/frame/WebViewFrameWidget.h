@@ -112,7 +112,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;
 
   WebWidgetClient* client_;
-  RefPtr<WebViewImpl> web_view_;
+  scoped_refptr<WebViewImpl> web_view_;
   Member<WebLocalFrameImpl> main_frame_;
 
   SelfKeepAlive<WebViewFrameWidget> self_keep_alive_;

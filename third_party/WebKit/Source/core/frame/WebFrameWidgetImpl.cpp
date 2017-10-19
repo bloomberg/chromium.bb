@@ -787,7 +787,7 @@ void WebFrameWidgetImpl::HandleMouseDown(LocalFrame& main_frame,
   // If there is a popup open, close it as the user is clicking on the page
   // (outside of the popup). We also save it so we can prevent a click on an
   // element from immediately reopening the same popup.
-  RefPtr<WebPagePopupImpl> page_popup;
+  scoped_refptr<WebPagePopupImpl> page_popup;
   if (event.button == WebMouseEvent::Button::kLeft) {
     page_popup = view_impl->GetPagePopup();
     view_impl->HidePopups();

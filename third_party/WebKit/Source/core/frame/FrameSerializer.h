@@ -146,7 +146,7 @@ class CORE_EXPORT FrameSerializer final {
 
   void AddToResources(const String& mime_type,
                       ResourceHasCacheControlNoStoreHeader,
-                      RefPtr<const SharedBuffer>,
+                      scoped_refptr<const SharedBuffer>,
                       const KURL&);
   void AddImageToResources(ImageResourceContent*, const KURL&);
   void AddFontToResources(FontResource*);

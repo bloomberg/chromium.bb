@@ -1089,7 +1089,7 @@ void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
 
 std::unique_ptr<WebURLLoader> LocalFrame::CreateURLLoader(
     const ResourceRequest& request,
-    RefPtr<WebTaskRunner> task_runner) {
+    scoped_refptr<WebTaskRunner> task_runner) {
   return Client()->CreateURLLoader(request, std::move(task_runner));
 }
 
@@ -1120,8 +1120,9 @@ void LocalFrame::SetViewportIntersectionFromParent(
   }
 }
 
-void LocalFrame::ForceSynchronousDocumentInstall(const AtomicString& mime_type,
-                                                 RefPtr<SharedBuffer> data) {
+void LocalFrame::ForceSynchronousDocumentInstall(
+    const AtomicString& mime_type,
+    scoped_refptr<SharedBuffer> data) {
   CHECK(loader_.StateMachine()->IsDisplayingInitialEmptyDocument());
   DCHECK(!Client()->IsLocalFrameClientImpl());
 
