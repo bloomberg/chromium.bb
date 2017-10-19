@@ -8955,6 +8955,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ChromeOS.DetachableBase.PairResult"
+    enum="DetachableBasePairResult">
+  <owner>kitching@google.com</owner>
+  <summary>Result of a Chrome OS detachable base pair operation.</summary>
+</histogram>
+
 <histogram name="ChromeOS.DetachableBase.ROUpdateMetric"
     enum="DetachableBaseROUpdateResult">
   <owner>kitching@google.com</owner>
