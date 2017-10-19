@@ -5558,11 +5558,9 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
 }
 
 static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
-                               RD_STATS *rd_stats, BLOCK_SIZE bsize,
-                               int64_t ref_best_rd) {
-#if CONFIG_EXT_TX
+                               RD_STATS *rd_stats, BLOCK_SIZE bsize, int mi_row,
+                               int mi_col, int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
-#endif  // CONFIG_EXT_TX
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
@@ -5587,6 +5585,8 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const TxSetType tx_set_type = get_ext_tx_set_type(
       max_tx_size, bsize, is_inter, cm->reduced_tx_set_used);
 #endif  // CONFIG_EXT_TX
+  int within_border = (mi_row + mi_size_high[bsize] <= cm->mi_rows) &&
+                      (mi_col + mi_size_wide[bsize] <= cm->mi_cols);
 
   av1_invalid_rd_stats(rd_stats);
 
@@ -5601,7 +5601,7 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   const uint32_t hash = get_block_residue_hash(x, bsize);
   TX_RD_RECORD *tx_rd_record = &x->tx_rd_record;
 
-  if (ref_best_rd != INT64_MAX) {
+  if (ref_best_rd != INT64_MAX && within_border) {
     for (int i = 0; i < tx_rd_record->num; ++i) {
       const int index = (tx_rd_record->index_start + i) % RD_RECORD_BUFFER_LEN;
       // If there is a match in the tx_rd_record, fetch the RD decision and
@@ -5728,17 +5728,19 @@ static void select_tx_type_yrd(const AV1_COMP *cpi, MACROBLOCK *x,
   memcpy(x->blk_skip[0], best_blk_skip, sizeof(best_blk_skip[0]) * n4);
 
   // Save the RD search results into tx_rd_record.
-  int index;
-  if (tx_rd_record->num < RD_RECORD_BUFFER_LEN) {
-    index =
-        (tx_rd_record->index_start + tx_rd_record->num) % RD_RECORD_BUFFER_LEN;
-    ++tx_rd_record->num;
-  } else {
-    index = tx_rd_record->index_start;
-    tx_rd_record->index_start =
-        (tx_rd_record->index_start + 1) % RD_RECORD_BUFFER_LEN;
+  if (within_border) {
+    int index;
+    if (tx_rd_record->num < RD_RECORD_BUFFER_LEN) {
+      index = (tx_rd_record->index_start + tx_rd_record->num) %
+              RD_RECORD_BUFFER_LEN;
+      ++tx_rd_record->num;
+    } else {
+      index = tx_rd_record->index_start;
+      tx_rd_record->index_start =
+          (tx_rd_record->index_start + 1) % RD_RECORD_BUFFER_LEN;
+    }
+    save_tx_rd_info(n4, hash, x, rd_stats, &tx_rd_record->tx_rd_info[index]);
   }
-  save_tx_rd_info(n4, hash, x, rd_stats, &tx_rd_record->tx_rd_info[index]);
 }
 
 static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
@@ -9056,7 +9058,8 @@ static int64_t motion_mode_rd(
       av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
       if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-        select_tx_type_yrd(cpi, x, rd_stats_y, bsize, ref_best_rd);
+        select_tx_type_yrd(cpi, x, rd_stats_y, bsize, mi_row, mi_col,
+                           ref_best_rd);
       } else {
         int idx, idy;
         super_block_yrd(cpi, x, rd_stats_y, bsize, ref_best_rd);
@@ -10013,7 +10016,7 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-      select_tx_type_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
+      select_tx_type_yrd(cpi, x, &rd_stats, bsize, mi_row, mi_col, INT64_MAX);
     } else {
       int idx, idy;
       super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
@@ -11751,7 +11754,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
       if (cm->tx_mode == TX_MODE_SELECT || xd->lossless[mbmi->segment_id]) {
-        select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+        select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col,
+                           INT64_MAX);
         assert(rd_stats_y.rate != INT_MAX);
       } else {
         int idx, idy;
@@ -12555,7 +12559,7 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
   av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   } else {
     int idx, idy;
     super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
@@ -12605,7 +12609,7 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
   av1_subtract_plane(x, bsize, 0);
 #if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   } else {
     int idx, idy;
     super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
@@ -12719,7 +12723,7 @@ int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
 
 #if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
-    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
+    select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   } else {
     int idx, idy;
     super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
