@@ -205,7 +205,16 @@ std::string GetAuthorizationCodeUri() {
   NSString* authUri =
       [NSString stringWithCString:GetAuthorizationCodeUri().c_str()
                          encoding:[NSString defaultCStringEncoding]];
-  [[UIApplication sharedApplication] openURL:[NSURL URLWithString:authUri]];
+  if (@available(iOS 10, *)) {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:authUri]
+                                       options:@{}
+                             completionHandler:nil];
+  }
+#if !defined(__IPHONE_10_0) || __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_10_0
+  else {
+    [[UIApplication sharedApplication] openURL:[NSURL URLWithString:authUri]];
+  }
+#endif
 }
 
 - (void)didTapLogout:(id)sender {
