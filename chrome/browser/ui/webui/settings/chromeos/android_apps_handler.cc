@@ -40,7 +40,7 @@ void AndroidAppsHandler::OnJavascriptAllowed() {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   if (arc_prefs) {
     arc_prefs_observer_.Add(arc_prefs);
-    // arc::ArcSessionManager is assosiated with primary profile.
+    // arc::ArcSessionManager is associated with primary profile.
     arc_session_manager_observer_.Add(arc::ArcSessionManager::Get());
   }
 }

@@ -738,7 +738,7 @@ class TraceAnalyzer {
   std::map<TraceEvent::ProcessThreadID, std::string> thread_names_;
   std::vector<TraceEvent> raw_events_;
   bool ignore_metadata_events_;
-  bool allow_assocation_changes_;
+  bool allow_association_changes_;
 
   DISALLOW_COPY_AND_ASSIGN(TraceAnalyzer);
 };

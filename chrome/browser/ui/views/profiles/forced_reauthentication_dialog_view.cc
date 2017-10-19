@@ -56,7 +56,7 @@ bool IsMatchingBrowser(Browser* browser, Profile* profile) {
          BrowserView::GetBrowserViewForBrowser(browser)->frame()->IsVisible();
 }
 
-// Find a browser that is assoicated with |profile| to show the dialog for
+// Find a browser that is associated with |profile| to show the dialog for
 // Sign out warning.
 Browser* FindBrowserWithProfile(Profile* profile) {
   Browser* browser = BrowserList::GetInstance()->GetLastActive();

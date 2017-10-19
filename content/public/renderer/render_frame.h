@@ -170,7 +170,7 @@ class CONTENT_EXPORT RenderFrame : public IPC::Listener,
   virtual AssociatedInterfaceRegistry* GetAssociatedInterfaceRegistry() = 0;
 
   // Returns the AssociatedInterfaceProvider this frame can use to access
-  // frame-specific Channel-assocaited interfaces from the remote
+  // frame-specific Channel-associated interfaces from the remote
   // RenderFrameHost.
   virtual AssociatedInterfaceProvider* GetRemoteAssociatedInterfaces() = 0;
 

@@ -59,7 +59,7 @@ class POLICY_EXPORT PolicyHeaderIOHelper {
   // The URL we should add policy headers to.
   std::string server_url_;
 
-  // The task runner assocated with the I/O thread that runs this object.
+  // The task runner associated with the I/O thread that runs this object.
   scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
 
   // The current policy header value.

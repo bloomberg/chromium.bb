@@ -206,7 +206,7 @@ cr.define('cr.ui', function() {
    * The flag that prevents the shortcut text from being displayed on menu.
    *
    * If false, the keyboard shortcut text (eg. "Ctrl+X" for the cut command)
-   * is displayed in menu when the command is assosiated with a menu item.
+   * is displayed in menu when the command is associated with a menu item.
    * Otherwise, no text is displayed.
    */
   cr.defineProperty(Command, 'hideShortcutText', cr.PropertyKind.BOOL_ATTR);

@@ -398,7 +398,7 @@ class CC_EXPORT ResourceProvider
       // former case where the resource was synchronized externally, a
       // corresponding sync token will not exist. In the latter case which was
       // synchronized from the NEEDS_WAIT state, a corresponding sync token will
-      // exist which is assocaited with the resource. This sync token is still
+      // exist which is associated with the resource. This sync token is still
       // valid and still associated with the resource and can be passed as an
       // external resource for others to wait on.
       SYNCHRONIZED,

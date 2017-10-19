@@ -192,7 +192,7 @@ class NET_EXPORT HttpResponseInfo {
   // The "Vary" header data for this response.
   HttpVaryData vary_data;
 
-  // Any metadata asociated with this resource's cached data.
+  // Any metadata associated with this resource's cached data.
   scoped_refptr<IOBufferWithSize> metadata;
 
   static std::string ConnectionInfoToString(ConnectionInfo connection_info);

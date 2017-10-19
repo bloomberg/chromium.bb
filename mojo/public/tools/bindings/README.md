@@ -249,7 +249,7 @@ struct AllTheThings {
   SampleInterface&? nullable_sample_interface_request;
   associated SampleInterface associated_interface_client;
   associated SampleInterface& associated_interface_request;
-  assocaited SampleInterface&? maybe_another_associated_request;
+  associated SampleInterface&? maybe_another_associated_request;
 };
 ```
 

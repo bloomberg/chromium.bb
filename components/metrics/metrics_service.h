@@ -305,7 +305,7 @@ class MetricsService : public base::HistogramFlattener {
   // i.e., histograms with the |kUmaStabilityHistogramFlag| flag set.
   void RecordCurrentStabilityHistograms();
 
-  // Record a single independent profile and assocatied histogram from
+  // Record a single independent profile and associated histogram from
   // metrics providers. If this returns true, one was found and there may
   // be more.
   bool PrepareProviderMetricsLog();

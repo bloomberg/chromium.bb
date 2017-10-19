@@ -25,7 +25,7 @@ class ForcedReauthenticationDialog {
   // Show the ForcedReauthenticationDialog for |profile|. If there're no opened
   // browser windows for |profile|, |signin_manager| will be called to signed
   // out immediately. Otherwise, dialog will be closed with all browser windows
-  // are assoicated to |profile| after |countdown_duration| if there is no
+  // are associated to |profile| after |countdown_duration| if there is no
   // reauth.
   virtual void ShowDialog(Profile* profile,
                           SigninManager* signin_manager,

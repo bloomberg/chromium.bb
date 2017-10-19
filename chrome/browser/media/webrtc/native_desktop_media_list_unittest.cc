@@ -232,7 +232,7 @@ class NativeDesktopMediaListTest : public views::ViewsTestBase {
 #else
     int native_id = widget;
 #endif
-    // Remove the widget and assoicate aura window.
+    // Remove the widget and associated aura window.
     desktop_widgets_.erase(desktop_widgets_.begin() + index);
     // Remove the aura window from the window list.
     size_t i;
