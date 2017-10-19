@@ -165,7 +165,8 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
                 false);
         // Scale once beforehand before we start measuring.
         const gfx::Rect output_rect(dst_size);
-        scaler->Scale(src_texture, src_size, dst_texture, output_rect);
+        scaler->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
+                      output_rect);
         gl_->Finish();
 
         base::TimeTicks start_time = base::TimeTicks::Now();
@@ -174,7 +175,8 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
         while (true) {
           for (int i = 0; i < 50; i++) {
             iterations++;
-            scaler->Scale(src_texture, src_size, dst_texture, output_rect);
+            scaler->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
+                          output_rect);
             gl_->Flush();
           }
           gl_->Finish();

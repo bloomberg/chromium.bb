@@ -84,6 +84,7 @@ class I420ConverterImpl : public I420Converter {
 
   void Convert(GLuint src_texture,
                const gfx::Size& src_texture_size,
+               const gfx::Vector2dF& src_offset,
                GLHelper::ScalerInterface* optional_scaler,
                const gfx::Rect& output_rect,
                GLuint y_plane_texture,
@@ -420,7 +421,8 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
       quality, gfx::Vector2d(src_size.width(), src_size.height()),
       gfx::Vector2d(dst_size.width(), dst_size.height()),
       vertically_flip_texture, swizzle);
-  scaler->Scale(src_texture, src_size, dst_texture, gfx::Rect(dst_size));
+  scaler->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
+                gfx::Rect(dst_size));
   return dst_texture;
 }
 
@@ -446,7 +448,7 @@ GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
   const std::unique_ptr<ScalerInterface> planerizer =
       helper_->scaler_impl_.get()->CreateGrayscalePlanerizer(
           vertically_flip_texture, swizzle);
-  planerizer->Scale(src_texture, src_size, dst_texture,
+  planerizer->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
                     gfx::Rect(*encoded_texture_size));
   return dst_texture;
 }
@@ -975,6 +977,7 @@ I420ConverterImpl::~I420ConverterImpl() = default;
 
 void I420ConverterImpl::Convert(GLuint src_texture,
                                 const gfx::Size& src_texture_size,
+                                const gfx::Vector2dF& src_offset,
                                 GLHelper::ScalerInterface* optional_scaler,
                                 const gfx::Rect& output_rect,
                                 GLuint y_plane_texture,
@@ -994,7 +997,7 @@ void I420ConverterImpl::Convert(GLuint src_texture,
     // The scaler should not be configured to do any swizzling.
     DCHECK_EQ(optional_scaler->GetReadbackFormat(),
               static_cast<GLenum>(GL_RGBA));
-    optional_scaler->Scale(src_texture, src_texture_size,
+    optional_scaler->Scale(src_texture, src_texture_size, src_offset,
                            intermediate_->texture(), output_rect);
   }
 
@@ -1003,19 +1006,20 @@ void I420ConverterImpl::Convert(GLuint src_texture,
       optional_scaler ? intermediate_->texture() : src_texture;
   const gfx::Size texture_size =
       optional_scaler ? intermediate_->size() : src_texture_size;
+  const gfx::Vector2dF offset = optional_scaler ? gfx::Vector2dF() : src_offset;
   if (use_mrt()) {
-    y_planerizer_->ScaleToMultipleOutputs(texture, texture_size,
+    y_planerizer_->ScaleToMultipleOutputs(texture, texture_size, offset,
                                           y_plane_texture, uv_->id(),
                                           gfx::Rect(y_texture_size));
-    u_planerizer_->ScaleToMultipleOutputs(uv_->id(), y_texture_size,
-                                          u_plane_texture, v_plane_texture,
-                                          gfx::Rect(chroma_texture_size));
+    u_planerizer_->ScaleToMultipleOutputs(
+        uv_->id(), y_texture_size, gfx::Vector2dF(), u_plane_texture,
+        v_plane_texture, gfx::Rect(chroma_texture_size));
   } else {
-    y_planerizer_->Scale(texture, texture_size, y_plane_texture,
+    y_planerizer_->Scale(texture, texture_size, offset, y_plane_texture,
                          gfx::Rect(y_texture_size));
-    u_planerizer_->Scale(texture, texture_size, u_plane_texture,
+    u_planerizer_->Scale(texture, texture_size, offset, u_plane_texture,
                          gfx::Rect(chroma_texture_size));
-    v_planerizer_->Scale(texture, texture_size, v_plane_texture,
+    v_planerizer_->Scale(texture, texture_size, offset, v_plane_texture,
                          gfx::Rect(chroma_texture_size));
   }
 }
@@ -1111,8 +1115,9 @@ void GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUV(
 
   GLuint mailbox_texture =
       copy_impl_->ConsumeMailboxToTexture(mailbox, sync_token);
-  I420ConverterImpl::Convert(mailbox_texture, src_texture_size, scaler_.get(),
-                             output_rect, y_, u_, v_);
+  I420ConverterImpl::Convert(mailbox_texture, src_texture_size,
+                             gfx::Vector2dF(), scaler_.get(), output_rect, y_,
+                             u_, v_);
   gl_->DeleteTextures(1, &mailbox_texture);
 
   // Read back planes, one at a time. Keep the video frame alive while doing the
