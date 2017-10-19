@@ -136,6 +136,7 @@ source_set("unit_tests") {
     "model/mark_page_accessed_task_unittest.cc",
     "model/temporary_pages_consistency_check_task_unittest.cc",
     "offline_event_logger_unittest.cc",
+    "offline_page_feature_unittest.cc",
     "offline_page_metadata_store_unittest.cc",
     "offline_page_model_event_logger_unittest.cc",
     "offline_page_model_impl_unittest.cc",
