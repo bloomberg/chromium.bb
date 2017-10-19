@@ -92349,6 +92349,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="WebFont.InterventionResult" enum="WebFontInterventionResult">
+  <obsolete>
+    Deprecated 10/2017. Related field trial has finished rolling out.
+  </obsolete>
   <owner>toyoshim@chromium.org</owner>
   <owner>kenjibaheux@chromium.org</owner>
   <summary>
@@ -105949,6 +105952,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram_suffixes name="WebFontMissedCacheAndInterventionTriggeredOrNot"
     separator="." ordering="prefix">
+  <obsolete>
+    Deprecated 10/2017. Related field trial has finished rolling out.
+  </obsolete>
   <owner>toyoshim@chromium.org</owner>
   <suffix name="MissedCacheAndInterventionNotTriggered"
       label="On missed cache and intervention not triggered"/>
