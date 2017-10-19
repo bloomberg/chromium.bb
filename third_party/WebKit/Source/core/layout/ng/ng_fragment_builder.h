@@ -122,6 +122,9 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
   Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
 
+  NGPhysicalFragment::NGBoxType BoxType() const;
+  NGFragmentBuilder& SetBoxType(NGPhysicalFragment::NGBoxType);
+
   bool DidBreak() const { return did_break_; }
 
   NGFragmentBuilder& SetBorderEdges(NGBorderEdges border_edges) {
@@ -146,6 +149,7 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
   LayoutUnit block_size_;
   LayoutUnit intrinsic_block_size_;
 
+  NGPhysicalFragment::NGBoxType box_type_;
   bool did_break_;
   LayoutUnit used_block_size_;
 

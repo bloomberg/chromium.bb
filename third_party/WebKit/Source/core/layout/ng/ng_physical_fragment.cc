@@ -51,6 +51,8 @@ String StringForBoxType(NGPhysicalFragment::NGBoxType box_type) {
       return "floating";
     case NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned:
       return "out-of-flow-positioned";
+    case NGPhysicalFragment::NGBoxType::kOldLayoutRoot:
+      return "old-layout-root";
     case NGPhysicalFragment::NGBoxType::kAnonymousBox:
       return "anonymous";
   }
@@ -159,6 +161,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
       size_(size),
       break_token_(std::move(break_token)),
       type_(type),
+      box_type_(NGBoxType::kNormalBox),
       is_placed_(false) {}
 
 // Keep the implementation of the destructor here, to avoid dependencies on
@@ -191,43 +194,6 @@ Node* NGPhysicalFragment::GetNode() const {
   // TODO(layout-dev): This should store the node directly instead of going
   // through LayoutObject.
   return layout_object_ ? layout_object_->GetNode() : nullptr;
-}
-
-// TODO(kojii): This series of Is*() functions rely on LayoutObject for now, but
-// should be set by fragment builder.
-bool NGPhysicalFragment::IsInlineBlock() const {
-  return layout_object_ && layout_object_->IsAtomicInlineLevel();
-}
-
-bool NGPhysicalFragment::IsFloating() const {
-  return layout_object_ && layout_object_->IsFloating();
-}
-
-bool NGPhysicalFragment::IsOutOfFlowPositioned() const {
-  return layout_object_ && layout_object_->IsOutOfFlowPositioned();
-}
-
-bool NGPhysicalFragment::IsAnonymousBox() const {
-  return !layout_object_ || layout_object_->Style() != style_.get();
-}
-
-bool NGPhysicalFragment::IsBlockLayoutRoot() const {
-  if (IsAnonymousBox())
-    return false;
-  return layout_object_->IsAtomicInlineLevel() ||
-         layout_object_->IsFloatingOrOutOfFlowPositioned();
-}
-
-NGPhysicalFragment::NGBoxType NGPhysicalFragment::BoxType() const {
-  if (IsInlineBlock())
-    return NGPhysicalFragment::NGBoxType::kInlineBlock;
-  if (IsFloating())
-    return NGPhysicalFragment::NGBoxType::kFloating;
-  if (IsOutOfFlowPositioned())
-    return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
-  if (IsAnonymousBox())
-    return NGPhysicalFragment::NGBoxType::kAnonymousBox;
-  return NGPhysicalFragment::NGBoxType::kNormalBox;
 }
 
 NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {

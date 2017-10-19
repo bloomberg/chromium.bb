@@ -56,7 +56,8 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
                              NGBreakToken*,
                              RefPtr<NGLayoutResult>);
 
-  const NGPaintFragment* PaintFragment() const { return paint_fragment_.get(); }
+  NGPaintFragment* PaintFragment() const { return paint_fragment_.get(); }
+  void SetPaintFragment(RefPtr<const NGPhysicalFragment>);
 
  protected:
   bool IsOfType(LayoutObjectType) const override;
@@ -76,7 +77,9 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
 
   RefPtr<NGLayoutResult> cached_result_;
   RefPtr<const NGConstraintSpace> cached_constraint_space_;
-  std::unique_ptr<const NGPaintFragment> paint_fragment_;
+  std::unique_ptr<NGPaintFragment> paint_fragment_;
+
+  friend class NGBaseLayoutAlgorithmTest;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutNGBlockFlow, IsLayoutNGBlockFlow());
