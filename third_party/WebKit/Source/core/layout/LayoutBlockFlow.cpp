@@ -4486,12 +4486,13 @@ void LayoutBlockFlow::PositionDialog() {
     return;
   }
 
-  LocalFrameView* frame_view = GetDocument().View();
-  LayoutUnit top = LayoutUnit((Style()->GetPosition() == EPosition::kFixed)
-                                  ? 0
-                                  : frame_view->ScrollOffsetInt().Height());
-  int visible_height =
-      frame_view->VisibleContentRect(kIncludeScrollbars).Height();
+  auto* scrollable_area = GetDocument().View()->LayoutViewportScrollableArea();
+  LayoutUnit top =
+      LayoutUnit((Style()->GetPosition() == EPosition::kFixed)
+                     ? 0
+                     : scrollable_area->ScrollOffsetInt().Height());
+
+  int visible_height = GetDocument().View()->Height();
   if (Size().Height() < visible_height)
     top += (visible_height - Size().Height()) / 2;
   SetY(top);
