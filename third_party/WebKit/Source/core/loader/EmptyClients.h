@@ -190,7 +190,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
       const DateTimeChooserParameters&) override;
   void OpenTextDataListChooser(HTMLInputElement&) override;
 
-  void OpenFileChooser(LocalFrame*, RefPtr<FileChooser>) override;
+  void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) override;
 
   void SetCursor(const Cursor&, LocalFrame* local_root) override {}
   void SetCursorOverridden(bool) override {}
@@ -366,7 +366,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
   TextCheckerClient& GetTextCheckerClient() const override;
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest& request,
-      RefPtr<WebTaskRunner> task_runner) override {
+      scoped_refptr<WebTaskRunner> task_runner) override {
     // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
     WrappedResourceRequest wrapped(request);
     return Platform::Current()->CreateURLLoader(
@@ -463,7 +463,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void Reload(FrameLoadType, ClientRedirectPolicy) override {}
   unsigned BackForwardLength() override { return 0; }
   void ForwardPostMessage(MessageEvent*,
-                          RefPtr<SecurityOrigin> target,
+                          scoped_refptr<SecurityOrigin> target,
                           LocalFrame* source_frame) const override {}
   void FrameRectsChanged(const IntRect& frame_rect) override {}
   void UpdateRemoteViewportIntersection(

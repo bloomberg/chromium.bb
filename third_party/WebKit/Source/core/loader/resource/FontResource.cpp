@@ -134,7 +134,7 @@ void FontResource::StartLoadLimitTimers(WebTaskRunner* task_runner) {
       kFontLoadWaitLong);
 }
 
-RefPtr<FontCustomPlatformData> FontResource::GetCustomFontData() {
+scoped_refptr<FontCustomPlatformData> FontResource::GetCustomFontData() {
   if (!font_data_ && !ErrorOccurred() && !IsLoading()) {
     if (Data())
       font_data_ = FontCustomPlatformData::Create(Data(), ots_parsing_message_);

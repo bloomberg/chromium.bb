@@ -72,22 +72,22 @@ class EmptyFrameScheduler : public WebFrameScheduler {
  public:
   EmptyFrameScheduler() { DCHECK(IsMainThread()); }
 
-  RefPtr<WebTaskRunner> LoadingTaskRunner() override {
+  scoped_refptr<WebTaskRunner> LoadingTaskRunner() override {
     return Platform::Current()->MainThread()->GetWebTaskRunner();
   }
-  RefPtr<WebTaskRunner> LoadingControlTaskRunner() override {
+  scoped_refptr<WebTaskRunner> LoadingControlTaskRunner() override {
     return Platform::Current()->MainThread()->GetWebTaskRunner();
   }
-  RefPtr<WebTaskRunner> ThrottleableTaskRunner() override {
+  scoped_refptr<WebTaskRunner> ThrottleableTaskRunner() override {
     return Platform::Current()->MainThread()->GetWebTaskRunner();
   }
-  RefPtr<WebTaskRunner> DeferrableTaskRunner() override {
+  scoped_refptr<WebTaskRunner> DeferrableTaskRunner() override {
     return Platform::Current()->MainThread()->GetWebTaskRunner();
   }
-  RefPtr<WebTaskRunner> PausableTaskRunner() override {
+  scoped_refptr<WebTaskRunner> PausableTaskRunner() override {
     return Platform::Current()->MainThread()->GetWebTaskRunner();
   }
-  RefPtr<WebTaskRunner> UnpausableTaskRunner() override {
+  scoped_refptr<WebTaskRunner> UnpausableTaskRunner() override {
     return Platform::Current()->MainThread()->GetWebTaskRunner();
   }
 
@@ -139,7 +139,8 @@ DateTimeChooser* EmptyChromeClient::OpenDateTimeChooser(
 
 void EmptyChromeClient::OpenTextDataListChooser(HTMLInputElement&) {}
 
-void EmptyChromeClient::OpenFileChooser(LocalFrame*, RefPtr<FileChooser>) {}
+void EmptyChromeClient::OpenFileChooser(LocalFrame*,
+                                        scoped_refptr<FileChooser>) {}
 
 void EmptyChromeClient::AttachRootGraphicsLayer(GraphicsLayer* layer,
                                                 LocalFrame* local_root) {

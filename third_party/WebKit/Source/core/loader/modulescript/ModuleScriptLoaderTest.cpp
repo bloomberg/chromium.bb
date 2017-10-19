@@ -59,8 +59,8 @@ class TestModuleScriptLoaderClient final
 
 class ModuleScriptLoaderTestModulator final : public DummyModulator {
  public:
-  ModuleScriptLoaderTestModulator(RefPtr<ScriptState> script_state,
-                                  RefPtr<SecurityOrigin> security_origin)
+  ModuleScriptLoaderTestModulator(scoped_refptr<ScriptState> script_state,
+                                  scoped_refptr<SecurityOrigin> security_origin)
       : script_state_(std::move(script_state)),
         security_origin_(std::move(security_origin)) {
     auto* fetch_context =
@@ -118,8 +118,8 @@ class ModuleScriptLoaderTestModulator final : public DummyModulator {
   void Trace(blink::Visitor*);
 
  private:
-  RefPtr<ScriptState> script_state_;
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<ScriptState> script_state_;
+  scoped_refptr<SecurityOrigin> security_origin_;
   Member<ResourceFetcher> fetcher_;
   Vector<ModuleRequest> requests_;
 };

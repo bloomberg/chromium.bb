@@ -152,8 +152,9 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   MHTMLArchive* Archive() const override;
 
-  std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
-                                                RefPtr<WebTaskRunner>) override;
+  std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const ResourceRequest&,
+      scoped_refptr<WebTaskRunner>) override;
 
   bool IsDetached() const override { return frozen_state_; }
 
@@ -179,7 +180,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   // FetchContext overrides:
   WebFrameScheduler* GetFrameScheduler() override;
-  RefPtr<WebTaskRunner> GetLoadingTaskRunner() override;
+  scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override;
 
   // BaseFetchContext overrides:
   KURL GetSiteForCookies() const override;
@@ -214,8 +215,8 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   ContentSettingsClient* GetContentSettingsClient() const;
   Settings* GetSettings() const;
   String GetUserAgent() const;
-  RefPtr<SecurityOrigin> GetRequestorOrigin();
-  RefPtr<SecurityOrigin> GetRequestorOriginForFrameLoading();
+  scoped_refptr<SecurityOrigin> GetRequestorOrigin();
+  scoped_refptr<SecurityOrigin> GetRequestorOriginForFrameLoading();
   ClientHintsPreferences GetClientHintsPreferences() const;
   float GetDevicePixelRatio() const;
   bool ShouldSendClientHint(mojom::WebClientHintsType,

@@ -308,14 +308,14 @@ class WorkerThreadableLoaderTestHelper : public ThreadableLoaderTestHelper {
     event->Signal();
   }
 
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThreadForTest> worker_thread_;
 
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   // Accessed cross-thread when worker thread posts tasks to the parent.
   CrossThreadPersistent<ParentFrameTaskRunners> parent_frame_task_runners_;
-  RefPtr<WebTaskRunner> worker_loading_task_runner_;
+  scoped_refptr<WebTaskRunner> worker_loading_task_runner_;
   Checkpoint checkpoint_;
   // |m_loader| must be touched only from the worker thread only.
   CrossThreadPersistent<ThreadableLoader> loader_;

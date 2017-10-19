@@ -64,8 +64,9 @@ class WorkerFetchContext final : public BaseFetchContext {
 
   // FetchContext implementation:
   SecurityOrigin* GetSecurityOrigin() const override;
-  std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
-                                                RefPtr<WebTaskRunner>) override;
+  std::unique_ptr<WebURLLoader> CreateURLLoader(
+      const ResourceRequest&,
+      scoped_refptr<WebTaskRunner>) override;
   void PrepareRequest(ResourceRequest&, RedirectType) override;
   bool IsControlledByServiceWorker() const override;
   int ApplicationCacheHostID() const override;
@@ -101,7 +102,7 @@ class WorkerFetchContext final : public BaseFetchContext {
                                const FetchParameters::ResourceWidth&,
                                ResourceRequest&) override;
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
-  RefPtr<WebTaskRunner> GetLoadingTaskRunner() override;
+  scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override;
 
   virtual void Trace(blink::Visitor*);
 
@@ -113,7 +114,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   std::unique_ptr<WebWorkerFetchContext> web_context_;
   Member<SubresourceFilter> subresource_filter_;
   Member<ResourceFetcher> resource_fetcher_;
-  RefPtr<WebTaskRunner> loading_task_runner_;
+  scoped_refptr<WebTaskRunner> loading_task_runner_;
 };
 
 }  // namespace blink

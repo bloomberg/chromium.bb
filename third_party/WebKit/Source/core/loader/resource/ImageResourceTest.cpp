@@ -106,7 +106,7 @@ constexpr size_t kJpegImageSubrangeWithoutDimensionsLength = 3;
 // just the first kJpegImageSubrangeWithDimensionsLength bytes. If this test
 // fails, then the test data here probably needs to be updated.
 TEST(ImageResourceTest, DimensionsDecodableFromPartialTestImage) {
-  RefPtr<Image> image = BitmapImage::Create();
+  scoped_refptr<Image> image = BitmapImage::Create();
   EXPECT_EQ(
       Image::kSizeAvailable,
       image->SetData(SharedBuffer::Create(

@@ -147,7 +147,7 @@ inline FormSubmission::FormSubmission(SubmitMethod method,
                                       const AtomicString& target,
                                       const AtomicString& content_type,
                                       HTMLFormElement* form,
-                                      RefPtr<EncodedFormData> data,
+                                      scoped_refptr<EncodedFormData> data,
                                       const String& boundary,
                                       Event* event)
     : method_(method),
@@ -243,7 +243,7 @@ FormSubmission* FormSubmission::Create(HTMLFormElement* form,
   if (submit_button)
     submit_button->SetActivatedSubmit(false);
 
-  RefPtr<EncodedFormData> form_data;
+  scoped_refptr<EncodedFormData> form_data;
   String boundary;
 
   if (is_multi_part_form) {

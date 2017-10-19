@@ -117,7 +117,7 @@ void HistoryItem::ClearDocumentState() {
   document_state_vector_.clear();
 }
 
-void HistoryItem::SetStateObject(RefPtr<SerializedScriptValue> object) {
+void HistoryItem::SetStateObject(scoped_refptr<SerializedScriptValue> object) {
   state_object_ = std::move(object);
 }
 
@@ -138,7 +138,7 @@ void HistoryItem::SetFormInfoFromRequest(const ResourceRequest& request) {
   }
 }
 
-void HistoryItem::SetFormData(RefPtr<EncodedFormData> form_data) {
+void HistoryItem::SetFormData(scoped_refptr<EncodedFormData> form_data) {
   form_data_ = std::move(form_data);
 }
 

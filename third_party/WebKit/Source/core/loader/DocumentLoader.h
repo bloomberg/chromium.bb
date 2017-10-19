@@ -125,7 +125,7 @@ class CORE_EXPORT DocumentLoader
   void DidObserveLoadingBehavior(WebLoadingBehaviorFlag);
   void UpdateForSameDocumentNavigation(const KURL&,
                                        SameDocumentNavigationSource,
-                                       RefPtr<SerializedScriptValue>,
+                                       scoped_refptr<SerializedScriptValue>,
                                        HistoryScrollRestorationType,
                                        FrameLoadType,
                                        Document*);
@@ -358,7 +358,7 @@ class CORE_EXPORT DocumentLoader
 
   // Used to protect against reentrancy into dataReceived().
   bool in_data_received_;
-  RefPtr<SharedBuffer> data_buffer_;
+  scoped_refptr<SharedBuffer> data_buffer_;
 };
 
 DECLARE_WEAK_IDENTIFIER_MAP(DocumentLoader);
