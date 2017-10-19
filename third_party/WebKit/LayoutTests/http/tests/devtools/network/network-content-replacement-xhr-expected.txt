@@ -1,8 +1,8 @@
-CONSOLE WARNING: line 33: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-CONSOLE MESSAGE: line 6: XHR loaded: 1
-CONSOLE MESSAGE: line 6: XHR loaded: 2
-CONSOLE MESSAGE: line 6: XHR loaded: 3
-CONSOLE MESSAGE: line 6: XHR loaded: 4
+CONSOLE WARNING: line 31: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
+CONSOLE MESSAGE: line 5: XHR loaded: 1
+CONSOLE MESSAGE: line 5: XHR loaded: 2
+CONSOLE MESSAGE: line 5: XHR loaded: 3
+CONSOLE MESSAGE: line 5: XHR loaded: 4
 Tests NetworkResourcesData logic for XHR content replacement.
 
 http://127.0.0.1:8000/devtools/network/resources/resource.php?size=200

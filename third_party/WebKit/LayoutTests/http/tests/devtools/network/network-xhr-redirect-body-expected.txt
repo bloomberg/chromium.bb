@@ -1,5 +1,5 @@
-CONSOLE MESSAGE: line 6: XHR loaded: 1
-CONSOLE MESSAGE: line 6: XHR loaded: 2
+CONSOLE MESSAGE: line 5: XHR loaded: 1
+CONSOLE MESSAGE: line 5: XHR loaded: 2
 5
 Tests that XHR redirects preserve request body.
 

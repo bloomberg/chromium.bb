@@ -1,5 +1,5 @@
 CONSOLE MESSAGE: line 10: sending a %s request to %s
-CONSOLE WARNING: line 33: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
+CONSOLE WARNING: line 31: Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
 CONSOLE MESSAGE: line 10: sending a %s request to %s
 CONSOLE MESSAGE: line 10: sending a %s request to %s
 CONSOLE MESSAGE: line 10: sending a %s request to %s
@@ -12,65 +12,65 @@ CONSOLE ERROR: line 37: Failed to load http://localhost:8000/devtools/resources/
 Tests that XMLHttpRequest Logging works when Enabled and doesn't show logs when Disabled.
 
 console-xhr-logging.html:5 sending a GET request to resources/xhr-exists.html
-network-test.js:33 [Deprecation] Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
-makeXHR @ network-test.js:33
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:31 [Deprecation] Synchronous XMLHttpRequest on the main thread is deprecated because of its detrimental effects to the end user's experience. For more help, check https://xhr.spec.whatwg.org/.
+makeXHR @ VM:31
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
-network-test.js:37 XHR finished loading: GET "http://127.0.0.1:8000/devtools/resources/xhr-exists.html".
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 XHR finished loading: GET "http://127.0.0.1:8000/devtools/resources/xhr-exists.html".
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
 console-xhr-logging.html:5 sending a GET request to resources/xhr-does-not-exist.html
-network-test.js:37 GET http://127.0.0.1:8000/devtools/resources/xhr-does-not-exist.html 404 (Not Found)
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 GET http://127.0.0.1:8000/devtools/resources/xhr-does-not-exist.html 404 (Not Found)
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
-network-test.js:37 XHR failed loading: GET "http://127.0.0.1:8000/devtools/resources/xhr-does-not-exist.html".
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 XHR failed loading: GET "http://127.0.0.1:8000/devtools/resources/xhr-does-not-exist.html".
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
 console-xhr-logging.html:5 sending a POST request to resources/post-target.cgi
-network-test.js:37 XHR finished loading: POST "http://127.0.0.1:8000/devtools/resources/post-target.cgi".
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 XHR finished loading: POST "http://127.0.0.1:8000/devtools/resources/post-target.cgi".
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
 console-xhr-logging.html:5 sending a GET request to http://localhost:8000/devtools/resources/xhr-exists.html
-network-test.js:37 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
-network-test.js:37 XHR finished loading: GET "http://localhost:8000/devtools/resources/xhr-exists.html".
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 XHR finished loading: GET "http://localhost:8000/devtools/resources/xhr-exists.html".
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
 console-xhr-logging.html:5 sending a GET request to resources/xhr-exists.html
 console-xhr-logging.html:5 sending a GET request to resources/xhr-does-not-exist.html
-network-test.js:37 GET http://127.0.0.1:8000/devtools/resources/xhr-does-not-exist.html 404 (Not Found)
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 GET http://127.0.0.1:8000/devtools/resources/xhr-does-not-exist.html 404 (Not Found)
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
 console-xhr-logging.html:5 sending a POST request to resources/post-target.cgi
 console-xhr-logging.html:5 sending a GET request to http://localhost:8000/devtools/resources/xhr-exists.html
-network-test.js:37 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
-makeXHR @ network-test.js:37
-makeSimpleXHRWithPayload @ network-test.js:16
-makeSimpleXHR @ network-test.js:11
+VM:37 Failed to load http://localhost:8000/devtools/resources/xhr-exists.html: No 'Access-Control-Allow-Origin' header is present on the requested resource. Origin 'http://127.0.0.1:8000' is therefore not allowed access.
+makeXHR @ VM:37
+makeSimpleXHRWithPayload @ VM:13
+makeSimpleXHR @ VM:9
 requestHelper @ console-xhr-logging.html:6
 (anonymous) @ VM:1
 
