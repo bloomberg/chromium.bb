@@ -1678,6 +1678,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                      GLint* params,
                      GLsizei params_size);
 
+  // Wrapper for glGetSynciv.
+  void DoGetSynciv(GLuint sync_id,
+                   GLenum pname,
+                   GLsizei num_values,
+                   GLsizei* length,
+                   GLint* values);
+
   // Helper for DoGetTexParameter{f|i}v.
   void GetTexParameterImpl(
       GLenum target, GLenum pname, GLfloat* fparams, GLint* iparams,
@@ -7235,6 +7242,19 @@ void GLES2DecoderImpl::DoGetProgramiv(GLuint program_id,
     return;
   }
   program->GetProgramiv(pname, params);
+}
+
+void GLES2DecoderImpl::DoGetSynciv(GLuint sync_id,
+                                   GLenum pname,
+                                   GLsizei num_values,
+                                   GLsizei* length,
+                                   GLint* values) {
+  GLsync service_sync = 0;
+  if (!group_->GetSyncServiceId(sync_id, &service_sync)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetSynciv", "invalid sync id");
+    return;
+  }
+  glGetSynciv(service_sync, pname, num_values, nullptr, values);
 }
 
 void GLES2DecoderImpl::DoGetBufferParameteri64v(GLenum target,
