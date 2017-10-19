@@ -274,8 +274,8 @@ void ImageInputType::CreateShadowSubtree() {
   HTMLImageFallbackHelper::CreateAltTextShadowTree(GetElement());
 }
 
-RefPtr<ComputedStyle> ImageInputType::CustomStyleForLayoutObject(
-    RefPtr<ComputedStyle> new_style) {
+scoped_refptr<ComputedStyle> ImageInputType::CustomStyleForLayoutObject(
+    scoped_refptr<ComputedStyle> new_style) {
   if (!use_fallback_content_)
     return new_style;
 

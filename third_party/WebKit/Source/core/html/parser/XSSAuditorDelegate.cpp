@@ -80,7 +80,7 @@ void XSSAuditorDelegate::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
 }
 
-RefPtr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
+scoped_refptr<EncodedFormData> XSSAuditorDelegate::GenerateViolationReport(
     const XSSInfo& xss_info) {
   DCHECK(IsMainThread());
 

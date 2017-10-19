@@ -11,7 +11,7 @@ namespace blink {
 CanvasRenderingContextHost::CanvasRenderingContextHost() {}
 
 ScriptPromise CanvasRenderingContextHost::Commit(
-    RefPtr<StaticBitmapImage> bitmap_image,
+    scoped_refptr<StaticBitmapImage> bitmap_image,
     const SkIRect& damage_rect,
     bool is_web_gl_software_rendering,
     ScriptState* script_state,

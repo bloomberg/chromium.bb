@@ -439,7 +439,7 @@ KURL HTMLVideoElement::PosterImageURL() const {
   return GetDocument().CompleteURL(url);
 }
 
-RefPtr<Image> HTMLVideoElement::GetSourceImageForCanvas(
+scoped_refptr<Image> HTMLVideoElement::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
@@ -461,7 +461,7 @@ RefPtr<Image> HTMLVideoElement::GetSourceImageForCanvas(
 
   PaintCurrentFrame(image_buffer->Canvas(),
                     IntRect(IntPoint(0, 0), intrinsic_size), nullptr);
-  RefPtr<Image> snapshot = image_buffer->NewImageSnapshot();
+  scoped_refptr<Image> snapshot = image_buffer->NewImageSnapshot();
   if (!snapshot) {
     *status = kInvalidSourceImageStatus;
     return nullptr;

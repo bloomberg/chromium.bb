@@ -87,9 +87,9 @@ class CORE_EXPORT FormData final
   void append(const String& name, Blob*, const String& filename = String());
   String Decode(const CString& data) const;
 
-  RefPtr<EncodedFormData> EncodeFormData(
+  scoped_refptr<EncodedFormData> EncodeFormData(
       EncodedFormData::EncodingType = EncodedFormData::kFormURLEncoded);
-  RefPtr<EncodedFormData> EncodeMultiPartFormData();
+  scoped_refptr<EncodedFormData> EncodeMultiPartFormData();
 
  private:
   explicit FormData(const WTF::TextEncoding&);

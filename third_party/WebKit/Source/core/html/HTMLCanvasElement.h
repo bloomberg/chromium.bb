@@ -148,9 +148,9 @@ class CORE_EXPORT HTMLCanvasElement final
   CanvasRenderingContext* RenderingContext() const { return context_.Get(); }
 
   void EnsureUnacceleratedImageBuffer();
-  RefPtr<Image> CopiedImage(SourceDrawingBuffer,
-                            AccelerationHint,
-                            SnapshotReason);
+  scoped_refptr<Image> CopiedImage(SourceDrawingBuffer,
+                                   AccelerationHint,
+                                   SnapshotReason);
   void ClearCopiedImage();
 
   bool OriginClean() const;
@@ -189,10 +189,10 @@ class CORE_EXPORT HTMLCanvasElement final
   void PageVisibilityChanged() override;
 
   // CanvasImageSource implementation
-  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                        AccelerationHint,
-                                        SnapshotReason,
-                                        const FloatSize&) override;
+  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                               AccelerationHint,
+                                               SnapshotReason,
+                                               const FloatSize&) override;
   bool WouldTaintOrigin(SecurityOrigin*) const override;
   FloatSize ElementSize(const FloatSize&) const override;
   bool IsCanvasElement() const override { return true; }
@@ -216,9 +216,9 @@ class CORE_EXPORT HTMLCanvasElement final
                                   const ImageBitmapOptions&) override;
 
   // OffscreenCanvasPlaceholder implementation.
-  void SetPlaceholderFrame(RefPtr<StaticBitmapImage>,
+  void SetPlaceholderFrame(scoped_refptr<StaticBitmapImage>,
                            WeakPtr<OffscreenCanvasFrameDispatcher>,
-                           RefPtr<WebTaskRunner>,
+                           scoped_refptr<WebTaskRunner>,
                            unsigned resource_id) override;
   virtual void Trace(blink::Visitor*);
 
@@ -332,7 +332,7 @@ class CORE_EXPORT HTMLCanvasElement final
 
   // FIXME: This is temporary for platforms that have to copy the image buffer
   // to render (and for CSSCanvasValue).
-  mutable RefPtr<Image> copied_image_;
+  mutable scoped_refptr<Image> copied_image_;
 
   // Used for OffscreenCanvas that controls this HTML canvas element
   std::unique_ptr<::blink::SurfaceLayerBridge> surface_layer_bridge_;

@@ -88,7 +88,7 @@ static void CheckThatXSSInfosAreSafeToSendToAnotherThread(
 
 WeakPtr<BackgroundHTMLParser> BackgroundHTMLParser::Create(
     std::unique_ptr<Configuration> config,
-    RefPtr<WebTaskRunner> loading_task_runner) {
+    scoped_refptr<WebTaskRunner> loading_task_runner) {
   auto* background_parser = new BackgroundHTMLParser(
       std::move(config), std::move(loading_task_runner));
   return background_parser->weak_factory_.CreateWeakPtr();
@@ -111,7 +111,7 @@ BackgroundHTMLParser::Configuration::Configuration()
 
 BackgroundHTMLParser::BackgroundHTMLParser(
     std::unique_ptr<Configuration> config,
-    RefPtr<WebTaskRunner> loading_task_runner)
+    scoped_refptr<WebTaskRunner> loading_task_runner)
     : weak_factory_(this),
       token_(WTF::WrapUnique(new HTMLToken)),
       tokenizer_(HTMLTokenizer::Create(config->options)),
