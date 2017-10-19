@@ -96,12 +96,44 @@ public final class MainActivityTest {
     }
 
     /**
-     * Test that the intent URL is not rewritten if it is inside the scope specified in the Android
-     * Manifest.
+     * Tests that the intent URL is rewritten if |LoggedIntentUrlParam| is set, even though the
+     * intent URL is inside the scope specified in the Android Manifest.
      */
     @Test
-    public void testNotRewriteStartUrlInsideScope() {
+    public void testRewriteStartUrlInsideScope() {
         final String intentStartUrl = "https://www.google.com/maps/address?A=a";
+        final String manifestStartUrl = "https://www.google.com/maps/startUrl";
+        final String manifestScope = "https://www.google.com/maps";
+        final String expectedStartUrl =
+                "https://www.google.com/maps/startUrl?originalUrl=https%3A%2F%2Fwww.google.com%2Fmaps%2Faddress%3FA%3Da";
+        final String browserPackageName = "com.android.chrome";
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, manifestStartUrl);
+        bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
+        bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, browserPackageName);
+        bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
+        WebApkTestHelper.registerWebApkWithMetaData(WebApkUtilsTest.WEBAPK_PACKAGE_NAME, bundle);
+
+        installBrowser(browserPackageName);
+
+        Intent launchIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(intentStartUrl));
+        Robolectric.buildActivity(MainActivity.class).withIntent(launchIntent).create();
+
+        Intent startActivityIntent = ShadowApplication.getInstance().getNextStartedActivity();
+        Assert.assertEquals(MainActivity.ACTION_START_WEBAPK, startActivityIntent.getAction());
+        Assert.assertEquals(
+                expectedStartUrl, startActivityIntent.getStringExtra(WebApkConstants.EXTRA_URL));
+    }
+
+    /**
+     * Tests that the intent URL is not rewritten again if the query parameter to append is part of
+     * the intent URL when |LoggedIntentUrlParam| is set.
+     */
+    @Test
+    public void testNotRewriteStartUrlWhenContainsTheQueryParameterToAppend() {
+        final String intentStartUrl =
+                "https://www.google.com/maps/startUrl?originalUrl=https%3A%2F%2Fwww.google.com%2Fmaps%2Faddress%3FA%3Da";
         final String manifestStartUrl = "https://www.google.com/maps/startUrl";
         final String manifestScope = "https://www.google.com/maps";
         final String browserPackageName = "com.android.chrome";
