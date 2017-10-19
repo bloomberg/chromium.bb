@@ -97,12 +97,7 @@ void BackgroundFetchJobController::DidCompleteRequest(
     const scoped_refptr<BackgroundFetchRequestInfo>& request,
     const std::string& download_guid) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(state_ == State::FETCHING || state_ == State::ABORTED);
-
-  // TODO(delphick): When ABORT is implemented correctly we should hopefully
-  // never get here and the DCHECK above should only allow FETCHING.
-  if (state_ == State::ABORTED)
-    return;
+  DCHECK(state_ == State::FETCHING);
 
   // This request is no longer in-progress, so the DataManager will take over
   // responsibility for storing its downloaded bytes, though still need a cache.
@@ -162,7 +157,7 @@ void BackgroundFetchJobController::Abort() {
       return;  // Ignore attempt to abort after completion/abort.
   }
 
-  delegate_proxy_->Abort();
+  delegate_proxy_->Abort(registration_id_.unique_id());
 
   state_ = State::ABORTED;
   // Inform the owner of the controller about the job having aborted.

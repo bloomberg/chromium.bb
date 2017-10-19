@@ -4,6 +4,7 @@
 
 #include "content/browser/background_fetch/background_fetch_delegate_proxy.h"
 
+#include <set>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
@@ -38,19 +39,22 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
     if (!client())
       return;
 
+    download_guid_to_job_id_map_[guid] = job_unique_id;
+
     auto response = std::make_unique<BackgroundFetchResponse>(
         std::vector<GURL>({url}),
         base::MakeRefCounted<net::HttpResponseHeaders>("200 OK"));
 
     client()->OnDownloadStarted(guid, std::move(response));
     if (complete_downloads_) {
-      auto result = std::make_unique<BackgroundFetchResult>(
-          base::Time::Now(), base::FilePath(), 10u);
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::BindOnce(&BackgroundFetchDelegate::Client::OnDownloadComplete,
-                         client(), guid, std::move(result)));
+          base::BindOnce(&FakeBackgroundFetchDelegate::CompleteDownload,
+                         base::Unretained(this), guid));
     }
+  }
+  void Abort(const std::string& job_unique_id) override {
+    aborted_jobs_.insert(job_unique_id);
   }
 
   void set_complete_downloads(bool complete_downloads) {
@@ -58,6 +62,20 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
   }
 
  private:
+  void CompleteDownload(const std::string& guid) {
+    if (!client())
+      return;
+
+    if (aborted_jobs_.count(download_guid_to_job_id_map_[guid]))
+      return;
+
+    client()->OnDownloadComplete(
+        guid, std::make_unique<BackgroundFetchResult>(base::Time::Now(),
+                                                      base::FilePath(), 10u));
+  }
+
+  std::set<std::string> aborted_jobs_;
+  std::map<std::string, std::string> download_guid_to_job_id_map_;
   bool complete_downloads_ = true;
 };
 
@@ -136,6 +154,36 @@ TEST_F(BackgroundFetchDelegateProxyTest, StartRequest_NotCompleted) {
 
   EXPECT_TRUE(controller.request_started_);
   EXPECT_FALSE(controller.request_completed_);
+}
+
+TEST_F(BackgroundFetchDelegateProxyTest, Abort) {
+  FakeController controller;
+  FakeController controller2;
+  ServiceWorkerFetchRequest fetch_request;
+  ServiceWorkerFetchRequest fetch_request2;
+  auto request = base::MakeRefCounted<BackgroundFetchRequestInfo>(
+      0 /* request_index */, fetch_request);
+  auto request2 = base::MakeRefCounted<BackgroundFetchRequestInfo>(
+      1 /* request_index */, fetch_request2);
+
+  EXPECT_FALSE(controller.request_started_);
+  EXPECT_FALSE(controller.request_completed_);
+  EXPECT_FALSE(controller2.request_started_);
+  EXPECT_FALSE(controller2.request_completed_);
+
+  delegate_proxy_.StartRequest("jobid1",
+                               controller.weak_ptr_factory_.GetWeakPtr(),
+                               url::Origin(), request);
+  delegate_proxy_.StartRequest("jobid2",
+                               controller2.weak_ptr_factory_.GetWeakPtr(),
+                               url::Origin(), request2);
+  delegate_proxy_.Abort("jobid1");
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(controller.request_started_);
+  EXPECT_FALSE(controller.request_completed_) << "Aborted job completed";
+  EXPECT_TRUE(controller2.request_started_);
+  EXPECT_TRUE(controller2.request_completed_) << "Normal job did not complete";
 }
 
 }  // namespace content

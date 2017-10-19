@@ -59,6 +59,7 @@ class BackgroundFetchDelegateImpl
                    const GURL& url,
                    const net::NetworkTrafficAnnotationTag& traffic_annotation,
                    const net::HttpRequestHeaders& headers) override;
+  void Abort(const std::string& job_unique_id) override;
 
   void OnDownloadStarted(const std::string& guid,
                          std::unique_ptr<content::BackgroundFetchResponse>);

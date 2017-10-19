@@ -85,10 +85,10 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // thread).
   void UpdateUI(const std::string& title);
 
-  // Immediately aborts this Background Fetch by request of the developer.
-  // Should only be called from the BackgroundFetchJobController (on the IO
-  // thread).
-  void Abort();
+  // Immediately aborts the job identified by |job_unique_id| by request of the
+  // developer. Should only be called from the BackgroundFetchJobController (on
+  // the IO thread).
+  void Abort(const std::string& job_unique_id);
 
  private:
   class Core;

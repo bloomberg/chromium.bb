@@ -91,6 +91,9 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       const net::HttpRequestHeaders& headers) = 0;
 
+  // Aborts any downloads associated with |job_unique_id|.
+  virtual void Abort(const std::string& job_unique_id) = 0;
+
   // Set the client that the delegate should communicate changes to.
   void SetDelegateClient(base::WeakPtr<Client> client) { client_ = client; }
 
