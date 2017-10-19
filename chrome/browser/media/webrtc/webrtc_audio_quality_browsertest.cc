@@ -62,12 +62,10 @@ const int kMaxAgcSegmentDiffMs =
   200;
 #endif
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_LINUX) || defined(OS_WIN) || defined(OS_MACOSX)
 #define MAYBE_WebRtcAudioQualityBrowserTest WebRtcAudioQualityBrowserTest
 #else
 // Not implemented on Android, ChromeOS etc.
-// Also disabled on Windows due to
-// https://bugs.chromium.org/p/chromium/issues/detail?id=677256
 #define MAYBE_WebRtcAudioQualityBrowserTest DISABLED_WebRtcAudioQualityBrowserTest
 #endif
 
