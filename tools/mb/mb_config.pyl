@@ -690,7 +690,7 @@
       'win10_chromium_x64_rel_ng': 'release_trybot',
       'win10_chromium_x64_rel_ng_exp': 'release_trybot',
       'win10_gce_x64_rel': 'release_bot_minimal_symbols',
-      'win8_chromium_gn_upload': 'release_bot_x86_minimal_symbols',
+      'win_chromium_gn_upload': 'release_bot_x86_minimal_symbols',
       'win_x64_archive': 'release_trybot',
       'win_archive': 'release_trybot_x86',
       'win_chromium_compile_dbg_ng': 'debug_trybot_x86_minimal_symbols',
