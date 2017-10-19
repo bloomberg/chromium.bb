@@ -159,23 +159,29 @@ cast_test_group("cast_tests") {
 
   base_unittests_filter = {
     test_name = "base_unittests"
-    if (target_os == "linux" && !is_cast_desktop_build) {
-      # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
-      # Disable ProcessUtilTest.* (need to define OS_ANDROID)
-      # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
-      # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
-      # Disable TimeFormattingTest.TimeFormat* for flakiness on devices (crbug/671429)
-      # Disable PostTasksViaTaskRunner/* to green up devices (b/62246873)
-      # Disable WorkerDetaches to green up devices (b/62246873)
-      gtest_excludes = [
-        "ProcessMetricsTest.GetNumberOfThreads",
-        "ProcessUtilTest.*",
-        "StackContainer.BufferAlignment",
-        "SystemMetrics2Test.GetSystemMemoryInfo",
-        "TimeFormattingTest.TimeFormat*",
-        "OneTraitsExecutionModePair/TaskSchedulerImplTest.PostTasksViaTaskRunner/*",
-        "TaskSchedulerWorkerTest.WorkerDetaches",
-      ]
+    gtest_excludes = []
+    if (target_os == "linux") {
+      if (is_cast_desktop_build) {
+        # Disable PartitionAllocTest.RepeatedReturnNullDirect (b/67975693)
+        gtest_excludes += [ "PartitionAlloc.RepeatedReturnNullDirect" ]
+      } else {
+        # Disable ProcessMetricsTest.GetNumberOfThreads (b/15610509)
+        # Disable ProcessUtilTest.* (need to define OS_ANDROID)
+        # Disable StackContainer.BufferAlignment (don't support 16-byte alignment)
+        # Disable SystemMetrics2Test.GetSystemMemoryInfo (buffers>0 can't be guaranteed)
+        # Disable TimeFormattingTest.TimeFormat* for flakiness on devices (crbug/671429)
+        # Disable PostTasksViaTaskRunner/* to green up devices (b/62246873)
+        # Disable WorkerDetaches to green up devices (b/62246873)
+        gtest_excludes += [
+          "ProcessMetricsTest.GetNumberOfThreads",
+          "ProcessUtilTest.*",
+          "StackContainer.BufferAlignment",
+          "SystemMetrics2Test.GetSystemMemoryInfo",
+          "TimeFormattingTest.TimeFormat*",
+          "OneTraitsExecutionModePair/TaskSchedulerImplTest.PostTasksViaTaskRunner/*",
+          "TaskSchedulerWorkerTest.WorkerDetaches",
+        ]
+      }
 
       if (is_cast_audio_only) {
         # Also disable TimeFormattingTest on audio-only builds, since we don't
