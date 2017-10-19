@@ -298,12 +298,7 @@ cr.define('cr.ui.Oobe', function() {
      * @param {text} oemEulaUrl OEM EULA URL.
      */
     setOemEulaUrl: function(oemEulaUrl) {
-      if (oemEulaUrl) {
-        $('oem-eula-frame').src = oemEulaUrl;
-        $('eulas').classList.remove('one-column');
-      } else {
-        $('eulas').classList.add('one-column');
-      }
+      $('eula').setOemEulaUrl(oemEulaUrl);
     },
 
     /**

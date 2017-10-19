@@ -2,100 +2,214 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/strings/utf_string_conversions.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "chrome/common/url_constants.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include <memory>
+#include <set>
+#include <string>
+#include <utility>
+
+#include "base/bind.h"
+#include "base/macros.h"
+#include "base/run_loop.h"
+#include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
+#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/oobe_screen_waiter.h"
+#include "chrome/browser/chromeos/login/ui/login_display_host.h"
+#include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
+#include "components/guest_view/browser/guest_view_manager.h"
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
+#include "content/public/browser/web_ui.h"
 #include "content/public/test/browser_test_utils.h"
-#include "net/http/http_response_headers.h"
-#include "net/http/http_status_code.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_status.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "extensions/browser/guest_view/web_view/web_view_guest.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
+#include "net/test/embedded_test_server/http_response.h"
+#include "url/gurl.h"
 
-using ::testing::Exactly;
-using ::testing::Invoke;
-using ::testing::_;
+using net::test_server::BasicHttpResponse;
+using net::test_server::HttpRequest;
+using net::test_server::HttpResponse;
 
+namespace chromeos {
 namespace {
 
-const char kEULAURL[] =
-    "https://www.google.com/intl/en-US/chrome/eula_text.html";
-const char kFakeOnlineEULA[] = "No obligations at all";
+constexpr char kFakeOnlineEulaPath[] = "/intl/en-US/chrome/eula_text.html";
+constexpr char kFakeOnlineEula[] = "No obligations at all";
+
 #if defined(GOOGLE_CHROME_BUILD)
 // See IDS_ABOUT_TERMS_OF_SERVICE for the complete text.
-const char kOfflineEULAWarning[] = "Chrome OS Terms";
+constexpr char kOfflineEULAWarning[] = "Chrome OS Terms";
+#else
+// Placeholder text in terms_chromium.html.
+constexpr char kOfflineEULAWarning[] =
+    "In official builds this space will show the terms of service.";
 #endif
 
-class TermsOfServiceProcessBrowserTest : public InProcessBrowserTest {};
-
-class TestURLFetcherCallback {
+// Helper class to wait until the WebCotnents finishes loading.
+class WebContentsLoadFinishedWaiter : public content::WebContentsObserver {
  public:
-  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* d,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status) {
-    std::unique_ptr<net::FakeURLFetcher> fetcher(
-        new net::FakeURLFetcher(url, d, response_data, response_code, status));
-    OnRequestCreate(url, fetcher.get());
-    return fetcher;
+  explicit WebContentsLoadFinishedWaiter(content::WebContents* web_contents)
+      : content::WebContentsObserver(web_contents) {}
+  ~WebContentsLoadFinishedWaiter() override = default;
+
+  void Wait() {
+    if (!web_contents()->IsLoading())
+      return;
+
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
   }
-  MOCK_METHOD2(OnRequestCreate, void(const GURL&, net::FakeURLFetcher*));
+
+ private:
+  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
+                     const GURL& url) override {
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  std::unique_ptr<base::RunLoop> run_loop_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebContentsLoadFinishedWaiter);
 };
 
-void AddMimeHeader(const GURL& url, net::FakeURLFetcher* fetcher) {
-  scoped_refptr<net::HttpResponseHeaders> download_headers =
-      new net::HttpResponseHeaders("");
-  download_headers->AddHeader("Content-Type: text/html");
-  fetcher->set_response_headers(download_headers);
+// Helper invoked by GuestViewManager::ForEachGuest to collect WebContents of
+// Webview named as |web_view_name,|.
+bool AddNamedWebContentsToSet(std::set<content::WebContents*>* frame_set,
+                              const std::string& web_view_name,
+                              content::WebContents* web_contents) {
+  auto* web_view = extensions::WebViewGuest::FromWebContents(web_contents);
+  if (web_view && web_view->name() == web_view_name)
+    frame_set->insert(web_contents);
+  return false;
 }
 
-// Load chrome://terms. Make sure online version is shown.
-IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOnline) {
-  TestURLFetcherCallback url_callback;
-  net::FakeURLFetcherFactory factory(
-      NULL, base::Bind(&TestURLFetcherCallback::CreateURLFetcher,
-                       base::Unretained(&url_callback)));
-  factory.SetFakeResponse(GURL(kEULAURL), kFakeOnlineEULA, net::HTTP_OK,
-                          net::URLRequestStatus::SUCCESS);
-  EXPECT_CALL(url_callback, OnRequestCreate(GURL(kEULAURL), _))
-      .Times(Exactly(1))
-      .WillRepeatedly(Invoke(AddMimeHeader));
+class EulaTest : public OobeBaseTest {
+ public:
+  EulaTest() = default;
+  ~EulaTest() override = default;
 
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUITermsURL));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_EQ(1, ui_test_utils::FindInPage(web_contents,
-                                         base::ASCIIToUTF16(kFakeOnlineEULA),
-                                         true, true, NULL, NULL));
+  // OobeBaseTest:
+  void RegisterAdditionalRequestHandlers() override {
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&EulaTest::HandleRequest, base::Unretained(this)));
+  }
+  void SetUpOnMainThread() override {
+    OobeBaseTest::SetUpOnMainThread();
+    OverrideOnlineEulaUrl();
+
+    eula_contents_ = FindEulaContents();
+    ASSERT_NE(nullptr, eula_contents_);
+  }
+
+  void OverrideOnlineEulaUrl() {
+    // Override with the embedded test server's base url. Otherwise, the load
+    // would not hit the embedded test server.
+    const GURL fake_eula_url =
+        embedded_test_server()->base_url().Resolve(kFakeOnlineEulaPath);
+    JS().Evaluate(base::StringPrintf(
+        "loadTimeData.overrideValues({eulaOnlineUrl: '%s'});",
+        fake_eula_url.spec().c_str()));
+  }
+
+  void ShowEulaScreen() {
+    LoginDisplayHost::default_host()->StartWizard(OobeScreen::SCREEN_OOBE_EULA);
+    OobeScreenWaiter(OobeScreen::SCREEN_OOBE_EULA).Wait();
+  }
+
+  std::string GetLoadedEulaAsText() {
+    // Wait the contents to load.
+    WebContentsLoadFinishedWaiter(eula_contents_).Wait();
+
+    std::string eula_text;
+    EXPECT_TRUE(content::ExecuteScriptAndExtractString(
+        eula_contents_,
+        "window.domAutomationController.send(document.body.textContent);",
+        &eula_text));
+
+    return eula_text;
+  }
+
+  void set_allow_online_eula(bool allow) { allow_online_eula_ = allow; }
+  content::WebContents* eula_contents() { return eula_contents_; }
+
+ private:
+  std::unique_ptr<HttpResponse> HandleRequest(const HttpRequest& request) {
+    GURL request_url = GURL("http://localhost").Resolve(request.relative_url);
+    const std::string request_path = request_url.path();
+    if (!base::EndsWith(request_path, "/eula_text.html",
+                        base::CompareCase::SENSITIVE)) {
+      return std::unique_ptr<HttpResponse>();
+    }
+
+    std::unique_ptr<BasicHttpResponse> http_response =
+        std::make_unique<BasicHttpResponse>();
+
+    if (allow_online_eula_) {
+      http_response->set_code(net::HTTP_OK);
+      http_response->set_content_type("text/html");
+      http_response->set_content(kFakeOnlineEula);
+    } else {
+      http_response->set_code(net::HTTP_SERVICE_UNAVAILABLE);
+    }
+
+    return std::move(http_response);
+  }
+
+  content::WebContents* FindEulaContents() {
+    // Tag the Eula webview in use with a unique name.
+    constexpr char kUniqueEulaWebviewName[] = "unique-eula-webview-name";
+    JS().Evaluate(base::StringPrintf(
+        "(function(){"
+        "  var isMd = (loadTimeData.getString('newOobeUI') == 'on');"
+        "  var eulaWebView = isMd ? $('oobe-eula-md').$.crosEulaFrame : "
+        "                           $('cros-eula-frame');"
+        "  eulaWebView.name = '%s';"
+        "})();",
+        kUniqueEulaWebviewName));
+
+    // Find the WebContents tagged with the unique name.
+    std::set<content::WebContents*> frame_set;
+    auto* const owner_contents = GetLoginUI()->GetWebContents();
+    auto* const manager = guest_view::GuestViewManager::FromBrowserContext(
+        owner_contents->GetBrowserContext());
+    manager->ForEachGuest(owner_contents,
+                          base::Bind(&AddNamedWebContentsToSet, &frame_set,
+                                     kUniqueEulaWebviewName));
+    EXPECT_EQ(1u, frame_set.size());
+    return *frame_set.begin();
+  }
+
+  bool allow_online_eula_ = false;
+
+  // WebContents of the webview hosting the Eula contents.
+  content::WebContents* eula_contents_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(EulaTest);
+};
+
+// Tests that online version is shown when it is accessible.
+IN_PROC_BROWSER_TEST_F(EulaTest, LoadOnline) {
+  set_allow_online_eula(true);
+  ShowEulaScreen();
+
+  EXPECT_TRUE(GetLoadedEulaAsText().find(kFakeOnlineEula) != std::string::npos);
 }
 
-// Load chrome://terms with no internet connectivity.
-// Make sure offline version is shown.
-IN_PROC_BROWSER_TEST_F(TermsOfServiceProcessBrowserTest, LoadOffline) {
-  net::FakeURLFetcherFactory factory(NULL);
-  factory.SetFakeResponse(GURL(kEULAURL), "", net::HTTP_INTERNAL_SERVER_ERROR,
-                          net::URLRequestStatus::FAILED);
+// Tests that offline version is shown when the online version is not
+// accessible.
+IN_PROC_BROWSER_TEST_F(EulaTest, LoadOffline) {
+  set_allow_online_eula(false);
+  ShowEulaScreen();
 
-  ui_test_utils::NavigateToURL(browser(), GURL(chrome::kChromeUITermsURL));
-  content::WebContents* web_contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  // Wait for the fallback offline page (loaded as data url) to be loaded.
+  while (!eula_contents()->GetLastCommittedURL().SchemeIs("data"))
+    WebContentsLoadFinishedWaiter(eula_contents()).Wait();
 
-#if defined(GOOGLE_CHROME_BUILD)
-  EXPECT_NE(0, ui_test_utils::FindInPage(
-                   web_contents, base::ASCIIToUTF16(kOfflineEULAWarning), true,
-                   true, NULL, NULL));
-#else
-  std::string body;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      web_contents,
-      "window.domAutomationController.send(document.body.textContent)", &body));
-  EXPECT_NE(std::string(), body);
-#endif
+  EXPECT_TRUE(GetLoadedEulaAsText().find(kOfflineEULAWarning) !=
+              std::string::npos);
 }
 
 }  // namespace
+}  // namespace chromeos

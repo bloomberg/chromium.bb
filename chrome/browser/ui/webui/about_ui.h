@@ -29,7 +29,8 @@ class AboutUIHTMLSource : public content::URLDataSource {
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string& path) const override;
   bool ShouldAddContentSecurityPolicy() const override;
-  bool ShouldDenyXFrameOptions() const override;
+  std::string GetAccessControlAllowOriginForOrigin(
+      const std::string& origin) const override;
 
   // Send the response data.
   void FinishDataRequest(
