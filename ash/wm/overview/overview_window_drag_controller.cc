@@ -102,7 +102,9 @@ void OverviewWindowDragController::CompleteDrag(
     // If no drag was initiated (e.g., a click/tap on the overview window),
     // activate the window. If the split view is active and has a left window,
     // snap the current window to right. If the split view is active and has a
-    // right window, snap the current window to left.
+    // right window, snap the current window to left. If split view is active
+    // and the selected window cannot be snapped, exit splitview and activate
+    // the selected window.
     SplitViewController::State split_state = split_view_controller_->state();
     if (split_state == SplitViewController::NO_SNAP) {
       window_selector_->SelectWindow(item_);
@@ -111,7 +113,8 @@ void OverviewWindowDragController::CompleteDrag(
                      ? SplitViewController::RIGHT
                      : SplitViewController::LEFT);
     } else {
-      window_selector_->PositionWindows(false /* animate */);
+      window_selector_->set_restore_focus_window(item_->GetWindow());
+      split_view_controller_->EndSplitView();
     }
   } else {
     did_move_ = false;
