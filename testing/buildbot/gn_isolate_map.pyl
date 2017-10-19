@@ -220,8 +220,8 @@
     "label": "//media/capture:capture_unittests",
     "type": "windowed_test_launcher",
   },
-  "cast_alsa_cma_backend_unittests": {
-    "label": "//chromecast/media/cma/backend/alsa:cast_alsa_cma_backend_unittests",
+  "cast_audio_backend_unittests": {
+    "label": "//chromecast/media/cma/backend:cast_audio_backend_unittests",
     "type": "console_test_launcher",
   },
   "cast_base_unittests": {

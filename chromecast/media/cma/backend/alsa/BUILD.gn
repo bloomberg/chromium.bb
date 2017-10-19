@@ -90,11 +90,3 @@ source_set("test_support") {
     "//testing/gmock",
   ]
 }
-
-# cast_alsa_cma_backend_unittests is an alias for cast_backend_unittests.
-# TODO(sergeyu): Remove all references to this target, then remove this target.
-test("cast_alsa_cma_backend_unittests") {
-  deps = [
-    "//chromecast/media/cma/backend:unit_tests",
-  ]
-}
