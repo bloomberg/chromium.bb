@@ -288,6 +288,8 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
     // already started to be pushed by the server, but do not have
     // consumers yet. Contains a subset of |active_streams_|.
     PushedStreamMap streams_;
+
+    DISALLOW_COPY_AND_ASSIGN(UnclaimedPushedStreamContainer);
   };
 
   // Returns true if |new_hostname| can be pooled into an existing connection to
@@ -573,14 +575,12 @@ class NET_EXPORT SpdySession : public BufferedSpdyFramerVisitorInterface,
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClientPing);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, FailedPing);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, GetActivePushStream);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, DeleteExpiredPushStreams);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, MetricsCollectionOnPushStreams);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushBeforeClaimed);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterSessionGoesAway);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, CancelPushAfterExpired);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ProtocolNegotiation);
-  FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, ClearSettings);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustRecvWindowSize);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, AdjustSendWindowSize);
   FRIEND_TEST_ALL_PREFIXES(SpdySessionTest, SessionFlowControlInactiveStream);
