@@ -30,6 +30,10 @@
         log('charCode: ' + event.charCode);
       if (event.text)
         log('text: ' + event.text);
+      if (event.location)
+        log('location: ' + event.location);
+      if (event.code)
+        log('code: ' + event.code);
       log('');
     }
   `);
@@ -59,6 +63,20 @@
     type: 'char',
     text: '\u05E9',  // Hebrew Shin (sh)
     unmodifiedText: '\u05E9'
+  }));
+  dumpError(await dp.Input.dispatchKeyEvent({
+    type: 'keyDown',
+    modifiers: 8, // shift
+    windowsVirtualKeyCode: 16,
+    location: 1,
+    code: 'ShiftLeft'
+  }));
+  dumpError(await dp.Input.dispatchKeyEvent({
+    type: 'keyDown',
+    modifiers: 8, // shift
+    windowsVirtualKeyCode: 16,
+    location: 2,
+    code: 'ShiftRight'
   }));
 
   testRunner.log(await session.evaluate(`window.logs.join('\\n')`));
