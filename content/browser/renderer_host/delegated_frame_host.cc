@@ -19,6 +19,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/texture_mailbox.h"
 #include "components/viz/common/resources/single_release_callback.h"
+#include "components/viz/common/surfaces/stub_surface_reference_factory.h"
 #include "components/viz/common/switches.h"
 #include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
@@ -45,15 +46,15 @@ namespace content {
 
 DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                        DelegatedFrameHostClient* client,
-                                       bool enable_surface_synchronization)
+                                       bool enable_surface_synchronization,
+                                       bool enable_viz)
     : frame_sink_id_(frame_sink_id),
       client_(client),
       enable_surface_synchronization_(enable_surface_synchronization),
-      compositor_(nullptr),
-      tick_clock_(new base::DefaultTickClock()),
-      skipped_frames_(false),
+      enable_viz_(enable_viz),
+      tick_clock_(std::make_unique<base::DefaultTickClock>()),
       background_color_(SK_ColorRED),
-      frame_evictor_(new viz::FrameEvictor(this)),
+      frame_evictor_(std::make_unique<viz::FrameEvictor>(this)),
       weak_ptr_factory_(this) {
   ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
   factory->GetContextFactory()->AddObserver(this);
@@ -65,6 +66,20 @@ DelegatedFrameHost::DelegatedFrameHost(const viz::FrameSinkId& frame_sink_id,
                                                   "DelegatedFrameHost");
 #endif
   CreateCompositorFrameSinkSupport();
+}
+
+DelegatedFrameHost::~DelegatedFrameHost() {
+  DCHECK(!compositor_);
+  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
+  factory->GetContextFactory()->RemoveObserver(this);
+
+  ResetCompositorFrameSinkSupport();
+
+  viz::HostFrameSinkManager* host_frame_sink_manager =
+      factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
+  host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
+
+  DCHECK(!vsync_manager_.get());
 }
 
 void DelegatedFrameHost::WasShown(const ui::LatencyInfo& latency_info) {
@@ -187,7 +202,7 @@ viz::SurfaceId DelegatedFrameHost::SurfaceIdAtPoint(
     gfx::Point* transformed_point) {
   *transformed_point = point;
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
-  if (!surface_id.is_valid())
+  if (!surface_id.is_valid() || enable_viz_)
     return surface_id;
   viz::SurfaceHittest hittest(delegate,
                               GetFrameSinkManager()->surface_manager());
@@ -204,7 +219,7 @@ bool DelegatedFrameHost::TransformPointToLocalCoordSpace(
     const viz::SurfaceId& original_surface,
     gfx::Point* transformed_point) {
   viz::SurfaceId surface_id(frame_sink_id_, local_surface_id_);
-  if (!surface_id.is_valid())
+  if (!surface_id.is_valid() || enable_viz_)
     return false;
   *transformed_point = point;
   if (original_surface == surface_id)
@@ -229,11 +244,21 @@ bool DelegatedFrameHost::TransformPointToCoordSpaceForView(
 }
 
 void DelegatedFrameHost::SetNeedsBeginFrames(bool needs_begin_frames) {
+  if (enable_viz_) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   needs_begin_frame_ = needs_begin_frames;
   support_->SetNeedsBeginFrame(needs_begin_frames);
 }
 
 void DelegatedFrameHost::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
+  if (enable_viz_) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   DCHECK(!ack.has_damage);
   support_->DidNotProduceFrame(ack);
 }
@@ -274,11 +299,8 @@ void DelegatedFrameHost::WasResized() {
     viz::SurfaceId surface_id(frame_sink_id_, client_->GetLocalSurfaceId());
     viz::SurfaceInfo surface_info(surface_id, layer->device_scale_factor(),
                                   desired_size_in_pixels);
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    viz::FrameSinkManagerImpl* manager =
-        factory->GetContextFactoryPrivate()->GetFrameSinkManager();
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_info, manager->surface_manager()->reference_factory());
+        surface_info, GetSurfaceReferenceFactory());
     has_primary_surface_ = true;
     frame_evictor_->SwappedFrame(client_->DelegatedFrameHostIsVisible());
     if (compositor_)
@@ -542,11 +564,8 @@ void DelegatedFrameHost::OnBeginFramePausedChanged(bool paused) {
 void DelegatedFrameHost::OnFirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (!enable_surface_synchronization_) {
-    ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-    viz::FrameSinkManagerImpl* manager =
-        factory->GetContextFactoryPrivate()->GetFrameSinkManager();
     client_->DelegatedFrameHostGetLayer()->SetShowPrimarySurface(
-        surface_info, manager->surface_manager()->reference_factory());
+        surface_info, GetSurfaceReferenceFactory());
     has_primary_surface_ = true;
   }
 
@@ -575,6 +594,11 @@ void DelegatedFrameHost::OnBeginFrame(const viz::BeginFrameArgs& args) {
 }
 
 void DelegatedFrameHost::EvictDelegatedFrame() {
+  if (enable_viz_) {
+    NOTIMPLEMENTED();
+    return;
+  }
+
   if (!has_primary_surface_)
     return;
   client_->DelegatedFrameHostGetLayer()->SetShowSolidColorContent();
@@ -828,20 +852,6 @@ void DelegatedFrameHost::OnLostResources() {
 ////////////////////////////////////////////////////////////////////////////////
 // DelegatedFrameHost, private:
 
-DelegatedFrameHost::~DelegatedFrameHost() {
-  DCHECK(!compositor_);
-  ImageTransportFactory* factory = ImageTransportFactory::GetInstance();
-  factory->GetContextFactory()->RemoveObserver(this);
-
-  ResetCompositorFrameSinkSupport();
-
-  viz::HostFrameSinkManager* host_frame_sink_manager =
-      factory->GetContextFactoryPrivate()->GetHostFrameSinkManager();
-  host_frame_sink_manager->InvalidateFrameSinkId(frame_sink_id_);
-
-  DCHECK(!vsync_manager_.get());
-}
-
 void DelegatedFrameHost::SetCompositor(ui::Compositor* compositor) {
   DCHECK(!compositor_);
   if (!compositor)
@@ -896,6 +906,9 @@ void DelegatedFrameHost::UnlockResources() {
 }
 
 void DelegatedFrameHost::CreateCompositorFrameSinkSupport() {
+  if (enable_viz_)
+    return;
+
   DCHECK(!support_);
   constexpr bool is_root = false;
   constexpr bool needs_sync_points = true;
@@ -919,6 +932,14 @@ void DelegatedFrameHost::ResetCompositorFrameSinkSupport() {
   if (compositor_)
     compositor_->RemoveFrameSink(frame_sink_id_);
   support_.reset();
+}
+
+scoped_refptr<viz::SurfaceReferenceFactory>
+DelegatedFrameHost::GetSurfaceReferenceFactory() {
+  if (enable_viz_)
+    return base::MakeRefCounted<viz::StubSurfaceReferenceFactory>();
+
+  return GetFrameSinkManager()->surface_manager()->reference_factory();
 }
 
 }  // namespace content

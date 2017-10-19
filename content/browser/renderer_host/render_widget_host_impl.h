@@ -1028,6 +1028,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   } saved_frame_;
 
   bool enable_surface_synchronization_ = false;
+  bool enable_viz_ = false;
 
   // If the |associated_widget_input_handler_| is set it should always be
   // used to ensure in order delivery of related messages that may occur
