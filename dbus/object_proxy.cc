@@ -121,34 +121,18 @@ std::unique_ptr<Response> ObjectProxy::CallMethodAndBlock(
 void ObjectProxy::CallMethod(MethodCall* method_call,
                              int timeout_ms,
                              ResponseCallback callback) {
-  CallMethodInternalCallback internal_callback = base::BindOnce(
+  auto internal_callback = base::BindOnce(
       &ObjectProxy::OnCallMethod, this, method_call->GetInterface(),
       method_call->GetMember(), std::move(callback));
 
-  CallMethodInternal(method_call, timeout_ms, std::move(internal_callback));
+  CallMethodWithErrorResponse(method_call, timeout_ms,
+                              std::move(internal_callback));
 }
 
-void ObjectProxy::CallMethodWithErrorCallback(MethodCall* method_call,
-                                              int timeout_ms,
-                                              ResponseCallback callback,
-                                              ErrorCallback error_callback) {
-  CallMethodInternalCallback internal_callback = base::BindOnce(
-      [](ResponseCallback callback, ErrorCallback error_callback,
-         Response* response, ErrorResponse* error_response) {
-        if (response) {
-          std::move(callback).Run(response);
-        } else {
-          std::move(error_callback).Run(error_response);
-        }
-      },
-      std::move(callback), std::move(error_callback));
-
-  CallMethodInternal(method_call, timeout_ms, std::move(internal_callback));
-}
-
-void ObjectProxy::CallMethodInternal(MethodCall* method_call,
-                                     int timeout_ms,
-                                     CallMethodInternalCallback callback) {
+void ObjectProxy::CallMethodWithErrorResponse(
+    MethodCall* method_call,
+    int timeout_ms,
+    ResponseOrErrorCallback callback) {
   bus_->AssertOnOriginThread();
 
   const base::TimeTicks start_time = base::TimeTicks::Now();
@@ -157,7 +141,7 @@ void ObjectProxy::CallMethodInternal(MethodCall* method_call,
       !method_call->SetPath(object_path_)) {
     // In case of a failure, run the error callback with nullptr.
     base::OnceClosure task = base::BindOnce(
-        &ObjectProxy::RunCallMethodInternalCallback, this, std::move(callback),
+        &ObjectProxy::RunResponseOrErrorCallback, this, std::move(callback),
         start_time, nullptr /* response */, nullptr /* error_response */);
     bus_->GetOriginTaskRunner()->PostTask(FROM_HERE, std::move(task));
     return;
@@ -178,6 +162,25 @@ void ObjectProxy::CallMethodInternal(MethodCall* method_call,
       base::BindOnce(&ObjectProxy::StartAsyncMethodCall, this, timeout_ms,
                      request_message, std::move(callback), start_time);
   bus_->GetDBusTaskRunner()->PostTask(FROM_HERE, std::move(task));
+}
+
+void ObjectProxy::CallMethodWithErrorCallback(MethodCall* method_call,
+                                              int timeout_ms,
+                                              ResponseCallback callback,
+                                              ErrorCallback error_callback) {
+  auto internal_callback = base::BindOnce(
+      [](ResponseCallback callback, ErrorCallback error_callback,
+         Response* response, ErrorResponse* error_response) {
+        if (response) {
+          std::move(callback).Run(response);
+        } else {
+          std::move(error_callback).Run(error_response);
+        }
+      },
+      std::move(callback), std::move(error_callback));
+
+  CallMethodWithErrorResponse(method_call, timeout_ms,
+                              std::move(internal_callback));
 }
 
 void ObjectProxy::ConnectToSignal(const std::string& interface_name,
@@ -250,7 +253,7 @@ ObjectProxy::ResponseCallback ObjectProxy::EmptyResponseCallback() {
 
 ObjectProxy::OnPendingCallIsCompleteData::OnPendingCallIsCompleteData(
     ObjectProxy* in_object_proxy,
-    CallMethodInternalCallback in_callback,
+    ResponseOrErrorCallback in_callback,
     base::TimeTicks in_start_time)
     : object_proxy(in_object_proxy),
       callback(std::move(in_callback)),
@@ -261,14 +264,14 @@ ObjectProxy::OnPendingCallIsCompleteData::~OnPendingCallIsCompleteData() =
 
 void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
                                        DBusMessage* request_message,
-                                       CallMethodInternalCallback callback,
+                                       ResponseOrErrorCallback callback,
                                        base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
 
   if (!bus_->Connect() || !bus_->SetUpAsyncOperations()) {
     // In case of a failure, run the error callback with nullptr.
     base::OnceClosure task = base::BindOnce(
-        &ObjectProxy::RunCallMethodInternalCallback, this, std::move(callback),
+        &ObjectProxy::RunResponseOrErrorCallback, this, std::move(callback),
         start_time, nullptr /* response */, nullptr /* error_response */);
     bus_->GetOriginTaskRunner()->PostTask(FROM_HERE, std::move(task));
 
@@ -298,7 +301,7 @@ void ObjectProxy::StartAsyncMethodCall(int timeout_ms,
 }
 
 void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
-                                          CallMethodInternalCallback callback,
+                                          ResponseOrErrorCallback callback,
                                           base::TimeTicks start_time) {
   bus_->AssertOnDBusThread();
 
@@ -315,7 +318,7 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
   }
 
   base::OnceClosure task = base::BindOnce(
-      &ObjectProxy::RunCallMethodInternalCallback, this, std::move(callback),
+      &ObjectProxy::RunResponseOrErrorCallback, this, std::move(callback),
       start_time, response.get(), error_response.get());
 
   // The message should be deleted on the D-Bus thread for a complicated
@@ -349,11 +352,10 @@ void ObjectProxy::OnPendingCallIsComplete(DBusPendingCall* pending_call,
   dbus_pending_call_unref(pending_call);
 }
 
-void ObjectProxy::RunCallMethodInternalCallback(
-    CallMethodInternalCallback callback,
-    base::TimeTicks start_time,
-    Response* response,
-    ErrorResponse* error_response) {
+void ObjectProxy::RunResponseOrErrorCallback(ResponseOrErrorCallback callback,
+                                             base::TimeTicks start_time,
+                                             Response* response,
+                                             ErrorResponse* error_response) {
   bus_->AssertOnOriginThread();
 
   std::move(callback).Run(response, error_response);
@@ -532,7 +534,7 @@ void ObjectProxy::RunMethod(base::TimeTicks start_time,
     iter->Run(signal);
 
   // Delete the message on the D-Bus thread. See comments in
-  // RunCallMethodInternalCallback().
+  // RunResponseOrErrorCallback().
   bus_->GetDBusTaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&base::DeletePointer<Signal>, signal));
