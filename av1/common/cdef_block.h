@@ -39,15 +39,15 @@
 #if CDEF_FULL
 extern const int cdef_pri_taps[2][3];
 extern const int cdef_sec_taps[2][2];
-extern const int cdef_directions[8][3];
+DECLARE_ALIGNED(16, extern const int, cdef_directions[8][3]);
 #else
 extern const int cdef_pri_taps[2][2];
 extern const int cdef_sec_taps[2][2];
-extern const int cdef_directions[8][2];
+DECLARE_ALIGNED(16, extern const int, cdef_directions[8][2]);
 #endif
 
 #else  // CONFIG_CDEF_SINGLEPASS
-extern const int cdef_directions[8][3];
+DECLARE_ALIGNED(16, extern const int, cdef_directions[8][3]);
 #endif
 
 typedef struct {
