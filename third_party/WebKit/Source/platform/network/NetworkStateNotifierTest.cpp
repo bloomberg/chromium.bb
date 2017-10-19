@@ -85,7 +85,7 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
     callback_count_ += 1;
 
     if (closure_)
-      closure_();
+      std::move(closure_).Run();
   }
 
   virtual void OnLineStateChange(bool on_line) {
@@ -93,7 +93,7 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
     callback_count_ += 1;
 
     if (closure_)
-      closure_();
+      std::move(closure_).Run();
   }
 
   WebConnectionType ObservedType() const { return observed_type_; }
@@ -111,12 +111,30 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
   bool ObservedOnLineState() const { return observed_on_line_state_; }
   int CallbackCount() const { return callback_count_; }
 
-  void SetNotificationCallback(WTF::Closure closure) {
-    closure_ = std::move(closure);
+  void AddObserverOnNotification(NetworkStateNotifier* notifier,
+                                 StateObserver* observer_to_add,
+                                 RefPtr<WebTaskRunner> task_runner) {
+    closure_ = base::BindOnce(
+        [](StateObserver* observer, NetworkStateNotifier* notifier,
+           StateObserver* observer_to_add, RefPtr<WebTaskRunner> task_runner) {
+          observer->added_handle_ =
+              notifier->AddConnectionObserver(observer_to_add, task_runner);
+        },
+        base::Unretained(this), base::Unretained(notifier),
+        base::Unretained(observer_to_add), task_runner);
+  }
+
+  void RemoveObserverOnNotification(
+      std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
+          handle) {
+    closure_ = base::BindOnce(
+        [](std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
+               handle) {},
+        std::move(handle));
   }
 
  private:
-  WTF::Closure closure_;
+  base::OnceClosure closure_;
   WebConnectionType observed_type_;
   double observed_max_bandwidth_mbps_;
   WebEffectiveConnectionType observed_effective_type_;
@@ -125,6 +143,8 @@ class StateObserver : public NetworkStateNotifier::NetworkStateObserver {
   Optional<double> observed_downlink_throughput_mbps_;
   bool observed_on_line_state_;
   int callback_count_;
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
+      added_handle_;
 };
 
 class NetworkStateNotifierTest : public ::testing::Test {
@@ -176,22 +196,6 @@ class NetworkStateNotifierTest : public ::testing::Test {
     RunPendingTasks();
   }
 
-  void AddObserverOnNotification(StateObserver* observer,
-                                 StateObserver* observer_to_add) {
-    observer->SetNotificationCallback(
-        WTF::Bind(&NetworkStateNotifier::AddConnectionObserver,
-                  WTF::Unretained(&notifier_), WTF::Unretained(observer_to_add),
-                  WTF::Unretained(GetTaskRunner())));
-  }
-
-  void RemoveObserverOnNotification(StateObserver* observer,
-                                    StateObserver* observer_to_remove) {
-    observer->SetNotificationCallback(WTF::Bind(
-        &NetworkStateNotifier::RemoveConnectionObserver,
-        WTF::Unretained(&notifier_), WTF::Unretained(observer_to_remove),
-        WTF::Unretained(GetTaskRunner())));
-  }
-
   bool VerifyObservations(
       const StateObserver& observer,
       WebConnectionType type,
@@ -224,7 +228,8 @@ class NetworkStateNotifierTest : public ::testing::Test {
 
 TEST_F(NetworkStateNotifierTest, AddObserver) {
   StateObserver observer;
-  notifier_.AddConnectionObserver(&observer, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddConnectionObserver(&observer, GetTaskRunner());
   EXPECT_TRUE(VerifyObservations(
       observer, kWebConnectionTypeNone, kNoneMaxBandwidthMbps,
       WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
@@ -279,15 +284,15 @@ TEST_F(NetworkStateNotifierTest, AddObserver) {
       WebEffectiveConnectionType::kType4G, kEthernetHttpRtt,
       kEthernetTransportRtt.value() * 2, kEthernetThroughputMbps));
   EXPECT_EQ(observer.CallbackCount(), 6);
-
-  notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveObserver) {
   StateObserver observer1, observer2;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  handle1 = nullptr;
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
@@ -301,13 +306,13 @@ TEST_F(NetworkStateNotifierTest, RemoveObserver) {
       observer2, kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
       WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
       kEthernetTransportRtt, kEthernetThroughputMbps));
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserver) {
   StateObserver observer1;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  handle = nullptr;
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
@@ -320,8 +325,9 @@ TEST_F(NetworkStateNotifierTest, RemoveSoleObserver) {
 
 TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying) {
   StateObserver observer1, observer2;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  AddObserverOnNotification(&observer1, &observer2);
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  observer1.AddObserverOnNotification(&notifier_, &observer2, GetTaskRunner());
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt,
@@ -334,14 +340,13 @@ TEST_F(NetworkStateNotifierTest, AddObserverWhileNotifying) {
       observer2, kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
       WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
       kUnknownThroughputMbps));
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying) {
   StateObserver observer1;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  RemoveObserverOnNotification(&observer1, &observer1);
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  observer1.RemoveObserverOnNotification(std::move(handle));
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt,
@@ -362,9 +367,11 @@ TEST_F(NetworkStateNotifierTest, RemoveSoleObserverWhileNotifying) {
 
 TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying) {
   StateObserver observer1, observer2;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
-  RemoveObserverOnNotification(&observer1, &observer1);
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
+  observer1.RemoveObserverOnNotification(std::move(handle1));
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt,
@@ -389,16 +396,15 @@ TEST_F(NetworkStateNotifierTest, RemoveCurrentObserverWhileNotifying) {
       observer2, kWebConnectionTypeEthernet, kEthernetMaxBandwidthMbps,
       WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
       kUnknownThroughputMbps));
-
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying) {
   StateObserver observer1, observer2;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
-  RemoveObserverOnNotification(&observer2, &observer1);
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
+  observer2.RemoveObserverOnNotification(std::move(handle1));
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt,
@@ -417,17 +423,17 @@ TEST_F(NetworkStateNotifierTest, RemovePastObserverWhileNotifying) {
       observer2, kWebConnectionTypeEthernet, kEthernetMaxBandwidthMbps,
       WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
       kUnknownThroughputMbps));
-
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying) {
   StateObserver observer1, observer2, observer3;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer3, GetTaskRunner());
-  RemoveObserverOnNotification(&observer1, &observer2);
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle3 =
+      notifier_.AddConnectionObserver(&observer3, GetTaskRunner());
+  observer1.RemoveObserverOnNotification(std::move(handle2));
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt,
@@ -444,16 +450,14 @@ TEST_F(NetworkStateNotifierTest, RemoveFutureObserverWhileNotifying) {
       observer3, kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
       WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
       kUnknownThroughputMbps));
-
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer3, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver) {
   StateObserver observer1, observer2;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner2());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner2());
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
@@ -466,16 +470,15 @@ TEST_F(NetworkStateNotifierTest, MultipleContextsAddObserver) {
       observer2, kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
       WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
       kEthernetTransportRtt, kEthernetThroughputMbps));
-
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner2());
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveContext) {
   StateObserver observer1, observer2;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner2());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner2());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner2());
+  handle2 = nullptr;
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
@@ -488,16 +491,16 @@ TEST_F(NetworkStateNotifierTest, RemoveContext) {
       observer2, kWebConnectionTypeNone, kNoneMaxBandwidthMbps,
       WebEffectiveConnectionType::kTypeUnknown, kUnknownRtt, kUnknownRtt,
       kUnknownThroughputMbps));
-
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, RemoveAllContexts) {
   StateObserver observer1, observer2;
-  notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner2());
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner2());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddConnectionObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner2());
+  handle1 = nullptr;
+  handle2 = nullptr;
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
@@ -514,7 +517,8 @@ TEST_F(NetworkStateNotifierTest, RemoveAllContexts) {
 
 TEST_F(NetworkStateNotifierTest, SetNetworkConnectionInfoOverride) {
   StateObserver observer;
-  notifier_.AddConnectionObserver(&observer, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddConnectionObserver(&observer, GetTaskRunner());
 
   notifier_.SetOnLine(true);
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
@@ -563,13 +567,12 @@ TEST_F(NetworkStateNotifierTest, SetNetworkConnectionInfoOverride) {
   EXPECT_FALSE(notifier_.OnLine());
   EXPECT_EQ(kWebConnectionTypeNone, notifier_.ConnectionType());
   EXPECT_EQ(kNoneMaxBandwidthMbps, notifier_.MaxBandwidth());
-
-  notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, SetNetworkQualityInfoOverride) {
   StateObserver observer;
-  notifier_.AddConnectionObserver(&observer, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddConnectionObserver(&observer, GetTaskRunner());
 
   notifier_.SetOnLine(true);
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
@@ -648,13 +651,12 @@ TEST_F(NetworkStateNotifierTest, SetNetworkQualityInfoOverride) {
             notifier_.EffectiveType());
   EXPECT_EQ(kUnknownRtt, notifier_.TransportRtt());
   EXPECT_EQ(kUnknownThroughputMbps, notifier_.DownlinkThroughputMbps());
-
-  notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, NoExtraNotifications) {
   StateObserver observer;
-  notifier_.AddConnectionObserver(&observer, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddConnectionObserver(&observer, GetTaskRunner());
 
   SetConnection(kWebConnectionTypeBluetooth, kBluetoothMaxBandwidthMbps,
                 WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
@@ -694,16 +696,16 @@ TEST_F(NetworkStateNotifierTest, NoExtraNotifications) {
       WebEffectiveConnectionType::kType3G, kEthernetHttpRtt,
       kEthernetTransportRtt, kEthernetThroughputMbps));
   EXPECT_EQ(observer.CallbackCount(), 6);
-
-  notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, NoNotificationOnInitialization) {
   NetworkStateNotifier notifier;
   StateObserver observer;
 
-  notifier.AddConnectionObserver(&observer, GetTaskRunner());
-  notifier.AddOnLineObserver(&observer, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier.AddConnectionObserver(&observer, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier.AddOnLineObserver(&observer, GetTaskRunner());
   RunPendingTasks();
   EXPECT_EQ(observer.CallbackCount(), 0);
 
@@ -730,14 +732,12 @@ TEST_F(NetworkStateNotifierTest, NoNotificationOnInitialization) {
   RunPendingTasks();
   EXPECT_EQ(observer.CallbackCount(), 2);
   EXPECT_FALSE(observer.ObservedOnLineState());
-
-  notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
-  notifier_.RemoveOnLineObserver(&observer, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, OnLineNotification) {
   StateObserver observer;
-  notifier_.AddOnLineObserver(&observer, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle =
+      notifier_.AddOnLineObserver(&observer, GetTaskRunner());
 
   SetOnLine(true);
   RunPendingTasks();
@@ -748,8 +748,6 @@ TEST_F(NetworkStateNotifierTest, OnLineNotification) {
   RunPendingTasks();
   EXPECT_FALSE(observer.ObservedOnLineState());
   EXPECT_EQ(observer.CallbackCount(), 2);
-
-  notifier_.RemoveConnectionObserver(&observer, GetTaskRunner());
 }
 
 TEST_F(NetworkStateNotifierTest, MultipleObservers) {
@@ -757,9 +755,12 @@ TEST_F(NetworkStateNotifierTest, MultipleObservers) {
   StateObserver observer2;
 
   // Observer1 observes online state, Observer2 observes both.
-  notifier_.AddOnLineObserver(&observer1, GetTaskRunner());
-  notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
-  notifier_.AddOnLineObserver(&observer2, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle1 =
+      notifier_.AddOnLineObserver(&observer1, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle2 =
+      notifier_.AddConnectionObserver(&observer2, GetTaskRunner());
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle> handle3 =
+      notifier_.AddOnLineObserver(&observer2, GetTaskRunner());
 
   notifier_.SetOnLine(true);
   RunPendingTasks();
@@ -788,9 +789,6 @@ TEST_F(NetworkStateNotifierTest, MultipleObservers) {
       kEthernetTransportRtt, kEthernetThroughputMbps));
   EXPECT_EQ(observer1.CallbackCount(), 3);
   EXPECT_EQ(observer2.CallbackCount(), 5);
-
-  notifier_.RemoveConnectionObserver(&observer1, GetTaskRunner());
-  notifier_.RemoveConnectionObserver(&observer2, GetTaskRunner());
 }
 
 }  // namespace blink

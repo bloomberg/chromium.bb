@@ -524,7 +524,7 @@ class Document::NetworkStateObserver final
  public:
   explicit NetworkStateObserver(Document& document)
       : ContextLifecycleObserver(&document) {
-    GetNetworkStateNotifier().AddOnLineObserver(
+    online_observer_handle_ = GetNetworkStateNotifier().AddOnLineObserver(
         this,
         TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()));
   }
@@ -545,11 +545,14 @@ class Document::NetworkStateObserver final
 
   void UnregisterAsObserver(ExecutionContext* context) {
     DCHECK(context);
-    GetNetworkStateNotifier().RemoveOnLineObserver(
-        this, TaskRunnerHelper::Get(TaskType::kNetworking, context));
+    online_observer_handle_ = nullptr;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() { ContextLifecycleObserver::Trace(visitor); }
+
+ private:
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
+      online_observer_handle_;
 };
 
 Document* Document::Create(const Document& document) {
