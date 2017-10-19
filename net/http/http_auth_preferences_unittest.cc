@@ -20,50 +20,21 @@ TEST(HttpAuthPreferencesTest, AuthSchemes) {
   const char* const expected_schemes[] = {"scheme1", "scheme2"};
   std::vector<std::string> expected_schemes_vector(
       expected_schemes, expected_schemes + arraysize(expected_schemes));
-  HttpAuthPreferences http_auth_preferences(expected_schemes_vector
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                                            ,
-                                            ""
-#endif
-#if defined(OS_CHROMEOS)
-                                            ,
-                                            true
-#endif
-                                            );
+  HttpAuthPreferences http_auth_preferences(expected_schemes_vector);
   EXPECT_TRUE(http_auth_preferences.IsSupportedScheme("scheme1"));
   EXPECT_TRUE(http_auth_preferences.IsSupportedScheme("scheme2"));
   EXPECT_FALSE(http_auth_preferences.IsSupportedScheme("scheme3"));
 }
 
 TEST(HttpAuthPreferencesTest, DisableCnameLookup) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                                            ,
-                                            ""
-#endif
-#if defined(OS_CHROMEOS)
-                                            ,
-                                            true
-#endif
-                                            );
+  HttpAuthPreferences http_auth_preferences;
   EXPECT_FALSE(http_auth_preferences.NegotiateDisableCnameLookup());
   http_auth_preferences.set_negotiate_disable_cname_lookup(true);
   EXPECT_TRUE(http_auth_preferences.NegotiateDisableCnameLookup());
 }
 
 TEST(HttpAuthPreferencesTest, NegotiateEnablePort) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                                            ,
-                                            ""
-#endif
-#if defined(OS_CHROMEOS)
-                                            ,
-                                            true
-#endif
-                                            );
+  HttpAuthPreferences http_auth_preferences;
   EXPECT_FALSE(http_auth_preferences.NegotiateEnablePort());
   http_auth_preferences.set_negotiate_enable_port(true);
   EXPECT_TRUE(http_auth_preferences.NegotiateEnablePort());
@@ -90,17 +61,7 @@ TEST(HttpAuthPreferencesTest, EnableNtlmV2) {
 
 #if defined(OS_ANDROID)
 TEST(HttpAuthPreferencesTest, AuthAndroidhNegotiateAccountType) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                                            ,
-                                            ""
-#endif
-#if defined(OS_CHROMEOS)
-                                            ,
-                                            true
-#endif
-                                            );
+  HttpAuthPreferences http_auth_preferences;
   EXPECT_EQ(std::string(),
             http_auth_preferences.AuthAndroidNegotiateAccountType());
   http_auth_preferences.set_auth_android_negotiate_account_type("foo");
@@ -111,40 +72,28 @@ TEST(HttpAuthPreferencesTest, AuthAndroidhNegotiateAccountType) {
 
 #if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
 TEST(HttpAuthPreferencesTest, GssApiLibraryName) {
-  std::vector<std::string> AuthSchemes;
-  HttpAuthPreferences http_auth_preferences(AuthSchemes, "bar");
+  std::vector<std::string> auth_schemes;
+  HttpAuthPreferences http_auth_preferences(auth_schemes, "bar");
   EXPECT_EQ(std::string("bar"), http_auth_preferences.GssapiLibraryName());
 }
 #endif
 
 #if defined(OS_CHROMEOS)
 TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadTrue) {
-  std::vector<std::string> AuthSchemes;
-  HttpAuthPreferences http_auth_preferences(AuthSchemes, true);
+  std::vector<std::string> auth_schemes;
+  HttpAuthPreferences http_auth_preferences(auth_schemes, true);
   EXPECT_TRUE(http_auth_preferences.AllowGssapiLibraryLoad());
 }
-#endif
 
-#if defined(OS_CHROMEOS)
 TEST(HttpAuthPreferencesTest, AllowGssapiLibraryLoadFalse) {
-  std::vector<std::string> AuthSchemes;
-  HttpAuthPreferences http_auth_preferences(AuthSchemes, false);
+  std::vector<std::string> auth_schemes;
+  HttpAuthPreferences http_auth_preferences(auth_schemes, false);
   EXPECT_FALSE(http_auth_preferences.AllowGssapiLibraryLoad());
 }
 #endif
 
 TEST(HttpAuthPreferencesTest, AuthServerWhitelist) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                                            ,
-                                            ""
-#endif
-#if defined(OS_CHROMEOS)
-                                            ,
-                                            true
-#endif
-                                            );
+  HttpAuthPreferences http_auth_preferences;
   // Check initial value
   EXPECT_FALSE(http_auth_preferences.CanUseDefaultCredentials(GURL("abc")));
   http_auth_preferences.set_server_whitelist("*");
@@ -152,17 +101,7 @@ TEST(HttpAuthPreferencesTest, AuthServerWhitelist) {
 }
 
 TEST(HttpAuthPreferencesTest, AuthDelegateWhitelist) {
-  std::vector<std::string> auth_schemes;
-  HttpAuthPreferences http_auth_preferences(auth_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                                            ,
-                                            ""
-#endif
-#if defined(OS_CHROMEOS)
-                                            ,
-                                            true
-#endif
-                                            );
+  HttpAuthPreferences http_auth_preferences;
   // Check initial value
   EXPECT_FALSE(http_auth_preferences.CanDelegate(GURL("abc")));
   http_auth_preferences.set_delegate_whitelist("*");
