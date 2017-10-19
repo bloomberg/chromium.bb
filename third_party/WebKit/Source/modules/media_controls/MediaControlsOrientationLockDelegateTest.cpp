@@ -14,7 +14,7 @@
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/html_names.h"
 #include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/device_orientation/DeviceOrientationController.h"
 #include "modules/device_orientation/DeviceOrientationData.h"
 #include "modules/media_controls/MediaControlsImpl.h"
@@ -129,7 +129,7 @@ class StubLocalFrameClientForOrientationLockDelegate final
 }  // anonymous namespace
 
 class MediaControlsOrientationLockDelegateTest
-    : public ::testing::Test,
+    : public PageTestBase,
       private ScopedVideoFullscreenOrientationLockForTest,
       private ScopedVideoRotateToFullscreenForTest {
  public:
@@ -156,10 +156,8 @@ class MediaControlsOrientationLockDelegateTest
     FillWithEmptyClients(clients);
     clients.chrome_client = chrome_client_.Get();
 
-    page_holder_ = DummyPageHolder::Create(
-        IntSize(800, 600), &clients,
-        StubLocalFrameClientForOrientationLockDelegate::Create());
-
+    SetupPageWithClients(
+        &clients, StubLocalFrameClientForOrientationLockDelegate::Create());
     previous_orientation_event_value_ =
         RuntimeEnabledFeatures::OrientationEventEnabled();
 
@@ -243,7 +241,6 @@ class MediaControlsOrientationLockDelegateTest
   }
 
   HTMLVideoElement& Video() const { return *video_; }
-  Document& GetDocument() const { return page_holder_->GetDocument(); }
   MockWebScreenOrientationClient& ScreenOrientationClient() const {
     return ChromeClient().WebScreenOrientationClient();
   }
@@ -256,7 +253,6 @@ class MediaControlsOrientationLockDelegateTest
   friend class MediaControlsOrientationLockAndRotateToFullscreenDelegateTest;
 
   bool previous_orientation_event_value_;
-  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<HTMLVideoElement> video_;
   Persistent<MockChromeClientForOrientationLockDelegate> chrome_client_;
 };

@@ -8,7 +8,7 @@
 #include "core/html/media/HTMLVideoElement.h"
 #include "core/html_names.h"
 #include "core/input_type_names.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/media_controls/MediaControlsImpl.h"
 #include "platform/testing/HistogramTester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -49,15 +49,14 @@ class MediaControlInputElementImpl final : public MediaControlInputElement {
 
 }  // anonymous namespace
 
-class MediaControlInputElementTest : public ::testing::Test {
+class MediaControlInputElementTest : public PageTestBase {
  public:
   void SetUp() final {
     // Create page and add a video element with controls.
-    dummy_page_holder_ = DummyPageHolder::Create(IntSize(800, 600));
-    media_element_ =
-        HTMLVideoElement::Create(dummy_page_holder_->GetDocument());
+    PageTestBase::SetUp();
+    media_element_ = HTMLVideoElement::Create(GetDocument());
     media_element_->SetBooleanAttribute(HTMLNames::controlsAttr, true);
-    dummy_page_holder_->GetDocument().body()->AppendChild(media_element_);
+    GetDocument().body()->AppendChild(media_element_);
 
     // Create instance of MediaControlInputElement to run tests on.
     media_controls_ =
@@ -84,7 +83,6 @@ class MediaControlInputElementTest : public ::testing::Test {
   HTMLMediaElement& MediaElement() { return *media_element_; }
 
  private:
-  std::unique_ptr<DummyPageHolder> dummy_page_holder_;
   Persistent<HTMLMediaElement> media_element_;
   Persistent<MediaControlsImpl> media_controls_;
   Persistent<MediaControlInputElementImpl> control_input_element_;
