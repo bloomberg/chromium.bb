@@ -25,43 +25,6 @@ std::string LatencySourceEventTypeToInputModalityString(
   }
 }
 
-void ComputeScrollLatencyHistograms(
-    const LatencyInfo::LatencyComponent& gpu_swap_begin_component,
-    const LatencyInfo::LatencyComponent& gpu_swap_end_component,
-    const LatencyInfo& latency) {
-  DCHECK(!latency.coalesced());
-  if (latency.coalesced())
-    return;
-
-  DCHECK(!gpu_swap_begin_component.event_time.is_null());
-  DCHECK(!gpu_swap_end_component.event_time.is_null());
-  LatencyInfo::LatencyComponent original_component;
-  if (latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-          &original_component)) {
-    // This UMA metric tracks the time between the final frame swap for the
-    // first scroll event in a sequence and the original timestamp of that
-    // scroll event's underlying touch event.
-    for (size_t i = 0; i < original_component.event_count; i++) {
-      UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-          "Event.Latency.TouchToFirstScrollUpdateSwapBegin", original_component,
-          gpu_swap_begin_component);
-    }
-  } else if (!latency.FindLatency(
-                 ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
-                 &original_component)) {
-    return;
-  }
-
-  // This UMA metric tracks the time from when the original touch event is
-  // created to when the scroll gesture results in final frame swap.
-  for (size_t i = 0; i < original_component.event_count; i++) {
-    UMA_HISTOGRAM_INPUT_LATENCY_HIGH_RESOLUTION_MICROSECONDS(
-        "Event.Latency.TouchToScrollUpdateSwapBegin", original_component,
-        gpu_swap_begin_component);
-  }
-}
-
 }  // namespace
 
 void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
@@ -100,16 +63,6 @@ void LatencyTracker::OnGpuSwapBuffersCompleted(const LatencyInfo& latency) {
                                      gpu_swap_end_component, latency);
   }
 
-  // Compute the old scroll update latency metrics. They are exclusively
-  // calculated for touch scrolls, and will be deprecated on M56.
-  // (https://crbug.com/649754)
-  LatencyInfo::LatencyComponent mouse_wheel_scroll_update_component;
-  if (!latency.FindLatency(
-          ui::INPUT_EVENT_LATENCY_GENERATE_SCROLL_UPDATE_FROM_MOUSE_WHEEL, 0,
-          &mouse_wheel_scroll_update_component)) {
-    ComputeScrollLatencyHistograms(gpu_swap_begin_component,
-                                   gpu_swap_end_component, latency);
-  }
 }
 
 void LatencyTracker::ReportRapporScrollLatency(

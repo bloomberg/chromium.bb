@@ -20193,6 +20193,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.TouchToFirstScrollUpdateSwapBegin"
     units="microseconds">
+  <obsolete>
+    Replaced by Event.Latency.ScrollBegin.Touch.TimeToScrollUpdateSwapBegin2.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initial creation of a touch event and the start of the frame
@@ -20222,6 +20225,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Event.Latency.TouchToScrollUpdateSwapBegin"
     units="microseconds">
+  <obsolete>
+    Replaced by Event.Latency.ScrollUpdate.Touch.TimeToScrollUpdateSwapBegin2.
+  </obsolete>
   <owner>tdresser@chromium.org</owner>
   <summary>
     Time between initial creation of a touch event and start of the frame swap
