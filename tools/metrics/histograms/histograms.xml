@@ -93844,6 +93844,38 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="WebRTC.Video.DroppedFrames.Capturer" units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped by a capturer for a sent video stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.DroppedFrames.Encoder" units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped by an encoder's internal rate limiter for a
+    sent video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.DroppedFrames.EncoderQueue" units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped because encoder queue is full for a sent
+    video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.DroppedFrames.Ratelimiter" units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped by a WebRTC rate limiter (in MediaOpt) for a
+    sent video stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
 <histogram name="WebRTC.Video.DuplicatedPacketsInPercent" units="%">
   <owner>asapersson@chromium.org</owner>
   <summary>
@@ -94291,6 +94323,41 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The average QP (quantizer value) per frame for a received VP8 screenshare
     stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.DroppedFrames.Capturer"
+    units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped by a capturer for a sent screenshare stream.
+    Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.DroppedFrames.Encoder" units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped by an encoder's internal rate limiter for a
+    sent screenshare stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.DroppedFrames.EncoderQueue"
+    units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped because encoder queue is full for a sent
+    screenshare stream. Recorded when a stream is removed.
+  </summary>
+</histogram>
+
+<histogram name="WebRTC.Video.Screenshare.DroppedFrames.Ratelimiter"
+    units="frames">
+  <owner>ilnik@chromium.org</owner>
+  <summary>
+    Total number of frames dropped by a WebRTC rate limiter (in MediaOpt) for a
+    sent screenshare stream. Recorded when a stream is removed.
   </summary>
 </histogram>
 
