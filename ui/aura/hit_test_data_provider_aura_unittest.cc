@@ -90,19 +90,23 @@ class HitTestDataProviderAuraTest : public test::AuraTestBaseMus {
     root_->Init(ui::LAYER_NOT_DRAWN);
     root_->SetEventTargeter(std::make_unique<WindowTargeter>());
     root_->SetBounds(gfx::Rect(0, 0, 300, 200));
+    root_->Show();
 
     window2_ = new Window(nullptr);
     window2_->Init(ui::LAYER_TEXTURED);
     window2_->SetBounds(gfx::Rect(20, 30, 40, 60));
+    window2_->Show();
 
     window3_ = new Window(nullptr);
     window3_->Init(ui::LAYER_TEXTURED);
     window3_->SetEventTargeter(std::make_unique<WindowTargeter>());
     window3_->SetBounds(gfx::Rect(50, 60, 100, 40));
+    window3_->Show();
 
     window4_ = new Window(nullptr);
     window4_->Init(ui::LAYER_TEXTURED);
     window4_->SetBounds(gfx::Rect(20, 10, 60, 30));
+    window4_->Show();
 
     window3_->AddChild(window4_);
     root_->AddChild(window2_);
@@ -262,7 +266,7 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
   hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
-  EXPECT_EQ(hit_test_data->regions.size(), 3U);
+  EXPECT_EQ(hit_test_data->regions.size(), 3u);
 
   root()->SetEventTargetingPolicy(ui::mojom::EventTargetingPolicy::TARGET_ONLY);
   window3()->SetEventTargetingPolicy(
@@ -270,7 +274,7 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
   hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
-  EXPECT_EQ(hit_test_data->regions.size(), 2U);
+  EXPECT_EQ(hit_test_data->regions.size(), 2u);
 
   root()->SetEventTargetingPolicy(
       ui::mojom::EventTargetingPolicy::DESCENDANTS_ONLY);
@@ -279,7 +283,7 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
   hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestIgnore);
-  EXPECT_EQ(hit_test_data->regions.size(), 2U);
+  EXPECT_EQ(hit_test_data->regions.size(), 2u);
 
   root()->SetEventTargetingPolicy(
       ui::mojom::EventTargetingPolicy::TARGET_AND_DESCENDANTS);
@@ -288,7 +292,38 @@ TEST_F(HitTestDataProviderAuraTest, TargetingPolicies) {
   hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
-  EXPECT_EQ(hit_test_data->regions.size(), 3U);
+  EXPECT_EQ(hit_test_data->regions.size(), 3u);
+}
+
+// Tests that we do not submit hit-test data for invisible windows and for
+// children of a child surface.
+TEST_F(HitTestDataProviderAuraTest, DoNotSubmit) {
+  auto hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->regions.size(), 3u);
+
+  window2()->Hide();
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->regions.size(), 2u);
+
+  window3()->AllocateLocalSurfaceId();
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->regions.size(), 1u);
+
+  root()->Hide();
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_FALSE(hit_test_data);
+
+  root()->Show();
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->regions.size(), 1u);
+  root()->AllocateLocalSurfaceId();
+  hit_test_data = hit_test_data_provider()->GetHitTestData();
+  ASSERT_TRUE(hit_test_data);
+  EXPECT_EQ(hit_test_data->regions.size(), 0u);
 }
 
 }  // namespace aura
