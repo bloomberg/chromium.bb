@@ -7,11 +7,13 @@ package org.chromium.android_webview;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
+import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CommandLine;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,12 +30,14 @@ public class AwSafeBrowsingConfigHelper {
     private static Boolean sSafeBrowsingUserOptIn;
 
     @SuppressWarnings("unchecked")
-    public static void maybeInitSafeBrowsingFromSettings(final Context appContext) {
+    public static void maybeEnableSafeBrowsingFromManifest(final Context appContext) {
+        Boolean appOptIn = getAppOptInPreference(appContext);
+
+        // If the app specifies something, fallback to the app's preference, otherwise check for the
+        // existence of the CLI switch.
         AwContentsStatics.setSafeBrowsingEnabledByManifest(
-                CommandLine.getInstance().hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
-                || CommandLine.getInstance().hasSwitch(
-                           AwSwitches.WEBVIEW_SAFEBROWSING_BLOCK_ALL_RESOURCES)
-                || appHasOptedIn(appContext));
+                appOptIn == null ? getCommandLineOptIn() : appOptIn);
+
         // If GMS is available, we will figure out if the user has opted-in to Safe Browsing and set
         // the correct value for sSafeBrowsingUserOptIn.
         final String getUserOptInPreferenceMethodName = "getUserOptInPreference";
@@ -58,17 +62,31 @@ public class AwSafeBrowsingConfigHelper {
         }
     }
 
-    private static boolean appHasOptedIn(Context appContext) {
+    private static boolean getCommandLineOptIn() {
+        CommandLine cli = CommandLine.getInstance();
+        return cli.hasSwitch(AwSwitches.WEBVIEW_ENABLE_SAFEBROWSING_SUPPORT)
+                || cli.hasSwitch(AwSwitches.WEBVIEW_SAFEBROWSING_BLOCK_ALL_RESOURCES);
+    }
+
+    /**
+     * Checks the application manifest for Safe Browsing opt-in preference.
+     *
+     * @param appContext application context.
+     * @return true if app has opted in, false if opted out, and null if no preference specified.
+     */
+    @Nullable
+    @SuppressFBWarnings("NP_BOOLEAN_RETURN_NULL")
+    private static Boolean getAppOptInPreference(Context appContext) {
         try {
             ApplicationInfo info = appContext.getPackageManager().getApplicationInfo(
                     appContext.getPackageName(), PackageManager.GET_META_DATA);
             if (info.metaData == null) {
-                // null means no such tag was found.
-                return false;
+                // No <meta-data> tag was found.
+                return null;
             }
             return info.metaData.containsKey(OPT_IN_META_DATA_STR)
                     ? info.metaData.getBoolean(OPT_IN_META_DATA_STR)
-                    : false;
+                    : null;
         } catch (PackageManager.NameNotFoundException e) {
             // This should never happen.
             Log.e(TAG, "App could not find itself by package name!");

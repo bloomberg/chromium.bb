@@ -112,7 +112,7 @@ public final class AwBrowserProcess {
             CombinedPolicyProvider.get().registerProvider(new AwPolicyProvider(appContext));
 
             // Check android settings but only when safebrowsing is enabled.
-            AwSafeBrowsingConfigHelper.maybeInitSafeBrowsingFromSettings(appContext);
+            AwSafeBrowsingConfigHelper.maybeEnableSafeBrowsingFromManifest(appContext);
 
             try {
                 BrowserStartupController.get(LibraryProcessType.PROCESS_WEBVIEW)
