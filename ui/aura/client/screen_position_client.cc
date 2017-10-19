@@ -5,6 +5,7 @@
 #include "ui/aura/client/screen_position_client.h"
 
 #include "ui/base/class_property.h"
+#include "ui/gfx/geometry/point_conversions.h"
 
 DECLARE_UI_CLASS_PROPERTY_TYPE(aura::client::ScreenPositionClient*)
 
@@ -14,6 +15,20 @@ namespace client {
 DEFINE_LOCAL_UI_CLASS_PROPERTY_KEY(ScreenPositionClient*,
                                 kScreenPositionClientKey,
                                 NULL);
+
+void ScreenPositionClient::ConvertPointToScreen(const Window* window,
+                                                gfx::Point* point) {
+  gfx::PointF point_float(*point);
+  ConvertPointToScreen(window, &point_float);
+  *point = gfx::ToFlooredPoint(point_float);
+}
+
+void ScreenPositionClient::ConvertPointFromScreen(const Window* window,
+                                                  gfx::Point* point) {
+  gfx::PointF point_float(*point);
+  ConvertPointFromScreen(window, &point_float);
+  *point = gfx::ToFlooredPoint(point_float);
+}
 
 void SetScreenPositionClient(Window* root_window,
                              ScreenPositionClient* client) {

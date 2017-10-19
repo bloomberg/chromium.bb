@@ -24,13 +24,13 @@ namespace ui {
 
 namespace {
 
-gfx::Point GetScreenLocationFromEvent(
+gfx::PointF GetScreenLocationFromEvent(
     const LocatedEvent& event,
-    const base::Callback<gfx::Point(const LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const LocatedEvent& event)>&
         screen_location_callback) {
   DCHECK(!screen_location_callback.is_null());
   return event.target() ? screen_location_callback.Run(event)
-                        : event.root_location();
+                        : event.root_location_f();
 }
 
 blink::WebPointerProperties::PointerType EventPointerTypeToWebPointerType(
@@ -219,7 +219,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 
 blink::WebMouseEvent MakeWebMouseEvent(
     const MouseEvent& event,
-    const base::Callback<gfx::Point(const LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const LocatedEvent& event)>&
         screen_location_callback) {
   // Construct an untranslated event from the platform event data.
   blink::WebMouseEvent webkit_event =
@@ -244,7 +244,7 @@ blink::WebMouseEvent MakeWebMouseEvent(
     return webkit_event;
 #endif
 
-  const gfx::Point screen_point =
+  const gfx::PointF screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
   webkit_event.SetPositionInScreen(screen_point.x(), screen_point.y());
 
@@ -253,7 +253,7 @@ blink::WebMouseEvent MakeWebMouseEvent(
 
 blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     const MouseWheelEvent& event,
-    const base::Callback<gfx::Point(const LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const LocatedEvent& event)>&
         screen_location_callback) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
@@ -273,7 +273,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
   // |event|.
   webkit_event.SetPositionInWidget(event.x(), event.y());
 
-  const gfx::Point screen_point =
+  const gfx::PointF screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
   webkit_event.SetPositionInScreen(screen_point.x(), screen_point.y());
 
@@ -282,7 +282,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
 
 blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     const ScrollEvent& event,
-    const base::Callback<gfx::Point(const LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const LocatedEvent& event)>&
         screen_location_callback) {
 #if defined(OS_WIN)
   // Construct an untranslated event from the platform event data.
@@ -302,7 +302,7 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
   // |event|.
   webkit_event.SetPositionInWidget(event.x(), event.y());
 
-  const gfx::Point screen_point =
+  const gfx::PointF screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
   webkit_event.SetPositionInScreen(screen_point.x(), screen_point.y());
 
@@ -333,14 +333,14 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const KeyEvent& event) {
 
 blink::WebGestureEvent MakeWebGestureEvent(
     const GestureEvent& event,
-    const base::Callback<gfx::Point(const LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const LocatedEvent& event)>&
         screen_location_callback) {
   blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUIEvent(event);
 
   gesture_event.x = event.x();
   gesture_event.y = event.y();
 
-  const gfx::Point screen_point =
+  const gfx::PointF screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
   gesture_event.global_x = screen_point.x();
   gesture_event.global_y = screen_point.y();
@@ -350,13 +350,13 @@ blink::WebGestureEvent MakeWebGestureEvent(
 
 blink::WebGestureEvent MakeWebGestureEvent(
     const ScrollEvent& event,
-    const base::Callback<gfx::Point(const LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const LocatedEvent& event)>&
         screen_location_callback) {
   blink::WebGestureEvent gesture_event = MakeWebGestureEventFromUiEvent(event);
   gesture_event.x = event.x();
   gesture_event.y = event.y();
 
-  const gfx::Point screen_point =
+  const gfx::PointF screen_point =
       GetScreenLocationFromEvent(event, screen_location_callback);
   gesture_event.global_x = screen_point.x();
   gesture_event.global_y = screen_point.y();

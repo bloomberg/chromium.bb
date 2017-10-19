@@ -428,7 +428,7 @@ const Window* Window::GetChildById(int id) const {
 // static
 void Window::ConvertPointToTarget(const Window* source,
                                   const Window* target,
-                                  gfx::Point* point) {
+                                  gfx::PointF* point) {
   if (!source)
     return;
   if (source->GetRootWindow() != target->GetRootWindow()) {
@@ -446,6 +446,15 @@ void Window::ConvertPointToTarget(const Window* source,
   } else {
     ui::Layer::ConvertPointToLayer(source->layer(), target->layer(), point);
   }
+}
+
+// static
+void Window::ConvertPointToTarget(const Window* source,
+                                  const Window* target,
+                                  gfx::Point* point) {
+  gfx::PointF point_float(*point);
+  ConvertPointToTarget(source, target, &point_float);
+  *point = gfx::ToFlooredPoint(point_float);
 }
 
 // static

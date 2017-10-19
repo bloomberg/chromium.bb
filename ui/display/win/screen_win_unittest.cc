@@ -22,7 +22,7 @@
 #include "ui/display/win/display_info.h"
 #include "ui/display/win/screen_win_display.h"
 #include "ui/display/win/test/screen_util_win.h"
-#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -240,12 +240,17 @@ class ScreenWinTestSingleDisplay1x : public ScreenWinTest {
   DISALLOW_COPY_AND_ASSIGN(ScreenWinTestSingleDisplay1x);
 };
 
+void expect_point_f_eq(gfx::PointF val1, gfx::PointF val2) {
+  EXPECT_FLOAT_EQ(val1.x(), val2.x());
+  EXPECT_FLOAT_EQ(val1.y(), val2.y());
+}
+
 }  // namespace
 
 TEST_F(ScreenWinTestSingleDisplay1x, ScreenToDIPPoints) {
-  gfx::Point origin(0, 0);
-  gfx::Point middle(365, 694);
-  gfx::Point lower_right(1919, 1199);
+  gfx::PointF origin(0, 0);
+  gfx::PointF middle(365, 694);
+  gfx::PointF lower_right(1919, 1199);
   EXPECT_EQ(origin, ScreenWin::ScreenToDIPPoint(origin));
   EXPECT_EQ(middle, ScreenWin::ScreenToDIPPoint(middle));
   EXPECT_EQ(lower_right, ScreenWin::ScreenToDIPPoint(lower_right));
@@ -414,11 +419,12 @@ class ScreenWinTestSingleDisplay1_25x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestSingleDisplay1_25x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(292, 555),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(1535, 959),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1919, 1199)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(292, 555.2F),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(1535.2F, 959.2F),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1919, 1199)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_25x, DIPToScreenPoints) {
@@ -570,11 +576,12 @@ class ScreenWinTestSingleDisplay1_5x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestSingleDisplay1_5x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(243, 462),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(1279, 799),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1919, 1199)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(243.3333F, 462.6666F),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(1279.3333F, 799.3333F),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1919, 1199)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay1_5x, DIPToScreenPoints) {
@@ -726,11 +733,12 @@ class ScreenWinTestSingleDisplay2x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestSingleDisplay2x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(182, 347),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(959, 599),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1919, 1199)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(182.5, 347),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(959.5, 599.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1919, 1199)));
 }
 
 TEST_F(ScreenWinTestSingleDisplay2x, DIPToScreenPoints) {
@@ -889,16 +897,16 @@ class ScreenWinTestTwoDisplays1x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestTwoDisplays1x, ScreenToDIPPoints) {
-  gfx::Point left_origin(0, 0);
-  gfx::Point left_middle(365, 694);
-  gfx::Point left_lower_right(1919, 1199);
+  gfx::PointF left_origin(0, 0);
+  gfx::PointF left_middle(365, 694);
+  gfx::PointF left_lower_right(1919, 1199);
   EXPECT_EQ(left_origin, ScreenWin::ScreenToDIPPoint(left_origin));
   EXPECT_EQ(left_middle, ScreenWin::ScreenToDIPPoint(left_middle));
   EXPECT_EQ(left_lower_right, ScreenWin::ScreenToDIPPoint(left_lower_right));
 
-  gfx::Point right_origin(1920, 0);
-  gfx::Point right_middle(2384, 351);
-  gfx::Point right_lower_right(2719, 599);
+  gfx::PointF right_origin(1920, 0);
+  gfx::PointF right_middle(2384, 351);
+  gfx::PointF right_lower_right(2719, 599);
   EXPECT_EQ(right_origin, ScreenWin::ScreenToDIPPoint(right_origin));
   EXPECT_EQ(right_middle, ScreenWin::ScreenToDIPPoint(right_middle));
   EXPECT_EQ(right_lower_right, ScreenWin::ScreenToDIPPoint(right_lower_right));
@@ -1157,18 +1165,19 @@ class ScreenWinTestTwoDisplays2x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestTwoDisplays2x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(182, 347),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(959, 599),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1919, 1199)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(182.5, 347),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(959.5, 599.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1919, 1199)));
 
-  EXPECT_EQ(gfx::Point(960, 0),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1920, 0)));
-  EXPECT_EQ(gfx::Point(1192, 175),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2384, 351)));
-  EXPECT_EQ(gfx::Point(1359, 299),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2719, 599)));
+  expect_point_f_eq(gfx::PointF(960, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1920, 0)));
+  expect_point_f_eq(gfx::PointF(1192, 175.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2384, 351)));
+  expect_point_f_eq(gfx::PointF(1359.5, 299.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2719, 599)));
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x, DIPToScreenPoints) {
@@ -1458,41 +1467,41 @@ class ScreenWinTestManyDisplays1x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestManyDisplays1x, ScreenToDIPPoints) {
-  gfx::Point primary_origin(0, 0);
-  gfx::Point primary_middle(250, 252);
-  gfx::Point primary_lower_right(639, 479);
+  gfx::PointF primary_origin(0, 0);
+  gfx::PointF primary_middle(250, 252);
+  gfx::PointF primary_lower_right(639, 479);
   EXPECT_EQ(primary_origin, ScreenWin::ScreenToDIPPoint(primary_origin));
   EXPECT_EQ(primary_middle, ScreenWin::ScreenToDIPPoint(primary_middle));
   EXPECT_EQ(primary_lower_right,
             ScreenWin::ScreenToDIPPoint(primary_lower_right));
 
-  gfx::Point monitor1_origin(640, 0);
-  gfx::Point monitor1_middle(852, 357);
-  gfx::Point monitor1_lower_right(1663, 759);
+  gfx::PointF monitor1_origin(640, 0);
+  gfx::PointF monitor1_middle(852, 357);
+  gfx::PointF monitor1_lower_right(1663, 759);
   EXPECT_EQ(monitor1_origin, ScreenWin::ScreenToDIPPoint(monitor1_origin));
   EXPECT_EQ(monitor1_middle, ScreenWin::ScreenToDIPPoint(monitor1_middle));
   EXPECT_EQ(monitor1_lower_right,
             ScreenWin::ScreenToDIPPoint(monitor1_lower_right));
 
-  gfx::Point monitor2_origin(0, 480);
-  gfx::Point monitor2_middle(321, 700);
-  gfx::Point monitor2_lower_right(639, 779);
+  gfx::PointF monitor2_origin(0, 480);
+  gfx::PointF monitor2_middle(321, 700);
+  gfx::PointF monitor2_lower_right(639, 779);
   EXPECT_EQ(monitor2_origin, ScreenWin::ScreenToDIPPoint(monitor2_origin));
   EXPECT_EQ(monitor2_middle, ScreenWin::ScreenToDIPPoint(monitor2_middle));
   EXPECT_EQ(monitor2_lower_right,
             ScreenWin::ScreenToDIPPoint(monitor2_lower_right));
 
-  gfx::Point monitor3_origin(1664, 768);
-  gfx::Point monitor3_middle(1823, 1000);
-  gfx::Point monitor3_lower_right(2063, 1167);
+  gfx::PointF monitor3_origin(1664, 768);
+  gfx::PointF monitor3_middle(1823, 1000);
+  gfx::PointF monitor3_lower_right(2063, 1167);
   EXPECT_EQ(monitor3_origin, ScreenWin::ScreenToDIPPoint(monitor3_origin));
   EXPECT_EQ(monitor3_middle, ScreenWin::ScreenToDIPPoint(monitor3_middle));
   EXPECT_EQ(monitor3_lower_right,
             ScreenWin::ScreenToDIPPoint(monitor3_lower_right));
 
-  gfx::Point monitor4_origin(1864, 1168);
-  gfx::Point monitor4_middle(1955, 1224);
-  gfx::Point monitor4_lower_right(2063, 1367);
+  gfx::PointF monitor4_origin(1864, 1168);
+  gfx::PointF monitor4_middle(1955, 1224);
+  gfx::PointF monitor4_lower_right(2063, 1367);
   EXPECT_EQ(monitor4_origin, ScreenWin::ScreenToDIPPoint(monitor4_origin));
   EXPECT_EQ(monitor4_middle, ScreenWin::ScreenToDIPPoint(monitor4_middle));
   EXPECT_EQ(monitor4_lower_right,
@@ -1866,43 +1875,44 @@ class ScreenWinTestManyDisplays2x : public ScreenWinTest {
 
 TEST_F(ScreenWinTestManyDisplays2x, ScreenToDIPPoints) {
   // Primary Monitor Points
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(125, 126),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(250, 252)));
-  EXPECT_EQ(gfx::Point(319, 239),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(639, 479)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(125, 126),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(250, 252)));
+  expect_point_f_eq(gfx::PointF(319.5, 239.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(639, 479)));
 
   // Monitor 1
-  EXPECT_EQ(gfx::Point(320, 0),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(640, 0)));
-  EXPECT_EQ(gfx::Point(426, 178),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(852, 357)));
-  EXPECT_EQ(gfx::Point(831, 379),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1663, 759)));
+  expect_point_f_eq(gfx::PointF(320, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(640, 0)));
+  expect_point_f_eq(gfx::PointF(426, 178.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(852, 357)));
+  expect_point_f_eq(gfx::PointF(831.5, 379.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1663, 759)));
 
   // Monitor 2
-  EXPECT_EQ(gfx::Point(0, 240),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(0, 480)));
-  EXPECT_EQ(gfx::Point(160, 350),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(321, 700)));
-  EXPECT_EQ(gfx::Point(319, 389),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(639, 779)));
+  expect_point_f_eq(gfx::PointF(0, 240),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 480)));
+  expect_point_f_eq(gfx::PointF(160.5, 350),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(321, 700)));
+  expect_point_f_eq(gfx::PointF(319.5, 389.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(639, 779)));
 
   // Monitor 3
-  EXPECT_EQ(gfx::Point(832, 384),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1664, 768)));
-  EXPECT_EQ(gfx::Point(911, 500),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1823, 1000)));
-  EXPECT_EQ(gfx::Point(1031, 583),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2063, 1167)));
+  expect_point_f_eq(gfx::PointF(832, 384),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1664, 768)));
+  expect_point_f_eq(gfx::PointF(911.5, 500),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1823, 1000)));
+  expect_point_f_eq(gfx::PointF(1031.5, 583.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2063, 1167)));
 
   // Monitor 4
-  EXPECT_EQ(gfx::Point(932, 584),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1864, 1168)));
-  EXPECT_EQ(gfx::Point(977, 612),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1955, 1224)));
-  EXPECT_EQ(gfx::Point(1031, 683),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2063, 1367)));
+  expect_point_f_eq(gfx::PointF(932, 584),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1864, 1168)));
+  expect_point_f_eq(gfx::PointF(977.5, 612),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1955, 1224)));
+  expect_point_f_eq(gfx::PointF(1031.5, 683.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2063, 1367)));
 }
 
 TEST_F(ScreenWinTestManyDisplays2x, DIPToScreenPoints) {
@@ -2275,18 +2285,19 @@ class ScreenWinTestTwoDisplays1x2x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestTwoDisplays1x2x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(365, 694),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(1919, 1199),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1919, 1199)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(365, 694),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(1919, 1199),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1919, 1199)));
 
-  EXPECT_EQ(gfx::Point(1920, 0),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1920, 0)));
-  EXPECT_EQ(gfx::Point(2152, 175),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2384, 351)));
-  EXPECT_EQ(gfx::Point(2319, 299),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2719, 599)));
+  expect_point_f_eq(gfx::PointF(1920, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1920, 0)));
+  expect_point_f_eq(gfx::PointF(2152, 175.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2384, 351)));
+  expect_point_f_eq(gfx::PointF(2319.5, 299.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2719, 599)));
 }
 
 TEST_F(ScreenWinTestTwoDisplays1x2x, DIPToScreenPoints) {
@@ -2559,18 +2570,19 @@ class ScreenWinTestTwoDisplays1_5x1x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestTwoDisplays1_5x1x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(243, 301),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 452)));
-  EXPECT_EQ(gfx::Point(532, 399),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(799, 599)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(243.3333F, 301.3333F),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 452)));
+  expect_point_f_eq(gfx::PointF(532.6666F, 399.3333F),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(799, 599)));
 
-  EXPECT_EQ(gfx::Point(534, -80),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(800, 120)));
-  EXPECT_EQ(gfx::Point(860, 151),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1126, 351)));
-  EXPECT_EQ(gfx::Point(1173, 399),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1439, 599)));
+  expect_point_f_eq(gfx::PointF(534, -80),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(800, 120)));
+  expect_point_f_eq(gfx::PointF(860, 151),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1126, 351)));
+  expect_point_f_eq(gfx::PointF(1173, 399),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1439, 599)));
 }
 
 TEST_F(ScreenWinTestTwoDisplays1_5x1x, DIPToScreenPoints) {
@@ -2841,18 +2853,19 @@ class ScreenWinTestTwoDisplays2x1x : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestTwoDisplays2x1x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(182, 347),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(959, 599),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1919, 1199)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(182.5, 347),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(959.5, 599.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1919, 1199)));
 
-  EXPECT_EQ(gfx::Point(960, 0),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1920, 0)));
-  EXPECT_EQ(gfx::Point(1424, 351),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2384, 351)));
-  EXPECT_EQ(gfx::Point(1759, 599),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(2719, 599)));
+  expect_point_f_eq(gfx::PointF(960, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1920, 0)));
+  expect_point_f_eq(gfx::PointF(1424, 351),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2384, 351)));
+  expect_point_f_eq(gfx::PointF(1759, 599),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(2719, 599)));
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x1x, DIPToScreenPoints) {
@@ -3127,18 +3140,19 @@ class ScreenWinTestTwoDisplays2x1xVirtualized : public ScreenWinTest {
 }  // namespace
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(182, 347),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(1599, 799),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(3199, 1599)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(182.5, 347),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(1599.5, 799.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(3199, 1599)));
 
-  EXPECT_EQ(gfx::Point(3200, 0),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(6400, 0)));
-  EXPECT_EQ(gfx::Point(4192, 175),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(8384, 351)));
-  EXPECT_EQ(gfx::Point(5119, 1199),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(10239, 2399)));
+  expect_point_f_eq(gfx::PointF(3200, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(6400, 0)));
+  expect_point_f_eq(gfx::PointF(4192, 175.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(8384, 351)));
+  expect_point_f_eq(gfx::PointF(5119.5, 1199.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(10239, 2399)));
 }
 
 TEST_F(ScreenWinTestTwoDisplays2x1xVirtualized, DIPToScreenPoints) {
@@ -3398,9 +3412,9 @@ class ScreenWinUninitializedForced1x : public testing::Test {
 }  // namespace
 
 TEST_F(ScreenWinUninitializedForced1x, ScreenToDIPPoints) {
-  gfx::Point origin(0, 0);
-  gfx::Point middle(365, 694);
-  gfx::Point lower_right(1919, 1199);
+  gfx::PointF origin(0, 0);
+  gfx::PointF middle(365, 694);
+  gfx::PointF lower_right(1919, 1199);
   EXPECT_EQ(origin, ScreenWin::ScreenToDIPPoint(origin));
   EXPECT_EQ(middle, ScreenWin::ScreenToDIPPoint(middle));
   EXPECT_EQ(lower_right, ScreenWin::ScreenToDIPPoint(lower_right));
@@ -3512,11 +3526,12 @@ class ScreenWinUninitializedForced2x : public testing::Test {
 }  // namespace
 
 TEST_F(ScreenWinUninitializedForced2x, ScreenToDIPPoints) {
-  EXPECT_EQ(gfx::Point(0, 0), ScreenWin::ScreenToDIPPoint(gfx::Point(0, 0)));
-  EXPECT_EQ(gfx::Point(182, 347),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(365, 694)));
-  EXPECT_EQ(gfx::Point(959, 599),
-            ScreenWin::ScreenToDIPPoint(gfx::Point(1919, 1199)));
+  expect_point_f_eq(gfx::PointF(0, 0),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(0, 0)));
+  expect_point_f_eq(gfx::PointF(182.5, 347),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(365, 694)));
+  expect_point_f_eq(gfx::PointF(959.5, 599.5),
+                    ScreenWin::ScreenToDIPPoint(gfx::PointF(1919, 1199)));
 }
 
 TEST_F(ScreenWinUninitializedForced2x, DIPToScreenPoints) {

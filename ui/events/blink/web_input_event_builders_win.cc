@@ -177,8 +177,8 @@ WebMouseEvent WebMouseEventBuilder::Build(
   ClientToScreen(hwnd, &global_point);
 
   // We need to convert the global point back to DIP before using it.
-  gfx::Point dip_global_point = display::win::ScreenWin::ScreenToDIPPoint(
-      gfx::Point(global_point.x, global_point.y));
+  gfx::PointF dip_global_point = display::win::ScreenWin::ScreenToDIPPoint(
+      gfx::PointF(global_point.x, global_point.y));
 
   result.SetPositionInScreen(dip_global_point.x(), dip_global_point.y());
 

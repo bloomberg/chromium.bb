@@ -12,10 +12,6 @@
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 
-namespace gfx {
-class Point;
-}
-
 namespace ui {
 class GestureEvent;
 class KeyEvent;
@@ -36,24 +32,24 @@ class ScrollEvent;
 // with ui::Event::screen_location (crbug.com/608547)
 blink::WebMouseEvent MakeWebMouseEvent(
     const MouseEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const ui::LocatedEvent& event)>&
         screen_location_callback);
 blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     const MouseWheelEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const ui::LocatedEvent& event)>&
         screen_location_callback);
 blink::WebMouseWheelEvent MakeWebMouseWheelEvent(
     const ScrollEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const ui::LocatedEvent& event)>&
         screen_location_callback);
 blink::WebKeyboardEvent MakeWebKeyboardEvent(const KeyEvent& event);
 blink::WebGestureEvent MakeWebGestureEvent(
     const GestureEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const ui::LocatedEvent& event)>&
         screen_location_callback);
 blink::WebGestureEvent MakeWebGestureEvent(
     const ScrollEvent& event,
-    const base::Callback<gfx::Point(const ui::LocatedEvent& event)>&
+    const base::Callback<gfx::PointF(const ui::LocatedEvent& event)>&
         screen_location_callback);
 blink::WebGestureEvent MakeWebGestureEventFlingCancel();
 
