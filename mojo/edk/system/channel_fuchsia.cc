@@ -43,17 +43,27 @@ bool UnwrapPlatformHandle(ScopedPlatformHandle handle,
   // Each FDIO file descriptor is implemented using one or more native resources
   // and can be un-wrapped into a set of |handle| and |info| pairs, with |info|
   // consisting of an FDIO-defined type & arguments (see zircon/processargs.h).
+  //
+  // We try to transfer the FD, but if that fails (for example if the file has
+  // already been dup()d into another FD) we may need to clone.
   zx_handle_t handles[FDIO_MAX_HANDLES] = {};
   uint32_t info[FDIO_MAX_HANDLES] = {};
   zx_status_t result = fdio_transfer_fd(handle.get().as_fd(), 0, handles, info);
-  DCHECK_LE(result, FDIO_MAX_HANDLES);
-  if (result <= 0) {
-    DLOG(ERROR) << "fdio_transfer_fd: " << zx_status_get_string(result);
-    return false;
+  if (result == ZX_OK) {
+    // On success, the fd in |handle| has been transferred and is no longer
+    // valid. Release from the ScopedPlatformHandle to avoid close()ing an
+    // invalid handle.
+    ignore_result(handle.release());
+  } else if (result == ZX_ERR_UNAVAILABLE) {
+    // No luck, try cloning instead.
+    result = fdio_clone_fd(handle.get().as_fd(), 0, handles, info);
   }
 
-  // The supplied file-descriptor was released by fdio_transfer_fd().
-  ignore_result(handle.release());
+  if (result != ZX_OK) {
+    DLOG(ERROR) << "fdio_transfer_fd(" << handle.get().as_fd()
+                << "): " << zx_status_get_string(result);
+    return false;
+  }
 
   // We assume here that only the |PA_HND_TYPE| of the |info| really matters,
   // and that that is the same for all the underlying handles.
