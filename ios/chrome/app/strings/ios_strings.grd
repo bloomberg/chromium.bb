@@ -534,26 +534,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_CONTENT_SETTINGS_TITLE" desc="Title for content settings dialog [Length: 29em] [iOS only]">
         Content Settings
       </message>
-      <message name="IDS_IOS_CONTEXTUAL_SEARCH_DESCRIPTION" desc="Description for Contextual Search preference">
-        Learn about topics on websites without leaving the page. Touch to Search sends a word and its surrounding context to Google Search, returning definitions, pictures, search results, and other details.
-
-To adjust your search term, long press to select. To refine your search, slide the panel all the way up and touch the search box.
-      </message>
-      <message name="IDS_IOS_CONTEXTUAL_SEARCH_GOT_IT_BUTTON" desc="A button to confirm and dismiss opt out promo">
-        Allow
-      </message>
-      <message name="IDS_IOS_CONTEXTUAL_SEARCH_LEARN_MORE_URL" desc="URL for learning more about Contextual Search preference [iOS only]" translateable="false">
-        https://support.google.com/chrome/?p=ios_touch
-      </message>
-      <message name="IDS_IOS_CONTEXTUAL_SEARCH_PROMO_OPTOUT" desc="Text for the button the user clicks to opt out.">
-        No Thanks
-      </message>
-      <message name="IDS_IOS_CONTEXTUAL_SEARCH_SHORT_DESCRIPTION" desc="The text displayed on the contextual search opt-in promo">
-        Touch to Search sends the selected word and the current page as context to Google Search. You can turn it off in <ph name="BEGIN_LINK">BEGIN_LINK</ph>Settings<ph name="END_LINK">END_LINK</ph>.
-      </message>
-      <message name="IDS_IOS_CONTEXTUAL_SEARCH_TITLE" desc="Name for the Contextual Search feature, which allows users to search for a term in a web page by tapping on it.">
-        Touch to Search
-      </message>
       <message name="IDS_IOS_CONTEXT_MENU_SEARCHWEBFORIMAGE" desc="Context menu text for option to perform a search for image [Length: 25em] [iOS only]">
         Search <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> for This Image
       </message>

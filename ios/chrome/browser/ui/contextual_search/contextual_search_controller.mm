@@ -24,13 +24,8 @@
 #import "ios/chrome/browser/tabs/tab.h"
 #include "ios/chrome/browser/ui/contextual_search/contextual_search_context.h"
 #include "ios/chrome/browser/ui/contextual_search/contextual_search_delegate.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_header_view.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_highlighter_view.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_metrics.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_protocols.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_view.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_promo_view.h"
-#import "ios/chrome/browser/ui/contextual_search/contextual_search_results_view.h"
 #include "ios/chrome/browser/ui/contextual_search/contextual_search_web_state_observer.h"
 #import "ios/chrome/browser/ui/contextual_search/js_contextual_search_manager.h"
 #import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
@@ -51,9 +46,6 @@
 #include "ios/web/public/web_state/web_state_observer.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-
-// Returns |value| clamped so that min <= value <= max
-#define CLAMP(min, value, max) MAX(min, MIN(value, max))
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -140,17 +132,8 @@ NSArray* StringValueToRectArray(const std::string& list) {
                                          CRWWebViewScrollViewProxyObserver,
                                          UIGestureRecognizerDelegate,
                                          ContextualSearchHighlighterDelegate,
-                                         ContextualSearchPromoViewDelegate,
-                                         ContextualSearchPanelMotionObserver,
-                                         ContextualSearchPanelTapHandler,
-                                         ContextualSearchPreloadChecker,
-                                         ContextualSearchTabPromoter,
                                          ContextualSearchWebStateDelegate,
                                          TouchToSearchPermissionsChangeAudience>
-
-// Controller delegate for the controller to call back to.
-@property(nonatomic, readwrite, weak) id<ContextualSearchControllerDelegate>
-    controllerDelegate;
 
 // Permissions interface for this feature. Property is readwrite for testing.
 @property(nonatomic, readwrite, strong)
@@ -234,9 +217,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 // - vertical: put |_highlightBoundingRect| at |kYScrollMargin| from top edge.
 - (void)scrollToShowSelection:(CRWWebViewScrollViewProxy*)scrollView;
 
-// Creates, enables or disables the dismiss recognizer based on state_.
-- (void)updateDismissRecognizer;
-
 @end
 
 @implementation ContextualSearchController {
@@ -282,24 +262,11 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   // Delegate for fetching search information.
   std::unique_ptr<ContextualSearchDelegate> _delegate;
 
-  // The panel view controlled by this object; it is created externally and
-  // owned by its superview. There is no guarantee about its lifetime.
-  __weak ContextualSearchPanelView* _panelView;
-
   // The view containing the highlighting of the search terms.
   __weak ContextualSearchHighlighterView* _contextualHighlightView;
 
-  // Content view displayed in the peeking section of the panel.
-  ContextualSearchHeaderView* _headerView;
-
   // Vertical constraints for layout of the search tab.
   NSArray* _searchTabVerticalConstraints;
-
-  // Container view for the opt-out promo and the search tab view.
-  ContextualSearchResultsView* _searchResultsView;
-
-  // View for the opt-out promo.
-  ContextualSearchPromoView* _promoView;
 
   // The tab that should be used as the opener for the search tab.
   Tab* _opener;
@@ -379,18 +346,13 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 }
 
 @synthesize enabled = _enabled;
-@synthesize controllerDelegate = _controllerDelegate;
 @synthesize webState = _webState;
 
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            delegate:(id<ContextualSearchControllerDelegate>)
-                                         delegate {
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   if ((self = [super init])) {
     _permissions = [[TouchToSearchPermissionsMediator alloc]
         initWithBrowserState:browserState];
     [_permissions setAudience:self];
-
-    self.controllerDelegate = delegate;
 
     // Set up the web state observer. This lasts as long as this object does,
     // but it will observe and un-observe the web tabs as it changes over time.
@@ -417,44 +379,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 
 - (void)setPermissions:(TouchToSearchPermissionsMediator*)permissions {
   _permissions = permissions;
-}
-
-- (ContextualSearchPanelView*)panel {
-  return _panelView;
-}
-
-- (void)setPanel:(ContextualSearchPanelView*)panel {
-  DCHECK(!_panelView);
-  DCHECK(panel);
-
-  // Save the new panel, set up observation and delegation relationships.
-  _panelView = panel;
-  [_panelView addMotionObserver:self];
-  [_dismissRecognizer setViewToExclude:_panelView];
-
-  // Create new subviews.
-  NSMutableArray* panelContents = [NSMutableArray arrayWithCapacity:3];
-
-  _headerView = [[ContextualSearchHeaderView alloc]
-      initWithHeight:[_panelView configuration].peekingHeight];
-  [_headerView addGestureRecognizer:_copyGestureRecognizer];
-  [_headerView setTapHandler:self];
-
-  [panelContents addObject:_headerView];
-
-  if (self.permissions.preferenceState == TouchToSearch::UNDECIDED) {
-    _promoView = [[ContextualSearchPromoView alloc] initWithFrame:CGRectZero
-                                                         delegate:self];
-    [panelContents addObject:_promoView];
-  }
-
-  _searchResultsView =
-      [[ContextualSearchResultsView alloc] initWithFrame:CGRectZero];
-  [_searchResultsView setPromoter:self];
-  [_searchResultsView setPreloadChecker:self];
-  [panelContents addObject:_searchResultsView];
-
-  [_panelView addContentViews:panelContents];
 }
 
 - (void)enableContextualSearch:(BOOL)enabled {
@@ -492,7 +416,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 
 - (void)setTab:(Tab*)tab {
   [self setWebState:tab.webState];
-  [_searchResultsView setOpener:tab];
 }
 
 - (void)setWebState:(web::WebState*)webState {
@@ -588,29 +511,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   }
 }
 
-- (void)updateDismissRecognizer {
-  if (!_panelView)
-    return;
-  if (!_dismissRecognizer) {
-    _dismissRecognizer = [[WindowGestureObserver alloc]
-        initWithTarget:self
-                action:@selector(handleWindowGesture:)];
-    [_dismissRecognizer setViewToExclude:_panelView];
-    [[_panelView window] addGestureRecognizer:_dismissRecognizer];
-  }
-
-  [_dismissRecognizer
-      setEnabled:[_panelView state] >= ContextualSearch::PEEKING];
-}
-
-- (void)showLearnMore {
-  [self dismissPane:ContextualSearch::UNKNOWN];
-  GURL learnMoreUrl = google_util::AppendGoogleLocaleParam(
-      GURL(l10n_util::GetStringUTF8(IDS_IOS_CONTEXTUAL_SEARCH_LEARN_MORE_URL)),
-      GetApplicationContext()->GetApplicationLocale());
-  [_controllerDelegate createTabFromContextualSearchController:learnMoreUrl];
-}
-
 - (void)dealloc {
   [self close];
 }
@@ -674,16 +574,8 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
     _preventActionMenu = YES;
     if (!_observingActionMenu) {
       _observingActionMenu = YES;
-      [[NSNotificationCenter defaultCenter]
-          addObserver:self
-             selector:@selector(willShowMenuNotification)
-                 name:UIMenuControllerWillShowMenuNotification
-               object:nil];
     }
     [self peekPane:ContextualSearch::TEXT_SELECT_LONG_PRESS];
-    [_headerView
-        setSearchTerm:base::SysUTF8ToNSString(selectedText)
-             animated:[_panelView state] != ContextualSearch::DISMISSED];
   }
   _webViewTappedWithSelection = NO;
 }
@@ -714,8 +606,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
     return YES;
   }
   if (command == "contextualSearch.mutationEvent") {
-    if ([_panelView state] <= ContextualSearch::PEEKING &&
-        !_searchTermResolved) {
+    if (!_searchTermResolved) {
       [self dismissPane:ContextualSearch::UNKNOWN];
     }
     return YES;
@@ -740,9 +631,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 
   // If the panel is already displayed, just dismiss it and return, unless the
   // tap was from displaying a new selection.
-  if (([_panelView state] != ContextualSearch::DISMISSED &&
-       !_newSelectionDisplaying) ||
-      dismissTimeout > 0) {
+  if (dismissTimeout > 0) {
     [self dismissPane:ContextualSearch::BASE_PAGE_TAP];
     return;
   }
@@ -760,10 +649,8 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
       return;
     }
 
+    // tapPoint is the coordinate of the tap in the webView.
     CGPoint tapPoint = [recognizer locationInView:recognizer.view];
-    // tapPoint is the coordinate of the tap in the webView. If the view is
-    // currently offset because a header is displayed, offset the tapPoint.
-    tapPoint.y -= [_controllerDelegate currentHeaderHeight];
 
     // Handle tap asynchronously to monitor DOM modifications. See comment
     // of |kDOMModificationDelaySeconds| for details.
@@ -1012,9 +899,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
     [self dismissPane:ContextualSearch::UNKNOWN];
   } else {
     _searchTermResolved = YES;
-    [_headerView
-        setSearchTerm:base::SysUTF8ToNSString(_resolvedSearch.display_text)
-             animated:[_panelView state] != ContextualSearch::DISMISSED];
     if (_resolvedSearch.start_offset != -1 &&
         _resolvedSearch.end_offset != -1) {
       __weak ContextualSearchController* weakSelf = self;
@@ -1027,8 +911,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
                      }];
     }
     GURL url = _delegate->GetURLForResolvedSearch(_resolvedSearch, true);
-    [_searchResultsView createTabForSearch:url
-                            preloadEnabled:!_resolvedSearch.prevent_preload];
     // Record the tap-to-search interval.
     ContextualSearch::RecordTimeToSearch(base::Time::Now() - _tapTime);
   }
@@ -1040,29 +922,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
     [self peekPane:ContextualSearch::TEXT_SELECT_TAP];
     _searchInvolvedFirstRun =
         self.permissions.preferenceState == TouchToSearch::UNDECIDED;
-
-    if (_searchContext->surrounding_text.empty()) {
-      [_headerView
-          setSearchTerm:base::SysUTF8ToNSString(_searchContext->selected_text)
-               animated:[_panelView state] != ContextualSearch::DISMISSED];
-    } else {
-      NSString* surroundingText =
-          base::SysUTF16ToNSString(_searchContext->surrounding_text);
-      NSInteger startOffset =
-          CLAMP(0, _searchContext->start_offset,
-                static_cast<NSInteger>([surroundingText length]));
-      NSString* displayedText =
-          [surroundingText substringFromIndex:startOffset];
-      NSInteger adjusted_offset =
-          _searchContext->end_offset - _searchContext->start_offset;
-      NSInteger followingOffset = CLAMP(
-          0, adjusted_offset, static_cast<NSInteger>([surroundingText length]));
-      NSRange followingTextRange =
-          NSMakeRange(followingOffset, displayedText.length - followingOffset);
-      [_headerView setText:displayedText
-          followingTextRange:followingTextRange
-                    animated:[_panelView state] != ContextualSearch::DISMISSED];
-    }
   } else {
     ContextualSearch::RecordSelectionIsValid(false);
     [self dismissPane:ContextualSearch::INVALID_SELECTION];
@@ -1092,8 +951,8 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 
   CGSize displaySize = [_contextualHighlightView frame].size;
 
-  CGFloat panelHeight = CGRectGetHeight(
-      CGRectIntersection([_panelView frame], [_panelView superview].bounds));
+  CGFloat panelHeight =
+      CGRectGetHeight(CGRectIntersection(CGRectZero, CGRectZero));
 
   displaySize.height -= scrollView.contentInset.top +
                         scrollView.contentInset.bottom + panelHeight;
@@ -1134,10 +993,8 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   }
 
   // Make sure top is visible.
-  if (top - kYScrollMargin - [_controllerDelegate currentHeaderHeight] <
-      frameTop) {
-    scrollPoint.y =
-        top - kYScrollMargin - [_controllerDelegate currentHeaderHeight];
+  if (top - kYScrollMargin < frameTop) {
+    scrollPoint.y = top - kYScrollMargin;
   }
 
   if (scrollPoint.x < 0)
@@ -1170,30 +1027,9 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   CGPoint scroll = [[_webViewProxy scrollViewProxy] contentOffset];
   [_contextualHighlightView
       highlightRects:rects
-          withOffset:[_controllerDelegate currentHeaderHeight]
+          withOffset:0
                 zoom:[[_webViewProxy scrollViewProxy] zoomScale]
               scroll:scroll];
-}
-
-- (void)willShowMenuNotification {
-  if (!_preventActionMenu)
-    return;
-  BOOL dismiss = NO;
-  if ([_panelView state] > ContextualSearch::PEEKING) {
-    dismiss = YES;
-  }
-  if ([_panelView state] == ContextualSearch::PEEKING) {
-    CGPoint headerTop = [_headerView convertPoint:CGPointZero toView:nil];
-    CGRect menuRect = [[UIMenuController sharedMenuController] menuFrame];
-    if (headerTop.y < CGRectGetMaxY(menuRect)) {
-      dismiss = YES;
-    }
-  }
-  if (dismiss) {
-    dispatch_async(dispatch_get_main_queue(), ^{
-      [[UIMenuController sharedMenuController] setMenuVisible:NO];
-    });
-  }
 }
 
 - (void)close {
@@ -1203,11 +1039,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   _closed = YES;
   [self disableCurrentWebState];
   [self setWebState:nil];
-  [_headerView removeGestureRecognizer:_copyGestureRecognizer];
-  [[_panelView window] removeGestureRecognizer:_dismissRecognizer];
   _delegate.reset();
-  [_searchResultsView setActive:NO];
-  _searchResultsView = nil;
 }
 
 #pragma mark - Promo view management
@@ -1215,8 +1047,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 - (void)userOptedInFromPromo:(BOOL)optIn {
   if (optIn) {
     self.permissions.preferenceState = TouchToSearch::ENABLED;
-    [_promoView closeAnimated:YES];
-    [_promoView setDisabled:YES];
   } else {
     [self dismissPane:ContextualSearch::OPTOUT];
     self.permissions.preferenceState = TouchToSearch::DISABLED;
@@ -1224,91 +1054,11 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   ContextualSearch::RecordFirstRunFlowOutcome(self.permissions.preferenceState);
 }
 
-#pragma mark - ContextualSearchPreloadChecker
-
-- (BOOL)canPreloadSearchResults {
-  if (_preventPreload) {
-    return NO;
-  }
-  return [self.permissions canPreloadSearchResults];
-}
-
-#pragma mark - ContextualSearchTabPromoter
-
-- (void)promoteTabHeaderPressed:(BOOL)headerPressed {
-  // Move the panel so it's covering before the transition.
-  if ([_panelView state] != ContextualSearch::COVERING) {
-    [self coverPane:ContextualSearch::SERP_NAVIGATION];
-  }
-  // TODO(crbug.com/455334): Make this transition look nicer.
-  [_searchResultsView scrollToTopAnimated:YES];
-
-  [self cleanUpWebStateForDismissWithCompletion:nil];
-
-  // Tell the BVC to handle the promotion, which will cause a new panel view
-  // to be created.
-  [_controllerDelegate promotePanelToTabProvidedBy:_searchResultsView
-                                        focusInput:NO];
-}
-
-#pragma mark - ContextualSearchPanelMotionObserver
-
-- (void)panel:(ContextualSearchPanelView*)panel
-    didStopMovingWithMotion:(ContextualSearch::PanelMotion)motion {
-  if (motion.state == ContextualSearch::DISMISSED) {
-    [self dismissPane:ContextualSearch::SWIPE];
-  } else if (motion.state == ContextualSearch::PEEKING) {
-    // newOrigin is above peeking height but below preview height.
-    if ([_panelView state] >= ContextualSearch::PREVIEWING) {
-      // Dragged down from previewing or covering
-      [self peekPane:ContextualSearch::SWIPE];
-    } else {
-      // Dragged up or stayed the same.
-      [self previewPane:ContextualSearch::SWIPE];
-    }
-  } else {
-    if ([_panelView state] == ContextualSearch::COVERING) {
-      if (motion.state != ContextualSearch::COVERING) {
-        // Dragged down from covering.
-        [self previewPane:ContextualSearch::SWIPE];
-      }
-    } else {
-      // Dragged up.
-      [self coverPane:ContextualSearch::SWIPE];
-    }
-  }
-  [self updateHighlight];
-}
-
-- (void)panelWillPromote:(ContextualSearchPanelView*)panel {
-  DCHECK(panel == _panelView);
-  [panel removeMotionObserver:self];
-  _panelView = nil;
-  [self setState:ContextualSearch::DISMISSED
-          reason:ContextualSearch::TAB_PROMOTION];
-}
-
-#pragma mark - ContextualSearchPanelTapHandler
-
-- (void)panelWasTapped:(UIGestureRecognizer*)gesture {
-  // Tapping when peeking switches to previewing.
-  // Tapping otherwise turns the panel into a tab.
-  if ([_panelView state] == ContextualSearch::PEEKING) {
-    [self previewPane:ContextualSearch::SEARCH_BAR_TAP];
-  } else {
-    [self promoteTabHeaderPressed:YES];
-  }
-}
-
-- (void)closePanel {
-  [self dismissPane:ContextualSearch::SEARCH_BAR_TAP];
-}
-
 #pragma mark - State change methods
 
 - (void)setState:(ContextualSearch::PanelState)state
           reason:(ContextualSearch::StateChangeReason)reason {
-  ContextualSearch::PanelState fromState = [_panelView state];
+  ContextualSearch::PanelState fromState = ContextualSearch::DISMISSED;
 
   // If we're moving to PEEKING as a result of text selection, that's starting
   // a new search.
@@ -1332,15 +1082,11 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
   BOOL firstExitFromCovering =
       fromState == ContextualSearch::COVERING && !_exitedCovering && !sameState;
 
-  _resultsVisible = _resultsVisible || [_searchResultsView contentVisible];
-
   if (endingSearch) {
     if (_searchInvolvedFirstRun) {
       // If the first run panel might have been shown, did the user see it?
       ContextualSearch::RecordFirstRunPanelSeen(_firstRunPanelBecameVisible);
     }
-    // Record search timing.
-    [_searchResultsView recordFinishedSearchChained:chained];
     // Record if the user saw the search results.
     if (_searchTriggeredBySelection) {
       ContextualSearch::RecordSelectionResultsSeen(_resultsVisible);
@@ -1378,10 +1124,7 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
     _exitedCovering = YES;
   }
 
-  [_panelView setState:state];
   // If the panel is now visible, enable the window-tap detector.
-
-  [self updateDismissRecognizer];
 
   if (state == ContextualSearch::PREVIEWING) {
     _enteredPreviewing = YES;
@@ -1419,60 +1162,14 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
     (ProceduralBlock)completionHandler {
   _lastDismiss = [NSDate date];
   _currentTapCancelled = YES;
-  ContextualSearch::PanelState originalState = [_panelView state];
-  if (originalState == ContextualSearch::DISMISSED) {
-    DCHECK(![_searchResultsView active]);
-    if ([self webState]) {
-      DOMAlteringLock* lock = DOMAlteringLock::FromWebState([self webState]);
-      if (lock) {
-        lock->Release(self);
-      }
+  if ([self webState]) {
+    DOMAlteringLock* lock = DOMAlteringLock::FromWebState([self webState]);
+    if (lock) {
+      lock->Release(self);
     }
-    if (completionHandler)
-      completionHandler();
-    return;
   }
-
-  [_doubleTapRecognizer setEnabled:YES];
-  _searchContext.reset();
-  [_searchResultsView setActive:NO];
-  _delegate->CancelSearchTermRequest();
-  _selectedText = "";
-
-  ContextualSearchDelegate::SearchResolution blank;
-  _resolvedSearch = blank;
-  if (completionHandler) {
-    __weak ContextualSearchController* weakSelf = self;
-    ProceduralBlock javaScriptCompletion = ^{
-      if ([weakSelf webState]) {
-        DOMAlteringLock::FromWebState([weakSelf webState])->Release(weakSelf);
-        completionHandler();
-      }
-    };
-    [self highlightRects:nil];
-    [_contextualSearchJsManager clearHighlight];
-    javaScriptCompletion();
-  } else {
-    [self highlightRects:nil];
-    [_contextualSearchJsManager clearHighlight];
-    DOMAlteringLock::FromWebState([self webState])->Release(self);
-  }
-
-  _preventActionMenu = NO;
-
-  // If the tapped word was at the bottom of the webview, and it was scrolled
-  // up to be displayed over the pane, scroll it back down now.
-  // (Ideally this "overscrolling" should just happen as the pane moves).
-  // TODO(crbug.com/546227): Handle this with a constraint.
-  CGPoint contentOffset = [[_webViewProxy scrollViewProxy] contentOffset];
-  CGSize contentSize = [[_webViewProxy scrollViewProxy] contentSize];
-  CGSize viewSize = [[_webViewProxy scrollViewProxy] frame].size;
-  CGFloat maxOffset = contentSize.height - viewSize.height;
-  if (contentOffset.y > maxOffset) {
-    contentOffset.y = maxOffset;
-    [[_webViewProxy scrollViewProxy] setContentOffset:contentOffset
-                                             animated:YES];
-  }
+  if (completionHandler)
+    completionHandler();
 }
 
 - (void)dismissPane:(ContextualSearch::StateChangeReason)reason {
@@ -1501,20 +1198,6 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 
 - (void)movePanelOffscreen {
   [self dismissPane:ContextualSearch::RESET];
-}
-
-#pragma mark - ContextualSearchPromoViewDelegate methods
-
-- (void)promoViewAcceptTapped {
-  [self userOptedInFromPromo:YES];
-}
-
-- (void)promoViewDeclineTapped {
-  [self userOptedInFromPromo:NO];
-}
-
-- (void)promoViewSettingsTapped {
-  // Show the contextual search settings.
 }
 
 #pragma mark - ContextualSearchWebStateObserver methods
@@ -1567,19 +1250,17 @@ dismissPaneWithJavascriptCompletionHandler:(ProceduralBlock)completionHandler
 - (void)webViewScrollViewDidScroll:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   _currentTapCancelled = YES;
-  [_contextualHighlightView
-      setScroll:[webViewScrollViewProxy contentOffset]
-           zoom:[webViewScrollViewProxy zoomScale]
-         offset:[_controllerDelegate currentHeaderHeight]];
+  [_contextualHighlightView setScroll:[webViewScrollViewProxy contentOffset]
+                                 zoom:[webViewScrollViewProxy zoomScale]
+                               offset:0];
 }
 
 - (void)webViewScrollViewDidZoom:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   _currentTapCancelled = YES;
-  [_contextualHighlightView
-      setScroll:[webViewScrollViewProxy contentOffset]
-           zoom:[webViewScrollViewProxy zoomScale]
-         offset:[_controllerDelegate currentHeaderHeight]];
+  [_contextualHighlightView setScroll:[webViewScrollViewProxy contentOffset]
+                                 zoom:[webViewScrollViewProxy zoomScale]
+                               offset:0];
   [self scrollToShowSelection:webViewScrollViewProxy];
 }
 

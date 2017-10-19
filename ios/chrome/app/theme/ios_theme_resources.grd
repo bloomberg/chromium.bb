@@ -33,7 +33,6 @@
            The easiest way to find the use of a given resource ID:
            'git grep TOOLBAR_IDR_.*BACK' -->
       <structure type="chrome_scaled_image" name="IDR_IOS_CHECKMARK" file="checkmark.png" />
-      <structure type="chrome_scaled_image" name="IDR_IOS_CONTEXTUAL_SEARCH_HEADER" file="contextual_search_header.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_CONTROLLED_SETTING_MANDATORY" file="controlled_setting_mandatory.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_ERROR" file="error.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
