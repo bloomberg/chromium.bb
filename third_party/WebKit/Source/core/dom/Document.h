@@ -1391,8 +1391,6 @@ class CORE_EXPORT Document : public ContainerNode,
   ukm::UkmRecorder* UkmRecorder();
   int64_t UkmSourceID() const;
 
-  void RecordUkmOutliveTimeAfterShutdown(int outlive_time_count);
-
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 

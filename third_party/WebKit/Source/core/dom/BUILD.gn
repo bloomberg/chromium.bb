@@ -364,7 +364,6 @@ blink_core_sources("dom") {
 
   deps = [
     "//services/metrics/public/cpp:metrics_cpp",
-    "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/interfaces",
   ]
 }
