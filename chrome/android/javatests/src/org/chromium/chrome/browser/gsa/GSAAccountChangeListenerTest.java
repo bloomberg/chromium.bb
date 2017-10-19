@@ -11,9 +11,6 @@ import android.content.IntentFilter;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
 
-import junit.framework.AssertionFailedError;
-
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +32,7 @@ public class GSAAccountChangeListenerTest {
         RecordHistogram.setDisabledForTests(true);
     }
 
-    @Test
+    @Test(expected = AssertionError.class)
     @SmallTest
     public void testReceivesBroadcastIntents() throws Exception {
         final Context context = InstrumentationRegistry.getTargetContext();
@@ -68,18 +65,13 @@ public class GSAAccountChangeListenerTest {
         context.sendBroadcast(intent, "permission.you.dont.have");
 
         // This is ugly, but so is checking that some asynchronous call was never received.
-        try {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    String currentAccount =
-                            GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
-                    return ACCOUNT_NAME2.equals(currentAccount);
-                }
-            }, 1000, 100);
-        } catch (AssertionFailedError e) {
-            return;
-        }
-        Assert.fail("The broadcast was received.");
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                String currentAccount =
+                        GSAState.getInstance(context.getApplicationContext()).getGsaAccount();
+                return ACCOUNT_NAME2.equals(currentAccount);
+            }
+        }, 1000, 100);
     }
 }

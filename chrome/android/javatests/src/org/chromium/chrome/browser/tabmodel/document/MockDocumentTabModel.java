@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.browser.tabmodel.document;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;

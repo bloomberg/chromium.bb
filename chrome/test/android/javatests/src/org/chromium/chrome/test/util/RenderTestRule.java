@@ -12,8 +12,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.view.View;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.rules.TestWatcher;
 import org.junit.runner.Description;
 

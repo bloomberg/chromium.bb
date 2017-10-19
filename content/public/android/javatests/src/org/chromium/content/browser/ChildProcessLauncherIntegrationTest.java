@@ -9,8 +9,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
 
-import junit.framework.Assert;
-
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;

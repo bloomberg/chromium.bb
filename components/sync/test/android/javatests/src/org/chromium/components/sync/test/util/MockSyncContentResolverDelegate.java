@@ -10,7 +10,7 @@ import android.content.SyncStatusObserver;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;

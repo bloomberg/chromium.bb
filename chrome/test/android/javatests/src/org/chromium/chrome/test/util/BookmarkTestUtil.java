@@ -4,7 +4,7 @@
 
 package org.chromium.chrome.test.util;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
