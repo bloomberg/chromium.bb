@@ -29,7 +29,7 @@ extern "C" {
 #define USE_12TAP_FILTER 0
 #define USE_EXTRA_FILTER 0
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   EIGHTTAP_REGULAR,
   EIGHTTAP_SMOOTH,
 #if USE_EXTRA_FILTER

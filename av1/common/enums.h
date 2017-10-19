@@ -304,7 +304,7 @@ typedef enum ATTRIBUTE_PACKED {
   TX_TYPES_1D,
 } TX_TYPE_1D;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   DCT_DCT,    // DCT  in both horizontal and vertical
   ADST_DCT,   // ADST in vertical, DCT in horizontal
   DCT_ADST,   // DCT  in vertical, ADST in horizontal
