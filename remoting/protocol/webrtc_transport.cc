@@ -78,7 +78,7 @@ void UpdateCodecParameters(SdpMessage* sdp_message, bool incoming) {
   // underlying bug is fixed to handle high load at high bitrate.
   if (sdp_message->has_video()) {
     const char* kParameters =
-        "x-google-min-bitrate=1000; x-google-max-bitrate=20000";
+        "x-google-min-bitrate=0; x-google-max-bitrate=20000";
     bool param_added = sdp_message->AddCodecParameter("VP8", kParameters);
     param_added |= sdp_message->AddCodecParameter("VP9", kParameters);
     param_added |= sdp_message->AddCodecParameter("H264", kParameters);
