@@ -1284,6 +1284,27 @@ __gCrWeb.autofill.inferLabelFromPlaceholder = function(element) {
 };
 
 /**
+* Helper for |InferLabelForElement()| that infers a label, if possible, from
+* the value attribute when it is present and user has not typed in (if
+* element's value attribute is same as the element's value).
+*
+* It is based on the logic in
+*     string16 InferLabelFromValueAttr(const WebFormControlElement& element)
+* in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+*
+* @param {FormControlElement} element An element to examine.
+* @return {string} The label of element.
+*/
+__gCrWeb.autofill.InferLabelFromValueAttr = function(element) {
+  if (!element || !element.value || !element.hasAttribute("value") ||
+      element.value != element.getAttribute("value")) {
+    return '';
+  }
+
+  return element.value;
+};
+
+/**
  * Helper for |InferLabelForElement()| that infers a label, if possible, from
  * enclosing list item, e.g.
  *     <li>Some Text<input ...><input ...><input ...></li>
@@ -1668,7 +1689,7 @@ __gCrWeb.autofill.ancestorTagNames = function(element) {
  * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
  *
  * @param {FormControlElement} element An element to examine.
- * @return {string} The label of element.
+ * @return {string} The inferred label of element, or '' if none could be found.
  */
 __gCrWeb.autofill.inferLabelForElement = function(element) {
   var inferredLabel;
@@ -1716,11 +1737,16 @@ __gCrWeb.autofill.inferLabelForElement = function(element) {
     }
 
     if (inferredLabel.length > 0) {
-      break;
+      return inferredLabel;
     }
   }
+  // If we didn't find a label, check for the value attribute case.
+  inferredLabel = __gCrWeb.autofill.InferLabelFromValueAttr(element);
+  if (inferredLabel.length > 0) {
+    return inferredLabel;
+  }
 
-  return inferredLabel;
+  return '';
 };
 
 /**
