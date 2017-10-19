@@ -7,11 +7,6 @@
 
 #include "build/build_config.h"
 
-#if defined(ADDRESS_SANITIZER) && defined(OS_MACOSX)
-#include <crt_externs.h>  // for _NSGetArgc, _NSGetArgv
-#include <string.h>
-#endif  // ADDRESS_SANITIZER && OS_MACOSX
-
 #if defined(ADDRESS_SANITIZER) || defined(LEAK_SANITIZER) ||  \
     defined(MEMORY_SANITIZER) || defined(THREAD_SANITIZER) || \
     defined(UNDEFINED_SANITIZER)
