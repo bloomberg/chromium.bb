@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
-#include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/notifications/profile_notification.h"
 #include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/browser_thread.h"
@@ -33,14 +32,11 @@
 using message_center::NotifierId;
 
 MessageCenterNotificationManager::MessageCenterNotificationManager(
-    message_center::MessageCenter* message_center,
-    std::unique_ptr<message_center::NotifierSettingsProvider> settings_provider)
+    message_center::MessageCenter* message_center)
     : message_center_(message_center),
-      settings_provider_(std::move(settings_provider)),
       system_observer_(this),
       stats_collector_(message_center) {
   message_center_->AddObserver(this);
-  message_center_->SetNotifierSettingsProvider(settings_provider_.get());
 
 #if !defined(OS_CHROMEOS)
   blockers_.push_back(
@@ -58,7 +54,6 @@ MessageCenterNotificationManager::MessageCenterNotificationManager(
 }
 
 MessageCenterNotificationManager::~MessageCenterNotificationManager() {
-  message_center_->SetNotifierSettingsProvider(nullptr);
   message_center_->RemoveObserver(this);
 
   profile_notifications_.clear();

@@ -44,10 +44,8 @@ class MessageCenterNotificationManager
     : public NotificationUIManager,
       public message_center::MessageCenterObserver {
  public:
-  MessageCenterNotificationManager(
-      message_center::MessageCenter* message_center,
-      std::unique_ptr<message_center::NotifierSettingsProvider>
-          settings_provider);
+  explicit MessageCenterNotificationManager(
+      message_center::MessageCenter* message_center);
   ~MessageCenterNotificationManager() override;
 
   // NotificationUIManager
@@ -99,8 +97,6 @@ class MessageCenterNotificationManager
   // Returns the ProfileNotification for the |id|, or NULL if no such
   // notification is found.
   ProfileNotification* FindProfileNotification(const std::string& id) const;
-
-  std::unique_ptr<message_center::NotifierSettingsProvider> settings_provider_;
 
   // To own the blockers.
   std::vector<std::unique_ptr<message_center::NotificationBlocker>> blockers_;

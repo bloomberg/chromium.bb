@@ -2,17 +2,21 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/notifications/message_center_settings_controller_chromeos.h"
+
 #include <string>
 #include <utility>
 
+#include "ash/system/system_notifier.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
+#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
-#include "chrome/browser/notifications/message_center_settings_controller.h"
 #include "chrome/browser/permissions/permission_manager.h"
 #include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -26,82 +30,49 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/notifier_settings.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/system/system_notifier.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
-#include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
-#endif
-
-class MessageCenterSettingsControllerBaseTest : public testing::Test {
+class MessageCenterSettingsControllerChromeOsTest : public testing::Test {
  protected:
-  MessageCenterSettingsControllerBaseTest()
+  MessageCenterSettingsControllerChromeOsTest()
       : testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
-
-  ~MessageCenterSettingsControllerBaseTest() override {}
-
-  base::FilePath GetProfilePath(const std::string& base_name) {
-    return testing_profile_manager_.profile_manager()->user_data_dir()
-        .AppendASCII(base_name);
-  }
-
-  void SetUp() override { ASSERT_TRUE(testing_profile_manager_.SetUp()); }
-
-  virtual TestingProfile* CreateProfile(const std::string& name) {
-    return testing_profile_manager_.CreateTestingProfile(name);
-  }
-
-  void CreateController() {
-    controller_.reset(new MessageCenterSettingsController(
-        *testing_profile_manager_.profile_attributes_storage()));
-  }
-
-  void ResetController() {
-    controller_.reset();
-  }
-
-  MessageCenterSettingsController* controller() { return controller_.get(); }
-
- private:
-  content::TestBrowserThreadBundle thread_bundle_;
-  TestingProfileManager testing_profile_manager_;
-  std::unique_ptr<MessageCenterSettingsController> controller_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsControllerBaseTest);
-};
-
-#if defined(OS_CHROMEOS)
-
-class MessageCenterSettingsControllerChromeOSTest
-    : public MessageCenterSettingsControllerBaseTest {
- protected:
-  MessageCenterSettingsControllerChromeOSTest() {}
-  ~MessageCenterSettingsControllerChromeOSTest() override {}
+  ~MessageCenterSettingsControllerChromeOsTest() override {}
 
   void SetUp() override {
-    MessageCenterSettingsControllerBaseTest::SetUp();
+    ASSERT_TRUE(testing_profile_manager_.SetUp());
 
     // Initialize the UserManager singleton to a fresh FakeUserManager instance.
     user_manager_enabler_.reset(new chromeos::ScopedUserManagerEnabler(
         new chromeos::FakeChromeUserManager));
   }
 
-  void TearDown() override {
-    ResetController();
-    MessageCenterSettingsControllerBaseTest::TearDown();
-  }
+  void TearDown() override { ResetController(); }
 
-  TestingProfile* CreateProfile(const std::string& name) override {
+  TestingProfile* CreateProfile(const std::string& name) {
     TestingProfile* profile =
-        MessageCenterSettingsControllerBaseTest::CreateProfile(name);
+        testing_profile_manager_.CreateTestingProfile(name);
 
     GetFakeUserManager()->AddUser(AccountId::FromUserEmail(name));
     GetFakeUserManager()->LoginUser(AccountId::FromUserEmail(name));
     return profile;
   }
 
+  base::FilePath GetProfilePath(const std::string& base_name) {
+    return testing_profile_manager_.profile_manager()
+        ->user_data_dir()
+        .AppendASCII(base_name);
+  }
+
   void SwitchActiveUser(const std::string& name) {
     GetFakeUserManager()->SwitchActiveUser(AccountId::FromUserEmail(name));
-    controller()->ActiveUserChanged(GetFakeUserManager()->GetActiveUser());
+  }
+
+  void CreateController() {
+    controller_.reset(new MessageCenterSettingsControllerChromeOs());
+  }
+
+  void ResetController() { controller_.reset(); }
+
+  MessageCenterSettingsControllerChromeOs* controller() {
+    return controller_.get();
   }
 
  private:
@@ -110,68 +81,18 @@ class MessageCenterSettingsControllerChromeOSTest
         user_manager::UserManager::Get());
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
+  TestingProfileManager testing_profile_manager_;
+  std::unique_ptr<MessageCenterSettingsControllerChromeOs> controller_;
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
-  DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsControllerChromeOSTest);
+  DISALLOW_COPY_AND_ASSIGN(MessageCenterSettingsControllerChromeOsTest);
 };
 
-typedef MessageCenterSettingsControllerChromeOSTest
-    MessageCenterSettingsControllerTest;
-#else
-typedef MessageCenterSettingsControllerBaseTest
-    MessageCenterSettingsControllerTest;
-#endif  // OS_CHROMEOS
-
-#if !defined(OS_CHROMEOS)
-TEST_F(MessageCenterSettingsControllerTest, NotifierGroups) {
-  CreateProfile("Profile-1");
-  CreateProfile("Profile-2");
-  CreateController();
-
-  EXPECT_EQ(controller()->GetNotifierGroupCount(), 2u);
-
-  EXPECT_EQ(controller()->GetNotifierGroupAt(0).name,
-            base::UTF8ToUTF16("Profile-1"));
-  EXPECT_EQ(controller()->GetNotifierGroupAt(1).name,
-            base::UTF8ToUTF16("Profile-2"));
-
-  EXPECT_EQ(controller()->GetActiveNotifierGroup().name,
-            base::UTF8ToUTF16("Profile-1"));
-
-  controller()->SwitchToNotifierGroup(1);
-  EXPECT_EQ(controller()->GetActiveNotifierGroup().name,
-            base::UTF8ToUTF16("Profile-2"));
-
-  controller()->SwitchToNotifierGroup(0);
-  EXPECT_EQ(controller()->GetActiveNotifierGroup().name,
-            base::UTF8ToUTF16("Profile-1"));
-}
-#else   // !defined(OS_CHROMEOS)
-TEST_F(MessageCenterSettingsControllerChromeOSTest, NotifierGroups) {
-  CreateProfile("Profile-1");
-  CreateProfile("Profile-2");
-  CreateController();
-
-  EXPECT_EQ(controller()->GetNotifierGroupCount(), 1u);
-
-  EXPECT_EQ(controller()->GetNotifierGroupAt(0).name,
-            base::UTF8ToUTF16("Profile-1"));
-
-  SwitchActiveUser("Profile-2");
-  EXPECT_EQ(controller()->GetNotifierGroupCount(), 1u);
-  EXPECT_EQ(controller()->GetNotifierGroupAt(0).name,
-            base::UTF8ToUTF16("Profile-2"));
-
-  SwitchActiveUser("Profile-1");
-  EXPECT_EQ(controller()->GetNotifierGroupCount(), 1u);
-  EXPECT_EQ(controller()->GetNotifierGroupAt(0).name,
-            base::UTF8ToUTF16("Profile-1"));
-}
 // TODO(mukai): write a test case to reproduce the actual guest session scenario
-// in ChromeOS -- no profiles in |profile_attributes_storage_|.
-#endif  // !defined(OS_CHROMEOS)
+// in ChromeOS.
 
-TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
+TEST_F(MessageCenterSettingsControllerChromeOsTest, NotifierSortOrder) {
   TestingProfile* profile = CreateProfile("Profile-1");
   extensions::TestExtensionSystem* test_extension_system =
       static_cast<extensions::TestExtensionSystem*>(
@@ -281,14 +202,12 @@ TEST_F(MessageCenterSettingsControllerTest, NotifierSortOrder) {
 
   std::vector<std::unique_ptr<message_center::Notifier>> notifiers;
   controller()->GetNotifierList(&notifiers);
-
   EXPECT_EQ(2u, notifiers.size());
-
   EXPECT_EQ(kBarId, notifiers[0]->notifier_id.id);
   EXPECT_EQ(kFooId, notifiers[1]->notifier_id.id);
 }
 
-TEST_F(MessageCenterSettingsControllerTest, SetWebPageNotifierEnabled) {
+TEST_F(MessageCenterSettingsControllerChromeOsTest, SetWebPageNotifierEnabled) {
   Profile* profile = CreateProfile("MyProfile");
   CreateController();
 

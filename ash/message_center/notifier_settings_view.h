@@ -42,9 +42,6 @@ class ASH_EXPORT NotifierSettingsView
   // Overridden from NotifierSettingsDelegate:
   void UpdateIconImage(const message_center::NotifierId& notifier_id,
                        const gfx::Image& icon) override;
-  void NotifierGroupChanged() override;
-  void NotifierEnabledChanged(const message_center::NotifierId& notifier_id,
-                              bool enabled) override;
 
   void set_provider(message_center::NotifierSettingsProvider* new_provider) {
     provider_ = new_provider;
