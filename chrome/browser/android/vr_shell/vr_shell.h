@@ -13,8 +13,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
+#include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_unsupported_mode.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -60,12 +62,11 @@ enum UiAction {
   EXIT_PRESENT,
 };
 
-class VrMetricsHelper;
-
 // The native instance of the Java VrShell. This class is not threadsafe and
 // must only be used on the UI thread.
 class VrShell : device::GvrGamepadDataProvider,
                 device::CardboardGamepadDataProvider,
+                vr::VoiceResultDelegate,
                 public ChromeToolbarModelDelegate {
  public:
   VrShell(JNIEnv* env,
@@ -180,6 +181,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                             vr::ExitVrPromptChoice choice);
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds);
+  void SetVoiceSearchActivate(bool activate);
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
                              int content_id);
@@ -200,6 +202,8 @@ class VrShell : device::GvrGamepadDataProvider,
   // ChromeToolbarModelDelegate implementation.
   content::WebContents* GetActiveWebContents() const override;
   bool ShouldDisplayURL() const override;
+
+  void OnVoiceResults(const base::string16& result) override;
 
  private:
   ~VrShell() override;
@@ -235,6 +239,7 @@ class VrShell : device::GvrGamepadDataProvider,
   std::unique_ptr<vr::WebContentsEventForwarder> web_contents_event_forwarder_;
   std::unique_ptr<AndroidUiGestureTarget> android_ui_gesture_target_;
   std::unique_ptr<VrMetricsHelper> metrics_helper_;
+  std::unique_ptr<vr::SpeechRecognizer> speech_recognizer_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<VrGLThread> gl_thread_;

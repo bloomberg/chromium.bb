@@ -31,6 +31,7 @@ enum UiElementName {
   kBluetoothConnectedIndicator,
   kLoadingIndicator,
   kCloseButton,
+  kVoiceSearchButton,
   kScreenDimmer,
   kExitWarning,
   kExitPrompt,

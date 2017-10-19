@@ -52,6 +52,7 @@ const std::set<UiElementName> kHitTestableElements = {
     kUrlBar,
     kLoadingIndicator,
     kCloseButton,
+    kVoiceSearchButton,
 };
 const std::set<UiElementName> kElementsVisibleWithExitWarning = {
     kScreenDimmer, kExitWarning,
