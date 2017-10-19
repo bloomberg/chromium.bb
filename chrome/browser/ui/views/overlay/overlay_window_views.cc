@@ -4,12 +4,40 @@
 
 #include "chrome/browser/ui/views/overlay/overlay_window_views.h"
 
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 // static
 std::unique_ptr<OverlayWindow> OverlayWindow::Create() {
   return base::WrapUnique(new OverlayWindowViews());
 }
+
+// OverlayWindow implementation of WidgetDelegate.
+class OverlayWindowWidgetDelegate : public views::WidgetDelegate {
+ public:
+  explicit OverlayWindowWidgetDelegate(views::Widget* widget)
+      : widget_(widget) {
+    DCHECK(widget_);
+  }
+  ~OverlayWindowWidgetDelegate() override = default;
+
+  // WidgetDelegate:
+  bool CanResize() const override { return true; }
+  ui::ModalType GetModalType() const override { return ui::MODAL_TYPE_SYSTEM; }
+  base::string16 GetWindowTitle() const override {
+    return l10n_util::GetStringUTF16(IDS_PICTURE_IN_PICTURE_TITLE_TEXT);
+  }
+  views::Widget* GetWidget() override { return widget_; }
+  const views::Widget* GetWidget() const override { return widget_; }
+
+ private:
+  // Owns OverlayWindowWidgetDelegate.
+  views::Widget* widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(OverlayWindowWidgetDelegate);
+};
 
 OverlayWindowViews::OverlayWindowViews() {
   widget_.reset(new views::Widget());
@@ -28,11 +56,11 @@ void OverlayWindowViews::Init() {
   params.keep_on_top = true;
   params.visible_on_all_workspaces = true;
 
+  // Set WidgetDelegate for more control over |widget_|.
+  params.delegate = new OverlayWindowWidgetDelegate(widget_.get());
+
   widget_->Init(params);
   widget_->Show();
-
-  // TODO(apacible): Set the WidgetDelegate for more control over behavior.
-  // http://crbug/726621
 }
 
 bool OverlayWindowViews::IsActive() const {

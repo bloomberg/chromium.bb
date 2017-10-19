@@ -5904,6 +5904,11 @@ I don't think this site should be blocked!
         Turn on autoupdate
       </message>
 
+      <!-- Picture in Picture -->
+      <message name="IDS_PICTURE_IN_PICTURE_TITLE_TEXT" desc="Title of the picture in picture window. This appears in the system tray and window header.">
+        Picture in Picture
+      </message>
+
       <!-- Print -->
       <message name="IDS_DEFAULT_PRINT_DOCUMENT_TITLE" desc="Default title for a print document">
         Untitled Document
