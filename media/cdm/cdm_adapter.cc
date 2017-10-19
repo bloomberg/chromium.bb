@@ -21,6 +21,7 @@
 #include "media/base/channel_layout.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
+#include "media/base/key_systems.h"
 #include "media/base/limits.h"
 #include "media/base/sample_format.h"
 #include "media/base/video_codecs.h"
@@ -375,6 +376,14 @@ void* GetCdmHost(int host_interface_version, void* user_data) {
                    << host_interface_version;
       return nullptr;
   }
+}
+
+void ReportSystemCodeUMA(const std::string& key_system, uint32_t system_code) {
+  // Sparse histogram macro does not cache the histogram, so it's safe to use
+  // macro with non-static histogram name here.
+  UMA_HISTOGRAM_SPARSE_SLOWLY(
+      "Media.EME." + GetKeySystemNameForUMA(key_system) + ".SystemCode",
+      system_code);
 }
 
 }  // namespace
@@ -811,6 +820,11 @@ void CdmAdapter::OnRejectPromise(uint32_t promise_id,
                                  uint32_t system_code,
                                  const char* error_message,
                                  uint32_t error_message_size) {
+  // This is the central place for library CDM promise rejection. Cannot report
+  // this is more generic classes like CdmPromise or CdmPromiseAdapter because
+  // they may be used multiple times in one promise chain that involves IPC.
+  ReportSystemCodeUMA(key_system_, system_code);
+
   DCHECK(task_runner_->BelongsToCurrentThread());
   cdm_promise_adapter_.RejectPromise(
       promise_id, ToMediaExceptionType(exception), system_code,

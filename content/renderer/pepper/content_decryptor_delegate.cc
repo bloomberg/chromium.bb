@@ -385,8 +385,6 @@ CdmMessageType PpCdmMessageTypeToMediaMessageType(
   }
 }
 
-// TODO(xhwang): Unify EME UMA reporting code when prefixed EME is deprecated.
-// See http://crbug.com/412987 for details.
 void ReportSystemCodeUMA(const std::string& key_system, uint32_t system_code) {
   // Sparse histogram macro does not cache the histogram, so it's safe to use
   // macro with non-static histogram name here.
