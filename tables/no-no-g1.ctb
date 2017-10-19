@@ -1,5 +1,26 @@
 # liblouis: Norwegian contracted braille, level 1.
 #
+#+locale:no
+#+type:literary
+#+direction:both
+#+dots:6
+#+grade:1
+#
+#-name: Norsk litterær punktskrift, kortskrift nivå 1
+#-display-name: Norwegian literary braille, contraction grade 1
+#
+#-copyright: 2005, ViewPlus Technologies, Inc.
+#-copyright: 2009, Lars Bjørndal
+#-license: LGPLv2.1
+#
+#-author-name: Lars Bjørndal
+#-author-email: lars@lamasti.net
+#-author-url: https://github.com/larsbjorndal
+#
+# Official norwegian braille specifications are collected here:
+# https://github.com/liblouis/braille-specs/blob/master/norwegian/README.md
+# This specific table is based on the document "Kortskrift i norsk punktskrift - KS04".
+#
 #  Copyright (C) 2005 ViewPlus Technologies, Inc. www.viewplus.com
 #  Copyright (C) 2009 Lars Bjørndal <lars@lamasti.net>
 #
