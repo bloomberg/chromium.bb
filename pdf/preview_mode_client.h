@@ -56,8 +56,8 @@ class PreviewModeClient : public PDFEngine::Client {
                   const void* data,
                   int length) override;
   pp::URLLoader CreateURLLoader() override;
-  void ScheduleCallback(int id, int delay_in_ms) override;
-  void ScheduleTouchTimerCallback(int id, int delay_in_ms) override;
+  void ScheduleCallback(int id, base::TimeDelta delay) override;
+  void ScheduleTouchTimerCallback(int id, base::TimeDelta delay) override;
   void SearchString(const base::char16* string,
                     const base::char16* term,
                     bool case_sensitive,

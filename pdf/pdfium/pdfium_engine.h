@@ -655,10 +655,10 @@ class PDFiumEngine : public PDFEngine,
   pp::CompletionCallbackFactory<PDFiumEngine> find_factory_;
 
   pp::CompletionCallbackFactory<PDFiumEngine> password_factory_;
-  int32_t password_tries_remaining_;
-
-  // The current text used for searching.
-  std::string current_find_text_;
+  // Set to true if the user is being prompted for their password. Will be set
+  // to false after the user finishes getting their password.
+  bool getting_password_ = false;
+  int password_tries_remaining_ = 0;
 
   // The PDFium wrapper object for the document.
   FPDF_DOCUMENT doc_;
@@ -706,13 +706,15 @@ class PDFiumEngine : public PDFEngine,
   // True if left mouse button is currently being held down.
   bool mouse_left_button_down_;
 
-  // Used for searching.
+  // The current text used for searching.
+  std::string current_find_text_;
+  // The results found.
   std::vector<PDFiumRange> find_results_;
   // Which page to search next.
-  int next_page_to_search_;
+  int next_page_to_search_ = -1;
   // Where to stop searching.
-  int last_page_to_search_;
-  int last_character_index_to_search_;  // -1 if search until end of page.
+  int last_page_to_search_ = -1;
+  int last_character_index_to_search_ = -1;  // -1 if search until end of page.
   // Which result the user has currently selected.
   FindTextIndex current_find_index_;
   // Where to resume searching.
@@ -735,14 +737,20 @@ class PDFiumEngine : public PDFEngine,
 
   pp::Size default_page_size_;
 
-  // Used to manage timers that form fill API needs.  The pair holds the timer
-  // period, in ms, and the callback function.
-  std::map<int, std::pair<int, TimerCallback>> formfill_timers_;
-  int next_formfill_timer_id_;
+  // Used to manage timers that form fill API needs. The key is the timer id.
+  // The value holds the timer period and the callback function.
+  struct FormFillTimerData {
+    FormFillTimerData(base::TimeDelta period, TimerCallback callback);
+
+    base::TimeDelta timer_period;
+    TimerCallback timer_callback;
+  };
+  std::map<int, const FormFillTimerData> formfill_timers_;
+  int next_formfill_timer_id_ = 0;
 
   // Used to manage timers for touch long press.
   std::map<int, pp::TouchInputEvent> touch_timers_;
-  int next_touch_timer_id_;
+  int next_touch_timer_id_ = 0;
 
   // Holds the zero-based page index of the last page that the mouse clicked on.
   int last_page_mouse_down_;
@@ -793,17 +801,14 @@ class PDFiumEngine : public PDFEngine,
   // Shadow matrix for generating the page shadow bitmap.
   std::unique_ptr<ShadowMatrix> page_shadow_;
 
-  // Set to true if the user is being prompted for their password. Will be set
-  // to false after the user finishes getting their password.
-  bool getting_password_;
-
   // While true, the document try to be opened and parsed after download each
   // part. Else the document will be opened and parsed only on finish of
   // downloading.
   bool process_when_pending_request_complete_ = true;
 
   enum class RangeSelectionDirection { Left, Right };
-  RangeSelectionDirection range_selection_direction_;
+  RangeSelectionDirection range_selection_direction_ =
+      RangeSelectionDirection::Right;
 
   pp::Point range_selection_base_;
 

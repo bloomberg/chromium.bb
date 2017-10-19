@@ -90,9 +90,10 @@ const uint32_t kPendingPageColor = 0xFFEEEEEE;
 const uint32_t kFormHighlightColor = 0xFFE4DD;
 const int32_t kFormHighlightAlpha = 100;
 
-const int32_t kMaxPasswordTries = 3;
+constexpr int kMaxPasswordTries = 3;
 
-const int32_t kTouchLongPressTimeoutMs = 300;
+constexpr base::TimeDelta kTouchLongPressTimeout =
+    base::TimeDelta::FromMilliseconds(300);
 
 // See Table 3.20 in
 // http://www.adobe.com/devnet/acrobat/pdfs/pdf_reference_1-7.pdf
@@ -694,7 +695,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
     : client_(client),
       current_zoom_(1.0),
       current_rotation_(0),
-      password_tries_remaining_(0),
       doc_(nullptr),
       form_(nullptr),
       defer_page_unload_(false),
@@ -704,20 +704,14 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       in_form_text_area_(false),
       editable_form_text_area_(false),
       mouse_left_button_down_(false),
-      next_page_to_search_(-1),
-      last_page_to_search_(-1),
-      last_character_index_to_search_(-1),
       permissions_(0),
       permissions_handler_revision_(-1),
       fpdf_availability_(nullptr),
-      next_formfill_timer_id_(0),
-      next_touch_timer_id_(0),
       last_page_mouse_down_(-1),
       most_visible_page_(-1),
       called_do_document_action_(false),
       render_grayscale_(false),
-      render_annots_(true),
-      getting_password_(false) {
+      render_annots_(true) {
   find_factory_.Initialize(this);
   password_factory_.Initialize(this);
 
@@ -2720,12 +2714,14 @@ void PDFiumEngine::SetGrayscale(bool grayscale) {
 }
 
 void PDFiumEngine::OnCallback(int id) {
-  if (!formfill_timers_.count(id))
+  auto it = formfill_timers_.find(id);
+  if (it == formfill_timers_.end())
     return;
 
-  formfill_timers_[id].second(id);
-  if (formfill_timers_.count(id))  // The callback might delete the timer.
-    client_->ScheduleCallback(id, formfill_timers_[id].first);
+  it->second.timer_callback(id);
+  it = formfill_timers_.find(id);  // The callback might delete the timer.
+  if (it != formfill_timers_.end())
+    client_->ScheduleCallback(id, it->second.timer_period);
 }
 
 void PDFiumEngine::OnTouchTimerCallback(int id) {
@@ -3938,7 +3934,7 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
 void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {
   touch_timers_[++next_touch_timer_id_] = evt;
   client_->ScheduleTouchTimerCallback(next_touch_timer_id_,
-                                      kTouchLongPressTimeoutMs);
+                                      kTouchLongPressTimeout);
 }
 
 void PDFiumEngine::KillTouchTimer(int timer_id) {
@@ -3996,9 +3992,13 @@ int PDFiumEngine::Form_SetTimer(FPDF_FORMFILLINFO* param,
                                 int elapse,
                                 TimerCallback timer_func) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  engine->formfill_timers_[++engine->next_formfill_timer_id_] =
-      std::pair<int, TimerCallback>(elapse, timer_func);
-  engine->client_->ScheduleCallback(engine->next_formfill_timer_id_, elapse);
+  base::TimeDelta elapse_time = base::TimeDelta::FromMilliseconds(elapse);
+  engine->formfill_timers_.emplace(
+      std::piecewise_construct,
+      std::forward_as_tuple(++engine->next_formfill_timer_id_),
+      std::forward_as_tuple(elapse_time, timer_func));
+  engine->client_->ScheduleCallback(engine->next_formfill_timer_id_,
+                                    elapse_time);
   return engine->next_formfill_timer_id_;
 }
 
@@ -4280,6 +4280,10 @@ void PDFiumEngine::SetSelectionBounds(const pp::Point& base,
                                    ? RangeSelectionDirection::Left
                                    : RangeSelectionDirection::Right;
 }
+
+PDFiumEngine::FormFillTimerData::FormFillTimerData(base::TimeDelta period,
+                                                   TimerCallback callback)
+    : timer_period(period), timer_callback(callback) {}
 
 ScopedUnsupportedFeature::ScopedUnsupportedFeature(PDFiumEngine* engine)
     : old_engine_(g_engine_for_unsupported) {
