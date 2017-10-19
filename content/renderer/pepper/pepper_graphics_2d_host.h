@@ -84,7 +84,6 @@ class CONTENT_EXPORT PepperGraphics2DHost
   float GetScale() const;
   void SetLayerTransform(float scale, const PP_Point& transform);
   bool IsAlwaysOpaque() const;
-  PPB_ImageData_Impl* ImageData();
   gfx::Size Size() const;
 
   void ClearCache();
