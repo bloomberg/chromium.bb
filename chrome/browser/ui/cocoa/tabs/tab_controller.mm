@@ -22,6 +22,7 @@
 #import "extensions/common/extension.h"
 #import "ui/base/cocoa/menu_controller.h"
 #include "ui/base/material_design/material_design_controller.h"
+#include "ui/gfx/favicon_size.h"
 
 @implementation TabController
 
@@ -65,7 +66,6 @@ class MenuDelegate : public ui::SimpleMenuModel::Delegate {
 namespace {
 static const CGFloat kTabLeadingPadding = 18;
 static const CGFloat kTabTrailingPadding = 15;
-static const CGFloat kIconSize = 16;
 static const CGFloat kCloseButtonSize = 16;
 static const CGFloat kInitialTabWidth = 160;
 static const CGFloat kTitleLeadingPadding = 4;
@@ -97,10 +97,10 @@ static const CGFloat kTabElementYOrigin = 6;
     BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
     // Icon.
     const CGFloat iconOrigin =
-        isRTL ? kInitialTabWidth - kTabLeadingPadding - kIconSize
+        isRTL ? kInitialTabWidth - kTabLeadingPadding - gfx::kFaviconSize
               : kTabLeadingPadding;
-    NSRect iconFrame =
-        NSMakeRect(iconOrigin, kTabElementYOrigin, kIconSize, kIconSize);
+    NSRect iconFrame = NSMakeRect(iconOrigin, kTabElementYOrigin,
+                                  gfx::kFaviconSize, gfx::kFaviconSize);
     iconView_.reset([[SpriteView alloc] initWithFrame:iconFrame]);
     [iconView_ setAutoresizingMask:isRTL ? NSViewMinXMargin | NSViewMinYMargin
                                          : NSViewMaxXMargin | NSViewMinYMargin];
@@ -314,7 +314,7 @@ static const CGFloat kTabElementYOrigin = 6;
   const CGFloat availableWidth =
       std::max<CGFloat>(0, NSWidth([[self tabView] frame]) -
                                kTabLeadingPadding - kTabTrailingPadding);
-  const CGFloat widthPerIcon = kIconSize;
+  const CGFloat widthPerIcon = gfx::kFaviconSize;
   const int kPaddingBetweenIcons = 2;
   if (availableWidth >= widthPerIcon &&
       availableWidth < (widthPerIcon + kPaddingBetweenIcons)) {
@@ -368,15 +368,15 @@ static const CGFloat kTabElementYOrigin = 6;
 
       // Center the icon.
       appIconFrame.origin = NSMakePoint(
-          std::floor((tabWidth - kIconSize) / 2.0), kTabElementYOrigin);
+          std::floor((tabWidth - gfx::kFaviconSize) / 2.0), kTabElementYOrigin);
       [iconView_ setFrame:appIconFrame];
     } else {
       const CGFloat tabWidth = NSWidth([[self tabView] frame]);
-      const CGFloat iconOrigin = isRTL
-                                     ? tabWidth - kIconSize - kTabLeadingPadding
-                                     : kTabLeadingPadding;
-      NSRect iconFrame =
-          NSMakeRect(iconOrigin, kTabElementYOrigin, kIconSize, kIconSize);
+      const CGFloat iconOrigin =
+          isRTL ? tabWidth - gfx::kFaviconSize - kTabLeadingPadding
+                : kTabLeadingPadding;
+      NSRect iconFrame = NSMakeRect(iconOrigin, kTabElementYOrigin,
+                                    gfx::kFaviconSize, gfx::kFaviconSize);
       [iconView_ setFrame:iconFrame];
     }
   }
@@ -413,7 +413,8 @@ static const CGFloat kTabElementYOrigin = 6;
       const CGFloat tabWidth = [TabController pinnedTabWidth];
       newFrame.origin.x = std::floor((tabWidth - NSWidth(newFrame)) / 2);
       newFrame.origin.y =
-          kTabElementYOrigin - std::floor((NSHeight(newFrame) - kIconSize) / 2);
+          kTabElementYOrigin -
+          std::floor((NSHeight(newFrame) - gfx::kFaviconSize) / 2);
     } else {
       // The Frame for the alertIndicatorButton_ depends on whether iconView_
       // and/or closeButton_ are visible, and where they have been positioned.
