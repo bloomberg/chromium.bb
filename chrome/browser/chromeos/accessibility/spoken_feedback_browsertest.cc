@@ -513,6 +513,16 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, MAYBE_ChromeVoxShiftSearch) {
   EnableChromeVox();
 
+  ui_test_utils::NavigateToURL(
+      browser(),
+      GURL("data:text/html;charset=utf-8,<button autofocus>Click me</button>"));
+  while (true) {
+    std::string utterance = speech_monitor_.GetNextUtterance();
+    if (utterance == "Click me")
+      break;
+  }
+  EXPECT_EQ("Button", speech_monitor_.GetNextUtterance());
+
   // Press Search+/ to enter ChromeVox's "find in page".
   SendKeyPressWithSearch(ui::VKEY_OEM_2);
 
