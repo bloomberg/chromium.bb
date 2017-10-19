@@ -516,7 +516,6 @@ void EnrollmentScreenHandler::SetupAndShowOfflineMessage(
   }
 
   if (GetCurrentScreen() != OobeScreen::SCREEN_ERROR_MESSAGE) {
-    const std::string network_type = network_state_informer_->network_type();
     error_screen_->SetUIState(NetworkError::UI_STATE_SIGNIN);
     error_screen_->SetParentScreen(kScreenId);
     error_screen_->SetHideCallback(base::Bind(&EnrollmentScreenHandler::DoShow,
