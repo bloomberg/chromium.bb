@@ -347,7 +347,7 @@ void AppListFolderView::SetRootLevelDragViewVisible(bool visible) {
 }
 
 void AppListFolderView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ui::AX_ROLE_BUTTON;
+  node_data->role = ui::AX_ROLE_GENERIC_CONTAINER;
   node_data->SetName(accessible_name_);
 }
 
