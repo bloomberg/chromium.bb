@@ -33,6 +33,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -370,6 +371,14 @@ base::LazyInstance<MockWebUIProvider>::DestructorAtExit mock_provider_ =
     LAZY_INSTANCE_INITIALIZER;
 
 }  // namespace
+
+void WebUIBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
+  JavaScriptBrowserTest::SetUpCommandLine(command_line);
+
+  // Enables the MojoJSTest bindings which are used for WebUI tests.
+  base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+      switches::kEnableBlinkFeatures, "MojoJSTest");
+}
 
 void WebUIBrowserTest::SetUpOnMainThread() {
   JavaScriptBrowserTest::SetUpOnMainThread();

@@ -21,15 +21,4 @@ void WebContextFeatures::EnableMojoJS(v8::Local<v8::Context> context,
       ->enableMojoJS(enable);
 }
 
-// static
-void WebContextFeatures::EnableMojoJSTest(v8::Local<v8::Context> context,
-                                          bool enable) {
-  ScriptState* script_state = ScriptState::From(context);
-  DCHECK(script_state->World().IsMainWorld());
-  ContextFeatureSettings::From(
-      ExecutionContext::From(script_state),
-      ContextFeatureSettings::CreationMode::kCreateIfNotExists)
-      ->enableMojoJSTest(enable);
-}
-
 }  // namespace blink

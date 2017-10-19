@@ -35,15 +35,10 @@ class CORE_EXPORT ContextFeatureSettings final
   void enableMojoJS(bool enable) { enable_mojo_js_ = enable; }
   bool isMojoJSEnabled() const { return enable_mojo_js_; }
 
-  // ContextEnabled=MojoJSTest feature
-  void enableMojoJSTest(bool enable) { enable_mojo_js_test_ = enable; }
-  bool isMojoJSTestEnabled() const { return enable_mojo_js_test_; }
-
   DECLARE_VIRTUAL_TRACE();
 
  private:
   bool enable_mojo_js_ = false;
-  bool enable_mojo_js_test_ = false;
 };
 
 }  // namespace blink
