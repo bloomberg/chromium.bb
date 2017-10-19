@@ -392,7 +392,7 @@ WebString AccessControlErrorString(
   switch (status) {
     case AccessStatus::kAccessAllowed:
       NOTREACHED();
-      return "";
+      return WebString();
     case AccessStatus::kInvalidResponse:
       return String::Format("Invalid response. %s",
                             origin_denied.Utf8().data());
@@ -469,7 +469,7 @@ WebString AccessControlErrorString(
                : ""));
   }
   NOTREACHED();
-  return "";
+  return WebString();
 }
 
 WebString PreflightErrorString(const PreflightStatus status,
@@ -478,7 +478,7 @@ WebString PreflightErrorString(const PreflightStatus status,
   switch (status) {
     case PreflightStatus::kPreflightSuccess:
       NOTREACHED();
-      return "";
+      return WebString();
     case PreflightStatus::kPreflightInvalidStatus:
       return String::Format(
           "Response for preflight has invalid HTTP status code %d",
@@ -500,7 +500,7 @@ WebString PreflightErrorString(const PreflightStatus status,
               .data());
   }
   NOTREACHED();
-  return "";
+  return WebString();
 }
 
 WebString RedirectErrorString(const RedirectStatus status,
@@ -508,7 +508,7 @@ WebString RedirectErrorString(const RedirectStatus status,
   switch (status) {
     case RedirectStatus::kRedirectSuccess:
       NOTREACHED();
-      return "";
+      return WebString();
     case RedirectStatus::kRedirectDisallowedScheme:
       return String::Format(
           "Redirect location '%s' has a disallowed scheme for cross-origin "
@@ -521,7 +521,7 @@ WebString RedirectErrorString(const RedirectStatus status,
           redirect_url.GetString().Utf8().data());
   }
   NOTREACHED();
-  return "";
+  return WebString();
 }
 
 void ExtractCorsExposedHeaderNamesList(const WebURLResponse& response,
