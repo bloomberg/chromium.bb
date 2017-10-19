@@ -199,6 +199,8 @@ cr.define('extensions', function() {
      * @private
      */
     onFilterChanged_: function(event) {
+      if (this.currentPage_.page !== Page.LIST)
+        extensions.navigation.navigateTo({page: Page.LIST});
       this.filter = /** @type {string} */ (event.detail);
     },
 
