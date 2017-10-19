@@ -510,10 +510,6 @@ std::unique_ptr<ui::MenuModel> MessageCenterView::CreateMenuModel(
   return tray_->CreateNotificationMenuModel(notification);
 }
 
-bool MessageCenterView::HasClickedListener(const std::string& notification_id) {
-  return message_center_->HasClickedListener(notification_id);
-}
-
 void MessageCenterView::ClickOnNotificationButton(
     const std::string& notification_id,
     int button_index) {

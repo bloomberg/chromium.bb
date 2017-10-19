@@ -100,8 +100,6 @@ class DeprecatedAcceleratorNotificationDelegate
   DeprecatedAcceleratorNotificationDelegate() {}
 
   // message_center::NotificationDelegate:
-  bool HasClickedListener() override { return true; }
-
   void Click() override {
     if (!Shell::Get()->session_controller()->IsUserSessionBlocked())
       Shell::Get()->shell_delegate()->OpenKeyboardShortcutHelpPage();
@@ -169,6 +167,7 @@ void ShowDeprecatedAcceleratorNotification(const char* const notification_id,
           message_center::RichNotificationData(),
           new DeprecatedAcceleratorNotificationDelegate,
           kNotificationSettingsIcon, SystemNotificationWarningLevel::NORMAL);
+  notification->set_clickable(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

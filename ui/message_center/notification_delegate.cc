@@ -14,8 +14,6 @@ void NotificationDelegate::Display() {}
 
 void NotificationDelegate::Close(bool by_user) {}
 
-bool NotificationDelegate::HasClickedListener() { return false; }
-
 void NotificationDelegate::Click() {}
 
 void NotificationDelegate::ButtonClick(int button_index) {}
@@ -43,10 +41,6 @@ HandleNotificationClickedDelegate::HandleNotificationClickedDelegate(
 }
 
 HandleNotificationClickedDelegate::~HandleNotificationClickedDelegate() {}
-
-bool HandleNotificationClickedDelegate::HasClickedListener() {
-  return !closure_.is_null();
-}
 
 void HandleNotificationClickedDelegate::Click() {
   if (!closure_.is_null())

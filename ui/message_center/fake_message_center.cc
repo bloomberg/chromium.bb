@@ -47,10 +47,6 @@ bool FakeMessageCenter::IsLockedState() const {
   return false;
 }
 
-bool FakeMessageCenter::HasClickedListener(const std::string& id) {
-  return false;
-}
-
 message_center::Notification* FakeMessageCenter::FindVisibleNotificationById(
     const std::string& id) {
   for (auto* notification : GetVisibleNotifications()) {

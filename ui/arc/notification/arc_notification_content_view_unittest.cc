@@ -175,10 +175,6 @@ class TestMessageCenterController
     return nullptr;
   }
 
-  bool HasClickedListener(const std::string& notification_id) override {
-    return false;
-  }
-
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override {
     // For this test, this method should not be invoked.

@@ -143,8 +143,6 @@ class CrashNotificationDelegate : public message_center::NotificationDelegate {
     ScheduleCloseBalloon(copied_extension_id, profile_);
   }
 
-  bool HasClickedListener() override { return true; }
-
  private:
   ~CrashNotificationDelegate() override {}
 
@@ -181,6 +179,7 @@ void NotificationImageReady(const std::string extension_name,
       message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
                                  kNotifierId),
       message_center::RichNotificationData(), delegate.get());
+  notification.set_clickable(true);
 
   g_browser_process->notification_ui_manager()->Add(notification, profile);
 }

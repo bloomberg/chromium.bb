@@ -365,13 +365,6 @@ std::unique_ptr<ui::MenuModel> ToastContentsView::CreateMenuModel(
   return nullptr;
 }
 
-bool ToastContentsView::HasClickedListener(
-    const std::string& notification_id) {
-  if (!collection_)
-    return false;
-  return collection_->HasClickedListener(notification_id);
-}
-
 void ToastContentsView::ClickOnNotificationButton(
     const std::string& notification_id,
     int button_index) {

@@ -352,6 +352,7 @@ void ScreenLayoutObserver::CreateOrUpdateNotification(
               base::Bind(&OpenSettingsFromNotification)),
           kNotificationScreenIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_clickable(true);
 
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DISPLAY_NOTIFICATION_CREATED);

@@ -215,13 +215,6 @@ bool MessageCenterImpl::IsLockedState() const {
   return locked_;
 }
 
-bool MessageCenterImpl::HasClickedListener(const std::string& id) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  scoped_refptr<NotificationDelegate> delegate =
-      notification_list_->GetNotificationDelegate(id);
-  return delegate.get() && delegate->HasClickedListener();
-}
-
 message_center::Notification* MessageCenterImpl::FindVisibleNotificationById(
     const std::string& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
