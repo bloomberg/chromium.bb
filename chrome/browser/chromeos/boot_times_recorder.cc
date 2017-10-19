@@ -66,7 +66,15 @@ RenderWidgetHost* GetRenderWidgetHost(NavigationController* tab) {
 }
 
 const std::string GetTabUrl(RenderWidgetHost* rwh) {
+  // rwh is null during initialization and shut down.
+  if (!rwh)
+    return std::string();
+
   RenderWidgetHostView* rwhv = rwh->GetView();
+  // rwhv is null if renderer has crashed.
+  if (!rwhv)
+    std::string();
+
   for (auto* browser : *BrowserList::GetInstance()) {
     for (int i = 0, tab_count = browser->tab_strip_model()->count();
          i < tab_count;
