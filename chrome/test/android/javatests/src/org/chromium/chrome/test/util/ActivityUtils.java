@@ -14,7 +14,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.ActivityOptionsCompat;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;

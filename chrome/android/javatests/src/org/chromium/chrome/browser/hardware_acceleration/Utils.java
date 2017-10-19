@@ -8,7 +8,7 @@ import android.app.Dialog;
 import android.view.View;
 import android.view.ViewTreeObserver.OnPreDrawListener;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import org.chromium.base.SysUtils;
 import org.chromium.base.ThreadUtils;

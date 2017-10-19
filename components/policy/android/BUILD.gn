@@ -27,6 +27,7 @@ android_library("policy_java_test_support") {
     ":policy_java",
     "//base:base_java",
     "//base:base_java_test_support",
+    "//third_party/junit",
   ]
   java_files = [
     "javatests/src/org/chromium/policy/test/annotations/Policies.java",

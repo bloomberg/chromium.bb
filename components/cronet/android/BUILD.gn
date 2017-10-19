@@ -555,6 +555,7 @@ android_library("cronet_test_apk_java") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//net/android:net_java_test_support",
+    "//third_party/junit",
     "//third_party/netty4:netty_all_java",
   ]
 

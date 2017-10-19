@@ -4,7 +4,7 @@
 
 package org.chromium.net.urlconnection;
 
-import junit.framework.Assert;
+import org.junit.Assert;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;

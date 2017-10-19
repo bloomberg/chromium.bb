@@ -14,8 +14,6 @@ import android.os.StrictMode;
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrApi;
 
-import junit.framework.Assert;
-
 import org.chromium.ui.base.WindowAndroid;
 
 
@@ -79,7 +77,9 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
     @Override
     public boolean exitFromVr(int requestCode, final Intent intent) {
         Activity activity = WindowAndroid.activityFromContext(mContext);
-        Assert.assertNotNull(activity);
+        if (activity == null) {
+            throw new IllegalStateException("Activity is null");
+        }
         DaydreamApi daydreamApi = DaydreamApi.create(activity);
         if (daydreamApi == null) return false;
         daydreamApi.exitFromVr(activity, requestCode, intent);
