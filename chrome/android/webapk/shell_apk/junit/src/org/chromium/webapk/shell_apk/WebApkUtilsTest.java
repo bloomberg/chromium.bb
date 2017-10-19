@@ -86,7 +86,7 @@ public class WebApkUtilsTest {
      * manifest meta data.
      */
     @Test
-    public void testLoggedIntentUrlParamWhenRewrite() {
+    public void testLoggedIntentUrlParamWhenRewriteOutOfScope() {
         final String intentStartUrl = "https://maps.google.com/page?a=A";
         final String manifestStartUrl = "https://www.google.com/maps";
         final String manifestScope = "https://www.google.com";
@@ -99,6 +99,31 @@ public class WebApkUtilsTest {
         bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
         bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, browserPackageName);
         bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "originalUrl");
+
+        Assert.assertEquals(expectedRewrittenStartUrl,
+                WebApkUtils.rewriteIntentUrlIfNecessary(intentStartUrl, bundle));
+    }
+
+    /**
+     * Test that MainActivity appends the start URL as a paramater if |loggedIntentUrlParam| in
+     * WebAPK metadata is set and {@link intentStartUrl} is in the scope specified in the manifest
+     * meta data.
+     */
+    @Test
+    public void testLoggedIntentUrlParamWhenRewriteInScope() {
+        final String intentStartUrl = "https://www.google.com/maps/search/A";
+        final String manifestStartUrl = "https://www.google.com/maps?force=qVTs2FOxxTmHHo79-pwa";
+        final String manifestScope = "https://www.google.com";
+        final String expectedRewrittenStartUrl =
+                "https://www.google.com/maps?force=qVTs2FOxxTmHHo79-pwa&intent="
+                + "https%3A%2F%2Fwww.google.com%2Fmaps%2Fsearch%2FA";
+        final String browserPackageName = "browser.support.webapks";
+
+        Bundle bundle = new Bundle();
+        bundle.putString(WebApkMetaDataKeys.START_URL, manifestStartUrl);
+        bundle.putString(WebApkMetaDataKeys.SCOPE, manifestScope);
+        bundle.putString(WebApkMetaDataKeys.RUNTIME_HOST, browserPackageName);
+        bundle.putString(WebApkMetaDataKeys.LOGGED_INTENT_URL_PARAM, "intent");
 
         Assert.assertEquals(expectedRewrittenStartUrl,
                 WebApkUtils.rewriteIntentUrlIfNecessary(intentStartUrl, bundle));
