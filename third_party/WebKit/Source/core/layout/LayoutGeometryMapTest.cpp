@@ -185,7 +185,7 @@ TEST_P(LayoutGeometryMapTest, SimpleGeometryMapTest) {
   // FloatRects. This is because LayoutGeometryMap treats both slightly
   // differently
   LayoutGeometryMap rgm;
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InitialDiv"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InitialDiv"), nullptr);
   FloatRect rect(0.0f, 0.0f, 1.0f, 2.0f);
   EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 1.0f, 2.0f)),
             rgm.MapToAncestor(rect, nullptr));
@@ -194,7 +194,7 @@ TEST_P(LayoutGeometryMapTest, SimpleGeometryMapTest) {
   EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 1.0f, 2.0f)),
             rgm.MapToAncestor(rect, nullptr));
 
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InnerDiv"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InnerDiv"), nullptr);
   EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)),
             rgm.MapToAncestor(rect, GetLayoutBox(web_view, "CenterDiv")));
 
@@ -226,7 +226,7 @@ TEST_P(LayoutGeometryMapTest, TransformedGeometryTest)
   web_view->UpdateAllLifecyclePhases();
 
   LayoutGeometryMap rgm;
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InitialDiv"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InitialDiv"), nullptr);
   const float kRectWidth = 15.0f;
   const float kScaleWidth = 2.0f;
   const float kScaleHeight = 3.0f;
@@ -238,7 +238,7 @@ TEST_P(LayoutGeometryMapTest, TransformedGeometryTest)
   EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)).BoundingBox(),
             rgm.MapToAncestor(rect, nullptr).BoundingBox());
 
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InnerDiv"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InnerDiv"), nullptr);
   EXPECT_EQ(FloatQuad(FloatRect(523.0f - kRectWidth, 6.0f, 15.0f, 25.0f))
                 .BoundingBox(),
             rgm.MapToAncestor(rect, GetLayoutBox(web_view, "CenterDiv"))
@@ -285,7 +285,7 @@ TEST_P(LayoutGeometryMapTest, FixedGeometryTest) {
   web_view->UpdateAllLifecyclePhases();
 
   LayoutGeometryMap rgm;
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InitialDiv"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InitialDiv"), nullptr);
   FloatRect rect(0.0f, 0.0f, 15.0f, 25.0f);
   EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 15.0f, 25.0f)),
             rgm.MapToAncestor(rect, nullptr));
@@ -294,7 +294,7 @@ TEST_P(LayoutGeometryMapTest, FixedGeometryTest) {
   EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 15.0f, 25.0f)),
             rgm.MapToAncestor(rect, nullptr));
 
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InnerDiv"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "InnerDiv"), nullptr);
   EXPECT_EQ(FloatQuad(FloatRect(20.0f, 14.0f, 15.0f, 25.0f)),
             rgm.MapToAncestor(rect, nullptr));
 
@@ -327,7 +327,8 @@ TEST_P(LayoutGeometryMapTest, ContainsFixedPositionTest) {
 
   // This fixed position element is not contained and so is attached at the top
   // of the viewport.
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "simple-container"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "simple-container"),
+                             nullptr);
   EXPECT_EQ(FloatRect(8.0f, 100.0f, 100.0f, 100.0f),
             AdjustForFrameScroll(web_view, rgm.AbsoluteRect(rect)));
   rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "fixed1"),
@@ -340,7 +341,7 @@ TEST_P(LayoutGeometryMapTest, ContainsFixedPositionTest) {
   rgm.PopMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
 
   // Transforms contain fixed position descendants.
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "has-transform"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "has-transform"), nullptr);
   EXPECT_EQ(FloatRect(8.0f, 100.0f, 100.0f, 100.0f),
             AdjustForFrameScroll(web_view, rgm.AbsoluteRect(rect)));
   rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "fixed2"),
@@ -350,7 +351,7 @@ TEST_P(LayoutGeometryMapTest, ContainsFixedPositionTest) {
   rgm.PopMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
 
   // Paint containment contains fixed position descendants.
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "contains-paint"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "contains-paint"), nullptr);
   EXPECT_EQ(FloatRect(8.0f, 100.0f, 100.0f, 100.0f),
             AdjustForFrameScroll(web_view, rgm.AbsoluteRect(rect)));
   rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "fixed3"),
@@ -373,9 +374,9 @@ TEST_P(LayoutGeometryMapTest, IframeTest) {
   LayoutGeometryMap rgm_no_frame;
 
   rgm_no_frame.PushMappingsToAncestor(
-      GetFrameElement("test_frame", web_view, "InitialDiv"), 0);
+      GetFrameElement("test_frame", web_view, "InitialDiv"), nullptr);
   rgm.PushMappingsToAncestor(
-      GetFrameElement("test_frame", web_view, "InitialDiv"), 0);
+      GetFrameElement("test_frame", web_view, "InitialDiv"), nullptr);
   FloatRect rect(0.0f, 0.0f, 1.0f, 2.0f);
 
   EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 1.0f, 2.0f)),
@@ -411,9 +412,9 @@ TEST_P(LayoutGeometryMapTest, IframeTest) {
   rgm_no_frame.PopMappingsToAncestor(static_cast<PaintLayer*>(nullptr));
 
   rgm.PushMappingsToAncestor(
-      GetFrameElement("test_frame", web_view, "InnerDiv"), 0);
+      GetFrameElement("test_frame", web_view, "InnerDiv"), nullptr);
   rgm_no_frame.PushMappingsToAncestor(
-      GetFrameElement("test_frame", web_view, "InnerDiv"), 0);
+      GetFrameElement("test_frame", web_view, "InnerDiv"), nullptr);
   EXPECT_EQ(FloatQuad(FloatRect(21.0f, 6.0f, 1.0f, 2.0f)),
             rgm.MapToAncestor(rect, GetFrameLayoutContainer(
                                         "test_frame", web_view, "CenterDiv")));
@@ -474,7 +475,7 @@ TEST_P(LayoutGeometryMapTest, ColumnTest) {
   float offset = (1000.0f - 16.0f - 20.0f) / 3.0f + 10.0f;
 
   LayoutGeometryMap rgm;
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "A"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "A"), nullptr);
   FloatPoint point;
   FloatRect rect(0.0f, 0.0f, 5.0f, 3.0f);
 
@@ -485,7 +486,7 @@ TEST_P(LayoutGeometryMapTest, ColumnTest) {
   EXPECT_EQ(FloatQuad(FloatRect(0.0f, 0.0f, 5.0f, 3.0f)),
             rgm.MapToAncestor(rect, nullptr));
 
-  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "Col1"), 0);
+  rgm.PushMappingsToAncestor(GetLayoutBox(web_view, "Col1"), nullptr);
   EXPECT_EQ(FloatQuad(FloatRect(8.0f, 8.0f, 5.0f, 3.0f)),
             rgm.MapToAncestor(rect, nullptr));
 

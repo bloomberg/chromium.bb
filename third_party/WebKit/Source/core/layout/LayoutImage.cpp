@@ -268,7 +268,8 @@ LayoutUnit LayoutImage::MinimumReplacedHeight() const {
 
 HTMLMapElement* LayoutImage::ImageMap() const {
   HTMLImageElement* i = ToHTMLImageElementOrNull(GetNode());
-  return i ? i->GetTreeScope().GetImageMap(i->FastGetAttribute(usemapAttr)) : 0;
+  return i ? i->GetTreeScope().GetImageMap(i->FastGetAttribute(usemapAttr))
+           : nullptr;
 }
 
 bool LayoutImage::NodeAtPoint(HitTestResult& result,

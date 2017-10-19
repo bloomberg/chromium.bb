@@ -74,7 +74,7 @@ const char* StorageQuotaClient::SupplementName() {
 
 StorageQuotaClient* StorageQuotaClient::From(ExecutionContext* context) {
   if (!context->IsDocument())
-    return 0;
+    return nullptr;
   return static_cast<StorageQuotaClient*>(
       Supplement<Page>::From(ToDocument(context)->GetPage(), SupplementName()));
 }

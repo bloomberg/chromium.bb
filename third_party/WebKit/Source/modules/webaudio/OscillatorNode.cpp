@@ -284,8 +284,8 @@ void OscillatorHandler::Process(size_t frames_to_process) {
       CalculateSampleAccuratePhaseIncrements(frames_to_process);
 
   float frequency = 0;
-  float* higher_wave_data = 0;
-  float* lower_wave_data = 0;
+  float* higher_wave_data = nullptr;
+  float* lower_wave_data = nullptr;
   float table_interpolation_factor = 0;
 
   if (!has_sample_accurate_values) {

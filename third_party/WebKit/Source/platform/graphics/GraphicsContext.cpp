@@ -688,7 +688,7 @@ void GraphicsContext::DrawTextPasses(const DrawTextFunc& draw_text) {
     PaintFlags stroke_flags(ImmutableState()->StrokeFlags());
     if (mode_flags & kTextModeFill) {
       // shadow was already applied during fill pass
-      stroke_flags.setLooper(0);
+      stroke_flags.setLooper(nullptr);
     }
     draw_text(stroke_flags);
   }

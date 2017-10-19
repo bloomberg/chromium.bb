@@ -46,13 +46,13 @@ static bool ResolveRelative(const KURL& base,
   StringUTF8Adaptor base_utf8(base.GetString());
   if (relative.Is8Bit()) {
     StringUTF8Adaptor relative_utf8(relative);
-    return url::ResolveRelative(base_utf8.Data(), base_utf8.length(),
-                                base.GetParsed(), relative_utf8.Data(),
-                                relative_utf8.length(), 0, buffer, &parsed);
+    return url::ResolveRelative(
+        base_utf8.Data(), base_utf8.length(), base.GetParsed(),
+        relative_utf8.Data(), relative_utf8.length(), nullptr, buffer, &parsed);
   }
   return url::ResolveRelative(base_utf8.Data(), base_utf8.length(),
                               base.GetParsed(), relative.Characters16(),
-                              relative.length(), 0, buffer, &parsed);
+                              relative.length(), nullptr, buffer, &parsed);
 }
 
 LinkHash VisitedLinkHash(const KURL& base, const AtomicString& relative) {

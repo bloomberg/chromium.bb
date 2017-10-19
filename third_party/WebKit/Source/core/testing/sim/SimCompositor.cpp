@@ -46,7 +46,7 @@ SimCompositor::SimCompositor()
     : needs_begin_frame_(false),
       defer_commits_(true),
       has_selection_(false),
-      web_view_(0),
+      web_view_(nullptr),
       last_frame_time_monotonic_(0) {
   LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(true);
 }

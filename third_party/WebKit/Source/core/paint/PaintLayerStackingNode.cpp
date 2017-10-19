@@ -157,7 +157,7 @@ void PaintLayerStackingNode::RebuildZOrderLists() {
       Element* child_element =
           (child->GetNode() && child->GetNode()->IsElementNode())
               ? ToElement(child->GetNode())
-              : 0;
+              : nullptr;
       if (child_element && child_element->IsInTopLayer()) {
         PaintLayer* layer = ToLayoutBoxModelObject(child)->Layer();
         // Create the buffer if it doesn't exist yet.
@@ -267,7 +267,7 @@ PaintLayerStackingNode* PaintLayerStackingNode::AncestorStackingContextNode()
     if (stacking_node->IsStackingContext())
       return stacking_node;
   }
-  return 0;
+  return nullptr;
 }
 
 LayoutBoxModelObject& PaintLayerStackingNode::GetLayoutObject() const {

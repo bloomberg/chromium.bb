@@ -803,7 +803,7 @@ void InspectorNetworkAgent::DidReceiveResourceResponse(
   // following didReceiveResponse as there will be no calls to didReceiveData
   // from the network stack.
   if (is_not_modified && cached_resource && cached_resource->EncodedSize())
-    DidReceiveData(identifier, loader, 0, cached_resource->EncodedSize());
+    DidReceiveData(identifier, loader, nullptr, cached_resource->EncodedSize());
 }
 
 static bool IsErrorStatusCode(int status_code) {
@@ -1355,7 +1355,7 @@ Response InspectorNetworkAgent::replayXHR(const String& request_id) {
 
   ExecutionContext* execution_context = xhr_replay_data->GetExecutionContext();
   if (execution_context->IsContextDestroyed()) {
-    resources_data_->SetXHRReplayData(request_id, 0);
+    resources_data_->SetXHRReplayData(request_id, nullptr);
     return Response::Error("Document is already detached");
   }
 

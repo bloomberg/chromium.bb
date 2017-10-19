@@ -973,7 +973,7 @@ RootInlineBox* LayoutBlockFlow::CreateLineBoxesFromBidiRuns(
 
 static void DeleteLineRange(LineLayoutState& layout_state,
                             RootInlineBox* start_line,
-                            RootInlineBox* stop_line = 0) {
+                            RootInlineBox* stop_line = nullptr) {
   RootInlineBox* box_to_delete = start_line;
   while (box_to_delete && box_to_delete != stop_line) {
     // Note: deleteLineRange(firstRootBox()) is not identical to
@@ -1068,8 +1068,9 @@ void LayoutBlockFlow::AppendFloatsToLastLine(
     }
     layout_state.SetFloatIndex(layout_state.FloatIndex() + 1);
   }
-  layout_state.SetLastFloat(
-      !floating_object_set.IsEmpty() ? floating_object_set.back().get() : 0);
+  layout_state.SetLastFloat(!floating_object_set.IsEmpty()
+                                ? floating_object_set.back().get()
+                                : nullptr);
 }
 
 void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
@@ -1107,7 +1108,7 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
                                                     clean_line_bidi_status));
       if (layout_state.EndLineMatched()) {
         resolver.SetPosition(
-            InlineIterator(resolver.GetPosition().Root(), 0, 0), 0);
+            InlineIterator(resolver.GetPosition().Root(), nullptr, 0), 0);
         break;
       }
     }
@@ -1121,7 +1122,7 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
     bool is_new_uba_paragraph =
         layout_state.GetLineInfo().PreviousLineBrokeCleanly();
     FloatingObject* last_float_from_previous_line =
-        (ContainsFloats()) ? floating_objects_->Set().back().get() : 0;
+        (ContainsFloats()) ? floating_objects_->Set().back().get() : nullptr;
 
     WordMeasurements word_measurements;
     end_of_line =
@@ -1135,8 +1136,8 @@ void LayoutBlockFlow::LayoutRunsAndFloatsInRange(
       resolver.Runs().DeleteRuns();
       resolver.MarkCurrentRunEmpty();  // FIXME: This can probably be replaced
                                        // by an ASSERT (or just removed).
-      resolver.SetPosition(InlineIterator(resolver.GetPosition().Root(), 0, 0),
-                           0);
+      resolver.SetPosition(
+          InlineIterator(resolver.GetPosition().Root(), nullptr, 0), 0);
       break;
     }
 
@@ -2039,7 +2040,7 @@ RootInlineBox* LayoutBlockFlow::DetermineStartPosition(
     InlineBidiResolver& resolver) {
   RootInlineBox* curr = nullptr;
   RootInlineBox* last = nullptr;
-  RootInlineBox* first_line_box_with_break_and_clearance = 0;
+  RootInlineBox* first_line_box_with_break_and_clearance = nullptr;
 
   // FIXME: This entire float-checking block needs to be broken into a new
   // function.
@@ -2371,7 +2372,7 @@ void LayoutBlockFlow::DeleteEllipsisLineBoxes() {
           LogicalRightOffsetForLine(curr->LineTop(), kDoNotIndentText) -
           logical_left;
       LayoutUnit total_logical_width = curr->LogicalWidth();
-      UpdateLogicalWidthForAlignment(text_align, curr, 0, logical_left,
+      UpdateLogicalWidthForAlignment(text_align, curr, nullptr, logical_left,
                                      total_logical_width,
                                      available_logical_width, 0);
 
@@ -2483,7 +2484,7 @@ void LayoutBlockFlow::CheckLinesForTextOverflow() {
         // We are only interested in the delta from the base position.
         LayoutUnit logical_left;
         LayoutUnit available_logical_width = block_right_edge - block_left_edge;
-        UpdateLogicalWidthForAlignment(text_align, curr, 0, logical_left,
+        UpdateLogicalWidthForAlignment(text_align, curr, nullptr, logical_left,
                                        total_logical_width,
                                        available_logical_width, 0);
         if (ltr)
@@ -2639,7 +2640,7 @@ LayoutUnit LayoutBlockFlow::StartAlignedOffsetForLine(
   LayoutUnit available_logical_width =
       LogicalRightOffsetForLine(LogicalHeight(), kDoNotIndentText) -
       logical_left;
-  UpdateLogicalWidthForAlignment(text_align, 0, 0, logical_left,
+  UpdateLogicalWidthForAlignment(text_align, nullptr, nullptr, logical_left,
                                  total_logical_width, available_logical_width,
                                  0);
 

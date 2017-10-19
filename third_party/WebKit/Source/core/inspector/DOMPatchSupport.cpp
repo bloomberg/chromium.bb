@@ -129,14 +129,14 @@ Node* DOMPatchSupport::PatchNode(Node* node,
   HeapVector<Member<Digest>> old_list;
   for (Node* child = parent_node->firstChild(); child;
        child = child->nextSibling())
-    old_list.push_back(CreateDigest(child, 0));
+    old_list.push_back(CreateDigest(child, nullptr));
 
   // Compose the new list.
   String markup_copy = markup.DeprecatedLower();
   HeapVector<Member<Digest>> new_list;
   for (Node* child = parent_node->firstChild(); child != node;
        child = child->nextSibling())
-    new_list.push_back(CreateDigest(child, 0));
+    new_list.push_back(CreateDigest(child, nullptr));
   for (Node* child = fragment->firstChild(); child;
        child = child->nextSibling()) {
     if (IsHTMLHeadElement(*child) && !child->hasChildren() &&
@@ -152,7 +152,7 @@ Node* DOMPatchSupport::PatchNode(Node* node,
     new_list.push_back(CreateDigest(child, &unused_nodes_map_));
   }
   for (Node* child = node->nextSibling(); child; child = child->nextSibling())
-    new_list.push_back(CreateDigest(child, 0));
+    new_list.push_back(CreateDigest(child, nullptr));
 
   if (!InnerPatchChildren(parent_node, old_list, new_list, exception_state)) {
     // Fall back to total replace.
@@ -223,12 +223,12 @@ DOMPatchSupport::Diff(const HeapVector<Member<Digest>>& old_list,
   ResultMap old_map(old_list.size());
 
   for (size_t i = 0; i < old_map.size(); ++i) {
-    old_map[i].first = 0;
+    old_map[i].first = nullptr;
     old_map[i].second = 0;
   }
 
   for (size_t i = 0; i < new_map.size(); ++i) {
-    new_map[i].first = 0;
+    new_map[i].first = nullptr;
     new_map[i].second = 0;
   }
 
@@ -329,7 +329,7 @@ bool DOMPatchSupport::InnerPatchChildren(
     if (old_map[i].first) {
       if (used_new_ordinals.insert(old_map[i].second).is_new_entry)
         continue;
-      old_map[i].first = 0;
+      old_map[i].first = nullptr;
       old_map[i].second = 0;
     }
 
@@ -375,7 +375,7 @@ bool DOMPatchSupport::InnerPatchChildren(
     size_t old_ordinal = new_map[i].second;
     if (used_old_ordinals.Contains(old_ordinal)) {
       // Do not map node more than once
-      new_map[i].first = 0;
+      new_map[i].first = nullptr;
       new_map[i].second = 0;
       continue;
     }

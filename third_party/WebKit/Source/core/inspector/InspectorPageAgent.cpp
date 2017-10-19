@@ -734,7 +734,7 @@ void InspectorPageAgent::WillCommitLoad(LocalFrame*, DocumentLoader* loader) {
 void InspectorPageAgent::FrameAttachedToParent(LocalFrame* frame) {
   Frame* parent_frame = frame->Tree().Parent();
   if (!parent_frame->IsLocalFrame())
-    parent_frame = 0;
+    parent_frame = nullptr;
   std::unique_ptr<SourceLocation> location =
       SourceLocation::CaptureWithFullStackTrace();
   GetFrontend()->frameAttached(

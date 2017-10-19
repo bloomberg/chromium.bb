@@ -505,7 +505,7 @@ WebLocalFrame* WebLocalFrame::FrameForCurrentContext() {
   v8::Local<v8::Context> context =
       v8::Isolate::GetCurrent()->GetCurrentContext();
   if (context.IsEmpty())
-    return 0;
+    return nullptr;
   return FrameForContext(context);
 }
 
@@ -531,7 +531,7 @@ bool WebLocalFrameImpl::IsWebRemoteFrame() const {
 
 WebRemoteFrame* WebLocalFrameImpl::ToWebRemoteFrame() {
   NOTREACHED();
-  return 0;
+  return nullptr;
 }
 
 void WebLocalFrameImpl::Close() {
@@ -671,8 +671,8 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
   HeapVector<ScriptSourceCode> sources =
       CreateSourcesVector(sources_in, num_sources);
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(world_id,
-                                                                 sources, 0);
+  GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
+      world_id, sources, nullptr);
 }
 
 void WebLocalFrameImpl::SetIsolatedWorldSecurityOrigin(
@@ -798,8 +798,8 @@ void WebLocalFrameImpl::ExecuteScriptInIsolatedWorld(
     results->Swap(v8_results);
   } else {
     v8::HandleScope handle_scope(ToIsolate(GetFrame()));
-    GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(world_id,
-                                                                   sources, 0);
+    GetFrame()->GetScriptController().ExecuteScriptInIsolatedWorld(
+        world_id, sources, nullptr);
   }
 }
 
@@ -1376,7 +1376,7 @@ WebPlugin* WebLocalFrameImpl::FocusedPluginIfInputMethodSupported() {
   WebPluginContainerImpl* container = GetFrame()->GetWebPluginContainer();
   if (container && container->SupportsInputMethod())
     return container->Plugin();
-  return 0;
+  return nullptr;
 }
 
 void WebLocalFrameImpl::DispatchBeforePrintEvent() {
@@ -1659,10 +1659,10 @@ WebLocalFrameImpl::WebLocalFrameImpl(
     : WebLocalFrame(scope),
       local_frame_client_(LocalFrameClientImpl::Create(this)),
       client_(client),
-      autofill_client_(0),
+      autofill_client_(nullptr),
       input_events_scale_factor_for_emulation_(1),
       interface_registry_(interface_registry),
-      web_dev_tools_frontend_(0),
+      web_dev_tools_frontend_(nullptr),
       input_method_controller_(*this),
       text_checker_client_(new TextCheckerClientImpl(this)),
       spell_check_panel_host_client_(nullptr),
@@ -2060,7 +2060,7 @@ void WebLocalFrameImpl::LoadData(const WebData& data,
   request.SetCheckForBrowserSideNavigation(false);
 
   FrameLoadRequest frame_request(
-      0, request,
+      nullptr, request,
       SubstituteData(data, mime_type, text_encoding, unreachable_url));
   DCHECK(frame_request.GetSubstituteData().IsValid());
   frame_request.SetReplacesCurrentItem(replace);

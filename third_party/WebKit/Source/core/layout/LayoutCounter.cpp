@@ -640,7 +640,7 @@ void LayoutCounter::LayoutObjectStyleChanged(LayoutObject& layout_object,
     return;  // cannot have generated content or if it can have, it will be
              // handled during attaching
   const CounterDirectiveMap* old_counter_directives =
-      old_style ? old_style->GetCounterDirectives() : 0;
+      old_style ? old_style->GetCounterDirectives() : nullptr;
   const CounterDirectiveMap* new_counter_directives =
       new_style.GetCounterDirectives();
   if (old_counter_directives) {

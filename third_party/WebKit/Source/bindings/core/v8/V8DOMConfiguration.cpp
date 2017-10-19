@@ -656,9 +656,9 @@ void V8DOMConfiguration::InstallConstantWithGetter(
   v8::Local<v8::String> constant_name = V8AtomicString(isolate, name);
   v8::PropertyAttribute attributes =
       static_cast<v8::PropertyAttribute>(v8::ReadOnly | v8::DontDelete);
-  interface_template->SetNativeDataProperty(constant_name, getter, 0,
+  interface_template->SetNativeDataProperty(constant_name, getter, nullptr,
                                             v8::Local<v8::Value>(), attributes);
-  prototype_template->SetNativeDataProperty(constant_name, getter, 0,
+  prototype_template->SetNativeDataProperty(constant_name, getter, nullptr,
                                             v8::Local<v8::Value>(), attributes);
 }
 

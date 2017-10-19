@@ -87,7 +87,7 @@ void BaseTemporalInputType::SetValueAsDouble(
 }
 
 bool BaseTemporalInputType::TypeMismatchFor(const String& value) const {
-  return !value.IsEmpty() && !ParseToDateComponents(value, 0);
+  return !value.IsEmpty() && !ParseToDateComponents(value, nullptr);
 }
 
 bool BaseTemporalInputType::TypeMismatch() const {

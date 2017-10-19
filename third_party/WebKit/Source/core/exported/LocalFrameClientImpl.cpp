@@ -335,7 +335,7 @@ void LocalFrameClientImpl::Detached(FrameDetachType type) {
 
   // Signal that no further communication with WebFrameClient should take
   // place at this point since we are no longer associated with the Page.
-  web_frame_->SetClient(0);
+  web_frame_->SetClient(nullptr);
 
   client->FrameDetached(static_cast<WebFrameClient::DetachType>(type));
 
@@ -893,7 +893,7 @@ WebRemotePlaybackClient* LocalFrameClientImpl::CreateWebRemotePlaybackClient(
 
 WebCookieJar* LocalFrameClientImpl::CookieJar() const {
   if (!web_frame_->Client())
-    return 0;
+    return nullptr;
   return web_frame_->Client()->CookieJar();
 }
 

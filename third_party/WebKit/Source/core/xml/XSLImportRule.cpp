@@ -42,7 +42,7 @@ void XSLImportRule::SetXSLStyleSheet(const String& href,
                                      const KURL& base_url,
                                      const String& sheet) {
   if (style_sheet_)
-    style_sheet_->SetParentStyleSheet(0);
+    style_sheet_->SetParentStyleSheet(nullptr);
 
   style_sheet_ = XSLStyleSheet::Create(this, href, base_url);
 

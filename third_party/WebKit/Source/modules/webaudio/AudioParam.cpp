@@ -265,7 +265,7 @@ void AudioParamHandler::CalculateFinalValues(float* values,
 
     // Render audio from this output.
     AudioBus* connection_bus =
-        output->Pull(0, AudioUtilities::kRenderQuantumFrames);
+        output->Pull(nullptr, AudioUtilities::kRenderQuantumFrames);
 
     // Sum, with unity-gain.
     summing_bus->SumFrom(*connection_bus);

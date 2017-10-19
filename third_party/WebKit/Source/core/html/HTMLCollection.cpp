@@ -342,7 +342,7 @@ Element* HTMLCollection::TraverseToFirst() const {
           RootNode(), MakeIsMatch(ToClassCollection(*this)));
     default:
       if (OverridesItemAfter())
-        return VirtualItemAfter(0);
+        return VirtualItemAfter(nullptr);
       if (ShouldOnlyIncludeDirectChildren())
         return ElementTraversal::FirstChild(RootNode(), MakeIsMatch(*this));
       return ElementTraversal::FirstWithin(RootNode(), MakeIsMatch(*this));

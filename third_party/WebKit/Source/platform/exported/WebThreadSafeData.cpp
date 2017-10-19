@@ -55,7 +55,7 @@ size_t WebThreadSafeData::size() const {
 
 const char* WebThreadSafeData::Data() const {
   if (private_.IsNull())
-    return 0;
+    return nullptr;
   return private_->data();
 }
 

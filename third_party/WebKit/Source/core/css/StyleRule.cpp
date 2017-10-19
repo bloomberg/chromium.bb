@@ -45,11 +45,11 @@ static_assert(sizeof(StyleRuleBase) <= sizeof(SameSizeAsStyleRuleBase),
               "StyleRuleBase should stay small");
 
 CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSStyleSheet* parent_sheet) const {
-  return CreateCSSOMWrapper(parent_sheet, 0);
+  return CreateCSSOMWrapper(parent_sheet, nullptr);
 }
 
 CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSRule* parent_rule) const {
-  return CreateCSSOMWrapper(0, parent_rule);
+  return CreateCSSOMWrapper(nullptr, parent_rule);
 }
 
 void StyleRuleBase::Trace(blink::Visitor* visitor) {

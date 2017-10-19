@@ -288,7 +288,7 @@ TEST_F(ImageFrameGeneratorTest, frameHasAlpha) {
   EXPECT_TRUE(generator_->HasAlpha(0));
   EXPECT_EQ(1, decode_request_count_);
 
-  ImageDecoder* temp_decoder = 0;
+  ImageDecoder* temp_decoder = nullptr;
   EXPECT_TRUE(ImageDecodingStore::Instance().LockDecoder(
       generator_.get(), FullSize(), ImageDecoder::kAlphaPremultiplied,
       &temp_decoder));

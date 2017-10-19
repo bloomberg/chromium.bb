@@ -223,7 +223,7 @@ std::unique_ptr<JSONObject> ObjectForSkPath(const SkPath& path) {
   std::unique_ptr<JSONObject> path_item = JSONObject::Create();
   path_item->SetString("fillType", FillTypeName(path.getFillType()));
   path_item->SetString("convexity", ConvexityName(path.getConvexity()));
-  path_item->SetBoolean("isRect", path.isRect(0));
+  path_item->SetBoolean("isRect", path.isRect(nullptr));
   SkPath::Iter iter(path, false);
   SkPoint points[4];
   std::unique_ptr<JSONArray> path_points_array = JSONArray::Create();

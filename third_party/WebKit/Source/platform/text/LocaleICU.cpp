@@ -47,13 +47,13 @@ std::unique_ptr<Locale> Locale::Create(const String& locale) {
 
 LocaleICU::LocaleICU(const char* locale)
     : locale_(locale),
-      number_format_(0),
-      short_date_format_(0),
+      number_format_(nullptr),
+      short_date_format_(nullptr),
       did_create_decimal_format_(false),
       did_create_short_date_format_(false),
       first_day_of_week_(0),
-      medium_time_format_(0),
-      short_time_format_(0),
+      medium_time_format_(nullptr),
+      short_time_format_(nullptr),
       did_create_time_format_(false) {}
 
 LocaleICU::~LocaleICU() {
@@ -69,7 +69,8 @@ std::unique_ptr<LocaleICU> LocaleICU::Create(const char* locale_string) {
 
 String LocaleICU::DecimalSymbol(UNumberFormatSymbol symbol) {
   UErrorCode status = U_ZERO_ERROR;
-  int32_t buffer_length = unum_getSymbol(number_format_, symbol, 0, 0, &status);
+  int32_t buffer_length =
+      unum_getSymbol(number_format_, symbol, nullptr, 0, &status);
   DCHECK(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
   if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
     return String();
@@ -85,7 +86,7 @@ String LocaleICU::DecimalSymbol(UNumberFormatSymbol symbol) {
 String LocaleICU::DecimalTextAttribute(UNumberFormatTextAttribute tag) {
   UErrorCode status = U_ZERO_ERROR;
   int32_t buffer_length =
-      unum_getTextAttribute(number_format_, tag, 0, 0, &status);
+      unum_getTextAttribute(number_format_, tag, nullptr, 0, &status);
   DCHECK(U_SUCCESS(status) || status == U_BUFFER_OVERFLOW_ERROR);
   if (U_FAILURE(status) && status != U_BUFFER_OVERFLOW_ERROR)
     return String();
@@ -104,7 +105,8 @@ void LocaleICU::InitializeLocaleData() {
     return;
   did_create_decimal_format_ = true;
   UErrorCode status = U_ZERO_ERROR;
-  number_format_ = unum_open(UNUM_DECIMAL, 0, 0, locale_.data(), 0, &status);
+  number_format_ =
+      unum_open(UNUM_DECIMAL, nullptr, 0, locale_.data(), nullptr, &status);
   if (!U_SUCCESS(status))
     return;
 
@@ -141,7 +143,7 @@ UDateFormat* LocaleICU::OpenDateFormat(UDateFormatStyle time_style,
   const UChar kGmtTimezone[3] = {'G', 'M', 'T'};
   UErrorCode status = U_ZERO_ERROR;
   return udat_open(time_style, date_style, locale_.data(), kGmtTimezone,
-                   WTF_ARRAY_LENGTH(kGmtTimezone), 0, -1, &status);
+                   WTF_ARRAY_LENGTH(kGmtTimezone), nullptr, -1, &status);
 }
 
 // We cannot use udat_*Symbols API to get standalone month names to use in
@@ -154,7 +156,7 @@ UDateFormat* LocaleICU::OpenDateFormatForStandAloneMonthLabels(
   const UChar kMonthPattern[4] = {'L', 'L', 'L', 'L'};
   UErrorCode status = U_ZERO_ERROR;
   UDateFormat* formatter =
-      udat_open(UDAT_PATTERN, UDAT_PATTERN, locale_.data(), 0, -1,
+      udat_open(UDAT_PATTERN, UDAT_PATTERN, locale_.data(), nullptr, -1,
                 kMonthPattern, is_short ? 3 : 4, &status);
   udat_setContext(formatter, UDISPCTX_CAPITALIZATION_FOR_STANDALONE, &status);
   DCHECK(U_SUCCESS(status));
@@ -166,7 +168,7 @@ static String GetDateFormatPattern(const UDateFormat* date_format) {
     return g_empty_string;
 
   UErrorCode status = U_ZERO_ERROR;
-  int32_t length = udat_toPattern(date_format, TRUE, 0, 0, &status);
+  int32_t length = udat_toPattern(date_format, TRUE, nullptr, 0, &status);
   if (status != U_BUFFER_OVERFLOW_ERROR || !length)
     return g_empty_string;
   StringBuffer<UChar> buffer(length);
@@ -197,10 +199,11 @@ std::unique_ptr<Vector<String>> LocaleICU::CreateLabelVector(
     static const UDate kEpoch = U_MILLIS_PER_DAY * 15u;  // 1970-01-15
     static const UDate kMonth = U_MILLIS_PER_DAY * 30u;  // 30 days in ms
     if (is_stand_alone_month) {
-      length = udat_format(date_format, kEpoch + i * kMonth, 0, 0, 0, &status);
+      length = udat_format(date_format, kEpoch + i * kMonth, nullptr, 0,
+                           nullptr, &status);
     } else {
-      length =
-          udat_getSymbols(date_format, type, start_index + i, 0, 0, &status);
+      length = udat_getSymbols(date_format, type, start_index + i, nullptr, 0,
+                               &status);
     }
     if (status != U_BUFFER_OVERFLOW_ERROR)
       return std::unique_ptr<Vector<String>>();
@@ -208,7 +211,7 @@ std::unique_ptr<Vector<String>> LocaleICU::CreateLabelVector(
     status = U_ZERO_ERROR;
     if (is_stand_alone_month) {
       udat_format(date_format, kEpoch + i * kMonth, buffer.Characters(), length,
-                  0, &status);
+                  nullptr, &status);
     } else {
       udat_getSymbols(date_format, type, start_index + i, buffer.Characters(),
                       length, &status);
@@ -351,7 +354,7 @@ static String GetFormatForSkeleton(const char* locale, const String& skeleton) {
   skeleton.AppendTo(skeleton_characters);
   int32_t length =
       udatpg_getBestPattern(pattern_generator, skeleton_characters.data(),
-                            skeleton_characters.size(), 0, 0, &status);
+                            skeleton_characters.size(), nullptr, 0, &status);
   if (status == U_BUFFER_OVERFLOW_ERROR && length) {
     StringBuffer<UChar> buffer(length);
     status = U_ZERO_ERROR;

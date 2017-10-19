@@ -1042,7 +1042,7 @@ void PaymentRequest::Trace(blink::Visitor* visitor) {
 
 void PaymentRequest::OnCompleteTimeoutForTesting() {
   complete_timer_.Stop();
-  OnCompleteTimeout(0);
+  OnCompleteTimeout(nullptr);
 }
 
 PaymentRequest::PaymentRequest(ExecutionContext* execution_context,

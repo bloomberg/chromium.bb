@@ -168,7 +168,7 @@ PositionWithAffinity HitTestResult::GetPosition() const {
 }
 
 LayoutObject* HitTestResult::GetLayoutObject() const {
-  return inner_node_ ? inner_node_->GetLayoutObject() : 0;
+  return inner_node_ ? inner_node_->GetLayoutObject() : nullptr;
 }
 
 void HitTestResult::SetToShadowHostIfInRestrictedShadowRoot() {

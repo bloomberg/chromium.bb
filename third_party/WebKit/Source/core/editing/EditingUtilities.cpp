@@ -424,11 +424,11 @@ ContainerNode* HighestEditableRoot(
     Element* (*root_editable_element_of)(const Position&),
     bool (*has_editable_style)(const Node&)) {
   if (position.IsNull())
-    return 0;
+    return nullptr;
 
   ContainerNode* highest_root = root_editable_element_of(position);
   if (!highest_root)
-    return 0;
+    return nullptr;
 
   if (IsHTMLBodyElement(*highest_root))
     return highest_root;
@@ -489,7 +489,7 @@ bool IsRichlyEditablePosition(const Position& p) {
 Element* RootEditableElementOf(const Position& p) {
   Node* node = p.ComputeContainerNode();
   if (!node)
-    return 0;
+    return nullptr;
 
   if (IsDisplayInsideTable(node))
     node = node->parentNode();
@@ -1130,7 +1130,7 @@ static HTMLElement* FirstInSpecialElement(const Position& pos) {
         return special_element;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 static HTMLElement* LastInSpecialElement(const Position& pos) {
@@ -1152,7 +1152,7 @@ static HTMLElement* LastInSpecialElement(const Position& pos) {
         return special_element;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 Position PositionBeforeContainingSpecialElement(
@@ -1216,7 +1216,7 @@ Element* TableElementJustAfter(const VisiblePosition& visible_position) {
       downstream.AtFirstEditingPositionForNode())
     return ToElement(downstream.AnchorNode());
 
-  return 0;
+  return nullptr;
 }
 
 // Returns the visible position at the beginning of a node
@@ -1270,7 +1270,7 @@ Element* AssociatedElementOf(const Position& position) {
 Element* EnclosingElementWithTag(const Position& p,
                                  const QualifiedName& tag_name) {
   if (p.IsNull())
-    return 0;
+    return nullptr;
 
   ContainerNode* root = HighestEditableRoot(p);
   Element* ancestor = p.AnchorNode()->IsElementNode()
@@ -1282,10 +1282,10 @@ Element* EnclosingElementWithTag(const Position& p,
     if (ancestor->HasTagName(tag_name))
       return ancestor;
     if (ancestor == root)
-      return 0;
+      return nullptr;
   }
 
-  return 0;
+  return nullptr;
 }
 
 template <typename Strategy>
@@ -1375,7 +1375,7 @@ Node* HighestNodeToRemoveInPruning(Node* node, Node* exclude_node) {
     }
     previous_node = node;
   }
-  return 0;
+  return nullptr;
 }
 
 Element* EnclosingTableCell(const Position& p) {
@@ -1384,7 +1384,7 @@ Element* EnclosingTableCell(const Position& p) {
 
 Element* EnclosingAnchorElement(const Position& p) {
   if (p.IsNull())
-    return 0;
+    return nullptr;
 
   for (Element* ancestor =
            ElementTraversal::FirstAncestorOrSelf(*p.AnchorNode());
@@ -1392,12 +1392,12 @@ Element* EnclosingAnchorElement(const Position& p) {
     if (ancestor->IsLink())
       return ancestor;
   }
-  return 0;
+  return nullptr;
 }
 
 HTMLElement* EnclosingList(Node* node) {
   if (!node)
-    return 0;
+    return nullptr;
 
   ContainerNode* root = HighestEditableRoot(FirstPositionInOrBeforeNode(*node));
 
@@ -1405,15 +1405,15 @@ HTMLElement* EnclosingList(Node* node) {
     if (IsHTMLUListElement(runner) || IsHTMLOListElement(runner))
       return ToHTMLElement(&runner);
     if (runner == root)
-      return 0;
+      return nullptr;
   }
 
-  return 0;
+  return nullptr;
 }
 
 Node* EnclosingListChild(Node* node) {
   if (!node)
-    return 0;
+    return nullptr;
   // Check for a list item element, or for a node whose parent is a list
   // element. Such a node will appear visually as a list item (but without a
   // list marker)
@@ -1426,10 +1426,10 @@ Node* EnclosingListChild(Node* node) {
         (IsHTMLListElement(n->parentNode()) && n != root))
       return n;
     if (n == root || IsTableCell(n))
-      return 0;
+      return nullptr;
   }
 
-  return 0;
+  return nullptr;
 }
 
 // FIXME: This method should not need to call
@@ -1442,7 +1442,7 @@ Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
       EnclosingListChild(visible_pos.DeepEquivalent().AnchorNode());
   if (!list_child_node || !IsStartOfParagraph(visible_pos) ||
       !IsEndOfParagraph(visible_pos))
-    return 0;
+    return nullptr;
 
   VisiblePosition first_in_list_child =
       CreateVisiblePosition(FirstPositionInOrBeforeNode(*list_child_node));
@@ -1451,7 +1451,7 @@ Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
 
   if (first_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent() ||
       last_in_list_child.DeepEquivalent() != visible_pos.DeepEquivalent())
-    return 0;
+    return nullptr;
 
   return list_child_node;
 }
@@ -1459,7 +1459,7 @@ Node* EnclosingEmptyListItem(const VisiblePosition& visible_pos) {
 HTMLElement* OutermostEnclosingList(Node* node, HTMLElement* root_list) {
   HTMLElement* list = EnclosingList(node);
   if (!list)
-    return 0;
+    return nullptr;
 
   while (HTMLElement* next_list = EnclosingList(list)) {
     if (next_list == root_list)
@@ -1577,7 +1577,7 @@ bool IsTabHTMLSpanElementTextNode(const Node* node) {
 HTMLSpanElement* TabSpanElement(const Node* node) {
   return IsTabHTMLSpanElementTextNode(node)
              ? ToHTMLSpanElement(node->parentNode())
-             : 0;
+             : nullptr;
 }
 
 static HTMLSpanElement* CreateTabSpanElement(Document& document,

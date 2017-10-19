@@ -144,8 +144,8 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
       }
 
       xmlFreeParserCtxt(ctx);
-      xmlSetStructuredErrorFunc(0, 0);
-      xmlSetGenericErrorFunc(0, 0);
+      xmlSetStructuredErrorFunc(nullptr, nullptr);
+      xmlSetGenericErrorFunc(nullptr, nullptr);
 
       return doc;
     }
@@ -194,7 +194,7 @@ static int WriteToStringBuilder(void* context, const char* buffer, int len) {
 static bool SaveResultToString(xmlDocPtr result_doc,
                                xsltStylesheetPtr sheet,
                                String& result_string) {
-  xmlOutputBufferPtr output_buf = xmlAllocOutputBuffer(0);
+  xmlOutputBufferPtr output_buf = xmlAllocOutputBuffer(nullptr);
   if (!output_buf)
     return false;
 
@@ -246,7 +246,7 @@ static const char** XsltParamArrayFromParameterMap(
     parameter_array[index++] =
         AllocateParameterArray(parameter.value.Utf8().data());
   }
-  parameter_array[index] = 0;
+  parameter_array[index] = nullptr;
 
   return parameter_array;
 }
@@ -338,7 +338,7 @@ bool XSLTProcessor::TransformToString(Node* source_node,
   xsltStylesheetPtr sheet = XsltStylesheetPointer(document_.Get(), stylesheet_,
                                                   stylesheet_root_node_.Get());
   if (!sheet) {
-    SetXSLTLoadCallBack(0, 0, 0);
+    SetXSLTLoadCallBack(nullptr, nullptr, nullptr);
     stylesheet_ = nullptr;
     return false;
   }
@@ -384,8 +384,8 @@ bool XSLTProcessor::TransformToString(Node* source_node,
 
     const char** params = XsltParamArrayFromParameterMap(parameters_);
     xsltQuoteUserParams(transform_context, params);
-    xmlDocPtr result_doc =
-        xsltApplyStylesheetUser(sheet, source_doc, 0, 0, 0, transform_context);
+    xmlDocPtr result_doc = xsltApplyStylesheetUser(
+        sheet, source_doc, nullptr, nullptr, nullptr, transform_context);
 
     xsltFreeTransformContext(transform_context);
     xsltFreeSecurityPrefs(security_prefs);
@@ -403,7 +403,7 @@ bool XSLTProcessor::TransformToString(Node* source_node,
   }
 
   sheet->method = orig_method;
-  SetXSLTLoadCallBack(0, 0, 0);
+  SetXSLTLoadCallBack(nullptr, nullptr, nullptr);
   xsltFreeStylesheet(sheet);
   stylesheet_ = nullptr;
 

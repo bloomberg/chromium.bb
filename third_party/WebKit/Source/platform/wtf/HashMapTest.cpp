@@ -205,7 +205,7 @@ TEST(HashMapTest, AddResult) {
   IntSimpleMap::AddResult result = map.insert(1, nullptr);
   EXPECT_TRUE(result.is_new_entry);
   EXPECT_EQ(1, result.stored_value->key);
-  EXPECT_EQ(0, result.stored_value->value.get());
+  EXPECT_EQ(nullptr, result.stored_value->value.get());
 
   SimpleClass* simple1 = new SimpleClass(1);
   result.stored_value->value = WTF::WrapUnique(simple1);

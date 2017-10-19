@@ -74,13 +74,13 @@ TransformOperations TransformOperations::BlendByMatchingOperations(
   unsigned size = std::max(from_size, to_size);
   for (unsigned i = 0; i < size; i++) {
     RefPtr<TransformOperation> from_operation =
-        (i < from_size) ? from.Operations()[i].get() : 0;
+        (i < from_size) ? from.Operations()[i].get() : nullptr;
     RefPtr<TransformOperation> to_operation =
-        (i < to_size) ? Operations()[i].get() : 0;
+        (i < to_size) ? Operations()[i].get() : nullptr;
     RefPtr<TransformOperation> blended_operation =
         to_operation
             ? to_operation->Blend(from_operation.get(), progress)
-            : (from_operation ? from_operation->Blend(0, progress, true)
+            : (from_operation ? from_operation->Blend(nullptr, progress, true)
                               : nullptr);
     if (blended_operation)
       result.Operations().push_back(blended_operation);

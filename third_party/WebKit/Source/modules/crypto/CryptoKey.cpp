@@ -53,7 +53,7 @@ const char* KeyTypeToString(WebCryptoKeyType type) {
       return "private";
   }
   NOTREACHED();
-  return 0;
+  return nullptr;
 }
 
 struct KeyUsageMapping {
@@ -84,7 +84,7 @@ const char* KeyUsageToString(WebCryptoKeyUsage usage) {
       return kKeyUsageMappings[i].name;
   }
   NOTREACHED();
-  return 0;
+  return nullptr;
 }
 
 WebCryptoKeyUsageMask KeyUsageStringToMask(const String& usage_string) {

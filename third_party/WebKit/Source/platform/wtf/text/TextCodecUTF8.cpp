@@ -70,7 +70,7 @@ void TextCodecUTF8::RegisterEncodingNames(EncodingNameRegistrar registrar) {
 }
 
 void TextCodecUTF8::RegisterCodecs(TextCodecRegistrar registrar) {
-  registrar("UTF-8", Create, 0);
+  registrar("UTF-8", Create, nullptr);
 }
 
 static inline int NonASCIISequenceLength(uint8_t first_byte) {

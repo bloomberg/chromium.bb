@@ -70,7 +70,7 @@ class TestImage : public Image {
   }
 
  private:
-  TestImage(IntSize size, bool opaque) : Image(0), size_(size) {
+  TestImage(IntSize size, bool opaque) : Image(nullptr), size_(size) {
     sk_sp<SkSurface> surface = CreateSkSurface(size, opaque);
     if (!surface)
       return;

@@ -123,10 +123,10 @@ WEBPImageDecoder::WEBPImageDecoder(AlphaOption alpha_option,
                                    const ColorBehavior& color_behavior,
                                    size_t max_decoded_bytes)
     : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
-      decoder_(0),
+      decoder_(nullptr),
       format_flags_(0),
       frame_background_has_alpha_(false),
-      demux_(0),
+      demux_(nullptr),
       demux_state_(WEBP_DEMUX_PARSING_HEADER),
       have_already_parsed_this_data_(false),
       repetition_count_(kAnimationLoopOnce),
@@ -142,14 +142,14 @@ WEBPImageDecoder::~WEBPImageDecoder() {
 
 void WEBPImageDecoder::Clear() {
   WebPDemuxDelete(demux_);
-  demux_ = 0;
+  demux_ = nullptr;
   consolidated_data_.reset();
   ClearDecoder();
 }
 
 void WEBPImageDecoder::ClearDecoder() {
   WebPIDelete(decoder_);
-  decoder_ = 0;
+  decoder_ = nullptr;
   decoded_height_ = 0;
   frame_background_has_alpha_ = false;
 }
@@ -322,7 +322,7 @@ void WEBPImageDecoder::ApplyPostProcessing(size_t frame_index) {
   ImageFrame& buffer = frame_buffer_cache_[frame_index];
   int width;
   int decoded_height;
-  if (!WebPIDecGetRGB(decoder_, &decoded_height, &width, 0, 0))
+  if (!WebPIDecGetRGB(decoder_, &decoded_height, &width, nullptr, nullptr))
     return;  // See also https://bugs.webkit.org/show_bug.cgi?id=74062
   if (decoded_height <= 0)
     return;

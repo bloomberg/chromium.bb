@@ -54,7 +54,7 @@ void CanvasGradient::addColorStop(float value,
   }
 
   Color color = 0;
-  if (!ParseColorOrCurrentColor(color, color_string, 0 /*canvas*/)) {
+  if (!ParseColorOrCurrentColor(color, color_string, nullptr /*canvas*/)) {
     exception_state.ThrowDOMException(kSyntaxError,
                                       "The value provided ('" + color_string +
                                           "') could not be parsed as a color.");

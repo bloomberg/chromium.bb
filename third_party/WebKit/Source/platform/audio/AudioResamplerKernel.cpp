@@ -70,7 +70,7 @@ float* AudioResamplerKernel::GetSourcePointer(
                  fill_index_ + frames_needed <= source_buffer_.size();
   DCHECK(is_good);
   if (!is_good)
-    return 0;
+    return nullptr;
 
   return source_buffer_.Data() + fill_index_;
 }

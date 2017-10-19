@@ -122,8 +122,8 @@ static CSSBasicShapeInsetValue* ConsumeBasicShapeInset(
     shape->UpdateShapeSize1Value(top);
 
   if (ConsumeIdent<CSSValueRound>(args)) {
-    CSSValue* horizontal_radii[4] = {0};
-    CSSValue* vertical_radii[4] = {0};
+    CSSValue* horizontal_radii[4] = {nullptr};
+    CSSValue* vertical_radii[4] = {nullptr};
     if (!CSSPropertyShapeUtils::ConsumeRadii(horizontal_radii, vertical_radii,
                                              args, context.Mode(), false))
       return nullptr;

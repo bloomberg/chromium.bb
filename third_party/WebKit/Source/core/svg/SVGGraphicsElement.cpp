@@ -152,7 +152,7 @@ SVGElement* SVGGraphicsElement::nearestViewportElement() const {
 }
 
 SVGElement* SVGGraphicsElement::farthestViewportElement() const {
-  SVGElement* farthest = 0;
+  SVGElement* farthest = nullptr;
   for (Element* current = ParentOrShadowHostElement(); current;
        current = current->ParentOrShadowHostElement()) {
     if (IsViewportElement(*current))

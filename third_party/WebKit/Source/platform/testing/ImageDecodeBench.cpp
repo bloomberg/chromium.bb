@@ -176,7 +176,7 @@ static double GetCurrentTime() {
 
 static double GetCurrentTime() {
   struct timeval now;
-  gettimeofday(&now, 0);
+  gettimeofday(&now, nullptr);
   return now.tv_sec + now.tv_usec * (1.0 / 1000000.0);
 }
 
@@ -279,7 +279,7 @@ int Main(int argc, char* argv[]) {
 
   size_t iterations = 1;
   if (argc >= 3) {
-    char* end = 0;
+    char* end = nullptr;
     iterations = strtol(argv[2], &end, 10);
     if (*end != '\0' || !iterations) {
       fprintf(stderr,
@@ -292,7 +292,7 @@ int Main(int argc, char* argv[]) {
 
   size_t packet_size = 0;
   if (argc >= 4) {
-    char* end = 0;
+    char* end = nullptr;
     packet_size = strtol(argv[3], &end, 10);
     if (*end != '\0') {
       fprintf(stderr,

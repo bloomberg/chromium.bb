@@ -137,7 +137,7 @@ ServiceWorkerContainer::~ServiceWorkerContainer() {
 
 void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
   if (provider_) {
-    provider_->SetClient(0);
+    provider_->SetClient(nullptr);
     provider_ = nullptr;
   }
   controller_ = nullptr;
@@ -486,7 +486,7 @@ ServiceWorkerContainer::ServiceWorkerContainer(
     ExecutionContext* execution_context,
     NavigatorServiceWorker* navigator)
     : ContextLifecycleObserver(execution_context),
-      provider_(0),
+      provider_(nullptr),
       navigator_(navigator) {
   if (!execution_context)
     return;

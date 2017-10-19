@@ -181,7 +181,7 @@ SecurityOrigin* DOMWrapperWorld::IsolatedWorldSecurityOrigin() {
   DCHECK(this->IsIsolatedWorld());
   IsolatedWorldSecurityOriginMap& origins = IsolatedWorldSecurityOrigins();
   IsolatedWorldSecurityOriginMap::iterator it = origins.find(GetWorldId());
-  return it == origins.end() ? 0 : it->value.get();
+  return it == origins.end() ? nullptr : it->value.get();
 }
 
 void DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(

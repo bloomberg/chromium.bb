@@ -507,7 +507,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForFirstLetter(style);
 
     AdjustStyleForDisplay(style, layout_parent_style,
-                          element ? &element->GetDocument() : 0);
+                          element ? &element->GetDocument() : nullptr);
 
     // Paint containment forces a block formatting context, so we must coerce
     // from inline.  https://drafts.csswg.org/css-containment/#containment-paint

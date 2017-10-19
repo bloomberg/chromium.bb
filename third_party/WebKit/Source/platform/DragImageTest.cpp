@@ -107,7 +107,7 @@ class TestImage : public Image {
 };
 
 TEST(DragImageTest, NullHandling) {
-  EXPECT_FALSE(DragImage::Create(0));
+  EXPECT_FALSE(DragImage::Create(nullptr));
 
   RefPtr<TestImage> null_test_image(TestImage::Create(IntSize()));
   EXPECT_FALSE(DragImage::Create(null_test_image.get()));

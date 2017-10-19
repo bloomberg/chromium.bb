@@ -656,7 +656,7 @@ InspectorDOMDebuggerAgent::PreparePauseOnNativeEventData(
 
 void InspectorDOMDebuggerAgent::DidFireWebGLError(const String& error_name) {
   std::unique_ptr<protocol::DictionaryValue> event_data =
-      PreparePauseOnNativeEventData(kWebglErrorFiredEventName, 0);
+      PreparePauseOnNativeEventData(kWebglErrorFiredEventName, nullptr);
   if (!event_data)
     return;
   if (!error_name.IsEmpty())
@@ -666,7 +666,8 @@ void InspectorDOMDebuggerAgent::DidFireWebGLError(const String& error_name) {
 
 void InspectorDOMDebuggerAgent::DidFireWebGLWarning() {
   PauseOnNativeEventIfNeeded(
-      PreparePauseOnNativeEventData(kWebglWarningFiredEventName, 0), false);
+      PreparePauseOnNativeEventData(kWebglWarningFiredEventName, nullptr),
+      false);
 }
 
 void InspectorDOMDebuggerAgent::DidFireWebGLErrorOrWarning(
@@ -684,7 +685,7 @@ void InspectorDOMDebuggerAgent::CancelNativeBreakpoint() {
 void InspectorDOMDebuggerAgent::ScriptExecutionBlockedByCSP(
     const String& directive_text) {
   std::unique_ptr<protocol::DictionaryValue> event_data =
-      PreparePauseOnNativeEventData(kScriptBlockedByCSPEventName, 0);
+      PreparePauseOnNativeEventData(kScriptBlockedByCSPEventName, nullptr);
   if (!event_data)
     return;
   event_data->setString("directiveText", directive_text);
@@ -769,7 +770,8 @@ void InspectorDOMDebuggerAgent::WillSendXMLHttpOrFetchNetworkRequest(
 
 void InspectorDOMDebuggerAgent::DidCreateCanvasContext() {
   PauseOnNativeEventIfNeeded(
-      PreparePauseOnNativeEventData(kCanvasContextCreatedEventName, 0), true);
+      PreparePauseOnNativeEventData(kCanvasContextCreatedEventName, nullptr),
+      true);
 }
 
 void InspectorDOMDebuggerAgent::DidAddBreakpoint() {

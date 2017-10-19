@@ -86,7 +86,7 @@ void StrokeData::SetupPaintDashPathEffect(PaintFlags* flags,
     path_length -= 2 * dash_width;
     if (path_length <= dash_length) {
       // No space for dashes
-      flags->setPathEffect(0);
+      flags->setPathEffect(nullptr);
     } else if (path_length <= 2 * dash_length + gap_length) {
       // Exactly 2 dashes proportionally sized
       float multiplier = path_length / (2 * dash_length + gap_length);
@@ -117,7 +117,7 @@ void StrokeData::SetupPaintDashPathEffect(PaintFlags* flags,
     SkScalar intervals[2] = {0, gap + dash_width - kEpsilon};
     flags->setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
   } else {
-    flags->setPathEffect(0);
+    flags->setPathEffect(nullptr);
   }
 }
 

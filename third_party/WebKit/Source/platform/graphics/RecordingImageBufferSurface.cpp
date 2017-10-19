@@ -26,7 +26,7 @@ RecordingImageBufferSurface::RecordingImageBufferSurface(
     const CanvasColorParams& color_params)
     : ImageBufferSurface(size, color_params),
       allow_fallback_(allow_fallback),
-      image_buffer_(0),
+      image_buffer_(nullptr),
       current_frame_pixel_count_(0),
       previous_frame_pixel_count_(0),
       frame_was_cleared_(true),

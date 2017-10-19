@@ -32,7 +32,7 @@ TEST(MediaConditionParserTest, Basic) {
       {"(min-width: [100px) and (max-width: 900px)", "not all"},
       {"not (min-width: 900px)", "not all and (min-width: 900px)"},
       {"not (blabla)", "not all"},
-      {0, 0}  // Do not remove the terminator line.
+      {nullptr, nullptr}  // Do not remove the terminator line.
   };
 
   // FIXME: We should test comma-seperated media conditions

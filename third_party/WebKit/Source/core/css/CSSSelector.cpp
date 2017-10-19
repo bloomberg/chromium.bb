@@ -426,7 +426,7 @@ static CSSSelector::PseudoType NameToPseudoType(const AtomicString& name,
     pseudo_type_map_end = kPseudoTypeWithoutArgumentsMap +
                           WTF_ARRAY_LENGTH(kPseudoTypeWithoutArgumentsMap);
   }
-  NameToPseudoStruct dummy_key = {0, CSSSelector::kPseudoUnknown};
+  NameToPseudoStruct dummy_key = {nullptr, CSSSelector::kPseudoUnknown};
   const NameToPseudoStruct* match =
       std::lower_bound(pseudo_type_map, pseudo_type_map_end, dummy_key,
                        NameToPseudoCompare(name));

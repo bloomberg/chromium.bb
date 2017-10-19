@@ -213,7 +213,7 @@ KURL::KURL() : is_valid_(false), protocol_is_in_http_family_(false) {}
 // UTF-8 just in case.
 KURL::KURL(ParsedURLStringTag, const String& url) {
   if (!url.IsNull())
-    Init(NullURL(), url, 0);
+    Init(NullURL(), url, nullptr);
   else {
     // WebCore expects us to preserve the nullness of strings when this
     // constructor is used. In all other cases, it expects a non-null
@@ -232,7 +232,7 @@ KURL KURL::CreateIsolated(ParsedURLStringTag, const String& url) {
 // Constructs a new URL given a base URL and a possibly relative input URL.
 // This assumes UTF-8 encoding.
 KURL::KURL(const KURL& base, const String& relative) {
-  Init(base, relative, 0);
+  Init(base, relative, nullptr);
 }
 
 // Constructs a new URL given a base URL and a possibly relative input URL.
@@ -725,11 +725,12 @@ bool ProtocolIs(const String& url, const char* protocol) {
 #endif
   if (url.IsNull())
     return false;
-  if (url.Is8Bit())
+  if (url.Is8Bit()) {
     return url::FindAndCompareScheme(AsURLChar8Subtle(url), url.length(),
-                                     protocol, 0);
+                                     protocol, nullptr);
+  }
   return url::FindAndCompareScheme(url.Characters16(), url.length(), protocol,
-                                   0);
+                                   nullptr);
 }
 
 void KURL::Init(const KURL& base,
@@ -748,7 +749,7 @@ void KURL::Init(const KURL& base,
   KURLCharsetConverter charset_converter_object(query_encoding);
   KURLCharsetConverter* charset_converter =
       (!query_encoding || IsUnicodeEncoding(query_encoding))
-          ? 0
+          ? nullptr
           : &charset_converter_object;
 
   // Clamp to int max to avoid overflow.
@@ -869,8 +870,9 @@ void KURL::ReplaceComponents(const url::Replacements<CHAR>& replacements) {
   url::Parsed new_parsed;
 
   StringUTF8Adaptor utf8(string_);
-  is_valid_ = url::ReplaceComponents(utf8.Data(), utf8.length(), parsed_,
-                                     replacements, 0, &output, &new_parsed);
+  is_valid_ =
+      url::ReplaceComponents(utf8.Data(), utf8.length(), parsed_, replacements,
+                             nullptr, &output, &new_parsed);
 
   parsed_ = new_parsed;
   string_ = AtomicString::FromUTF8(output.data(), output.length());

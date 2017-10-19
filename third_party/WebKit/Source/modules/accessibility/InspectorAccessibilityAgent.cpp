@@ -249,7 +249,7 @@ void FillWidgetProperties(AXObject& ax_object,
 void FillWidgetStates(AXObject& ax_object,
                       protocol::Array<AXProperty>& properties) {
   AccessibilityRole role = ax_object.RoleValue();
-  const char* checked_prop_val = 0;
+  const char* checked_prop_val = nullptr;
   switch (ax_object.CheckedState()) {
     case kCheckedStateTrue:
       checked_prop_val = "true";

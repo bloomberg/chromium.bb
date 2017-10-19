@@ -53,7 +53,7 @@ void ExpectBuilderContent(const String& expected,
 void ExpectEmpty(const StringBuilder& builder) {
   EXPECT_EQ(0U, builder.length());
   EXPECT_TRUE(builder.IsEmpty());
-  EXPECT_EQ(0, builder.Characters8());
+  EXPECT_EQ(nullptr, builder.Characters8());
 }
 
 }  // namespace
@@ -243,7 +243,7 @@ TEST(StringBuilderTest, Equal) {
   StringBuilder builder1;
   StringBuilder builder2;
   EXPECT_TRUE(builder1 == builder2);
-  EXPECT_TRUE(Equal(builder1, static_cast<LChar*>(0), 0));
+  EXPECT_TRUE(Equal(builder1, static_cast<LChar*>(nullptr), 0));
   EXPECT_TRUE(builder1 == String());
   EXPECT_TRUE(String() == builder1);
   EXPECT_TRUE(builder1 != String("abc"));

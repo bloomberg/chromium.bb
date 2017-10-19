@@ -60,7 +60,7 @@ ProcessingInstruction::~ProcessingInstruction() {}
 
 EventListener* ProcessingInstruction::EventListenerForXSLT() {
   if (!listener_for_xslt_)
-    return 0;
+    return nullptr;
 
   return listener_for_xslt_->ToEventListener();
 }

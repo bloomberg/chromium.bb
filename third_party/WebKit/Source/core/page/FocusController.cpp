@@ -393,7 +393,7 @@ inline void DispatchBlurEvent(const Document& document,
 
 inline void DispatchFocusEvent(const Document& document,
                                Element& focused_element) {
-  focused_element.DispatchFocusEvent(0, kWebFocusTypePage);
+  focused_element.DispatchFocusEvent(nullptr, kWebFocusTypePage);
   if (focused_element == document.FocusedElement()) {
     focused_element.DispatchFocusInEvent(EventTypeNames::focusin, nullptr,
                                          kWebFocusTypePage);

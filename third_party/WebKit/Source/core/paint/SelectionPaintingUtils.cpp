@@ -147,12 +147,12 @@ TextPaintStyle SelectionPaintingUtils::SelectionPaintingStyle(
                                   CSSPropertyWebkitTextStrokeColor);
       selection_style.stroke_width = pseudo_style->TextStrokeWidth();
       selection_style.shadow =
-          uses_text_as_clip ? 0 : pseudo_style->TextShadow();
+          uses_text_as_clip ? nullptr : pseudo_style->TextShadow();
     }
 
     // Text shadows are disabled when printing. http://crbug.com/258321
     if (is_printing)
-      selection_style.shadow = 0;
+      selection_style.shadow = nullptr;
   }
 
   return selection_style;

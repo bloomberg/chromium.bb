@@ -145,7 +145,7 @@ void DevToolsHost::EvaluateScript(const String& expression) {
 }
 
 void DevToolsHost::DisconnectClient() {
-  client_ = 0;
+  client_ = nullptr;
   if (menu_provider_) {
     menu_provider_->Disconnect();
     menu_provider_ = nullptr;

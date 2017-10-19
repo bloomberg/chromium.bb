@@ -48,7 +48,7 @@ TEST(SharedBufferReaderTest, readDataWith0BytesRequest) {
   RefPtr<SharedBuffer> shared_buffer = SharedBuffer::Create();
   SharedBufferReader reader(shared_buffer);
 
-  EXPECT_EQ(0, reader.ReadData(0, 0));
+  EXPECT_EQ(0, reader.ReadData(nullptr, 0));
 }
 
 TEST(SharedBufferReaderTest, readDataWithSizeBiggerThanSharedBufferSize) {

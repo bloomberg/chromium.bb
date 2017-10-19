@@ -89,7 +89,7 @@ void OESVertexArrayObject::bindVertexArrayOES(
     return;
 
   if (array_object && (array_object->IsDeleted() ||
-                       !array_object->Validate(0, scoped.Context()))) {
+                       !array_object->Validate(nullptr, scoped.Context()))) {
     scoped.Context()->SynthesizeGLError(
         GL_INVALID_OPERATION, "bindVertexArrayOES", "invalid arrayObject");
     return;

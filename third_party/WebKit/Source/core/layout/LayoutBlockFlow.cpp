@@ -965,7 +965,7 @@ LayoutUnit LayoutBlockFlow::AdjustBlockChildForPagination(
     BlockChildrenLayoutInfo& layout_info,
     bool at_before_side_of_block) {
   LayoutBlockFlow* child_block_flow =
-      child.IsLayoutBlockFlow() ? ToLayoutBlockFlow(&child) : 0;
+      child.IsLayoutBlockFlow() ? ToLayoutBlockFlow(&child) : nullptr;
 
   // See if we need a soft (unforced) break in front of this child, and set the
   // pagination strut in that case. An unforced break may come from two sources:
@@ -1604,7 +1604,7 @@ LayoutBlockFlow::MarginValues LayoutBlockFlow::MarginValuesForChild(
   LayoutUnit after_margin;
 
   LayoutBlockFlow* child_layout_block_flow =
-      child.IsLayoutBlockFlow() ? ToLayoutBlockFlow(&child) : 0;
+      child.IsLayoutBlockFlow() ? ToLayoutBlockFlow(&child) : nullptr;
 
   // If the child has the same directionality as we do, then we can just return
   // its margins in the same direction.

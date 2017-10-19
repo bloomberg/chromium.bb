@@ -60,7 +60,7 @@ void ArrayPiece::InitWithData(void* data, unsigned byte_length) {
 
 void ArrayPiece::InitNull() {
   byte_length_ = 0;
-  data_ = 0;
+  data_ = nullptr;
   is_null_ = true;
 }
 

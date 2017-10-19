@@ -15,11 +15,11 @@
 
 namespace blink {
 
-static ScriptStreamerThread* g_shared_thread = 0;
+static ScriptStreamerThread* g_shared_thread = nullptr;
 // Guards s_sharedThread. s_sharedThread is initialized and deleted in the main
 // thread, but also used by the streamer thread. Races can occur during
 // shutdown.
-static Mutex* g_mutex = 0;
+static Mutex* g_mutex = nullptr;
 
 void ScriptStreamerThread::Init() {
   DCHECK(!g_shared_thread);

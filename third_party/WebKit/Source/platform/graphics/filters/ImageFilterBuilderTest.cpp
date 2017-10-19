@@ -92,22 +92,22 @@ class ImageFilterBuilderTest : public Test {
 
     EXPECT_EQ(filter->countInputs(), 1);         // Should be CS (L->D)
     SkImageFilter* child = filter->getInput(0);  // Should be Merge
-    EXPECT_EQ(child->asColorFilter(0), false);
+    EXPECT_EQ(child->asColorFilter(nullptr), false);
     EXPECT_EQ(child->countInputs(), 2);
     child = child->getInput(1);  // Should be CS (D->L)
-    EXPECT_EQ(child->asColorFilter(0), true);
+    EXPECT_EQ(child->asColorFilter(nullptr), true);
     EXPECT_EQ(child->countInputs(), 1);
     child = child->getInput(0);  // Should be Blend
-    EXPECT_EQ(child->asColorFilter(0), false);
+    EXPECT_EQ(child->asColorFilter(nullptr), false);
     EXPECT_EQ(child->countInputs(), 2);
     child = child->getInput(0);  // Should be CS (L->D)
-    EXPECT_EQ(child->asColorFilter(0), true);
+    EXPECT_EQ(child->asColorFilter(nullptr), true);
     EXPECT_EQ(child->countInputs(), 1);
     child = child->getInput(0);  // Should be Blur
-    EXPECT_EQ(child->asColorFilter(0), false);
+    EXPECT_EQ(child->asColorFilter(nullptr), false);
     EXPECT_EQ(child->countInputs(), 1);
     child = child->getInput(0);  // Should be CS (D->L)
-    EXPECT_EQ(child->asColorFilter(0), true);
+    EXPECT_EQ(child->asColorFilter(nullptr), true);
     EXPECT_EQ(child->countInputs(), 1);
   }
 };

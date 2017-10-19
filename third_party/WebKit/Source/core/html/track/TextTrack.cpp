@@ -174,7 +174,7 @@ void TextTrack::RemoveAllCues() {
     GetCueTimeline()->RemoveCues(this, cues_.Get());
 
   for (size_t i = 0; i < cues_->length(); ++i)
-    cues_->AnonymousIndexedGetter(i)->SetTrack(0);
+    cues_->AnonymousIndexedGetter(i)->SetTrack(nullptr);
 
   cues_->RemoveAll();
   if (active_cues_)
@@ -273,7 +273,7 @@ void TextTrack::removeCue(TextTrackCue* cue, ExceptionState& exception_state) {
   // If the cue is active, a timeline needs to be available.
   DCHECK(!cue->IsActive() || GetCueTimeline());
 
-  cue->SetTrack(0);
+  cue->SetTrack(nullptr);
 
   if (GetCueTimeline())
     GetCueTimeline()->RemoveCue(this, cue);
@@ -356,11 +356,11 @@ const AtomicString& TextTrack::InterfaceName() const {
 
 ExecutionContext* TextTrack::GetExecutionContext() const {
   HTMLMediaElement* owner = MediaElement();
-  return owner ? owner->GetExecutionContext() : 0;
+  return owner ? owner->GetExecutionContext() : nullptr;
 }
 
 HTMLMediaElement* TextTrack::MediaElement() const {
-  return track_list_ ? track_list_->Owner() : 0;
+  return track_list_ ? track_list_->Owner() : nullptr;
 }
 
 CueTimeline* TextTrack::GetCueTimeline() const {

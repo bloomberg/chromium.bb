@@ -124,7 +124,7 @@ void LayoutTextControlSingleLine::UpdateLayout() {
 
   HTMLElement* placeholder_element = InputElement()->PlaceholderElement();
   if (LayoutBox* placeholder_box =
-          placeholder_element ? placeholder_element->GetLayoutBox() : 0) {
+          placeholder_element ? placeholder_element->GetLayoutBox() : nullptr) {
     LayoutSize inner_editor_size;
 
     if (inner_editor_layout_object)
@@ -280,7 +280,7 @@ LayoutUnit LayoutTextControlSingleLine::PreferredContentLogicalWidth(
   if (includes_decoration) {
     HTMLElement* spin_button = InnerSpinButtonElement();
     if (LayoutBox* spin_layout_object =
-            spin_button ? spin_button->GetLayoutBox() : 0) {
+            spin_button ? spin_button->GetLayoutBox() : nullptr) {
       result += spin_layout_object->BorderAndPaddingLogicalWidth();
       // Since the width of spinLayoutObject is not calculated yet,
       // spinLayoutObject->logicalWidth() returns 0.
@@ -362,8 +362,9 @@ void LayoutTextControlSingleLine::Autoscroll(const IntPoint& position) {
 }
 
 LayoutUnit LayoutTextControlSingleLine::ScrollWidth() const {
-  if (LayoutBox* inner =
-          InnerEditorElement() ? InnerEditorElement()->GetLayoutBox() : 0) {
+  if (LayoutBox* inner = InnerEditorElement()
+                             ? InnerEditorElement()->GetLayoutBox()
+                             : nullptr) {
     // Adjust scrollWidth to inculde input element horizontal paddings and
     // decoration width
     LayoutUnit adjustment = ClientWidth() - inner->ClientWidth();
@@ -373,8 +374,9 @@ LayoutUnit LayoutTextControlSingleLine::ScrollWidth() const {
 }
 
 LayoutUnit LayoutTextControlSingleLine::ScrollHeight() const {
-  if (LayoutBox* inner =
-          InnerEditorElement() ? InnerEditorElement()->GetLayoutBox() : 0) {
+  if (LayoutBox* inner = InnerEditorElement()
+                             ? InnerEditorElement()->GetLayoutBox()
+                             : nullptr) {
     // Adjust scrollHeight to include input element vertical paddings and
     // decoration height
     LayoutUnit adjustment = ClientHeight() - inner->ClientHeight();

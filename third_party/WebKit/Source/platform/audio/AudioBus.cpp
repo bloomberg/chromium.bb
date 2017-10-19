@@ -63,7 +63,7 @@ AudioBus::AudioBus(unsigned number_of_channels, size_t length, bool allocate)
   for (unsigned i = 0; i < number_of_channels; ++i) {
     std::unique_ptr<AudioChannel> channel =
         allocate ? WTF::WrapUnique(new AudioChannel(length))
-                 : WTF::WrapUnique(new AudioChannel(0, length));
+                 : WTF::WrapUnique(new AudioChannel(nullptr, length));
     channels_.push_back(std::move(channel));
   }
 

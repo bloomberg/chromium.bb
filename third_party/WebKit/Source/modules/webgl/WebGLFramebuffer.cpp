@@ -76,7 +76,7 @@ WebGLRenderbufferAttachment::WebGLRenderbufferAttachment(
     : renderbuffer_(renderbuffer) {}
 
 WebGLSharedObject* WebGLRenderbufferAttachment::Object() const {
-  return renderbuffer_->Object() ? renderbuffer_.Get() : 0;
+  return renderbuffer_->Object() ? renderbuffer_.Get() : nullptr;
 }
 
 bool WebGLRenderbufferAttachment::IsSharedObject(
@@ -158,7 +158,7 @@ WebGLTextureAttachment::WebGLTextureAttachment(WebGLTexture* texture,
     : texture_(texture), target_(target), level_(level), layer_(layer) {}
 
 WebGLSharedObject* WebGLTextureAttachment::Object() const {
-  return texture_->Object() ? texture_.Get() : 0;
+  return texture_->Object() ? texture_.Get() : nullptr;
 }
 
 bool WebGLTextureAttachment::IsSharedObject(WebGLSharedObject* object) const {
@@ -310,7 +310,7 @@ WebGLSharedObject* WebGLFramebuffer::GetAttachmentObject(
 WebGLFramebuffer::WebGLAttachment* WebGLFramebuffer::GetAttachment(
     GLenum attachment) const {
   const AttachmentMap::const_iterator it = attachments_.find(attachment);
-  return (it != attachments_.end()) ? it->value.Get() : 0;
+  return (it != attachments_.end()) ? it->value.Get() : nullptr;
 }
 
 void WebGLFramebuffer::RemoveAttachmentFromBoundFramebuffer(

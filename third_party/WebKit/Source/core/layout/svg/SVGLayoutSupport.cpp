@@ -320,7 +320,7 @@ void SVGLayoutSupport::LayoutChildren(LayoutObject* first_child,
       // check whether this child uses relative lengths
       if (SVGElement* element = child->GetNode()->IsSVGElement()
                                     ? ToSVGElement(child->GetNode())
-                                    : 0) {
+                                    : nullptr) {
         if (element->HasRelativeLengths()) {
           // FIXME: this should be done on invalidation, not during layout.
           // When the layout size changed and when using relative values tell
@@ -539,7 +539,7 @@ AffineTransform SVGLayoutSupport::DeprecatedCalculateTransformToLayer(
   // FIXME: this queries layer compositing state - which is not
   // supported during layout. Hence, the result may not include all CSS
   // transforms.
-  PaintLayer* layer = layout_object ? layout_object->EnclosingLayer() : 0;
+  PaintLayer* layer = layout_object ? layout_object->EnclosingLayer() : nullptr;
   while (layer && layer->IsAllowedToQueryCompositingState()) {
     // We can stop at compositing layers, to match the backing resolution.
     // FIXME: should we be computing the transform to the nearest composited

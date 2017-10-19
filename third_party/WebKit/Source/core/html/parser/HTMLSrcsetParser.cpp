@@ -110,7 +110,7 @@ static void AppendDescriptorAndReset(const CharType* attribute_start,
   if (position > descriptor_start)
     descriptors.push_back(DescriptorToken(descriptor_start - attribute_start,
                                           position - descriptor_start));
-  descriptor_start = 0;
+  descriptor_start = nullptr;
 }
 
 // The following is called appendCharacter to match the spec's terminology.

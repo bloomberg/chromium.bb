@@ -44,7 +44,7 @@ WebGLProgram* WebGLUniformLocation::Program() const {
   // If the program has been linked again, then this UniformLocation is no
   // longer valid.
   if (program_->LinkCount() != link_count_)
-    return 0;
+    return nullptr;
   return program_;
 }
 

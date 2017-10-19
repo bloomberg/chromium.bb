@@ -339,13 +339,13 @@ bool Editor::CanCut() const {
 
 static HTMLImageElement* ImageElementFromImageDocument(Document* document) {
   if (!document)
-    return 0;
+    return nullptr;
   if (!document->IsImageDocument())
-    return 0;
+    return nullptr;
 
   HTMLElement* body = document->body();
   if (!body)
-    return 0;
+    return nullptr;
 
   return ToHTMLImageElementOrNull(body->firstChild());
 }

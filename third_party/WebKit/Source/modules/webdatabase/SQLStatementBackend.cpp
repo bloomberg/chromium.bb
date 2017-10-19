@@ -120,7 +120,7 @@ SQLErrorData* SQLStatementBackend::SqlError() const {
 }
 
 SQLResultSet* SQLStatementBackend::SqlResultSet() const {
-  return result_set_->IsValid() ? result_set_.Get() : 0;
+  return result_set_->IsValid() ? result_set_.Get() : nullptr;
 }
 
 bool SQLStatementBackend::Execute(Database* db) {

@@ -116,7 +116,7 @@ TEST(StringHasherTest, StringHasher_addCharacters) {
 
   // Hashing zero characters.
   hasher = StringHasher();
-  hasher.AddCharacters(static_cast<LChar*>(0), 0);
+  hasher.AddCharacters(static_cast<LChar*>(nullptr), 0);
   EXPECT_EQ(kEmptyStringHash, hasher.GetHash());
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, hasher.HashWithTop8BitsMasked());
   hasher = StringHasher();
@@ -124,7 +124,7 @@ TEST(StringHasherTest, StringHasher_addCharacters) {
   EXPECT_EQ(kEmptyStringHash, hasher.GetHash());
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, hasher.HashWithTop8BitsMasked());
   hasher = StringHasher();
-  hasher.AddCharacters(static_cast<UChar*>(0), 0);
+  hasher.AddCharacters(static_cast<UChar*>(nullptr), 0);
   EXPECT_EQ(kEmptyStringHash, hasher.GetHash());
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, hasher.HashWithTop8BitsMasked());
   hasher = StringHasher();
@@ -256,7 +256,7 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned) {
 
   // Hashing zero characters.
   hasher = StringHasher();
-  hasher.AddCharactersAssumingAligned(static_cast<LChar*>(0), 0);
+  hasher.AddCharactersAssumingAligned(static_cast<LChar*>(nullptr), 0);
   EXPECT_EQ(kEmptyStringHash, hasher.GetHash());
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, hasher.HashWithTop8BitsMasked());
   hasher = StringHasher();
@@ -264,7 +264,7 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned) {
   EXPECT_EQ(kEmptyStringHash, hasher.GetHash());
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, hasher.HashWithTop8BitsMasked());
   hasher = StringHasher();
-  hasher.AddCharactersAssumingAligned(static_cast<UChar*>(0), 0);
+  hasher.AddCharactersAssumingAligned(static_cast<UChar*>(nullptr), 0);
   EXPECT_EQ(kEmptyStringHash, hasher.GetHash());
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, hasher.HashWithTop8BitsMasked());
   hasher = StringHasher();
@@ -367,10 +367,10 @@ TEST(StringHasherTest, StringHasher_addCharactersAssumingAligned) {
 
 TEST(StringHasherTest, StringHasher_computeHash) {
   EXPECT_EQ(kEmptyStringHash,
-            StringHasher::ComputeHash(static_cast<LChar*>(0), 0));
+            StringHasher::ComputeHash(static_cast<LChar*>(nullptr), 0));
   EXPECT_EQ(kEmptyStringHash, StringHasher::ComputeHash(kNullLChars, 0));
   EXPECT_EQ(kEmptyStringHash,
-            StringHasher::ComputeHash(static_cast<UChar*>(0), 0));
+            StringHasher::ComputeHash(static_cast<UChar*>(nullptr), 0));
   EXPECT_EQ(kEmptyStringHash, StringHasher::ComputeHash(kNullUChars, 0));
 
   EXPECT_EQ(kSingleNullCharacterHash,
@@ -384,14 +384,14 @@ TEST(StringHasherTest, StringHasher_computeHash) {
 }
 
 TEST(StringHasherTest, StringHasher_computeHashAndMaskTop8Bits) {
-  EXPECT_EQ(
-      kEmptyStringHash & 0xFFFFFF,
-      StringHasher::ComputeHashAndMaskTop8Bits(static_cast<LChar*>(0), 0));
+  EXPECT_EQ(kEmptyStringHash & 0xFFFFFF,
+            StringHasher::ComputeHashAndMaskTop8Bits(
+                static_cast<LChar*>(nullptr), 0));
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF,
             StringHasher::ComputeHashAndMaskTop8Bits(kNullLChars, 0));
-  EXPECT_EQ(
-      kEmptyStringHash & 0xFFFFFF,
-      StringHasher::ComputeHashAndMaskTop8Bits(static_cast<UChar*>(0), 0));
+  EXPECT_EQ(kEmptyStringHash & 0xFFFFFF,
+            StringHasher::ComputeHashAndMaskTop8Bits(
+                static_cast<UChar*>(nullptr), 0));
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF,
             StringHasher::ComputeHashAndMaskTop8Bits(kNullUChars, 0));
 
@@ -409,10 +409,10 @@ TEST(StringHasherTest, StringHasher_computeHashAndMaskTop8Bits) {
 }
 
 TEST(StringHasherTest, StringHasher_hashMemory) {
-  EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, StringHasher::HashMemory(0, 0));
+  EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, StringHasher::HashMemory(nullptr, 0));
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF,
             StringHasher::HashMemory(kNullUChars, 0));
-  EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, StringHasher::HashMemory<0>(0));
+  EXPECT_EQ(kEmptyStringHash & 0xFFFFFF, StringHasher::HashMemory<0>(nullptr));
   EXPECT_EQ(kEmptyStringHash & 0xFFFFFF,
             StringHasher::HashMemory<0>(kNullUChars));
 

@@ -284,7 +284,7 @@ TEST_F(MHTMLTest, TestMHTMLEncoding) {
   // the right encoding is used for the different sections.
   LineReader line_reader(std::string(data->data(), data->length()));
   int section_checked_count = 0;
-  const char* expected_encoding = 0;
+  const char* expected_encoding = nullptr;
   std::string line;
   while (line_reader.GetNextLine(&line)) {
     if (line.compare(0, 13, "Content-Type:") == 0) {
@@ -304,7 +304,7 @@ TEST_F(MHTMLTest, TestMHTMLEncoding) {
     if (line.compare(0, 26, "Content-Transfer-Encoding:") == 0) {
       ASSERT_TRUE(expected_encoding);
       EXPECT_NE(line.find(expected_encoding), std::string::npos);
-      expected_encoding = 0;
+      expected_encoding = nullptr;
       section_checked_count++;
     }
   }

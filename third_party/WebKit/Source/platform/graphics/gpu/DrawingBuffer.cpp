@@ -1249,7 +1249,7 @@ RefPtr<DrawingBuffer::ColorBuffer> DrawingBuffer::CreateColorBuffer(
     } else {
       GLenum gl_format = parameters.allocate_alpha_channel ? GL_RGBA : GL_RGB;
       gl_->TexImage2D(parameters.target, 0, gl_format, size.Width(),
-                      size.Height(), 0, gl_format, GL_UNSIGNED_BYTE, 0);
+                      size.Height(), 0, gl_format, GL_UNSIGNED_BYTE, nullptr);
     }
   }
 

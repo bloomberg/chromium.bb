@@ -192,7 +192,8 @@ static String ConvertDragOperationToEffectAllowed(DragOperation op) {
 // We provide the IE clipboard types (URL and Text), and the clipboard types
 // specified in the WHATWG Web Applications 1.0 draft see
 // http://www.whatwg.org/specs/web-apps/current-work/ Section 6.3.5.3
-static String NormalizeType(const String& type, bool* convert_to_url = 0) {
+static String NormalizeType(const String& type,
+                            bool* convert_to_url = nullptr) {
   String clean_type = type.StripWhiteSpace().DeprecatedLower();
   if (clean_type == kMimeTypeText ||
       clean_type.StartsWith(kMimeTypeTextPlainEtc))
@@ -343,11 +344,11 @@ void DataTransfer::ClearDragImage() {
 
 void DataTransfer::SetDragImageResource(ImageResourceContent* img,
                                         const IntPoint& loc) {
-  setDragImage(img, 0, loc);
+  setDragImage(img, nullptr, loc);
 }
 
 void DataTransfer::SetDragImageElement(Node* node, const IntPoint& loc) {
-  setDragImage(0, node, loc);
+  setDragImage(nullptr, node, loc);
 }
 
 FloatRect DataTransfer::ClipByVisualViewport(const FloatRect& rect_in_frame,
@@ -440,13 +441,13 @@ static ImageResourceContent* GetImageResourceContent(Element* element) {
   DCHECK(element);
   LayoutObject* layout_object = element->GetLayoutObject();
   if (!layout_object || !layout_object->IsImage())
-    return 0;
+    return nullptr;
 
   LayoutImage* image = ToLayoutImage(layout_object);
   if (image->CachedImage() && !image->CachedImage()->ErrorOccurred())
     return image->CachedImage();
 
-  return 0;
+  return nullptr;
 }
 
 static void WriteImageToDataObject(DataObject* data_object,

@@ -334,7 +334,7 @@ void EventSource::OnMessageEvent(const AtomicString& event_type,
                                  const AtomicString& last_event_id) {
   MessageEvent* e = MessageEvent::Create();
   e->initMessageEvent(event_type, false, false, data, event_stream_origin_,
-                      last_event_id, 0, nullptr);
+                      last_event_id, nullptr, nullptr);
 
   probe::willDispatchEventSourceEvent(GetExecutionContext(), this, event_type,
                                       last_event_id, data);

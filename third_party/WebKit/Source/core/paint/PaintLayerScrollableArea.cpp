@@ -116,8 +116,8 @@ const int kResizerControlExpandRatioForTouch = 2;
 
 PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
     : layer_(layer),
-      next_topmost_scroll_child_(0),
-      topmost_scroll_child_(0),
+      next_topmost_scroll_child_(nullptr),
+      topmost_scroll_child_(nullptr),
       in_resize_mode_(false),
       scrolls_overflow_(false),
       in_overflow_relayout_(false),

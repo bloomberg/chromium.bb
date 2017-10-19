@@ -148,7 +148,7 @@ WebInputElement::operator HTMLInputElement*() const {
 
 WebInputElement* ToWebInputElement(WebElement* web_element) {
   if (!IsHTMLInputElement(*web_element->Unwrap<Element>()))
-    return 0;
+    return nullptr;
 
   return static_cast<WebInputElement*>(web_element);
 }

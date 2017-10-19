@@ -46,7 +46,7 @@ static std::unique_ptr<TextCodec> NewStreamingTextDecoderUserDefined(
 }
 
 void TextCodecUserDefined::RegisterCodecs(TextCodecRegistrar registrar) {
-  registrar("x-user-defined", NewStreamingTextDecoderUserDefined, 0);
+  registrar("x-user-defined", NewStreamingTextDecoderUserDefined, nullptr);
 }
 
 String TextCodecUserDefined::Decode(const char* bytes,

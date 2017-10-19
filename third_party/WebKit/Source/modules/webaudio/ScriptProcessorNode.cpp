@@ -99,12 +99,12 @@ void ScriptProcessorHandler::Initialize() {
         number_of_input_channels_
             ? AudioBuffer::Create(number_of_input_channels_, BufferSize(),
                                   sample_rate)
-            : 0;
+            : nullptr;
     AudioBuffer* output_buffer =
         number_of_output_channels_
             ? AudioBuffer::Create(number_of_output_channels_, BufferSize(),
                                   sample_rate)
-            : 0;
+            : nullptr;
 
     input_buffers_.push_back(input_buffer);
     output_buffers_.push_back(output_buffer);

@@ -37,7 +37,7 @@ std::unique_ptr<WebServiceWorkerResponse> CreateTestWebServiceWorkerResponse() {
   } headers[] = {{"cache-control", "no-cache"},
                  {"set-cookie", "foop"},
                  {"foo", "bar"},
-                 {0, 0}};
+                 {nullptr, nullptr}};
   Vector<WebURL> url_list;
   url_list.push_back(url);
   std::unique_ptr<WebServiceWorkerResponse> web_response =

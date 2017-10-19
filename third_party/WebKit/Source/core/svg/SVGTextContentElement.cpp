@@ -306,7 +306,7 @@ SVGTextContentElement* SVGTextContentElement::ElementFromLineLayoutItem(
   SVGElement* element = ToSVGElement(line_layout_item.GetNode());
   DCHECK(element);
   return IsSVGTextContentElement(*element) ? ToSVGTextContentElement(element)
-                                           : 0;
+                                           : nullptr;
 }
 
 }  // namespace blink

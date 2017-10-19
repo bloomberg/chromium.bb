@@ -207,7 +207,7 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
                                  std::move(callbacks));
   if (error_code != FileError::kOK) {
     FileError::ThrowDOMException(exception_state, error_code);
-    return 0;
+    return nullptr;
   }
   return file_writer;
 }

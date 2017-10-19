@@ -158,7 +158,8 @@ TEST(HTMLSrcsetParserTest, Basic) {
       {1.0, -1, "", "data:,a 1.0x", "data:,a", 1.0, -1},
       {1.0, -1, "", "1%20and%202.gif 1x", "1%20and%202.gif", 1.0, -1},
       {1.0, 700, "", "data:,a 0.5x, data:,b 1400w", "data:,b", 2.0, 1400},
-      {0, 0, 0, 0, 0, 0}  // Do not remove the terminator line.
+      {0, 0, nullptr, nullptr, nullptr,
+       0}  // Do not remove the terminator line.
   };
 
   for (unsigned i = 0; test_cases[i].src_input; ++i) {

@@ -79,7 +79,7 @@ int restrictError(int error) {
 namespace blink {
 
 SQLiteStatement::SQLiteStatement(SQLiteDatabase& db, const String& sql)
-    : database_(db), query_(sql), statement_(0) {}
+    : database_(db), query_(sql), statement_(nullptr) {}
 
 SQLiteStatement::~SQLiteStatement() {
   Finalize();
@@ -151,7 +151,7 @@ int SQLiteStatement::Finalize() {
     return SQLITE_OK;
   SQL_DVLOG(1) << "SQL - finalize - " << query_;
   int result = sqlite3_finalize(statement_);
-  statement_ = 0;
+  statement_ = nullptr;
   return restrictError(result);
 }
 

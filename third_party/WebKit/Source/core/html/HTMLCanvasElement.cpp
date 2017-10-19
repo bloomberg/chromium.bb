@@ -632,7 +632,7 @@ void HTMLCanvasElement::Paint(GraphicsContext& context, const LayoutRect& r) {
           !context_ || context_->CreationAttributes().alpha()
               ? SkBlendMode::kSrcOver
               : SkBlendMode::kSrc;
-      GetImageBuffer()->Draw(context, PixelSnappedIntRect(r), 0,
+      GetImageBuffer()->Draw(context, PixelSnappedIntRect(r), nullptr,
                              composite_operator);
     }
   } else {

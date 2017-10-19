@@ -493,7 +493,7 @@ TEST(CSSTokenizerBlockTest, Basic) {
       {"all an[isdfs bla())(]icalc(i)(()), (max-width: 500px)", 4, 2},
       {"all an[isdfs bla())(]icalc(i)(())), (max-width: 600px)", 4, 1},
       {"all an[isdfs bla())(]icalc(i)(()))], (max-width: 800px)", 4, 0},
-      {0, 0, 0}  // Do not remove the terminator line.
+      {nullptr, 0, 0}  // Do not remove the terminator line.
   };
   for (int i = 0; test_cases[i].input; ++i) {
     CSSTokenizer tokenizer(test_cases[i].input);

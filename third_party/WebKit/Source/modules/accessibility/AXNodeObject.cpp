@@ -207,7 +207,7 @@ static bool IsPresentationalInTable(AXObject* parent,
     // Because TableSections have ignored role, presentation should be checked
     // with its parent node.
     AXObject* table_object = parent->ParentObject();
-    Node* table_node = table_object ? table_object->GetNode() : 0;
+    Node* table_node = table_object ? table_object->GetNode() : nullptr;
     return IsHTMLTableElement(table_node) &&
            table_object->HasInheritedPresentationalRole();
   }
@@ -247,7 +247,7 @@ static bool IsRequiredOwnedElement(AXObject* parent,
 const AXObject* AXNodeObject::InheritsPresentationalRoleFrom() const {
   // ARIA states if an item can get focus, it should not be presentational.
   if (CanSetFocusAttribute())
-    return 0;
+    return nullptr;
 
   if (IsPresentational())
     return this;
@@ -257,32 +257,32 @@ const AXObject* AXNodeObject::InheritsPresentationalRoleFrom() const {
   // presentation
   // to any owned elements that do not have an explicit role defined.
   if (AriaRoleAttribute() != kUnknownRole)
-    return 0;
+    return nullptr;
 
   AXObject* parent = ParentObject();
   if (!parent)
-    return 0;
+    return nullptr;
 
   HTMLElement* element = nullptr;
   if (GetNode() && GetNode()->IsHTMLElement())
     element = ToHTMLElement(GetNode());
   if (!parent->HasInheritedPresentationalRole()) {
     if (!GetLayoutObject() || !GetLayoutObject()->IsBoxModelObject())
-      return 0;
+      return nullptr;
 
     LayoutBoxModelObject* css_box = ToLayoutBoxModelObject(GetLayoutObject());
     if (!css_box->IsTableCell() && !css_box->IsTableRow())
-      return 0;
+      return nullptr;
 
     if (!IsPresentationalInTable(parent, element))
-      return 0;
+      return nullptr;
   }
   // ARIA spec says that when a parent object is presentational and this object
   // is a required owned element of that parent, then this object is also
   // presentational.
   if (IsRequiredOwnedElement(parent, RoleValue(), element))
     return parent;
-  return 0;
+  return nullptr;
 }
 
 // There should only be one banner/contentInfo per page. If header/footer are
@@ -681,13 +681,13 @@ AXObject* AXNodeObject::MenuButtonForMenu() const {
     if (menu_item_ax && menu_item_ax->IsMenuButton())
       return menu_item_ax;
   }
-  return 0;
+  return nullptr;
 }
 
 static Element* SiblingWithAriaRole(String role, Node* node) {
   Node* parent = node->parentNode();
   if (!parent)
-    return 0;
+    return nullptr;
 
   for (Element* sibling = ElementTraversal::FirstChild(*parent); sibling;
        sibling = ElementTraversal::NextSibling(*sibling)) {
@@ -698,12 +698,12 @@ static Element* SiblingWithAriaRole(String role, Node* node) {
       return sibling;
   }
 
-  return 0;
+  return nullptr;
 }
 
 Element* AXNodeObject::MenuItemElementForMenu() const {
   if (AriaRoleAttribute() != kMenuRole)
-    return 0;
+    return nullptr;
 
   return SiblingWithAriaRole("menuitem", GetNode());
 }
@@ -1960,23 +1960,23 @@ AXObject* AXNodeObject::ComputeParentIfExists() const {
 
 AXObject* AXNodeObject::RawFirstChild() const {
   if (!GetNode())
-    return 0;
+    return nullptr;
 
   Node* first_child = GetNode()->firstChild();
 
   if (!first_child)
-    return 0;
+    return nullptr;
 
   return AxObjectCache().GetOrCreate(first_child);
 }
 
 AXObject* AXNodeObject::RawNextSibling() const {
   if (!GetNode())
-    return 0;
+    return nullptr;
 
   Node* next_sibling = GetNode()->nextSibling();
   if (!next_sibling)
-    return 0;
+    return nullptr;
 
   return AxObjectCache().GetOrCreate(next_sibling);
 }
@@ -2144,7 +2144,7 @@ Element* AXNodeObject::ActionElement() const {
 Element* AXNodeObject::AnchorElement() const {
   Node* node = this->GetNode();
   if (!node)
-    return 0;
+    return nullptr;
 
   AXObjectCacheImpl& cache = AxObjectCache();
 
@@ -2158,12 +2158,12 @@ Element* AXNodeObject::AnchorElement() const {
       return ToElement(node);
   }
 
-  return 0;
+  return nullptr;
 }
 
 Document* AXNodeObject::GetDocument() const {
   if (!GetNode())
-    return 0;
+    return nullptr;
   return &GetNode()->GetDocument();
 }
 
@@ -2174,32 +2174,32 @@ void AXNodeObject::SetNode(Node* node) {
 AXObject* AXNodeObject::CorrespondingControlForLabelElement() const {
   HTMLLabelElement* label_element = LabelElementContainer();
   if (!label_element)
-    return 0;
+    return nullptr;
 
   HTMLElement* corresponding_control = label_element->control();
   if (!corresponding_control)
-    return 0;
+    return nullptr;
 
   // Make sure the corresponding control isn't a descendant of this label
   // that's in the middle of being destroyed.
   if (corresponding_control->GetLayoutObject() &&
       !corresponding_control->GetLayoutObject()->Parent())
-    return 0;
+    return nullptr;
 
   return AxObjectCache().GetOrCreate(corresponding_control);
 }
 
 HTMLLabelElement* AXNodeObject::LabelElementContainer() const {
   if (!GetNode())
-    return 0;
+    return nullptr;
 
   // the control element should not be considered part of the label
   if (IsControl())
-    return 0;
+    return nullptr;
 
   // the link element should not be considered part of the label
   if (IsLink())
-    return 0;
+    return nullptr;
 
   // find if this has a ancestor that is a label
   return Traversal<HTMLLabelElement>::FirstAncestorOrSelf(*GetNode());

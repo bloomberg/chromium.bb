@@ -362,14 +362,14 @@ InspectorDatabaseResource* InspectorDatabaseAgent::FindByFileName(
     if (it->value->GetDatabase()->FileName() == file_name)
       return it->value.Get();
   }
-  return 0;
+  return nullptr;
 }
 
 blink::Database* InspectorDatabaseAgent::DatabaseForId(
     const String& database_id) {
   DatabaseResourcesHeapMap::iterator it = resources_.find(database_id);
   if (it == resources_.end())
-    return 0;
+    return nullptr;
   return it->value->GetDatabase();
 }
 

@@ -520,7 +520,7 @@ void CreateWindowForRequest(const FrameLoadRequest& request,
   }
 
   // TODO(japhet): Form submissions on RemoteFrames don't work yet.
-  FrameLoadRequest new_request(0, request.GetResourceRequest());
+  FrameLoadRequest new_request(nullptr, request.GetResourceRequest());
   new_request.SetForm(request.Form());
   if (new_frame->IsLocalFrame())
     ToLocalFrame(new_frame)->Loader().Load(new_request);

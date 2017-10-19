@@ -847,7 +847,7 @@ ScriptLoader::ExecuteScriptResult ScriptLoader::DoExecuteScript(
                   script->GetScriptType() == ScriptType::kModule ||
                   is_imported_script
               ? context_document
-              : 0);
+              : nullptr);
 
   // 4. "Let old script element be the value to which the script element's
   //     node document's currentScript object was most recently set."

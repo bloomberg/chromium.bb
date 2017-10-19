@@ -57,7 +57,7 @@ LayoutUnit LayoutSearchField::ComputeControlLogicalHeight(
     LayoutUnit non_content_height) const {
   Element* search_decoration = SearchDecorationElement();
   if (LayoutBox* decoration_layout_object =
-          search_decoration ? search_decoration->GetLayoutBox() : 0) {
+          search_decoration ? search_decoration->GetLayoutBox() : nullptr) {
     decoration_layout_object->UpdateLogicalHeight();
     non_content_height =
         max(non_content_height,
@@ -67,7 +67,7 @@ LayoutUnit LayoutSearchField::ComputeControlLogicalHeight(
   }
   Element* cancel_button = CancelButtonElement();
   if (LayoutBox* cancel_layout_object =
-          cancel_button ? cancel_button->GetLayoutBox() : 0) {
+          cancel_button ? cancel_button->GetLayoutBox() : nullptr) {
     cancel_layout_object->UpdateLogicalHeight();
     non_content_height =
         max(non_content_height,

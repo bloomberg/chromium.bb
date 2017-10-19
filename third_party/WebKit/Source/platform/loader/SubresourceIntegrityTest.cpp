@@ -445,8 +445,8 @@ TEST_F(SubresourceIntegrityTest, Parsing) {
       "07yMK81ytlg0MPaIrPAjcHqba5csorDWtKg==",
       IntegrityAlgorithm::kSha512);
 
-  ExpectParseMultipleHashes("", 0, 0);
-  ExpectParseMultipleHashes("    ", 0, 0);
+  ExpectParseMultipleHashes("", nullptr, 0);
+  ExpectParseMultipleHashes("    ", nullptr, 0);
 
   const IntegrityMetadata valid_sha384_and_sha512[] = {
       IntegrityMetadata(

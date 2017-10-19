@@ -86,7 +86,7 @@ void StyleRuleImport::SetCSSStyleSheet(
   style_sheet_ = StyleSheetContents::Create(this, href, context);
 
   style_sheet_->ParseAuthorStyleSheet(
-      cached_style_sheet, document ? document->GetSecurityOrigin() : 0);
+      cached_style_sheet, document ? document->GetSecurityOrigin() : nullptr);
 
   loading_ = false;
 

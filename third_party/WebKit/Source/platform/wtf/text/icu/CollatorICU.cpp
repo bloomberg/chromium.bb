@@ -49,12 +49,14 @@ static Mutex& CachedCollatorMutex() {
 }
 
 Collator::Collator(const char* locale)
-    : collator_(0), locale_(locale ? strdup(locale) : 0), lower_first_(false) {
+    : collator_(nullptr),
+      locale_(locale ? strdup(locale) : nullptr),
+      lower_first_(false) {
   SetEquivalentLocale(locale_, equivalent_locale_);
 }
 
 std::unique_ptr<Collator> Collator::UserDefault() {
-  return WTF::WrapUnique(new Collator(0));
+  return WTF::WrapUnique(new Collator(nullptr));
 }
 
 Collator::~Collator() {
@@ -93,7 +95,7 @@ void Collator::CreateCollator() const {
            (UCOL_UPPER_FIRST == cached_collator_lower_first &&
             !lower_first_))) {
         collator_ = g_cached_collator;
-        g_cached_collator = 0;
+        g_cached_collator = nullptr;
         g_cached_equivalent_locale[0] = 0;
         return;
       }
@@ -125,9 +127,9 @@ void Collator::ReleaseCollator() {
     g_cached_collator = collator_;
     strncpy(g_cached_equivalent_locale, equivalent_locale_,
             kUlocFullnameCapacity);
-    collator_ = 0;
+    collator_ = nullptr;
   }
-  collator_ = 0;
+  collator_ = nullptr;
 }
 
 void Collator::SetEquivalentLocale(const char* locale,

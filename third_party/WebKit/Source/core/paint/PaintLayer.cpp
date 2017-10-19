@@ -161,11 +161,11 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       has_ancestor_with_clip_path_(false),
       self_painting_status_changed_(false),
       layout_object_(layout_object),
-      parent_(0),
-      previous_(0),
-      next_(0),
-      first_(0),
-      last_(0),
+      parent_(nullptr),
+      previous_(nullptr),
+      next_(nullptr),
+      first_(nullptr),
+      last_(nullptr),
       static_inline_position_(0),
       static_block_position_(0),
       ancestor_overflow_layer_(nullptr) {
@@ -194,7 +194,7 @@ PaintLayer::~PaintLayer() {
 
   if (GroupedMapping()) {
     DisableCompositingQueryAsserts disabler;
-    SetGroupedMapping(0, kInvalidateLayerAndRemoveFromMapping);
+    SetGroupedMapping(nullptr, kInvalidateLayerAndRemoveFromMapping);
   }
 
   // Child layers will be deleted by their corresponding layout objects, so
@@ -216,7 +216,7 @@ LayoutRect PaintLayer::VisualRect() const {
 
 PaintLayerCompositor* PaintLayer::Compositor() const {
   if (!GetLayoutObject().View())
-    return 0;
+    return nullptr;
   return GetLayoutObject().View()->Compositor();
 }
 
@@ -454,7 +454,7 @@ static PaintLayer* EnclosingLayerForContainingBlock(PaintLayer* layer) {
   if (LayoutObject* containing_block =
           layer->GetLayoutObject().ContainingBlock())
     return containing_block->EnclosingLayer();
-  return 0;
+  return nullptr;
 }
 
 static const PaintLayer* EnclosingLayerForContainingBlock(
@@ -462,11 +462,11 @@ static const PaintLayer* EnclosingLayerForContainingBlock(
   if (const LayoutObject* containing_block =
           layer->GetLayoutObject().ContainingBlock())
     return containing_block->EnclosingLayer();
-  return 0;
+  return nullptr;
 }
 
 PaintLayer* PaintLayer::RenderingContextRoot() {
-  PaintLayer* rendering_context = 0;
+  PaintLayer* rendering_context = nullptr;
 
   if (ShouldPreserve3D())
     rendering_context = this;
@@ -480,7 +480,7 @@ PaintLayer* PaintLayer::RenderingContextRoot() {
 }
 
 const PaintLayer* PaintLayer::RenderingContextRoot() const {
-  const PaintLayer* rendering_context = 0;
+  const PaintLayer* rendering_context = nullptr;
 
   if (ShouldPreserve3D())
     rendering_context = this;
@@ -749,7 +749,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         do {
           r = r->Parent();
           if (r == &GetLayoutObject())
-            r = 0;
+            r = nullptr;
         } while (r && !r->NextSibling());
         if (r)
           r = r->NextSibling();
@@ -1018,7 +1018,7 @@ PaintLayer* PaintLayer::EnclosingLayerWithCompositedLayerMapping(
 PaintLayer*
 PaintLayer::EnclosingLayerForPaintInvalidationCrossingFrameBoundaries() const {
   const PaintLayer* layer = this;
-  PaintLayer* composited_layer = 0;
+  PaintLayer* composited_layer = nullptr;
   while (!composited_layer) {
     composited_layer = layer->EnclosingLayerForPaintInvalidation();
     if (!composited_layer) {
@@ -1196,7 +1196,7 @@ LayoutRect PaintLayer::TransparencyClipBox(
     const PaintLayer* pagination_layer =
         transparency_mode == kDescendantsOfTransparencyClipBox
             ? layer->EnclosingPaginationLayer()
-            : 0;
+            : nullptr;
     const PaintLayer* root_layer_for_transform =
         pagination_layer ? pagination_layer : root_layer;
     LayoutPoint delta;
@@ -1351,9 +1351,9 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
   if (GetLayoutObject().Style()->Visibility() != EVisibility::kVisible)
     DirtyVisibleContentStatus();
 
-  old_child->SetPreviousSibling(0);
-  old_child->SetNextSibling(0);
-  old_child->parent_ = 0;
+  old_child->SetPreviousSibling(nullptr);
+  old_child->SetNextSibling(nullptr);
+  old_child->parent_ = nullptr;
 
   // Remove any ancestor overflow layers which descended into the removed child.
   if (old_child->AncestorOverflowLayer())
@@ -1867,8 +1867,8 @@ bool PaintLayer::HitTest(HitTestResult& result) {
   if (request.IgnoreClipping())
     hit_test_area.Unite(LayoutRect(GetLayoutObject().View()->DocumentRect()));
 
-  PaintLayer* inside_layer =
-      HitTestLayer(this, 0, result, hit_test_area, hit_test_location, false);
+  PaintLayer* inside_layer = HitTestLayer(this, nullptr, result, hit_test_area,
+                                          hit_test_location, false);
   if (!inside_layer && IsRootLayer()) {
     IntRect hit_rect = hit_test_location.BoundingBox();
     bool fallback = false;
@@ -1918,7 +1918,7 @@ Node* PaintLayer::EnclosingNode() const {
       return e;
   }
   NOTREACHED();
-  return 0;
+  return nullptr;
 }
 
 bool PaintLayer::IsInTopLayer() const {
@@ -1972,7 +1972,7 @@ RefPtr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
   offset.MoveBy(translation_offset);
 
   LayoutObject* container_layout_object =
-      container_layer ? &container_layer->GetLayoutObject() : 0;
+      container_layer ? &container_layer->GetLayoutObject() : nullptr;
   if (GetLayoutObject().ShouldUseTransformFromContainer(
           container_layout_object)) {
     TransformationMatrix container_transform;
@@ -2120,8 +2120,8 @@ PaintLayer* PaintLayer::HitTestLayer(
   // The following are used for keeping track of the z-depth of the hit point of
   // 3d-transformed descendants.
   double local_z_offset = -std::numeric_limits<double>::infinity();
-  double* z_offset_for_descendants_ptr = 0;
-  double* z_offset_for_contents_ptr = 0;
+  double* z_offset_for_descendants_ptr = nullptr;
+  double* z_offset_for_contents_ptr = nullptr;
 
   bool depth_sort_descendants = false;
   if (Preserves3D()) {
@@ -2131,13 +2131,13 @@ PaintLayer* PaintLayer::HitTestLayer(
     z_offset_for_descendants_ptr = z_offset ? z_offset : &local_z_offset;
     z_offset_for_contents_ptr = z_offset ? z_offset : &local_z_offset;
   } else if (z_offset) {
-    z_offset_for_descendants_ptr = 0;
+    z_offset_for_descendants_ptr = nullptr;
     // Container needs us to give back a z offset for the hit layer.
     z_offset_for_contents_ptr = z_offset;
   }
 
   // This variable tracks which layer the mouse ends up being inside.
-  PaintLayer* candidate_layer = 0;
+  PaintLayer* candidate_layer = nullptr;
 
   // Begin by walking our list of positive layers from highest z-index down to
   // the lowest z-index.
@@ -2332,7 +2332,7 @@ PaintLayer* PaintLayer::HitTestTransformedLayerInFragments(
       return hit_layer;
   }
 
-  return 0;
+  return nullptr;
 }
 
 PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
@@ -2352,7 +2352,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
 
   // If the transform can't be inverted, then don't hit test this layer at all.
   if (!new_transform_state->accumulated_transform_.IsInvertible())
-    return 0;
+    return nullptr;
 
   // Compute the point and the hit test rect in the coords of this layer by
   // using the values from the transformState, which store the point and quad in
@@ -2431,14 +2431,14 @@ PaintLayer* PaintLayer::HitTestChildren(
     const HitTestingTransformState* unflattened_transform_state,
     bool depth_sort_descendants) {
   if (!HasSelfPaintingLayerDescendant())
-    return 0;
+    return nullptr;
 
-  PaintLayer* result_layer = 0;
+  PaintLayer* result_layer = nullptr;
   PaintLayerStackingNodeReverseIterator iterator(*stacking_node_,
                                                  childrento_visit);
   while (PaintLayerStackingNode* child = iterator.Next()) {
     PaintLayer* child_layer = child->Layer();
-    PaintLayer* hit_layer = 0;
+    PaintLayer* hit_layer = nullptr;
     HitTestResult temp_result(result.GetHitTestRequest(),
                               result.GetHitTestLocation());
     hit_layer = child_layer->HitTestLayer(

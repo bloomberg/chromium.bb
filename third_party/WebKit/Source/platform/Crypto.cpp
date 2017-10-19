@@ -56,7 +56,7 @@ std::unique_ptr<WebCryptoDigestor> CreateDigestor(HashAlgorithm algorithm) {
 }
 
 void FinishDigestor(WebCryptoDigestor* digestor, DigestValue& digest_result) {
-  unsigned char* result = 0;
+  unsigned char* result = nullptr;
   unsigned result_size = 0;
 
   if (!digestor->Finish(result, result_size))

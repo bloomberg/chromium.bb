@@ -509,9 +509,9 @@ void ShapeResult::ComputeGlyphPositions(ShapeResult::RunInfo* run,
   DCHECK_EQ(is_horizontal_run, run->IsHorizontal());
   const SimpleFontData* current_font_data = run->font_data_.get();
   const hb_glyph_info_t* glyph_infos =
-      hb_buffer_get_glyph_infos(harf_buzz_buffer, 0);
+      hb_buffer_get_glyph_infos(harf_buzz_buffer, nullptr);
   const hb_glyph_position_t* glyph_positions =
-      hb_buffer_get_glyph_positions(harf_buzz_buffer, 0);
+      hb_buffer_get_glyph_positions(harf_buzz_buffer, nullptr);
   const unsigned start_cluster =
       HB_DIRECTION_IS_FORWARD(hb_buffer_get_direction(harf_buzz_buffer))
           ? glyph_infos[start_glyph].cluster

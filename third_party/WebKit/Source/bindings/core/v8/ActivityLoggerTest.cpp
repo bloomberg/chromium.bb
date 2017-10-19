@@ -99,7 +99,7 @@ class ActivityLoggerTest : public ::testing::Test {
     sources.push_back(ScriptSourceCode(script));
     Vector<v8::Local<v8::Value>> results;
     script_controller_->ExecuteScriptInIsolatedWorld(kIsolatedWorldId, sources,
-                                                     0);
+                                                     nullptr);
     PumpPendingRequestsForFrameToLoad(web_view_helper_.WebView()->MainFrame());
   }
 

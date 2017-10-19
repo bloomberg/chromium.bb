@@ -908,7 +908,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
 
     // FIXME: Passing 0 as the Element* introduces a lot of complexity
     // in the StyleAdjuster::AdjustComputedStyle code.
-    StyleAdjuster::AdjustComputedStyle(state, 0);
+    StyleAdjuster::AdjustComputedStyle(state, nullptr);
 
     UpdateBaseComputedStyle(state, pseudo_element);
   }
@@ -918,7 +918,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   // require adjustment to have happened before deciding which properties to
   // transition.
   if (ApplyAnimatedStandardProperties(state, pseudo_element))
-    StyleAdjuster::AdjustComputedStyle(state, 0);
+    StyleAdjuster::AdjustComputedStyle(state, nullptr);
 
   GetDocument().GetStyleEngine().IncStyleForElementCount();
   INCREMENT_STYLE_STATS_COUNTER(GetDocument().GetStyleEngine(),

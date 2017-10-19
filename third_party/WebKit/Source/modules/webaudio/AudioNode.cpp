@@ -369,7 +369,7 @@ void AudioHandler::PullInputs(size_t frames_to_process) {
 
   // Process all of the AudioNodes connected to our inputs.
   for (auto& input : inputs_)
-    input->Pull(0, frames_to_process);
+    input->Pull(nullptr, frames_to_process);
 }
 
 bool AudioHandler::InputsAreSilent() {

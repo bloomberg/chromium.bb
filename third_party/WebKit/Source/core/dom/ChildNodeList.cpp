@@ -58,7 +58,7 @@ Node* ChildNodeList::TraverseForwardToOffset(unsigned offset,
     if (++current_offset == offset)
       return next;
   }
-  return 0;
+  return nullptr;
 }
 
 Node* ChildNodeList::TraverseBackwardToOffset(unsigned offset,
@@ -72,7 +72,7 @@ Node* ChildNodeList::TraverseBackwardToOffset(unsigned offset,
     if (--current_offset == offset)
       return previous;
   }
-  return 0;
+  return nullptr;
 }
 
 void ChildNodeList::Trace(blink::Visitor* visitor) {

@@ -70,7 +70,7 @@ BMPImageReader::BMPImageReader(ImageDecoder* parent,
                                size_t img_data_offset,
                                bool is_in_ico)
     : parent_(parent),
-      buffer_(0),
+      buffer_(nullptr),
       fast_reader_(nullptr),
       decoded_offset_(decoded_and_header_offset),
       header_offset_(decoded_and_header_offset),
@@ -527,7 +527,7 @@ bool BMPImageReader::ProcessBitmasks() {
     uint32_t temp_mask = bit_masks_[i];
     if (!temp_mask) {
       bit_shifts_right_[i] = 0;
-      lookup_table_addresses_[i] = 0;
+      lookup_table_addresses_[i] = nullptr;
       continue;
     }
 
@@ -559,7 +559,7 @@ bool BMPImageReader::ProcessBitmasks() {
 
     // Calculate LUT address.
     lookup_table_addresses_[i] =
-        num_bits ? (nBitTo8BitlookupTable + (1 << num_bits) - 2) : 0;
+        num_bits ? (nBitTo8BitlookupTable + (1 << num_bits) - 2) : nullptr;
   }
 
   return true;

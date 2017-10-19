@@ -360,7 +360,7 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation) {
   EXPECT_EQ(resource1, GetMemoryCache()->ResourceForURL(
                            url, GetMemoryCache()->DefaultCacheIdentifier()));
   EXPECT_EQ(resource2, GetMemoryCache()->ResourceForURL(url, "foo"));
-  EXPECT_EQ(0, GetMemoryCache()->ResourceForURL(NullURL()));
+  EXPECT_EQ(nullptr, GetMemoryCache()->ResourceForURL(NullURL()));
 
   FakeResource* resource3 =
       FakeResource::Create("http://test/resource", Resource::kRaw);

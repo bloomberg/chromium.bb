@@ -255,7 +255,7 @@ TEST_F(LocaleICUTest, localizedDecimalSeparator) {
 
 void TestNumberIsReversible(const AtomicString& locale_identifier,
                             const char* original,
-                            const char* should_have = 0) {
+                            const char* should_have = nullptr) {
   std::unique_ptr<Locale> locale = Locale::Create(locale_identifier);
   String localized = locale->ConvertToLocalizedNumber(original);
   if (should_have)

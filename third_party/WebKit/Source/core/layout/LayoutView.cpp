@@ -347,9 +347,9 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
                                     TransformState& transform_state,
                                     MapCoordinatesFlags mode) const {
   if (!ancestor && mode & kUseTransforms &&
-      ShouldUseTransformFromContainer(0)) {
+      ShouldUseTransformFromContainer(nullptr)) {
     TransformationMatrix t;
-    GetTransformFromContainer(0, LayoutSize(), t);
+    GetTransformFromContainer(nullptr, LayoutSize(), t);
     transform_state.ApplyTransform(t);
   }
 

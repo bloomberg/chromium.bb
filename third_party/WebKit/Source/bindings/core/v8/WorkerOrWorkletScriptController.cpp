@@ -103,7 +103,7 @@ WorkerOrWorkletScriptController::WorkerOrWorkletScriptController(
       isolate_(isolate),
       execution_forbidden_(false),
       rejected_promises_(RejectedPromises::Create()),
-      execution_state_(0) {
+      execution_state_(nullptr) {
   DCHECK(isolate);
   world_ =
       DOMWrapperWorld::Create(isolate, DOMWrapperWorld::WorldType::kWorker);

@@ -143,7 +143,7 @@ ImageBitmap* WebGLRenderingContext::TransferToImageBitmap(
 void WebGLRenderingContext::RegisterContextExtensions() {
   // Register extensions.
   static const char* const kBothPrefixes[] = {
-      "", "WEBKIT_", 0,
+      "", "WEBKIT_", nullptr,
   };
 
   RegisterExtension<ANGLEInstancedArrays>(angle_instanced_arrays_);

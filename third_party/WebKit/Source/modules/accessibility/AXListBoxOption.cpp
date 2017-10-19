@@ -154,12 +154,12 @@ bool AXListBoxOption::OnNativeSetSelectedAction(bool selected) {
 
 HTMLSelectElement* AXListBoxOption::ListBoxOptionParentNode() const {
   if (!GetNode())
-    return 0;
+    return nullptr;
 
   if (auto* option = ToHTMLOptionElementOrNull(GetNode()))
     return option->OwnerSelectElement();
 
-  return 0;
+  return nullptr;
 }
 
 }  // namespace blink

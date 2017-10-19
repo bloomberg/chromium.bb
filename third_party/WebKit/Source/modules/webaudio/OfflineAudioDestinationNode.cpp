@@ -221,7 +221,7 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
   while (frames_to_process_ > 0) {
     // Suspend the rendering if a scheduled suspend found at the current
     // sample frame. Otherwise render one quantum.
-    if (RenderIfNotSuspended(0, render_bus_.get(),
+    if (RenderIfNotSuspended(nullptr, render_bus_.get(),
                              AudioUtilities::kRenderQuantumFrames))
       return;
 

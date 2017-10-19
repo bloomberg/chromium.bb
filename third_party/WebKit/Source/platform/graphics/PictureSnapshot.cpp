@@ -100,13 +100,13 @@ RefPtr<PictureSnapshot> PictureSnapshot::Load(
   if (tiles.size() == 1)
     return WTF::AdoptRef(new PictureSnapshot(std::move(pictures[0])));
   SkPictureRecorder recorder;
-  SkCanvas* canvas =
-      recorder.beginRecording(union_rect.Width(), union_rect.Height(), 0, 0);
+  SkCanvas* canvas = recorder.beginRecording(union_rect.Width(),
+                                             union_rect.Height(), nullptr, 0);
   for (size_t i = 0; i < pictures.size(); ++i) {
     canvas->save();
     canvas->translate(tiles[i]->layer_offset.X() - union_rect.X(),
                       tiles[i]->layer_offset.Y() - union_rect.Y());
-    pictures[i]->playback(canvas, 0);
+    pictures[i]->playback(canvas, nullptr);
     canvas->restore();
   }
   return WTF::AdoptRef(

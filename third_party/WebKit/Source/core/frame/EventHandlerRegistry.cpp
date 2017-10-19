@@ -326,7 +326,8 @@ void EventHandlerRegistry::DocumentDetached(Document& document) {
     for (const auto& event_target : *targets) {
       if (Node* node = event_target.key->ToNode()) {
         for (Document* doc = &node->GetDocument(); doc;
-             doc = doc->LocalOwner() ? &doc->LocalOwner()->GetDocument() : 0) {
+             doc = doc->LocalOwner() ? &doc->LocalOwner()->GetDocument()
+                                     : nullptr) {
           if (doc == &document) {
             targets_to_remove.push_back(event_target.key);
             break;

@@ -183,7 +183,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
       HasVisibleTextNode(layout_object)) {
     if (!behavior_.CollapseTrailingSpace() ||
         (offset_ > 0 && str[offset_ - 1] == ' ')) {
-      SpliceBuffer(kSpaceCharacter, text_node_, 0, offset_, offset_);
+      SpliceBuffer(kSpaceCharacter, text_node_, nullptr, offset_, offset_);
       needs_handle_pre_formatted_text_node_ = true;
       return;
     }
@@ -198,7 +198,7 @@ void TextIteratorTextNodeHandler::HandlePreFormattedTextNode() {
           stops_in_first_letter ? end_offset_ : first_letter.length();
       EmitText(text_node_, first_letter_text_, run_start, run_end);
       first_letter_text_ = nullptr;
-      text_box_ = 0;
+      text_box_ = nullptr;
       offset_ = run_end;
       if (!stops_in_first_letter)
         needs_handle_pre_formatted_text_node_ = true;
@@ -380,7 +380,8 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
           EmitText(text_node_, layout_object, space_run_start,
                    space_run_start + 1);
         } else {
-          SpliceBuffer(kSpaceCharacter, text_node_, 0, run_start, run_start);
+          SpliceBuffer(kSpaceCharacter, text_node_, nullptr, run_start,
+                       run_start);
         }
         return;
       }
@@ -403,7 +404,7 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
       //   split out the punctuation and possibly reorder it.
       if (next_text_box &&
           !(next_text_box->GetLineLayoutItem().IsEqual(layout_object))) {
-        text_box_ = 0;
+        text_box_ = nullptr;
         return;
       }
       DCHECK(!next_text_box ||
@@ -418,9 +419,9 @@ void TextIteratorTextNodeHandler::HandleTextBox() {
           // We need to preserve new lines in case of PreLine.
           // See bug crbug.com/317365.
           if (layout_object->Style()->WhiteSpace() == EWhiteSpace::kPreLine) {
-            SpliceBuffer('\n', text_node_, 0, run_start, run_start);
+            SpliceBuffer('\n', text_node_, nullptr, run_start, run_start);
           } else {
-            SpliceBuffer(kSpaceCharacter, text_node_, 0, run_start,
+            SpliceBuffer(kSpaceCharacter, text_node_, nullptr, run_start,
                          run_start + 1);
           }
           offset_ = text_start_offset + run_start + 1;
@@ -486,7 +487,7 @@ bool TextIteratorTextNodeHandler::ShouldProceedToRemainingText() const {
 
 void TextIteratorTextNodeHandler::ProceedToRemainingText() {
   text_box_ = remaining_text_box_;
-  remaining_text_box_ = 0;
+  remaining_text_box_ = nullptr;
   first_letter_text_ = nullptr;
   offset_ = text_node_->GetLayoutObject()->TextStartOffset();
 }

@@ -397,7 +397,7 @@ MIMETypeRegistry::SupportsType HTMLMediaElement::GetSupportsType(
   return result;
 }
 
-URLRegistry* HTMLMediaElement::media_stream_registry_ = 0;
+URLRegistry* HTMLMediaElement::media_stream_registry_ = nullptr;
 
 void HTMLMediaElement::SetMediaStreamRegistry(URLRegistry* registry) {
   DCHECK(!media_stream_registry_);
@@ -2914,7 +2914,7 @@ KURL HTMLMediaElement::SelectNextSourceChild(
 
   KURL media_url;
   Node* node;
-  HTMLSourceElement* source = 0;
+  HTMLSourceElement* source = nullptr;
   String type;
   bool looking_for_start_node = next_child_node_to_consider_;
   bool can_use_source_element = false;

@@ -234,7 +234,7 @@ void Event::preventDefault() {
     prevent_default_called_during_passive_ = true;
 
     const LocalDOMWindow* window =
-        event_path_ ? event_path_->GetWindowEventContext().Window() : 0;
+        event_path_ ? event_path_->GetWindowEventContext().Window() : nullptr;
     if (window && handling_passive_ == PassiveMode::kPassive) {
       window->PrintErrorMessage(
           "Unable to preventDefault inside passive event listener invocation.");

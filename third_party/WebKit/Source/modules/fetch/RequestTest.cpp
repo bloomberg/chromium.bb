@@ -54,7 +54,7 @@ TEST(ServiceWorkerRequestTest, FromAndToWebRequest) {
   struct {
     const char* key;
     const char* value;
-  } headers[] = {{"X-Foo", "bar"}, {"X-Quux", "foop"}, {0, 0}};
+  } headers[] = {{"X-Foo", "bar"}, {"X-Quux", "foop"}, {nullptr, nullptr}};
   const String referrer = "http://www.referrer.com/";
   const WebReferrerPolicy kReferrerPolicy = kWebReferrerPolicyAlways;
   const WebURLRequest::RequestContext kContext =

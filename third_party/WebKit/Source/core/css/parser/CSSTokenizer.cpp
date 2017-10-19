@@ -298,7 +298,7 @@ CSSParserToken CSSTokenizer::NextToken() {
   // incremental tokenization of partial sources.
   // However, for now we follow the spec exactly.
   UChar cc = Consume();
-  CodePoint code_point_func = 0;
+  CodePoint code_point_func = nullptr;
 
   if (IsASCII(cc)) {
     SECURITY_DCHECK(cc < codePointsNumber);

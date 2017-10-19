@@ -690,7 +690,7 @@ const HeapHashSet<WeakMember<SVGElement>>& SVGElement::InstancesForElement()
 SVGElement* SVGElement::CorrespondingElement() const {
   DCHECK(!HasSVGRareData() || !SvgRareData()->CorrespondingElement() ||
          ContainingShadowRoot());
-  return HasSVGRareData() ? SvgRareData()->CorrespondingElement() : 0;
+  return HasSVGRareData() ? SvgRareData()->CorrespondingElement() : nullptr;
 }
 
 SVGUseElement* SVGElement::CorrespondingUseElement() const {
@@ -1146,7 +1146,7 @@ void SVGElement::InvalidateInstances() {
 
   // Mark all use elements referencing 'element' for rebuilding
   for (SVGElement* instance : set) {
-    instance->SetCorrespondingElement(0);
+    instance->SetCorrespondingElement(nullptr);
 
     if (SVGUseElement* element = instance->CorrespondingUseElement()) {
       if (element->isConnected())

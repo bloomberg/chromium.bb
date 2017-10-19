@@ -188,7 +188,7 @@ void AudioNodeInput::SumAllConnections(AudioBus* summing_bus,
     DCHECK(output);
 
     // Render audio from this output.
-    AudioBus* connection_bus = output->Pull(0, frames_to_process);
+    AudioBus* connection_bus = output->Pull(nullptr, frames_to_process);
 
     // Sum, with unity-gain.
     summing_bus->SumFrom(*connection_bus, interpretation);

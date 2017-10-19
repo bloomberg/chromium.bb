@@ -101,7 +101,7 @@ CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageSlice(
     CSSParserTokenRange& range,
     DefaultFill default_fill) {
   bool fill = CSSPropertyParserHelpers::ConsumeIdent<CSSValueFill>(range);
-  CSSValue* slices[4] = {0};
+  CSSValue* slices[4] = {nullptr};
 
   for (size_t index = 0; index < 4; ++index) {
     CSSPrimitiveValue* value =
@@ -132,7 +132,7 @@ CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageSlice(
 
 CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageWidth(
     CSSParserTokenRange& range) {
-  CSSValue* widths[4] = {0};
+  CSSValue* widths[4] = {nullptr};
 
   CSSValue* value = nullptr;
   for (size_t index = 0; index < 4; ++index) {
@@ -158,7 +158,7 @@ CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageWidth(
 
 CSSValue* CSSPropertyBorderImageUtils::ConsumeBorderImageOutset(
     CSSParserTokenRange& range) {
-  CSSValue* outsets[4] = {0};
+  CSSValue* outsets[4] = {nullptr};
 
   CSSValue* value = nullptr;
   for (size_t index = 0; index < 4; ++index) {

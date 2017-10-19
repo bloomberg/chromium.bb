@@ -76,7 +76,7 @@ void TrailingObjects::UpdateMidpointsForTrailingObjects(
     // Add a new end midpoint that stops right at the very end.
     unsigned length = whitespace_.TextLength();
     unsigned pos = length >= 2 ? length - 2 : UINT_MAX;
-    InlineIterator end_mid(0, whitespace_, pos);
+    InlineIterator end_mid(nullptr, whitespace_, pos);
     line_midpoint_state.StartIgnoringSpaces(end_mid);
     for (size_t i = 0; i < objects_.size(); ++i) {
       EnsureLineBoxInsideIgnoredSpaces(&line_midpoint_state, objects_[i]);

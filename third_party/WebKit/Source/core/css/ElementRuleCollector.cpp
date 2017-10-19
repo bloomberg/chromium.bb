@@ -252,7 +252,7 @@ CSSRule* ElementRuleCollector::FindStyleRule(CSSRuleCollection* css_rules,
                                              StyleRule* style_rule) {
   if (!css_rules)
     return nullptr;
-  CSSRule* result = 0;
+  CSSRule* result = nullptr;
   for (unsigned i = 0; i < css_rules->length() && !result; ++i) {
     CSSRule* css_rule = css_rules->item(i);
     CSSRule::Type css_rule_type = css_rule->type();

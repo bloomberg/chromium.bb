@@ -455,7 +455,7 @@ void HTMLMediaElementEncryptedMedia::DidResumePlaybackBlockedForKey() {
 
 WebContentDecryptionModule*
 HTMLMediaElementEncryptedMedia::ContentDecryptionModule() {
-  return media_keys_ ? media_keys_->ContentDecryptionModule() : 0;
+  return media_keys_ ? media_keys_->ContentDecryptionModule() : nullptr;
 }
 
 void HTMLMediaElementEncryptedMedia::Trace(blink::Visitor* visitor) {

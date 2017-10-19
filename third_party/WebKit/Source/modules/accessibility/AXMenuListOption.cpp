@@ -188,12 +188,12 @@ String AXMenuListOption::TextAlternative(bool recursive,
 
 HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
   if (!GetNode())
-    return 0;
+    return nullptr;
 
   if (auto* option = ToHTMLOptionElementOrNull(GetNode()))
     return option->OwnerSelectElement();
 
-  return 0;
+  return nullptr;
 }
 
 void AXMenuListOption::Trace(blink::Visitor* visitor) {

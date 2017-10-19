@@ -115,7 +115,7 @@ void CSSGroupingRule::deleteRule(unsigned index,
   group_rule_->WrapperRemoveRule(index);
 
   if (child_rule_cssom_wrappers_[index])
-    child_rule_cssom_wrappers_[index]->SetParentRule(0);
+    child_rule_cssom_wrappers_[index]->SetParentRule(nullptr);
   child_rule_cssom_wrappers_.EraseAt(index);
 }
 

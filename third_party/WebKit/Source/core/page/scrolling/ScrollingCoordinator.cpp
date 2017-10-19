@@ -718,7 +718,7 @@ static void ProjectRectsToGraphicsLayerSpace(
     flags |= kTraverseDocumentBoundaries;
   PaintLayer* root_layer = main_frame->ContentLayoutItem().Layer();
   LayoutGeometryMap geometry_map(flags);
-  geometry_map.PushMappingsToAncestor(root_layer, 0);
+  geometry_map.PushMappingsToAncestor(root_layer, nullptr);
   LayerFrameMap layer_child_frame_map;
   MakeLayerChildFrameMap(main_frame, &layer_child_frame_map);
   ProjectRectsToGraphicsLayerSpaceRecursive(

@@ -329,7 +329,7 @@ MediaStreamTrack* MediaStream::getTrackById(String id) {
       return iter->Get();
   }
 
-  return 0;
+  return nullptr;
 }
 
 MediaStream* MediaStream::clone(ScriptState* script_state) {
@@ -430,7 +430,7 @@ void MediaStream::RemoveTrackByComponent(MediaStreamComponent* component) {
   if (!GetExecutionContext())
     return;
 
-  MediaStreamTrackVector* tracks = 0;
+  MediaStreamTrackVector* tracks = nullptr;
   switch (component->Source()->GetType()) {
     case MediaStreamSource::kTypeAudio:
       tracks = &audio_tracks_;

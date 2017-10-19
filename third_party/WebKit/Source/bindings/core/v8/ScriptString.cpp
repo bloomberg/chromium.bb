@@ -34,7 +34,7 @@
 
 namespace blink {
 
-ScriptString::ScriptString() : isolate_(0) {}
+ScriptString::ScriptString() : isolate_(nullptr) {}
 
 ScriptString::ScriptString(v8::Isolate* isolate, v8::Local<v8::String> string)
     : isolate_(isolate),

@@ -49,7 +49,7 @@ namespace blink {
 const int kInvalidPort = 0;
 const int kMaxAllowedPort = 65535;
 
-static URLSecurityOriginMap* g_url_origin_map = 0;
+static URLSecurityOriginMap* g_url_origin_map = nullptr;
 
 static SecurityOrigin* GetOriginFromMap(const KURL& url) {
   if (g_url_origin_map)

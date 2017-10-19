@@ -155,7 +155,7 @@ void HTMLTableElement::deleteTFoot() {
 HTMLTableSectionElement* HTMLTableElement::createTBody() {
   HTMLTableSectionElement* body =
       HTMLTableSectionElement::Create(tbodyTag, GetDocument());
-  Node* reference_element = LastBody() ? LastBody()->nextSibling() : 0;
+  Node* reference_element = LastBody() ? LastBody()->nextSibling() : nullptr;
 
   InsertBefore(body, reference_element);
   return body;
@@ -239,7 +239,7 @@ void HTMLTableElement::deleteRow(int index, ExceptionState& exception_state) {
     return;
   }
 
-  HTMLTableRowElement* row = 0;
+  HTMLTableRowElement* row = nullptr;
   int i = 0;
   if (index == -1) {
     row = HTMLTableRowsCollection::LastRow(*this);

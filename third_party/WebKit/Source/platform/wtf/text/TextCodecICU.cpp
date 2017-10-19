@@ -256,7 +256,7 @@ void TextCodecICU::RegisterEncodingNames(EncodingNameRegistrar registrar) {
 
 void TextCodecICU::RegisterCodecs(TextCodecRegistrar registrar) {
   // See comment above in registerEncodingNames.
-  registrar("ISO-8859-8-I", Create, 0);
+  registrar("ISO-8859-8-I", Create, nullptr);
 
   int32_t num_encodings = ucnv_countAvailable();
   for (int32_t i = 0; i < num_encodings; ++i) {
@@ -278,7 +278,7 @@ void TextCodecICU::RegisterCodecs(TextCodecRegistrar registrar) {
       continue;
     }
 #endif
-    registrar(standard_name, Create, 0);
+    registrar(standard_name, Create, nullptr);
   }
 }
 
@@ -316,7 +316,7 @@ void TextCodecICU::CreateICUConverter() const {
     const char* cached_name = ucnv_getName(cached_converter, &err);
     if (U_SUCCESS(err) && encoding_ == TextEncoding(cached_name)) {
       converter_icu_ = cached_converter;
-      cached_converter = 0;
+      cached_converter = nullptr;
       return;
     }
   }
@@ -351,7 +351,7 @@ class ErrorCallbackSetter final {
       : converter_(converter), should_stop_on_encoding_errors_(stop_on_error) {
     if (should_stop_on_encoding_errors_) {
       UErrorCode err = U_ZERO_ERROR;
-      ucnv_setToUCallBack(converter_, UCNV_TO_U_CALLBACK_STOP, 0,
+      ucnv_setToUCallBack(converter_, UCNV_TO_U_CALLBACK_STOP, nullptr,
                           &saved_action_, &saved_context_, &err);
       DCHECK_EQ(err, U_ZERO_ERROR);
     }
@@ -651,8 +651,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
       if (!encoding_.IsNonByteBasedEncoding())
         ucnv_setSubstChars(converter_icu_, "?", 1, &err);
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(converter_icu_, UCNV_FROM_U_CALLBACK_SUBSTITUTE, 0,
-                            0, 0, &err);
+      ucnv_setFromUCallBack(converter_icu_, UCNV_FROM_U_CALLBACK_SUBSTITUTE,
+                            nullptr, nullptr, nullptr, &err);
 #else
       ucnv_setFromUCallBack(converter_icu_,
                             needs_gbk_fallbacks_
@@ -663,8 +663,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
       break;
     case kEntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(converter_icu_, NumericEntityCallback, 0, 0, 0,
-                            &err);
+      ucnv_setFromUCallBack(converter_icu_, NumericEntityCallback, nullptr,
+                            nullptr, nullptr, &err);
 #else
       ucnv_setFromUCallBack(
           converter_icu_,
@@ -674,8 +674,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
       break;
     case kURLEncodedEntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(converter_icu_, UrlEscapedEntityCallback, 0, 0, 0,
-                            &err);
+      ucnv_setFromUCallBack(converter_icu_, UrlEscapedEntityCallback, nullptr,
+                            nullptr, nullptr, &err);
 #else
       ucnv_setFromUCallBack(converter_icu_,
                             needs_gbk_fallbacks_ ? GbkUrlEscapedEntityCallack
@@ -685,8 +685,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
       break;
     case kCSSEncodedEntitiesForUnencodables:
 #if !defined(USING_SYSTEM_ICU)
-      ucnv_setFromUCallBack(converter_icu_, CssEscapedEntityCallback, 0, 0, 0,
-                            &err);
+      ucnv_setFromUCallBack(converter_icu_, CssEscapedEntityCallback, nullptr,
+                            nullptr, nullptr, &err);
 #else
       ucnv_setFromUCallBack(converter_icu_,
                             needs_gbk_fallbacks_ ? GbkCssEscapedEntityCallack
@@ -707,8 +707,8 @@ CString TextCodecICU::EncodeInternal(const TextCodecInput& input,
     char* target = buffer;
     char* target_limit = target + kConversionBufferSize;
     err = U_ZERO_ERROR;
-    ucnv_fromUnicode(converter_icu_, &target, target_limit, &source, end, 0,
-                     true, &err);
+    ucnv_fromUnicode(converter_icu_, &target, target_limit, &source, end,
+                     nullptr, true, &err);
     size_t count = target - buffer;
     result.Grow(size + count);
     memcpy(result.data() + size, buffer, count);

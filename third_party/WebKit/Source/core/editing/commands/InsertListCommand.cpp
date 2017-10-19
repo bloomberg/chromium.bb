@@ -552,7 +552,7 @@ static HTMLElement* AdjacentEnclosingList(const VisiblePosition& pos,
       OutermostEnclosingList(adjacent_pos.DeepEquivalent().AnchorNode());
 
   if (!list_element)
-    return 0;
+    return nullptr;
 
   Element* previous_cell = EnclosingTableCell(pos.DeepEquivalent());
   Element* current_cell = EnclosingTableCell(adjacent_pos.DeepEquivalent());
@@ -562,7 +562,7 @@ static HTMLElement* AdjacentEnclosingList(const VisiblePosition& pos,
       previous_cell != current_cell ||
       EnclosingList(list_element) !=
           EnclosingList(pos.DeepEquivalent().AnchorNode()))
-    return 0;
+    return nullptr;
 
   return list_element;
 }

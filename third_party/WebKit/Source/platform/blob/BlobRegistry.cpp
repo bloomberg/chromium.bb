@@ -120,7 +120,7 @@ BlobOriginMap::BlobOriginMap() {
 SecurityOrigin* BlobOriginMap::GetOrigin(const KURL& url) {
   if (url.ProtocolIs("blob"))
     return OriginMap()->at(url.GetString());
-  return 0;
+  return nullptr;
 }
 
 }  // namespace blink

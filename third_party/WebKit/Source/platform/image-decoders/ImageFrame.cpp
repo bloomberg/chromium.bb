@@ -32,7 +32,7 @@
 namespace blink {
 
 ImageFrame::ImageFrame()
-    : allocator_(0),
+    : allocator_(nullptr),
       has_alpha_(true),
       status_(kFrameEmpty),
       disposal_method_(kDisposeNotSpecified),

@@ -302,7 +302,7 @@ LayoutRect InlineTextBox::LocalSelectionRect(
   StringBuilder characters_with_hyphen;
   bool respect_hyphen = e_pos == len_ && HasHyphen();
   TextRun text_run = ConstructTextRun(
-      style_to_use, respect_hyphen ? &characters_with_hyphen : 0);
+      style_to_use, respect_hyphen ? &characters_with_hyphen : nullptr);
 
   LayoutPoint starting_point = LayoutPoint(LogicalLeft(), sel_top);
   LayoutRect r;

@@ -78,7 +78,7 @@ SerializedScriptValue* History::state(ExceptionState& exception_state) {
     exception_state.ThrowSecurityError(
         "May not use a History object associated with a Document that is not "
         "fully active");
-    return 0;
+    return nullptr;
   }
   last_state_object_requested_ = StateInternal();
   return last_state_object_requested_.get();
@@ -86,14 +86,14 @@ SerializedScriptValue* History::state(ExceptionState& exception_state) {
 
 SerializedScriptValue* History::StateInternal() const {
   if (!GetFrame())
-    return 0;
+    return nullptr;
 
   if (HistoryItem* history_item =
           GetFrame()->Loader().GetDocumentLoader()->GetHistoryItem()) {
     return history_item->StateObject();
   }
 
-  return 0;
+  return nullptr;
 }
 
 void History::setScrollRestoration(const String& value,

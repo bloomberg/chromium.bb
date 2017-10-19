@@ -75,10 +75,10 @@ Font& Font::operator=(const Font& other) {
 
 bool Font::operator==(const Font& other) const {
   FontSelector* first =
-      font_fallback_list_ ? font_fallback_list_->GetFontSelector() : 0;
+      font_fallback_list_ ? font_fallback_list_->GetFontSelector() : nullptr;
   FontSelector* second = other.font_fallback_list_
                              ? other.font_fallback_list_->GetFontSelector()
-                             : 0;
+                             : nullptr;
 
   return first == second && font_description_ == other.font_description_ &&
          (font_fallback_list_

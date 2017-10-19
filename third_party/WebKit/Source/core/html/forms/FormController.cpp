@@ -40,7 +40,7 @@ static inline HTMLFormElement* OwnerFormForState(
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
   // indeterminate.
-  return control.FastHasAttribute(formAttr) ? 0 : control.Form();
+  return control.FastHasAttribute(formAttr) ? nullptr : control.Form();
 }
 
 // ----------------------------------------------------------------------------
@@ -85,7 +85,7 @@ FormControlState FormControlState::Deserialize(
 
 class FormElementKey {
  public:
-  FormElementKey(StringImpl* = 0, StringImpl* = 0);
+  FormElementKey(StringImpl* = nullptr, StringImpl* = nullptr);
   ~FormElementKey();
   FormElementKey(const FormElementKey&);
   FormElementKey& operator=(const FormElementKey&);

@@ -55,7 +55,7 @@ unsigned WebArrayBufferView::ByteLength() const {
 WebArrayBufferView* WebArrayBufferView::CreateFromV8Value(
     v8::Local<v8::Value> value) {
   if (!value->IsArrayBufferView())
-    return 0;
+    return nullptr;
   DOMArrayBufferView* view = V8ArrayBufferView::ToImpl(value.As<v8::Object>());
   return new WebArrayBufferView(view);
 }

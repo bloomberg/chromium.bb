@@ -67,7 +67,7 @@ void GraphicsContextState::SetStrokeThickness(float thickness) {
 
 void GraphicsContextState::SetStrokeColor(const Color& color) {
   stroke_flags_.setColor(color.Rgb());
-  stroke_flags_.setShader(0);
+  stroke_flags_.setShader(nullptr);
 }
 
 void GraphicsContextState::SetLineCap(LineCap cap) {
@@ -87,7 +87,7 @@ void GraphicsContextState::SetMiterLimit(float miter_limit) {
 
 void GraphicsContextState::SetFillColor(const Color& color) {
   fill_flags_.setColor(color.Rgb());
-  fill_flags_.setShader(0);
+  fill_flags_.setShader(nullptr);
 }
 
 // Shadow. (This will need tweaking if we use draw loopers for other things.)

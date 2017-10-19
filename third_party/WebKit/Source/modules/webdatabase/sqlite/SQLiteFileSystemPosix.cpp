@@ -297,7 +297,7 @@ int ChromiumFullPathname(sqlite3_vfs* vfs,
 
 // Do not allow loading libraries in the renderer.
 void* ChromiumDlOpen(sqlite3_vfs*, const char*) {
-  return 0;
+  return nullptr;
 }
 
 void ChromiumDlError(sqlite3_vfs*, int buf_size, char* error_buffer) {
@@ -305,7 +305,7 @@ void ChromiumDlError(sqlite3_vfs*, int buf_size, char* error_buffer) {
 }
 
 void (*ChromiumDlSym(sqlite3_vfs*, void*, const char*))(void) {
-  return 0;
+  return nullptr;
 }
 
 void ChromiumDlClose(sqlite3_vfs*, void*) {}
@@ -345,7 +345,7 @@ void SQLiteFileSystem::RegisterSQLiteVFS() {
   static sqlite3_vfs chromium_vfs = {1,
                                      sizeof(chromiumVfsFile),
                                      wrapped_vfs->mxPathname,
-                                     0,
+                                     nullptr,
                                      "chromium_vfs",
                                      wrapped_vfs,
                                      ChromiumOpen,
