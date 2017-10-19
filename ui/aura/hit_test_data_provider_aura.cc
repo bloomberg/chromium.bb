@@ -20,13 +20,14 @@ viz::mojom::HitTestRegionPtr CreateHitTestRegion(const aura::Window* window,
   auto hit_test_region = viz::mojom::HitTestRegion::New();
   DCHECK(window->GetFrameSinkId().is_valid());
   hit_test_region->frame_sink_id = window->GetFrameSinkId();
-  if (layer->GetPrimarySurfaceInfo()) {
-    DCHECK(window->GetFrameSinkId() ==
-           layer->GetPrimarySurfaceInfo()->id().frame_sink_id());
-    hit_test_region->local_surface_id =
-        layer->GetPrimarySurfaceInfo()->id().local_surface_id();
+  // Checking |layer| may not be correct, since the actual layer that embeds
+  // the surface may be a descendent of |layer|, instead of |layer| itself.
+  if (window->GetLocalSurfaceId().is_valid()) {
+    hit_test_region->local_surface_id = window->GetLocalSurfaceId();
+    hit_test_region->flags = flags | viz::mojom::kHitTestChildSurface;
+  } else {
+    hit_test_region->flags = flags | viz::mojom::kHitTestMine;
   }
-  hit_test_region->flags = flags;
   hit_test_region->rect = rect;
   hit_test_region->transform = layer->transform();
 
@@ -82,9 +83,6 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
       gfx::Rect rect_mouse(child->bounds());
       gfx::Rect rect_touch;
       bool touch_and_mouse_are_same = true;
-      uint32_t flags = child->layer()->GetPrimarySurfaceInfo()
-                           ? viz::mojom::kHitTestChildSurface
-                           : viz::mojom::kHitTestMine;
       WindowTargeter* targeter =
           static_cast<WindowTargeter*>(child->GetEventTargeter());
       if (!targeter)
@@ -109,8 +107,7 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
           if (rect.IsEmpty())
             continue;
           hit_test_region_list->regions.push_back(CreateHitTestRegion(
-              child,
-              flags | viz::mojom::kHitTestMouse | viz::mojom::kHitTestTouch,
+              child, viz::mojom::kHitTestMouse | viz::mojom::kHitTestTouch,
               rect));
         }
       } else {
@@ -118,14 +115,14 @@ void HitTestDataProviderAura::GetHitTestDataRecursively(
         if (!rect_mouse.IsEmpty()) {
           hit_test_region_list->regions.push_back(CreateHitTestRegion(
               child,
-              flags | (touch_and_mouse_are_same ? (viz::mojom::kHitTestMouse |
-                                                   viz::mojom::kHitTestTouch)
-                                                : viz::mojom::kHitTestMouse),
+              touch_and_mouse_are_same
+                  ? (viz::mojom::kHitTestMouse | viz::mojom::kHitTestTouch)
+                  : viz::mojom::kHitTestMouse,
               rect_mouse));
         }
         if (!touch_and_mouse_are_same && !rect_touch.IsEmpty()) {
           hit_test_region_list->regions.push_back(CreateHitTestRegion(
-              child, flags | viz::mojom::kHitTestTouch, rect_touch));
+              child, viz::mojom::kHitTestTouch, rect_touch));
         }
       }
     }
