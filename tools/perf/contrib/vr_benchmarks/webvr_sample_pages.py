@@ -18,6 +18,15 @@ class WebVrSamplePage(VrSamplePage):
   def RunPageInteractions(self, action_runner):
     action_runner.TapElement(selector='canvas[id="webgl-canvas"]')
     action_runner.MeasureMemory(True)
+    # Exit VR and navigate to a blank page to avoid unnecessary rendering, and
+    # therefore extra heat, while processing the trace data.
+    action_runner.ExecuteJavaScript(
+        """
+        navigator.getVRDisplays().then( (displays) => {
+          displays[0].exitPresent();
+        });
+        """)
+    action_runner.Navigate("about:blank")
 
 
 class WebVrSamplePageSet(story.StorySet):
