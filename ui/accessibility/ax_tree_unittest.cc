@@ -945,6 +945,9 @@ TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
   EXPECT_EQ("(0, 0) size (800 x 600)", GetBoundsAsString(tree, 1));
   EXPECT_EQ("(300, 200) size (100 x 100)", GetBoundsAsString(tree, 2));
   EXPECT_EQ("(300, 200) size (100 x 100)", GetBoundsAsString(tree, 3));
+  EXPECT_FALSE(IsNodeOffscreen(tree, 1));
+  EXPECT_FALSE(IsNodeOffscreen(tree, 2));
+  EXPECT_TRUE(IsNodeOffscreen(tree, 3));
 }
 
 TEST(AXTreeTest, GetBoundsCropsChildToRoot) {
