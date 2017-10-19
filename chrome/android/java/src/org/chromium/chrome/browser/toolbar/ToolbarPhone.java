@@ -2415,8 +2415,8 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     private void setTabSwitcherAnimationMenuDrawable() {
-        mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(getResources(),
-                R.drawable.btn_menu);
+        mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(
+                getResources(), R.drawable.ic_more_vert_black_24dp);
         mTabSwitcherAnimationMenuDrawable.mutate();
         mTabSwitcherAnimationMenuDrawable.setColorFilter(
                 isIncognito() ? mLightModeDefaultColor : mDarkModeDefaultColor,
