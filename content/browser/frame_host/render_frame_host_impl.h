@@ -1170,6 +1170,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // The last AXContentTreeData for this frame received from the RenderFrame.
   AXContentTreeData ax_content_tree_data_;
 
+  // The AX tree ID of this frame.
+  ui::AXTreeIDRegistry::AXTreeID ax_tree_id_ =
+      ui::AXTreeIDRegistry::kNoAXTreeID;
+
   // The AX tree ID of the embedder, if this is a browser plugin guest.
   ui::AXTreeIDRegistry::AXTreeID browser_plugin_embedder_ax_tree_id_;
 
