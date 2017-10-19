@@ -27,7 +27,7 @@ String CSSFontFamilyValue::CustomCSSText() const {
   return SerializeFontFamily(string_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSFontFamilyValue) {
+void CSSFontFamilyValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 

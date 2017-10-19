@@ -55,7 +55,7 @@ SVGTextPositioningElement::SVGTextPositioningElement(
   AddToPropertyMap(rotate_);
 }
 
-DEFINE_TRACE(SVGTextPositioningElement) {
+void SVGTextPositioningElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(dx_);

@@ -47,7 +47,7 @@ class CachedMatchedProperties final
            const ComputedStyle& parent_style,
            const MatchedPropertiesVector&);
   void Clear();
-  DEFINE_INLINE_TRACE() { visitor->Trace(matched_properties); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(matched_properties); }
 };
 
 // Specialize the HashTraits for CachedMatchedProperties to check for dead
@@ -112,7 +112,7 @@ class MatchedPropertiesCache {
   static bool IsCacheable(const StyleResolverState&);
   static bool IsStyleCacheable(const ComputedStyle&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   using Cache = HeapHashMap<unsigned,

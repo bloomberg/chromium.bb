@@ -106,7 +106,7 @@ class CORE_EXPORT DOMMatrixReadOnly
 
   const TransformationMatrix& Matrix() const { return *matrix_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  protected:
   DOMMatrixReadOnly() {}

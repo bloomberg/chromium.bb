@@ -37,7 +37,7 @@ IdTargetObserver::IdTargetObserver(IdTargetObserverRegistry& observer_registry,
 
 IdTargetObserver::~IdTargetObserver() {}
 
-DEFINE_TRACE(IdTargetObserver) {
+void IdTargetObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(registry_);
 }
 

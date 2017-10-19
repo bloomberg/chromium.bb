@@ -50,7 +50,7 @@ Step::Step(Axis axis,
 
 Step::~Step() {}
 
-DEFINE_TRACE(Step) {
+void Step::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_test_);
   visitor->Trace(predicates_);
   ParseNode::Trace(visitor);

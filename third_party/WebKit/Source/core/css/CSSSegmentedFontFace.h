@@ -74,7 +74,7 @@ class CSSSegmentedFontFace final
     return approximate_character_count_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   CSSSegmentedFontFace(FontSelectionCapabilities);

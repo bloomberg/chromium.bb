@@ -16,7 +16,7 @@ Response* BackgroundFetchSettledFetch::response() const {
   return response_;
 }
 
-DEFINE_TRACE(BackgroundFetchSettledFetch) {
+void BackgroundFetchSettledFetch::Trace(blink::Visitor* visitor) {
   visitor->Trace(response_);
   BackgroundFetchFetch::Trace(visitor);
 }

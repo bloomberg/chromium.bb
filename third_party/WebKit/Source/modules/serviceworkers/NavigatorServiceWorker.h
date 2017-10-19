@@ -35,7 +35,7 @@ class MODULES_EXPORT NavigatorServiceWorker final
                                                String& error_message);
   void ClearServiceWorker();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorServiceWorker(Navigator&);

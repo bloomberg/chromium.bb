@@ -52,7 +52,7 @@ class WorkerNavigatorStorageQuota final
 
   StorageManager* storage() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit WorkerNavigatorStorageQuota();

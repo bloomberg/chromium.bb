@@ -187,7 +187,7 @@ RefPtr<WebTaskRunner> DOMTimer::TimerTaskRunner() const {
   return GetExecutionContext()->Timers()->TimerTaskRunner();
 }
 
-DEFINE_TRACE(DOMTimer) {
+void DOMTimer::Trace(blink::Visitor* visitor) {
   visitor->Trace(action_);
   SuspendableTimer::Trace(visitor);
 }

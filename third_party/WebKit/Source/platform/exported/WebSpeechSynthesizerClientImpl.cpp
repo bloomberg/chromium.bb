@@ -83,7 +83,7 @@ void WebSpeechSynthesizerClientImpl::SentenceBoundaryEventOccurred(
                                  char_index);
 }
 
-DEFINE_TRACE(WebSpeechSynthesizerClientImpl) {
+void WebSpeechSynthesizerClientImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(synthesizer_);
   visitor->Trace(client_);
 }

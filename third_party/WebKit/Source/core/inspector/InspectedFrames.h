@@ -47,7 +47,7 @@ class CORE_EXPORT InspectedFrames final
   Iterator begin();
   Iterator end();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit InspectedFrames(LocalFrame*);

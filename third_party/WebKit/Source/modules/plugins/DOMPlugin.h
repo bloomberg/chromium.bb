@@ -53,7 +53,7 @@ class DOMPlugin final : public GarbageCollected<DOMPlugin>,
   void NamedPropertyEnumerator(Vector<String>&, ExceptionState&) const;
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   DOMPlugin(LocalFrame*, const PluginInfo&);

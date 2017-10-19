@@ -96,7 +96,7 @@ const AtomicString& BackgroundFetchedEvent::InterfaceName() const {
   return EventNames::BackgroundFetchedEvent;
 }
 
-DEFINE_TRACE(BackgroundFetchedEvent) {
+void BackgroundFetchedEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetches_);
   visitor->Trace(registration_);
   BackgroundFetchEvent::Trace(visitor);

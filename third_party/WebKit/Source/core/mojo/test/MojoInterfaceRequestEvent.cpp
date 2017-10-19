@@ -11,7 +11,7 @@ namespace blink {
 
 MojoInterfaceRequestEvent::~MojoInterfaceRequestEvent() {}
 
-DEFINE_TRACE(MojoInterfaceRequestEvent) {
+void MojoInterfaceRequestEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
   visitor->Trace(handle_);
 }

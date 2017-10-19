@@ -59,7 +59,7 @@ class SVGFEBlendElement final : public SVGFilterPrimitiveStandardAttributes {
   SVGAnimatedString* in2() { return in2_.Get(); }
   SVGAnimatedEnumeration<Mode>* mode() { return mode_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGFEBlendElement(Document&);

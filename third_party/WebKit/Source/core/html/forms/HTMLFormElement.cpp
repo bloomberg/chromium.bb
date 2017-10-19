@@ -81,7 +81,7 @@ HTMLFormElement* HTMLFormElement::Create(Document& document) {
 
 HTMLFormElement::~HTMLFormElement() {}
 
-DEFINE_TRACE(HTMLFormElement) {
+void HTMLFormElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(past_names_map_);
   visitor->Trace(radio_button_group_scope_);
   visitor->Trace(listed_elements_);

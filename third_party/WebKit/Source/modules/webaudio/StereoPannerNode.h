@@ -56,7 +56,7 @@ class StereoPannerNode final : public AudioNode {
   static StereoPannerNode* Create(BaseAudioContext*,
                                   const StereoPannerOptions&,
                                   ExceptionState&);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   AudioParam* pan() const;
 

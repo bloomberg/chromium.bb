@@ -27,7 +27,7 @@ class MODULES_EXPORT InspectorAccessibilityAgent
   InspectorAccessibilityAgent(Page*, InspectorDOMAgent*);
 
   // Base agent methods.
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // Protocol methods.
   protocol::Response getPartialAXTree(

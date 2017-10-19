@@ -51,7 +51,7 @@ void RTCStatsResponse::AddStats(const WebRTCLegacyStats& stats) {
   }
 }
 
-DEFINE_TRACE(RTCStatsResponse) {
+void RTCStatsResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(result_);
   RTCStatsResponseBase::Trace(visitor);
 }

@@ -54,7 +54,7 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
         entries[0]->target()->GetLayoutObject());
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(text_track_container_);
     ResizeObserver::Delegate::Trace(visitor);
   }
@@ -68,7 +68,7 @@ class VideoElementResizeDelegate final : public ResizeObserver::Delegate {
 TextTrackContainer::TextTrackContainer(Document& document)
     : HTMLDivElement(document), default_font_size_(0) {}
 
-DEFINE_TRACE(TextTrackContainer) {
+void TextTrackContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(video_size_observer_);
   HTMLDivElement::Trace(visitor);
 }

@@ -99,7 +99,7 @@ class CORE_EXPORT CSSParserContext
     return should_check_content_security_policy_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   CSSParserContext(const KURL& base_url,

@@ -79,7 +79,7 @@ class TrackListBase : public EventTargetWithInlineData {
     ScheduleEvent(Event::Create(EventTypeNames::change));
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(tracks_);
     visitor->Trace(media_element_);
     EventTargetWithInlineData::Trace(visitor);

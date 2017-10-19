@@ -437,7 +437,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   // Sets the local core frame and registers destruction observers.
   void SetCoreFrame(LocalFrame*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   WebLocalFrameImpl(WebTreeScopeType,

@@ -39,7 +39,7 @@ CredentialsContainer* NavigatorCredentials::credentials() {
   return credentials_container_.Get();
 }
 
-DEFINE_TRACE(NavigatorCredentials) {
+void NavigatorCredentials::Trace(blink::Visitor* visitor) {
   visitor->Trace(credentials_container_);
   Supplement<Navigator>::Trace(visitor);
 }

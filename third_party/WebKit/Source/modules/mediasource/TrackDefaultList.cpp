@@ -70,7 +70,7 @@ TrackDefaultList::TrackDefaultList(
     const HeapVector<Member<TrackDefault>>& track_defaults)
     : track_defaults_(track_defaults) {}
 
-DEFINE_TRACE(TrackDefaultList) {
+void TrackDefaultList::Trace(blink::Visitor* visitor) {
   visitor->Trace(track_defaults_);
 }
 

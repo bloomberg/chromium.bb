@@ -110,7 +110,7 @@ class CORE_EXPORT FontFace : public GarbageCollectedFinalized<FontFace>,
   CSSFontFace* CssFontFace() { return css_font_face_.Get(); }
   size_t ApproximateBlankCharacterCount() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   bool HadBlankText() const;
 
@@ -119,7 +119,7 @@ class CORE_EXPORT FontFace : public GarbageCollectedFinalized<FontFace>,
     virtual ~LoadFontCallback() {}
     virtual void NotifyLoaded(FontFace*) = 0;
     virtual void NotifyError(FontFace*) = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void Trace(blink::Visitor* visitor) {}
   };
   void LoadWithCallback(LoadFontCallback*);
   void AddCallback(LoadFontCallback*);

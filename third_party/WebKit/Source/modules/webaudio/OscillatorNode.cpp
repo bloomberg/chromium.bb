@@ -439,7 +439,7 @@ OscillatorNode* OscillatorNode::Create(BaseAudioContext* context,
   return node;
 }
 
-DEFINE_TRACE(OscillatorNode) {
+void OscillatorNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(frequency_);
   visitor->Trace(detune_);
   AudioScheduledSourceNode::Trace(visitor);

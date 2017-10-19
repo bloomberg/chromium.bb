@@ -102,7 +102,7 @@ ScrollingCoordinator::~ScrollingCoordinator() {
   DCHECK(!page_);
 }
 
-DEFINE_TRACE(ScrollingCoordinator) {
+void ScrollingCoordinator::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(horizontal_scrollbars_);
   visitor->Trace(vertical_scrollbars_);

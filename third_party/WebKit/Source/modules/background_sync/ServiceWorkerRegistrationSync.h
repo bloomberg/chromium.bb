@@ -27,7 +27,7 @@ class ServiceWorkerRegistrationSync final
   static SyncManager* sync(ServiceWorkerRegistration&);
   SyncManager* sync();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit ServiceWorkerRegistrationSync(ServiceWorkerRegistration*);

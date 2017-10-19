@@ -76,7 +76,7 @@ bool RecordTest::unionReceivedARecord(
   return arg.IsByteStringByteStringRecord();
 }
 
-DEFINE_TRACE(RecordTest) {
+void RecordTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(string_element_record_);
 }
 

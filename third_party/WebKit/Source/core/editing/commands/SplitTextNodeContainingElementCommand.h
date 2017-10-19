@@ -37,7 +37,7 @@ class SplitTextNodeContainingElementCommand final
     return new SplitTextNodeContainingElementCommand(node, offset);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SplitTextNodeContainingElementCommand(Text*, int offset);

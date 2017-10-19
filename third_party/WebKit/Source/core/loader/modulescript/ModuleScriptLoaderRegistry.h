@@ -25,7 +25,7 @@ class CORE_EXPORT ModuleScriptLoaderRegistry final
   static ModuleScriptLoaderRegistry* Create() {
     return new ModuleScriptLoaderRegistry;
   }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   ModuleScriptLoader* Fetch(const ModuleScriptFetchRequest&,
                             ModuleGraphLevel,

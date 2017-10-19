@@ -274,7 +274,7 @@ class RequestSameResourceOnComplete
   }
   bool NotifyFinishedCalled() const { return notify_finished_called_; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(resource_);
     RawResourceClient::Trace(visitor);
   }
@@ -358,7 +358,7 @@ class ServeRequestsOnCompleteClient final
     ASSERT_TRUE(false);
   }
 
-  DEFINE_INLINE_TRACE() { RawResourceClient::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) { RawResourceClient::Trace(visitor); }
 
   String DebugName() const override { return "ServeRequestsOnCompleteClient"; }
 };

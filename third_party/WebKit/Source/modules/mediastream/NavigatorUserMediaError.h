@@ -51,7 +51,7 @@ class NavigatorUserMediaError final
   const String& message() const { return message_; }
   const String& constraintName() const { return constraint_name_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   NavigatorUserMediaError(const String& name,

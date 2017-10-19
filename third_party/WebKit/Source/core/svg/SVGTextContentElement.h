@@ -73,7 +73,7 @@ class CORE_EXPORT SVGTextContentElement : public SVGGraphicsElement {
     return length_adjust_.Get();
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   SVGTextContentElement(const QualifiedName&, Document&);

@@ -142,7 +142,7 @@ class PostMessageTimer final
   // Eager finalization is needed to promptly stop this timer object.
   // (see DOMTimer comment for more.)
   EAGERLY_FINALIZE();
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(event_);
     visitor->Trace(window_);
     SuspendableTimer::Trace(visitor);
@@ -1621,7 +1621,7 @@ DOMWindow* LocalDOMWindow::open(const String& url_string,
   return new_window;
 }
 
-DEFINE_TRACE(LocalDOMWindow) {
+void LocalDOMWindow::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(screen_);
   visitor->Trace(history_);

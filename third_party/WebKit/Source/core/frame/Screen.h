@@ -58,7 +58,7 @@ class CORE_EXPORT Screen final : public GarbageCollected<Screen>,
   int availHeight() const;
   int availWidth() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit Screen(LocalFrame*);

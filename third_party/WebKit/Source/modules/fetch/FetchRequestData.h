@@ -96,7 +96,7 @@ class FetchRequestData final
     return AtomicString("about:client");
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   FetchRequestData();

@@ -249,7 +249,7 @@ bool OriginTrialContext::EnableTrialFromToken(const String& token) {
   return valid;
 }
 
-DEFINE_TRACE(OriginTrialContext) {
+void OriginTrialContext::Trace(blink::Visitor* visitor) {
   Supplement<ExecutionContext>::Trace(visitor);
 }
 

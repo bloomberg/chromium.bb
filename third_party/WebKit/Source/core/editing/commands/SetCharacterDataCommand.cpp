@@ -65,7 +65,7 @@ void SetCharacterDataCommand::DoUnapply() {
                      IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-DEFINE_TRACE(SetCharacterDataCommand) {
+void SetCharacterDataCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_);
   SimpleEditCommand::Trace(visitor);
 }

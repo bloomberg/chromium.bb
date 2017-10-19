@@ -60,7 +60,7 @@ class PagePopupController final : public GarbageCollected<PagePopupController>,
   void ClearPagePopupClient();
   void setWindowRect(int x, int y, int width, int height);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   PagePopupController(PagePopup&, PagePopupClient*);

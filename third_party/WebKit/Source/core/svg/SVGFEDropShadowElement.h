@@ -42,7 +42,7 @@ class SVGFEDropShadowElement final
   SVGAnimatedNumber* stdDeviationY() { return std_deviation_->SecondNumber(); }
   SVGAnimatedString* in1() { return in1_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGFEDropShadowElement(Document&);

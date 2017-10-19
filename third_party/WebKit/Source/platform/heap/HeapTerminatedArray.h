@@ -21,7 +21,7 @@ class HeapTerminatedArray : public TerminatedArray<T> {
   using TerminatedArray<T>::begin;
   using TerminatedArray<T>::end;
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     for (typename TerminatedArray<T>::iterator it = begin(); it != end(); ++it)
       visitor->Trace(*it);
   }

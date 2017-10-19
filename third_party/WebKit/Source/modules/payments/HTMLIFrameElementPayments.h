@@ -27,7 +27,7 @@ class HTMLIFrameElementPayments final
   static HTMLIFrameElementPayments& From(HTMLIFrameElement&);
   static bool AllowPaymentRequest(HTMLIFrameElement&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   HTMLIFrameElementPayments();

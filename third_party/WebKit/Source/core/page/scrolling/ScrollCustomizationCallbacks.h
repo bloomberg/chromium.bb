@@ -26,7 +26,7 @@ class CORE_EXPORT ScrollCustomizationCallbacks
   void RemoveApplyScroll(Element*);
   ScrollStateCallback* GetApplyScroll(Element*);
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(apply_scroll_callbacks_);
     visitor->Trace(distribute_scroll_callbacks_);
   };

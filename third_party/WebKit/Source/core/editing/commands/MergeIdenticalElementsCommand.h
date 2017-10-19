@@ -37,7 +37,7 @@ class MergeIdenticalElementsCommand final : public SimpleEditCommand {
     return new MergeIdenticalElementsCommand(element1, element2);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MergeIdenticalElementsCommand(Element*, Element*);

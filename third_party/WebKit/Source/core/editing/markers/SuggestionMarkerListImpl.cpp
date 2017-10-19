@@ -191,7 +191,7 @@ bool SuggestionMarkerListImpl::ShiftMarkersForNonSuggestionEditingOperation(
   return did_shift_marker;
 }
 
-DEFINE_TRACE(SuggestionMarkerListImpl) {
+void SuggestionMarkerListImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(markers_);
   DocumentMarkerList::Trace(visitor);
 }

@@ -43,7 +43,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   static SVGAnimateElement* Create(Document&);
   ~SVGAnimateElement() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   bool IsSVGAnimationAttributeSettingJavaScriptURL(
       const Attribute&) const override;

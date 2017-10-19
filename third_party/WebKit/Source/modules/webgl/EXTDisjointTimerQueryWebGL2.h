@@ -27,7 +27,7 @@ class EXTDisjointTimerQueryWebGL2 final : public WebGLExtension {
 
   void queryCounterEXT(WebGLQuery*, GLenum);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit EXTDisjointTimerQueryWebGL2(WebGLRenderingContextBase*);

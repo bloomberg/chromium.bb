@@ -56,7 +56,7 @@ LongOrTestDictionary::LongOrTestDictionary(const LongOrTestDictionary&) = defaul
 LongOrTestDictionary::~LongOrTestDictionary() = default;
 LongOrTestDictionary& LongOrTestDictionary::operator=(const LongOrTestDictionary&) = default;
 
-DEFINE_TRACE(LongOrTestDictionary) {
+void LongOrTestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_dictionary_);
 }
 

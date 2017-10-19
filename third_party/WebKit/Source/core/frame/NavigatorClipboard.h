@@ -24,7 +24,7 @@ class NavigatorClipboard final : public GarbageCollected<NavigatorClipboard>,
  public:
   static Clipboard* clipboard(ScriptState*, Navigator&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorClipboard(Navigator&);

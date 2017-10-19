@@ -73,7 +73,7 @@ BooleanOrStringOrUnrestrictedDouble::BooleanOrStringOrUnrestrictedDouble(const B
 BooleanOrStringOrUnrestrictedDouble::~BooleanOrStringOrUnrestrictedDouble() = default;
 BooleanOrStringOrUnrestrictedDouble& BooleanOrStringOrUnrestrictedDouble::operator=(const BooleanOrStringOrUnrestrictedDouble&) = default;
 
-DEFINE_TRACE(BooleanOrStringOrUnrestrictedDouble) {
+void BooleanOrStringOrUnrestrictedDouble::Trace(blink::Visitor* visitor) {
 }
 
 void V8BooleanOrStringOrUnrestrictedDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrStringOrUnrestrictedDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {

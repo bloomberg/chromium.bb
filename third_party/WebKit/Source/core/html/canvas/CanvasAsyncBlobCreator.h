@@ -70,7 +70,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   virtual void SignalTaskSwitchInStartTimeoutEventForTesting() {}
   virtual void SignalTaskSwitchInCompleteTimeoutEventForTesting() {}
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   CanvasAsyncBlobCreator(DOMUint8ClampedArray* data,

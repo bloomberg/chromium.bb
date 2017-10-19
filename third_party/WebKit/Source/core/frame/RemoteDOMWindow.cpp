@@ -14,7 +14,7 @@ ExecutionContext* RemoteDOMWindow::GetExecutionContext() const {
   return nullptr;
 }
 
-DEFINE_TRACE(RemoteDOMWindow) {
+void RemoteDOMWindow::Trace(blink::Visitor* visitor) {
   DOMWindow::Trace(visitor);
 }
 

@@ -25,7 +25,7 @@ class NavigatorBattery final : public GarbageCollected<NavigatorBattery>,
   static ScriptPromise getBattery(ScriptState*, Navigator&);
   ScriptPromise getBattery(ScriptState*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorBattery(Navigator&);

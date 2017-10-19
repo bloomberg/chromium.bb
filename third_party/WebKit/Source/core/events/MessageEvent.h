@@ -166,7 +166,7 @@ class CORE_EXPORT MessageEvent final : public Event {
 
   void EntangleMessagePorts(ExecutionContext*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,

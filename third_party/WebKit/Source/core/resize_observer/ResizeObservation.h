@@ -31,7 +31,7 @@ class CORE_EXPORT ResizeObservation final
   LayoutSize ComputeTargetSize() const;
   LayoutPoint ComputeTargetLocation() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   WeakMember<Element> target_;

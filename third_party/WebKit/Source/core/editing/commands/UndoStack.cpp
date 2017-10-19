@@ -94,7 +94,7 @@ void UndoStack::Clear() {
   redo_stack_.clear();
 }
 
-DEFINE_TRACE(UndoStack) {
+void UndoStack::Trace(blink::Visitor* visitor) {
   visitor->Trace(undo_stack_);
   visitor->Trace(redo_stack_);
 }

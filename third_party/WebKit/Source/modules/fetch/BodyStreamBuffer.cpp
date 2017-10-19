@@ -74,7 +74,7 @@ class BodyStreamBuffer::LoaderClient final
     client_->DidFetchDataLoadFailed();
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(buffer_);
     visitor->Trace(client_);
     ContextLifecycleObserver::Trace(visitor);

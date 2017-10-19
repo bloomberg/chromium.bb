@@ -102,7 +102,7 @@ class TestSynchronousMutationObserver
           node_to_be_removed_(node_with_index.GetNode()),
           offset_(offset) {}
 
-    DEFINE_INLINE_TRACE() {
+    void Trace(blink::Visitor* visitor) {
       visitor->Trace(node_);
       visitor->Trace(node_to_be_removed_);
     }
@@ -124,7 +124,7 @@ class TestSynchronousMutationObserver
           old_length_(old_length),
           new_length_(new_length) {}
 
-    DEFINE_INLINE_TRACE() { visitor->Trace(node_); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(node_); }
   };
 
   TestSynchronousMutationObserver(Document&);
@@ -164,7 +164,7 @@ class TestSynchronousMutationObserver
     return updated_character_data_records_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   // Implement |SynchronousMutationObserver| member functions.
@@ -241,7 +241,7 @@ void TestSynchronousMutationObserver::NodeWillBeRemoved(Node& node) {
   removed_nodes_.push_back(&node);
 }
 
-DEFINE_TRACE(TestSynchronousMutationObserver) {
+void TestSynchronousMutationObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(children_changed_nodes_);
   visitor->Trace(merge_text_nodes_records_);
   visitor->Trace(move_tree_to_new_document_nodes_);
@@ -265,7 +265,7 @@ class TestDocumentShutdownObserver
     return context_destroyed_called_counter_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   // Implement |DocumentShutdownObserver| member functions.
@@ -284,7 +284,7 @@ void TestDocumentShutdownObserver::ContextDestroyed(Document*) {
   ++context_destroyed_called_counter_;
 }
 
-DEFINE_TRACE(TestDocumentShutdownObserver) {
+void TestDocumentShutdownObserver::Trace(blink::Visitor* visitor) {
   DocumentShutdownObserver::Trace(visitor);
 }
 
@@ -319,7 +319,8 @@ class MockDocumentValidationMessageClient
   }
   void WillBeDestroyed() override {}
 
-  // DEFINE_INLINE_VIRTUAL_TRACE() { ValidationMessageClient::trace(visitor); }
+  // virtual void Trace(blink::Visitor* visitor) {
+  // ValidationMessageClient::trace(visitor); }
 };
 
 class MockWebApplicationCacheHost : public blink::WebApplicationCacheHost {

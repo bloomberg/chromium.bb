@@ -49,7 +49,7 @@ class CORE_EXPORT HTMLResourcePreloader
   static HTMLResourcePreloader* Create(Document&);
   int CountPreloads();
   Document* GetDocument() { return document_.Get(); }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  protected:
   void Preload(std::unique_ptr<PreloadRequest>,

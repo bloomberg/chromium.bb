@@ -57,7 +57,7 @@ TestInterfaceGarbageCollectedOrString::TestInterfaceGarbageCollectedOrString(con
 TestInterfaceGarbageCollectedOrString::~TestInterfaceGarbageCollectedOrString() = default;
 TestInterfaceGarbageCollectedOrString& TestInterfaceGarbageCollectedOrString::operator=(const TestInterfaceGarbageCollectedOrString&) = default;
 
-DEFINE_TRACE(TestInterfaceGarbageCollectedOrString) {
+void TestInterfaceGarbageCollectedOrString::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_interface_garbage_collected_);
 }
 

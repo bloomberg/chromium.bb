@@ -71,7 +71,7 @@ class CORE_EXPORT HTMLTableElement final : public HTMLElement {
   const StylePropertySet* AdditionalCellStyle();
   const StylePropertySet* AdditionalGroupStyle(bool rows);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit HTMLTableElement(Document&);

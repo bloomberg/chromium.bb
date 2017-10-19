@@ -142,7 +142,7 @@ void TextTrackCueList::ValidateCueIndexes() {
   first_invalid_index_ = list_.size();
 }
 
-DEFINE_TRACE(TextTrackCueList) {
+void TextTrackCueList::Trace(blink::Visitor* visitor) {
   visitor->Trace(list_);
 }
 

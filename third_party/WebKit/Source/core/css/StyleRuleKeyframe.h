@@ -32,7 +32,7 @@ class StyleRuleKeyframe final : public StyleRuleBase {
 
   String CssText() const;
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   StyleRuleKeyframe(std::unique_ptr<Vector<double>>, StylePropertySet*);

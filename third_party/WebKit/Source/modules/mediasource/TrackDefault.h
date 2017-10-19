@@ -39,7 +39,7 @@ class TrackDefault final : public GarbageCollectedFinalized<TrackDefault>,
   String label() const { return label_; }
   ScriptValue kinds(ScriptState*) const;
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   TrackDefault(const AtomicString& type,

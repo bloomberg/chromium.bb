@@ -44,7 +44,7 @@ class CORE_EXPORT ScrollTimeline final : public AnimationTimeline {
   String orientation();
   void timeRange(DoubleOrScrollTimelineAutoKeyword&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   ScrollTimeline(const Document&, Element*, ScrollDirection, double);

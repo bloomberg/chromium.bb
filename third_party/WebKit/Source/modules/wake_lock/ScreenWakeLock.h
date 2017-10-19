@@ -34,7 +34,7 @@ class MODULES_EXPORT ScreenWakeLock final
 
   ~ScreenWakeLock() = default;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit ScreenWakeLock(LocalFrame&);

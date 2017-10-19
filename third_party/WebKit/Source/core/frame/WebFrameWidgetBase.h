@@ -111,7 +111,7 @@ class CORE_EXPORT WebFrameWidgetBase
   // Image decode functionality.
   void RequestDecode(const PaintImage&, WTF::Function<void(bool)> callback);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   enum DragAction { kDragEnter, kDragOver };

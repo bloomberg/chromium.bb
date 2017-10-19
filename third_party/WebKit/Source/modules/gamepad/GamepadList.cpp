@@ -39,7 +39,7 @@ Gamepad* GamepadList::item(unsigned index) {
   return index < length() ? items_[index].Get() : 0;
 }
 
-DEFINE_TRACE(GamepadList) {
+void GamepadList::Trace(blink::Visitor* visitor) {
   for (unsigned index = 0; index < device::Gamepads::kItemsLengthCap; index++) {
     visitor->Trace(items_[index]);
   }

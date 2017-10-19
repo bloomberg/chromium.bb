@@ -29,7 +29,7 @@ class WebTaskRunner;
 class ModulatorImplBase : public Modulator {
  public:
   virtual ~ModulatorImplBase();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
   ExecutionContext* GetExecutionContext() const;

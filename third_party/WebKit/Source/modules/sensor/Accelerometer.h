@@ -22,7 +22,7 @@ class Accelerometer : public Sensor {
   double y(bool& is_null) const;
   double z(bool& is_null) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   Accelerometer(ExecutionContext*,

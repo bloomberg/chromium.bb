@@ -36,7 +36,7 @@ void ModulePendingScriptTreeClient::NotifyModuleTreeLoadFinished(
     pending_script_->NotifyModuleTreeLoadFinished();
 }
 
-DEFINE_TRACE(ModulePendingScriptTreeClient) {
+void ModulePendingScriptTreeClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_script_);
   visitor->Trace(pending_script_);
   ModuleTreeClient::Trace(visitor);
@@ -65,7 +65,7 @@ void ModulePendingScript::DisposeInternal() {
   module_tree_client_ = nullptr;
 }
 
-DEFINE_TRACE(ModulePendingScript) {
+void ModulePendingScript::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_tree_client_);
   PendingScript::Trace(visitor);
 }

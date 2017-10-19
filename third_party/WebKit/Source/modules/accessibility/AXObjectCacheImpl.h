@@ -59,7 +59,7 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   explicit AXObjectCacheImpl(Document&);
   virtual ~AXObjectCacheImpl();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   Document& GetDocument() { return *document_; }
   AXObject* FocusedObject();

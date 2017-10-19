@@ -771,7 +771,7 @@ void Request::RefreshBody(ScriptState* script_state) {
       .Set(request.As<v8::Object>(), body_buffer);
 }
 
-DEFINE_TRACE(Request) {
+void Request::Trace(blink::Visitor* visitor) {
   Body::Trace(visitor);
   visitor->Trace(request_);
   visitor->Trace(headers_);

@@ -53,7 +53,9 @@ class WorkerFetchContextHolder final
     return std::move(web_context_);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<WorkerClients>::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    Supplement<WorkerClients>::Trace(visitor);
+  }
 
  private:
   std::unique_ptr<WebWorkerFetchContext> web_context_;
@@ -344,7 +346,7 @@ RefPtr<WebTaskRunner> WorkerFetchContext::GetLoadingTaskRunner() {
   return loading_task_runner_;
 }
 
-DEFINE_TRACE(WorkerFetchContext) {
+void WorkerFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
   visitor->Trace(subresource_filter_);
   visitor->Trace(resource_fetcher_);

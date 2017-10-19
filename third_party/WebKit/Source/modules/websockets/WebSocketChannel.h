@@ -104,7 +104,7 @@ class MODULES_EXPORT WebSocketChannel
 
   virtual ~WebSocketChannel() {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

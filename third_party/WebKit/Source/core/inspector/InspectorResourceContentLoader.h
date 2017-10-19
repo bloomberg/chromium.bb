@@ -29,7 +29,7 @@ class CORE_EXPORT InspectorResourceContentLoader final
   }
   ~InspectorResourceContentLoader();
   void Dispose();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   int CreateClientId();
   void EnsureResourcesContentLoaded(int client_id, WTF::Closure callback);

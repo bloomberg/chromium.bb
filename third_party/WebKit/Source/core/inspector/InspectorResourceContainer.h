@@ -25,7 +25,7 @@ class CORE_EXPORT InspectorResourceContainer
  public:
   explicit InspectorResourceContainer(InspectedFrames*);
   ~InspectorResourceContainer();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void DidCommitLoadForLocalFrame(LocalFrame*);
 

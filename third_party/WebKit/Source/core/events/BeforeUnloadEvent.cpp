@@ -33,7 +33,7 @@ bool BeforeUnloadEvent::IsBeforeUnloadEvent() const {
   return true;
 }
 
-DEFINE_TRACE(BeforeUnloadEvent) {
+void BeforeUnloadEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 

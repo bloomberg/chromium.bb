@@ -19,7 +19,7 @@ class StyleRuleUsageTracker : public GarbageCollected<StyleRuleUsageTracker> {
   void Track(const CSSStyleSheet*, const StyleRule*);
   RuleListByStyleSheet TakeDelta();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   HeapHashSet<std::pair<Member<const CSSStyleSheet>, Member<const StyleRule>>>

@@ -141,7 +141,7 @@ void SVGStyleElement::DispatchPendingEvent() {
   DispatchEvent(Event::Create(EventTypeNames::error));
 }
 
-DEFINE_TRACE(SVGStyleElement) {
+void SVGStyleElement::Trace(blink::Visitor* visitor) {
   StyleElement::Trace(visitor);
   SVGElement::Trace(visitor);
 }

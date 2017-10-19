@@ -45,7 +45,7 @@ class RTCSessionDescriptionRequest
   virtual void RequestSucceeded(const WebRTCSessionDescription&) = 0;
   virtual void RequestFailed(const String& error) = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   RTCSessionDescriptionRequest() {}

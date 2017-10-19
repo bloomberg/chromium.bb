@@ -50,7 +50,7 @@ class RTCPeerConnectionIceEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   RTCPeerConnectionIceEvent(bool can_bubble, bool cancelable, RTCIceCandidate*);

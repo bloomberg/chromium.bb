@@ -65,7 +65,7 @@ class CallbackWrapper final
     return std::move(callbacks_);
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   std::unique_ptr<AsyncFileSystemCallbacks> callbacks_;
@@ -182,7 +182,7 @@ LocalFileSystem::LocalFileSystem(WorkerClients& worker_clients,
   DCHECK(client_);
 }
 
-DEFINE_TRACE(LocalFileSystem) {
+void LocalFileSystem::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   Supplement<WorkerClients>::Trace(visitor);
 }

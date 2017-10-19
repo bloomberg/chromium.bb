@@ -425,7 +425,7 @@ bool RTCPeerConnection::EventWrapper::Setup() {
   return true;
 }
 
-DEFINE_TRACE(RTCPeerConnection::EventWrapper) {
+void RTCPeerConnection::EventWrapper::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_);
 }
 
@@ -1749,7 +1749,7 @@ void RTCPeerConnection::RecordRapporMetrics() {
         *document, HostsUsingFeatures::Feature::kRTCPeerConnectionDataChannel);
 }
 
-DEFINE_TRACE(RTCPeerConnection) {
+void RTCPeerConnection::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_streams_);
   visitor->Trace(tracks_);
   visitor->Trace(rtp_senders_);

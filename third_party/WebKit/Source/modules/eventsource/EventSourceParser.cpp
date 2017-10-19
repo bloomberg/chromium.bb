@@ -131,7 +131,7 @@ String EventSourceParser::FromUTF8(const char* bytes, size_t size) {
   return codec_->Decode(bytes, size, WTF::kDataEOF);
 }
 
-DEFINE_TRACE(EventSourceParser) {
+void EventSourceParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
 }
 

@@ -83,7 +83,7 @@ AutoscrollController* AutoscrollController::Create(Page& page) {
 
 AutoscrollController::AutoscrollController(Page& page) : page_(&page) {}
 
-DEFINE_TRACE(AutoscrollController) {
+void AutoscrollController::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
 }
 

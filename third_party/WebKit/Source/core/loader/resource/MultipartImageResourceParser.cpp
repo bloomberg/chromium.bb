@@ -180,7 +180,7 @@ size_t MultipartImageResourceParser::FindBoundary(const Vector<char>& data,
   return boundary_position;
 }
 
-DEFINE_TRACE(MultipartImageResourceParser) {
+void MultipartImageResourceParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
 }
 

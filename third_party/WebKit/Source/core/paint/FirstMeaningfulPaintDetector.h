@@ -53,7 +53,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   void ReportSwapTime(PaintEvent, WebLayerTreeView::SwapResult, double);
   void NotifyFirstContentfulPaint(double swap_stamp);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   enum HadUserInput { kNoUserInput, kHadUserInput, kHadUserInputEnumMax };
 

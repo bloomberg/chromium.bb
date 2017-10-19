@@ -64,7 +64,7 @@ class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>,
 
   WebRTCICECandidate WebCandidate() const;
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit RTCIceCandidate(WebRTCICECandidate);

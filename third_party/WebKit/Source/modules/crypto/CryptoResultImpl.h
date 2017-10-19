@@ -73,7 +73,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
 
   WebCryptoResult Result() { return WebCryptoResult(this, cancel_.get()); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   class Resolver;

@@ -76,7 +76,7 @@ class StoppingClient : public GarbageCollectedFinalized<StoppingClient>,
     events_.push_back(EventOrReconnectionTimeSetting(reconnection_time));
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(parser_);
     EventSourceParser::Client::Trace(visitor);
   }

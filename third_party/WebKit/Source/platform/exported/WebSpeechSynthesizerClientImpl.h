@@ -56,7 +56,7 @@ class WebSpeechSynthesizerClientImpl final
   virtual void SentenceBoundaryEventOccurred(const WebSpeechSynthesisUtterance&,
                                              unsigned char_index);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Member<PlatformSpeechSynthesizer> synthesizer_;

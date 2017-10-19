@@ -22,7 +22,7 @@ class CORE_EXPORT AnimationTimeline
 
   virtual bool IsDocumentTimeline() const { return false; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

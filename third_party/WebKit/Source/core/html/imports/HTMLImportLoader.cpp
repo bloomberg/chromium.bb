@@ -204,7 +204,7 @@ V0CustomElementSyncMicrotaskQueue* HTMLImportLoader::MicrotaskQueue() const {
   return microtask_queue_;
 }
 
-DEFINE_TRACE(HTMLImportLoader) {
+void HTMLImportLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(imports_);
   visitor->Trace(document_);

@@ -29,7 +29,7 @@ class CORE_EXPORT MediaCustomControlsFullscreenDetector final
   void Detach();
   void ContextDestroyed();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   friend class MediaCustomControlsFullscreenDetectorTest;

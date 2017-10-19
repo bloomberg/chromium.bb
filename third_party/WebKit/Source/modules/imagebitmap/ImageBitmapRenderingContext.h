@@ -35,7 +35,7 @@ class MODULES_EXPORT ImageBitmapRenderingContext final
     }
   };
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // Script API
   void transferFromImageBitmap(ImageBitmap*, ExceptionState&);

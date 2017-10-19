@@ -37,7 +37,7 @@ class MODULES_EXPORT PushMessageData final
   ScriptValue json(ScriptState*, ExceptionState&) const;
   String text() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   PushMessageData(const char* data, unsigned bytes_size);

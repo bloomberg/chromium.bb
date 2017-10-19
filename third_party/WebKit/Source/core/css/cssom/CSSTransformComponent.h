@@ -55,7 +55,7 @@ class CORE_EXPORT CSSTransformComponent
   virtual const CSSFunctionValue* ToCSSValue() const = 0;
   virtual const DOMMatrix* AsMatrix(ExceptionState&) const = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   CSSTransformComponent(bool is2D) : is2D_(is2D) {}

@@ -38,7 +38,7 @@ class NodeSet final : public GarbageCollected<NodeSet> {
  public:
   static NodeSet* Create() { return new NodeSet; }
   static NodeSet* Create(const NodeSet&);
-  DEFINE_INLINE_TRACE() { visitor->Trace(nodes_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(nodes_); }
 
   size_t size() const { return nodes_.size(); }
   bool IsEmpty() const { return !nodes_.size(); }

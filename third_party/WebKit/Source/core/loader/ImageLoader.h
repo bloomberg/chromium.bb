@@ -52,7 +52,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
   explicit ImageLoader(Element*);
   ~ImageLoader() override;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   enum UpdateFromElementBehavior {
     // This should be the update behavior when the element is attached to a
@@ -236,7 +236,7 @@ class CORE_EXPORT ImageLoader : public GarbageCollectedFinalized<ImageLoader>,
     DecodeRequest(DecodeRequest&&) = default;
     ~DecodeRequest() = default;
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
     DecodeRequest& operator=(DecodeRequest&&) = default;
 

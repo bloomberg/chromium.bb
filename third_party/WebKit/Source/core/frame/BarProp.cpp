@@ -37,7 +37,7 @@ namespace blink {
 BarProp::BarProp(LocalFrame* frame, Type type)
     : DOMWindowClient(frame), type_(type) {}
 
-DEFINE_TRACE(BarProp) {
+void BarProp::Trace(blink::Visitor* visitor) {
   DOMWindowClient::Trace(visitor);
 }
 

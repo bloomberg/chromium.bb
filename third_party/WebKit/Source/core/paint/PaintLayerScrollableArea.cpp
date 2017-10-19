@@ -217,7 +217,7 @@ void PaintLayerScrollableArea::Dispose() {
   has_been_disposed_ = true;
 }
 
-DEFINE_TRACE(PaintLayerScrollableArea) {
+void PaintLayerScrollableArea::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollbar_manager_);
   visitor->Trace(scroll_anchor_);
   ScrollableArea::Trace(visitor);

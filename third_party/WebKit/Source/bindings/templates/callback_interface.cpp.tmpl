@@ -16,7 +16,7 @@ namespace blink {
 
 {{v8_class}}::~{{v8_class}}() {}
 
-DEFINE_TRACE({{v8_class}}) {
+void {{v8_class}}::Trace(blink::Visitor* visitor) {
   {{cpp_class}}::Trace(visitor);
 }
 

@@ -57,7 +57,7 @@ BooleanOrTestCallbackInterface::BooleanOrTestCallbackInterface(const BooleanOrTe
 BooleanOrTestCallbackInterface::~BooleanOrTestCallbackInterface() = default;
 BooleanOrTestCallbackInterface& BooleanOrTestCallbackInterface::operator=(const BooleanOrTestCallbackInterface&) = default;
 
-DEFINE_TRACE(BooleanOrTestCallbackInterface) {
+void BooleanOrTestCallbackInterface::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_callback_interface_);
 }
 

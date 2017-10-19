@@ -166,7 +166,7 @@ bool AXObjectCache::IsInsideFocusableElementOrARIAWidget(const Node& node) {
   return false;
 }
 
-DEFINE_TRACE(AXObjectCache) {
+void AXObjectCache::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 

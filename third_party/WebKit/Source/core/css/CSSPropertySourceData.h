@@ -86,7 +86,7 @@ namespace blink {
 class CSSRuleSourceData : public GarbageCollectedFinalized<CSSRuleSourceData> {
  public:
   explicit CSSRuleSourceData(StyleRule::RuleType type) : type(type) {}
-  DEFINE_INLINE_TRACE() { visitor->Trace(child_rules); };
+  void Trace(blink::Visitor* visitor) { visitor->Trace(child_rules); };
 
   bool HasProperties() const {
     return type == StyleRule::kStyle || type == StyleRule::kFontFace ||

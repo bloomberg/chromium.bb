@@ -23,7 +23,7 @@ class MediaControlsWindowEventListener final : public EventListener {
   void Start();
   void Stop();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit MediaControlsWindowEventListener(MediaControlsImpl*, Callback);

@@ -41,7 +41,7 @@ class SVGLength final : public SVGPropertyBase {
     return new SVGLength(mode);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   SVGLength* Clone() const;
   SVGPropertyBase* CloneForAnimation(const String&) const override;

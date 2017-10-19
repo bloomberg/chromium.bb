@@ -29,7 +29,7 @@ class WorkerNavigatorBudget final
   static BudgetService* budget(ExecutionContext*, WorkerNavigator&);
   BudgetService* budget(ExecutionContext*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit WorkerNavigatorBudget(WorkerNavigator&);

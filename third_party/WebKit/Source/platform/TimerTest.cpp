@@ -106,7 +106,7 @@ class OnHeapTimerOwner final
     timer_.StartOneShot(interval, caller);
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   void Fired(TimerBase*) {

@@ -92,7 +92,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   unsigned long long decodedBodySize() const;
   PerformanceServerTimingVector serverTiming() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   void BuildJSONValue(ScriptState*, V8ObjectBuilder&) const override;

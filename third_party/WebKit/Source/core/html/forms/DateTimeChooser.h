@@ -76,7 +76,7 @@ class CORE_EXPORT DateTimeChooser
   // Returns a root AXObject in the DateTimeChooser if it's available.
   virtual AXObject* RootAXObject() = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

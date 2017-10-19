@@ -6,7 +6,7 @@
 
 namespace blink {
 
-DEFINE_TRACE(VRStageBounds) {
+void VRStageBounds::Trace(blink::Visitor* visitor) {
   visitor->Trace(geometry_);
 }
 

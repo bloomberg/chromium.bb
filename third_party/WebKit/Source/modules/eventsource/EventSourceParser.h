@@ -26,7 +26,7 @@ class MODULES_EXPORT EventSourceParser final
                                 const AtomicString& last_event_id) = 0;
     virtual void OnReconnectionTimeSet(
         unsigned long long reconnection_time) = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void Trace(blink::Visitor* visitor) {}
   };
 
   EventSourceParser(const AtomicString& last_event_id, Client*);
@@ -35,7 +35,7 @@ class MODULES_EXPORT EventSourceParser final
   const AtomicString& LastEventId() const { return last_event_id_; }
   // Stop parsing. This can be called from Client::onMessageEvent.
   void Stop() { is_stopped_ = true; }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   void ParseLine();

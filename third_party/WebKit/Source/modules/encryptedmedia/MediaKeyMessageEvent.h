@@ -53,7 +53,7 @@ class MediaKeyMessageEvent final : public Event {
   String messageType() const { return message_type_; }
   DOMArrayBuffer* message() const { return message_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MediaKeyMessageEvent();

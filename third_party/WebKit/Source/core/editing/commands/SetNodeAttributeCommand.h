@@ -39,7 +39,7 @@ class SetNodeAttributeCommand final : public SimpleEditCommand {
     return new SetNodeAttributeCommand(element, attribute, value);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SetNodeAttributeCommand(Element*,

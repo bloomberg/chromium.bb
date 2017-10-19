@@ -41,7 +41,7 @@ class Filter final : public Expression {
  public:
   Filter(Expression*, HeapVector<Member<Predicate>>&);
   ~Filter() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   Value Evaluate(EvaluationContext&) const override;
 
@@ -56,7 +56,7 @@ class LocationPath final : public Expression {
  public:
   LocationPath();
   ~LocationPath() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   Value Evaluate(EvaluationContext&) const override;
   void SetAbsolute(bool value) {
@@ -79,7 +79,7 @@ class Path final : public Expression {
  public:
   Path(Expression*, LocationPath*);
   ~Path() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   Value Evaluate(EvaluationContext&) const override;
 

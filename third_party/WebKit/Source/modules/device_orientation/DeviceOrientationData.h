@@ -48,7 +48,7 @@ class MODULES_EXPORT DeviceOrientationData final
                                        bool absolute);
   static DeviceOrientationData* Create(const DeviceOrientationEventInit&);
   static DeviceOrientationData* Create(const device::OrientationData&);
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   double Alpha() const;
   double Beta() const;

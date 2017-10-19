@@ -40,7 +40,7 @@ class MockCrossOriginLocalFrameClient final : public EmptyLocalFrameClient {
     return new MockCrossOriginLocalFrameClient(parent);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(parent_);
     EmptyLocalFrameClient::Trace(visitor);
   }

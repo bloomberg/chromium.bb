@@ -73,7 +73,7 @@ class CORE_EXPORT TextTrackList final : public EventTargetWithInlineData {
 
   bool HasShowingTracks();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 

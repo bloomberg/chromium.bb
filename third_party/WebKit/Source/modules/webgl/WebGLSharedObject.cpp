@@ -51,7 +51,7 @@ gpu::gles2::GLES2Interface* WebGLSharedObject::GetAGLInterface() const {
   return context_group_->GetAGLInterface();
 }
 
-DEFINE_TRACE(WebGLSharedObject) {
+void WebGLSharedObject::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_group_);
   WebGLObject::Trace(visitor);
 }

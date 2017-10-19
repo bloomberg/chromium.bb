@@ -38,7 +38,7 @@ class WrapContentsInDummySpanCommand final : public SimpleEditCommand {
     return new WrapContentsInDummySpanCommand(element);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit WrapContentsInDummySpanCommand(Element*);

@@ -22,7 +22,7 @@ class MediaKeysPolicy final : public GarbageCollectedFinalized<MediaKeysPolicy>,
 
   String minHdcpVersion() const { return min_hdcp_version_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MediaKeysPolicy() = delete;

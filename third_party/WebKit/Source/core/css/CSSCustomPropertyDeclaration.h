@@ -42,7 +42,7 @@ class CSSCustomPropertyDeclaration : public CSSValue {
     return this == &other;
   }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSCustomPropertyDeclaration(const AtomicString& name, CSSValueID id)

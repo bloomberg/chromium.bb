@@ -77,7 +77,7 @@ class CORE_EXPORT V0InsertionPoint : public HTMLElement {
     return distributed_nodes_.PreviousTo(node);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   V0InsertionPoint(const QualifiedName&, Document&);

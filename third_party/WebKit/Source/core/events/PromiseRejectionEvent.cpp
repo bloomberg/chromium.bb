@@ -62,7 +62,7 @@ bool PromiseRejectionEvent::CanBeDispatchedInWorld(
   return world_ && world_->GetWorldId() == world.GetWorldId();
 }
 
-DEFINE_TRACE(PromiseRejectionEvent) {
+void PromiseRejectionEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 

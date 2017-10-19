@@ -36,7 +36,7 @@ PlatformSpeechSynthesisUtterance::PlatformSpeechSynthesisUtterance(
     PlatformSpeechSynthesisUtteranceClient* client)
     : client_(client), volume_(1.0f), rate_(1.0f), pitch_(1.0f) {}
 
-DEFINE_TRACE(PlatformSpeechSynthesisUtterance) {
+void PlatformSpeechSynthesisUtterance::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
 }
 

@@ -35,7 +35,7 @@ class NotificationPermissionCallback
     : public GarbageCollectedFinalized<NotificationPermissionCallback> {
  public:
   virtual ~NotificationPermissionCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(const String& permission) = 0;
 };
 

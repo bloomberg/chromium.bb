@@ -150,7 +150,7 @@ bool ChildListMutationAccumulator::IsEmpty() {
   return result;
 }
 
-DEFINE_TRACE(ChildListMutationAccumulator) {
+void ChildListMutationAccumulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(removed_nodes_);
   visitor->Trace(added_nodes_);

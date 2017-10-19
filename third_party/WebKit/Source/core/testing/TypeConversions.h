@@ -66,7 +66,7 @@ class TypeConversions final : public GarbageCollectedFinalized<TypeConversions>,
   const String& testUSVString() const { return usv_string_; }
   void setTestUSVString(const String& value) { usv_string_ = value; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   TypeConversions()

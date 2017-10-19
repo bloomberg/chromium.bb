@@ -84,7 +84,7 @@ using SavedFormStateMap =
 class DocumentState final : public GarbageCollected<DocumentState> {
  public:
   static DocumentState* Create();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void AddControl(HTMLFormControlElementWithState*);
   void RemoveControl(HTMLFormControlElementWithState*);
@@ -100,7 +100,7 @@ class FormController final : public GarbageCollectedFinalized<FormController> {
  public:
   static FormController* Create() { return new FormController; }
   ~FormController();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void RegisterStatefulFormControl(HTMLFormControlElementWithState&);
   void UnregisterStatefulFormControl(HTMLFormControlElementWithState&);

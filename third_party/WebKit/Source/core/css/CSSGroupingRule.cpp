@@ -161,7 +161,7 @@ void CSSGroupingRule::Reattach(StyleRuleBase* rule) {
   }
 }
 
-DEFINE_TRACE(CSSGroupingRule) {
+void CSSGroupingRule::Trace(blink::Visitor* visitor) {
   CSSRule::Trace(visitor);
   visitor->Trace(child_rule_cssom_wrappers_);
   visitor->Trace(group_rule_);

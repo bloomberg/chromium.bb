@@ -35,7 +35,7 @@ UserMediaController::UserMediaController(
     std::unique_ptr<UserMediaClient> client)
     : Supplement<LocalFrame>(frame), client_(std::move(client)) {}
 
-DEFINE_TRACE(UserMediaController) {
+void UserMediaController::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
 }
 

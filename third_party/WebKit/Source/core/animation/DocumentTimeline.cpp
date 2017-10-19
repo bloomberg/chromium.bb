@@ -185,7 +185,7 @@ void DocumentTimeline::DocumentTimelineTiming::ServiceOnNextFrame() {
     timeline_->document_->View()->ScheduleAnimation();
 }
 
-DEFINE_TRACE(DocumentTimeline::DocumentTimelineTiming) {
+void DocumentTimeline::DocumentTimelineTiming::Trace(blink::Visitor* visitor) {
   visitor->Trace(timeline_);
   DocumentTimeline::PlatformTiming::Trace(visitor);
 }
@@ -305,7 +305,7 @@ void DocumentTimeline::InvalidateKeyframeEffects(const TreeScope& tree_scope) {
     animation->InvalidateKeyframeEffect(tree_scope);
 }
 
-DEFINE_TRACE(DocumentTimeline) {
+void DocumentTimeline::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(timing_);
   visitor->Trace(animations_needing_update_);

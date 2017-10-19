@@ -221,7 +221,9 @@ struct FrameFetchContext::FrozenState final
   const bool is_main_frame;
   const bool is_svg_image_chrome_client;
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(content_security_policy); }
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(content_security_policy);
+  }
 };
 
 ResourceFetcher* FrameFetchContext::CreateFetcher(DocumentLoader* loader,
@@ -1200,7 +1202,7 @@ FetchContext* FrameFetchContext::Detach() {
   return this;
 }
 
-DEFINE_TRACE(FrameFetchContext) {
+void FrameFetchContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_loader_);
   visitor->Trace(document_);
   visitor->Trace(frozen_state_);

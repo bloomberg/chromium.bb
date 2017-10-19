@@ -2043,7 +2043,7 @@ void StyleResolver::UpdateMediaType() {
   }
 }
 
-DEFINE_TRACE(StyleResolver) {
+void StyleResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(matched_properties_cache_);
   visitor->Trace(selector_filter_);
   visitor->Trace(document_);

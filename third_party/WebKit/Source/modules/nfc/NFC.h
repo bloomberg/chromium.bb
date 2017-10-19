@@ -62,7 +62,7 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
   void PageVisibilityChanged() override;
 
   // Interface required by garbage collection.
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   // Returns boolean indicating whether NFC is supported in this context. If

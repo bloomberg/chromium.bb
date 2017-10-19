@@ -49,7 +49,7 @@ class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
     return v;
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }
@@ -74,7 +74,7 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
     return v;
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }
@@ -164,7 +164,7 @@ BytesConsumer::Error ReadableStreamBytesConsumer::GetError() const {
   return Error("Failed to read from a ReadableStream.");
 }
 
-DEFINE_TRACE(ReadableStreamBytesConsumer) {
+void ReadableStreamBytesConsumer::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   visitor->Trace(pending_buffer_);
   BytesConsumer::Trace(visitor);

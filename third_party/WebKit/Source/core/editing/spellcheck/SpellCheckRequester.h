@@ -63,7 +63,7 @@ class CORE_EXPORT SpellCheckRequest final : public TextCheckingRequest {
 
   int RequestNumber() const { return request_number_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SpellCheckRequest(Range* checking_range, const String&, int request_number);
@@ -85,7 +85,7 @@ class CORE_EXPORT SpellCheckRequester final
   }
 
   ~SpellCheckRequester();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void RequestCheckingFor(const EphemeralRange&);
   void RequestCheckingFor(const EphemeralRange&, int request_num);

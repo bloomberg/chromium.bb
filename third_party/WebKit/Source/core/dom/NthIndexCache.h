@@ -26,11 +26,11 @@ class CORE_EXPORT NthIndexData final : public GarbageCollected<NthIndexData> {
   unsigned NthOfTypeIndex(Element&) const;
   unsigned NthLastOfTypeIndex(Element&) const;
 
+  void Trace(blink::Visitor*);
+
  private:
   HeapHashMap<Member<Element>, unsigned> element_index_map_;
   unsigned count_ = 0;
-
-  DECLARE_TRACE();
 };
 
 class CORE_EXPORT NthIndexCache final {

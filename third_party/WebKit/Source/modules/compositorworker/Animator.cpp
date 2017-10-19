@@ -19,7 +19,7 @@ Animator::Animator(v8::Isolate* isolate,
 
 Animator::~Animator() {}
 
-DEFINE_TRACE(Animator) {
+void Animator::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);
 }
 

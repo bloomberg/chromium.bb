@@ -43,7 +43,7 @@ class VRFieldOfView final : public GarbageCollected<VRFieldOfView> {
   void SetLeftDegrees(double value) { left_degrees_ = value; }
   void SetRightDegrees(double value) { right_degrees_ = value; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   double up_degrees_;

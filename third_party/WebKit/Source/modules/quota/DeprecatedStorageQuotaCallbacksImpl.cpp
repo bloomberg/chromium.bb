@@ -46,7 +46,7 @@ DeprecatedStorageQuotaCallbacksImpl::DeprecatedStorageQuotaCallbacksImpl(
 
 DeprecatedStorageQuotaCallbacksImpl::~DeprecatedStorageQuotaCallbacksImpl() {}
 
-DEFINE_TRACE(DeprecatedStorageQuotaCallbacksImpl) {
+void DeprecatedStorageQuotaCallbacksImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(usage_callback_);
   visitor->Trace(quota_callback_);
   visitor->Trace(error_callback_);

@@ -141,7 +141,7 @@ void WebGLProgram::CacheInfoIfNeeded(WebGLRenderingContextBase* context) {
   info_valid_ = true;
 }
 
-DEFINE_TRACE(WebGLProgram) {
+void WebGLProgram::Trace(blink::Visitor* visitor) {
   visitor->Trace(vertex_shader_);
   visitor->Trace(fragment_shader_);
   WebGLSharedPlatform3DObject::Trace(visitor);

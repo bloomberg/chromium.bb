@@ -63,7 +63,7 @@ class MODULES_EXPORT PresentationAvailability final
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   // EventTarget implementation.

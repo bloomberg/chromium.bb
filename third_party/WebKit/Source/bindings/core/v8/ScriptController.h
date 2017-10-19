@@ -74,7 +74,7 @@ class CORE_EXPORT ScriptController final
     return new ScriptController(frame, window_proxy_manager);
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // This returns an initialized window proxy. (If the window proxy is not
   // yet initialized, it's implicitly initialized at the first access.)

@@ -104,7 +104,7 @@ class CORE_EXPORT HTMLMediaElement
   // for the given document.
   static void OnMediaControlsEnabledChange(Document*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
@@ -680,7 +680,7 @@ class CORE_EXPORT HTMLMediaElement
     // WebAudioSourceProviderClient
     void SetFormat(size_t number_of_channels, float sample_rate) override;
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     Member<AudioSourceProviderClient> client_;
@@ -703,7 +703,7 @@ class CORE_EXPORT HTMLMediaElement
     void SetClient(AudioSourceProviderClient*) override;
     void ProvideInput(AudioBus*, size_t frames_to_process) override;
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     WebAudioSourceProvider* web_audio_source_provider_;

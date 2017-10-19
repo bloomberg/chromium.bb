@@ -75,7 +75,7 @@ void MediaControlElementBase::SetDisplayType(
     object->SetShouldDoFullPaintInvalidation();
 }
 
-DEFINE_TRACE(MediaControlElementBase) {
+void MediaControlElementBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_controls_);
   visitor->Trace(element_);
 }

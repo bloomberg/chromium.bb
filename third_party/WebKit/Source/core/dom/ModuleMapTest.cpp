@@ -26,7 +26,7 @@ class TestSingleModuleClient final : public SingleModuleClient {
   TestSingleModuleClient() = default;
   virtual ~TestSingleModuleClient() {}
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(module_script_);
     SingleModuleClient::Trace(visitor);
   }
@@ -78,7 +78,7 @@ class ModuleMapTestModulator final : public DummyModulator {
   ModuleMapTestModulator();
   virtual ~ModuleMapTestModulator() {}
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   TestScriptModuleResolver* GetTestScriptModuleResolver() {
     return resolver_.Get();
@@ -105,7 +105,7 @@ class ModuleMapTestModulator final : public DummyModulator {
     ScriptFetchOptions options;
     Member<ModuleScriptLoaderClient> client;
 
-    DEFINE_INLINE_TRACE() { visitor->Trace(client); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(client); }
   };
   HeapVector<Member<TestRequest>> test_requests_;
 
@@ -115,7 +115,7 @@ class ModuleMapTestModulator final : public DummyModulator {
 ModuleMapTestModulator::ModuleMapTestModulator()
     : resolver_(new TestScriptModuleResolver) {}
 
-DEFINE_TRACE(ModuleMapTestModulator) {
+void ModuleMapTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_requests_);
   visitor->Trace(resolver_);
   DummyModulator::Trace(visitor);

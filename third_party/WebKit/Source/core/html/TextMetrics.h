@@ -68,7 +68,7 @@ class CORE_EXPORT TextMetrics final : public GarbageCollected<TextMetrics>,
 
   static float GetFontBaseline(const TextBaseline&, const FontMetrics&);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   void Update(const Font&,

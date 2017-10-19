@@ -73,7 +73,7 @@ IDBObjectStore::IDBObjectStore(RefPtr<IDBObjectStoreMetadata> metadata,
   DCHECK(metadata_.get());
 }
 
-DEFINE_TRACE(IDBObjectStore) {
+void IDBObjectStore::Trace(blink::Visitor* visitor) {
   visitor->Trace(transaction_);
   visitor->Trace(index_map_);
 }
@@ -641,7 +641,7 @@ class IndexPopulator final : public EventListener {
     return this == &other;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(database_);
     EventListener::Trace(visitor);
   }

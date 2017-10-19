@@ -52,7 +52,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
     return self->BindToV8Function();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(observer_);
     ScriptFunction::Trace(visitor);
   }
@@ -314,7 +314,7 @@ void WaitUntilObserver::ConsumeWindowInteraction(TimerBase*) {
   execution_context_->ConsumeWindowInteraction();
 }
 
-DEFINE_TRACE(WaitUntilObserver) {
+void WaitUntilObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
 }
 

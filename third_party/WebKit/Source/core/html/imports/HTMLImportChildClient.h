@@ -45,7 +45,7 @@ class HTMLImportChildClient : public GarbageCollectedMixin {
   virtual void ImportChildWasDisposed(HTMLImportChild*) = 0;
   virtual bool IsSync() const = 0;
   virtual HTMLLinkElement* Link() = 0;
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

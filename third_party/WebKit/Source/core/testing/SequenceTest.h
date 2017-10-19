@@ -36,7 +36,7 @@ class SequenceTest final : public GarbageCollectedFinalized<SequenceTest>,
 
   bool unionReceivedSequence(const DoubleOrDoubleSequence& arg);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   SequenceTest();

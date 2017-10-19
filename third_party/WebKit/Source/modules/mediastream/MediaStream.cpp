@@ -489,7 +489,7 @@ URLRegistry& MediaStream::Registry() const {
   return MediaStreamRegistry::Registry();
 }
 
-DEFINE_TRACE(MediaStream) {
+void MediaStream::Trace(blink::Visitor* visitor) {
   visitor->Trace(audio_tracks_);
   visitor->Trace(video_tracks_);
   visitor->Trace(descriptor_);

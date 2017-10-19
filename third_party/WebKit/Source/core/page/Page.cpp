@@ -643,7 +643,7 @@ void Page::AcceptLanguagesChanged() {
     frames[i]->DomWindow()->AcceptLanguagesChanged();
 }
 
-DEFINE_TRACE(Page) {
+void Page::Trace(blink::Visitor* visitor) {
   visitor->Trace(animator_);
   visitor->Trace(autoscroll_controller_);
   visitor->Trace(chrome_client_);

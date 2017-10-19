@@ -48,7 +48,7 @@ class MODULES_EXPORT IDBDatabaseCallbacks
 
   static IDBDatabaseCallbacks* Create();
   virtual ~IDBDatabaseCallbacks();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // IDBDatabaseCallbacks
   virtual void OnForcedClose();

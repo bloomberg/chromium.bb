@@ -75,7 +75,7 @@ class MODULES_EXPORT Entry : public EntryBase, public ScriptWrappable {
                  ErrorCallback* = nullptr) const;
   String toURL(ScriptState*) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   Entry(DOMFileSystemBase*, const String& full_path);

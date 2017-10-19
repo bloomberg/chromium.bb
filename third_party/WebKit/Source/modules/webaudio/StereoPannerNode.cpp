@@ -173,7 +173,7 @@ StereoPannerNode* StereoPannerNode::Create(BaseAudioContext* context,
   return node;
 }
 
-DEFINE_TRACE(StereoPannerNode) {
+void StereoPannerNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(pan_);
   AudioNode::Trace(visitor);
 }

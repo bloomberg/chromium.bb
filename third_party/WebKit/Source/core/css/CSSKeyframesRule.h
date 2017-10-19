@@ -61,7 +61,7 @@ class StyleRuleKeyframes final : public StyleRuleBase {
 
   StyleRuleKeyframes* Copy() const { return new StyleRuleKeyframes(*this); }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
   void StyleChanged() { version_++; }
   unsigned Version() const { return version_; }
@@ -113,7 +113,7 @@ class CSSKeyframesRule final : public CSSRule {
 
   void StyleChanged() { keyframes_rule_->StyleChanged(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   CSSKeyframesRule(StyleRuleKeyframes*, CSSStyleSheet* parent);

@@ -10,7 +10,7 @@
 
 namespace blink {
 
-DEFINE_TRACE(ModuleTreeLinkerRegistry) {
+void ModuleTreeLinkerRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_tree_linkers_);
 }
 

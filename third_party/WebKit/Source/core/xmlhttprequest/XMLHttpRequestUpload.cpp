@@ -84,7 +84,7 @@ void XMLHttpRequestUpload::HandleRequestError(const AtomicString& type) {
                           last_total_bytes_to_be_sent_);
 }
 
-DEFINE_TRACE(XMLHttpRequestUpload) {
+void XMLHttpRequestUpload::Trace(blink::Visitor* visitor) {
   visitor->Trace(xml_http_request_);
   XMLHttpRequestEventTarget::Trace(visitor);
 }

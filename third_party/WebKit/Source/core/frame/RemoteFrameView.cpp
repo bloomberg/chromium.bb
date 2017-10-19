@@ -167,7 +167,7 @@ IntRect RemoteFrameView::ConvertFromRootFrame(
   return rect_in_root_frame;
 }
 
-DEFINE_TRACE(RemoteFrameView) {
+void RemoteFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(remote_frame_);
 }
 

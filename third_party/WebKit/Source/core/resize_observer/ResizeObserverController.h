@@ -37,7 +37,7 @@ class ResizeObserverController final
   void ClearObservations();
   void ObserverChanged() { observers_changed_ = true; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // For testing only.
   const HeapHashSet<WeakMember<ResizeObserver>>& Observers() {

@@ -37,7 +37,7 @@ class SplitElementCommand final : public SimpleEditCommand {
     return new SplitElementCommand(element, split_point_child);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SplitElementCommand(Element*, Node* split_point_child);

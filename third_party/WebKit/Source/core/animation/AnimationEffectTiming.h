@@ -33,7 +33,7 @@ class CORE_EXPORT AnimationEffectTiming : public AnimationEffectTimingReadOnly {
 
   bool IsAnimationEffectTiming() const override { return true; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit AnimationEffectTiming(AnimationEffectReadOnly*);

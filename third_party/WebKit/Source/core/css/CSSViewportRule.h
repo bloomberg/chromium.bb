@@ -55,7 +55,7 @@ class CSSViewportRule final : public CSSRule {
 
   CSSStyleDeclaration* style() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   CSSViewportRule(StyleRuleViewport*, CSSStyleSheet*);

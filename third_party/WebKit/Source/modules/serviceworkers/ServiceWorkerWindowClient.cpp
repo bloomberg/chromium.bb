@@ -89,7 +89,7 @@ ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* script_state,
   return promise;
 }
 
-DEFINE_TRACE(ServiceWorkerWindowClient) {
+void ServiceWorkerWindowClient::Trace(blink::Visitor* visitor) {
   ServiceWorkerClient::Trace(visitor);
 }
 

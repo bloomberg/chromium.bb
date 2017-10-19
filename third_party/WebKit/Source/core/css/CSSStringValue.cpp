@@ -16,7 +16,7 @@ String CSSStringValue::CustomCSSText() const {
   return SerializeString(string_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSStringValue) {
+void CSSStringValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 

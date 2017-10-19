@@ -145,7 +145,7 @@ void WorkerInspectorController::DidProcessTask() {
     it.value->flushProtocolNotifications();
 }
 
-DEFINE_TRACE(WorkerInspectorController) {
+void WorkerInspectorController::Trace(blink::Visitor* visitor) {
   visitor->Trace(probe_sink_);
   visitor->Trace(sessions_);
 }

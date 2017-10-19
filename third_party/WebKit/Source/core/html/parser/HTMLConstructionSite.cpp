@@ -369,7 +369,7 @@ HTMLConstructionSite::~HTMLConstructionSite() {
   DCHECK(pending_text_.IsEmpty());
 }
 
-DEFINE_TRACE(HTMLConstructionSite) {
+void HTMLConstructionSite::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(attachment_root_);
   visitor->Trace(head_);
@@ -1072,7 +1072,7 @@ void HTMLConstructionSite::FosterParent(Node* node) {
   QueueTask(task);
 }
 
-DEFINE_TRACE(HTMLConstructionSite::PendingText) {
+void HTMLConstructionSite::PendingText::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent);
   visitor->Trace(next_child);
 }

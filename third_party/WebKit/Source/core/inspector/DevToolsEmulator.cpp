@@ -106,7 +106,7 @@ DevToolsEmulator* DevToolsEmulator::Create(WebViewImpl* web_view_base) {
   return new DevToolsEmulator(web_view_base);
 }
 
-DEFINE_TRACE(DevToolsEmulator) {}
+void DevToolsEmulator::Trace(blink::Visitor* visitor) {}
 
 void DevToolsEmulator::SetTextAutosizingEnabled(bool enabled) {
   embedder_text_autosizing_enabled_ = enabled;

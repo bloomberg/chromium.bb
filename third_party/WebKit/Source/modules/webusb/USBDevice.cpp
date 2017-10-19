@@ -472,7 +472,7 @@ void USBDevice::ContextDestroyed(ExecutionContext*) {
   device_requests_.clear();
 }
 
-DEFINE_TRACE(USBDevice) {
+void USBDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_requests_);
   ContextLifecycleObserver::Trace(visitor);
 }

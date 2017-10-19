@@ -40,7 +40,7 @@ class MODULES_EXPORT PaymentAddress final
   const String& recipient() const { return recipient_; }
   const String& phone() const { return phone_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   String country_;

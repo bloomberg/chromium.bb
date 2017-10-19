@@ -34,7 +34,7 @@ ScriptSourceCode::ScriptSourceCode(ScriptStreamer* streamer,
 
 ScriptSourceCode::~ScriptSourceCode() {}
 
-DEFINE_TRACE(ScriptSourceCode) {
+void ScriptSourceCode::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_);
   visitor->Trace(streamer_);
 }

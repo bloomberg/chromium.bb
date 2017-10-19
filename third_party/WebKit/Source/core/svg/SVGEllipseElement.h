@@ -40,7 +40,7 @@ class SVGEllipseElement final : public SVGGeometryElement {
   SVGAnimatedLength* rx() const { return rx_.Get(); }
   SVGAnimatedLength* ry() const { return ry_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGEllipseElement(Document&);

@@ -30,7 +30,7 @@ class MODULES_EXPORT ApplyConstraintsRequest final
   void RequestSucceeded();
   void RequestFailed(const String& constraint, const String& message);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   ApplyConstraintsRequest(const WebMediaStreamTrack&,

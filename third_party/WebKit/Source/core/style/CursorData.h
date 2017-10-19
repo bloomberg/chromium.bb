@@ -55,7 +55,7 @@ class CursorData {
   // Hot spot in the image in logical pixels.
   const IntPoint& HotSpot() const { return hot_spot_; }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(image_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(image_); }
 
  private:
   Member<StyleImage> image_;

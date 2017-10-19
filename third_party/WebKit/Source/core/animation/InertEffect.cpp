@@ -67,7 +67,7 @@ double InertEffect::CalculateTimeToEffectChange(bool, double, double) const {
   return std::numeric_limits<double>::infinity();
 }
 
-DEFINE_TRACE(InertEffect) {
+void InertEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(model_);
   AnimationEffectReadOnly::Trace(visitor);
 }

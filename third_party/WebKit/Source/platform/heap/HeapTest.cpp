@@ -62,7 +62,7 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
   virtual ~IntWrapper() { ++destructor_calls_; }
 
   static int destructor_calls_;
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   int Value() const { return x_; }
 
@@ -346,7 +346,7 @@ class TestGCScope {
 class SimpleObject : public GarbageCollected<SimpleObject> {
  public:
   static SimpleObject* Create() { return new SimpleObject(); }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
   char GetPayload(int i) { return payload[i]; }
   // This virtual method is unused but it is here to make sure
   // that this object has a vtable. This object is used
@@ -369,7 +369,7 @@ class HeapTestSuperClass
   virtual ~HeapTestSuperClass() { ++destructor_calls_; }
 
   static int destructor_calls_;
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  protected:
   HeapTestSuperClass() {}
@@ -413,7 +413,7 @@ class HeapAllocatedArray : public GarbageCollected<HeapAllocatedArray> {
   }
 
   int8_t at(size_t i) { return array_[i]; }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   static const int kArraySize = 1000;
@@ -626,7 +626,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
    public:
     Local() {}
 
-    DEFINE_INLINE_TRACE() {}
+    void Trace(blink::Visitor* visitor) {}
   };
 
   class PersistentChain;
@@ -654,7 +654,7 @@ class ThreadPersistentHeapTester : public ThreadedTesterBase {
       return new PersistentChain(count);
     }
 
-    DEFINE_INLINE_TRACE() {}
+    void Trace(blink::Visitor* visitor) {}
 
    private:
     explicit PersistentChain(int count) {
@@ -691,7 +691,7 @@ class TraceCounter : public GarbageCollectedFinalized<TraceCounter> {
  public:
   static TraceCounter* Create() { return new TraceCounter(); }
 
-  DEFINE_INLINE_TRACE() { trace_count_++; }
+  void Trace(blink::Visitor* visitor) { trace_count_++; }
 
   int TraceCount() { return trace_count_; }
 
@@ -705,7 +705,7 @@ class ClassWithMember : public GarbageCollected<ClassWithMember> {
  public:
   static ClassWithMember* Create() { return new ClassWithMember(); }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     EXPECT_TRUE(ThreadHeap::IsHeapObjectAlive(this));
 
     // Const pointer should also be alive. See http://crbug.com/661363.
@@ -738,7 +738,7 @@ class SimpleFinalizedObject
 
   static int destructor_calls_;
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   SimpleFinalizedObject() {}
@@ -767,7 +767,7 @@ class IntNode : public GarbageCollected<IntNode> {
 
   static IntNode* Create(int i) { return new IntNode(i); }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   int Value() { return value_; }
 
@@ -787,7 +787,7 @@ class Bar : public GarbageCollectedFinalized<Bar> {
   }
   bool HasBeenFinalized() const { return !magic_; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   static unsigned live_;
 
  protected:
@@ -805,7 +805,7 @@ class Baz : public GarbageCollected<Baz> {
  public:
   static Baz* Create(Bar* bar) { return new Baz(bar); }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(bar_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(bar_); }
 
   void Clear() { bar_.Release(); }
 
@@ -824,7 +824,7 @@ class Foo : public Bar {
 
   static Foo* Create(Foo* foo) { return new Foo(foo); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     if (points_to_foo_)
       visitor->Mark(static_cast<Foo*>(bar_));
     else
@@ -846,7 +846,7 @@ class Bars : public Bar {
  public:
   static Bars* Create() { return new Bars(); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     for (unsigned i = 0; i < width_; i++)
       visitor->Trace(bars_[i]);
   }
@@ -873,7 +873,7 @@ class ConstructorAllocation : public GarbageCollected<ConstructorAllocation> {
  public:
   static ConstructorAllocation* Create() { return new ConstructorAllocation(); }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(int_wrapper_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(int_wrapper_); }
 
  private:
   ConstructorAllocation() { int_wrapper_ = IntWrapper::Create(42); }
@@ -888,7 +888,7 @@ class LargeHeapObject : public GarbageCollectedFinalized<LargeHeapObject> {
   char Get(size_t i) { return data_[i]; }
   void Set(size_t i, char c) { data_[i] = c; }
   size_t length() { return kLength; }
-  DEFINE_INLINE_TRACE() { visitor->Trace(int_wrapper_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(int_wrapper_); }
   static int destructor_calls_;
 
  private:
@@ -937,7 +937,7 @@ class RefCountedAndGarbageCollected
       keep_alive_.Clear();
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   static int destructor_calls_;
 
@@ -977,7 +977,7 @@ class RefCountedAndGarbageCollected2
       keep_alive_.Clear();
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   static int destructor_calls_;
 
@@ -994,7 +994,7 @@ class Weak : public Bar {
  public:
   static Weak* Create(Bar* strong, Bar* weak) { return new Weak(strong, weak); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(strong_bar_);
     visitor->template RegisterWeakMembers<Weak, &Weak::ZapWeakMembers>(this);
   }
@@ -1023,7 +1023,7 @@ class WithWeakMember : public Bar {
     return new WithWeakMember(strong, weak);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(strong_bar_);
     visitor->Trace(weak_bar_);
   }
@@ -1047,7 +1047,7 @@ class Observable : public GarbageCollectedFinalized<Observable> {
  public:
   static Observable* Create(Bar* bar) { return new Observable(bar); }
   ~Observable() { was_destructed_ = true; }
-  DEFINE_INLINE_TRACE() { visitor->Trace(bar_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(bar_); }
 
   // willFinalize is called by FinalizationObserver. willFinalize can touch
   // other on-heap objects.
@@ -1076,7 +1076,7 @@ class ObservableWithPreFinalizer
     return new ObservableWithPreFinalizer();
   }
   ~ObservableWithPreFinalizer() { was_destructed_ = true; }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
   void Dispose() {
     EXPECT_FALSE(was_destructed_);
     dispose_was_called_ = true;
@@ -1101,7 +1101,7 @@ class PreFinalizerBase : public GarbageCollectedFinalized<PreFinalizerBase> {
  public:
   static PreFinalizerBase* Create() { return new PreFinalizerBase(); }
   virtual ~PreFinalizerBase() { was_destructed_ = true; }
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_TRUE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -1120,7 +1120,7 @@ class PreFinalizerMixin : public GarbageCollectedMixin {
 
  public:
   ~PreFinalizerMixin() { was_destructed_ = true; }
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_TRUE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -1141,7 +1141,7 @@ class PreFinalizerSubClass : public PreFinalizerBase, public PreFinalizerMixin {
  public:
   static PreFinalizerSubClass* Create() { return new PreFinalizerSubClass(); }
   ~PreFinalizerSubClass() { was_destructed_ = true; }
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   void Dispose() {
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_base);
     EXPECT_FALSE(g_dispose_was_called_for_pre_finalizer_sub_class);
@@ -1163,7 +1163,7 @@ class FinalizationObserver : public GarbageCollected<FinalizationObserver<T>> {
   }
   bool DidCallWillFinalize() const { return did_call_will_finalize_; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->template RegisterWeakMembers<
         FinalizationObserver<T>, &FinalizationObserver<T>::ZapWeakMembers>(
         this);
@@ -1245,7 +1245,7 @@ class PointsBack : public GarbageCollectedFinalized<PointsBack> {
 
   SuperClass* BackPointer() const { return back_pointer_; }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(back_pointer_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(back_pointer_); }
 
   static int alive_count_;
 
@@ -1273,7 +1273,7 @@ class SuperClass : public GarbageCollectedFinalized<SuperClass> {
     EXPECT_EQ(super_class_count, SuperClass::alive_count_);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(points_back_); }
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(points_back_); }
 
   PointsBack* GetPointsBack() const { return points_back_.Get(); }
 
@@ -1295,7 +1295,7 @@ class SubData : public GarbageCollectedFinalized<SubData> {
   SubData() { ++alive_count_; }
   ~SubData() { --alive_count_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   static int alive_count_;
 };
@@ -1310,7 +1310,7 @@ class SubClass : public SuperClass {
 
   ~SubClass() override { --alive_count_; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(data_);
     SuperClass::Trace(visitor);
   }
@@ -1331,7 +1331,7 @@ int SubClass::alive_count_ = 0;
 
 class Mixin : public GarbageCollectedMixin {
  public:
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
   virtual char GetPayload(int i) { return padding_[i]; }
 
@@ -1345,7 +1345,7 @@ class UseMixin : public SimpleObject, public Mixin {
   static UseMixin* Create() { return new UseMixin(); }
 
   static int trace_count_;
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     SimpleObject::Trace(visitor);
     Mixin::Trace(visitor);
     ++trace_count_;
@@ -1368,7 +1368,7 @@ class VectorObject {
  public:
   VectorObject() { value_ = SimpleFinalizedObject::Create(); }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(value_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(value_); }
 
  private:
   Member<SimpleFinalizedObject> value_;
@@ -1393,7 +1393,7 @@ class TerminatedArrayItem {
   TerminatedArrayItem(IntWrapper* payload)
       : payload_(payload), is_last_(false) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(payload_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(payload_); }
 
   bool IsLastInArray() const { return is_last_; }
   void SetLastInArray(bool value) { is_last_ = value; }
@@ -1418,7 +1418,7 @@ class OneKiloByteObject : public GarbageCollectedFinalized<OneKiloByteObject> {
  public:
   ~OneKiloByteObject() { destructor_calls_++; }
   char* Data() { return data_; }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
   static int destructor_calls_;
 
  private:
@@ -1439,7 +1439,7 @@ class DynamicallySizedObject : public GarbageCollected<DynamicallySizedObject> {
 
   uint8_t Get(int i) { return *(reinterpret_cast<uint8_t*>(this) + i); }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   DynamicallySizedObject() {}
@@ -1459,7 +1459,7 @@ class FinalizationAllocator
       LargeHeapObject::Create();
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   Persistent<IntWrapper>* wrapper_;
@@ -1482,7 +1482,7 @@ class PreFinalizationAllocator
       LargeHeapObject::Create();
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   Persistent<IntWrapper>* wrapper_;
@@ -1527,7 +1527,7 @@ class PreFinalizerBackingShrinkForbidden
     EXPECT_EQ(0ul, map_.Capacity());
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(vector_);
     visitor->Trace(map_);
   }
@@ -1561,7 +1561,7 @@ class PreFinalizerVectorBackingExpandForbidden
     }
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(vector_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(vector_); }
 
  private:
   HeapVector<Member<IntWrapper>> vector_;
@@ -1591,7 +1591,7 @@ class PreFinalizerHashTableBackingExpandForbidden
     }
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(map_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(map_); }
 
  private:
   HeapHashMap<int, Member<IntWrapper>> map_;
@@ -1943,7 +1943,7 @@ class SimpleFinalizedEagerObjectBase
     : public GarbageCollectedFinalized<SimpleFinalizedEagerObjectBase> {
  public:
   virtual ~SimpleFinalizedEagerObjectBase() {}
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   EAGERLY_FINALIZE();
 
@@ -1980,7 +1980,7 @@ class SimpleFinalizedObjectInstanceOfTemplate final
   }
   ~SimpleFinalizedObjectInstanceOfTemplate() { ++destructor_calls_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   static int destructor_calls_;
 
@@ -2351,7 +2351,7 @@ class Container : public GarbageCollected<Container> {
   HeapDeque<Member<IntWrapper>, 0> deque;
   HeapDeque<PairWrappedUnwrapped, 0> deque_wu;
   HeapDeque<PairUnwrappedWrapped, 0> deque_uw;
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(map);
     visitor->Trace(set);
     visitor->Trace(set2);
@@ -2367,7 +2367,7 @@ class Container : public GarbageCollected<Container> {
 
 struct NeedsTracingTrait {
   explicit NeedsTracingTrait(IntWrapper* wrapper) : wrapper_(wrapper) {}
-  DEFINE_INLINE_TRACE() { visitor->Trace(wrapper_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(wrapper_); }
   Member<IntWrapper> wrapper_;
 };
 
@@ -3062,7 +3062,7 @@ class NonTrivialObject final {
     deque_.push_back(IntWrapper::Create(num));
     vector_.push_back(IntWrapper::Create(num));
   }
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(deque_);
     visitor->Trace(vector_);
   }
@@ -4274,7 +4274,7 @@ class InlinedVectorObject {
  public:
   InlinedVectorObject() {}
   ~InlinedVectorObject() { destructor_calls_++; }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   static int destructor_calls_;
 };
@@ -4288,7 +4288,7 @@ class InlinedVectorObjectWithVtable {
   InlinedVectorObjectWithVtable() {}
   virtual ~InlinedVectorObjectWithVtable() { destructor_calls_++; }
   virtual void VirtualMethod() {}
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   static int destructor_calls_;
 };
@@ -4314,7 +4314,7 @@ class InlinedVectorObjectWrapper final
     vector3_.push_back(i2);
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(vector1_);
     visitor->Trace(vector2_);
     visitor->Trace(vector3_);
@@ -4339,7 +4339,7 @@ class InlinedVectorObjectWithVtableWrapper final
     vector3_.push_back(i2);
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(vector1_);
     visitor->Trace(vector2_);
     visitor->Trace(vector3_);
@@ -4668,7 +4668,7 @@ TEST(HeapTest, DestructorsCalled) {
 class MixinA : public GarbageCollectedMixin {
  public:
   MixinA() : obj_(IntWrapper::Create(100)) {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     trace_count_++;
     visitor->Trace(obj_);
   }
@@ -4683,7 +4683,7 @@ int MixinA::trace_count_ = 0;
 class MixinB : public GarbageCollectedMixin {
  public:
   MixinB() : obj_(IntWrapper::Create(101)) {}
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(obj_); }
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(obj_); }
   Member<IntWrapper> obj_;
 };
 
@@ -4694,7 +4694,7 @@ class MultipleMixins : public GarbageCollected<MultipleMixins>,
 
  public:
   MultipleMixins() : obj_(IntWrapper::Create(102)) {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(obj_);
     MixinA::Trace(visitor);
     MixinB::Trace(visitor);
@@ -4706,7 +4706,7 @@ class DerivedMultipleMixins : public MultipleMixins {
  public:
   DerivedMultipleMixins() : obj_(IntWrapper::Create(103)) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     trace_called_++;
     visitor->Trace(obj_);
     MultipleMixins::Trace(visitor);
@@ -5219,7 +5219,7 @@ TEST(HeapTest, EphemeronsInEphemerons) {
 
 class EphemeronWrapper : public GarbageCollected<EphemeronWrapper> {
  public:
-  DEFINE_INLINE_TRACE() { visitor->Trace(map_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(map_); }
 
   typedef HeapHashMap<WeakMember<IntWrapper>, Member<EphemeronWrapper>> Map;
   Map& GetMap() { return map_; }
@@ -5356,7 +5356,7 @@ class Link1 : public GarbageCollected<Link1> {
  public:
   Link1(IntWrapper* link) : link_(link) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(link_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(link_); }
 
   IntWrapper* Link() { return link_; }
 
@@ -5632,7 +5632,7 @@ class MarkingSameThreadCheckTester {
  private:
   class MainThreadObject : public GarbageCollectedFinalized<MainThreadObject> {
    public:
-    DEFINE_INLINE_TRACE() { visitor->Trace(wrapper_set_); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(wrapper_set_); }
     void AddToSet(IntWrapper* wrapper) { wrapper_set_.insert(42, wrapper); }
 
    private:
@@ -5695,7 +5695,7 @@ class ClassWithGarbageCollectingMixinConstructor
       : trace_counter_(TraceCounter::Create()),
         wrapper_(IntWrapper::Create(32)) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     trace_called_++;
     visitor->Trace(trace_counter_);
     visitor->Trace(wrapper_);
@@ -5740,7 +5740,7 @@ class DestructorLockingObject
   }
 
   static int destructor_calls_;
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   DestructorLockingObject() {}
@@ -5758,7 +5758,9 @@ class TraceIfNeededTester
   static TraceIfNeededTester<T>* Create(const T& obj) {
     return new TraceIfNeededTester<T>(obj);
   }
-  DEFINE_INLINE_TRACE() { TraceIfNeeded<T>::Trace(visitor, obj_); }
+  void Trace(blink::Visitor* visitor) {
+    TraceIfNeeded<T>::Trace(visitor, obj_);
+  }
   T& Obj() { return obj_; }
   ~TraceIfNeededTester() {}
 
@@ -5773,7 +5775,7 @@ class PartObject {
 
  public:
   PartObject() : obj_(SimpleObject::Create()) {}
-  DEFINE_INLINE_TRACE() { visitor->Trace(obj_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(obj_); }
 
  private:
   Member<SimpleObject> obj_;
@@ -5802,7 +5804,7 @@ class AllocatesOnAssignment {
 
   inline bool IsDeleted() const { return value_.IsHashTableDeletedValue(); }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(value_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(value_); }
 
   int Value() { return value_->Value(); }
 
@@ -5878,14 +5880,14 @@ TEST(HeapTest, GCInHashMapOperations) {
 
 class PartObjectWithVirtualMethod {
  public:
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 class ObjectWithVirtualPartObject
     : public GarbageCollected<ObjectWithVirtualPartObject> {
  public:
   ObjectWithVirtualPartObject() : dummy_(AllocateAndReturnBool()) {}
-  DEFINE_INLINE_TRACE() { visitor->Trace(part_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(part_); }
 
  private:
   bool dummy_;
@@ -5902,7 +5904,7 @@ class AllocInSuperConstructorArgumentSuper
  public:
   AllocInSuperConstructorArgumentSuper(bool value) : value_(value) {}
   virtual ~AllocInSuperConstructorArgumentSuper() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   bool Value() { return value_; }
 
  private:
@@ -5932,7 +5934,7 @@ class NonNodeAllocatingNodeInDestructor
     node_ = new Persistent<IntNode>(IntNode::Create(10));
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   static Persistent<IntNode>* node_;
 };
@@ -5990,7 +5992,7 @@ class DeepEagerly final : public GarbageCollected<DeepEagerly> {
  public:
   DeepEagerly(DeepEagerly* next) : next_(next) {}
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     int calls = ++s_trace_calls_;
     if (s_trace_lazy_ <= 2)
       visitor->Trace(next_);
@@ -6094,7 +6096,7 @@ class PartObjectWithRef {
  public:
   PartObjectWithRef(int i) : value_(SimpleRefValue::Create(i)) {}
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   int Value() const { return value_->Value(); }
 
@@ -6245,7 +6247,7 @@ class TestMixinAllocationA : public GarbageCollected<TestMixinAllocationA>,
     DCHECK(ThreadState::Current()->IsGCForbidden());
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 class TestMixinAllocationB : public TestMixinAllocationA {
@@ -6261,7 +6263,7 @@ class TestMixinAllocationB : public TestMixinAllocationA {
     DCHECK(ThreadState::Current()->IsGCForbidden());
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(a_);
     TestMixinAllocationA::Trace(visitor);
   }
@@ -6276,7 +6278,7 @@ class TestMixinAllocationC final : public TestMixinAllocationB {
  public:
   TestMixinAllocationC() { DCHECK(!ThreadState::Current()->IsGCForbidden()); }
 
-  DEFINE_INLINE_TRACE() { TestMixinAllocationB::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) { TestMixinAllocationB::Trace(visitor); }
 };
 
 TEST(HeapTest, NestedMixinConstruction) {
@@ -6312,7 +6314,7 @@ class TestMixinAllocatingObject final
     return new TestMixinAllocatingObject(member);
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(trace_counter_);
     TestMixinAllocationB::Trace(visitor);
   }
@@ -6550,7 +6552,7 @@ class ThreadedClearOnShutdownTester::HeapObject final
     GetHeapObjectSet().insert(Create(false));
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit HeapObject(bool test_destructor)
@@ -6597,7 +6599,7 @@ class WithWeakConstObject final : public GarbageCollected<WithWeakConstObject> {
     return new WithWeakConstObject(int_wrapper);
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(wrapper_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(wrapper_); }
 
   const IntWrapper* Value() const { return wrapper_; }
 

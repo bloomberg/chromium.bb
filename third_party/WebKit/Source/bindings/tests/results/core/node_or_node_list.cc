@@ -60,7 +60,7 @@ NodeOrNodeList::NodeOrNodeList(const NodeOrNodeList&) = default;
 NodeOrNodeList::~NodeOrNodeList() = default;
 NodeOrNodeList& NodeOrNodeList::operator=(const NodeOrNodeList&) = default;
 
-DEFINE_TRACE(NodeOrNodeList) {
+void NodeOrNodeList::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_);
   visitor->Trace(node_list_);
 }

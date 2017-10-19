@@ -45,7 +45,7 @@ class CORE_EXPORT HTMLObjectElement final : public HTMLPlugInElement,
  public:
   static HTMLObjectElement* Create(Document&, bool created_by_parser);
   ~HTMLObjectElement() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   const String& ClassId() const { return class_id_; }
 

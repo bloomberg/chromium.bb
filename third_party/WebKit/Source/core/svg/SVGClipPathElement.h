@@ -41,7 +41,7 @@ class SVGClipPathElement final : public SVGGraphicsElement {
 
   bool SupportsFocus() const override { return false; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGClipPathElement(Document&);

@@ -178,7 +178,7 @@ SpeechRecognition::SpeechRecognition(Page* page, ExecutionContext* context)
 
 SpeechRecognition::~SpeechRecognition() {}
 
-DEFINE_TRACE(SpeechRecognition) {
+void SpeechRecognition::Trace(blink::Visitor* visitor) {
   visitor->Trace(grammars_);
   visitor->Trace(audio_track_);
   visitor->Trace(controller_);

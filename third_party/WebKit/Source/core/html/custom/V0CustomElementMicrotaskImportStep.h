@@ -58,7 +58,7 @@ class V0CustomElementMicrotaskImportStep final
   void Invalidate();
   void ImportDidFinishLoading();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit V0CustomElementMicrotaskImportStep(HTMLImportChild*);

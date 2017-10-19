@@ -40,7 +40,7 @@ class InsertIntoTextNodeCommand final : public SimpleEditCommand {
     return new InsertIntoTextNodeCommand(node, offset, text);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   InsertIntoTextNodeCommand(Text* node, unsigned offset, const String& text);

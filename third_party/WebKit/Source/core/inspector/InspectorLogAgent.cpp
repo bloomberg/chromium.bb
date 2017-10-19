@@ -87,7 +87,7 @@ InspectorLogAgent::InspectorLogAgent(
 
 InspectorLogAgent::~InspectorLogAgent() {}
 
-DEFINE_TRACE(InspectorLogAgent) {
+void InspectorLogAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(storage_);
   visitor->Trace(performance_monitor_);
   InspectorBaseAgent::Trace(visitor);

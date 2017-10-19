@@ -27,7 +27,7 @@ class MODULES_EXPORT AudioWorklet final : public Worklet {
 
   AudioWorkletMessagingProxy* FindAvailableMessagingProxy();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit AudioWorklet(LocalFrame*);

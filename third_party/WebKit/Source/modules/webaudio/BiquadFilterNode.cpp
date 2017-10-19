@@ -85,7 +85,7 @@ BiquadFilterNode* BiquadFilterNode::Create(BaseAudioContext* context,
   return node;
 }
 
-DEFINE_TRACE(BiquadFilterNode) {
+void BiquadFilterNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(frequency_);
   visitor->Trace(q_);
   visitor->Trace(gain_);

@@ -55,7 +55,7 @@ class MODULES_EXPORT EntryBase : public GarbageCollectedFinalized<EntryBase> {
 
   String toURL() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   EntryBase(DOMFileSystemBase*, const String& full_path);

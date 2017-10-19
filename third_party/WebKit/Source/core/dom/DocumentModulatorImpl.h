@@ -26,7 +26,7 @@ class DocumentModulatorImpl final : public ModulatorImplBase {
   // Implements Modulator.
   ModuleScriptFetcher* CreateModuleScriptFetcher() override;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   DocumentModulatorImpl(RefPtr<ScriptState>, ResourceFetcher*);

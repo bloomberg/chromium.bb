@@ -830,7 +830,7 @@ HeapVector<Member<CSPSource>> SourceListDirective::GetIntersectCSPSources(
   return normalized;
 }
 
-DEFINE_TRACE(SourceListDirective) {
+void SourceListDirective::Trace(blink::Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(list_);
   CSPDirective::Trace(visitor);

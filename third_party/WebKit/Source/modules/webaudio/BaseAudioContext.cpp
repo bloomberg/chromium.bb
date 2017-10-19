@@ -994,7 +994,7 @@ void BaseAudioContext::StartRendering() {
   }
 }
 
-DEFINE_TRACE(BaseAudioContext) {
+void BaseAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(destination_node_);
   visitor->Trace(listener_);
   visitor->Trace(active_source_nodes_);

@@ -92,7 +92,7 @@ void RTCVoidRequestImpl::Clear() {
   requester_.Clear();
 }
 
-DEFINE_TRACE(RTCVoidRequestImpl) {
+void RTCVoidRequestImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);
   visitor->Trace(requester_);

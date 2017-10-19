@@ -27,7 +27,7 @@ class CORE_EXPORT TextCheckerClientImpl final
   void RequestCheckingOfString(TextCheckingRequest*) final;
   void CancelAllPendingRequests() final;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   WebTextCheckClient* GetWebTextCheckClient() const;

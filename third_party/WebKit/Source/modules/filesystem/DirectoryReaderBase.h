@@ -47,7 +47,7 @@ class DirectoryReaderBase
 
   virtual ~DirectoryReaderBase() {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(file_system_); }
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(file_system_); }
 
  protected:
   DirectoryReaderBase(DOMFileSystemBase* file_system, const String& full_path)

@@ -49,7 +49,7 @@ class ConstantSourceNode final : public AudioScheduledSourceNode {
   static ConstantSourceNode* Create(BaseAudioContext*,
                                     const ConstantSourceOptions&,
                                     ExceptionState&);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   AudioParam* offset();
 

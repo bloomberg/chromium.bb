@@ -63,7 +63,7 @@ class WebGLExtension : public GarbageCollected<WebGLExtension>,
 
   bool IsLost() { return !context_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit WebGLExtension(WebGLRenderingContextBase*);

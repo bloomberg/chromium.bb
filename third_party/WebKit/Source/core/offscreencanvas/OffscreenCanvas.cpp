@@ -423,7 +423,7 @@ FontSelector* OffscreenCanvas::GetFontSelector() {
   return ToWorkerGlobalScope(execution_context_)->GetFontSelector();
 }
 
-DEFINE_TRACE(OffscreenCanvas) {
+void OffscreenCanvas::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(execution_context_);
   visitor->Trace(commit_promise_resolver_);

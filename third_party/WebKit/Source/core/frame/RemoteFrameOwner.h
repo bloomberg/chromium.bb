@@ -76,7 +76,7 @@ class CORE_EXPORT RemoteFrameOwner final
     container_policy_ = container_policy;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   RemoteFrameOwner(SandboxFlags,

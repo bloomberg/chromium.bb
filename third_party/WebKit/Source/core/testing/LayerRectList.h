@@ -57,7 +57,7 @@ class LayerRectList final : public GarbageCollected<LayerRectList>,
               int layer_offset_y,
               DOMRectReadOnly* layer_relative_rect);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   LayerRectList();

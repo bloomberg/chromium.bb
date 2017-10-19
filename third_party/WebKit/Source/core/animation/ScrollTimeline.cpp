@@ -141,7 +141,7 @@ void ScrollTimeline::timeRange(DoubleOrScrollTimelineAutoKeyword& result) {
   result.SetDouble(time_range_);
 }
 
-DEFINE_TRACE(ScrollTimeline) {
+void ScrollTimeline::Trace(blink::Visitor* visitor) {
   visitor->Trace(scroll_source_);
   AnimationTimeline::Trace(visitor);
 }

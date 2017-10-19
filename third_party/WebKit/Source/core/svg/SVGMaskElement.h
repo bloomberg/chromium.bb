@@ -47,7 +47,7 @@ class SVGMaskElement final : public SVGElement, public SVGTests {
     return mask_content_units_.Get();
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGMaskElement(Document&);

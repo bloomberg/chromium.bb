@@ -29,7 +29,7 @@ class MODULES_EXPORT AbortPaymentRespondWithObserver final
   void OnResponseFulfilled(const ScriptValue&) override;
   void OnNoResponse() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 };
 
 }  // namespace blink

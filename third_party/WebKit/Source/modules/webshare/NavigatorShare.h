@@ -36,7 +36,7 @@ class NavigatorShare final : public GarbageCollectedFinalized<NavigatorShare>,
   ScriptPromise share(ScriptState*, const ShareData&);
   static ScriptPromise share(ScriptState*, Navigator&, const ShareData&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   class ShareClientImpl;

@@ -145,7 +145,7 @@ void CSSFontSelector::ReportNotDefGlyph() const {
   UseCounter::Count(document_, WebFeature::kFontShapingNotDefGlyphObserved);
 }
 
-DEFINE_TRACE(CSSFontSelector) {
+void CSSFontSelector::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(font_face_cache_);
   visitor->Trace(clients_);

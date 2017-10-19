@@ -71,8 +71,8 @@ class CORE_EXPORT StyleRuleBase
   CSSRule* CreateCSSOMWrapper(CSSStyleSheet* parent_sheet = nullptr) const;
   CSSRule* CreateCSSOMWrapper(CSSRule* parent_rule) const;
 
-  DECLARE_TRACE();
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {}
+  void Trace(blink::Visitor*);
+  void TraceAfterDispatch(blink::Visitor* visitor) {}
   void FinalizeGarbageCollectedObject();
 
   // ~StyleRuleBase should be public, because non-public ~StyleRuleBase
@@ -124,7 +124,7 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
   bool PropertiesHaveFailedOrCanceledSubresources() const;
   bool ShouldConsiderForMatchingRules(bool include_empty_rules) const;
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   friend class CSSLazyParsingTest;
@@ -163,7 +163,7 @@ class CORE_EXPORT StyleRuleFontFace : public StyleRuleBase {
 
   StyleRuleFontFace* Copy() const { return new StyleRuleFontFace(*this); }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   StyleRuleFontFace(StylePropertySet*);
@@ -192,7 +192,7 @@ class StyleRulePage : public StyleRuleBase {
 
   StyleRulePage* Copy() const { return new StyleRulePage(*this); }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   StyleRulePage(CSSSelectorList, StylePropertySet*);
@@ -211,7 +211,7 @@ class CORE_EXPORT StyleRuleGroup : public StyleRuleBase {
   void WrapperInsertRule(unsigned, StyleRuleBase*);
   void WrapperRemoveRule(unsigned);
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  protected:
   StyleRuleGroup(RuleType, HeapVector<Member<StyleRuleBase>>& adopt_rule);
@@ -225,7 +225,7 @@ class CORE_EXPORT StyleRuleCondition : public StyleRuleGroup {
  public:
   String ConditionText() const { return condition_text_; }
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     StyleRuleGroup::TraceAfterDispatch(visitor);
   }
 
@@ -250,7 +250,7 @@ class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
 
   StyleRuleMedia* Copy() const { return new StyleRuleMedia(*this); }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   StyleRuleMedia(RefPtr<MediaQuerySet>,
@@ -273,7 +273,7 @@ class StyleRuleSupports : public StyleRuleCondition {
   bool ConditionIsSupported() const { return condition_is_supported_; }
   StyleRuleSupports* Copy() const { return new StyleRuleSupports(*this); }
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     StyleRuleCondition::TraceAfterDispatch(visitor);
   }
 
@@ -300,7 +300,7 @@ class StyleRuleViewport : public StyleRuleBase {
 
   StyleRuleViewport* Copy() const { return new StyleRuleViewport(*this); }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   StyleRuleViewport(StylePropertySet*);
@@ -313,7 +313,7 @@ class StyleRuleViewport : public StyleRuleBase {
 class StyleRuleCharset : public StyleRuleBase {
  public:
   static StyleRuleCharset* Create() { return new StyleRuleCharset(); }
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     StyleRuleBase::TraceAfterDispatch(visitor);
   }
 

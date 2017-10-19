@@ -53,7 +53,7 @@ class MODULES_EXPORT Body : public GarbageCollected<Body>,
   // ScriptWrappable override.
   bool HasPendingActivity() const override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ContextClient::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { ContextClient::Trace(visitor); }
 
  private:
   // TODO(e_hakkinen): Fix |MimeType()| to always contain parameters and

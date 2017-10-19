@@ -39,7 +39,7 @@ class CORE_EXPORT LongOrBoolean final {
   LongOrBoolean(const LongOrBoolean&);
   ~LongOrBoolean();
   LongOrBoolean& operator=(const LongOrBoolean&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

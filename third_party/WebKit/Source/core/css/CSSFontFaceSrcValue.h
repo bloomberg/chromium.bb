@@ -72,7 +72,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
 
   bool Equals(const CSSFontFaceSrcValue&) const;
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     visitor->Trace(fetched_);
     CSSValue::TraceAfterDispatch(visitor);
   }
@@ -111,7 +111,7 @@ class CORE_EXPORT CSSFontFaceSrcValue : public CSSValue {
       return new FontResourceHelper(resource);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {
+    virtual void Trace(blink::Visitor* visitor) {
       ResourceOwner<FontResource>::Trace(visitor);
     }
 

@@ -54,7 +54,7 @@ void FileEntry::file(BlobCallback* success_callback,
                            ScriptErrorCallback::Wrap(error_callback));
 }
 
-DEFINE_TRACE(FileEntry) {
+void FileEntry::Trace(blink::Visitor* visitor) {
   Entry::Trace(visitor);
 }
 

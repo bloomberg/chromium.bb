@@ -27,7 +27,7 @@ RemoteFrameOwner::RemoteFrameOwner(
       csp_(frame_owner_properties.required_csp),
       container_policy_(container_policy) {}
 
-DEFINE_TRACE(RemoteFrameOwner) {
+void RemoteFrameOwner::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   FrameOwner::Trace(visitor);
 }

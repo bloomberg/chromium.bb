@@ -57,7 +57,7 @@ class TextTrackCueList final : public GarbageCollected<TextTrackCueList>,
   }
   void ValidateCueIndexes();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:

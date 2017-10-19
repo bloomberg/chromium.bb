@@ -63,7 +63,7 @@ namespace blink {
 TextFinder::FindMatch::FindMatch(Range* range, int ordinal)
     : range_(range), ordinal_(ordinal) {}
 
-DEFINE_TRACE(TextFinder::FindMatch) {
+void TextFinder::FindMatch::Trace(blink::Visitor* visitor) {
   visitor->Trace(range_);
 }
 
@@ -78,7 +78,7 @@ class TextFinder::DeferredScopeStringMatches
                                           options);
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(text_finder_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(text_finder_); }
 
   void Dispose() { timer_.Stop(); }
 
@@ -878,7 +878,7 @@ void TextFinder::FlushCurrentScoping() {
   FlushCurrentScopingEffort(find_request_identifier_);
 }
 
-DEFINE_TRACE(TextFinder) {
+void TextFinder::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_frame_);
   visitor->Trace(active_match_);
   visitor->Trace(resume_scoping_from_range_);

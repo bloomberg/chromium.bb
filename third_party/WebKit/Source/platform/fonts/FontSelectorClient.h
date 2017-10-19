@@ -17,7 +17,7 @@ class FontSelectorClient : public GarbageCollectedMixin {
 
   virtual void FontsNeedUpdate(FontSelector*) = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

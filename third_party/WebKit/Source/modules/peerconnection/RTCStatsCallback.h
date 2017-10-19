@@ -34,7 +34,7 @@ class RTCStatsResponse;
 class RTCStatsCallback : public GarbageCollectedFinalized<RTCStatsCallback> {
  public:
   virtual ~RTCStatsCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(RTCStatsResponse*) = 0;
 };
 

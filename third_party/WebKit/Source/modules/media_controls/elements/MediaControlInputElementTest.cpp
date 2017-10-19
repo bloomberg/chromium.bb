@@ -34,7 +34,9 @@ class MediaControlInputElementImpl final : public MediaControlInputElement {
     SetIsWanted(false);
   }
 
-  DEFINE_INLINE_TRACE() { MediaControlInputElement::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) {
+    MediaControlInputElement::Trace(visitor);
+  }
 
  protected:
   const char* GetNameForHistograms() const final {

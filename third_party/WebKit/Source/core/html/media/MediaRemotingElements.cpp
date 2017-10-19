@@ -75,7 +75,7 @@ HTMLVideoElement& MediaRemotingExitButtonElement::GetVideoElement() const {
   return interstitial_->GetVideoElement();
 }
 
-DEFINE_TRACE(MediaRemotingExitButtonElement) {
+void MediaRemotingExitButtonElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(interstitial_);
   visitor->Trace(listener_);
   HTMLDivElement::Trace(visitor);

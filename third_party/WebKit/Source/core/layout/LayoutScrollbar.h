@@ -69,7 +69,7 @@ class LayoutScrollbar final : public Scrollbar {
 
   void SetVisualRect(const LayoutRect&) final;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   LayoutScrollbar(ScrollableArea*, ScrollbarOrientation, Element*);

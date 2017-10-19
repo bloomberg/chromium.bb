@@ -221,7 +221,7 @@ void DictionaryTest::Reset() {
   dictionary_member_properties_ = nullptr;
 }
 
-DEFINE_TRACE(DictionaryTest) {
+void DictionaryTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_member_);
   visitor->Trace(element_or_null_member_);
   visitor->Trace(double_or_string_sequence_member_);

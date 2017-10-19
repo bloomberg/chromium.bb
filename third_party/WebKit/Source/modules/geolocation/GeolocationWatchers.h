@@ -17,7 +17,7 @@ class GeolocationWatchers : public TraceWrapperBase {
 
  public:
   GeolocationWatchers() {}
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
   bool Add(int id, GeoNotifier*);

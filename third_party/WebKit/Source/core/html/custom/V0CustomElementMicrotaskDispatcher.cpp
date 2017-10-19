@@ -74,7 +74,7 @@ void V0CustomElementMicrotaskDispatcher::DoDispatch() {
   phase_ = kQuiescent;
 }
 
-DEFINE_TRACE(V0CustomElementMicrotaskDispatcher) {
+void V0CustomElementMicrotaskDispatcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(elements_);
 }
 

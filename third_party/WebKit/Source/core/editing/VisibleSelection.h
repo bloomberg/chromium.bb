@@ -105,7 +105,7 @@ class CORE_TEMPLATE_CLASS_EXPORT VisibleSelectionTemplate {
       const PositionTemplate<Strategy>& extent,
       TextAffinity);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
 #ifndef NDEBUG
   void ShowTreeForThis() const;

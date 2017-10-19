@@ -82,7 +82,7 @@ void CSSImportRule::Reattach(StyleRuleBase*) {
   NOTREACHED();
 }
 
-DEFINE_TRACE(CSSImportRule) {
+void CSSImportRule::Trace(blink::Visitor* visitor) {
   visitor->Trace(import_rule_);
   visitor->Trace(media_cssom_wrapper_);
   visitor->Trace(style_sheet_cssom_wrapper_);

@@ -50,7 +50,7 @@ class V0CustomElementMicrotaskResolutionStep final
 
   ~V0CustomElementMicrotaskResolutionStep() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   V0CustomElementMicrotaskResolutionStep(V0CustomElementRegistrationContext*,

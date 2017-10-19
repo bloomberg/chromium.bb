@@ -27,7 +27,7 @@ class MODULES_EXPORT AuthenticatorAttestationResponse final
     return attestation_object_.Get();
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit AuthenticatorAttestationResponse(DOMArrayBuffer* client_data_json,

@@ -45,7 +45,7 @@ class MODULES_EXPORT DOMWindowSpeechSynthesis final
   static SpeechSynthesis* speechSynthesis(ScriptState*, LocalDOMWindow&);
   static DOMWindowSpeechSynthesis& From(LocalDOMWindow&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit DOMWindowSpeechSynthesis(LocalDOMWindow&);

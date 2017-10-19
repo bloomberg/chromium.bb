@@ -112,7 +112,7 @@ void Attr::AttachToElement(Element* element,
   standalone_value_or_attached_local_name_ = attached_local_name;
 }
 
-DEFINE_TRACE(Attr) {
+void Attr::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   Node::Trace(visitor);
 }

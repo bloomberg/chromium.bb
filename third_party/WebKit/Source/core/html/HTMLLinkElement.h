@@ -110,7 +110,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   }
   bool IsCreatedByParser() const { return created_by_parser_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 

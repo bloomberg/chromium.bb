@@ -134,7 +134,7 @@ class GetDatabaseNamesCallback final : public EventListener {
     request_callback_->sendSuccess(std::move(database_names));
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
 
  private:
   GetDatabaseNamesCallback(
@@ -172,7 +172,7 @@ class DeleteCallback final : public EventListener {
     request_callback_->sendSuccess();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
 
  private:
   DeleteCallback(std::unique_ptr<DeleteDatabaseCallback> request_callback,
@@ -601,7 +601,7 @@ class OpenCursorCallback final : public EventListener {
     request_callback_->sendSuccess(std::move(result_), has_more);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
 
  private:
   OpenCursorCallback(v8_inspector::V8InspectorSession* v8_session,
@@ -896,7 +896,7 @@ class ClearObjectStoreListener final : public EventListener {
     request_callback_->sendSuccess();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventListener::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { EventListener::Trace(visitor); }
 
  private:
   ClearObjectStoreListener(
@@ -1037,7 +1037,7 @@ void InspectorIndexedDBAgent::deleteDatabase(
       false);
 }
 
-DEFINE_TRACE(InspectorIndexedDBAgent) {
+void InspectorIndexedDBAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);
 }

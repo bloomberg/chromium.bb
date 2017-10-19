@@ -95,7 +95,7 @@ class CORE_EXPORT MediaQueryEvaluator final
   // Evaluates media query subexpression, ie "and (media-feature: value)" part.
   bool Eval(const MediaQueryExp&) const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   const String MediaType() const;

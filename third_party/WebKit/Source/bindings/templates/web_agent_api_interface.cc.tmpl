@@ -16,7 +16,7 @@ namespace web {
 }
 
 {% if not base_class %}
-DEFINE_TRACE({{class_name.upper_camel_case}}) {
+void {{class_name.upper_camel_case}}::Trace(blink::Visitor* visitor) {
   visitor->trace({{class_name.snake_case}}_);
 }
 {% endif %}

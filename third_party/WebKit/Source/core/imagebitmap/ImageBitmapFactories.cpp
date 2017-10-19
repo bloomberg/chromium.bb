@@ -258,7 +258,7 @@ void ImageBitmapFactories::ImageBitmapLoader::LoadBlobAsync(
   loader_->Start(context, blob->GetBlobDataHandle());
 }
 
-DEFINE_TRACE(ImageBitmapFactories) {
+void ImageBitmapFactories::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_loaders_);
   Supplement<LocalDOMWindow>::Trace(visitor);
   Supplement<WorkerGlobalScope>::Trace(visitor);
@@ -358,7 +358,7 @@ void ImageBitmapFactories::ImageBitmapLoader::ResolvePromiseOnOriginalThread(
   factory_->DidFinishLoading(this);
 }
 
-DEFINE_TRACE(ImageBitmapFactories::ImageBitmapLoader) {
+void ImageBitmapFactories::ImageBitmapLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(factory_);
   visitor->Trace(resolver_);
 }

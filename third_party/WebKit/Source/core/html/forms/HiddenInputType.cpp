@@ -45,7 +45,7 @@ InputType* HiddenInputType::Create(HTMLInputElement& element) {
   return new HiddenInputType(element);
 }
 
-DEFINE_TRACE(HiddenInputType) {
+void HiddenInputType::Trace(blink::Visitor* visitor) {
   InputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

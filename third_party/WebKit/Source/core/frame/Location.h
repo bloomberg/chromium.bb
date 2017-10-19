@@ -123,7 +123,7 @@ class CORE_EXPORT Location final : public GarbageCollected<Location>,
 
   String toString() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit Location(DOMWindow*);

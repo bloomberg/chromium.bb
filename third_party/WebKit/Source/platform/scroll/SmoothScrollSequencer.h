@@ -31,7 +31,7 @@ struct SequencedScroll final : public GarbageCollected<SequencedScroll> {
   ScrollOffset scroll_offset;
   ScrollBehavior scroll_behavior;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 };
 
 // A sequencer that queues the nested scrollers from inside to outside,
@@ -52,7 +52,7 @@ class PLATFORM_EXPORT SmoothScrollSequencer final
 
   void DidDisposeScrollableArea(const ScrollableArea&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   HeapVector<Member<SequencedScroll>> queue_;

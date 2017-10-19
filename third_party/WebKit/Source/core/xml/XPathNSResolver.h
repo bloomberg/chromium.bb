@@ -41,7 +41,7 @@ class XPathNSResolver : public GarbageCollectedFinalized<XPathNSResolver>,
   virtual ~XPathNSResolver() {}
   virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   XPathNSResolver() {}

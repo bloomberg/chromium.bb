@@ -135,7 +135,7 @@ bool CSSBasicShapeCircleValue::Equals(
          DataEquivalent(radius_, other.radius_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSBasicShapeCircleValue) {
+void CSSBasicShapeCircleValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(center_x_);
   visitor->Trace(center_y_);
   visitor->Trace(radius_);
@@ -215,7 +215,7 @@ bool CSSBasicShapeEllipseValue::Equals(
          DataEquivalent(radius_y_, other.radius_y_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSBasicShapeEllipseValue) {
+void CSSBasicShapeEllipseValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(center_x_);
   visitor->Trace(center_y_);
   visitor->Trace(radius_x_);
@@ -276,7 +276,7 @@ bool CSSBasicShapePolygonValue::Equals(
   return CompareCSSValueVector(values_, other.values_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSBasicShapePolygonValue) {
+void CSSBasicShapePolygonValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(values_);
   CSSValue::TraceAfterDispatch(visitor);
 }
@@ -424,7 +424,7 @@ bool CSSBasicShapeInsetValue::Equals(
          DataEquivalent(bottom_left_radius_, other.bottom_left_radius_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSBasicShapeInsetValue) {
+void CSSBasicShapeInsetValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(top_);
   visitor->Trace(right_);
   visitor->Trace(bottom_);

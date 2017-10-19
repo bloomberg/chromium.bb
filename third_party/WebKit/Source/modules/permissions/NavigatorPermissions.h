@@ -23,7 +23,7 @@ class NavigatorPermissions final
   static NavigatorPermissions& From(Navigator&);
   static Permissions* permissions(Navigator&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   NavigatorPermissions();

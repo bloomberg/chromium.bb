@@ -916,7 +916,7 @@ void NFC::OnWatchRegistered(MessageCallback* callback,
   }
 }
 
-DEFINE_TRACE(NFC) {
+void NFC::Trace(blink::Visitor* visitor) {
   PageVisibilityObserver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(requests_);

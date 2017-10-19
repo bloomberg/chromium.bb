@@ -294,7 +294,7 @@ class CORE_EXPORT StyleEngine final
   void ClearWhitespaceReattachSet() { whitespace_reattach_set_.clear(); }
   void MarkForWhitespaceReattachment();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

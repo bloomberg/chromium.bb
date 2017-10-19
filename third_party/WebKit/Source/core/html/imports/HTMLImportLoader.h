@@ -95,7 +95,7 @@ class HTMLImportLoader final
 
   V0CustomElementSyncMicrotaskQueue* MicrotaskQueue() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   HTMLImportLoader(HTMLImportsController*);

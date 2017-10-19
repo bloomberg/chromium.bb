@@ -33,7 +33,7 @@ class CORE_EXPORT RootFrameViewport final
     return new RootFrameViewport(visual_viewport, layout_viewport);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   void SetLayoutViewport(ScrollableArea&);
   ScrollableArea& LayoutViewport() const;

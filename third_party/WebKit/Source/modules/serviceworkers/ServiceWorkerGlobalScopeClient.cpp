@@ -298,7 +298,7 @@ ServiceWorkerGlobalScopeClient* ServiceWorkerGlobalScopeClient::From(
   return client;
 }
 
-DEFINE_TRACE(ServiceWorkerGlobalScopeClient) {
+void ServiceWorkerGlobalScopeClient::Trace(blink::Visitor* visitor) {
   Supplement<WorkerClients>::Trace(visitor);
 }
 

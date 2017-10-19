@@ -85,7 +85,7 @@ class MODULES_EXPORT MediaRecorder final
                  double timecode) override;
   void OnError(const WebString& message) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MediaRecorder(ExecutionContext*,

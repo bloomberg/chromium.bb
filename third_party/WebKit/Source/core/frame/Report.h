@@ -23,7 +23,7 @@ class CORE_EXPORT Report : public GarbageCollectedFinalized<Report>,
   String url() const { return url_; }
   ReportBody* body() const { return body_; }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(body_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(body_); }
 
  private:
   const String type_;

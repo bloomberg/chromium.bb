@@ -104,7 +104,7 @@ void CSSLazyParsingState::RecordUsageMetrics() {
   usage_histogram.Count(usage_);
 }
 
-DEFINE_TRACE(CSSLazyParsingState) {
+void CSSLazyParsingState::Trace(blink::Visitor* visitor) {
   visitor->Trace(owning_contents_);
   visitor->Trace(document_);
   visitor->Trace(context_);

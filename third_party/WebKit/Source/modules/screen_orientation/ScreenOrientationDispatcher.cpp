@@ -23,7 +23,7 @@ ScreenOrientationDispatcher::~ScreenOrientationDispatcher() {
   DCHECK(!listener_);
 }
 
-DEFINE_TRACE(ScreenOrientationDispatcher) {
+void ScreenOrientationDispatcher::Trace(blink::Visitor* visitor) {
   PlatformEventDispatcher::Trace(visitor);
 }
 

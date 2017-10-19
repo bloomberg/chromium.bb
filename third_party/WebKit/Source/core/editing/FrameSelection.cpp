@@ -1004,7 +1004,7 @@ void FrameSelection::ShowTreeForThis() const {
 
 #endif
 
-DEFINE_TRACE(FrameSelection) {
+void FrameSelection::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(layout_selection_);
   visitor->Trace(selection_editor_);

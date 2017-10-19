@@ -689,7 +689,7 @@ class CORE_EXPORT LocalFrameView final
 
   bool IsLocalFrameView() const override { return true; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   void NotifyPageThatContentAreaWillPaint() const;
 
   // Returns the scrollable area for the frame. For the root frame, this will

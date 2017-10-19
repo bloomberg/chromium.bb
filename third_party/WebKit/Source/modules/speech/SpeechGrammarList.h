@@ -49,7 +49,7 @@ class MODULES_EXPORT SpeechGrammarList final
   void addFromUri(ScriptState*, const String& src, double weight = 1.0);
   void addFromString(const String&, double weight = 1.0);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   SpeechGrammarList();

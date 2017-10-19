@@ -125,7 +125,7 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
 
   void MaybeRecordOverflowTimeToAction();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   // MediaControlsMediaEventListener is a component that is listening to events

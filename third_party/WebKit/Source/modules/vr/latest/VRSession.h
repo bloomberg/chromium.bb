@@ -55,7 +55,7 @@ class VRSession final : public EventTargetWithInlineData {
   void OnFocus();
   void OnBlur();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   const Member<VRDevice> device_;

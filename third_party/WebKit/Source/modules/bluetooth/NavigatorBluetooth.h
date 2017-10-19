@@ -28,7 +28,7 @@ class NavigatorBluetooth final : public GarbageCollected<NavigatorBluetooth>,
   // IDL exposed interface:
   Bluetooth* bluetooth();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorBluetooth(Navigator&);

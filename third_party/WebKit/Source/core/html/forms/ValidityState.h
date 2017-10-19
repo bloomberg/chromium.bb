@@ -38,7 +38,7 @@ class ValidityState final : public GarbageCollected<ValidityState>,
   static ValidityState* Create(ListedElement* control) {
     return new ValidityState(control);
   }
-  DEFINE_INLINE_TRACE() { visitor->Trace(control_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(control_); }
 
   String ValidationMessage() const;
 

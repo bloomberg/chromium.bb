@@ -25,7 +25,7 @@ class AnimationWorkletMessagingProxy final
  public:
   AnimationWorkletMessagingProxy(ExecutionContext*, WorkerClients*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   ~AnimationWorkletMessagingProxy() override;

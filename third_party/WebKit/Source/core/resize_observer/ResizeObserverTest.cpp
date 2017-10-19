@@ -34,7 +34,7 @@ class TestResizeObserverDelegate : public ResizeObserver::Delegate {
   ExecutionContext* GetExecutionContext() const { return document_; }
   int CallCount() const { return call_count_; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     ResizeObserver::Delegate::Trace(visitor);
     visitor->Trace(document_);
   }

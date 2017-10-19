@@ -56,7 +56,7 @@ BooleanOrString::BooleanOrString(const BooleanOrString&) = default;
 BooleanOrString::~BooleanOrString() = default;
 BooleanOrString& BooleanOrString::operator=(const BooleanOrString&) = default;
 
-DEFINE_TRACE(BooleanOrString) {
+void BooleanOrString::Trace(blink::Visitor* visitor) {
 }
 
 void V8BooleanOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, BooleanOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {

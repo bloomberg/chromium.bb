@@ -14,7 +14,7 @@ namespace blink {
 NavigatorMediaSession::NavigatorMediaSession(Navigator& navigator)
     : Supplement<Navigator>(navigator) {}
 
-DEFINE_TRACE(NavigatorMediaSession) {
+void NavigatorMediaSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(session_);
   Supplement<Navigator>::Trace(visitor);
 }

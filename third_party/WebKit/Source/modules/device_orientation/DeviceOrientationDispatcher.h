@@ -64,7 +64,7 @@ class DeviceOrientationDispatcher final
   // Inherited from WebDeviceOrientationListener.
   void DidChangeDeviceOrientation(const device::OrientationData&) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit DeviceOrientationDispatcher(bool absolute);

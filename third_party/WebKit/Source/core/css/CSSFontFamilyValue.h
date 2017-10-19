@@ -22,7 +22,7 @@ class CORE_EXPORT CSSFontFamilyValue : public CSSValue {
     return string_ == other.string_;
   }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   friend class CSSValuePool;

@@ -69,7 +69,7 @@ void SharedWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
     debugger->ExceptionThrown(GetThread(), event);
 }
 
-DEFINE_TRACE(SharedWorkerGlobalScope) {
+void SharedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
   WorkerGlobalScope::Trace(visitor);
 }
 

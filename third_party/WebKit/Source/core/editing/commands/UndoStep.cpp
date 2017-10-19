@@ -99,7 +99,7 @@ void UndoStep::SetEndingSelection(const SelectionForUndoStep& selection) {
   ending_root_editable_element_ = RootEditableElementOf(selection.Base());
 }
 
-DEFINE_TRACE(UndoStep) {
+void UndoStep::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(starting_selection_);
   visitor->Trace(ending_selection_);

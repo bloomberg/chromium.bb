@@ -45,7 +45,7 @@ void NodeListsNodeData::InvalidateCaches(const QualifiedName* attr_name) {
     cache.value->InvalidateCache();
 }
 
-DEFINE_TRACE(NodeListsNodeData) {
+void NodeListsNodeData::Trace(blink::Visitor* visitor) {
   visitor->Trace(child_node_list_);
   visitor->Trace(atomic_name_caches_);
   visitor->Trace(tag_collection_ns_caches_);

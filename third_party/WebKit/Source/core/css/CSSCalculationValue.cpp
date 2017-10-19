@@ -272,7 +272,7 @@ class CSSCalcPrimitiveValue final : public CSSCalcExpressionNode {
     return kCalcAdd;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(value_);
     CSSCalcExpressionNode::Trace(visitor);
   }
@@ -618,7 +618,7 @@ class CSSCalcBinaryOperation final : public CSSCalcExpressionNode {
     return CSSPrimitiveValue::UnitType::kUnknown;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(left_side_);
     visitor->Trace(right_side_);
     CSSCalcExpressionNode::Trace(visitor);

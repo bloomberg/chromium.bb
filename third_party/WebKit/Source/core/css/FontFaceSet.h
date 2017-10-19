@@ -60,7 +60,9 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
   virtual size_t size() const = 0;
   virtual AtomicString status() const = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { EventTargetWithInlineData::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    EventTargetWithInlineData::Trace(visitor);
+  }
 
  protected:
   // Iterable overrides.
@@ -77,7 +79,7 @@ class CORE_EXPORT FontFaceSet : public EventTargetWithInlineData,
               Member<FontFace>&,
               ExceptionState&) override;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {
+    virtual void Trace(blink::Visitor* visitor) {
       visitor->Trace(font_faces_);
       FontFaceSetIterable::IterationSource::Trace(visitor);
     }

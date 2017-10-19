@@ -153,7 +153,7 @@ DOMException* BluetoothRemoteGATTDescriptor::CreateInvalidDescriptorError() {
           "after reconnecting.");
 }
 
-DEFINE_TRACE(BluetoothRemoteGATTDescriptor) {
+void BluetoothRemoteGATTDescriptor::Trace(blink::Visitor* visitor) {
   visitor->Trace(characteristic_);
   visitor->Trace(value_);
 }

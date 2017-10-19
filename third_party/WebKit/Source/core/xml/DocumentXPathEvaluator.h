@@ -57,7 +57,7 @@ class DocumentXPathEvaluator final
                                const ScriptValue&,
                                ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit DocumentXPathEvaluator(Document&);

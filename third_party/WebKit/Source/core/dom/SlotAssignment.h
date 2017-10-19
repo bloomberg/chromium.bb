@@ -47,7 +47,7 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   bool FindHostChildBySlotName(const AtomicString& slot_name) const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit SlotAssignment(ShadowRoot& owner);

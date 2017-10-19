@@ -45,7 +45,7 @@ void ElementVisibilityObserver::DeliverObservationsForTesting() {
   intersection_observer_->Deliver();
 }
 
-DEFINE_TRACE(ElementVisibilityObserver) {
+void ElementVisibilityObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(intersection_observer_);
 }

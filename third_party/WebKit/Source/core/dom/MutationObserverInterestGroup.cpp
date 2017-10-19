@@ -87,7 +87,7 @@ void MutationObserverInterestGroup::EnqueueMutationRecord(
   }
 }
 
-DEFINE_TRACE(MutationObserverInterestGroup) {
+void MutationObserverInterestGroup::Trace(blink::Visitor* visitor) {
   visitor->Trace(observers_);
 }
 

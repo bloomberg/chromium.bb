@@ -100,7 +100,7 @@ const AtomicString& DeviceMotionController::EventTypeName() const {
   return EventTypeNames::devicemotion;
 }
 
-DEFINE_TRACE(DeviceMotionController) {
+void DeviceMotionController::Trace(blink::Visitor* visitor) {
   DeviceSingleWindowEventController::Trace(visitor);
   Supplement<Document>::Trace(visitor);
 }

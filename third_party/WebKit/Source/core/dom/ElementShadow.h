@@ -80,7 +80,7 @@ class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
     return *element_shadow_v0_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

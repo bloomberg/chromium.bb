@@ -100,7 +100,7 @@ class CORE_EXPORT ImageResource final
 
   bool ShouldShowPlaceholder() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   enum class MultipartParsingState : uint8_t {

@@ -23,7 +23,7 @@ class ScriptPromiseResolver;
 class CORE_EXPORT DynamicModuleResolver final
     : public GarbageCollected<DynamicModuleResolver> {
  public:
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   static DynamicModuleResolver* Create(Modulator* modulator) {
     return new DynamicModuleResolver(modulator);

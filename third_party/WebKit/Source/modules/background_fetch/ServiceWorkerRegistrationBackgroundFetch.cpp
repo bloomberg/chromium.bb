@@ -51,7 +51,7 @@ ServiceWorkerRegistrationBackgroundFetch::backgroundFetch() {
   return background_fetch_manager_.Get();
 }
 
-DEFINE_TRACE(ServiceWorkerRegistrationBackgroundFetch) {
+void ServiceWorkerRegistrationBackgroundFetch::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(background_fetch_manager_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

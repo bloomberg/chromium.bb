@@ -2667,7 +2667,7 @@ bool Node::HasMediaControlAncestor() const {
   return false;
 }
 
-DEFINE_TRACE(Node) {
+void Node::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_or_shadow_host_node_);
   visitor->Trace(previous_);
   visitor->Trace(next_);

@@ -63,7 +63,7 @@ class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
 
   void SetError(FileError::ErrorCode code) { error_code_ = code; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   class EntriesCallbackHelper;

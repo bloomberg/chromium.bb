@@ -27,7 +27,7 @@ Presentation* Presentation::Create(LocalFrame* frame) {
   return presentation;
 }
 
-DEFINE_TRACE(Presentation) {
+void Presentation::Trace(blink::Visitor* visitor) {
   visitor->Trace(default_request_);
   visitor->Trace(receiver_);
   ContextClient::Trace(visitor);

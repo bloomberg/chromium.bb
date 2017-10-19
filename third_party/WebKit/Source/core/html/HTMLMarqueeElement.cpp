@@ -89,7 +89,7 @@ class HTMLMarqueeElement::RequestAnimationFrameCallback final
     marquee_->ContinueAnimation();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(marquee_);
     FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
   }
@@ -114,7 +114,7 @@ class HTMLMarqueeElement::AnimationFinished final : public EventListener {
     marquee_->start();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(marquee_);
     EventListener::Trace(visitor);
   }
@@ -480,7 +480,7 @@ AtomicString HTMLMarqueeElement::CreateTransform(double value) const {
          String::NumberToStringECMAScript(value) + "px)";
 }
 
-DEFINE_TRACE(HTMLMarqueeElement) {
+void HTMLMarqueeElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(mover_);
   visitor->Trace(player_);
   HTMLElement::Trace(visitor);

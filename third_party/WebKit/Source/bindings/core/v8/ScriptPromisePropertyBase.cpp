@@ -212,7 +212,7 @@ V8PrivateProperty::Symbol ScriptPromisePropertyBase::ResolverSymbol() {
   return V8PrivateProperty::GetSymbol(isolate_, "noResolver");
 }
 
-DEFINE_TRACE(ScriptPromisePropertyBase) {
+void ScriptPromisePropertyBase::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 

@@ -36,7 +36,7 @@ AtomicString CSSNamespaceRule::prefix() const {
   return namespace_rule_->Prefix();
 }
 
-DEFINE_TRACE(CSSNamespaceRule) {
+void CSSNamespaceRule::Trace(blink::Visitor* visitor) {
   visitor->Trace(namespace_rule_);
   CSSRule::Trace(visitor);
 }

@@ -104,7 +104,7 @@ class CORE_EXPORT PrintContext
                                            int margin_left);
   static int NumberOfPages(LocalFrame*, const FloatSize& page_size_in_pixels);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   friend class PrintContextTest;

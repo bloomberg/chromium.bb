@@ -159,7 +159,7 @@ MediaStreamDescriptor::MediaStreamDescriptor(
     video_components_.push_back((*iter));
 }
 
-DEFINE_TRACE(MediaStreamDescriptor) {
+void MediaStreamDescriptor::Trace(blink::Visitor* visitor) {
   visitor->Trace(audio_components_);
   visitor->Trace(video_components_);
   visitor->Trace(client_);

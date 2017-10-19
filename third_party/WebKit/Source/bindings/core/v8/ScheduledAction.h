@@ -60,7 +60,7 @@ class ScheduledAction final
   ~ScheduledAction();
   void Dispose();
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   void Execute(ExecutionContext*);
 

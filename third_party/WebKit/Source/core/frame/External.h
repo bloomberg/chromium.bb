@@ -19,7 +19,7 @@ class External : public GarbageCollected<External>, public ScriptWrappable {
   void AddSearchProvider() {}
   void IsSearchProviderInstalled() {}
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

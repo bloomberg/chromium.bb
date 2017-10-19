@@ -41,7 +41,7 @@ class RemoveCSSPropertyCommand final : public SimpleEditCommand {
     return new RemoveCSSPropertyCommand(document, element, property);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   RemoveCSSPropertyCommand(Document&, Element*, CSSPropertyID);

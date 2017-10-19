@@ -52,7 +52,7 @@ class DOMWindowEventQueueTimer final
   // Eager finalization is needed to promptly stop this timer object.
   // (see DOMTimer comment for more.)
   EAGERLY_FINALIZE();
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(event_queue_);
     SuspendableTimer::Trace(visitor);
   }
@@ -75,7 +75,7 @@ DOMWindowEventQueue::DOMWindowEventQueue(ExecutionContext* context)
 
 DOMWindowEventQueue::~DOMWindowEventQueue() {}
 
-DEFINE_TRACE(DOMWindowEventQueue) {
+void DOMWindowEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_event_timer_);
   visitor->Trace(queued_events_);
   EventQueue::Trace(visitor);

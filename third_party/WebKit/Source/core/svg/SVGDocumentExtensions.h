@@ -72,7 +72,7 @@ class SVGDocumentExtensions
   static SVGSVGElement* rootElement(const Document&);
   SVGSVGElement* rootElement() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Member<Document> document_;

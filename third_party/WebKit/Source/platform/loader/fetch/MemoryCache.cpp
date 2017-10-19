@@ -60,7 +60,7 @@ MemoryCache* ReplaceMemoryCacheForTesting(MemoryCache* cache) {
   return old_cache;
 }
 
-DEFINE_TRACE(MemoryCacheEntry) {
+void MemoryCacheEntry::Trace(blink::Visitor* visitor) {
   visitor->template RegisterWeakMembers<MemoryCacheEntry,
                                         &MemoryCacheEntry::ClearResourceWeak>(
       this);
@@ -97,7 +97,7 @@ MemoryCache::~MemoryCache() {
     Platform::Current()->CurrentThread()->RemoveTaskObserver(this);
 }
 
-DEFINE_TRACE(MemoryCache) {
+void MemoryCache::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_maps_);
   MemoryCacheDumpClient::Trace(visitor);
   MemoryCoordinatorClient::Trace(visitor);

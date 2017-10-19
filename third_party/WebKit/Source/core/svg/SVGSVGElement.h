@@ -109,7 +109,7 @@ class SVGSVGElement final : public SVGGraphicsElement,
   SVGAnimatedLength* width() const { return width_.Get(); }
   SVGAnimatedLength* height() const { return height_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   SVGViewSpec* ViewSpec() const { return view_spec_; }
   void SetViewSpec(SVGViewSpec*);

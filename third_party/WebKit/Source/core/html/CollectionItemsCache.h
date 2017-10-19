@@ -47,7 +47,7 @@ class CollectionItemsCache : public CollectionIndexCache<Collection, NodeType> {
   CollectionItemsCache();
   ~CollectionItemsCache();
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(cached_list_);
     Base::Trace(visitor);
   }

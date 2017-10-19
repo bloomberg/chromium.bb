@@ -36,7 +36,7 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
   void OnResponseFulfilled(const ScriptValue&) override;
   void OnNoResponse() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   FetchRespondWithObserver(ExecutionContext*,

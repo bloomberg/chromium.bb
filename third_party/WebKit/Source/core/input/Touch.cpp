@@ -104,7 +104,7 @@ Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {
                    absolute_location_);
 }
 
-DEFINE_TRACE(Touch) {
+void Touch::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
 }
 

@@ -38,7 +38,7 @@ const char* ScreenScreenOrientation::SupplementName() {
   return "ScreenScreenOrientation";
 }
 
-DEFINE_TRACE(ScreenScreenOrientation) {
+void ScreenScreenOrientation::Trace(blink::Visitor* visitor) {
   visitor->Trace(orientation_);
   Supplement<Screen>::Trace(visitor);
 }

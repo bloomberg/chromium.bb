@@ -21,7 +21,7 @@ TestPermissiveDictionary::TestPermissiveDictionary(const TestPermissiveDictionar
 
 TestPermissiveDictionary& TestPermissiveDictionary::operator=(const TestPermissiveDictionary&) = default;
 
-DEFINE_TRACE(TestPermissiveDictionary) {
+void TestPermissiveDictionary::Trace(blink::Visitor* visitor) {
   IDLDictionaryBase::Trace(visitor);
 }
 

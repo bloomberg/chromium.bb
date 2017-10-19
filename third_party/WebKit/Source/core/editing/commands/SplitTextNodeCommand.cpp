@@ -102,7 +102,7 @@ void SplitTextNodeCommand::InsertText1AndTrimText2() {
   GetDocument().UpdateStyleAndLayout();
 }
 
-DEFINE_TRACE(SplitTextNodeCommand) {
+void SplitTextNodeCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(text1_);
   visitor->Trace(text2_);
   SimpleEditCommand::Trace(visitor);

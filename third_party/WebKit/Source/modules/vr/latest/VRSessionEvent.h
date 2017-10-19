@@ -31,7 +31,7 @@ class VRSessionEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   VRSessionEvent();

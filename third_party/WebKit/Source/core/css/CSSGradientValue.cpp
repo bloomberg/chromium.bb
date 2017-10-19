@@ -99,7 +99,7 @@ bool CSSGradientColorStop::IsCacheable() const {
   return !offset_ || !offset_->IsFontRelativeLength();
 }
 
-DEFINE_TRACE(CSSGradientColorStop) {
+void CSSGradientColorStop::Trace(blink::Visitor* visitor) {
   visitor->Trace(offset_);
   visitor->Trace(color_);
 }
@@ -730,7 +730,7 @@ void CSSGradientValue::GetStopColors(Vector<Color>& stop_colors,
   }
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSGradientValue) {
+void CSSGradientValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(stops_);
   CSSImageGeneratorValue::TraceAfterDispatch(visitor);
 }
@@ -990,7 +990,7 @@ bool CSSLinearGradientValue::Equals(const CSSLinearGradientValue& other) const {
   return equal_xand_y && stops_ == other.stops_;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSLinearGradientValue) {
+void CSSLinearGradientValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(first_x_);
   visitor->Trace(first_y_);
   visitor->Trace(second_x_);
@@ -1383,7 +1383,7 @@ bool CSSRadialGradientValue::Equals(const CSSRadialGradientValue& other) const {
   return stops_ == other.stops_;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSRadialGradientValue) {
+void CSSRadialGradientValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(first_x_);
   visitor->Trace(first_y_);
   visitor->Trace(second_x_);
@@ -1453,7 +1453,7 @@ bool CSSConicGradientValue::Equals(const CSSConicGradientValue& other) const {
          stops_ == other.stops_;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSConicGradientValue) {
+void CSSConicGradientValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(from_angle_);

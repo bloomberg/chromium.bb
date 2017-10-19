@@ -38,7 +38,7 @@ void SampledEffect::UpdateReplacedProperties(
   }
 }
 
-DEFINE_TRACE(SampledEffect) {
+void SampledEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(effect_);
 }
 

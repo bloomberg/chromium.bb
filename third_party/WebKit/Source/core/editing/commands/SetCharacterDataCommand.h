@@ -18,7 +18,7 @@ class CORE_EXPORT SetCharacterDataCommand final : public SimpleEditCommand {
     return new SetCharacterDataCommand(node, offset, count, text);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SetCharacterDataCommand(Text* node,

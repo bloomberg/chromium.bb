@@ -115,7 +115,7 @@ void FetchRequestData::SetCredentials(
     attached_credential_ = nullptr;
 }
 
-DEFINE_TRACE(FetchRequestData) {
+void FetchRequestData::Trace(blink::Visitor* visitor) {
   visitor->Trace(buffer_);
   visitor->Trace(header_list_);
 }

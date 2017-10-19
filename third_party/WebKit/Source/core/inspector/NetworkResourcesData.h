@@ -67,7 +67,7 @@ class XHRReplayData final : public GarbageCollectedFinalized<XHRReplayData> {
   bool IncludeCredentials() const { return include_credentials_; }
   ExecutionContext* GetExecutionContext() const { return execution_context_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   XHRReplayData(ExecutionContext*,
@@ -165,7 +165,7 @@ class NetworkResourcesData final
       pending_encoded_data_length_ += encoded_data_length;
     }
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     bool HasData() const { return data_buffer_.get(); }
@@ -236,7 +236,7 @@ class NetworkResourcesData final
   void AddPendingEncodedDataLength(const String& request_id,
                                    int encoded_data_length);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   NetworkResourcesData(size_t total_buffer_size, size_t resource_buffer_size);

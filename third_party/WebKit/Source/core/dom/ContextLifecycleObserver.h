@@ -50,7 +50,7 @@ class CORE_EXPORT ContextClient : public GarbageCollectedMixin {
   ExecutionContext* GetExecutionContext() const;
   LocalFrame* GetFrame() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit ContextClient(ExecutionContext*);
@@ -114,7 +114,7 @@ class CORE_EXPORT DOMWindowClient : public GarbageCollectedMixin {
   LocalDOMWindow* DomWindow() const;
   LocalFrame* GetFrame() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit DOMWindowClient(LocalDOMWindow*);

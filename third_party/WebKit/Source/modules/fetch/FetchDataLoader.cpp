@@ -98,7 +98,7 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
 
   String DebugName() const override { return "FetchDataLoaderAsBlobHandle"; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     FetchDataLoader::Trace(visitor);
@@ -171,7 +171,7 @@ class FetchDataLoaderAsArrayBuffer final : public FetchDataLoader,
 
   String DebugName() const override { return "FetchDataLoaderAsArrayBuffer"; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     FetchDataLoader::Trace(visitor);
@@ -227,7 +227,7 @@ class FetchDataLoaderAsFailure final : public FetchDataLoader,
 
   void Cancel() override { consumer_->Cancel(); }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     FetchDataLoader::Trace(visitor);
@@ -312,7 +312,7 @@ class FetchDataLoaderAsFormData final : public FetchDataLoader,
     multipart_parser_->Cancel();
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     visitor->Trace(form_data_);
@@ -465,7 +465,7 @@ class FetchDataLoaderAsString final : public FetchDataLoader,
 
   void Cancel() override { consumer_->Cancel(); }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     FetchDataLoader::Trace(visitor);
@@ -557,7 +557,7 @@ class FetchDataLoaderAsDataPipe final : public FetchDataLoader,
 
   void Cancel() override { StopInternal(); }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(consumer_);
     visitor->Trace(client_);
     FetchDataLoader::Trace(visitor);

@@ -84,7 +84,7 @@ void BluetoothRemoteGATTServer::Dispose() {
   client_bindings_.CloseAllBindings();
 }
 
-DEFINE_TRACE(BluetoothRemoteGATTServer) {
+void BluetoothRemoteGATTServer::Trace(blink::Visitor* visitor) {
   visitor->Trace(active_algorithms_);
   visitor->Trace(device_);
   ContextLifecycleObserver::Trace(visitor);

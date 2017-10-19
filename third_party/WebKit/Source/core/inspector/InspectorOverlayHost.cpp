@@ -47,7 +47,7 @@ void InspectorOverlayHost::ClearListener() {
   listener_.Clear();
 }
 
-DEFINE_TRACE(InspectorOverlayHost) {
+void InspectorOverlayHost::Trace(blink::Visitor* visitor) {
   visitor->Trace(listener_);
 }
 

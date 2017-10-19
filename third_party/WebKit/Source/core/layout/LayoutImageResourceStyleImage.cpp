@@ -77,7 +77,7 @@ LayoutSize LayoutImageResourceStyleImage::ImageSize(float multiplier) const {
                                             LayoutReplaced::kDefaultHeight));
 }
 
-DEFINE_TRACE(LayoutImageResourceStyleImage) {
+void LayoutImageResourceStyleImage::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_image_);
   LayoutImageResource::Trace(visitor);
 }

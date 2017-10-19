@@ -41,7 +41,7 @@ class CORE_EXPORT ScreenOrientationController
   // unlocking.
   virtual bool MaybeHasActiveLock() const = 0;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit ScreenOrientationController(LocalFrame&);

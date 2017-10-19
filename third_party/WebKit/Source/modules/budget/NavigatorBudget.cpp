@@ -49,7 +49,7 @@ BudgetService* NavigatorBudget::budget(Navigator& navigator) {
   return NavigatorBudget::From(navigator).budget();
 }
 
-DEFINE_TRACE(NavigatorBudget) {
+void NavigatorBudget::Trace(blink::Visitor* visitor) {
   visitor->Trace(budget_);
   Supplement<Navigator>::Trace(visitor);
 }

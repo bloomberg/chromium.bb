@@ -89,7 +89,7 @@ class CORE_EXPORT TouchEvent final : public UIEventWithKeyState {
     return native_event_.get();
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   TouchEvent();

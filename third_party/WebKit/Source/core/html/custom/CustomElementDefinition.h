@@ -38,7 +38,7 @@ class CORE_EXPORT CustomElementDefinition
                           const HashSet<AtomicString>&);
   virtual ~CustomElementDefinition();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   DECLARE_VIRTUAL_TRACE_WRAPPERS() {}
 
   const CustomElementDescriptor& Descriptor() { return descriptor_; }

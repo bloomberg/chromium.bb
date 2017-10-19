@@ -122,7 +122,7 @@ class CORE_EXPORT DataObject : public GarbageCollectedFinalized<DataObject>,
   // whenever the underlying item_list_ changes.
   void AddObserver(Observer*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   WebDragData ToWebDragData();
 

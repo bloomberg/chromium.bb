@@ -6,7 +6,7 @@
 
 namespace blink {
 
-DEFINE_TRACE(MemoryCacheDumpClient) {}
+void MemoryCacheDumpClient::Trace(blink::Visitor* visitor) {}
 
 MemoryCacheDumpProvider* MemoryCacheDumpProvider::Instance() {
   DEFINE_STATIC_LOCAL(MemoryCacheDumpProvider, instance, ());

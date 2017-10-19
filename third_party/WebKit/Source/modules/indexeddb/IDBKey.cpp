@@ -33,7 +33,7 @@ namespace blink {
 
 IDBKey::~IDBKey() {}
 
-DEFINE_TRACE(IDBKey) {
+void IDBKey::Trace(blink::Visitor* visitor) {
   visitor->Trace(array_);
 }
 

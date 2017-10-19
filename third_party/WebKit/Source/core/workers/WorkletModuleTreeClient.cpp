@@ -54,7 +54,7 @@ void WorkletModuleTreeClient::NotifyModuleTreeLoadFinished(
                       WrapCrossThreadPersistent(pending_tasks_.Get())));
 };
 
-DEFINE_TRACE(WorkletModuleTreeClient) {
+void WorkletModuleTreeClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
   ModuleTreeClient::Trace(visitor);
 }

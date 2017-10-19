@@ -9,7 +9,7 @@
 
 namespace blink {
 
-DEFINE_TRACE(GeolocationWatchers) {
+void GeolocationWatchers::Trace(blink::Visitor* visitor) {
   visitor->Trace(id_to_notifier_map_);
   visitor->Trace(notifier_to_id_map_);
 }

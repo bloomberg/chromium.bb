@@ -48,7 +48,7 @@ class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
     return new DOMTokenList(element, attr);
   }
   virtual ~DOMTokenList() {}
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   unsigned length() const { return token_set_.size(); }
   const AtomicString item(unsigned index) const;

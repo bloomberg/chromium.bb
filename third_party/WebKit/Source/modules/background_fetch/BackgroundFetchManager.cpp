@@ -430,7 +430,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
   NOTREACHED();
 }
 
-DEFINE_TRACE(BackgroundFetchManager) {
+void BackgroundFetchManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(bridge_);
 }

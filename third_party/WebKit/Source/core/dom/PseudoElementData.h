@@ -18,7 +18,7 @@ class PseudoElementData final : public GarbageCollected<PseudoElementData> {
   PseudoElement* GetPseudoElement(PseudoId) const;
   bool HasPseudoElements() const;
   void ClearPseudoElements();
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(generated_before_);
     visitor->Trace(generated_after_);
     visitor->Trace(generated_first_letter_);

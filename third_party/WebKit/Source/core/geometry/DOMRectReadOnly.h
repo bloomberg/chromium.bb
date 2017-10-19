@@ -40,7 +40,7 @@ class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
   double bottom() const { return std::max(y_, y_ + height_); }
   double left() const { return std::min(x_, x_ + width_); }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 

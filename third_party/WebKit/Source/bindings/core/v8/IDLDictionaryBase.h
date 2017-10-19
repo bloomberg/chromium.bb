@@ -25,7 +25,7 @@ class CORE_EXPORT IDLDictionaryBase {
   virtual v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object> creation_context,
                                         v8::Isolate*) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 };
 
 }  // namespace blink

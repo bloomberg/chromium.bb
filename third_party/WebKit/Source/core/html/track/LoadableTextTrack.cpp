@@ -63,7 +63,7 @@ size_t LoadableTextTrack::TrackElementIndex() const {
   return index;
 }
 
-DEFINE_TRACE(LoadableTextTrack) {
+void LoadableTextTrack::Trace(blink::Visitor* visitor) {
   visitor->Trace(track_element_);
   TextTrack::Trace(visitor);
 }

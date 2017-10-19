@@ -38,7 +38,7 @@ class NewCSSAnimation {
         style_rule(style_rule),
         style_rule_version(this->style_rule->Version()) {}
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(effect);
     visitor->Trace(style_rule);
   }
@@ -67,7 +67,7 @@ class UpdatedCSSAnimation {
         style_rule(style_rule),
         style_rule_version(this->style_rule->Version()) {}
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(animation);
     visitor->Trace(effect);
     visitor->Trace(style_rule);
@@ -170,7 +170,7 @@ class CSSAnimationUpdate final {
    public:
     NewTransition();
     ~NewTransition();
-    DEFINE_INLINE_TRACE() { visitor->Trace(effect); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(effect); }
 
     PropertyHandle property = HashTraits<blink::PropertyHandle>::EmptyValue();
     RefPtr<const ComputedStyle> from;
@@ -242,7 +242,7 @@ class CSSAnimationUpdate final {
            updated_compositor_keyframes_.IsEmpty();
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(new_transitions_);
     visitor->Trace(new_animations_);
     visitor->Trace(suppressed_animations_);

@@ -73,7 +73,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   const RefPtr<SerializedScriptValue> Options() { return options_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   WorkletAnimation(const String& animator_name,

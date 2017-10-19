@@ -13,7 +13,7 @@ namespace {
 
 class DummyGCBase final : public GarbageCollected<DummyGCBase> {
  public:
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 };
 }
 

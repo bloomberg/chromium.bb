@@ -43,7 +43,7 @@ class USBInTransferResult final
   String status() const { return status_; }
   DOMDataView* data() const { return data_; }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(data_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(data_); }
 
  private:
   const String status_;

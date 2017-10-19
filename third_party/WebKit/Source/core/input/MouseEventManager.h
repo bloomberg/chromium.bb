@@ -41,7 +41,7 @@ class CORE_EXPORT MouseEventManager final
  public:
   MouseEventManager(LocalFrame&, ScrollManager&);
   virtual ~MouseEventManager();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   enum FakeMouseMoveReason { kDuringScroll, kPerFrame };
 

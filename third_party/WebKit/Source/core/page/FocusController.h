@@ -100,7 +100,7 @@ class CORE_EXPORT FocusController final
 
   void RegisterFocusChangedObserver(FocusChangedObserver*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit FocusController(Page*);

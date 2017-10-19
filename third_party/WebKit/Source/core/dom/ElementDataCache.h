@@ -44,7 +44,7 @@ class ElementDataCache final : public GarbageCollected<ElementDataCache> {
   ShareableElementData* CachedShareableElementDataWithAttributes(
       const Vector<Attribute>&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   ElementDataCache();

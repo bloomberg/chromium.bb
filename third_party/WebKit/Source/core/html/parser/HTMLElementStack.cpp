@@ -118,7 +118,7 @@ bool HTMLElementStack::ElementRecord::IsAbove(ElementRecord* other) const {
   return false;
 }
 
-DEFINE_TRACE(HTMLElementStack::ElementRecord) {
+void HTMLElementStack::ElementRecord::Trace(blink::Visitor* visitor) {
   visitor->Trace(item_);
   visitor->Trace(next_);
 }
@@ -535,7 +535,7 @@ HTMLElementStack::FurthestBlockForFormattingElement(
   return nullptr;
 }
 
-DEFINE_TRACE(HTMLElementStack) {
+void HTMLElementStack::Trace(blink::Visitor* visitor) {
   visitor->Trace(top_);
   visitor->Trace(root_node_);
   visitor->Trace(head_element_);

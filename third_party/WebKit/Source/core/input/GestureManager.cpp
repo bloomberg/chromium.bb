@@ -41,7 +41,7 @@ void GestureManager::Clear() {
   last_show_press_timestamp_.reset();
 }
 
-DEFINE_TRACE(GestureManager) {
+void GestureManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(scroll_manager_);
   visitor->Trace(mouse_event_manager_);

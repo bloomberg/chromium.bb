@@ -55,7 +55,7 @@ inline SVGFESpecularLightingElement::SVGFESpecularLightingElement(
   AddToPropertyMap(in1_);
 }
 
-DEFINE_TRACE(SVGFESpecularLightingElement) {
+void SVGFESpecularLightingElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(specular_constant_);
   visitor->Trace(specular_exponent_);
   visitor->Trace(surface_scale_);

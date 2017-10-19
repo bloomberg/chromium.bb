@@ -69,7 +69,9 @@ class ScrollableAreaStub : public GarbageCollectedFinalized<ScrollableAreaStub>,
     return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ScrollableArea::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    ScrollableArea::Trace(visitor);
+  }
 
  protected:
   ScrollableAreaStub(const IntSize& viewport_size, const IntSize& contents_size)

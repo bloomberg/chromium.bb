@@ -152,7 +152,7 @@ void DOMWebSocket::EventQueue::ResumeTimerFired(TimerBase*) {
   DispatchQueuedEvents();
 }
 
-DEFINE_TRACE(DOMWebSocket::EventQueue) {
+void DOMWebSocket::EventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(events_);
 }
@@ -838,7 +838,7 @@ void DOMWebSocket::RecordReceiveMessageSizeHistogram(WebSocketReceiveType type,
   }
 }
 
-DEFINE_TRACE(DOMWebSocket) {
+void DOMWebSocket::Trace(blink::Visitor* visitor) {
   visitor->Trace(channel_);
   visitor->Trace(event_queue_);
   WebSocketChannelClient::Trace(visitor);

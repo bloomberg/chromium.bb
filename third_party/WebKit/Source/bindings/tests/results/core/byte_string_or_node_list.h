@@ -41,7 +41,7 @@ class CORE_EXPORT ByteStringOrNodeList final {
   ByteStringOrNodeList(const ByteStringOrNodeList&);
   ~ByteStringOrNodeList();
   ByteStringOrNodeList& operator=(const ByteStringOrNodeList&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

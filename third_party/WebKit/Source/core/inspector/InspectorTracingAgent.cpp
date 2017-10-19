@@ -36,7 +36,7 @@ InspectorTracingAgent::InspectorTracingAgent(Client* client,
       worker_agent_(worker_agent),
       inspected_frames_(inspected_frames) {}
 
-DEFINE_TRACE(InspectorTracingAgent) {
+void InspectorTracingAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(worker_agent_);
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent::Trace(visitor);

@@ -105,7 +105,7 @@ void PublicURLManager::ContextDestroyed(ExecutionContext*) {
   registry_to_url_.clear();
 }
 
-DEFINE_TRACE(PublicURLManager) {
+void PublicURLManager::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 

@@ -49,7 +49,7 @@ void GamepadPose::SetPose(const device::GamepadPose& state) {
   }
 }
 
-DEFINE_TRACE(GamepadPose) {
+void GamepadPose::Trace(blink::Visitor* visitor) {
   visitor->Trace(orientation_);
   visitor->Trace(position_);
   visitor->Trace(angular_velocity_);

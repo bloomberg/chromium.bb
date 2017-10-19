@@ -63,7 +63,7 @@ class SVGMarkerOrientEnumeration final
                               SVGElement*) override;
   float CalculateDistance(SVGPropertyBase*, SVGElement*) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SVGMarkerOrientEnumeration(SVGAngle*);
@@ -132,7 +132,7 @@ class SVGAngle final : public SVGPropertyHelper<SVGAngle> {
 
   static AnimatedPropertyType ClassType() { return kAnimatedAngle; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SVGAngle();

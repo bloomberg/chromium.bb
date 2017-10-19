@@ -39,7 +39,7 @@ DetectedBarcode::DetectedBarcode(String raw_value,
       bounding_box_(bounding_box),
       corner_points_(corner_points) {}
 
-DEFINE_TRACE(DetectedBarcode) {
+void DetectedBarcode::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounding_box_);
   visitor->Trace(corner_points_);
 }

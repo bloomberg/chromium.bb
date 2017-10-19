@@ -55,7 +55,7 @@ class NetworkInformation final
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   DEFINE_ATTRIBUTE_EVENT_LISTENER(change);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(typechange);  // Deprecated

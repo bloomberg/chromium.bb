@@ -164,7 +164,7 @@ size_t Worklet::SelectGlobalScope() const {
   return 0u;
 }
 
-DEFINE_TRACE(Worklet) {
+void Worklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(proxies_);
   visitor->Trace(module_responses_map_);
   ContextLifecycleObserver::Trace(visitor);

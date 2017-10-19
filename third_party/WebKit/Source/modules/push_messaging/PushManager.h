@@ -38,7 +38,7 @@ class MODULES_EXPORT PushManager final : public GarbageCollected<PushManager>,
                                 const PushSubscriptionOptionsInit&,
                                 ExceptionState&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit PushManager(ServiceWorkerRegistration*);

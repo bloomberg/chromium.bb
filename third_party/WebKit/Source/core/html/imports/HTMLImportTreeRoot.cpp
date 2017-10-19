@@ -81,7 +81,7 @@ void HTMLImportTreeRoot::RecalcTimerFired(TimerBase*) {
   HTMLImport::RecalcTreeState(this);
 }
 
-DEFINE_TRACE(HTMLImportTreeRoot) {
+void HTMLImportTreeRoot::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(imports_);
   HTMLImport::Trace(visitor);

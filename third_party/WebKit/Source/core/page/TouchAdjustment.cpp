@@ -53,7 +53,7 @@ class SubtargetGeometry {
  public:
   SubtargetGeometry(Node* node, const FloatQuad& quad)
       : node_(node), quad_(quad) {}
-  DEFINE_INLINE_TRACE() { visitor->Trace(node_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(node_); }
 
   Node* GetNode() const { return node_; }
   FloatQuad Quad() const { return quad_; }

@@ -139,7 +139,7 @@ void BytesConsumerForDataConsumerHandle::DidGetReadable() {
   return;
 }
 
-DEFINE_TRACE(BytesConsumerForDataConsumerHandle) {
+void BytesConsumerForDataConsumerHandle::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(client_);
   BytesConsumer::Trace(visitor);

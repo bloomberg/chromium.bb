@@ -27,7 +27,7 @@ class CORE_EXPORT InlineStylePropertyMap final : public StylePropertyMap {
               ExceptionState&) override;
   void remove(CSSPropertyID, ExceptionState&) override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(owner_element_);
     StylePropertyMap::Trace(visitor);
   }

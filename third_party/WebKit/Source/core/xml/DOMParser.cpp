@@ -41,7 +41,7 @@ Document* DOMParser::parseFromString(const String& str, const String& type) {
 DOMParser::DOMParser(Document& document)
     : context_document_(document.ContextDocument()) {}
 
-DEFINE_TRACE(DOMParser) {
+void DOMParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_document_);
 }
 

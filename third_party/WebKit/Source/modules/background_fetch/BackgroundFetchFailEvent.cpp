@@ -47,7 +47,7 @@ const AtomicString& BackgroundFetchFailEvent::InterfaceName() const {
   return EventNames::BackgroundFetchFailEvent;
 }
 
-DEFINE_TRACE(BackgroundFetchFailEvent) {
+void BackgroundFetchFailEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetches_);
   BackgroundFetchEvent::Trace(visitor);
 }

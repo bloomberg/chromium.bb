@@ -71,7 +71,7 @@ DEFINE_NODE_FACTORY(SVGTextPathElement)
 
 SVGTextPathElement::~SVGTextPathElement() {}
 
-DEFINE_TRACE(SVGTextPathElement) {
+void SVGTextPathElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(start_offset_);
   visitor->Trace(method_);
   visitor->Trace(spacing_);

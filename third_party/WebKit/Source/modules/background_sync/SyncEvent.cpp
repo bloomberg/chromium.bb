@@ -34,7 +34,7 @@ bool SyncEvent::lastChance() {
   return last_chance_;
 }
 
-DEFINE_TRACE(SyncEvent) {
+void SyncEvent::Trace(blink::Visitor* visitor) {
   ExtendableEvent::Trace(visitor);
 }
 

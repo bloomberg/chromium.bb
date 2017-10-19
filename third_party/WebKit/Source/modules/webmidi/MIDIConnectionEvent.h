@@ -58,7 +58,7 @@ class MIDIConnectionEvent final : public Event {
     return EventNames::MIDIConnectionEvent;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MIDIConnectionEvent(MIDIPort* port)

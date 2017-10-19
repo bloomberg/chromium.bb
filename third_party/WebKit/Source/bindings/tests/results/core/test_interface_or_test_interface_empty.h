@@ -42,7 +42,7 @@ class CORE_EXPORT TestInterfaceOrTestInterfaceEmpty final {
   TestInterfaceOrTestInterfaceEmpty(const TestInterfaceOrTestInterfaceEmpty&);
   ~TestInterfaceOrTestInterfaceEmpty();
   TestInterfaceOrTestInterfaceEmpty& operator=(const TestInterfaceOrTestInterfaceEmpty&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

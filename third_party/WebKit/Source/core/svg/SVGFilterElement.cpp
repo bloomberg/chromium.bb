@@ -75,7 +75,7 @@ SVGFilterElement::~SVGFilterElement() {}
 
 DEFINE_NODE_FACTORY(SVGFilterElement)
 
-DEFINE_TRACE(SVGFilterElement) {
+void SVGFilterElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

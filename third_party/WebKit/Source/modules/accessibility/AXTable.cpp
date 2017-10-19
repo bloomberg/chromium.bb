@@ -605,7 +605,7 @@ bool AXTable::ComputeAccessibilityIsIgnored(
   return false;
 }
 
-DEFINE_TRACE(AXTable) {
+void AXTable::Trace(blink::Visitor* visitor) {
   visitor->Trace(rows_);
   visitor->Trace(columns_);
   visitor->Trace(header_container_);

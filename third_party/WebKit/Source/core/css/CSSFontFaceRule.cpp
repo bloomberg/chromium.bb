@@ -60,7 +60,7 @@ void CSSFontFaceRule::Reattach(StyleRuleBase* rule) {
     properties_cssom_wrapper_->Reattach(font_face_rule_->MutableProperties());
 }
 
-DEFINE_TRACE(CSSFontFaceRule) {
+void CSSFontFaceRule::Trace(blink::Visitor* visitor) {
   visitor->Trace(font_face_rule_);
   visitor->Trace(properties_cssom_wrapper_);
   CSSRule::Trace(visitor);

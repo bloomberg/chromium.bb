@@ -24,7 +24,7 @@ class PLATFORM_EXPORT PlatformCredential
   virtual bool IsPassword() { return false; }
   virtual bool IsFederated() { return false; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   PlatformCredential(const String& id);

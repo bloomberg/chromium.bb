@@ -113,7 +113,7 @@ WebPresentationClient* PresentationController::ClientFromContext(
   return controller ? controller->Client() : nullptr;
 }
 
-DEFINE_TRACE(PresentationController) {
+void PresentationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(presentation_);
   visitor->Trace(connections_);
   Supplement<LocalFrame>::Trace(visitor);

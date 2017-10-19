@@ -70,7 +70,7 @@ class HTMLImportChild final : public HTMLImport {
   HTMLImportLoader* Loader() const final;
   void StateWillChange() final;
   void StateDidChange() final;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   void DidFinishLoading();
   void DidFinishUpgradingCustomElements();

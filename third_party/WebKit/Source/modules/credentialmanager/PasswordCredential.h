@@ -51,7 +51,7 @@ class MODULES_EXPORT PasswordCredential final : public Credential {
 
   // Internal methods
   RefPtr<EncodedFormData> EncodeFormData(String& content_type) const;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   PasswordCredential(WebPasswordCredential*);

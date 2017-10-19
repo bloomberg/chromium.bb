@@ -1331,7 +1331,7 @@ ExecutionContext* DocumentThreadableLoader::GetExecutionContext() const {
   return loading_context_->GetExecutionContext();
 }
 
-DEFINE_TRACE(DocumentThreadableLoader) {
+void DocumentThreadableLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_);
   visitor->Trace(loading_context_);
   ThreadableLoader::Trace(visitor);

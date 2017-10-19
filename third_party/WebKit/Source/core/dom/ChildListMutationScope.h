@@ -64,7 +64,7 @@ class ChildListMutationAccumulator final
   void EnterMutationScope() { mutation_scopes_++; }
   void LeaveMutationScope();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   ChildListMutationAccumulator(Node*, MutationObserverInterestGroup*);

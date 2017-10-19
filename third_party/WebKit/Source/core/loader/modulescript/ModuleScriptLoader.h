@@ -62,7 +62,7 @@ class CORE_EXPORT ModuleScriptLoader final
   bool IsInitialState() const { return state_ == State::kInitial; }
   bool HasFinished() const { return state_ == State::kFinished; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   ModuleScriptLoader(Modulator*,

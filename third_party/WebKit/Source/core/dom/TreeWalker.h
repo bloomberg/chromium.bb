@@ -58,7 +58,7 @@ class TreeWalker final : public GarbageCollected<TreeWalker>,
   Node* previousNode(ExceptionState&);
   Node* nextNode(ExceptionState&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 

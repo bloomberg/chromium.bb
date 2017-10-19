@@ -132,7 +132,7 @@ class PatternAttributes final {
   bool HasPatternTransform() const { return pattern_transform_set_; }
   bool HasPatternContentElement() const { return pattern_content_element_set_; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(x_);
     visitor->Trace(y_);
     visitor->Trace(width_);
@@ -177,7 +177,7 @@ class PatternAttributesWrapper
 
   PatternAttributes& Attributes() { return attributes_; }
   void Set(const PatternAttributes& attributes) { attributes_ = attributes; }
-  DEFINE_INLINE_TRACE() { visitor->Trace(attributes_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(attributes_); }
 
  private:
   PatternAttributesWrapper() {}

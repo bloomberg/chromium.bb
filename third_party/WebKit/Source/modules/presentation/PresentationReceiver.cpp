@@ -147,7 +147,7 @@ void PresentationReceiver::ContextDestroyed(ExecutionContext*) {
   }
 }
 
-DEFINE_TRACE(PresentationReceiver) {
+void PresentationReceiver::Trace(blink::Visitor* visitor) {
   visitor->Trace(connection_list_);
   visitor->Trace(connection_list_property_);
   ContextLifecycleObserver::Trace(visitor);

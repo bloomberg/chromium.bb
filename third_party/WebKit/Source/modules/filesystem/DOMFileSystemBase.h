@@ -158,7 +158,7 @@ class MODULES_EXPORT DOMFileSystemBase
                     SynchronousType = kAsynchronous);
   bool WaitForAdditionalResult(int callbacks_id);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   DOMFileSystemBase(ExecutionContext*,

@@ -196,7 +196,7 @@ void StyleElement::StartLoadingDynamicSheet(Document& document) {
   document.GetStyleEngine().AddPendingSheet(style_engine_context_);
 }
 
-DEFINE_TRACE(StyleElement) {
+void StyleElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(sheet_);
 }
 

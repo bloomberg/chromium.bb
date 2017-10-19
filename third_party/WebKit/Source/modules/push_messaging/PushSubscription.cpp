@@ -95,7 +95,7 @@ ScriptValue PushSubscription::toJSONForBinding(ScriptState* script_state) {
   return result.GetScriptValue();
 }
 
-DEFINE_TRACE(PushSubscription) {
+void PushSubscription::Trace(blink::Visitor* visitor) {
   visitor->Trace(options_);
   visitor->Trace(p256dh_);
   visitor->Trace(auth_);

@@ -24,7 +24,7 @@ class NavigatorCredentials final
   // NavigatorCredentials.idl
   static CredentialsContainer* credentials(Navigator&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorCredentials(Navigator&);

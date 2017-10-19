@@ -47,7 +47,7 @@ class DragState final : public GarbageCollected<DragState> {
   // Used on only the source side of dragging.
   Member<DataTransfer> drag_data_transfer_;
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(drag_src_);
     visitor->Trace(drag_data_transfer_);
   }

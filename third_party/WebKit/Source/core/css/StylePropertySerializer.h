@@ -126,7 +126,7 @@ class StylePropertySerializer {
     const CSSValue* GetPropertyCSSValue(CSSPropertyID) const;
     bool IsDescriptorContext() const;
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     bool HasExpandedAllProperty() const {

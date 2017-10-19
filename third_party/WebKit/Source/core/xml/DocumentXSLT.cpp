@@ -58,7 +58,7 @@ class DOMContentLoadedListener final
 
   EventListener* ToEventListener() override { return this; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(processing_instruction_);
     EventListener::Trace(visitor);
     ProcessingInstruction::DetachableEventListener::Trace(visitor);
@@ -177,7 +177,7 @@ DocumentXSLT& DocumentXSLT::From(Document& document) {
   return *supplement;
 }
 
-DEFINE_TRACE(DocumentXSLT) {
+void DocumentXSLT::Trace(blink::Visitor* visitor) {
   visitor->Trace(transform_source_document_);
   Supplement<Document>::Trace(visitor);
 }

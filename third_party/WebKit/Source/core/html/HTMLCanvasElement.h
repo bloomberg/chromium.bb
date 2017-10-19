@@ -220,7 +220,7 @@ class CORE_EXPORT HTMLCanvasElement final
                            WeakPtr<OffscreenCanvasFrameDispatcher>,
                            RefPtr<WebTaskRunner>,
                            unsigned resource_id) override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 

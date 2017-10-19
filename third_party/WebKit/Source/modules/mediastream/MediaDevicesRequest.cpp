@@ -74,7 +74,7 @@ void MediaDevicesRequest::ContextDestroyed(ExecutionContext*) {
   resolver_.Clear();
 }
 
-DEFINE_TRACE(MediaDevicesRequest) {
+void MediaDevicesRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(resolver_);
   ContextLifecycleObserver::Trace(visitor);

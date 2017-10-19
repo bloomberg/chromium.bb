@@ -163,7 +163,7 @@ void EffectStack::RemoveRedundantSampledEffects() {
   sampled_effects_.Shrink(new_size);
 }
 
-DEFINE_TRACE(EffectStack) {
+void EffectStack::Trace(blink::Visitor* visitor) {
   visitor->Trace(sampled_effects_);
 }
 

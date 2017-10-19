@@ -52,7 +52,7 @@ class IndexedDBClient : public GarbageCollected<IndexedDBClient>,
   static IndexedDBClient* Create(LocalFrame&);
   static IndexedDBClient* Create(WorkerClients&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   bool AllowIndexedDB(ExecutionContext*, const String& name);
 

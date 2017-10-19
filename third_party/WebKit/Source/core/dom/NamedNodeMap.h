@@ -65,7 +65,7 @@ class NamedNodeMap final : public GarbageCollected<NamedNodeMap>,
   void NamedPropertyEnumerator(Vector<String>& names, ExceptionState&) const;
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&) const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit NamedNodeMap(Element* element) : element_(element) {

@@ -56,7 +56,7 @@ void ResizeObserverController::ClearObservations() {
     observer->ClearObservations();
 }
 
-DEFINE_TRACE(ResizeObserverController) {
+void ResizeObserverController::Trace(blink::Visitor* visitor) {
   visitor->Trace(observers_);
 }
 

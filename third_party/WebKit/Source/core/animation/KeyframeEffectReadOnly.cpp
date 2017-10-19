@@ -367,7 +367,7 @@ void KeyframeEffectReadOnly::AttachCompositedLayers() {
   CompositorAnimations::AttachCompositedLayers(*target_, *GetAnimation());
 }
 
-DEFINE_TRACE(KeyframeEffectReadOnly) {
+void KeyframeEffectReadOnly::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(model_);
   visitor->Trace(sampled_effect_);

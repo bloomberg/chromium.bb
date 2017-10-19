@@ -48,7 +48,7 @@ class MODULES_EXPORT PaymentResponse final
 
   ScriptPromise complete(ScriptState*, const String& result = "");
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   String requestId_;

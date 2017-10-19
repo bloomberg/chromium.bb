@@ -52,7 +52,7 @@ class RecordTest final : public GarbageCollectedFinalized<RecordTest>,
 
   void setFloatOrStringElementRecord(const FloatOrStringElementRecord&){};
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   RecordTest();

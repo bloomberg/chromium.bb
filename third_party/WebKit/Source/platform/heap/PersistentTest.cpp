@@ -22,7 +22,7 @@ class Receiver : public GarbageCollected<Receiver> {
  public:
   void Increment(int* counter) { ++*counter; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 };
 
 TEST(PersistentTest, BindCancellation) {

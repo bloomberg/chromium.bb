@@ -183,7 +183,7 @@ void DedicatedWorkerMessagingProxy::DispatchErrorEvent(
                      exception_id, CrossThreadUnretained(GetWorkerThread())));
 }
 
-DEFINE_TRACE(DedicatedWorkerMessagingProxy) {
+void DedicatedWorkerMessagingProxy::Trace(blink::Visitor* visitor) {
   visitor->Trace(worker_object_);
   ThreadedMessagingProxyBase::Trace(visitor);
 }

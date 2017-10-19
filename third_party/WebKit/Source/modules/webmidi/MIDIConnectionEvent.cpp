@@ -42,7 +42,7 @@ MIDIConnectionEvent::MIDIConnectionEvent(
     port_ = initializer.port();
 }
 
-DEFINE_TRACE(MIDIConnectionEvent) {
+void MIDIConnectionEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(port_);
   Event::Trace(visitor);
 }

@@ -18,7 +18,7 @@ FrameViewAutoSizeInfo::FrameViewAutoSizeInfo(LocalFrameView* view)
   DCHECK(frame_view_);
 }
 
-DEFINE_TRACE(FrameViewAutoSizeInfo) {
+void FrameViewAutoSizeInfo::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_view_);
 }
 

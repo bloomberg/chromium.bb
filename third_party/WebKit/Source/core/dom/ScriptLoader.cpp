@@ -110,7 +110,7 @@ ScriptLoader::ScriptLoader(ScriptElementBase* element,
 
 ScriptLoader::~ScriptLoader() {}
 
-DEFINE_TRACE(ScriptLoader) {
+void ScriptLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(resource_);
   visitor->Trace(pending_script_);

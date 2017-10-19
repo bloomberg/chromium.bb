@@ -51,7 +51,9 @@ class MockPlatformTiming : public DocumentTimeline::PlatformTiming {
   MOCK_METHOD1(WakeAfter, void(double));
   MOCK_METHOD0(ServiceOnNextFrame, void());
 
-  DEFINE_INLINE_TRACE() { DocumentTimeline::PlatformTiming::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) {
+    DocumentTimeline::PlatformTiming::Trace(visitor);
+  }
 };
 
 class AnimationDocumentTimelineTest : public ::testing::Test {

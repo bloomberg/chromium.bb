@@ -125,7 +125,7 @@ class MediaSource final : public EventTargetWithInlineData,
   void AddedToRegistry();
   void RemovedFromRegistry();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit MediaSource(ExecutionContext*);

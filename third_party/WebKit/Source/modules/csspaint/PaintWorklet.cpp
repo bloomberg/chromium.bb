@@ -80,7 +80,7 @@ const char* PaintWorklet::SupplementName() {
   return "PaintWorklet";
 }
 
-DEFINE_TRACE(PaintWorklet) {
+void PaintWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_generator_registry_);
   visitor->Trace(document_definition_map_);
   Worklet::Trace(visitor);

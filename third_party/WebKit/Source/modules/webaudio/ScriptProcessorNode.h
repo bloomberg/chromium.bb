@@ -141,7 +141,7 @@ class ScriptProcessorNode final
   // ScriptWrappable
   bool HasPendingActivity() const final;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { AudioNode::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { AudioNode::Trace(visitor); }
 
  private:
   ScriptProcessorNode(BaseAudioContext&,

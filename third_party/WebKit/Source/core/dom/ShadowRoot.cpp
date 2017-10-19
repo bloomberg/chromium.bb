@@ -351,7 +351,7 @@ void ShadowRoot::DistributeV1() {
   EnsureSlotAssignment().ResolveDistribution();
 }
 
-DEFINE_TRACE(ShadowRoot) {
+void ShadowRoot::Trace(blink::Visitor* visitor) {
   visitor->Trace(shadow_root_rare_data_v0_);
   visitor->Trace(slot_assignment_);
   visitor->Trace(style_sheet_list_);

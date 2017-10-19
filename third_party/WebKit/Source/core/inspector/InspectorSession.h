@@ -52,7 +52,7 @@ class CORE_EXPORT InspectorSession
   void DispatchProtocolMessage(const String& method, const String& message);
   void flushProtocolNotifications() override;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   // protocol::FrontendChannel implementation.

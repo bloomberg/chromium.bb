@@ -176,7 +176,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
                 "attr1", "attr2", HTMLNames::contenteditableAttr.LocalName(),
             }) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     TestCustomElementDefinition::Trace(visitor);
     visitor->Trace(element_);
     visitor->Trace(adopted_);
@@ -208,7 +208,7 @@ class LogUpgradeDefinition : public TestCustomElementDefinition {
     Member<Document> old_owner_;
     Member<Document> new_owner_;
 
-    DEFINE_INLINE_TRACE() {
+    void Trace(blink::Visitor* visitor) {
       visitor->Trace(old_owner_);
       visitor->Trace(new_owner_);
     }

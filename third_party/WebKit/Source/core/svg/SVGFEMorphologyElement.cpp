@@ -49,7 +49,7 @@ inline SVGFEMorphologyElement::SVGFEMorphologyElement(Document& document)
   AddToPropertyMap(svg_operator_);
 }
 
-DEFINE_TRACE(SVGFEMorphologyElement) {
+void SVGFEMorphologyElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(radius_);
   visitor->Trace(in1_);
   visitor->Trace(svg_operator_);

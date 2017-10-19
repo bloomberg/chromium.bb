@@ -445,7 +445,7 @@ InputDeviceCapabilitiesConstants* DOMWindow::GetInputDeviceCapabilities() {
   return input_capabilities_;
 }
 
-DEFINE_TRACE(DOMWindow) {
+void DOMWindow::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(window_proxy_manager_);
   visitor->Trace(input_capabilities_);

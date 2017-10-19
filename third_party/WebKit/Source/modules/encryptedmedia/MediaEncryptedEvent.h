@@ -48,7 +48,7 @@ class MediaEncryptedEvent final : public Event {
   String initDataType() const { return init_data_type_; }
   DOMArrayBuffer* initData() const { return init_data_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MediaEncryptedEvent(const AtomicString& type,

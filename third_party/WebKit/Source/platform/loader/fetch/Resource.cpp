@@ -120,7 +120,7 @@ class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
     return new CachedMetadataHandlerImpl(resource);
   }
   ~CachedMetadataHandlerImpl() override {}
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   void SetCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
   void ClearCachedMetadata(CacheType) override;
   RefPtr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
@@ -145,7 +145,7 @@ Resource::CachedMetadataHandlerImpl::CachedMetadataHandlerImpl(
     Resource* resource)
     : resource_(resource) {}
 
-DEFINE_TRACE(Resource::CachedMetadataHandlerImpl) {
+void Resource::CachedMetadataHandlerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_);
   CachedMetadataHandler::Trace(visitor);
 }
@@ -214,7 +214,7 @@ class Resource::ServiceWorkerResponseCachedMetadataHandler
                                                           security_origin);
   }
   ~ServiceWorkerResponseCachedMetadataHandler() override {}
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   void SendToPlatform() override;
@@ -231,7 +231,8 @@ Resource::ServiceWorkerResponseCachedMetadataHandler::
                                                SecurityOrigin* security_origin)
     : CachedMetadataHandlerImpl(resource), security_origin_(security_origin) {}
 
-DEFINE_TRACE(Resource::ServiceWorkerResponseCachedMetadataHandler) {
+void Resource::ServiceWorkerResponseCachedMetadataHandler::Trace(
+    blink::Visitor* visitor) {
   CachedMetadataHandlerImpl::Trace(visitor);
 }
 
@@ -292,7 +293,7 @@ Resource::~Resource() {
   InstanceCounters::DecrementCounter(InstanceCounters::kResourceCounter);
 }
 
-DEFINE_TRACE(Resource) {
+void Resource::Trace(blink::Visitor* visitor) {
   visitor->Trace(loader_);
   visitor->Trace(cache_handler_);
   visitor->Trace(clients_);

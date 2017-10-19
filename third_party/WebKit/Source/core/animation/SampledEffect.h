@@ -39,7 +39,7 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   void RemoveReplacedInterpolations(const HashSet<PropertyHandle>&);
   void UpdateReplacedProperties(HashSet<PropertyHandle>&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   SampledEffect(KeyframeEffectReadOnly*);

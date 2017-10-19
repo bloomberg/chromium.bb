@@ -406,7 +406,7 @@ void LinkStyle::OwnerRemoved() {
     ClearSheet();
 }
 
-DEFINE_TRACE(LinkStyle) {
+void LinkStyle::Trace(blink::Visitor* visitor) {
   visitor->Trace(sheet_);
   LinkResource::Trace(visitor);
   ResourceOwner<StyleSheetResource>::Trace(visitor);

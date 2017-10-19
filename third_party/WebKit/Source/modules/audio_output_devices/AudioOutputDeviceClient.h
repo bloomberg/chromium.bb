@@ -28,7 +28,7 @@ class MODULES_EXPORT AudioOutputDeviceClient : public Supplement<LocalFrame> {
       const WebString& sink_id,
       std::unique_ptr<WebSetSinkIdCallbacks>) = 0;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // Supplement requirements.
   static AudioOutputDeviceClient* From(ExecutionContext*);

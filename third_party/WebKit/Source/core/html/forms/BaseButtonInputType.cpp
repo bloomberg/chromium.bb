@@ -46,7 +46,7 @@ using namespace HTMLNames;
 BaseButtonInputType::BaseButtonInputType(HTMLInputElement& element)
     : InputType(element), KeyboardClickableInputTypeView(element) {}
 
-DEFINE_TRACE(BaseButtonInputType) {
+void BaseButtonInputType::Trace(blink::Visitor* visitor) {
   KeyboardClickableInputTypeView::Trace(visitor);
   InputType::Trace(visitor);
 }

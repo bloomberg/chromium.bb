@@ -181,7 +181,7 @@ class CORE_EXPORT CSPDirectiveList
   // instance it doesn't contains 'unsafe-inline' or 'unsafe-eval'
   WebContentSecurityPolicy ExposeForNavigationalChecks() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, IsMatchingNoncePresent);

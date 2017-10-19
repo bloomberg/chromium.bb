@@ -106,7 +106,7 @@ void DocumentModuleScriptFetcher::Finalize(
   NotifyFetchFinished(params, error_message);
 }
 
-DEFINE_TRACE(DocumentModuleScriptFetcher) {
+void DocumentModuleScriptFetcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);
   ResourceOwner<ScriptResource>::Trace(visitor);
   ModuleScriptFetcher::Trace(visitor);

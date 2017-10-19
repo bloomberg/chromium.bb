@@ -54,7 +54,7 @@ class WebGLTransformFeedback : public WebGLContextObject {
 
   void UnbindBuffer(WebGLBuffer*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:

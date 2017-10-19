@@ -168,7 +168,7 @@ class ElementRareData : public NodeRareData {
   const AtomicString& GetNonce() const { return nonce_; }
   void SetNonce(const AtomicString& nonce) { nonce_ = nonce; }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
 
  private:

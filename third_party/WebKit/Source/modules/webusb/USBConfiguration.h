@@ -35,7 +35,7 @@ class USBConfiguration : public GarbageCollected<USBConfiguration>,
   String configurationName() const { return Info().configuration_name; }
   HeapVector<Member<USBInterface>> interfaces() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Member<const USBDevice> device_;

@@ -44,7 +44,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
       SecurityViolationReportingPolicy,
       ResourceRequest::RedirectStatus) const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   virtual KURL GetSiteForCookies() const = 0;
   virtual void CountUsage(WebFeature) const = 0;

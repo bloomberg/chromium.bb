@@ -49,7 +49,7 @@ class Crypto final : public GarbageCollected<Crypto>, public ScriptWrappable {
 
   SubtleCrypto* subtle();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Crypto() {}

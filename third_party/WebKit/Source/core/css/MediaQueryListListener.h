@@ -32,7 +32,7 @@ class CORE_EXPORT MediaQueryListListener
  public:
   virtual void NotifyMediaQueryChanged() = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   MediaQueryListListener();

@@ -49,7 +49,7 @@ const AtomicString& AnimationPlaybackEvent::InterfaceName() const {
   return EventNames::AnimationPlaybackEvent;
 }
 
-DEFINE_TRACE(AnimationPlaybackEvent) {
+void AnimationPlaybackEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 

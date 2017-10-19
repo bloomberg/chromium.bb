@@ -48,7 +48,7 @@ class SVGFEDiffuseLightingElement final
   }
   SVGAnimatedString* in1() { return in1_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGFEDiffuseLightingElement(Document&);

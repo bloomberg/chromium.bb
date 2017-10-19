@@ -663,7 +663,7 @@ String ConvertDragOperationToDropZoneOperation(DragOperation operation) {
   }
 }
 
-DEFINE_TRACE(DataTransfer) {
+void DataTransfer::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_object_);
   visitor->Trace(drag_image_);
   visitor->Trace(drag_image_element_);

@@ -114,7 +114,7 @@ class FakeColorChooserClient
       : owner_element_(owner_element) {}
   ~FakeColorChooserClient() override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(owner_element_);
     ColorChooserClient::Trace(visitor);
   }
@@ -144,7 +144,7 @@ class FakeDateTimeChooserClient
       : owner_element_(owner_element) {}
   ~FakeDateTimeChooserClient() override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(owner_element_);
     DateTimeChooserClient::Trace(visitor);
   }

@@ -57,7 +57,7 @@ class FormDataBytesConsumer final : public BytesConsumer {
   Error GetError() const override { return impl_->GetError(); }
   String DebugName() const override { return impl_->DebugName(); }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(impl_);
     BytesConsumer::Trace(visitor);
   }

@@ -135,7 +135,7 @@ void LinkImport::OwnerRemoved() {
     GetDocument().GetStyleEngine().HtmlImportAddedOrRemoved();
 }
 
-DEFINE_TRACE(LinkImport) {
+void LinkImport::Trace(blink::Visitor* visitor) {
   visitor->Trace(child_);
   HTMLImportChildClient::Trace(visitor);
   LinkResource::Trace(visitor);

@@ -51,7 +51,7 @@ class SQLTransactionWrapper
     : public GarbageCollectedFinalized<SQLTransactionWrapper> {
  public:
   virtual ~SQLTransactionWrapper() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual bool PerformPreflight(SQLTransactionBackend*) = 0;
   virtual bool PerformPostflight(SQLTransactionBackend*) = 0;
   virtual SQLErrorData* SqlError() const = 0;
@@ -68,7 +68,7 @@ class SQLTransactionBackend final
                                        bool read_only);
 
   ~SQLTransactionBackend() override;
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void LockAcquired();
   void PerformNextStep();

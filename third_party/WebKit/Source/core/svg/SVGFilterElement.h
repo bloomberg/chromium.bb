@@ -42,7 +42,7 @@ class CORE_EXPORT SVGFilterElement final : public SVGElement,
 
  public:
   DECLARE_NODE_FACTORY(SVGFilterElement);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   ~SVGFilterElement() override;
 

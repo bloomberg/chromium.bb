@@ -49,7 +49,7 @@ HeapVector<Member<MediaStream>> RTCTrackEvent::streams() const {
   return streams_;
 }
 
-DEFINE_TRACE(RTCTrackEvent) {
+void RTCTrackEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(receiver_);
   visitor->Trace(track_);
   visitor->Trace(streams_);

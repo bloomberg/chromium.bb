@@ -89,7 +89,7 @@ void ScriptModuleResolverImpl::ContextDestroyed(ExecutionContext*) {
   record_to_module_script_map_.clear();
 }
 
-DEFINE_TRACE(ScriptModuleResolverImpl) {
+void ScriptModuleResolverImpl::Trace(blink::Visitor* visitor) {
   ScriptModuleResolver::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(record_to_module_script_map_);

@@ -66,7 +66,7 @@ class DOMFileSystemSync final : public DOMFileSystemBase,
   File* CreateFile(const FileEntrySync*, ExceptionState&);
   FileWriterSync* CreateWriter(const FileEntrySync*, ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   DOMFileSystemSync(ExecutionContext*,

@@ -27,7 +27,7 @@ const AtomicString& PresentationConnectionCloseEvent::InterfaceName() const {
   return EventNames::PresentationConnectionCloseEvent;
 }
 
-DEFINE_TRACE(PresentationConnectionCloseEvent) {
+void PresentationConnectionCloseEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 

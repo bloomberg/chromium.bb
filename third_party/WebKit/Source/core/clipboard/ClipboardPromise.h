@@ -29,7 +29,7 @@ class ClipboardPromise final
   static ScriptPromise CreateForWrite(ScriptState*, DataTransfer*);
   static ScriptPromise CreateForWriteText(ScriptState*, const String&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   ClipboardPromise(ScriptState*);

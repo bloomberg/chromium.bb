@@ -84,7 +84,7 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   virtual bool PreservesTypingStyle() const;
   virtual void SetShouldRetainAutocorrectionIndicator(bool);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit CompositeEditCommand(Document&);

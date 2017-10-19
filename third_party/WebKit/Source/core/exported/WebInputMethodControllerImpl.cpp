@@ -31,7 +31,7 @@ WebInputMethodControllerImpl::WebInputMethodControllerImpl(
 
 WebInputMethodControllerImpl::~WebInputMethodControllerImpl() {}
 
-DEFINE_TRACE(WebInputMethodControllerImpl) {
+void WebInputMethodControllerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(web_frame_);
 }
 

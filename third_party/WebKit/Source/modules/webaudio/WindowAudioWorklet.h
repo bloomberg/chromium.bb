@@ -28,7 +28,7 @@ class MODULES_EXPORT WindowAudioWorklet final
 
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   static WindowAudioWorklet& From(LocalDOMWindow&);

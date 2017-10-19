@@ -43,7 +43,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   CSSPaintDefinition* FindDefinition(const String& name);
   double devicePixelRatio() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

@@ -46,7 +46,7 @@ DeviceMotionDispatcher::DeviceMotionDispatcher() {}
 
 DeviceMotionDispatcher::~DeviceMotionDispatcher() {}
 
-DEFINE_TRACE(DeviceMotionDispatcher) {
+void DeviceMotionDispatcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(last_device_motion_data_);
   PlatformEventDispatcher::Trace(visitor);
 }

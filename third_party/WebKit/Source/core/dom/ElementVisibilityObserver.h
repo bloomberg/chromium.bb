@@ -43,7 +43,7 @@ class CORE_EXPORT ElementVisibilityObserver final
 
   void DeliverObservationsForTesting();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   class ElementVisibilityCallback;

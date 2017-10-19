@@ -49,7 +49,7 @@ class WebGLGetBufferSubDataAsyncCallback
 
   void Resolve();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   WeakMember<WebGL2RenderingContextBase> context_;

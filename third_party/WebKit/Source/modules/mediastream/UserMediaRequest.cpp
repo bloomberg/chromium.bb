@@ -499,7 +499,7 @@ void UserMediaRequest::ContextDestroyed(ExecutionContext*) {
   }
 }
 
-DEFINE_TRACE(UserMediaRequest) {
+void UserMediaRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);

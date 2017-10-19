@@ -23,7 +23,7 @@ class CORE_EXPORT CustomElementAdoptedCallbackReaction final
                                        Document* old_owner,
                                        Document* new_owner);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   void Invoke(Element*) override;

@@ -28,7 +28,7 @@ class CSSNamespaceRule final : public CSSRule {
   AtomicString namespaceURI() const;
   AtomicString prefix() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   CSSNamespaceRule(StyleRuleNamespace*, CSSStyleSheet*);

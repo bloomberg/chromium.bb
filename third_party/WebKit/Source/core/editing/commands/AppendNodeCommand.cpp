@@ -53,7 +53,7 @@ void AppendNodeCommand::DoUnapply() {
   node_->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-DEFINE_TRACE(AppendNodeCommand) {
+void AppendNodeCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_);
   visitor->Trace(node_);
   SimpleEditCommand::Trace(visitor);

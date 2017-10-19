@@ -64,7 +64,7 @@ StorageManager* WorkerNavigatorStorageQuota::storage() const {
   return storage_manager_.Get();
 }
 
-DEFINE_TRACE(WorkerNavigatorStorageQuota) {
+void WorkerNavigatorStorageQuota::Trace(blink::Visitor* visitor) {
   visitor->Trace(storage_manager_);
   Supplement<WorkerNavigator>::Trace(visitor);
 }

@@ -1128,7 +1128,7 @@ AXObjectCache* AccessibleNode::GetAXObjectCache() {
   return document_->ExistingAXObjectCache();
 }
 
-DEFINE_TRACE(AccessibleNode) {
+void AccessibleNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(document_);
   visitor->Trace(relation_properties_);

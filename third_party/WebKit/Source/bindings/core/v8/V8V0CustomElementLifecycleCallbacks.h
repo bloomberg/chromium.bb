@@ -60,7 +60,7 @@ class V8V0CustomElementLifecycleCallbacks final
 
   bool SetBinding(std::unique_ptr<V0CustomElementBinding>);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   V8V0CustomElementLifecycleCallbacks(

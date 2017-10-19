@@ -76,7 +76,7 @@ class MIMEHeader : public GarbageCollectedFinalized<MIMEHeader> {
   String EndOfPartBoundary() const { return end_of_part_boundary_; }
   String EndOfDocumentBoundary() const { return end_of_document_boundary_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   MIMEHeader();

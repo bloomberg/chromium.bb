@@ -36,7 +36,7 @@ class FontFaceCacheTest : public ::testing::Test {
 
   FontFaceCache cache_;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  protected:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
@@ -403,7 +403,7 @@ TEST_F(FontFaceCacheTest, ObliqueRangeMatching) {
       FontSelectionRange({FontSelectionValue(30), FontSelectionValue(35)}));
 }
 
-DEFINE_TRACE(FontFaceCacheTest) {
+void FontFaceCacheTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(cache_);
 }
 

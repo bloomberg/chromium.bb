@@ -110,7 +110,7 @@ void ConsoleMessage::SetNodes(LocalFrame* frame, Vector<DOMNodeId> nodes) {
   nodes_ = std::move(nodes);
 }
 
-DEFINE_TRACE(ConsoleMessage) {
+void ConsoleMessage::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
 }
 

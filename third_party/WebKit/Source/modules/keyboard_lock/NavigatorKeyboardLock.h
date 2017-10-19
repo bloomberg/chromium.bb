@@ -47,7 +47,7 @@ class NavigatorKeyboardLock final
   // the web page is closed, the user agent implicitly executes this API.
   static void cancelKeyboardLock(Navigator&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorKeyboardLock(Navigator&);

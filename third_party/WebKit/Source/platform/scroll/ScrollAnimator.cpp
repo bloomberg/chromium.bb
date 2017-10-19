@@ -442,7 +442,7 @@ bool ScrollAnimator::RegisterAndScheduleAnimation() {
   return true;
 }
 
-DEFINE_TRACE(ScrollAnimator) {
+void ScrollAnimator::Trace(blink::Visitor* visitor) {
   ScrollAnimatorBase::Trace(visitor);
 }
 

@@ -24,7 +24,7 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector,
  public:
   static BarcodeDetector* Create(ExecutionContext*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit BarcodeDetector(ExecutionContext*);

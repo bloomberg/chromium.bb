@@ -78,7 +78,7 @@ class CORE_EXPORT EventTargetData final
   EventTargetData();
   ~EventTargetData();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
   EventListenerMap event_listener_map;
@@ -175,7 +175,7 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
 
   static DispatchEventResult GetDispatchEventResult(const Event&);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
 
   virtual bool KeepEventInNode(Event*) { return false; }
@@ -227,7 +227,7 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
  public:
   ~EventTargetWithInlineData() override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(event_target_data_);
     EventTarget::Trace(visitor);
   }

@@ -49,7 +49,7 @@ Vector<String> FileList::PathsForUserVisibleFiles() const {
   return paths;
 }
 
-DEFINE_TRACE(FileList) {
+void FileList::Trace(blink::Visitor* visitor) {
   visitor->Trace(files_);
 }
 

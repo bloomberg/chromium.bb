@@ -34,7 +34,7 @@ class USBIsochronousOutTransferResult final
     return packets_;
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(packets_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(packets_); }
 
  private:
   const HeapVector<Member<USBIsochronousOutTransferPacket>> packets_;

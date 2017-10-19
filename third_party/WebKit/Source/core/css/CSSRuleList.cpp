@@ -27,7 +27,7 @@ namespace blink {
 
 StaticCSSRuleList::StaticCSSRuleList() {}
 
-DEFINE_TRACE(StaticCSSRuleList) {
+void StaticCSSRuleList::Trace(blink::Visitor* visitor) {
   visitor->Trace(rules_);
   CSSRuleList::Trace(visitor);
 }

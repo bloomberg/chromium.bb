@@ -41,7 +41,7 @@ class VRController final : public GarbageCollectedFinalized<VRController>,
 
   void FocusChanged();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   void OnDisplaysSynced();

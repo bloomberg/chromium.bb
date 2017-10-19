@@ -57,7 +57,7 @@ XMLHttpRequestOrString::XMLHttpRequestOrString(const XMLHttpRequestOrString&) = 
 XMLHttpRequestOrString::~XMLHttpRequestOrString() = default;
 XMLHttpRequestOrString& XMLHttpRequestOrString::operator=(const XMLHttpRequestOrString&) = default;
 
-DEFINE_TRACE(XMLHttpRequestOrString) {
+void XMLHttpRequestOrString::Trace(blink::Visitor* visitor) {
   visitor->Trace(xml_http_request_);
 }
 

@@ -60,7 +60,7 @@ FrameCaret::FrameCaret(LocalFrame& frame,
 
 FrameCaret::~FrameCaret() = default;
 
-DEFINE_TRACE(FrameCaret) {
+void FrameCaret::Trace(blink::Visitor* visitor) {
   visitor->Trace(selection_editor_);
   visitor->Trace(frame_);
 }

@@ -44,7 +44,7 @@ class CORE_EXPORT MediaValuesDynamic : public MediaValues {
   bool HasValues() const override;
   void OverrideViewportDimensions(double width, double height) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   MediaValuesDynamic(LocalFrame*);

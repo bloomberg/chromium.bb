@@ -144,7 +144,7 @@ void PaintTiming::NotifyPaint(bool is_first_paint,
   fmp_detector_->NotifyPaint();
 }
 
-DEFINE_TRACE(PaintTiming) {
+void PaintTiming::Trace(blink::Visitor* visitor) {
   visitor->Trace(fmp_detector_);
   Supplement<Document>::Trace(visitor);
 }

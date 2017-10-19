@@ -57,7 +57,7 @@ class XPathEvaluator final : public GarbageCollected<XPathEvaluator>,
                         const ScriptValue&,
                         ExceptionState&);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   XPathEvaluator() {}

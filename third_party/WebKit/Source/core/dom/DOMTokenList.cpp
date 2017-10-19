@@ -80,7 +80,7 @@ bool CheckTokensSyntax(const Vector<String>& tokens,
 
 }  // anonymous namespace
 
-DEFINE_TRACE(DOMTokenList) {
+void DOMTokenList::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
 }
 

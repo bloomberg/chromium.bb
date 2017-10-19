@@ -41,7 +41,7 @@ class ApplicationCacheErrorEvent final : public Event {
     return EventNames::ApplicationCacheErrorEvent;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   ApplicationCacheErrorEvent(WebApplicationCacheHost::ErrorReason,

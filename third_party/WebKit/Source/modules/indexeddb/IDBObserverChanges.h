@@ -34,7 +34,7 @@ class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
       const WebVector<int32_t>& observation_indices,
       v8::Isolate*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // Implement IDL
   IDBTransaction* transaction() const { return transaction_.Get(); }

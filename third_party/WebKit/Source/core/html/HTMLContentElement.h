@@ -45,7 +45,7 @@ class HTMLContentSelectFilter
   virtual bool CanSelectNode(const HeapVector<Member<Node>, 32>& siblings,
                              int nth) const = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
@@ -64,7 +64,7 @@ class CORE_EXPORT HTMLContentElement final : public V0InsertionPoint {
   const CSSSelectorList& SelectorList() const;
   bool IsSelectValid() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   HTMLContentElement(Document&, HTMLContentSelectFilter*);

@@ -106,7 +106,7 @@ const char* NavigatorKeyboardLock::SupplementName() {
   return "NavigatorKeyboardLock";
 }
 
-DEFINE_TRACE(NavigatorKeyboardLock) {
+void NavigatorKeyboardLock::Trace(blink::Visitor* visitor) {
   visitor->Trace(request_keylock_resolver_);
   Supplement<Navigator>::Trace(visitor);
 }

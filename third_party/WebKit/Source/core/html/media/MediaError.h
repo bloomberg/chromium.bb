@@ -56,7 +56,7 @@ class CORE_EXPORT MediaError final
   // additional error detail.
   String message() const { return message_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   MediaError(ErrorCode code, const String& message)

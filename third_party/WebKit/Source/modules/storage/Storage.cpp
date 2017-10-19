@@ -69,7 +69,7 @@ bool Storage::NamedPropertyQuery(const AtomicString& name,
   return true;
 }
 
-DEFINE_TRACE(Storage) {
+void Storage::Trace(blink::Visitor* visitor) {
   visitor->Trace(storage_area_);
   ContextClient::Trace(visitor);
 }

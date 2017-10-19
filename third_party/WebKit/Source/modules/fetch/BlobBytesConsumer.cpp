@@ -261,7 +261,7 @@ void BlobBytesConsumer::DidFailRedirectCheck() {
   NOTREACHED();
 }
 
-DEFINE_TRACE(BlobBytesConsumer) {
+void BlobBytesConsumer::Trace(blink::Visitor* visitor) {
   visitor->Trace(body_);
   visitor->Trace(client_);
   visitor->Trace(loader_);

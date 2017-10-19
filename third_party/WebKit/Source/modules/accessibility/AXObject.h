@@ -85,7 +85,7 @@ class AccessibilityText final
   WTF_MAKE_NONCOPYABLE(AccessibilityText);
 
  public:
-  DEFINE_INLINE_TRACE() { visitor->Trace(text_element_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(text_element_); }
 
  private:
   AccessibilityText(const String& text,
@@ -178,7 +178,7 @@ class IgnoredReason {
   IgnoredReason(AXIgnoredReason r, const AXObject* obj)
       : reason(r), related_object(obj) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(related_object); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(related_object); }
 };
 
 class NameSourceRelatedObject
@@ -192,7 +192,7 @@ class NameSourceRelatedObject
   NameSourceRelatedObject(AXObject* object, String text)
       : object(object), text(text) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(object); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(object); }
 };
 
 typedef HeapVector<Member<NameSourceRelatedObject>> AXRelatedObjectVector;
@@ -215,7 +215,7 @@ class NameSource {
   explicit NameSource(bool superseded)
       : superseded(superseded), attribute(QualifiedName::Null()) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(related_objects); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(related_objects); }
 };
 
 class DescriptionSource {
@@ -237,7 +237,7 @@ class DescriptionSource {
   explicit DescriptionSource(bool superseded)
       : superseded(superseded), attribute(QualifiedName::Null()) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(related_objects); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(related_objects); }
 };
 
 }  // namespace blink
@@ -325,7 +325,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
  public:
   virtual ~AXObject();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   static unsigned NumberOfLiveAXObjects() { return number_of_live_ax_objects_; }
 

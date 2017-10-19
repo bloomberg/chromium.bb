@@ -15,7 +15,7 @@ class ScriptState;
 class MessageCallback : public GarbageCollectedFinalized<MessageCallback> {
  public:
   virtual ~MessageCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleMessage(const NFCMessage&) = 0;
 
   void SetScriptState(ScriptState* script_state) {

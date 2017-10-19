@@ -30,7 +30,7 @@ class MODULES_EXPORT MediaDownloadInProductHelpManager final
   bool IsShowingInProductHelp() const;
   void UpdateInProductHelp();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   void StateUpdated();

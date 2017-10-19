@@ -58,7 +58,7 @@ class CORE_EXPORT ImageResourceInfo : public GarbageCollectedMixin {
       const KURL&,
       const AtomicString& initiator_name) = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

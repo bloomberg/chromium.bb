@@ -29,7 +29,7 @@ class Presentation final : public GarbageCollected<Presentation>,
  public:
   static Presentation* Create(LocalFrame*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   PresentationRequest* defaultRequest() const;
   void setDefaultRequest(PresentationRequest*);

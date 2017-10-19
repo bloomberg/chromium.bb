@@ -333,7 +333,7 @@ HTMLMediaElement* HTMLTrackElement::MediaElement() const {
   return nullptr;
 }
 
-DEFINE_TRACE(HTMLTrackElement) {
+void HTMLTrackElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(track_);
   visitor->Trace(loader_);
   HTMLElement::Trace(visitor);

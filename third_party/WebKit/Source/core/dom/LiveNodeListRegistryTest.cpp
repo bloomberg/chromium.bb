@@ -105,7 +105,7 @@ TEST_F(LiveNodeListRegistryTest, ExplicitRemove) {
 struct LiveNodeListRegistryWrapper
     : public GarbageCollectedFinalized<LiveNodeListRegistryWrapper> {
   LiveNodeListRegistry registry;
-  DEFINE_INLINE_TRACE() { visitor->Trace(registry); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(registry); }
 };
 
 // The set of types which match should be updated as elements are removed due to

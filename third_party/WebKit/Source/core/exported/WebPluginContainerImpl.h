@@ -185,7 +185,7 @@ class CORE_EXPORT WebPluginContainerImpl final
     return const_cast<WebPluginContainerImpl*>(this);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   // USING_PRE_FINALIZER does not allow for virtual dispatch from the finalizer
   // method. Here we call Dispose() which does the correct virtual dispatch.
   void PreFinalize() { Dispose(); }

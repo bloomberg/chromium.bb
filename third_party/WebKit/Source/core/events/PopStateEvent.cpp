@@ -87,7 +87,7 @@ const AtomicString& PopStateEvent::InterfaceName() const {
   return EventNames::PopStateEvent;
 }
 
-DEFINE_TRACE(PopStateEvent) {
+void PopStateEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(history_);
   Event::Trace(visitor);
 }

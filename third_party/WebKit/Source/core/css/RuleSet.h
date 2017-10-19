@@ -59,7 +59,7 @@ class MinimalRuleData {
   MinimalRuleData(StyleRule* rule, unsigned selector_index, AddRuleFlags flags)
       : rule_(rule), selector_index_(selector_index), flags_(flags) {}
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   Member<StyleRule> rule_;
   unsigned selector_index_;
@@ -112,7 +112,7 @@ class CORE_EXPORT RuleData {
     return descendant_selector_identifier_hashes_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Member<StyleRule> rule_;
@@ -257,7 +257,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   void Show() const;
 #endif
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   using PendingRuleMap =
@@ -290,7 +290,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     PendingRuleMap tag_rules;
     PendingRuleMap shadow_pseudo_element_rules;
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     PendingRuleMaps() {}

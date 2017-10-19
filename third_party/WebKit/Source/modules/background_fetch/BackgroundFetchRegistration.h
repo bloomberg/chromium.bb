@@ -74,7 +74,7 @@ class BackgroundFetchRegistration final
 
   void Dispose();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   void DidAbort(ScriptPromiseResolver*, mojom::blink::BackgroundFetchError);

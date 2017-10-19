@@ -52,7 +52,7 @@ CoreProbeSink* MainThreadWorkletGlobalScope::GetProbeSink() {
   return probe::ToCoreProbeSink(GetFrame());
 }
 
-DEFINE_TRACE(MainThreadWorkletGlobalScope) {
+void MainThreadWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   WorkletGlobalScope::Trace(visitor);
   ContextClient::Trace(visitor);
 }

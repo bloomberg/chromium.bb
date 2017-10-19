@@ -48,7 +48,7 @@ class CORE_EXPORT ScriptPromisePropertyBase
 
   ScriptPromise Promise(DOMWrapperWorld&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   ScriptPromisePropertyBase(ExecutionContext*, Name);

@@ -72,7 +72,7 @@ const AtomicString& DeviceOrientationAbsoluteController::EventTypeName() const {
   return EventTypeNames::deviceorientationabsolute;
 }
 
-DEFINE_TRACE(DeviceOrientationAbsoluteController) {
+void DeviceOrientationAbsoluteController::Trace(blink::Visitor* visitor) {
   DeviceOrientationController::Trace(visitor);
 }
 

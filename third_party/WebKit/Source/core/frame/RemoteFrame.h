@@ -25,7 +25,7 @@ class CORE_EXPORT RemoteFrame final : public Frame {
   ~RemoteFrame() override;
 
   // Frame overrides:
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   void Navigate(Document& origin_document,
                 const KURL&,
                 bool replace_current_item,

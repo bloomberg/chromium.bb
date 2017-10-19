@@ -75,7 +75,7 @@ class CORE_EXPORT WorkerOrWorkletGlobalScope : public ExecutionContext {
 
   WorkerReportingProxy& ReportingProxy() { return reporting_proxy_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   CrossThreadPersistent<WorkerClients> worker_clients_;

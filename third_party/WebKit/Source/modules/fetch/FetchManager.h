@@ -24,7 +24,7 @@ class FetchManager final : public GarbageCollected<FetchManager>,
   ScriptPromise Fetch(ScriptState*, FetchRequestData*);
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit FetchManager(ExecutionContext*);

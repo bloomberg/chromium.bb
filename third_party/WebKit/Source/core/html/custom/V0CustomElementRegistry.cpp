@@ -144,7 +144,7 @@ bool V0CustomElementRegistry::V1NameIsDefined(const AtomicString& name) const {
   return v1_.Get() && v1_->NameIsDefined(name);
 }
 
-DEFINE_TRACE(V0CustomElementRegistry) {
+void V0CustomElementRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(definitions_);
   visitor->Trace(v1_);
 }

@@ -24,7 +24,7 @@ class V0CustomElementMicrotaskDispatcher final
 
   bool ElementQueueIsEmpty() { return elements_.IsEmpty(); }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   V0CustomElementMicrotaskDispatcher();

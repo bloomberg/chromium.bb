@@ -177,7 +177,7 @@ IIRFilterNode* IIRFilterNode::Create(BaseAudioContext* context,
   return node;
 }
 
-DEFINE_TRACE(IIRFilterNode) {
+void IIRFilterNode::Trace(blink::Visitor* visitor) {
   AudioNode::Trace(visitor);
 }
 

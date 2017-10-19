@@ -27,7 +27,7 @@ class CORE_EXPORT InterventionReport : public ReportBody {
     return location_->Url().IsNull() ? "" : location_->Url();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ReportBody::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { ReportBody::Trace(visitor); }
 
  private:
   const String message_;

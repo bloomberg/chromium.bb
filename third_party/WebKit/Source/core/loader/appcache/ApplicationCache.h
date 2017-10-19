@@ -69,7 +69,7 @@ class ApplicationCache final : public EventTargetWithInlineData,
 
   static const AtomicString& ToEventType(ApplicationCacheHost::EventID);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit ApplicationCache(LocalFrame*);

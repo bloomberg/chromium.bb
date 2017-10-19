@@ -116,7 +116,7 @@ class SourceBuffer final : public EventTargetWithInlineData,
   bool InitializationSegmentReceived(const WebVector<MediaTrackInfo>&) override;
   void NotifyParseWarning(const ParseWarning) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SourceBuffer(std::unique_ptr<WebSourceBuffer>,

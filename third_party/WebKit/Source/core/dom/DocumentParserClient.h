@@ -14,7 +14,7 @@ class DocumentParserClient : public GarbageCollectedMixin {
   // This callback is called when all data pushed to parser has been consumed.
   virtual void NotifyParserStopped() = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   DocumentParserClient() {}

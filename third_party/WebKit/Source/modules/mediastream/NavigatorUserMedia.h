@@ -19,7 +19,7 @@ class NavigatorUserMedia final : public GarbageCollected<NavigatorUserMedia>,
   USING_GARBAGE_COLLECTED_MIXIN(NavigatorUserMedia)
  public:
   static MediaDevices* mediaDevices(Navigator&);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorUserMedia(Navigator&);

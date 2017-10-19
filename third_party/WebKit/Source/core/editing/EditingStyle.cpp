@@ -172,7 +172,9 @@ class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
   virtual bool ValueIsPresentInStyle(HTMLElement*, StylePropertySet*) const;
   virtual void AddToStyle(Element*, EditingStyle*) const;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(identifier_value_); }
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(identifier_value_);
+  }
 
  protected:
   HTMLElementEquivalent(CSSPropertyID);
@@ -239,7 +241,9 @@ class HTMLTextDecorationEquivalent final : public HTMLElementEquivalent {
   bool PropertyExistsInStyle(const StylePropertySet*) const override;
   bool ValueIsPresentInStyle(HTMLElement*, StylePropertySet*) const override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { HTMLElementEquivalent::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    HTMLElementEquivalent::Trace(visitor);
+  }
 
  private:
   HTMLTextDecorationEquivalent(CSSValueID primitive_value,
@@ -294,7 +298,9 @@ class HTMLAttributeEquivalent : public HTMLElementEquivalent {
   virtual const CSSValue* AttributeValueAsCSSValue(Element*) const;
   inline const QualifiedName& AttributeName() const { return attr_name_; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { HTMLElementEquivalent::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    HTMLElementEquivalent::Trace(visitor);
+  }
 
  protected:
   HTMLAttributeEquivalent(CSSPropertyID,
@@ -350,7 +356,9 @@ class HTMLFontSizeEquivalent final : public HTMLAttributeEquivalent {
   }
   const CSSValue* AttributeValueAsCSSValue(Element*) const override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { HTMLAttributeEquivalent::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    HTMLAttributeEquivalent::Trace(visitor);
+  }
 
  private:
   HTMLFontSizeEquivalent();
@@ -1493,7 +1501,7 @@ int EditingStyle::LegacyFontSize(Document* document) const {
                                     kAlwaysUseLegacyFontSize);
 }
 
-DEFINE_TRACE(EditingStyle) {
+void EditingStyle::Trace(blink::Visitor* visitor) {
   visitor->Trace(mutable_style_);
 }
 

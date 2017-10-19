@@ -52,7 +52,7 @@ CSSRule* StyleRuleBase::CreateCSSOMWrapper(CSSRule* parent_rule) const {
   return CreateCSSOMWrapper(0, parent_rule);
 }
 
-DEFINE_TRACE(StyleRuleBase) {
+void StyleRuleBase::Trace(blink::Visitor* visitor) {
   switch (GetType()) {
     case kCharset:
       ToStyleRuleCharset(this)->TraceAfterDispatch(visitor);
@@ -263,7 +263,7 @@ bool StyleRule::HasParsedProperties() const {
   return !lazy_property_parser_;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(StyleRule) {
+void StyleRule::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(properties_);
   visitor->Trace(lazy_property_parser_);
   StyleRuleBase::TraceAfterDispatch(visitor);
@@ -288,7 +288,7 @@ MutableStylePropertySet& StyleRulePage::MutableProperties() {
   return *ToMutableStylePropertySet(properties_.Get());
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(StyleRulePage) {
+void StyleRulePage::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(properties_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
@@ -308,7 +308,7 @@ MutableStylePropertySet& StyleRuleFontFace::MutableProperties() {
   return *ToMutableStylePropertySet(properties_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(StyleRuleFontFace) {
+void StyleRuleFontFace::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(properties_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
@@ -333,7 +333,7 @@ void StyleRuleGroup::WrapperRemoveRule(unsigned index) {
   child_rules_.EraseAt(index);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(StyleRuleGroup) {
+void StyleRuleGroup::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(child_rules_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }
@@ -370,7 +370,7 @@ StyleRuleSupports::StyleRuleSupports(
     : StyleRuleCondition(kSupports, condition_text, adopt_rules),
       condition_is_supported_(condition_is_supported) {}
 
-DEFINE_TRACE_AFTER_DISPATCH(StyleRuleMedia) {
+void StyleRuleMedia::TraceAfterDispatch(blink::Visitor* visitor) {
   StyleRuleCondition::TraceAfterDispatch(visitor);
 }
 
@@ -393,7 +393,7 @@ MutableStylePropertySet& StyleRuleViewport::MutableProperties() {
   return *ToMutableStylePropertySet(properties_);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(StyleRuleViewport) {
+void StyleRuleViewport::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(properties_);
   StyleRuleBase::TraceAfterDispatch(visitor);
 }

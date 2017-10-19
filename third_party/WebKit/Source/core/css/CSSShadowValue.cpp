@@ -82,7 +82,7 @@ bool CSSShadowValue::Equals(const CSSShadowValue& other) const {
          DataEquivalent(style, other.style);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSShadowValue) {
+void CSSShadowValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(x);
   visitor->Trace(y);
   visitor->Trace(blur);

@@ -17,7 +17,7 @@ class MODULES_EXPORT AXVirtualObject : public AXObject {
  public:
   AXVirtualObject(AXObjectCacheImpl&, AccessibleNode*);
   ~AXVirtualObject() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // AXObject overrides.
   void Detach();

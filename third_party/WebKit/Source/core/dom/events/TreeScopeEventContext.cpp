@@ -94,7 +94,7 @@ TreeScopeEventContext::TreeScopeEventContext(TreeScope& tree_scope)
       pre_order_(-1),
       post_order_(-1) {}
 
-DEFINE_TRACE(TreeScopeEventContext) {
+void TreeScopeEventContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(tree_scope_);
   visitor->Trace(target_);
   visitor->Trace(related_target_);

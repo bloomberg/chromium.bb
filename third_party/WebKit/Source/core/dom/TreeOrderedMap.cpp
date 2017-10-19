@@ -207,11 +207,11 @@ Element* TreeOrderedMap::GetCachedFirstElementWithoutAccessingNodeTree(
   return entry->element;
 }
 
-DEFINE_TRACE(TreeOrderedMap) {
+void TreeOrderedMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(map_);
 }
 
-DEFINE_TRACE(TreeOrderedMap::MapEntry) {
+void TreeOrderedMap::MapEntry::Trace(blink::Visitor* visitor) {
   visitor->Trace(element);
   visitor->Trace(ordered_list);
 }

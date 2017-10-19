@@ -56,7 +56,7 @@ class DraggedIsolatedFileSystemImpl final
   static const char* SupplementName();
   static DraggedIsolatedFileSystemImpl* From(DataObject*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   static void PrepareForDataObject(DataObject*);
 

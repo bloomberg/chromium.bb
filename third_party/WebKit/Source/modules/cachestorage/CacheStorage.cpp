@@ -359,7 +359,7 @@ void CacheStorage::Dispose() {
   web_cache_storage_.reset();
 }
 
-DEFINE_TRACE(CacheStorage) {
+void CacheStorage::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
 }
 

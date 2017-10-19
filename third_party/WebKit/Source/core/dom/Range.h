@@ -165,7 +165,7 @@ class CORE_EXPORT Range final : public GarbageCollected<Range>,
 
   static Node* CheckNodeWOffset(Node*, unsigned offset, ExceptionState&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit Range(Document&);

@@ -90,7 +90,7 @@ class CSSCalcExpressionNode : public GarbageCollected<CSSCalcExpressionNode> {
   virtual CSSPrimitiveValue::UnitType TypeWithCalcResolved() const = 0;
   bool IsInteger() const { return is_integer_; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   CSSCalcExpressionNode(CalculationCategory category, bool is_integer)
@@ -140,7 +140,7 @@ class CORE_EXPORT CSSCalcValue : public GarbageCollected<CSSCalcValue> {
   String CustomCSSText() const;
   bool Equals(const CSSCalcValue&) const;
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(expression_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(expression_); }
 
  private:
   CSSCalcValue(CSSCalcExpressionNode* expression, ValueRange range)

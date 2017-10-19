@@ -562,7 +562,7 @@ AudioHandler& AudioNode::Handler() const {
   return *handler_;
 }
 
-DEFINE_TRACE(AudioNode) {
+void AudioNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(connected_nodes_);
   visitor->Trace(connected_params_);

@@ -23,7 +23,7 @@ class ModuleMap::Entry final : public GarbageCollectedFinalized<Entry>,
   static Entry* Create(ModuleMap* map) { return new Entry(map); }
   ~Entry() override {}
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
   // Notify fetched |m_moduleScript| to the client asynchronously.
@@ -53,7 +53,7 @@ ModuleMap::Entry::Entry(ModuleMap* map) : map_(map) {
   DCHECK(map_);
 }
 
-DEFINE_TRACE(ModuleMap::Entry) {
+void ModuleMap::Entry::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_script_);
   visitor->Trace(map_);
   visitor->Trace(clients_);
@@ -102,7 +102,7 @@ ModuleMap::ModuleMap(Modulator* modulator) : modulator_(modulator) {
   DCHECK(modulator);
 }
 
-DEFINE_TRACE(ModuleMap) {
+void ModuleMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(map_);
   visitor->Trace(modulator_);
 }

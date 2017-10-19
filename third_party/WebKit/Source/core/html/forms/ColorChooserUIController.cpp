@@ -46,7 +46,7 @@ ColorChooserUIController::~ColorChooserUIController() {
   EndChooser();
 }
 
-DEFINE_TRACE(ColorChooserUIController) {
+void ColorChooserUIController::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(client_);
   ColorChooser::Trace(visitor);

@@ -27,7 +27,7 @@ class SingleChildLocalFrameClient final : public EmptyLocalFrameClient {
     return new SingleChildLocalFrameClient();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(child_);
     EmptyLocalFrameClient::Trace(visitor);
   }
@@ -51,7 +51,7 @@ class LocalFrameClientWithParent final : public EmptyLocalFrameClient {
     return new LocalFrameClientWithParent(parent);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(parent_);
     EmptyLocalFrameClient::Trace(visitor);
   }

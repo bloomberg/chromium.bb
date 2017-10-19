@@ -66,7 +66,9 @@ class MODULES_EXPORT StorageQuotaClient
   static const char* SupplementName();
   static StorageQuotaClient* From(ExecutionContext*);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { Supplement<Page>::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    Supplement<Page>::Trace(visitor);
+  }
 
  private:
   StorageQuotaClient();

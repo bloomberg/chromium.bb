@@ -43,7 +43,7 @@ void SourceBufferTrackBaseSupplement::SetSourceBuffer(
   From(track).source_buffer_ = source_buffer;
 }
 
-DEFINE_TRACE(SourceBufferTrackBaseSupplement) {
+void SourceBufferTrackBaseSupplement::Trace(blink::Visitor* visitor) {
   visitor->Trace(source_buffer_);
   Supplement<TrackBase>::Trace(visitor);
 }

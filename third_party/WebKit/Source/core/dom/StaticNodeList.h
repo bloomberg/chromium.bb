@@ -49,7 +49,7 @@ class StaticNodeTypeList final : public NodeList {
   unsigned length() const override;
   NodeType* item(unsigned index) const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
     for (unsigned i = 0; i < length(); i++)
       visitor->TraceWrappers(nodes_[i]);

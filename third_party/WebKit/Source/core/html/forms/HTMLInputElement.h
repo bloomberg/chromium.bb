@@ -56,7 +56,7 @@ class CORE_EXPORT HTMLInputElement
  public:
   static HTMLInputElement* Create(Document&, bool created_by_parser);
   ~HTMLInputElement() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   bool HasPendingActivity() const final;
 

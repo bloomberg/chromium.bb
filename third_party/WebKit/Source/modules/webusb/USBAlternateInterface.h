@@ -37,7 +37,7 @@ class USBAlternateInterface : public GarbageCollected<USBAlternateInterface>,
   String interfaceName() const { return Info().interface_name; }
   HeapVector<Member<USBEndpoint>> endpoints() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Member<const USBInterface> interface_;

@@ -62,7 +62,7 @@ inline SVGImageElement::SVGImageElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGImageElement)
 
-DEFINE_TRACE(SVGImageElement) {
+void SVGImageElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);

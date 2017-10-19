@@ -62,7 +62,7 @@ class CORE_EXPORT FormData final
   static FormData* Create(const WTF::TextEncoding& encoding) {
     return new FormData(encoding);
   }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // FormData IDL interface.
   void append(const String& name, const String& value);
@@ -112,7 +112,7 @@ class FormData::Entry : public GarbageCollectedFinalized<FormData::Entry> {
       : name_(name), value_(value) {}
   Entry(const CString& name, Blob* blob, const String& filename)
       : name_(name), blob_(blob), filename_(filename) {}
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   bool IsString() const { return !blob_; }
   bool isFile() const { return blob_; }

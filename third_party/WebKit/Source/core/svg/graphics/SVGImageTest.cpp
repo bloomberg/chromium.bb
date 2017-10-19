@@ -60,7 +60,9 @@ class SVGImageTest : public ::testing::Test {
 
     void AsyncLoadCompleted(const blink::Image*) override {}
 
-    DEFINE_INLINE_VIRTUAL_TRACE() { ImageObserver::Trace(visitor); }
+    virtual void Trace(blink::Visitor* visitor) {
+      ImageObserver::Trace(visitor);
+    }
 
    private:
     bool should_pause_;

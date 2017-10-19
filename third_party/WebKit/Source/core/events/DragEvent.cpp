@@ -98,7 +98,7 @@ EventDispatchMediator* DragEvent::CreateMediator() {
   return DragEventDispatchMediator::Create(this);
 }
 
-DEFINE_TRACE(DragEvent) {
+void DragEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_transfer_);
   MouseEvent::Trace(visitor);
 }

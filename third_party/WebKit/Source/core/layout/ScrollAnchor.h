@@ -64,7 +64,7 @@ class CORE_EXPORT ScrollAnchor final {
   // Notifies us that an object will be removed from the layout tree.
   void NotifyRemoved(LayoutObject*);
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(scroller_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(scroller_); }
 
  private:
   void FindAnchor();

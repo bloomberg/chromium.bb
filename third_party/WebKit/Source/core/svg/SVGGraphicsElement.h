@@ -63,7 +63,7 @@ class CORE_EXPORT SVGGraphicsElement : public SVGElement, public SVGTests {
   AffineTransform ComputeCTM(CTMScope mode,
                              const SVGGraphicsElement* ancestor = 0) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   SVGGraphicsElement(const QualifiedName&,

@@ -39,7 +39,7 @@ class CORE_EXPORT PropertyRegistration
     return interpolation_types_;
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(initial_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(initial_); }
 
  private:
   PropertyRegistration(const AtomicString& name,

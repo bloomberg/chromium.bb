@@ -40,7 +40,7 @@ class CORE_EXPORT MainThreadWorkletGlobalScope
   void ExceptionThrown(ErrorEvent*) final;
   CoreProbeSink* GetProbeSink() final;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 };
 
 DEFINE_TYPE_CASTS(MainThreadWorkletGlobalScope,

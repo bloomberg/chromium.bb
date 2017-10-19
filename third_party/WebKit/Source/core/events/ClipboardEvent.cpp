@@ -44,7 +44,7 @@ bool ClipboardEvent::IsClipboardEvent() const {
   return true;
 }
 
-DEFINE_TRACE(ClipboardEvent) {
+void ClipboardEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(clipboard_data_);
   Event::Trace(visitor);
 }

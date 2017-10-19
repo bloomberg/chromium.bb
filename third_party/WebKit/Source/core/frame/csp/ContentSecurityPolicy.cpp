@@ -222,7 +222,7 @@ void ContentSecurityPolicy::ApplyPolicySideEffectsToExecutionContext() {
 
 ContentSecurityPolicy::~ContentSecurityPolicy() {}
 
-DEFINE_TRACE(ContentSecurityPolicy) {
+void ContentSecurityPolicy::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(policies_);
   visitor->Trace(console_messages_);

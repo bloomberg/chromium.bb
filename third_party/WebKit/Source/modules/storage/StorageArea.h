@@ -78,7 +78,7 @@ class MODULES_EXPORT StorageArea final
                                           const WebStorageNamespace&,
                                           WebStorageArea* source_area_instance);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   StorageArea(std::unique_ptr<WebStorageArea>, StorageType);

@@ -40,7 +40,7 @@ class SVGMPathElement final : public SVGElement, public SVGURIReference {
 
   void TargetPathChanged();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGMPathElement(Document&);

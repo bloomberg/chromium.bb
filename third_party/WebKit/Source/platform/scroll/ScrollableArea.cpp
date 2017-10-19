@@ -682,7 +682,7 @@ void ScrollableArea::DidScroll(const gfx::ScrollOffset& offset) {
   SetScrollOffset(new_offset, kCompositorScroll);
 }
 
-DEFINE_TRACE(ScrollableArea) {
+void ScrollableArea::Trace(blink::Visitor* visitor) {
   visitor->Trace(scroll_animator_);
   visitor->Trace(programmatic_scroll_animator_);
 }

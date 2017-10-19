@@ -38,7 +38,7 @@ class MODULES_EXPORT ServiceWorkerWindowClient final
   ScriptPromise focus(ScriptState*);
   ScriptPromise navigate(ScriptState*, const String& url);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit ServiceWorkerWindowClient(const WebServiceWorkerClientInfo&);

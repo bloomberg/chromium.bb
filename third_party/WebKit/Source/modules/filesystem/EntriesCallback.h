@@ -41,7 +41,7 @@ typedef HeapVector<Member<Entry>> EntryHeapVector;
 class EntriesCallback : public GarbageCollectedFinalized<EntriesCallback> {
  public:
   virtual ~EntriesCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(const EntryHeapVector&) = 0;
 };
 

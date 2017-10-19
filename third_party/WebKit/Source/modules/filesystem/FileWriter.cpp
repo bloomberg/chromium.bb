@@ -315,7 +315,7 @@ void FileWriter::Dispose() {
   ResetWriter();
 }
 
-DEFINE_TRACE(FileWriter) {
+void FileWriter::Trace(blink::Visitor* visitor) {
   visitor->Trace(error_);
   visitor->Trace(blob_being_written_);
   EventTargetWithInlineData::Trace(visitor);

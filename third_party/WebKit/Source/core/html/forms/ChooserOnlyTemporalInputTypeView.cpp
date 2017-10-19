@@ -51,7 +51,7 @@ ChooserOnlyTemporalInputTypeView::~ChooserOnlyTemporalInputTypeView() {
   DCHECK(!date_time_chooser_);
 }
 
-DEFINE_TRACE(ChooserOnlyTemporalInputTypeView) {
+void ChooserOnlyTemporalInputTypeView::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_type_);
   visitor->Trace(date_time_chooser_);
   InputTypeView::Trace(visitor);

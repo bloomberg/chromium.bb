@@ -67,7 +67,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tag_name,
 
 HTMLFormControlElement::~HTMLFormControlElement() {}
 
-DEFINE_TRACE(HTMLFormControlElement) {
+void HTMLFormControlElement::Trace(blink::Visitor* visitor) {
   ListedElement::Trace(visitor);
   LabelableElement::Trace(visitor);
 }

@@ -149,7 +149,7 @@ bool StyleAttributeMutationScope::should_deliver_ = false;
 
 }  // namespace
 
-DEFINE_TRACE(PropertySetCSSStyleDeclaration) {
+void PropertySetCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
   visitor->Trace(property_set_);
   AbstractPropertySetCSSStyleDeclaration::Trace(visitor);
 }
@@ -345,7 +345,7 @@ bool AbstractPropertySetCSSStyleDeclaration::CssPropertyMatches(
   return PropertySet().PropertyMatches(property_id, *property_value);
 }
 
-DEFINE_TRACE(AbstractPropertySetCSSStyleDeclaration) {
+void AbstractPropertySetCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
   CSSStyleDeclaration::Trace(visitor);
 }
 
@@ -388,7 +388,7 @@ PropertyRegistry* StyleRuleCSSStyleDeclaration::GetPropertyRegistry() const {
   return node->GetDocument().GetPropertyRegistry();
 }
 
-DEFINE_TRACE(StyleRuleCSSStyleDeclaration) {
+void StyleRuleCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_rule_);
   PropertySetCSSStyleDeclaration::Trace(visitor);
 }
@@ -427,7 +427,7 @@ PropertyRegistry* InlineCSSStyleDeclaration::GetPropertyRegistry() const {
                          : nullptr;
 }
 
-DEFINE_TRACE(InlineCSSStyleDeclaration) {
+void InlineCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_element_);
   AbstractPropertySetCSSStyleDeclaration::Trace(visitor);
 }

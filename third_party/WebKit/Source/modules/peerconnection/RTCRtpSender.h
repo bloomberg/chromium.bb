@@ -31,7 +31,7 @@ class RTCRtpSender final : public GarbageCollectedFinalized<RTCRtpSender>,
   // track updated, and the |track| must match the |WebRTCRtpSender::Track|.
   void SetTrack(MediaStreamTrack*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   std::unique_ptr<WebRTCRtpSender> sender_;

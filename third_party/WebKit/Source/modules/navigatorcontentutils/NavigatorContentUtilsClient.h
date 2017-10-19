@@ -34,7 +34,7 @@ class MODULES_EXPORT NavigatorContentUtilsClient
                                                           const KURL&);
   virtual void UnregisterProtocolHandler(const String& scheme, const KURL&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit NavigatorContentUtilsClient(WebLocalFrameImpl*);

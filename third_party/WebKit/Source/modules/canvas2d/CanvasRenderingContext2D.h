@@ -199,6 +199,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void WillDrawImage(CanvasImageSource*) const final;
 
+  virtual void Trace(blink::Visitor*);
+
  protected:
   virtual void NeedsFinalizeFrame() {
     CanvasRenderingContext::NeedsFinalizeFrame();
@@ -244,7 +246,6 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   bool HasAlpha() const override { return CreationAttributes().alpha(); }
   void SetIsHidden(bool) override;
   void Stop() final;
-  DECLARE_VIRTUAL_TRACE();
 
   virtual bool IsTransformInvertible() const;
 

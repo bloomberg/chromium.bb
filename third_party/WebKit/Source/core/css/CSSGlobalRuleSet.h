@@ -42,7 +42,7 @@ class CSSGlobalRuleSet : public GarbageCollectedFinalized<CSSGlobalRuleSet> {
   }
   bool HasFullscreenUAStyle() const { return has_fullscreen_ua_style_; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   CSSGlobalRuleSet() {}

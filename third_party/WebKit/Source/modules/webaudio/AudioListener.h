@@ -129,7 +129,7 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
   bool IsHRTFDatabaseLoaded();
   void WaitForHRTFDatabaseLoaderThreadCompletion();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   AudioListener(BaseAudioContext&);

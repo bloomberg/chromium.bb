@@ -62,7 +62,7 @@ InspectorDOMStorageAgent::InspectorDOMStorageAgent(Page* page)
 
 InspectorDOMStorageAgent::~InspectorDOMStorageAgent() {}
 
-DEFINE_TRACE(InspectorDOMStorageAgent) {
+void InspectorDOMStorageAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
   InspectorBaseAgent::Trace(visitor);
 }

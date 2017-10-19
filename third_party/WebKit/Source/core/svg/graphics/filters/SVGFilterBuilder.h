@@ -63,7 +63,7 @@ class SVGFilterGraphNodeMap final
 
   void InvalidateDependentEffects(FilterEffect*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   SVGFilterGraphNodeMap();

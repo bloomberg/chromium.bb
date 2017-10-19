@@ -73,7 +73,7 @@ void HitTestCache::Clear() {
   items_.clear();
 }
 
-DEFINE_TRACE(HitTestCache) {
+void HitTestCache::Trace(blink::Visitor* visitor) {
   visitor->Trace(items_);
 }
 

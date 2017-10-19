@@ -62,7 +62,7 @@ CSSIdentifierValue::CSSIdentifierValue(const Length& length)
   }
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSIdentifierValue) {
+void CSSIdentifierValue::TraceAfterDispatch(blink::Visitor* visitor) {
   CSSValue::TraceAfterDispatch(visitor);
 }
 

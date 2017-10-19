@@ -41,7 +41,7 @@ class CORE_EXPORT BooleanOrElementSequence final {
   BooleanOrElementSequence(const BooleanOrElementSequence&);
   ~BooleanOrElementSequence();
   BooleanOrElementSequence& operator=(const BooleanOrElementSequence&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

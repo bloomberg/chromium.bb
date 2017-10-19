@@ -54,7 +54,7 @@ class CORE_EXPORT ProgressTracker final
   static ProgressTracker* Create(LocalFrame*);
 
   ~ProgressTracker();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   void Dispose();
 
   double EstimatedProgress() const;

@@ -376,7 +376,7 @@ void Event::setCancelBubble(ScriptState* script_state, bool cancel) {
     propagation_stopped_ = true;
 }
 
-DEFINE_TRACE(Event) {
+void Event::Trace(blink::Visitor* visitor) {
   visitor->Trace(current_target_);
   visitor->Trace(target_);
   visitor->Trace(underlying_event_);

@@ -23,7 +23,7 @@ class CSSFunctionValue : public CSSValueList {
   }
   CSSValueID FunctionType() const { return value_id_; }
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     CSSValueList::TraceAfterDispatch(visitor);
   }
 

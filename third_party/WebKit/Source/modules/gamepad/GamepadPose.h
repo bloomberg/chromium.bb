@@ -32,7 +32,7 @@ class GamepadPose final : public GarbageCollected<GamepadPose>,
 
   void SetPose(const device::GamepadPose& state);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   GamepadPose();

@@ -44,7 +44,7 @@ class IDBFactory final : public GarbageCollected<IDBFactory>,
 
  public:
   static IDBFactory* Create() { return new IDBFactory(); }
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
   // Implement the IDBFactory IDL
   IDBOpenDBRequest* open(ScriptState*, const String& name, ExceptionState&);

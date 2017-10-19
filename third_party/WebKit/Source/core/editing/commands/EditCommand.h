@@ -54,7 +54,7 @@ class CORE_EXPORT EditCommand : public GarbageCollectedFinalized<EditCommand> {
   // |TypingCommand| will return the text of the last |m_commands|.
   virtual String TextDataForInputEvent() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit EditCommand(Document&);

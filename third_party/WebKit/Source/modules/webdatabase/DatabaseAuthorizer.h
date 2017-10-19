@@ -50,7 +50,7 @@ class DatabaseAuthorizer
 
   static DatabaseAuthorizer* Create(DatabaseContext*,
                                     const String& database_info_table_name);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   int CreateTable(const String& table_name);
   int CreateTempTable(const String& table_name);

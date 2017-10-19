@@ -47,7 +47,7 @@ class CueTimeline final : public GarbageCollectedFinalized<CueTimeline> {
 
   const CueList& CurrentlyActiveCues() const { return currently_active_cues_; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   HTMLMediaElement& MediaElement() const { return *media_element_; }

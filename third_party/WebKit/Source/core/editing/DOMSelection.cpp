@@ -856,7 +856,7 @@ void DOMSelection::AddConsoleError(const String& message) {
         ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel, message));
 }
 
-DEFINE_TRACE(DOMSelection) {
+void DOMSelection::Trace(blink::Visitor* visitor) {
   visitor->Trace(tree_scope_);
   ContextClient::Trace(visitor);
 }

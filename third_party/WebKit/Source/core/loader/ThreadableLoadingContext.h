@@ -36,7 +36,7 @@ class CORE_EXPORT ThreadableLoadingContext
   virtual ExecutionContext* GetExecutionContext() = 0;
   BaseFetchContext* GetFetchContext();
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

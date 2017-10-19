@@ -55,7 +55,7 @@ class DirectoryReader::EntriesCallbackHelper final : public EntriesCallback {
     reader_->AddEntries(entries);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(reader_);
     EntriesCallback::Trace(visitor);
   }
@@ -72,7 +72,7 @@ class DirectoryReader::ErrorCallbackHelper final : public ErrorCallbackBase {
 
   void Invoke(FileError::ErrorCode error) override { reader_->OnError(error); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(reader_);
     ErrorCallbackBase::Trace(visitor);
   }
@@ -144,7 +144,7 @@ void DirectoryReader::OnError(FileError::ErrorCode error) {
     error_callback_->handleEvent(FileError::CreateDOMException(error));
 }
 
-DEFINE_TRACE(DirectoryReader) {
+void DirectoryReader::Trace(blink::Visitor* visitor) {
   visitor->Trace(entries_);
   visitor->Trace(entries_callback_);
   visitor->Trace(error_callback_);

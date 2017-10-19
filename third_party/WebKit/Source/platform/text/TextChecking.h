@@ -77,7 +77,7 @@ class PLATFORM_EXPORT TextCheckingRequest
     : public GarbageCollectedFinalized<TextCheckingRequest> {
  public:
   virtual ~TextCheckingRequest() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
   virtual const TextCheckingRequestData& Data() const = 0;
   virtual void DidSucceed(const Vector<TextCheckingResult>&) = 0;

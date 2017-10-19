@@ -53,7 +53,7 @@ inline SVGFEColorMatrixElement::SVGFEColorMatrixElement(Document& document)
   AddToPropertyMap(type_);
 }
 
-DEFINE_TRACE(SVGFEColorMatrixElement) {
+void SVGFEColorMatrixElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(values_);
   visitor->Trace(in1_);
   visitor->Trace(type_);

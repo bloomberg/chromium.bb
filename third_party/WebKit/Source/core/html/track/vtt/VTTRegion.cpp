@@ -416,7 +416,7 @@ void VTTRegion::ScrollTimerFired(TimerBase*) {
   DisplayLastVTTCueBox();
 }
 
-DEFINE_TRACE(VTTRegion) {
+void VTTRegion::Trace(blink::Visitor* visitor) {
   visitor->Trace(cue_container_);
   visitor->Trace(region_display_tree_);
 }

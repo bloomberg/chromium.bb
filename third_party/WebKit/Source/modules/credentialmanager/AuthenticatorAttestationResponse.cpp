@@ -21,7 +21,7 @@ AuthenticatorAttestationResponse::AuthenticatorAttestationResponse(
 
 AuthenticatorAttestationResponse::~AuthenticatorAttestationResponse() {}
 
-DEFINE_TRACE(AuthenticatorAttestationResponse) {
+void AuthenticatorAttestationResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(attestation_object_);
   AuthenticatorResponse::Trace(visitor);
 }

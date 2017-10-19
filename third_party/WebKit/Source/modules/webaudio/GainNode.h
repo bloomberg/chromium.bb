@@ -75,7 +75,7 @@ class GainNode final : public AudioNode {
   static GainNode* Create(BaseAudioContext*,
                           const GainOptions&,
                           ExceptionState&);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   AudioParam* gain() const;
 

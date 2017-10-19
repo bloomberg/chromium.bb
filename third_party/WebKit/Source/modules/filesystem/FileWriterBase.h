@@ -48,7 +48,7 @@ class FileWriterBase : public GarbageCollectedMixin {
   long long position() const { return position_; }
   long long length() const { return length_; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   FileWriterBase();

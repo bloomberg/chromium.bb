@@ -61,7 +61,7 @@ void PlatformEventDispatcher::NotifyControllers() {
   }
 }
 
-DEFINE_TRACE(PlatformEventDispatcher) {
+void PlatformEventDispatcher::Trace(blink::Visitor* visitor) {
   visitor->Trace(controllers_);
 }
 

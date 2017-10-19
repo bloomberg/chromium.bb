@@ -18,7 +18,7 @@ VideoTrack::VideoTrack(const String& id,
 
 VideoTrack::~VideoTrack() {}
 
-DEFINE_TRACE(VideoTrack) {
+void VideoTrack::Trace(blink::Visitor* visitor) {
   TrackBase::Trace(visitor);
 }
 

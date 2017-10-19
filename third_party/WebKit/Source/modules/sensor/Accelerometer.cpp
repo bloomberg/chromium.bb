@@ -42,7 +42,7 @@ double Accelerometer::z(bool& is_null) const {
   return proxy()->reading().accel.z;
 }
 
-DEFINE_TRACE(Accelerometer) {
+void Accelerometer::Trace(blink::Visitor* visitor) {
   Sensor::Trace(visitor);
 }
 

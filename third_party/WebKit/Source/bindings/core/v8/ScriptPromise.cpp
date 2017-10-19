@@ -54,7 +54,7 @@ class PromiseAllHandler final
     return (new PromiseAllHandler(script_state, promises))->resolver_.Promise();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  private:
   class AdapterFunction : public ScriptFunction {
@@ -73,7 +73,7 @@ class PromiseAllHandler final
       return self->BindToV8Function();
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {
+    virtual void Trace(blink::Visitor* visitor) {
       visitor->Trace(handler_);
       ScriptFunction::Trace(visitor);
     }

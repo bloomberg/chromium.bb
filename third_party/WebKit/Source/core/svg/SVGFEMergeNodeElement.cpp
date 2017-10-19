@@ -30,7 +30,7 @@ inline SVGFEMergeNodeElement::SVGFEMergeNodeElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-DEFINE_TRACE(SVGFEMergeNodeElement) {
+void SVGFEMergeNodeElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(in1_);
   SVGElement::Trace(visitor);
 }

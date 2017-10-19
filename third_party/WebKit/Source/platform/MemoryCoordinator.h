@@ -65,7 +65,7 @@ class PLATFORM_EXPORT MemoryCoordinator final
 
   void OnPurgeMemory();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   friend class Internals;

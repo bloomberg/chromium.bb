@@ -18,7 +18,7 @@ class LinearAccelerationSensor final : public Accelerometer {
                                           ExceptionState&);
   static LinearAccelerationSensor* Create(ExecutionContext*, ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   LinearAccelerationSensor(ExecutionContext*,

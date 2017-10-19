@@ -80,7 +80,7 @@ class CORE_EXPORT DataObjectItem
   bool HasFileSystemId() const;
   String FileSystemId() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum DataSource {

@@ -215,7 +215,7 @@ LocalFrame::~LocalFrame() {
   DCHECK(!view_);
 }
 
-DEFINE_TRACE(LocalFrame) {
+void LocalFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(probe_sink_);
   visitor->Trace(performance_monitor_);
   visitor->Trace(idleness_detector_);

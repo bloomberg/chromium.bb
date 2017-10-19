@@ -46,7 +46,7 @@ class PositionError final : public GarbageCollectedFinalized<PositionError>,
   static PositionError* Create(ErrorCode code, const String& message) {
     return new PositionError(code, message);
   }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   ErrorCode code() const { return code_; }
   const String& message() const { return message_; }

@@ -45,7 +45,7 @@ String TaskAttributionTiming::containerName() const {
   return container_name_;
 }
 
-DEFINE_TRACE(TaskAttributionTiming) {
+void TaskAttributionTiming::Trace(blink::Visitor* visitor) {
   PerformanceEntry::Trace(visitor);
 }
 

@@ -620,7 +620,7 @@ const AtomicString& HTMLTableElement::Summary() const {
   return getAttribute(summaryAttr);
 }
 
-DEFINE_TRACE(HTMLTableElement) {
+void HTMLTableElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(shared_cell_style_);
   HTMLElement::Trace(visitor);
 }

@@ -37,7 +37,7 @@ class GlobalIndexedDBImpl final
     return idb_factory_;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(idb_factory_);
     Supplement<T>::Trace(visitor);
   }

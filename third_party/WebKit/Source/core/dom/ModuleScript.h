@@ -63,7 +63,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   const TextPosition& StartPosition() const { return start_position_; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

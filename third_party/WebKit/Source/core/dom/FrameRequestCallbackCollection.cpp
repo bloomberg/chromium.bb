@@ -80,7 +80,7 @@ void FrameRequestCallbackCollection::ExecuteCallbacks(
   callbacks_to_invoke_.clear();
 }
 
-DEFINE_TRACE(FrameRequestCallbackCollection) {
+void FrameRequestCallbackCollection::Trace(blink::Visitor* visitor) {
   visitor->Trace(callbacks_);
   visitor->Trace(callbacks_to_invoke_);
   visitor->Trace(context_);
@@ -97,7 +97,8 @@ FrameRequestCallbackCollection::V8FrameCallback::V8FrameCallback(
     V8FrameRequestCallback* callback)
     : callback_(callback) {}
 
-DEFINE_TRACE(FrameRequestCallbackCollection::V8FrameCallback) {
+void FrameRequestCallbackCollection::V8FrameCallback::Trace(
+    blink::Visitor* visitor) {
   visitor->Trace(callback_);
   FrameRequestCallbackCollection::FrameCallback::Trace(visitor);
 }

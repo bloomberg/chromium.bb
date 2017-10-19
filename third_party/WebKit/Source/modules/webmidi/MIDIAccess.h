@@ -127,7 +127,7 @@ class MIDIAccess final : public EventTargetWithInlineData,
   // Eager finalization needed to promptly release m_accessor. Otherwise
   // its client back reference could end up being unsafely used during
   // the lazy sweeping phase.
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MIDIAccess(std::unique_ptr<MIDIAccessor>,

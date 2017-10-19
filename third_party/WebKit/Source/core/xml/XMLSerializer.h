@@ -37,7 +37,7 @@ class XMLSerializer final : public GarbageCollected<XMLSerializer>,
 
   String serializeToString(Node*);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   XMLSerializer() {}

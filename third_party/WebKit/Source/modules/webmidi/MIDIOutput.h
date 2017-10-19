@@ -61,7 +61,7 @@ class MIDIOutput final : public MIDIPort {
   void send(NotShared<DOMUint8Array>, ExceptionState&);
   void send(Vector<unsigned>, ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   MIDIOutput(MIDIAccess*,

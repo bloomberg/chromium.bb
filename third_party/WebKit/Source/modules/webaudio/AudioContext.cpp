@@ -119,7 +119,7 @@ AudioContext::~AudioContext() {
 #endif
 }
 
-DEFINE_TRACE(AudioContext) {
+void AudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(close_resolver_);
   BaseAudioContext::Trace(visitor);
 }

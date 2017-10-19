@@ -55,7 +55,7 @@ HeapVector<Member<USBInterface>> USBConfiguration::interfaces() const {
   return interfaces;
 }
 
-DEFINE_TRACE(USBConfiguration) {
+void USBConfiguration::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);
 }
 

@@ -60,7 +60,7 @@ class CORE_EXPORT IdleSpellCheckCallback final
   void SkipColdModeTimerForTesting();
   int IdleCallbackHandle() const { return idle_callback_handle_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit IdleSpellCheckCallback(LocalFrame&);

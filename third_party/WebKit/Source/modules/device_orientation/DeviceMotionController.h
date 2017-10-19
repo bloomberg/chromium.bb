@@ -27,7 +27,7 @@ class MODULES_EXPORT DeviceMotionController final
   void DidAddEventListener(LocalDOMWindow*,
                            const AtomicString& event_type) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit DeviceMotionController(Document&);

@@ -252,7 +252,7 @@ void V8V0CustomElementLifecycleCallbacks::Call(
                                receiver, 0, 0, isolate);
 }
 
-DEFINE_TRACE(V8V0CustomElementLifecycleCallbacks) {
+void V8V0CustomElementLifecycleCallbacks::Trace(blink::Visitor* visitor) {
   V0CustomElementLifecycleCallbacks::Trace(visitor);
 }
 

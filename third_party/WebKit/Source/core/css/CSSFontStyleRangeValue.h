@@ -52,7 +52,7 @@ class CSSFontStyleRangeValue final : public CSSValue {
 
   bool Equals(const CSSFontStyleRangeValue&) const;
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSFontStyleRangeValue(const CSSIdentifierValue& font_style_value,

@@ -92,7 +92,7 @@ void SVGUseElement::Dispose() {
   SetDocumentResource(nullptr);
 }
 
-DEFINE_TRACE(SVGUseElement) {
+void SVGUseElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(x_);
   visitor->Trace(y_);
   visitor->Trace(width_);
