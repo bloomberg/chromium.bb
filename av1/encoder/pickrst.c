@@ -626,14 +626,13 @@ static double search_sgrproj(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
   // tile at a time.
   const AV1_COMMON *const cm = &cpi->common;
 #if CONFIG_HIGHBITDEPTH
-  if (cm->use_highbitdepth)
-    extend_frame_highbd(CONVERT_TO_SHORTPTR(ctxt.dgd_buffer), ctxt.plane_width,
-                        ctxt.plane_height, ctxt.dgd_stride, SGRPROJ_BORDER_HORZ,
-                        SGRPROJ_BORDER_VERT);
-  else
+  const int highbd = cm->use_highbitdepth;
+#else
+  const int highbd = 0;
 #endif
-    extend_frame(ctxt.dgd_buffer, ctxt.plane_width, ctxt.plane_height,
-                 ctxt.dgd_stride, SGRPROJ_BORDER_HORZ, SGRPROJ_BORDER_VERT);
+  extend_frame(ctxt.dgd_buffer, ctxt.plane_width, ctxt.plane_height,
+               ctxt.dgd_stride, SGRPROJ_BORDER_HORZ, SGRPROJ_BORDER_VERT,
+               highbd);
 
   for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
     for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
@@ -1237,14 +1236,12 @@ static double search_wiener(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi,
 // Note use this border to gather stats even though the actual filter
 // may use less border on the top/bottom of a processing unit.
 #if CONFIG_HIGHBITDEPTH
-  if (cm->use_highbitdepth)
-    extend_frame_highbd(CONVERT_TO_SHORTPTR(ctxt.dgd_buffer), ctxt.plane_width,
-                        ctxt.plane_height, ctxt.dgd_stride, WIENER_HALFWIN,
-                        WIENER_HALFWIN);
-  else
+  const int highbd = cm->use_highbitdepth;
+#else
+  const int highbd = 0;
 #endif
-    extend_frame(ctxt.dgd_buffer, ctxt.plane_width, ctxt.plane_height,
-                 ctxt.dgd_stride, WIENER_HALFWIN, WIENER_HALFWIN);
+  extend_frame(ctxt.dgd_buffer, ctxt.plane_width, ctxt.plane_height,
+               ctxt.dgd_stride, WIENER_HALFWIN, WIENER_HALFWIN, highbd);
 
   // Compute best Wiener filters for each rtile, one (encoder/decoder)
   // tile at a time.

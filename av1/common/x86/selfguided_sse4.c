@@ -60,9 +60,9 @@ static void calc_block(__m128i sum, __m128i sum_sq, __m128i n,
   _mm_storeu_si128((__m128i *)&B[idx], b_res);
 }
 
-static void selfguided_restoration_1_v(uint8_t *src, int width, int height,
-                                       int src_stride, int32_t *A, int32_t *B,
-                                       int buf_stride) {
+static void selfguided_restoration_1_v(const uint8_t *src, int width,
+                                       int height, int src_stride, int32_t *A,
+                                       int32_t *B, int buf_stride) {
   int i, j;
 
   // Vertical sum
@@ -234,9 +234,9 @@ static void selfguided_restoration_1_h(int32_t *A, int32_t *B, int width,
   }
 }
 
-static void selfguided_restoration_2_v(uint8_t *src, int width, int height,
-                                       int src_stride, int32_t *A, int32_t *B,
-                                       int buf_stride) {
+static void selfguided_restoration_2_v(const uint8_t *src, int width,
+                                       int height, int src_stride, int32_t *A,
+                                       int32_t *B, int buf_stride) {
   int i, j;
 
   // Vertical sum
@@ -435,9 +435,9 @@ static void selfguided_restoration_2_h(int32_t *A, int32_t *B, int width,
   }
 }
 
-static void selfguided_restoration_3_v(uint8_t *src, int width, int height,
-                                       int src_stride, int32_t *A, int32_t *B,
-                                       int buf_stride) {
+static void selfguided_restoration_3_v(const uint8_t *src, int width,
+                                       int height, int src_stride, int32_t *A,
+                                       int32_t *B, int buf_stride) {
   int i, j;
 
   // Vertical sum over 7-pixel regions, 4 columns at a time
@@ -664,8 +664,8 @@ static void selfguided_restoration_3_h(int32_t *A, int32_t *B, int width,
   }
 }
 
-void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
-                                       int dgd_stride, int32_t *dst,
+void av1_selfguided_restoration_sse4_1(const uint8_t *dgd, int width,
+                                       int height, int dgd_stride, int32_t *dst,
                                        int dst_stride, int r, int eps) {
   DECLARE_ALIGNED(16, int32_t, A_[RESTORATION_PROC_UNIT_PELS]);
   DECLARE_ALIGNED(16, int32_t, B_[RESTORATION_PROC_UNIT_PELS]);
@@ -682,7 +682,8 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
 
-  uint8_t *dgd0 = dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
+  const uint8_t *dgd0 =
+      dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
   if (r == 1) {
     selfguided_restoration_1_v(dgd0, width_ext, height_ext, dgd_stride, A, B,
                                buf_stride);
@@ -894,9 +895,9 @@ void av1_selfguided_restoration_sse4_1(uint8_t *dgd, int width, int height,
   }
 }
 
-void av1_highpass_filter_sse4_1(uint8_t *dgd, int width, int height, int stride,
-                                int32_t *dst, int dst_stride, int corner,
-                                int edge) {
+void av1_highpass_filter_sse4_1(const uint8_t *dgd, int width, int height,
+                                int stride, int32_t *dst, int dst_stride,
+                                int corner, int edge) {
   int i, j;
   const int center = (1 << SGRPROJ_RST_BITS) - 4 * (corner + edge);
 
@@ -1055,9 +1056,9 @@ void av1_highpass_filter_sse4_1(uint8_t *dgd, int width, int height, int stride,
   }
 }
 
-void apply_selfguided_restoration_sse4_1(uint8_t *dat, int width, int height,
-                                         int stride, int eps, int *xqd,
-                                         uint8_t *dst, int dst_stride,
+void apply_selfguided_restoration_sse4_1(const uint8_t *dat, int width,
+                                         int height, int stride, int eps,
+                                         int *xqd, uint8_t *dst, int dst_stride,
                                          int32_t *tmpbuf) {
   int xq[2];
   int32_t *flt1 = tmpbuf;
@@ -1136,7 +1137,7 @@ void apply_selfguided_restoration_sse4_1(uint8_t *dat, int width, int height,
 #if CONFIG_HIGHBITDEPTH
 // Only the vertical sums need to be adjusted for highbitdepth
 
-static void highbd_selfguided_restoration_1_v(uint16_t *src, int width,
+static void highbd_selfguided_restoration_1_v(const uint16_t *src, int width,
                                               int height, int src_stride,
                                               int32_t *A, int32_t *B,
                                               int buf_stride) {
@@ -1193,7 +1194,7 @@ static void highbd_selfguided_restoration_1_v(uint16_t *src, int width,
   }
 }
 
-static void highbd_selfguided_restoration_2_v(uint16_t *src, int width,
+static void highbd_selfguided_restoration_2_v(const uint16_t *src, int width,
                                               int height, int src_stride,
                                               int32_t *A, int32_t *B,
                                               int buf_stride) {
@@ -1273,7 +1274,7 @@ static void highbd_selfguided_restoration_2_v(uint16_t *src, int width,
   }
 }
 
-static void highbd_selfguided_restoration_3_v(uint16_t *src, int width,
+static void highbd_selfguided_restoration_3_v(const uint16_t *src, int width,
                                               int height, int src_stride,
                                               int32_t *A, int32_t *B,
                                               int buf_stride) {
@@ -1371,7 +1372,7 @@ static void highbd_selfguided_restoration_3_v(uint16_t *src, int width,
   }
 }
 
-void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
+void av1_selfguided_restoration_highbd_sse4_1(const uint16_t *dgd, int width,
                                               int height, int dgd_stride,
                                               int32_t *dst, int dst_stride,
                                               int bit_depth, int r, int eps) {
@@ -1390,7 +1391,8 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
   // Don't filter tiles with dimensions < 5 on any axis
   if ((width < 5) || (height < 5)) return;
 
-  uint16_t *dgd0 = dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
+  const uint16_t *dgd0 =
+      dgd - dgd_stride * SGRPROJ_BORDER_VERT - SGRPROJ_BORDER_HORZ;
   if (r == 1) {
     highbd_selfguided_restoration_1_v(dgd0, width_ext, height_ext, dgd_stride,
                                       A, B, buf_stride);
@@ -1605,9 +1607,9 @@ void av1_selfguided_restoration_highbd_sse4_1(uint16_t *dgd, int width,
   }
 }
 
-void av1_highpass_filter_highbd_sse4_1(uint16_t *dgd, int width, int height,
-                                       int stride, int32_t *dst, int dst_stride,
-                                       int corner, int edge) {
+void av1_highpass_filter_highbd_sse4_1(const uint16_t *dgd, int width,
+                                       int height, int stride, int32_t *dst,
+                                       int dst_stride, int corner, int edge) {
   int i, j;
   const int center = (1 << SGRPROJ_RST_BITS) - 4 * (corner + edge);
 
@@ -1737,8 +1739,8 @@ void av1_highpass_filter_highbd_sse4_1(uint16_t *dgd, int width, int height,
 }
 
 void apply_selfguided_restoration_highbd_sse4_1(
-    uint16_t *dat, int width, int height, int stride, int bit_depth, int eps,
-    int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf) {
+    const uint16_t *dat, int width, int height, int stride, int bit_depth,
+    int eps, int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf) {
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
