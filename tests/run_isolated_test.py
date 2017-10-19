@@ -474,6 +474,8 @@ class RunIsolatedTest(RunIsolatedTestBase):
       fs.rmtree(unicode(workdir))
 
   def test_main_naked_with_packages(self):
+    self.mock(cipd, 'get_platform', lambda: 'linux-amd64')
+
     pins = {
       '': [
         ('infra/data/x', 'badc0fee'*5),
@@ -536,7 +538,7 @@ class RunIsolatedTest(RunIsolatedTestBase):
     # Test cipd client cache. `git:wowza` was a tag and so is cacheable.
     self.assertEqual(len(os.listdir(os.path.join(cipd_cache, 'versions'))), 2)
     version_file = unicode(os.path.join(
-        cipd_cache, 'versions', '633d2aa4119cc66803f1600f9c4d85ce0e0581b5'))
+        cipd_cache, 'versions', '765a0de4c618f91faf923cb68a47bb564aed412d'))
     self.assertTrue(fs.isfile(version_file))
     with open(version_file) as f:
       self.assertEqual(f.read(), 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa')

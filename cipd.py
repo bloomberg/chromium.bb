@@ -381,8 +381,8 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
   # Is it an instance id already? They look like HEX SHA1.
   if isolated_format.is_valid_hash(version, hashlib.sha1):
     instance_id = version
-  elif ':' in version: # it's an immutable tag
-    # version_cache is {version_digest -> instance id} mapping.
+  elif ':' in version:  # it's an immutable tag, cache the resolved version
+    # version_cache is {hash(package_name, tag) -> instance id} mapping.
     # It does not take a lot of disk space.
     version_cache = isolateserver.DiskCache(
         unicode(os.path.join(cache_dir, 'versions')),
@@ -391,9 +391,10 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
         trim=True)
     with version_cache:
       version_cache.cleanup()
-      # Convert |version| to a string that may be used as a filename in disk
-      # cache by hashing it.
-      version_digest = hashlib.sha1(version).hexdigest()
+      # Convert (package_name, version) to a string that may be used as a
+      # filename in disk cache by hashing it.
+      version_digest = hashlib.sha1(
+          '%s\n%s' % (package_name, version)).hexdigest()
       try:
         with version_cache.getfileobj(version_digest) as f:
           instance_id = f.read()
@@ -401,7 +402,7 @@ def get_client(service_url, package_name, version, cache_dir, timeout=None):
         instance_id = resolve_version(
             service_url, package_name, version, timeout=timeoutfn())
         version_cache.write(version_digest, instance_id)
-  else: # it's a ref
+  else:  # it's a ref, hit the backend
     instance_id = resolve_version(
         service_url, package_name, version, timeout=timeoutfn())
 
