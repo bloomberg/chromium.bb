@@ -23,6 +23,7 @@
 #include "content/browser/download/download_utils.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_features.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "mojo/public/c/system/types.h"
@@ -227,6 +228,7 @@ DownloadFileImpl::DownloadFileImpl(
       record_stream_bandwidth_(false),
       bytes_seen_with_parallel_streams_(0),
       bytes_seen_without_parallel_streams_(0),
+      is_paused_(false),
       observer_(observer),
       weak_factory_(this) {
   download_item_net_log.AddEvent(
@@ -504,15 +506,34 @@ bool DownloadFileImpl::InProgress() const {
   return file_.in_progress();
 }
 
-void DownloadFileImpl::WasPaused() {
+void DownloadFileImpl::Pause() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_paused_ = true;
   record_stream_bandwidth_ = false;
 }
 
-// TODO(qinmin): This only works with byte stream now, need to handle callback
-// from data pipe.
+void DownloadFileImpl::Resume() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(is_paused_);
+  is_paused_ = false;
+
+  if (!base::FeatureList::IsEnabled(features::kNetworkService))
+    return;
+
+  for (auto& stream : source_streams_) {
+    SourceStream* source_stream = stream.second.get();
+    if (!source_stream->is_finished()) {
+      StreamActive(source_stream, MOJO_RESULT_OK);
+    }
+  }
+}
+
 void DownloadFileImpl::StreamActive(SourceStream* source_stream,
                                     MojoResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  if (base::FeatureList::IsEnabled(features::kNetworkService) && is_paused_)
+    return;
+
   base::TimeTicks start(base::TimeTicks::Now());
   base::TimeTicks now;
   scoped_refptr<net::IOBuffer> incoming_data;
