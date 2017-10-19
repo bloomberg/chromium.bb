@@ -48,7 +48,7 @@ void FillShaderVariableProto(
   proto->set_precision(variable.precision);
   proto->set_name(variable.name);
   proto->set_mapped_name(variable.mappedName);
-  proto->set_array_size(variable.arraySize);
+  proto->set_array_size(variable.getOutermostArraySize());
   proto->set_static_use(variable.staticUse);
   for (size_t ii = 0; ii < variable.fields.size(); ++ii) {
     ShaderVariableProto* field = proto->add_fields();
@@ -140,7 +140,7 @@ void RetrieveShaderVariableInfo(
   variable->precision = proto.precision();
   variable->name = proto.name();
   variable->mappedName = proto.mapped_name();
-  variable->arraySize = proto.array_size();
+  variable->setArraySize(proto.array_size());
   variable->staticUse = proto.static_use();
   variable->fields.resize(proto.fields_size());
   for (int ii = 0; ii < proto.fields_size(); ++ii)
