@@ -523,6 +523,39 @@ const GoogleConfigParams kGoogleConfigs[] = {
     {"ad.doubleclick.net", false, false, false},
     {"drive.google.com", false, false, false},
     {"redirector.googlevideo.com", false, false, false},
+
+    // Third-party domains that have been approved for use within Google's
+    // server-side Domain Reliablity infrastructure.
+    //
+    // DO NOT ADD TO THIS WITHOUT APPROVAL FROM juliatuttle@.
+    //
+    // This is intended as a short-term stopgap to assess server-side data
+    // handling for domains that may one day use Network Error Logging with a
+    // third-party collector.
+    //
+    // To prevent this from being used too heavily, this list is limited to the
+    // initial 16 origins, and will be removed in January 2018, around three
+    // months after it was added.
+    //
+    // include_origin_specific_collector is set so that Domain Reliability will
+    // provide full URLs in at least some report uploads, which will be
+    // redirected from the same origin to Google's servers.
+    {"wistia.com", true, true, false},
+    {"wistia.net", true, true, false},
+    {"wistia.land", true, true, false},
+    {"embedwistia-a.akamaihd.net", true, true, false},
+    {"wayfair.co.uk", true, true, false},
+    {"dwellstudio.com", true, true, false},
+    {"csnstores.com", true, true, false},
+    {"jossandmain.com", true, true, false},
+    {"secure.img2.wfcdn.com", true, true, false},
+    {"secure.img3.wfcdn.com", true, true, false},
+    {"birchlane.com", true, true, false},
+    {"allmodern.com", true, true, false},
+    {"perigold.com", true, true, false},
+    {"wayfairsupply.com", true, true, false},
+    {"wayfair.ca", true, true, false},
+    {"wayfair.de", true, true, false},
 };
 
 const char* const kGoogleStandardCollectors[] = {
