@@ -113,8 +113,8 @@ WebKeyboardEvent WebKeyboardEventBuilder::Build(
 
 WebMouseEvent WebMouseEventBuilder::Build(WebInputEvent::Type type,
                                           double time_sec,
-                                          int window_x,
-                                          int window_y,
+                                          float window_x,
+                                          float window_y,
                                           int modifiers,
                                           int click_count,
                                           int pointer_id,
@@ -156,8 +156,8 @@ WebMouseWheelEvent WebMouseWheelEventBuilder::Build(float ticks_x,
                                                     float ticks_y,
                                                     float tick_multiplier,
                                                     double time_sec,
-                                                    int window_x,
-                                                    int window_y) {
+                                                    float window_x,
+                                                    float window_y) {
   WebMouseWheelEvent result(WebInputEvent::kMouseWheel,
                             WebInputEvent::kNoModifiers, time_sec);
   result.SetPositionInWidget(window_x, window_y);

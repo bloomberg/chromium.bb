@@ -157,25 +157,25 @@ class CONTENT_EXPORT DelegatedFrameHost
   // Returns a null SurfaceId if this DelegatedFrameHost has not yet created
   // a compositor Surface.
   viz::SurfaceId SurfaceIdAtPoint(viz::SurfaceHittestDelegate* delegate,
-                                  const gfx::Point& point,
-                                  gfx::Point* transformed_point);
+                                  const gfx::PointF& point,
+                                  gfx::PointF* transformed_point);
 
   // Given the SurfaceID of a Surface that is contained within this class'
   // Surface, find the relative transform between the Surfaces and apply it
   // to a point. Returns false if a Surface has not yet been created or if
   // |original_surface| is not embedded within our current Surface.
-  bool TransformPointToLocalCoordSpace(const gfx::Point& point,
+  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
                                        const viz::SurfaceId& original_surface,
-                                       gfx::Point* transformed_point);
+                                       gfx::PointF* transformed_point);
 
   // Given a RenderWidgetHostViewBase that renders to a Surface that is
   // contained within this class' Surface, find the relative transform between
   // the Surfaces and apply it to a point. Returns false if a Surface has not
   // yet been created or if |target_view| is not a descendant RWHV from our
   // client.
-  bool TransformPointToCoordSpaceForView(const gfx::Point& point,
+  bool TransformPointToCoordSpaceForView(const gfx::PointF& point,
                                          RenderWidgetHostViewBase* target_view,
-                                         gfx::Point* transformed_point);
+                                         gfx::PointF* transformed_point);
 
   void SetNeedsBeginFrames(bool needs_begin_frames);
   void DidNotProduceFrame(const viz::BeginFrameAck& ack);

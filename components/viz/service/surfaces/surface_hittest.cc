@@ -55,7 +55,7 @@ bool SurfaceHittest::GetTransformToTargetSurface(
 bool SurfaceHittest::TransformPointToTargetSurface(
     const SurfaceId& original_surface_id,
     const SurfaceId& target_surface_id,
-    gfx::Point* point) {
+    gfx::PointF* point) {
   gfx::Transform transform;
   // Two possibilities need to be considered: original_surface_id can be
   // embedded in target_surface_id, or vice versa.

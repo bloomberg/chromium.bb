@@ -229,7 +229,7 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
   // not what sites expect. The delta is computed in the
   // ModifyEventMovementAndCoords function.
   global_mouse_position_ = unlocked_global_mouse_position_;
-  window_->MoveCursorTo(unlocked_mouse_position_);
+  window_->MoveCursorTo(gfx::ToFlooredPoint(unlocked_mouse_position_));
 
   aura::client::CursorClient* cursor_client =
       aura::client::GetCursorClient(root_window);
@@ -819,8 +819,10 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
   // We do not measure movement as the delta from cursor to center because
   // we may receive more mouse movement events before our warp has taken
   // effect.
-  event->movement_x = event->PositionInScreen().x - global_mouse_position_.x();
-  event->movement_y = event->PositionInScreen().y - global_mouse_position_.y();
+  event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x -
+                                        global_mouse_position_.x());
+  event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y -
+                                        global_mouse_position_.y());
 
   global_mouse_position_.SetPoint(event->PositionInScreen().x,
                                   event->PositionInScreen().y);
@@ -861,8 +863,8 @@ void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
 bool RenderWidgetHostViewEventHandler::ShouldMoveToCenter() {
   gfx::Rect rect = window_->bounds();
   rect = delegate_->ConvertRectToScreen(rect);
-  int border_x = rect.width() * kMouseLockBorderPercentage / 100;
-  int border_y = rect.height() * kMouseLockBorderPercentage / 100;
+  float border_x = rect.width() * kMouseLockBorderPercentage / 100.0;
+  float border_y = rect.height() * kMouseLockBorderPercentage / 100.0;
 
   return global_mouse_position_.x() < rect.x() + border_x ||
          global_mouse_position_.x() > rect.right() - border_x ||

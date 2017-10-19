@@ -20,8 +20,8 @@ class WebMouseEventBuilder {
  public:
   static blink::WebMouseEvent Build(blink::WebInputEvent::Type type,
                                     double time_sec,
-                                    int window_x,
-                                    int window_y,
+                                    float window_x,
+                                    float window_y,
                                     int modifiers,
                                     int click_count,
                                     int pointer_id,
@@ -39,8 +39,8 @@ class WebMouseWheelEventBuilder {
                                          float ticks_y,
                                          float tick_multiplier,
                                          double time_sec,
-                                         int window_x,
-                                         int window_y);
+                                         float window_x,
+                                         float window_y);
 };
 
 class CONTENT_EXPORT WebKeyboardEventBuilder {

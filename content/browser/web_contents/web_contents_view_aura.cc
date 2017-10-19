@@ -573,7 +573,7 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
   if (rwhv)
     rwhv->SetSize(size);
 }
-
+// TODO(eirage) remove DND events coordinates trunction.
 void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
                                   blink::WebDragOperationsMask ops) {
   drag_start_process_id_ = ChildProcessHost::kInvalidUniqueID;
@@ -584,8 +584,9 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
     return;
 
   aura::Window* window = GetContentNativeView();
-  gfx::Point screen_loc = display::Screen::GetScreen()->GetCursorScreenPoint();
-  gfx::Point client_loc = screen_loc;
+  gfx::PointF screen_loc =
+      gfx::PointF(display::Screen::GetScreen()->GetCursorScreenPoint());
+  gfx::PointF client_loc = screen_loc;
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(window->GetRootWindow());
   if (screen_position_client)
@@ -593,8 +594,8 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
 
   // |client_loc| and |screen_loc| are in the root coordinate space, for
   // non-root RenderWidgetHosts they need to be transformed.
-  gfx::Point transformed_point = client_loc;
-  gfx::Point transformed_screen_point = screen_loc;
+  gfx::PointF transformed_point = client_loc;
+  gfx::PointF transformed_screen_point = screen_loc;
   if (source_rwh && web_contents_->GetRenderWidgetHostView()) {
     static_cast<RenderWidgetHostViewBase*>(
         web_contents_->GetRenderWidgetHostView())
@@ -610,10 +611,11 @@ void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
             &transformed_screen_point);
   }
 
-  web_contents_->DragSourceEndedAt(transformed_point.x(), transformed_point.y(),
-                                   transformed_screen_point.x(),
-                                   transformed_screen_point.y(), ops,
-                                   source_rwh);
+  web_contents_->DragSourceEndedAt(
+      gfx::ToFlooredInt(transformed_point.x()),
+      gfx::ToFlooredInt(transformed_point.y()),
+      gfx::ToFlooredInt(transformed_screen_point.x()),
+      gfx::ToFlooredInt(transformed_screen_point.y()), ops, source_rwh);
 
   web_contents_->SystemDragEnded(source_rwh);
 }
@@ -1229,16 +1231,17 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
   if (!IsValidDragTarget(target_rwh))
     return ui::DragDropTypes::DRAG_NONE;
 
-  gfx::Point screen_pt = event.root_location();
+  gfx::PointF screen_pt = event.root_location_f();
   if (target_rwh != current_rwh_for_drag_.get()) {
     if (current_rwh_for_drag_) {
-      gfx::Point transformed_leave_point = event.location();
-      gfx::Point transformed_screen_point = screen_pt;
+      gfx::PointF transformed_leave_point = event.location_f();
+      gfx::PointF transformed_screen_point = screen_pt;
       static_cast<RenderWidgetHostViewBase*>(
           web_contents_->GetRenderWidgetHostView())
           ->TransformPointToCoordSpaceForView(
-              event.location(), static_cast<RenderWidgetHostViewBase*>(
-                                    current_rwh_for_drag_->GetView()),
+              event.location_f(),
+              static_cast<RenderWidgetHostViewBase*>(
+                  current_rwh_for_drag_->GetView()),
               &transformed_leave_point);
       static_cast<RenderWidgetHostViewBase*>(
           web_contents_->GetRenderWidgetHostView())
@@ -1246,8 +1249,9 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
               screen_pt, static_cast<RenderWidgetHostViewBase*>(
                              current_rwh_for_drag_->GetView()),
               &transformed_screen_point);
-      current_rwh_for_drag_->DragTargetDragLeave(transformed_leave_point,
-                                                 transformed_screen_point);
+      current_rwh_for_drag_->DragTargetDragLeave(
+          gfx::ToFlooredPoint(transformed_leave_point),
+          gfx::ToFlooredPoint(transformed_screen_point));
     }
     OnDragEntered(event);
   }
@@ -1257,7 +1261,7 @@ int WebContentsViewAura::OnDragUpdated(const ui::DropTargetEvent& event) {
 
   blink::WebDragOperationsMask op = ConvertToWeb(event.source_operations());
   target_rwh->DragTargetDragOver(
-      transformed_pt, screen_pt, op,
+      transformed_pt, gfx::ToFlooredPoint(screen_pt), op,
       ConvertAuraEventFlagsToWebInputEventModifiers(event.flags()));
 
   if (drag_dest_delegate_)

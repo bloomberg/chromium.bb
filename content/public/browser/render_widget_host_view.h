@@ -14,6 +14,7 @@
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {
@@ -79,13 +80,15 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // the top-level frame's renderer this is a no-op as they are already
   // properly transformed; however, coordinates received from an out-of-process
   // iframe renderer process require transformation.
-  virtual gfx::Point TransformPointToRootCoordSpace(
-      const gfx::Point& point) = 0;
-
-  // A floating point variant of the above. PointF values will be snapped to
-  // integral points before transformation.
   virtual gfx::PointF TransformPointToRootCoordSpaceF(
       const gfx::PointF& point) = 0;
+
+  // A int point variant of the above. Use float version to transform,
+  // then rounded back to int point.
+  gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) {
+    return gfx::ToRoundedPoint(
+        TransformPointToRootCoordSpaceF(gfx::PointF(point)));
+  }
 
   // Retrieves the native view used to contain plugins and identify the
   // renderer in IPC messages.

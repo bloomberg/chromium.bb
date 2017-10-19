@@ -225,11 +225,11 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // While the mouse is locked, they store the last known position just as mouse
   // lock was entered.
   // Relative to the upper-left corner of the view.
-  gfx::Point unlocked_mouse_position_;
+  gfx::PointF unlocked_mouse_position_;
   // Relative to the upper-left corner of the screen.
-  gfx::Point unlocked_global_mouse_position_;
+  gfx::PointF unlocked_global_mouse_position_;
   // Last cursor position relative to screen. Used to compute movementX/Y.
-  gfx::Point global_mouse_position_;
+  gfx::PointF global_mouse_position_;
   // In mouse locked mode, we synthetically move the mouse cursor to the center
   // of the window when it reaches the window borders to avoid it going outside.
   // This flag is used to differentiate between these synthetic mouse move
