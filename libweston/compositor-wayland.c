@@ -1376,17 +1376,21 @@ wayland_output_create_for_parent_output(struct wayland_backend *b,
 	output->base.scale = 1;
 	output->base.transform = WL_OUTPUT_TRANSFORM_NORMAL;
 
-	if (wayland_output_set_size(&output->base, mode->width, mode->height) < 0)
-		goto out;
-
-	output->mode = *mode;
 	output->parent.output = poutput->global;
 
 	output->base.make = poutput->physical.make;
 	output->base.model = poutput->physical.model;
+	output->base.mm_width = poutput->physical.width;
+	output->base.mm_height = poutput->physical.height;
 
 	wl_list_insert_list(&output->base.mode_list, &poutput->mode_list);
 	wl_list_init(&poutput->mode_list);
+
+	/* No other mode should have CURRENT already. */
+	mode->flags |= WL_OUTPUT_MODE_CURRENT;
+	output->base.current_mode = mode;
+
+	/* output->mode is unused in this path. */
 
 	weston_compositor_add_pending_output(&output->base, b->compositor);
 
