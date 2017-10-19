@@ -181,7 +181,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   // the display resolution so that the caller needs to show a notification in
   // case the new resolution actually doesn't work.
   bool SetDisplayMode(int64_t display_id,
-                      const scoped_refptr<ManagedDisplayMode>& display_mode);
+                      const ManagedDisplayMode& display_mode);
 
   // Register per display properties.
   // |overscan_insets| is null if the display has no custom overscan insets.
@@ -212,21 +212,21 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
     return registered_internal_display_rotation_;
   }
 
-  // Returns the display mode of |display_id| which is currently used.
-  scoped_refptr<ManagedDisplayMode> GetActiveModeForDisplayId(
-      int64_t display_id) const;
+  // Fills in the display |mode| currently in use in |display_id| if found,
+  // returning true in that case, otherwise false.
+  bool GetActiveModeForDisplayId(int64_t display_id,
+                                 ManagedDisplayMode* mode) const;
 
-  // Returns the display's selected mode.
-  scoped_refptr<ManagedDisplayMode> GetSelectedModeForDisplayId(
-      int64_t display_id) const;
+  // Returns true and fills in the display's selected |mode| if found, or false.
+  bool GetSelectedModeForDisplayId(int64_t display_id,
+                                   ManagedDisplayMode* mode) const;
 
   // Sets the selected mode of |display_id| to |display_mode| if it's a
   // supported mode. This doesn't trigger reconfiguration or observers
   // notifications. This is suitable to be used from within an observer
   // notification to prevent reentrance to UpdateDisplaysWith().
-  void SetSelectedModeForDisplayId(
-      int64_t display_id,
-      const scoped_refptr<ManagedDisplayMode>& display_mode);
+  void SetSelectedModeForDisplayId(int64_t display_id,
+                                   const ManagedDisplayMode& display_mode);
 
   // Tells if the virtual resolution feature is enabled.
   bool IsDisplayUIScalingEnabled() const;
@@ -480,7 +480,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
   std::map<int64_t, ManagedDisplayInfo> display_info_;
 
   // Selected display modes for displays. Key is the displays' ID.
-  std::map<int64_t, scoped_refptr<ManagedDisplayMode>> display_modes_;
+  std::map<int64_t, ManagedDisplayMode> display_modes_;
 
   // When set to true, the host window's resize event updates the display's
   // size. This is set to true when running on desktop environment (for

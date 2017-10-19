@@ -333,21 +333,24 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
 
   // Set the display mode.
   if (info.display_mode) {
-    scoped_refptr<display::ManagedDisplayMode> current_mode =
-        display_manager->GetActiveModeForDisplayId(id);
+    display::ManagedDisplayMode current_mode;
+    if (!display_manager->GetActiveModeForDisplayId(id, &current_mode)) {
+      *error = "Unable to find the active mode for display id " +
+               base::Int64ToString(id);
+      return false;
+    }
     // Copy properties not set in the UI from the current mode.
     gfx::Size size(info.display_mode->width_in_native_pixels,
                    info.display_mode->height_in_native_pixels);
 
     // NB: info.display_mode is neither a display::ManagedDisplayMode or a
     // display::DisplayMode.
-    scoped_refptr<display::ManagedDisplayMode> new_mode(
-        new display::ManagedDisplayMode(
-            size, current_mode->refresh_rate(), current_mode->is_interlaced(),
-            info.display_mode->is_native, info.display_mode->ui_scale,
-            info.display_mode->device_scale_factor));
+    display::ManagedDisplayMode new_mode(
+        size, current_mode.refresh_rate(), current_mode.is_interlaced(),
+        info.display_mode->is_native, info.display_mode->ui_scale,
+        info.display_mode->device_scale_factor);
 
-    if (new_mode->IsEquivalent(current_mode)) {
+    if (new_mode.IsEquivalent(current_mode)) {
       *error = "Display mode matches current mode.";
       return false;
     }
@@ -372,21 +375,26 @@ bool ValidateParamsForDisplay(const system_display::DisplayProperties& info,
 system_display::DisplayMode GetDisplayMode(
     display::DisplayManager* display_manager,
     const display::ManagedDisplayInfo& display_info,
-    const scoped_refptr<display::ManagedDisplayMode>& display_mode) {
+    const display::ManagedDisplayMode& display_mode) {
   system_display::DisplayMode result;
 
   bool is_internal = display::Display::HasInternalDisplay() &&
                      display::Display::InternalDisplayId() == display_info.id();
-  gfx::Size size_dip = display_mode->GetSizeInDIP(is_internal);
+  gfx::Size size_dip = display_mode.GetSizeInDIP(is_internal);
   result.width = size_dip.width();
   result.height = size_dip.height();
-  result.width_in_native_pixels = display_mode->size().width();
-  result.height_in_native_pixels = display_mode->size().height();
-  result.ui_scale = display_mode->ui_scale();
-  result.device_scale_factor = display_mode->device_scale_factor();
-  result.is_native = display_mode->native();
-  result.is_selected = display_mode->IsEquivalent(
-      display_manager->GetActiveModeForDisplayId(display_info.id()));
+  result.width_in_native_pixels = display_mode.size().width();
+  result.height_in_native_pixels = display_mode.size().height();
+  result.ui_scale = display_mode.ui_scale();
+  result.device_scale_factor = display_mode.device_scale_factor();
+  result.is_native = display_mode.native();
+
+  display::ManagedDisplayMode mode;
+  const bool success =
+      display_manager->GetActiveModeForDisplayId(display_info.id(), &mode);
+  DCHECK(success);
+  result.is_selected = display_mode.IsEquivalent(mode);
+
   return result;
 }
 
@@ -620,7 +628,7 @@ void DisplayInfoProviderChromeOS::UpdateDisplayUnitInfoForPlatform(
   unit->overscan.right = overscan_insets.right();
   unit->overscan.bottom = overscan_insets.bottom();
 
-  for (const scoped_refptr<display::ManagedDisplayMode>& display_mode :
+  for (const display::ManagedDisplayMode& display_mode :
        display_info.display_modes()) {
     unit->modes.push_back(
         GetDisplayMode(display_manager, display_info, display_mode));

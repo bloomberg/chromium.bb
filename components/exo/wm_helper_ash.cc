@@ -127,8 +127,8 @@ double WMHelperAsh::GetDefaultDeviceScaleFactor() const {
   const display::ManagedDisplayInfo& display_info =
       display_manager->GetDisplayInfo(display::Display::InternalDisplayId());
   for (auto& mode : display_info.display_modes()) {
-    if (mode->is_default())
-      return mode->device_scale_factor();
+    if (mode.is_default())
+      return mode.device_scale_factor();
   }
 
   NOTREACHED();

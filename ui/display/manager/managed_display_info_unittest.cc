@@ -13,10 +13,9 @@ std::string GetModeSizeInDIP(const gfx::Size& size,
                              float device_scale_factor,
                              float ui_scale,
                              bool is_internal) {
-  scoped_refptr<ManagedDisplayMode> mode = new ManagedDisplayMode(
-      size, 0.0 /* refresh_rate */, false /* interlaced */, false /* native */,
-      ui_scale, device_scale_factor);
-  return mode->GetSizeInDIP(is_internal).ToString();
+  ManagedDisplayMode mode(size, 0.0 /* refresh_rate */, false /* interlaced */,
+                          false /* native */, ui_scale, device_scale_factor);
+  return mode.GetSizeInDIP(is_internal).ToString();
 }
 
 }  // namespace
@@ -63,29 +62,29 @@ TEST_F(DisplayInfoTest, CreateFromSpec) {
   EXPECT_EQ("0,0 200x200", info.bounds_in_native().ToString());
   EXPECT_EQ(5u, info.display_modes().size());
   // Modes are sorted in DIP for external display.
-  EXPECT_EQ("150x100", info.display_modes()[0]->size().ToString());
-  EXPECT_EQ("100x100", info.display_modes()[1]->size().ToString());
-  EXPECT_EQ("150x150", info.display_modes()[2]->size().ToString());
-  EXPECT_EQ("200x200", info.display_modes()[3]->size().ToString());
-  EXPECT_EQ("300x200", info.display_modes()[4]->size().ToString());
+  EXPECT_EQ("150x100", info.display_modes()[0].size().ToString());
+  EXPECT_EQ("100x100", info.display_modes()[1].size().ToString());
+  EXPECT_EQ("150x150", info.display_modes()[2].size().ToString());
+  EXPECT_EQ("200x200", info.display_modes()[3].size().ToString());
+  EXPECT_EQ("300x200", info.display_modes()[4].size().ToString());
 
-  EXPECT_EQ(0.0f, info.display_modes()[0]->refresh_rate());
-  EXPECT_EQ(60.0f, info.display_modes()[1]->refresh_rate());
-  EXPECT_EQ(30.0f, info.display_modes()[2]->refresh_rate());
-  EXPECT_EQ(59.9f, info.display_modes()[3]->refresh_rate());
-  EXPECT_EQ(0.0f, info.display_modes()[4]->refresh_rate());
+  EXPECT_EQ(0.0f, info.display_modes()[0].refresh_rate());
+  EXPECT_EQ(60.0f, info.display_modes()[1].refresh_rate());
+  EXPECT_EQ(30.0f, info.display_modes()[2].refresh_rate());
+  EXPECT_EQ(59.9f, info.display_modes()[3].refresh_rate());
+  EXPECT_EQ(0.0f, info.display_modes()[4].refresh_rate());
 
-  EXPECT_EQ(2.0f, info.display_modes()[0]->device_scale_factor());
-  EXPECT_EQ(1.0f, info.display_modes()[1]->device_scale_factor());
-  EXPECT_EQ(1.25f, info.display_modes()[2]->device_scale_factor());
-  EXPECT_EQ(1.0f, info.display_modes()[3]->device_scale_factor());
-  EXPECT_EQ(1.0f, info.display_modes()[4]->device_scale_factor());
+  EXPECT_EQ(2.0f, info.display_modes()[0].device_scale_factor());
+  EXPECT_EQ(1.0f, info.display_modes()[1].device_scale_factor());
+  EXPECT_EQ(1.25f, info.display_modes()[2].device_scale_factor());
+  EXPECT_EQ(1.0f, info.display_modes()[3].device_scale_factor());
+  EXPECT_EQ(1.0f, info.display_modes()[4].device_scale_factor());
 
-  EXPECT_FALSE(info.display_modes()[0]->native());
-  EXPECT_FALSE(info.display_modes()[1]->native());
-  EXPECT_FALSE(info.display_modes()[2]->native());
-  EXPECT_FALSE(info.display_modes()[3]->native());
-  EXPECT_TRUE(info.display_modes()[4]->native());
+  EXPECT_FALSE(info.display_modes()[0].native());
+  EXPECT_FALSE(info.display_modes()[1].native());
+  EXPECT_FALSE(info.display_modes()[2].native());
+  EXPECT_FALSE(info.display_modes()[3].native());
+  EXPECT_TRUE(info.display_modes()[4].native());
 }
 
 TEST_F(DisplayInfoTest, ManagedDisplayModeGetSizeInDIPNormal) {
