@@ -26,10 +26,18 @@
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
+#include "content/public/common/page_zoom.h"
+#include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view.h"
+#include "gin/data_object_builder.h"
+#include "gin/handle.h"
+#include "gin/object_template_builder.h"
+#include "gin/wrappable.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 #include "third_party/WebKit/public/web/WebView.h"
@@ -39,6 +47,21 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 #include "v8/include/v8.h"
+
+namespace internal {  // for testing.
+
+// Returns an array with the RGBA color components.
+v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
+                                      const RGBAColor& color) {
+  v8::Local<v8::Array> color_array = v8::Array::New(isolate, 4);
+  color_array->Set(0, v8::Int32::New(isolate, color.r));
+  color_array->Set(1, v8::Int32::New(isolate, color.g));
+  color_array->Set(2, v8::Int32::New(isolate, color.b));
+  color_array->Set(3, v8::Int32::New(isolate, color.a));
+  return color_array;
+}
+
+}  // namespace internal
 
 namespace {
 
@@ -66,64 +89,47 @@ const char kThemeAttributionFormat[] = "-webkit-image-set("
 const char kLTRHtmlTextDirection[] = "ltr";
 const char kRTLHtmlTextDirection[] = "rtl";
 
-// Converts a V8 value to a string16.
-base::string16 V8ValueToUTF16(v8::Local<v8::Value> v) {
-  v8::String::Value s(v);
-  return base::string16(reinterpret_cast<const base::char16*>(*s), s.length());
-}
-
-// Converts string16 to V8 String.
-v8::Local<v8::String> UTF16ToV8String(v8::Isolate* isolate,
-                                       const base::string16& s) {
-  return v8::String::NewFromTwoByte(isolate,
-                                    reinterpret_cast<const uint16_t*>(s.data()),
-                                    v8::String::kNormalString,
-                                    s.size());
-}
-
-// Converts std::string to V8 String.
-v8::Local<v8::String> UTF8ToV8String(v8::Isolate* isolate,
-                                      const std::string& s) {
-  return v8::String::NewFromUtf8(
-      isolate, s.data(), v8::String::kNormalString, s.size());
-}
-
-// Throws a TypeError on the current V8 context if the args are invalid.
-void ThrowInvalidParameters(const v8::FunctionCallbackInfo<v8::Value>& args) {
-  v8::Isolate* isolate = args.GetIsolate();
-  isolate->ThrowException(v8::Exception::TypeError(
-      v8::String::NewFromUtf8(isolate, "Invalid parameters")));
-}
-
 void Dispatch(blink::WebLocalFrame* frame, const blink::WebString& script) {
-  if (!frame) return;
+  if (!frame)
+    return;
   frame->ExecuteScript(blink::WebScriptSource(script));
 }
 
-v8::Local<v8::String> GenerateThumbnailURL(
-    v8::Isolate* isolate,
-    int render_view_id,
-    InstantRestrictedID most_visited_item_id) {
-  return UTF8ToV8String(
-      isolate,
-      base::StringPrintf(
-          "chrome-search://thumb/%d/%d", render_view_id, most_visited_item_id));
+std::string GenerateThumbnailURL(int render_view_id,
+                                 InstantRestrictedID most_visited_item_id) {
+  return base::StringPrintf("chrome-search://thumb/%d/%d", render_view_id,
+                            most_visited_item_id);
 }
 
-v8::Local<v8::String> GenerateThumb2URL(v8::Isolate* isolate,
-                                        const GURL& page_url,
-                                        const GURL& fallback_thumb_url) {
-  return UTF8ToV8String(isolate,
-                        base::StringPrintf("chrome-search://thumb2/%s?fb=%s",
-                                           page_url.spec().c_str(),
-                                           fallback_thumb_url.spec().c_str()));
+std::string GenerateThumb2URL(const GURL& page_url,
+                              const GURL& fallback_thumb_url) {
+  return base::StringPrintf("chrome-search://thumb2/%s?fb=%s",
+                            page_url.spec().c_str(),
+                            fallback_thumb_url.spec().c_str());
 }
 
-// Populates a Javascript MostVisitedItem object from |mv_item|.
-// NOTE: Includes "url", "title" and "domain" which are private data, so should
-// not be returned to the Instant page. These should be erased before returning
-// the object. See GetMostVisitedItemsWrapper() in searchbox_api.js.
+// Populates a Javascript MostVisitedItem object for returning from
+// newTabPage.mostVisited. This does not include private data such as "url" or
+// "title".
 v8::Local<v8::Object> GenerateMostVisitedItem(
+    v8::Isolate* isolate,
+    float device_pixel_ratio,
+    int render_view_id,
+    InstantRestrictedID restricted_id) {
+  return gin::DataObjectBuilder(isolate)
+      .Set("rid", restricted_id)
+      .Set("faviconUrl", base::StringPrintf(
+                             "chrome-search://favicon/size/16@%fx/%d/%d",
+                             device_pixel_ratio, render_view_id, restricted_id))
+      .Build();
+}
+
+// Populates a Javascript MostVisitedItem object appropriate for returning from
+// newTabPage.getMostVisitedItemData.
+// NOTE: Includes private data such as "url", "title", and "domain", so this
+// should not be returned to the host page (via newTabPage.mostVisited). It is
+// only accessible to most-visited iframes via getMostVisitedItemData.
+v8::Local<v8::Object> GenerateMostVisitedItemData(
     v8::Isolate* isolate,
     int render_view_id,
     InstantRestrictedID restricted_id,
@@ -145,107 +151,198 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
   else
     direction = kLTRHtmlTextDirection;
 
-  base::string16 title = mv_item.title;
+  std::string title = base::UTF16ToUTF8(mv_item.title);
   if (title.empty())
-    title = base::UTF8ToUTF16(mv_item.url.spec());
-
-  v8::Local<v8::Object> obj = v8::Object::New(isolate);
-  obj->Set(v8::String::NewFromUtf8(isolate, "renderViewId"),
-           v8::Int32::New(isolate, render_view_id));
-  obj->Set(v8::String::NewFromUtf8(isolate, "rid"),
-           v8::Int32::New(isolate, restricted_id));
+    title = mv_item.url.spec();
 
   // If the suggestion already has a suggested thumbnail, we create a thumbnail
   // URL with both the local thumbnail and the proposed one as a fallback.
   // Otherwise, we just pass on the generated one.
-  obj->Set(v8::String::NewFromUtf8(isolate, "thumbnailUrl"),
-           mv_item.thumbnail.is_valid()
-               ? GenerateThumb2URL(isolate, mv_item.url, mv_item.thumbnail)
-               : GenerateThumbnailURL(isolate, render_view_id, restricted_id));
+  std::string thumbnail_url =
+      mv_item.thumbnail.is_valid()
+          ? GenerateThumb2URL(mv_item.url, mv_item.thumbnail)
+          : GenerateThumbnailURL(render_view_id, restricted_id);
+
+  gin::DataObjectBuilder builder(isolate);
+  builder.Set("renderViewId", render_view_id)
+      .Set("rid", restricted_id)
+      .Set("thumbnailUrl", thumbnail_url)
+      .Set("tileTitleSource", static_cast<int>(mv_item.title_source))
+      .Set("tileSource", static_cast<int>(mv_item.source))
+      .Set("title", title)
+      .Set("domain", mv_item.url.host())
+      .Set("direction", base::StringPiece(direction))
+      .Set("url", mv_item.url.spec())
+      .Set("dataGenerationTime",
+           mv_item.data_generation_time.is_null()
+               ? v8::Local<v8::Value>(v8::Null(isolate))
+               : v8::Date::New(isolate,
+                               mv_item.data_generation_time.ToJsTime()));
 
   // If the suggestion already has a favicon, we populate the element with it.
-  if (!mv_item.favicon.spec().empty()) {
-    obj->Set(v8::String::NewFromUtf8(isolate, "faviconUrl"),
-             UTF8ToV8String(isolate, mv_item.favicon.spec()));
-  }
+  if (!mv_item.favicon.spec().empty())
+    builder.Set("faviconUrl", mv_item.favicon.spec());
 
-  obj->Set(v8::String::NewFromUtf8(isolate, "tileTitleSource"),
-           v8::Integer::New(isolate, static_cast<int>(mv_item.title_source)));
-  obj->Set(v8::String::NewFromUtf8(isolate, "tileSource"),
-           v8::Integer::New(isolate, static_cast<int>(mv_item.source)));
-  obj->Set(v8::String::NewFromUtf8(isolate, "title"),
-           UTF16ToV8String(isolate, title));
-  obj->Set(v8::String::NewFromUtf8(isolate, "domain"),
-           UTF8ToV8String(isolate, mv_item.url.host()));
-  obj->Set(v8::String::NewFromUtf8(isolate, "direction"),
-           v8::String::NewFromUtf8(isolate, direction));
-  obj->Set(v8::String::NewFromUtf8(isolate, "url"),
-           UTF8ToV8String(isolate, mv_item.url.spec()));
-  obj->Set(
-      v8::String::NewFromUtf8(isolate, "dataGenerationTime"),
-      mv_item.data_generation_time.is_null()
-          ? v8::Local<v8::Value>(v8::Null(isolate))
-          : v8::Date::New(isolate, mv_item.data_generation_time.ToJsTime()));
-  return obj;
-}
-
-// Returns the main frame of the render frame for the current JS context if it
-// matches |origin|, otherwise returns NULL. Used to restrict methods that
-// access suggestions and most visited data to pages with origin
-// chrome-search://most-visited and chrome-search://suggestions.
-content::RenderFrame* GetRenderFrameWithCheckedOrigin(const GURL& origin) {
-  blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::FrameForCurrentContext();
-  if (!webframe)
-    return NULL;
-  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->LocalRoot());
-  if (!main_frame || !main_frame->IsMainFrame())
-    return NULL;
-
-  GURL url(webframe->GetDocument().Url());
-  if (url.GetOrigin() != origin.GetOrigin())
-    return NULL;
-
-  return main_frame;
+  return builder.Build();
 }
 
 base::Time ConvertDateValueToTime(v8::Value* value) {
   DCHECK(value);
-  if (value->IsNull())
+  if (value->IsNull() || !value->IsDate())
     return base::Time();
 
-  DCHECK(value->IsDate());
   return base::Time::FromJsTime(v8::Date::Cast(value)->ValueOf());
 }
 
-}  // namespace
+v8::Local<v8::Object> GenerateThemeBackgroundInfo(
+    v8::Isolate* isolate,
+    const ThemeBackgroundInfo& theme_info) {
+  gin::DataObjectBuilder builder(isolate);
 
-namespace internal {  // for testing.
+  builder.Set("usingDefaultTheme", theme_info.using_default_theme);
 
-// Returns an array with the RGBA color components.
-v8::Local<v8::Value> RGBAColorToArray(v8::Isolate* isolate,
-                                       const RGBAColor& color) {
-  v8::Local<v8::Array> color_array = v8::Array::New(isolate, 4);
-  color_array->Set(0, v8::Int32::New(isolate, color.r));
-  color_array->Set(1, v8::Int32::New(isolate, color.g));
-  color_array->Set(2, v8::Int32::New(isolate, color.b));
-  color_array->Set(3, v8::Int32::New(isolate, color.a));
-  return color_array;
+  // The theme background color is in RGBA format "rgba(R,G,B,A)" where R, G and
+  // B are between 0 and 255 inclusive, and A is a double between 0 and 1
+  // inclusive.
+  // This is the CSS "background-color" format.
+  // Value is always valid.
+  // TODO(jfweitz): Remove this field after GWS is modified to use the new
+  // backgroundColorRgba field.
+  builder.Set(
+      "colorRgba",
+      // Convert the alpha using DoubleToString because StringPrintf will
+      // use locale specific formatters (e.g., use , instead of . in
+      // German).
+      base::StringPrintf(
+          kCSSBackgroundColorFormat, theme_info.background_color.r,
+          theme_info.background_color.g, theme_info.background_color.b,
+          base::DoubleToString(theme_info.background_color.a / 255.0).c_str()));
+
+  // Theme color for background as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("backgroundColorRgba",
+              internal::RGBAColorToArray(isolate, theme_info.background_color));
+
+  // Theme color for text as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("textColorRgba",
+              internal::RGBAColorToArray(isolate, theme_info.text_color));
+
+  // Theme color for links as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("linkColorRgba",
+              internal::RGBAColorToArray(isolate, theme_info.link_color));
+
+  // Theme color for light text as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("textColorLightRgba",
+              internal::RGBAColorToArray(isolate, theme_info.text_color_light));
+
+  // Theme color for header as an array with the RGBA components in order.
+  // Value is always valid.
+  builder.Set("headerColorRgba",
+              internal::RGBAColorToArray(isolate, theme_info.header_color));
+
+  // Theme color for section border as an array with the RGBA components in
+  // order. Value is always valid.
+  builder.Set(
+      "sectionBorderColorRgba",
+      internal::RGBAColorToArray(isolate, theme_info.section_border_color));
+
+  // The theme alternate logo value indicates a white logo when TRUE and a
+  // colorful one when FALSE.
+  builder.Set("alternateLogo", theme_info.logo_alternate);
+
+  // The theme background image url is of format kCSSBackgroundImageFormat
+  // where both instances of "%s" are replaced with the id that identifies the
+  // theme.
+  // This is the CSS "background-image" format.
+  // Value is only valid if there's a custom theme background image.
+  if (crx_file::id_util::IdIsValid(theme_info.theme_id)) {
+    builder.Set("imageUrl", base::StringPrintf(kCSSBackgroundImageFormat,
+                                               theme_info.theme_id.c_str(),
+                                               theme_info.theme_id.c_str()));
+
+    // The theme background image horizontal alignment is one of "left",
+    // "right", "center".
+    // This is the horizontal component of the CSS "background-position" format.
+    // Value is only valid if |imageUrl| is not empty.
+    std::string alignment = kCSSBackgroundPositionCenter;
+    if (theme_info.image_horizontal_alignment ==
+        THEME_BKGRND_IMAGE_ALIGN_LEFT) {
+      alignment = kCSSBackgroundPositionLeft;
+    } else if (theme_info.image_horizontal_alignment ==
+               THEME_BKGRND_IMAGE_ALIGN_RIGHT) {
+      alignment = kCSSBackgroundPositionRight;
+    }
+    builder.Set("imageHorizontalAlignment", alignment);
+
+    // The theme background image vertical alignment is one of "top", "bottom",
+    // "center".
+    // This is the vertical component of the CSS "background-position" format.
+    // Value is only valid if |image_url| is not empty.
+    if (theme_info.image_vertical_alignment == THEME_BKGRND_IMAGE_ALIGN_TOP) {
+      alignment = kCSSBackgroundPositionTop;
+    } else if (theme_info.image_vertical_alignment ==
+               THEME_BKGRND_IMAGE_ALIGN_BOTTOM) {
+      alignment = kCSSBackgroundPositionBottom;
+    } else {
+      alignment = kCSSBackgroundPositionCenter;
+    }
+    builder.Set("imageVerticalAlignment", alignment);
+
+    // The tiling of the theme background image is one of "no-repeat",
+    // "repeat-x", "repeat-y", "repeat".
+    // This is the CSS "background-repeat" format.
+    // Value is only valid if |image_url| is not empty.
+    std::string tiling = kCSSBackgroundRepeatNo;
+    switch (theme_info.image_tiling) {
+      case THEME_BKGRND_IMAGE_NO_REPEAT:
+        tiling = kCSSBackgroundRepeatNo;
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT_X:
+        tiling = kCSSBackgroundRepeatX;
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT_Y:
+        tiling = kCSSBackgroundRepeatY;
+        break;
+      case THEME_BKGRND_IMAGE_REPEAT:
+        tiling = kCSSBackgroundRepeat;
+        break;
+    }
+    builder.Set("imageTiling", tiling);
+
+    // The theme background image height is only valid if |imageUrl| is valid.
+    builder.Set("imageHeight", static_cast<int>(theme_info.image_height));
+
+    // The attribution URL is only valid if the theme has attribution logo.
+    if (theme_info.has_attribution) {
+      builder.Set("attributionUrl",
+                  base::StringPrintf(kThemeAttributionFormat,
+                                     theme_info.theme_id.c_str(),
+                                     theme_info.theme_id.c_str()));
+    }
+  }
+
+  return builder.Build();
 }
 
-// Resolves a possibly relative URL using the current URL.
-GURL ResolveURL(const GURL& current_url,
-                const base::string16& possibly_relative_url) {
-  if (current_url.is_valid() && !possibly_relative_url.empty())
-    return current_url.Resolve(possibly_relative_url);
-  return GURL(possibly_relative_url);
+content::RenderFrame* GetMainFrame(content::RenderFrame* render_frame) {
+  if (!render_frame)
+    return nullptr;
+  content::RenderFrame* main_frame = content::RenderFrame::FromWebFrame(
+      render_frame->GetWebFrame()->LocalRoot());
+  if (!main_frame || !main_frame->IsMainFrame())
+    return nullptr;
+  return main_frame;
 }
 
-}  // namespace internal
-
-namespace extensions_v8 {
-
-static const char kSearchBoxExtensionName[] = "v8/EmbeddedSearch";
+SearchBox* GetSearchBox(content::RenderFrame* render_frame) {
+  content::RenderFrame* main_frame = GetMainFrame(render_frame);
+  if (!main_frame)
+    return nullptr;
+  return SearchBox::Get(main_frame);
+}
 
 static const char kDispatchChromeIdentityCheckResult[] =
     "if (window.chrome &&"
@@ -337,99 +434,361 @@ static const char kDispatchThemeChangeEventScript[] =
 
 // ----------------------------------------------------------------------------
 
-class SearchBoxExtensionWrapper : public v8::Extension {
+class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings>,
+                          public content::RenderFrameObserver {
  public:
-  explicit SearchBoxExtensionWrapper(const base::StringPiece& code);
+  static gin::WrapperInfo kWrapperInfo;
 
-  // Allows v8's javascript code to call the native functions defined
-  // in this class for window.chrome.
-  v8::Local<v8::FunctionTemplate> GetNativeFunctionTemplate(
-      v8::Isolate*,
-      v8::Local<v8::String> name) override;
-
-  // Helper function to find the main RenderFrame. May return NULL.
-  static content::RenderFrame* GetRenderFrame();
-
-  // Sends a Chrome identity check to the browser.
-  static void CheckIsUserSignedInToChromeAs(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Checks whether the user syncs their history.
-  static void CheckIsUserSyncingHistory(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Deletes a Most Visited item.
-  static void DeleteMostVisitedItem(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets Most Visited Items.
-  static void GetMostVisitedItems(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets the raw data for a most visited item including its raw URL.
-  // GetRenderFrameWithCheckedOrigin() enforces that only code in the origin
-  // chrome-search://most-visited can call this function.
-  static void GetMostVisitedItemData(
-    const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Returns true if the Chrome UI is rendered right-to-left.
-  static void GetRightToLeft(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets the background info of the theme currently adopted by browser.
-  // Call only when overlay is showing NTP page.
-  static void GetThemeBackgroundInfo(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets whether the omnibox has focus or not.
-  static void IsFocused(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets whether user input is in progress.
-  static void IsInputInProgress(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Gets whether the browser is capturing key strokes.
-  static void IsKeyCaptureEnabled(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Logs information from the NTP.
-  static void LogEvent(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Logs an impression on one of the Most Visited tile on the NTP.
-  static void LogMostVisitedImpression(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Logs a navigation on one of the Most Visited tile on the NTP.
-  static void LogMostVisitedNavigation(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Pastes provided value or clipboard's content into the omnibox.
-  static void Paste(const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Start capturing user key strokes.
-  static void StartCapturingKeyStrokes(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Stop capturing user key strokes.
-  static void StopCapturingKeyStrokes(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Undoes the deletion of all Most Visited itens.
-  static void UndoAllMostVisitedDeletions(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
-
-  // Undoes the deletion of a Most Visited item.
-  static void UndoMostVisitedDeletion(
-      const v8::FunctionCallbackInfo<v8::Value>& args);
+  explicit SearchBoxBindings(content::RenderFrame* render_frame);
+  ~SearchBoxBindings() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(SearchBoxExtensionWrapper);
+  // gin::Wrappable.
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) final;
+
+  // content::RenderFrameObserver:
+  void OnDestruct() override;
+
+  bool GetRightToLeft();
+  bool IsFocused();
+  bool IsKeyCaptureEnabled();
+  void Paste(const std::string& text);
+  void StartCapturingKeyStrokes();
+  void StopCapturingKeyStrokes();
+
+  DISALLOW_COPY_AND_ASSIGN(SearchBoxBindings);
 };
 
+gin::WrapperInfo SearchBoxBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
+
+SearchBoxBindings::SearchBoxBindings(content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame) {}
+
+SearchBoxBindings::~SearchBoxBindings() = default;
+
+gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
+    v8::Isolate* isolate) {
+  return gin::Wrappable<SearchBoxBindings>::GetObjectTemplateBuilder(isolate)
+      .SetProperty("rtl", &SearchBoxBindings::GetRightToLeft)
+      .SetProperty("isFocused", &SearchBoxBindings::IsFocused)
+      .SetProperty("isKeyCaptureEnabled",
+                   &SearchBoxBindings::IsKeyCaptureEnabled)
+      .SetMethod("paste", &SearchBoxBindings::Paste)
+      .SetMethod("startCapturingKeyStrokes",
+                 &SearchBoxBindings::StartCapturingKeyStrokes)
+      .SetMethod("stopCapturingKeyStrokes",
+                 &SearchBoxBindings::StopCapturingKeyStrokes);
+}
+
+void SearchBoxBindings::OnDestruct() {}
+
+bool SearchBoxBindings::GetRightToLeft() {
+  return base::i18n::IsRTL();
+}
+
+bool SearchBoxBindings::IsFocused() {
+  const SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return false;
+  return search_box->is_focused();
+}
+
+bool SearchBoxBindings::IsKeyCaptureEnabled() {
+  const SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return false;
+  return search_box->is_key_capture_enabled();
+}
+
+void SearchBoxBindings::Paste(const std::string& text) {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->Paste(base::UTF8ToUTF16(text));
+}
+
+void SearchBoxBindings::StartCapturingKeyStrokes() {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->StartCapturingKeyStrokes();
+}
+
+void SearchBoxBindings::StopCapturingKeyStrokes() {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->StopCapturingKeyStrokes();
+}
+
+class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings>,
+                           public content::RenderFrameObserver {
+ public:
+  static gin::WrapperInfo kWrapperInfo;
+
+  explicit NewTabPageBindings(content::RenderFrame* render_frame);
+  ~NewTabPageBindings() override;
+
+ private:
+  // gin::Wrappable.
+  gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
+      v8::Isolate* isolate) final;
+
+  // content::RenderFrameObserver:
+  void OnDestruct() override;
+
+  bool HasOrigin(const GURL& origin) const;
+
+  bool IsInputInProgress();
+  v8::Local<v8::Value> GetMostVisited(v8::Isolate* isolate);
+  v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
+
+  void CheckIsUserSignedInToChromeAs(const std::string& identity);
+  void CheckIsUserSyncingHistory();
+  void DeleteMostVisitedItem(int rid);
+  v8::Local<v8::Value> GetMostVisitedItemData(v8::Isolate* isolate, int rid);
+  void LogEvent(int event);
+  void LogMostVisitedImpression(int position,
+                                int tile_title_source,
+                                int tile_source,
+                                int tile_type,
+                                v8::Local<v8::Value> data_generation_time);
+  void LogMostVisitedNavigation(int position,
+                                int tile_title_source,
+                                int tile_source,
+                                int tile_type,
+                                v8::Local<v8::Value> data_generation_time);
+  void UndoAllMostVisitedDeletions();
+  void UndoMostVisitedDeletion(int rid);
+
+  DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
+};
+
+gin::WrapperInfo NewTabPageBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
+
+NewTabPageBindings::NewTabPageBindings(content::RenderFrame* render_frame)
+    : content::RenderFrameObserver(render_frame) {}
+
+NewTabPageBindings::~NewTabPageBindings() = default;
+
+gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
+    v8::Isolate* isolate) {
+  return gin::Wrappable<NewTabPageBindings>::GetObjectTemplateBuilder(isolate)
+      .SetProperty("isInputInProgress", &NewTabPageBindings::IsInputInProgress)
+      .SetProperty("mostVisited", &NewTabPageBindings::GetMostVisited)
+      .SetProperty("themeBackgroundInfo",
+                   &NewTabPageBindings::GetThemeBackgroundInfo)
+      .SetMethod("checkIsUserSignedIntoChromeAs",
+                 &NewTabPageBindings::CheckIsUserSignedInToChromeAs)
+      .SetMethod("checkIsUserSyncingHistory",
+                 &NewTabPageBindings::CheckIsUserSyncingHistory)
+      .SetMethod("deleteMostVisitedItem",
+                 &NewTabPageBindings::DeleteMostVisitedItem)
+      .SetMethod("getMostVisitedItemData",
+                 &NewTabPageBindings::GetMostVisitedItemData)
+      .SetMethod("logEvent", &NewTabPageBindings::LogEvent)
+      .SetMethod("logMostVisitedImpression",
+                 &NewTabPageBindings::LogMostVisitedImpression)
+      .SetMethod("logMostVisitedNavigation",
+                 &NewTabPageBindings::LogMostVisitedNavigation)
+      .SetMethod("undoAllMostVisitedDeletions",
+                 &NewTabPageBindings::UndoAllMostVisitedDeletions)
+      .SetMethod("undoMostVisitedDeletion",
+                 &NewTabPageBindings::UndoMostVisitedDeletion);
+}
+
+void NewTabPageBindings::OnDestruct() {}
+
+bool NewTabPageBindings::HasOrigin(const GURL& origin) const {
+  if (!render_frame())
+    return false;
+  GURL url(render_frame()->GetWebFrame()->GetDocument().Url());
+  return url.GetOrigin() == origin.GetOrigin();
+}
+
+bool NewTabPageBindings::IsInputInProgress() {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return false;
+  return search_box->is_input_in_progress();
+}
+
+v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
+  const SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return v8::Null(isolate);
+
+  content::RenderView* render_view = render_frame()->GetRenderView();
+
+  // This corresponds to "window.devicePixelRatio" in JavaScript.
+  float zoom_factor =
+      content::ZoomLevelToZoomFactor(render_view->GetZoomLevel());
+  float device_pixel_ratio = render_view->GetDeviceScaleFactor() * zoom_factor;
+
+  int render_view_id =
+      GetMainFrame(render_frame())->GetRenderView()->GetRoutingID();
+
+  std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
+  search_box->GetMostVisitedItems(&instant_mv_items);
+  v8::Local<v8::Object> v8_mv_items =
+      v8::Array::New(isolate, instant_mv_items.size());
+  for (size_t i = 0; i < instant_mv_items.size(); ++i) {
+    InstantRestrictedID rid = instant_mv_items[i].first;
+    v8_mv_items->Set(i, GenerateMostVisitedItem(isolate, device_pixel_ratio,
+                                                render_view_id, rid));
+  }
+  return v8_mv_items;
+}
+
+v8::Local<v8::Value> NewTabPageBindings::GetThemeBackgroundInfo(
+    v8::Isolate* isolate) {
+  const SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return v8::Null(isolate);
+  const ThemeBackgroundInfo& theme_info = search_box->GetThemeBackgroundInfo();
+  return GenerateThemeBackgroundInfo(isolate, theme_info);
+}
+
+void NewTabPageBindings::CheckIsUserSignedInToChromeAs(
+    const std::string& identity) {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->CheckIsUserSignedInToChromeAs(base::UTF8ToUTF16(identity));
+}
+
+void NewTabPageBindings::CheckIsUserSyncingHistory() {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->CheckIsUserSyncingHistory();
+}
+
+void NewTabPageBindings::DeleteMostVisitedItem(int rid) {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->DeleteMostVisitedItem(rid);
+}
+
+v8::Local<v8::Value> NewTabPageBindings::GetMostVisitedItemData(
+    v8::Isolate* isolate,
+    int rid) {
+  const SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return v8::Null(isolate);
+
+  InstantMostVisitedItem item;
+  if (!search_box->GetMostVisitedItemWithID(rid, &item))
+    return v8::Null(isolate);
+
+  int render_view_id =
+      GetMainFrame(render_frame())->GetRenderView()->GetRoutingID();
+  return GenerateMostVisitedItemData(isolate, render_view_id, rid, item);
+}
+
+void NewTabPageBindings::LogEvent(int event) {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
+                       HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
+    return;
+  }
+  if (event <= NTP_EVENT_TYPE_LAST)
+    search_box->LogEvent(static_cast<NTPLoggingEventType>(event));
+}
+
+void NewTabPageBindings::LogMostVisitedImpression(
+    int position,
+    int tile_title_source,
+    int tile_source,
+    int tile_type,
+    v8::Local<v8::Value> data_generation_time) {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return;
+
+  if (tile_title_source <= static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
+      tile_source <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
+      tile_type <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+    const ntp_tiles::NTPTileImpression impression(
+        position, static_cast<ntp_tiles::TileSource>(tile_source),
+        static_cast<ntp_tiles::TileTitleSource>(tile_title_source),
+        static_cast<ntp_tiles::TileVisualType>(tile_type),
+        ConvertDateValueToTime(*data_generation_time),
+        /*url_for_rappor=*/GURL());
+    search_box->LogMostVisitedImpression(impression);
+  }
+}
+
+void NewTabPageBindings::LogMostVisitedNavigation(
+    int position,
+    int tile_title_source,
+    int tile_source,
+    int tile_type,
+    v8::Local<v8::Value> data_generation_time) {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
+    return;
+
+  if (tile_title_source <= static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
+      tile_source <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
+      tile_type <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
+    const ntp_tiles::NTPTileImpression impression(
+        position, static_cast<ntp_tiles::TileSource>(tile_source),
+        static_cast<ntp_tiles::TileTitleSource>(tile_title_source),
+        static_cast<ntp_tiles::TileVisualType>(tile_type),
+        ConvertDateValueToTime(*data_generation_time),
+        /*url_for_rappor=*/GURL());
+    search_box->LogMostVisitedNavigation(impression);
+  }
+}
+
+void NewTabPageBindings::UndoAllMostVisitedDeletions() {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->UndoAllMostVisitedDeletions();
+}
+
+void NewTabPageBindings::UndoMostVisitedDeletion(int rid) {
+  SearchBox* search_box = GetSearchBox(render_frame());
+  if (!search_box)
+    return;
+  search_box->UndoMostVisitedDeletion(rid);
+}
+
+}  // namespace
+
 // static
-v8::Extension* SearchBoxExtension::Get() {
-  return new SearchBoxExtensionWrapper(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_SEARCHBOX_API));
+void SearchBoxExtension::Install(content::RenderFrame* render_frame) {
+  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context =
+      render_frame->GetWebFrame()->MainWorldScriptContext();
+  if (context.IsEmpty())
+    return;
+
+  v8::Context::Scope context_scope(context);
+
+  gin::Handle<SearchBoxBindings> searchbox_controller =
+      gin::CreateHandle(isolate, new SearchBoxBindings(render_frame));
+  if (searchbox_controller.IsEmpty())
+    return;
+
+  gin::Handle<NewTabPageBindings> newtabpage_controller =
+      gin::CreateHandle(isolate, new NewTabPageBindings(render_frame));
+  if (newtabpage_controller.IsEmpty())
+    return;
+
+  v8::Handle<v8::Object> chrome =
+      content::GetOrCreateChromeObject(isolate, context->Global());
+  v8::Local<v8::Object> embedded_search = v8::Object::New(isolate);
+  embedded_search->Set(gin::StringToV8(isolate, "searchBox"),
+                       searchbox_controller.ToV8());
+  embedded_search->Set(gin::StringToV8(isolate, "newTabPage"),
+                       newtabpage_controller.ToV8());
+  chrome->Set(gin::StringToSymbol(isolate, "embeddedSearch"), embedded_search);
 }
 
 // static
@@ -483,527 +842,3 @@ void SearchBoxExtension::DispatchMostVisitedChanged(
 void SearchBoxExtension::DispatchThemeChange(blink::WebLocalFrame* frame) {
   Dispatch(frame, kDispatchThemeChangeEventScript);
 }
-
-SearchBoxExtensionWrapper::SearchBoxExtensionWrapper(
-    const base::StringPiece& code)
-    : v8::Extension(kSearchBoxExtensionName, code.data(), 0, 0, code.size()) {
-}
-
-v8::Local<v8::FunctionTemplate>
-SearchBoxExtensionWrapper::GetNativeFunctionTemplate(
-    v8::Isolate* isolate,
-    v8::Local<v8::String> name) {
-  // Extract the name for easier comparison.
-  std::string name_str;
-  if (name->Length() > 0)
-    name->WriteUtf8(base::WriteInto(&name_str, name->Length() + 1));
-
-  if (name_str == "CheckIsUserSignedInToChromeAs")
-    return v8::FunctionTemplate::New(isolate, CheckIsUserSignedInToChromeAs);
-  if (name_str == "CheckIsUserSyncingHistory")
-    return v8::FunctionTemplate::New(isolate, CheckIsUserSyncingHistory);
-  if (name_str == "DeleteMostVisitedItem")
-    return v8::FunctionTemplate::New(isolate, DeleteMostVisitedItem);
-  if (name_str == "GetMostVisitedItems")
-    return v8::FunctionTemplate::New(isolate, GetMostVisitedItems);
-  if (name_str == "GetMostVisitedItemData")
-    return v8::FunctionTemplate::New(isolate, GetMostVisitedItemData);
-  if (name_str == "GetRightToLeft")
-    return v8::FunctionTemplate::New(isolate, GetRightToLeft);
-  if (name_str == "GetThemeBackgroundInfo")
-    return v8::FunctionTemplate::New(isolate, GetThemeBackgroundInfo);
-  if (name_str == "IsFocused")
-    return v8::FunctionTemplate::New(isolate, IsFocused);
-  if (name_str == "IsInputInProgress")
-    return v8::FunctionTemplate::New(isolate, IsInputInProgress);
-  if (name_str == "IsKeyCaptureEnabled")
-    return v8::FunctionTemplate::New(isolate, IsKeyCaptureEnabled);
-  if (name_str == "LogEvent")
-    return v8::FunctionTemplate::New(isolate, LogEvent);
-  if (name_str == "LogMostVisitedImpression")
-    return v8::FunctionTemplate::New(isolate, LogMostVisitedImpression);
-  if (name_str == "LogMostVisitedNavigation")
-    return v8::FunctionTemplate::New(isolate, LogMostVisitedNavigation);
-  if (name_str == "Paste")
-    return v8::FunctionTemplate::New(isolate, Paste);
-  if (name_str == "StartCapturingKeyStrokes")
-    return v8::FunctionTemplate::New(isolate, StartCapturingKeyStrokes);
-  if (name_str == "StopCapturingKeyStrokes")
-    return v8::FunctionTemplate::New(isolate, StopCapturingKeyStrokes);
-  if (name_str == "UndoAllMostVisitedDeletions")
-    return v8::FunctionTemplate::New(isolate, UndoAllMostVisitedDeletions);
-  if (name_str == "UndoMostVisitedDeletion")
-    return v8::FunctionTemplate::New(isolate, UndoMostVisitedDeletion);
-
-  return v8::Local<v8::FunctionTemplate>();
-}
-
-// static
-content::RenderFrame* SearchBoxExtensionWrapper::GetRenderFrame() {
-  blink::WebLocalFrame* webframe =
-      blink::WebLocalFrame::FrameForCurrentContext();
-  if (!webframe) return NULL;
-
-  auto* main_frame = content::RenderFrame::FromWebFrame(webframe->LocalRoot());
-  if (!main_frame || !main_frame->IsMainFrame())
-    return NULL;
-
-  return main_frame;
-}
-
-// static
-void SearchBoxExtensionWrapper::CheckIsUserSignedInToChromeAs(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  if (!args.Length() || args[0]->IsUndefined()) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_frame << " CheckIsUserSignedInToChromeAs";
-
-  SearchBox::Get(render_frame)
-      ->CheckIsUserSignedInToChromeAs(V8ValueToUTF16(args[0]));
-}
-
-// static
-void SearchBoxExtensionWrapper::CheckIsUserSyncingHistory(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  DVLOG(1) << render_frame << " CheckIsUserSyncingHistory";
-  SearchBox::Get(render_frame)->CheckIsUserSyncingHistory();
-}
-
-// static
-void SearchBoxExtensionWrapper::DeleteMostVisitedItem(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  if (!args.Length()) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_frame
-           << " DeleteMostVisitedItem: " << args[0]->ToInteger()->Value();
-  SearchBox::Get(render_frame)
-      ->DeleteMostVisitedItem(args[0]->ToInteger()->Value());
-}
-
-// static
-void SearchBoxExtensionWrapper::GetMostVisitedItems(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-  DVLOG(1) << render_frame << " GetMostVisitedItems";
-
-  const SearchBox* search_box = SearchBox::Get(render_frame);
-  int render_view_id = render_frame->GetRenderView()->GetRoutingID();
-
-  std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
-  search_box->GetMostVisitedItems(&instant_mv_items);
-  v8::Isolate* isolate = args.GetIsolate();
-  v8::Local<v8::Array> v8_mv_items =
-      v8::Array::New(isolate, instant_mv_items.size());
-  for (size_t i = 0; i < instant_mv_items.size(); ++i) {
-    v8_mv_items->Set(i, GenerateMostVisitedItem(isolate, render_view_id,
-                                                instant_mv_items[i].first,
-                                                instant_mv_items[i].second));
-  }
-  args.GetReturnValue().Set(v8_mv_items);
-}
-
-// static
-void SearchBoxExtensionWrapper::GetMostVisitedItemData(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
-      GURL(chrome::kChromeSearchMostVisitedUrl));
-  if (!render_frame)
-    return;
-
-  // Need an rid argument.
-  if (!args.Length() || !args[0]->IsNumber()) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_frame << " GetMostVisitedItem";
-  InstantRestrictedID restricted_id = args[0]->IntegerValue();
-  InstantMostVisitedItem mv_item;
-  if (!SearchBox::Get(render_frame)
-           ->GetMostVisitedItemWithID(restricted_id, &mv_item)) {
-    return;
-  }
-  v8::Isolate* isolate = args.GetIsolate();
-  args.GetReturnValue().Set(GenerateMostVisitedItem(
-      isolate, render_frame->GetRenderView()->GetRoutingID(), restricted_id,
-      mv_item));
-}
-
-// static
-void SearchBoxExtensionWrapper::GetRightToLeft(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  args.GetReturnValue().Set(base::i18n::IsRTL());
-}
-
-void SearchBoxExtensionWrapper::GetThemeBackgroundInfo(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  DVLOG(1) << render_frame << " GetThemeBackgroundInfo";
-  const ThemeBackgroundInfo& theme_info =
-      SearchBox::Get(render_frame)->GetThemeBackgroundInfo();
-  v8::Isolate* isolate = args.GetIsolate();
-  v8::Local<v8::Object> info = v8::Object::New(isolate);
-
-  info->Set(v8::String::NewFromUtf8(isolate, "usingDefaultTheme"),
-            v8::Boolean::New(isolate, theme_info.using_default_theme));
-
-  // The theme background color is in RGBA format "rgba(R,G,B,A)" where R, G and
-  // B are between 0 and 255 inclusive, and A is a double between 0 and 1
-  // inclusive.
-  // This is the CSS "background-color" format.
-  // Value is always valid.
-  // TODO(jfweitz): Remove this field after GWS is modified to use the new
-  // backgroundColorRgba field.
-  info->Set(
-      v8::String::NewFromUtf8(isolate, "colorRgba"),
-      UTF8ToV8String(
-          isolate,
-          // Convert the alpha using DoubleToString because StringPrintf will
-          // use
-          // locale specific formatters (e.g., use , instead of . in German).
-          base::StringPrintf(
-              kCSSBackgroundColorFormat,
-              theme_info.background_color.r,
-              theme_info.background_color.g,
-              theme_info.background_color.b,
-              base::DoubleToString(theme_info.background_color.a / 255.0)
-                  .c_str())));
-
-  // Theme color for background as an array with the RGBA components in order.
-  // Value is always valid.
-  info->Set(v8::String::NewFromUtf8(isolate, "backgroundColorRgba"),
-            internal::RGBAColorToArray(isolate, theme_info.background_color));
-
-  // Theme color for text as an array with the RGBA components in order.
-  // Value is always valid.
-  info->Set(v8::String::NewFromUtf8(isolate, "textColorRgba"),
-            internal::RGBAColorToArray(isolate, theme_info.text_color));
-
-  // Theme color for links as an array with the RGBA components in order.
-  // Value is always valid.
-  info->Set(v8::String::NewFromUtf8(isolate, "linkColorRgba"),
-            internal::RGBAColorToArray(isolate, theme_info.link_color));
-
-  // Theme color for light text as an array with the RGBA components in order.
-  // Value is always valid.
-  info->Set(v8::String::NewFromUtf8(isolate, "textColorLightRgba"),
-            internal::RGBAColorToArray(isolate, theme_info.text_color_light));
-
-  // Theme color for header as an array with the RGBA components in order.
-  // Value is always valid.
-  info->Set(v8::String::NewFromUtf8(isolate, "headerColorRgba"),
-            internal::RGBAColorToArray(isolate, theme_info.header_color));
-
-  // Theme color for section border as an array with the RGBA components in
-  // order. Value is always valid.
-  info->Set(
-      v8::String::NewFromUtf8(isolate, "sectionBorderColorRgba"),
-      internal::RGBAColorToArray(isolate, theme_info.section_border_color));
-
-  // The theme alternate logo value indicates a white logo when TRUE and a
-  // colorful one when FALSE.
-  info->Set(v8::String::NewFromUtf8(isolate, "alternateLogo"),
-            v8::Boolean::New(isolate, theme_info.logo_alternate));
-
-  // The theme background image url is of format kCSSBackgroundImageFormat
-  // where both instances of "%s" are replaced with the id that identifies the
-  // theme.
-  // This is the CSS "background-image" format.
-  // Value is only valid if there's a custom theme background image.
-  if (crx_file::id_util::IdIsValid(theme_info.theme_id)) {
-    info->Set(v8::String::NewFromUtf8(isolate, "imageUrl"),
-              UTF8ToV8String(isolate,
-                             base::StringPrintf(kCSSBackgroundImageFormat,
-                                                theme_info.theme_id.c_str(),
-                                                theme_info.theme_id.c_str())));
-
-    // The theme background image horizontal alignment is one of "left",
-    // "right", "center".
-    // This is the horizontal component of the CSS "background-position" format.
-    // Value is only valid if |imageUrl| is not empty.
-    std::string alignment = kCSSBackgroundPositionCenter;
-    if (theme_info.image_horizontal_alignment ==
-            THEME_BKGRND_IMAGE_ALIGN_LEFT) {
-      alignment = kCSSBackgroundPositionLeft;
-    } else if (theme_info.image_horizontal_alignment ==
-                   THEME_BKGRND_IMAGE_ALIGN_RIGHT) {
-      alignment = kCSSBackgroundPositionRight;
-    }
-    info->Set(v8::String::NewFromUtf8(isolate, "imageHorizontalAlignment"),
-              UTF8ToV8String(isolate, alignment));
-
-    // The theme background image vertical alignment is one of "top", "bottom",
-    // "center".
-    // This is the vertical component of the CSS "background-position" format.
-    // Value is only valid if |image_url| is not empty.
-    if (theme_info.image_vertical_alignment == THEME_BKGRND_IMAGE_ALIGN_TOP) {
-      alignment = kCSSBackgroundPositionTop;
-    } else if (theme_info.image_vertical_alignment ==
-                   THEME_BKGRND_IMAGE_ALIGN_BOTTOM) {
-      alignment = kCSSBackgroundPositionBottom;
-    } else {
-      alignment = kCSSBackgroundPositionCenter;
-    }
-    info->Set(v8::String::NewFromUtf8(isolate, "imageVerticalAlignment"),
-              UTF8ToV8String(isolate, alignment));
-
-    // The tiling of the theme background image is one of "no-repeat",
-    // "repeat-x", "repeat-y", "repeat".
-    // This is the CSS "background-repeat" format.
-    // Value is only valid if |image_url| is not empty.
-    std::string tiling = kCSSBackgroundRepeatNo;
-    switch (theme_info.image_tiling) {
-      case THEME_BKGRND_IMAGE_NO_REPEAT:
-        tiling = kCSSBackgroundRepeatNo;
-        break;
-      case THEME_BKGRND_IMAGE_REPEAT_X:
-        tiling = kCSSBackgroundRepeatX;
-        break;
-      case THEME_BKGRND_IMAGE_REPEAT_Y:
-        tiling = kCSSBackgroundRepeatY;
-        break;
-      case THEME_BKGRND_IMAGE_REPEAT:
-        tiling = kCSSBackgroundRepeat;
-        break;
-    }
-    info->Set(v8::String::NewFromUtf8(isolate, "imageTiling"),
-              UTF8ToV8String(isolate, tiling));
-
-    // The theme background image height is only valid if |imageUrl| is valid.
-    info->Set(v8::String::NewFromUtf8(isolate, "imageHeight"),
-              v8::Int32::New(isolate, theme_info.image_height));
-
-    // The attribution URL is only valid if the theme has attribution logo.
-    if (theme_info.has_attribution) {
-      info->Set(
-          v8::String::NewFromUtf8(isolate, "attributionUrl"),
-          UTF8ToV8String(isolate,
-                         base::StringPrintf(kThemeAttributionFormat,
-                                            theme_info.theme_id.c_str(),
-                                            theme_info.theme_id.c_str())));
-    }
-  }
-
-  args.GetReturnValue().Set(info);
-}
-
-// static
-void SearchBoxExtensionWrapper::IsFocused(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  bool is_focused = SearchBox::Get(render_frame)->is_focused();
-  DVLOG(1) << render_frame << " IsFocused: " << is_focused;
-  args.GetReturnValue().Set(is_focused);
-}
-
-// static
-void SearchBoxExtensionWrapper::IsInputInProgress(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  bool is_input_in_progress =
-      SearchBox::Get(render_frame)->is_input_in_progress();
-  DVLOG(1) << render_frame << " IsInputInProgress: " << is_input_in_progress;
-  args.GetReturnValue().Set(is_input_in_progress);
-}
-
-// static
-void SearchBoxExtensionWrapper::IsKeyCaptureEnabled(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  args.GetReturnValue().Set(
-      SearchBox::Get(render_frame)->is_key_capture_enabled());
-}
-
-// static
-void SearchBoxExtensionWrapper::LogEvent(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
-      GURL(chrome::kChromeSearchMostVisitedUrl));
-
-  if (!render_frame) {
-    render_frame =
-        GetRenderFrameWithCheckedOrigin(GURL(chrome::kChromeSearchLocalNtpUrl));
-  }
-  if (!render_frame)
-    return;
-
-  if (!args.Length() || !args[0]->IsNumber()) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_frame << " LogEvent";
-
-  if (args[0]->Uint32Value() <= NTP_EVENT_TYPE_LAST) {
-    NTPLoggingEventType event =
-        static_cast<NTPLoggingEventType>(args[0]->Uint32Value());
-    SearchBox::Get(render_frame)->LogEvent(event);
-  }
-}
-
-// static
-void SearchBoxExtensionWrapper::LogMostVisitedImpression(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
-      GURL(chrome::kChromeSearchMostVisitedUrl));
-  if (!render_frame)
-    return;
-
-  if (args.Length() < 5 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
-      !args[2]->IsNumber() || !args[3]->IsNumber() ||
-      (!args[4]->IsDate() && !args[4]->IsNull())) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_frame << " LogMostVisitedImpression";
-
-  if (args[1]->Uint32Value() <=
-          static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
-      args[2]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
-      args[3]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
-    const ntp_tiles::NTPTileImpression impression(
-        /*index=*/args[0]->IntegerValue(),
-        /*source=*/static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value()),
-        /*title_source=*/
-        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value()),
-        /*visual_type=*/
-        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value()),
-        /*data_generation_time=*/ConvertDateValueToTime(*args[4]),
-        /*url_for_rappor=*/GURL());
-    SearchBox::Get(render_frame)->LogMostVisitedImpression(impression);
-  }
-}
-
-// static
-void SearchBoxExtensionWrapper::LogMostVisitedNavigation(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrameWithCheckedOrigin(
-      GURL(chrome::kChromeSearchMostVisitedUrl));
-  if (!render_frame)
-    return;
-
-  if (args.Length() < 5 || !args[0]->IsNumber() || !args[1]->IsNumber() ||
-      !args[2]->IsNumber() || !args[3]->IsNumber() ||
-      (!args[4]->IsDate() && !args[4]->IsNull())) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_frame << " LogMostVisitedNavigation";
-
-  if (args[1]->Uint32Value() <=
-          static_cast<int>(ntp_tiles::TileTitleSource::LAST) &&
-      args[2]->Uint32Value() <= static_cast<int>(ntp_tiles::TileSource::LAST) &&
-      args[3]->Uint32Value() <= ntp_tiles::TileVisualType::TILE_TYPE_MAX) {
-    const ntp_tiles::NTPTileImpression impression(
-        /*index=*/args[0]->IntegerValue(),
-        /*source=*/static_cast<ntp_tiles::TileSource>(args[2]->Uint32Value()),
-        /*title_source=*/
-        static_cast<ntp_tiles::TileTitleSource>(args[1]->Uint32Value()),
-        /*visual_type=*/
-        static_cast<ntp_tiles::TileVisualType>(args[3]->Uint32Value()),
-        /*data_generation_time=*/ConvertDateValueToTime(*args[4]),
-        /*url_for_rappor=*/GURL());
-    SearchBox::Get(render_frame)->LogMostVisitedNavigation(impression);
-  }
-}
-
-// static
-void SearchBoxExtensionWrapper::Paste(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  base::string16 text;
-  if (!args[0]->IsUndefined())
-    text = V8ValueToUTF16(args[0]);
-
-  DVLOG(1) << render_frame << " Paste: " << text;
-  SearchBox::Get(render_frame)->Paste(text);
-}
-
-// static
-void SearchBoxExtensionWrapper::StartCapturingKeyStrokes(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  DVLOG(1) << render_frame << " StartCapturingKeyStrokes";
-  SearchBox::Get(render_frame)->StartCapturingKeyStrokes();
-}
-
-// static
-void SearchBoxExtensionWrapper::StopCapturingKeyStrokes(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  DVLOG(1) << render_frame << " StopCapturingKeyStrokes";
-  SearchBox::Get(render_frame)->StopCapturingKeyStrokes();
-}
-
-// static
-void SearchBoxExtensionWrapper::UndoAllMostVisitedDeletions(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame)
-    return;
-
-  DVLOG(1) << render_frame << " UndoAllMostVisitedDeletions";
-  SearchBox::Get(render_frame)->UndoAllMostVisitedDeletions();
-}
-
-// static
-void SearchBoxExtensionWrapper::UndoMostVisitedDeletion(
-    const v8::FunctionCallbackInfo<v8::Value>& args) {
-  content::RenderFrame* render_frame = GetRenderFrame();
-  if (!render_frame) {
-    return;
-  }
-  if (!args.Length()) {
-    ThrowInvalidParameters(args);
-    return;
-  }
-
-  DVLOG(1) << render_frame << " UndoMostVisitedDeletion";
-  SearchBox::Get(render_frame)
-      ->UndoMostVisitedDeletion(args[0]->ToInteger()->Value());
-}
-
-}  // namespace extensions_v8

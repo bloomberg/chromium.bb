@@ -1883,6 +1883,10 @@ float RenderViewImpl::GetDeviceScaleFactor() const {
   return device_scale_factor_;
 }
 
+float RenderViewImpl::GetZoomLevel() const {
+  return page_zoom_level_;
+}
+
 const WebPreferences& RenderViewImpl::GetWebkitPreferences() {
   return webkit_preferences_;
 }

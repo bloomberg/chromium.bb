@@ -25,6 +25,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/prerender/prerender_helper.h"
 #include "chrome/renderer/safe_browsing/phishing_classifier_delegate.h"
+#include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "chrome/renderer/web_apps.h"
 #include "components/translate/content/renderer/translate_helper.h"
 #include "content/public/common/associated_interface_provider.h"
@@ -379,6 +380,13 @@ void ChromeRenderFrameObserver::DidCommitProvisionalLoad(
     webui_javascript_.clear();
   }
 #endif
+}
+
+void ChromeRenderFrameObserver::DidClearWindowObject() {
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  if (command_line.HasSwitch(switches::kInstantProcess))
+    SearchBoxExtension::Install(render_frame());
 }
 
 void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {

@@ -103,7 +103,7 @@ class SearchBox : public content::RenderFrameObserver,
   // Sends PasteAndOpenDropdown to the browser.
   void Paste(const base::string16& text);
 
-  const ThemeBackgroundInfo& GetThemeBackgroundInfo();
+  const ThemeBackgroundInfo& GetThemeBackgroundInfo() const;
 
   // Sends FocusOmnibox(OMNIBOX_FOCUS_INVISIBLE) to the browser.
   void StartCapturingKeyStrokes();

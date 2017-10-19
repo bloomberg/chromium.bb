@@ -11,7 +11,5 @@ per-file image_util.js=dewittj@chromium.org
 per-file media_galleries*.js=file://chrome/browser/media_galleries/OWNERS
 per-file media_router_bindings.js=file://chrome/browser/media/router/OWNERS
 per-file notifications_*.js=dewittj@chromium.org
-per-file searchbox_api.js=dcblack@chromium.org
-per-file searchbox_api.js=file://chrome/browser/search/OWNERS
 
 # COMPONENT: Platform>Extensions

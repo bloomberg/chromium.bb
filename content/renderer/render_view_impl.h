@@ -340,6 +340,7 @@ class CONTENT_EXPORT RenderViewImpl : public RenderWidget,
   int GetRoutingID() const override;
   gfx::Size GetSize() const override;
   float GetDeviceScaleFactor() const override;
+  float GetZoomLevel() const override;
   const WebPreferences& GetWebkitPreferences() override;
   void SetWebkitPreferences(const WebPreferences& preferences) override;
   blink::WebView* GetWebView() override;

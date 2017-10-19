@@ -19,11 +19,6 @@ def Minify(source, filename):
   file_type = path.splitext(filename)[1]
   if not file_type == '.js' or not __js_minifier:
     return source
-  # TODO (BUG http://crbug/644392) searchbox_api.js uses Chrome extensions so
-  # can't be minified. Remove this when that is fixed.
-  if path.abspath(filename).endswith(
-      '/chrome/renderer/resources/extensions/searchbox_api.js'):
-    return source
   p = subprocess.Popen(
       __js_minifier,
       stdin=subprocess.PIPE,

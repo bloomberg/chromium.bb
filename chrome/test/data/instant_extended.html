@@ -4,26 +4,22 @@
 
 var apiHandle;
 var newTabPageHandle;
+
 var onMostVisitedChangedCalls = 0;
 var mostVisitedItemsCount = 0;
 var firstMostVisitedItemId = 0;
 var onFocusChangedCalls = 0;
 var isFocused = false;
-var onvisibilitycalls = 0;
 var onThemeChangedCalls = 0;
 
 function getApiHandle() {
-  if (window.navigator && window.navigator.searchBox)
-    return window.navigator.searchBox;
-  if (window.chrome && window.chrome.searchBox)
-    return window.chrome.searchBox;
+  if (window.chrome && window.chrome.embeddedSearch &&
+      window.chrome.embeddedSearch.searchBox)
+    return window.chrome.embeddedSearch.searchBox;
   return null;
 }
 
 function getNewTabPageHandle() {
-  if (window.navigator && window.navigator.embeddedSearch &&
-      window.navigator.embeddedSearch.newTabPage)
-    return window.navigator.embeddedSearch.newTabPage;
   if (window.chrome && window.chrome.embeddedSearch &&
       window.chrome.embeddedSearch.newTabPage)
     return window.chrome.embeddedSearch.newTabPage;
@@ -38,10 +34,6 @@ function handleMostVisitedChange() {
     firstMostVisitedItemId = items[0] ? items[0].rid : 0;
   }
 }
-
-document.addEventListener("visibilitychange", function() {
-  onvisibilitycalls++;
-}, false);
 
 function handleFocusChange() {
   onFocusChangedCalls++;

@@ -7,7 +7,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -20,17 +19,13 @@
 #include "chrome/renderer/searchbox/searchbox_extension.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/favicon_base/favicon_url_parser.h"
-#include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/associated_interface_registry.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
-#include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebPerformance.h"
-#include "third_party/WebKit/public/web/WebView.h"
-#include "url/gurl.h"
 
 namespace {
 
@@ -295,7 +290,7 @@ bool SearchBox::GetMostVisitedItemWithID(
                                                            item);
 }
 
-const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() {
+const ThemeBackgroundInfo& SearchBox::GetThemeBackgroundInfo() const {
   return theme_info_;
 }
 
@@ -329,7 +324,7 @@ void SearchBox::SetPageSequenceNumber(int page_seq_no) {
 
 void SearchBox::ChromeIdentityCheckResult(const base::string16& identity,
                                           bool identity_match) {
-  extensions_v8::SearchBoxExtension::DispatchChromeIdentityCheckResult(
+  SearchBoxExtension::DispatchChromeIdentityCheckResult(
       render_frame()->GetWebFrame(), identity, identity_match);
 }
 
@@ -348,7 +343,7 @@ void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
     if (reason != OMNIBOX_FOCUS_CHANGE_TYPING) {
       is_key_capture_enabled_ = key_capture_enabled;
       DVLOG(1) << render_frame() << " KeyCaptureChange";
-      extensions_v8::SearchBoxExtension::DispatchKeyCaptureChange(
+      SearchBoxExtension::DispatchKeyCaptureChange(
           render_frame()->GetWebFrame());
     }
   }
@@ -356,13 +351,12 @@ void SearchBox::FocusChanged(OmniboxFocusState new_focus_state,
   if (is_focused != is_focused_) {
     is_focused_ = is_focused;
     DVLOG(1) << render_frame() << " FocusChange";
-    extensions_v8::SearchBoxExtension::DispatchFocusChange(
-        render_frame()->GetWebFrame());
+    SearchBoxExtension::DispatchFocusChange(render_frame()->GetWebFrame());
   }
 }
 
 void SearchBox::HistorySyncCheckResult(bool sync_history) {
-  extensions_v8::SearchBoxExtension::DispatchHistorySyncCheckResult(
+  SearchBoxExtension::DispatchHistorySyncCheckResult(
       render_frame()->GetWebFrame(), sync_history);
 }
 
@@ -376,8 +370,7 @@ void SearchBox::MostVisitedChanged(
   }
 
   most_visited_items_cache_.AddItems(items);
-  extensions_v8::SearchBoxExtension::DispatchMostVisitedChanged(
-      render_frame()->GetWebFrame());
+  SearchBoxExtension::DispatchMostVisitedChanged(render_frame()->GetWebFrame());
 }
 
 void SearchBox::SetInputInProgress(bool is_input_in_progress) {
@@ -385,11 +378,9 @@ void SearchBox::SetInputInProgress(bool is_input_in_progress) {
     is_input_in_progress_ = is_input_in_progress;
     DVLOG(1) << render_frame() << " SetInputInProgress";
     if (is_input_in_progress_) {
-      extensions_v8::SearchBoxExtension::DispatchInputStart(
-          render_frame()->GetWebFrame());
+      SearchBoxExtension::DispatchInputStart(render_frame()->GetWebFrame());
     } else {
-      extensions_v8::SearchBoxExtension::DispatchInputCancel(
-          render_frame()->GetWebFrame());
+      SearchBoxExtension::DispatchInputCancel(render_frame()->GetWebFrame());
     }
   }
 }
@@ -400,8 +391,7 @@ void SearchBox::ThemeChanged(const ThemeBackgroundInfo& theme_info) {
     return;
 
   theme_info_ = theme_info;
-  extensions_v8::SearchBoxExtension::DispatchThemeChange(
-      render_frame()->GetWebFrame());
+  SearchBoxExtension::DispatchThemeChange(render_frame()->GetWebFrame());
 }
 
 GURL SearchBox::GetURLForMostVisitedItem(InstantRestrictedID item_id) const {
