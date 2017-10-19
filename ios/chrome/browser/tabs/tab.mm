@@ -306,7 +306,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     _iOSCaptivePortalBlockingPageDelegate;
 @synthesize useGreyImageCache = useGreyImageCache_;
 @synthesize isPrerenderTab = _isPrerenderTab;
-@synthesize isLinkLoadingPrerenderTab = isLinkLoadingPrerenderTab_;
 @synthesize isVoiceSearchResultsTab = _isVoiceSearchResultsTab;
 @synthesize overscrollActionsController = _overscrollActionsController;
 @synthesize overscrollActionsControllerDelegate =
@@ -440,19 +439,13 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   return self.webState ? self.webState->GetNavigationManager() : nullptr;
 }
 
-- (void)setIsLinkLoadingPrerenderTab:(BOOL)isLinkLoadingPrerenderTab {
-  isLinkLoadingPrerenderTab_ = isLinkLoadingPrerenderTab;
-  [self setIsPrerenderTab:isLinkLoadingPrerenderTab];
-}
-
 - (void)setIsPrerenderTab:(BOOL)isPrerender {
   if (_isPrerenderTab == isPrerender)
     return;
 
   _isPrerenderTab = isPrerender;
 
-  self.webState->SetShouldSuppressDialogs(isPrerender &&
-                                          !isLinkLoadingPrerenderTab_);
+  self.webState->SetShouldSuppressDialogs(isPrerender);
 
   if (_isPrerenderTab)
     return;
@@ -1164,7 +1157,7 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
 - (BOOL)webController:(CRWWebController*)webController
     shouldOpenExternalURL:(const GURL&)URL {
-  if (_isPrerenderTab && !isLinkLoadingPrerenderTab_) {
+  if (_isPrerenderTab) {
     [delegate_ discardPrerender];
     return NO;
   }
