@@ -7,7 +7,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/help_app_launcher.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/oobe_screen.h"
@@ -30,7 +32,7 @@
 
 namespace {
 
-const char kJsScreenPath[] = "login.EulaScreen";
+constexpr char kJsScreenPath[] = "login.EulaScreen";
 
 // Helper class to tweak display details of credits pages in the context
 // of OOBE/EULA step.
@@ -147,6 +149,11 @@ void EulaScreenHandler::DeclareLocalizedValues(
                 IDS_EULA_RLZ_ENABLE,
                 IDS_SHORT_PRODUCT_OS_NAME);
 #endif
+
+  builder->Add(
+      "eulaOnlineUrl",
+      base::StringPrintf(chrome::kOnlineEulaURLPath,
+                         g_browser_process->GetApplicationLocale().c_str()));
 
   builder->Add("chromeCreditsLink", IDS_ABOUT_VERSION_LICENSE_EULA);
   builder->Add("chromeosCreditsLink", IDS_ABOUT_CROS_VERSION_LICENSE_EULA);

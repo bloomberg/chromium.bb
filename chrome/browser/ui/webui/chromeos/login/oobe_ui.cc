@@ -186,10 +186,8 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   source->AddResourcePath(kProductLogoPath, IDR_PRODUCT_LOGO_64);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
-  source->OverrideContentSecurityPolicyChildSrc(
-      base::StringPrintf(
-          "child-src chrome://terms/ %s/;",
-          extensions::kGaiaAuthExtensionOrigin));
+  source->OverrideContentSecurityPolicyChildSrc(base::StringPrintf(
+      "child-src %s/;", extensions::kGaiaAuthExtensionOrigin));
   source->OverrideContentSecurityPolicyObjectSrc(
       "object-src chrome:;");
 

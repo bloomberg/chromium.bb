@@ -60,11 +60,11 @@
         <h1 class="title" i18n-content="oobeEulaSectionTitle"></h1>
       </div>
       <div class="footer flex layout vertical">
-        <iframe id="crosEulaFrame" src="chrome://terms"
+        <webview id="crosEulaFrame"
             role="document" class="flex focus-on-show"
             i18n-values="aria-label:oobeEulaIframeLabel"
-            on-load="onFrameLoad_">
-        </iframe>
+            on-contentload="onFrameLoad_">
+        </webview>
         <a id="installationSettings" href="#"
             on-tap="onInstallationSettingsClicked_"
             i18n-content="eulaSystemInstallationSettings">

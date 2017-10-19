@@ -19,6 +19,7 @@
 }
 
 .eula-frame {
+  border: none;
   height: 222px;
 }
 
@@ -41,11 +42,6 @@
 .eula-columns {
   display: -webkit-box;
   width: 630px;
-}
-
-.eula-frame {
-  border: none;
-  padding: 0 0 0 5px;
 }
 
 #cros-eula {

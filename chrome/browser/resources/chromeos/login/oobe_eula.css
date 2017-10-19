@@ -8,6 +8,12 @@ a {
   width: fit-content;
 }
 
+#eulaDialog {
+  /* Works around the problem that webview height is not calculated
+   * correctly with only min-height set. */
+  height: 640px;
+}
+
 #crosEulaFrame,
 #installationSettings,
 #logging {
