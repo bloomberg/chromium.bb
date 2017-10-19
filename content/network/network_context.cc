@@ -238,7 +238,7 @@ void NetworkContext::ApplyContextParamsToBuilder(
     net::URLRequestContextBuilder* builder,
     mojom::NetworkContextParams* network_context_params) {
   // |network_service_| may be nullptr in tests.
-  if (!builder->net_log() && network_service_)
+  if (network_service_)
     builder->set_net_log(network_service_->net_log());
 
   builder->set_enable_brotli(network_context_params->enable_brotli);
@@ -279,7 +279,7 @@ void NetworkContext::ApplyContextParamsToBuilder(
         std::make_unique<net::HttpServerPropertiesManager>(
             std::make_unique<HttpServerPropertiesPrefDelegate>(
                 pref_service_.get()),
-            builder->net_log()));
+            network_service_->net_log()));
   }
 
   builder->set_data_enabled(network_context_params->enable_data_url_support);
