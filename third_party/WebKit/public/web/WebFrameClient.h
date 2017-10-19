@@ -416,9 +416,10 @@ class BLINK_EXPORT WebFrameClient {
   // The frame's document has just been initialized.
   virtual void DidCreateNewDocument() {}
 
-  // The window object for the frame has been cleared of any extra
-  // properties that may have been set by script from the previously
-  // loaded document.
+  // The window object for the frame has been cleared of any extra properties
+  // that may have been set by script from the previously loaded document. This
+  // will get invoked multiple times when navigating from an initial empty
+  // document to the actual document.
   virtual void DidClearWindowObject() {}
 
   // The document element has been created.
