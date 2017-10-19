@@ -232,6 +232,7 @@ RequestParams ProtoConversions::RequestParamsFromProto(
   RequestParams request_params;
   request_params.url = GURL(proto.url());
   request_params.method = proto.method();
+  request_params.fetch_error_body = proto.fetch_error_body();
 
   for (int i = 0; i < proto.headers_size(); i++) {
     protodb::RequestHeader header = proto.headers(i);
@@ -245,6 +246,7 @@ void ProtoConversions::RequestParamsToProto(const RequestParams& request_params,
                                             protodb::RequestParams* proto) {
   proto->set_url(request_params.url.spec());
   proto->set_method(request_params.method);
+  proto->set_fetch_error_body(request_params.fetch_error_body);
 
   int i = 0;
   net::HttpRequestHeaders::Iterator iter(request_params.request_headers);

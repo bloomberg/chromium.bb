@@ -18,4 +18,5 @@ message RequestParams {
   optional string url = 1;
   optional string method = 2;
   repeated RequestHeader headers = 3;
+  optional bool fetch_error_body = 4;
 }
