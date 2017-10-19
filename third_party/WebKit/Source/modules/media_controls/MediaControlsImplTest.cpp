@@ -21,7 +21,7 @@
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutObject.h"
 #include "core/loader/EmptyClients.h"
-#include "core/testing/DummyPageHolder.h"
+#include "core/testing/PageTestBase.h"
 #include "modules/media_controls/MediaDownloadInProductHelpManager.h"
 #include "modules/media_controls/elements/MediaControlCurrentTimeDisplayElement.h"
 #include "modules/media_controls/elements/MediaControlDownloadButtonElement.h"
@@ -178,7 +178,7 @@ static void AdvanceClock(double seconds) {
   g_current_time += seconds;
 }
 
-class MediaControlsImplTest : public ::testing::Test,
+class MediaControlsImplTest : public PageTestBase,
                               private ScopedMediaCastOverlayButtonForTest {
  public:
   MediaControlsImplTest() : ScopedMediaCastOverlayButtonForTest(true) {}
@@ -197,8 +197,7 @@ class MediaControlsImplTest : public ::testing::Test,
     Page::PageClients clients;
     FillWithEmptyClients(clients);
     clients.chrome_client = new MockChromeClientForImpl();
-    page_holder_ = DummyPageHolder::Create(
-        IntSize(800, 600), &clients, StubLocalFrameClientForImpl::Create());
+    SetupPageWithClients(&clients, StubLocalFrameClientForImpl::Create());
     GetDocument().GetSettings()->SetMediaDownloadInProductHelpEnabled(
         EnableDownloadInProductHelp());
 
@@ -208,7 +207,7 @@ class MediaControlsImplTest : public ::testing::Test,
     media_controls_ = static_cast<MediaControlsImpl*>(video.GetMediaControls());
 
     // If scripts are not enabled, controls will always be shown.
-    page_holder_->GetFrame().GetSettings()->SetScriptEnabled(true);
+    GetFrame().GetSettings()->SetScriptEnabled(true);
   }
 
   void SimulateRouteAvailable() {
@@ -247,7 +246,6 @@ class MediaControlsImplTest : public ::testing::Test,
     return static_cast<MockWebMediaPlayerForImpl*>(
         MediaControls().MediaElement().GetWebMediaPlayer());
   }
-  Document& GetDocument() { return page_holder_->GetDocument(); }
 
   HistogramTester& GetHistogramTester() { return histogram_tester_; }
 
@@ -293,7 +291,6 @@ class MediaControlsImplTest : public ::testing::Test,
   }
 
  private:
-  std::unique_ptr<DummyPageHolder> page_holder_;
   Persistent<MediaControlsImpl> media_controls_;
   HistogramTester histogram_tester_;
   TimeFunction original_time_function_;
