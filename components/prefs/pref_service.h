@@ -248,11 +248,11 @@ class COMPONENTS_PREFS_EXPORT PrefService {
   // the preference is not set in the user pref store, returns NULL.
   const base::Value* GetUserPrefValue(const std::string& path) const;
 
-  // Changes the default value for a preference. Takes ownership of |value|.
+  // Changes the default value for a preference.
   //
   // Will cause a pref change notification to be fired if this causes
   // the effective value to change.
-  void SetDefaultPrefValue(const std::string& path, base::Value* value);
+  void SetDefaultPrefValue(const std::string& path, base::Value value);
 
   // Returns the default value of the given preference. |path| must point to a
   // registered preference. In that case, will never return nullptr, so callers

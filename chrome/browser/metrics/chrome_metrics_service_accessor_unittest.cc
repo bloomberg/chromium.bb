@@ -35,7 +35,7 @@ class ChromeMetricsServiceAccessorTest : public testing::Test {
 TEST_F(ChromeMetricsServiceAccessorTest, MetricsReportingEnabled) {
 #if defined(GOOGLE_CHROME_BUILD)
   const char* pref = metrics::prefs::kMetricsReportingEnabled;
-  GetLocalState()->SetDefaultPrefValue(pref, new base::Value(false));
+  GetLocalState()->SetDefaultPrefValue(pref, base::Value(false));
 
   GetLocalState()->SetBoolean(pref, false);
   EXPECT_FALSE(

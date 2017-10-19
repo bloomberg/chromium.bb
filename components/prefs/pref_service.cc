@@ -29,15 +29,18 @@ namespace {
 
 class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
  public:
-  ReadErrorHandler(base::Callback<void(PersistentPrefStore::PrefReadError)> cb)
-      : callback_(cb) {}
+  using ErrorCallback =
+      base::Callback<void(PersistentPrefStore::PrefReadError)>;
+  explicit ReadErrorHandler(ErrorCallback cb) : callback_(cb) {}
 
   void OnError(PersistentPrefStore::PrefReadError error) override {
     callback_.Run(error);
   }
 
  private:
-  base::Callback<void(PersistentPrefStore::PrefReadError)> callback_;
+  ErrorCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(ReadErrorHandler);
 };
 
 // Returns the WriteablePrefStore::PrefWriteFlags for the pref with the given
@@ -323,9 +326,9 @@ const base::Value* PrefService::GetUserPrefValue(
 }
 
 void PrefService::SetDefaultPrefValue(const std::string& path,
-                                      base::Value* value) {
+                                      base::Value value) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  pref_registry_->SetDefaultPrefValue(path, value);
+  pref_registry_->SetDefaultPrefValue(path, std::move(value));
 }
 
 const base::Value* PrefService::GetDefaultPrefValue(
@@ -558,7 +561,7 @@ base::Value::Type PrefService::Preference::GetType() const {
 }
 
 const base::Value* PrefService::Preference::GetValue() const {
-  const base::Value* result= pref_service_->GetPreferenceValue(name_);
+  const base::Value* result = pref_service_->GetPreferenceValue(name_);
   DCHECK(result) << "Must register pref before getting its value";
   return result;
 }
