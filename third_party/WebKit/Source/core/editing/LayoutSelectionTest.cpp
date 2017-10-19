@@ -213,29 +213,15 @@ TEST_F(LayoutSelectionTest, TraverseLayoutObjectListStyleImage) {
 }
 
 TEST_F(LayoutSelectionTest, TraverseLayoutObjectCrossingShadowBoundary) {
-#ifndef NDEBUG
-  PrintLayoutTreeForDebug();
-#endif
-  SetBodyContent(
-      "foo<div id='host'>"
-      "<span slot='s1'>bar1</span><span slot='s2'>bar2</span>"
-      "</div>");
-  // TODO(yoichio): Move NodeTest::AttachShadowTo to EditingTestBase and use
-  // it.
-  ShadowRootInit shadow_root_init;
-  shadow_root_init.setMode("open");
-  ShadowRoot* const shadow_root =
-      GetDocument().QuerySelector("div")->attachShadow(
-          ToScriptStateForMainWorld(GetDocument().GetFrame()), shadow_root_init,
-          ASSERT_NO_EXCEPTION);
-  shadow_root->SetInnerHTMLFromString(
-      "Foo<slot name='s2'></slot><slot name='s1'></slot>");
-
-  Selection().SetSelection(
-      SelectionInDOMTree::Builder()
-          .SetBaseAndExtent(Position(GetDocument().body(), 0),
-                            Position(GetDocument().QuerySelector("span"), 0))
-          .Build());
+  Selection().SetSelection(SetSelectionTextToBody(
+      "^foo"
+      "<div>"
+      "<template data-mode=open>"
+      "Foo<slot name=s2></slot><slot name=s1></slot>"
+      "</template>"
+      // Set selection at SPAN@0 instead of "bar1"@0
+      "<span slot=s1><!--|-->bar1</span><span slot=s2>bar2</span>"
+      "</div>"));
   Selection().CommitAppearanceIfNeeded();
   TEST_NEXT(IsLayoutBlock, kStartAndEnd, NotInvalidate);
   TEST_NEXT(IsLayoutBlockFlow, kStart, NotInvalidate);
