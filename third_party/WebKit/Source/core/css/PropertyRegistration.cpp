@@ -28,7 +28,7 @@ PropertyRegistration::PropertyRegistration(
     const CSSSyntaxDescriptor& syntax,
     bool inherits,
     const CSSValue* initial,
-    RefPtr<CSSVariableData> initial_variable_data)
+    scoped_refptr<CSSVariableData> initial_variable_data)
     : syntax_(syntax),
       inherits_(inherits),
       initial_(initial),
@@ -111,7 +111,7 @@ void PropertyRegistration::registerProperty(
   }
 
   const CSSValue* initial = nullptr;
-  RefPtr<CSSVariableData> initial_variable_data;
+  scoped_refptr<CSSVariableData> initial_variable_data;
   if (descriptor.hasInitialValue()) {
     CSSTokenizer tokenizer(descriptor.initialValue());
     const auto tokens = tokenizer.TokenizeToEOF();

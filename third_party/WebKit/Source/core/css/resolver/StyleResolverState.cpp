@@ -79,7 +79,7 @@ StyleResolverState::~StyleResolverState() {
   animation_update_.Clear();
 }
 
-void StyleResolverState::SetStyle(RefPtr<ComputedStyle> style) {
+void StyleResolverState::SetStyle(scoped_refptr<ComputedStyle> style) {
   // FIXME: Improve RAII of StyleResolverState to remove this function.
   style_ = std::move(style);
   css_to_length_conversion_data_ = CSSToLengthConversionData(
@@ -87,7 +87,7 @@ void StyleResolverState::SetStyle(RefPtr<ComputedStyle> style) {
       style_->EffectiveZoom());
 }
 
-RefPtr<ComputedStyle> StyleResolverState::TakeStyle() {
+scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
   return std::move(style_);
 }
 
@@ -103,12 +103,12 @@ CSSToLengthConversionData StyleResolverState::FontSizeConversionData() const {
 }
 
 void StyleResolverState::SetParentStyle(
-    RefPtr<const ComputedStyle> parent_style) {
+    scoped_refptr<const ComputedStyle> parent_style) {
   parent_style_ = std::move(parent_style);
 }
 
 void StyleResolverState::SetLayoutParentStyle(
-    RefPtr<const ComputedStyle> parent_style) {
+    scoped_refptr<const ComputedStyle> parent_style) {
   layout_parent_style_ = std::move(parent_style);
 }
 

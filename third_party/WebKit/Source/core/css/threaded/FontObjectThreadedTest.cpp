@@ -125,7 +125,7 @@ TSAN_TEST(FontObjectThreadedTest, WordShaperTest) {
 
     TextRun text_run(reinterpret_cast<const LChar*>("ABC DEF."), 8);
 
-    RefPtr<const ShapeResult> result;
+    scoped_refptr<const ShapeResult> result;
     CachingWordShapeIterator iter(&cache, text_run, &font);
 
     ASSERT_TRUE(iter.Next(&result));

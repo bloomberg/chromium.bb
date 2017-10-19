@@ -57,7 +57,7 @@ class CORE_EXPORT CSSFontFace final
 
   FontFace* GetFontFace() const { return font_face_; }
 
-  RefPtr<UnicodeRangeSet> Ranges() { return ranges_; }
+  scoped_refptr<UnicodeRangeSet> Ranges() { return ranges_; }
 
   void SetSegmentedFontFace(CSSSegmentedFontFace*);
   void ClearSegmentedFontFace() { segmented_font_face_ = nullptr; }
@@ -72,7 +72,7 @@ class CORE_EXPORT CSSFontFace final
   void FontLoaded(RemoteFontFaceSource*, LoadFinishReason);
   void DidBecomeVisibleFallback(RemoteFontFaceSource*);
 
-  RefPtr<SimpleFontData> GetFontData(const FontDescription&);
+  scoped_refptr<SimpleFontData> GetFontData(const FontDescription&);
 
   FontFace::LoadStatusType LoadStatus() const {
     return font_face_->LoadStatus();
@@ -89,7 +89,7 @@ class CORE_EXPORT CSSFontFace final
  private:
   void SetLoadStatus(FontFace::LoadStatusType);
 
-  RefPtr<UnicodeRangeSet> ranges_;
+  scoped_refptr<UnicodeRangeSet> ranges_;
   Member<CSSSegmentedFontFace> segmented_font_face_;
   HeapDeque<Member<CSSFontFaceSource>> sources_;
   Member<FontFace> font_face_;

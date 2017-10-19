@@ -68,7 +68,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
     return variable_data;
 
   bool unused_cycle_detected;
-  RefPtr<CSSVariableData> new_variable_data =
+  scoped_refptr<CSSVariableData> new_variable_data =
       ResolveCustomProperty(name, *variable_data, unused_cycle_detected);
   if (!registration) {
     inherited_variables_->SetVariable(name, new_variable_data);
@@ -93,7 +93,7 @@ CSSVariableData* CSSVariableResolver::ValueForCustomProperty(
   return new_variable_data.get();
 }
 
-RefPtr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
+scoped_refptr<CSSVariableData> CSSVariableResolver::ResolveCustomProperty(
     AtomicString name,
     const CSSVariableData& variable_data,
     bool& cycle_detected) {
@@ -304,7 +304,7 @@ const CSSValue* CSSVariableResolver::ResolvePendingSubstitutions(
   return CSSUnsetValue::Create();
 }
 
-RefPtr<CSSVariableData>
+scoped_refptr<CSSVariableData>
 CSSVariableResolver::ResolveCustomPropertyAnimationKeyframe(
     const CSSCustomPropertyDeclaration& keyframe,
     bool& cycle_detected) {

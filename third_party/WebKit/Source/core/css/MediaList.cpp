@@ -57,7 +57,7 @@ MediaQuerySet::MediaQuerySet(const MediaQuerySet& o)
     queries_[i] = o.queries_[i]->Copy();
 }
 
-RefPtr<MediaQuerySet> MediaQuerySet::Create(const String& media_string) {
+scoped_refptr<MediaQuerySet> MediaQuerySet::Create(const String& media_string) {
   if (media_string.IsEmpty())
     return MediaQuerySet::Create();
 
@@ -65,7 +65,7 @@ RefPtr<MediaQuerySet> MediaQuerySet::Create(const String& media_string) {
 }
 
 bool MediaQuerySet::Set(const String& media_string) {
-  RefPtr<MediaQuerySet> result = Create(media_string);
+  scoped_refptr<MediaQuerySet> result = Create(media_string);
   // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
   for (const auto& query : result->queries_) {
     CHECK(query);
@@ -78,7 +78,7 @@ bool MediaQuerySet::Add(const String& query_string) {
   // To "parse a media query" for a given string means to follow "the parse
   // a media query list" steps and return "null" if more than one media query
   // is returned, or else the returned media query.
-  RefPtr<MediaQuerySet> result = Create(query_string);
+  scoped_refptr<MediaQuerySet> result = Create(query_string);
 
   // Only continue if exactly one media query is found, as described above.
   if (result->queries_.size() != 1)
@@ -104,7 +104,7 @@ bool MediaQuerySet::Remove(const String& query_string_to_remove) {
   // To "parse a media query" for a given string means to follow "the parse
   // a media query list" steps and return "null" if more than one media query
   // is returned, or else the returned media query.
-  RefPtr<MediaQuerySet> result = Create(query_string_to_remove);
+  scoped_refptr<MediaQuerySet> result = Create(query_string_to_remove);
 
   // Only continue if exactly one media query is found, as described above.
   if (result->queries_.size() != 1)
@@ -149,13 +149,14 @@ String MediaQuerySet::MediaText() const {
   return text.ToString();
 }
 
-MediaList::MediaList(RefPtr<MediaQuerySet> media_queries,
+MediaList::MediaList(scoped_refptr<MediaQuerySet> media_queries,
                      CSSStyleSheet* parent_sheet)
     : media_queries_(media_queries),
       parent_style_sheet_(parent_sheet),
       parent_rule_(nullptr) {}
 
-MediaList::MediaList(RefPtr<MediaQuerySet> media_queries, CSSRule* parent_rule)
+MediaList::MediaList(scoped_refptr<MediaQuerySet> media_queries,
+                     CSSRule* parent_rule)
     : media_queries_(media_queries),
       parent_style_sheet_(nullptr),
       parent_rule_(parent_rule) {}
@@ -207,7 +208,7 @@ void MediaList::appendMedium(const String& medium,
     parent_style_sheet_->DidMutate();
 }
 
-void MediaList::Reattach(RefPtr<MediaQuerySet> media_queries) {
+void MediaList::Reattach(scoped_refptr<MediaQuerySet> media_queries) {
   // TODO(keishi) Changed DCHECK to CHECK for crbug.com/699269 diagnosis
   CHECK(media_queries);
   for (const auto& query : media_queries->QueryVector()) {

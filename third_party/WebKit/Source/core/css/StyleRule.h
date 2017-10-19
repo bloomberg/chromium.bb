@@ -241,7 +241,7 @@ class CORE_EXPORT StyleRuleCondition : public StyleRuleGroup {
 class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
  public:
   static StyleRuleMedia* Create(
-      RefPtr<MediaQuerySet> media,
+      scoped_refptr<MediaQuerySet> media,
       HeapVector<Member<StyleRuleBase>>& adopt_rules) {
     return new StyleRuleMedia(media, adopt_rules);
   }
@@ -253,11 +253,11 @@ class CORE_EXPORT StyleRuleMedia : public StyleRuleCondition {
   void TraceAfterDispatch(blink::Visitor*);
 
  private:
-  StyleRuleMedia(RefPtr<MediaQuerySet>,
+  StyleRuleMedia(scoped_refptr<MediaQuerySet>,
                  HeapVector<Member<StyleRuleBase>>& adopt_rules);
   StyleRuleMedia(const StyleRuleMedia&);
 
-  RefPtr<MediaQuerySet> media_queries_;
+  scoped_refptr<MediaQuerySet> media_queries_;
 };
 
 class StyleRuleSupports : public StyleRuleCondition {

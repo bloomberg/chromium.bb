@@ -17,7 +17,7 @@ bool LocalFontFaceSource::IsLocalFontAvailable(
       font_description, font_name_);
 }
 
-RefPtr<SimpleFontData> LocalFontFaceSource::CreateFontData(
+scoped_refptr<SimpleFontData> LocalFontFaceSource::CreateFontData(
     const FontDescription& font_description,
     const FontSelectionCapabilities&) {
   // FIXME(drott) crbug.com/627143: We still have the issue of matching
@@ -37,8 +37,10 @@ RefPtr<SimpleFontData> LocalFontFaceSource::CreateFontData(
   unstyled_description.SetStyle(NormalSlopeValue());
   unstyled_description.SetWeight(NormalWeightValue());
 #endif
-  RefPtr<SimpleFontData> font_data = FontCache::GetFontCache()->GetFontData(
-      unstyled_description, font_name_, AlternateFontName::kLocalUniqueFace);
+  scoped_refptr<SimpleFontData> font_data =
+      FontCache::GetFontCache()->GetFontData(
+          unstyled_description, font_name_,
+          AlternateFontName::kLocalUniqueFace);
   histograms_.Record(font_data.get());
   return font_data;
 }

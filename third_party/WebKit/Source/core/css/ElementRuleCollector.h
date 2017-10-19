@@ -170,7 +170,8 @@ class ElementRuleCollector {
  private:
   const ElementResolveContext& context_;
   const SelectorFilter& selector_filter_;
-  RefPtr<ComputedStyle> style_;  // FIXME: This can be mutated during matching!
+  scoped_refptr<ComputedStyle>
+      style_;  // FIXME: This can be mutated during matching!
 
   PseudoStyleRequest pseudo_style_request_;
   SelectorChecker::Mode mode_;

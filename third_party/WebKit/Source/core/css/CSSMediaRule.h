@@ -53,7 +53,7 @@ class CSSMediaRule final : public CSSConditionRule {
 
   CSSRule::Type type() const override { return kMediaRule; }
 
-  RefPtr<MediaQuerySet> MediaQueries() const;
+  scoped_refptr<MediaQuerySet> MediaQueries() const;
 
   mutable Member<MediaList> media_cssom_wrapper_;
 };

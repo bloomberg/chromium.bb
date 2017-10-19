@@ -101,7 +101,7 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void ClearOwnerRule() { owner_rule_ = nullptr; }
   Document* OwnerDocument() const;
   const MediaQuerySet* MediaQueries() const { return media_queries_.get(); }
-  void SetMediaQueries(RefPtr<MediaQuerySet>);
+  void SetMediaQueries(scoped_refptr<MediaQuerySet>);
   bool MatchesMediaQueries(const MediaQueryEvaluator&);
   bool HasMediaQueryResults() const {
     return !viewport_dependent_media_query_results_.IsEmpty() ||
@@ -116,7 +116,8 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   void SetTitle(const String& title) { title_ = title; }
   // Set by LinkStyle iff CORS-enabled fetch of stylesheet succeeded from this
   // origin.
-  void SetAllowRuleAccessFromOrigin(RefPtr<SecurityOrigin> allowed_origin);
+  void SetAllowRuleAccessFromOrigin(
+      scoped_refptr<SecurityOrigin> allowed_origin);
 
   class RuleMutationScope {
     WTF_MAKE_NONCOPYABLE(RuleMutationScope);
@@ -168,11 +169,11 @@ class CORE_EXPORT CSSStyleSheet final : public StyleSheet {
   bool is_disabled_ = false;
   bool load_completed_ = false;
   String title_;
-  RefPtr<MediaQuerySet> media_queries_;
+  scoped_refptr<MediaQuerySet> media_queries_;
   MediaQueryResultList viewport_dependent_media_query_results_;
   MediaQueryResultList device_dependent_media_query_results_;
 
-  RefPtr<SecurityOrigin> allow_rule_access_from_origin_;
+  scoped_refptr<SecurityOrigin> allow_rule_access_from_origin_;
 
   Member<Node> owner_node_;
   Member<CSSRule> owner_rule_;

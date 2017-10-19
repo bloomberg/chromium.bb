@@ -203,7 +203,8 @@ void CSSStyleSheet::setDisabled(bool disabled) {
   DidMutate();
 }
 
-void CSSStyleSheet::SetMediaQueries(RefPtr<MediaQuerySet> media_queries) {
+void CSSStyleSheet::SetMediaQueries(
+    scoped_refptr<MediaQuerySet> media_queries) {
   media_queries_ = std::move(media_queries);
   if (media_cssom_wrapper_ && media_queries_)
     media_cssom_wrapper_->Reattach(media_queries_.get());
@@ -403,7 +404,7 @@ Document* CSSStyleSheet::OwnerDocument() const {
 }
 
 void CSSStyleSheet::SetAllowRuleAccessFromOrigin(
-    RefPtr<SecurityOrigin> allowed_origin) {
+    scoped_refptr<SecurityOrigin> allowed_origin) {
   allow_rule_access_from_origin_ = std::move(allowed_origin);
 }
 

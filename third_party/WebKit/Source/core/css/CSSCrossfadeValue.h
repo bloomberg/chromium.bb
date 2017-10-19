@@ -54,10 +54,10 @@ class CORE_EXPORT CSSCrossfadeValue final : public CSSImageGeneratorValue {
 
   String CustomCSSText() const;
 
-  RefPtr<Image> GetImage(const ImageResourceObserver&,
-                         const Document&,
-                         const ComputedStyle&,
-                         const IntSize& container_size);
+  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
+                                const Document&,
+                                const ComputedStyle&,
+                                const IntSize& container_size);
   bool IsFixedSize() const { return true; }
   IntSize FixedSize(const Document&, const FloatSize&);
 

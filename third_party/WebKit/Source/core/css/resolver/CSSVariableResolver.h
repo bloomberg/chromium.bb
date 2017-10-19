@@ -29,7 +29,7 @@ class CSSVariableResolver {
  public:
   CSSVariableResolver(const StyleResolverState&);
 
-  RefPtr<CSSVariableData> ResolveCustomPropertyAnimationKeyframe(
+  scoped_refptr<CSSVariableData> ResolveCustomPropertyAnimationKeyframe(
       const CSSCustomPropertyDeclaration& keyframe,
       bool& cycle_detected);
 
@@ -84,9 +84,9 @@ class CSSVariableResolver {
   // if necessary.
   CSSVariableData* ValueForCustomProperty(AtomicString name);
   // Resolves the CSSVariableData from a custom property declaration.
-  RefPtr<CSSVariableData> ResolveCustomProperty(AtomicString name,
-                                                const CSSVariableData&,
-                                                bool& cycle_detected);
+  scoped_refptr<CSSVariableData> ResolveCustomProperty(AtomicString name,
+                                                       const CSSVariableData&,
+                                                       bool& cycle_detected);
 
   const StyleResolverState& state_;
   StyleInheritedVariables* inherited_variables_;

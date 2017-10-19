@@ -14,8 +14,9 @@ namespace blink {
 
 class CSSCustomPropertyDeclaration : public CSSValue {
  public:
-  static CSSCustomPropertyDeclaration* Create(const AtomicString& name,
-                                              RefPtr<CSSVariableData> value) {
+  static CSSCustomPropertyDeclaration* Create(
+      const AtomicString& name,
+      scoped_refptr<CSSVariableData> value) {
     return new CSSCustomPropertyDeclaration(name, std::move(value));
   }
 
@@ -55,14 +56,14 @@ class CSSCustomPropertyDeclaration : public CSSValue {
   }
 
   CSSCustomPropertyDeclaration(const AtomicString& name,
-                               RefPtr<CSSVariableData> value)
+                               scoped_refptr<CSSVariableData> value)
       : CSSValue(kCustomPropertyDeclarationClass),
         name_(name),
         value_(std::move(value)),
         value_id_(CSSValueInvalid) {}
 
   const AtomicString name_;
-  RefPtr<CSSVariableData> value_;
+  scoped_refptr<CSSVariableData> value_;
   CSSValueID value_id_;
 };
 

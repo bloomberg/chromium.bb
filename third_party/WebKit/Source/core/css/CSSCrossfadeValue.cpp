@@ -220,10 +220,11 @@ void CSSCrossfadeValue::LoadSubimages(const Document& document) {
   crossfade_subimage_observer_.SetReady(true);
 }
 
-RefPtr<Image> CSSCrossfadeValue::GetImage(const ImageResourceObserver& client,
-                                          const Document& document,
-                                          const ComputedStyle&,
-                                          const IntSize& size) {
+scoped_refptr<Image> CSSCrossfadeValue::GetImage(
+    const ImageResourceObserver& client,
+    const Document& document,
+    const ComputedStyle&,
+    const IntSize& size) {
   if (size.IsEmpty())
     return nullptr;
 
@@ -233,8 +234,8 @@ RefPtr<Image> CSSCrossfadeValue::GetImage(const ImageResourceObserver& client,
   if (!from_image || !to_image)
     return Image::NullImage();
 
-  RefPtr<Image> from_image_ref(from_image);
-  RefPtr<Image> to_image_ref(to_image);
+  scoped_refptr<Image> from_image_ref(from_image);
+  scoped_refptr<Image> to_image_ref(to_image);
 
   if (from_image->IsSVGImage())
     from_image_ref = SVGImageForContainer::Create(

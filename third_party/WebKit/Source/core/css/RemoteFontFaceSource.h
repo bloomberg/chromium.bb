@@ -57,10 +57,11 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   virtual void Trace(blink::Visitor*);
 
  protected:
-  RefPtr<SimpleFontData> CreateFontData(
+  scoped_refptr<SimpleFontData> CreateFontData(
       const FontDescription&,
       const FontSelectionCapabilities&) override;
-  RefPtr<SimpleFontData> CreateLoadingFallbackFontData(const FontDescription&);
+  scoped_refptr<SimpleFontData> CreateLoadingFallbackFontData(
+      const FontDescription&);
 
  private:
   class FontLoadHistograms {
@@ -119,7 +120,7 @@ class RemoteFontFaceSource final : public CSSFontFaceSource,
   Member<FontSelector> font_selector_;
 
   // |nullptr| if font is not loaded or failed to decode.
-  RefPtr<FontCustomPlatformData> custom_font_data_;
+  scoped_refptr<FontCustomPlatformData> custom_font_data_;
 
   const FontDisplay display_;
   DisplayPeriod period_;
