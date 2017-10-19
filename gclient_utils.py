@@ -291,11 +291,7 @@ def CheckCallAndFilterAndHeader(args, always=False, header=None, **kwargs):
   """
   stdout = kwargs.setdefault('stdout', sys.stdout)
   if header is None:
-    # The automatically generated header only prepends newline if always is
-    # false: always is usually set to false if there's an external progress
-    # display, and it's better not to clobber it in that case.
-    header = "%s________ running '%s' in '%s'\n" % (
-                 '' if always else '\n',
+    header = "________ running '%s' in '%s'\n" % (
                  ' '.join(args), kwargs.get('cwd', '.'))
 
   if always:
