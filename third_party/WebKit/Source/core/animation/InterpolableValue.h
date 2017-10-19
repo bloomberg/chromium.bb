@@ -25,7 +25,6 @@ class CORE_EXPORT InterpolableValue {
   virtual bool IsNumber() const { return false; }
   virtual bool IsBool() const { return false; }
   virtual bool IsList() const { return false; }
-  virtual bool IsAnimatableValue() const { return false; }
 
   virtual bool Equals(const InterpolableValue&) const = 0;
   virtual std::unique_ptr<InterpolableValue> Clone() const = 0;
@@ -130,42 +129,6 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   Vector<std::unique_ptr<InterpolableValue>> values_;
 };
 
-// FIXME: Remove this when we can.
-class InterpolableAnimatableValue : public InterpolableValue {
- public:
-  static std::unique_ptr<InterpolableAnimatableValue> Create(
-      RefPtr<AnimatableValue> value) {
-    return WTF::WrapUnique(new InterpolableAnimatableValue(std::move(value)));
-  }
-
-  bool IsAnimatableValue() const final { return true; }
-  AnimatableValue* Value() const { return value_.get(); }
-  bool Equals(const InterpolableValue&) const final {
-    NOTREACHED();
-    return false;
-  }
-  std::unique_ptr<InterpolableValue> Clone() const final {
-    return Create(value_);
-  }
-  std::unique_ptr<InterpolableValue> CloneAndZero() const final {
-    NOTREACHED();
-    return nullptr;
-  }
-  void Scale(double scale) final { NOTREACHED(); }
-  void ScaleAndAdd(double scale, const InterpolableValue& other) final {
-    NOTREACHED();
-  }
-
- private:
-  void Interpolate(const InterpolableValue& to,
-                   const double progress,
-                   InterpolableValue& result) const final;
-  RefPtr<AnimatableValue> value_;
-
-  InterpolableAnimatableValue(RefPtr<AnimatableValue> value)
-      : value_(std::move(value)) {}
-};
-
 DEFINE_TYPE_CASTS(InterpolableNumber,
                   InterpolableValue,
                   value,
@@ -176,11 +139,6 @@ DEFINE_TYPE_CASTS(InterpolableList,
                   value,
                   value->IsList(),
                   value.IsList());
-DEFINE_TYPE_CASTS(InterpolableAnimatableValue,
-                  InterpolableValue,
-                  value,
-                  value->IsAnimatableValue(),
-                  value.IsAnimatableValue());
 
 }  // namespace blink
 
