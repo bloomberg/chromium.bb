@@ -48,45 +48,45 @@ void SetupRendererSandboxParameters(sandbox::SeatbeltExecClient* client) {
       command_line->HasSwitch(switches::kEnableSandboxLogging);
 
   CHECK(client->SetBooleanParameter(
-      service_manager::Sandbox::kSandboxEnableLogging, enable_logging));
+      service_manager::SandboxMac::kSandboxEnableLogging, enable_logging));
   CHECK(client->SetBooleanParameter(
-      service_manager::Sandbox::kSandboxDisableDenialLogging, !enable_logging));
+      service_manager::SandboxMac::kSandboxDisableDenialLogging,
+      !enable_logging));
 
   std::string homedir =
-      service_manager::Sandbox::GetCanonicalSandboxPath(base::GetHomeDir())
-          .value();
-  CHECK(client->SetParameter(service_manager::Sandbox::kSandboxHomedirAsLiteral,
-                             homedir));
+      service_manager::SandboxMac::GetCanonicalPath(base::GetHomeDir()).value();
+  CHECK(client->SetParameter(
+      service_manager::SandboxMac::kSandboxHomedirAsLiteral, homedir));
 
-  CHECK(client->SetParameter(service_manager::Sandbox::kSandboxOSVersion,
+  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxOSVersion,
                              GetOSVersion()));
 
-  std::string bundle_path = service_manager::Sandbox::GetCanonicalSandboxPath(
-                                base::mac::MainBundlePath())
-                                .value();
-  CHECK(client->SetParameter(service_manager::Sandbox::kSandboxBundlePath,
+  std::string bundle_path =
+      service_manager::SandboxMac::GetCanonicalPath(base::mac::MainBundlePath())
+          .value();
+  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxBundlePath,
                              bundle_path));
 
   NSBundle* bundle = base::mac::OuterBundle();
   std::string bundle_id = base::SysNSStringToUTF8([bundle bundleIdentifier]);
-  CHECK(client->SetParameter(service_manager::Sandbox::kSandboxChromeBundleId,
-                             bundle_id));
+  CHECK(client->SetParameter(
+      service_manager::SandboxMac::kSandboxChromeBundleId, bundle_id));
 
-  CHECK(client->SetParameter(service_manager::Sandbox::kSandboxBrowserPID,
+  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxBrowserPID,
                              std::to_string(getpid())));
 
   std::string logging_path =
       GetContentClient()->browser()->GetLoggingFileName(*command_line).value();
   CHECK(client->SetParameter(
-      service_manager::Sandbox::kSandboxLoggingPathAsLiteral, logging_path));
+      service_manager::SandboxMac::kSandboxLoggingPathAsLiteral, logging_path));
 
 #if defined(COMPONENT_BUILD)
   // For component builds, allow access to one directory level higher, where
   // the dylibs live.
   base::FilePath component_path = base::mac::MainBundlePath().Append("..");
   std::string component_path_canonical =
-      service_manager::Sandbox::GetCanonicalSandboxPath(component_path).value();
-  CHECK(client->SetParameter(service_manager::Sandbox::kSandboxComponentPath,
+      service_manager::SandboxMac::GetCanonicalPath(component_path).value();
+  CHECK(client->SetParameter(service_manager::SandboxMac::kSandboxComponentPath,
                              component_path_canonical));
 #endif
 }
