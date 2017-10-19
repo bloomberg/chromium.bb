@@ -234,8 +234,7 @@ StyleRule::StyleRule(const StyleRule& o)
     : StyleRuleBase(o),
       should_consider_for_matching_rules_(kConsiderIfNonEmpty),
       selector_list_(o.selector_list_.Copy()),
-      properties_(o.ParsedProperties() ? o.ParsedProperties()->MutableCopy()
-                                       : nullptr) {}
+      properties_(o.Properties().MutableCopy()) {}
 
 StyleRule::~StyleRule() {}
 
