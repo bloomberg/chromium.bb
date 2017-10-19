@@ -31,7 +31,9 @@
       }
     </style>
     <div class="settings-box continuation">
-      <paper-button class="secondary-button" id="removeShowingSites"
+      <div hidden$="[[!isLoading_]]">$i18n{loadingLocalDataList}</div>
+      <paper-button class="secondary-button"
+          disabled$="[[isLoading_]]" id="removeShowingSites"
           on-tap="onRemoveShowingSitesTap_" hidden$="[[!sites.length]]">
         [[computeRemoveLabel_(filter)]]
       </paper-button>
