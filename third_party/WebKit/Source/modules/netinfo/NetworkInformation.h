@@ -83,6 +83,9 @@ class NetworkInformation final
   // returned value is in Mbps.
   double RoundMbps(const Optional<double>& downlink_mbps) const;
 
+  // Whether this object is listening for events from NetworkStateNotifier.
+  bool IsObserving() const;
+
   // Touched only on context thread.
   WebConnectionType type_;
 
@@ -102,11 +105,11 @@ class NetworkInformation final
   // only on context thread.
   double downlink_mbps_;
 
-  // Whether this object is listening for events from NetworkStateNotifier.
-  bool observing_;
-
   // Whether ContextLifecycleObserver::contextDestroyed has been called.
   bool context_stopped_;
+
+  std::unique_ptr<NetworkStateNotifier::NetworkStateObserverHandle>
+      connection_observer_handle_;
 };
 
 }  // namespace blink

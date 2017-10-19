@@ -66,13 +66,17 @@ NetworkInformation* NetworkInformation::Create(ExecutionContext* context) {
 }
 
 NetworkInformation::~NetworkInformation() {
-  DCHECK(!observing_);
+  DCHECK(!IsObserving());
 }
+
+bool NetworkInformation::IsObserving() const {
+  return !!connection_observer_handle_;
+};
 
 String NetworkInformation::type() const {
   // type_ is only updated when listening for events, so ask
   // networkStateNotifier if not listening (crbug.com/379841).
-  if (!observing_)
+  if (!IsObserving())
     return ConnectionTypeToString(GetNetworkStateNotifier().ConnectionType());
 
   // If observing, return m_type which changes when the event fires, per spec.
@@ -80,7 +84,7 @@ String NetworkInformation::type() const {
 }
 
 double NetworkInformation::downlinkMax() const {
-  if (!observing_)
+  if (!IsObserving())
     return GetNetworkStateNotifier().MaxBandwidth();
 
   return downlink_max_mbps_;
@@ -89,7 +93,7 @@ double NetworkInformation::downlinkMax() const {
 String NetworkInformation::effectiveType() const {
   // effective_type_ is only updated when listening for events, so ask
   // networkStateNotifier if not listening (crbug.com/379841).
-  if (!observing_) {
+  if (!IsObserving()) {
     return EffectiveConnectionTypeToString(
         GetNetworkStateNotifier().EffectiveType());
   }
@@ -99,14 +103,14 @@ String NetworkInformation::effectiveType() const {
 }
 
 unsigned long NetworkInformation::rtt() const {
-  if (!observing_)
+  if (!IsObserving())
     return RoundRtt(GetNetworkStateNotifier().HttpRtt());
 
   return http_rtt_msec_;
 }
 
 double NetworkInformation::downlink() const {
-  if (!observing_)
+  if (!IsObserving())
     return RoundMbps(GetNetworkStateNotifier().DownlinkThroughputMbps());
 
   return downlink_mbps_;
@@ -187,10 +191,10 @@ void NetworkInformation::RemoveAllEventListeners() {
 }
 
 bool NetworkInformation::HasPendingActivity() const {
-  DCHECK(context_stopped_ || observing_ == HasEventListeners());
+  DCHECK(context_stopped_ || IsObserving() == HasEventListeners());
 
   // Prevent collection of this object when there are active listeners.
-  return observing_;
+  return IsObserving();
 }
 
 void NetworkInformation::ContextDestroyed(ExecutionContext*) {
@@ -199,21 +203,20 @@ void NetworkInformation::ContextDestroyed(ExecutionContext*) {
 }
 
 void NetworkInformation::StartObserving() {
-  if (!observing_ && !context_stopped_) {
+  if (!IsObserving() && !context_stopped_) {
     type_ = GetNetworkStateNotifier().ConnectionType();
-    GetNetworkStateNotifier().AddConnectionObserver(
-        this,
-        TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()));
-    observing_ = true;
+    DCHECK(!connection_observer_handle_);
+    connection_observer_handle_ =
+        GetNetworkStateNotifier().AddConnectionObserver(
+            this, TaskRunnerHelper::Get(TaskType::kNetworking,
+                                        GetExecutionContext()));
   }
 }
 
 void NetworkInformation::StopObserving() {
-  if (observing_) {
-    GetNetworkStateNotifier().RemoveConnectionObserver(
-        this,
-        TaskRunnerHelper::Get(TaskType::kNetworking, GetExecutionContext()));
-    observing_ = false;
+  if (IsObserving()) {
+    DCHECK(connection_observer_handle_);
+    connection_observer_handle_ = nullptr;
   }
 }
 
@@ -225,7 +228,6 @@ NetworkInformation::NetworkInformation(ExecutionContext* context)
       http_rtt_msec_(RoundRtt(GetNetworkStateNotifier().HttpRtt())),
       downlink_mbps_(
           RoundMbps(GetNetworkStateNotifier().DownlinkThroughputMbps())),
-      observing_(false),
       context_stopped_(false) {
   DCHECK_LE(1u, GetNetworkStateNotifier().RandomizationSalt());
   DCHECK_GE(20u, GetNetworkStateNotifier().RandomizationSalt());
