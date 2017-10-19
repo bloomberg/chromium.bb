@@ -207,6 +207,7 @@
 -BrowserOnly/MemlogBrowserTest.EndToEndTracing/0
 -BrowserTest.CancelBeforeUnloadResetsURL
 -BrowserTest.InterstitialCancelsGuestViewDialogs
+-BrowsingDataRemoverBrowserTest.CookieDeletion
 -BrowsingDataRemoverBrowserTest.Database
 -CaptivePortalBrowserTest.AbortLoad
 -CaptivePortalBrowserTest.CloseLoginTab
@@ -2050,6 +2051,7 @@
 -NativeBindings/ExternallyConnectableMessagingTest.HostedAppOnWebsite/0
 -NativeBindings/ExternallyConnectableMessagingTest.WebConnectableAndNotConnectable/0
 -NativeBindingsApiTest.LazyListeners
+-NetworkTimePolicyTest.NetworkTimeQueriesDisabled
 -NewTabPageInterceptorTest.204Interception
 -NewTabPageInterceptorTest.404Interception
 -NewTabPageInterceptorTest.FailedRequestInterception
