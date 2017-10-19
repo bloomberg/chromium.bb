@@ -2312,6 +2312,9 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(delta_q_cdf)
 #if CONFIG_EXT_DELTA_Q
   AVERAGE_TILE_CDFS(delta_lf_cdf)
+#if CONFIG_LOOPFILTER_LEVEL
+  AVERAGE_TILE_CDFS(delta_lf_multi_cdf)
+#endif
 #endif
 
 #if CONFIG_NEW_MULTISYMBOL
