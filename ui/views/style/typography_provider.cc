@@ -50,7 +50,7 @@ Font::Weight TypographyProvider::MediumWeightForUI() {
   // than the surrounding text. For example, Windows can be configured to use a
   // BOLD font for dialog text; deriving MEDIUM from that would replace the BOLD
   // attribute with something lighter.
-  if (ui::ResourceBundle::GetSharedInstance()
+  if (ResourceBundle::GetSharedInstance()
           .GetFontListWithDelta(0, Font::NORMAL, Font::Weight::NORMAL)
           .GetFontWeight() < Font::Weight::MEDIUM)
     return Font::Weight::MEDIUM;
@@ -63,7 +63,7 @@ const gfx::FontList& DefaultTypographyProvider::GetFont(int context,
   int size_delta;
   Font::Weight font_weight;
   GetDefaultFont(context, style, &size_delta, &font_weight);
-  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
+  return ResourceBundle::GetSharedInstance().GetFontListWithDelta(
       size_delta, Font::NORMAL, font_weight);
 }
 
@@ -130,7 +130,7 @@ void DefaultTypographyProvider::GetDefaultFont(int context,
       // Only non-MD default buttons should "increase" in boldness.
       if (context == style::CONTEXT_BUTTON) {
         *font_weight = GetValueBolderThan(
-            ui::ResourceBundle::GetSharedInstance()
+            ResourceBundle::GetSharedInstance()
                 .GetFontListWithDelta(*size_delta, Font::NORMAL, *font_weight)
                 .GetFontWeight());
       }

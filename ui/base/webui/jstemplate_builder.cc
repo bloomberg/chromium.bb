@@ -39,7 +39,7 @@ void AppendJsonHtml(const base::DictionaryValue* json, std::string* output) {
 void AppendLoadTimeData(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   base::StringPiece load_time_data_src(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_WEBUI_JS_LOAD_TIME_DATA));
 
   if (load_time_data_src.empty()) {
@@ -56,7 +56,7 @@ void AppendLoadTimeData(std::string* output) {
 void AppendJsTemplateSourceHtml(std::string* output) {
   // fetch and cache the pointer of the jstemplate resource source text.
   base::StringPiece jstemplate_src(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_WEBUI_JSTEMPLATE_JS));
 
   if (jstemplate_src.empty()) {
@@ -85,7 +85,7 @@ void AppendJsTemplateProcessHtml(
 // Appends the source for i18n Templates in a script tag.
 void AppendI18nTemplateSourceHtml(std::string* output) {
   base::StringPiece i18n_template_src(
-      ui::ResourceBundle::GetSharedInstance().GetRawDataResource(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
           IDR_WEBUI_I18N_TEMPLATE_JS));
 
   if (i18n_template_src.empty()) {

@@ -268,14 +268,14 @@ void Widget::ReparentNativeView(gfx::NativeView native_view,
 // static
 int Widget::GetLocalizedContentsWidth(int col_resource_id) {
   return ui::GetLocalizedContentsWidthForFont(
-      col_resource_id, ui::ResourceBundle::GetSharedInstance().GetFontWithDelta(
+      col_resource_id, ResourceBundle::GetSharedInstance().GetFontWithDelta(
                            ui::kMessageFontSizeDelta));
 }
 
 // static
 int Widget::GetLocalizedContentsHeight(int row_resource_id) {
   return ui::GetLocalizedContentsHeightForFont(
-      row_resource_id, ui::ResourceBundle::GetSharedInstance().GetFontWithDelta(
+      row_resource_id, ResourceBundle::GetSharedInstance().GetFontWithDelta(
                            ui::kMessageFontSizeDelta));
 }
 

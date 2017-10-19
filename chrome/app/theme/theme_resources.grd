@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- This grd file contains images that are pre-scaled for device scale
-     factors. The image returned by ui::ResourceBundle::GetImageNamed()
-     will contain multiple gfx:ImageSkiaReps for each scale factors. The
+     factors. The image returned by |base::ResourceBundle::GetImageNamed|
+     will contain multiple |gfx:ImageSkiaReps| for each scale factors. The
      |fallback_to_low_resolution| attribute controls behavior when
      an image file is missing for target scale factor. If true, chrome
      will automatically scale the 1x image to the target scale factor.

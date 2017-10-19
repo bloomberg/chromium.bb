@@ -43,7 +43,7 @@ BorderImages::BorderImages(const int border_image_ids[],
     return;
 
   border_painter = Painter::CreateImageGridPainter(border_image_ids);
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   border_thickness = rb.GetImageSkiaNamed(border_image_ids[0])->width();
 
   if (arrow_image_ids[0] != 0) {

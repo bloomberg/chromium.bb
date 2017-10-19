@@ -261,13 +261,13 @@ bool IsLocaleAvailable(const std::string& locale) {
 
   // If the ResourceBundle is not yet initialized, return false to avoid the
   // CHECK failure in ResourceBundle::GetSharedInstance().
-  if (!ui::ResourceBundle::HasSharedInstance())
+  if (!ResourceBundle::HasSharedInstance())
     return false;
 
   // TODO(hshi): make ResourceBundle::LocaleDataPakExists() a static function
   // so that this can be invoked without initializing the global instance.
   // See crbug.com/230432: CHECK failure in GetUserDataDir().
-  return ui::ResourceBundle::GetSharedInstance().LocaleDataPakExists(locale);
+  return ResourceBundle::GetSharedInstance().LocaleDataPakExists(locale);
 }
 #endif
 
@@ -695,7 +695,7 @@ std::string GetStringUTF8(int message_id) {
 }
 
 base::string16 GetStringUTF16(int message_id) {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   base::string16 str = rb.GetLocalizedString(message_id);
   AdjustParagraphDirectionality(&str);
 
@@ -709,7 +709,7 @@ base::string16 GetStringFUTF16(int message_id,
   // a StringPiece and were able to call ReplaceStringPlaceholders with
   // a StringPiece format string and base::string16 substitution strings.  In
   // practice, the strings should be relatively short.
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   const base::string16& format_string = rb.GetLocalizedString(message_id);
 
 #ifndef NDEBUG
