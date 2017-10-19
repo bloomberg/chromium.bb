@@ -23664,6 +23664,7 @@ from previous Chrome versions.
   <int value="-1648216169" label="NewOmniboxAnswerTypes:disabled"/>
   <int value="-1634878515" label="ChromeHomeModernLayout:enabled"/>
   <int value="-1634154256" label="ZeroSuggestRedirectToChrome:enabled"/>
+  <int value="-1633586675" label="TabModalJsDialog:enabled"/>
   <int value="-1631329950" label="ssl-version-max"/>
   <int value="-1630419335" label="enable-download-notification"/>
   <int value="-1624854957" label="enable-es3-apis"/>
@@ -23729,6 +23730,7 @@ from previous Chrome versions.
   <int value="-1468126425" label="ResourceLoadScheduler:disabled"/>
   <int value="-1467332609" label="tab-management-experiment-type-anise"/>
   <int value="-1466990325" label="CrosCompUpdates:enabled"/>
+  <int value="-1466759286" label="TabModalJsDialog:disabled"/>
   <int value="-1463410070" label="IPH_DemoMode:enabled"/>
   <int value="-1461261930" label="OutOfBlinkCORS:disabled"/>
   <int value="-1460462432" label="disable-media-source"/>

@@ -1309,6 +1309,11 @@ const char kTabsInCbdName[] = "Enable tabs for the Clear Browsing Data dialog.";
 const char kTabsInCbdDescription[] =
     "Enables a basic and an advanced tab for the Clear Browsing Data dialog.";
 
+const char kTabModalJsDialogName[] = "Auto-dismissing JavaScript Dialogs";
+const char kTabModalJsDialogDescription[] =
+    "If enabled, the JavaScript dialog will be auto dismissable when switching"
+    " tab.";
+
 const char kTcpFastOpenName[] = "TCP Fast Open";
 const char kTcpFastOpenDescription[] =
     "Enable the option to send extra authentication information in the initial "

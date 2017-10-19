@@ -811,6 +811,9 @@ extern const char kSysInternalsDescription[];
 extern const char kTabAudioMutingName[];
 extern const char kTabAudioMutingDescription[];
 
+extern const char kTabModalJsDialogName[];
+extern const char kTabModalJsDialogDescription[];
+
 extern const char kTabsInCbdName[];
 extern const char kTabsInCbdDescription[];
 

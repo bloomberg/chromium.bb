@@ -64,6 +64,7 @@ extern const base::Feature kReaderModeInCCT;
 extern const base::Feature kSpannableInlineAutocomplete;
 extern const base::Feature kSpecialLocaleFeature;
 extern const base::Feature kSpecialLocaleWrapper;
+extern const base::Feature kTabModalJsDialog;
 extern const base::Feature kTabReparenting;
 extern const base::Feature kUserMediaScreenCapturing;
 extern const base::Feature kVideoPersistence;
