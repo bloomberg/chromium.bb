@@ -63,7 +63,7 @@
     <template is="dom-if"
         if="[[showImagePreview_(cameraActive_, imageSrc)]]">
       <div id="preview">
-        <img alt="[[previewAltText]]" src="[[getImgSrc_(imageSrc)]]"
+        <img alt="[[previewAltText]]" src="[[getImgSrc_(imageUrl)]]"
             data-show-discard$="[[showDiscard_(imageType)]]">
         <div id="discard" hidden="[[!showDiscard_(imageType)]]">
           <button is="paper-icon-button-light" id="discardImage"

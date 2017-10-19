@@ -16,7 +16,16 @@ Polymer({
     cameraPresent: Boolean,
 
     /** Image source to show when imageType != CAMERA. */
-    imageSrc: String,
+    imageSrc: {
+      type: String,
+      observer: 'imageSrcChanged_',
+    },
+
+    /** Image URL to use when imageType != CAMERA. */
+    imageUrl: {
+      type: String,
+      value: '',
+    },
 
     /**
      * The type of image to display in the preview.
@@ -69,6 +78,31 @@ Polymer({
       camera.startCamera();
     else
       camera.stopCamera();
+  },
+
+  /** @private */
+  imageSrcChanged_: function() {
+    /**
+     * If current image URL is an object URL created below then revoke it to
+     * prevent this code from using more than one object URL per document.
+     */
+    if (this.imageUrl.startsWith('blob:'))
+      URL.revokeObjectURL(this.imageUrl);
+
+    /**
+     * Data URLs for PNG images can be large. Create an object URL to avoid
+     * URL length limits.
+     */
+    if (this.imageSrc.startsWith('data:image/png')) {
+      var byteString = atob(this.imageSrc.split(',')[1]);
+      var bytes = new Uint8Array(byteString.length);
+      for (var i = 0; i < byteString.length; i++)
+        bytes[i] = byteString.charCodeAt(i);
+      var blob = new Blob([bytes], {'type': 'image/png'});
+      this.imageUrl = URL.createObjectURL(blob);
+    } else {
+      this.imageUrl = this.imageSrc;
+    }
   },
 
   /**

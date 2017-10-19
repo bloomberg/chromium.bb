@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -132,12 +133,18 @@ void UserImageScreenHandler::HandleScreenReady() {
 }
 
 void UserImageScreenHandler::HandlePhotoTaken(const std::string& image_url) {
-  std::string mime_type, charset, raw_data;
-  if (!net::DataURL::Parse(GURL(image_url), &mime_type, &charset, &raw_data))
-    NOTREACHED();
-  DCHECK_EQ("image/png", mime_type);
   AccessibilityManager::Get()->PlayEarcon(
       SOUND_CAMERA_SNAP, PlaySoundOption::SPOKEN_FEEDBACK_ENABLED);
+
+  std::string raw_data;
+  base::StringPiece url(image_url);
+  const char kDataUrlPrefix[] = "data:image/png;base64,";
+  const size_t kDataUrlPrefixLength = arraysize(kDataUrlPrefix) - 1;
+  if (!url.starts_with(kDataUrlPrefix) ||
+      !base::Base64Decode(url.substr(kDataUrlPrefixLength), &raw_data)) {
+    LOG(WARNING) << "Invalid image URL";
+    return;
+  }
 
   if (screen_)
     screen_->OnPhotoTaken(raw_data);
