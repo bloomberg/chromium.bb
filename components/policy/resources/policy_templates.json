@@ -9803,15 +9803,15 @@
       'example_value': {
         'allow-user-initiated-powerwash': True
       },
-      'caption': '''Configure TPM firmware update behavior''',
+      'caption': '''Configure <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update behavior''',
       'tags': [],
-      'desc': '''Configures availability and behavior of TPM firmware update functionality.
+      'desc': '''Configures availability and behavior of <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality.
 
       Individual settings can be specified in JSON properties:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users will be able to trigger the powerwash flow to install a TPM firmware update.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH">allow-user-initiated-powerwash</ph>: If set to <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE">true</ph>, users will be able to trigger the powerwash flow to install a <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update.
 
-      If the policy is not set, TPM firmware update functionality will not be available.''',
+      If the policy is not set, <ph name="TPM_FIRMWARE_UPDATE_TPM">TPM</ph> firmware update functionality will not be available.''',
     },
 
     {
