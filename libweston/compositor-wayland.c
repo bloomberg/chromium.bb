@@ -130,7 +130,6 @@ struct wayland_output {
 	} shm;
 
 	struct weston_mode mode;
-	uint32_t scale;
 
 	struct wl_callback *frame_cb;
 };
@@ -1338,7 +1337,6 @@ wayland_output_set_size(struct weston_output *base, int width, int height)
 	output->mode.width = output_width;
 	output->mode.height = output_height;
 	output->mode.refresh = 60000;
-	output->scale = output->base.scale;
 	wl_list_insert(&output->base.mode_list, &output->mode.link);
 
 	output->base.current_mode = &output->mode;
