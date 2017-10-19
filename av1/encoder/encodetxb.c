@@ -145,8 +145,8 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE txsize,
     int eob_pos_ctx = get_eob_pos_ctx(i);
     counts->eob_flag[txsize][plane][eob_pos_ctx][eob_pt == i]++;
 #if LV_MAP_PROB
-    update_cdf(ec_ctx->coeff_base_cdf[txsize][plane][i][eob_pos_ctx],
-               eob_pt == i, 2);
+    update_cdf(ec_ctx->eob_flag_cdf[txsize][plane][eob_pos_ctx], eob_pt == i,
+               2);
 #endif
     if (eob_pt == i) {
       break;
