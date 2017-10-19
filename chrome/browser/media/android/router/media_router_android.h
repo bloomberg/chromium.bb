@@ -65,8 +65,6 @@ class MediaRouterAndroid : public MediaRouterBase {
                    const std::string& search_input,
                    const std::string& domain,
                    MediaSinkSearchResponseCallback sink_callback) override;
-  void ProvideSinks(const std::string& provider_name,
-                    std::vector<MediaSinkInternal> sinks) override;
 
   // The methods called by the Java bridge.
   // Notifies the media router that information about sinks is received for

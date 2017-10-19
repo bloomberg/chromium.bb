@@ -295,7 +295,6 @@ class MediaRouterMojoTest : public ::testing::Test {
   void TestSendRouteBinaryMessage();
   void TestDetachRoute();
   void TestSearchSinks();
-  void TestProvideSinks();
   void TestCreateMediaRouteController();
   void TestCreateHangoutsMediaRouteController();
 

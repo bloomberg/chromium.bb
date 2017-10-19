@@ -143,7 +143,7 @@ void MediaRouterDesktop::StartDiscovery() {
   if (media_router::CastDiscoveryEnabled()) {
     if (!cast_media_sink_service_) {
       cast_media_sink_service_ = base::MakeRefCounted<CastMediaSinkService>(
-          base::BindRepeating(&MediaRouterMojoImpl::ProvideSinks,
+          base::BindRepeating(&MediaRouterDesktop::ProvideSinks,
                               weak_factory_.GetWeakPtr(), "cast"),
           context(),
           content::BrowserThread::GetTaskRunnerForThread(
@@ -158,7 +158,7 @@ void MediaRouterDesktop::StartDiscovery() {
     if (!dial_media_sink_service_proxy_) {
       dial_media_sink_service_proxy_ =
           base::MakeRefCounted<DialMediaSinkServiceProxy>(
-              base::BindRepeating(&MediaRouterMojoImpl::ProvideSinks,
+              base::BindRepeating(&MediaRouterDesktop::ProvideSinks,
                                   weak_factory_.GetWeakPtr(), "dial"),
               context());
       dial_media_sink_service_proxy_->SetObserver(
@@ -168,6 +168,14 @@ void MediaRouterDesktop::StartDiscovery() {
       dial_media_sink_service_proxy_->ForceSinkDiscoveryCallback();
     }
   }
+}
+
+void MediaRouterDesktop::ProvideSinks(const std::string& provider_name,
+                                      std::vector<MediaSinkInternal> sinks) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DVLOG(1) << "Provider [" << provider_name << "] found " << sinks.size()
+           << " devices...";
+  media_route_provider_->ProvideSinks(provider_name, std::move(sinks));
 }
 
 #if defined(OS_WIN)

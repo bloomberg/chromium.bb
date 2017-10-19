@@ -340,14 +340,6 @@ void MediaRouterMojoImpl::InitMediaRouteController(
       std::move(callback));
 }
 
-void MediaRouterMojoImpl::ProvideSinks(const std::string& provider_name,
-                                       std::vector<MediaSinkInternal> sinks) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DVLOG_WITH_INSTANCE(1) << "Provider [" << provider_name << "] found "
-                         << sinks.size() << " devices...";
-  media_route_provider_->ProvideSinks(provider_name, std::move(sinks));
-}
-
 bool MediaRouterMojoImpl::RegisterMediaSinksObserver(
     MediaSinksObserver* observer) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
