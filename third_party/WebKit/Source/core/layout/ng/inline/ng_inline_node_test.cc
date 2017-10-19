@@ -330,6 +330,7 @@ TEST_F(NGInlineNodeTest, MinMaxSize) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>AB CDEF</div>");
   NGInlineNodeForTest node = CreateInlineNode();
+  node.PrepareLayout();
   MinMaxSize sizes = node.ComputeMinMaxSize();
   EXPECT_EQ(40, sizes.min_size);
   EXPECT_EQ(70, sizes.max_size);
@@ -339,6 +340,7 @@ TEST_F(NGInlineNodeTest, MinMaxSizeElementBoundary) {
   LoadAhem();
   SetupHtml("t", "<div id=t style='font:10px Ahem'>A B<span>C D</span></div>");
   NGInlineNodeForTest node = CreateInlineNode();
+  node.PrepareLayout();
   MinMaxSize sizes = node.ComputeMinMaxSize();
   // |min_content| should be the width of "BC" because there is an element
   // boundary between "B" and "C" but no break opportunities.

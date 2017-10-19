@@ -250,8 +250,13 @@ NGLayoutInputNode NGBlockNode::FirstChild() {
   auto* child = GetLayoutObjectForFirstChildNode(block);
   if (!child)
     return nullptr;
-  if (AreNGBlockFlowChildrenInline(block))
-    return NGInlineNode(block);
+  if (AreNGBlockFlowChildrenInline(block)) {
+    // TODO(kojii): Invalidate PrepareLayout() more efficiently.
+    NGInlineNode node(block);
+    node.InvalidatePrepareLayout();
+    node.PrepareLayout();
+    return node;
+  }
   return NGBlockNode(ToLayoutBox(child));
 }
 
