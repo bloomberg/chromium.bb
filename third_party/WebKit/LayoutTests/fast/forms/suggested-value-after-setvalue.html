@@ -62,8 +62,11 @@ else {
     select.value = 'CA';
 
     log();
-    var innerTextValue = internals.shadowRoot(input).firstChild.innerText;
-    var innerTextAreaValue = internals.shadowRoot(textarea).firstChild.innerText;
+    // Make sure the InnerEditor value is set to the "new value". The
+    // InnerEditor element is the second/last child of the shadow
+    // input/textarea.
+    var innerTextValue = internals.shadowRoot(input).lastChild.innerText;
+    var innerTextAreaValue = internals.shadowRoot(textarea).lastChild.innerText;
     var selectedValues = getSelectedValues(select);
     addText(innerTextValue == 'new value' &&
             innerTextAreaValue == 'new value' &&

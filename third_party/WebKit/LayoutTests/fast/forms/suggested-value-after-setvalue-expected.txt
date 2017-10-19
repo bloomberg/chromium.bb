@@ -8,8 +8,13 @@ After setting suggestedValue:
 |   this.value="initial value"
 |   <shadow:root>
 |     <div>
-|       id="inner-editor"
+|       id="placeholder"
+|       pseudo="-webkit-input-suggested"
+|       style="display: none !important;"
+|       shadow:pseudoId="-webkit-input-suggested"
 |       "suggested value"
+|     <div>
+|       id="inner-editor"
 | "input.value: initial value"
 | "internals.suggestedValue(input): suggested value"
 | "input.selectionStart: 0"

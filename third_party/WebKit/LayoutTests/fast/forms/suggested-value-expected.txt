@@ -8,8 +8,13 @@ instead of "initial value".
 |   this.value="initial value"
 |   <shadow:root>
 |     <div>
-|       id="inner-editor"
+|       id="placeholder"
+|       pseudo="-webkit-input-suggested"
+|       style="display: none !important;"
+|       shadow:pseudoId="-webkit-input-suggested"
 |       "suggested value"
+|     <div>
+|       id="inner-editor"
 | <input>
 |   id="month"
 |   type="month"
@@ -65,8 +70,13 @@ instead of "initial value".
 |   this.value="initial value"
 |   <shadow:root>
 |     <div>
-|       id="inner-editor"
+|       id="placeholder"
+|       pseudo="-webkit-input-suggested"
+|       style="display: none !important;"
+|       shadow:pseudoId="-webkit-input-suggested"
 |       "suggested value"
+|     <div>
+|       id="inner-editor"
 | <select>
 |   id="select"
 |   <option>

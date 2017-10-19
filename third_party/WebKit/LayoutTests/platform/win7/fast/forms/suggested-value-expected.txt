@@ -8,6 +8,12 @@ instead of "initial value".
 |   this.value="initial value"
 |   <shadow:root>
 |     <div>
+|       id="placeholder"
+|       pseudo="-webkit-input-suggested"
+|       style="display: none !important;"
+|       shadow:pseudoId="-webkit-input-suggested"
+|       "suggested value"
+|     <div>
 |       id="inner-editor"
 |       "suggested value"
 | <input>
@@ -64,9 +70,12 @@ instead of "initial value".
 |   id="textarea"
 |   this.value="initial value"
 |   <shadow:root>
+|       id="placeholder"
+|       pseudo="-webkit-input-suggestedx"
+|       style="display: none !important;"
+|       shadow:pseudoId="-webkit-input-suggested"
 |     <div>
 |       id="inner-editor"
-|       "suggested value"
 | <select>
 |   id="select"
 |   <option>
