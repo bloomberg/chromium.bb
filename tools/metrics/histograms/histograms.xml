@@ -15831,7 +15831,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="DomDistiller.InfoBarUsage" enum="BooleanUsage">
   <owner>mdjones@chromium.org</owner>
-  <summary>Records if the infobar was used or closed.</summary>
+  <summary>
+    &quot;Used&quot; is recorded when the user clicks the infobar to enter
+    Reader Mode. &quot;Not Used&quot; is recorded when the user clicks the close
+    button. If there's no user action, nothing is recorded.
+  </summary>
 </histogram>
 
 <histogram name="DomDistiller.LongArticleScoreNMF.Negative" units="score">
