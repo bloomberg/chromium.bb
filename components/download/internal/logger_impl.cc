@@ -157,7 +157,13 @@ std::unique_ptr<base::DictionaryValue> EntryToValue(
   serialized_entry->SetString("client", ClientToString(entry.client));
   serialized_entry->SetString("state", EntryStateToString(entry.state));
   serialized_entry->SetString("guid", entry.guid);
-  serialized_entry->SetString("url", entry.request_params.url.spec());
+
+  // Convert the URL to a proper logging format.
+  GURL::Replacements replacements;
+  replacements.ClearQuery();
+
+  serialized_entry->SetString(
+      "url", entry.request_params.url.ReplaceComponents(replacements).spec());
   serialized_entry->SetString("file_path",
                               entry.target_file_path.MaybeAsASCII());
 
