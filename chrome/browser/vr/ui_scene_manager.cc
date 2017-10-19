@@ -4,6 +4,7 @@
 
 #include "chrome/browser/vr/ui_scene_manager.h"
 
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -216,8 +217,6 @@ void UiSceneManager::CreateSystemIndicators() {
     system_indicators_.push_back(element.get());
     scene_->AddUiElement(kIndicatorLayout, std::move(element));
   }
-
-  ConfigureIndicators();
 }
 
 void UiSceneManager::CreateContentQuad(ContentInputDelegate* delegate) {
@@ -656,6 +655,10 @@ void UiSceneManager::OnProjMatrixChanged(const gfx::Transform& proj_matrix) {
 }
 
 void UiSceneManager::ConfigureScene() {
+  // Everything we do to configure scenes here should eventually be moved to
+  // bindings.
+  base::AutoReset<bool> configuring(&configuring_scene_, true);
+
   // We disable WebVR rendering if we're expecting to auto present so that we
   // can continue to show the 2D splash screen while the site submits the first
   // WebVR frame.
@@ -732,9 +735,36 @@ void UiSceneManager::ConfigureScene() {
   ConfigureExclusiveScreenToast();
   ConfigureIndicators();
   ConfigureBackgroundColor();
+  scene_->set_dirty();
+}
+
+void UiSceneManager::ConfigureExclusiveScreenToast() {
+  DCHECK(configuring_scene_);
+  exclusive_screen_toast_transient_parent_->SetVisible(fullscreen_ &&
+                                                       !web_vr_mode_);
+  exclusive_screen_toast_viewport_aware_transient_parent_->SetVisible(
+      web_vr_mode_ && web_vr_show_toast_);
+}
+
+void UiSceneManager::ConfigureIndicators() {
+  DCHECK(configuring_scene_);
+  bool allowed = !web_vr_mode_ && !fullscreen_;
+  audio_capture_indicator_->SetVisible(allowed && audio_capturing_);
+  video_capture_indicator_->SetVisible(allowed && video_capturing_);
+  screen_capture_indicator_->SetVisible(allowed && screen_capturing_);
+  location_access_indicator_->SetVisible(allowed && location_access_);
+  bluetooth_connected_indicator_->SetVisible(allowed && bluetooth_connected_);
+
+  audio_capture_indicator_->set_requires_layout(allowed && audio_capturing_);
+  video_capture_indicator_->set_requires_layout(allowed && video_capturing_);
+  screen_capture_indicator_->set_requires_layout(allowed && screen_capturing_);
+  location_access_indicator_->set_requires_layout(allowed && location_access_);
+  bluetooth_connected_indicator_->set_requires_layout(allowed &&
+                                                      bluetooth_connected_);
 }
 
 void UiSceneManager::ConfigureBackgroundColor() {
+  DCHECK(configuring_scene_);
   for (Rect* panel : background_panels_) {
     panel->SetCenterColor(color_scheme().world_background);
     panel->SetEdgeColor(color_scheme().world_background);
@@ -748,27 +778,27 @@ void UiSceneManager::ConfigureBackgroundColor() {
 
 void UiSceneManager::SetAudioCapturingIndicator(bool enabled) {
   audio_capturing_ = enabled;
-  ConfigureIndicators();
+  ConfigureScene();
 }
 
 void UiSceneManager::SetVideoCapturingIndicator(bool enabled) {
   video_capturing_ = enabled;
-  ConfigureIndicators();
+  ConfigureScene();
 }
 
 void UiSceneManager::SetScreenCapturingIndicator(bool enabled) {
   screen_capturing_ = enabled;
-  ConfigureIndicators();
+  ConfigureScene();
 }
 
 void UiSceneManager::SetLocationAccessIndicator(bool enabled) {
   location_access_ = enabled;
-  ConfigureIndicators();
+  ConfigureScene();
 }
 
 void UiSceneManager::SetBluetoothConnectedIndicator(bool enabled) {
   bluetooth_connected_ = enabled;
-  ConfigureIndicators();
+  ConfigureScene();
 }
 
 void UiSceneManager::SetIncognito(bool incognito) {
@@ -829,29 +859,6 @@ void UiSceneManager::SetExitVrPromptEnabled(bool enabled,
   exit_vr_prompt_reason_ = reason;
   prompting_to_exit_ = enabled;
   ConfigureScene();
-}
-
-void UiSceneManager::ConfigureIndicators() {
-  bool allowed = !web_vr_mode_ && !fullscreen_;
-  audio_capture_indicator_->SetVisible(allowed && audio_capturing_);
-  video_capture_indicator_->SetVisible(allowed && video_capturing_);
-  screen_capture_indicator_->SetVisible(allowed && screen_capturing_);
-  location_access_indicator_->SetVisible(allowed && location_access_);
-  bluetooth_connected_indicator_->SetVisible(allowed && bluetooth_connected_);
-
-  audio_capture_indicator_->set_requires_layout(allowed && audio_capturing_);
-  video_capture_indicator_->set_requires_layout(allowed && video_capturing_);
-  screen_capture_indicator_->set_requires_layout(allowed && screen_capturing_);
-  location_access_indicator_->set_requires_layout(allowed && location_access_);
-  bluetooth_connected_indicator_->set_requires_layout(allowed &&
-                                                      bluetooth_connected_);
-}
-
-void UiSceneManager::ConfigureExclusiveScreenToast() {
-  exclusive_screen_toast_transient_parent_->SetVisible(fullscreen_ &&
-                                                       !web_vr_mode_);
-  exclusive_screen_toast_viewport_aware_transient_parent_->SetVisible(
-      web_vr_mode_ && web_vr_show_toast_);
 }
 
 void UiSceneManager::OnBackButtonClicked() {

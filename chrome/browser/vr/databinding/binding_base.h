@@ -19,7 +19,8 @@ class BindingBase {
 
   // This function updates the binding. The exact behavior depends on the
   // subclass. Please see comments on the overridden functions for details.
-  virtual void Update() = 0;
+  // Returns true if the binding was updated.
+  virtual bool Update() = 0;
 
   base::WeakPtr<BindingBase> GetWeakPtr();
 

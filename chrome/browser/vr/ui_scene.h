@@ -20,10 +20,6 @@ namespace base {
 class TimeTicks;
 }  // namespace base
 
-namespace cc {
-class Animation;
-}  // namespace cc
-
 namespace gfx {
 class Vector3dF;
 }  // namespace gfx
@@ -41,17 +37,15 @@ class UiScene {
 
   void RemoveUiElement(int element_id);
 
-  // Add an animation to the scene, on element |element_id|.
-  void AddAnimation(int element_id, std::unique_ptr<cc::Animation> animation);
-
-  // Remove |animation_id| from element |element_id|.
-  void RemoveAnimation(int element_id, int animation_id);
-
   // Handles per-frame updates, giving each element the opportunity to update,
   // if necessary (eg, for animations). NB: |current_time| is the shared,
   // absolute begin frame time.
-  void OnBeginFrame(const base::TimeTicks& current_time,
+  // Returns true if *anything* was updated.
+  bool OnBeginFrame(const base::TimeTicks& current_time,
                     const gfx::Vector3dF& look_at);
+
+  // Returns true if any textures were redrawn.
+  bool UpdateTextures();
 
   UiElement& root_element();
 
@@ -67,8 +61,6 @@ class UiScene {
 
   float background_distance() const { return background_distance_; }
   void set_background_distance(float d) { background_distance_ = d; }
-  SkColor background_color() const { return background_color_; }
-  void set_background_color(SkColor color) { background_color_ = color; }
 
   bool web_vr_rendering_enabled() const { return webvr_rendering_enabled_; }
   void set_web_vr_rendering_enabled(bool enabled) {
@@ -84,6 +76,7 @@ class UiScene {
   void set_first_foreground_draw_phase(int phase) {
     first_foreground_draw_phase_ = phase;
   }
+  void set_dirty() { is_dirty_ = true; }
 
   void OnGlInitialized();
 
@@ -94,11 +87,17 @@ class UiScene {
   ColorScheme::Mode mode_ = ColorScheme::kModeNormal;
 
   float background_distance_ = 10.0f;
-  SkColor background_color_ = 0;
   bool webvr_rendering_enabled_ = false;
   bool reticle_rendering_enabled_ = true;
   bool gl_initialized_ = false;
   int first_foreground_draw_phase_ = 0;
+  bool initialized_scene_ = false;
+
+  // TODO(mthiesse): Convert everything that manipulates UI elements to
+  // bindings. Don't allow any code to go in and manipulate UI elements outside
+  // of bindings so that we can do a single pass and update everything and
+  // easily compute dirtiness.
+  bool is_dirty_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UiScene);
 };

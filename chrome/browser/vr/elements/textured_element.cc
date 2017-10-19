@@ -29,7 +29,6 @@ void TexturedElement::Initialize() {
   texture_size_ = GetTexture()->GetPreferredTextureSize(maximum_width_);
   GetTexture()->OnInitialized();
   initialized_ = true;
-  UpdateTexture();
 }
 
 // static
@@ -37,15 +36,16 @@ void TexturedElement::SetInitializedForTesting() {
   g_initialized_for_testing_ = true;
 }
 
-void TexturedElement::UpdateTexture() {
+bool TexturedElement::UpdateTexture() {
   if (!initialized_ || !GetTexture()->dirty() || !IsVisible())
-    return;
+    return false;
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
       texture_size_.width(), texture_size_.height());
   GetTexture()->DrawAndLayout(surface->getCanvas(), texture_size_);
   Flush(surface.get());
   // Update the element size's aspect ratio to match the texture.
   UpdateElementSize();
+  return true;
 }
 
 void TexturedElement::UpdateElementSize() {
@@ -94,11 +94,10 @@ void TexturedElement::Flush(SkSurface* surface) {
 
 void TexturedElement::OnSetMode() {
   GetTexture()->SetMode(mode());
-  UpdateTexture();
 }
 
-void TexturedElement::PrepareToDraw() {
-  UpdateTexture();
+bool TexturedElement::PrepareToDraw() {
+  return UpdateTexture();
 }
 
 }  // namespace vr

@@ -69,10 +69,10 @@ class UiSceneManagerTest : public testing::Test {
 
   // Advances current_time_ by delta. This is done in frame increments and
   // UiScene::OnBeginFrame is called at each increment.
-  void AnimateBy(base::TimeDelta delta);
+  bool AnimateBy(base::TimeDelta delta);
 
   // A wrapper to call scene_->OnBeginFrame.
-  void OnBeginFrame();
+  bool OnBeginFrame();
 
   void GetBackgroundColor(SkColor* background_color) const;
 

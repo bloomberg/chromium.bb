@@ -879,12 +879,17 @@ void VrShellGl::DrawFrame(int16_t frame_index) {
   }
 
   // Update the render position of all UI elements (including desktop).
-  ui_->scene()->OnBeginFrame(current_time,
-                             GetForwardVector(render_info_primary_.head_pose));
+  bool scene_changed = ui_->scene()->OnBeginFrame(
+      current_time, GetForwardVector(render_info_primary_.head_pose));
 
   // WebVR handles controller input in OnVsync.
   if (!ShouldDrawWebVr())
     UpdateController(render_info_primary_.head_pose);
+
+  bool textures_changed = ui_->scene()->UpdateTextures();
+
+  DVLOG(1) << "scene changed: " << (scene_changed ? "true, " : "false, ")
+           << "textures changed: " << (textures_changed ? "true" : "false");
 
   UpdateEyeInfos(render_info_primary_.head_pose, kViewportListPrimaryOffset,
                  render_info_primary_.surface_texture_size,

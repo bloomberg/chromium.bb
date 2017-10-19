@@ -5,7 +5,6 @@
 #ifndef CHROME_BROWSER_VR_UI_SCENE_MANAGER_H_
 #define CHROME_BROWSER_VR_UI_SCENE_MANAGER_H_
 
-#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/values.h"
 #include "chrome/browser/vr/browser_ui_interface.h"
@@ -195,6 +194,7 @@ class UiSceneManager {
   bool prompting_to_exit_ = false;
   bool exiting_ = false;
   bool browsing_disabled_ = false;
+  bool configuring_scene_ = false;
 
   bool fullscreen_ = false;
   bool incognito_ = false;

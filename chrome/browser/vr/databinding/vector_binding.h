@@ -38,9 +38,11 @@ class VectorBinding : public BindingBase {
   //  1. Managing the collection of element bindings (in response to changes in
   //  the size of the observed collection).
   //  2. Updating said element bindings.
-  void Update() override {
+  bool Update() override {
+    bool updated = false;
     size_t current_size = models_->size();
     if (!last_size_ || current_size != last_size_.value()) {
+      updated = true;
       size_t last_size = last_size_ ? last_size_.value() : 0lu;
       for (size_t i = current_size; i < last_size; ++i) {
         removed_callback_.Run(bindings_[i].get());
@@ -53,8 +55,10 @@ class VectorBinding : public BindingBase {
       last_size_ = current_size;
     }
     for (auto& binding : bindings_) {
-      binding->Update();
+      if (binding->Update())
+        updated = true;
     }
+    return updated;
   }
 
  private:

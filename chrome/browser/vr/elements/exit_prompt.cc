@@ -69,7 +69,6 @@ void ExitPrompt::OnStateUpdated(const gfx::PointF& position) {
   texture_->SetSecondaryButtonHovered(secondary_hovered);
   texture_->SetSecondaryButtonPressed(secondary_hovered ? secondary_down_
                                                         : false);
-  UpdateTexture();
 }
 
 UiTexture* ExitPrompt::GetTexture() const {

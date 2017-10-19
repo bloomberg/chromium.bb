@@ -48,16 +48,26 @@ void RotateAboutYAxis(float degrees, gfx::Vector3dF* out) {
   transform.TransformVector(out);
 }
 
+class ViewportAwareRootForTesting : public ViewportAwareRoot {
+ public:
+  ViewportAwareRootForTesting() = default;
+  ~ViewportAwareRootForTesting() override = default;
+
+  bool AdjustRotationForHeadPose(const gfx::Vector3dF& look_at) override {
+    return ViewportAwareRoot::AdjustRotationForHeadPose(look_at);
+  }
+};
+
 }  // namespace
 
 class ViewportAwareRootTest : public testing::Test {
  public:
-  ViewportAwareRootTest() {}
-  ~ViewportAwareRootTest() override {}
+  ViewportAwareRootTest() = default;
+  ~ViewportAwareRootTest() override = default;
 
   void SetUp() override {
     scene_ = base::MakeUnique<UiScene>();
-    auto viewport_aware_root = base::MakeUnique<ViewportAwareRoot>();
+    auto viewport_aware_root = base::MakeUnique<ViewportAwareRootForTesting>();
     viewport_aware_root->set_draw_phase(kPhaseForeground);
     viewport_root = viewport_aware_root.get();
     scene_->AddUiElement(kRoot, std::move(viewport_aware_root));
@@ -121,19 +131,23 @@ class ViewportAwareRootTest : public testing::Test {
     viewport_root->Reset();
   }
 
-  void AnimateWithHeadPose(base::TimeDelta delta,
+  bool AnimateWithHeadPose(base::TimeDelta delta,
                            const gfx::Vector3dF& head_pose) {
     base::TimeTicks target_time = current_time_ + delta;
     base::TimeDelta frame_duration =
         base::TimeDelta::FromSecondsD(1.0 / kFramesPerSecond);
+    bool changed = false;
     for (; current_time_ < target_time; current_time_ += frame_duration) {
-      scene_->OnBeginFrame(current_time_, head_pose);
+      if (scene_->OnBeginFrame(current_time_, head_pose))
+        changed = true;
     }
     current_time_ = target_time;
-    scene_->OnBeginFrame(current_time_, head_pose);
+    if (scene_->OnBeginFrame(current_time_, head_pose))
+      changed = true;
+    return changed;
   }
 
-  ViewportAwareRoot* viewport_root;
+  ViewportAwareRootForTesting* viewport_root;
   UiElement* viewport_element;
 
  private:
@@ -153,56 +167,56 @@ TEST_F(ViewportAwareRootTest, TestAdjustRotationForHeadPose) {
 
 TEST_F(ViewportAwareRootTest, ChildElementsRepositioned) {
   gfx::Vector3dF look_at{0.f, 0.f, -1.f};
-  AnimateWithHeadPose(MsToDelta(0), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(0), look_at));
   EXPECT_TRUE(Point3FAreNearlyEqual(gfx::Point3F(0.f, 0.f, -1.f),
                                     viewport_element->GetCenter()));
 
   // This should trigger reposition of viewport aware elements.
   RotateAboutYAxis(90.f, &look_at);
-  AnimateWithHeadPose(MsToDelta(10), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(10), look_at));
   EXPECT_TRUE(Point3FAreNearlyEqual(gfx::Point3F(-1.f, 0.f, 0.f),
                                     viewport_element->GetCenter()));
 }
 
 TEST_F(ViewportAwareRootTest, ChildElementsHasOpacityAnimation) {
   gfx::Vector3dF look_at{0.f, 0.f, -1.f};
-  AnimateWithHeadPose(MsToDelta(0), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(0), look_at));
   EXPECT_TRUE(viewport_element->IsVisible());
 
   // Trigger a reposition.
   RotateAboutYAxis(90.f, &look_at);
-  AnimateWithHeadPose(MsToDelta(5), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(5), look_at));
 
   // Initially the element should be invisible and then animate to its full
   // opacity.
   EXPECT_FALSE(viewport_element->IsVisible());
-  AnimateWithHeadPose(MsToDelta(50), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(50), look_at));
   EXPECT_TRUE(viewport_element->IsVisible());
   EXPECT_TRUE(IsAnimating(viewport_root, {OPACITY}));
-  AnimateWithHeadPose(MsToDelta(500), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(500), look_at));
   EXPECT_TRUE(viewport_element->IsVisible());
   EXPECT_FALSE(IsAnimating(viewport_root, {OPACITY}));
 }
 
 TEST_F(ViewportAwareRootTest, ResetPositionWhenReshow) {
   gfx::Vector3dF look_at{0.f, 0.f, -1.f};
-  AnimateWithHeadPose(MsToDelta(0), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(0), look_at));
   gfx::Point3F original_position = viewport_element->GetCenter();
 
   RotateAboutYAxis(90.f, &look_at);
-  AnimateWithHeadPose(MsToDelta(10), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(10), look_at));
 
   RotateAboutYAxis(-60.f, &look_at);
-  AnimateWithHeadPose(MsToDelta(20), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(20), look_at));
   // Viewport element should have 90 - 60 = 30 degrees rotation.
   EXPECT_TRUE(Point3FAreNearlyEqual(gfx::Point3F(-0.5f, 0.f, -0.866025f),
                                     viewport_element->GetCenter()));
 
   // Hide all children and then reshow later should reset children's position.
   viewport_element->SetVisibleImmediately(false);
-  AnimateWithHeadPose(MsToDelta(30), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(30), look_at));
   viewport_element->SetVisibleImmediately(true);
-  AnimateWithHeadPose(MsToDelta(40), look_at);
+  EXPECT_TRUE(AnimateWithHeadPose(MsToDelta(40), look_at));
   EXPECT_TRUE(
       Point3FAreNearlyEqual(original_position, viewport_element->GetCenter()));
 }
