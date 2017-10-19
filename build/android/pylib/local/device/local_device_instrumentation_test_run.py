@@ -753,7 +753,7 @@ class LocalDeviceInstrumentationTestRun(
             'golden_%s' % failure_filename, 'render_tests',
             output_manager.Datatype.IMAGE) as golden_image_host_file:
           device.PullFile(
-              golden_image_device_file, golden_image_host_file)
+              golden_image_device_file, golden_image_host_file.name)
         golden_link = golden_image_host_file.Link()
       else:
         golden_link = ''
@@ -765,7 +765,7 @@ class LocalDeviceInstrumentationTestRun(
             'diff_%s' % failure_filename, 'render_tests',
             output_manager.Datatype.IMAGE) as diff_image_host_file:
           device.PullFile(
-              diff_image_device_file, diff_image_host_file)
+              diff_image_device_file, diff_image_host_file.name)
         diff_link = diff_image_host_file.Link()
       else:
         diff_link = ''
