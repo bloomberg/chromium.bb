@@ -3681,3 +3681,5 @@ crbug.com/774688 [ Mac ] fast/spatial-navigation/snav-container-white-space.html
 crbug.com/774751 [ Mac ] virtual/gpu/fast/canvas/canvas-text-baseline.html [ Failure ]
 crbug.com/774751 [ Mac ] virtual/gpu/fast/canvas/canvas-transforms-during-path.html [ Failure ]
 crbug.com/774751 [ Mac ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Failure ]
+
+crbug.com/776201 [ Win7 Debug ] virtual/longtask-v2/http/tests/performance-timing/longtask-v2/longtask-v8compile.html [ Pass Failure ]
