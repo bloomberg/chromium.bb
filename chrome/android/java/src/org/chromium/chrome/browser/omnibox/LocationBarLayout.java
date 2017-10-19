@@ -1040,13 +1040,13 @@ public class LocationBarLayout extends FrameLayout
             }
             // Moving focus away from UrlBar(EditText) to a non-editable focus holder, such as
             // ToolbarPhone, won't automatically hide keyboard app, but restart it with TYPE_NULL,
-            // which will result in a visual glitch. We apply this logic only to ChromeHome
-            // cautiously since hiding keyboard may lower FPS of other animation effects.
-            if (mBottomSheet != null) {
-                InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
-                        Context.INPUT_METHOD_SERVICE);
-                if (imm.isActive(mUrlBar)) imm.hideSoftInputFromWindow(getWindowToken(), 0, null);
-            }
+            // which will result in a visual glitch. Also, currently, we do not allow moving focus
+            // directly from omnibox to web content's form field. Therefore, we hide keyboard on
+            // focus blur indiscriminately here. Note that hiding keyboard may lower FPS of other
+            // animation effects, but we found it tolerable in an experiment.
+            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(
+                    Context.INPUT_METHOD_SERVICE);
+            if (imm.isActive(mUrlBar)) imm.hideSoftInputFromWindow(getWindowToken(), 0, null);
         }
 
         if (mToolbarDataProvider.isUsingBrandColor()) {
