@@ -1,8 +1,9 @@
 GroupedByName()
 Showing 42 symbols (42 unique) with total pss: 43785380 bytes
 Histogram of symbols based on PSS:
-      {0}: 6    [8,16): 3    [32,64): 7   [128,256): 1     [65536,131072): 1     [1048576,2097152): 2
-    [4,8): 7   [16,32): 9   [64,128): 2   [256,512): 1   [524288,1048576): 2   [33554432,67108864): 1
+      {0}: 6    [8,16): 3    [64,128): 2      [65536,131072): 1   [33554432,67108864): 1
+    [2,4): 2   [16,32): 9   [128,256): 1    [524288,1048576): 2
+    [4,8): 5   [32,64): 7   [256,512): 1   [1048576,2097152): 2
 .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb
 Number of unique paths: 9
 
@@ -17,10 +18,10 @@ Index | Running Total | Section@Address | PSS | Path
 5)   39117493 (89.3%) *@Group      448             ucnv_extMatchFromU (count=1)
 6)   39117521 (89.3%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
 7)   39186645 (89.5%) *@Group      69124           foo_bar (count=1)
-8)   39186673 (89.5%) *@Group      28              blink::ContiguousContainerBase::shrinkToFit (count=2)
-9)   39186697 (89.5%) *@Group      24              BazAlias (count=1)
-10)  39186701 (89.5%) *@Group      4               FooAlias (count=1)
-11)  39186705 (89.5%) *@Group      4               BarAlias (count=1)
+8)   39186675 (89.5%) *@Group      30              blink::ContiguousContainerBase::shrinkToFit (count=3)
+9)   39186699 (89.5%) *@Group      24              BazAlias (count=1)
+10)  39186702 (89.5%) *@Group      3               FooAlias (count=1)
+11)  39186705 (89.5%) *@Group      3               BarAlias (count=1)
 12)  39186733 (89.5%) *@Group      28              blink::ContiguousContainerBase::ContiguousContainerBase (count=1)
 13)  39186827 (89.5%) *@Group      94              blink::PaintChunker::releasePaintChunks (count=1)
 14)  39186848 (89.5%) *@Group      21              string literal 0 (count=2)
@@ -55,7 +56,7 @@ GroupedByName(depth=1)
 Showing 34 symbols (34 unique) with total pss: 43785380 bytes
 Histogram of symbols based on PSS:
       {0}: 6    [8,16): 4    [32,64): 6   [128,256): 2     [65536,131072): 1     [1048576,2097152): 2
-    [4,8): 2   [16,32): 6   [64,128): 1   [256,512): 1   [524288,1048576): 2   [33554432,67108864): 1
+    [2,4): 2   [16,32): 6   [64,128): 1   [256,512): 1   [524288,1048576): 2   [33554432,67108864): 1
 .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb
 Number of unique paths: 9
 
@@ -70,10 +71,10 @@ Index | Running Total | Section@Address | PSS | Path
 5)   39117493 (89.3%) *@Group      448             ucnv_extMatchFromU (count=1)
 6)   39117521 (89.3%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
 7)   39186645 (89.5%) *@Group      69124           foo_bar (count=1)
-8)   39186799 (89.5%) *@Group      154             blink (count=5)
-9)   39186823 (89.5%) *@Group      24              BazAlias (count=1)
-10)  39186827 (89.5%) *@Group      4               FooAlias (count=1)
-11)  39186831 (89.5%) *@Group      4               BarAlias (count=1)
+8)   39186801 (89.5%) *@Group      156             blink (count=6)
+9)   39186825 (89.5%) *@Group      24              BazAlias (count=1)
+10)  39186828 (89.5%) *@Group      3               FooAlias (count=1)
+11)  39186831 (89.5%) *@Group      3               BarAlias (count=1)
 12)  39186852 (89.5%) *@Group      21              string literal 0 (count=2)
 13)  39186895 (89.5%) *@Group      43              ** merge strings (count=1)
 14)  41152240 (94.0%) *@Group      1965345         ** merge constants (count=1)
@@ -99,8 +100,9 @@ Index | Running Total | Section@Address | PSS | Path
 GroupedByName(depth=-1)
 Showing 37 symbols (37 unique) with total pss: 43785380 bytes
 Histogram of symbols based on PSS:
-      {0}: 6    [8,16): 4    [32,64): 8   [128,256): 1     [65536,131072): 1     [1048576,2097152): 2
-    [4,8): 3   [16,32): 6   [64,128): 2   [256,512): 1   [524288,1048576): 2   [33554432,67108864): 1
+      {0}: 6    [8,16): 4    [64,128): 2      [65536,131072): 1   [33554432,67108864): 1
+    [2,4): 2   [16,32): 6   [128,256): 1    [524288,1048576): 2
+    [4,8): 1   [32,64): 8   [256,512): 1   [1048576,2097152): 2
 .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb
 Number of unique paths: 9
 
@@ -115,10 +117,10 @@ Index | Running Total | Section@Address | PSS | Path
 5)   39117493 (89.3%) *@Group      448             ucnv_extMatchFromU (count=1)
 6)   39117521 (89.3%) *@Group      28              _GLOBAL__sub_I_SkDeviceProfile.cpp (count=1)
 7)   39186645 (89.5%) *@Group      69124           foo_bar (count=1)
-8)   39186701 (89.5%) *@Group      56              blink::ContiguousContainerBase (count=3)
-9)   39186725 (89.5%) *@Group      24              BazAlias (count=1)
-10)  39186729 (89.5%) *@Group      4               FooAlias (count=1)
-11)  39186733 (89.5%) *@Group      4               BarAlias (count=1)
+8)   39186703 (89.5%) *@Group      58              blink::ContiguousContainerBase (count=4)
+9)   39186727 (89.5%) *@Group      24              BazAlias (count=1)
+10)  39186730 (89.5%) *@Group      3               FooAlias (count=1)
+11)  39186733 (89.5%) *@Group      3               BarAlias (count=1)
 12)  39186827 (89.5%) *@Group      94              blink::PaintChunker (count=1)
 13)  39186848 (89.5%) *@Group      21              string literal 0 (count=2)
 14)  39186891 (89.5%) *@Group      43              ** merge strings (count=1)
@@ -147,9 +149,9 @@ Index | Running Total | Section@Address | PSS | Path
 GroupedByName(depth=1, min_count=2)
 Showing 34 symbols (33 unique) with total pss: 43785380 bytes
 Histogram of symbols based on PSS:
-      [4,8): 3     [32,64): 6         [256,512): 1     [262144,524288): 1   [33554432,67108864): 1
-     [8,16): 4    [64,128): 1    [65536,131072): 1    [524288,1048576): 2
-    [16,32): 7   [128,256): 3   [131072,262144): 2   [1048576,2097152): 2
+     [2,4): 2    [16,32): 7        [128,256): 3    [131072,262144): 2     [1048576,2097152): 2
+     [4,8): 1    [32,64): 6        [256,512): 1    [262144,524288): 1   [33554432,67108864): 1
+    [8,16): 4   [64,128): 1   [65536,131072): 1   [524288,1048576): 2
 .text=34.2mb     .rodata=5.65mb     .data.rel.ro=1.02mb     .data=99.4kb     .bss=512kb      total=41.8mb
 Number of unique paths: 9
 
@@ -172,14 +174,14 @@ Index | Running Total | Section@Address | PSS | Path
              _GLOBAL__sub_I_SkDeviceProfile.cpp
 7)   39186645 (89.5%) t@0x28f1e0   69124          third_party/icu/ucnv_ext.c
              foo_bar
-8)   39186799 (89.5%) *@Group      154            {no path}
-             blink (count=5)
-9)   39186823 (89.5%) t@0x2a0000   24 (size=48)   third_party/icu/ucnv_ext.c
+8)   39186801 (89.5%) *@Group      156            {no path}
+             blink (count=6)
+9)   39186825 (89.5%) t@0x2a0000   24 (size=48)   third_party/icu/ucnv_ext.c
              BazAlias (num_aliases=2)
-10)  39186827 (89.5%) t@0x2a0010   4 (size=12)    third_party/fft_float.cc
-             FooAlias (num_aliases=3)
-11)  39186831 (89.5%) t@0x2a0010   4 (size=12)    third_party/fft_float.cc
-             BarAlias (num_aliases=3)
+10)  39186828 (89.5%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+             FooAlias (num_aliases=4)
+11)  39186831 (89.5%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+             BarAlias (num_aliases=4)
 12)  39186852 (89.5%) *@Group      21             {no path}
              string literal 0 (count=2)
 13)  39186895 (89.5%) r@0x266e630  43             {no path}

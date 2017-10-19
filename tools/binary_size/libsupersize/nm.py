@@ -31,6 +31,7 @@ BulkObjectFileAnalyzer:
   alias for _BulkObjectFileAnalyzerWorker.
   * AnalyzePaths: Run "nm" on all .o files to collect symbol names that exist
     within each.
+  * SortPaths: Sort results of AnalyzePaths().
   * AnalyzeStringLiterals: Must be run after AnalyzePaths() has completed.
     Extracts string literals from .o files, and then locates them within the
     "** merge strings" sections within an ELF's .rodata section.
@@ -58,9 +59,10 @@ import threading
 import concurrent
 
 _MSG_ANALYZE_PATHS = 1
-_MSG_ANALYZE_STRINGS = 2
-_MSG_GET_SYMBOL_NAMES = 3
-_MSG_GET_STRINGS = 4
+_MSG_SORT_PATHS = 2
+_MSG_ANALYZE_STRINGS = 3
+_MSG_GET_SYMBOL_NAMES = 4
+_MSG_GET_STRINGS = 5
 
 _active_pids = None
 
@@ -128,7 +130,8 @@ def _IsRelevantObjectFileName(name):
 
 def CollectAliasesByAddress(elf_path, tool_prefix):
   """Runs nm on |elf_path| and returns a dict of address->[names]"""
-  names_by_address = collections.defaultdict(list)
+  # Constructors often show up twice, so use sets to ensure no duplicates.
+  names_by_address = collections.defaultdict(set)
 
   # About 60mb of output, but piping takes ~30s, and loading it into RAM
   # directly takes 3s.
@@ -151,17 +154,12 @@ def CollectAliasesByAddress(elf_path, tool_prefix):
     address = int(address_str, 16)
     if not address:
       continue
-    # Constructors often show up twice.
-    name_list = names_by_address[address]
-    if name not in name_list:
-      name_list.append(name)
+    names_by_address[address].add(name)
 
   # Since this is run in a separate process, minimize data passing by returning
   # only aliased symbols.
-  names_by_address = {k: v for k, v in names_by_address.iteritems()
-                      if len(v) > 1}
-
-  return names_by_address
+  # Also: Sort to ensure stable ordering.
+  return {k: sorted(v) for k, v in names_by_address.iteritems() if len(v) > 1}
 
 
 def _CollectAliasesByAddressAsyncHelper(elf_path, tool_prefix):
@@ -350,9 +348,17 @@ def _ExtractArchivePath(path):
   return None
 
 
-def _IterStringLiterals(path, addresses, string_sections_by_path):
+def _IterStringLiterals(path, addresses, obj_sections):
+  """Yields all string literals (including \0) for the given object path.
+
+  Args:
+    path: Object file path.
+    addresses: List of string offsets encoded as hex strings.
+    obj_sections: List of contents of .rodata.str sections read from the given
+        object file.
+  """
+
   next_offsets = sorted(int(a, 16) for a in addresses)
-  obj_sections = string_sections_by_path.get(path)
   if not obj_sections:
     # Happens when there is an address for a symbol which is not actually a
     # string literal, or when string_sections_by_path is missing an entry.
@@ -410,7 +416,7 @@ def _ResolveStringPieces(encoded_string_addresses_by_path, string_data,
   #     least for ascii strings).
   for path, object_addresses in string_addresses_by_path.iteritems():
     for value in _IterStringLiterals(
-        path, object_addresses, string_sections_by_path):
+        path, object_addresses, string_sections_by_path.get(path)):
       first_match = -1
       first_match_dict = None
       for target_dict, data in itertools.izip(ret, string_data):
@@ -530,6 +536,10 @@ class _BulkObjectFileAnalyzerWorker(object):
         self._encoded_string_addresses_by_path_chunks.append(encoded_strs)
     logging.debug('worker: AnalyzePaths() completed.')
 
+  def SortPaths(self):
+    for paths in self._paths_by_name.itervalues():
+      paths.sort()
+
   def AnalyzeStringLiterals(self, elf_path, elf_string_positions):
     logging.debug('worker: AnalyzeStringLiterals() started.')
     # Read string_data from elf_path, to be shared by forked processes.
@@ -612,6 +622,9 @@ class _BulkObjectFileAnalyzerMaster(object):
     payload = '\x01'.join(paths)
     self._pipe.send((_MSG_ANALYZE_PATHS, payload))
 
+  def SortPaths(self):
+    self._pipe.send((_MSG_SORT_PATHS,))
+
   def AnalyzeStringLiterals(self, elf_path, string_positions):
     self._pipe.send((_MSG_ANALYZE_STRINGS, elf_path, string_positions))
 
@@ -669,6 +682,10 @@ class _BulkObjectFileAnalyzerSlave(object):
               'Cannot call AnalyzePaths() after AnalyzeStringLiterals()s.')
           paths = message[1].split('\x01')
           self._job_queue.put(lambda: self._worker_analyzer.AnalyzePaths(paths))
+        elif message[0] == _MSG_SORT_PATHS:
+          assert self._allow_analyze_paths, (
+              'Cannot call SortPaths() after AnalyzeStringLiterals()s.')
+          self._job_queue.put(self._worker_analyzer.SortPaths)
         elif message[0] == _MSG_ANALYZE_STRINGS:
           self._WaitForAnalyzePathJobs()
           elf_path, string_positions = message[1:]
@@ -726,6 +743,7 @@ def main():
   # Pass individually to test multiple calls.
   for path in args.objects:
     bulk_analyzer.AnalyzePaths([path])
+  bulk_analyzer.SortPaths()
 
   names_to_paths = bulk_analyzer.GetSymbolNames()
   print('Found {} names'.format(len(names_to_paths)))
