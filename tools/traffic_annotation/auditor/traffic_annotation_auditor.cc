@@ -71,6 +71,12 @@ const base::FilePath kClangLibraryPath =
         .Append(FILE_PATH_LITERAL("lib"))
         .Append(FILE_PATH_LITERAL("clang"));
 
+const base::FilePath kRunToolScript =
+    base::FilePath(FILE_PATH_LITERAL("tools"))
+        .Append(FILE_PATH_LITERAL("clang"))
+        .Append(FILE_PATH_LITERAL("scripts"))
+        .Append(FILE_PATH_LITERAL("run_tool.py"));
+
 }  // namespace
 
 TrafficAnnotationAuditor::TrafficAnnotationAuditor(
@@ -165,8 +171,8 @@ bool TrafficAnnotationAuditor::RunClangTool(
   }
   base::CloseFile(options_file);
 
-  base::CommandLine cmdline(source_path_.Append(
-      FILE_PATH_LITERAL("tools/clang/scripts/run_tool.py")));
+  base::CommandLine cmdline(
+      base::MakeAbsoluteFilePath(source_path_.Append(kRunToolScript)));
 
 #if defined(OS_WIN)
   cmdline.PrependWrapper(L"python");
@@ -175,7 +181,11 @@ bool TrafficAnnotationAuditor::RunClangTool(
   cmdline.AppendArg(base::StringPrintf(
       "--options-file=%s", options_filepath.MaybeAsASCII().c_str()));
 
-  // Run, and clean after.
+  // Change current folder to source before running run_tool.py as it expects to
+  // be run from there.
+  base::FilePath original_path;
+  base::GetCurrentDirectory(&original_path);
+  base::SetCurrentDirectory(source_path_);
   bool result = base::GetAppOutput(cmdline, &clang_tool_raw_output_);
 
   if (!result) {
@@ -187,8 +197,9 @@ bool TrafficAnnotationAuditor::RunClangTool(
       options_file_text = "Could not read options file.";
 
     LOG(ERROR) << base::StringPrintf(
-        "Calling clang tool returned false.\nCommand line: %s\n\n"
+        "Calling clang tool from %s returned false.\nCommand line: %s\n\n"
         "Returned error text: %s\n\nPartial options file: %s\n",
+        source_path_.MaybeAsASCII().c_str(),
 #if defined(OS_WIN)
         base::UTF16ToASCII(cmdline.GetCommandLineString()).c_str(),
 #else
@@ -197,6 +208,7 @@ bool TrafficAnnotationAuditor::RunClangTool(
         tool_errors.c_str(), options_file_text.substr(0, 1024).c_str());
   }
 
+  base::SetCurrentDirectory(original_path);
   base::DeleteFile(options_filepath, false);
 
   return result;
