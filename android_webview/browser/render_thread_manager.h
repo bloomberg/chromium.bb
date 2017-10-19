@@ -115,7 +115,6 @@ class RenderThreadManager : public CompositorFrameConsumer {
   mutable base::Lock lock_;
   gfx::Vector2d scroll_offset_;
   ChildFrameQueue child_frames_;
-  const bool sync_on_draw_hardware_;
   bool inside_hardware_release_;
   ParentCompositorDrawConstraints parent_draw_constraints_;
   ReturnedResourcesMap returned_resources_map_;
