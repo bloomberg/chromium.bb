@@ -60,35 +60,13 @@ source_set("cast_media_android_dummy") {
 cast_shared_library("libcast_media_1.0") {
   if (is_cast_desktop_build) {
     deps = [
-      ":default",
+      "//chromecast/media/cma/backend/desktop",
     ]
   } else {
     deps = [
       ":dummy",
     ]
   }
-}
-
-# Default implementation of media backend used on desktop.
-source_set("default") {
-  sources = [
-    "audio_decoder_default.cc",
-    "audio_decoder_default.h",
-    "cast_media_default.cc",
-    "media_pipeline_backend_default.cc",
-    "media_pipeline_backend_default.h",
-    "media_sink_default.cc",
-    "media_sink_default.h",
-    "video_decoder_default.cc",
-    "video_decoder_default.h",
-  ]
-
-  deps = [
-    "//base",
-    "//chromecast/base",
-    "//chromecast/public/media",
-    "//media",
-  ]
 }
 
 # Dummy implementation of media backend used on chromecast devices.

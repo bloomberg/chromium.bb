@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_SINK_DEFAULT_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_SINK_DEFAULT_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_MEDIA_SINK_DESKTOP_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_MEDIA_SINK_DESKTOP_H_
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -14,11 +14,11 @@
 namespace chromecast {
 namespace media {
 
-class MediaSinkDefault {
+class MediaSinkDesktop {
  public:
-  MediaSinkDefault(MediaPipelineBackend::Decoder::Delegate* delegate,
+  MediaSinkDesktop(MediaPipelineBackend::Decoder::Delegate* delegate,
                    base::TimeDelta start_pts);
-  ~MediaSinkDefault();
+  ~MediaSinkDesktop();
 
   void SetPlaybackRate(float rate);
   base::TimeDelta GetCurrentPts();
@@ -35,10 +35,10 @@ class MediaSinkDefault {
   bool received_eos_;
   base::CancelableClosure eos_task_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaSinkDefault);
+  DISALLOW_COPY_AND_ASSIGN(MediaSinkDesktop);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_SINK_DEFAULT_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_MEDIA_SINK_DESKTOP_H_

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_DEFAULT_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_DEFAULT_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_MEDIA_PIPELINE_BACKEND_DESKTOP_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_MEDIA_PIPELINE_BACKEND_DESKTOP_H_
 
 #include <stdint.h>
 
@@ -14,19 +14,19 @@
 
 namespace chromecast {
 namespace media {
-class AudioDecoderDefault;
-class VideoDecoderDefault;
+class AudioDecoderDesktop;
+class VideoDecoderDesktop;
 
-// Factory that instantiates default (stub) media pipeline device elements.
-class MediaPipelineBackendDefault : public MediaPipelineBackend {
+// Factory that instantiates desktop (stub) media pipeline device elements.
+class MediaPipelineBackendDesktop : public MediaPipelineBackend {
  public:
-  MediaPipelineBackendDefault();
-  ~MediaPipelineBackendDefault() override;
+  MediaPipelineBackendDesktop();
+  ~MediaPipelineBackendDesktop() override;
 
-  const AudioDecoderDefault* audio_decoder() const {
+  const AudioDecoderDesktop* audio_decoder() const {
     return audio_decoder_.get();
   }
-  const VideoDecoderDefault* video_decoder() const {
+  const VideoDecoderDesktop* video_decoder() const {
     return video_decoder_.get();
   }
 
@@ -50,13 +50,13 @@ class MediaPipelineBackendDefault : public MediaPipelineBackend {
   };
   State state_;
   float rate_;
-  std::unique_ptr<AudioDecoderDefault> audio_decoder_;
-  std::unique_ptr<VideoDecoderDefault> video_decoder_;
+  std::unique_ptr<AudioDecoderDesktop> audio_decoder_;
+  std::unique_ptr<VideoDecoderDesktop> video_decoder_;
 
-  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendDefault);
+  DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendDesktop);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_MEDIA_PIPELINE_BACKEND_DEFAULT_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_MEDIA_PIPELINE_BACKEND_DESKTOP_H_
