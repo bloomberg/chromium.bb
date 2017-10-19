@@ -144,7 +144,8 @@ void PlatformSensorFusion::CreateSensorCallback(
 void PlatformSensorFusion::AddSourceSensor(
     scoped_refptr<PlatformSensor> sensor) {
   DCHECK(sensor);
-  source_sensors_[sensor->GetType()] = std::move(sensor);
+  mojom::SensorType type = sensor->GetType();
+  source_sensors_[type] = std::move(sensor);
 
   if (source_sensors_.size() != fusion_algorithm_->source_types().size())
     return;
