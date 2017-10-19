@@ -23,9 +23,10 @@ TEST(UiElements, AnimateSize) {
                                           gfx::SizeF(20, 200),
                                           MicrosecondsToDelta(10000)));
   base::TimeTicks start_time = MicrosecondsToTicks(1);
-  rect.OnBeginFrame(start_time, kForwardVector);
+  EXPECT_TRUE(rect.DoBeginFrame(start_time, kForwardVector));
   EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(10, 100), rect.size());
-  rect.OnBeginFrame(start_time + MicrosecondsToDelta(10000), kForwardVector);
+  EXPECT_TRUE(rect.DoBeginFrame(start_time + MicrosecondsToDelta(10000),
+                                kForwardVector));
   EXPECT_FLOAT_SIZE_EQ(gfx::SizeF(20, 200), rect.size());
 }
 
@@ -40,12 +41,13 @@ TEST(UiElements, AnimationAffectsInheritableTransform) {
       2, 2, from_operations, to_operations, MicrosecondsToDelta(10000)));
 
   base::TimeTicks start_time = MicrosecondsToTicks(1);
-  rect.OnBeginFrame(start_time, kForwardVector);
+  EXPECT_TRUE(rect.DoBeginFrame(start_time, kForwardVector));
   gfx::Point3F p;
   rect.LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(10, 100, 1000), p);
   p = gfx::Point3F();
-  rect.OnBeginFrame(start_time + MicrosecondsToDelta(10000), kForwardVector);
+  EXPECT_TRUE(rect.DoBeginFrame(start_time + MicrosecondsToDelta(10000),
+                                kForwardVector));
   rect.LocalTransform().TransformPoint(&p);
   EXPECT_VECTOR3DF_EQ(gfx::Vector3dF(20, 200, 2000), p);
 }

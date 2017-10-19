@@ -128,15 +128,15 @@ TEST_F(UiSceneManagerTest, ToastTransience) {
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetFullscreen(true);
-  AnimateBy(MsToDelta(10));
+  EXPECT_TRUE(AnimateBy(MsToDelta(10)));
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
-  AnimateBy(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds));
+  EXPECT_TRUE(AnimateBy(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds)));
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   manager_->SetWebVrMode(true, true);
-  AnimateBy(MsToDelta(10));
+  EXPECT_TRUE(AnimateBy(MsToDelta(10)));
   EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
-  AnimateBy(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds));
+  EXPECT_TRUE(AnimateBy(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds)));
   EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
 
   manager_->SetWebVrMode(false, false);
@@ -240,7 +240,7 @@ TEST_F(UiSceneManagerTest, WebVrAutopresented) {
       scene_->GetUiElementByName(kWebVrUrlToastTransientParent);
   EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY}));
   // Finish the transition.
-  AnimateBy(MsToDelta(1000));
+  EXPECT_TRUE(AnimateBy(MsToDelta(1000)));
   EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY}));
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }
@@ -285,7 +285,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   EXPECT_TRUE(IsAnimating(content_quad, {BOUNDS}));
   EXPECT_TRUE(IsAnimating(content_group, {TRANSFORM}));
   // Finish the transition.
-  AnimateBy(MsToDelta(1000));
+  EXPECT_TRUE(AnimateBy(MsToDelta(1000)));
   EXPECT_FALSE(IsAnimating(content_quad, {BOUNDS}));
   EXPECT_FALSE(IsAnimating(content_group, {TRANSFORM}));
   EXPECT_NE(initial_content_size, content_quad->size());
@@ -301,7 +301,7 @@ TEST_F(UiSceneManagerTest, UiUpdatesForFullscreenChanges) {
   EXPECT_TRUE(IsAnimating(content_quad, {BOUNDS}));
   EXPECT_TRUE(IsAnimating(content_group, {TRANSFORM}));
   // Finish the transition.
-  AnimateBy(MsToDelta(1000));
+  EXPECT_TRUE(AnimateBy(MsToDelta(1000)));
   EXPECT_FALSE(IsAnimating(content_quad, {BOUNDS}));
   EXPECT_FALSE(IsAnimating(content_group, {TRANSFORM}));
   EXPECT_EQ(initial_content_size, content_quad->size());
@@ -491,7 +491,7 @@ TEST_F(UiSceneManagerTest, PropagateContentBoundsOnStart) {
   MakeManager(kNotInCct, kNotInWebVr);
 
   // Calculate the inheritable transforms.
-  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(AnimateBy(MsToDelta(0)));
 
   gfx::SizeF expected_bounds(0.495922f, 0.330614f);
   EXPECT_CALL(*browser_,
@@ -504,10 +504,10 @@ TEST_F(UiSceneManagerTest, PropagateContentBoundsOnStart) {
 TEST_F(UiSceneManagerTest, PropagateContentBoundsOnFullscreen) {
   MakeManager(kNotInCct, kNotInWebVr);
 
-  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(AnimateBy(MsToDelta(0)));
   manager_->OnProjMatrixChanged(kPixelDaydreamProjMatrix);
   manager_->SetFullscreen(true);
-  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(AnimateBy(MsToDelta(0)));
 
   gfx::SizeF expected_bounds(0.587874f, 0.330614f);
   EXPECT_CALL(*browser_,
@@ -519,21 +519,21 @@ TEST_F(UiSceneManagerTest, PropagateContentBoundsOnFullscreen) {
 
 TEST_F(UiSceneManagerTest, HitTestableElements) {
   MakeManager(kNotInCct, kNotInWebVr);
-  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(AnimateBy(MsToDelta(0)));
   CheckHitTestableRecursive(&scene_->root_element());
 }
 
 TEST_F(UiSceneManagerTest, DontPropagateContentBoundsOnNegligibleChange) {
   MakeManager(kNotInCct, kNotInWebVr);
 
-  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(AnimateBy(MsToDelta(0)));
   manager_->OnProjMatrixChanged(kPixelDaydreamProjMatrix);
 
   UiElement* content_quad = scene_->GetUiElementByName(kContentQuad);
   gfx::SizeF content_quad_size = content_quad->size();
   content_quad_size.Scale(1.2f);
   content_quad->SetSize(content_quad_size.width(), content_quad_size.height());
-  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(AnimateBy(MsToDelta(0)));
 
   EXPECT_CALL(*browser_, OnContentScreenBoundsChanged(testing::_)).Times(0);
 
@@ -555,7 +555,7 @@ TEST_F(UiSceneManagerTest, LoadingIndicatorBindings) {
   MakeManager(kNotInCct, kNotInWebVr);
   model_->loading = true;
   model_->load_progress = 0.5f;
-  AnimateBy(MsToDelta(200));
+  EXPECT_TRUE(AnimateBy(MsToDelta(200)));
   EXPECT_TRUE(VerifyVisibility({kLoadingIndicator}, true));
   UiElement* loading_indicator = scene_->GetUiElementByName(kLoadingIndicator);
   UiElement* loading_indicator_fg = loading_indicator->children().back().get();
@@ -569,7 +569,7 @@ TEST_F(UiSceneManagerTest, LoadingIndicatorBindings) {
 TEST_F(UiSceneManagerTest, ExitWarning) {
   MakeManager(kNotInCct, kNotInWebVr);
   manager_->SetIsExiting();
-  AnimateBy(MsToDelta(0));
+  EXPECT_TRUE(AnimateBy(MsToDelta(0)));
   EXPECT_TRUE(VerifyVisibility(kElementsVisibleWithExitWarning, true));
 }
 

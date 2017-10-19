@@ -40,23 +40,24 @@ ViewportAwareRoot::ViewportAwareRoot() {
 
 ViewportAwareRoot::~ViewportAwareRoot() = default;
 
-void ViewportAwareRoot::OnBeginFrame(const base::TimeTicks& time,
+bool ViewportAwareRoot::OnBeginFrame(const base::TimeTicks& time,
                                      const gfx::Vector3dF& head_direction) {
-  UiElement::OnBeginFrame(time, head_direction);
-  AdjustRotationForHeadPose(head_direction);
+  return AdjustRotationForHeadPose(head_direction);
 }
 
-void ViewportAwareRoot::AdjustRotationForHeadPose(
+bool ViewportAwareRoot::AdjustRotationForHeadPose(
     const gfx::Vector3dF& look_at) {
   DCHECK(!look_at.IsZero());
+  bool rotated = false;
 
   bool has_visible_children = HasVisibleChildren();
-  if (has_visible_children && !children_visible_)
+  if (has_visible_children && !children_visible_) {
     Reset();
+    rotated = true;
+  }
   children_visible_ = has_visible_children;
-
   if (!children_visible_)
-    return;
+    return false;
 
   gfx::Vector3dF rotated_center_vector{0.f, 0.f, -1.0f};
   LocalTransform().TransformVector(&rotated_center_vector);
@@ -65,7 +66,7 @@ void ViewportAwareRoot::AdjustRotationForHeadPose(
       top_projected_look_at, rotated_center_vector, {0.f, 1.0f, 0.f});
   if (degrees <= kViewportRotationTriggerDegrees ||
       degrees >= 360.0f - kViewportRotationTriggerDegrees) {
-    return;
+    return rotated;
   }
   viewport_aware_total_rotation_ += degrees;
   viewport_aware_total_rotation_ = fmod(viewport_aware_total_rotation_, 360.0f);
@@ -76,6 +77,7 @@ void ViewportAwareRoot::AdjustRotationForHeadPose(
 
   // Fade it back in.
   SetVisible(true);
+  return true;
 }
 
 void ViewportAwareRoot::Reset() {

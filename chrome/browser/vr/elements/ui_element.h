@@ -74,10 +74,12 @@ class UiElement : public cc::AnimationTarget {
     kClean = kUpdatedWorldSpaceTransform,
   };
 
-  virtual void PrepareToDraw();
+  // Returns true if the element needs to be re-drawn.
+  virtual bool PrepareToDraw();
 
-  virtual void OnBeginFrame(const base::TimeTicks& time,
-                            const gfx::Vector3dF& head_direction);
+  // Returns true if the element has been updated in any visible way.
+  bool DoBeginFrame(const base::TimeTicks& time,
+                    const gfx::Vector3dF& head_direction);
 
   // Indicates whether the element should be tested for cursor input.
   bool IsHitTestable() const;
@@ -210,7 +212,9 @@ class UiElement : public cc::AnimationTarget {
   const std::vector<std::unique_ptr<BindingBase>>& bindings() {
     return bindings_;
   }
-  void UpdateBindings();
+
+  // Return true if any bindings has updates.
+  bool UpdateBindings();
 
   gfx::Point3F GetCenter() const;
   gfx::Vector3dF GetNormal() const;
@@ -284,9 +288,6 @@ class UiElement : public cc::AnimationTarget {
   void set_update_phase(UpdatePhase phase) { phase_ = phase; }
 
  protected:
-  virtual void OnSetMode();
-  virtual void OnUpdatedWorldSpaceTransform();
-
   AnimationPlayer& animation_player() { return animation_player_; }
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
@@ -296,6 +297,13 @@ class UiElement : public cc::AnimationTarget {
   gfx::SizeF stale_size() const;
 
  private:
+  virtual void OnSetMode();
+  virtual void OnUpdatedWorldSpaceTransform();
+
+  // Returns true if the element has been updated in any visible way.
+  virtual bool OnBeginFrame(const base::TimeTicks& time,
+                            const gfx::Vector3dF& look_at);
+
   // Valid IDs are non-negative.
   int id_ = -1;
 

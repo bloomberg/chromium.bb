@@ -25,10 +25,13 @@ class VectorElementBinding : public BindingBase {
   // This function will check if the getter is producing a different value than
   // when it was last polled. If so, it will pass that value to the provided
   // setter.
-  void Update() override {
+  bool Update() override {
+    bool updated = false;
     for (auto& binding : bindings_) {
-      binding->Update();
+      if (binding->Update())
+        updated = true;
     }
+    return updated;
   }
 
   M* model() { return &(*models_)[index_]; }

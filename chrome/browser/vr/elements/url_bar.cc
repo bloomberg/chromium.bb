@@ -74,7 +74,6 @@ void UrlBar::OnStateUpdated(const gfx::PointF& position) {
 
   texture_->SetBackButtonHovered(hovered);
   texture_->SetBackButtonPressed(pressed);
-  UpdateTexture();
 }
 
 }  // namespace vr

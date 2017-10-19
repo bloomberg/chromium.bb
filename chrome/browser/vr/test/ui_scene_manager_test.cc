@@ -136,7 +136,7 @@ void UiSceneManagerTest::CheckRendererOpacityRecursive(
   // might be confused which opacity is used by renderer.
   element->SetOpacity(0.9f);
 
-  OnBeginFrame();
+  EXPECT_TRUE(OnBeginFrame());
 
   FakeUiElementRenderer renderer;
   if (element->draw_phase() != kPhaseNone) {
@@ -155,18 +155,23 @@ void UiSceneManagerTest::CheckRendererOpacityRecursive(
   }
 }
 
-void UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
+bool UiSceneManagerTest::AnimateBy(base::TimeDelta delta) {
   base::TimeTicks target_time = current_time_ + delta;
   base::TimeDelta frame_time = base::TimeDelta::FromSecondsD(1.0 / 60.0);
+  bool changed = false;
   for (; current_time_ < target_time; current_time_ += frame_time) {
-    scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f));
+    if (scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f)))
+      changed = true;
   }
   current_time_ = target_time;
-  scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f));
+  if (scene_->OnBeginFrame(current_time_, gfx::Vector3dF(0.f, 0.f, -1.0f)))
+    changed = true;
+  return changed;
 }
 
-void UiSceneManagerTest::OnBeginFrame() {
-  scene_->OnBeginFrame(base::TimeTicks(), gfx::Vector3dF(0.f, 0.f, -1.0f));
+bool UiSceneManagerTest::OnBeginFrame() {
+  return scene_->OnBeginFrame(base::TimeTicks(),
+                              gfx::Vector3dF(0.f, 0.f, -1.0f));
 }
 
 void UiSceneManagerTest::GetBackgroundColor(SkColor* background_color) const {

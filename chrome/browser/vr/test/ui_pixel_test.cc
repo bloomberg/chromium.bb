@@ -88,11 +88,11 @@ void UiPixelTest::DrawUi(const gfx::Vector3dF& laser_direction,
   render_info.right_eye_info.viewport = {0, 0, 0, 0};
 
   GestureList gesture_list;
-  ui_->scene()->OnBeginFrame(
+  EXPECT_TRUE(ui_->scene()->OnBeginFrame(
       base::TimeTicks(),
       gfx::Vector3dF(-render_info.head_pose.matrix().get(2, 0),
                      -render_info.head_pose.matrix().get(2, 1),
-                     -render_info.head_pose.matrix().get(2, 2)));
+                     -render_info.head_pose.matrix().get(2, 2))));
   ui_->input_manager()->HandleInput(
       gfx::Vector3dF(0.0f, 0.0f, -1.0f), controller_info.laser_origin,
       controller_info.touchpad_button_state, &gesture_list,

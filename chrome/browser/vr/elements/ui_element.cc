@@ -83,12 +83,24 @@ void UiElement::OnScrollUpdate(std::unique_ptr<blink::WebGestureEvent> gesture,
 void UiElement::OnScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
                             const gfx::PointF& position) {}
 
-void UiElement::PrepareToDraw() {}
+bool UiElement::PrepareToDraw() {
+  return false;
+}
 
-void UiElement::OnBeginFrame(const base::TimeTicks& time,
+bool UiElement::DoBeginFrame(const base::TimeTicks& time,
                              const gfx::Vector3dF& look_at) {
+  // TODO(mthiesse): This is overly cautious. We may have animations but not
+  // trigger any updates, so we should refine this logic and have
+  // AnimationPlayer::Tick return a boolean.
+  bool updated = animation_player_.animations().size() > 0;
   animation_player_.Tick(time);
   last_frame_time_ = time;
+  return OnBeginFrame(time, look_at) || updated;
+}
+
+bool UiElement::OnBeginFrame(const base::TimeTicks& time,
+                             const gfx::Vector3dF& look_at) {
+  return false;
 }
 
 bool UiElement::IsHitTestable() const {
@@ -233,9 +245,13 @@ void UiElement::AddBinding(std::unique_ptr<BindingBase> binding) {
   bindings_.push_back(std::move(binding));
 }
 
-void UiElement::UpdateBindings() {
-  for (auto& binding : bindings_)
-    binding->Update();
+bool UiElement::UpdateBindings() {
+  bool updated = false;
+  for (auto& binding : bindings_) {
+    if (binding->Update())
+      updated = true;
+  }
+  return updated;
 }
 
 gfx::Point3F UiElement::GetCenter() const {
