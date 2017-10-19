@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -164,8 +165,8 @@ void ServiceWorkerProviderContext::SetController(
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   ControlleeState* state = controllee_state_.get();
   DCHECK(state);
-  DCHECK(!state->controller ||
-         state->controller->handle_id() != kInvalidServiceWorkerHandleId);
+  DCHECK(!state->controller || state->controller->handle_id() !=
+                                   blink::mojom::kInvalidServiceWorkerHandleId);
 
   state->controller = std::move(controller);
   state->used_features = used_features;

@@ -11,6 +11,7 @@
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message_macros.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 
 namespace content {
 
@@ -21,7 +22,7 @@ namespace {
 void SendServiceWorkerObjectDestroyed(
     ThreadSafeSender* sender,
     int handle_id) {
-  if (handle_id == kInvalidServiceWorkerHandleId)
+  if (handle_id == blink::mojom::kInvalidServiceWorkerHandleId)
     return;
   sender->Send(
       new ServiceWorkerHostMsg_DecrementServiceWorkerRefCount(handle_id));

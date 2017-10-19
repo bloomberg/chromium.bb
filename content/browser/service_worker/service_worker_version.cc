@@ -47,6 +47,7 @@
 #include "net/http/http_response_info.h"
 #include "third_party/WebKit/common/origin_trials/trial_token_validator.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 
 namespace content {
@@ -294,7 +295,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       validator_(base::MakeUnique<blink::TrialTokenValidator>(
           base::MakeUnique<TrialPolicyImpl>())),
       weak_factory_(this) {
-  DCHECK_NE(kInvalidServiceWorkerVersionId, version_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId, version_id);
   DCHECK(context_);
   DCHECK(registration);
   DCHECK(script_url_.is_valid());

@@ -19,6 +19,7 @@
 #include "content/browser/service_worker/service_worker_database.pb.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -276,7 +277,7 @@ const char* ServiceWorkerDatabase::StatusToString(
 
 ServiceWorkerDatabase::RegistrationData::RegistrationData()
     : registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
-      version_id(kInvalidServiceWorkerVersionId),
+      version_id(blink::mojom::kInvalidServiceWorkerVersionId),
       is_active(false),
       has_fetch_handler(false),
       resources_total_size_bytes(0) {}
@@ -587,7 +588,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::WriteRegistration(
   DCHECK(old_registration);
   DCHECK(!resources.empty());
   Status status = LazyOpen(true);
-  old_registration->version_id = kInvalidServiceWorkerVersionId;
+  old_registration->version_id = blink::mojom::kInvalidServiceWorkerVersionId;
   if (status != STATUS_OK)
     return status;
 
@@ -788,7 +789,7 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::DeleteRegistration(
     std::vector<int64_t>* newly_purgeable_resources) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
   DCHECK(deleted_version);
-  deleted_version->version_id = kInvalidServiceWorkerVersionId;
+  deleted_version->version_id = blink::mojom::kInvalidServiceWorkerVersionId;
   Status status = LazyOpen(false);
   if (IsNewOrNonexistentDatabase(status))
     return STATUS_OK;

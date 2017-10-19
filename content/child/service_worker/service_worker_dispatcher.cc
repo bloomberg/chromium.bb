@@ -564,7 +564,7 @@ void ServiceWorkerDispatcher::RemoveServiceWorkerRegistration(
 }
 
 std::unique_ptr<ServiceWorkerHandleReference> ServiceWorkerDispatcher::Adopt(
-    const ServiceWorkerObjectInfo& info) {
+    const blink::mojom::ServiceWorkerObjectInfo& info) {
   return ServiceWorkerHandleReference::Adopt(info, thread_safe_sender_.get());
 }
 

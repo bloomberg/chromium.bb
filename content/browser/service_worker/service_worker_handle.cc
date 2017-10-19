@@ -52,8 +52,8 @@ void ServiceWorkerHandle::OnVersionStateChanged(ServiceWorkerVersion* version) {
       mojo::ConvertTo<blink::mojom::ServiceWorkerState>(version->status()));
 }
 
-ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
-  ServiceWorkerObjectInfo info;
+blink::mojom::ServiceWorkerObjectInfo ServiceWorkerHandle::GetObjectInfo() {
+  blink::mojom::ServiceWorkerObjectInfo info;
   info.handle_id = handle_id_;
   info.url = version_->script_url();
   info.state =

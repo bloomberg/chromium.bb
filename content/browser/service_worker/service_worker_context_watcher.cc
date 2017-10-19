@@ -14,6 +14,7 @@
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/console_message_level.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "url/gurl.h"
 
@@ -139,7 +140,7 @@ void ServiceWorkerContextWatcher::StoreRegistrationInfo(
 void ServiceWorkerContextWatcher::StoreVersionInfo(
     const ServiceWorkerVersionInfo& version_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (version_info.version_id == kInvalidServiceWorkerVersionId)
+  if (version_info.version_id == blink::mojom::kInvalidServiceWorkerVersionId)
     return;
   version_info_map_[version_info.version_id] =
       base::MakeUnique<ServiceWorkerVersionInfo>(version_info);

@@ -86,6 +86,7 @@
 #include "storage/browser/blob/blob_reader.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -332,13 +333,13 @@ void CountScriptResources(
   int version_id;
   size_t index = infos.size() - 1;
   if (infos[index].installing_version.version_id !=
-      kInvalidServiceWorkerVersionId)
+      blink::mojom::kInvalidServiceWorkerVersionId)
     version_id = infos[index].installing_version.version_id;
   else if (infos[index].waiting_version.version_id !=
-           kInvalidServiceWorkerVersionId)
+           blink::mojom::kInvalidServiceWorkerVersionId)
     version_id = infos[1].waiting_version.version_id;
   else if (infos[index].active_version.version_id !=
-           kInvalidServiceWorkerVersionId)
+           blink::mojom::kInvalidServiceWorkerVersionId)
     version_id = infos[index].active_version.version_id;
   else
     return;

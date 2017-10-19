@@ -795,6 +795,7 @@ mojom("mojo_bindings") {
     "platform/modules/presentation/presentation.mojom",
     "platform/modules/serviceworker/service_worker_error_type.mojom",
     "platform/modules/serviceworker/service_worker_event_status.mojom",
+    "platform/modules/serviceworker/service_worker_object.mojom",
     "platform/modules/serviceworker/service_worker_registration.mojom",
     "platform/modules/serviceworker/service_worker_state.mojom",
     "platform/modules/serviceworker/service_worker_stream_handle.mojom",

@@ -41,7 +41,6 @@ class ServiceWorkerProviderHost;
 class ServiceWorkerRegistration;
 class ServiceWorkerRegistrationHandle;
 class ServiceWorkerVersion;
-struct ServiceWorkerObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
 // ServiceWorkerDispatcherHost is the browser-side endpoint for several IPC
@@ -207,8 +206,12 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
       const SourceInfo& source_info,
       const StatusCallback& callback,
       ServiceWorkerStatusCode status);
+  bool IsValidSourceInfo(const ServiceWorkerClientInfo& source_info);
+  bool IsValidSourceInfo(
+      const blink::mojom::ServiceWorkerObjectInfo& source_info);
   void ReleaseSourceInfo(const ServiceWorkerClientInfo& source_info);
-  void ReleaseSourceInfo(const ServiceWorkerObjectInfo& source_info);
+  void ReleaseSourceInfo(
+      const blink::mojom::ServiceWorkerObjectInfo& source_info);
 
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
