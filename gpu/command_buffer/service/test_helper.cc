@@ -47,7 +47,7 @@ T ConstructShaderVariable(
     bool static_use, const std::string& name) {
   T var;
   var.type = type;
-  var.arraySize = array_size;
+  var.setArraySize(array_size);
   var.precision = precision;
   var.staticUse = static_use;
   var.name = name;

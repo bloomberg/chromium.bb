@@ -249,7 +249,7 @@ TEST_F(ShaderTranslatorTest, GetAttributes) {
   AttributeMap::const_iterator iter = attrib_map.find("_uvPosition");
   EXPECT_TRUE(iter != attrib_map.end());
   EXPECT_EQ(static_cast<GLenum>(GL_FLOAT_VEC4), iter->second.type);
-  EXPECT_EQ(0u, iter->second.arraySize);
+  EXPECT_EQ(0u, iter->second.getOutermostArraySize());
   EXPECT_EQ("vPosition", iter->second.name);
 }
 
@@ -299,14 +299,14 @@ TEST_F(ShaderTranslatorTest, GetUniforms) {
   EXPECT_TRUE(iter->second.findInfoByMappedName("_ubar[0]._ufoo._ucolor[0]",
                                                 &info, &original_name));
   EXPECT_EQ(static_cast<GLenum>(GL_FLOAT_VEC4), info->type);
-  EXPECT_EQ(1u, info->arraySize);
+  EXPECT_EQ(1u, info->getOutermostArraySize());
   EXPECT_STREQ("color", info->name.c_str());
   EXPECT_STREQ("bar[0].foo.color[0]", original_name.c_str());
   // Second uniform.
   EXPECT_TRUE(iter->second.findInfoByMappedName("_ubar[1]._ufoo._ucolor[0]",
                                                 &info, &original_name));
   EXPECT_EQ(static_cast<GLenum>(GL_FLOAT_VEC4), info->type);
-  EXPECT_EQ(1u, info->arraySize);
+  EXPECT_EQ(1u, info->getOutermostArraySize());
   EXPECT_STREQ("color", info->name.c_str());
   EXPECT_STREQ("bar[1].foo.color[0]", original_name.c_str());
   EXPECT_EQ(1u, output_variable_list.size());

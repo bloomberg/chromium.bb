@@ -218,8 +218,8 @@ GLsizeiptr VertexShaderOutputTypeToSize(const sh::Varying& varying) {
     GLsizeiptr size = VertexShaderOutputBaseTypeToSize(varying.type);
     DCHECK(size);
     total = size;
-    if (varying.arraySize > 1) {  // array case.
-      total *= varying.arraySize;
+    if (varying.isArray()) {  // array case.
+      total *= varying.getOutermostArraySize();
     }
   }
   return total.ValueOrDefault(std::numeric_limits<GLsizeiptr>::max());
@@ -454,7 +454,8 @@ void Program::UpdateFragmentOutputBaseTypes() {
       if (output.name != "gl_FragColor" && output.name != "gl_FragData")
         continue;
     }
-    int count = static_cast<int>(output.arraySize == 0 ? 1 : output.arraySize);
+    int count =
+        static_cast<int>(output.isArray() ? output.getOutermostArraySize() : 1);
     // TODO(zmo): Handle the special case in ES2 where gl_FragColor could
     // be broadcasting to all draw buffers.
     DCHECK_LE(location + count,
@@ -863,9 +864,9 @@ bool Program::UpdateUniforms() {
       if (uniform &&
           uniform->findInfoByMappedName(service_name, &info, &client_name)) {
         DCHECK(!client_name.empty());
-        is_array = info->arraySize > 0;
+        is_array = info->isArray();
         type = info->type;
-        size = std::max(1u, info->arraySize);
+        size = std::max(1u, info->getOutermostArraySize());
       } else {
         const InterfaceBlockMap& interface_block_map =
             shader->interface_block_map();
@@ -897,9 +898,9 @@ bool Program::UpdateUniforms() {
           }
           if (find) {
             DCHECK(!client_name.empty());
-            is_array = info->arraySize > 0;
+            is_array = info->isArray();
             type = info->type;
-            size = std::max(1u, info->arraySize);
+            size = std::max(1u, info->getOutermostArraySize());
             break;
           }
         }
@@ -1046,7 +1047,7 @@ void Program::UpdateFragmentInputs() {
     if (varying &&
         varying->findInfoByMappedName(service_name, &info, &client_name)) {
       type = info->type;
-      size = std::max(1u, info->arraySize);
+      size = std::max(1u, info->getOutermostArraySize());
     } else {
       // Should only happen if there are major bugs in the driver, ANGLE or if
       // the shader translator is disabled.
@@ -1127,7 +1128,7 @@ void Program::UpdateProgramOutputs() {
       continue;
 
     std::string client_name = output_var.name;
-    if (output_var.arraySize == 0) {
+    if (!output_var.isArray()) {
       GLint color_name =
           glGetFragDataLocation(service_id_, service_name.c_str());
       if (color_name < 0)
@@ -1145,7 +1146,7 @@ void Program::UpdateProgramOutputs() {
           glGetFragDataLocation(service_id_, service_name.c_str());
       if (color_name >= 0) {
         GLint index = 0;
-        for (size_t ii = 0; ii < output_var.arraySize; ++ii) {
+        for (size_t ii = 0; ii < output_var.getOutermostArraySize(); ++ii) {
           std::string array_spec(
               std::string("[") + base::IntToString(ii) + "]");
           program_output_infos_.push_back(ProgramOutputInfo(
@@ -1153,7 +1154,7 @@ void Program::UpdateProgramOutputs() {
         }
       }
     } else {
-      for (size_t ii = 0; ii < output_var.arraySize; ++ii) {
+      for (size_t ii = 0; ii < output_var.getOutermostArraySize(); ++ii) {
         std::string array_spec(std::string("[") + base::IntToString(ii) + "]");
         std::string service_element_name(service_name + array_spec);
         GLint color_name =
@@ -1228,8 +1229,8 @@ void Program::ExecuteProgramOutputBindCalls() {
     // non-existing variable names.  Binding calls are only executed with ES SL
     // 3.00 and higher.
     for (auto const& output_var : fragment_shader->output_variable_list()) {
-      size_t count = std::max(output_var.arraySize, 1u);
-      bool is_array = output_var.arraySize > 0;
+      size_t count = std::max(output_var.getOutermostArraySize(), 1u);
+      bool is_array = output_var.isArray();
 
       for (size_t jj = 0; jj < count; ++jj) {
         std::string name = output_var.name;
@@ -1281,22 +1282,22 @@ void Program::ExecuteProgramOutputBindCalls() {
     const std::string& name = output_var.mappedName;
     if (name == "gl_FragColor") {
       DCHECK_EQ(-1, output_var.location);
-      DCHECK_EQ(0u, output_var.arraySize);
+      DCHECK_EQ(false, output_var.isArray());
       // We leave these unbound by not giving a binding name. The driver will
       // bind this.
     } else if (name == "gl_FragData") {
       DCHECK_EQ(-1, output_var.location);
-      DCHECK_NE(0u, output_var.arraySize);
+      DCHECK_NE(0u, output_var.getOutermostArraySize());
       // We leave these unbound by not giving a binding name. The driver will
       // bind this.
     } else if (name == "gl_SecondaryFragColorEXT") {
       DCHECK_EQ(-1, output_var.location);
-      DCHECK_EQ(0u, output_var.arraySize);
+      DCHECK_EQ(false, output_var.isArray());
       glBindFragDataLocationIndexed(service_id_, 0, 1,
                                     "angle_SecondaryFragColor");
     } else if (name == "gl_SecondaryFragDataEXT") {
       DCHECK_EQ(-1, output_var.location);
-      DCHECK_NE(0u, output_var.arraySize);
+      DCHECK_NE(0u, output_var.getOutermostArraySize());
       glBindFragDataLocationIndexed(service_id_, 0, 1,
                                     "angle_SecondaryFragData");
     }
@@ -2045,8 +2046,8 @@ bool Program::DetectProgramOutputLocationBindingConflicts() const {
     if (!output_var.staticUse)
       continue;
 
-    size_t count = std::max(output_var.arraySize, 1u);
-    bool is_array = output_var.arraySize > 0;
+    size_t count = std::max(output_var.getOutermostArraySize(), 1u);
+    bool is_array = output_var.isArray();
 
     for (size_t jj = 0; jj < count; ++jj) {
       std::string name = output_var.name;

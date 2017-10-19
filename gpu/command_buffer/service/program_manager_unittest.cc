@@ -1010,7 +1010,8 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
     EXPECT_TRUE(it->second.findInfoByMappedName(
         attrib_info->name, &info, &original_name));
     EXPECT_EQ(info->type, attrib_info->type);
-    EXPECT_EQ(static_cast<GLint>(info->arraySize), attrib_info->size);
+    EXPECT_EQ(static_cast<GLint>(info->getOutermostArraySize()),
+              attrib_info->size);
     EXPECT_EQ(original_name, attrib_info->name);
   }
   // Check Uniforms
@@ -1030,7 +1031,8 @@ TEST_F(ProgramManagerWithShaderTest, GLDriverReturnsWrongTypeInfo) {
     EXPECT_TRUE(it->second.findInfoByMappedName(
         uniform_info->name, &info, &original_name));
     EXPECT_EQ(info->type, uniform_info->type);
-    EXPECT_EQ(static_cast<GLint>(info->arraySize), uniform_info->size);
+    EXPECT_EQ(static_cast<GLint>(info->getOutermostArraySize()),
+              uniform_info->size);
     EXPECT_EQ(original_name, uniform_info->name);
   }
 }
@@ -1621,7 +1623,8 @@ TEST_F(ProgramManagerWithShaderTest, BindAttribLocationConflicts) {
         vshader->GetAttribInfo(it->first);
     ASSERT_TRUE(variable_info != NULL);
     EXPECT_EQ(it->second.type, variable_info->type);
-    EXPECT_EQ(it->second.arraySize, variable_info->arraySize);
+    EXPECT_EQ(it->second.getOutermostArraySize(),
+              variable_info->getOutermostArraySize());
     EXPECT_EQ(it->second.precision, variable_info->precision);
     EXPECT_EQ(it->second.staticUse, variable_info->staticUse);
     EXPECT_EQ(it->second.name, variable_info->name);
