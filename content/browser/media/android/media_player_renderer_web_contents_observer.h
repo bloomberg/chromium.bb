@@ -15,7 +15,9 @@ class MediaPlayerRenderer;
 
 // This class propagates WebContents muting updates to MediaPlayerRenderers.
 // This allows us to avoid adding N WebContentsObservers for N
-// MediaPlayerRenderers on a page.
+// MediaPlayerRenderers on a page. Essentially, this is a call-stack filter to
+// prevent uninteresting observer methods from calling into the
+// MediaPlayerRenderers.
 class MediaPlayerRendererWebContentsObserver
     : public WebContentsObserver,
       public WebContentsUserData<MediaPlayerRendererWebContentsObserver> {
