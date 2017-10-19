@@ -339,15 +339,17 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
           gl::GLSurfaceFormat());
       if (!surface_ || !surface_->Initialize(gl::GLSurfaceFormat())) {
         surface_ = nullptr;
-        DLOG(ERROR) << "Failed to create surface.";
+        LOG(ERROR) << "ContextResult::kFatalFailure: "
+                      "Failed to create surface.";
         return gpu::ContextResult::kFatalFailure;
       }
     }
   }
 
   if (!surface_.get()) {
-    DLOG(ERROR) << "Could not create GLSurface.";
     DestroyOnGpuThread();
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "Could not create GLSurface.";
     return gpu::ContextResult::kFatalFailure;
   }
 
@@ -400,15 +402,17 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   }
 
   if (!context_.get()) {
-    LOG(ERROR) << "Could not create GLContext.";
     DestroyOnGpuThread();
+    LOG(ERROR) << "ContextResult::kFatalFailure: "
+                  "Could not create GLContext.";
     return gpu::ContextResult::kFatalFailure;
   }
 
   if (!context_->MakeCurrent(surface_.get())) {
-    LOG(ERROR) << "Could not make context current.";
     DestroyOnGpuThread();
     // The caller should retry making a context, but this one won't work.
+    LOG(ERROR) << "ContextResult::kTransientFailure: "
+                  "Could not make context current.";
     return gpu::ContextResult::kTransientFailure;
   }
 

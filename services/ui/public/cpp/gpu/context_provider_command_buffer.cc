@@ -278,10 +278,11 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     }
 
     if (command_buffer_->GetLastState().error != gpu::error::kNoError) {
-      DLOG(ERROR) << "Context dead on arrival. Last error: "
-                  << command_buffer_->GetLastState().error;
       // The context was DOA, which can be caused by other contexts and we
       // could try again.
+      LOG(ERROR) << "ContextResult::kTransientFailure: "
+                    "Context dead on arrival. Last error: "
+                 << command_buffer_->GetLastState().error;
       bind_result_ = gpu::ContextResult::kTransientFailure;
       return bind_result_;
     }
@@ -302,6 +303,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     if (share_group && share_group->IsLost()) {
       // The context was DOA, which can be caused by other contexts and we
       // could try again.
+      LOG(ERROR) << "ContextResult::kTransientFailure: share group was lost";
       bind_result_ = gpu::ContextResult::kTransientFailure;
       return bind_result_;
     }
