@@ -23,37 +23,13 @@
 #define WTF_RefPtr_h
 
 #include "base/memory/scoped_refptr.h"
-#include "platform/wtf/Allocator.h"
 
 namespace WTF {
 
 template <typename T>
 using RefPtr = scoped_refptr<T>;
 
-template <typename T>
-inline T* GetPtr(const RefPtr<T>& p) {
-  return p.get();
-}
-
-template <typename T>
-class RefPtrValuePeeker {
-  DISALLOW_NEW();
-
- public:
-  ALWAYS_INLINE RefPtrValuePeeker(T* p) : ptr_(p) {}
-  template <typename U>
-  RefPtrValuePeeker(const RefPtr<U>& p) : ptr_(p.get()) {}
-
-  ALWAYS_INLINE operator T*() const { return ptr_; }
-
- private:
-  T* ptr_;
-};
-
-template <typename T>
-RefPtr<T> AdoptRef(T* p) {
-  return RefPtr<T>(base::AdoptRef(p));
-}
+using base::AdoptRef;
 
 template <typename T>
 RefPtr<T> WrapRefPtr(T* ptr) {

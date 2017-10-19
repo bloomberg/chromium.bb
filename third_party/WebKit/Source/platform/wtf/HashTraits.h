@@ -27,6 +27,7 @@
 #include <memory>
 #include <type_traits>
 #include <utility>
+#include "platform/wtf/Allocator.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashFunctions.h"
 #include "platform/wtf/HashTableDeletedValueType.h"
@@ -219,6 +220,20 @@ struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
                 "Unexpected RefPtr size."
                 " RefPtr needs to be single pointer to support deleted value.");
 
+  class RefPtrValuePeeker {
+    DISALLOW_NEW();
+
+   public:
+    ALWAYS_INLINE RefPtrValuePeeker(P* p) : ptr_(p) {}
+    template <typename U>
+    RefPtrValuePeeker(const RefPtr<U>& p) : ptr_(p.get()) {}
+
+    ALWAYS_INLINE operator P*() const { return ptr_; }
+
+   private:
+    P* ptr_;
+  };
+
   typedef std::nullptr_t EmptyValueType;
   static EmptyValueType EmptyValue() { return nullptr; }
 
@@ -234,7 +249,7 @@ struct HashTraits<RefPtr<P>> : SimpleClassHashTraits<RefPtr<P>> {
     *reinterpret_cast<void**>(&slot) = reinterpret_cast<void*>(-1);
   }
 
-  typedef RefPtrValuePeeker<P> PeekInType;
+  typedef RefPtrValuePeeker PeekInType;
   typedef RefPtr<P>* IteratorGetType;
   typedef const RefPtr<P>* IteratorConstGetType;
   typedef RefPtr<P>& IteratorReferenceType;
