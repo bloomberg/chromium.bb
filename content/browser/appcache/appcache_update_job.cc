@@ -27,7 +27,7 @@ namespace content {
 
 namespace {
 
-const int kBufferSize = 32768;
+const int kAppCacheFetchBufferSize = 32768;
 const size_t kMaxConcurrentUrlFetches = 2;
 
 std::string FormatUrlErrorMessage(
@@ -337,7 +337,7 @@ void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
       new URLFetcher(manifest_url_,
                      is_first_fetch ? URLFetcher::MANIFEST_FETCH
                                     : URLFetcher::MANIFEST_REFETCH,
-                     this, kBufferSize);
+                     this, kAppCacheFetchBufferSize);
 
   if (is_first_fetch) {
     // Maybe load the cached headers to make a condiditional request.
@@ -938,10 +938,9 @@ void AppCacheUpdateJob::CheckIfManifestChanged() {
   manifest_response_reader_.reset(
       storage_->CreateResponseReader(manifest_url_,
                                      entry->response_id()));
-  read_manifest_buffer_ = new net::IOBuffer(kBufferSize);
+  read_manifest_buffer_ = new net::IOBuffer(kAppCacheFetchBufferSize);
   manifest_response_reader_->ReadData(
-      read_manifest_buffer_.get(),
-      kBufferSize,
+      read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
       base::Bind(&AppCacheUpdateJob::OnManifestDataReadComplete,
                  base::Unretained(this)));  // async read
 }
@@ -950,8 +949,7 @@ void AppCacheUpdateJob::OnManifestDataReadComplete(int result) {
   if (result > 0) {
     loaded_manifest_data_.append(read_manifest_buffer_->data(), result);
     manifest_response_reader_->ReadData(
-        read_manifest_buffer_.get(),
-        kBufferSize,
+        read_manifest_buffer_.get(), kAppCacheFetchBufferSize,
         base::Bind(&AppCacheUpdateJob::OnManifestDataReadComplete,
                    base::Unretained(this)));  // read more
   } else {
@@ -1033,8 +1031,9 @@ void AppCacheUpdateJob::FetchUrls() {
                MaybeLoadFromNewestCache(url_to_fetch.url, entry)) {
       // Continues asynchronously after data is loaded from newest cache.
     } else {
-      URLFetcher* fetcher = new URLFetcher(
-          url_to_fetch.url, URLFetcher::URL_FETCH, this, kBufferSize);
+      URLFetcher* fetcher =
+          new URLFetcher(url_to_fetch.url, URLFetcher::URL_FETCH, this,
+                         kAppCacheFetchBufferSize);
       if (url_to_fetch.existing_response_info.get() &&
           group_->newest_complete_cache()) {
         AppCacheEntry* existing_entry =
@@ -1157,7 +1156,7 @@ void AppCacheUpdateJob::FetchMasterEntries() {
       }
     } else {
       URLFetcher* fetcher = new URLFetcher(url, URLFetcher::MASTER_ENTRY_FETCH,
-                                           this, kBufferSize);
+                                           this, kAppCacheFetchBufferSize);
       fetcher->Start();
       master_entry_fetches_.insert(PendingUrlFetches::value_type(url, fetcher));
     }

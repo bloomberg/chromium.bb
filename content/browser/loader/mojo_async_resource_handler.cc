@@ -9,12 +9,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/loader/downloaded_temp_file_impl.h"
 #include "content/browser/loader/resource_controller.h"
@@ -42,22 +40,6 @@ int g_allocation_size = MojoAsyncResourceHandler::kDefaultAllocationSize;
 constexpr size_t kMinAllocationSize = 2 * net::kMaxBytesToSniff;
 
 constexpr size_t kMaxChunkSize = 32 * 1024;
-
-void GetNumericArg(const std::string& name, int* result) {
-  const std::string& value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(name);
-  if (!value.empty())
-    base::StringToInt(value, result);
-}
-
-void InitializeResourceBufferConstants() {
-  static bool did_init = false;
-  if (did_init)
-    return;
-  did_init = true;
-
-  GetNumericArg("resource-buffer-size", &g_allocation_size);
-}
 
 void NotReached(mojom::URLLoaderRequest mojo_request,
                 mojom::URLLoaderClientPtr url_loader_client) {
@@ -141,6 +123,15 @@ MojoAsyncResourceHandler::MojoAsyncResourceHandler(
 MojoAsyncResourceHandler::~MojoAsyncResourceHandler() {
   if (has_checked_for_sufficient_resources_)
     rdh_->FinishedWithResourcesForRequest(request());
+}
+
+void MojoAsyncResourceHandler::InitializeResourceBufferConstants() {
+  static bool did_init = false;
+  if (did_init)
+    return;
+  did_init = true;
+
+  GetNumericArg("resource-buffer-size", &g_allocation_size);
 }
 
 void MojoAsyncResourceHandler::OnRequestRedirected(
