@@ -59,9 +59,9 @@ extern "C" {
 #if CONFIG_REFERENCE_BUFFER
 /* Constant values while waiting for the sequence header */
 #define FRAME_ID_NUMBERS_PRESENT_FLAG 1
-#define FRAME_ID_LENGTH_MINUS7 8         // Allows frame id up to 2^15-1
-#define DELTA_FRAME_ID_LENGTH_MINUS2 12  // Allows frame id deltas up to 2^14-1
-#endif                                   // CONFIG_REFERENCE_BUFFER
+#define FRAME_ID_LENGTH 15
+#define DELTA_FRAME_ID_LENGTH 14
+#endif  // CONFIG_REFERENCE_BUFFER
 
 #if CONFIG_NO_FRAME_CONTEXT_SIGNALING
 #define FRAME_CONTEXTS (FRAME_BUFFERS + 1)
