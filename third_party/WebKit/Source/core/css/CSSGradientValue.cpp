@@ -104,10 +104,11 @@ void CSSGradientColorStop::Trace(blink::Visitor* visitor) {
   visitor->Trace(color_);
 }
 
-RefPtr<Image> CSSGradientValue::GetImage(const ImageResourceObserver& client,
-                                         const Document& document,
-                                         const ComputedStyle& style,
-                                         const IntSize& size) {
+scoped_refptr<Image> CSSGradientValue::GetImage(
+    const ImageResourceObserver& client,
+    const Document& document,
+    const ComputedStyle& style,
+    const IntSize& size) {
   if (size.IsEmpty())
     return nullptr;
 
@@ -124,7 +125,7 @@ RefPtr<Image> CSSGradientValue::GetImage(const ImageResourceObserver& client,
   }
 
   // We need to create an image.
-  RefPtr<Gradient> gradient;
+  scoped_refptr<Gradient> gradient;
 
   const ComputedStyle* root_style =
       document.documentElement()->GetComputedStyle();
@@ -151,7 +152,8 @@ RefPtr<Image> CSSGradientValue::GetImage(const ImageResourceObserver& client,
       NOTREACHED();
   }
 
-  RefPtr<Image> new_image = GradientGeneratedImage::Create(gradient, size);
+  scoped_refptr<Image> new_image =
+      GradientGeneratedImage::Create(gradient, size);
   if (is_cacheable_)
     PutImage(size, new_image);
 
@@ -878,7 +880,7 @@ static void EndPointsFromAngle(float angle_deg,
   first_point.Set(half_width - end_x, half_height + end_y);
 }
 
-RefPtr<Gradient> CSSLinearGradientValue::CreateGradient(
+scoped_refptr<Gradient> CSSLinearGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const IntSize& size,
     const LayoutObject& object) {
@@ -948,7 +950,7 @@ RefPtr<Gradient> CSSLinearGradientValue::CreateGradient(
                     repeating_ ? kSpreadMethodRepeat : kSpreadMethodPad);
   AddStops(desc, conversion_data, object);
 
-  RefPtr<Gradient> gradient =
+  scoped_refptr<Gradient> gradient =
       Gradient::CreateLinear(desc.p0, desc.p1, desc.spread_method,
                              Gradient::ColorInterpolation::kPremultiplied);
 
@@ -1244,7 +1246,7 @@ FloatSize RadiusToCorner(const FloatPoint& point,
 
 }  // anonymous namespace
 
-RefPtr<Gradient> CSSRadialGradientValue::CreateGradient(
+scoped_refptr<Gradient> CSSRadialGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const IntSize& size,
     const LayoutObject& object) {
@@ -1321,7 +1323,7 @@ RefPtr<Gradient> CSSRadialGradientValue::CreateGradient(
                     repeating_ ? kSpreadMethodRepeat : kSpreadMethodPad);
   AddStops(desc, conversion_data, object);
 
-  RefPtr<Gradient> gradient = Gradient::CreateRadial(
+  scoped_refptr<Gradient> gradient = Gradient::CreateRadial(
       desc.p0, desc.r0, desc.p1, desc.r1,
       is_degenerate ? 1 : second_radius.AspectRatio(), desc.spread_method,
       Gradient::ColorInterpolation::kPremultiplied);
@@ -1420,7 +1422,7 @@ String CSSConicGradientValue::CustomCSSText() const {
   return result.ToString();
 }
 
-RefPtr<Gradient> CSSConicGradientValue::CreateGradient(
+scoped_refptr<Gradient> CSSConicGradientValue::CreateGradient(
     const CSSToLengthConversionData& conversion_data,
     const IntSize& size,
     const LayoutObject& object) {
@@ -1438,7 +1440,7 @@ RefPtr<Gradient> CSSConicGradientValue::CreateGradient(
                     repeating_ ? kSpreadMethodRepeat : kSpreadMethodPad);
   AddStops(desc, conversion_data, object);
 
-  RefPtr<Gradient> gradient = Gradient::CreateConic(
+  scoped_refptr<Gradient> gradient = Gradient::CreateConic(
       position, angle, desc.start_angle, desc.end_angle, desc.spread_method,
       Gradient::ColorInterpolation::kPremultiplied);
   gradient->AddColorStops(desc.stops);

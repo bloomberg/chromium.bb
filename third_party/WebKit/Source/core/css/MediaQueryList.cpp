@@ -29,13 +29,14 @@ namespace blink {
 
 MediaQueryList* MediaQueryList::Create(ExecutionContext* context,
                                        MediaQueryMatcher* matcher,
-                                       RefPtr<MediaQuerySet> media) {
-  return new MediaQueryList(context, matcher, RefPtr<MediaQuerySet>(media));
+                                       scoped_refptr<MediaQuerySet> media) {
+  return new MediaQueryList(context, matcher,
+                            scoped_refptr<MediaQuerySet>(media));
 }
 
 MediaQueryList::MediaQueryList(ExecutionContext* context,
                                MediaQueryMatcher* matcher,
-                               RefPtr<MediaQuerySet> media)
+                               scoped_refptr<MediaQuerySet> media)
     : ContextLifecycleObserver(context),
       matcher_(matcher),
       media_(media),

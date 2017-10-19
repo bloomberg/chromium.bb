@@ -87,7 +87,7 @@ void CSSFontSelector::FontCacheInvalidated() {
   DispatchInvalidationCallbacks();
 }
 
-RefPtr<FontData> CSSFontSelector::GetFontData(
+scoped_refptr<FontData> CSSFontSelector::GetFontData(
     const FontDescription& font_description,
     const AtomicString& family_name) {
   if (CSSSegmentedFontFace* face =

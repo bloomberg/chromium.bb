@@ -51,8 +51,8 @@ class CORE_EXPORT CSSFontSelector : public FontSelector {
 
   void ReportNotDefGlyph() const override;
 
-  RefPtr<FontData> GetFontData(const FontDescription&,
-                               const AtomicString&) override;
+  scoped_refptr<FontData> GetFontData(const FontDescription&,
+                                      const AtomicString&) override;
   void WillUseFontData(const FontDescription&,
                        const AtomicString& family,
                        const String& text) override;

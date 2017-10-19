@@ -210,7 +210,7 @@ bool RequiresSubtreeInvalidation(const CSSSelector& selector) {
 }  // anonymous namespace
 
 InvalidationSet& RuleFeatureSet::StoredInvalidationSet(
-    RefPtr<InvalidationSet>& invalidation_set,
+    scoped_refptr<InvalidationSet>& invalidation_set,
     InvalidationType type,
     PositionType position) {
   if (invalidation_set && invalidation_set->IsSelfInvalidationSet()) {
@@ -244,31 +244,31 @@ InvalidationSet& RuleFeatureSet::StoredInvalidationSet(
   if (type == kInvalidateDescendants)
     return ToSiblingInvalidationSet(*invalidation_set).EnsureDescendants();
 
-  RefPtr<InvalidationSet> descendants = invalidation_set;
+  scoped_refptr<InvalidationSet> descendants = invalidation_set;
   invalidation_set = SiblingInvalidationSet::Create(
       ToDescendantInvalidationSet(descendants.get()));
   return *invalidation_set;
 }
 
 InvalidationSet& RuleFeatureSet::EnsureInvalidationSet(
-    HashMap<AtomicString, RefPtr<InvalidationSet>>& map,
+    HashMap<AtomicString, scoped_refptr<InvalidationSet>>& map,
     const AtomicString& key,
     InvalidationType type,
     PositionType position) {
-  RefPtr<InvalidationSet>& invalidation_set =
+  scoped_refptr<InvalidationSet>& invalidation_set =
       map.insert(key, nullptr).stored_value->value;
   return StoredInvalidationSet(invalidation_set, type, position);
 }
 
 InvalidationSet& RuleFeatureSet::EnsureInvalidationSet(
     HashMap<CSSSelector::PseudoType,
-            RefPtr<InvalidationSet>,
+            scoped_refptr<InvalidationSet>,
             WTF::IntHash<unsigned>,
             WTF::UnsignedWithZeroKeyHashTraits<unsigned>>& map,
     CSSSelector::PseudoType key,
     InvalidationType type,
     PositionType position) {
-  RefPtr<InvalidationSet>& invalidation_set =
+  scoped_refptr<InvalidationSet>& invalidation_set =
       map.insert(key, nullptr).stored_value->value;
   return StoredInvalidationSet(invalidation_set, type, position);
 }

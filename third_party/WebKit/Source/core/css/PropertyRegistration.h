@@ -46,12 +46,12 @@ class CORE_EXPORT PropertyRegistration
                        const CSSSyntaxDescriptor&,
                        bool inherits,
                        const CSSValue* initial,
-                       RefPtr<CSSVariableData> initial_variable_data);
+                       scoped_refptr<CSSVariableData> initial_variable_data);
 
   const CSSSyntaxDescriptor syntax_;
   const bool inherits_;
   const Member<const CSSValue> initial_;
-  const RefPtr<CSSVariableData> initial_variable_data_;
+  const scoped_refptr<CSSVariableData> initial_variable_data_;
   const InterpolationTypes interpolation_types_;
 };
 

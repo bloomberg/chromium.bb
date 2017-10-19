@@ -532,8 +532,10 @@ void StyleResolver::CollectTreeBoundaryCrossingRulesV0CascadeOrder(
   }
 }
 
-RefPtr<ComputedStyle> StyleResolver::StyleForViewport(Document& document) {
-  RefPtr<ComputedStyle> viewport_style = InitialStyleForElement(document);
+scoped_refptr<ComputedStyle> StyleResolver::StyleForViewport(
+    Document& document) {
+  scoped_refptr<ComputedStyle> viewport_style =
+      InitialStyleForElement(document);
 
   viewport_style->SetZIndex(0);
   viewport_style->SetIsStackingContext(true);
@@ -592,7 +594,7 @@ static void UpdateBaseComputedStyle(StyleResolverState& state,
   }
 }
 
-RefPtr<ComputedStyle> StyleResolver::StyleForElement(
+scoped_refptr<ComputedStyle> StyleResolver::StyleForElement(
     Element* element,
     const ComputedStyle* default_parent,
     const ComputedStyle* default_layout_parent,
@@ -639,7 +641,7 @@ RefPtr<ComputedStyle> StyleResolver::StyleForElement(
     }
   } else {
     if (state.ParentStyle()) {
-      RefPtr<ComputedStyle> style = ComputedStyle::Create();
+      scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
       style->InheritFrom(*state.ParentStyle(),
                          IsAtShadowBoundary(element)
                              ? ComputedStyle::kAtShadowBoundary
@@ -759,7 +761,7 @@ RefPtr<ComputedStyle> StyleResolver::StyleForElement(
 
 // TODO(alancutter): Create compositor keyframe values directly instead of
 // intermediate AnimatableValues.
-RefPtr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
+scoped_refptr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
     Element& element,
     const ComputedStyle& base_style,
     const ComputedStyle* parent_style,
@@ -833,7 +835,7 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
                            parent_layout_object->Style());
   if (!PseudoStyleForElementInternal(parent, pseudo_id, parent_style, state))
     return nullptr;
-  RefPtr<ComputedStyle> style = state.TakeStyle();
+  scoped_refptr<ComputedStyle> style = state.TakeStyle();
   DCHECK(style);
   parent_style->AddCachedPseudoStyle(style);
 
@@ -869,7 +871,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   if (base_computed_style) {
     state.SetStyle(ComputedStyle::Clone(*base_computed_style));
   } else if (pseudo_style_request.AllowsInheritance(state.ParentStyle())) {
-    RefPtr<ComputedStyle> style = ComputedStyle::Create();
+    scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
     style->InheritFrom(*state.ParentStyle());
     state.SetStyle(std::move(style));
   } else {
@@ -930,7 +932,7 @@ bool StyleResolver::PseudoStyleForElementInternal(
   return true;
 }
 
-RefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
+scoped_refptr<ComputedStyle> StyleResolver::PseudoStyleForElement(
     Element* element,
     const PseudoStyleRequest& pseudo_style_request,
     const ComputedStyle* parent_style,
@@ -956,12 +958,13 @@ RefPtr<ComputedStyle> StyleResolver::PseudoStyleForElement(
   return state.TakeStyle();
 }
 
-RefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
-  RefPtr<ComputedStyle> initial_style = InitialStyleForElement(GetDocument());
+scoped_refptr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
+  scoped_refptr<ComputedStyle> initial_style =
+      InitialStyleForElement(GetDocument());
   StyleResolverState state(GetDocument(), GetDocument().documentElement(),
                            initial_style.get(), initial_style.get());
 
-  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   const ComputedStyle* root_element_style =
       state.RootElementStyle() ? state.RootElementStyle()
                                : GetDocument().GetComputedStyle();
@@ -999,11 +1002,11 @@ RefPtr<ComputedStyle> StyleResolver::StyleForPage(int page_index) {
   return state.TakeStyle();
 }
 
-RefPtr<ComputedStyle> StyleResolver::InitialStyleForElement(
+scoped_refptr<ComputedStyle> StyleResolver::InitialStyleForElement(
     Document& document) {
   const LocalFrame* frame = document.GetFrame();
 
-  RefPtr<ComputedStyle> initial_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> initial_style = ComputedStyle::Create();
 
   initial_style->SetRtlOrdering(document.VisuallyOrdered() ? EOrder::kVisual
                                                            : EOrder::kLogical);
@@ -1023,7 +1026,7 @@ RefPtr<ComputedStyle> StyleResolver::InitialStyleForElement(
   return initial_style;
 }
 
-RefPtr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
+scoped_refptr<ComputedStyle> StyleResolver::StyleForText(Text* text_node) {
   DCHECK(text_node);
 
   Node* parent_node = LayoutTreeBuilderTraversal::Parent(*text_node);

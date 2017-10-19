@@ -40,8 +40,8 @@ class CachedMatchedProperties final
     : public GarbageCollectedFinalized<CachedMatchedProperties> {
  public:
   HeapVector<MatchedProperties> matched_properties;
-  RefPtr<ComputedStyle> computed_style;
-  RefPtr<ComputedStyle> parent_computed_style;
+  scoped_refptr<ComputedStyle> computed_style;
+  scoped_refptr<ComputedStyle> parent_computed_style;
 
   void Set(const ComputedStyle&,
            const ComputedStyle& parent_style,

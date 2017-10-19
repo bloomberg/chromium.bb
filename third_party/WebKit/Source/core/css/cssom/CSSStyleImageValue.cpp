@@ -39,7 +39,7 @@ bool CSSStyleImageValue::IsAccelerated() const {
   return GetImage() && GetImage()->IsTextureBacked();
 }
 
-RefPtr<Image> CSSStyleImageValue::GetImage() const {
+scoped_refptr<Image> CSSStyleImageValue::GetImage() const {
   if (IsCachePending())
     return nullptr;
   // cachedImage can be null if image is StyleInvalidImage

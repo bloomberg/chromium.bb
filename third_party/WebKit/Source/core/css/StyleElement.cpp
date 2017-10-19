@@ -153,7 +153,7 @@ StyleElement::ProcessingResult StyleElement::CreateSheet(Element& element,
   // If type is empty or CSS, this is a CSS style sheet.
   const AtomicString& type = this->type();
   if (IsCSS(element, type) && passes_content_security_policy_checks) {
-    RefPtr<MediaQuerySet> media_queries = MediaQuerySet::Create(media());
+    scoped_refptr<MediaQuerySet> media_queries = MediaQuerySet::Create(media());
 
     loading_ = true;
     TextPosition start_position =

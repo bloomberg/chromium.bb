@@ -93,10 +93,10 @@ namespace cssvalue {
 
 class CSSGradientValue : public CSSImageGeneratorValue {
  public:
-  RefPtr<Image> GetImage(const ImageResourceObserver&,
-                         const Document&,
-                         const ComputedStyle&,
-                         const IntSize&);
+  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
+                                const Document&,
+                                const ComputedStyle&,
+                                const IntSize&);
 
   void AddStop(const CSSGradientColorStop& stop) {
     stops_.push_back(stop);
@@ -169,9 +169,9 @@ class CSSLinearGradientValue final : public CSSGradientValue {
   String CustomCSSText() const;
 
   // Create the gradient for a given size.
-  RefPtr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                  const IntSize&,
-                                  const LayoutObject&);
+  scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
+                                         const IntSize&,
+                                         const LayoutObject&);
 
   bool Equals(const CSSLinearGradientValue&) const;
 
@@ -242,9 +242,9 @@ class CSSRadialGradientValue final : public CSSGradientValue {
   void SetEndVerticalSize(CSSPrimitiveValue* val) { end_vertical_size_ = val; }
 
   // Create the gradient for a given size.
-  RefPtr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                  const IntSize&,
-                                  const LayoutObject&);
+  scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
+                                         const IntSize&,
+                                         const LayoutObject&);
 
   bool Equals(const CSSRadialGradientValue&) const;
 
@@ -308,9 +308,9 @@ class CSSConicGradientValue final : public CSSGradientValue {
   String CustomCSSText() const;
 
   // Create the gradient for a given size.
-  RefPtr<Gradient> CreateGradient(const CSSToLengthConversionData&,
-                                  const IntSize&,
-                                  const LayoutObject&);
+  scoped_refptr<Gradient> CreateGradient(const CSSToLengthConversionData&,
+                                         const IntSize&,
+                                         const LayoutObject&);
 
   bool Equals(const CSSConicGradientValue&) const;
 

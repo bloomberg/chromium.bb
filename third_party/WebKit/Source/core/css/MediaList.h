@@ -41,10 +41,10 @@ class MediaQuery;
 
 class CORE_EXPORT MediaQuerySet : public RefCounted<MediaQuerySet> {
  public:
-  static RefPtr<MediaQuerySet> Create() {
+  static scoped_refptr<MediaQuerySet> Create() {
     return WTF::AdoptRef(new MediaQuerySet());
   }
-  static RefPtr<MediaQuerySet> Create(const String& media_string);
+  static scoped_refptr<MediaQuerySet> Create(const String& media_string);
 
   bool Set(const String&);
   bool Add(const String&);
@@ -58,7 +58,7 @@ class CORE_EXPORT MediaQuerySet : public RefCounted<MediaQuerySet> {
 
   String MediaText() const;
 
-  RefPtr<MediaQuerySet> Copy() const {
+  scoped_refptr<MediaQuerySet> Copy() const {
     return WTF::AdoptRef(new MediaQuerySet(*this));
   }
 
@@ -74,12 +74,12 @@ class MediaList final : public GarbageCollectedFinalized<MediaList>,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static MediaList* Create(RefPtr<MediaQuerySet> media_queries,
+  static MediaList* Create(scoped_refptr<MediaQuerySet> media_queries,
                            CSSStyleSheet* parent_sheet) {
     return new MediaList(std::move(media_queries), parent_sheet);
   }
 
-  static MediaList* Create(RefPtr<MediaQuerySet> media_queries,
+  static MediaList* Create(scoped_refptr<MediaQuerySet> media_queries,
                            CSSRule* parent_rule) {
     return new MediaList(std::move(media_queries), parent_rule);
   }
@@ -98,15 +98,15 @@ class MediaList final : public GarbageCollectedFinalized<MediaList>,
 
   const MediaQuerySet* Queries() const { return media_queries_.get(); }
 
-  void Reattach(RefPtr<MediaQuerySet>);
+  void Reattach(scoped_refptr<MediaQuerySet>);
 
   void Trace(blink::Visitor*);
 
  private:
-  MediaList(RefPtr<MediaQuerySet>, CSSStyleSheet* parent_sheet);
-  MediaList(RefPtr<MediaQuerySet>, CSSRule* parent_rule);
+  MediaList(scoped_refptr<MediaQuerySet>, CSSStyleSheet* parent_sheet);
+  MediaList(scoped_refptr<MediaQuerySet>, CSSRule* parent_rule);
 
-  RefPtr<MediaQuerySet> media_queries_;
+  scoped_refptr<MediaQuerySet> media_queries_;
   Member<CSSStyleSheet> parent_style_sheet_;
   Member<CSSRule> parent_rule_;
 };

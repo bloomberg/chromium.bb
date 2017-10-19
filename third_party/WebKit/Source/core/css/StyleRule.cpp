@@ -353,7 +353,7 @@ StyleRuleCondition::StyleRuleCondition(const StyleRuleCondition& condition_rule)
     : StyleRuleGroup(condition_rule),
       condition_text_(condition_rule.condition_text_) {}
 
-StyleRuleMedia::StyleRuleMedia(RefPtr<MediaQuerySet> media,
+StyleRuleMedia::StyleRuleMedia(scoped_refptr<MediaQuerySet> media,
                                HeapVector<Member<StyleRuleBase>>& adopt_rules)
     : StyleRuleCondition(kMedia, adopt_rules), media_queries_(media) {}
 

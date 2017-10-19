@@ -19,7 +19,7 @@ namespace cssvalue {
 
 class CSSPathValue : public CSSValue {
  public:
-  static CSSPathValue* Create(RefPtr<StylePath>);
+  static CSSPathValue* Create(scoped_refptr<StylePath>);
   static CSSPathValue* Create(std::unique_ptr<SVGPathByteStream>);
 
   static CSSPathValue& EmptyPathValue();
@@ -36,9 +36,9 @@ class CSSPathValue : public CSSValue {
   }
 
  private:
-  CSSPathValue(RefPtr<StylePath>);
+  CSSPathValue(scoped_refptr<StylePath>);
 
-  RefPtr<StylePath> style_path_;
+  scoped_refptr<StylePath> style_path_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPathValue, IsPathValue());

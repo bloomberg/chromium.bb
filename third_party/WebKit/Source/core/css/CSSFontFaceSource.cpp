@@ -35,7 +35,7 @@ namespace blink {
 
 CSSFontFaceSource::~CSSFontFaceSource() {}
 
-RefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
+scoped_refptr<SimpleFontData> CSSFontFaceSource::GetFontData(
     const FontDescription& font_description,
     const FontSelectionCapabilities& font_selection_capabilities) {
   // If the font hasn't loaded or an error occurred, then we've got nothing.
@@ -49,7 +49,7 @@ RefPtr<SimpleFontData> CSSFontFaceSource::GetFontData(
 
   FontCacheKey key = font_description.CacheKey(FontFaceCreationParams());
 
-  RefPtr<SimpleFontData>& font_data =
+  scoped_refptr<SimpleFontData>& font_data =
       font_data_table_.insert(key, nullptr).stored_value->value;
   if (!font_data)
     font_data = CreateFontData(font_description, font_selection_capabilities);

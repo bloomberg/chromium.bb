@@ -37,7 +37,7 @@ void OffscreenFontSelector::RegisterForInvalidationCallbacks(
 void OffscreenFontSelector::UnregisterForInvalidationCallbacks(
     FontSelectorClient* client) {}
 
-RefPtr<FontData> OffscreenFontSelector::GetFontData(
+scoped_refptr<FontData> OffscreenFontSelector::GetFontData(
     const FontDescription& font_description,
     const AtomicString& family_name) {
   if (CSSSegmentedFontFace* face =

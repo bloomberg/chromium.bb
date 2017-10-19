@@ -37,7 +37,7 @@ class ComputedStyleCSSValueMapping {
   static const CSSValue* Get(const AtomicString custom_property_name,
                              const ComputedStyle&,
                              const PropertyRegistry*);
-  static std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>>
+  static std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
   GetVariables(const ComputedStyle&);
 
  private:

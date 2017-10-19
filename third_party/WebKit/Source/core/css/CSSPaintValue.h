@@ -20,8 +20,9 @@ class CSSPaintValue : public CSSImageGeneratorValue {
     return new CSSPaintValue(name);
   }
 
-  static CSSPaintValue* Create(CSSCustomIdentValue* name,
-                               Vector<RefPtr<CSSVariableData>>& variable_data) {
+  static CSSPaintValue* Create(
+      CSSCustomIdentValue* name,
+      Vector<scoped_refptr<CSSVariableData>>& variable_data) {
     return new CSSPaintValue(name, variable_data);
   }
 
@@ -33,11 +34,11 @@ class CSSPaintValue : public CSSImageGeneratorValue {
 
   // The |container_size| is container size with subpixel snapping, where the
   // |logical_size| is without it. Both sizes include zoom.
-  RefPtr<Image> GetImage(const ImageResourceObserver&,
-                         const Document&,
-                         const ComputedStyle&,
-                         const IntSize& container_size,
-                         const LayoutSize* logical_size);
+  scoped_refptr<Image> GetImage(const ImageResourceObserver&,
+                                const Document&,
+                                const ComputedStyle&,
+                                const IntSize& container_size,
+                                const LayoutSize* logical_size);
   bool IsFixedSize() const { return false; }
   IntSize FixedSize(const Document&) { return IntSize(); }
 
@@ -60,7 +61,8 @@ class CSSPaintValue : public CSSImageGeneratorValue {
  private:
   explicit CSSPaintValue(CSSCustomIdentValue* name);
 
-  CSSPaintValue(CSSCustomIdentValue* name, Vector<RefPtr<CSSVariableData>>&);
+  CSSPaintValue(CSSCustomIdentValue* name,
+                Vector<scoped_refptr<CSSVariableData>>&);
 
   class Observer final : public CSSPaintImageGenerator::Observer {
     WTF_MAKE_NONCOPYABLE(Observer);
@@ -90,7 +92,7 @@ class CSSPaintValue : public CSSImageGeneratorValue {
   Member<CSSPaintImageGenerator> generator_;
   Member<Observer> paint_image_generator_observer_;
   Member<CSSStyleValueVector> parsed_input_arguments_;
-  Vector<RefPtr<CSSVariableData>> argument_variable_data_;
+  Vector<scoped_refptr<CSSVariableData>> argument_variable_data_;
 };
 
 DEFINE_CSS_VALUE_TYPE_CASTS(CSSPaintValue, IsPaintValue());

@@ -386,7 +386,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
       StyledNode()->GetDocument().GetPropertyRegistry());
 }
 
-std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>>
+std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
 CSSComputedStyleDeclaration::GetVariables() const {
   const ComputedStyle* style = ComputeComputedStyle();
   if (!style)

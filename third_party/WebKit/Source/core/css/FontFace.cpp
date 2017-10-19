@@ -733,7 +733,7 @@ void FontFace::InitCSSFontFace(const unsigned char* data, size_t size) {
   if (error_)
     return;
 
-  RefPtr<SharedBuffer> buffer = SharedBuffer::Create(data, size);
+  scoped_refptr<SharedBuffer> buffer = SharedBuffer::Create(data, size);
   BinaryDataFontFaceSource* source =
       new BinaryDataFontFaceSource(buffer.get(), ots_parse_message_);
   if (source->IsValid())

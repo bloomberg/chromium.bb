@@ -12,7 +12,7 @@ namespace blink {
 
 namespace cssvalue {
 
-CSSPathValue* CSSPathValue::Create(RefPtr<StylePath> style_path) {
+CSSPathValue* CSSPathValue::Create(scoped_refptr<StylePath> style_path) {
   return new CSSPathValue(std::move(style_path));
 }
 
@@ -21,7 +21,7 @@ CSSPathValue* CSSPathValue::Create(
   return CSSPathValue::Create(StylePath::Create(std::move(path_byte_stream)));
 }
 
-CSSPathValue::CSSPathValue(RefPtr<StylePath> style_path)
+CSSPathValue::CSSPathValue(scoped_refptr<StylePath> style_path)
     : CSSValue(kPathClass), style_path_(std::move(style_path)) {
   DCHECK(style_path_);
 }

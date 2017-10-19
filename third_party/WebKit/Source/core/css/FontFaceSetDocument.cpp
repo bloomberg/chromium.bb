@@ -464,7 +464,7 @@ bool FontFaceSetDocument::ResolveFontStyle(const String& font_string,
   if (font_value == "inherit" || font_value == "initial")
     return false;
 
-  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
 
   FontFamily font_family;
   font_family.SetFamily(kDefaultFontFamily);
