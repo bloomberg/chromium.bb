@@ -77,7 +77,6 @@ class CTLogVerifier;
 class HostResolver;
 class HttpAuthHandlerFactory;
 class HttpAuthPreferences;
-class LoggingNetworkChangeObserver;
 class NetworkQualityEstimator;
 class ProxyConfigService;
 class RTTAndThroughputEstimatesObserver;
@@ -281,9 +280,6 @@ class IOThread : public content::BrowserThreadDelegate {
   // lifetime of the IO thread.
 
   Globals* globals_;
-
-  // Observer that logs network changes to the ChromeNetLog.
-  std::unique_ptr<net::LoggingNetworkChangeObserver> network_change_observer_;
 
   std::unique_ptr<certificate_transparency::TreeStateTracker> ct_tree_tracker_;
 

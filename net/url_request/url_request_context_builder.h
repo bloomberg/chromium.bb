@@ -351,11 +351,6 @@ class NET_EXPORT URLRequestContextBuilder {
       CreateHttpTransactionFactoryCallback
           create_http_network_transaction_factory);
 
-  // Returns the previous value passed to set_net_log(), or nullptr if it hasn't
-  // been called yet.
-  // TODO(mmenke): Remove this method.
-  net::NetLog* net_log() const { return net_log_; }
-
   // Creates a mostly self-contained URLRequestContext. May only be called once
   // per URLRequestContextBuilder. After this is called, the Builder can be
   // safely destroyed.

@@ -1009,7 +1009,6 @@ void ProfileIOData::Init(
   std::unique_ptr<content::URLRequestContextBuilderMojo> builder =
       base::MakeUnique<content::URLRequestContextBuilderMojo>();
 
-  builder->set_net_log(io_thread->net_log());
   builder->set_shared_http_user_agent_settings(
       chrome_http_user_agent_settings_.get());
   builder->set_ssl_config_service(profile_params_->ssl_config_service);
