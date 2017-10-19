@@ -55,7 +55,7 @@ AllAppsTileItemView::~AllAppsTileItemView() {
 }
 
 void AllAppsTileItemView::UpdateIcon() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   gfx::Size canvas_size = gfx::Size(kTileIconSize, kTileIconSize);
   auto source = std::make_unique<AllAppsImageSource>(
       *rb.GetImageNamed(IDR_ALL_APPS_DROP_DOWN).ToImageSkia(), canvas_size);
