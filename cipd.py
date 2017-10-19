@@ -254,7 +254,7 @@ def get_platform():
     arch = 'armv6l'
   elif arch in ('amd64', 'x86_64'):
     arch = 'amd64'
-  elif arch in ('i386', 'i686'):
+  elif arch in ('i386', 'i686', 'x86'):
     arch = '386'
 
   # If using a 32-bit python on x86_64 kernel on Linux, "downgrade" the arch to
