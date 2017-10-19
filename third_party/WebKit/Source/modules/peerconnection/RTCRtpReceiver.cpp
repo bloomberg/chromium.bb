@@ -6,16 +6,25 @@
 
 #include "platform/bindings/Microtask.h"
 #include "platform/wtf/text/WTFString.h"
+#include "public/platform/WebMediaStream.h"
+#include "public/platform/WebMediaStreamTrack.h"
 #include "public/platform/WebRTCRtpContributingSource.h"
 
 namespace blink {
 
 RTCRtpReceiver::RTCRtpReceiver(std::unique_ptr<WebRTCRtpReceiver> receiver,
-                               MediaStreamTrack* track)
-    : receiver_(std::move(receiver)), track_(track) {
+                               MediaStreamTrack* track,
+                               MediaStreamVector streams)
+    : receiver_(std::move(receiver)),
+      track_(track),
+      streams_(std::move(streams)) {
   DCHECK(receiver_);
   DCHECK(track_);
-  DCHECK_EQ(static_cast<String>(receiver_->Track().Id()), track_->id());
+  // Some bots require #if around the DCHECK to avoid compile error about
+  // |StateMatchesWebReceiver| (which is behind #if) not being defined.
+#if DCHECK_IS_ON()
+  DCHECK(StateMatchesWebReceiver());
+#endif  // DCHECK_IS_ON()
 }
 
 MediaStreamTrack* RTCRtpReceiver::track() const {
@@ -31,6 +40,31 @@ RTCRtpReceiver::getContributingSources() {
 const WebRTCRtpReceiver& RTCRtpReceiver::web_receiver() const {
   return *receiver_;
 }
+
+MediaStreamVector RTCRtpReceiver::streams() const {
+  return streams_;
+}
+
+#if DCHECK_IS_ON()
+
+bool RTCRtpReceiver::StateMatchesWebReceiver() const {
+  if (track_->Component() !=
+      static_cast<MediaStreamComponent*>(receiver_->Track())) {
+    return false;
+  }
+  WebVector<WebMediaStream> web_streams = receiver_->Streams();
+  if (streams_.size() != web_streams.size())
+    return false;
+  for (size_t i = 0; i < streams_.size(); ++i) {
+    if (streams_[i]->Descriptor() !=
+        static_cast<MediaStreamDescriptor*>(web_streams[i])) {
+      return false;
+    }
+  }
+  return true;
+}
+
+#endif  // DCHECK_IS_ON()
 
 void RTCRtpReceiver::UpdateSourcesIfNeeded() {
   if (!contributing_sources_needs_updating_)
@@ -76,6 +110,7 @@ void RTCRtpReceiver::SetContributingSourcesNeedsUpdating() {
 
 DEFINE_TRACE(RTCRtpReceiver) {
   visitor->Trace(track_);
+  visitor->Trace(streams_);
   visitor->Trace(contributing_sources_by_source_id_);
   visitor->Trace(contributing_sources_);
 }
