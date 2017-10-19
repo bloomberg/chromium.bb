@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
@@ -28,6 +29,10 @@
 #if defined(OS_LINUX)
 #include "chromecast/media/cma/backend/audio_features.h"
 #endif  // defined(OS_LINUX)
+
+#if defined(OS_FUCHSIA)
+#include <zircon/syscalls.h>
+#endif  // defined(OS_FUCHSIA)
 
 #define TRACE_FUNCTION_ENTRY0() TRACE_EVENT0("cma", __FUNCTION__)
 
@@ -70,7 +75,9 @@ int64_t MonotonicClockNow() {
   return static_cast<int64_t>(now.tv_sec) * 1000000 + now.tv_nsec / 1000;
 }
 #else
-#error Need MonotonicClockNow implementation.
+int64_t MonotonicClockNow() {
+  return zx_time_get(ZX_CLOCK_MONOTONIC) / 1000;
+}
 #endif
 
 }  // namespace

@@ -130,6 +130,9 @@ class SlewVolumeBaseTest : public ::testing::Test {
   DISALLOW_COPY_AND_ASSIGN(SlewVolumeBaseTest);
 };
 
+// ASSERT_DEATH isn't implemented on Fuchsia.
+#if defined(ASSERT_DEATH)
+
 TEST_F(SlewVolumeBaseTest, BadSampleRate) {
 // String arguments aren't passed to CHECK() in official builds.
 #if defined(OFFICIAL_BUILD) && defined(NDEBUG)
@@ -142,6 +145,8 @@ TEST_F(SlewVolumeBaseTest, BadSampleRate) {
 TEST_F(SlewVolumeBaseTest, BadSlewTime) {
   ASSERT_DEATH(slew_volume_->SetMaxSlewTimeMs(-1), "");
 }
+
+#endif  // defined(ASSERT_DEATH)
 
 class SlewVolumeSteadyStateTest : public SlewVolumeBaseTest {
  protected:

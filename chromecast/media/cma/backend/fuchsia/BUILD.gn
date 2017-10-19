@@ -11,7 +11,6 @@ assert(is_fuchsia)
 cast_shared_library("libcast_media_1.0_fuchsia") {
   sources = [
     "cast_media_shlib_fuchsia.cc",
-    "media_capabilities_shlib_fuchsia.cc",
   ]
 
   deps = [
@@ -26,10 +25,9 @@ cast_shared_library("libcast_media_1.0_fuchsia") {
 
 source_set("fuchsia_cma_backend") {
   sources = [
-    "audio_decoder_fuchsia.cc",
-    "audio_decoder_fuchsia.h",
-    "media_pipeline_backend_fuchsia.cc",
-    "media_pipeline_backend_fuchsia.h",
+    "fuchsia_volume_control.cc",
+    "mixer_output_stream_fuchsia.cc",
+    "mixer_output_stream_fuchsia.h",
   ]
 
   deps = [
@@ -43,11 +41,10 @@ source_set("fuchsia_cma_backend") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "media_pipeline_backend_fuchsia_unittest.cc",
+    "mixer_output_stream_fuchsia_unittest.cc",
   ]
   deps = [
     ":fuchsia_cma_backend",
-    "//chromecast/media/cma/backend:test_support",
     "//testing/gtest",
   ]
 }
