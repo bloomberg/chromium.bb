@@ -12,7 +12,7 @@ declare_args() {
   # ALSA version equal or later than 1.0.29 support this function.
   use_alsa_monotonic_raw_tstamps = use_alsa && !is_cast_desktop_build
 
-  alsa_owns_volume =
+  system_owns_volume =
       use_alsa && !enable_assistant && chromecast_branding != "google"
 }
 
@@ -86,7 +86,7 @@ buildflag_header("audio_features") {
 
   flags = [
     "ALSA_MONOTONIC_RAW_TSTAMPS=$use_alsa_monotonic_raw_tstamps",
-    "ALSA_OWNS_VOLUME=$alsa_owns_volume",
+    "SYSTEM_OWNS_VOLUME=$system_owns_volume",
   ]
 }
 
@@ -114,8 +114,10 @@ source_set("audio") {
     "stream_mixer_input.h",
     "stream_mixer_input_impl.cc",
     "stream_mixer_input_impl.h",
+    "system_volume_control.h",
     "video_decoder_null.cc",
     "video_decoder_null.h",
+    "volume_control.cc",
     "volume_map.cc",
     "volume_map.h",
   ]
