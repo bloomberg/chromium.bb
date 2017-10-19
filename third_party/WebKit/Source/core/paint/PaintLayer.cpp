@@ -2875,9 +2875,12 @@ bool PaintLayer::HasCompositedClippingMask() const {
 
 bool PaintLayer::PaintsWithTransform(
     GlobalPaintFlags global_paint_flags) const {
-  return Transform() &&
-         ((global_paint_flags & kGlobalPaintFlattenCompositingLayers) ||
-          GetCompositingState() != kPaintsIntoOwnBacking);
+  return Transform() && !PaintsComposited(global_paint_flags);
+}
+
+bool PaintLayer::PaintsComposited(GlobalPaintFlags global_paint_flags) const {
+  return !(global_paint_flags & kGlobalPaintFlattenCompositingLayers) &&
+         GetCompositingState() == kPaintsIntoOwnBacking;
 }
 
 bool PaintLayer::SupportsSubsequenceCaching() const {
