@@ -5,9 +5,13 @@
 #include "components/offline_pages/core/offline_page_storage_manager.h"
 
 #include <algorithm>
+#include <map>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "components/offline_pages/core/client_namespace_constants.h"
@@ -51,6 +55,10 @@ void OfflinePageStorageManager::ClearPagesIfNeeded(
 void OfflinePageStorageManager::SetClockForTesting(
     std::unique_ptr<base::Clock> clock) {
   clock_ = std::move(clock);
+}
+
+void OfflinePageStorageManager::ResetUsageReportingFlagForTesting() {
+  reported_usage_this_launch_ = false;
 }
 
 void OfflinePageStorageManager::OnGetStorageStatsDoneForClearingPages(
@@ -189,38 +197,31 @@ OfflinePageStorageManager::ShouldClearPages(
 
 void OfflinePageStorageManager::ReportStorageUsageUMA(
     const MultipleOfflinePageItemResult& pages) {
-  std::map<std::string, int64_t> page_sizes;
-
   // Only run once per app launch to make the data less noisy.
   // TODO(petewil): Once per day might be better, but would need a new field in
   // the database, and a new async task to get it.
   if (reported_usage_this_launch_)
     return;
-
   reported_usage_this_launch_ = true;
 
   // Iterate through all the pages, getting their size, and adding to the proper
-  // namespace accumulator
+  // namespace accumulator.
+  std::map<std::string, int64_t> page_sizes;
   for (const OfflinePageItem& item : pages) {
     const std::string& name_space = item.client_id.name_space;
-
-    std::map<std::string, int64_t>::iterator found =
-        page_sizes.find(name_space);
-
-    if (found != page_sizes.end())
-      found->second += item.file_size;
-    else if (item.file_size > 0)
-      // Check that file_size is greater than zero so we don't report for
-      // namespaces with no storage usage.
-      page_sizes[name_space] = item.file_size;
+    // Note: if |name_space| is not yet a key in the map a new entry will be
+    // properly initialized with the value 0 because |int| is
+    // default-constructible (int() == 0).
+    page_sizes[name_space] += item.file_size;
   }
 
-  // Report the numbers for each namespace.
+  // Report usages for all namespaces known to ClientPolicyController and only
+  // for those.
   std::string base_histogram_name = "OfflinePages.ClearStoragePreRunUsage.";
-  for (auto namespace_summary : page_sizes) {
-    base::UmaHistogramMemoryLargeMB(
-        base_histogram_name + namespace_summary.first,
-        namespace_summary.second);
+  for (const std::string name_space : policy_controller_->GetAllNamespaces()) {
+    int size_in_kib = base::saturated_cast<int>(page_sizes[name_space] / 1024);
+    base::UmaHistogramCustomCounts(base_histogram_name + name_space,
+                                   size_in_kib, 1, 10000000, 50);
   }
 }
 
