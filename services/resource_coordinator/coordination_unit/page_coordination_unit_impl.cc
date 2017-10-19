@@ -19,6 +19,26 @@ PageCoordinationUnitImpl::PageCoordinationUnitImpl(
 
 PageCoordinationUnitImpl::~PageCoordinationUnitImpl() = default;
 
+void PageCoordinationUnitImpl::SetVisibility(bool visible) {
+  SetProperty(mojom::PropertyType::kVisible, visible);
+}
+
+void PageCoordinationUnitImpl::SetUKMSourceId(int64_t ukm_source_id) {
+  SetProperty(mojom::PropertyType::kUKMSourceId, ukm_source_id);
+}
+
+void PageCoordinationUnitImpl::OnFaviconUpdated() {
+  SendEvent(mojom::Event::kFaviconUpdated);
+}
+
+void PageCoordinationUnitImpl::OnTitleUpdated() {
+  SendEvent(mojom::Event::kTitleUpdated);
+}
+
+void PageCoordinationUnitImpl::OnMainFrameNavigationCommitted() {
+  SendEvent(mojom::Event::kNavigationCommitted);
+}
+
 std::set<CoordinationUnitBase*>
 PageCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     CoordinationUnitType type) const {

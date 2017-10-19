@@ -18,6 +18,24 @@ ProcessCoordinationUnitImpl::ProcessCoordinationUnitImpl(
 
 ProcessCoordinationUnitImpl::~ProcessCoordinationUnitImpl() = default;
 
+void ProcessCoordinationUnitImpl::SetCPUUsage(double cpu_usage) {
+  SetProperty(mojom::PropertyType::kCPUUsage, cpu_usage * 1000);
+}
+
+void ProcessCoordinationUnitImpl::SetExpectedTaskQueueingDuration(
+    base::TimeDelta duration) {
+  SetProperty(mojom::PropertyType::kExpectedTaskQueueingDuration,
+              duration.InMilliseconds());
+}
+
+void ProcessCoordinationUnitImpl::SetLaunchTime(base::Time launch_time) {
+  SetProperty(mojom::PropertyType::kLaunchTime, launch_time.ToTimeT());
+}
+
+void ProcessCoordinationUnitImpl::SetPID(int64_t pid) {
+  SetProperty(mojom::PropertyType::kPID, pid);
+}
+
 std::set<CoordinationUnitBase*>
 ProcessCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
     CoordinationUnitType type) const {
