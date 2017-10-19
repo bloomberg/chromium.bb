@@ -40,6 +40,8 @@ enum ModalType {
 };
 
 // TODO(varunjain): Remove MENU_SOURCE_NONE (crbug.com/250964)
+// A Java counterpart will be generated for this enum.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.ui.base
 enum MenuSourceType {
   MENU_SOURCE_NONE = 0,
   MENU_SOURCE_MOUSE = 1,

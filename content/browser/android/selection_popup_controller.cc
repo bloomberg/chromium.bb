@@ -161,7 +161,7 @@ bool SelectionPopupController::ShowSelectionMenu(
       params.selection_rect.right(),
       params.selection_rect.bottom() + handle_height, params.is_editable,
       is_password_type, jselected_text, can_select_all, can_edit_richly,
-      should_suggest, from_selection_adjustment);
+      should_suggest, params.source_type);
   return true;
 }
 
