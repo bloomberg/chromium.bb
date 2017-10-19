@@ -104,6 +104,9 @@ class WebUIBrowserTest : public JavaScriptBrowserTest {
   void set_preload_test_fixture(const std::string& preload_test_fixture);
   void set_preload_test_name(const std::string& preload_test_name);
 
+  // Enable command line flags for test.
+  void SetUpCommandLine(base::CommandLine* command_line) override;
+
   // Set up & tear down console error catching.
   void SetUpOnMainThread() override;
   void TearDownOnMainThread() override;

@@ -4626,10 +4626,6 @@ void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
     // We only allow these bindings to be installed when creating the main
     // world context of the main frame.
     blink::WebContextFeatures::EnableMojoJS(context, true);
-    // The test bindings are only needed by WebUI browser tests but the test
-    // runner does not currently inform the renderer if it is being started
-    // by a test.
-    blink::WebContextFeatures::EnableMojoJSTest(context, true);
   }
 
   for (auto& observer : observers_)
