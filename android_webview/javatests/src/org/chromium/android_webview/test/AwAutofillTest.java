@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.ViewStructure.HtmlInfo.Builder;
+import android.view.WindowManager;
 import android.view.autofill.AutofillId;
 import android.view.autofill.AutofillValue;
 
@@ -42,6 +43,7 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.components.autofill.AutofillProvider;
+import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.net.test.util.TestWebServer;
 
 import java.net.URL;
@@ -475,6 +477,51 @@ public class AwAutofillTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
+    public void testTouchingFormBasicTest() throws Throwable {
+        // Currently, touching form triggers autofill only when the app resizes on showing soft
+        // input keyboard. (https://crbug.com/730764)
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                mRule.getActivity().getWindow().setSoftInputMode(
+                        WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+            }
+        });
+        TestWebServer webServer = TestWebServer.start();
+        final String data = "<html><head></head><body><form action='a.html' name='formname'>"
+                + "<input type='text' id='text1' name='username'"
+                + " placeholder='placeholder@placeholder.com' autocomplete='username name'>"
+                + "<input type='submit'>"
+                + "</form></body></html>";
+        try {
+            int cnt = 0;
+            final String url = webServer.setResponse(FILE, data, null);
+            loadUrlSync(url);
+            // Note that we cancel autofill in loading as a precautious measure.
+            cnt += waitForCallbackAndVerifyTypes(
+                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_CANCEL});
+            DOMUtils.waitForNonZeroNodeBounds(mAwContents.getWebContents(), "text1");
+            // Note that we currently depend on keyboard app's behavior.
+            // TODO(changwan): mock out IME interaction.
+            Assert.assertTrue(DOMUtils.clickNode(mTestContainerView.getContentViewCore(), "text1"));
+            cnt += waitForCallbackAndVerifyTypes(
+                    cnt, new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED});
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_A);
+            // Note that we currently call ENTER/EXIT one more time.
+            waitForCallbackAndVerifyTypes(cnt,
+                    new Integer[] {
+                            AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
+
+            executeJavaScriptAndWaitForResult("document.getElementById('text1').blur();");
+            waitForCallbackAndVerifyTypes(cnt, new Integer[] {AUTOFILL_VIEW_EXITED});
+        } finally {
+            webServer.shutdown();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView"})
     public void testBasicAutofill() throws Throwable {
         TestWebServer webServer = TestWebServer.start();
         final String data = "<html><head></head><body><form action='a.html' name='formname'>"
@@ -484,10 +531,14 @@ public class AwAutofillTest {
                 + "<select id='select1' name='month'>"
                 + "<option value='1'>Jan</option>"
                 + "<option value='2'>Feb</option>"
-                + "</select>"
+                + "</select><textarea id='textarea1'></textarea>"
+                + "<div contenteditable id='div1'>hello</div>"
                 + "<input type='submit'>"
+                + "<input type='reset' id='reset1'>"
+                + "<input type='color' id='color1'><input type='file' id='file1'>"
+                + "<input type='image' id='image1'>"
                 + "</form></body></html>";
-        final int totalControls = 3;
+        final int totalControls = 4; // text1, checkbox1, select1, textarea1
         try {
             int cnt = 0;
             final String url = webServer.setResponse(FILE, data, null);
@@ -548,16 +599,25 @@ public class AwAutofillTest {
             assertEquals("Jan", options[0]);
             assertEquals("Feb", options[1]);
 
+            // Verify textarea control is filled correctly in ViewStructure.
+            TestViewStructure child3 = viewStructure.getChild(3);
+            assertEquals(View.AUTOFILL_TYPE_TEXT, child3.getAutofillType());
+            assertEquals("", child3.getHint());
+            assertNull(child3.getAutofillHints());
+            TestViewStructure.AwHtmlInfo htmlInfo3 = child3.getHtmlInfo();
+            assertEquals("textarea1", htmlInfo3.getAttribute("name"));
+
             // Autofill form and verify filled values.
             SparseArray<AutofillValue> values = new SparseArray<AutofillValue>();
             values.append(child0.getId(), AutofillValue.forText("example@example.com"));
             values.append(child1.getId(), AutofillValue.forToggle(true));
             values.append(child2.getId(), AutofillValue.forList(1));
+            values.append(child3.getId(), AutofillValue.forText("aaa"));
             cnt = getCallbackCount();
             invokeAutofill(values);
             waitForCallbackAndVerifyTypes(cnt,
                     new Integer[] {AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED,
-                            AUTOFILL_VALUE_CHANGED});
+                            AUTOFILL_VALUE_CHANGED, AUTOFILL_VALUE_CHANGED});
 
             // Verify form filled by Javascript
             String value0 =
@@ -569,6 +629,9 @@ public class AwAutofillTest {
             String value2 =
                     executeJavaScriptAndWaitForResult("document.getElementById('select1').value;");
             assertEquals("\"2\"", value2);
+            String value3 = executeJavaScriptAndWaitForResult(
+                    "document.getElementById('textarea1').value;");
+            assertEquals("\"aaa\"", value3);
         } finally {
             webServer.shutdown();
         }
