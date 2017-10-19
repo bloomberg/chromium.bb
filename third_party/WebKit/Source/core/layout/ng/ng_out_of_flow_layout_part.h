@@ -31,7 +31,10 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
                         const NGConstraintSpace& container_space,
                         const ComputedStyle& container_style,
                         NGFragmentBuilder* container_builder);
-  void Run();
+
+  // update_legacy will place NG OOF descendants into their Legacy container.
+  // It should be false if OOF descendants have already been placed into Legacy.
+  void Run(bool update_legacy = true);
 
  private:
   RefPtr<NGLayoutResult> LayoutDescendant(NGBlockNode descendant,

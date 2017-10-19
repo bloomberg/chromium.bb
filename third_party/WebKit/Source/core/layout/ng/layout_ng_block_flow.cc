@@ -140,6 +140,16 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
     }
     if (!logical_top.IsAuto())
       static_block = ValueForLength(logical_top, container->LogicalHeight());
+
+    // Legacy static position is relative to padding box.
+    // Convert to border box.
+    NGBoxStrut border_strut =
+        ComputeBorders(*constraint_space, *container_style);
+    if (parent_style->IsLeftToRightDirection())
+      static_inline += border_strut.inline_start;
+    else
+      static_inline -= border_strut.inline_end;
+    static_block += border_strut.block_start;
   }
   if (!parent_style->IsLeftToRightDirection())
     static_inline = containing_block_logical_width - static_inline;
@@ -168,9 +178,9 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   DCHECK(css_container->IsBox());
   NGOutOfFlowLayoutPart(NGBlockNode(ToLayoutBox(css_container)),
                         *constraint_space, *container_style, &container_builder)
-      .Run();
+      .Run(/* update_legacy */ false);
   RefPtr<NGLayoutResult> result = container_builder.ToBoxFragment();
-  // These are the OOF descendants of the current OOF block.
+  // These are the unpositioned OOF descendants of the current OOF block.
   for (NGOutOfFlowPositionedDescendant descendant :
        result->OutOfFlowPositionedDescendants())
     descendant.node.UseOldOutOfFlowPositioning();
@@ -324,6 +334,10 @@ void LayoutNGBlockFlow::SetCachedLayoutResult(
 
   cached_constraint_space_ = &constraint_space;
   cached_result_ = layout_result;
+}
+
+RefPtr<NGLayoutResult> LayoutNGBlockFlow::CachedLayoutResultForTesting() {
+  return cached_result_;
 }
 
 void LayoutNGBlockFlow::SetPaintFragment(
