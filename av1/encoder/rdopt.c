@@ -9282,7 +9282,6 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   if (rd_pick_intrabc_mode_sb(cpi, x, rd_cost, bsize, best_rd) < best_rd) {
     ctx->skip = x->skip;  // FIXME where is the proper place to set this?!
     assert(rd_cost->rate != INT_MAX);
-    rd_cost->rdcost = RDCOST(x->rdmult, rd_cost->rate, rd_cost->dist);
   }
 #endif
   if (rd_cost->rate == INT_MAX) return;
