@@ -15,6 +15,7 @@
 #include "net/base/port_util.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
+#include "net/quic/chromium/quic_http_utils.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/spdy/core/spdy_alt_svc_wire_format.h"
 #include "url/gurl.h"
@@ -54,19 +55,11 @@ void HttpStreamFactory::ProcessAlternativeServices(
     // Check if QUIC version is supported. Filter supported QUIC versions.
     QuicTransportVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !alternative_service_entry.version.empty()) {
-      bool match_found = false;
-      for (QuicTransportVersion supported :
-           session->params().quic_supported_versions) {
-        for (uint16_t advertised : alternative_service_entry.version) {
-          if (supported == advertised) {
-            match_found = true;
-            advertised_versions.push_back(supported);
-          }
-        }
-      }
-      if (!match_found) {
+      advertised_versions = FilterSupportedAltSvcVersions(
+          alternative_service_entry, session->params().quic_supported_versions,
+          session->params().support_ietf_format_quic_altsvc);
+      if (advertised_versions.empty())
         continue;
-      }
     }
     AlternativeService alternative_service(protocol,
                                            alternative_service_entry.host,

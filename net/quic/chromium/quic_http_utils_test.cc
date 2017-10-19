@@ -8,6 +8,8 @@
 
 #include <limits>
 
+#include "net/quic/platform/api/quic_endian.h"
+#include "net/spdy/core/spdy_alt_svc_wire_format.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -33,6 +35,49 @@ TEST(QuicHttpUtilsTest, ConvertQuicPriorityToRequestPriority) {
   for (int i = 5; i < std::numeric_limits<uint8_t>::max(); ++i) {
     EXPECT_EQ(IDLE, ConvertQuicPriorityToRequestPriority(i));
   }
+}
+
+TEST(QuicHttpUtilsTest, FilterSupportedAltSvcVersions) {
+  QuicTransportVersionVector supported_versions = {
+      QUIC_VERSION_37, QUIC_VERSION_38, QUIC_VERSION_39, QUIC_VERSION_41};
+
+  std::vector<uint32_t> alt_svc_versions_google = {
+      QUIC_VERSION_38, QUIC_VERSION_41, QUIC_VERSION_42};
+  std::vector<uint32_t> alt_svc_versions_ietf = {
+      QuicVersionToQuicVersionLabel(QUIC_VERSION_38),
+      QuicVersionToQuicVersionLabel(QUIC_VERSION_41),
+      QuicVersionToQuicVersionLabel(QUIC_VERSION_42)};
+
+  if (!FLAGS_quic_reloadable_flag_quic_use_net_byte_order_version_label) {
+    for (uint32_t& version_label : alt_svc_versions_ietf) {
+      version_label = QuicEndian::HostToNet32(version_label);
+    }
+  }
+
+  QuicTransportVersionVector supported_alt_svc_versions = {QUIC_VERSION_38,
+                                                           QUIC_VERSION_41};
+  SpdyAltSvcWireFormat::AlternativeService altsvc;
+
+  altsvc.protocol_id = "quic";
+  altsvc.version = alt_svc_versions_google;
+  EXPECT_EQ(supported_alt_svc_versions,
+            FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
+  EXPECT_EQ(supported_alt_svc_versions,
+            FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
+
+  altsvc.protocol_id = "hq";
+  altsvc.version = alt_svc_versions_ietf;
+  EXPECT_EQ(supported_alt_svc_versions,
+            FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
+  EXPECT_EQ(QuicTransportVersionVector(),
+            FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
+
+  altsvc.protocol_id = "invalid_protocol";
+  altsvc.version = alt_svc_versions_ietf;
+  EXPECT_EQ(QuicTransportVersionVector(),
+            FilterSupportedAltSvcVersions(altsvc, supported_versions, true));
+  EXPECT_EQ(QuicTransportVersionVector(),
+            FilterSupportedAltSvcVersions(altsvc, supported_versions, false));
 }
 
 }  // namespace test

@@ -62,6 +62,7 @@ class NET_EXPORT SpdySessionPool
                   TransportSecurityState* transport_security_state,
                   const QuicTransportVersionVector& quic_supported_versions,
                   bool enable_ping_based_connection_checking,
+                  bool support_ietf_format_quic_altsvc,
                   size_t session_max_recv_window_size,
                   const SettingsMap& initial_settings,
                   SpdySessionPool::TimeFunc time_func,
@@ -260,6 +261,9 @@ class NET_EXPORT SpdySessionPool
   // Defaults to true. May be controlled via SpdySessionPoolPeer for tests.
   bool enable_sending_initial_data_;
   bool enable_ping_based_connection_checking_;
+
+  // If true, alt-svc headers advertising QUIC in IETF format will be supported.
+  bool support_ietf_format_quic_altsvc_;
 
   size_t session_max_recv_window_size_;
 
