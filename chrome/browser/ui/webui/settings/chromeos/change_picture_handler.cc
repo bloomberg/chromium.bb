@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "base/base64.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -176,10 +177,15 @@ void ChangePictureHandler::HandlePhotoTaken(const base::ListValue* args) {
     NOTREACHED();
   DCHECK(!image_url.empty());
 
-  std::string mime_type, charset, raw_data;
-  if (!net::DataURL::Parse(GURL(image_url), &mime_type, &charset, &raw_data))
-    NOTREACHED();
-  DCHECK_EQ("image/png", mime_type);
+  std::string raw_data;
+  base::StringPiece url(image_url);
+  const char kDataUrlPrefix[] = "data:image/png;base64,";
+  const size_t kDataUrlPrefixLength = arraysize(kDataUrlPrefix) - 1;
+  if (!url.starts_with(kDataUrlPrefix) ||
+      !base::Base64Decode(url.substr(kDataUrlPrefixLength), &raw_data)) {
+    LOG(WARNING) << "Invalid image URL";
+    return;
+  }
 
   // Use |raw_data| as image but first verify that it can be decoded.
   user_photo_ = gfx::ImageSkia();
