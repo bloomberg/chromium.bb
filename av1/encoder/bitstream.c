@@ -1690,12 +1690,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
   write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
 
-  if (cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_VAR_TX && !CONFIG_RECT_TX
-      (bsize >= BLOCK_8X8 || (bsize > BLOCK_4X4 && is_inter)) &&
-#else
-      block_signals_txsize(bsize) &&
-#endif
+  if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !(is_inter && skip) && !xd->lossless[segment_id]) {
 #if CONFIG_VAR_TX
     if (is_inter) {  // This implies skip flag is 0.
