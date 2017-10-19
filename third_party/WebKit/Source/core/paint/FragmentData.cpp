@@ -34,21 +34,60 @@ FragmentData& FragmentData::EnsureNextFragment() {
   return *next_fragment_.get();
 }
 
+const TransformPaintPropertyNode* FragmentData::GetPreTransform() const {
+  if (!paint_properties_)
+    return local_border_box_properties_->Transform();
+  if (paint_properties_->Transform())
+    return paint_properties_->Transform()->Parent();
+  return local_border_box_properties_->Transform();
+}
+
+const TransformPaintPropertyNode* FragmentData::GetPostScrollTranslation()
+    const {
+  if (!paint_properties_)
+    return local_border_box_properties_->Transform();
+  if (paint_properties_->ScrollTranslation())
+    return paint_properties_->ScrollTranslation();
+  if (paint_properties_->Perspective())
+    return paint_properties_->Perspective();
+  return local_border_box_properties_->Transform();
+}
+
+const ClipPaintPropertyNode* FragmentData::GetPreCssClip() const {
+  if (!paint_properties_)
+    return local_border_box_properties_->Clip();
+  if (paint_properties_->CssClip())
+    return paint_properties_->CssClip()->Parent();
+  return local_border_box_properties_->Clip();
+}
+
+const ClipPaintPropertyNode* FragmentData::GetPostOverflowClip() const {
+  if (!paint_properties_)
+    return local_border_box_properties_->Clip();
+  if (paint_properties_->OverflowClip())
+    return paint_properties_->OverflowClip();
+  return local_border_box_properties_->Clip();
+}
+
+const EffectPaintPropertyNode* FragmentData::GetPreEffect() const {
+  if (!paint_properties_)
+    return local_border_box_properties_->Effect();
+  if (paint_properties_->Effect())
+    return paint_properties_->Effect()->Parent();
+  if (paint_properties_->Filter())
+    return paint_properties_->Filter()->Parent();
+  return local_border_box_properties_->Effect();
+}
+
+PropertyTreeState FragmentData::PreEffectProperties() const {
+  DCHECK(local_border_box_properties_);
+  return PropertyTreeState(GetPreTransform(), GetPreCssClip(), GetPreEffect());
+}
+
 PropertyTreeState FragmentData::ContentsProperties() const {
   DCHECK(local_border_box_properties_);
-  PropertyTreeState contents(*local_border_box_properties_);
-  if (auto* properties = PaintProperties()) {
-    if (properties->ScrollTranslation())
-      contents.SetTransform(properties->ScrollTranslation());
-    if (properties->OverflowClip())
-      contents.SetClip(properties->OverflowClip());
-    else if (properties->CssClip())
-      contents.SetClip(properties->CssClip());
-  }
-
-  // TODO(chrishtr): cssClipFixedPosition needs to be handled somehow.
-
-  return contents;
+  return PropertyTreeState(GetPostScrollTranslation(), GetPostOverflowClip(),
+                           local_border_box_properties_->Effect());
 }
 
 }  // namespace blink

@@ -228,6 +228,8 @@ blink_core_sources("paint") {
     "compositing/CompositingInputsUpdater.h",
     "compositing/CompositingLayerAssigner.cpp",
     "compositing/CompositingLayerAssigner.h",
+    "compositing/CompositingLayerPropertyUpdater.cpp",
+    "compositing/CompositingLayerPropertyUpdater.h",
     "compositing/CompositingReasonFinder.cpp",
     "compositing/CompositingReasonFinder.h",
     "compositing/CompositingRequirementsUpdater.cpp",

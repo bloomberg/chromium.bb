@@ -166,6 +166,9 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
     return squashing_containment_layer_.get();
   }
   GraphicsLayer* SquashingLayer() const { return squashing_layer_.get(); }
+  const IntSize& SquashingLayerOffsetFromLayoutObject() const {
+    return squashing_layer_offset_from_layout_object_;
+  }
 
   void SetSquashingContentsNeedDisplay();
   void SetContentsNeedDisplay();
@@ -335,8 +338,8 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void UpdateSquashingLayerGeometry(
       const IntPoint& graphics_layer_parent_location,
       const PaintLayer* compositing_container,
+      const IntPoint& snapped_offset_from_composited_ancestor,
       Vector<GraphicsLayerPaintInfo>& layers,
-      GraphicsLayer*,
       LayoutPoint* offset_from_transformed_ancestor,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
   void UpdateMainGraphicsLayerGeometry(
@@ -665,24 +668,24 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   // A squashing CLM has two possible squashing-related structures.
   //
-  // If m_ancestorClippingLayer is present:
+  // If ancestor_clipping_layer_ is present:
   //
-  // m_ancestorClippingLayer
-  //   + m_graphicsLayer
-  //   + m_squashingLayer
+  // ancestor_clipping_layer_
+  //   + graphics_layer_
+  //   + squashing_layer_
   //
   // If not:
   //
-  // m_squashingContainmentLayer
-  //   + m_graphicsLayer
-  //   + m_squashingLayer
+  // squashing_containment_layer_
+  //   + graphics_layer_
+  //   + squashing_layer_
   //
   // Stacking children of a squashed layer receive graphics layers that are
   // parented to the compositd ancestor of the squashed layer (i.e. nearest
   // enclosing composited layer that is not
   // squashed).
 
-  // Only used if any squashed layers exist and m_squashingContainmentLayer is
+  // Only used if any squashed layers exist and ancestor_clipping_layer_ is
   // not present, to contain the squashed layers as siblings to the rest of the
   // GraphicsLayer tree chunk.
   std::unique_ptr<GraphicsLayer> squashing_containment_layer_;
@@ -692,6 +695,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   std::unique_ptr<GraphicsLayer> squashing_layer_;
   Vector<GraphicsLayerPaintInfo> squashed_layers_;
   LayoutPoint squashing_layer_offset_from_transformed_ancestor_;
+  IntSize squashing_layer_offset_from_layout_object_;
 
   LayoutRect composited_bounds_;
 
