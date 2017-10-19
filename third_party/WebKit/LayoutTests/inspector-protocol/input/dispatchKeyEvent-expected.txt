@@ -20,4 +20,18 @@ type: keypress
 keyCode: 1513
 charCode: 1513
 
+-----Event-----
+type: keydown
+shiftKey
+keyCode: 16
+location: 1
+code: ShiftLeft
+
+-----Event-----
+type: keydown
+shiftKey
+keyCode: 16
+location: 2
+code: ShiftRight
+
 
