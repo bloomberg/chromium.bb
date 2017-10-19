@@ -727,6 +727,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="Accel_PowerButton_Screenshot">
+  <owner>warx@chromium.org</owner>
+  <description>
+    User takes a screenshot by pressing power button and volume down key
+    simultaneously on tablet mode.
+  </description>
+</action>
+
 <action name="Accel_PrevWindow_F5">
   <obsolete>Unused as of 08/2017</obsolete>
   <owner>jamescook@chromium.org</owner>
