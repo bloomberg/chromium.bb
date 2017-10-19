@@ -747,8 +747,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
                          accountId:(const std::string&)accountId
                                tag:(int)tag
                     reauthRequired:(BOOL)reauthRequired;
-
-- (bool)shouldShowGoIncognito;
 @end
 
 @implementation ProfileChooserController
@@ -794,13 +792,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 
 - (void)closeAllWindows:(id)sender {
   profiles::CloseProfileWindows(browser_->profile());
-}
-
-- (void)goIncognito:(id)sender {
-  DCHECK([self shouldShowGoIncognito]);
-  chrome::NewIncognitoWindow(browser_);
-  [self postActionPerformed:
-      ProfileMetrics::PROFILE_DESKTOP_MENU_GO_INCOGNITO];
 }
 
 - (void)showAccountManagement:(id)sender {
@@ -896,25 +887,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
   accountIdToRemove_.clear();
 
   [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_ACCOUNT_MANAGEMENT];
-}
-
-- (void)showLearnMorePage:(id)sender {
-  signin_ui_util::ShowSigninErrorLearnMorePage(browser_->profile());
-}
-
-- (void)configureSyncSettings:(id)sender {
-  LoginUIServiceFactory::GetForProfile(browser_->profile())->
-      SyncConfirmationUIClosed(LoginUIService::CONFIGURE_SYNC_FIRST);
-  ProfileMetrics::LogProfileNewAvatarMenuSignin(
-      ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_SETTINGS);
-}
-
-- (void)syncSettingsConfirmed:(id)sender {
-  LoginUIServiceFactory::GetForProfile(browser_->profile())->
-      SyncConfirmationUIClosed(LoginUIService::SYNC_WITH_DEFAULT_SETTINGS);
-  ProfileMetrics::LogProfileNewAvatarMenuSignin(
-      ProfileMetrics::PROFILE_AVATAR_MENU_SIGNIN_OK);
-  [self showMenuWithViewMode:profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER];
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -1641,12 +1613,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [container addSubview:lockButton];
     viewRect.origin.y = NSMaxY([lockButton frame]);
   } else if (!isGuestSession_) {
-    int num_browsers = 0;
-    for (auto* browser : *BrowserList::GetInstance()) {
-      Profile* current_profile = browser_->profile()->GetOriginalProfile();
-      if (browser->profile()->GetOriginalProfile() == current_profile)
-        num_browsers++;
-    }
     NSButton* closeAllWindowsButton = [self
         hoverButtonWithRect:viewRect
                        text:l10n_util::GetNSString(
@@ -1996,13 +1962,6 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
 - (void)postActionPerformed:(ProfileMetrics::ProfileDesktopMenu)action {
   ProfileMetrics::LogProfileDesktopMenu(action, serviceType_);
   serviceType_ = signin::GAIA_SERVICE_TYPE_NONE;
-}
-
-- (bool)shouldShowGoIncognito {
-  bool incognitoAvailable =
-      IncognitoModePrefs::GetAvailability(browser_->profile()->GetPrefs()) !=
-          IncognitoModePrefs::DISABLED;
-  return incognitoAvailable && !browser_->profile()->IsGuestSession();
 }
 
 - (void)showWindow:(id)sender {

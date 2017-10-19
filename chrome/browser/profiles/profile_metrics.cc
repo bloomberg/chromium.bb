@@ -449,13 +449,6 @@ void ProfileMetrics::LogProfileDelete(bool profile_was_signed_in) {
   UMA_HISTOGRAM_BOOLEAN("Profile.Delete", profile_was_signed_in);
 }
 
-void ProfileMetrics::LogProfileNewAvatarMenuSignin(
-    ProfileNewAvatarMenuSignin metric) {
-  DCHECK_LT(metric, NUM_PROFILE_AVATAR_MENU_SIGNIN_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Profile.NewAvatarMenu.Signin", metric,
-                            NUM_PROFILE_AVATAR_MENU_SIGNIN_METRICS);
-}
-
 void ProfileMetrics::LogTimeToOpenUserManager(
     const base::TimeDelta& time_to_open) {
   UMA_HISTOGRAM_TIMES("Profile.TimeToOpenUserManager", time_to_open);

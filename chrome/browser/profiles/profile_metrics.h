@@ -160,18 +160,6 @@ class ProfileMetrics {
   };
 #endif  // defined(OS_ANDROID)
 
-  // Enum for tracking user interactions with the signin bubble that appears
-  // in the New Avatar Menu after using the Inline Signin flow.
-  enum ProfileNewAvatarMenuSignin {
-    // User viewed the signin bubble after successfully using the inline signin.
-    PROFILE_AVATAR_MENU_SIGNIN_VIEW = 0,
-    // User selected ok to dismiss the signin bubble.
-    PROFILE_AVATAR_MENU_SIGNIN_OK,
-    // User opened the settings from the signin bubble.
-    PROFILE_AVATAR_MENU_SIGNIN_SETTINGS,
-    NUM_PROFILE_AVATAR_MENU_SIGNIN_METRICS,
-  };
-
   static void UpdateReportedProfilesStatistics(ProfileManager* manager);
   // Count and return summary information about the profiles currently in the
   // |manager|. This information is returned in the output variable |counts|.
@@ -203,7 +191,6 @@ class ProfileMetrics {
   static void LogProfileDesktopMenu(ProfileDesktopMenu metric,
                                     signin::GAIAServiceType gaia_service);
   static void LogProfileDelete(bool profile_was_signed_in);
-  static void LogProfileNewAvatarMenuSignin(ProfileNewAvatarMenuSignin metric);
   static void LogTimeToOpenUserManager(const base::TimeDelta& time_to_open);
 
 #if defined(OS_ANDROID)

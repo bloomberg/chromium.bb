@@ -65017,6 +65017,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="Profile.NewAvatarMenu.Signin"
     enum="ProfileNewAvatarMenuSignin">
+  <obsolete>
+    Deprecated 2017-10-19. No longer tracked. Feature removed.
+  </obsolete>
   <owner>mlerman@chromium.org</owner>
   <summary>
     Tracks user interactions with the signin bubble that appears in the New
