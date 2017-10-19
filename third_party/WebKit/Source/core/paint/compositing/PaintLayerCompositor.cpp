@@ -925,8 +925,12 @@ bool PaintLayerCompositor::CanBeComposited(const PaintLayer* layer) const {
 // z-order hierarchy.
 bool PaintLayerCompositor::ClipsCompositingDescendants(
     const PaintLayer* layer) const {
-  return layer->HasCompositingDescendant() &&
-         layer->GetLayoutObject().HasClipRelatedProperty();
+  if (!layer->HasCompositingDescendant())
+    return false;
+  if (!layer->GetLayoutObject().IsBox())
+    return false;
+  const LayoutBox& box = ToLayoutBox(layer->GetLayoutObject());
+  return box.ShouldClipOverflow() || box.HasClip();
 }
 
 // If an element has composited negative z-index children, those children paint

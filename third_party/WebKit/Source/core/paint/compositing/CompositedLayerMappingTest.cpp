@@ -2438,4 +2438,40 @@ TEST_P(CompositedLayerMappingTest, ScrollingLayerBackgroundColor) {
   EXPECT_EQ(Color(0, 0, 255), scrolling_contents_layer->BackgroundColor());
 }
 
+TEST_P(CompositedLayerMappingTest, ClipPathNoChildContainmentLayer) {
+  // This test verifies only the presence of clip path does not induce child
+  // containment layer.
+  SetBodyInnerHTML(
+      "<div id='target' style='width:100px; height:100px; clip-path:circle();'>"
+      "  <div style='will-change:transform; width:200px; height:200px;'></div>"
+      "</div>");
+  auto* mapping = ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))
+                      ->Layer()
+                      ->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+  ASSERT_FALSE(mapping->ClippingLayer());
+}
+
+TEST_P(CompositedLayerMappingTest, ForegroundLayerSizing) {
+  // This test verifies the foreground layer is sized to the clip rect.
+  SetBodyInnerHTML(
+      "<div id='target' style='position:relative; z-index:0; width:100px; "
+      "height:100px; border:10px solid black; overflow:hidden;'>"
+      "  <div style='width:200px; height:200px; background:green;'></div>"
+      "  <div style='position:relative; z-index:-1; "
+      "will-change:transform;'></div>"
+      "</div>");
+  auto* mapping = ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))
+                      ->Layer()
+                      ->GetCompositedLayerMapping();
+  ASSERT_TRUE(mapping);
+  EXPECT_EQ(FloatSize(120, 120), mapping->MainGraphicsLayer()->Size());
+  ASSERT_TRUE(mapping->ClippingLayer());
+  EXPECT_EQ(FloatPoint(10, 10), mapping->ClippingLayer()->GetPosition());
+  EXPECT_EQ(FloatSize(100, 100), mapping->ClippingLayer()->Size());
+  ASSERT_TRUE(mapping->ForegroundLayer());
+  EXPECT_EQ(FloatPoint(0, 0), mapping->ForegroundLayer()->GetPosition());
+  EXPECT_EQ(FloatSize(100, 100), mapping->ForegroundLayer()->Size());
+}
+
 }  // namespace blink

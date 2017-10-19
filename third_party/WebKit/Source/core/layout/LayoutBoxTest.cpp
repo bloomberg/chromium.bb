@@ -226,9 +226,9 @@ TEST_F(LayoutBoxTest, ControlClip) {
   EXPECT_TRUE(target->HasClipRelatedProperty());
   EXPECT_TRUE(target->ShouldClipOverflow());
 #if defined(OS_MACOSX)
-  EXPECT_EQ(LayoutRect(0, 0, 100, 18), target->ClippingRect());
+  EXPECT_EQ(LayoutRect(0, 0, 100, 18), target->ClippingRect(LayoutPoint()));
 #else
-  EXPECT_EQ(LayoutRect(2, 2, 96, 46), target->ClippingRect());
+  EXPECT_EQ(LayoutRect(2, 2, 96, 46), target->ClippingRect(LayoutPoint()));
 #endif
 }
 

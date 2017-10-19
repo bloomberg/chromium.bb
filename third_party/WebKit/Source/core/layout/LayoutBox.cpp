@@ -1205,13 +1205,13 @@ IntSize LayoutBox::ScrolledContentOffset() const {
   return result;
 }
 
-LayoutRect LayoutBox::ClippingRect() const {
+LayoutRect LayoutBox::ClippingRect(const LayoutPoint& location) const {
   LayoutRect result = LayoutRect(LayoutRect::InfiniteIntRect());
   if (ShouldClipOverflow())
-    result = OverflowClipRect(LayoutPoint());
+    result = OverflowClipRect(location);
 
   if (HasClip())
-    result.Intersect(ClipRect(LayoutPoint()));
+    result.Intersect(ClipRect(location));
 
   return result;
 }
@@ -1332,7 +1332,7 @@ bool LayoutBox::ApplyBoxClips(
   // This won't work fully correctly for fixed-position elements, who should
   // receive CSS clip but for whom the current object is not in the containing
   // block chain.
-  LayoutRect clip_rect = ClippingRect();
+  LayoutRect clip_rect = ClippingRect(LayoutPoint());
 
   transform_state.Flatten();
   LayoutRect rect(transform_state.LastPlanarQuad().EnclosingBoundingBox());
