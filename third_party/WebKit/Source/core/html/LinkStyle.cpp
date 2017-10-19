@@ -286,7 +286,7 @@ LinkStyle::LoadReturnValue LinkStyle::LoadStylesheetIfNeeded(
   bool media_query_matches = true;
   LocalFrame* frame = LoadingFrame();
   if (!owner_->Media().IsEmpty() && frame) {
-    RefPtr<MediaQuerySet> media = MediaQuerySet::Create(owner_->Media());
+    scoped_refptr<MediaQuerySet> media = MediaQuerySet::Create(owner_->Media());
     MediaQueryEvaluator evaluator(frame);
     media_query_matches = evaluator.Eval(*media);
   }

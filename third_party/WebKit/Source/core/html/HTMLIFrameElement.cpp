@@ -207,8 +207,8 @@ void HTMLIFrameElement::ParseAttribute(
 Vector<WebParsedFeaturePolicyDeclaration>
 HTMLIFrameElement::ConstructContainerPolicy(Vector<String>* messages,
                                             bool* old_syntax) const {
-  RefPtr<SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
-  RefPtr<SecurityOrigin> self_origin = GetDocument().GetSecurityOrigin();
+  scoped_refptr<SecurityOrigin> src_origin = GetOriginForFeaturePolicy();
+  scoped_refptr<SecurityOrigin> self_origin = GetDocument().GetSecurityOrigin();
   Vector<WebParsedFeaturePolicyDeclaration> container_policy =
       ParseFeaturePolicyAttribute(allow_, self_origin, src_origin, messages,
                                   old_syntax);

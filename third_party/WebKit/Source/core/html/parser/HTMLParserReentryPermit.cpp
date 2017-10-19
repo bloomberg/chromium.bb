@@ -6,7 +6,7 @@
 
 namespace blink {
 
-RefPtr<HTMLParserReentryPermit> HTMLParserReentryPermit::Create() {
+scoped_refptr<HTMLParserReentryPermit> HTMLParserReentryPermit::Create() {
   return WTF::AdoptRef(new HTMLParserReentryPermit());
 }
 

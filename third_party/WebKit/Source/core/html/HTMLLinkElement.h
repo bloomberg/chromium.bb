@@ -149,7 +149,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
   void DidStopLinkPrerender() override;
   void DidSendLoadForLinkPrerender() override;
   void DidSendDOMContentLoadedForLinkPrerender() override;
-  RefPtr<WebTaskRunner> GetLoadingTaskRunner() override;
+  scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override;
 
   Member<LinkResource> link_;
   Member<LinkLoader> link_loader_;

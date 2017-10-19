@@ -91,8 +91,8 @@ LayoutObject* InputTypeView::CreateLayoutObject(
   return LayoutObject::CreateObject(&GetElement(), style);
 }
 
-RefPtr<ComputedStyle> InputTypeView::CustomStyleForLayoutObject(
-    RefPtr<ComputedStyle> original_style) {
+scoped_refptr<ComputedStyle> InputTypeView::CustomStyleForLayoutObject(
+    scoped_refptr<ComputedStyle> original_style) {
   return original_style;
 }
 

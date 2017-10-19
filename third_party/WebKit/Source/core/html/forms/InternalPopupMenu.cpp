@@ -75,8 +75,8 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
 
   // We don't override willUseFontData() for now because the old PopupListBox
   // only worked with fonts loaded when opening the popup.
-  RefPtr<FontData> GetFontData(const FontDescription&,
-                               const AtomicString&) override;
+  scoped_refptr<FontData> GetFontData(const FontDescription&,
+                                      const AtomicString&) override;
 
   virtual void Trace(blink::Visitor*);
 
@@ -97,7 +97,7 @@ PopupMenuCSSFontSelector::PopupMenuCSSFontSelector(
 
 PopupMenuCSSFontSelector::~PopupMenuCSSFontSelector() {}
 
-RefPtr<FontData> PopupMenuCSSFontSelector::GetFontData(
+scoped_refptr<FontData> PopupMenuCSSFontSelector::GetFontData(
     const FontDescription& description,
     const AtomicString& name) {
   return owner_font_selector_->GetFontData(description, name);
@@ -523,7 +523,7 @@ void InternalPopupMenu::Update() {
     return;
   }
 
-  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   PagePopupClient::AddString("window.updateData = {\n", data.get());
   PagePopupClient::AddString("type: \"update\",\n", data.get());
   ItemIterationContext context(*owner_element_->GetComputedStyle(), data.get());

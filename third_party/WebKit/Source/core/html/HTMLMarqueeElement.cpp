@@ -248,12 +248,12 @@ StringKeyframeEffectModel* HTMLMarqueeElement::CreateEffectModel(
       mover_->GetDocument().ElementSheet().Contents();
   MutableStylePropertySet::SetResult set_result;
 
-  RefPtr<StringKeyframe> keyframe1 = StringKeyframe::Create();
+  scoped_refptr<StringKeyframe> keyframe1 = StringKeyframe::Create();
   set_result = keyframe1->SetCSSPropertyValue(
       CSSPropertyTransform, parameters.transform_begin, style_sheet_contents);
   DCHECK(set_result.did_parse);
 
-  RefPtr<StringKeyframe> keyframe2 = StringKeyframe::Create();
+  scoped_refptr<StringKeyframe> keyframe2 = StringKeyframe::Create();
   set_result = keyframe2->SetCSSPropertyValue(
       CSSPropertyTransform, parameters.transform_end, style_sheet_contents);
   DCHECK(set_result.did_parse);

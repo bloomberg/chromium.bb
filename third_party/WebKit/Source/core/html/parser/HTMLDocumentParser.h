@@ -234,7 +234,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   HTMLParserOptions options_;
   HTMLInputStream input_;
-  RefPtr<HTMLParserReentryPermit> reentry_permit_;
+  scoped_refptr<HTMLParserReentryPermit> reentry_permit_;
 
   std::unique_ptr<HTMLToken> token_;
   std::unique_ptr<HTMLTokenizer> tokenizer_;
@@ -245,7 +245,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   // A scanner used only for input provided to the insert() method.
   std::unique_ptr<HTMLPreloadScanner> insertion_preload_scanner_;
 
-  RefPtr<WebTaskRunner> loading_task_runner_;
+  scoped_refptr<WebTaskRunner> loading_task_runner_;
   Member<HTMLParserScheduler> parser_scheduler_;
   HTMLSourceTracker source_tracker_;
   TextPosition text_position_;
@@ -264,7 +264,7 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   WeakPtr<BackgroundHTMLParser> background_parser_;
   Member<HTMLResourcePreloader> preloader_;
   PreloadRequestStream queued_preloads_;
-  RefPtr<TokenizedChunkQueue> tokenized_chunk_queue_;
+  scoped_refptr<TokenizedChunkQueue> tokenized_chunk_queue_;
 
   // If this is non-null, then there is a meta CSP token somewhere in the
   // speculation buffer. Preloads will be deferred until a token matching this

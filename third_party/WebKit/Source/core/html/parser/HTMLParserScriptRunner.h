@@ -128,7 +128,7 @@ class HTMLParserScriptRunner final
 
   void PossiblyFetchBlockedDocWriteScript(PendingScript*);
 
-  RefPtr<HTMLParserReentryPermit> reentry_permit_;
+  scoped_refptr<HTMLParserReentryPermit> reentry_permit_;
   Member<Document> document_;
   Member<HTMLParserScriptRunnerHost> host_;
 

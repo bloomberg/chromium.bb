@@ -104,7 +104,8 @@ static String InitiatorFor(const StringImpl* tag_impl) {
 
 static bool MediaAttributeMatches(const MediaValuesCached& media_values,
                                   const String& attribute_value) {
-  RefPtr<MediaQuerySet> media_queries = MediaQuerySet::Create(attribute_value);
+  scoped_refptr<MediaQuerySet> media_queries =
+      MediaQuerySet::Create(attribute_value);
   MediaQueryEvaluator media_query_evaluator(media_values);
   return media_query_evaluator.Eval(*media_queries);
 }

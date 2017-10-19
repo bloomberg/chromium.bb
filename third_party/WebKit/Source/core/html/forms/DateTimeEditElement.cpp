@@ -563,11 +563,11 @@ DateTimeEditElement* DateTimeEditElement::Create(
   return container;
 }
 
-RefPtr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
+scoped_refptr<ComputedStyle> DateTimeEditElement::CustomStyleForLayoutObject() {
   // FIXME: This is a kind of layout. We might want to introduce new
   // layoutObject.
-  RefPtr<ComputedStyle> original_style = OriginalStyleForLayoutObject();
-  RefPtr<ComputedStyle> style = ComputedStyle::Clone(*original_style);
+  scoped_refptr<ComputedStyle> original_style = OriginalStyleForLayoutObject();
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Clone(*original_style);
   float width = 0;
   for (Node* child = FieldsWrapperElement()->firstChild(); child;
        child = child->nextSibling()) {

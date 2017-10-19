@@ -61,7 +61,7 @@ class CORE_EXPORT HTMLFrameElementBase : public HTMLFrameOwnerElement {
   // on the origin which is specified by the frame's "src" attribute.
   // It also takes into account details such as the frame's sandbox status, and
   // whether the frame should inherit its parent's origin.
-  RefPtr<SecurityOrigin> GetOriginForFeaturePolicy() const override;
+  scoped_refptr<SecurityOrigin> GetOriginForFeaturePolicy() const override;
 
  private:
   bool SupportsFocus() const final;

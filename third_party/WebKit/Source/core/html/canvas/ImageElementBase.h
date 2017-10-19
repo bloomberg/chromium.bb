@@ -33,10 +33,10 @@ class CORE_EXPORT ImageElementBase : public CanvasImageSource,
                                   Optional<IntRect>,
                                   const ImageBitmapOptions&) override;
 
-  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                        AccelerationHint,
-                                        SnapshotReason,
-                                        const FloatSize&) override;
+  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                               AccelerationHint,
+                                               SnapshotReason,
+                                               const FloatSize&) override;
 
   bool WouldTaintOrigin(
       SecurityOrigin* destination_security_origin) const override;

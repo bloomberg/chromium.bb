@@ -210,7 +210,7 @@ class HTMLTreeBuilder::CharacterTokenBuffer {
     return StringView(characters_.get(), start, current_ - start);
   }
 
-  RefPtr<StringImpl> characters_;
+  scoped_refptr<StringImpl> characters_;
   unsigned current_;
   unsigned end_;
 };

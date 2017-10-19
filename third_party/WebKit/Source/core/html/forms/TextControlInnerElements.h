@@ -47,7 +47,7 @@ class EditingViewPortElement final : public HTMLDivElement {
 
  protected:
   explicit EditingViewPortElement(Document&);
-  RefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
+  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
 
  private:
   bool SupportsFocus() const override { return false; }
@@ -62,7 +62,7 @@ class TextControlInnerEditorElement final : public HTMLDivElement {
  private:
   explicit TextControlInnerEditorElement(Document&);
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
-  RefPtr<ComputedStyle> CustomStyleForLayoutObject() override;
+  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject() override;
   bool SupportsFocus() const override { return false; }
 };
 
