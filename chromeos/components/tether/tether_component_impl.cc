@@ -12,7 +12,7 @@
 #include "chromeos/components/tether/ble_connection_manager.h"
 #include "chromeos/components/tether/ble_scanner_impl.h"
 #include "chromeos/components/tether/ble_synchronizer.h"
-#include "chromeos/components/tether/crash_recovery_manager.h"
+#include "chromeos/components/tether/crash_recovery_manager_impl.h"
 #include "chromeos/components/tether/device_id_tether_network_guid_map.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender.h"
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
@@ -275,7 +275,7 @@ void TetherComponentImpl::CreateComponent() {
           network_connection_handler_, active_host_.get(),
           tether_connector_.get(), tether_disconnector_.get());
 
-  crash_recovery_manager_ = base::MakeUnique<CrashRecoveryManager>(
+  crash_recovery_manager_ = base::MakeUnique<CrashRecoveryManagerImpl>(
       network_state_handler_, active_host_.get(),
       master_host_scan_cache_.get());
   crash_recovery_manager_->RestorePreCrashStateIfNecessary(

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/crash_recovery_manager.h"
+#include "chromeos/components/tether/crash_recovery_manager_impl.h"
 
 #include <memory>
 #include <sstream>
@@ -44,11 +44,11 @@ std::string CreateConfigurationJsonString(bool is_connected) {
 
 }  // namespace
 
-class CrashRecoveryManagerTest : public NetworkStateTest {
+class CrashRecoveryManagerImplTest : public NetworkStateTest {
  protected:
-  CrashRecoveryManagerTest()
+  CrashRecoveryManagerImplTest()
       : test_device_(cryptauth::GenerateTestRemoteDevices(1u)[0]) {}
-  ~CrashRecoveryManagerTest() override {}
+  ~CrashRecoveryManagerImplTest() override {}
 
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -61,7 +61,7 @@ class CrashRecoveryManagerTest : public NetworkStateTest {
     fake_active_host_ = base::MakeUnique<FakeActiveHost>();
     fake_host_scan_cache_ = base::MakeUnique<FakeHostScanCache>();
 
-    crash_recovery_manager_ = base::MakeUnique<CrashRecoveryManager>(
+    crash_recovery_manager_ = base::MakeUnique<CrashRecoveryManagerImpl>(
         network_state_handler(), fake_active_host_.get(),
         fake_host_scan_cache_.get());
 
@@ -108,7 +108,7 @@ class CrashRecoveryManagerTest : public NetworkStateTest {
 
   void StartRestoration() {
     crash_recovery_manager_->RestorePreCrashStateIfNecessary(
-        base::Bind(&CrashRecoveryManagerTest::OnRestorationFinished,
+        base::Bind(&CrashRecoveryManagerImplTest::OnRestorationFinished,
                    base::Unretained(this)));
   }
 
@@ -132,18 +132,18 @@ class CrashRecoveryManagerTest : public NetworkStateTest {
 
   bool is_restoration_finished_;
 
-  std::unique_ptr<CrashRecoveryManager> crash_recovery_manager_;
+  std::unique_ptr<CrashRecoveryManagerImpl> crash_recovery_manager_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(CrashRecoveryManagerTest);
+  DISALLOW_COPY_AND_ASSIGN(CrashRecoveryManagerImplTest);
 };
 
-TEST_F(CrashRecoveryManagerTest, ActiveHostDisconnected) {
+TEST_F(CrashRecoveryManagerImplTest, ActiveHostDisconnected) {
   StartRestoration();
   VerifyDisconnectedAfterRestoration();
 }
 
-TEST_F(CrashRecoveryManagerTest, ActiveHostConnecting) {
+TEST_F(CrashRecoveryManagerImplTest, ActiveHostConnecting) {
   fake_active_host_->SetActiveHostConnecting(test_device_.GetDeviceId(),
                                              GetTetherNetworkGuid());
 
@@ -151,14 +151,14 @@ TEST_F(CrashRecoveryManagerTest, ActiveHostConnecting) {
   VerifyDisconnectedAfterRestoration();
 }
 
-TEST_F(CrashRecoveryManagerTest, ActiveHostConnected_EntryNotInCache) {
+TEST_F(CrashRecoveryManagerImplTest, ActiveHostConnected_EntryNotInCache) {
   SetConnected();
 
   StartRestoration();
   VerifyDisconnectedAfterRestoration();
 }
 
-TEST_F(CrashRecoveryManagerTest, ActiveHostConnected_WifiNetworkMissing) {
+TEST_F(CrashRecoveryManagerImplTest, ActiveHostConnected_WifiNetworkMissing) {
   AddScanEntry();
   SetConnected();
 
@@ -166,7 +166,8 @@ TEST_F(CrashRecoveryManagerTest, ActiveHostConnected_WifiNetworkMissing) {
   VerifyDisconnectedAfterRestoration();
 }
 
-TEST_F(CrashRecoveryManagerTest, ActiveHostConnected_WifiNetworkDisconnected) {
+TEST_F(CrashRecoveryManagerImplTest,
+       ActiveHostConnected_WifiNetworkDisconnected) {
   AddScanEntry();
   AddWifiNetwork(false /* is_connected */);
   SetConnected();
@@ -175,7 +176,7 @@ TEST_F(CrashRecoveryManagerTest, ActiveHostConnected_WifiNetworkDisconnected) {
   VerifyDisconnectedAfterRestoration();
 }
 
-TEST_F(CrashRecoveryManagerTest, ActiveHostConnected_RestoreSuccessful) {
+TEST_F(CrashRecoveryManagerImplTest, ActiveHostConnected_RestoreSuccessful) {
   AddScanEntry();
   AddWifiNetwork(true /* is_connected */);
   SetConnected();
