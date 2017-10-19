@@ -288,10 +288,6 @@ const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
 const base::Feature kSitePerProcess{"site-per-process",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// An experiment for skipping compositing small scrollers.
-const base::Feature kSkipCompositingSmallScrollers{
-    "SkipCompositingSmallScrollers", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Paint invalidation based on slimming paint. See https://goo.gl/eQczQW
 const base::Feature kSlimmingPaintInvalidation{
     "SlimmingPaintInvalidation", base::FEATURE_ENABLED_BY_DEFAULT};

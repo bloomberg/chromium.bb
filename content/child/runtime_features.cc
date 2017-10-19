@@ -306,9 +306,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (base::FeatureList::IsEnabled(features::kCompositorTouchAction))
     WebRuntimeFeatures::EnableCompositorTouchAction(true);
 
-  if (base::FeatureList::IsEnabled(features::kSkipCompositingSmallScrollers))
-    WebRuntimeFeatures::EnableSkipCompositingSmallScrollers(true);
-
   if (base::FeatureList::IsEnabled(features::kGenericSensor)) {
     WebRuntimeFeatures::EnableGenericSensor(true);
     if (base::FeatureList::IsEnabled(features::kGenericSensorExtraClasses))
