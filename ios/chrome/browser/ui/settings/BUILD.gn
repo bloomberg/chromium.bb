@@ -361,7 +361,7 @@ source_set("eg_tests") {
     "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",

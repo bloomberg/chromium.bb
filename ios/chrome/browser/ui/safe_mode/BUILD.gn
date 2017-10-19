@@ -41,7 +41,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/main",
     "//ios/chrome/test/base",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
   ]
 }
 

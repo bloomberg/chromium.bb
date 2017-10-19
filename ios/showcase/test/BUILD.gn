@@ -14,7 +14,7 @@ source_set("test") {
     "//base",
     "//ios/showcase/core",
     "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//testing/gtest",
   ]
   public_deps = [

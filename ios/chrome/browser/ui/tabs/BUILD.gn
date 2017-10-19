@@ -106,7 +106,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//ui/base",
   ]
   libs = [ "XCTest.framework" ]
