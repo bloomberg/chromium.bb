@@ -2303,10 +2303,6 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewOverlayVisibility) {
 // attempting to drag a unsnappable window.
 TEST_F(SplitViewWindowSelectorTest,
        SplitViewOverviewOverlayVisibilityUnsnappableWindow) {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      switches::kAshEnableTabletSplitView);
-  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-
   std::unique_ptr<aura::Window> unsnappable_window = CreateUnsnappableWindow();
 
   ToggleOverview();
@@ -2548,6 +2544,35 @@ TEST_F(SplitViewWindowSelectorTest, SplitViewOverviewBothActiveTest) {
   // leak during shutdown. Fix and remove the ToggleOverview. See
   // crbug.com/766725
   ToggleOverview();
+}
+
+// Verify that selecting an unsnappable window while in split view works as
+// intended.
+TEST_F(SplitViewWindowSelectorTest, SelectUnsnappableWindowInSplitView) {
+  // Create one snappable and one unsnappable window.
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  std::unique_ptr<aura::Window> unsnappable_window = CreateUnsnappableWindow();
+
+  ToggleOverview();
+  ASSERT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Snap the snappable window to enter split view mode.
+  split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
+  ASSERT_TRUE(split_view_controller()->IsSplitViewModeActive());
+
+  // Select the unsnappable window.
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item =
+      GetWindowItemForWindow(grid_index, unsnappable_window.get());
+  GetEventGenerator().set_current_location(
+      selector_item->target_bounds().CenterPoint());
+  GetEventGenerator().ClickLeftButton();
+
+  // Verify that we are out of split view and overview mode, and that the active
+  // window is the unsnappable window.
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(unsnappable_window.get(), wm::GetActiveWindow());
 }
 
 }  // namespace ash

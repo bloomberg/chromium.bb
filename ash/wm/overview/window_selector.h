@@ -134,6 +134,10 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
     return split_view_overview_overlay_.get();
   }
 
+  void set_restore_focus_window(aura::Window* window) {
+    restore_focus_window_ = window;
+  }
+
   // display::DisplayObserver:
   void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayRemoved(const display::Display& display) override;
