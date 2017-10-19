@@ -69,7 +69,7 @@ void RenderingTest::TearDown() {
 }
 
 void RenderingTest::SetChildFrameHTML(const String& html) {
-  ChildDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  ChildDocument().SetBaseURLOverride(KURL("http://test.com"));
   ChildDocument().body()->SetInnerHTMLFromString(html, ASSERT_NO_EXCEPTION);
 }
 

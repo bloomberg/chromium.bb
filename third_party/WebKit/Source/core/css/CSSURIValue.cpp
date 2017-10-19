@@ -58,7 +58,7 @@ AtomicString CSSURIValue::FragmentIdentifier() const {
 }
 
 KURL CSSURIValue::AbsoluteUrl() const {
-  return KURL(kParsedURLString, absolute_url_);
+  return KURL(absolute_url_);
 }
 
 bool CSSURIValue::IsLocal(const Document& document) const {

@@ -97,9 +97,9 @@ class WorkerThreadForTest : public WorkerThread {
     headers->push_back(header_and_type);
 
     auto creation_params = WTF::MakeUnique<GlobalScopeCreationParams>(
-        KURL(kParsedURLString, "http://fake.url/"), "fake user agent", source,
-        nullptr, kDontPauseWorkerGlobalScopeOnStart, headers.get(), "",
-        security_origin, worker_clients, kWebAddressSpaceLocal, nullptr,
+        KURL("http://fake.url/"), "fake user agent", source, nullptr,
+        kDontPauseWorkerGlobalScopeOnStart, headers.get(), "", security_origin,
+        worker_clients, kWebAddressSpaceLocal, nullptr,
         std::make_unique<WorkerSettings>(Settings::Create().get()),
         kV8CacheOptionsDefault);
 

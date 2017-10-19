@@ -74,7 +74,7 @@ class NotificationResourcesLoaderTest : public ::testing::Test {
 
   // Registers a mocked url that will fail to be fetched, with a 404 error.
   WebURL RegisterMockedErrorURL(const String& file_name) {
-    WebURL url(KURL(kParsedURLString, kResourcesLoaderBaseUrl + file_name));
+    WebURL url(KURL(kResourcesLoaderBaseUrl + file_name));
     URLTestHelpers::RegisterMockedErrorURLLoad(url);
     return url;
   }

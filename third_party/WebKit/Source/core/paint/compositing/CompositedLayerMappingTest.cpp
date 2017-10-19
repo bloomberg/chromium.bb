@@ -789,7 +789,7 @@ TEST_P(CompositedLayerMappingTest,
 }
 
 TEST_P(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div style='width: 200; height: 8000px'></div>"
@@ -815,7 +815,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfIframeInScrolledDiv) {
 }
 
 TEST_P(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
   SetBodyInnerHTML(
@@ -845,7 +845,7 @@ TEST_P(CompositedLayerMappingTest, InterestRectOfScrolledIframe) {
 }
 
 TEST_P(CompositedLayerMappingTest, InterestRectOfIframeWithContentBoxOffset) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   GetDocument().GetFrame()->GetSettings()->SetPreferCompositingToLCDTextEnabled(
       true);
   // Set a 10px border in order to have a contentBoxOffset for the iframe

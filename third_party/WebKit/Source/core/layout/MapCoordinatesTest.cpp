@@ -687,7 +687,7 @@ TEST_P(MapCoordinatesTest, FixedPosInContainPaint) {
 
 // TODO(chrishtr): add more multi-frame tests.
 TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<div style='width: 200; height: 8000px'></div>"
@@ -716,7 +716,7 @@ TEST_P(MapCoordinatesTest, FixedPosInIFrameWhenMainFrameScrolled) {
 }
 
 TEST_P(MapCoordinatesTest, IFrameTransformed) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<style>body { margin: 0; }</style>"
       "<iframe style='transform: scale(2)' src='http://test.com' "
@@ -748,7 +748,7 @@ TEST_P(MapCoordinatesTest, IFrameTransformed) {
 }
 
 TEST_P(MapCoordinatesTest, FixedPosInScrolledIFrameWithTransform) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<style>* { margin: 0; }</style>"
       "<div style='position: absolute; left: 0px; top: 0px; width: 1024px; "

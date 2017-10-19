@@ -25,10 +25,10 @@ constexpr const char* kTestReferrerURL = "https://example.com/referrer.js";
 constexpr const char* kTestDependencyURL = "https://example.com/dependency.js";
 
 const KURL TestReferrerURL() {
-  return KURL(kParsedURLString, kTestReferrerURL);
+  return KURL(kTestReferrerURL);
 }
 const KURL TestDependencyURL() {
-  return KURL(kParsedURLString, kTestDependencyURL);
+  return KURL(kTestDependencyURL);
 }
 
 class DynamicModuleResolverTestModulator final : public DummyModulator {
@@ -304,7 +304,7 @@ TEST(DynamicModuleResolverTest, ExceptionThrown) {
 
 TEST(DynamicModuleResolverTest, ResolveWithNullReferrerScriptSuccess) {
   V8TestingScope scope;
-  scope.GetDocument().SetURL(KURL(kParsedURLString, "https://example.com"));
+  scope.GetDocument().SetURL(KURL("https://example.com"));
 
   auto modulator =
       new DynamicModuleResolverTestModulator(scope.GetScriptState());

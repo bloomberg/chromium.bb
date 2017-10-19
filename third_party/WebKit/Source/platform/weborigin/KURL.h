@@ -67,8 +67,6 @@ namespace blink {
 
 struct KURLHash;
 
-enum ParsedURLStringTag { kParsedURLString };
-
 class PLATFORM_EXPORT KURL {
   USING_FAST_MALLOC(KURL);
 
@@ -82,13 +80,15 @@ class PLATFORM_EXPORT KURL {
   KURL& operator=(const KURL&);
 
   // The argument is an absolute URL string. The string is assumed to be
-  // output of KURL::string() called on a valid KURL object, or indiscernible
-  // from such. It is usually best to avoid repeatedly parsing a string,
-  // unless memory saving outweigh the possible slow-downs.
-  KURL(ParsedURLStringTag, const String&);
+  // output of KURL::GetString() called on a valid KURL object, or
+  // indiscernible from such.
+  //
+  // It is usually best to avoid repeatedly parsing a String, unless memory
+  // saving outweigh the possible slow-downs.
+  explicit KURL(const String&);
 
   // Creates an isolated URL object suitable for sending to another thread.
-  static KURL CreateIsolated(ParsedURLStringTag, const String&);
+  static KURL CreateIsolated(const String&);
 
   // Resolves the relative URL with the given base URL. If provided, the
   // TextEncoding is used to encode non-ASCII characers. The base URL can be

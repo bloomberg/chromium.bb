@@ -19,8 +19,7 @@ DOMFileSystem* DevToolsHostFileSystem::isolatedFileSystem(
     const String& root_url) {
   ExecutionContext* context = host.FrontendFrame()->GetDocument();
   return DOMFileSystem::Create(context, file_system_name,
-                               kFileSystemTypeIsolated,
-                               KURL(kParsedURLString, root_url));
+                               kFileSystemTypeIsolated, KURL(root_url));
 }
 
 void DevToolsHostFileSystem::upgradeDraggedFileSystemPermissions(

@@ -119,7 +119,7 @@ class DedicatedWorkerMessagingProxyForTest
   ~DedicatedWorkerMessagingProxyForTest() override = default;
 
   void StartWithSourceCode(const String& source) {
-    KURL script_url(kParsedURLString, "http://fake.url/");
+    KURL script_url("http://fake.url/");
     security_origin_ = SecurityOrigin::Create(script_url);
     std::unique_ptr<Vector<CSPHeaderAndType>> headers =
         WTF::MakeUnique<Vector<CSPHeaderAndType>>();

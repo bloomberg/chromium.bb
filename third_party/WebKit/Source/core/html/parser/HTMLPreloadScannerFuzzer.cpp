@@ -42,7 +42,7 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   std::unique_ptr<CachedDocumentParameters> document_parameters =
       CachedDocumentParametersForFuzzing(fuzzed_data);
 
-  KURL document_url(kParsedURLString, "http://whatever.test/");
+  KURL document_url("http://whatever.test/");
 
   // Copied from HTMLPreloadScannerTest. May be worthwhile to fuzz.
   MediaValuesCached::MediaValuesCachedData media_data;

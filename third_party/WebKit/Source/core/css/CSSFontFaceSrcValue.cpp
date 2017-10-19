@@ -120,7 +120,7 @@ void CSSFontFaceSrcValue::RestoreCachedResourceIfNeeded(
   DCHECK_EQ(should_check_content_security_policy_,
             fetched_->GetResource()->Options().content_security_policy_option);
   context->Fetcher()->EmulateLoadStartedForInspector(
-      fetched_->GetResource(), KURL(kParsedURLString, resource_url),
+      fetched_->GetResource(), KURL(resource_url),
       WebURLRequest::kRequestContextFont, FetchInitiatorTypeNames::css);
 }
 

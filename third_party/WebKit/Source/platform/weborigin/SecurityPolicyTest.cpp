@@ -38,7 +38,7 @@
 namespace blink {
 
 TEST(SecurityPolicyTest, EmptyReferrerForUnauthorizedScheme) {
-  const KURL example_http_url = KURL(kParsedURLString, "http://example.com/");
+  const KURL example_http_url = KURL("http://example.com/");
   EXPECT_TRUE(String() == SecurityPolicy::GenerateReferrer(
                               kReferrerPolicyAlways, example_http_url,
                               String::FromUTF8("chrome://somepage/"))
@@ -46,7 +46,7 @@ TEST(SecurityPolicyTest, EmptyReferrerForUnauthorizedScheme) {
 }
 
 TEST(SecurityPolicyTest, GenerateReferrerRespectsReferrerSchemesRegistry) {
-  const KURL example_http_url = KURL(kParsedURLString, "http://example.com/");
+  const KURL example_http_url = KURL("http://example.com/");
   const String foobar_url = String::FromUTF8("foobar://somepage/");
   const String foobar_scheme = String::FromUTF8("foobar");
 
@@ -61,7 +61,7 @@ TEST(SecurityPolicyTest, GenerateReferrerRespectsReferrerSchemesRegistry) {
 }
 
 TEST(SecurityPolicyTest, ShouldHideReferrerRespectsReferrerSchemesRegistry) {
-  const KURL example_http_url = KURL(kParsedURLString, "http://example.com/");
+  const KURL example_http_url = KURL("http://example.com/");
   const KURL foobar_url = KURL(NullURL(), "foobar://somepage/");
   const String foobar_scheme = String::FromUTF8("foobar");
 
@@ -188,7 +188,7 @@ TEST(SecurityPolicyTest, GenerateReferrer) {
   };
 
   for (TestCase test : inputs) {
-    KURL destination(kParsedURLString, test.destination);
+    KURL destination(test.destination);
     Referrer result = SecurityPolicy::GenerateReferrer(
         test.policy, destination, String::FromUTF8(test.referrer));
     if (test.expected) {

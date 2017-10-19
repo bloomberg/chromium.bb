@@ -102,7 +102,7 @@ static KURL UrlForCSSValue(const CSSValue* value) {
   if (!value->IsImageValue())
     return KURL();
 
-  return KURL(kParsedURLString, ToCSSImageValue(*value).Url());
+  return KURL(ToCSSImageValue(*value).Url());
 }
 
 CSSCrossfadeValue::CSSCrossfadeValue(CSSValue* from_value,

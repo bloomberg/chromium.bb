@@ -66,8 +66,8 @@ void CSSImageSetValue::FillImageSet() {
     ImageWithScale image;
     image.image_url = image_url;
     image.referrer = SecurityPolicy::GenerateReferrer(
-        image_value.GetReferrer().referrer_policy,
-        KURL(kParsedURLString, image_url), image_value.GetReferrer().referrer);
+        image_value.GetReferrer().referrer_policy, KURL(image_url),
+        image_value.GetReferrer().referrer);
     image.scale_factor = scale_factor;
     images_in_set_.push_back(image);
     ++i;

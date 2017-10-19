@@ -6005,7 +6005,7 @@ void Document::InitSecurityContext(const DocumentInit& initializer) {
   if (!initializer.HasSecurityContext()) {
     // No source for a security context.
     // This can occur via document.implementation.createDocument().
-    cookie_url_ = KURL(kParsedURLString, g_empty_string);
+    cookie_url_ = KURL(g_empty_string);
     SetSecurityOrigin(SecurityOrigin::CreateUnique());
     InitContentSecurityPolicy();
     SetFeaturePolicy(g_empty_string);

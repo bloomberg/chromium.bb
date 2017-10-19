@@ -76,7 +76,7 @@ KURL SecurityOrigin::ExtractInnerURL(const KURL& url) {
     return *url.InnerURL();
   // FIXME: Update this callsite to use the innerURL member function when
   // we finish implementing it.
-  return KURL(kParsedURLString, url.GetPath());
+  return KURL(url.GetPath());
 }
 
 void SecurityOrigin::SetMap(URLSecurityOriginMap* map) {
@@ -598,8 +598,7 @@ bool SecurityOrigin::AreSameSchemeHostPort(const KURL& a, const KURL& b) {
 
 const KURL& SecurityOrigin::UrlWithUniqueSecurityOrigin() {
   DCHECK(IsMainThread());
-  DEFINE_STATIC_LOCAL(const KURL, unique_security_origin_url,
-                      (kParsedURLString, "data:,"));
+  DEFINE_STATIC_LOCAL(const KURL, unique_security_origin_url, ("data:,"));
   return unique_security_origin_url;
 }
 

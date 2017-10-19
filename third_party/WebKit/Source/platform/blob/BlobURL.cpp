@@ -60,7 +60,7 @@ KURL BlobURL::CreateBlobURL(const String& origin_string) {
   DCHECK(!origin_string.IsEmpty());
   String url_string =
       "blob:" + origin_string + '/' + CreateCanonicalUUIDString();
-  return KURL::CreateIsolated(kParsedURLString, url_string);
+  return KURL::CreateIsolated(url_string);
 }
 
 }  // namespace blink

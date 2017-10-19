@@ -37,7 +37,7 @@ ScriptWrappable* V8ScriptValueDeserializerForModules::ReadDOMObject(
         return nullptr;
       return DOMFileSystem::Create(ExecutionContext::From(GetScriptState()),
                                    name, static_cast<FileSystemType>(raw_type),
-                                   KURL(kParsedURLString, root_url));
+                                   KURL(root_url));
     }
     case kRTCCertificateTag: {
       String pem_private_key;

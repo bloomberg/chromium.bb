@@ -37,7 +37,6 @@ TEST(FileListTest, pathsForUserVisibleFiles) {
   // User visible file system URL file.
   {
     KURL url(
-        ParsedURLStringTag(),
         "filesystem:http://example.com/isolated/hash/visible-non-native-file");
     file_list->Append(File::CreateForFileSystemFile(url, FileMetadata(),
                                                     File::kIsUserVisible));
@@ -45,9 +44,9 @@ TEST(FileListTest, pathsForUserVisibleFiles) {
 
   // Not user visible file system URL file.
   {
-    KURL url(ParsedURLStringTag(),
-             "filesystem:http://example.com/isolated/hash/"
-             "not-visible-non-native-file");
+    KURL url(
+        "filesystem:http://example.com/isolated/hash/"
+        "not-visible-non-native-file");
     file_list->Append(File::CreateForFileSystemFile(url, FileMetadata(),
                                                     File::kIsNotUserVisible));
   }

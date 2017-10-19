@@ -80,7 +80,7 @@ ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
       "referrer.js", kSharableCrossOrigin,
       WebURLRequest::kFetchCredentialsModeOmit, "", kParserInserted,
       TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
-  KURL referrer_url(kParsedURLString, "https://example.com/referrer.js");
+  KURL referrer_url("https://example.com/referrer.js");
   auto* referrer_module_script =
       ModuleScript::CreateForTest(modulator, referrer_record, referrer_url);
   return referrer_module_script;
@@ -94,7 +94,7 @@ ModuleScript* CreateTargetModuleScript(
       scope.GetIsolate(), "export const pi = 3.14;", "target.js",
       kSharableCrossOrigin, WebURLRequest::kFetchCredentialsModeOmit, "",
       kParserInserted, TextPosition::MinimumPosition(), ASSERT_NO_EXCEPTION);
-  KURL url(kParsedURLString, "https://example.com/target.js");
+  KURL url("https://example.com/target.js");
   auto* module_script = ModuleScript::CreateForTest(modulator, record, url);
   if (state != ScriptModuleState::kInstantiated) {
     EXPECT_EQ(ScriptModuleState::kErrored, state);

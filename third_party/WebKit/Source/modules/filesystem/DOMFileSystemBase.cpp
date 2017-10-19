@@ -106,7 +106,7 @@ KURL DOMFileSystemBase::CreateFileSystemRootURL(const String& origin,
     return KURL();
 
   String result = "filesystem:" + origin + "/" + type_string + "/";
-  return KURL(kParsedURLString, result);
+  return KURL(result);
 }
 
 bool DOMFileSystemBase::SupportsToURL() const {
@@ -132,7 +132,7 @@ KURL DOMFileSystemBase::CreateFileSystemURL(const String& full_path) const {
     result.Append(filesystem_root_url_.GetPath());
     // Remove the extra leading slash.
     result.Append(EncodeWithURLEscapeSequences(full_path.Substring(1)));
-    return KURL(kParsedURLString, result.ToString());
+    return KURL(result.ToString());
   }
 
   // For regular types we can just append the entry's fullPath to the

@@ -173,8 +173,7 @@ bool ProtocolIsJavaScript(const String& url) {
 }
 
 const KURL& BlankURL() {
-  DEFINE_STATIC_LOCAL(KURL, static_blank_url,
-                      (kParsedURLString, "about:blank"));
+  DEFINE_STATIC_LOCAL(KURL, static_blank_url, ("about:blank"));
   return static_blank_url;
 }
 
@@ -183,8 +182,7 @@ bool KURL::IsAboutBlankURL() const {
 }
 
 const KURL& SrcdocURL() {
-  DEFINE_STATIC_LOCAL(KURL, static_srcdoc_url,
-                      (kParsedURLString, "about:srcdoc"));
+  DEFINE_STATIC_LOCAL(KURL, static_srcdoc_url, ("about:srcdoc"));
   return static_srcdoc_url;
 }
 
@@ -211,7 +209,7 @@ KURL::KURL() : is_valid_(false), protocol_is_in_http_family_(false) {}
 // to a string and then converted back. In this case, the URL is already
 // canonical and in proper escaped form so needs no encoding. We treat it as
 // UTF-8 just in case.
-KURL::KURL(ParsedURLStringTag, const String& url) {
+KURL::KURL(const String& url) {
   if (!url.IsNull())
     Init(NullURL(), url, nullptr);
   else {
@@ -223,10 +221,10 @@ KURL::KURL(ParsedURLStringTag, const String& url) {
   }
 }
 
-KURL KURL::CreateIsolated(ParsedURLStringTag, const String& url) {
+KURL KURL::CreateIsolated(const String& url) {
   // FIXME: We should be able to skip this extra copy and created an
   // isolated KURL more efficiently.
-  return KURL(kParsedURLString, url).Copy();
+  return KURL(url).Copy();
 }
 
 // Constructs a new URL given a base URL and a possibly relative input URL.
@@ -795,13 +793,13 @@ void KURL::InitInnerURL() {
     inner_url_.reset();
     return;
   }
-  if (url::Parsed* inner_parsed = parsed_.inner_parsed())
-    inner_url_ = WTF::WrapUnique(new KURL(
-        kParsedURLString, string_.Substring(inner_parsed->scheme.begin,
-                                            inner_parsed->Length() -
-                                                inner_parsed->scheme.begin)));
-  else
+  if (url::Parsed* inner_parsed = parsed_.inner_parsed()) {
+    inner_url_ = WTF::WrapUnique(new KURL(string_.Substring(
+        inner_parsed->scheme.begin,
+        inner_parsed->Length() - inner_parsed->scheme.begin)));
+  } else {
     inner_url_.reset();
+  }
 }
 
 void KURL::InitProtocolMetadata() {

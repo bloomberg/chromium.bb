@@ -355,7 +355,7 @@ bool ContextMenuClient::ShowContextMenu(const ContextMenu* default_menu,
     // in that case. See https://crbug.com/534561
     WebSecurityOrigin origin = web_view_->MainFrame()->GetSecurityOrigin();
     if (!origin.IsNull())
-      data.page_url = KURL(kParsedURLString, origin.ToString());
+      data.page_url = KURL(origin.ToString());
   } else {
     data.page_url =
         UrlFromFrame(ToLocalFrame(web_view_->GetPage()->MainFrame()));

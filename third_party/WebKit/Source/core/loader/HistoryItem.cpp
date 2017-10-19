@@ -53,7 +53,7 @@ const String& HistoryItem::UrlString() const {
 }
 
 KURL HistoryItem::Url() const {
-  return KURL(kParsedURLString, url_string_);
+  return KURL(url_string_);
 }
 
 const Referrer& HistoryItem::GetReferrer() const {

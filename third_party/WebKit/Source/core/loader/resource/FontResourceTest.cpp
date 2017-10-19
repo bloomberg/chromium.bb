@@ -35,7 +35,7 @@ class FontResourceTest : public ::testing::Test {
 // loading supports.
 TEST_F(FontResourceTest,
        ResourceFetcherRevalidateDeferedResourceFromTwoInitiators) {
-  KURL url(kParsedURLString, "http://127.0.0.1:8000/font.woff");
+  KURL url("http://127.0.0.1:8000/font.woff");
   ResourceResponse response;
   response.SetURL(url);
   response.SetHTTPStatusCode(200);
@@ -94,7 +94,7 @@ TEST_F(FontResourceTest,
 
 // Tests if cache-aware font loading works correctly.
 TEST_F(FontResourceTest, CacheAwareFontLoading) {
-  KURL url(kParsedURLString, "http://127.0.0.1:8000/font.woff");
+  KURL url("http://127.0.0.1:8000/font.woff");
   ResourceResponse response;
   response.SetURL(url);
   response.SetHTTPStatusCode(200);

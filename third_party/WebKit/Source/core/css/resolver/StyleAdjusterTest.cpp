@@ -15,7 +15,7 @@ class StyleAdjusterTest : public RenderingTest {
 };
 
 TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<style>body { margin: 0; } iframe { display: block; } </style>"
       "<iframe id='owner' src='http://test.com' width='500' height='500' "
@@ -39,7 +39,7 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedAcrossIframes) {
 }
 
 TEST_F(StyleAdjusterTest, TouchActionPanningReEnabledByScrollers) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<style>#ancestor { margin: 0; touch-action: pinch-zoom; } "
       "#scroller { overflow: scroll; width: 100px; height: 100px; } "
@@ -54,7 +54,7 @@ TEST_F(StyleAdjusterTest, TouchActionPanningReEnabledByScrollers) {
 }
 
 TEST_F(StyleAdjusterTest, TouchActionPropagatedWhenAncestorStyleChanges) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<style>#ancestor { margin: 0; touch-action: pan-x; } "
       "#potential-scroller { width: 100px; height: 100px; overflow: hidden; } "
@@ -82,7 +82,7 @@ TEST_F(StyleAdjusterTest, TouchActionPropagatedWhenAncestorStyleChanges) {
 }
 
 TEST_F(StyleAdjusterTest, TouchActionRestrictedByLowerAncestor) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
+  GetDocument().SetBaseURLOverride(KURL("http://test.com"));
   SetBodyInnerHTML(
       "<div id='ancestor' style='touch-action: pan'>"
       "<div id='parent' style='touch-action: pan-right pan-y'>"

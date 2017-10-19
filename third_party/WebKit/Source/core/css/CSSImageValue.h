@@ -82,7 +82,7 @@ class CORE_EXPORT CSSImageValue : public CSSValue {
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const;
 
   CSSImageValue* ValueWithURLMadeAbsolute() const {
-    return Create(KURL(kParsedURLString, absolute_url_), cached_image_.Get());
+    return Create(KURL(absolute_url_), cached_image_.Get());
   }
 
   void SetInitiator(const AtomicString& name) { initiator_name_ = name; }

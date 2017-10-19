@@ -53,7 +53,7 @@ WebURLError& WebURLError::operator=(const ResourceError& error) {
   } else {
     domain = error.GetDomain();
     reason = error.ErrorCode();
-    unreachable_url = KURL(kParsedURLString, error.FailingURL());
+    unreachable_url = KURL(error.FailingURL());
     stale_copy_in_cache = error.StaleCopyInCache();
     localized_description = error.LocalizedDescription();
     is_web_security_violation = error.IsAccessCheck();

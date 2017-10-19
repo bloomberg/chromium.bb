@@ -78,7 +78,7 @@ TEST(WebURLResponseTest, NewInstanceIsNull) {
 
 TEST(WebURLResponseTest, NotNullAfterSetURL) {
   WebURLResponse instance;
-  instance.SetURL(KURL(kParsedURLString, "http://localhost/"));
+  instance.SetURL(KURL("http://localhost/"));
   EXPECT_FALSE(instance.IsNull());
 }
 

@@ -83,7 +83,7 @@ class OriginTrialContextTest : public ::testing::Test,
   MockTokenValidator* TokenValidator() { return token_validator_; }
 
   void UpdateSecurityOrigin(const String& origin) {
-    KURL page_url(kParsedURLString, origin);
+    KURL page_url(origin);
     RefPtr<SecurityOrigin> page_origin = SecurityOrigin::Create(page_url);
     execution_context_->SetSecurityOrigin(page_origin);
     execution_context_->SetIsSecureContext(SecurityOrigin::IsSecure(page_url));

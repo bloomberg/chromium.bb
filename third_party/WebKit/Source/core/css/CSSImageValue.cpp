@@ -100,7 +100,7 @@ void CSSImageValue::RestoreCachedResourceIfNeeded(
     return;
 
   resource->EmulateLoadStartedForInspector(
-      document.Fetcher(), KURL(kParsedURLString, absolute_url_),
+      document.Fetcher(), KURL(absolute_url_),
       initiator_name_.IsEmpty() ? FetchInitiatorTypeNames::css
                                 : initiator_name_);
 }

@@ -41,7 +41,7 @@ namespace URLTestHelpers {
 
 inline blink::KURL ToKURL(const std::string& url) {
   WTF::String wtf_string(url.c_str());
-  return blink::KURL(blink::kParsedURLString, wtf_string);
+  return blink::KURL(wtf_string);
 }
 
 // Avoid directly using these methods, instead please use ScopedMockedURL (or

@@ -17,7 +17,7 @@ SimRequest::SimRequest(String url, String mime_type)
       client_(nullptr),
       total_encoded_data_length_(0),
       is_ready_(false) {
-  KURL full_url(kParsedURLString, url);
+  KURL full_url(url);
   WebURLResponse response(full_url);
   response.SetMIMEType(mime_type);
   response.SetHTTPStatusCode(200);

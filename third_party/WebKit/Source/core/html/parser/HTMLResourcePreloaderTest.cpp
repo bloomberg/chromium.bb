@@ -50,9 +50,8 @@ class HTMLResourcePreloaderTest : public ::testing::Test {
     // beyond preconnect.
     PreloaderNetworkHintsMock network_hints;
     auto preload_request = PreloadRequest::CreateIfNeeded(
-        String(), TextPosition(), test_case.url,
-        KURL(ParsedURLStringTag(), test_case.base_url), Resource::kImage,
-        ReferrerPolicy(), PreloadRequest::kDocumentIsReferrer,
+        String(), TextPosition(), test_case.url, KURL(test_case.base_url),
+        Resource::kImage, ReferrerPolicy(), PreloadRequest::kDocumentIsReferrer,
         ResourceFetcher::kImageNotImageSet, FetchParameters::ResourceWidth(),
         ClientHintsPreferences(), PreloadRequest::kRequestTypePreconnect);
     DCHECK(preload_request);

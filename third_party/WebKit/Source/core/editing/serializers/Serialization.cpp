@@ -103,7 +103,7 @@ namespace blink {
 static void CompleteURLs(DocumentFragment& fragment, const String& base_url) {
   HeapVector<AttributeChange> changes;
 
-  KURL parsed_base_url(kParsedURLString, base_url);
+  KURL parsed_base_url(base_url);
 
   for (Element& element : ElementTraversal::DescendantsOf(fragment)) {
     AttributeCollection attributes = element.Attributes();

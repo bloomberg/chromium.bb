@@ -55,7 +55,7 @@ String ConvertURIListToURL(const String& uri_list) {
       continue;
     if (line[0] == '#')
       continue;
-    KURL url = KURL(kParsedURLString, line);
+    KURL url = KURL(line);
     if (url.IsValid())
       return url;
   }

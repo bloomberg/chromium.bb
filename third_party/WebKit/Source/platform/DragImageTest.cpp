@@ -133,7 +133,7 @@ TEST(DragImageTest, CreateDragImage) {
 }
 
 TEST(DragImageTest, TrimWhitespace) {
-  KURL url(kParsedURLString, "http://www.example.com/");
+  KURL url("http://www.example.com/");
   String test_label = "          Example Example Example      \n    ";
   String expected_label = "Example Example Example";
   float device_scale_factor = 1.0f;

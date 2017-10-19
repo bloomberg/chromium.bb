@@ -28,7 +28,7 @@ class HTMLMediaElementTest : public ::testing::TestWithParam<MediaTestParam> {
 
   HTMLMediaElement* Media() { return media_.Get(); }
   void SetCurrentSrc(const String& src) {
-    KURL url(kParsedURLString, src);
+    KURL url(src);
     Media()->current_src_ = url;
   }
 

@@ -152,7 +152,7 @@ TEST_F(RawResourceTest, AddClientDuringCallback) {
 
   // Create a non-null response.
   ResourceResponse response = raw->GetResponse();
-  response.SetURL(KURL(kParsedURLString, "http://600.613/"));
+  response.SetURL(KURL("http://600.613/"));
   raw->SetResponse(response);
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());
@@ -197,7 +197,7 @@ TEST_F(RawResourceTest, RemoveClientDuringCallback) {
 
   // Create a non-null response.
   ResourceResponse response = raw->GetResponse();
-  response.SetURL(KURL(kParsedURLString, "http://600.613/"));
+  response.SetURL(KURL("http://600.613/"));
   raw->SetResponse(response);
   raw->FinishForTest();
   EXPECT_FALSE(raw->GetResponse().IsNull());

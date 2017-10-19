@@ -101,7 +101,7 @@ DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(
 
   return DOMFileSystem::Create(context, filesystem_name.ToString(),
                                kFileSystemTypeIsolated,
-                               KURL(kParsedURLString, root_url.ToString()));
+                               KURL(root_url.ToString()));
 }
 
 DOMFileSystem::DOMFileSystem(ExecutionContext* context,

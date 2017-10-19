@@ -65,7 +65,7 @@ WebURL GetAvailabilityUrl(const WebURL& source, bool is_source_supported) {
   String encoded_source =
       WTF::Base64URLEncode(source_string.data(), source_string.length());
 
-  return KURL(kParsedURLString, "remote-playback://" + encoded_source);
+  return KURL("remote-playback://" + encoded_source);
 }
 
 bool IsBackgroundAvailabilityMonitoringDisabled() {
