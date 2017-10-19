@@ -102,6 +102,10 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 }
 
 - (void)enterEditingModePressed {
+  // Ignore the button tap if view controller presenting.
+  if ([self presentedViewController]) {
+    return;
+  }
   [self.readingListCollectionViewController enterEditingModePressed];
 }
 
