@@ -9,12 +9,14 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
+#include "base/command_line.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
+#include "components/viz/common/switches.h"
 #include "content/child/child_process.h"
 #include "content/gpu/gpu_service_factory.h"
 #include "content/public/common/connection_filter.h"
@@ -43,11 +45,6 @@
 
 namespace content {
 namespace {
-
-bool IsVizEnabled() {
-  // TODO(crbug.com/770833): Look at the --enable-viz flag instead.
-  return false;
-}
 
 ChildThreadImpl::Options GetOptions() {
   ChildThreadImpl::Options::Builder builder;
@@ -136,7 +133,8 @@ class QueueingConnectionFilter : public ConnectionFilter {
 
 ui::GpuMain::ExternalDependencies CreateGpuMainDependencies() {
   ui::GpuMain::ExternalDependencies deps;
-  deps.create_display_compositor = IsVizEnabled();
+  deps.create_display_compositor =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kEnableViz);
   if (GetContentClient()->gpu())
     deps.sync_point_manager = GetContentClient()->gpu()->GetSyncPointManager();
   auto* process = ChildProcess::current();

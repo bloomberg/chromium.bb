@@ -121,6 +121,9 @@ void RecordContextLost(ContextType type,
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.MusClient", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
       break;
+    case UI_COMPOSITOR_CONTEXT:
+      UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.UICompositor", reason,
+                                CONTEXT_LOST_REASON_MAX_ENUM);
     case CONTEXT_TYPE_UNKNOWN:
       UMA_HISTOGRAM_ENUMERATION("GPU.ContextLost.Unknown", reason,
                                 CONTEXT_LOST_REASON_MAX_ENUM);
@@ -155,7 +158,9 @@ std::string ContextTypeToString(ContextType type) {
     case MEDIA_CONTEXT:
       return "Media";
     case MUS_CLIENT_CONTEXT:
-      return "MusClientContext";
+      return "MusClient";
+    case UI_COMPOSITOR_CONTEXT:
+      return "UICompositor";
     default:
       NOTREACHED();
       return "unknown";

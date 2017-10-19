@@ -96888,6 +96888,8 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
       label="A VideoCapture GPU command buffer context"/>
   <suffix name="WebGL" label="A WebGL GPU command buffer context"/>
   <suffix name="Media" label="The media worker command buffer context"/>
+  <suffix name="MusClient" label="A mus client command buffer context"/>
+  <suffix name="UICompositor" label="The UI compositor command buffer context"/>
   <suffix name="BlimpRenderCompositor"
       label="BlimpCompositor compositor command buffer context">
     <obsolete>

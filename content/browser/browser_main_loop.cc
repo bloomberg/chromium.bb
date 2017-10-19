@@ -60,6 +60,7 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/compositor/gpu_process_transport_factory.h"
 #include "content/browser/compositor/surface_utils.h"
+#include "content/browser/compositor/viz_process_transport_factory.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/download/save_file_manager.h"
@@ -1455,10 +1456,8 @@ int BrowserMainLoop::BrowserThreadsStarted() {
 #endif
 
 #if BUILDFLAG(ENABLE_VULKAN)
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableVulkan)) {
+  if (parsed_command_line_.HasSwitch(switches::kEnableVulkan))
     gpu::InitializeVulkan();
-  }
 #endif
 
   // Initialize the GPU shader cache. This needs to be initialized before
@@ -1481,27 +1480,33 @@ int BrowserMainLoop::BrowserThreadsStarted() {
       is_mus) {
     established_gpu_channel = always_uses_gpu = false;
   }
+
   if (!is_mus) {
     host_frame_sink_manager_ = base::MakeUnique<viz::HostFrameSinkManager>();
 
-    // TODO(crbug.com/676384): Remove flag along with surface sequences.
-    auto surface_lifetime_type =
-        parsed_command_line_.HasSwitch(switches::kDisableSurfaceReferences)
-            ? viz::SurfaceManager::LifetimeType::SEQUENCES
-            : viz::SurfaceManager::LifetimeType::REFERENCES;
-    frame_sink_manager_impl_ =
-        std::make_unique<viz::FrameSinkManagerImpl>(surface_lifetime_type);
-
-    // TODO(danakj): Don't make a FrameSinkManagerImpl when display is in the
-    // Gpu process, instead get the mojo pointer from the Gpu process.
-    surface_utils::ConnectWithLocalFrameSinkManager(
-        host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
-
-    // Initialize GpuChannelHostFactory and ImageTransportFactory.
     BrowserGpuChannelHostFactory::Initialize(established_gpu_channel);
-    ImageTransportFactory::SetFactory(
-        std::make_unique<GpuProcessTransportFactory>(
-            BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner()));
+
+    if (parsed_command_line_.HasSwitch(switches::kEnableViz)) {
+      auto transport_factory = std::make_unique<VizProcessTransportFactory>(
+          BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner());
+      transport_factory->ConnectHostFrameSinkManager();
+      ImageTransportFactory::SetFactory(std::move(transport_factory));
+    } else {
+      // TODO(crbug.com/676384): Remove flag along with surface sequences.
+      auto surface_lifetime_type =
+          parsed_command_line_.HasSwitch(switches::kDisableSurfaceReferences)
+              ? viz::SurfaceManager::LifetimeType::SEQUENCES
+              : viz::SurfaceManager::LifetimeType::REFERENCES;
+      frame_sink_manager_impl_ =
+          std::make_unique<viz::FrameSinkManagerImpl>(surface_lifetime_type);
+
+      surface_utils::ConnectWithLocalFrameSinkManager(
+          host_frame_sink_manager_.get(), frame_sink_manager_impl_.get());
+
+      ImageTransportFactory::SetFactory(
+          std::make_unique<GpuProcessTransportFactory>(
+              BrowserGpuChannelHostFactory::instance(), GetResizeTaskRunner()));
+    }
   }
 
 #if defined(USE_AURA)
