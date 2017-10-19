@@ -94,7 +94,7 @@ struct SchedulingParams {
 struct RequestParams {
  public:
   RequestParams();
-  RequestParams(const RequestParams& other) = default;
+  RequestParams(const RequestParams& other);
   ~RequestParams() = default;
 
   GURL url;
@@ -102,6 +102,10 @@ struct RequestParams {
   // The request method ("GET" is the default value).
   std::string method;
   net::HttpRequestHeaders request_headers;
+
+  // If the request will fetch HTTP error response body and treat them as
+  // a successful download.
+  bool fetch_error_body;
 };
 
 // The parameters that describe a download request made to the DownloadService.
