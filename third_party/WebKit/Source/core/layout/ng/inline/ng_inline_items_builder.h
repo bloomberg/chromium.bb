@@ -18,6 +18,7 @@ namespace blink {
 
 class ComputedStyle;
 class LayoutObject;
+class LayoutText;
 class NGInlineItem;
 
 // NGInlineItemsBuilder builds a string and a list of NGInlineItem from inlines.
@@ -62,9 +63,9 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   // @param style The style for the string.
   // If a nullptr, it should skip shaping. Atomic inlines and bidi controls use
   // this.
-  // @param LayoutObject The LayoutObject for the string.
+  // @param LayoutText The LayoutText for the string.
   // If a nullptr, it does not generate BidiRun. Bidi controls use this.
-  void Append(const String&, const ComputedStyle*, LayoutObject* = nullptr);
+  void Append(const String&, const ComputedStyle*, LayoutText* = nullptr);
 
   // Append a break opportunity; e.g., <wbr> element.
   void AppendBreakOpportunity(const ComputedStyle*, LayoutObject*);
@@ -134,13 +135,13 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
                                       unsigned start,
                                       unsigned end,
                                       const ComputedStyle*,
-                                      LayoutObject*);
+                                      LayoutText*);
   void AppendWithoutWhiteSpaceCollapsing(const String&,
                                          const ComputedStyle*,
-                                         LayoutObject*);
+                                         LayoutText*);
   void AppendWithPreservingNewlines(const String&,
                                     const ComputedStyle*,
-                                    LayoutObject*);
+                                    LayoutText*);
 
   void AppendForcedBreak(const ComputedStyle*, LayoutObject*);
 

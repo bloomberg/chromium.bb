@@ -158,7 +158,7 @@ template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     const String& string,
     const ComputedStyle* style,
-    LayoutObject* layout_object) {
+    LayoutText* layout_object) {
   if (string.IsEmpty())
     return;
   text_.ReserveCapacity(string.length());
@@ -172,8 +172,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
     AppendWithWhiteSpaceCollapsing(string, 0, string.length(), style,
                                    layout_object);
 
-  // TODO(xiaochengh): Change AppendXXX functions to take |LayoutText*|.
-  mapping_builder_.AnnotateSuffix(string.length(), ToLayoutText(layout_object));
+  mapping_builder_.AnnotateSuffix(string.length(), layout_object);
 }
 
 template <typename OffsetMappingBuilder>
@@ -182,7 +181,7 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
                                    unsigned start,
                                    unsigned end,
                                    const ComputedStyle* style,
-                                   LayoutObject* layout_object) {
+                                   LayoutText* layout_object) {
   DCHECK_GT(end, start);
 
   // Collapsed spaces are "zero advance width, invisible, but retains its soft
@@ -261,7 +260,7 @@ template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     AppendWithoutWhiteSpaceCollapsing(const String& string,
                                       const ComputedStyle* style,
-                                      LayoutObject* layout_object) {
+                                      LayoutText* layout_object) {
   for (unsigned start = 0; start < string.length();) {
     UChar c = string[start];
     if (IsControlItemCharacter(c)) {
@@ -290,7 +289,7 @@ template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::
     AppendWithPreservingNewlines(const String& string,
                                  const ComputedStyle* style,
-                                 LayoutObject* layout_object) {
+                                 LayoutText* layout_object) {
   for (unsigned start = 0; start < string.length();) {
     if (string[start] == kNewlineCharacter) {
       AppendForcedBreak(style, layout_object);
