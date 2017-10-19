@@ -92,8 +92,7 @@ TEST_F(ClientHintsPreferencesTest, PersistentHints) {
     WebEnabledClientHints enabled_types;
     TimeDelta persist_duration;
 
-    const KURL kurl(kParsedURLString,
-                    test.use_https_url
+    const KURL kurl(test.use_https_url
                         ? String::FromUTF8("https://www.google.com/")
                         : String::FromUTF8("http://www.google.com/"));
 

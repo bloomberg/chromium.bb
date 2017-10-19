@@ -9711,7 +9711,7 @@ TEST_P(ParameterizedWebFrameTest, LoaderOriginAccess) {
   SchemeRegistry::RegisterURLSchemeAsDisplayIsolated("chrome");
 
   // Cross-origin request.
-  KURL resource_url(kParsedURLString, "chrome://test.pdf");
+  KURL resource_url("chrome://test.pdf");
   ResourceRequest request(resource_url);
   request.SetRequestContext(WebURLRequest::kRequestContextObject);
   request.SetFetchCredentialsMode(WebURLRequest::kFetchCredentialsModeOmit);

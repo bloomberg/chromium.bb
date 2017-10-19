@@ -396,7 +396,7 @@ DOMWindow* CreateWindow(const String& url_string,
   DCHECK(active_frame);
 
   KURL completed_url = url_string.IsEmpty()
-                           ? KURL(kParsedURLString, g_empty_string)
+                           ? KURL(g_empty_string)
                            : first_frame.GetDocument()->CompleteURL(url_string);
   if (!completed_url.IsEmpty() && !completed_url.IsValid()) {
     UseCounter::Count(active_frame, WebFeature::kWindowOpenWithInvalidURL);

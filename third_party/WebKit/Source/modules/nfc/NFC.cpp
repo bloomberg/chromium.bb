@@ -525,7 +525,7 @@ ScriptPromise RejectIfInvalidNFCPushMessage(
 
 bool SetURL(const String& origin,
             device::mojom::blink::NFCMessagePtr& message) {
-  KURL origin_url(kParsedURLString, origin);
+  KURL origin_url(origin);
 
   if (!message->url.IsEmpty() && origin_url.CanSetPathname()) {
     origin_url.SetPath(message->url);
@@ -752,7 +752,7 @@ ScriptPromise NFC::watch(ScriptState* script_state,
 
   // https://w3c.github.io/web-nfc/#dom-nfc-watch (Step 9)
   if (options.hasURL() && !options.url().IsEmpty()) {
-    KURL pattern_url(kParsedURLString, options.url());
+    KURL pattern_url(options.url());
     if (!pattern_url.IsValid() || pattern_url.Protocol() != kProtocolHttps) {
       return RejectWithDOMException(script_state, kSyntaxError,
                                     "Invalid URL pattern was provided.");

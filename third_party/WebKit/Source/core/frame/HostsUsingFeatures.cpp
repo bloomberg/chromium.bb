@@ -133,8 +133,7 @@ void HostsUsingFeatures::RecordETLDPlus1ToRappor() {
 
   // Report to RAPPOR.
   for (auto& url_and_value : aggregated_by_url)
-    url_and_value.value.RecordETLDPlus1ToRappor(
-        KURL(kParsedURLString, url_and_value.key));
+    url_and_value.value.RecordETLDPlus1ToRappor(KURL(url_and_value.key));
 }
 
 void HostsUsingFeatures::RecordNamesToRappor() {

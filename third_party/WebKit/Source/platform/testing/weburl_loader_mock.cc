@@ -83,8 +83,7 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
 WebURL WebURLLoaderMock::ServeRedirect(
     const WebURLRequest& request,
     const WebURLResponse& redirect_response) {
-  KURL redirect_url(kParsedURLString,
-                    redirect_response.HttpHeaderField("Location"));
+  KURL redirect_url(redirect_response.HttpHeaderField("Location"));
 
   WeakPtr<WebURLLoaderMock> self = weak_factory_.CreateWeakPtr();
 

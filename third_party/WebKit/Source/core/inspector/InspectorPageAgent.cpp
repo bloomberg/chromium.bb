@@ -593,8 +593,7 @@ void InspectorPageAgent::GetResourceContentAfterResourcesContentLoaded(
   String content;
   bool base64_encoded;
   if (InspectorPageAgent::CachedResourceContent(
-          CachedResource(frame, KURL(kParsedURLString, url),
-                         inspector_resource_content_loader_),
+          CachedResource(frame, KURL(url), inspector_resource_content_loader_),
           &content, &base64_encoded))
     callback->sendSuccess(content, base64_encoded);
   else
@@ -633,8 +632,7 @@ void InspectorPageAgent::SearchContentAfterResourcesContentLoaded(
   String content;
   bool base64_encoded;
   if (!InspectorPageAgent::CachedResourceContent(
-          CachedResource(frame, KURL(kParsedURLString, url),
-                         inspector_resource_content_loader_),
+          CachedResource(frame, KURL(url), inspector_resource_content_loader_),
           &content, &base64_encoded)) {
     callback->sendFailure(Response::Error("No resource with given URL found"));
     return;

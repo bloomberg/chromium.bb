@@ -101,7 +101,7 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
     case XSLT_LOAD_DOCUMENT: {
       xsltTransformContextPtr context = (xsltTransformContextPtr)ctxt;
       xmlChar* base = xmlNodeGetBase(context->document->doc, context->node);
-      KURL url(KURL(kParsedURLString, reinterpret_cast<const char*>(base)),
+      KURL url(KURL(reinterpret_cast<const char*>(base)),
                reinterpret_cast<const char*>(uri));
       xmlFree(base);
 

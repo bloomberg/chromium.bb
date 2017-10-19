@@ -43,7 +43,7 @@ class MainThreadWorkletTest : public ::testing::Test {
   void SetUp() override {
     page_ = DummyPageHolder::Create();
     Document* document = page_->GetFrame().GetDocument();
-    document->SetURL(KURL(kParsedURLString, "https://example.com/"));
+    document->SetURL(KURL("https://example.com/"));
     document->UpdateSecurityOrigin(SecurityOrigin::Create(document->Url()));
     reporting_proxy_ =
         std::make_unique<MainThreadWorkletReportingProxyForTest>(document);

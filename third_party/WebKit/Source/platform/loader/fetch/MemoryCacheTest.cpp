@@ -70,7 +70,7 @@ class MemoryCacheTest : public ::testing::Test {
   class FakeResource final : public Resource {
    public:
     static FakeResource* Create(const char* url, Type type) {
-      return Create(KURL(kParsedURLString, url), type);
+      return Create(KURL(url), type);
     }
     static FakeResource* Create(const KURL& url, Type type) {
       ResourceRequest request(url);
@@ -355,7 +355,7 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation) {
   EXPECT_TRUE(GetMemoryCache()->Contains(resource1));
   EXPECT_TRUE(GetMemoryCache()->Contains(resource2));
 
-  const KURL url = KURL(kParsedURLString, "http://test/resource");
+  const KURL url = KURL("http://test/resource");
   EXPECT_EQ(resource1, GetMemoryCache()->ResourceForURL(url));
   EXPECT_EQ(resource1, GetMemoryCache()->ResourceForURL(
                            url, GetMemoryCache()->DefaultCacheIdentifier()));
@@ -381,7 +381,7 @@ TEST_F(MemoryCacheTest, ResourceMapIsolation) {
 }
 
 TEST_F(MemoryCacheTest, FragmentIdentifier) {
-  const KURL url1 = KURL(kParsedURLString, "http://test/resource#foo");
+  const KURL url1 = KURL("http://test/resource#foo");
   FakeResource* resource = FakeResource::Create(url1, Resource::kRaw);
   GetMemoryCache()->Add(resource);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource));
@@ -393,7 +393,7 @@ TEST_F(MemoryCacheTest, FragmentIdentifier) {
 }
 
 TEST_F(MemoryCacheTest, RemoveURLFromCache) {
-  const KURL url1 = KURL(kParsedURLString, "http://test/resource1");
+  const KURL url1 = KURL("http://test/resource1");
   Persistent<FakeResource> resource1 =
       FakeResource::Create(url1, Resource::kRaw);
   GetMemoryCache()->Add(resource1);
@@ -402,7 +402,7 @@ TEST_F(MemoryCacheTest, RemoveURLFromCache) {
   GetMemoryCache()->RemoveURLFromCache(url1);
   EXPECT_FALSE(GetMemoryCache()->Contains(resource1));
 
-  const KURL url2 = KURL(kParsedURLString, "http://test/resource2#foo");
+  const KURL url2 = KURL("http://test/resource2#foo");
   FakeResource* resource2 = FakeResource::Create(url2, Resource::kRaw);
   GetMemoryCache()->Add(resource2);
   EXPECT_TRUE(GetMemoryCache()->Contains(resource2));

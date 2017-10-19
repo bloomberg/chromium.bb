@@ -70,7 +70,7 @@ void CopylessPasteExtractorTest::SetHTMLInnerHTML(const String& html_content) {
 }
 
 void CopylessPasteExtractorTest::SetURL(const String& url) {
-  GetDocument().SetURL(blink::KURL(blink::kParsedURLString, url));
+  GetDocument().SetURL(blink::KURL(url));
 }
 
 void CopylessPasteExtractorTest::SetTitle(const String& title) {
@@ -120,7 +120,7 @@ PropertyPtr CopylessPasteExtractorTest::createEntityProperty(const String& name,
 WebPagePtr CopylessPasteExtractorTest::createWebPage(const String& url,
                                                      const String& title) {
   WebPagePtr page = WebPage::New();
-  page->url = blink::KURL(blink::kParsedURLString, url);
+  page->url = blink::KURL(url);
   page->title = title;
   return page;
 }

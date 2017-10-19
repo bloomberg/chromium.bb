@@ -859,7 +859,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystem) {
   DOMFileSystem* fs = DOMFileSystem::Create(
       scope.GetExecutionContext(), "http_example.com_0:Persistent",
       kFileSystemTypePersistent,
-      KURL(kParsedURLString, "filesystem:http://example.com/persistent/"));
+      KURL("filesystem:http://example.com/persistent/"));
   // At time of writing, this can only happen for filesystems from PPAPI.
   fs->MakeClonable();
   v8::Local<v8::Value> wrapper = ToV8(fs, scope.GetScriptState());
@@ -882,7 +882,7 @@ TEST(V8ScriptValueSerializerForModulesTest, RoundTripDOMFileSystemNotClonable) {
   DOMFileSystem* fs = DOMFileSystem::Create(
       scope.GetExecutionContext(), "http_example.com_0:Persistent",
       kFileSystemTypePersistent,
-      KURL(kParsedURLString, "filesystem:http://example.com/persistent/0/"));
+      KURL("filesystem:http://example.com/persistent/0/"));
   ASSERT_FALSE(fs->Clonable());
   v8::Local<v8::Value> wrapper = ToV8(fs, scope.GetScriptState());
   EXPECT_FALSE(V8ScriptValueSerializer(scope.GetScriptState())

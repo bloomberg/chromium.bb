@@ -392,9 +392,7 @@ TEST(LinkLoaderTest, DNSPrefetch) {
     Persistent<MockLinkLoaderClient> loader_client =
         MockLinkLoaderClient::Create(test_case.should_load);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
-    KURL href_url =
-        KURL(KURL(ParsedURLStringTag(), String("http://example.com")),
-             test_case.href);
+    KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     NetworkHintsMock network_hints;
     loader->LoadLink(LinkRelAttribute("dns-prefetch"),
                      kCrossOriginAttributeNotSet, String(), String(), String(),
@@ -428,9 +426,7 @@ TEST(LinkLoaderTest, Preconnect) {
     Persistent<MockLinkLoaderClient> loader_client =
         MockLinkLoaderClient::Create(test_case.should_load);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
-    KURL href_url =
-        KURL(KURL(ParsedURLStringTag(), String("http://example.com")),
-             test_case.href);
+    KURL href_url = KURL(KURL(String("http://example.com")), test_case.href);
     NetworkHintsMock network_hints;
     loader->LoadLink(LinkRelAttribute("preconnect"), test_case.cross_origin,
                      String(), String(), String(), String(),

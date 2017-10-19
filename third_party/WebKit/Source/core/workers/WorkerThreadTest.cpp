@@ -71,8 +71,7 @@ class WorkerThreadTest : public ::testing::Test {
 
   void SetUp() override {
     reporting_proxy_ = WTF::MakeUnique<MockWorkerReportingProxy>();
-    security_origin_ =
-        SecurityOrigin::Create(KURL(kParsedURLString, "http://fake.url/"));
+    security_origin_ = SecurityOrigin::Create(KURL("http://fake.url/"));
     worker_thread_ =
         WTF::WrapUnique(new WorkerThreadForTest(nullptr, *reporting_proxy_));
     lifecycle_observer_ = new MockWorkerThreadLifecycleObserver(
@@ -302,8 +301,8 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   // on initialization to run debugger tasks.
   auto global_scope_creation_params =
       WTF::MakeUnique<GlobalScopeCreationParams>(
-          KURL(kParsedURLString, "http://fake.url/"), "fake user agent",
-          "//fake source code", nullptr, /* cachedMetaData */
+          KURL("http://fake.url/"), "fake user agent", "//fake source code",
+          nullptr, /* cachedMetaData */
           kPauseWorkerGlobalScopeOnStart, headers.get(), "",
           security_origin_.get(), nullptr, /* workerClients */
           kWebAddressSpaceLocal, nullptr /* originTrialToken */,

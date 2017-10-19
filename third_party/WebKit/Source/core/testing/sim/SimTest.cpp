@@ -46,7 +46,7 @@ void SimTest::SetUp() {
 }
 
 void SimTest::LoadURL(const String& url) {
-  WebURLRequest request(KURL(kParsedURLString, url));
+  WebURLRequest request{KURL(url)};
   WebView().MainFrameImpl()->LoadRequest(request);
 }
 

@@ -19,7 +19,7 @@ class FetchResponseDataTest : public ::testing::Test {
     FetchResponseData* internal_response = FetchResponseData::Create();
     internal_response->SetStatus(200);
     Vector<KURL> url_list;
-    url_list.push_back(KURL(kParsedURLString, "http://www.example.com"));
+    url_list.push_back(KURL("http://www.example.com"));
     internal_response->SetURLList(url_list);
     internal_response->HeaderList()->Append("set-cookie", "foo");
     internal_response->HeaderList()->Append("bar", "bar");

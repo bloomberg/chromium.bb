@@ -63,7 +63,7 @@ WebString WebHistoryItem::UrlString() const {
 }
 
 void WebHistoryItem::SetURLString(const WebString& url) {
-  private_->SetURLString(KURL(kParsedURLString, url).GetString());
+  private_->SetURLString(KURL(url).GetString());
 }
 
 WebString WebHistoryItem::GetReferrer() const {

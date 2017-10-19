@@ -17,13 +17,12 @@ namespace blink {
 
 TEST(ResourceRequestTest, CrossThreadResourceRequestData) {
   ResourceRequest original;
-  original.SetURL(KURL(kParsedURLString, "http://www.example.com/test.htm"));
+  original.SetURL(KURL("http://www.example.com/test.htm"));
   original.SetCachePolicy(WebCachePolicy::kUseProtocolCachePolicy);
   original.SetTimeoutInterval(10);
-  original.SetSiteForCookies(
-      KURL(kParsedURLString, "http://www.example.com/first_party.htm"));
-  original.SetRequestorOrigin(SecurityOrigin::Create(
-      KURL(kParsedURLString, "http://www.example.com/first_party.htm")));
+  original.SetSiteForCookies(KURL("http://www.example.com/first_party.htm"));
+  original.SetRequestorOrigin(
+      SecurityOrigin::Create(KURL("http://www.example.com/first_party.htm")));
   original.SetHTTPMethod(HTTPNames::GET);
   original.SetHTTPHeaderField(AtomicString("Foo"), AtomicString("Bar"));
   original.SetHTTPHeaderField(AtomicString("Piyo"), AtomicString("Fuga"));

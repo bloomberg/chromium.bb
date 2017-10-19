@@ -59,7 +59,7 @@ TEST_F(BackgroundFetchManagerTest, NullValue) {
 TEST_F(BackgroundFetchManagerTest, SingleUSVString) {
   V8TestingScope scope;
 
-  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
+  KURL image_url("https://www.example.com/my_image.png");
 
   RequestOrUSVStringOrRequestOrUSVStringSequence requests =
       RequestOrUSVStringOrRequestOrUSVStringSequence::FromUSVString(
@@ -79,7 +79,7 @@ TEST_F(BackgroundFetchManagerTest, SingleUSVString) {
 TEST_F(BackgroundFetchManagerTest, SingleRequest) {
   V8TestingScope scope;
 
-  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
+  KURL image_url("https://www.example.com/my_image.png");
 
   Request* request = Request::Create(
       scope.GetScriptState(), image_url.GetString(),
@@ -104,10 +104,9 @@ TEST_F(BackgroundFetchManagerTest, SingleRequest) {
 TEST_F(BackgroundFetchManagerTest, Sequence) {
   V8TestingScope scope;
 
-  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
-  KURL icon_url(kParsedURLString, "https://www.example.com/my_icon.jpg");
-  KURL cat_video_url(kParsedURLString,
-                     "https://www.example.com/my_cat_video.avi");
+  KURL image_url("https://www.example.com/my_image.png");
+  KURL icon_url("https://www.example.com/my_icon.jpg");
+  KURL cat_video_url("https://www.example.com/my_cat_video.avi");
 
   RequestOrUSVString image_request =
       RequestOrUSVString::FromUSVString(image_url.GetString());
@@ -164,7 +163,7 @@ TEST_F(BackgroundFetchManagerTest, SequenceEmpty) {
 TEST_F(BackgroundFetchManagerTest, SequenceWithNullValue) {
   V8TestingScope scope;
 
-  KURL image_url(kParsedURLString, "https://www.example.com/my_image.png");
+  KURL image_url("https://www.example.com/my_image.png");
 
   RequestOrUSVString null_request;
   RequestOrUSVString image_request =

@@ -82,8 +82,8 @@ static const char kUnsupportedHashFunctionIntegrity[] =
 class SubresourceIntegrityTest : public ::testing::Test {
  public:
   SubresourceIntegrityTest()
-      : sec_url(kParsedURLString, "https://example.test:443"),
-        insec_url(kParsedURLString, "http://example.test:80") {}
+      : sec_url("https://example.test:443"),
+        insec_url("http://example.test:80") {}
 
  protected:
   virtual void SetUp() {

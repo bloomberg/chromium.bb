@@ -148,7 +148,7 @@ class ThreadedWorkletMessagingProxyForTest
   ~ThreadedWorkletMessagingProxyForTest() override {}
 
   void Start() {
-    KURL script_url(kParsedURLString, "http://fake.url/");
+    KURL script_url("http://fake.url/");
     std::unique_ptr<Vector<char>> cached_meta_data = nullptr;
     Vector<CSPHeaderAndType> content_security_policy_headers;
     String referrer_policy = "";

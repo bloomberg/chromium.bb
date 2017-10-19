@@ -82,7 +82,7 @@ TEST_F(CSSPreloadScannerTest, ScanFromResourceClient) {
   CSSMockHTMLResourcePreloader* preloader =
       new CSSMockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url("http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
       CSSStyleSheetResource::CreateForTest(url, UTF8Encoding());
   resource->SetStatus(ResourceStatus::kPending);
@@ -110,7 +110,7 @@ TEST_F(CSSPreloadScannerTest, DestroyClientBeforeDataSent) {
   Persistent<CSSMockHTMLResourcePreloader> preloader =
       new CSSMockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url("http://127.0.0.1/foo.css");
   Persistent<CSSStyleSheetResource> resource =
       CSSStyleSheetResource::CreateForTest(url, UTF8Encoding());
   resource->SetStatus(ResourceStatus::kPending);
@@ -137,7 +137,7 @@ TEST_F(CSSPreloadScannerTest, DontReadFromClearedData) {
   CSSMockHTMLResourcePreloader* preloader =
       new CSSMockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url("http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
       CSSStyleSheetResource::CreateForTest(url, UTF8Encoding());
 
@@ -168,7 +168,7 @@ TEST_F(CSSPreloadScannerTest, DoNotExpectValidDocument) {
   CSSMockHTMLResourcePreloader* preloader =
       new CSSMockHTMLResourcePreloader(dummy_page_holder->GetDocument());
 
-  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url("http://127.0.0.1/foo.css");
   CSSStyleSheetResource* resource =
       CSSStyleSheetResource::CreateForTest(url, UTF8Encoding());
   resource->SetStatus(ResourceStatus::kPending);
@@ -195,7 +195,7 @@ TEST_F(CSSPreloadScannerTest, ReferrerPolicyHeader) {
   CSSMockHTMLResourcePreloader* preloader = new CSSMockHTMLResourcePreloader(
       dummy_page_holder->GetDocument(), "http://127.0.0.1/foo.css");
 
-  KURL url(kParsedURLString, "http://127.0.0.1/foo.css");
+  KURL url("http://127.0.0.1/foo.css");
   ResourceResponse response;
   response.SetURL(url);
   response.SetHTTPStatusCode(200);
@@ -208,7 +208,7 @@ TEST_F(CSSPreloadScannerTest, ReferrerPolicyHeader) {
   PreloadRecordingCSSPreloaderResourceClient* resource_client =
       new PreloadRecordingCSSPreloaderResourceClient(resource, preloader);
 
-  KURL preload_url(kParsedURLString, "http://127.0.0.1/preload.css");
+  KURL preload_url("http://127.0.0.1/preload.css");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       preload_url, WrappedResourceResponse(ResourceResponse()), "");
 

@@ -135,7 +135,7 @@ void WebServiceWorkerRequest::SetReferrer(const WebString& web_referrer,
 }
 
 WebURL WebServiceWorkerRequest::ReferrerUrl() const {
-  return KURL(kParsedURLString, private_->referrer_.referrer);
+  return KURL(private_->referrer_.referrer);
 }
 
 WebReferrerPolicy WebServiceWorkerRequest::GetReferrerPolicy() const {

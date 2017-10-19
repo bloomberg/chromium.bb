@@ -1825,7 +1825,7 @@ bool InspectorStyleSheet::ResourceStyleSheetText(String* result) {
   if (!page_style_sheet_->OwnerDocument())
     return false;
 
-  KURL url(kParsedURLString, page_style_sheet_->href());
+  KURL url(page_style_sheet_->href());
   if (resource_container_->LoadStyleSheetContent(url, result))
     return true;
 

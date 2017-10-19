@@ -84,8 +84,7 @@ TEST(KnownPortsTest, IsPortAllowedForScheme) {
   };
 
   for (const TestCase& test : inputs)
-    EXPECT_EQ(test.is_allowed,
-              IsPortAllowedForScheme(KURL(kParsedURLString, test.url)));
+    EXPECT_EQ(test.is_allowed, IsPortAllowedForScheme(KURL(test.url)));
 }
 
 }  // namespace blink

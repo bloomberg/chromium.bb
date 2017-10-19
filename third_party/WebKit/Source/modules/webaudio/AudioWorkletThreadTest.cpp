@@ -38,20 +38,18 @@ class AudioWorkletThreadTest : public ::testing::Test {
   void SetUp() override {
     AudioWorkletThread::CreateSharedBackingThreadForTest();
     reporting_proxy_ = WTF::MakeUnique<WorkerReportingProxy>();
-    security_origin_ =
-        SecurityOrigin::Create(KURL(kParsedURLString, "http://fake.url/"));
+    security_origin_ = SecurityOrigin::Create(KURL("http://fake.url/"));
   }
 
   std::unique_ptr<AudioWorkletThread> CreateAudioWorkletThread() {
     std::unique_ptr<AudioWorkletThread> thread =
         AudioWorkletThread::Create(nullptr, *reporting_proxy_);
-    thread->Start(
-        WTF::MakeUnique<GlobalScopeCreationParams>(
-            KURL(kParsedURLString, "http://fake.url/"), "fake user agent", "",
-            nullptr, kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
-            security_origin_.get(), nullptr, kWebAddressSpaceLocal, nullptr,
-            nullptr, kV8CacheOptionsDefault),
-        WTF::nullopt, ParentFrameTaskRunners::Create());
+    thread->Start(WTF::MakeUnique<GlobalScopeCreationParams>(
+                      KURL("http://fake.url/"), "fake user agent", "", nullptr,
+                      kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
+                      security_origin_.get(), nullptr, kWebAddressSpaceLocal,
+                      nullptr, nullptr, kV8CacheOptionsDefault),
+                  WTF::nullopt, ParentFrameTaskRunners::Create());
     return thread;
   }
 

@@ -38,8 +38,7 @@ class ScriptStreamingTest : public ::testing::Test {
         settings_(Settings::Create()),
         dummy_document_(Document::CreateForTest()) {
     resource_ = ScriptResource::CreateForTest(
-        KURL(kParsedURLString, "http://www.streaming-test.com/"),
-        UTF8Encoding());
+        KURL("http://www.streaming-test.com/"), UTF8Encoding());
     resource_->SetStatus(ResourceStatus::kPending);
 
     MockScriptElementBase* element = MockScriptElementBase::Create();

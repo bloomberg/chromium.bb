@@ -77,7 +77,7 @@ class WorkletModuleResponsesMapTest : public ::testing::Test {
 };
 
 TEST_F(WorkletModuleResponsesMapTest, Basic) {
-  const KURL kUrl(kParsedURLString, "https://example.com/module.js");
+  const KURL kUrl("https://example.com/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
       kUrl, testing::CoreTestDataPath("module.js"), "text/javascript");
   HeapVector<Member<ClientImpl>> clients;
@@ -107,7 +107,7 @@ TEST_F(WorkletModuleResponsesMapTest, Basic) {
 }
 
 TEST_F(WorkletModuleResponsesMapTest, Failure) {
-  const KURL kUrl(kParsedURLString, "https://example.com/module.js");
+  const KURL kUrl("https://example.com/module.js");
   URLTestHelpers::RegisterMockedErrorURLLoad(kUrl);
   HeapVector<Member<ClientImpl>> clients;
 
@@ -136,8 +136,8 @@ TEST_F(WorkletModuleResponsesMapTest, Failure) {
 }
 
 TEST_F(WorkletModuleResponsesMapTest, Isolation) {
-  const KURL kUrl1(kParsedURLString, "https://example.com/module?1.js");
-  const KURL kUrl2(kParsedURLString, "https://example.com/module?2.js");
+  const KURL kUrl1("https://example.com/module?1.js");
+  const KURL kUrl2("https://example.com/module?2.js");
   URLTestHelpers::RegisterMockedErrorURLLoad(kUrl1);
   URLTestHelpers::RegisterMockedURLLoad(
       kUrl2, testing::CoreTestDataPath("module.js"), "text/javascript");
@@ -197,7 +197,7 @@ TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
   EXPECT_EQ(ClientImpl::Result::kFailed, client2->GetResult());
   EXPECT_FALSE(client2->GetParams().has_value());
 
-  const KURL kInvalidURL(kParsedURLString, String());
+  const KURL kInvalidURL;
   ASSERT_FALSE(kInvalidURL.IsValid());
   ClientImpl* client3 = new ClientImpl;
   ReadEntry(kInvalidURL, client3);
@@ -206,8 +206,8 @@ TEST_F(WorkletModuleResponsesMapTest, InvalidURL) {
 }
 
 TEST_F(WorkletModuleResponsesMapTest, Dispose) {
-  const KURL kUrl1(kParsedURLString, "https://example.com/module?1.js");
-  const KURL kUrl2(kParsedURLString, "https://example.com/module?2.js");
+  const KURL kUrl1("https://example.com/module?1.js");
+  const KURL kUrl2("https://example.com/module?2.js");
   URLTestHelpers::RegisterMockedURLLoad(
       kUrl1, testing::CoreTestDataPath("module.js"), "text/javascript");
   URLTestHelpers::RegisterMockedURLLoad(

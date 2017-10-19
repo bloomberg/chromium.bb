@@ -480,7 +480,7 @@ TEST_F(CacheStorageTest, BatchOperationArguments) {
 
   WebServiceWorkerResponse web_response;
   std::vector<KURL> url_list;
-  url_list.push_back(KURL(kParsedURLString, url));
+  url_list.push_back(KURL(url));
   web_response.SetURLList(url_list);
   Response* response = Response::Create(GetScriptState(), web_response);
 
@@ -562,7 +562,7 @@ TEST_F(CacheStorageTest, MatchResponseTest) {
 
   WebServiceWorkerResponse web_response;
   std::vector<KURL> url_list;
-  url_list.push_back(KURL(kParsedURLString, response_url));
+  url_list.push_back(KURL(response_url));
   web_response.SetURLList(url_list);
   web_response.SetResponseType(network::mojom::FetchResponseType::kDefault);
 
@@ -606,8 +606,8 @@ TEST_F(CacheStorageTest, KeysResponseTest) {
   expected_urls[1] = url2;
 
   WebVector<WebServiceWorkerRequest> web_requests(size_t(2));
-  web_requests[0].SetURL(KURL(kParsedURLString, url1));
-  web_requests[1].SetURL(KURL(kParsedURLString, url2));
+  web_requests[0].SetURL(KURL(url1));
+  web_requests[1].SetURL(KURL(url2));
 
   Cache* cache = CreateCache(fetcher, new KeysTestCache(web_requests));
 
@@ -660,11 +660,9 @@ TEST_F(CacheStorageTest, MatchAllAndBatchResponseTest) {
   expected_urls[1] = url2;
 
   WebVector<WebServiceWorkerResponse> web_responses(size_t(2));
-  web_responses[0].SetURLList(
-      std::vector<KURL>({KURL(kParsedURLString, url1)}));
+  web_responses[0].SetURLList(std::vector<KURL>({KURL(url1)}));
   web_responses[0].SetResponseType(network::mojom::FetchResponseType::kDefault);
-  web_responses[1].SetURLList(
-      std::vector<KURL>({KURL(kParsedURLString, url2)}));
+  web_responses[1].SetURLList(std::vector<KURL>({KURL(url2)}));
   web_responses[1].SetResponseType(network::mojom::FetchResponseType::kDefault);
 
   Cache* cache =

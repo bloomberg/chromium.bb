@@ -1169,7 +1169,7 @@ static void GatherSecurityPolicyViolationEventData(
   if (!source_location)
     source_location = SourceLocation::Capture(context);
   if (source_location->LineNumber()) {
-    KURL source = KURL(kParsedURLString, source_location->Url());
+    KURL source = KURL(source_location->Url());
     init.setSourceFile(StripURLForUseInReport(context, source, redirect_status,
                                               effective_type));
     init.setLineNumber(source_location->LineNumber());
@@ -1233,9 +1233,8 @@ void ContentSecurityPolicy::ReportViolation(
   // we should at least stop spamming reporting endpoints. See
   // https://crbug.com/524356 for detail.
   if (!violation_data.sourceFile().IsEmpty() &&
-      ShouldBypassContentSecurityPolicy(
-          KURL(kParsedURLString, violation_data.sourceFile()),
-          execution_context_)) {
+      ShouldBypassContentSecurityPolicy(KURL(violation_data.sourceFile()),
+                                        execution_context_)) {
     return;
   }
 
@@ -1329,8 +1328,7 @@ void ContentSecurityPolicy::PostViolationReport(
                    DirectiveType::kFrameAncestors);
         KURL url = context_frame
                        ? frame->GetDocument()->CompleteURLWithOverride(
-                             report_endpoint, KURL(kParsedURLString,
-                                                   violation_data.blockedURI()))
+                             report_endpoint, KURL(violation_data.blockedURI()))
                        : CompleteURL(report_endpoint);
         PingLoader::SendViolationReport(
             frame, url, report,

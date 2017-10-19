@@ -60,7 +60,7 @@ TEST(TextEncodingDetectorTest, UrlHintHelpsEUCJP) {
   EXPECT_EQ(WTF::TextEncoding("GBK"), encoding)
       << "Without language hint, it's detected as GBK";
 
-  KURL url_jp_domain(kParsedURLString, "http://example.co.jp/");
+  KURL url_jp_domain("http://example.co.jp/");
   result = DetectTextEncoding(eucjp_bytes.c_str(), eucjp_bytes.length(),
                               nullptr, url_jp_domain, nullptr, &encoding);
   EXPECT_TRUE(result);
@@ -81,14 +81,14 @@ TEST(TextEncodingDetectorTest, LanguageHintHelpsEUCJP) {
   EXPECT_EQ(WTF::TextEncoding("GBK"), encoding)
       << "Without language hint, it's detected as GBK";
 
-  KURL url(kParsedURLString, "http://example.com/");
+  KURL url("http://example.com/");
   result = DetectTextEncoding(eucjp_bytes.c_str(), eucjp_bytes.length(),
                               nullptr, url, "ja", &encoding);
   EXPECT_TRUE(result);
   EXPECT_EQ(WTF::TextEncoding("GBK"), encoding)
       << "Language hint doesn't help for normal URL. Should be detected as GBK";
 
-  KURL file_url(kParsedURLString, "file:///text.txt");
+  KURL file_url("file:///text.txt");
   result = DetectTextEncoding(eucjp_bytes.c_str(), eucjp_bytes.length(),
                               nullptr, file_url, "ja", &encoding);
   EXPECT_TRUE(result);
@@ -111,7 +111,7 @@ TEST(TextEncodingDetectorTest, RespectUTF8DetectionForFileResource) {
       "tnegirjji gosa gii beare s\xC3\xA1htt\xC3\xA1 \xC4\x8D\xC3"
       "\xA1llit artihkkaliid. Maid don s\xC3\xA1ht\xC3\xA1t dievasmah";
   WTF::TextEncoding encoding;
-  KURL file_url(kParsedURLString, "file:///text.txt");
+  KURL file_url("file:///text.txt");
   bool result = DetectTextEncoding(utf8_bytes.c_str(), utf8_bytes.length(),
                                    nullptr, file_url, nullptr, &encoding);
   EXPECT_TRUE(result);

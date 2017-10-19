@@ -55,7 +55,7 @@ class PingLoaderTest : public ::testing::Test {
   }
 
   const ResourceRequest& PingAndGetRequest(const KURL& ping_url) {
-    KURL destination_url(kParsedURLString, "http://navigation.destination");
+    KURL destination_url("http://navigation.destination");
     URLTestHelpers::RegisterMockedURLLoad(
         ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
     PingLoader::SendLinkAuditPing(&page_holder_->GetFrame(), ping_url,
@@ -77,8 +77,8 @@ class PingLoaderTest : public ::testing::Test {
 };
 
 TEST_F(PingLoaderTest, HTTPSToHTTPS) {
-  KURL ping_url(kParsedURLString, "https://localhost/bar.html");
-  SetDocumentURL(KURL(kParsedURLString, "https://127.0.0.1:8000/foo.html"));
+  KURL ping_url("https://localhost/bar.html");
+  SetDocumentURL(KURL("https://127.0.0.1:8000/foo.html"));
   const ResourceRequest& ping_request = PingAndGetRequest(ping_url);
   ASSERT_FALSE(ping_request.IsNull());
   EXPECT_EQ(ping_url, ping_request.Url());
@@ -86,8 +86,8 @@ TEST_F(PingLoaderTest, HTTPSToHTTPS) {
 }
 
 TEST_F(PingLoaderTest, HTTPToHTTPS) {
-  KURL document_url(kParsedURLString, "http://127.0.0.1:8000/foo.html");
-  KURL ping_url(kParsedURLString, "https://localhost/bar.html");
+  KURL document_url("http://127.0.0.1:8000/foo.html");
+  KURL ping_url("https://localhost/bar.html");
   SetDocumentURL(document_url);
   const ResourceRequest& ping_request = PingAndGetRequest(ping_url);
   ASSERT_FALSE(ping_request.IsNull());
@@ -97,16 +97,16 @@ TEST_F(PingLoaderTest, HTTPToHTTPS) {
 }
 
 TEST_F(PingLoaderTest, NonHTTPPingTarget) {
-  SetDocumentURL(KURL(kParsedURLString, "http://127.0.0.1:8000/foo.html"));
+  SetDocumentURL(KURL("http://127.0.0.1:8000/foo.html"));
   const ResourceRequest& ping_request =
-      PingAndGetRequest(KURL(kParsedURLString, "ftp://localhost/bar.html"));
+      PingAndGetRequest(KURL("ftp://localhost/bar.html"));
   ASSERT_TRUE(ping_request.IsNull());
 }
 
 TEST_F(PingLoaderTest, LoadImagePriority) {
-  SetDocumentURL(KURL(kParsedURLString, "http://localhost/foo.html"));
+  SetDocumentURL(KURL("http://localhost/foo.html"));
 
-  KURL ping_url(kParsedURLString, "https://localhost/bar.html");
+  KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
       ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
   PingLoader::LoadImage(&page_holder_->GetFrame(), ping_url);
@@ -118,10 +118,10 @@ TEST_F(PingLoaderTest, LoadImagePriority) {
 }
 
 TEST_F(PingLoaderTest, LinkAuditPingPriority) {
-  KURL destination_url(kParsedURLString, "http://navigation.destination");
-  SetDocumentURL(KURL(kParsedURLString, "http://localhost/foo.html"));
+  KURL destination_url("http://navigation.destination");
+  SetDocumentURL(KURL("http://localhost/foo.html"));
 
-  KURL ping_url(kParsedURLString, "https://localhost/bar.html");
+  KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
       ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
   PingLoader::SendLinkAuditPing(&page_holder_->GetFrame(), ping_url,
@@ -134,9 +134,9 @@ TEST_F(PingLoaderTest, LinkAuditPingPriority) {
 }
 
 TEST_F(PingLoaderTest, ViolationPriority) {
-  SetDocumentURL(KURL(kParsedURLString, "http://localhost/foo.html"));
+  SetDocumentURL(KURL("http://localhost/foo.html"));
 
-  KURL ping_url(kParsedURLString, "https://localhost/bar.html");
+  KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
       ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
   PingLoader::SendViolationReport(&page_holder_->GetFrame(), ping_url,
@@ -150,9 +150,9 @@ TEST_F(PingLoaderTest, ViolationPriority) {
 }
 
 TEST_F(PingLoaderTest, BeaconPriority) {
-  SetDocumentURL(KURL(kParsedURLString, "https://localhost/foo.html"));
+  SetDocumentURL(KURL("https://localhost/foo.html"));
 
-  KURL ping_url(kParsedURLString, "https://localhost/bar.html");
+  KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
       ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
   size_t size = 0;

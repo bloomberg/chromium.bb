@@ -459,7 +459,7 @@ class GetCacheForDeleteEntry
     BatchOperation delete_operation;
     delete_operation.operation_type =
         WebServiceWorkerCache::kOperationTypeDelete;
-    delete_operation.request.SetURL(KURL(kParsedURLString, request_spec_));
+    delete_operation.request.SetURL(KURL(request_spec_));
     Vector<BatchOperation> operations;
     operations.push_back(delete_operation);
     cache.release()->DispatchBatch(std::move(delete_request),
@@ -669,7 +669,7 @@ void InspectorCacheStorageAgent::requestCachedResponse(
     return;
   }
   WebServiceWorkerRequest request;
-  request.SetURL(KURL(kParsedURLString, request_url));
+  request.SetURL(KURL(request_url));
   ExecutionContext* context = nullptr;
   response = GetExecutionContext(frames_, cache_id, &context);
   if (!response.isSuccess())

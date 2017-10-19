@@ -273,7 +273,7 @@ void FrameLoader::Trace(blink::Visitor* visitor) {
 void FrameLoader::Init() {
   ScriptForbiddenScope forbid_scripts;
 
-  ResourceRequest initial_request(KURL(kParsedURLString, g_empty_string));
+  ResourceRequest initial_request{KURL(g_empty_string)};
   initial_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
   initial_request.SetFrameType(frame_->IsMainFrame()
                                    ? WebURLRequest::kFrameTypeTopLevel
@@ -1707,11 +1707,11 @@ std::unique_ptr<TracedValue> FrameLoader::ToTracedValue() const {
   traced_value->SetString("stateMachine", state_machine_.ToString());
   traced_value->SetString("provisionalDocumentLoaderURL",
                           provisional_document_loader_
-                              ? provisional_document_loader_->Url()
+                              ? provisional_document_loader_->Url().GetString()
                               : String());
-  traced_value->SetString("documentLoaderURL", document_loader_
-                                                   ? document_loader_->Url()
-                                                   : String());
+  traced_value->SetString(
+      "documentLoaderURL",
+      document_loader_ ? document_loader_->Url().GetString() : String());
   return traced_value;
 }
 

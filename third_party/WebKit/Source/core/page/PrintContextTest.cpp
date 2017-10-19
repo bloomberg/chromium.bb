@@ -250,7 +250,7 @@ TEST_F(PrintContextTest, LinkTargetSvg) {
 
 TEST_F(PrintContextTest, LinkedTarget) {
   MockPageContextCanvas canvas;
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(
       AbsoluteBlockHtmlForLink(
           50, 60, 70, 80,
@@ -275,7 +275,7 @@ TEST_F(PrintContextTest, LinkedTarget) {
 
 TEST_F(PrintContextTest, EmptyLinkedTarget) {
   MockPageContextCanvas canvas;
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(AbsoluteBlockHtmlForLink(50, 60, 70, 80, "#fragment") +
                    HtmlForAnchor(250, 260, "fragment", ""));
   PrintSinglePage(canvas);
@@ -304,7 +304,7 @@ TEST_F(PrintContextTest, LinkTargetBoundingBox) {
 }
 
 TEST_F(PrintContextFrameTest, WithSubframe) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(
       "<style>::-webkit-scrollbar { display: none }</style>"
       "<iframe src='http://b.com/' width='500' height='500'"
@@ -329,7 +329,7 @@ TEST_F(PrintContextFrameTest, WithSubframe) {
 }
 
 TEST_F(PrintContextFrameTest, WithScrolledSubframe) {
-  GetDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://a.com/"));
+  GetDocument().SetBaseURLOverride(KURL("http://a.com/"));
   SetBodyInnerHTML(
       "<style>::-webkit-scrollbar { display: none }</style>"
       "<iframe src='http://b.com/' width='500' height='500'"

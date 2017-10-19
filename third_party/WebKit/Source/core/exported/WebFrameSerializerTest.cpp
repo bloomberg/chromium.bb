@@ -113,7 +113,7 @@ class WebFrameSerializerTest : public ::testing::Test {
   };
 
   String SerializeFile(const String& url, const String& file_name) {
-    KURL parsed_url(kParsedURLString, url);
+    KURL parsed_url(url);
     String file_path("frameserialization/" + file_name);
     RegisterMockedFileURLLoad(parsed_url, file_path, "text/html");
     FrameTestHelpers::LoadFrame(MainFrameImpl(), url.Utf8().data());

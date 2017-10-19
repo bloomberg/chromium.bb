@@ -138,7 +138,7 @@ void ProcessingInstruction::Process(const String& href, const String& charset) {
     // It needs to be able to kick off import/include loads that
     // can hang off some parent sheet.
     if (is_xsl_ && RuntimeEnabledFeatures::XSLTEnabled()) {
-      KURL final_url(kParsedURLString, local_href_);
+      KURL final_url(local_href_);
       sheet_ = XSLStyleSheet::CreateEmbedded(this, final_url);
       loading_ = false;
     }

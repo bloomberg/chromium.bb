@@ -212,7 +212,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
       PreloadState preload_state = kPreloadEnabled,
       ReferrerPolicy document_referrer_policy = kReferrerPolicyDefault) {
     HTMLParserOptions options(&dummy_page_holder_->GetDocument());
-    KURL document_url(kParsedURLString, "http://whatever.test/");
+    KURL document_url("http://whatever.test/");
     dummy_page_holder_->GetDocument().SetURL(document_url);
     dummy_page_holder_->GetDocument().SetSecurityOrigin(
         SecurityOrigin::Create(document_url));
@@ -235,7 +235,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 
   void Test(PreloadScannerTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
-    KURL base_url(kParsedURLString, test_case.base_url);
+    KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
@@ -247,7 +247,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 
   void Test(HTMLPreconnectTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
-    KURL base_url(kParsedURLString, test_case.base_url);
+    KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
@@ -257,7 +257,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 
   void Test(ReferrerPolicyTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
-    KURL base_url(kParsedURLString, test_case.base_url);
+    KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
@@ -276,7 +276,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 
   void Test(CORSTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
-    KURL base_url(kParsedURLString, test_case.base_url);
+    KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
@@ -288,7 +288,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 
   void Test(NonceTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
-    KURL base_url(kParsedURLString, test_case.base_url);
+    KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
@@ -298,7 +298,7 @@ class HTMLPreloadScannerTest : public ::testing::Test {
 
   void Test(ContextTestCase test_case) {
     HTMLMockHTMLResourcePreloader preloader;
-    KURL base_url(kParsedURLString, test_case.base_url);
+    KURL base_url(test_case.base_url);
     scanner_->AppendToEnd(String(test_case.input_html));
     PreloadRequestStream requests = scanner_->Scan(base_url, nullptr);
     preloader.TakeAndPreload(requests);
@@ -1013,7 +1013,7 @@ TEST_F(HTMLPreloadScannerTest, testUppercaseAsValues) {
 TEST_F(HTMLPreloadScannerTest, ReferrerHeader) {
   RunSetUp(kViewportEnabled, kPreloadEnabled, kReferrerPolicyAlways);
 
-  KURL preload_url(kParsedURLString, "http://example.test/sheet.css");
+  KURL preload_url("http://example.test/sheet.css");
   Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(
       preload_url, WrappedResourceResponse(ResourceResponse()), "");
 

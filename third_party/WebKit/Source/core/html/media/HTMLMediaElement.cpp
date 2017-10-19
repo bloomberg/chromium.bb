@@ -1223,7 +1223,7 @@ void HTMLMediaElement::StartPlayerLoad() {
     if (!request_url.Pass().IsEmpty())
       request_url.SetPass(String());
 
-    KURL kurl(kParsedURLString, request_url);
+    KURL kurl(request_url);
     source = WebMediaPlayerSource(WebURL(kurl));
   }
 

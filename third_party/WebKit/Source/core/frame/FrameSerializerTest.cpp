@@ -540,26 +540,23 @@ TEST_F(FrameSerializerTest, NamespaceElementsDontCrash) {
 
 TEST_F(FrameSerializerTest, markOfTheWebDeclaration) {
   EXPECT_EQ("saved from url=(0015)http://foo.com/",
-            FrameSerializer::MarkOfTheWebDeclaration(
-                KURL(kParsedURLString, "http://foo.com")));
+            FrameSerializer::MarkOfTheWebDeclaration(KURL("http://foo.com")));
   EXPECT_EQ("saved from url=(0015)http://f-o.com/",
-            FrameSerializer::MarkOfTheWebDeclaration(
-                KURL(kParsedURLString, "http://f-o.com")));
+            FrameSerializer::MarkOfTheWebDeclaration(KURL("http://f-o.com")));
   EXPECT_EQ("saved from url=(0019)http://foo.com-%2D/",
-            FrameSerializer::MarkOfTheWebDeclaration(
-                KURL(kParsedURLString, "http://foo.com--")));
-  EXPECT_EQ("saved from url=(0024)http://f-%2D.com-%2D%3E/",
-            FrameSerializer::MarkOfTheWebDeclaration(
-                KURL(kParsedURLString, "http://f--.com-->")));
-  EXPECT_EQ("saved from url=(0020)http://foo.com/?-%2D",
-            FrameSerializer::MarkOfTheWebDeclaration(
-                KURL(kParsedURLString, "http://foo.com?--")));
-  EXPECT_EQ("saved from url=(0020)http://foo.com/#-%2D",
-            FrameSerializer::MarkOfTheWebDeclaration(
-                KURL(kParsedURLString, "http://foo.com#--")));
+            FrameSerializer::MarkOfTheWebDeclaration(KURL("http://foo.com--")));
+  EXPECT_EQ(
+      "saved from url=(0024)http://f-%2D.com-%2D%3E/",
+      FrameSerializer::MarkOfTheWebDeclaration(KURL("http://f--.com-->")));
+  EXPECT_EQ(
+      "saved from url=(0020)http://foo.com/?-%2D",
+      FrameSerializer::MarkOfTheWebDeclaration(KURL("http://foo.com?--")));
+  EXPECT_EQ(
+      "saved from url=(0020)http://foo.com/#-%2D",
+      FrameSerializer::MarkOfTheWebDeclaration(KURL("http://foo.com#--")));
   EXPECT_EQ("saved from url=(0026)http://foo.com/#bar-%2Dbaz",
             FrameSerializer::MarkOfTheWebDeclaration(
-                KURL(kParsedURLString, "http://foo.com#bar--baz")));
+                KURL("http://foo.com#bar--baz")));
 }
 
 }  // namespace blink

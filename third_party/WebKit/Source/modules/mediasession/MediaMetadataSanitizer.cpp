@@ -63,7 +63,7 @@ blink::mojom::blink::MediaImagePtr SanitizeMediaImageAndConvertToMojo(
     ExecutionContext* context) {
   blink::mojom::blink::MediaImagePtr mojo_image;
 
-  KURL url = KURL(kParsedURLString, image.src());
+  KURL url = KURL(image.src());
   if (!CheckMediaImageSrcSanity(url, context))
     return mojo_image;
 

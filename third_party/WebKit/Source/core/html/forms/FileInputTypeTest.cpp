@@ -23,8 +23,7 @@ TEST(FileInputTypeTest, createFileList) {
       FileChooserFileInfo("/native/path/native-file", "display-name"));
 
   // Non-native file.
-  KURL url(ParsedURLStringTag(),
-           "filesystem:http://example.com/isolated/hash/non-native-file");
+  KURL url("filesystem:http://example.com/isolated/hash/non-native-file");
   FileMetadata metadata;
   metadata.length = 64;
   metadata.modification_time = 1.0 * kMsPerDay + 3;
@@ -66,8 +65,7 @@ TEST(FileInputTypeTest, ignoreDroppedNonNativeFiles) {
                                            kDragOperationCopy);
   FileMetadata metadata;
   metadata.length = 1234;
-  const KURL url(ParsedURLStringTag(),
-                 "filesystem:http://example.com/isolated/hash/non-native-file");
+  const KURL url("filesystem:http://example.com/isolated/hash/non-native-file");
   non_native_file_drag_data.PlatformData()->Add(
       File::CreateForFileSystemFile(url, metadata, File::kIsUserVisible));
   non_native_file_drag_data.PlatformData()->SetFilesystemId("fileSystemId");

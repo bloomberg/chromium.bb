@@ -46,8 +46,7 @@ class V8ScriptRunnerTest : public ::testing::Test {
     return WTF::String::Format("whatever%d.js", counter_);
   }
   KURL Url() const {
-    return KURL(kParsedURLString,
-                WTF::String::Format("http://bla.com/bla%d", counter_));
+    return KURL(WTF::String::Format("http://bla.com/bla%d", counter_));
   }
   unsigned TagForParserCache(CachedMetadataHandler* cache_handler) const {
     return V8ScriptRunner::TagForParserCache(cache_handler);
