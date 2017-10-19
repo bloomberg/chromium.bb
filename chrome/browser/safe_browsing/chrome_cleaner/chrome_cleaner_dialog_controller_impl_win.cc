@@ -21,11 +21,6 @@ namespace safe_browsing {
 
 namespace {
 
-void OpenSettingsPage(Browser* browser) {
-  chrome_cleaner_util::OpenSettingsPage(
-      browser, WindowOpenDisposition::NEW_FOREGROUND_TAB);
-}
-
 // These values are used to send UMA information and are replicated in the
 // histograms.xml file, so the order MUST NOT CHANGE.
 enum PromptDialogResponseHistogramValue {
@@ -97,7 +92,8 @@ void ChromeCleanerDialogControllerImpl::Accept(bool logs_enabled) {
       logs_enabled
           ? ChromeCleanerController::UserResponse::kAcceptedWithLogs
           : ChromeCleanerController::UserResponse::kAcceptedWithoutLogs);
-  OpenSettingsPage(browser_);
+  chrome_cleaner_util::OpenSettingsPage(
+      browser_, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   OnInteractionDone();
 }
 
@@ -152,7 +148,8 @@ void ChromeCleanerDialogControllerImpl::DetailsButtonClicked(
       "SoftwareReporter.PromptDialog_DetailsButtonClicked"));
 
   cleaner_controller_->SetLogsEnabled(logs_enabled);
-  OpenSettingsPage(browser_);
+  chrome_cleaner_util::OpenSettingsPage(
+      browser_, WindowOpenDisposition::NEW_FOREGROUND_TAB);
   OnInteractionDone();
 }
 

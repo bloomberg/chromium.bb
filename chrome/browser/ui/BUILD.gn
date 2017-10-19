@@ -2420,6 +2420,8 @@ split_static_library("ui") {
       "views/certificate_viewer_win.cc",
       "views/chrome_cleaner_dialog_win.cc",
       "views/chrome_cleaner_dialog_win.h",
+      "views/chrome_cleaner_reboot_dialog_win.cc",
+      "views/chrome_cleaner_reboot_dialog_win.h",
       "views/color_chooser_dialog.cc",
       "views/color_chooser_dialog.h",
       "views/color_chooser_win.cc",

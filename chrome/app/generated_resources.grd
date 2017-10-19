@@ -5823,6 +5823,12 @@ I don't think this site should be blocked!
         <message name="IDS_CHROME_CLEANUP_PROMPT_TITLE" desc="Title of the Chrome Cleanup dialog. Chrome browser shows the dialog when unwanted software, like ad injectors or software that changes the user's settings without their knowledge, is found on the user's computer. Appears above a description of what the cleanup dialog does, along with a 'Remove', 'Cancel', and 'Details' button. 'Remove' is imperative, asking the user, do you want Chrome to remove harmful software?">
           Remove harmful software?
         </message>
+        <message name="IDS_CHROME_CLEANUP_REBOOT_PROMPT_TITLE" desc="Title of the Chrome Cleanup reboot prompt dialog. Chrome browser shows the dialog when the user runs the Chrome Cleanup tool and computer restart is required to finish the cleanup. User must take additional action to finish the cleanup. 'Restart' is imperative.">
+          To finish removing harmful software, restart your computer
+        </message>
+        <message name="IDS_CHROME_CLEANUP_REBOOT_PROMPT_RESTART_BUTTON_LABEL" desc="A button in the Chrome Cleanup reboot prompt dialog. Clicking this button causes the user's computer to turn off (shut down) and turn back on again. Imperative.">
+          Restart computer
+        </message>
         <message name="IDS_CHROME_CLEANUP_WEBUI_DONE_BUTTON_LABEL" desc="A button on the web page for Chrome Cleanup. Clicking this button causes the card on the settings page to be dismissed.">
           Done
         </message>

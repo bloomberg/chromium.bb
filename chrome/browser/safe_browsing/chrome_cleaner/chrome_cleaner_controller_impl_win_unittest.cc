@@ -139,6 +139,10 @@ class ChromeCleanerControllerSimpleTest
     FAIL();
   }
 
+  void StartRebootPromptFlow(ChromeCleanerController* controller) override {
+    FAIL();
+  }
+
   // ChromeCleanerRunnerTestDelegate overrides.
 
   base::Process LaunchTestProcess(
@@ -290,6 +294,10 @@ class ChromeCleanerControllerTest
     std::move(continuation).Run();
   }
 
+  void StartRebootPromptFlow(ChromeCleanerController* controller) override {
+    reboot_flow_started_ = true;
+  }
+
   // ChromeCleanerRunnerTestDelegate overrides.
 
   base::Process LaunchTestProcess(
@@ -325,8 +333,7 @@ class ChromeCleanerControllerTest
     if (process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
         crash_point_ == CrashPoint::kNone &&
         uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired &&
-        (user_response_ == UserResponse::kAcceptedWithLogs ||
-         user_response_ == UserResponse::kAcceptedWithoutLogs)) {
+        ExpectedPromptAccepted()) {
       return State::kRebootRequired;
     }
     return State::kIdle;
@@ -344,8 +351,7 @@ class ChromeCleanerControllerTest
   bool ExpectedOnCleaningCalled() {
     return ExpectedOnInfectedCalled() &&
            crash_point_ != CrashPoint::kAfterRequestSent &&
-           (user_response_ == UserResponse::kAcceptedWithLogs ||
-            user_response_ == UserResponse::kAcceptedWithoutLogs);
+           ExpectedPromptAccepted();
   }
 
   bool ExpectedOnRebootRequiredCalled() {
@@ -354,22 +360,25 @@ class ChromeCleanerControllerTest
 
   bool ExpectedUwsFound() { return ExpectedOnInfectedCalled(); }
 
+  bool ExpectedPromptAccepted() {
+    return user_response_ == UserResponse::kAcceptedWithLogs ||
+           user_response_ == UserResponse::kAcceptedWithoutLogs;
+  }
+
   bool ExpectedToTagProfile() {
     return process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
            (crash_point_ == CrashPoint::kNone ||
             crash_point_ == CrashPoint::kAfterResponseReceived) &&
            (uws_found_status_ == UwsFoundStatus::kUwsFoundNoRebootRequired ||
             uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired) &&
-           (user_response_ == UserResponse::kAcceptedWithLogs ||
-            user_response_ == UserResponse::kAcceptedWithoutLogs);
+           ExpectedPromptAccepted();
   }
 
   bool ExpectedToResetSettings() {
     return process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
            crash_point_ == CrashPoint::kNone &&
            uws_found_status_ == UwsFoundStatus::kUwsFoundNoRebootRequired &&
-           (user_response_ == UserResponse::kAcceptedWithLogs ||
-            user_response_ == UserResponse::kAcceptedWithoutLogs);
+           ExpectedPromptAccepted();
   }
 
   ChromeCleanerController::IdleReason ExpectedIdleReason() {
@@ -390,14 +399,19 @@ class ChromeCleanerControllerTest
       return IdleReason::kUserDeclinedCleanup;
     }
 
-    if (ExpectedOnInfectedCalled() &&
-        (user_response_ == UserResponse::kAcceptedWithLogs ||
-         user_response_ == UserResponse::kAcceptedWithoutLogs) &&
+    if (ExpectedOnInfectedCalled() && ExpectedPromptAccepted() &&
         crash_point_ == CrashPoint::kAfterResponseReceived) {
       return IdleReason::kCleaningFailed;
     }
 
     return IdleReason::kCleaningSucceeded;
+  }
+
+  bool ExpectedRebootFlowStarted() {
+    return process_status_ == CleanerProcessStatus::kFetchSuccessValidProcess &&
+           crash_point_ == CrashPoint::kNone &&
+           uws_found_status_ == UwsFoundStatus::kUwsFoundRebootRequired &&
+           ExpectedPromptAccepted();
   }
 
  protected:
@@ -420,6 +434,8 @@ class ChromeCleanerControllerTest
 
   std::vector<Profile*> profiles_tagged_;
   std::vector<Profile*> profiles_to_reset_if_tagged_;
+
+  bool reboot_flow_started_ = false;
 };
 
 MULTIPROCESS_TEST_MAIN(MockChromeCleanerProcessMain) {
@@ -521,6 +537,8 @@ TEST_P(ChromeCleanerControllerTest, WithMockCleanerProcess) {
       !files_to_delete_on_cleaning.empty()) {
     EXPECT_EQ(files_to_delete_on_infected, files_to_delete_on_cleaning);
   }
+
+  EXPECT_EQ(ExpectedRebootFlowStarted(), reboot_flow_started_);
 
   std::vector<Profile*> expected_tagged;
   if (ExpectedToTagProfile())

@@ -29,6 +29,7 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_fetcher_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_navigation_util_win.h"
+#include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_reboot_dialog_controller_impl_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/chrome_cleaner_runner_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/settings_resetter_win.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_client_info_win.h"
@@ -76,16 +77,6 @@ enum IPCDisconnectedHistogramValue {
   IPC_DISCONNECTED_LOST_USER_PROMPTED = 2,
 
   IPC_DISCONNECTED_MAX,
-};
-
-// These values are used to send UMA information and are replicated in the
-// enums.xml, so the order MUST NOT CHANGE
-enum SettingsPageActiveOnRebootRequiredHistogramValue {
-  SETTINGS_PAGE_ON_REBOOT_REQUIRED_NO_BROWSER = 0,
-  SETTINGS_PAGE_ON_REBOOT_REQUIRED_NOT_ACTIVE_TAB = 1,
-  SETTINGS_PAGE_ON_REBOOT_REQUIRED_ACTIVE_TAB = 2,
-
-  SETTINGS_PAGE_ON_REBOOT_REQUIRED_MAX,
 };
 
 // Attempts to change the Chrome Cleaner binary's suffix to ".exe". Will return
@@ -153,13 +144,6 @@ void RecordIPCDisconnectedHistogram(IPCDisconnectedHistogramValue error) {
                             IPC_DISCONNECTED_MAX);
 }
 
-void RecordSettingsPageActiveOnRebootRequired(
-    SettingsPageActiveOnRebootRequiredHistogramValue value) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "SoftwareReporter.Cleaner.SettingsPageActiveOnRebootRequired", value,
-      SETTINGS_PAGE_ON_REBOOT_REQUIRED_MAX);
-}
-
 }  // namespace
 
 void RecordCleanupStartedHistogram(CleanupStartedHistogramValue value) {
@@ -194,6 +178,12 @@ void ChromeCleanerControllerDelegate::ResetTaggedProfiles(
         std::move(profiles), std::move(continuation),
         base::MakeUnique<PostCleanupSettingsResetter::Delegate>());
   }
+}
+
+void ChromeCleanerControllerDelegate::StartRebootPromptFlow(
+    ChromeCleanerController* controller) {
+  // The controller object decides if and when a prompt should be shown.
+  ChromeCleanerRebootDialogControllerImpl::Create(controller);
 }
 
 // static
@@ -575,26 +565,8 @@ void ChromeCleanerControllerImpl::OnCleanerProcessDone(
       RecordCleanupResultHistogram(CLEANUP_RESULT_REBOOT_REQUIRED);
       SetStateAndNotifyObservers(State::kRebootRequired);
 
-      Browser* browser = chrome_cleaner_util::FindBrowser();
-      if (!browser) {
-        RecordSettingsPageActiveOnRebootRequired(
-            SETTINGS_PAGE_ON_REBOOT_REQUIRED_NO_BROWSER);
-        return;
-      }
-
-      // No need to reopen the Settings page if it's the current active tab.
-      if (chrome_cleaner_util::SettingsPageIsActiveTab(browser)) {
-        RecordSettingsPageActiveOnRebootRequired(
-            SETTINGS_PAGE_ON_REBOOT_REQUIRED_ACTIVE_TAB);
-        return;
-      }
-
-      // Reopens the Settings page as a background tab. Eventually the user
-      // might see that a reboot is required.
-      RecordSettingsPageActiveOnRebootRequired(
-          SETTINGS_PAGE_ON_REBOOT_REQUIRED_NOT_ACTIVE_TAB);
-      chrome_cleaner_util::OpenSettingsPage(
-          browser, WindowOpenDisposition::NEW_BACKGROUND_TAB);
+      // Start the reboot prompt flow.
+      delegate_->StartRebootPromptFlow(this);
       return;
     }
 

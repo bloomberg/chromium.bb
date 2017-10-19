@@ -56,6 +56,10 @@ enum PromptTypeHistogramValue {
 // within Chrome.
 extern const base::Feature kInBrowserCleanerUIFeature;
 
+// When enabled, shows a prompt dialog if a cleanup requires a reboot and the
+// Settings page is not the current active tab.
+extern const base::Feature kRebootPromptDialogFeature;
+
 extern const char kSRTPromptTrial[];
 
 // Returns true if this Chrome is in a field trial group which shows the SRT
@@ -78,6 +82,10 @@ std::string GetIncomingSRTSeed();
 
 // Returns the group name in the SRTPrompt field trial.
 std::string GetSRTFieldTrialGroupName();
+
+// Returns true if the kRebootPromptDialogFeature is enabled and the prompt
+// dialog is modal.
+bool IsRebootPromptModal();
 
 // Records a value for the SRT Prompt Histogram.
 void RecordSRTPromptHistogram(SRTPromptHistogramValue value);

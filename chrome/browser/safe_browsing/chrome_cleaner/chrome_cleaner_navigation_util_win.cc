@@ -22,8 +22,9 @@ Browser* FindBrowser() {
        ++browser_iterator) {
     Browser* browser = *browser_iterator;
     if (browser->is_type_tabbed() &&
-        (browser->window()->IsActive() || !browser->window()->IsMinimized()))
+        (browser->window()->IsActive() || !browser->window()->IsMinimized())) {
       return browser;
+    }
   }
 
   return nullptr;

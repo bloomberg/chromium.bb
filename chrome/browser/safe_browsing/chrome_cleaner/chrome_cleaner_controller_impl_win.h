@@ -39,6 +39,9 @@ class ChromeCleanerControllerDelegate {
   virtual void TagForResetting(Profile* profile);
   virtual void ResetTaggedProfiles(std::vector<Profile*> profiles,
                                    base::OnceClosure continuation);
+
+  // Starts the reboot prompt flow if a cleanup requires a machine restart.
+  virtual void StartRebootPromptFlow(ChromeCleanerController* controller);
 };
 
 class ChromeCleanerControllerImpl : public ChromeCleanerController {
