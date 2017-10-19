@@ -613,6 +613,13 @@ int GetCrashSignalFD(const base::CommandLine& command_line) {
     return crash_handler->GetDeathSignalSocket();
   }
 
+  if (process_type == switches::kUtilityProcess) {
+    static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
+    if (!crash_handler)
+      crash_handler = CreateCrashHandlerHost(process_type);
+    return crash_handler->GetDeathSignalSocket();
+  }
+
   return -1;
 }
 #endif  // defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_MACOSX)

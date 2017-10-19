@@ -138,5 +138,6 @@ bool ChromeCrashReporterClient::EnableBreakpadForProcess(
   return process_type == switches::kRendererProcess ||
          process_type == switches::kPpapiPluginProcess ||
          process_type == switches::kZygoteProcess ||
-         process_type == switches::kGpuProcess;
+         process_type == switches::kGpuProcess ||
+         process_type == switches::kUtilityProcess;
 }
