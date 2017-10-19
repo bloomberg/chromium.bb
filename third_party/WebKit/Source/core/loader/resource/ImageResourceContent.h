@@ -8,8 +8,6 @@
 #include <memory>
 #include "core/CoreExport.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/geometry/IntSizeHash.h"
-#include "platform/geometry/LayoutSize.h"
 #include "platform/graphics/Image.h"
 #include "platform/graphics/ImageObserver.h"
 #include "platform/graphics/ImageOrientation.h"
@@ -80,12 +78,6 @@ class CORE_EXPORT ImageResourceContent final
   // TODO(fs): Make SVGImages return proper intrinsic width/height.
   IntSize IntrinsicSize(
       RespectImageOrientationEnum should_respect_image_orientation);
-
-  // This method takes a zoom multiplier that can be used to increase the
-  // natural size of the image by the zoom.
-  LayoutSize ImageSize(
-      RespectImageOrientationEnum should_respect_image_orientation,
-      float multiplier);
 
   void UpdateImageAnimationPolicy();
 
