@@ -150,6 +150,7 @@
       'dependencies': [
         '../compiled_resources2.gyp:route',
         '../settings_page/compiled_resources2.gyp:settings_animated_pages',
+        '<(DEPTH)/ui/webui/resources/cr_elements/chromeos/cr_picture/compiled_resources2.gyp:cr_png_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:i18n_behavior',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:icon',
