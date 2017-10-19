@@ -43,8 +43,6 @@ class CORE_EXPORT V8ScriptValueSerializer
   RefPtr<SerializedScriptValue> Serialize(v8::Local<v8::Value>,
                                           ExceptionState&);
 
-  static const uint32_t kLatestVersion;
-
  protected:
   // Returns true if the DOM object was successfully written.
   // If false is returned and no more specific exception is thrown, a generic
