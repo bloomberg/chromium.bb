@@ -1220,6 +1220,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Called when the leading button is clicked.
 - (void)leadingButtonClicked {
+  // Ignore the button tap if view controller presenting.
+  if ([self presentedViewController]) {
+    return;
+  }
   const std::set<const bookmarks::BookmarkNode*> nodes =
       [self.bookmarksTableView editNodes];
   switch (self.contextBarState) {
@@ -1248,6 +1252,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Called when the center button is clicked.
 - (void)centerButtonClicked {
+  // Ignore the button tap if view controller presenting.
+  if ([self presentedViewController]) {
+    return;
+  }
   const std::set<const bookmarks::BookmarkNode*> nodes =
       [self.bookmarksTableView editNodes];
   // Center button is shown and is clickable only when at least
@@ -1299,6 +1307,10 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
 // Called when the trailing button, "Select" or "Cancel" is clicked.
 - (void)trailingButtonClicked {
+  // Ignore the button tap if view controller presenting.
+  if ([self presentedViewController]) {
+    return;
+  }
   // Toggle edit mode.
   [self setTableViewEditing:!self.bookmarksTableView.editing];
 }

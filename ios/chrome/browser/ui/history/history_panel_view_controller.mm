@@ -318,6 +318,10 @@ CGFloat kShadowOpacity = 0.2f;
 }
 
 - (void)openPrivacySettings {
+  // Ignore the button tap if view controller presenting.
+  if ([self presentedViewController]) {
+    return;
+  }
   [self exitSearchMode];
   base::RecordAction(
       base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
@@ -325,6 +329,10 @@ CGFloat kShadowOpacity = 0.2f;
 }
 
 - (void)enterEditingMode {
+  // Ignore the button tap if view controller presenting.
+  if ([self presentedViewController]) {
+    return;
+  }
   [_historyCollectionController setEditing:YES];
   [_clearBrowsingBar setEditing:YES];
   if (_historyCollectionController.searching) {
