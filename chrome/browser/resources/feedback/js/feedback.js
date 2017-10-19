@@ -348,7 +348,11 @@ function initialize() {
         chrome.app.window.current().show();
 
         var screenshotDataUrl = screenshotCanvas.toDataURL('image/png');
+
+        // Only set the alt text when the src url is available, otherwise we'd
+        // get a broken image picture instead. crbug.com/773985.
         $('screenshot-image').src = screenshotDataUrl;
+        $('screenshot-image').alt = 'screenshot';
         $('screenshot-image')
             .classList.toggle(
                 'wide-screen',
