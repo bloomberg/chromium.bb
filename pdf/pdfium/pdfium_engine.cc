@@ -105,7 +105,8 @@ const int32_t kLoadingTextVerticalOffset = 50;
 
 // The maximum amount of time we'll spend doing a paint before we give back
 // control of the thread.
-const int32_t kMaxProgressivePaintTimeMs = 300;
+constexpr base::TimeDelta kMaxProgressivePaintTime =
+    base::TimeDelta::FromMilliseconds(300);
 
 // The maximum amount of time we'll spend doing the first paint. This is less
 // than the above to keep things smooth if the user is scrolling quickly. This
@@ -118,7 +119,8 @@ const int32_t kMaxProgressivePaintTimeMs = 300;
 // the final painting can start.
 // The scrollbar will always be responsive since it is managed by a separate
 // process.
-const int32_t kMaxInitialProgressivePaintTimeMs = 250;
+constexpr base::TimeDelta kMaxInitialProgressivePaintTime =
+    base::TimeDelta::FromMilliseconds(250);
 
 PDFiumEngine* g_engine_for_fontmapper = nullptr;
 
@@ -715,7 +717,6 @@ PDFiumEngine::PDFiumEngine(PDFEngine::Client* client)
       called_do_document_action_(false),
       render_grayscale_(false),
       render_annots_(true),
-      progressive_paint_timeout_(0),
       getting_password_(false) {
   find_factory_.Initialize(this);
   password_factory_.Initialize(this);
@@ -1089,9 +1090,9 @@ void PDFiumEngine::Paint(const pp::Rect& rect,
 
       if (progressive == -1) {
         progressive = StartPaint(index, dirty_in_screen);
-        progressive_paint_timeout_ = kMaxInitialProgressivePaintTimeMs;
+        progressive_paint_timeout_ = kMaxInitialProgressivePaintTime;
       } else {
-        progressive_paint_timeout_ = kMaxProgressivePaintTimeMs;
+        progressive_paint_timeout_ = kMaxProgressivePaintTime;
       }
 
       progressive_paints_[progressive].painted_ = true;
@@ -4236,8 +4237,8 @@ void PDFiumEngine::Form_GotoPage(IPDF_JSPLATFORM* param, int page_number) {
 
 FPDF_BOOL PDFiumEngine::Pause_NeedToPauseNow(IFSDK_PAUSE* param) {
   PDFiumEngine* engine = static_cast<PDFiumEngine*>(param);
-  return (base::Time::Now() - engine->last_progressive_start_time_)
-             .InMilliseconds() > engine->progressive_paint_timeout_;
+  return base::Time::Now() - engine->last_progressive_start_time_ >
+         engine->progressive_paint_timeout_;
 }
 
 void PDFiumEngine::SetCaretPosition(const pp::Point& position) {
