@@ -1025,6 +1025,12 @@ gfx::QuadF MapQuadToLocalSpace(const gfx::Transform& device_transform,
 }
 
 const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
+#if defined(OS_MACOSX)
+  // On Macs, this path can sometimes lead to all black output.
+  // TODO(enne): investigate this and remove this hack.
+  return nullptr;
+#endif
+
   // Can only collapse a single tile quad.
   if (pass->quad_list.size() != 1)
     return nullptr;
@@ -1065,11 +1071,6 @@ const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
       resource_provider_->GetResourceTextureTarget(tile_quad->resource_id());
   if (target != GL_TEXTURE_2D)
     return nullptr;
-#if defined(OS_MACOSX)
-  // On Macs, this path can sometimes lead to all black output.
-  // TODO(enne): investigate this and remove this hack.
-  return nullptr;
-#endif
 
   return tile_quad;
 }
