@@ -37,9 +37,8 @@ class CHROMEOS_EXPORT LorgnetteManagerClient : public DBusClient {
 
   // Attributes provided to a scan request.
   struct ScanProperties {
-    ScanProperties() : resolution_dpi(0) {}
     std::string mode;  // Can be "Color", "Gray", or "Lineart".
-    int resolution_dpi;
+    int resolution_dpi = 0;
   };
 
   ~LorgnetteManagerClient() override;

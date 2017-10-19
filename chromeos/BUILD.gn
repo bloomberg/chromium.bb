@@ -554,8 +554,6 @@ static_library("test_support") {
     "cryptohome/mock_homedir_methods.h",
     "dbus/biod/test_utils.cc",
     "dbus/biod/test_utils.h",
-    "dbus/mock_lorgnette_manager_client.cc",
-    "dbus/mock_lorgnette_manager_client.h",
     "dbus/mock_shill_manager_client.cc",
     "dbus/mock_shill_manager_client.h",
     "dbus/mock_shill_profile_client.cc",
