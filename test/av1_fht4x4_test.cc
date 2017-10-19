@@ -167,7 +167,7 @@ TEST_P(AV1HighbdTrans4x4HT, HighbdCoeffCheck) { RunBitexactCheck(); }
 
 using std::tr1::make_tuple;
 
-#if HAVE_SSE2 && !CONFIG_DAALA_TX4
+#if HAVE_SSE2 && !CONFIG_DAALA_TX4 && !CONFIG_LGT
 const Ht4x4Param kArrayHt4x4Param_sse2[] = {
   make_tuple(&av1_fht4x4_sse2, &av1_iht4x4_16_add_sse2, DCT_DCT, AOM_BITS_8,
              16),
