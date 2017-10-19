@@ -11,6 +11,8 @@
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/task_scheduler.h"
+#import "base/test/ios/wait_util.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/data_driven_test.h"
 #import "components/autofill/ios/browser/autofill_agent.h"
@@ -170,12 +172,18 @@ void FormStructureBrowserTest::SetUp() {
 void FormStructureBrowserTest::TearDown() {
   [autofillController_ detachFromWebState];
 
+  // TODO(crbug.com/776330): remove this manual sync.
+  // This is a workaround to manually sync the tasks posted by
+  // |CRWCertVerificationController verifyTrust:completionHandler:|.
+  // |WaitForBackgroundTasks| currently fails to wait for completion of them.
+  base::test::ios::SpinRunLoopWithMinDelay(base::TimeDelta::FromSecondsD(0.1));
   ChromeWebTest::TearDown();
 }
 
 void FormStructureBrowserTest::GenerateResults(const std::string& input,
                                                std::string* output) {
   LoadHtml(input);
+  base::TaskScheduler::GetInstance()->FlushForTesting();
   AutofillManager* autofill_manager =
       AutofillDriverIOS::FromWebState(web_state())->autofill_manager();
   ASSERT_NE(nullptr, autofill_manager);
