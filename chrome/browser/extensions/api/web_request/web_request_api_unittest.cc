@@ -214,7 +214,6 @@ class ExtensionWebRequestTest : public testing::Test {
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<EventRouterForwarder> event_router_;
-  scoped_refptr<InfoMap> extension_info_map_;
   std::unique_ptr<ChromeNetworkDelegate> network_delegate_;
   std::unique_ptr<net::TestURLRequestContext> context_;
 };
@@ -1021,7 +1020,6 @@ class ExtensionWebRequestHeaderModificationTest
   BooleanPrefMember enable_referrers_;
   TestIPCSender ipc_sender_;
   scoped_refptr<EventRouterForwarder> event_router_;
-  scoped_refptr<InfoMap> extension_info_map_;
   std::unique_ptr<ChromeNetworkDelegate> network_delegate_;
   std::unique_ptr<net::MockHostResolver> host_resolver_;
   std::unique_ptr<net::TestURLRequestContext> context_;
