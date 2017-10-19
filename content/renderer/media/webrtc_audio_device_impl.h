@@ -300,7 +300,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceImpl : public WebRtcAudioDeviceNotImpl,
   int32_t StereoPlayoutIsAvailable(bool* available) const override;
   int32_t StereoRecordingIsAvailable(bool* available) const override;
   int32_t PlayoutDelay(uint16_t* delay_ms) const override;
-  int32_t RecordingDelay(uint16_t* delay_ms) const override;
   int32_t RecordingSampleRate(uint32_t* sample_rate) const override;
   int32_t PlayoutSampleRate(uint32_t* sample_rate) const override;
 

@@ -33,7 +33,6 @@ class WebrtcAudioModule : public webrtc::AudioDeviceModule {
 
   // webrtc::AudioDeviceModule implementation.
   int32_t ActiveAudioLayer(AudioLayer* audio_layer) const override;
-  ErrorCode LastError() const override;
   int32_t RegisterAudioCallback(
       webrtc::AudioTransport* audio_callback) override;
   int32_t Init() override;
@@ -94,7 +93,6 @@ class WebrtcAudioModule : public webrtc::AudioDeviceModule {
   int32_t SetRecordingChannel(const ChannelType channel) override;
   int32_t RecordingChannel(ChannelType* channel) const override;
   int32_t PlayoutDelay(uint16_t* delay_ms) const override;
-  int32_t RecordingDelay(uint16_t* delay_ms) const override;
   int32_t SetRecordingSampleRate(const uint32_t samples_per_sec) override;
   int32_t RecordingSampleRate(uint32_t* samples_per_sec) const override;
   int32_t SetPlayoutSampleRate(const uint32_t samples_per_sec) override;

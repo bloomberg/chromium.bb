@@ -13,11 +13,6 @@ int32_t WebRtcAudioDeviceNotImpl::ActiveAudioLayer(
   return 0;
 }
 
-webrtc::AudioDeviceModule::ErrorCode
-WebRtcAudioDeviceNotImpl::LastError() const {
-  return AudioDeviceModule::kAdmErrNone;
-}
-
 int16_t WebRtcAudioDeviceNotImpl::PlayoutDevices() {
   return 0;
 }

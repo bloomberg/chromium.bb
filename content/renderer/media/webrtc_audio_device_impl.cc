@@ -351,15 +351,6 @@ int32_t WebRtcAudioDeviceImpl::PlayoutDelay(uint16_t* delay_ms) const {
   return 0;
 }
 
-int32_t WebRtcAudioDeviceImpl::RecordingDelay(uint16_t* delay_ms) const {
-  DCHECK(signaling_thread_checker_.CalledOnValidThread());
-
-  // There is no way to report a correct delay value to WebRTC since there
-  // might be multiple ProcessedLocalAudioSource instances.
-  NOTREACHED();
-  return -1;
-}
-
 int32_t WebRtcAudioDeviceImpl::RecordingSampleRate(
     uint32_t* sample_rate) const {
   DCHECK(signaling_thread_checker_.CalledOnValidThread());

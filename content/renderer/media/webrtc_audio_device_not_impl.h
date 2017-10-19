@@ -31,7 +31,6 @@ class CONTENT_EXPORT WebRtcAudioDeviceNotImpl
   // implementation in WebRtcAudioDeviceImpl when needed.
 
   int32_t ActiveAudioLayer(AudioLayer* audio_layer) const override;
-  webrtc::AudioDeviceModule::ErrorCode LastError() const override;
   int16_t PlayoutDevices() override;
   int16_t RecordingDevices() override;
   int32_t PlayoutDeviceName(uint16_t index,
