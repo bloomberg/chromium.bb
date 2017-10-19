@@ -154,6 +154,9 @@ public abstract class InfoBar implements InfoBarView {
             title = messageView.getText();
         }
         title = getAccessibilityMessage(title);
+        if (title.length() > 0) {
+            title = title + " ";
+        }
         // TODO(crbug/773717): Avoid string concatenation due to i18n.
         return title + mContext.getString(R.string.bottom_bar_screen_position);
     }
