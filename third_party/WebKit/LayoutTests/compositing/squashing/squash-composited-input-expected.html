@@ -8,12 +8,10 @@
 
   .i1 {
     top: 100px;
-    will-change: transform;
   }
 
   .i2 {
     top: 170px;
-    will-change: transform;
   }
 </style>
 <div style=" position: relative; width: 400px; height: 400px; overflow: hidden;">
@@ -21,10 +19,3 @@
   <input type="text" class="i1" value="test test test test test test test test"/>
   <input type="text" class="i2"/>
 </div>
-
-<script>
-onload = function () {
-  if (window.internals)
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-};
-</script>

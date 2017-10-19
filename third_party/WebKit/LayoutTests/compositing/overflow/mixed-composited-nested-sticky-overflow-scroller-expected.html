@@ -40,20 +40,9 @@ body {
 </style>
 
 <script>
-if (window.testRunner)
-  testRunner.waitUntilDone();
-
-function finishTest() {
+onload = function() {
   document.querySelector('.scroller').scrollTop = 200;
-  if (window.testRunner)
-    testRunner.notifyDone();
 }
-
-window.addEventListener('load', function() {
-  requestAnimationFrame(function() {
-    requestAnimationFrame(finishTest);
-  });
-});
 </script>
 
 <div class="scroller">

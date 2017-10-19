@@ -7,12 +7,10 @@
             height: 2000px;
             background-image: url('resources/simple_image.png');
             background-size: 200px 200px;
-            background-attachment: fixed;
             overflow: hidden; /* hide scrollbar */
         }
         .fixed {
-            position: fixed;
-            z-index: -1;
+            position: absolute;
             top: 50px;
             left: 50px;
             width: 200px;
@@ -23,7 +21,7 @@
 </head>
 <body>
 
-    <div class="fixed box"></div>
+    <div class="fixed"></div>
 
 </body>
 </html>

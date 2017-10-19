@@ -2,10 +2,6 @@
 <html>
 <head>
 <style>
-.composited {
-  transform: translateZ(0);
-}
-
 .background {
   position: fixed;
   background-color: lightgray;
@@ -25,14 +21,12 @@
 
 .overlapping {
   position: relative;
-  z-index: 1;
   width: 200px;
   height: 100.5px;
 }
 
 .nonsubpixel {
   position: relative;
-  z-index: 1;
   width: 200px;
   height: 100px;
 }
@@ -42,10 +36,6 @@
   top: 100px;
   left: 450px;
   width: 300px;
-}
-
-#testResults {
-  display: none;
 }
 
 body {
@@ -63,7 +53,7 @@ body {
     render layers at both integral and non-integral positions.</p>
   </div>
 
-  <div class="composited background"> </div>
+  <div class="background"> </div>
 
   <div id="paragraph-a" class="overlapping cyan"></div>
   <div id="paragraph-b" class="overlapping lime"></div>
