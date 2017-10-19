@@ -140,7 +140,7 @@ class Hook(object):
   """Descriptor of command ran before/after sync or on demand."""
 
   def __init__(self, action, pattern=None, name=None, cwd=None, condition=None,
-               variables=None):
+               variables=None, verbose=False):
     """Constructor.
 
     Arguments:
@@ -157,9 +157,10 @@ class Hook(object):
     self._cwd = cwd
     self._condition = condition
     self._variables = variables
+    self._verbose = verbose
 
   @staticmethod
-  def from_dict(d, variables=None):
+  def from_dict(d, variables=None, verbose=False):
     """Creates a Hook instance from a dict like in the DEPS file."""
     return Hook(
         d['action'],
@@ -167,7 +168,9 @@ class Hook(object):
         d.get('name'),
         d.get('cwd'),
         d.get('condition'),
-        variables=variables)
+        variables=variables,
+        # Always print the header if not printing to a TTY.
+        verbose=verbose or not setup_color.IS_TTY)
 
   @property
   def action(self):
@@ -212,7 +215,7 @@ class Hook(object):
     try:
       start_time = time.time()
       gclient_utils.CheckCallAndFilterAndHeader(
-          cmd, cwd=cwd, always=True)
+          cmd, cwd=cwd, always=self._verbose)
     except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
       # Use a discrete exit status code of 2 to indicate that a hook action
       # failed.  Users of this script may wish to treat hook action failures
@@ -793,7 +796,7 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       # Keep original contents of hooks_os for flatten.
       for hook_os, os_hooks in hooks_os.iteritems():
         self._os_deps_hooks[hook_os] = [
-            Hook.from_dict(hook, variables=self.get_vars())
+            Hook.from_dict(hook, variables=self.get_vars(), verbose=True)
             for hook in os_hooks]
 
       # Specifically append these to ensure that hooks_os run after hooks.
@@ -809,8 +812,9 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
     if self.recursion_limit:
       self._pre_deps_hooks = [
-          Hook.from_dict(hook, variables=self.get_vars()) for hook in
-          local_scope.get('pre_deps_hooks', [])]
+          Hook.from_dict(hook, variables=self.get_vars(), verbose=True)
+          for hook in local_scope.get('pre_deps_hooks', [])
+      ]
 
     self.add_dependencies_and_close(deps_to_add, hooks_to_run)
     logging.info('ParseDepsFile(%s) done' % self.name)
@@ -826,8 +830,11 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
     for dep in deps_to_add:
       if dep.verify_validity():
         self.add_dependency(dep)
-    self._mark_as_parsed(
-        [Hook.from_dict(h, variables=self.get_vars()) for h in hooks])
+    self._mark_as_parsed([
+        Hook.from_dict(
+            h, variables=self.get_vars(), verbose=self.root._options.verbose)
+        for h in hooks
+    ])
 
   def findDepsFromNotAllowedHosts(self):
     """Returns a list of depenecies from not allowed hosts.
@@ -1013,11 +1020,18 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
         dep.WriteGNArgsFile()
       self.WriteGNArgsFilesRecursively(dep.dependencies)
 
-  def RunHooksRecursively(self, options):
+  def RunHooksRecursively(self, options, progress):
     assert self.hooks_ran == False
     self._hooks_ran = True
-    for hook in self.GetHooks(options):
+    hooks = self.GetHooks(options)
+    if progress:
+      progress._total = len(hooks)
+    for hook in hooks:
       hook.run(self.root.root_dir)
+      if progress:
+        progress.update(extra=hook.name or '')
+    if progress:
+      progress.end()
 
   def RunPreDepsHooks(self):
     assert self.processed
@@ -1467,9 +1481,11 @@ it or fix the checkout.
                        'validate'):
       self._CheckConfig()
       revision_overrides = self._EnforceRevisions()
-    pm = None
     # Disable progress for non-tty stdout.
-    if (setup_color.IS_TTY and not self._options.verbose and progress):
+    should_show_progress = (
+        setup_color.IS_TTY and not self._options.verbose and progress)
+    pm = None
+    if should_show_progress:
       if command in ('update', 'revert'):
         pm = Progress('Syncing projects', 1)
       elif command in ('recurse', 'validate'):
@@ -1491,7 +1507,9 @@ it or fix the checkout.
       self.WriteGNArgsFilesRecursively(self.dependencies)
 
     if not self._options.nohooks:
-      self.RunHooksRecursively(self._options)
+      if should_show_progress:
+        pm = Progress('Running hooks', 1)
+      self.RunHooksRecursively(self._options, pm)
 
     if command == 'update':
       # Notify the user if there is an orphaned entry in their working copy.
