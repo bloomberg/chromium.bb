@@ -15414,6 +15414,82 @@
             "chrome_internal"
         ]
     },
+    "lassen-chromium-pfq": {
+        "_template": "chromium_pfq",
+        "boards": [
+            "lassen"
+        ],
+        "important": false,
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lassen-compile-only-pre-cq": {
+        "_template": "compile_only_pre_cq",
+        "boards": [
+            "lassen"
+        ]
+    },
+    "lassen-full": {
+        "_template": "full",
+        "boards": [
+            "lassen"
+        ],
+        "prebuilts": "public",
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lassen-no-vmtest-pre-cq": {
+        "_template": "no_vmtest_pre_cq",
+        "boards": [
+            "lassen"
+        ]
+    },
+    "lassen-paladin": {
+        "_template": "paladin",
+        "boards": [
+            "lassen"
+        ],
+        "important": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "lassen-pre-cq": {
+        "_template": "pre_cq",
+        "boards": [
+            "lassen"
+        ],
+        "vm_tests": []
+    },
+    "lassen-release": {
+        "_template": "release",
+        "active_waterfall": "chromeos",
+        "boards": [
+            "lassen"
+        ],
+        "chrome_sdk_build_chrome": false,
+        "vm_tests": [],
+        "vm_tests_override": null
+    },
+    "lassen-tot-chromium-pfq-informational": {
+        "_template": "chromium_pfq_informational",
+        "boards": [
+            "lassen"
+        ],
+        "useflags": [
+            "-chrome_internal"
+        ],
+        "vm_tests": []
+    },
+    "lassen-unittest-stress": {
+        "_template": "unittest_stress",
+        "boards": [
+            "lassen"
+        ]
+    },
     "leon-chrome-pfq": {
         "_template": "chrome_pfq",
         "boards": [
@@ -16694,6 +16770,7 @@
             "lars-release",
             "lasilla-ground-release",
             "lasilla-sky-release",
+            "lassen-release",
             "leon-release",
             "link-release",
             "lulu-release",
