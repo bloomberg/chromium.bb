@@ -781,11 +781,11 @@ WebInputEventResult EventHandler::HandleMouseMoveOrLeaveEvent(
   // Mouse states need to be reset when mouse move with no button down.
   // This is for popup/context_menu opened at mouse_down event and
   // mouse_release is not handled in page.
-  // crbug/527582
+  // crbug.com/527582
   if (mouse_event.button == WebPointerProperties::Button::kNoButton &&
       !(mouse_event.GetModifiers() &
         WebInputEvent::Modifiers::kRelativeMotionEvent)) {
-    mouse_event_manager_->HandleMouseReleaseEventUpdateStates();
+    mouse_event_manager_->ClearDragHeuristicState();
     if (event_handler_will_reset_capturing_mouse_events_node_)
       capturing_mouse_events_node_ = nullptr;
   }
