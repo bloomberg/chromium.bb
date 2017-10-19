@@ -244,6 +244,12 @@ void PromiseWriterHelper(const DropData& drop_data,
 
   contents_->SystemDragEnded(dragStartRWH_.get());
 
+  if (dragImage_) {
+    screenPoint.x += imageOffset_.x;
+    // Deal with Cocoa's flipped coordinate system.
+    screenPoint.y += [dragImage_.get() size].height - imageOffset_.y;
+  }
+
   // Convert |screenPoint| to view coordinates and flip it.
   NSPoint localPoint = NSZeroPoint;
   if ([contentsView_ window])
