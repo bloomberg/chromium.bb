@@ -4,7 +4,7 @@
 
 #include "chromecast/media/cma/backend/alsa/alsa_wrapper.h"
 
-#include "chromecast/media/cma/backend/alsa/alsa_features.h"
+#include "chromecast/media/cma/backend/audio_features.h"
 
 namespace chromecast {
 namespace media {
