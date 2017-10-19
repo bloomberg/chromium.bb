@@ -129,6 +129,7 @@ ContentSettingSimpleBubbleModel::ContentSettingSimpleBubbleModel(
   // Notifications do not have a bubble.
   DCHECK_NE(content_type, CONTENT_SETTINGS_TYPE_NOTIFICATIONS);
   SetTitle();
+  SetMessage();
   SetManageText();
   SetCustomLink();
 }
@@ -145,15 +146,14 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
           : nullptr;
 
   static const ContentSettingsTypeIdEntry kBlockedTitleIDs[] = {
-    {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
-    {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
-    {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
-    {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
-    {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TITLE},
-    {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
-        IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
-    {CONTENT_SETTINGS_TYPE_PPAPI_BROKER,
-        IDS_BLOCKED_PPAPI_BROKER_TITLE},
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_TITLE},
+      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_TITLE},
+      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_TITLE},
+      {CONTENT_SETTINGS_TYPE_PLUGINS, IDS_BLOCKED_PLUGINS_TITLE},
+      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_TITLE},
+      {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+       IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE},
+      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_TITLE},
   };
   // Fields as for kBlockedTitleIDs, above.
   static const ContentSettingsTypeIdEntry kAccessedTitleIDs[] = {
@@ -170,6 +170,39 @@ void ContentSettingSimpleBubbleModel::SetTitle() {
   int title_id = GetIdForContentType(title_ids, num_title_ids, content_type());
   if (title_id)
     set_title(l10n_util::GetStringUTF16(title_id));
+}
+
+void ContentSettingSimpleBubbleModel::SetMessage() {
+  TabSpecificContentSettings* content_settings =
+      web_contents()
+          ? TabSpecificContentSettings::FromWebContents(web_contents())
+          : nullptr;
+
+  static const ContentSettingsTypeIdEntry kBlockedMessageIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_BLOCKED_COOKIES_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_IMAGES, IDS_BLOCKED_IMAGES_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_JAVASCRIPT, IDS_BLOCKED_JAVASCRIPT_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_POPUPS, IDS_BLOCKED_POPUPS_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT,
+       IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT},
+      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_BLOCKED_PPAPI_BROKER_MESSAGE},
+  };
+  // Fields as for kBlockedMessageIDs, above.
+  static const ContentSettingsTypeIdEntry kAccessedMessageIDs[] = {
+      {CONTENT_SETTINGS_TYPE_COOKIES, IDS_ACCESSED_COOKIES_MESSAGE},
+      {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, IDS_ALLOWED_PPAPI_BROKER_MESSAGE},
+  };
+  const ContentSettingsTypeIdEntry* message_ids = kBlockedMessageIDs;
+  size_t num_message_ids = arraysize(kBlockedMessageIDs);
+  if (content_settings && content_settings->IsContentAllowed(content_type()) &&
+      !content_settings->IsContentBlocked(content_type())) {
+    message_ids = kAccessedMessageIDs;
+    num_message_ids = arraysize(kAccessedMessageIDs);
+  }
+  int message_id =
+      GetIdForContentType(message_ids, num_message_ids, content_type());
+  if (message_id)
+    set_message(l10n_util::GetStringUTF16(message_id));
 }
 
 void ContentSettingSimpleBubbleModel::SetManageText() {

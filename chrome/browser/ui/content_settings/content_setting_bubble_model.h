@@ -292,6 +292,7 @@ class ContentSettingSimpleBubbleModel : public ContentSettingBubbleModel {
  private:
   // ContentSettingBubbleModel implementation.
   void SetTitle();
+  void SetMessage();
   void SetManageText();
   void OnManageButtonClicked() override;
   void SetCustomLink();
