@@ -124,9 +124,10 @@ void PermissionContextBase::RequestPermission(
   // Synchronously check the content setting to see if the user has already made
   // a decision, or if the origin is under embargo. If so, respect that
   // decision.
-  // TODO(raymes): Pass in the RenderFrameHost of the request here.
-  PermissionResult result = GetPermissionStatus(
-      nullptr /* render_frame_host */, requesting_origin, embedding_origin);
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      id.render_process_id(), id.render_frame_id());
+  PermissionResult result =
+      GetPermissionStatus(rfh, requesting_origin, embedding_origin);
 
   if (result.content_setting == CONTENT_SETTING_ALLOW ||
       result.content_setting == CONTENT_SETTING_BLOCK) {

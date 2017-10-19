@@ -495,10 +495,11 @@ ContentSetting MediaStreamDevicesController::GetContentSetting(
     return CONTENT_SETTING_BLOCK;
   }
 
+  content::RenderFrameHost* rfh = content::RenderFrameHost::FromID(
+      request.render_process_id, request.render_frame_id);
   PermissionResult result =
-      PermissionManager::Get(profile_)->GetPermissionStatus(
-          content_type, request.security_origin,
-          web_contents_->GetLastCommittedURL().GetOrigin());
+      PermissionManager::Get(profile_)->GetPermissionStatusForFrame(
+          content_type, rfh, request.security_origin);
   if (result.content_setting == CONTENT_SETTING_BLOCK) {
     *denial_reason = (result.source == PermissionStatusSource::KILL_SWITCH)
                          ? content::MEDIA_DEVICE_KILL_SWITCH_ON
