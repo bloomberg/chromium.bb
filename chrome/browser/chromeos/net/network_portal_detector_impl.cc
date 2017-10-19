@@ -228,8 +228,6 @@ NetworkPortalDetectorImpl::NetworkPortalDetectorImpl(
                    weak_factory_.GetWeakPtr()));
   }
 
-  registrar_.Add(this, chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
-                 content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
                  content::NotificationService::AllSources());
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_CANCELLED,
@@ -338,6 +336,7 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
     NET_LOG(EVENT) << "Default network changed: None";
 
     default_network_name_.clear();
+    default_proxy_config_.reset();
 
     StopDetection();
 
@@ -350,11 +349,23 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
   default_network_name_ = default_network->name();
 
   bool network_changed = (default_network_id_ != default_network->guid());
-  default_network_id_ = default_network->guid();
+  if (network_changed) {
+    default_network_id_ = default_network->guid();
+    default_proxy_config_ =
+        std::make_unique<base::Value>(default_network->proxy_config().Clone());
+  }
 
   bool connection_state_changed =
       (default_connection_state_ != default_network->connection_state());
   default_connection_state_ = default_network->connection_state();
+
+  bool proxy_config_changed =
+      default_proxy_config_.get() &&
+      (*default_proxy_config_ != default_network->proxy_config());
+  if (proxy_config_changed) {
+    default_proxy_config_ =
+        std::make_unique<base::Value>(default_network->proxy_config().Clone());
+  }
 
   if (default_network->is_captive_portal())
     last_shill_reports_portal_time_ = NowTicks();
@@ -366,10 +377,18 @@ void NetworkPortalDetectorImpl::DefaultNetworkChanged(
                  << " changed=" << network_changed
                  << " state_changed=" << connection_state_changed;
 
-  if (network_changed || connection_state_changed)
+  if (network_changed || connection_state_changed || proxy_config_changed)
     StopDetection();
 
-  if (is_idle() && NetworkState::StateIsConnected(default_connection_state_)) {
+  if (!NetworkState::StateIsConnected(default_connection_state_))
+    return;
+
+  if (proxy_config_changed) {
+    ScheduleAttempt(base::TimeDelta::FromSeconds(kProxyChangeDelaySec));
+    return;
+  }
+
+  if (is_idle()) {
     // Initiate Captive Portal detection if network's captive
     // portal state is unknown (e.g. for freshly created networks),
     // offline or if network connection state was changed.
@@ -586,10 +605,9 @@ void NetworkPortalDetectorImpl::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_LOGIN_PROXY_CHANGED ||
-      type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
+  if (type == chrome::NOTIFICATION_AUTH_SUPPLIED ||
       type == chrome::NOTIFICATION_AUTH_CANCELLED) {
-    NET_LOG(EVENT) << "Restarting portal detection due to proxy change"
+    NET_LOG(EVENT) << "Restarting portal detection due to auth change"
                    << " name=" << default_network_name_;
     StopDetection();
     ScheduleAttempt(base::TimeDelta::FromSeconds(kProxyChangeDelaySec));

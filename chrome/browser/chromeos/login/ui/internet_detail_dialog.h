@@ -38,10 +38,6 @@ class InternetDetailDialog : public LoginWebDialog {
                          gfx::NativeWindow window,
                          const std::string& network_id);
 
- protected:
-  // ui::WebDialogDelegate implementation.
-  void OnDialogClosed(const std::string& json_retval) override;
-
  private:
   // TODO(altimofeev): consider avoidance static variable by extending current
   // WebUI/login interfaces.

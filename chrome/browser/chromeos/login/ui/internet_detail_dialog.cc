@@ -68,14 +68,6 @@ std::string InternetDetailDialog::GetDialogArgs() const {
   return guid_;
 }
 
-void InternetDetailDialog::OnDialogClosed(const std::string& json_retval) {
-  LoginWebDialog::OnDialogClosed(json_retval);
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_LOGIN_PROXY_CHANGED,
-      content::NotificationService::AllSources(),
-      content::NotificationService::NoDetails());
-}
-
 bool InternetDetailDialog::IsShown() {
   return instance_count_ > 0;
 }
