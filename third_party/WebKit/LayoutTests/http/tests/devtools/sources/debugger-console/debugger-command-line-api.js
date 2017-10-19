@@ -1,15 +1,24 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/console-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
-function testFunction()
-{
-    debugger;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-var test = function() {
+(async function() {
+  TestRunner.addResult(`Tests that inspect() command line api works while on breakpoint.\n`);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <p id="p1">
+      </p>
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function testFunction()
+      {
+          debugger;
+      }
+  `);
+
   TestRunner.addSniffer(SDK.RuntimeModel.prototype, '_inspectRequested', inspect);
   TestRunner.addSniffer(Common.Revealer, 'revealPromise', oneRevealPromise, true);
 
@@ -38,15 +47,4 @@ var test = function() {
   function step2(callFrames) {
     ConsoleTestRunner.evaluateInConsoleAndDump('inspect($(\'#p1\'))');
   }
-};
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p id="p1">
-Tests that inspect() command line api works while on breakpoint.
-</p>
-
-</body>
-</html>
+})();
