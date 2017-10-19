@@ -132,9 +132,7 @@ void WidgetInputHandlerManager::AddInterface(
   }
 }
 
-void WidgetInputHandlerManager::WillShutdown() {
-  input_handler_proxy_.reset();
-}
+void WidgetInputHandlerManager::WillShutdown() {}
 
 void WidgetInputHandlerManager::TransferActiveWheelFlingAnimation(
     const blink::WebActiveWheelFlingParameters& params) {
@@ -245,14 +243,7 @@ void WidgetInputHandlerManager::ObserveGestureEventOnMainThread(
 void WidgetInputHandlerManager::DispatchEvent(
     std::unique_ptr<content::InputEvent> event,
     mojom::WidgetInputHandler::DispatchEventCallback callback) {
-  if (!event || !event->web_event || !input_handler_proxy_) {
-    // Call |callback| if it was available indicating this event wasn't
-    // handled.
-    if (callback) {
-      std::move(callback).Run(
-          InputEventAckSource::MAIN_THREAD, ui::LatencyInfo(),
-          INPUT_EVENT_ACK_STATE_NOT_CONSUMED, base::nullopt, base::nullopt);
-    }
+  if (!event || !event->web_event) {
     return;
   }
 
@@ -381,7 +372,7 @@ void WidgetInputHandlerManager::HandledInputEvent(
                                   touch_action));
   } else {
     std::move(callback).Run(
-        InputEventAckSource::MAIN_THREAD, latency_info, ack_state,
+        InputEventAckSource::COMPOSITOR_THREAD, latency_info, ack_state,
         overscroll_params
             ? base::Optional<ui::DidOverscrollParams>(*overscroll_params)
             : base::nullopt,
@@ -392,8 +383,6 @@ void WidgetInputHandlerManager::HandledInputEvent(
 void WidgetInputHandlerManager::ObserveGestureEventOnCompositorThread(
     const blink::WebGestureEvent& gesture_event,
     const cc::InputHandlerScrollResult& scroll_result) {
-  if (!input_handler_proxy_)
-    return;
   DCHECK(input_handler_proxy_->scroll_elasticity_controller());
   input_handler_proxy_->scroll_elasticity_controller()
       ->ObserveGestureEventAndResult(gesture_event, scroll_result);
