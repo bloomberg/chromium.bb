@@ -156,8 +156,9 @@ void FramePainter::PaintContents(GraphicsContext& context,
          DocumentLifecycle::kCompositingClean);
 
   FramePaintTiming frame_paint_timing(context, &GetFrameView().GetFrame());
-  TRACE_EVENT1("devtools.timeline,rail", "Paint", "data",
-               InspectorPaintEvent::Data(layout_view, LayoutRect(rect), 0));
+  TRACE_EVENT1(
+      "devtools.timeline,rail", "Paint", "data",
+      InspectorPaintEvent::Data(layout_view, LayoutRect(rect), nullptr));
 
   bool is_top_level_painter = !in_paint_contents_;
   in_paint_contents_ = true;
@@ -203,7 +204,7 @@ void FramePainter::PaintContents(GraphicsContext& context,
     in_paint_contents_ = false;
   }
 
-  probe::didPaint(layout_view->GetFrame(), 0, context, LayoutRect(rect));
+  probe::didPaint(layout_view->GetFrame(), nullptr, context, LayoutRect(rect));
 }
 
 void FramePainter::PaintScrollbars(GraphicsContext& context,

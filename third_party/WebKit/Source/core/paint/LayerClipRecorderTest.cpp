@@ -32,7 +32,7 @@ void DrawEmptyClip(GraphicsContext& context,
   ClipRect clip_rect(rect);
   LayerClipRecorder layer_clip_recorder(
       context, *layout_view.Compositor()->RootLayer(),
-      DisplayItem::kClipLayerForeground, clip_rect, 0, LayoutPoint(),
+      DisplayItem::kClipLayerForeground, clip_rect, nullptr, LayoutPoint(),
       PaintLayerFlags(),
       layout_view.Compositor()->RootLayer()->GetLayoutObject());
 }
@@ -45,7 +45,7 @@ void DrawRectInClip(GraphicsContext& context,
   ClipRect clip_rect((LayoutRect(rect)));
   LayerClipRecorder layer_clip_recorder(
       context, *layout_view.Compositor()->RootLayer(),
-      DisplayItem::kClipLayerForeground, clip_rect, 0, LayoutPoint(),
+      DisplayItem::kClipLayerForeground, clip_rect, nullptr, LayoutPoint(),
       PaintLayerFlags(),
       layout_view.Compositor()->RootLayer()->GetLayoutObject());
   if (!DrawingRecorder::UseCachedDrawingIfPossible(context, layout_view,

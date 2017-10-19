@@ -125,7 +125,7 @@ Document* Geolocation::GetDocument() const {
 }
 
 LocalFrame* Geolocation::GetFrame() const {
-  return GetDocument() ? GetDocument()->GetFrame() : 0;
+  return GetDocument() ? GetDocument()->GetFrame() : nullptr;
 }
 
 void Geolocation::ContextDestroyed(ExecutionContext*) {
@@ -382,7 +382,7 @@ void Geolocation::HandleError(PositionError* error) {
     // position.
     ExtractNotifiersWithCachedPosition(one_shots_copy,
                                        &one_shots_with_cached_position);
-    ExtractNotifiersWithCachedPosition(watchers_copy, 0);
+    ExtractNotifiersWithCachedPosition(watchers_copy, nullptr);
   }
 
   SendError(one_shots_copy, error);

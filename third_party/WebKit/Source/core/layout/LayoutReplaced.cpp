@@ -69,7 +69,7 @@ void LayoutReplaced::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
   LayoutBox::StyleDidChange(diff, old_style);
 
-  bool had_style = (old_style != 0);
+  bool had_style = !!old_style;
   float old_zoom =
       had_style ? old_style->EffectiveZoom() : ComputedStyle::InitialZoom();
   if (Style() && Style()->EffectiveZoom() != old_zoom)
@@ -885,7 +885,7 @@ PositionWithAffinity LayoutReplaced::PositionForPoint(
     const LayoutPoint& point) {
   // FIXME: This code is buggy if the replaced element is relative positioned.
   InlineBox* box = InlineBoxWrapper();
-  RootInlineBox* root_box = box ? &box->Root() : 0;
+  RootInlineBox* root_box = box ? &box->Root() : nullptr;
 
   LayoutUnit top = root_box ? root_box->SelectionTop() : LogicalTop();
   LayoutUnit bottom = root_box ? root_box->SelectionBottom() : LogicalBottom();

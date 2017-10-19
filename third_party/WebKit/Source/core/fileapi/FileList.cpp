@@ -31,7 +31,7 @@ FileList::FileList() {}
 
 File* FileList::item(unsigned index) const {
   if (index >= files_.size())
-    return 0;
+    return nullptr;
   return files_[index].Get();
 }
 

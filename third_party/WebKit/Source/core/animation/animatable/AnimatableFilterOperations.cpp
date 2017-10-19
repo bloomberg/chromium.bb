@@ -50,11 +50,11 @@ RefPtr<AnimatableValue> AnimatableFilterOperations::InterpolateTo(
   for (size_t i = 0; i < size; i++) {
     FilterOperation* from =
         (i < from_size) ? operation_wrapper_->Operations().Operations()[i].Get()
-                        : 0;
+                        : nullptr;
     FilterOperation* to =
         (i < to_size)
             ? target->operation_wrapper_->Operations().Operations()[i].Get()
-            : 0;
+            : nullptr;
     FilterOperation* blended_op = FilterOperation::Blend(from, to, fraction);
     if (blended_op)
       result.Operations().push_back(blended_op);

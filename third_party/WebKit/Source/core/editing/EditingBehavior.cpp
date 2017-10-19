@@ -241,7 +241,7 @@ const char* EditingBehavior::InterpretKeyEvent(
   }
 
   int map_key = modifiers << 16 | event.charCode();
-  return map_key ? key_press_commands_map->at(map_key) : 0;
+  return map_key ? key_press_commands_map->at(map_key) : nullptr;
 }
 
 bool EditingBehavior::ShouldInsertCharacter(const KeyboardEvent& event) const {

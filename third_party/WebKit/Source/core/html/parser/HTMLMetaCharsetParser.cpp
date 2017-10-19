@@ -37,7 +37,7 @@ namespace blink {
 using namespace HTMLNames;
 
 HTMLMetaCharsetParser::HTMLMetaCharsetParser()
-    : tokenizer_(HTMLTokenizer::Create(HTMLParserOptions(0))),
+    : tokenizer_(HTMLTokenizer::Create(HTMLParserOptions(nullptr))),
       assumed_codec_(NewTextCodec(Latin1Encoding())),
       in_head_section_(true),
       done_checking_(false) {}

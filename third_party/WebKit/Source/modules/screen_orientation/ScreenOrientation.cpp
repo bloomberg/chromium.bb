@@ -123,7 +123,7 @@ const WTF::AtomicString& ScreenOrientation::InterfaceName() const {
 
 ExecutionContext* ScreenOrientation::GetExecutionContext() const {
   if (!GetFrame())
-    return 0;
+    return nullptr;
   return GetFrame()->GetDocument();
 }
 
@@ -148,7 +148,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(state);
   ScriptPromise promise = resolver->Promise();
 
-  Document* document = GetFrame() ? GetFrame()->GetDocument() : 0;
+  Document* document = GetFrame() ? GetFrame()->GetDocument() : nullptr;
 
   if (!document || !Controller()) {
     DOMException* exception = DOMException::Create(
@@ -181,7 +181,7 @@ void ScreenOrientation::unlock() {
 
 ScreenOrientationControllerImpl* ScreenOrientation::Controller() {
   if (!GetFrame())
-    return 0;
+    return nullptr;
 
   return ScreenOrientationControllerImpl::From(*GetFrame());
 }

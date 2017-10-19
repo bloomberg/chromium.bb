@@ -37,7 +37,7 @@ namespace blink {
 
 // FIXME: Remove the need for this.
 WebCryptoAlgorithm CreateHash(WebCryptoAlgorithmId hash) {
-  return WebCryptoAlgorithm::AdoptParamsAndCreate(hash, 0);
+  return WebCryptoAlgorithm::AdoptParamsAndCreate(hash, nullptr);
 }
 
 class WebCryptoKeyAlgorithmPrivate
@@ -136,7 +136,7 @@ WebCryptoAesKeyAlgorithmParams* WebCryptoKeyAlgorithm::AesParams() const {
   DCHECK(!IsNull());
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeAes)
     return static_cast<WebCryptoAesKeyAlgorithmParams*>(private_->params.get());
-  return 0;
+  return nullptr;
 }
 
 WebCryptoHmacKeyAlgorithmParams* WebCryptoKeyAlgorithm::HmacParams() const {
@@ -144,7 +144,7 @@ WebCryptoHmacKeyAlgorithmParams* WebCryptoKeyAlgorithm::HmacParams() const {
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeHmac)
     return static_cast<WebCryptoHmacKeyAlgorithmParams*>(
         private_->params.get());
-  return 0;
+  return nullptr;
 }
 
 WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::RsaHashedParams()
@@ -153,14 +153,14 @@ WebCryptoRsaHashedKeyAlgorithmParams* WebCryptoKeyAlgorithm::RsaHashedParams()
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeRsaHashed)
     return static_cast<WebCryptoRsaHashedKeyAlgorithmParams*>(
         private_->params.get());
-  return 0;
+  return nullptr;
 }
 
 WebCryptoEcKeyAlgorithmParams* WebCryptoKeyAlgorithm::EcParams() const {
   DCHECK(!IsNull());
   if (ParamsType() == kWebCryptoKeyAlgorithmParamsTypeEc)
     return static_cast<WebCryptoEcKeyAlgorithmParams*>(private_->params.get());
-  return 0;
+  return nullptr;
 }
 
 void WebCryptoKeyAlgorithm::WriteToDictionary(

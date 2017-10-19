@@ -524,7 +524,7 @@ void HTMLElementStack::RemoveNonTopCommon(Element* element) {
 HTMLElementStack::ElementRecord*
 HTMLElementStack::FurthestBlockForFormattingElement(
     Element* formatting_element) const {
-  ElementRecord* furthest_block = 0;
+  ElementRecord* furthest_block = nullptr;
   for (ElementRecord* pos = top_.Get(); pos; pos = pos->Next()) {
     if (pos->GetElement() == formatting_element)
       return furthest_block;

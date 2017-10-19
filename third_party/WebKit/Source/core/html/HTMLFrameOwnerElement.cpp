@@ -130,11 +130,11 @@ HTMLFrameOwnerElement::~HTMLFrameOwnerElement() {
 Document* HTMLFrameOwnerElement::contentDocument() const {
   return (content_frame_ && content_frame_->IsLocalFrame())
              ? ToLocalFrame(content_frame_)->GetDocument()
-             : 0;
+             : nullptr;
 }
 
 DOMWindow* HTMLFrameOwnerElement::contentWindow() const {
-  return content_frame_ ? content_frame_->DomWindow() : 0;
+  return content_frame_ ? content_frame_->DomWindow() : nullptr;
 }
 
 void HTMLFrameOwnerElement::SetSandboxFlags(SandboxFlags flags) {

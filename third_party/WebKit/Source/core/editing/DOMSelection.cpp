@@ -59,10 +59,10 @@ static Node* SelectionShadowAncestor(LocalFrame* frame) {
                    .Base()
                    .AnchorNode();
   if (!node)
-    return 0;
+    return nullptr;
 
   if (!node->IsInShadowTree())
-    return 0;
+    return nullptr;
 
   return frame->GetDocument()->AncestorInThisScope(node);
 }
@@ -176,7 +176,7 @@ unsigned DOMSelection::focusOffset() const {
 
 Node* DOMSelection::baseNode() const {
   if (!IsAvailable())
-    return 0;
+    return nullptr;
 
   return ShadowAdjustedNode(BasePosition(GetVisibleSelection()));
 }
@@ -190,7 +190,7 @@ unsigned DOMSelection::baseOffset() const {
 
 Node* DOMSelection::extentNode() const {
   if (!IsAvailable())
-    return 0;
+    return nullptr;
 
   return ShadowAdjustedNode(ExtentPosition(GetVisibleSelection()));
 }
@@ -811,13 +811,13 @@ String DOMSelection::toString() {
 
 Node* DOMSelection::ShadowAdjustedNode(const Position& position) const {
   if (position.IsNull())
-    return 0;
+    return nullptr;
 
   Node* container_node = position.ComputeContainerNode();
   Node* adjusted_node = tree_scope_->AncestorInThisScope(container_node);
 
   if (!adjusted_node)
-    return 0;
+    return nullptr;
 
   if (container_node == adjusted_node)
     return container_node;

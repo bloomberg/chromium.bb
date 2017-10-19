@@ -238,7 +238,7 @@ void LayoutInline::UpdateAlwaysCreateLineBoxes(bool full_layout) {
 
   const ComputedStyle& parent_style = Parent()->StyleRef();
   LayoutInline* parent_layout_inline =
-      Parent()->IsLayoutInline() ? ToLayoutInline(Parent()) : 0;
+      Parent()->IsLayoutInline() ? ToLayoutInline(Parent()) : nullptr;
   bool check_fonts = GetDocument().InNoQuirksMode();
   bool always_create_line_boxes_new =
       (parent_layout_inline && parent_layout_inline->AlwaysCreateLineBoxes()) ||
@@ -788,7 +788,7 @@ class AbsoluteQuadsGeneratorContext {
                                 Vector<FloatQuad>& quads,
                                 MapCoordinatesFlags mode)
       : quads_(quads), geometry_map_(mode) {
-    geometry_map_.PushMappingsToAncestor(layout_object, 0);
+    geometry_map_.PushMappingsToAncestor(layout_object, nullptr);
   }
 
   void operator()(const FloatRect& rect) {

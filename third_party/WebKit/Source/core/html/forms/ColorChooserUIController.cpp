@@ -67,7 +67,7 @@ void ColorChooserUIController::EndChooser() {
 }
 
 AXObject* ColorChooserUIController::RootAXObject() {
-  return 0;
+  return nullptr;
 }
 
 void ColorChooserUIController::DidChooseColor(const WebColor& color) {

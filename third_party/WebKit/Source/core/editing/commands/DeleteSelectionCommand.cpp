@@ -148,8 +148,8 @@ void DeleteSelectionCommand::InitializeStartEnd(Position& start,
     return;
 
   while (1) {
-    start_special_container = 0;
-    end_special_container = 0;
+    start_special_container = nullptr;
+    end_special_container = nullptr;
 
     Position s =
         PositionBeforeContainingSpecialElement(start, &start_special_container);

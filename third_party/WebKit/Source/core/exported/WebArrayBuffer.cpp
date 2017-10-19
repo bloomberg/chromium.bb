@@ -51,7 +51,7 @@ void WebArrayBuffer::Assign(const WebArrayBuffer& other) {
 void* WebArrayBuffer::Data() const {
   if (!IsNull())
     return const_cast<void*>(private_->Data());
-  return 0;
+  return nullptr;
 }
 
 unsigned WebArrayBuffer::ByteLength() const {

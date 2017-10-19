@@ -71,7 +71,7 @@ TEST(SizesAttributeParserTest, Basic) {
       {"(max-width: 3000px) 50.5px, 40vw", 50.5},
       {"not (blabla) 50px, 40vw", 200},
       {"not (max-width: 100px) 50px, 40vw", 50},
-      {0, 0}  // Do not remove the terminator line.
+      {nullptr, 0}  // Do not remove the terminator line.
   };
 
   MediaValuesCached::MediaValuesCachedData data;
@@ -152,7 +152,7 @@ TEST(SizesAttributeParserTest, FloatViewportWidth) {
       {"(max-width: 3000px) 50.5px, 40vw", 50.5},
       {"not (blabla) 50px, 40vw", 200.2},
       {"not (max-width: 100px) 50px, 40vw", 50},
-      {0, 0}  // Do not remove the terminator line.
+      {nullptr, 0}  // Do not remove the terminator line.
   };
 
   MediaValuesCached::MediaValuesCachedData data;

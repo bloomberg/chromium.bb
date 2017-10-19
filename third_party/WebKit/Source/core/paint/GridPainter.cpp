@@ -100,7 +100,7 @@ void GridPainter::PaintChildren(const PaintInfo& paint_info,
                    grid_items_to_be_painted.end(),
                    CompareOrderModifiedDocumentOrder);
 
-  LayoutBox* previous = 0;
+  LayoutBox* previous = nullptr;
   for (const auto& grid_item_and_paint_index : grid_items_to_be_painted) {
     // We might have duplicates because of spanning children are included in all
     // cells they span.  Skip them here to avoid painting items several times.

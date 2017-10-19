@@ -94,8 +94,8 @@ void HRTFDatabase::GetKernelsFromAzimuthElevation(double azimuth_blend,
                   elevations_.size() > 0);
 
   if (!elevations_.size()) {
-    kernel_l = 0;
-    kernel_r = 0;
+    kernel_l = nullptr;
+    kernel_r = nullptr;
     return;
   }
 
@@ -105,8 +105,8 @@ void HRTFDatabase::GetKernelsFromAzimuthElevation(double azimuth_blend,
   HRTFElevation* hrtf_elevation = elevations_[elevation_index].get();
   DCHECK(hrtf_elevation);
   if (!hrtf_elevation) {
-    kernel_l = 0;
-    kernel_r = 0;
+    kernel_l = nullptr;
+    kernel_r = nullptr;
     return;
   }
 

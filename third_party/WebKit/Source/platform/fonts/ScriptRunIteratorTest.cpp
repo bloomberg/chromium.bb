@@ -626,7 +626,7 @@ class ScriptRunIteratorICUDataTest : public ::testing::Test {
     UChar32 max_extensionscp = 0;
     for (UChar32 cp = 0; cp < 0x11000; ++cp) {
       UErrorCode status = U_ZERO_ERROR;
-      int count = uscript_getScriptExtensions(cp, 0, 0, &status);
+      int count = uscript_getScriptExtensions(cp, nullptr, 0, &status);
       if (count > max_extensions) {
         max_extensions = count;
         max_extensionscp = cp;

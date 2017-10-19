@@ -76,7 +76,7 @@ class FileReader::ThrottlingController final
  public:
   static ThrottlingController* From(ExecutionContext* context) {
     if (!context)
-      return 0;
+      return nullptr;
 
     ThrottlingController* controller = static_cast<ThrottlingController*>(
         Supplement<ExecutionContext>::From(*context, SupplementName()));

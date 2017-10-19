@@ -606,7 +606,7 @@ void DateTimeEditElement::DisabledStateChanged() {
 }
 
 DateTimeFieldElement* DateTimeEditElement::FieldAt(size_t field_index) const {
-  return field_index < fields_.size() ? fields_[field_index].Get() : 0;
+  return field_index < fields_.size() ? fields_[field_index].Get() : nullptr;
 }
 
 size_t DateTimeEditElement::FieldIndexOf(

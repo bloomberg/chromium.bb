@@ -51,7 +51,7 @@ void ApplicationCache::Trace(blink::Visitor* visitor) {
 
 ApplicationCacheHost* ApplicationCache::GetApplicationCacheHost() const {
   if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
-    return 0;
+    return nullptr;
   return GetFrame()->Loader().GetDocumentLoader()->GetApplicationCacheHost();
 }
 

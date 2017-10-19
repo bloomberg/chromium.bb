@@ -63,26 +63,26 @@ RefPtr<BidiContext> BidiContext::Create(unsigned char level,
     if (!override) {
       DEFINE_STATIC_REF(
           BidiContext, ltr_context,
-          (CreateUncached(0, kLeftToRight, false, kFromStyleOrDOM, 0)));
+          (CreateUncached(0, kLeftToRight, false, kFromStyleOrDOM, nullptr)));
       return ltr_context;
     }
 
     DEFINE_STATIC_REF(
         BidiContext, ltr_override_context,
-        (CreateUncached(0, kLeftToRight, true, kFromStyleOrDOM, 0)));
+        (CreateUncached(0, kLeftToRight, true, kFromStyleOrDOM, nullptr)));
     return ltr_override_context;
   }
 
   if (!override) {
     DEFINE_STATIC_REF(
         BidiContext, rtl_context,
-        (CreateUncached(1, kRightToLeft, false, kFromStyleOrDOM, 0)));
+        (CreateUncached(1, kRightToLeft, false, kFromStyleOrDOM, nullptr)));
     return rtl_context;
   }
 
   DEFINE_STATIC_REF(
       BidiContext, rtl_override_context,
-      (CreateUncached(1, kRightToLeft, true, kFromStyleOrDOM, 0)));
+      (CreateUncached(1, kRightToLeft, true, kFromStyleOrDOM, nullptr)));
   return rtl_override_context;
 }
 
@@ -112,7 +112,7 @@ RefPtr<BidiContext> BidiContext::CopyStackRemovingUnicodeEmbeddingContexts() {
   DCHECK(contexts.size());
 
   RefPtr<BidiContext> top_context =
-      CopyContextAndRebaselineLevel(contexts.back(), 0);
+      CopyContextAndRebaselineLevel(contexts.back(), nullptr);
   for (int i = contexts.size() - 1; i > 0; --i) {
     top_context =
         CopyContextAndRebaselineLevel(contexts[i - 1], top_context.get());

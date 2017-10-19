@@ -140,7 +140,7 @@ void ReverbConvolverStage::Process(const float* source,
     temporary_buffer = temporary_buffer_.Data();
   } else {
     // Zero delay
-    pre_delayed_destination = 0;
+    pre_delayed_destination = nullptr;
     pre_delayed_source = source;
     temporary_buffer = pre_delay_buffer_.Data();
 

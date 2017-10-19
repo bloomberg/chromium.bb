@@ -93,7 +93,7 @@ ImageBuffer::ImageBuffer(std::unique_ptr<ImageBufferSurface> surface)
     : weak_ptr_factory_(this),
       snapshot_state_(kInitialSnapshotState),
       surface_(std::move(surface)),
-      client_(0),
+      client_(nullptr),
       gpu_readback_invoked_in_current_frame_(false),
       gpu_readback_successive_frames_(0),
       gpu_memory_usage_(0) {

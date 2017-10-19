@@ -48,7 +48,7 @@ v8::Isolate* MainThreadIsolate() {
   return V8PerIsolateData::MainThreadIsolate();
 }
 
-static V8PerIsolateData* g_main_thread_per_isolate_data = 0;
+static V8PerIsolateData* g_main_thread_per_isolate_data = nullptr;
 
 static void BeforeCallEnteredCallback(v8::Isolate* isolate) {
   CHECK(!ScriptForbiddenScope::IsScriptForbidden());
@@ -176,7 +176,7 @@ void V8PerIsolateData::Destroy(v8::Isolate* isolate) {
   data->operation_template_map_for_non_main_world_.clear();
   data->operation_template_map_for_main_world_.clear();
   if (IsMainThread())
-    g_main_thread_per_isolate_data = 0;
+    g_main_thread_per_isolate_data = nullptr;
 
   // FIXME: Remove once all v8::Isolate::GetCurrent() calls are gone.
   isolate->Exit();

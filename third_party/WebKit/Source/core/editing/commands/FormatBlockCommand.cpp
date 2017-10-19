@@ -152,14 +152,15 @@ Element* FormatBlockCommand::ElementForFormatBlockCommand(
     common_ancestor = common_ancestor->parentNode();
 
   if (!common_ancestor)
-    return 0;
+    return nullptr;
 
   Element* element =
       RootEditableElement(*range.StartPosition().ComputeContainerNode());
   if (!element || common_ancestor->contains(element))
-    return 0;
+    return nullptr;
 
-  return common_ancestor->IsElementNode() ? ToElement(common_ancestor) : 0;
+  return common_ancestor->IsElementNode() ? ToElement(common_ancestor)
+                                          : nullptr;
 }
 
 bool IsElementForFormatBlock(const QualifiedName& tag_name) {

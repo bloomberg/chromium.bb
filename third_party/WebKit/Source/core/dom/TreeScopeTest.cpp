@@ -85,8 +85,8 @@ TEST(TreeScopeTest, CommonAncestorOfTreesAtDifferentDepths) {
 TEST(TreeScopeTest, CommonAncestorOfTreesInDifferentDocuments) {
   Document* document1 = Document::CreateForTest();
   Document* document2 = Document::CreateForTest();
-  EXPECT_EQ(0, document1->CommonAncestorTreeScope(*document2));
-  EXPECT_EQ(0, document2->CommonAncestorTreeScope(*document1));
+  EXPECT_EQ(nullptr, document1->CommonAncestorTreeScope(*document2));
+  EXPECT_EQ(nullptr, document2->CommonAncestorTreeScope(*document1));
 }
 
 }  // namespace blink

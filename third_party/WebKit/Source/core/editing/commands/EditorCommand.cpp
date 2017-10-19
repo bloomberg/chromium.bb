@@ -2029,7 +2029,7 @@ static bool ExecuteYank(LocalFrame& frame,
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   frame.GetEditor().InsertTextWithoutSendingTextEvent(
-      yank_string, false, 0, InputEvent::InputType::kInsertFromYank);
+      yank_string, false, nullptr, InputEvent::InputType::kInsertFromYank);
   frame.GetEditor().GetKillRing().SetToYankedState();
   return true;
 }
@@ -2054,7 +2054,7 @@ static bool ExecuteYankAndSelect(LocalFrame& frame,
   frame.GetDocument()->UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   frame.GetEditor().InsertTextWithoutSendingTextEvent(
-      frame.GetEditor().GetKillRing().Yank(), true, 0,
+      frame.GetEditor().GetKillRing().Yank(), true, nullptr,
       InputEvent::InputType::kInsertFromYank);
   frame.GetEditor().GetKillRing().SetToYankedState();
   return true;
@@ -2989,7 +2989,7 @@ bool Editor::ExecuteCommand(const String& command_name, const String& value) {
   return CreateCommand(command_name).Execute(value);
 }
 
-Editor::Command::Command() : command_(0) {}
+Editor::Command::Command() : command_(nullptr) {}
 
 Editor::Command::Command(const EditorInternalCommand* command,
                          EditorCommandSource source,

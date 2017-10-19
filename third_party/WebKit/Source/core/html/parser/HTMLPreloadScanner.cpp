@@ -138,7 +138,7 @@ class TokenPreloadScanner::StartTagScanner {
     }
     if (!Match(tag_impl_, inputTag) && !Match(tag_impl_, linkTag) &&
         !Match(tag_impl_, scriptTag) && !Match(tag_impl_, videoTag))
-      tag_impl_ = 0;
+      tag_impl_ = nullptr;
   }
 
   enum URLReplacement { kAllowURLReplacement, kDisallowURLReplacement };

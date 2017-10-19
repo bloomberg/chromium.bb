@@ -36,7 +36,7 @@ void GamepadList::Set(unsigned index, Gamepad* gamepad) {
 }
 
 Gamepad* GamepadList::item(unsigned index) {
-  return index < length() ? items_[index].Get() : 0;
+  return index < length() ? items_[index].Get() : nullptr;
 }
 
 void GamepadList::Trace(blink::Visitor* visitor) {

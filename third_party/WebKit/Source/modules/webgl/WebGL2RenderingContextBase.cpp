@@ -4715,7 +4715,7 @@ void WebGL2RenderingContextBase::bindVertexArray(
     return;
 
   if (vertex_array &&
-      (vertex_array->IsDeleted() || !vertex_array->Validate(0, this))) {
+      (vertex_array->IsDeleted() || !vertex_array->Validate(nullptr, this))) {
     SynthesizeGLError(GL_INVALID_OPERATION, "bindVertexArray",
                       "invalid vertexArray");
     return;

@@ -60,8 +60,8 @@ static std::unique_ptr<TextCodec> NewStreamingTextDecoderUTF16BE(
 }
 
 void TextCodecUTF16::RegisterCodecs(TextCodecRegistrar registrar) {
-  registrar("UTF-16LE", NewStreamingTextDecoderUTF16LE, 0);
-  registrar("UTF-16BE", NewStreamingTextDecoderUTF16BE, 0);
+  registrar("UTF-16LE", NewStreamingTextDecoderUTF16LE, nullptr);
+  registrar("UTF-16BE", NewStreamingTextDecoderUTF16BE, nullptr);
 }
 
 String TextCodecUTF16::Decode(const char* bytes,

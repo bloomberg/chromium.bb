@@ -210,7 +210,7 @@ void InlineTextBoxPainter::Paint(const PaintInfo& paint_info,
   StringBuilder characters_with_hyphen;
   TextRun text_run = inline_text_box_.ConstructTextRun(
       style_to_use, string, maximum_length,
-      inline_text_box_.HasHyphen() ? &characters_with_hyphen : 0);
+      inline_text_box_.HasHyphen() ? &characters_with_hyphen : nullptr);
   if (inline_text_box_.HasHyphen())
     length = text_run.length();
 
@@ -929,7 +929,7 @@ void InlineTextBoxPainter::PaintSelection(GraphicsContext& context,
       style, string,
       inline_text_box_.GetLineLayoutItem().TextLength() -
           inline_text_box_.Start(),
-      respect_hyphen ? &characters_with_hyphen : 0);
+      respect_hyphen ? &characters_with_hyphen : nullptr);
   if (respect_hyphen)
     e_pos = text_run.length();
 
@@ -1076,7 +1076,7 @@ void InlineTextBoxPainter::PaintTextMatchMarkerForeground(
   text_style.current_color = text_style.fill_color = text_style.stroke_color =
       text_style.emphasis_mark_color = text_color;
   text_style.stroke_width = style.TextStrokeWidth();
-  text_style.shadow = 0;
+  text_style.shadow = nullptr;
 
   LayoutRect box_rect(box_origin, LayoutSize(inline_text_box_.LogicalWidth(),
                                              inline_text_box_.LogicalHeight()));

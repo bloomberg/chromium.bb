@@ -164,7 +164,7 @@ void ElementShadowV0::Distribute() {
 
   for (ShadowRoot* root = &YoungestShadowRoot(); root;
        root = root->OlderShadowRoot()) {
-    HTMLShadowElement* shadow_insertion_point = 0;
+    HTMLShadowElement* shadow_insertion_point = nullptr;
     for (const auto& point : root->DescendantInsertionPoints()) {
       if (!point->IsActive())
         continue;

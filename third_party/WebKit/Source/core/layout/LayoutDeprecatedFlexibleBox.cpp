@@ -61,8 +61,8 @@ class FlexBoxIterator {
   }
 
   void Reset() {
-    current_child_ = 0;
-    natural_current_child_ = 0;
+    current_child_ = nullptr;
+    natural_current_child_ = nullptr;
     ordinal_iteration_ = -1;
   }
 

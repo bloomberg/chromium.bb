@@ -373,7 +373,7 @@ void WebURLRequest::SetPreviewsState(
 WebURLRequest::ExtraData* WebURLRequest::GetExtraData() const {
   RefPtr<ResourceRequest::ExtraData> data = resource_request_->GetExtraData();
   if (!data)
-    return 0;
+    return nullptr;
   return static_cast<URLRequestExtraDataContainer*>(data.get())->GetExtraData();
 }
 

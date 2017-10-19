@@ -56,31 +56,31 @@ TEST(KURLTest, Getters) {
     bool has_fragment_identifier;
   } cases[] = {
       {"http://www.google.com/foo/blah?bar=baz#ref", "http", "www.google.com",
-       0, "", 0, "/foo/blah", "blah", "bar=baz", "ref", true},
+       0, "", nullptr, "/foo/blah", "blah", "bar=baz", "ref", true},
       {// Non-ASCII code points in the fragment part. fragmentIdentifier()
        // shouldn't return it in percent-encoded form.
        "http://www.google.com/foo/blah?bar=baz#\xce\xb1\xce\xb2", "http",
-       "www.google.com", 0, "", 0, "/foo/blah", "blah", "bar=baz",
+       "www.google.com", 0, "", nullptr, "/foo/blah", "blah", "bar=baz",
        "%CE%B1%CE%B2", true},
-      {"http://foo.com:1234/foo/bar/", "http", "foo.com", 1234, "", 0,
-       "/foo/bar/", "bar", 0, 0, false},
-      {"http://www.google.com?#", "http", "www.google.com", 0, "", 0, "/", 0,
-       "", "", true},
+      {"http://foo.com:1234/foo/bar/", "http", "foo.com", 1234, "", nullptr,
+       "/foo/bar/", "bar", nullptr, nullptr, false},
+      {"http://www.google.com?#", "http", "www.google.com", 0, "", nullptr, "/",
+       nullptr, "", "", true},
       {"https://me:pass@google.com:23#foo", "https", "google.com", 23, "me",
-       "pass", "/", 0, 0, "foo", true},
-      {"javascript:hello!//world", "javascript", "", 0, "", 0, "hello!//world",
-       "world", 0, 0, false},
+       "pass", "/", nullptr, nullptr, "foo", true},
+      {"javascript:hello!//world", "javascript", "", 0, "", nullptr,
+       "hello!//world", "world", nullptr, nullptr, false},
       {// Recognize a query and a fragment in the path portion of a path
        // URL.
-       "javascript:hello!?#/\\world", "javascript", "", 0, "", 0, "hello!",
-       "hello!", "", "/\\world", true},
+       "javascript:hello!?#/\\world", "javascript", "", 0, "", nullptr,
+       "hello!", "hello!", "", "/\\world", true},
       {// lastPathComponent() method handles "parameters" in a path. path()
        // method doesn't.
-       "http://a.com/hello;world", "http", "a.com", 0, "", 0, "/hello;world",
-       "hello", 0, 0, false},
+       "http://a.com/hello;world", "http", "a.com", 0, "", nullptr,
+       "/hello;world", "hello", nullptr, nullptr, false},
       {// IDNA
        "http://\xe4\xbd\xa0\xe5\xa5\xbd\xe4\xbd\xa0\xe5\xa5\xbd/", "http",
-       "xn--6qqa088eba", 0, "", 0, "/", 0, 0, 0, false},
+       "xn--6qqa088eba", 0, "", nullptr, "/", nullptr, nullptr, nullptr, false},
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {
@@ -171,7 +171,7 @@ TEST(KURLTest, Setters) {
        // path
        "/", "http://goo.com:92/?f#b",
        // query
-       0, "http://goo.com:92/#b"},
+       nullptr, "http://goo.com:92/#b"},
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(cases); i++) {

@@ -115,7 +115,7 @@ void PseudoElement::Dispose() {
   DetachLayoutTree();
   Element* parent = ParentOrShadowHostElement();
   GetDocument().AdoptIfNeeded(*this);
-  SetParentOrShadowHostNode(0);
+  SetParentOrShadowHostNode(nullptr);
   RemovedFrom(parent);
 }
 

@@ -107,7 +107,7 @@ std::unique_ptr<TextResourceDecoder> BuildTextResourceDecoderFor(
       GetEncodingFromDomain(document->Url());
 
   LocalFrame* frame = document->GetFrame();
-  LocalFrame* parent_frame = 0;
+  LocalFrame* parent_frame = nullptr;
   if (frame && frame->Tree().Parent() && frame->Tree().Parent()->IsLocalFrame())
     parent_frame = ToLocalFrame(frame->Tree().Parent());
 

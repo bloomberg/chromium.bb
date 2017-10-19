@@ -92,7 +92,7 @@ void BaseCheckableInputType::AccessKeyAction(bool send_mouse_events) {
   InputTypeView::AccessKeyAction(send_mouse_events);
 
   GetElement().DispatchSimulatedClick(
-      0, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
+      nullptr, send_mouse_events ? kSendMouseUpDownEvents : kSendNoEvents);
 }
 
 bool BaseCheckableInputType::MatchesDefaultPseudoClass() {

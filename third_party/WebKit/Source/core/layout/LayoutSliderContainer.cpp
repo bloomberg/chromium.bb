@@ -114,8 +114,8 @@ void LayoutSliderContainer::UpdateLayout() {
       ShadowElementNames::SliderThumb());
   Element* track_element = input->UserAgentShadowRoot()->getElementById(
       ShadowElementNames::SliderTrack());
-  LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : 0;
-  LayoutBox* track = track_element ? track_element->GetLayoutBox() : 0;
+  LayoutBox* thumb = thumb_element ? thumb_element->GetLayoutBox() : nullptr;
+  LayoutBox* track = track_element ? track_element->GetLayoutBox() : nullptr;
 
   SubtreeLayoutScope layout_scope(*this);
   // Force a layout to reset the position of the thumb so the code below doesn't

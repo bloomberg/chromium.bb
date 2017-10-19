@@ -403,7 +403,7 @@ TEST_F(DocumentTest, PrintRelayout) {
 // specification.
 TEST_F(DocumentTest, LinkManifest) {
   // Test the default result.
-  EXPECT_EQ(0, GetDocument().LinkManifest());
+  EXPECT_EQ(nullptr, GetDocument().LinkManifest());
 
   // Check that we use the first manifest with <link rel=manifest>
   HTMLLinkElement* link = HTMLLinkElement::Create(GetDocument(), false);
@@ -455,9 +455,9 @@ TEST_F(DocumentTest, LinkManifest) {
   // Check that link outside of the <head> are ignored.
   GetDocument().head()->RemoveChild(link);
   GetDocument().head()->RemoveChild(link2);
-  EXPECT_EQ(0, GetDocument().LinkManifest());
+  EXPECT_EQ(nullptr, GetDocument().LinkManifest());
   GetDocument().body()->AppendChild(link);
-  EXPECT_EQ(0, GetDocument().LinkManifest());
+  EXPECT_EQ(nullptr, GetDocument().LinkManifest());
   GetDocument().head()->AppendChild(link);
   GetDocument().head()->AppendChild(link2);
 

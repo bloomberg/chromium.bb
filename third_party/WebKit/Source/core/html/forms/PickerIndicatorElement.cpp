@@ -144,7 +144,7 @@ void PickerIndicatorElement::DetachLayoutTree(const AttachContext& context) {
 }
 
 AXObject* PickerIndicatorElement::PopupRootAXObject() const {
-  return chooser_ ? chooser_->RootAXObject() : 0;
+  return chooser_ ? chooser_->RootAXObject() : nullptr;
 }
 
 bool PickerIndicatorElement::IsPickerIndicatorElement() const {

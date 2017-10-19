@@ -51,7 +51,7 @@ class KeyboardTest : public ::testing::Test {
   // E.g., sending in the enter key gives back "InsertNewline".
   const char* InterpretKeyEvent(const WebKeyboardEvent& web_keyboard_event) {
     KeyboardEvent* keyboard_event =
-        KeyboardEvent::Create(web_keyboard_event, 0);
+        KeyboardEvent::Create(web_keyboard_event, nullptr);
     std::unique_ptr<Settings> settings = Settings::Create();
     EditingBehavior behavior(settings->GetEditingBehaviorType());
     return behavior.InterpretKeyEvent(*keyboard_event);

@@ -128,7 +128,7 @@ static bool IsHTMLBlockElement(const Node* node) {
 static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(
     Element* common_ancestor_block) {
   if (!common_ancestor_block)
-    return 0;
+    return nullptr;
 
   if (common_ancestor_block->HasTagName(tbodyTag) ||
       IsHTMLTableRowElement(*common_ancestor_block))
@@ -137,7 +137,7 @@ static HTMLElement* AncestorToRetainStructureAndAppearanceForBlock(
   if (IsNonTableCellHTMLBlockElement(common_ancestor_block))
     return ToHTMLElement(common_ancestor_block);
 
-  return 0;
+  return nullptr;
 }
 
 static inline HTMLElement* AncestorToRetainStructureAndAppearance(
@@ -636,7 +636,7 @@ DocumentFragment* CreateFragmentForTransformToFragment(
   } else if (source_mime_type == "text/plain") {
     fragment->ParserAppendChild(Text::Create(output_doc, source_string));
   } else {
-    bool successful_parse = fragment->ParseXML(source_string, 0);
+    bool successful_parse = fragment->ParseXML(source_string, nullptr);
     if (!successful_parse)
       return nullptr;
   }

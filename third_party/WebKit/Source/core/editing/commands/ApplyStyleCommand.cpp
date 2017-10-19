@@ -128,7 +128,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document,
       use_ending_selection_(true),
       styled_inline_element_(nullptr),
       remove_only_(false),
-      is_inline_element_to_remove_function_(0) {}
+      is_inline_element_to_remove_function_(nullptr) {}
 
 ApplyStyleCommand::ApplyStyleCommand(Document& document,
                                      const EditingStyle* style,
@@ -143,7 +143,7 @@ ApplyStyleCommand::ApplyStyleCommand(Document& document,
       use_ending_selection_(false),
       styled_inline_element_(nullptr),
       remove_only_(false),
-      is_inline_element_to_remove_function_(0) {}
+      is_inline_element_to_remove_function_(nullptr) {}
 
 ApplyStyleCommand::ApplyStyleCommand(Element* element, bool remove_only)
     : CompositeEditCommand(element->GetDocument()),
@@ -155,7 +155,7 @@ ApplyStyleCommand::ApplyStyleCommand(Element* element, bool remove_only)
       use_ending_selection_(true),
       styled_inline_element_(element),
       remove_only_(remove_only),
-      is_inline_element_to_remove_function_(0) {}
+      is_inline_element_to_remove_function_(nullptr) {}
 
 ApplyStyleCommand::ApplyStyleCommand(
     Document& document,
@@ -529,7 +529,7 @@ static ContainerNode* DummySpanAncestorForNode(const Node* node) {
                   !IsStyleSpanOrSpanWithOnlyStyleAttribute(ToElement(node))))
     node = node->parentNode();
 
-  return node ? node->parentNode() : 0;
+  return node ? node->parentNode() : nullptr;
 }
 
 void ApplyStyleCommand::CleanupUnstyledAppleStyleSpans(
@@ -562,7 +562,7 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
   // return the unsplit ancestor. Otherwise, we return 0.
   Element* block = EnclosingBlock(node);
   if (!block)
-    return 0;
+    return nullptr;
 
   ContainerNode* highest_ancestor_with_unicode_bidi = nullptr;
   ContainerNode* next_highest_ancestor_with_unicode_bidi = nullptr;
@@ -581,9 +581,9 @@ HTMLElement* ApplyStyleCommand::SplitAncestorsWithUnicodeBidi(
   }
 
   if (!highest_ancestor_with_unicode_bidi)
-    return 0;
+    return nullptr;
 
-  HTMLElement* unsplit_ancestor = 0;
+  HTMLElement* unsplit_ancestor = nullptr;
 
   WritingDirection highest_ancestor_direction;
   if (allowed_direction != NaturalWritingDirection &&
@@ -670,7 +670,7 @@ static HTMLElement* HighestEmbeddingAncestor(Node* start_node,
     }
   }
 
-  return 0;
+  return nullptr;
 }
 
 void ApplyStyleCommand::ApplyInlineStyle(EditingStyle* style,
@@ -1269,7 +1269,7 @@ HTMLElement* ApplyStyleCommand::HighestAncestorWithConflictingInlineStyle(
     EditingStyle* style,
     Node* node) {
   if (!node)
-    return 0;
+    return nullptr;
 
   HTMLElement* result = nullptr;
   Node* unsplittable_element =

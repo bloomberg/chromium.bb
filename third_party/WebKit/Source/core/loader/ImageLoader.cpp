@@ -670,7 +670,7 @@ LayoutImageResource* ImageLoader::GetLayoutImageResource() {
   LayoutObject* layout_object = element_->GetLayoutObject();
 
   if (!layout_object)
-    return 0;
+    return nullptr;
 
   // We don't return style generated image because it doesn't belong to the
   // ImageLoader. See <https://bugs.webkit.org/show_bug.cgi?id=42840>
@@ -684,7 +684,7 @@ LayoutImageResource* ImageLoader::GetLayoutImageResource() {
   if (layout_object->IsVideo())
     return ToLayoutVideo(layout_object)->ImageResource();
 
-  return 0;
+  return nullptr;
 }
 
 void ImageLoader::UpdateLayoutObject() {

@@ -104,7 +104,7 @@ void WebFont::DrawText(WebCanvas* canvas,
 }
 
 int WebFont::CalculateWidth(const WebTextRun& run) const {
-  return private_->GetFont().Width(run, 0);
+  return private_->GetFont().Width(run, nullptr);
 }
 
 int WebFont::OffsetForPosition(const WebTextRun& run, float position) const {

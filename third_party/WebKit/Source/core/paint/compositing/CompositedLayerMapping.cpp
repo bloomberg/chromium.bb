@@ -218,7 +218,7 @@ CompositedLayerMapping::~CompositedLayerMapping() {
     DCHECK_EQ(old_squashed_layer->GroupedMapping(), this);
     if (old_squashed_layer->GroupedMapping() == this) {
       old_squashed_layer->SetGroupedMapping(
-          0, PaintLayer::kDoNotInvalidateLayerAndRemoveFromMapping);
+          nullptr, PaintLayer::kDoNotInvalidateLayerAndRemoveFromMapping);
       old_squashed_layer->SetLostGroupedMapping(true);
     }
   }
@@ -2511,7 +2511,7 @@ static void UpdateScrollParentForGraphicsLayer(
   // Only the topmost layer has a scroll parent. All other layers have a null
   // scroll parent.
   if (layer != topmost_layer)
-    scroll_parent = 0;
+    scroll_parent = nullptr;
 
   scrolling_coordinator->UpdateScrollParentForGraphicsLayer(layer,
                                                             scroll_parent);
@@ -2544,7 +2544,7 @@ static void UpdateClipParentForGraphicsLayer(
   // Only the topmost layer has a scroll parent. All other layers have a null
   // scroll parent.
   if (layer != topmost_layer)
-    clip_parent = 0;
+    clip_parent = nullptr;
 
   scrolling_coordinator->UpdateClipParentForGraphicsLayer(layer, clip_parent);
 }
@@ -2781,7 +2781,7 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
     LayoutObject* root_object =
         layout_object.GetDocument().documentElement()
             ? layout_object.GetDocument().documentElement()->GetLayoutObject()
-            : 0;
+            : nullptr;
     // Reject anything that has a border, a border-radius or outline,
     // or is not a simple background (no background, or solid color).
     if (root_object &&
@@ -2791,7 +2791,7 @@ bool CompositedLayerMapping::ContainsPaintedContent() const {
     // Now look at the body's layoutObject.
     HTMLElement* body = layout_object.GetDocument().body();
     LayoutObject* body_object =
-        IsHTMLBodyElement(body) ? body->GetLayoutObject() : 0;
+        IsHTMLBodyElement(body) ? body->GetLayoutObject() : nullptr;
     if (body_object &&
         HasBoxDecorationsOrBackgroundImage(body_object->StyleRef()))
       return true;

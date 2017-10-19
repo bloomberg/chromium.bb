@@ -266,11 +266,11 @@ bool ReplacementFragment::IsEmpty() const {
 }
 
 Node* ReplacementFragment::FirstChild() const {
-  return fragment_ ? fragment_->firstChild() : 0;
+  return fragment_ ? fragment_->firstChild() : nullptr;
 }
 
 Node* ReplacementFragment::LastChild() const {
-  return fragment_ ? fragment_->lastChild() : 0;
+  return fragment_ ? fragment_->lastChild() : nullptr;
 }
 
 void ReplacementFragment::RemoveNodePreservingChildren(ContainerNode* node) {
@@ -574,7 +574,7 @@ void ReplaceSelectionCommand::RemoveRedundantStylesAndKeepStyleSpanInline(
         } else if (new_inline_style
                        ->ExtractConflictingImplicitStyleOfAttributes(
                            html_element,
-                           EditingStyle::kPreserveWritingDirection, 0,
+                           EditingStyle::kPreserveWritingDirection, nullptr,
                            attributes,
                            EditingStyle::kDoNotExtractMatchingStyle)) {
           // e.g. <font size="3" style="font-size: 20px;"> is converted to <font

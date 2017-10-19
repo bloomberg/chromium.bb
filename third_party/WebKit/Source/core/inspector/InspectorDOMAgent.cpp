@@ -755,7 +755,7 @@ Response InspectorDOMAgent::setAttributesAsText(int element_id,
     fragment->ParseHTML(markup, element->GetDocument().body(),
                         kAllowScriptingContent);
   else
-    fragment->ParseXML(markup, 0, kAllowScriptingContent);
+    fragment->ParseXML(markup, nullptr, kAllowScriptingContent);
 
   Element* parsed_element =
       fragment->firstChild() && fragment->firstChild()->IsElementNode()
@@ -838,7 +838,7 @@ Response InspectorDOMAgent::setNodeName(int node_id,
   // Copy over the original node's children.
   for (Node* child = old_element->firstChild(); child;
        child = old_element->firstChild()) {
-    response = dom_editor_->InsertBefore(new_elem, child, 0);
+    response = dom_editor_->InsertBefore(new_elem, child, nullptr);
     if (!response.isSuccess())
       return response;
   }

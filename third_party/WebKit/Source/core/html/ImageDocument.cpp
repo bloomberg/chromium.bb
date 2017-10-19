@@ -73,7 +73,7 @@ class ImageEventListener : public EventListener {
   static const ImageEventListener* Cast(const EventListener* listener) {
     return listener->GetType() == kImageEventListenerType
                ? static_cast<const ImageEventListener*>(listener)
-               : 0;
+               : nullptr;
   }
 
   bool operator==(const EventListener& other) const override;

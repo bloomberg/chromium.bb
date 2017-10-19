@@ -142,7 +142,7 @@ void InternalSettings::ResetToConsistentState() {
 
 Settings* InternalSettings::GetSettings() const {
   if (!GetPage())
-    return 0;
+    return nullptr;
   return &GetPage()->GetSettings();
 }
 

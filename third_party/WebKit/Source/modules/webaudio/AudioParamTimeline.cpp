@@ -844,7 +844,7 @@ float AudioParamTimeline::ValuesForFrameRangeImpl(size_t start_frame,
   for (int i = 0; i < number_of_events && write_index < number_of_values; ++i) {
     ParamEvent* event = events_[i].get();
     ParamEvent* next_event =
-        i < number_of_events - 1 ? events_[i + 1].get() : 0;
+        i < number_of_events - 1 ? events_[i + 1].get() : nullptr;
 
     // Wait until we get a more recent event.
     if (!IsEventCurrent(event, next_event, current_frame, sample_rate)) {

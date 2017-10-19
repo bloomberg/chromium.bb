@@ -34,7 +34,7 @@ GeoNotifier* GeolocationWatchers::Find(int id) {
   DCHECK_GT(id, 0);
   IdToNotifierMap::iterator iter = id_to_notifier_map_.find(id);
   if (iter == id_to_notifier_map_.end())
-    return 0;
+    return nullptr;
   return iter->value;
 }
 

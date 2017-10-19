@@ -50,7 +50,7 @@ void EXTDisjointTimerQuery::deleteQueryEXT(WebGLTimerQueryEXT* query) {
 GLboolean EXTDisjointTimerQuery::isQueryEXT(WebGLTimerQueryEXT* query) {
   WebGLExtensionScopedContext scoped(this);
   if (!query || scoped.IsLost() || query->IsDeleted() ||
-      !query->Validate(0, scoped.Context())) {
+      !query->Validate(nullptr, scoped.Context())) {
     return false;
   }
 
@@ -64,7 +64,7 @@ void EXTDisjointTimerQuery::beginQueryEXT(GLenum target,
     return;
 
   DCHECK(query);
-  if (query->IsDeleted() || !query->Validate(0, scoped.Context())) {
+  if (query->IsDeleted() || !query->Validate(nullptr, scoped.Context())) {
     scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "beginQueryEXT",
                                         "invalid query");
     return;
@@ -122,7 +122,7 @@ void EXTDisjointTimerQuery::queryCounterEXT(WebGLTimerQueryEXT* query,
     return;
 
   DCHECK(query);
-  if (query->IsDeleted() || !query->Validate(0, scoped.Context())) {
+  if (query->IsDeleted() || !query->Validate(nullptr, scoped.Context())) {
     scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION, "queryCounterEXT",
                                         "invalid query");
     return;
@@ -187,7 +187,7 @@ ScriptValue EXTDisjointTimerQuery::getQueryObjectEXT(ScriptState* script_state,
     return ScriptValue::CreateNull(script_state);
 
   DCHECK(query);
-  if (query->IsDeleted() || !query->Validate(0, scoped.Context()) ||
+  if (query->IsDeleted() || !query->Validate(nullptr, scoped.Context()) ||
       current_elapsed_query_ == query) {
     scoped.Context()->SynthesizeGLError(GL_INVALID_OPERATION,
                                         "getQueryObjectEXT", "invalid query");

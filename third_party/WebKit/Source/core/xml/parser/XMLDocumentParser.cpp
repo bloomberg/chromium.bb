@@ -546,7 +546,7 @@ static void ParseChunk(xmlParserCtxtPtr ctxt, const String& chunk) {
 }
 
 static void FinishParsing(xmlParserCtxtPtr ctxt) {
-  xmlParseChunk(ctxt, 0, 0, 1);
+  xmlParseChunk(ctxt, nullptr, 0, 1);
 }
 
 #define xmlParseChunk \
@@ -622,7 +622,7 @@ static void* OpenFunc(const char* uri) {
 
   {
     Document* document = XMLDocumentParserScope::current_document_;
-    XMLDocumentParserScope scope(0);
+    XMLDocumentParserScope scope(nullptr);
     // FIXME: We should restore the original global error handler as well.
     ResourceLoaderOptions options;
     options.initiator_info.name = FetchInitiatorTypeNames::xml;
@@ -688,7 +688,8 @@ RefPtr<XMLParserContext> XMLParserContext::CreateStringParser(
     xmlSAXHandlerPtr handlers,
     void* user_data) {
   InitializeLibXMLIfNecessary();
-  xmlParserCtxtPtr parser = xmlCreatePushParserCtxt(handlers, 0, 0, 0, 0);
+  xmlParserCtxtPtr parser =
+      xmlCreatePushParserCtxt(handlers, nullptr, nullptr, 0, nullptr);
   xmlCtxtUseOptions(parser, XML_PARSE_HUGE);
   parser->_private = user_data;
   parser->replaceEntities = true;
@@ -1405,7 +1406,7 @@ static xmlEntityPtr GetXHTMLEntity(const xmlChar* name) {
   size_t number_of_code_units = DecodeNamedEntityToUCharArray(
       reinterpret_cast<const char*>(name), utf16_decoded_entity);
   if (!number_of_code_units)
-    return 0;
+    return nullptr;
 
   DCHECK_LE(number_of_code_units, 4u);
   size_t entity_length_in_utf8 = ConvertUTF16EntityToUTF8(
@@ -1413,7 +1414,7 @@ static xmlEntityPtr GetXHTMLEntity(const xmlChar* name) {
       reinterpret_cast<char*>(g_shared_xhtml_entity_result),
       WTF_ARRAY_LENGTH(g_shared_xhtml_entity_result));
   if (!entity_length_in_utf8)
-    return 0;
+    return nullptr;
 
   xmlEntityPtr entity = SharedXHTMLEntity();
   entity->length = entity_length_in_utf8;
@@ -1558,11 +1559,11 @@ xmlDocPtr XmlDocPtrForString(Document* document,
                              const String& source,
                              const String& url) {
   if (source.IsEmpty())
-    return 0;
+    return nullptr;
   // Parse in a single chunk into an xmlDocPtr
   // FIXME: Hook up error handlers so that a failure to parse the main
   // document results in good error messages.
-  XMLDocumentParserScope scope(document, ErrorFunc, 0);
+  XMLDocumentParserScope scope(document, ErrorFunc, nullptr);
   XMLParserInput input(source);
   return xmlReadMemory(input.Data(), input.size(), url.Latin1().data(),
                        input.Encoding(), XSLT_PARSE_OPTIONS);

@@ -341,7 +341,7 @@ static double CalculateUTCOffset() {
       time_zone_information.Bias + time_zone_information.StandardBias;
   return -bias * 60 * 1000;
 #else
-  time_t local_time = time(0);
+  time_t local_time = time(nullptr);
   tm localt;
   GetLocalTime(&local_time, &localt);
 

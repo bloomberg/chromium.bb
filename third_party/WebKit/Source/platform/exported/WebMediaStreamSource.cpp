@@ -141,7 +141,7 @@ WebMediaStreamSource::ExtraData* WebMediaStreamSource::GetExtraData() const {
   DCHECK(!private_.IsNull());
   MediaStreamSource::ExtraData* data = private_->GetExtraData();
   if (!data)
-    return 0;
+    return nullptr;
   return static_cast<MediaStreamSourceExtraDataContainer*>(data)
       ->GetExtraData();
 }

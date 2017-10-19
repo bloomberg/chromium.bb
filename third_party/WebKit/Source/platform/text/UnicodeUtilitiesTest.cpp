@@ -90,7 +90,7 @@ TEST(UnicodeUtilitiesTest, Separators) {
   }
 
   g_is_test_first_and_last_chars_in_category_failed = false;
-  u_enumCharTypes(&TestFirstAndLastCharsInCategory, 0);
+  u_enumCharTypes(&TestFirstAndLastCharsInCategory, nullptr);
   EXPECT_FALSE(g_is_test_first_and_last_chars_in_category_failed);
 }
 

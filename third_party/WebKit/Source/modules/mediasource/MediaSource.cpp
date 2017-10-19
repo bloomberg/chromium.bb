@@ -153,7 +153,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
   //    and abort these steps.
   if (type.IsEmpty()) {
     LogAndThrowTypeError(exception_state, "The type provided is empty");
-    return 0;
+    return nullptr;
   }
 
   // 2. If type contains a MIME type that is not supported ..., then throw a
@@ -162,7 +162,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
     LogAndThrowDOMException(
         exception_state, kNotSupportedError,
         "The type provided ('" + type + "') is unsupported.");
-    return 0;
+    return nullptr;
   }
 
   // 4. If the readyState attribute is not in the "open" state then throw an
@@ -170,7 +170,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
   if (!IsOpen()) {
     LogAndThrowDOMException(exception_state, kInvalidStateError,
                             "The MediaSource's readyState is not 'open'.");
-    return 0;
+    return nullptr;
   }
 
   // 5. Create a new SourceBuffer object and associated resources.
@@ -186,7 +186,7 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
     //    NotSupportedError exception and abort these steps.
     // 3. If the user agent can't handle any more SourceBuffer objects then
     //    throw a QuotaExceededError exception and abort these steps
-    return 0;
+    return nullptr;
   }
 
   SourceBuffer* buffer = SourceBuffer::Create(std::move(web_source_buffer),
@@ -792,7 +792,7 @@ std::unique_ptr<WebSourceBuffer> MediaSource::CreateWebSourceBuffer(
     const String& type,
     const String& codecs,
     ExceptionState& exception_state) {
-  WebSourceBuffer* web_source_buffer = 0;
+  WebSourceBuffer* web_source_buffer = nullptr;
 
   switch (
       web_media_source_->AddSourceBuffer(type, codecs, &web_source_buffer)) {

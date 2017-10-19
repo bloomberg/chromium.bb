@@ -126,7 +126,7 @@ void CSSKeyframesRule::deleteRule(const String& s) {
   keyframes_rule_->WrapperRemoveKeyframe(i);
 
   if (child_rule_cssom_wrappers_[i])
-    child_rule_cssom_wrappers_[i]->SetParentRule(0);
+    child_rule_cssom_wrappers_[i]->SetParentRule(nullptr);
   child_rule_cssom_wrappers_.EraseAt(i);
 }
 

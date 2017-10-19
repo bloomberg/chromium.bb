@@ -333,7 +333,7 @@ void CSSStyleSheet::deleteRule(unsigned index,
 
   if (!child_rule_cssom_wrappers_.IsEmpty()) {
     if (child_rule_cssom_wrappers_[index])
-      child_rule_cssom_wrappers_[index]->SetParentStyleSheet(0);
+      child_rule_cssom_wrappers_[index]->SetParentStyleSheet(nullptr);
     child_rule_cssom_wrappers_.EraseAt(index);
   }
 }

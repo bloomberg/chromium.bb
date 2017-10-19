@@ -126,7 +126,7 @@ WebMediaStreamSource WebMediaStreamTrack::Source() const {
 WebMediaStreamTrack::TrackData* WebMediaStreamTrack::GetTrackData() const {
   MediaStreamComponent::TrackData* data = private_->GetTrackData();
   if (!data)
-    return 0;
+    return nullptr;
   return static_cast<TrackDataContainer*>(data)->GetTrackData();
 }
 

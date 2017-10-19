@@ -81,7 +81,7 @@ class VisualViewportTest
         base_url_("http://www.test.com/") {}
 
   void InitializeWithDesktopSettings(
-      void (*override_settings_func)(WebSettings*) = 0) {
+      void (*override_settings_func)(WebSettings*) = nullptr) {
     if (!override_settings_func)
       override_settings_func = &ConfigureSettings;
     helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,
@@ -90,7 +90,7 @@ class VisualViewportTest
   }
 
   void InitializeWithAndroidSettings(
-      void (*override_settings_func)(WebSettings*) = 0) {
+      void (*override_settings_func)(WebSettings*) = nullptr) {
     if (!override_settings_func)
       override_settings_func = &ConfigureAndroidSettings;
     helper_.Initialize(nullptr, &mock_web_view_client_, nullptr,

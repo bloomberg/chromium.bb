@@ -49,7 +49,7 @@ DateTimeChooserImpl::DateTimeChooserImpl(
     const DateTimeChooserParameters& parameters)
     : chrome_client_(chrome_client),
       client_(client),
-      popup_(0),
+      popup_(nullptr),
       parameters_(parameters),
       locale_(Locale::Create(parameters.locale)) {
   DCHECK(RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled());
@@ -80,7 +80,7 @@ void DateTimeChooserImpl::EndChooser() {
 }
 
 AXObject* DateTimeChooserImpl::RootAXObject() {
-  return popup_ ? popup_->RootAXObject() : 0;
+  return popup_ ? popup_->RootAXObject() : nullptr;
 }
 
 static String ValueToDateTimeString(double value, AtomicString type) {

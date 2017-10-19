@@ -347,7 +347,7 @@ XHRReplayData* NetworkResourcesData::XhrReplayData(const String& request_id) {
 
   ResourceData* resource_data = ResourceDataForRequestId(request_id);
   if (!resource_data)
-    return 0;
+    return nullptr;
   return resource_data->XhrReplayData();
 }
 
@@ -434,7 +434,7 @@ void NetworkResourcesData::SetResourcesDataSizeLimits(
 NetworkResourcesData::ResourceData*
 NetworkResourcesData::ResourceDataForRequestId(const String& request_id) {
   if (request_id.IsNull())
-    return 0;
+    return nullptr;
   return request_id_to_resource_data_map_.at(request_id);
 }
 

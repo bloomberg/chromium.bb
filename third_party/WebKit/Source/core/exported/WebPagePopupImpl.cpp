@@ -247,9 +247,9 @@ bool PagePopupFeaturesClient::IsEnabled(Document*,
 WebPagePopupImpl::WebPagePopupImpl(WebWidgetClient* client)
     : widget_client_(client),
       closing_(false),
-      layer_tree_view_(0),
-      root_layer_(0),
-      root_graphics_layer_(0),
+      layer_tree_view_(nullptr),
+      root_layer_(nullptr),
+      root_graphics_layer_(nullptr),
       is_accelerated_compositing_active_(false) {
   DCHECK(client);
 }
@@ -301,7 +301,8 @@ bool WebPagePopupImpl::InitializePage() {
   ProvideContextFeaturesTo(*page_, WTF::MakeUnique<PagePopupFeaturesClient>());
   DEFINE_STATIC_LOCAL(LocalFrameClient, empty_local_frame_client,
                       (EmptyLocalFrameClient::Create()));
-  LocalFrame* frame = LocalFrame::Create(&empty_local_frame_client, *page_, 0);
+  LocalFrame* frame =
+      LocalFrame::Create(&empty_local_frame_client, *page_, nullptr);
   frame->SetPagePopupOwner(popup_client_->OwnerElement());
   frame->SetView(LocalFrameView::Create(*frame));
   frame->Init();
@@ -343,10 +344,10 @@ void WebPagePopupImpl::DestroyPage() {
 
 AXObject* WebPagePopupImpl::RootAXObject() {
   if (!page_ || !page_->MainFrame())
-    return 0;
+    return nullptr;
   Document* document = ToLocalFrame(page_->MainFrame())->GetDocument();
   if (!document)
-    return 0;
+    return nullptr;
   AXObjectCache* cache = document->AxObjectCache();
   DCHECK(cache);
   return ToAXObjectCacheBase(cache)->GetOrCreate(ToLayoutView(
@@ -359,7 +360,7 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
 
 void WebPagePopupImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
   root_graphics_layer_ = layer;
-  root_layer_ = layer ? layer->PlatformLayer() : 0;
+  root_layer_ = layer ? layer->PlatformLayer() : nullptr;
 
   is_accelerated_compositing_active_ = !!layer;
   if (layer_tree_view_) {

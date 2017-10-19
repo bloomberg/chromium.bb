@@ -245,7 +245,7 @@ void LayoutText::RemoveAndDestroyTextBoxes() {
 
 void LayoutText::WillBeDestroyed() {
   if (SecureTextTimer* secure_text_timer =
-          g_secure_text_timers ? g_secure_text_timers->Take(this) : 0)
+          g_secure_text_timers ? g_secure_text_timers->Take(this) : nullptr)
     delete secure_text_timer;
 
   RemoveAndDestroyTextBoxes();
@@ -1105,7 +1105,7 @@ void LayoutText::ComputePreferredLogicalWidths(
   TextDirection text_direction = style_to_use.Direction();
   if ((Is8Bit() && text_direction == TextDirection::kLtr) ||
       IsOverride(style_to_use.GetUnicodeBidi())) {
-    run = 0;
+    run = nullptr;
   } else {
     TextRun text_run(GetText());
     BidiStatus status(text_direction, false);
@@ -1611,7 +1611,7 @@ void LayoutText::SecureText(UChar mask) {
   int last_typed_character_offset_to_reveal = -1;
   UChar revealed_text;
   SecureTextTimer* secure_text_timer =
-      g_secure_text_timers ? g_secure_text_timers->at(this) : 0;
+      g_secure_text_timers ? g_secure_text_timers->at(this) : nullptr;
   if (secure_text_timer && secure_text_timer->IsActive()) {
     last_typed_character_offset_to_reveal =
         secure_text_timer->LastTypedCharacterOffset();

@@ -793,7 +793,7 @@ void ContainerNode::RemoveChildren(SubtreeModificationAction action) {
       ScriptForbiddenScope forbid_script;
 
       while (Node* child = first_child_) {
-        RemoveBetween(0, child->nextSibling(), *child);
+        RemoveBetween(nullptr, child->nextSibling(), *child);
         NotifyNodeRemoved(*child);
       }
     }

@@ -559,7 +559,7 @@ void FrameFetchContext::DispatchDidDownloadData(unsigned long identifier,
 
   GetFrame()->Loader().Progress().IncrementProgress(identifier, data_length);
   probe::didReceiveData(GetFrame()->GetDocument(), identifier,
-                        MasterDocumentLoader(), 0, data_length);
+                        MasterDocumentLoader(), nullptr, data_length);
   probe::didReceiveEncodedDataLength(GetFrame()->GetDocument(), identifier,
                                      encoded_data_length);
 }

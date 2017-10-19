@@ -116,7 +116,7 @@ class StyleAttributeMutationScope {
     // We have to clear internal state before calling Inspector's code.
     AbstractPropertySetCSSStyleDeclaration* local_copy_style_decl =
         current_decl_;
-    current_decl_ = 0;
+    current_decl_ = nullptr;
 
     if (!should_notify_inspector_)
       return;
@@ -143,7 +143,7 @@ class StyleAttributeMutationScope {
 
 unsigned StyleAttributeMutationScope::scope_count_ = 0;
 AbstractPropertySetCSSStyleDeclaration*
-    StyleAttributeMutationScope::current_decl_ = 0;
+    StyleAttributeMutationScope::current_decl_ = nullptr;
 bool StyleAttributeMutationScope::should_notify_inspector_ = false;
 bool StyleAttributeMutationScope::should_deliver_ = false;
 

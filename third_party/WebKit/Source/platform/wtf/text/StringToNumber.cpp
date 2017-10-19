@@ -304,8 +304,8 @@ float CharactersToFloat(const LChar* data,
                         size_t& parsed_length) {
   // FIXME: This will return ok even when the string fits into a double but
   // not a float.
-  return static_cast<float>(
-      ToDoubleType<LChar, kAllowTrailingJunk>(data, length, 0, parsed_length));
+  return static_cast<float>(ToDoubleType<LChar, kAllowTrailingJunk>(
+      data, length, nullptr, parsed_length));
 }
 
 float CharactersToFloat(const UChar* data,
@@ -313,8 +313,8 @@ float CharactersToFloat(const UChar* data,
                         size_t& parsed_length) {
   // FIXME: This will return ok even when the string fits into a double but
   // not a float.
-  return static_cast<float>(
-      ToDoubleType<UChar, kAllowTrailingJunk>(data, length, 0, parsed_length));
+  return static_cast<float>(ToDoubleType<UChar, kAllowTrailingJunk>(
+      data, length, nullptr, parsed_length));
 }
 
 }  // namespace WTF

@@ -4351,7 +4351,7 @@ TEST_P(ParameterizedWebFrameTest, ClearFocusedNodeTest) {
   web_view_helper.WebView()->ClearFocusedElement();
 
   // Now retrieve the FocusedNode and test it should be null.
-  EXPECT_EQ(0, web_view_helper.WebView()->FocusedElement());
+  EXPECT_EQ(nullptr, web_view_helper.WebView()->FocusedElement());
 }
 
 class ChangedSelectionCounter : public FrameTestHelpers::TestWebFrameClient {
@@ -4874,7 +4874,7 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects) {
         static_cast<FloatRect>(web_match_rects[result_index]);
 
     // Select the match by the center of its rect.
-    EXPECT_EQ(main_frame->SelectNearestFindMatch(result_rect.Center(), 0),
+    EXPECT_EQ(main_frame->SelectNearestFindMatch(result_rect.Center(), nullptr),
               result_index + 1);
 
     // Check that the find result ordering matches with our expectations.
@@ -6775,7 +6775,7 @@ TEST_P(ParameterizedWebFrameTest, RemoveSpellingMarkersUnderWords) {
 
 class StubbornTextCheckClient : public WebTextCheckClient {
  public:
-  StubbornTextCheckClient() : completion_(0) {}
+  StubbornTextCheckClient() : completion_(nullptr) {}
   ~StubbornTextCheckClient() override {}
 
   // WebTextCheckClient:
@@ -6808,7 +6808,7 @@ class StubbornTextCheckClient : public WebTextCheckClient {
                                               misspelling_length));
     }
     completion_->DidFinishCheckingText(results);
-    completion_ = 0;
+    completion_ = nullptr;
   }
 
   WebTextCheckingCompletion* completion_;
@@ -6911,7 +6911,8 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
 
   textcheck.Kick();
   ASSERT_EQ(1U, document->Markers().Markers().size());
-  ASSERT_NE(static_cast<DocumentMarker*>(0), document->Markers().Markers()[0]);
+  ASSERT_NE(static_cast<DocumentMarker*>(nullptr),
+            document->Markers().Markers()[0]);
   EXPECT_EQ(DocumentMarker::kSpelling,
             document->Markers().Markers()[0]->GetType());
 
@@ -6925,7 +6926,8 @@ TEST_P(ParameterizedWebFrameTest, SpellcheckResultsSavedInDocument) {
 
   textcheck.KickGrammar();
   ASSERT_EQ(1U, document->Markers().Markers().size());
-  ASSERT_NE(static_cast<DocumentMarker*>(0), document->Markers().Markers()[0]);
+  ASSERT_NE(static_cast<DocumentMarker*>(nullptr),
+            document->Markers().Markers()[0]);
   EXPECT_EQ(DocumentMarker::kGrammar,
             document->Markers().Markers()[0]->GetType());
 }
@@ -7279,7 +7281,7 @@ class TestNewWindowWebViewClient : public FrameTestHelpers::TestWebViewClient {
                       bool,
                       WebSandboxFlags) override {
     EXPECT_TRUE(false);
-    return 0;
+    return nullptr;
   }
 };
 
@@ -7557,10 +7559,11 @@ TEST_P(ParameterizedWebFrameTest, NavigateToSame) {
   EXPECT_FALSE(client.FrameLoadTypeReloadSeen());
 
   FrameLoadRequest frame_request(
-      0, ResourceRequest(
-             ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame())
-                 ->GetDocument()
-                 ->Url()));
+      nullptr,
+      ResourceRequest(
+          ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame())
+              ->GetDocument()
+              ->Url()));
   ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame())
       ->Loader()
       .Load(frame_request);

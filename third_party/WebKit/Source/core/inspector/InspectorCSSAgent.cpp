@@ -983,7 +983,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
 template <class CSSRuleCollection>
 static CSSKeyframesRule* FindKeyframesRule(CSSRuleCollection* css_rules,
                                            StyleRuleKeyframes* keyframes_rule) {
-  CSSKeyframesRule* result = 0;
+  CSSKeyframesRule* result = nullptr;
   for (unsigned j = 0; css_rules && j < css_rules->length() && !result; ++j) {
     CSSRule* css_rule = css_rules->item(j);
     if (css_rule->type() == CSSRule::kKeyframesRule) {

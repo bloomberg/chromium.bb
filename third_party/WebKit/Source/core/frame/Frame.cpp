@@ -77,7 +77,7 @@ void Frame::Detach(FrameDetachType type) {
   // By the time this method is called, the subclasses should have already
   // advanced to the Detaching state.
   DCHECK_EQ(lifecycle_.GetState(), FrameLifecycle::kDetaching);
-  client_->SetOpener(0);
+  client_->SetOpener(nullptr);
   // After this, we must no longer talk to the client since this clears
   // its owning reference back to our owning LocalFrame.
   client_->Detached(type);

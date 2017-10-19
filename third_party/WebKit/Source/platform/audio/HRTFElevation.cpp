@@ -331,8 +331,8 @@ void HRTFElevation::GetKernelsFromAzimuth(double azimuth_blend,
   bool is_index_good = azimuth_index < num_kernels;
   DCHECK(is_index_good);
   if (!is_index_good) {
-    kernel_l = 0;
-    kernel_r = 0;
+    kernel_l = nullptr;
+    kernel_r = nullptr;
     return;
   }
 

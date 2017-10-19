@@ -105,9 +105,9 @@ class ErrorWebCacheForTests : public WebServiceWorkerCache {
  public:
   ErrorWebCacheForTests(const WebServiceWorkerCacheError error)
       : error_(error),
-        expected_url_(0),
-        expected_query_params_(0),
-        expected_batch_operations_(0) {}
+        expected_url_(nullptr),
+        expected_query_params_(nullptr),
+        expected_batch_operations_(nullptr) {}
 
   std::string GetAndClearLastErrorWebCacheMethodCalled() {
     std::string old = last_error_web_cache_method_called_;
@@ -257,7 +257,7 @@ class CacheStorageTest : public ::testing::Test {
     DummyExceptionStateForTesting exception_state;
     Request* request = Request::Create(GetScriptState(), url, exception_state);
     EXPECT_FALSE(exception_state.HadException());
-    return exception_state.HadException() ? 0 : request;
+    return exception_state.HadException() ? nullptr : request;
   }
 
   // Convenience methods for testing the returned promises.

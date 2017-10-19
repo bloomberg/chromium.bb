@@ -463,7 +463,7 @@ size_t ImageDecoder::FindRequiredPreviousFrame(size_t frame_index,
 
 ImagePlanes::ImagePlanes() {
   for (int i = 0; i < 3; ++i) {
-    planes_[i] = 0;
+    planes_[i] = nullptr;
     row_bytes_[i] = 0;
   }
 }

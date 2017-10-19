@@ -61,7 +61,7 @@ TEST(TreeNodeTest, InsertBefore) {
   RefPtr<TestTree> last_child = TestTree::Create();
 
   // Inserting single node
-  root->InsertBefore(last_child.get(), 0);
+  root->InsertBefore(last_child.get(), nullptr);
   EXPECT_EQ(last_child->Parent(), root.get());
   EXPECT_EQ(root->FirstChild(), last_child.get());
   EXPECT_EQ(root->LastChild(), last_child.get());

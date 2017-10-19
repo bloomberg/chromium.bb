@@ -261,7 +261,8 @@ static inline bool TableHasSpace(hb_face_t* face,
                                  hb_codepoint_t space) {
   unsigned count = hb_ot_layout_table_get_lookup_count(face, tag);
   for (unsigned i = 0; i < count; i++) {
-    hb_ot_layout_lookup_collect_glyphs(face, tag, i, glyphs, glyphs, glyphs, 0);
+    hb_ot_layout_lookup_collect_glyphs(face, tag, i, glyphs, glyphs, glyphs,
+                                       nullptr);
     if (hb_set_has(glyphs, space))
       return true;
   }

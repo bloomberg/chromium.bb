@@ -159,7 +159,7 @@ v8::Local<v8::Value> ThrowStackOverflowExceptionIfNeeded(v8::Isolate* isolate) {
                         ThrowStackOverflowException, v8::Local<v8::Value>(), 0,
                         v8::ConstructorBehavior::kThrow)
           .ToLocalChecked()
-          ->Call(v8::Undefined(isolate), 0, 0);
+          ->Call(v8::Undefined(isolate), 0, nullptr);
   V8PerIsolateData::From(isolate)->SetIsHandlingRecursionLevelError(false);
   return result;
 }

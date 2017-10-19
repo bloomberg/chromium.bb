@@ -262,7 +262,7 @@ class MediaControlsImplTest : public PageTestBase,
   void ClickOverflowButton() {
     MediaControls()
         .mute_button_->OverflowElementForTests()
-        ->DispatchSimulatedClick(0, kSendNoEvents,
+        ->DispatchSimulatedClick(nullptr, kSendNoEvents,
                                  SimulatedClickCreationScope::kFromUserAgent);
   }
 

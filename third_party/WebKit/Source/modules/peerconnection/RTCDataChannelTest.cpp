@@ -24,7 +24,7 @@ namespace {
 class MockHandler final : public WebRTCDataChannelHandler {
  public:
   MockHandler()
-      : client_(0),
+      : client_(nullptr),
         state_(WebRTCDataChannelHandlerClient::kReadyStateConnecting),
         buffered_amount_(0) {}
   void SetClient(WebRTCDataChannelHandlerClient* client) override {

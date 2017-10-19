@@ -370,7 +370,7 @@ void WebURLResponse::SetEncodedDataLength(long long length) {
 WebURLResponse::ExtraData* WebURLResponse::GetExtraData() const {
   RefPtr<ResourceResponse::ExtraData> data = resource_response_->GetExtraData();
   if (!data)
-    return 0;
+    return nullptr;
   return static_cast<URLResponseExtraDataContainer*>(data.get())
       ->GetExtraData();
 }

@@ -502,7 +502,7 @@ void SVGAnimateElement::ApplyResultsToTarget() {
         targetElement()->EnsureAnimatedSMILStyleProperties();
     if (property_set
             ->SetProperty(css_property_id_, animated_value_->ValueAsString(),
-                          false, 0)
+                          false, nullptr)
             .did_change) {
       targetElement()->SetNeedsStyleRecalc(
           kLocalStyleChange,

@@ -389,7 +389,7 @@ TEST_F(AnimationDocumentTimelineTest, DelayBeforeAnimationStart) {
 }
 
 TEST_F(AnimationDocumentTimelineTest, UseAnimationAfterTimelineDeref) {
-  Animation* animation = timeline->Play(0);
+  Animation* animation = timeline->Play(nullptr);
   timeline.Clear();
   // Test passes if this does not crash.
   animation->setStartTime(0, false);
@@ -402,7 +402,8 @@ TEST_F(AnimationDocumentTimelineTest, PlayAfterDocumentDeref) {
   timeline = &document->Timeline();
   document = nullptr;
 
-  KeyframeEffect* keyframe_effect = KeyframeEffect::Create(0, nullptr, timing);
+  KeyframeEffect* keyframe_effect =
+      KeyframeEffect::Create(nullptr, nullptr, timing);
   // Test passes if this does not crash.
   timeline->Play(keyframe_effect);
 }

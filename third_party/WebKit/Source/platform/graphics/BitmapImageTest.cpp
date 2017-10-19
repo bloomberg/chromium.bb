@@ -119,7 +119,7 @@ class BitmapImageTest : public ::testing::Test {
     return size;
   }
 
-  void AdvanceAnimation() { image_->AdvanceAnimation(0); }
+  void AdvanceAnimation() { image_->AdvanceAnimation(nullptr); }
 
   int RepetitionCount() { return image_->RepetitionCount(); }
 

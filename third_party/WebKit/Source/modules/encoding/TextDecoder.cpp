@@ -49,7 +49,7 @@ TextDecoder* TextDecoder::Create(const String& label,
   if (!encoding.IsValid() || !strcasecmp(encoding.GetName(), "replacement")) {
     exception_state.ThrowRangeError("The encoding label provided ('" + label +
                                     "') is invalid.");
-    return 0;
+    return nullptr;
   }
 
   return new TextDecoder(encoding, options.fatal(), options.ignoreBOM());

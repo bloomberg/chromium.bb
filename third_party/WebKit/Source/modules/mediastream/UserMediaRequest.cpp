@@ -433,7 +433,7 @@ Document* UserMediaRequest::OwnerDocument() {
     return ToDocument(context);
   }
 
-  return 0;
+  return nullptr;
 }
 
 void UserMediaRequest::Start() {

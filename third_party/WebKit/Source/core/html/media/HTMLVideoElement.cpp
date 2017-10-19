@@ -180,8 +180,11 @@ void HTMLVideoElement::ParseAttribute(
         image_loader_ = HTMLImageLoader::Create(this);
       image_loader_->UpdateFromElement(ImageLoader::kUpdateIgnorePreviousError);
     } else {
-      if (GetLayoutObject())
-        ToLayoutImage(GetLayoutObject())->ImageResource()->SetImageResource(0);
+      if (GetLayoutObject()) {
+        ToLayoutImage(GetLayoutObject())
+            ->ImageResource()
+            ->SetImageResource(nullptr);
+      }
     }
     // Notify the player when the poster image URL changes.
     if (GetWebMediaPlayer())

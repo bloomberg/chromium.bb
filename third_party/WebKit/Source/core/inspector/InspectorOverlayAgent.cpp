@@ -847,7 +847,7 @@ Page* InspectorOverlayAgent::OverlayPage() {
   overlay_settings.SetAcceleratedCompositingEnabled(false);
 
   LocalFrame* frame =
-      LocalFrame::Create(&dummy_local_frame_client, *overlay_page_, 0);
+      LocalFrame::Create(&dummy_local_frame_client, *overlay_page_, nullptr);
   frame->SetView(LocalFrameView::Create(*frame));
   frame->Init();
   frame->View()->SetCanHaveScrollbars(false);

@@ -144,7 +144,7 @@ ClipRects* PaintLayerClipper::ClipRectsIfCached(
   // We should add a test that has an inconsistent root. See
   // http://crbug.com/366118 for an example.
   if (context.root_layer != entry.root)
-    return 0;
+    return nullptr;
 #if DCHECK_IS_ON()
   DCHECK(entry.overlay_scrollbar_clip_behavior ==
          context.overlay_scrollbar_clip_behavior);

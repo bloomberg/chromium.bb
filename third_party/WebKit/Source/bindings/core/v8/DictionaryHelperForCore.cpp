@@ -202,7 +202,7 @@ bool DictionaryHelper::Get(const Dictionary& dictionary,
   if (!dictionary.Get(key, v8_value))
     return false;
 
-  TrackBase* source = 0;
+  TrackBase* source = nullptr;
   if (v8_value->IsObject()) {
     v8::Local<v8::Object> wrapper = v8::Local<v8::Object>::Cast(v8_value);
 

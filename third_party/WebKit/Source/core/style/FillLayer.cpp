@@ -44,7 +44,7 @@ static_assert(sizeof(FillLayer) == sizeof(SameSizeAsFillLayer),
               "FillLayer should stay small");
 
 FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
-    : next_(0),
+    : next_(nullptr),
       image_(FillLayer::InitialFillImage(type)),
       x_position_(FillLayer::InitialFillXPosition(type)),
       y_position_(FillLayer::InitialFillYPosition(type)),
@@ -81,7 +81,7 @@ FillLayer::FillLayer(EFillLayerType type, bool use_initial_values)
       cached_properties_computed_(false) {}
 
 FillLayer::FillLayer(const FillLayer& o)
-    : next_(o.next_ ? new FillLayer(*o.next_) : 0),
+    : next_(o.next_ ? new FillLayer(*o.next_) : nullptr),
       image_(o.image_),
       x_position_(o.x_position_),
       y_position_(o.y_position_),
@@ -123,7 +123,7 @@ FillLayer::~FillLayer() {
 FillLayer& FillLayer::operator=(const FillLayer& o) {
   if (next_ != o.next_) {
     delete next_;
-    next_ = o.next_ ? new FillLayer(*o.next_) : 0;
+    next_ = o.next_ ? new FillLayer(*o.next_) : nullptr;
   }
 
   image_ = o.image_;
@@ -324,7 +324,7 @@ void FillLayer::CullEmptyLayers() {
     next = p->next_;
     if (next && !next->IsImageSet()) {
       delete next;
-      p->next_ = 0;
+      p->next_ = nullptr;
       break;
     }
   }

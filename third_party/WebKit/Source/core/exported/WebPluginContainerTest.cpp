@@ -262,7 +262,7 @@ void CreateAndHandleKeyboardEvent(WebElement* plugin_container_one_element,
   WebKeyboardEvent web_keyboard_event(WebInputEvent::kRawKeyDown, modifier_key,
                                       WebInputEvent::kTimeStampForTesting);
   web_keyboard_event.windows_key_code = key_code;
-  KeyboardEvent* key_event = KeyboardEvent::Create(web_keyboard_event, 0);
+  KeyboardEvent* key_event = KeyboardEvent::Create(web_keyboard_event, nullptr);
   ToWebPluginContainerImpl(plugin_container_one_element->PluginContainer())
       ->HandleEvent(key_event);
 }

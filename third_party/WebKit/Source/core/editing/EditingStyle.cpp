@@ -189,7 +189,7 @@ class HTMLElementEquivalent : public GarbageCollected<HTMLElementEquivalent> {
 };
 
 HTMLElementEquivalent::HTMLElementEquivalent(CSSPropertyID id)
-    : property_id_(id), tag_name_(0) {}
+    : property_id_(id), tag_name_(nullptr) {}
 
 HTMLElementEquivalent::HTMLElementEquivalent(CSSPropertyID id,
                                              const HTMLQualifiedName& tag_name)

@@ -78,7 +78,7 @@ void SimplifyMarkupCommand::DoApply(EditingState* editing_state) {
         continue;
 
       if (current_node->firstChild() != current_node->lastChild()) {
-        top_node_with_starting_style = 0;
+        top_node_with_starting_style = nullptr;
         break;
       }
 

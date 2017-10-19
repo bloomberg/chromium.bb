@@ -612,7 +612,7 @@ void AddKeyframesToCurve(PlatformAnimationCurveType& curve,
                          const PropertySpecificKeyframeVector& keyframes) {
   auto* last_keyframe = keyframes.back().get();
   for (const auto& keyframe : keyframes) {
-    const TimingFunction* keyframe_timing_function = 0;
+    const TimingFunction* keyframe_timing_function = nullptr;
     // Ignore timing function of last frame.
     if (keyframe == last_keyframe)
       keyframe_timing_function = LinearTimingFunction::Shared();

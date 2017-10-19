@@ -58,7 +58,7 @@ TrackDefault* TrackDefaultList::item(unsigned index) const {
   // 1. If |index| is greater than or equal to the length attribute then
   //    return undefined and abort these steps.
   if (index >= track_defaults_.size())
-    return 0;
+    return nullptr;
 
   // 2. Return the |index|'th TrackDefault object in the list.
   return track_defaults_[index].Get();

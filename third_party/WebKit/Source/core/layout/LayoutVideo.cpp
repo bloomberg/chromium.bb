@@ -201,7 +201,7 @@ static const LayoutBlock* LayoutObjectPlaceholder(
     return nullptr;
 
   LayoutFullScreen* full_screen =
-      parent->IsLayoutFullScreen() ? ToLayoutFullScreen(parent) : 0;
+      parent->IsLayoutFullScreen() ? ToLayoutFullScreen(parent) : nullptr;
   if (!full_screen)
     return nullptr;
 

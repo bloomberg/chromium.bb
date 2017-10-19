@@ -46,10 +46,11 @@ XSLStyleSheet::XSLStyleSheet(XSLImportRule* parent_rule,
       // Child sheets get marked as processed when the libxslt engine has
       // finally seen them.
       processed_(false),
-      stylesheet_doc_(0),
+      stylesheet_doc_(nullptr),
       stylesheet_doc_taken_(false),
       compilation_failed_(false),
-      parent_style_sheet_(parent_rule ? parent_rule->ParentStyleSheet() : 0),
+      parent_style_sheet_(parent_rule ? parent_rule->ParentStyleSheet()
+                                      : nullptr),
       owner_document_(nullptr) {}
 
 XSLStyleSheet::XSLStyleSheet(Node* parent_node,
@@ -62,7 +63,7 @@ XSLStyleSheet::XSLStyleSheet(Node* parent_node,
       is_disabled_(false),
       embedded_(embedded),
       processed_(true),  // The root sheet starts off processed.
-      stylesheet_doc_(0),
+      stylesheet_doc_(nullptr),
       stylesheet_doc_taken_(false),
       compilation_failed_(false),
       parent_style_sheet_(nullptr),
@@ -79,7 +80,7 @@ XSLStyleSheet::XSLStyleSheet(Document* owner_document,
       is_disabled_(false),
       embedded_(embedded),
       processed_(true),  // The root sheet starts off processed.
-      stylesheet_doc_(0),
+      stylesheet_doc_(nullptr),
       stylesheet_doc_taken_(false),
       compilation_failed_(false),
       parent_style_sheet_(nullptr),
@@ -114,7 +115,7 @@ xmlDocPtr XSLStyleSheet::GetDocument() {
 }
 
 void XSLStyleSheet::ClearDocuments() {
-  stylesheet_doc_ = 0;
+  stylesheet_doc_ = nullptr;
   for (unsigned i = 0; i < children_.size(); ++i) {
     XSLImportRule* import = children_.at(i).Get();
     if (import->GetStyleSheet())
@@ -235,7 +236,7 @@ xsltStylesheetPtr XSLStyleSheet::CompileStyleSheet() {
   // Certain libxslt versions are corrupting the xmlDoc on compilation
   // failures - hence attempting to recompile after a failure is unsafe.
   if (compilation_failed_)
-    return 0;
+    return nullptr;
 
   // xsltParseStylesheetDoc makes the document part of the stylesheet
   // so we have to release our pointer to it.
@@ -299,7 +300,7 @@ xmlDocPtr XSLStyleSheet::LocateStylesheetSubResource(xmlDocPtr parent_doc,
       return result;
   }
 
-  return 0;
+  return nullptr;
 }
 
 void XSLStyleSheet::MarkAsProcessed() {

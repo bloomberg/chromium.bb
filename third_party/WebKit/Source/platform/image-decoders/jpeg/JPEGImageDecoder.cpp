@@ -522,7 +522,7 @@ class JPEGImageReader final {
         info_.enable_external_quant = false;
         info_.enable_1pass_quant = false;
         info_.quantize_colors = false;
-        info_.colormap = 0;
+        info_.colormap = nullptr;
 
         // Make a one-row-high sample array that will go away when done with
         // image. Always make it big enough to hold one RGBA row. Since this
@@ -700,7 +700,7 @@ void emit_message(j_common_ptr cinfo, int msg_level) {
   err->pub.num_warnings++;
 
   // Detect and count corrupt JPEG warning messages.
-  const char* warning = 0;
+  const char* warning = nullptr;
   int code = err->pub.msg_code;
   if (code > 0 && code <= err->pub.last_jpeg_message)
     warning = err->pub.jpeg_message_table[code];

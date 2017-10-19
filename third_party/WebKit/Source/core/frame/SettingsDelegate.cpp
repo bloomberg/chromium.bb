@@ -43,7 +43,7 @@ SettingsDelegate::SettingsDelegate(std::unique_ptr<Settings> settings)
 
 SettingsDelegate::~SettingsDelegate() {
   if (settings_)
-    settings_->SetDelegate(0);
+    settings_->SetDelegate(nullptr);
 }
 
 }  // namespace blink

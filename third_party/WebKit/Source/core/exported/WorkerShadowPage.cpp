@@ -48,8 +48,8 @@ void WorkerShadowPage::Initialize(const KURL& script_url) {
   CString content("");
   RefPtr<SharedBuffer> buffer(
       SharedBuffer::Create(content.data(), content.length()));
-  main_frame_->GetFrame()->Loader().Load(
-      FrameLoadRequest(0, ResourceRequest(script_url), SubstituteData(buffer)));
+  main_frame_->GetFrame()->Loader().Load(FrameLoadRequest(
+      nullptr, ResourceRequest(script_url), SubstituteData(buffer)));
 }
 
 void WorkerShadowPage::SetContentSecurityPolicyAndReferrerPolicy(

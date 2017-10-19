@@ -68,13 +68,13 @@ MediaQueryEvaluatorTestCase g_screen_test_cases[] = {
     {"(shape: round)", 0},
     {"(max-device-aspect-ratio: 4294967295/1)", 1},
     {"(min-device-aspect-ratio: 1/4294967296)", 1},
-    {0, 0}  // Do not remove the terminator line.
+    {nullptr, 0}  // Do not remove the terminator line.
 };
 
 MediaQueryEvaluatorTestCase g_monochrome_test_cases[] = {
     {"(color)", 0},
     {"(monochrome)", 1},
-    {0, 0}  // Do not remove the terminator line.
+    {nullptr, 0}  // Do not remove the terminator line.
 };
 
 MediaQueryEvaluatorTestCase g_viewport_test_cases[] = {
@@ -101,7 +101,7 @@ MediaQueryEvaluatorTestCase g_viewport_test_cases[] = {
     {"screen and (min-width: 400px) and (max-width: 700px)", 1},
     {"(max-aspect-ratio: 4294967296/1)", 1},
     {"(min-aspect-ratio: 1/4294967295)", 1},
-    {0, 0}  // Do not remove the terminator line.
+    {nullptr, 0}  // Do not remove the terminator line.
 };
 
 MediaQueryEvaluatorTestCase g_float_viewport_test_cases[] = {
@@ -125,7 +125,7 @@ MediaQueryEvaluatorTestCase g_float_viewport_test_cases[] = {
     {"(height: 700.126px)", 0},
     {"(height: 700.124px)", 0},
     {"(height: 701px)", 0},
-    {0, 0}  // Do not remove the terminator line.
+    {nullptr, 0}  // Do not remove the terminator line.
 };
 
 MediaQueryEvaluatorTestCase g_float_non_friendly_viewport_test_cases[] = {
@@ -137,14 +137,14 @@ MediaQueryEvaluatorTestCase g_float_non_friendly_viewport_test_cases[] = {
     {"(height: 821px)", 1},
     {"(width: 100vw)", 1},
     {"(height: 100vh)", 1},
-    {0, 0}  // Do not remove the terminator line.
+    {nullptr, 0}  // Do not remove the terminator line.
 };
 
 MediaQueryEvaluatorTestCase g_print_test_cases[] = {
     {"print and (min-resolution: 1dppx)", 1},
     {"print and (min-resolution: 118dpcm)", 1},
     {"print and (min-resolution: 119dpcm)", 0},
-    {0, 0}  // Do not remove the terminator line.
+    {nullptr, 0}  // Do not remove the terminator line.
 };
 
 void TestMQEvaluator(MediaQueryEvaluatorTestCase* test_cases,

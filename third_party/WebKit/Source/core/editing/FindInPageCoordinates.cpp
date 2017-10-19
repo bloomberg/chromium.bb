@@ -140,7 +140,7 @@ FloatRect FindInPageRectFromAbsoluteRect(
     // Jump to the layoutObject owning the frame, if any.
     layout_object = layout_object->GetFrame()
                         ? layout_object->GetFrame()->OwnerLayoutObject()
-                        : 0;
+                        : nullptr;
   }
 
   return normalized_rect;

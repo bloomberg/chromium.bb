@@ -97,7 +97,7 @@ void HTMLLIElement::AttachLayoutTree(AttachContext& context) {
     DCHECK(!GetDocument().ChildNeedsDistributionRecalc());
 
     // Find the enclosing list node.
-    Element* list_node = 0;
+    Element* list_node = nullptr;
     Element* current = this;
     while (!list_node) {
       current = LayoutTreeBuilderTraversal::ParentElement(*current);

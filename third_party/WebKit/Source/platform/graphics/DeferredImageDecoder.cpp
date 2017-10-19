@@ -167,7 +167,7 @@ void DeferredImageDecoder::SetDataInternal(RefPtr<SharedBuffer> data,
     if (!rw_buffer_)
       rw_buffer_ = WTF::WrapUnique(new SkRWBuffer(data->size()));
 
-    const char* segment = 0;
+    const char* segment = nullptr;
     for (size_t length = data->GetSomeData(segment, rw_buffer_->size()); length;
          length = data->GetSomeData(segment, rw_buffer_->size())) {
       DCHECK_GE(data->size(), rw_buffer_->size() + length);

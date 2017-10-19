@@ -605,7 +605,7 @@ LayoutViewItem LocalFrameView::GetLayoutViewItem() const {
 
 ScrollingCoordinator* LocalFrameView::GetScrollingCoordinator() const {
   Page* p = GetPage();
-  return p ? p->GetScrollingCoordinator() : 0;
+  return p ? p->GetScrollingCoordinator() : nullptr;
 }
 
 CompositorAnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
@@ -690,7 +690,7 @@ bool LocalFrameView::ShouldUseCustomScrollbars(
   Document* doc = frame_->GetDocument();
 
   // Try the <body> element first as a scrollbar source.
-  Element* body = doc ? doc->body() : 0;
+  Element* body = doc ? doc->body() : nullptr;
   if (body && body->GetLayoutObject() &&
       body->GetLayoutObject()->Style()->HasPseudoStyle(kPseudoIdScrollbar)) {
     custom_scrollbar_element = body;
@@ -698,7 +698,7 @@ bool LocalFrameView::ShouldUseCustomScrollbars(
   }
 
   // If the <body> didn't have a custom style, then the root element might.
-  Element* doc_element = doc ? doc->documentElement() : 0;
+  Element* doc_element = doc ? doc->documentElement() : nullptr;
   if (doc_element && doc_element->GetLayoutObject() &&
       doc_element->GetLayoutObject()->Style()->HasPseudoStyle(
           kPseudoIdScrollbar)) {
@@ -1254,10 +1254,10 @@ void LocalFrameView::UpdateLayout() {
         LayoutBox* root_layout_object =
             document->documentElement()
                 ? document->documentElement()->GetLayoutBox()
-                : 0;
+                : nullptr;
         LayoutBox* body_layout_object = root_layout_object && document->body()
                                             ? document->body()->GetLayoutBox()
-                                            : 0;
+                                            : nullptr;
         if (body_layout_object && body_layout_object->StretchesToViewport())
           body_layout_object->SetChildNeedsLayout();
         else if (root_layout_object &&

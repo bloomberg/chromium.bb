@@ -198,7 +198,7 @@ TreeScopeEventContext* EventPath::EnsureTreeScopeEventContext(
 
     TreeScopeEventContext* parent_tree_scope_event_context =
         EnsureTreeScopeEventContext(
-            0, tree_scope->OlderShadowRootOrParentTreeScope());
+            nullptr, tree_scope->OlderShadowRootOrParentTreeScope());
     if (parent_tree_scope_event_context &&
         parent_tree_scope_event_context->Target()) {
       tree_scope_event_context->SetTarget(

@@ -164,7 +164,7 @@ void CanvasRenderingContext2DState::UpdateLineDash() const {
     return;
 
   if (!HasANonZeroElement(line_dash_)) {
-    stroke_flags_.setPathEffect(0);
+    stroke_flags_.setPathEffect(nullptr);
   } else {
     Vector<float> line_dash(line_dash_.size());
     std::copy(line_dash_.begin(), line_dash_.end(), line_dash.begin());
@@ -247,7 +247,7 @@ void CanvasRenderingContext2DState::ClipPath(
   clip_list_.ClipPath(path, anti_aliasing_mode,
                       AffineTransformToSkMatrix(transform_));
   has_clip_ = true;
-  if (!path.isRect(0))
+  if (!path.isRect(nullptr))
     has_complex_clip_ = true;
 }
 
@@ -570,36 +570,36 @@ const PaintFlags* CanvasRenderingContext2DState::GetFlags(
 
   if ((!ShouldDrawShadows() && shadow_mode == kDrawShadowAndForeground) ||
       shadow_mode == kDrawForegroundOnly) {
-    flags->setLooper(0);
-    flags->setImageFilter(0);
+    flags->setLooper(nullptr);
+    flags->setImageFilter(nullptr);
     return flags;
   }
 
   if (!ShouldDrawShadows() && shadow_mode == kDrawShadowOnly) {
     flags->setLooper(sk_ref_sp(EmptyDrawLooper()));  // draw nothing
-    flags->setImageFilter(0);
+    flags->setImageFilter(nullptr);
     return flags;
   }
 
   if (shadow_mode == kDrawShadowOnly) {
     if (image_type == kNonOpaqueImage || filter_value_) {
-      flags->setLooper(0);
+      flags->setLooper(nullptr);
       flags->setImageFilter(ShadowOnlyImageFilter());
       return flags;
     }
     flags->setLooper(sk_ref_sp(ShadowOnlyDrawLooper()));
-    flags->setImageFilter(0);
+    flags->setImageFilter(nullptr);
     return flags;
   }
 
   DCHECK(shadow_mode == kDrawShadowAndForeground);
   if (image_type == kNonOpaqueImage) {
-    flags->setLooper(0);
+    flags->setLooper(nullptr);
     flags->setImageFilter(ShadowAndForegroundImageFilter());
     return flags;
   }
   flags->setLooper(sk_ref_sp(ShadowAndForegroundDrawLooper()));
-  flags->setImageFilter(0);
+  flags->setImageFilter(nullptr);
   return flags;
 }
 

@@ -43,7 +43,7 @@ void TreeOrderedList::Add(Node* node) {
   iterator begin = nodes_.begin();
   iterator end = nodes_.end();
   iterator it = end;
-  Node* following_node = 0;
+  Node* following_node = nullptr;
   do {
     --it;
     Node* n = *it;

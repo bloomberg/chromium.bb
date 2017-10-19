@@ -45,7 +45,7 @@ UStringSearch* CreateSearcher() {
       CurrentSearchLocaleID() + String("@collation=search");
   UStringSearch* searcher =
       usearch_open(&kNewlineCharacter, 1, &kNewlineCharacter, 1,
-                   search_collator_name.Utf8().data(), 0, &status);
+                   search_collator_name.Utf8().data(), nullptr, &status);
   DCHECK(status == U_ZERO_ERROR || status == U_USING_FALLBACK_WARNING ||
          status == U_USING_DEFAULT_WARNING)
       << status;

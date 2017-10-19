@@ -10,7 +10,7 @@
 
 namespace blink {
 
-SerializedScriptValueFactory* SerializedScriptValueFactory::instance_ = 0;
+SerializedScriptValueFactory* SerializedScriptValueFactory::instance_ = nullptr;
 
 RefPtr<SerializedScriptValue> SerializedScriptValueFactory::Create(
     v8::Isolate* isolate,

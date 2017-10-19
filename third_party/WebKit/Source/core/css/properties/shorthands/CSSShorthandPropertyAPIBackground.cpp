@@ -82,7 +82,7 @@ bool CSSShorthandPropertyAPIBackground::ParseShorthand(
                                             : webkitMaskShorthand();
 
   const unsigned longhand_count = shorthand.length();
-  CSSValue* longhands[10] = {0};
+  CSSValue* longhands[10] = {nullptr};
   DCHECK_LE(longhand_count, 10u);
 
   bool implicit = false;

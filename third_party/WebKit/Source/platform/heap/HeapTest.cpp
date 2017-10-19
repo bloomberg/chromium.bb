@@ -1001,7 +1001,7 @@ class Weak : public Bar {
 
   void ZapWeakMembers(Visitor* visitor) {
     if (!ThreadHeap::IsHeapObjectAlive(weak_bar_))
-      weak_bar_ = 0;
+      weak_bar_ = nullptr;
   }
 
   bool StrongIsThere() { return !!strong_bar_; }
@@ -1636,7 +1636,7 @@ TEST(HeapTest, Transition) {
   EXPECT_EQ(1, SuperClass::alive_count_);
   EXPECT_EQ(1, SubClass::alive_count_);
   EXPECT_EQ(1, SubData::alive_count_);
-  EXPECT_EQ(0, points_back1->BackPointer());
+  EXPECT_EQ(nullptr, points_back1->BackPointer());
 
   points_back1.Release();
   PreciselyCollectGarbage();
@@ -1651,7 +1651,7 @@ TEST(HeapTest, Transition) {
   EXPECT_EQ(0, SuperClass::alive_count_);
   EXPECT_EQ(0, SubClass::alive_count_);
   EXPECT_EQ(0, SubData::alive_count_);
-  EXPECT_EQ(0, points_back2->BackPointer());
+  EXPECT_EQ(nullptr, points_back2->BackPointer());
 
   points_back2.Release();
   PreciselyCollectGarbage();
@@ -1786,7 +1786,7 @@ TEST(HeapTest, BasicFunctionality) {
 
   for (size_t i = 0; i < persistent_count; i++) {
     delete persistents[i];
-    persistents[i] = 0;
+    persistents[i] = nullptr;
   }
 
   uint8_t* address = reinterpret_cast<uint8_t*>(
@@ -1807,7 +1807,7 @@ TEST(HeapTest, BasicFunctionality) {
             0ul);
   // This should be equivalent to malloc(0).
   EXPECT_EQ(reinterpret_cast<uintptr_t>(
-                ThreadHeap::Reallocate<DynamicallySizedObject>(0, 0)),
+                ThreadHeap::Reallocate<DynamicallySizedObject>(nullptr, 0)),
             0ul);
 }
 
@@ -2212,7 +2212,7 @@ TEST(HeapTest, HashMapOfMembers) {
     size_t after_gc2 = heap.ObjectPayloadSizeForTesting();
     EXPECT_EQ(after_gc2, after_add_and_gc);
 
-    IntWrapper* dozen = 0;
+    IntWrapper* dozen = nullptr;
 
     for (int i = 1; i < 1000; i++) {  // 999 iterations.
       IntWrapper* i_wrapper(IntWrapper::Create(i));
@@ -3449,7 +3449,7 @@ void CheckPairSets(Persistent<WSSet>& weak_strong,
   p2 = IteratorExtractor(*it_sw);
   p3 = IteratorExtractor(*it_wu);
   p4 = IteratorExtractor(*it_uw);
-  IntWrapper* null_wrapper = 0;
+  IntWrapper* null_wrapper = nullptr;
   if (ones) {
     EXPECT_EQ(p.first->Value(), 1);
     EXPECT_EQ(p2.second->Value(), 1);
@@ -3868,7 +3868,7 @@ TEST(HeapTest, FinalizationObserver) {
   FinalizationObserverWithHashMap::ObserverMap& map =
       FinalizationObserverWithHashMap::Observe(*foo);
   EXPECT_EQ(1u, map.size());
-  foo = 0;
+  foo = nullptr;
   // FinalizationObserverWithHashMap doesn't have a strong reference to
   // |foo|. So |foo| and its member will be collected.
   PreciselyCollectGarbage();
@@ -4061,7 +4061,7 @@ TEST(HeapTest, PersistentHeapCollectionTypes) {
     wp_map.insert(ten, eleven);
 
     // Collect |vec| and |one|.
-    vec = 0;
+    vec = nullptr;
     PreciselyCollectGarbage();
     EXPECT_EQ(1, IntWrapper::destructor_calls_);
 
@@ -4461,7 +4461,7 @@ TEST(HeapTest, HeapTerminatedArray) {
   ClearOutOldGarbage();
   IntWrapper::destructor_calls_ = 0;
 
-  HeapTerminatedArray<TerminatedArrayItem>* arr = 0;
+  HeapTerminatedArray<TerminatedArrayItem>* arr = nullptr;
 
   const size_t kPrefixSize = 4;
   const size_t kSuffixSize = 4;
@@ -4497,7 +4497,7 @@ TEST(HeapTest, HeapTerminatedArray) {
 
   {
     Persistent<HeapTerminatedArray<TerminatedArrayItem>> persistent_arr = arr;
-    arr = 0;
+    arr = nullptr;
     PreciselyCollectGarbage();
     arr = persistent_arr.Get();
     EXPECT_EQ(0, IntWrapper::destructor_calls_);
@@ -4506,7 +4506,7 @@ TEST(HeapTest, HeapTerminatedArray) {
       EXPECT_EQ(i, static_cast<size_t>(arr->at(i).Payload()->Value()));
   }
 
-  arr = 0;
+  arr = nullptr;
   PreciselyCollectGarbage();
   EXPECT_EQ(8, IntWrapper::destructor_calls_);
 }
@@ -5939,14 +5939,14 @@ class NonNodeAllocatingNodeInDestructor
   static Persistent<IntNode>* node_;
 };
 
-Persistent<IntNode>* NonNodeAllocatingNodeInDestructor::node_ = 0;
+Persistent<IntNode>* NonNodeAllocatingNodeInDestructor::node_ = nullptr;
 
 TEST(HeapTest, NonNodeAllocatingNodeInDestructor) {
   new NonNodeAllocatingNodeInDestructor();
   PreciselyCollectGarbage();
   EXPECT_EQ(10, (*NonNodeAllocatingNodeInDestructor::node_)->Value());
   delete NonNodeAllocatingNodeInDestructor::node_;
-  NonNodeAllocatingNodeInDestructor::node_ = 0;
+  NonNodeAllocatingNodeInDestructor::node_ = nullptr;
 }
 
 class TraceTypeEagerly1 : public GarbageCollected<TraceTypeEagerly1> {};

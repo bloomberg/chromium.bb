@@ -88,7 +88,7 @@ WebGLShader* WebGLProgram::GetAttachedShader(GLenum type) {
     case GL_FRAGMENT_SHADER:
       return fragment_shader_;
     default:
-      return 0;
+      return nullptr;
   }
 }
 

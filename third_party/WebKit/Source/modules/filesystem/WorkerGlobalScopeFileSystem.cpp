@@ -82,7 +82,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
   ExecutionContext* secure_context = worker.GetExecutionContext();
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem()) {
     exception_state.ThrowSecurityError(FileError::kSecurityErrorMessage);
-    return 0;
+    return nullptr;
   }
 
   FileSystemType file_system_type = static_cast<FileSystemType>(type);
@@ -90,7 +90,7 @@ DOMFileSystemSync* WorkerGlobalScopeFileSystem::webkitRequestFileSystemSync(
     exception_state.ThrowDOMException(
         kInvalidModificationError,
         "the type must be kTemporary or kPersistent.");
-    return 0;
+    return nullptr;
   }
 
   FileSystemSyncCallbackHelper* helper = FileSystemSyncCallbackHelper::Create();
@@ -143,13 +143,13 @@ EntrySync* WorkerGlobalScopeFileSystem::webkitResolveLocalFileSystemSyncURL(
   if (!secure_context->GetSecurityOrigin()->CanAccessFileSystem() ||
       !secure_context->GetSecurityOrigin()->CanRequest(completed_url)) {
     exception_state.ThrowSecurityError(FileError::kSecurityErrorMessage);
-    return 0;
+    return nullptr;
   }
 
   if (!completed_url.IsValid()) {
     exception_state.ThrowDOMException(kEncodingError,
                                       "the URL '" + url + "' is invalid.");
-    return 0;
+    return nullptr;
   }
 
   EntrySyncCallbackHelper* resolve_url_helper =

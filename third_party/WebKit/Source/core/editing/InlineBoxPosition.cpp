@@ -56,13 +56,13 @@ InlineTextBox* SearchAheadForBetterMatch(LayoutObject* layout_object) {
   for (LayoutObject* next = layout_object->NextInPreOrder(container); next;
        next = next->NextInPreOrder(container)) {
     if (next->IsLayoutBlock())
-      return 0;
+      return nullptr;
     if (next->IsBR())
-      return 0;
+      return nullptr;
     if (IsNonTextLeafChild(next))
-      return 0;
+      return nullptr;
     if (next->IsText()) {
-      InlineTextBox* match = 0;
+      InlineTextBox* match = nullptr;
       int min_offset = INT_MAX;
       for (InlineTextBox* box : InlineTextBoxesOf(*ToLayoutText(next))) {
         int caret_min_offset = box->CaretMinOffset();
@@ -75,7 +75,7 @@ InlineTextBox* SearchAheadForBetterMatch(LayoutObject* layout_object) {
         return match;
     }
   }
-  return 0;
+  return nullptr;
 }
 
 // Returns true if |inlineBox| starts different direction of embedded text ru.

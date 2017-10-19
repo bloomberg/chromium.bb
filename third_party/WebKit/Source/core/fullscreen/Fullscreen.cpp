@@ -882,7 +882,7 @@ void Fullscreen::FullscreenElementChanged(Element* old_element,
 
     if (new_element != GetDocument()->documentElement()) {
       LayoutFullScreen::WrapLayoutObject(
-          layout_object, layout_object ? layout_object->Parent() : 0,
+          layout_object, layout_object ? layout_object->Parent() : nullptr,
           GetDocument());
     }
   }

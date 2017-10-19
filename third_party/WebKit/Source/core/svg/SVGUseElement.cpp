@@ -565,7 +565,7 @@ bool SVGUseElement::HasCycleUseReferencing(SVGUseElement& use,
                                            const ContainerNode& target_instance,
                                            SVGElement*& new_target) const {
   Element* target_element = use.ResolveTargetElement(kDontAddObserver);
-  new_target = 0;
+  new_target = nullptr;
   if (target_element && target_element->IsSVGElement())
     new_target = ToSVGElement(target_element);
 

@@ -446,7 +446,7 @@ void DocumentLoader::FinishedLoading(double finish_time) {
     // If this is an empty document, it will not have actually been created yet.
     // Force a commit so that the Document actually gets created.
     if (state_ == kProvisional)
-      CommitData(0, 0);
+      CommitData(nullptr, 0);
   }
 
   if (!frame_)

@@ -296,7 +296,7 @@ Region::Shape::SegmentIterator Region::Shape::SegmentsBegin(
 
   // Check if this span has any segments.
   if (it->segment_index == segments_.size())
-    return 0;
+    return nullptr;
 
   return &segments_[it->segment_index];
 }
@@ -308,7 +308,7 @@ Region::Shape::SegmentIterator Region::Shape::SegmentsEnd(
 
   // Check if this span has any segments.
   if (it->segment_index == segments_.size())
-    return 0;
+    return nullptr;
 
   DCHECK_LT(it + 1, spans_.data() + spans_.size());
   size_t segment_index = (it + 1)->segment_index;
@@ -409,11 +409,11 @@ Region::Shape Region::Shape::ShapeOperation(const Shape& shape1,
   SpanIterator spans2 = shape2.SpansBegin();
   SpanIterator spans2_end = shape2.SpansEnd();
 
-  SegmentIterator segments1 = 0;
-  SegmentIterator segments1_end = 0;
+  SegmentIterator segments1 = nullptr;
+  SegmentIterator segments1_end = nullptr;
 
-  SegmentIterator segments2 = 0;
-  SegmentIterator segments2_end = 0;
+  SegmentIterator segments2 = nullptr;
+  SegmentIterator segments2_end = nullptr;
 
   Vector<int, 32> segments;
   segments.ReserveCapacity(

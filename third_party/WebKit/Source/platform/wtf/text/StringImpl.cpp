@@ -108,7 +108,7 @@ std::string StringImpl::AsciiForDebugging() const {
 RefPtr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
                                                    LChar*& data) {
   if (!length) {
-    data = 0;
+    data = nullptr;
     return empty_;
   }
 
@@ -125,7 +125,7 @@ RefPtr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
 RefPtr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
                                                    UChar*& data) {
   if (!length) {
-    data = 0;
+    data = nullptr;
     return empty_;
   }
 
@@ -641,7 +641,7 @@ RefPtr<StringImpl> StringImpl::LowerUnicode(
   // it's identical to the locale-agnostic lowercasing. Context-dependent
   // handling of Greek capital sigma is built into the common lowercasing
   // function in ICU.
-  const char* locale_for_conversion = 0;
+  const char* locale_for_conversion = nullptr;
   if (LocaleIdMatchesLang(locale_identifier, "tr") ||
       LocaleIdMatchesLang(locale_identifier, "az"))
     locale_for_conversion = "tr";
@@ -664,7 +664,7 @@ RefPtr<StringImpl> StringImpl::UpperUnicode(
   // Use the more-optimized code path most of the time.
   // Only Turkic (tr and az) languages, Greek and Lithuanian require
   // locale-specific uppercasing rules.
-  const char* locale_for_conversion = 0;
+  const char* locale_for_conversion = nullptr;
   if (LocaleIdMatchesLang(locale_identifier, "tr") ||
       LocaleIdMatchesLang(locale_identifier, "az"))
     locale_for_conversion = "tr";

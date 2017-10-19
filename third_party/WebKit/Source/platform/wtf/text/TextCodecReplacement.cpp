@@ -32,7 +32,7 @@ static std::unique_ptr<TextCodec> NewStreamingTextDecoderReplacement(
 }
 
 void TextCodecReplacement::RegisterCodecs(TextCodecRegistrar registrar) {
-  registrar("replacement", NewStreamingTextDecoderReplacement, 0);
+  registrar("replacement", NewStreamingTextDecoderReplacement, nullptr);
 }
 
 String TextCodecReplacement::Decode(const char*,

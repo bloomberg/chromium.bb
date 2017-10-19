@@ -84,7 +84,7 @@ bool ArrayBuffer::ShareContentsWith(ArrayBufferContents& result) {
 
 void ArrayBuffer::AddView(ArrayBufferView* view) {
   view->buffer_ = this;
-  view->prev_view_ = 0;
+  view->prev_view_ = nullptr;
   view->next_view_ = first_view_;
   if (first_view_)
     first_view_->prev_view_ = view;
@@ -99,7 +99,7 @@ void ArrayBuffer::RemoveView(ArrayBufferView* view) {
     view->prev_view_->next_view_ = view->next_view_;
   if (first_view_ == view)
     first_view_ = view->next_view_;
-  view->prev_view_ = view->next_view_ = 0;
+  view->prev_view_ = view->next_view_ = nullptr;
 }
 
 }  // namespace WTF

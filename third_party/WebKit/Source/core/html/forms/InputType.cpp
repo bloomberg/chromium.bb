@@ -120,7 +120,7 @@ static const InputTypeFactoryMap* FactoryMap() {
 InputType* InputType::Create(HTMLInputElement& element,
                              const AtomicString& type_name) {
   InputTypeFactoryFunction factory =
-      type_name.IsEmpty() ? 0 : FactoryMap()->at(type_name);
+      type_name.IsEmpty() ? nullptr : FactoryMap()->at(type_name);
   if (!factory)
     factory = TextInputType::Create;
   return factory(element);

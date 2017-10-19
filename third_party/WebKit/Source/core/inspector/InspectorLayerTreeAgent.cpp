@@ -548,7 +548,7 @@ Response InspectorLayerTreeAgent::profileSnapshot(
     ParseRect(clip_rect.fromJust(), &rect);
   std::unique_ptr<PictureSnapshot::Timings> timings = snapshot->Profile(
       min_repeat_count.fromMaybe(1), min_duration.fromMaybe(0),
-      clip_rect.isJust() ? &rect : 0);
+      clip_rect.isJust() ? &rect : nullptr);
   *out_timings = Array<Array<double>>::create();
   for (size_t i = 0; i < timings->size(); ++i) {
     const Vector<double>& row = (*timings)[i];

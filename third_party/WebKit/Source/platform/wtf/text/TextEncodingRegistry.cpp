@@ -87,7 +87,7 @@ struct TextEncodingNameHash {
 struct TextCodecFactory {
   NewTextCodecFunction function;
   const void* additional_data;
-  TextCodecFactory(NewTextCodecFunction f = 0, const void* d = 0)
+  TextCodecFactory(NewTextCodecFunction f = nullptr, const void* d = nullptr)
       : function(f), additional_data(d) {}
 };
 

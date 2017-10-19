@@ -174,7 +174,7 @@ size_t SharedBuffer::GetSomeDataInternal(const char*& some_data,
                                          size_t position) const {
   size_t total_size = size();
   if (position >= total_size) {
-    some_data = 0;
+    some_data = nullptr;
     return 0;
   }
 
@@ -229,7 +229,7 @@ sk_sp<SkData> SharedBuffer::GetAsSkData() const {
   size_t buffer_length = size();
   sk_sp<SkData> data = SkData::MakeUninitialized(buffer_length);
   char* buffer = static_cast<char*>(data->writable_data());
-  const char* segment = 0;
+  const char* segment = nullptr;
   size_t position = 0;
   while (size_t segment_size = GetSomeDataInternal(segment, position)) {
     memcpy(buffer + position, segment, segment_size);

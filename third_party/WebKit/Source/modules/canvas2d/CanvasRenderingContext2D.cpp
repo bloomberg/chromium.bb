@@ -660,7 +660,7 @@ String CanvasRenderingContext2D::GetIdFromControl(const Element* element) {
 static inline TextDirection ToTextDirection(
     CanvasRenderingContext2DState::Direction direction,
     HTMLCanvasElement* canvas,
-    const ComputedStyle** computed_style = 0) {
+    const ComputedStyle** computed_style = nullptr) {
   const ComputedStyle* style =
       (computed_style ||
        direction == CanvasRenderingContext2DState::kDirectionInherit)
@@ -800,7 +800,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
 
   // FIXME: Need to turn off font smoothing.
 
-  const ComputedStyle* computed_style = 0;
+  const ComputedStyle* computed_style = nullptr;
   TextDirection direction =
       ToTextDirection(GetState().GetDirection(), canvas(), &computed_style);
   bool is_rtl = direction == TextDirection::kRtl;
@@ -887,7 +887,7 @@ bool CanvasRenderingContext2D::IsTransformInvertible() const {
 }
 
 WebLayer* CanvasRenderingContext2D::PlatformLayer() const {
-  return GetImageBuffer() ? GetImageBuffer()->PlatformLayer() : 0;
+  return GetImageBuffer() ? GetImageBuffer()->PlatformLayer() : nullptr;
 }
 
 void CanvasRenderingContext2D::getContextAttributes(

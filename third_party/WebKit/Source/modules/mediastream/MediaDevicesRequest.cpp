@@ -52,7 +52,7 @@ Document* MediaDevicesRequest::OwnerDocument() {
     return ToDocument(context);
   }
 
-  return 0;
+  return nullptr;
 }
 
 ScriptPromise MediaDevicesRequest::Start() {

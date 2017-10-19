@@ -167,7 +167,7 @@ void Path::Apply(void* info, PathApplierFunction function) const {
       }
       case SkPath::kClose_Verb:
         path_element.type = kPathElementCloseSubpath;
-        path_element.points = ConvertPathPoints(path_points, 0, 0);
+        path_element.points = ConvertPathPoints(path_points, nullptr, 0);
         break;
       case SkPath::kDone_Verb:
         return;
@@ -198,11 +198,12 @@ FloatPoint Path::PointAtLength(float length) const {
   return point;
 }
 
-static bool CalculatePointAndNormalOnPath(SkPathMeasure& measure,
-                                          SkScalar length,
-                                          FloatPoint& point,
-                                          float& normal_angle,
-                                          SkScalar* accumulated_length = 0) {
+static bool CalculatePointAndNormalOnPath(
+    SkPathMeasure& measure,
+    SkScalar length,
+    FloatPoint& point,
+    float& normal_angle,
+    SkScalar* accumulated_length = nullptr) {
   do {
     SkScalar contour_length = measure.getLength();
     if (length <= contour_length) {
@@ -285,7 +286,7 @@ void Path::SetIsVolatile(bool is_volatile) {
 }
 
 bool Path::HasCurrentPoint() const {
-  return path_.getPoints(0, 0);
+  return path_.getPoints(nullptr, 0);
 }
 
 FloatPoint Path::CurrentPoint() const {

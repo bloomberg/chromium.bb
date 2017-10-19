@@ -44,7 +44,7 @@ unsigned LayerRectList::length() const {
 
 LayerRect* LayerRectList::item(unsigned index) {
   if (index >= list_.size())
-    return 0;
+    return nullptr;
 
   return list_[index].Get();
 }

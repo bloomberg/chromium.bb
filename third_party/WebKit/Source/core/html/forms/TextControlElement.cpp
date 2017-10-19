@@ -634,8 +634,8 @@ SelectionInDOMTree TextControlElement::Selection() const {
   }
 
   int offset = 0;
-  Node* start_node = 0;
-  Node* end_node = 0;
+  Node* start_node = nullptr;
+  Node* end_node = nullptr;
   for (Node& node : NodeTraversal::DescendantsOf(*inner_text)) {
     DCHECK(!node.hasChildren());
     DCHECK(node.IsTextNode() || IsHTMLBRElement(node));
@@ -879,7 +879,7 @@ static void GetNextSoftBreak(RootInlineBox*& line,
       return;
     }
   }
-  break_node = 0;
+  break_node = nullptr;
   break_offset = 0;
 }
 
@@ -947,7 +947,7 @@ TextControlElement* EnclosingTextControl(const Node* container) {
                  container->ContainingShadowRoot()->GetType() ==
                      ShadowRootType::kUserAgent
              ? ToTextControlElement(ancestor)
-             : 0;
+             : nullptr;
 }
 
 String TextControlElement::DirectionForFormData() const {

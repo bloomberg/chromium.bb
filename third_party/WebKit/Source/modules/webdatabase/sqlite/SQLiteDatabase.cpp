@@ -44,7 +44,7 @@ const int kSQLResultConstraint = SQLITE_CONSTRAINT;
 static const char kNotOpenErrorMessage[] = "database is not open";
 
 SQLiteDatabase::SQLiteDatabase()
-    : db_(0),
+    : db_(nullptr),
       page_size_(-1),
       transaction_in_progress_(false),
 #if DCHECK_IS_ON()
@@ -70,7 +70,7 @@ bool SQLiteDatabase::Open(const String& filename) {
     DLOG(ERROR) << "SQLite database failed to load from " << filename
                 << "\nCause - " << open_error_message_.data();
     sqlite3_close(db_);
-    db_ = 0;
+    db_ = nullptr;
     return false;
   }
 
@@ -80,7 +80,7 @@ bool SQLiteDatabase::Open(const String& filename) {
     DLOG(ERROR) << "SQLite database error when enabling extended errors - "
                 << open_error_message_.data();
     sqlite3_close(db_);
-    db_ = 0;
+    db_ = nullptr;
     return false;
   }
 
@@ -108,7 +108,7 @@ void SQLiteDatabase::Close() {
     sqlite3* db = db_;
     {
       MutexLocker locker(database_closing_mutex_);
-      db_ = 0;
+      db_ = nullptr;
     }
     sqlite3_close(db);
   }
@@ -355,7 +355,7 @@ void SQLiteDatabase::EnableAuthorizer(bool enable) {
     sqlite3_set_authorizer(db_, SQLiteDatabase::AuthorizerFunction,
                            authorizer_.Get());
   else
-    sqlite3_set_authorizer(db_, NULL, 0);
+    sqlite3_set_authorizer(db_, NULL, nullptr);
 }
 
 bool SQLiteDatabase::IsAutoCommitOn() const {

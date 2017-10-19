@@ -80,7 +80,7 @@ DOMFileSystem* DOMFileSystem::CreateIsolatedFileSystem(
     ExecutionContext* context,
     const String& filesystem_id) {
   if (filesystem_id.IsEmpty())
-    return 0;
+    return nullptr;
 
   StringBuilder filesystem_name;
   filesystem_name.Append(Platform::Current()->FileSystemCreateOriginIdentifier(

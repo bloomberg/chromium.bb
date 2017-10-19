@@ -205,7 +205,7 @@ void CompositeEditCommand::ApplyCommandToComposite(
     return;
   }
   if (command->IsSimpleEditCommand()) {
-    command->SetParent(0);
+    command->SetParent(nullptr);
     EnsureUndoStep()->Append(ToSimpleEditCommand(command));
   }
   commands_.push_back(command);
@@ -873,7 +873,7 @@ void CompositeEditCommand::DeleteInsignificantText(Text* text_node,
       if (++sorted_text_boxes_position < sorted_text_boxes.size())
         box = sorted_text_boxes[sorted_text_boxes_position];
       else
-        box = 0;
+        box = nullptr;
     }
   }
 

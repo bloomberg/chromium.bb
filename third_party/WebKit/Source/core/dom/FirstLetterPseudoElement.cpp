@@ -105,7 +105,7 @@ static bool IsInvalidFirstLetterLayoutObject(const LayoutObject* obj) {
 
 LayoutObject* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
     const Element& element) {
-  LayoutObject* parent_layout_object = 0;
+  LayoutObject* parent_layout_object = nullptr;
 
   // If we are looking at a first letter element then we need to find the
   // first letter text layoutObject from the parent node, and not ourselves.

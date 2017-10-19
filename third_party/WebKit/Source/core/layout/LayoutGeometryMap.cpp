@@ -267,7 +267,7 @@ void LayoutGeometryMap::PushMappingsToAncestor(
     // The LayoutView must be pushed first.
     if (!mapping_.size()) {
       DCHECK(ancestor_layer->GetLayoutObject().IsLayoutView());
-      PushMappingsToAncestor(&ancestor_layer->GetLayoutObject(), 0);
+      PushMappingsToAncestor(&ancestor_layer->GetLayoutObject(), nullptr);
     }
 
     AutoReset<size_t> position_change(&insertion_position_, mapping_.size());
@@ -279,7 +279,7 @@ void LayoutGeometryMap::PushMappingsToAncestor(
     return;
   }
   const LayoutBoxModelObject* ancestor_layout_object =
-      ancestor_layer ? &ancestor_layer->GetLayoutObject() : 0;
+      ancestor_layer ? &ancestor_layer->GetLayoutObject() : nullptr;
   PushMappingsToAncestor(&layout_object, ancestor_layout_object);
 }
 
@@ -353,7 +353,7 @@ void LayoutGeometryMap::PopMappingsToAncestor(
 void LayoutGeometryMap::PopMappingsToAncestor(
     const PaintLayer* ancestor_layer) {
   const LayoutBoxModelObject* ancestor_layout_object =
-      ancestor_layer ? &ancestor_layer->GetLayoutObject() : 0;
+      ancestor_layer ? &ancestor_layer->GetLayoutObject() : nullptr;
   PopMappingsToAncestor(ancestor_layout_object);
 }
 

@@ -445,7 +445,7 @@ void ScriptStreamer::Cancel() {
   // the control the next time. It can also be that V8 has already completed
   // its operations and streamingComplete will be called soon.
   detached_ = true;
-  resource_ = 0;
+  resource_ = nullptr;
   if (stream_)
     stream_->Cancel();
 }
@@ -536,7 +536,7 @@ void ScriptStreamer::NotifyAppendData(ScriptResource* resource) {
     if (!script_streaming_task) {
       // V8 cannot stream the script.
       SuppressStreaming();
-      stream_ = 0;
+      stream_ = nullptr;
       source_.reset();
       RecordNotStreamingReasonHistogram(script_type_, kV8CannotStream);
       RecordStartedStreamingHistogram(script_type_, 0);
@@ -581,7 +581,7 @@ ScriptStreamer::ScriptStreamer(
     : pending_script_(script),
       resource_(script->GetResource()),
       detached_(false),
-      stream_(0),
+      stream_(nullptr),
       loading_finished_(false),
       parsing_finished_(false),
       have_enough_data_for_streaming_(false),
