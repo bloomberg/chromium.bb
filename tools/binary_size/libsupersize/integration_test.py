@@ -218,8 +218,8 @@ class IntegrationTest(unittest.TestCase):
     size_info2 = self._CloneSizeInfo()
 
     # Removing 1 alias should not change the size.
-    a1, _, _ = (
-        size_info2.raw_symbols.Filter(lambda s: s.num_aliases == 3)[0].aliases)
+    a1, _, _, _ = (
+        size_info2.raw_symbols.Filter(lambda s: s.num_aliases == 4)[0].aliases)
     size_info2.raw_symbols -= [a1]
     a1.aliases.remove(a1)
     d = diff.Diff(size_info1, size_info2)
@@ -239,8 +239,8 @@ class IntegrationTest(unittest.TestCase):
     size_info2 = self._CloneSizeInfo()
 
     # Removing 2 aliases should not change the size.
-    a1, a2, _ = (
-        size_info2.raw_symbols.Filter(lambda s: s.num_aliases == 3)[0].aliases)
+    a1, _, a2, _ = (
+        size_info2.raw_symbols.Filter(lambda s: s.num_aliases == 4)[0].aliases)
     size_info2.raw_symbols -= [a1, a2]
     a1.aliases.remove(a1)
     a1.aliases.remove(a2)
@@ -255,22 +255,22 @@ class IntegrationTest(unittest.TestCase):
     self.assertEquals((0, 2, 0), _DiffCounts(d.raw_symbols))
     self.assertEquals((1, 1, 0), _DiffCounts(d.symbols.GroupedByFullName()))
 
-  def test_Diff_Aliases3(self):
+  def test_Diff_Aliases4(self):
     size_info1 = self._CloneSizeInfo()
     size_info2 = self._CloneSizeInfo()
 
-    # Removing all 3 aliases should change the size.
-    a1, a2, a3 = (
-        size_info2.raw_symbols.Filter(lambda s: s.num_aliases == 3)[0].aliases)
-    size_info2.raw_symbols -= [a1, a2, a3]
+    # Removing all 4 aliases should change the size.
+    a1, a2, a3, a4 = (
+        size_info2.raw_symbols.Filter(lambda s: s.num_aliases == 4)[0].aliases)
+    size_info2.raw_symbols -= [a1, a2, a3, a4]
     d = diff.Diff(size_info1, size_info2)
-    self.assertEquals((0, 0, 3), _DiffCounts(d.raw_symbols))
+    self.assertEquals((0, 0, 4), _DiffCounts(d.raw_symbols))
     self.assertEquals((1, 0, 2), _DiffCounts(d.symbols.GroupedByFullName()))
 
-    # Adding all 3 aliases should change size.
+    # Adding all 4 aliases should change size.
     d = diff.Diff(size_info2, size_info1)
     self.assertEquals(d.raw_symbols.pss, a1.size)
-    self.assertEquals((0, 3, 0), _DiffCounts(d.raw_symbols))
+    self.assertEquals((0, 4, 0), _DiffCounts(d.raw_symbols))
     self.assertEquals((1, 2, 0), _DiffCounts(d.symbols.GroupedByFullName()))
 
   def test_Diff_Clustering(self):

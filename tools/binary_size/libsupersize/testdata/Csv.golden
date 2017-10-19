@@ -21,9 +21,10 @@ GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
 ,0x28f1e0,69120,4,1,69124.0,t,foo_bar
 ,0x2a0000,16,32,2,24.0,t,blink::ContiguousContainerBase::shrinkToFit
 ,0x2a0000,16,32,2,24.0,t,BazAlias
-,0x2a0010,12,0,3,4.0,t,blink::ContiguousContainerBase::shrinkToFit
-,0x2a0010,12,0,3,4.0,t,FooAlias
-,0x2a0010,12,0,3,4.0,t,BarAlias
+,0x2a0010,12,0,4,3.0,t,blink::ContiguousContainerBase::shrinkToFit
+,0x2a0010,12,0,4,3.0,t,blink::ContiguousContainerBase::shrinkToFit
+,0x2a0010,12,0,4,3.0,t,FooAlias
+,0x2a0010,12,0,4,3.0,t,BarAlias
 ,0x2a0020,24,4,1,28.0,t,blink::ContiguousContainerBase::ContiguousContainerBase
 ,0x2a1000,94,0,1,94.0,t,blink::PaintChunker::releasePaintChunks
 ,0x266e600,5,0,2,2.5,r,string literal 0

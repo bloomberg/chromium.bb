@@ -6,11 +6,11 @@ git_revision=abc123
 gn_args=var1=true var2="foo"
 map_file_name=../test.map
 tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
-Section .text: has 100.0% of 35900712 bytes accounted for from 18 symbols. 0 bytes are unaccounted for.
+Section .text: has 100.0% of 35900712 bytes accounted for from 19 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 48 bytes (0.0%)
 * 3 placeholders (symbols that start with **) account for 35830760 bytes (99.8%)
-* Contains 5 aliases, mapped to 2 unique addresses (60 bytes)
-* 1 symbols have shared ownership (12 bytes)
+* Contains 6 aliases, mapped to 2 unique addresses (60 bytes)
+* 0 symbols have shared ownership
 Section .rodata: has 100.0% of 5927652 bytes accounted for from 12 symbols. 0 bytes are unaccounted for.
 * Padding accounts for 675996 bytes (11.4%)
 * 4 placeholders (symbols that start with **) account for 5251503 bytes (88.6%)
@@ -42,9 +42,10 @@ Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 byt
 .text@28f1e0(size_without_padding=69120,padding=4,full_name=foo_bar,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={unlikely,gen},num_aliases=1)
 .text@2a0000(size_without_padding=16,padding=32,full_name=blink::ContiguousContainerBase::shrinkToFit(),object_path=,source_path=,flags={},num_aliases=2)
 .text@2a0000(size_without_padding=16,padding=32,full_name=BazAlias(bool),object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=2)
-.text@2a0010(size_without_padding=12,padding=0,full_name=blink::ContiguousContainerBase::shrinkToFit(),object_path=third_party/{shared}/2,source_path=third_party/{shared}/2,flags={clone},num_aliases=3)
-.text@2a0010(size_without_padding=12,padding=0,full_name=FooAlias(),object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o,source_path=third_party/fft_float.cc,flags={},num_aliases=3)
-.text@2a0010(size_without_padding=12,padding=0,full_name=BarAlias(),object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o,source_path=third_party/fft_float.cc,flags={},num_aliases=3)
+.text@2a0010(size_without_padding=12,padding=0,full_name=blink::ContiguousContainerBase::shrinkToFit(),object_path=third_party/WebKit.a/PaintChunker.o,source_path=third_party/paint.cc,flags={clone},num_aliases=4)
+.text@2a0010(size_without_padding=12,padding=0,full_name=blink::ContiguousContainerBase::shrinkToFit(),object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen,clone},num_aliases=4)
+.text@2a0010(size_without_padding=12,padding=0,full_name=FooAlias(),object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o,source_path=third_party/fft_float.cc,flags={},num_aliases=4)
+.text@2a0010(size_without_padding=12,padding=0,full_name=BarAlias(),object_path=third_party/ffmpeg/libffmpeg_internal.a/fft_float.o,source_path=third_party/fft_float.cc,flags={},num_aliases=4)
 .text@2a0020(size_without_padding=24,padding=4,full_name=blink::ContiguousContainerBase::ContiguousContainerBase(blink::ContiguousContainerBase&&),object_path=third_party/WebKit.a/ContiguousContainer.o,source_path=third_party/container.c,flags={},num_aliases=1)
 .text@2a1000(size_without_padding=0,padding=4040,full_name=** symbol gap 1,object_path=,source_path=,flags={},num_aliases=1)
 .text@2a1000(size_without_padding=94,padding=0,full_name=blink::PaintChunker::releasePaintChunks(),object_path=third_party/WebKit.a/ContiguousContainer.o,source_path=third_party/container.c,flags={anon,clone},num_aliases=1)

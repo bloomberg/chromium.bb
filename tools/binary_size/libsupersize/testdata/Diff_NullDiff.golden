@@ -18,14 +18,14 @@ Section Sizes (Total=0 bytes (0 bytes)):
     .rodata: 0 bytes (0 bytes) (0.0%)
     .text: 0 bytes (0 bytes) (0.0%)
 
-0 symbols added (+), 0 changed (~), 0 removed (-), 47 unchanged (not shown)
+0 symbols added (+), 0 changed (~), 0 removed (-), 48 unchanged (not shown)
 Of changed symbols, 0 grew, 0 shrank
 Number of unique symbols 47 -> 47 (+0)
 0 paths added, 0 removed, 0 changed
 
 Showing 0 symbols (aliases not grouped for diffs) with total pss: 0 bytes
 Histogram of symbols based on PSS:
-    {0}: 47
+    {0}: 48
 .text=0 bytes    .rodata=0 bytes    .data.rel.ro=0 bytes    .data=0 bytes    .bss=0 bytes    total=0 bytes
 Number of unique paths: 0
 

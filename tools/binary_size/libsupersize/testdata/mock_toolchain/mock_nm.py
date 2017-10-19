@@ -64,7 +64,6 @@ _OBJECT_OUTPUTS = {
         '01010101 t _GLOBAL__sub_I_page_allocator.cc',
         '01010101 t _GLOBAL__sub_I_bbr_sender.cc',
         '01010101 t _GLOBAL__sub_I_pacing_sender.cc',
-        '01010101 t _GLOBAL__sub_I_bbr_sender.cc',
         '00000000 r .L.str',
         '01010101 t extFromUUseMapping(aj, int)',
         '01010101 t extFromUUseMapping(signed char, unsigned int, int)',

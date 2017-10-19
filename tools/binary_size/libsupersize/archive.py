@@ -30,6 +30,18 @@ import nm
 import paths
 
 
+# Effect of _MAX_SAME_NAME_ALIAS_COUNT (as of Oct 2017, with min_pss = max):
+# 1: shared .text symbols = 1772874 bytes, file size = 9.43MiB (645476 symbols).
+# 2: shared .text symbols = 1065654 bytes, file size = 9.58MiB (669952 symbols).
+# 6: shared .text symbols = 464058 bytes, file size = 10.11MiB (782693 symbols).
+# 10: shared .text symbols = 365648 bytes, file size =10.24MiB (813758 symbols).
+# 20: shared .text symbols = 86202 bytes, file size = 10.38MiB (854548 symbols).
+# 40: shared .text symbols = 48424 bytes, file size = 10.50MiB (890396 symbols).
+# 50: shared .text symbols = 41860 bytes, file size = 10.54MiB (902304 symbols).
+# max: shared .text symbols = 0 bytes, file size = 11.10MiB (1235449 symbols).
+_MAX_SAME_NAME_ALIAS_COUNT = 40  # 50kb is basically negligable.
+
+
 def _OpenMaybeGz(path, mode=None):
   """Calls `gzip.open()` if |path| ends in ".gz", otherwise calls `open()`."""
   if path.endswith('.gz'):
@@ -181,76 +193,133 @@ def _NormalizeSourcePath(path):
   return True, path
 
 
-def _SourcePathForObjectPath(object_path, source_mapper):
-  """Returns (is_generated, normalized_path)"""
-  # We don't have source info for prebuilt .a files.
-  if not os.path.isabs(object_path) and not object_path.startswith('..'):
-    source_path = source_mapper.FindSourceForPath(object_path)
-    if source_path:
-      return _NormalizeSourcePath(source_path)
-  return False, ''
+def _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper):
+  """Fills in the |source_path| attribute and normalizes |object_path|."""
+  if source_mapper:
+    logging.info('Looking up source paths from ninja files')
+    for symbol in raw_symbols:
+      object_path = symbol.object_path
+      if object_path:
+        # We don't have source info for prebuilt .a files.
+        if not os.path.isabs(object_path) and not object_path.startswith('..'):
+          source_path = source_mapper.FindSourceForPath(object_path)
+          if source_path:
+            symbol.generated_source, symbol.source_path = (
+                _NormalizeSourcePath(source_path))
+        symbol.object_path = _NormalizeObjectPath(object_path)
+    assert source_mapper.unmatched_paths_count == 0, (
+        'One or more source file paths could not be found. Likely caused by '
+        '.ninja files being generated at a different time than the .map file.')
+  else:
+    logging.info('Normalizing object paths')
+    for symbol in raw_symbols:
+      if symbol.object_path:
+        symbol.object_path = _NormalizeObjectPath(symbol.object_path)
 
 
-def _ExtractSourcePaths(raw_symbols, source_mapper):
-  """Fills in the |source_path| attribute."""
-  for symbol in raw_symbols:
-    object_path = symbol.object_path
-    if object_path and not symbol.source_path:
-      symbol.generated_source, symbol.source_path = (
-          _SourcePathForObjectPath(object_path, source_mapper))
-
-
-def _ComputeAncestorPath(path_list):
+def _ComputeAncestorPath(path_list, symbol_count):
   """Returns the common ancestor of the given paths."""
-  # Ignore missing paths.
-  path_list = [p for p in path_list if p]
+  if not path_list:
+    return ''
+
   prefix = os.path.commonprefix(path_list)
-  # Put the path count as a subdirectory to allow for better grouping when
-  # path-based breakdowns.
-  if not prefix:
-    if len(path_list) < 2:
-      return ''
-    return os.path.join('{shared}', str(len(path_list)))
+  # Check if all paths were the same.
   if prefix == path_list[0]:
     return prefix
-  assert len(path_list) > 1, 'path_list: ' + repr(path_list)
-  return os.path.join(os.path.dirname(prefix), '{shared}', str(len(path_list)))
+
+  # Put in buckets to cut down on the number of unique paths.
+  if symbol_count >= 100:
+    symbol_count_str = '100+'
+  elif symbol_count >= 50:
+    symbol_count_str = '50-99'
+  elif symbol_count >= 20:
+    symbol_count_str = '20-49'
+  elif symbol_count >= 10:
+    symbol_count_str = '10-19'
+  else:
+    symbol_count_str = str(symbol_count)
+
+  # Put the path count as a subdirectory so that grouping by path will show
+  # "{shared}" as a bucket, and the symbol counts as leafs.
+  if not prefix:
+    return os.path.join('{shared}', symbol_count_str)
+  return os.path.join(os.path.dirname(prefix), '{shared}', symbol_count_str)
 
 
-# This must normalize object paths at the same time because normalization
-# needs to occur before finding common ancestor.
-def _ComputeAncestorPathsAndNormalizeObjectPaths(
-    raw_symbols, object_paths_by_name, source_mapper):
+def _CompactLargeAliasesIntoSharedSymbols(raw_symbols):
+  """Converts symbols with large number of aliases into single symbols.
+
+  The merged symbol's path fields are changed to common-ancestor paths in
+  the form: common/dir/{shared}/$SYMBOL_COUNT
+
+  Assumes aliases differ only by path (not by name).
+  """
+  num_raw_symbols = len(raw_symbols)
+  num_shared_symbols = 0
+  src_cursor = 0
+  dst_cursor = 0
+  while src_cursor < num_raw_symbols:
+    symbol = raw_symbols[src_cursor]
+    raw_symbols[dst_cursor] = symbol
+    dst_cursor += 1
+    aliases = symbol.aliases
+    if aliases and len(aliases) > _MAX_SAME_NAME_ALIAS_COUNT:
+      symbol.source_path = _ComputeAncestorPath(
+          [s.source_path for s in aliases if s.source_path], len(aliases))
+      symbol.object_path = _ComputeAncestorPath(
+          [s.object_path for s in aliases if s.object_path], len(aliases))
+      symbol.generated_source = all(s.generated_source for s in aliases)
+      symbol.aliases = None
+      num_shared_symbols += 1
+      src_cursor += len(aliases)
+    else:
+      src_cursor += 1
+  raw_symbols[dst_cursor:] = []
+  num_removed = src_cursor - dst_cursor
+  logging.debug('Converted %d aliases into %d shared-path symbols',
+                num_removed, num_shared_symbols)
+
+
+def _ConnectNmAliases(raw_symbols):
+  """Ensures |aliases| is set correctly for all symbols."""
+  prev_sym = raw_symbols[0]
+  for sym in raw_symbols[1:]:
+    # Don't merge bss symbols.
+    if sym.address > 0 and prev_sym.address == sym.address:
+      # Don't merge padding-only symbols (** symbol gaps).
+      if prev_sym.size > 0:
+        # Don't merge if already merged.
+        if prev_sym.aliases is None or prev_sym.aliases is not sym.aliases:
+          if prev_sym.aliases:
+            prev_sym.aliases.append(sym)
+          else:
+            prev_sym.aliases = [prev_sym, sym]
+          sym.aliases = prev_sym.aliases
+    prev_sym = sym
+
+
+def _AssignNmAliasPathsAndCreatePathAliases(raw_symbols, object_paths_by_name):
   num_found_paths = 0
   num_unknown_names = 0
   num_path_mismatches = 0
-  num_unmatched_aliases = 0
+  num_aliases_created = 0
+  ret = []
   for symbol in raw_symbols:
+    ret.append(symbol)
     full_name = symbol.full_name
     if (symbol.IsBss() or
         not full_name or
         full_name[0] in '*.' or  # e.g. ** merge symbols, .Lswitch.table
         full_name == 'startup'):
-      symbol.object_path = _NormalizeObjectPath(symbol.object_path)
       continue
 
     object_paths = object_paths_by_name.get(full_name)
     if object_paths:
       num_found_paths += 1
     else:
-      if not symbol.object_path and symbol.aliases:
-        # Happens when aliases are from object files where all symbols were
-        # pruned or de-duped as aliases. Since we are only scanning .o files
-        # referenced by included symbols, such files are missed.
-        # TODO(agrieve): This could be fixed by retrieving linker inputs from
-        #     build.ninja, or by looking for paths within the .map file's
-        #     discarded sections.
-        num_unmatched_aliases += 1
-        continue
       if num_unknown_names < 10:
         logging.warning('Symbol not found in any .o files: %r', symbol)
       num_unknown_names += 1
-      symbol.object_path = _NormalizeObjectPath(symbol.object_path)
       continue
 
     if symbol.object_path and symbol.object_path not in object_paths:
@@ -258,21 +327,30 @@ def _ComputeAncestorPathsAndNormalizeObjectPaths(
         logging.warning('Symbol path reported by .map not found by nm.')
         logging.warning('sym=%r', symbol)
         logging.warning('paths=%r', object_paths)
+      object_paths.append(symbol.object_path)
+      object_paths.sort()
       num_path_mismatches += 1
 
-    if source_mapper:
-      tups = [
-          _SourcePathForObjectPath(p, source_mapper) for p in object_paths]
-      symbol.source_path = _ComputeAncestorPath(t[1] for t in tups)
-      symbol.generated_source = all(t[0] for t in tups)
+    symbol.object_path = object_paths[0]
 
-    object_paths = [_NormalizeObjectPath(p) for p in object_paths]
-    symbol.object_path = _ComputeAncestorPath(object_paths)
+    if len(object_paths) > 1:
+      # Create one symbol for each object_path.
+      aliases = symbol.aliases or [symbol]
+      symbol.aliases = aliases
+      num_aliases_created += len(object_paths) - 1
+      for object_path in object_paths[1:]:
+        new_sym = models.Symbol(
+            symbol.section_name, symbol.size, address=symbol.address,
+            full_name=full_name, object_path=object_path, aliases=aliases)
+        aliases.append(new_sym)
+        ret.append(new_sym)
 
   logging.debug('Cross-referenced %d symbols with nm output. '
                 'num_unknown_names=%d num_path_mismatches=%d '
-                'num_unused_aliases=%d', num_found_paths, num_unknown_names,
-                num_path_mismatches, num_unmatched_aliases)
+                'num_aliases_created=%d',
+                num_found_paths, num_unknown_names, num_path_mismatches,
+                num_aliases_created)
+  return ret
 
 
 def _DiscoverMissedObjectPaths(raw_symbols, elf_object_paths):
@@ -291,8 +369,7 @@ def _DiscoverMissedObjectPaths(raw_symbols, elf_object_paths):
 
 
 def _CreateMergeStringsReplacements(merge_string_syms,
-                                    list_of_positions_by_object_path,
-                                    source_mapper):
+                                    list_of_positions_by_object_path):
   """Creates replacement symbols for |merge_syms|."""
   ret = []
   NAME_PREFIX = models.STRING_LITERAL_NAME_PREFIX
@@ -307,12 +384,9 @@ def _CreateMergeStringsReplacements(merge_string_syms,
     for object_path, positions in positions_by_object_path.iteritems():
       for offset, size in positions:
         address = merge_sym_address + offset
-        symbol = models.Symbol('.rodata', size, address,
-                               NAME_PREFIX + name_suffix,
-                               object_path=_NormalizeObjectPath(object_path))
-        if source_mapper:
-          symbol.generated_source, symbol.source_path = (
-              _SourcePathForObjectPath(object_path, source_mapper))
+        symbol = models.Symbol(
+            '.rodata', size, address, NAME_PREFIX + name_suffix,
+            object_path=object_path)
         new_symbols.append(symbol)
 
   logging.debug('Created %d string literal symbols', sum(len(x) for x in ret))
@@ -408,7 +482,8 @@ def _CalculatePadding(raw_symbols):
         '%r\nprev symbol: %r' % (symbol, prev_symbol))
 
 
-def _AddSymbolAliases(raw_symbols, aliases_by_address):
+def _AddNmAliases(raw_symbols, names_by_address):
+  """Adds symbols that were removed by identical code folding."""
   # Step 1: Create list of (index_of_symbol, name_list).
   logging.debug('Creating alias list')
   replacements = []
@@ -417,7 +492,7 @@ def _AddSymbolAliases(raw_symbols, aliases_by_address):
     # Don't alias padding-only symbols (e.g. ** symbol gap)
     if s.size_without_padding == 0:
       continue
-    name_list = aliases_by_address.get(s.address)
+    name_list = names_by_address.get(s.address)
     if name_list:
       if s.full_name not in name_list:
         logging.warning('Name missing from aliases: %s %s', s.full_name,
@@ -427,15 +502,12 @@ def _AddSymbolAliases(raw_symbols, aliases_by_address):
       num_new_symbols += len(name_list) - 1
 
   if float(num_new_symbols) / len(raw_symbols) < .05:
-    # TODO(agrieve): Figure out if there's a way to get alias information from
-    # clang-compiled nm.
     logging.warning('Number of aliases is oddly low (%.0f%%). It should '
-                    'usually be around 25%%. Ensure --tool-prefix is correct. '
-                    'Ignore this if you compiled with clang.',
+                    'usually be around 25%%. Ensure --tool-prefix is correct. ',
                     float(num_new_symbols) / len(raw_symbols) * 100)
 
   # Step 2: Create new symbols as siblings to each existing one.
-  logging.debug('Creating %d aliases', num_new_symbols)
+  logging.debug('Creating %d new symbols from nm output', num_new_symbols)
   src_cursor_end = len(raw_symbols)
   raw_symbols += [None] * num_new_symbols
   dst_cursor_end = len(raw_symbols)
@@ -449,15 +521,14 @@ def _AddSymbolAliases(raw_symbols, aliases_by_address):
     sym = raw_symbols[src_index]
     src_cursor_end -= 1
 
-    # Create aliases (does not bother reusing the existing symbol).
-    aliases = [None] * len(name_list)
+    # Create symbols (does not bother reusing the existing symbol).
     for i, full_name in enumerate(name_list):
-      aliases[i] = models.Symbol(
-          sym.section_name, sym.size, address=sym.address, full_name=full_name,
-          aliases=aliases)
-
-    dst_cursor_end -= len(aliases)
-    raw_symbols[dst_cursor_end:dst_cursor_end + len(aliases)] = aliases
+      dst_cursor_end -= 1
+      # Do not set |aliases| in order to avoid being pruned by
+      # _CompactLargeAliasesIntoSharedSymbols(), which assumes aliases differ
+      # only by path. The field will be set afterwards by _ConnectNmAliases().
+      raw_symbols[dst_cursor_end] = models.Symbol(
+          sym.section_name, sym.size, address=sym.address, full_name=full_name)
 
   assert dst_cursor_end == src_cursor_end
 
@@ -572,6 +643,7 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
     missed_object_paths = _DiscoverMissedObjectPaths(
         raw_symbols, elf_object_paths)
     bulk_analyzer.AnalyzePaths(missed_object_paths)
+    bulk_analyzer.SortPaths()
     if track_string_literals:
       merge_string_syms = [
           s for s in raw_symbols if s.full_name == '** merge strings']
@@ -581,13 +653,6 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
       string_positions = [(s.address, s.size) for s in merge_string_syms]
       bulk_analyzer.AnalyzeStringLiterals(elf_path, string_positions)
 
-  if source_mapper:
-    logging.info('Looking up source paths from ninja files')
-    _ExtractSourcePaths(raw_symbols, source_mapper)
-    assert source_mapper.unmatched_paths_count == 0, (
-        'One or more source file paths could not be found. Likely caused by '
-        '.ninja files being generated at a different time than the .map file.')
-
   logging.info('Stripping linker prefixes from symbol names')
   _StripLinkerAddedSymbolPrefixes(raw_symbols)
   # Map file for some reason doesn't unmangle all names.
@@ -595,10 +660,11 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
   _UnmangleRemainingSymbols(raw_symbols, tool_prefix)
 
   if elf_path:
-    logging.info('Adding aliased symbols, as reported by nm')
+    logging.info(
+        'Adding symbols removed by identical code folding (as reported by nm)')
     # This normally does not block (it's finished by this time).
-    aliases_by_address = elf_nm_result.get()
-    _AddSymbolAliases(raw_symbols, aliases_by_address)
+    names_by_address = elf_nm_result.get()
+    _AddNmAliases(raw_symbols, names_by_address)
 
     if output_directory:
       object_paths_by_name = bulk_analyzer.GetSymbolNames()
@@ -607,10 +673,9 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
                     len(elf_object_paths) + len(missed_object_paths))
 
       # For aliases, this provides path information where there wasn't any.
-      logging.info('Computing ancestor paths for inline functions and '
-                   'normalizing object paths')
-      _ComputeAncestorPathsAndNormalizeObjectPaths(
-          raw_symbols, object_paths_by_name, source_mapper)
+      logging.info('Creating aliases for symbols shared by multiple paths')
+      raw_symbols = _AssignNmAliasPathsAndCreatePathAliases(
+          raw_symbols, object_paths_by_name)
 
       if track_string_literals:
         logging.info('Waiting for string literal extraction to complete.')
@@ -620,19 +685,22 @@ def CreateSizeInfo(map_path, elf_path, tool_prefix, output_directory,
       if track_string_literals:
         logging.info('Deconstructing ** merge strings into literals')
         replacements = _CreateMergeStringsReplacements(merge_string_syms,
-            list_of_positions_by_object_path, source_mapper)
+            list_of_positions_by_object_path)
         for merge_sym, literal_syms in itertools.izip(
             merge_string_syms, replacements):
           # Don't replace if no literals were found.
           if literal_syms:
             # Re-find the symbols since aliases cause their indices to change.
             idx = raw_symbols.index(merge_sym)
+            # This assignment is a bit slow (causes array to be shifted), but
+            # is fast enough since len(merge_string_syms) < 10.
             raw_symbols[idx:idx + 1] = literal_syms
 
-  if not elf_path or not output_directory:
-    logging.info('Normalizing object paths.')
-    for symbol in raw_symbols:
-      symbol.object_path = _NormalizeObjectPath(symbol.object_path)
+  _ExtractSourcePathsAndNormalizeObjectPaths(raw_symbols, source_mapper)
+  logging.info('Converting excessive aliases into shared-path symbols')
+  _CompactLargeAliasesIntoSharedSymbols(raw_symbols)
+  logging.debug('Connecting nm aliases')
+  _ConnectNmAliases(raw_symbols)
 
   # Padding not really required, but it is useful to check for large padding and
   # log a warning.
@@ -836,4 +904,5 @@ def Run(args, parser):
                '\n  '.join(describe.DescribeMetadata(size_info.metadata)))
   logging.info('Saving result to %s', args.size_file)
   file_format.SaveSizeInfo(size_info, args.size_file)
-  logging.info('Done. File size is %d bytes.', os.path.getsize(args.size_file))
+  size_in_mb = os.path.getsize(args.size_file) / 1024.0 / 1024.0
+  logging.info('Done. File size is %.2fMiB.', size_in_mb)
