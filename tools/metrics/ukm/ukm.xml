@@ -390,6 +390,24 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Document.OutliveTimeAfterShutdown">
+  <owner>hajimehoshi@chromium.org</owner>
+  <owner>keishi@chromium.org</owner>
+  <summary>
+    Recorded when a Document object survives certain number of garbage
+    collections after detached. It is expected that regular Document objects are
+    destroyed soon after detached, and if a document outlives longer, probably
+    this can be leaked.
+  </summary>
+  <metric name="GCCount">
+    <summary>
+      Measures the numbers of garbarge collection after the document is
+      detached. This is recorded when the number reached certain numbers like 5
+      or 10.
+    </summary>
+  </metric>
+</event>
+
 <event name="Event.ScrollUpdate.Touch">
   <owner>nzolghadr@chromium.org</owner>
   <summary>

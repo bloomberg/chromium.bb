@@ -261,6 +261,7 @@
 #include "public/platform/modules/insecure_input/insecure_input_service.mojom-blink.h"
 #include "public/platform/site_engagement.mojom-blink.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom-shared.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -311,12 +312,18 @@ class DocumentOutliveTimeReporter : public BlinkGCObserver {
     int outlive_time_count = GetOutliveTimeCount();
     if (outlive_time_count == 5 || outlive_time_count == 10) {
       const char* kUMAString = "Document.OutliveTimeAfterShutdown.GCCount";
+
       if (outlive_time_count == 5)
         UMA_HISTOGRAM_ENUMERATION(kUMAString, kGCCount5, kGCCountMax);
       else if (outlive_time_count == 10)
         UMA_HISTOGRAM_ENUMERATION(kUMAString, kGCCount10, kGCCountMax);
       else
         NOTREACHED();
+    }
+
+    if (outlive_time_count == 5 || outlive_time_count == 10 ||
+        outlive_time_count == 20 || outlive_time_count == 50) {
+      document_->RecordUkmOutliveTimeAfterShutdown(outlive_time_count);
     }
   }
 
@@ -3697,8 +3704,17 @@ void Document::SetURL(const KURL& url) {
   UpdateBaseURL();
   GetContextFeatures().UrlDidChange(this);
 
-  if (ukm_recorder_)
+  if (!ukm_recorder_ && IsInMainFrame()) {
+    ukm::mojom::UkmRecorderInterfacePtr interface;
+    frame_->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&interface));
+    ukm_source_id_ = ukm::UkmRecorder::GetNewSourceID();
+    ukm_recorder_.reset(new ukm::MojoUkmRecorder(std::move(interface)));
+  }
+
+  if (ukm_recorder_) {
+    DCHECK(IsInMainFrame());
     ukm_recorder_->UpdateSourceURL(ukm_source_id_, url_);
+  }
 }
 
 KURL Document::ValidBaseElementURL() const {
@@ -7230,6 +7246,15 @@ void Document::RecordDeferredLoadReason(WouldLoadReason reason) {
        i <= static_cast<int>(reason); ++i)
     RecordLoadReasonToHistogram(static_cast<WouldLoadReason>(i));
   would_load_reason_ = reason;
+}
+
+void Document::RecordUkmOutliveTimeAfterShutdown(int outlive_time_count) {
+  if (!ukm_recorder_)
+    return;
+
+  ukm::builders::Document_OutliveTimeAfterShutdown(ukm_source_id_)
+      .SetGCCount(outlive_time_count)
+      .Record(ukm_recorder_.get());
 }
 
 DEFINE_TRACE_WRAPPERS(Document) {
