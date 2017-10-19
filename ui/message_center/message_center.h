@@ -73,7 +73,6 @@ class MESSAGE_CENTER_EXPORT MessageCenter {
   virtual bool HasPopupNotifications() const = 0;
   virtual bool IsQuietMode() const = 0;
   virtual bool IsLockedState() const = 0;
-  virtual bool HasClickedListener(const std::string& id) = 0;
 
   // Find the notification with the corresponding id. Returns null if not
   // found. The returned instance is owned by the message center.

@@ -47,7 +47,6 @@ TEST_F(NotificationDelegateTest, ClickedDelegate) {
           base::Bind(&NotificationDelegateTest::ClickCallback,
                      base::Unretained(this))));
 
-  EXPECT_TRUE(delegate->HasClickedListener());
   delegate->Click();
   EXPECT_EQ(1, GetClickedCallbackAndReset());
 
@@ -60,7 +59,6 @@ TEST_F(NotificationDelegateTest, NullClickedDelegate) {
   scoped_refptr<HandleNotificationClickedDelegate> delegate(
       new HandleNotificationClickedDelegate(base::Closure()));
 
-  EXPECT_FALSE(delegate->HasClickedListener());
   delegate->Click();
   EXPECT_EQ(0, GetClickedCallbackAndReset());
 
@@ -68,4 +66,4 @@ TEST_F(NotificationDelegateTest, NullClickedDelegate) {
   EXPECT_EQ(0, GetClickedCallbackAndReset());
 }
 
-}
+}  // namespace message_center

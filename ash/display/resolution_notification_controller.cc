@@ -43,7 +43,6 @@ class ResolutionChangeNotificationDelegate
   // message_center::NotificationDelegate overrides:
   void Close(bool by_user) override;
   void Click() override;
-  bool HasClickedListener() override;
   void ButtonClick(int button_index) override;
 
   ResolutionNotificationController* controller_;
@@ -68,10 +67,6 @@ void ResolutionChangeNotificationDelegate::Close(bool by_user) {
 
 void ResolutionChangeNotificationDelegate::Click() {
   controller_->AcceptResolutionChange(true);
-}
-
-bool ResolutionChangeNotificationDelegate::HasClickedListener() {
-  return true;
 }
 
 void ResolutionChangeNotificationDelegate::ButtonClick(int button_index) {
@@ -259,6 +254,7 @@ void ResolutionNotificationController::CreateOrUpdateNotification(
           system_notifier::kNotifierDisplayResolutionChange),
       data, new ResolutionChangeNotificationDelegate(
                 this, change_info_->timeout_count > 0)));
+  notification->set_clickable(true);
   notification->SetSystemPriority();
   message_center->AddNotification(std::move(notification));
 }

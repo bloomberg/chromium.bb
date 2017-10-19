@@ -103,7 +103,6 @@ class ASH_EXPORT MessageCenterView
                           bool by_user) override;
   std::unique_ptr<ui::MenuModel> CreateMenuModel(
       const message_center::Notification& notification) override;
-  bool HasClickedListener(const std::string& notification_id) override;
   void ClickOnNotificationButton(const std::string& notification_id,
                                  int button_index) override;
   void ClickOnSettingsButton(const std::string& notification_id) override;

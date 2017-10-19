@@ -281,6 +281,7 @@ void DataPromoNotification::ShowOptionalMobileDataPromoNotification() {
               &NotificationClicked, default_network->guid(), info_url)),
           kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_clickable(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 
@@ -327,6 +328,7 @@ bool DataPromoNotification::ShowDataSaverNotification() {
               base::Bind(&NotificationClicked, "", kDataSaverExtensionUrl)),
           kNotificationMobileDataIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
+  notification->set_clickable(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
   base::RecordAction(base::UserMetricsAction("DataSaverPrompt_Shown"));

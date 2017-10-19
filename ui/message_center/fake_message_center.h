@@ -29,7 +29,6 @@ class FakeMessageCenter : public MessageCenter {
   bool HasPopupNotifications() const override;
   bool IsQuietMode() const override;
   bool IsLockedState() const override;
-  bool HasClickedListener(const std::string& id) override;
   message_center::Notification* FindVisibleNotificationById(
       const std::string& id) override;
   const NotificationList::Notifications& GetVisibleNotifications() override;

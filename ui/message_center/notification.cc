@@ -212,6 +212,7 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
     const gfx::Image& icon,
     const std::string& system_component_id,
     const base::Closure& click_callback) {
+  DCHECK(!click_callback.is_null());
   std::unique_ptr<Notification> notification = CreateSystemNotification(
       NOTIFICATION_TYPE_SIMPLE, notification_id, title, message, icon,
       base::string16() /* display_source */, GURL(),
@@ -219,6 +220,7 @@ std::unique_ptr<Notification> Notification::CreateSystemNotification(
       RichNotificationData(),
       new HandleNotificationClickedDelegate(click_callback), gfx::kNoneIcon,
       SystemNotificationWarningLevel::CRITICAL_WARNING);
+  notification->set_clickable(true);
   notification->SetSystemPriority();
   return notification;
 }
