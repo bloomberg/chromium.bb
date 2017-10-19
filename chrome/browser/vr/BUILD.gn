@@ -107,8 +107,6 @@ source_set("vr_common_source") {
     "service/vr_display_host.h",
     "service/vr_service_impl.cc",
     "service/vr_service_impl.h",
-    "speech_recognizer.cc",
-    "speech_recognizer.h",
     "target_property.cc",
     "target_property.h",
     "toolbar_helper.cc",
@@ -147,11 +145,11 @@ source_set("vr_common_source") {
     "//cc/paint",
     "//chrome/app:generated_resources",
     "//chrome/browser/resources:vr_shell_resources",
-    "//chrome/common:constants",
     "//components/security_state/core",
     "//components/strings",
     "//components/toolbar",
     "//components/url_formatter",
+    "//components/vector_icons",
     "//components/vector_icons",
     "//content/public/browser",
     "//content/public/common",
@@ -210,7 +208,6 @@ test("vr_common_unittests") {
     "fps_meter_unittest.cc",
     "gltf_parser_unittest.cc",
     "service/vr_device_manager_unittest.cc",
-    "speech_recognizer_unittest.cc",
     "test/animation_utils.cc",
     "test/animation_utils.h",
     "test/fake_ui_element_renderer.cc",
@@ -243,7 +240,6 @@ test("vr_common_unittests") {
   deps = [
     ":vr_test_support",
     "//cc:test_support",
-    "//content/test:test_support",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
@@ -305,6 +301,11 @@ source_set("vr_test_support") {
 
     # TODO(mthiesse, crbug.com/769373): Remove dependency on device/vr:fakes.
     "//device/vr:fakes",
+
+    # TODO(mthiesse): Figure out why these webrtc deps are necessary for compiling these tests.
+    # Is a dependency missing from some other target?
+    "//third_party/webrtc/api:video_frame_api",
+    "//third_party/webrtc/system_wrappers:metrics_default",
   ]
 
   if (is_win) {
