@@ -21,6 +21,13 @@ void MockObjectProxy::CallMethod(MethodCall* method_call,
   DoCallMethod(method_call, timeout_ms, &callback);
 }
 
+void MockObjectProxy::CallMethodWithErrorResponse(
+    MethodCall* method_call,
+    int timeout_ms,
+    ResponseOrErrorCallback callback) {
+  DoCallMethodWithErrorResponse(method_call, timeout_ms, &callback);
+}
+
 void MockObjectProxy::CallMethodWithErrorCallback(
     MethodCall* method_call,
     int timeout_ms,
