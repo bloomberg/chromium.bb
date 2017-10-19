@@ -14,6 +14,7 @@ from chromite.cbuildbot.stages import generic_stages_unittest
 from chromite.cbuildbot.stages import release_stages
 from chromite.lib import config_lib
 from chromite.lib import failures_lib
+from chromite.lib import parallel
 from chromite.lib import results_lib
 from chromite.lib import timeout_util
 
@@ -461,7 +462,7 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testRunPaygenInProcessWithUnifiedBuild(self):
     self._run.config.models = [config_lib.ModelTestConfig('model1'),
-                               config_lib.ModelTestConfig('model2')]
+                               config_lib.ModelTestConfig('model2', ['au'])]
 
     # Have to patch and verify that the PaygenTestStage is created.
     stage = self.ConstructStage()
@@ -473,8 +474,20 @@ class PaygenStageTest(generic_stages_unittest.AbstractStageTestCase,
       # Ensure that the first model from the unified build was selected
       # as the platform to be tested
       sched_tests.assert_called_once_with(
-          'foo-suite-name', 'model1', 'foo-archive-build',
+          'foo-suite-name', 'model2', 'foo-archive-build',
           False, True, job_keyvals=mock.ANY)
+
+  def testRunPaygenInParallelWithUnifiedBuild(self):
+    self._run.config.models = [config_lib.ModelTestConfig('model1', ['au']),
+                               config_lib.ModelTestConfig('model2', ['au'])]
+
+    # Have to patch and verify that the PaygenTestStage is created.
+    stage = self.ConstructStage()
+
+    with patch(parallel, 'RunParallelSteps') as parallel_tests:
+      stage._RunPaygenInProcess('foo', 'foo-board', 'foo-version',
+                                True, False, False, skip_duts_check=False)
+      parallel_tests.assert_called_once_with([mock.ANY, mock.ANY])
 
 
 class PaygenBuildStageTest(generic_stages_unittest.AbstractStageTestCase,
@@ -521,7 +534,7 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     return release_stages.PaygenTestStage(
         builder_run=self._run,
         suite_name='foo-test-suite',
-        board=self._current_board,
+        model=self._current_board,
         # The PaygenBuild stage will add the '-channel' suffix to the channel
         # when converting to release tools naming.
         channel='foochan-channel',
@@ -533,7 +546,7 @@ class PaygenTestStageTest(generic_stages_unittest.AbstractStageTestCase,
   def testStageName(self):
     """See if the stage name is correctly formed."""
     stage = self.ConstructStage()
-    self.assertEqual(stage.name, 'PaygenTestFoochan')
+    self.assertEqual(stage.name, 'PaygenTestFoochan [x86-alex_he]')
 
   def testPerformStageTestLabFail(self):
     """Test that exception from RunHWTestSuite are properly handled."""

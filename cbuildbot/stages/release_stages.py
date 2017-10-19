@@ -466,21 +466,27 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         if not self.skip_testing:
           suite_name, archive_board, archive_build, finished_uri = testdata
 
-          model = archive_board
-          # For unified builds, we need to use an explicit model since only
-          # those will actually exist in the hardware test farm.
+          models = []
+          # For unified builds, only test against the specified models.
           if self._run.config.models:
-            model = self._run.config.models[0].name
+            for model in self._run.config.models:
+              # 'au' is a test suite generated in ge_build_config.json
+              if model.test_suites and 'au' in model.test_suites:
+                models.append(model.name)
+          else:
+            models.append(archive_board)
 
-          # Paygen tests only need to be run on one model for a given
-          # reference board.
-          # If we add richer labels to Autotest platforms that differentiate
-          # models from boards, we can let Autotest choose for us in the
-          # future from all models for a given reference board.
-          PaygenTestStage(
-              self._run, suite_name, model, self.channel,
-              archive_build, finished_uri, self.skip_duts_check,
-              self.debug).Run()
+          if len(models) > 1:
+            parallel.RunParallelSteps(
+                [lambda: self._RunPaygenTestStage(
+                    suite_name, model, archive_build, finished_uri)
+                 for model in models])
+          elif len(models) == 1:
+            PaygenTestStage(
+                self._run, suite_name, models[0], self.channel,
+                archive_build, finished_uri, self.skip_duts_check,
+                self.debug).Run()
+
 
       except (paygen_build_lib.BuildFinished,
               paygen_build_lib.BuildLocked) as e:
@@ -492,17 +498,30 @@ class PaygenBuildStage(generic_stages.BoardSpecificBuilderStage):
         # being processed (so the build is locked).
         logging.info('PaygenBuild for %s skipped because: %s', self.channel, e)
 
+  def _RunPaygenTestStage(
+      self, suite_name, model, build, finished_uri):
+    """Runs the PaygenTest stage"""
+    PaygenTestStage(
+        self._run,
+        suite_name,
+        model,
+        self.channel,
+        build,
+        finished_uri,
+        self.skip_duts_check,
+        self.debug).Run()
+
 
 class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
   """Stage that schedules the payload tests."""
-  def __init__(self, builder_run, suite_name, board, channel, build,
+  def __init__(self, builder_run, suite_name, model, channel, build,
                finished_uri, skip_duts_check, debug, **kwargs):
     """Init that accepts the channels argument, if present.
 
     Args:
       builder_run: See builder_run on ArchiveStage
       suite_name: See builder_run on ArchiveStage
-      board: Board of payloads to generate ('x86-mario', 'x86-alex-he', etc)
+      model: Model that will be tested. ('reef', 'pyro', etc)
       channel: Channel of payloads to generate ('stable', 'beta', etc)
       build: Version of payloads to generate.
       finished_uri: GS URI of the finished flag to create on success.
@@ -510,7 +529,7 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
       debug: Boolean indicating if this is a test run or a real run.
     """
     self.suite_name = suite_name
-    self.board = board
+    self.model = model
     self.build = build
     self.finished_uri = finished_uri
     self.skip_duts_check = skip_duts_check
@@ -518,14 +537,16 @@ class PaygenTestStage(generic_stages.BoardSpecificBuilderStage):
     # We don't need the '-channel'suffix.
     if channel.endswith('-channel'):
       channel = channel[0:-len('-channel')]
+    suffix = '%s [%s]' % (channel.capitalize(), model)
+
     super(PaygenTestStage, self).__init__(
-        builder_run, board, suffix=channel.capitalize(), **kwargs)
+        builder_run, model, suffix=suffix, **kwargs)
     self._drm = dryrun_lib.DryRunMgr(self.debug)
 
   def PerformStage(self):
     """Schedule the tests to run."""
     # Schedule the tests to run and wait for the results.
-    paygen_build_lib.ScheduleAutotestTests(self.suite_name, self.board,
+    paygen_build_lib.ScheduleAutotestTests(self.suite_name, self.model,
                                            self.build, self.skip_duts_check,
                                            self.debug,
                                            job_keyvals=self.GetJobKeyvals())
