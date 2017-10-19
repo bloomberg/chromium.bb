@@ -2325,12 +2325,15 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
     NativeWebKeyboardEvent fakeEvent = event;
     fakeEvent.SetType(blink::WebInputEvent::kKeyUp);
     fakeEvent.skip_in_browser = true;
-    widgetHost->ForwardKeyboardEventWithLatencyInfo(fakeEvent, latency_info);
+    ui::LatencyInfo fake_event_latency_info = latency_info;
+    fake_event_latency_info.set_source_event_type(ui::SourceEventType::OTHER);
+    widgetHost->ForwardKeyboardEventWithLatencyInfo(fakeEvent,
+                                                    fake_event_latency_info);
     // Not checking |renderWidgetHostView_->render_widget_host_| here because
     // a key event with |skip_in_browser| == true won't be handled by browser,
     // thus it won't destroy the widget.
 
-    widgetHost->ForwardKeyboardEventWithCommands(event, latency_info,
+    widgetHost->ForwardKeyboardEventWithCommands(event, fake_event_latency_info,
                                                  &editCommands_);
 
     // Calling ForwardKeyboardEventWithCommands() could have destroyed the
