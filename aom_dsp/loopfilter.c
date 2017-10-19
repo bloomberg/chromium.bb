@@ -115,6 +115,7 @@ static INLINE int8_t flat_mask3(uint8_t thresh, uint8_t p5, uint8_t p4,
 }
 #endif
 
+#if !PARALLEL_DEBLOCKING_13_TAP
 static INLINE int8_t flat_mask5(uint8_t thresh, uint8_t p4, uint8_t p3,
                                 uint8_t p2, uint8_t p1, uint8_t p0, uint8_t q0,
                                 uint8_t q1, uint8_t q2, uint8_t q3,
@@ -124,6 +125,7 @@ static INLINE int8_t flat_mask5(uint8_t thresh, uint8_t p4, uint8_t p3,
   mask |= (abs(q4 - q0) > thresh) * -1;
   return ~mask;
 }
+#endif
 
 // is there high edge variance internal edge: 11111111 yes, 00000000 no
 static INLINE int8_t hev_mask(uint8_t thresh, uint8_t p1, uint8_t p0,
@@ -490,6 +492,7 @@ static INLINE void filter10(int8_t mask, uint8_t thresh, int8_t flat,
 }
 #endif
 
+#if !PARALLEL_DEBLOCKING_13_TAP
 static INLINE void filter16(int8_t mask, uint8_t thresh, int8_t flat,
                             int8_t flat2, uint8_t *op7, uint8_t *op6,
                             uint8_t *op5, uint8_t *op4, uint8_t *op3,
@@ -543,6 +546,7 @@ static INLINE void filter16(int8_t mask, uint8_t thresh, int8_t flat,
     filter8(mask, thresh, flat, op3, op2, op1, op0, oq0, oq1, oq2, oq3);
   }
 }
+#endif
 
 static void mb_lpf_horizontal_edge_w(uint8_t *s, int p, const uint8_t *blimit,
                                      const uint8_t *limit,
@@ -737,6 +741,7 @@ static INLINE int8_t highbd_flat_mask4(uint8_t thresh, uint16_t p3, uint16_t p2,
   return ~mask;
 }
 
+#if !PARALLEL_DEBLOCKING_13_TAP
 static INLINE int8_t highbd_flat_mask5(uint8_t thresh, uint16_t p4, uint16_t p3,
                                        uint16_t p2, uint16_t p1, uint16_t p0,
                                        uint16_t q0, uint16_t q1, uint16_t q2,
@@ -747,6 +752,7 @@ static INLINE int8_t highbd_flat_mask5(uint8_t thresh, uint16_t p4, uint16_t p3,
   mask |= (abs(q4 - q0) > thresh16) * -1;
   return ~mask;
 }
+#endif
 
 // Is there high edge variance internal edge:
 // 11111111_11111111 yes, 00000000_00000000 no ?
@@ -1096,6 +1102,7 @@ static INLINE void highbd_filter14(int8_t mask, uint8_t thresh, int8_t flat,
 }
 #endif
 
+#if !PARALLEL_DEBLOCKING_13_TAP
 static INLINE void highbd_filter16(int8_t mask, uint8_t thresh, int8_t flat,
                                    int8_t flat2, uint16_t *op7, uint16_t *op6,
                                    uint16_t *op5, uint16_t *op4, uint16_t *op3,
@@ -1161,6 +1168,7 @@ static INLINE void highbd_filter16(int8_t mask, uint8_t thresh, int8_t flat,
                    bd);
   }
 }
+#endif
 
 static void highbd_mb_lpf_horizontal_edge_w(uint16_t *s, int p,
                                             const uint8_t *blimit,

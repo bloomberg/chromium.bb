@@ -508,35 +508,55 @@ const loop8_param_t kHbdLoop8Test6[] = {
   make_tuple(&aom_highbd_lpf_vertical_4_sse2, &aom_highbd_lpf_vertical_4_c, 8),
   make_tuple(&aom_highbd_lpf_horizontal_8_sse2, &aom_highbd_lpf_horizontal_8_c,
              8),
+#if !CONFIG_DEBLOCK_13TAP
+  // Despite the name the following funcition is doing 15-tap filtering
+  // which is changed to 13-tap and not yet implemented in SIMD
   make_tuple(&aom_highbd_lpf_horizontal_edge_8_sse2,
              &aom_highbd_lpf_horizontal_edge_8_c, 8),
+#endif
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
   make_tuple(&aom_highbd_lpf_horizontal_edge_16_sse2,
              &aom_highbd_lpf_horizontal_edge_16_c, 8),
+#endif
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 8),
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
   make_tuple(&aom_highbd_lpf_vertical_16_sse2, &aom_highbd_lpf_vertical_16_c,
              8),
+#endif
   make_tuple(&aom_highbd_lpf_horizontal_4_sse2, &aom_highbd_lpf_horizontal_4_c,
              10),
   make_tuple(&aom_highbd_lpf_vertical_4_sse2, &aom_highbd_lpf_vertical_4_c, 10),
   make_tuple(&aom_highbd_lpf_horizontal_8_sse2, &aom_highbd_lpf_horizontal_8_c,
              10),
+#if !CONFIG_DEBLOCK_13TAP
+  // Despite the name the following funcition is doing 15-tap filtering
+  // which is changed to 13-tap and not yet implemented in SIMD
   make_tuple(&aom_highbd_lpf_horizontal_edge_8_sse2,
              &aom_highbd_lpf_horizontal_edge_8_c, 10),
+#endif
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
   make_tuple(&aom_highbd_lpf_horizontal_edge_16_sse2,
              &aom_highbd_lpf_horizontal_edge_16_c, 10),
+#endif
   make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 10),
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
   make_tuple(&aom_highbd_lpf_vertical_16_sse2, &aom_highbd_lpf_vertical_16_c,
              10),
+#endif
   make_tuple(&aom_highbd_lpf_horizontal_4_sse2, &aom_highbd_lpf_horizontal_4_c,
              12),
   make_tuple(&aom_highbd_lpf_vertical_4_sse2, &aom_highbd_lpf_vertical_4_c, 12),
   make_tuple(&aom_highbd_lpf_horizontal_8_sse2, &aom_highbd_lpf_horizontal_8_c,
              12),
+#if !CONFIG_DEBLOCK_13TAP
+  // Despite the name the following funcition is doing 15-tap filtering
+  // which is changed to 13-tap and not yet implemented in SIMD
   make_tuple(&aom_highbd_lpf_horizontal_edge_8_sse2,
              &aom_highbd_lpf_horizontal_edge_8_c, 12),
+#endif
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
   make_tuple(&aom_highbd_lpf_horizontal_edge_16_sse2,
              &aom_highbd_lpf_horizontal_edge_16_c, 12),
-  make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 12),
   make_tuple(&aom_highbd_lpf_vertical_16_sse2, &aom_highbd_lpf_vertical_16_c,
              12),
   make_tuple(&aom_highbd_lpf_vertical_16_dual_sse2,
@@ -544,7 +564,9 @@ const loop8_param_t kHbdLoop8Test6[] = {
   make_tuple(&aom_highbd_lpf_vertical_16_dual_sse2,
              &aom_highbd_lpf_vertical_16_dual_c, 10),
   make_tuple(&aom_highbd_lpf_vertical_16_dual_sse2,
-             &aom_highbd_lpf_vertical_16_dual_c, 12)
+             &aom_highbd_lpf_vertical_16_dual_c, 12),
+#endif
+  make_tuple(&aom_highbd_lpf_vertical_8_sse2, &aom_highbd_lpf_vertical_8_c, 12)
 };
 
 INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
@@ -553,12 +575,20 @@ INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
 const loop8_param_t kLoop8Test6[] = {
   make_tuple(&aom_lpf_horizontal_4_sse2, &aom_lpf_horizontal_4_c, 8),
   make_tuple(&aom_lpf_horizontal_8_sse2, &aom_lpf_horizontal_8_c, 8),
+#if !CONFIG_DEBLOCK_13TAP
+  // Despite the name the following funcition is doing 15-tap filtering
+  // which is changed to 13-tap and not yet implemented in SIMD
   make_tuple(&aom_lpf_horizontal_edge_8_sse2, &aom_lpf_horizontal_edge_8_c, 8),
+#endif
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
   make_tuple(&aom_lpf_horizontal_edge_16_sse2, &aom_lpf_horizontal_edge_16_c,
              8),
+#endif
   make_tuple(&aom_lpf_vertical_4_sse2, &aom_lpf_vertical_4_c, 8),
   make_tuple(&aom_lpf_vertical_8_sse2, &aom_lpf_vertical_8_c, 8),
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
   make_tuple(&aom_lpf_vertical_16_sse2, &aom_lpf_vertical_16_c, 8),
+#endif
 #if !CONFIG_PARALLEL_DEBLOCKING
   make_tuple(&aom_lpf_vertical_16_dual_sse2, &aom_lpf_vertical_16_dual_c, 8)
 #endif
@@ -572,6 +602,7 @@ INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test6Param,
 #if HAVE_AVX2
 #if CONFIG_HIGHBITDEPTH
 
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
 const loop8_param_t kHbdLoop8Test6Avx2[] = {
   make_tuple(&aom_highbd_lpf_horizontal_edge_16_avx2,
              &aom_highbd_lpf_horizontal_edge_16_c, 8),
@@ -592,14 +623,17 @@ INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
 
 #endif
 #endif
+#endif
 
 #if HAVE_AVX2 && (!CONFIG_HIGHBITDEPTH) && (!CONFIG_PARALLEL_DEBLOCKING)
-INSTANTIATE_TEST_CASE_P(
-    AVX2, Loop8Test6Param,
-    ::testing::Values(make_tuple(&aom_lpf_horizontal_edge_8_avx2,
-                                 &aom_lpf_horizontal_edge_8_c, 8),
-                      make_tuple(&aom_lpf_horizontal_edge_16_avx2,
-                                 &aom_lpf_horizontal_edge_16_c, 8)));
+INSTANTIATE_TEST_CASE_P(AVX2, Loop8Test6Param,
+                        ::testing::Values(
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
+                            make_tuple(&aom_lpf_horizontal_edge_16_avx2,
+                                       &aom_lpf_horizontal_edge_16_c, 8),
+#endif
+                            make_tuple(&aom_lpf_horizontal_edge_8_avx2,
+                                       &aom_lpf_horizontal_edge_8_c, 8)));
 #endif
 
 #if HAVE_SSE2
@@ -695,11 +729,13 @@ INSTANTIATE_TEST_CASE_P(
         // currently built for MSVS with ARM and NEON.
         make_tuple(&aom_lpf_horizontal_edge_8_neon,
                    &aom_lpf_horizontal_edge_8_c, 8),
+#if !CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
         make_tuple(&aom_lpf_horizontal_edge_16_neon,
                    &aom_lpf_horizontal_edge_16_c, 8),
         make_tuple(&aom_lpf_vertical_16_neon, &aom_lpf_vertical_16_c, 8),
         make_tuple(&aom_lpf_vertical_16_dual_neon, &aom_lpf_vertical_16_dual_c,
                    8),
+#endif
 #endif  // HAVE_NEON_ASM
         make_tuple(&aom_lpf_horizontal_8_neon, &aom_lpf_horizontal_8_c, 8),
         make_tuple(&aom_lpf_vertical_8_neon, &aom_lpf_vertical_8_c, 8),
@@ -729,10 +765,12 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_lpf_horizontal_edge_8, &aom_lpf_horizontal_edge_8, 8),
         make_tuple(&aom_lpf_horizontal_edge_16, &aom_lpf_horizontal_edge_16, 8),
         make_tuple(&aom_lpf_vertical_4_dspr2, &aom_lpf_vertical_4_c, 8),
-        make_tuple(&aom_lpf_vertical_8_dspr2, &aom_lpf_vertical_8_c, 8),
+#if CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
         make_tuple(&aom_lpf_vertical_16_dspr2, &aom_lpf_vertical_16_c, 8),
         make_tuple(&aom_lpf_vertical_16_dual_dspr2, &aom_lpf_vertical_16_dual_c,
-                   8)));
+                   8),
+#endif
+        make_tuple(&aom_lpf_vertical_8_dspr2, &aom_lpf_vertical_8_c, 8)));
 
 INSTANTIATE_TEST_CASE_P(
     DSPR2, Loop8Test9Param,
@@ -754,11 +792,13 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&aom_lpf_horizontal_8_msa, &aom_lpf_horizontal_8_c, 8),
         make_tuple(&aom_lpf_horizontal_edge_8_msa, &aom_lpf_horizontal_edge_8_c,
                    8),
+#if CONFIG_DEBLOCK_13TAP  // No SIMD implementation for deblock_13tap yet
         make_tuple(&aom_lpf_horizontal_edge_16_msa,
                    &aom_lpf_horizontal_edge_16_c, 8),
+        make_tuple(&aom_lpf_vertical_16_msa, &aom_lpf_vertical_16_c, 8),
+#endif
         make_tuple(&aom_lpf_vertical_4_msa, &aom_lpf_vertical_4_c, 8),
-        make_tuple(&aom_lpf_vertical_8_msa, &aom_lpf_vertical_8_c, 8),
-        make_tuple(&aom_lpf_vertical_16_msa, &aom_lpf_vertical_16_c, 8)));
+        make_tuple(&aom_lpf_vertical_8_msa, &aom_lpf_vertical_8_c, 8)));
 
 INSTANTIATE_TEST_CASE_P(
     MSA, Loop8Test9Param,
