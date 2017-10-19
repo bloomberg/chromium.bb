@@ -1541,7 +1541,7 @@ void RenderViewContextMenu::AppendPasswordItems() {
                                     IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
     add_separator = true;
   }
-  if (password_manager::ShowAllSavedPasswordsContextMenuEnabled()) {
+  if (password_manager_util::ShowAllSavedPasswordsContextMenuEnabled()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS,
                                     IDS_AUTOFILL_SHOW_ALL_SAVED_FALLBACK);
     add_separator = true;
@@ -2029,8 +2029,9 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS:
-      autofill::ChromeAutofillClient::FromWebContents(source_web_contents_)
-          ->ExecuteCommand(autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+      password_manager_util::UserTriggeredShowAllSavedPasswordsFromContextMenu(
+          autofill::ChromeAutofillClient::FromWebContents(
+              source_web_contents_));
       break;
 
     case IDC_CONTENT_CONTENT_PICTUREINPICTURE:

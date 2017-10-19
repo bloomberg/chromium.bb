@@ -453,6 +453,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
           password_client_->GetMetricsRecorder().RecordPageLevelUserAction(
               UserAction::kShowAllPasswordsWhileNoneAreSuggested);
           break;
+        case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU:
         case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_NONE:
         case metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT:
           NOTREACHED();

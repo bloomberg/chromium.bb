@@ -13,9 +13,4 @@ bool ForceSavingExperimentEnabled() {
       password_manager::features::kEnablePasswordForceSaving);
 }
 
-bool ShowAllSavedPasswordsContextMenuEnabled() {
-  return base::FeatureList::IsEnabled(
-      password_manager::features::kEnableShowAllSavedPasswordsContextMenu);
-}
-
 }  // namespace password_manager

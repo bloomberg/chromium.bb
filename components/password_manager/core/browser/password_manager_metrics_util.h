@@ -257,6 +257,8 @@ enum ShowAllSavedPasswordsContext {
   // passwords can be suggested to the user, e.g. because none are saved or
   // because of technical issues.
   SHOW_ALL_SAVED_PASSWORDS_CONTEXT_MANUAL_FALLBACK,
+  // The "Show all saved  passwords..." fallback is shown in context menu.
+  SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU,
   SHOW_ALL_SAVED_PASSWORDS_CONTEXT_COUNT
 };
 
