@@ -52157,10 +52157,22 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="OfflinePages.ClearStoragePreRunUsage" units="MiB">
+<histogram name="OfflinePages.ClearStoragePreRunUsage" units="bytes">
+  <obsolete>
+    Deprecated in Oct 2017 and replaced by OfflinePages.ClearStoragePreRunUsage2
+    as it was reporting data in bytes instead of the expected MiB.
+  </obsolete>
   <owner>petewil@chromium.org</owner>
   <summary>
     The total storage size used by all offline pages from a specific client
+    namespace.
+  </summary>
+</histogram>
+
+<histogram name="OfflinePages.ClearStoragePreRunUsage2" units="KiB">
+  <owner>carlosk@chromium.org</owner>
+  <summary>
+    The total disk storage size used by all offline pages from a specific client
     namespace.
   </summary>
 </histogram>
@@ -101895,6 +101907,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="OfflinePages.Background.TimeToStart"/>
   <affected-histogram name="OfflinePages.Background.TimeToStart.Svelte"/>
   <affected-histogram name="OfflinePages.ClearStoragePreRunUsage"/>
+  <affected-histogram name="OfflinePages.ClearStoragePreRunUsage2"/>
   <affected-histogram name="OfflinePages.DeletePage.AccessCount"/>
   <affected-histogram name="OfflinePages.DeletePage.LastOpenToCreated"/>
   <affected-histogram name="OfflinePages.DeletePage.PageSize"/>
