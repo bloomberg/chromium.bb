@@ -1,0 +1,57 @@
+<html>
+<script>
+  function setCookie() {
+    document.cookie = "foo=bar";
+    domAutomationController.send(true);
+  }
+
+  function hasCookie() {
+    domAutomationController.send(document.cookie == "foo=bar");
+  }
+
+  function setLocalStorage() {
+    localStorage.setItem("foo", "bar");
+    domAutomationController.send(true);
+  }
+
+  function hasLocalStorage() {
+    domAutomationController.send(localStorage.getItem("foo") == "bar");
+  }
+
+  function setSessionStorage() {
+    sessionStorage.setItem("foo", "bar");
+    domAutomationController.send(true);
+  }
+
+  function hasSessionStorage() {
+    domAutomationController.send(sessionStorage.getItem("foo") == "bar");
+  }
+
+  function openFile_(name, options, callback, error) {
+    navigator.webkitTemporaryStorage.requestQuota(1024, function (granted) {
+      window.webkitRequestFileSystem(TEMPORARY, 1024, function (fs) {
+        fs.root.getFile(name, options, callback, error);
+      });
+    });
+  }
+
+  function setFileSystem() {
+    openFile_("foo.txt", { create: true, exclusive: true }, function (file) {
+      domAutomationController.send(true);
+    });
+  }
+
+  function hasFileSystem() {
+    openFile_("foo.txt", { create: false }, function (file) {
+      domAutomationController.send(true);
+    }, function (error) {
+      domAutomationController.send(false);
+    });
+  }
+</script>
+
+<body>
+  This page is used to test creation and deletion of various site data types.
+</body>
+
+</html>
