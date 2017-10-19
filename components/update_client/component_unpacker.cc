@@ -61,9 +61,9 @@ bool ComponentUnpacker::Verify() {
     return false;
   }
   const std::vector<std::vector<uint8_t>> required_keys = {pk_hash_};
-  const crx_file::VerifierResult result =
-      crx_file::Verify(path_, crx_file::VerifierFormat::CRX2_OR_CRX3,
-                       required_keys, std::vector<uint8_t>(), nullptr, nullptr);
+  const crx_file::VerifierResult result = crx_file::Verify(
+      path_, crx_file::VerifierFormat::CRX2_OR_CRX3, required_keys,
+      std::vector<uint8_t>(), &public_key_, nullptr);
   if (result != crx_file::VerifierResult::OK_FULL &&
       result != crx_file::VerifierResult::OK_DELTA) {
     error_ = UnpackerError::kInvalidFile;
@@ -135,8 +135,10 @@ void ComponentUnpacker::EndUnpacking() {
   Result result;
   result.error = error_;
   result.extended_error = extended_error_;
-  if (error_ == UnpackerError::kNone)
+  if (error_ == UnpackerError::kNone) {
     result.unpack_path = unpack_path_;
+    result.public_key = public_key_;
+  }
 
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(callback_, result));

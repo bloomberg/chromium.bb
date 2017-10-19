@@ -71,6 +71,9 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
 
     // Path of the unpacked files if the unpacking was successful.
     base::FilePath unpack_path;
+
+    // The extracted public key of the package if the unpacking was successful.
+    std::string public_key;
   };
 
   using Callback = base::Callback<void(const Result& result)>;
@@ -127,6 +130,7 @@ class ComponentUnpacker : public base::RefCountedThreadSafe<ComponentUnpacker> {
   scoped_refptr<OutOfProcessPatcher> oop_patcher_;
   UnpackerError error_;
   int extended_error_;
+  std::string public_key_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentUnpacker);
 };
