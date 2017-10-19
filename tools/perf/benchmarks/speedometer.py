@@ -72,6 +72,12 @@ class SpeedometerMeasurement(legacy_page_test.LegacyPageTest):
         page, 'Total', 'ms',
         tab.EvaluateJavaScript('benchmarkClient._timeValues'),
         important=True))
+    results.AddValue(list_of_scalar_values.ListOfScalarValues(
+        page, 'Runs/Minute', 'score',
+        tab.EvaluateJavaScript(
+            '[parseFloat(document.getElementById("result-number").innerText)];'
+        ),
+        important=True))
 
     # Extract the timings for each suite
     for suite_name in self.enabled_suites:
