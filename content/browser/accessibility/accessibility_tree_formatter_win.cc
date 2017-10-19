@@ -43,7 +43,6 @@ BOOL CALLBACK EnumWindowsProcPid(HWND hwnd, LPARAM lParam) {
   HwndWithProcId* hwnd_with_proc_id = (HwndWithProcId*)lParam;
   if (process_id == static_cast<DWORD>(hwnd_with_proc_id->pid)) {
     hwnd_with_proc_id->hwnd = hwnd;
-    ;
     return FALSE;
   }
   return TRUE;
@@ -54,6 +53,7 @@ HWND GetHwndForProcess(base::ProcessId pid) {
   EnumWindows(&EnumWindowsProcPid, (LPARAM)&hwnd_with_proc_id);
   return hwnd_with_proc_id.hwnd;
 }
+
 }  // namespace
 
 namespace content {
