@@ -1341,6 +1341,23 @@ public class Tab
     }
 
     /**
+     * Reparents this Tab to the provided Activity. Unlike {@link #detachAndStartReparenting} which
+     * launches the target Activity which can then reparent the Tab with
+     * {@link #attachAndFinishReparenting}, this method should be called from the target Activity on
+     * a Tab that belongs to a different one.
+     * @param activity - The ChromeActivity that will own the Tab.
+     * @param tabDelegateFactory - The TabDelegateFactory from the Activity for that Tab.
+     */
+    public void reparent(ChromeActivity activity, TabDelegateFactory tabDelegateFactory) {
+        detach();
+        // TODO(peconn): Figure out why this is necessary - it is something to do with
+        // Tab.mIsDetached being true and TabModelSelectorImpl#requestToShowTab not calling
+        // |mVisibleTab.hide()| because of it.
+        hide();
+        attachAndFinishReparenting(activity, tabDelegateFactory, null);
+    }
+
+    /**
      * Begins the tab reparenting process. Detaches the tab from its current activity and fires
      * an Intent to reparent the tab into its new host activity.
      *
@@ -1372,7 +1389,13 @@ public class Tab
         IntentHandler.addTrustedIntentExtras(intent);
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.TAB_REPARENTING)) {
-            detach(intent, finalizeCallback);
+            // Add the tab to AsyncTabParamsManager before removing it from the current model to
+            // ensure the global count of tabs is correct. See https://crbug.com/611806.
+            intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
+            AsyncTabParamsManager.add(
+                    mId, new TabReparentingParams(this, intent, finalizeCallback));
+
+            detach();
         }
 
         activity.startActivity(intent, startActivityOptions);
@@ -1384,20 +1407,11 @@ public class Tab
      *
      * In details, this function:
      * - Tags the tab using mIsDetached.
-     * - Registers some information for later reparenting in {@link AsyncTabParamsManager}.
      * - Removes the tab from its current {@link TabModelSelector}, effectively severing
      *   the {@link Activity} to {@link Tab} link.
-     *
-     * @param intent to be stored within a {@link TabReparentingParams}
-     * @param finalizeCallback to be stored within a {@link TabReparentingParams}
      */
-    private void detach(Intent intent, Runnable finalizeCallback) {
+    private void detach() {
         mIsDetached = true;
-        // Add the tab to AsyncTabParamsManager before removing it from the current model to
-        // ensure the global count of tabs is correct. See crbug.com/611806.
-        if (intent == null) intent = new Intent();
-        intent.putExtra(IntentHandler.EXTRA_TAB_ID, mId);
-        AsyncTabParamsManager.add(mId, new TabReparentingParams(this, intent, finalizeCallback));
 
         TabModelSelector tabModelSelector = getTabModelSelector();
         if (tabModelSelector != null) {
@@ -1417,10 +1431,11 @@ public class Tab
      *
      * @param activity The new activity this tab should be associated with.
      * @param tabDelegateFactory The new delegate factory this tab should be using.
-     * @Param reparentingParams The TabReparentingParams associated with this reparenting process.
+     * @param finalizeCallback A Callback to be called after the Tab has been reparented.
      */
     public void attachAndFinishReparenting(ChromeActivity activity,
-            TabDelegateFactory tabDelegateFactory, TabReparentingParams reparentingParams) {
+            TabDelegateFactory tabDelegateFactory,
+            @Nullable Runnable finalizeCallback) {
         // TODO(yusufo): Share these calls with the construction related calls.
         // crbug.com/590281
         activity.getCompositorViewHolder().prepareForTabReparenting();
@@ -1429,7 +1444,7 @@ public class Tab
 
         mIsTabStateDirty = true;
 
-        reparentingParams.finalizeTabReparenting();
+        if (finalizeCallback != null) finalizeCallback.run();
 
         for (TabObserver observer : mObservers) {
             observer.onReparentingFinished(this);
@@ -1491,8 +1506,7 @@ public class Tab
     /**
      * @return Whether the tab is detached from any Activity and its {@link WindowAndroid}.
      * Certain functionalities will not work until it is attached to an activity
-     * with {@link Tab#attachAndFinishReparenting(
-     * ChromeActivity, TabDelegateFactory, TabReparentingParams)}.
+     * with {@link Tab#attachAndFinishReparenting}.
      */
     public boolean isDetached() {
         return mIsDetached;
@@ -2621,8 +2635,11 @@ public class Tab
         if (isFrozen()) return;
 
         int constraints = getBrowserControlsStateConstraints();
-        updateBrowserControlsState(
-                constraints, BrowserControlsState.BOTH, constraints != BrowserControlsState.HIDDEN);
+
+        // TODO(peconn): Figure out why updating without animations breaks fullscreen activity.
+        boolean animate = constraints != BrowserControlsState.HIDDEN
+                || ChromeFeatureList.isEnabled(ChromeFeatureList.FULLSCREEN_ACTIVITY);
+        updateBrowserControlsState(constraints, BrowserControlsState.BOTH, animate);
 
         if (getContentViewCore() != null && mFullscreenManager != null) {
             getContentViewCore().updateMultiTouchZoomSupport(
@@ -3039,7 +3056,7 @@ public class Tab
         tab.getContentViewCore().onSizeChanged(width, height, 0, 0);
         tab.getWebContents().setSize(width, height);
 
-        tab.detach(null, null);
+        tab.detach();
         return tab;
     }
 
