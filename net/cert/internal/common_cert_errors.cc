@@ -55,6 +55,9 @@ DEFINE_CERT_ERROR_ID(kUnacceptableSignatureAlgorithm,
                      "Unacceptable signature algorithm");
 DEFINE_CERT_ERROR_ID(kUnacceptablePublicKey, "Unacceptable public key");
 DEFINE_CERT_ERROR_ID(kCertificateRevoked, "Certificate is revoked");
+DEFINE_CERT_ERROR_ID(kNoRevocationMechanism,
+                     "Certificate lacks a revocation mechanism");
+DEFINE_CERT_ERROR_ID(kUnableToCheckRevocation, "Unable to check revocation");
 
 }  // namespace cert_errors
 
