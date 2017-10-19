@@ -71,7 +71,7 @@ const CGFloat kBackgroundViewColorAlpha = 0.95;
         UIColorFromRGB(kBackgroundViewColor, kBackgroundViewColorAlpha);
 
     [_stackViewToolbar addSubview:_openNewTabButton];
-    [self.view addSubview:_stackViewToolbar];
+    [self.contentView addSubview:_stackViewToolbar];
 
     [[self stackButton] addTarget:_dispatcher
                            action:@selector(dismissTabSwitcher)

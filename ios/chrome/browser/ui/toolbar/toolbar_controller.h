@@ -30,6 +30,9 @@ class ReadingListModel;
 
 // The top-level toolbar view.
 @property(nonatomic, readonly, strong) ToolbarView* view;
+// The view containing all the content of the toolbar. It respects the trailing
+// and leading anchors of the safe area.
+@property(nonatomic, readonly, strong) UIView* contentView;
 // The view for the toolbar background image. This is a subview of |view| to
 // allow clients to alter the transparency of the background image without
 // affecting the other components of the toolbar.
