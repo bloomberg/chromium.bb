@@ -84,7 +84,6 @@ interface MediaDevices : EventTarget
     attribute internals                      # test only
     attribute accessibilityController        # test only
     attribute textInputController            # test only
-    attribute gin
     attribute gamepadController              # test only
     attribute GCController                   # test only
     getter speechSynthesis                   # Speech API, crbug.com/487255
