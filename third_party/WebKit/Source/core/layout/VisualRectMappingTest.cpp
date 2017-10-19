@@ -875,7 +875,7 @@ TEST_F(VisualRectMappingTest, PerspectivePlusScroll) {
   transform.FlattenTo2d();
 
   LayoutRect output(transform.MapRect(FloatRect(originalRect)));
-  output.Intersect(container->ClippingRect());
+  output.Intersect(container->ClippingRect(LayoutPoint()));
   CheckVisualRect(*target, *target->View(), originalRect, output, false, false);
 }
 

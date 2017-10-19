@@ -1067,8 +1067,8 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   LayoutRect ClipRect(const LayoutPoint& location) const;
 
   // Returns the combination of overflow clip, contain: paint clip and CSS clip
-  // for this object, in local space.
-  LayoutRect ClippingRect() const;
+  // for this object.
+  LayoutRect ClippingRect(const LayoutPoint& location) const;
 
   virtual void PaintBoxDecorationBackground(const PaintInfo&,
                                             const LayoutPoint&) const;
