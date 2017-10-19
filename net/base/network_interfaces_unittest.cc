@@ -57,7 +57,7 @@ TEST(NetworkInterfacesTest, GetNetworkList) {
     if (it->type == NetworkChangeNotifier::CONNECTION_WIFI) {
       EXPECT_NE(WIFI_PHY_LAYER_PROTOCOL_NONE, GetWifiPHYLayerProtocol());
     }
-#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+#elif defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
     char name[IF_NAMESIZE];
     EXPECT_TRUE(if_indextoname(it->interface_index, name));
     EXPECT_STREQ(it->name.c_str(), name);

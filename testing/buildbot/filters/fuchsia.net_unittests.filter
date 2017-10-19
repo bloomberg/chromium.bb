@@ -4,9 +4,6 @@
 -DiskCacheTest.BlockFiles_Grow
 -DiskCacheBackendTest.SimpleCacheDeleteQuickly
 
-# getifaddrs() not implemented, ZX-766.
--NetworkInterfacesTest.GetNetworkList
-
 # Exceeds FD limit, ZX-1127.
 -ProxyScriptFetcherImplTest.Priority
 
