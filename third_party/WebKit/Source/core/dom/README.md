@@ -498,6 +498,8 @@ If we are ignoring the effect of `<slot>`, we can have the following simple defi
 
 TODO(hayato): Explain.
 
+In the meantime, please see [Incremental Shadow DOM](https://docs.google.com/document/d/1R9J8CVaSub_nbaVQwwm3NjCoZye4feJ7ft7tVe5QerM/edit?usp=sharing).
+
 # FlatTreeTraversal
 
 TODO(hayato): Explain.
