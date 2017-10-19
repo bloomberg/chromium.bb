@@ -20,7 +20,9 @@ namespace {
 constexpr base::TimeDelta kWeek = base::TimeDelta::FromDays(7);
 }  // namespace
 
-bool GetOffsetFromTimezoneToGmt(const std::string& timezone, int* offset) {
+bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
+                                base::Clock* clock,
+                                int* offset) {
   auto zone = base::WrapUnique(
       icu::TimeZone::createTimeZone(icu::UnicodeString::fromUTF8(timezone)));
   if (*zone == icu::TimeZone::getUnknown()) {
@@ -39,6 +41,14 @@ bool GetOffsetFromTimezoneToGmt(const std::string& timezone, int* offset) {
     LOG(ERROR) << "Gregorian calendar error = " << u_errorName(status);
     return false;
   }
+  UDate cur_date = static_cast<UDate>(clock->Now().ToDoubleT() *
+                                      base::Time::kMillisecondsPerSecond);
+  status = U_ZERO_ERROR;
+  gregorian_calendar->setTime(cur_date, status);
+  if (U_FAILURE(status)) {
+    LOG(ERROR) << "Gregorian calendar set time error = " << u_errorName(status);
+    return false;
+  }
   status = U_ZERO_ERROR;
   UBool day_light = gregorian_calendar->inDaylightTime(status);
   if (U_FAILURE(status)) {
@@ -52,11 +62,13 @@ bool GetOffsetFromTimezoneToGmt(const std::string& timezone, int* offset) {
   return true;
 }
 
-std::vector<OffHoursInterval> ConvertIntervalsToGmt(
-    const std::vector<OffHoursInterval>& intervals,
+std::vector<off_hours::OffHoursInterval> ConvertIntervalsToGmt(
+    const std::vector<off_hours::OffHoursInterval>& intervals,
+    base::Clock* clock,
     const std::string& timezone) {
   int gmt_offset = 0;
-  bool no_offset_error = GetOffsetFromTimezoneToGmt(timezone, &gmt_offset);
+  bool no_offset_error =
+      GetOffsetFromTimezoneToGmt(timezone, clock, &gmt_offset);
   if (!no_offset_error)
     return {};
   std::vector<OffHoursInterval> gmt_intervals;
