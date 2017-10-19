@@ -401,8 +401,6 @@ void AnalysisCanvas::onClipPath(const SkPath& path,
 bool doesCoverCanvas(const SkRRect& rr,
                      const SkMatrix& total_matrix,
                      const SkIRect& clip_device_bounds) {
-  const SkRect& bounding_rect = rr.rect();
-
   // We cannot handle non axis aligned rectangles at the moment.
   if (!total_matrix.isScaleTranslate()) {
     return false;
