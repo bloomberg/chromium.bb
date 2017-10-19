@@ -245,6 +245,38 @@ class BotUpdateUnittests(unittest.TestCase):
     setattr(os, 'remove', old_os_remove)
     self.assertTrue(os.path.join(path, lockfile) in removed)
 
+  def testGenerateManifestsBasic(self):
+    gclient_output = {
+			'solutions': {
+				'breakpad/': {
+					'revision': None,
+					'scm': None,
+					'url': ('https://chromium.googlesource.com/breakpad/breakpad.git' +
+                  '@5f638d532312685548d5033618c8a36f73302d0a')
+				},
+				"src/": {
+					'revision': 'f671d3baeb64d9dba628ad582e867cf1aebc0207',
+					'scm': None,
+					'url': 'https://chromium.googlesource.com/a/chromium/src.git'
+				},
+      }
+    }
+    out = bot_update.create_manifest(gclient_output, None, None)
+    self.assertEquals(len(out['directories']), 2)
+    print out
+    self.assertEquals(
+        out['directories']['src']['git_checkout']['revision'],
+        'f671d3baeb64d9dba628ad582e867cf1aebc0207')
+    self.assertEquals(
+        out['directories']['src']['git_checkout']['repo_url'],
+        'https://chromium.googlesource.com/chromium/src')
+    self.assertEquals(
+        out['directories']['breakpad']['git_checkout']['revision'],
+        '5f638d532312685548d5033618c8a36f73302d0a')
+    self.assertEquals(
+        out['directories']['breakpad']['git_checkout']['repo_url'],
+        'https://chromium.googlesource.com/breakpad/breakpad')
+
 
 if __name__ == '__main__':
   unittest.main()
