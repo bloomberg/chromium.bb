@@ -140,6 +140,23 @@ void BackgroundFetchDelegateImpl::DownloadUrl(
   download_service_->StartDownload(params);
 }
 
+void BackgroundFetchDelegateImpl::Abort(const std::string& job_unique_id) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  auto job_details_iter = job_details_map_.find(job_unique_id);
+  if (job_details_iter == job_details_map_.end())
+    return;
+
+  JobDetails& job_details = job_details_iter->second;
+
+  for (const auto& download_guid : job_details.current_download_guids) {
+    download_service_->CancelDownload(download_guid);
+    download_job_unique_id_map_.erase(download_guid);
+  }
+
+  job_details_map_.erase(job_details_iter);
+}
+
 void BackgroundFetchDelegateImpl::OnDownloadStarted(
     const std::string& download_guid,
     std::unique_ptr<content::BackgroundFetchResponse> response) {
@@ -166,8 +183,16 @@ void BackgroundFetchDelegateImpl::OnDownloadFailed(
   using FailureReason = content::BackgroundFetchResult::FailureReason;
   FailureReason failure_reason;
 
-  const std::string& job_unique_id = download_job_unique_id_map_[download_guid];
+  auto download_job_unique_id_iter =
+      download_job_unique_id_map_.find(download_guid);
+  // Cancelled downloads will already have been deleted so just return.
+  if (download_job_unique_id_iter == download_job_unique_id_map_.end())
+    return;
+
+  const std::string& job_unique_id = download_job_unique_id_iter->second;
   JobDetails& job_details = job_details_map_.find(job_unique_id)->second;
+  ++job_details.completed_parts;
+  job_details.UpdateOfflineItem();
 
   switch (reason) {
     case download::Client::FailureReason::NETWORK:

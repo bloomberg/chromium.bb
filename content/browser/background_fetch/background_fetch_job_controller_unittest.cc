@@ -242,18 +242,14 @@ TEST_F(BackgroundFetchJobControllerTest, AbortJob) {
             BackgroundFetchJobController::State::INITIALIZED);
 
   // Start the first few requests, and abort them immediately after.
-  {
-    base::RunLoop run_loop;
-    job_completed_closure_ = run_loop.QuitClosure();
+  controller->Start();
+  EXPECT_EQ(controller->state(), BackgroundFetchJobController::State::FETCHING);
 
-    controller->Start();
-    EXPECT_EQ(controller->state(),
-              BackgroundFetchJobController::State::FETCHING);
+  controller->Abort();
 
-    controller->Abort();
-
-    run_loop.Run();
-  }
+  // Run until idle to ensure that spurious download successful tasks are not
+  // executed.
+  base::RunLoop().RunUntilIdle();
 
   // TODO(peter): Verify that the issued download items have had their state
   // updated to be cancelled as well.
