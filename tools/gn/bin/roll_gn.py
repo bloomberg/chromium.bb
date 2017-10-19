@@ -167,7 +167,7 @@ class GNRoller(object):
     self.Call('git-cl try -m tryserver.chromium.mac '
               '-b mac_chromium_gn_upload -r %s' % self.new_gn_commitish)
     self.Call('git-cl try -m tryserver.chromium.win '
-              '-b win8_chromium_gn_upload -r %s' % self.new_gn_commitish)
+              '-b win_chromium_gn_upload -r %s' % self.new_gn_commitish)
 
     return 0
 
