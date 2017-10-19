@@ -78,18 +78,18 @@ class CONTENT_EXPORT CrossProcessFrameConnector
                             const viz::SurfaceSequence& sequence) override;
   gfx::Rect ChildFrameRect() override;
   void UpdateCursor(const WebCursor& cursor) override;
-  gfx::Point TransformPointToRootCoordSpace(
-      const gfx::Point& point,
+  gfx::PointF TransformPointToRootCoordSpace(
+      const gfx::PointF& point,
       const viz::SurfaceId& surface_id) override;
-  bool TransformPointToLocalCoordSpace(const gfx::Point& point,
+  bool TransformPointToLocalCoordSpace(const gfx::PointF& point,
                                        const viz::SurfaceId& original_surface,
                                        const viz::SurfaceId& local_surface_id,
-                                       gfx::Point* transformed_point) override;
+                                       gfx::PointF* transformed_point) override;
   bool TransformPointToCoordSpaceForView(
-      const gfx::Point& point,
+      const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
       const viz::SurfaceId& local_surface_id,
-      gfx::Point* transformed_point) override;
+      gfx::PointF* transformed_point) override;
   void ForwardProcessAckedTouchEvent(const TouchEventWithLatencyInfo& touch,
                                      InputEventAckState ack_result) override;
   void BubbleScrollEvent(const blink::WebGestureEvent& event) override;

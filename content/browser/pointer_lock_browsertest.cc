@@ -243,8 +243,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockEventRouting) {
       "var x; var y; var mX; var mY; document.addEventListener('mousemove', "
       "function(e) {x = e.x; y = e.y; mX = e.movementX; mY = e.movementY;});"));
 
-  gfx::Point transformed_point;
-  root_view->TransformPointToCoordSpaceForView(gfx::Point(0, 0), child_view,
+  gfx::PointF transformed_point;
+  root_view->TransformPointToCoordSpaceForView(gfx::PointF(0, 0), child_view,
                                                &transformed_point);
 
   mouse_event.SetPositionInWidget(-transformed_point.x() + 14,
@@ -403,8 +403,8 @@ IN_PROC_BROWSER_TEST_F(PointerLockBrowserTest, PointerLockWheelEventRouting) {
   MainThreadFrameObserver child_observer(child_view->GetRenderWidgetHost());
   child_observer.Wait();
 
-  gfx::Point transformed_point;
-  root_view->TransformPointToCoordSpaceForView(gfx::Point(0, 0), child_view,
+  gfx::PointF transformed_point;
+  root_view->TransformPointToCoordSpaceForView(gfx::PointF(0, 0), child_view,
                                                &transformed_point);
 
   wheel_event.SetPositionInWidget(-transformed_point.x() + 14,

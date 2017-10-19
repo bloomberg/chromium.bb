@@ -131,20 +131,20 @@ void CrossProcessFrameConnector::UpdateCursor(const WebCursor& cursor) {
     root_view->GetCursorManager()->UpdateCursor(view_, cursor);
 }
 
-gfx::Point CrossProcessFrameConnector::TransformPointToRootCoordSpace(
-    const gfx::Point& point,
+gfx::PointF CrossProcessFrameConnector::TransformPointToRootCoordSpace(
+    const gfx::PointF& point,
     const viz::SurfaceId& surface_id) {
-  gfx::Point transformed_point;
+  gfx::PointF transformed_point;
   TransformPointToCoordSpaceForView(point, GetRootRenderWidgetHostView(),
                                     surface_id, &transformed_point);
   return transformed_point;
 }
 
 bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
-    const gfx::Point& point,
+    const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
     const viz::SurfaceId& local_surface_id,
-    gfx::Point* transformed_point) {
+    gfx::PointF* transformed_point) {
   if (original_surface == local_surface_id) {
     *transformed_point = point;
     return true;
@@ -166,10 +166,10 @@ bool CrossProcessFrameConnector::TransformPointToLocalCoordSpace(
 }
 
 bool CrossProcessFrameConnector::TransformPointToCoordSpaceForView(
-    const gfx::Point& point,
+    const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
     const viz::SurfaceId& local_surface_id,
-    gfx::Point* transformed_point) {
+    gfx::PointF* transformed_point) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (!root_view)
     return false;

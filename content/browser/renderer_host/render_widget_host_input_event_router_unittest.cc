@@ -60,8 +60,8 @@ class MockRootRenderWidgetHostView : public MockRenderWidgetHostView {
   ~MockRootRenderWidgetHostView() override {}
 
   viz::FrameSinkId FrameSinkIdAtPoint(viz::SurfaceHittestDelegate*,
-                                      const gfx::Point&,
-                                      gfx::Point*) override {
+                                      const gfx::PointF&,
+                                      gfx::PointF*) override {
     return frame_sink_id_map_[current_hittest_result_];
   }
 

@@ -133,7 +133,6 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
 
   // This only needs to be overridden by RenderWidgetHostViewBase subclasses
   // that handle content embedded within other RenderWidgetHostViews.
-  gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
   gfx::PointF TransformPointToRootCoordSpaceF(
       const gfx::PointF& point) override;
 
@@ -279,8 +278,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // been identified by hit testing mouse, touch or gesture events).
   virtual viz::FrameSinkId FrameSinkIdAtPoint(
       viz::SurfaceHittestDelegate* delegate,
-      const gfx::Point& point,
-      gfx::Point* transformed_point);
+      const gfx::PointF& point,
+      gfx::PointF* transformed_point);
   virtual void ProcessKeyboardEvent(const NativeWebKeyboardEvent& event,
                                     const ui::LatencyInfo& latency) {}
   virtual void ProcessMouseEvent(const blink::WebMouseEvent& event,
@@ -304,16 +303,16 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // between sibling surfaces, the point must be transformed to the root's
   // coordinate space as an intermediate step.
   virtual bool TransformPointToLocalCoordSpace(
-      const gfx::Point& point,
+      const gfx::PointF& point,
       const viz::SurfaceId& original_surface,
-      gfx::Point* transformed_point);
+      gfx::PointF* transformed_point);
 
   // Transform a point that is in the coordinate space for the current
   // RenderWidgetHostView to the coordinate space of the target_view.
   virtual bool TransformPointToCoordSpaceForView(
-      const gfx::Point& point,
+      const gfx::PointF& point,
       RenderWidgetHostViewBase* target_view,
-      gfx::Point* transformed_point);
+      gfx::PointF* transformed_point);
 
   // TODO(kenrb, wjmaclean): This is a temporary subclass identifier for
   // RenderWidgetHostViewGuests that is needed for special treatment during

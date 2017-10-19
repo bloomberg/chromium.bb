@@ -71,7 +71,8 @@ class CONTENT_EXPORT RenderWidgetHostViewGuest
   void SetNeedsBeginFrames(bool needs_begin_frames) override;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
-  gfx::Point TransformPointToRootCoordSpace(const gfx::Point& point) override;
+  gfx::PointF TransformPointToRootCoordSpaceF(
+      const gfx::PointF& point) override;
 
   // RenderWidgetHostViewBase implementation.
   void InitAsPopup(RenderWidgetHostView* parent_host_view,

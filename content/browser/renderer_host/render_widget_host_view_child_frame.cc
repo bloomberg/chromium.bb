@@ -705,8 +705,8 @@ void RenderWidgetHostViewChildFrame::ProcessGestureEvent(
   host_->ForwardGestureEventWithLatencyInfo(event, latency);
 }
 
-gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
-    const gfx::Point& point) {
+gfx::PointF RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpaceF(
+    const gfx::PointF& point) {
   if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return point;
 
@@ -715,9 +715,9 @@ gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
-    const gfx::Point& point,
+    const gfx::PointF& point,
     const viz::SurfaceId& original_surface,
-    gfx::Point* transformed_point) {
+    gfx::PointF* transformed_point) {
   *transformed_point = point;
   if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return false;
@@ -729,9 +729,9 @@ bool RenderWidgetHostViewChildFrame::TransformPointToLocalCoordSpace(
 }
 
 bool RenderWidgetHostViewChildFrame::TransformPointToCoordSpaceForView(
-    const gfx::Point& point,
+    const gfx::PointF& point,
     RenderWidgetHostViewBase* target_view,
-    gfx::Point* transformed_point) {
+    gfx::PointF* transformed_point) {
   if (!frame_connector_ || !last_received_local_surface_id_.is_valid())
     return false;
 

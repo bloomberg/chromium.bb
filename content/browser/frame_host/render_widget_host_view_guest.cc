@@ -231,8 +231,8 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
   return GetViewBounds();
 }
 
-gfx::Point RenderWidgetHostViewGuest::TransformPointToRootCoordSpace(
-    const gfx::Point& point) {
+gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
+    const gfx::PointF& point) {
   if (!guest_ || !last_received_local_surface_id_.is_valid())
     return point;
 
@@ -254,7 +254,7 @@ gfx::Point RenderWidgetHostViewGuest::TransformPointToRootCoordSpace(
       return point;
   }
 
-  gfx::Point transformed_point = point;
+  gfx::PointF transformed_point = point;
   // TODO(wjmaclean): If we knew that TransformPointToLocalCoordSpace would
   // guarantee not to change transformed_point on failure, then we could skip
   // checking the function return value and directly return transformed_point.
