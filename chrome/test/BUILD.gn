@@ -2533,6 +2533,7 @@ test("browser_tests") {
           "../browser/ui/cocoa/location_bar/zoom_decoration_browsertest.mm",
           "../browser/ui/cocoa/omnibox/omnibox_view_mac_browsertest.mm",
           "../browser/ui/cocoa/one_click_signin_dialog_controller_browsertest.mm",
+          "../browser/ui/cocoa/page_info/page_info_bubble_views_mac_browsertest.mm",
           "../browser/ui/cocoa/passwords/passwords_bubble_browsertest.mm",
           "../browser/ui/cocoa/permission_bubble/permission_bubble_cocoa_browser_test.mm",
           "../browser/ui/cocoa/profiles/profile_signin_confirmation_view_controller_browsertest.mm",
