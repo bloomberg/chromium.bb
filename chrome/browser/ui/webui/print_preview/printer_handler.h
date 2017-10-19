@@ -56,8 +56,7 @@ class PrinterHandler {
   // not support any of the capability fields in a CDD.
   using GetCapabilityCallback =
       base::Callback<void(std::unique_ptr<base::DictionaryValue> capability)>;
-  using PrintCallback =
-      base::Callback<void(bool success, const base::Value& error)>;
+  using PrintCallback = base::Callback<void(const base::Value& error)>;
   using GetPrinterInfoCallback =
       base::Callback<void(const base::DictionaryValue& printer_info)>;
 

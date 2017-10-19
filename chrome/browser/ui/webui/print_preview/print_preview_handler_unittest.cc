@@ -97,7 +97,7 @@ class TestPrinterHandler : public PrinterHandler {
                   const gfx::Size& page_size,
                   const scoped_refptr<base::RefCountedBytes>& print_data,
                   const PrintCallback& callback) override {
-    callback.Run(true, base::Value());
+    callback.Run(base::Value());
   }
 
   void SetPrinters(const std::vector<PrinterInfo>& printers) {
