@@ -1206,8 +1206,8 @@ static void get_energy_distribution_finer(const int16_t *diff, int stride,
 // row/column, when computing horizontal/vertical correlation.
 static void get_horver_correlation_full(const int16_t *diff, int stride, int w,
                                         int h, float *hcorr, float *vcorr) {
-  const float num_hor = h * (w - 1);
-  const float num_ver = (h - 1) * w;
+  const float num_hor = (float)(h * (w - 1));
+  const float num_ver = (float)((h - 1) * w);
   int i, j;
 
   // The following notation is used:
