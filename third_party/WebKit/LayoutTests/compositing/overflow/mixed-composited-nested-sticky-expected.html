@@ -34,20 +34,9 @@ body {
 </style>
 
 <script>
-if (window.testRunner)
-  testRunner.waitUntilDone();
-
-function finishTest() {
+onload = function() {
   window.scrollTo(0, 200);
-  if (window.testRunner)
-    testRunner.notifyDone();
 }
-
-window.addEventListener('load', function() {
-  requestAnimationFrame(function() {
-    requestAnimationFrame(finishTest);
-  });
-});
 </script>
 
 <div class="container">

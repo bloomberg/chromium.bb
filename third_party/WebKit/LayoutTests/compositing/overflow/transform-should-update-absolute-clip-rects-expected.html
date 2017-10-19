@@ -3,37 +3,23 @@
   #slidein {
     width: 200px;
     height: 200px;
-    transform: translate3d(200px, 0, 0);
+    transform: translate(200px, 0);
   }
 
   #header {
-    position: relative;
     height: 50px;
-    z-index: 1;
     background-color: green;
   }
 
   #section {
-    position: absolute;
-    overflow: hidden;
-    top: 0;
-    width: 200px;
-  }
-
-  #content {
     width: 200px;
     height: 200px;
-    transform: translateZ(0);
     background-color: blue;
   }
 </style>
 
 <div id="slidein">
-  <div id="header">This div should stay in front.</div>
-
   <div id="section">
-    <div id="content">
-      This div should stay behind the header div.
-    </div>
+    <div id="header">This div should stay in front.</div>
   </div>
 </div>

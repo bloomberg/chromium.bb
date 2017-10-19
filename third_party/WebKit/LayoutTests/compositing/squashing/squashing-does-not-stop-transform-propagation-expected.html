@@ -23,9 +23,6 @@ body {
     background: blue;
     left: 100px;
     top: 100px;
-    /* This causes fg to be separately composited, removing the need for the
-       squashing containment layer. Should have no visible effect. */
-    will-change: transform;
 }
 
 #bg {
@@ -41,10 +38,6 @@ body {
     background: white;
 }
 </style>
-<script>
-if (window.internals)
-    window.internals.settings.setPreferCompositingToLCDTextEnabled(true);
-</script>
 <div id="container">
   <div class="scrolled" id="bg"></div>
   <div class="scrolled" id="fg"></div>

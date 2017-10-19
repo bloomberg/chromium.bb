@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <style>
 #clipping-repaint-container {
-    transform: translateZ(0);
     overflow: hidden;
     position: absolute;
     left: 49px;
@@ -12,7 +11,6 @@
 }
 
 #non-repaint-container-compositing-layer {
-    -webkit-perspective: 1px;
     position: absolute;
     left: 49px;
     top: 49px;
@@ -31,17 +29,15 @@
 }
 
 #compositing-child1 {
-    transform: translateZ(-1px);
     position: absolute;
-    left: 48px;
-    top: 48px;
-    width: 48px;
-    height: 48px;
-    border: blue 2px solid;
+    left: 61px;
+    top: 61px;
+    width: 24px;
+    height: 24px;
+    border: blue 1px solid;
 }
 
 #compositing-child2 {
-    transform: translateZ(0);
     position: absolute;
     left: 49px;
     top: 49px;

@@ -3,7 +3,6 @@
 .container {
   width: 300px;
   height: 300px;
-  will-change: transform;
   outline: 200px solid grey;
 }
 
@@ -18,14 +17,10 @@
   height: 200px;
   top: 0;
 }
-
-.composited {
-  backface-visibility: hidden;
-}
 </style>
 
 <div class="container">
-  <div class="composited scroller">
-    <div class="composited sticky"></div>
+  <div class="scroller">
+    <div class="sticky"></div>
   </div>
 </div>
