@@ -190,18 +190,9 @@ class MyTestCertVerifier : public net::CertVerifier {
 
 class MCSProbeAuthPreferences : public net::HttpAuthPreferences {
  public:
-  MCSProbeAuthPreferences()
-      : HttpAuthPreferences(std::vector<std::string>()
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                                ,
-                            std::string()
-#endif
-#if defined(OS_CHROMEOS)
-                                ,
-                            true
-#endif
-                            ) {
-  }
+  MCSProbeAuthPreferences() {}
+  ~MCSProbeAuthPreferences() override {}
+
   bool IsSupportedScheme(const std::string& scheme) const override {
     return scheme == std::string(net::kBasicAuthScheme);
   }

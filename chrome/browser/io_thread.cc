@@ -658,17 +658,16 @@ std::unique_ptr<net::HttpAuthHandlerFactory>
 IOThread::CreateDefaultAuthHandlerFactory(net::HostResolver* host_resolver) {
   std::vector<std::string> supported_schemes = base::SplitString(
       auth_schemes_, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  globals_->http_auth_preferences.reset(new net::HttpAuthPreferences(
-      supported_schemes
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-      ,
-      gssapi_library_name_
-#endif
+  globals_->http_auth_preferences =
+      std::make_unique<net::HttpAuthPreferences>(supported_schemes
 #if defined(OS_CHROMEOS)
-      ,
-      allow_gssapi_library_load_
+                                                 ,
+                                                 allow_gssapi_library_load_
+#elif defined(OS_POSIX) && !defined(OS_ANDROID)
+                                                 ,
+                                                 gssapi_library_name_
 #endif
-      ));
+                                                 );
   UpdateServerWhitelist();
   UpdateDelegateWhitelist();
   UpdateNegotiateDisableCnameLookup();

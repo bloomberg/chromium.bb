@@ -7,18 +7,7 @@
 
 namespace net {
 
-MockAllowHttpAuthPreferences::MockAllowHttpAuthPreferences()
-    : HttpAuthPreferences(std::vector<std::string>()
-#if defined(OS_POSIX) && !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
-                              ,
-                          std::string()
-#endif
-#if defined(OS_CHROMEOS)
-                              ,
-                          true
-#endif
-                          ) {
-}
+MockAllowHttpAuthPreferences::MockAllowHttpAuthPreferences() {}
 
 MockAllowHttpAuthPreferences::~MockAllowHttpAuthPreferences() {}
 
