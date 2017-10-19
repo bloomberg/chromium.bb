@@ -568,6 +568,9 @@ RenderFrameHostImpl::RenderFrameHostImpl(SiteInstance* site_instance,
         frame_tree_node_->frame_tree_node_id());
   }
   ResetFeaturePolicy();
+
+  ax_tree_id_ = ui::AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
+      GetProcess()->GetID(), routing_id_);
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
@@ -626,6 +629,8 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // Notify the FrameTree that this RFH is going away, allowing it to shut down
   // the corresponding RenderViewHost if it is no longer needed.
   frame_tree_->ReleaseRenderViewHostRef(render_view_host_);
+
+  ui::AXTreeIDRegistry::GetInstance()->RemoveAXTreeID(ax_tree_id_);
 }
 
 int RenderFrameHostImpl::GetRoutingID() {
@@ -633,8 +638,7 @@ int RenderFrameHostImpl::GetRoutingID() {
 }
 
 ui::AXTreeIDRegistry::AXTreeID RenderFrameHostImpl::GetAXTreeID() {
-  return ui::AXTreeIDRegistry::GetInstance()->GetOrCreateAXTreeID(
-      GetProcess()->GetID(), routing_id_);
+  return ax_tree_id_;
 }
 
 const base::UnguessableToken& RenderFrameHostImpl::GetOverlayRoutingToken() {
