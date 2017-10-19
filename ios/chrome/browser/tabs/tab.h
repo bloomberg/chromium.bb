@@ -134,7 +134,6 @@ extern NSString* const kProxyPassthroughHeaderValue;
 // TODO(crbug.com/661663): Should this property abstract away the concept of
 // prerendering?  Maybe this can move to the TabDelegate interface.
 @property(nonatomic, assign) BOOL isPrerenderTab;
-@property(nonatomic, assign) BOOL isLinkLoadingPrerenderTab;
 @property(nonatomic, assign) BOOL isVoiceSearchResultsTab;
 
 // |YES| if the tab has finished loading.
