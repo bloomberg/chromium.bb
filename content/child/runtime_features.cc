@@ -386,6 +386,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableModernMediaControls(
       base::FeatureList::IsEnabled(media::kUseModernMediaControls));
 
+  WebRuntimeFeatures::EnableWorkStealingInScriptRunner(
+      base::FeatureList::IsEnabled(features::kWorkStealingInScriptRunner));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   for (const std::string& feature :

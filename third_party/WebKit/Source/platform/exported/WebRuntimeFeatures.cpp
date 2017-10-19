@@ -470,4 +470,8 @@ void WebRuntimeFeatures::EnableAutomationControlled(bool enable) {
   RuntimeEnabledFeatures::SetAutomationControlledEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableWorkStealingInScriptRunner(bool enable) {
+  RuntimeEnabledFeatures::SetWorkStealingInScriptRunnerEnabled(enable);
+}
+
 }  // namespace blink

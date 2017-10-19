@@ -416,6 +416,10 @@ const base::Feature kKeepAliveRendererForKeepaliveRequests{
 const base::Feature kWebVRExperimentalRendering{
     "WebVRExperimentalRendering", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enabled "work stealing" in the script runner.
+const base::Feature kWorkStealingInScriptRunner{
+    "WorkStealingInScriptRunner", base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_ANDROID)
 // Autofill Accessibility in Android.
 // crbug.com/627860

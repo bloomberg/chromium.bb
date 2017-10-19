@@ -179,6 +179,7 @@ class WebRuntimeFeatures {
       bool);
   BLINK_PLATFORM_EXPORT static void EnableV8ContextSnapshot(bool);
   BLINK_PLATFORM_EXPORT static void EnableAutomationControlled(bool);
+  BLINK_PLATFORM_EXPORT static void EnableWorkStealingInScriptRunner(bool);
 
  private:
   WebRuntimeFeatures();
