@@ -107,11 +107,12 @@ pp::URLLoader PreviewModeClient::CreateURLLoader() {
   return pp::URLLoader();
 }
 
-void PreviewModeClient::ScheduleCallback(int id, int delay_in_ms) {
+void PreviewModeClient::ScheduleCallback(int id, base::TimeDelta delay) {
   NOTREACHED();
 }
 
-void PreviewModeClient::ScheduleTouchTimerCallback(int id, int delay_in_ms) {
+void PreviewModeClient::ScheduleTouchTimerCallback(int id,
+                                                   base::TimeDelta delay) {
   NOTREACHED();
 }
 

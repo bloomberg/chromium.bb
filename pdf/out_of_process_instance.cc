@@ -1394,16 +1394,19 @@ pp::URLLoader OutOfProcessInstance::CreateURLLoader() {
   return CreateURLLoaderInternal();
 }
 
-void OutOfProcessInstance::ScheduleTouchTimerCallback(int id, int delay_in_ms) {
-  pp::CompletionCallback callback = callback_factory_.NewCallback(
-      &OutOfProcessInstance::OnClientTouchTimerFired);
-  pp::Module::Get()->core()->CallOnMainThread(delay_in_ms, callback, id);
-}
-
-void OutOfProcessInstance::ScheduleCallback(int id, int delay_in_ms) {
+void OutOfProcessInstance::ScheduleCallback(int id, base::TimeDelta delay) {
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&OutOfProcessInstance::OnClientTimerFired);
-  pp::Module::Get()->core()->CallOnMainThread(delay_in_ms, callback, id);
+  pp::Module::Get()->core()->CallOnMainThread(delay.InMilliseconds(), callback,
+                                              id);
+}
+
+void OutOfProcessInstance::ScheduleTouchTimerCallback(int id,
+                                                      base::TimeDelta delay) {
+  pp::CompletionCallback callback = callback_factory_.NewCallback(
+      &OutOfProcessInstance::OnClientTouchTimerFired);
+  pp::Module::Get()->core()->CallOnMainThread(delay.InMilliseconds(), callback,
+                                              id);
 }
 
 void OutOfProcessInstance::SearchString(
