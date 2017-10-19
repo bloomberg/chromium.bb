@@ -8164,6 +8164,13 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Redirection to the default search engine"/>
 </enum>
 
+<enum name="DetachableBasePairResult">
+  <int value="0" label="UnknownError"/>
+  <int value="1" label="ChallengePassed"/>
+  <int value="2" label="ChallengeFailed"/>
+  <int value="3" label="NeedInjectEntropy"/>
+</enum>
+
 <enum name="DetachableBaseROUpdateResult">
   <int value="1" label="Succeeded"/>
   <int value="2" label="TransferFailed"/>
