@@ -176,6 +176,7 @@ TEST_F(HitTestDataProviderAuraTest, Stacking) {
 // Tests that the hit-test regions get expanded with a custom event targeter.
 TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
   window3()->SetEventTargeter(std::make_unique<TestWindowTargeter>());
+  window2()->AllocateLocalSurfaceId();
   const auto hit_test_data = hit_test_data_provider()->GetHitTestData();
   ASSERT_TRUE(hit_test_data);
   EXPECT_EQ(hit_test_data->flags, viz::mojom::kHitTestMine);
@@ -198,7 +199,7 @@ TEST_F(HitTestDataProviderAuraTest, CustomTargeter) {
       {window4(), viz::mojom::kHitTestMine | viz::mojom::kHitTestTouch,
        kTouchInset},
       {window2(),
-       viz::mojom::kHitTestMine | viz::mojom::kHitTestMouse |
+       viz::mojom::kHitTestChildSurface | viz::mojom::kHitTestMouse |
            viz::mojom::kHitTestTouch,
        0}};
   ASSERT_EQ(hit_test_data->regions.size(), arraysize(expected));
