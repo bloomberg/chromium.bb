@@ -12,6 +12,8 @@ html {
 
 body {
   color: rgb(48, 57, 66);
+  display: flex;
+  flex-direction: column;
   font-size: 13px;
   height: 100%;
   margin: 0;
@@ -38,18 +40,13 @@ img {
 
 #infobar {
   background: rgb(255, 212, 0);
-  height: 20px;
-  left: 0;
-  line-height: 20px;
-  position: fixed;
-  right: 0;
+  display: none;
+  padding: 4px 0;
   text-align: center;
-  visibility: hidden;
-  z-index: 1;
 }
 
 #infobar.show {
-  visibility: visible;
+  display: block;
 }
 
 #navigation {
