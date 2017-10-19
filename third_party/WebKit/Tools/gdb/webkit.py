@@ -145,7 +145,7 @@ class WTFStringImplPrinter(StringPrinter):
 class WTFStringPrinter(StringPrinter):
     "Print a WTF::String"
     def stringimpl_ptr(self):
-        return self.val['impl_']['ptr_']['ptr_']
+        return self.val['impl_']['ptr_']
 
     def get_length(self):
         if not self.stringimpl_ptr():
@@ -369,15 +369,6 @@ def typed_ptr(ptr):
     return '((%s)%s)' % (ptr.dynamic_type, ptr)
 
 
-class WTFRefOrOwnPtrPrinter:
-    def __init__(self, val):
-        self.val = val
-
-    def to_string(self):
-        type_without_param = re.sub(r'<.*>', '', self.val.type.name)
-        return '%s%s' % (type_without_param, typed_ptr(self.val['ptr_']))
-
-
 class BlinkDataRefPrinter:
     def __init__(self, val):
         self.val = val
@@ -401,7 +392,6 @@ def add_pretty_printers():
         (re.compile("^blink::QualifiedName$"), blinkQualifiedNamePrinter),
         (re.compile("^blink::PixelsAndPercent$"), BlinkPixelsAndPercentPrinter),
         (re.compile("^blink::Length$"), BlinkLengthPrinter),
-        (re.compile("^WTF::(Ref|Own)Ptr<.*>$"), WTFRefOrOwnPtrPrinter),
         (re.compile("^blink::DataRef<.*>$"), BlinkDataRefPrinter),
     )
 
