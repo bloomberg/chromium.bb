@@ -16,7 +16,6 @@ class ChromiumBrandedImageProvider : public BrandedImageProvider {
   UIImage* GetAccountsListActivityControlsImage() override;
   UIImage* GetClearBrowsingDataAccountActivityImage() override;
   UIImage* GetClearBrowsingDataSiteDataImage() override;
-  UIImage* GetContextualSearchHeaderImage() override;
   UIImage* GetSigninConfirmationSyncSettingsImage() override;
   UIImage* GetSigninConfirmationPersonalizeServicesImage() override;
   bool GetToolbarVoiceSearchButtonImageId(int* image_id) override;

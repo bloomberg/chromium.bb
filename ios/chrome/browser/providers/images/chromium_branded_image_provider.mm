@@ -34,11 +34,6 @@ UIImage* ChromiumBrandedImageProvider::GetClearBrowsingDataSiteDataImage() {
   return rb.GetNativeImageNamed(IDR_IOS_SETTINGS_INFO_24).ToUIImage();
 }
 
-UIImage* ChromiumBrandedImageProvider::GetContextualSearchHeaderImage() {
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
-  return rb.GetNativeImageNamed(IDR_IOS_CONTEXTUAL_SEARCH_HEADER).ToUIImage();
-}
-
 UIImage*
 ChromiumBrandedImageProvider::GetSigninConfirmationSyncSettingsImage() {
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();

@@ -7,7 +7,7 @@
 
 #import "base/time/time.h"
 #import "ios/chrome/browser/ui/contextual_search/contextual_search_controller.h"
-#import "ios/chrome/browser/ui/contextual_search/panel_configuration.h"
+#import "ios/chrome/browser/ui/contextual_search/contextual_search_panel_state.h"
 #import "ios/chrome/browser/ui/contextual_search/touch_to_search_permissions_mediator.h"
 
 namespace ContextualSearch {

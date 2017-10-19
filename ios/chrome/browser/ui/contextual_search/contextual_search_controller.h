@@ -9,7 +9,7 @@
 
 #include "base/ios/block_types.h"
 #include "base/strings/string16.h"
-#include "ios/chrome/browser/ui/contextual_search/panel_configuration.h"
+#include "ios/chrome/browser/ui/contextual_search/contextual_search_panel_state.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -46,35 +46,6 @@ enum StateChangeReason {
 };
 }  // namespace ContextualSearch
 
-@class ContextualSearchController;
-@class ContextualSearchPanelView;
-@class ContextualSearchResultsView;
-
-@protocol ContextualSearchTabProvider<NSObject>
-// Disassociate the internal WebState from this view and return it.
-- (std::unique_ptr<web::WebState>)releaseWebState;
-// Information about the opener of the internal WebState.
-- (WebStateOpener)webStateOpener;
-@end
-
-@protocol ContextualSearchControllerDelegate<NSObject>
-
-// Called by the controller when it has tab content for the delegate to load
-// and display as a new tab; the content is provided by -releaseSearchTab.
-// |focusInput| indicates that the after promoting the tab, the delegate must
-// focus the main input.
-- (void)promotePanelToTabProvidedBy:(id<ContextualSearchTabProvider>)tabProvider
-                         focusInput:(BOOL)focusInput;
-
-// Called by the controller when it has a link for the delegate to load
-// and display as a new tab.
-- (void)createTabFromContextualSearchController:(const GURL&)url;
-
-// Provides the current height of the headers at the top of the screen.
-- (CGFloat)currentHeaderHeight;
-
-@end
-
 // Controller for handling contextual search gestures.
 @interface ContextualSearchController : NSObject
 
@@ -86,18 +57,8 @@ enum StateChangeReason {
 // will set this property with the tab's webState.
 @property(nonatomic, assign) web::WebState* webState;
 
-// The panel view that this controller should populate with subviews and use.
-// Owned by its superview. Setting this will have the controller create subviews
-// for the panel; code that sets this property is responsible for disposing of
-// the old panel and its views.
-// This property can only be assigned a non-nil value, and can only be assigned
-// a value when its current value is nil.
-@property(nonatomic, weak) ContextualSearchPanelView* panel;
-
 // Designated initializer.
-- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState
-                            delegate:(id<ContextualSearchControllerDelegate>)
-                                         delegate;
+- (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;
 
 // Set the Tab to be used as the opener for the search results tab. |opener|'s
 // lifetime should be greater than the receiver's. |opener| can be nil.
