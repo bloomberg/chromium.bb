@@ -80,8 +80,6 @@ class MediaRouterMojoImpl : public MediaRouterBase,
                    const std::string& search_input,
                    const std::string& domain,
                    MediaSinkSearchResponseCallback sink_callback) final;
-  void ProvideSinks(const std::string& provider_name,
-                    std::vector<MediaSinkInternal> sinks) final;
   scoped_refptr<MediaRouteController> GetRouteController(
       const MediaRoute::Id& route_id) final;
   void RegisterMediaRouteProvider(

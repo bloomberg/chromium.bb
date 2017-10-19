@@ -26,7 +26,6 @@ const char kRouteId[] = "routeId";
 const char kSource[] = "source1";
 const char kSinkId[] = "sink";
 const char kSinkId2[] = "sink2";
-const char kSinkName[] = "sinkName";
 const int kInvalidTabId = -1;
 const char kOrigin[] = "http://origin/";
 const char kPresentationId[] = "presentationId";
@@ -393,25 +392,6 @@ void MediaRouterMojoTest::TestSearchSinks() {
 
   router()->SearchSinks(kSinkId, kSource, search_input, domain,
                         std::move(sink_callback));
-  base::RunLoop().RunUntilIdle();
-}
-
-void MediaRouterMojoTest::TestProvideSinks() {
-  std::vector<MediaSinkInternal> sinks;
-  MediaSink sink(kSinkId, kSinkName, SinkIconType::CAST);
-  CastSinkExtraData extra_data;
-  net::IPAddress ip_address;
-  EXPECT_TRUE(ip_address.AssignFromIPLiteral("192.168.1.3"));
-  extra_data.ip_endpoint = net::IPEndPoint(ip_address, 0);
-  extra_data.capabilities = 2;
-  extra_data.cast_channel_id = 3;
-  MediaSinkInternal expected_sink(sink, extra_data);
-  sinks.push_back(expected_sink);
-  std::string provider_name = "cast";
-
-  EXPECT_CALL(mock_media_route_provider_, ProvideSinks(provider_name, sinks));
-
-  router()->ProvideSinks(provider_name, sinks);
   base::RunLoop().RunUntilIdle();
 }
 

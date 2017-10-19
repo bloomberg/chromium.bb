@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_DESKTOP_H_
 #define CHROME_BROWSER_MEDIA_ROUTER_MOJO_MEDIA_ROUTER_DESKTOP_H_
 
+#include "base/gtest_prod_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/router/mojo/extension_media_route_provider_proxy.h"
 #include "chrome/browser/media/router/mojo/media_router_mojo_impl.h"
@@ -62,6 +63,7 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
   friend class MediaRouterDesktopTest;
   friend class MediaRouterDesktopTestTest;
   friend class MediaRouterFactory;
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterDesktopTest, TestProvideSinks);
 
   enum class FirewallCheck {
     // Skips the firewall check for the benefit of unit tests so they do not
@@ -89,6 +91,13 @@ class MediaRouterDesktop : public MediaRouterMojoImpl {
 
   // Starts browser side sink discovery.
   void StartDiscovery();
+
+  // Notifies the Media Router that the list of MediaSinks discovered by a
+  // MediaSinkService has been updated.
+  // |provider_name|: Name of the MediaSinkService providing the sinks.
+  // |sinks|: sinks discovered by MediaSinkService.
+  void ProvideSinks(const std::string& provider_name,
+                    std::vector<MediaSinkInternal> sinks);
 
 #if defined(OS_WIN)
   // Ensures that mDNS discovery is enabled in the MRPM extension. This can be

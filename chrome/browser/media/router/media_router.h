@@ -171,13 +171,6 @@ class MediaRouter : public KeyedService {
                            const std::string& domain,
                            MediaSinkSearchResponseCallback sink_callback) = 0;
 
-  // Notifies the Media Router that the list of MediaSinks discovered by a
-  // MediaSinkService has been updated.
-  // |provider_name|: Name of the MediaSinkService providing the sinks.
-  // |sinks|: sinks discovered by MediaSinkService.
-  virtual void ProvideSinks(const std::string& provider_name,
-                            std::vector<MediaSinkInternal> sinks) = 0;
-
   // Adds |callback| to listen for state changes for presentation connected to
   // |route_id|. The returned Subscription object is owned by the caller.
   // |callback| will be invoked whenever there are state changes, until the

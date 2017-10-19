@@ -128,4 +128,25 @@ TEST_F(MediaRouterDesktopTest, SyncStateToMediaRouteProvider) {
   EXPECT_TRUE(Mock::VerifyAndClearExpectations(&mock_media_route_provider_));
 }
 
+TEST_F(MediaRouterDesktopTest, TestProvideSinks) {
+  std::vector<MediaSinkInternal> sinks;
+  MediaSink sink("sinkId", "sinkName", SinkIconType::CAST);
+  CastSinkExtraData extra_data;
+  net::IPAddress ip_address;
+  EXPECT_TRUE(ip_address.AssignFromIPLiteral("192.168.1.3"));
+  extra_data.ip_endpoint = net::IPEndPoint(ip_address, 0);
+  extra_data.capabilities = 2;
+  extra_data.cast_channel_id = 3;
+  MediaSinkInternal expected_sink(sink, extra_data);
+  sinks.push_back(expected_sink);
+  std::string provider_name = "cast";
+
+  EXPECT_CALL(mock_media_route_provider_, ProvideSinks(provider_name, sinks));
+
+  MediaRouterDesktop* media_router_desktop =
+      static_cast<MediaRouterDesktop*>(router());
+  media_router_desktop->ProvideSinks(provider_name, sinks);
+  base::RunLoop().RunUntilIdle();
+}
+
 }  // namespace media_router

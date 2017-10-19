@@ -139,11 +139,6 @@ void MediaRouterAndroid::SearchSinks(
   NOTIMPLEMENTED();
 }
 
-void MediaRouterAndroid::ProvideSinks(const std::string& provider_name,
-                                      std::vector<MediaSinkInternal> sinks) {
-  NOTIMPLEMENTED();
-}
-
 void MediaRouterAndroid::DetachRoute(const MediaRoute::Id& route_id) {
   bridge_->DetachRoute(route_id);
   RemoveRoute(route_id);
