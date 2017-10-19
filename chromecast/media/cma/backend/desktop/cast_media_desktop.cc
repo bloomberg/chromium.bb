@@ -8,7 +8,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
-#include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
+#include "chromecast/media/cma/backend/desktop/media_pipeline_backend_desktop.h"
 #include "chromecast/public/cast_media_shlib.h"
 #include "chromecast/public/graphics_types.h"
 #include "chromecast/public/media/media_capabilities_shlib.h"
@@ -19,20 +19,20 @@ namespace chromecast {
 namespace media {
 namespace {
 
-class DefaultVideoPlane : public VideoPlane {
+class DesktopVideoPlane : public VideoPlane {
  public:
-  ~DefaultVideoPlane() override {}
+  ~DesktopVideoPlane() override {}
 
   void SetGeometry(const RectF& display_rect, Transform transform) override {}
 };
 
-DefaultVideoPlane* g_video_plane = nullptr;
+DesktopVideoPlane* g_video_plane = nullptr;
 base::ThreadTaskRunnerHandle* g_thread_task_runner_handle = nullptr;
 
 }  // namespace
 
 void CastMediaShlib::Initialize(const std::vector<std::string>& argv) {
-  g_video_plane = new DefaultVideoPlane();
+  g_video_plane = new DesktopVideoPlane();
 }
 
 void CastMediaShlib::Finalize() {
@@ -59,7 +59,7 @@ MediaPipelineBackend* CastMediaShlib::CreateMediaPipelineBackend(
     g_thread_task_runner_handle = new base::ThreadTaskRunnerHandle(task_runner);
   }
 
-  return new MediaPipelineBackendDefault();
+  return new MediaPipelineBackendDesktop();
 }
 
 double CastMediaShlib::GetMediaClockRate() {

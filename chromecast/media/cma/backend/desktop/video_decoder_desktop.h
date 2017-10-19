@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_DEFAULT_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_DEFAULT_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_VIDEO_DECODER_DESKTOP_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_VIDEO_DECODER_DESKTOP_H_
 
 #include <memory>
 
@@ -14,12 +14,12 @@
 namespace chromecast {
 namespace media {
 
-class MediaSinkDefault;
+class MediaSinkDesktop;
 
-class VideoDecoderDefault : public MediaPipelineBackend::VideoDecoder {
+class VideoDecoderDesktop : public MediaPipelineBackend::VideoDecoder {
  public:
-  VideoDecoderDefault();
-  ~VideoDecoderDefault() override;
+  VideoDecoderDesktop();
+  ~VideoDecoderDesktop() override;
 
   void Start(base::TimeDelta start_pts);
   void Stop();
@@ -35,11 +35,11 @@ class VideoDecoderDefault : public MediaPipelineBackend::VideoDecoder {
 
  private:
   Delegate* delegate_;
-  std::unique_ptr<MediaSinkDefault> sink_;
-  DISALLOW_COPY_AND_ASSIGN(VideoDecoderDefault);
+  std::unique_ptr<MediaSinkDesktop> sink_;
+  DISALLOW_COPY_AND_ASSIGN(VideoDecoderDesktop);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_VIDEO_DECODER_DEFAULT_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_VIDEO_DECODER_DESKTOP_H_

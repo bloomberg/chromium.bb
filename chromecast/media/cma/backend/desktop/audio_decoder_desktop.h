@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_DEFAULT_H_
-#define CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_DEFAULT_H_
+#ifndef CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_AUDIO_DECODER_DESKTOP_H_
+#define CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_AUDIO_DECODER_DESKTOP_H_
 
 #include <memory>
 
@@ -14,12 +14,12 @@
 namespace chromecast {
 namespace media {
 
-class MediaSinkDefault;
+class MediaSinkDesktop;
 
-class AudioDecoderDefault : public MediaPipelineBackend::AudioDecoder {
+class AudioDecoderDesktop : public MediaPipelineBackend::AudioDecoder {
  public:
-  AudioDecoderDefault();
-  ~AudioDecoderDefault() override;
+  AudioDecoderDesktop();
+  ~AudioDecoderDesktop() override;
 
   void Start(base::TimeDelta start_pts);
   void Stop();
@@ -37,11 +37,11 @@ class AudioDecoderDefault : public MediaPipelineBackend::AudioDecoder {
 
  private:
   Delegate* delegate_;
-  std::unique_ptr<MediaSinkDefault> sink_;
-  DISALLOW_COPY_AND_ASSIGN(AudioDecoderDefault);
+  std::unique_ptr<MediaSinkDesktop> sink_;
+  DISALLOW_COPY_AND_ASSIGN(AudioDecoderDesktop);
 };
 
 }  // namespace media
 }  // namespace chromecast
 
-#endif  // CHROMECAST_MEDIA_CMA_BACKEND_AUDIO_DECODER_DEFAULT_H_
+#endif  // CHROMECAST_MEDIA_CMA_BACKEND_DESKTOP_AUDIO_DECODER_DESKTOP_H_

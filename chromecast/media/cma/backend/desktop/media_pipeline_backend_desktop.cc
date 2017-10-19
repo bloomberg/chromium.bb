@@ -2,46 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/media_pipeline_backend_default.h"
+#include "chromecast/media/cma/backend/desktop/media_pipeline_backend_desktop.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "chromecast/media/cma/backend/audio_decoder_default.h"
-#include "chromecast/media/cma/backend/video_decoder_default.h"
+#include "chromecast/media/cma/backend/desktop/audio_decoder_desktop.h"
+#include "chromecast/media/cma/backend/desktop/video_decoder_desktop.h"
 #include "media/base/timestamp_constants.h"
 
 namespace chromecast {
 namespace media {
 
-MediaPipelineBackendDefault::MediaPipelineBackendDefault()
+MediaPipelineBackendDesktop::MediaPipelineBackendDesktop()
     : state_(kStateUninitialized), rate_(1.0f) {}
 
-MediaPipelineBackendDefault::~MediaPipelineBackendDefault() {
-}
+MediaPipelineBackendDesktop::~MediaPipelineBackendDesktop() {}
 
 MediaPipelineBackend::AudioDecoder*
-MediaPipelineBackendDefault::CreateAudioDecoder() {
+MediaPipelineBackendDesktop::CreateAudioDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   DCHECK(!audio_decoder_);
-  audio_decoder_ = base::MakeUnique<AudioDecoderDefault>();
+  audio_decoder_ = base::MakeUnique<AudioDecoderDesktop>();
   return audio_decoder_.get();
 }
 
 MediaPipelineBackend::VideoDecoder*
-MediaPipelineBackendDefault::CreateVideoDecoder() {
+MediaPipelineBackendDesktop::CreateVideoDecoder() {
   DCHECK_EQ(kStateUninitialized, state_);
   DCHECK(!video_decoder_);
-  video_decoder_ = base::MakeUnique<VideoDecoderDefault>();
+  video_decoder_ = base::MakeUnique<VideoDecoderDesktop>();
   return video_decoder_.get();
 }
 
-bool MediaPipelineBackendDefault::Initialize() {
+bool MediaPipelineBackendDesktop::Initialize() {
   DCHECK_EQ(kStateUninitialized, state_);
   state_ = kStateInitialized;
   return true;
 }
 
-bool MediaPipelineBackendDefault::Start(int64_t start_pts) {
+bool MediaPipelineBackendDesktop::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
   if (!audio_decoder_ && !video_decoder_)
     return false;
@@ -58,7 +57,7 @@ bool MediaPipelineBackendDefault::Start(int64_t start_pts) {
   return true;
 }
 
-void MediaPipelineBackendDefault::Stop() {
+void MediaPipelineBackendDesktop::Stop() {
   DCHECK(state_ == kStatePlaying || state_ == kStatePaused);
   if (audio_decoder_)
     audio_decoder_->Stop();
@@ -67,7 +66,7 @@ void MediaPipelineBackendDefault::Stop() {
   state_ = kStateInitialized;
 }
 
-bool MediaPipelineBackendDefault::Pause() {
+bool MediaPipelineBackendDesktop::Pause() {
   DCHECK_EQ(kStatePlaying, state_);
   if (audio_decoder_)
     audio_decoder_->SetPlaybackRate(0.0f);
@@ -77,7 +76,7 @@ bool MediaPipelineBackendDefault::Pause() {
   return true;
 }
 
-bool MediaPipelineBackendDefault::Resume() {
+bool MediaPipelineBackendDesktop::Resume() {
   DCHECK_EQ(kStatePaused, state_);
   if (audio_decoder_)
     audio_decoder_->SetPlaybackRate(rate_);
@@ -87,7 +86,7 @@ bool MediaPipelineBackendDefault::Resume() {
   return true;
 }
 
-int64_t MediaPipelineBackendDefault::GetCurrentPts() {
+int64_t MediaPipelineBackendDesktop::GetCurrentPts() {
   base::TimeDelta current_pts = ::media::kNoTimestamp;
 
   if (audio_decoder_ && video_decoder_) {
@@ -102,7 +101,7 @@ int64_t MediaPipelineBackendDefault::GetCurrentPts() {
   return current_pts.InMicroseconds();
 }
 
-bool MediaPipelineBackendDefault::SetPlaybackRate(float rate) {
+bool MediaPipelineBackendDesktop::SetPlaybackRate(float rate) {
   DCHECK_GT(rate, 0.0f);
   rate_ = rate;
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/media/cma/backend/media_sink_default.h"
+#include "chromecast/media/cma/backend/desktop/media_sink_desktop.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -13,7 +13,7 @@
 namespace chromecast {
 namespace media {
 
-MediaSinkDefault::MediaSinkDefault(
+MediaSinkDesktop::MediaSinkDesktop(
     MediaPipelineBackend::Decoder::Delegate* delegate,
     base::TimeDelta start_pts)
     : delegate_(delegate),
@@ -27,9 +27,9 @@ MediaSinkDefault::MediaSinkDefault(
   time_interpolator_.StartInterpolating();
 }
 
-MediaSinkDefault::~MediaSinkDefault() {}
+MediaSinkDesktop::~MediaSinkDesktop() {}
 
-void MediaSinkDefault::SetPlaybackRate(float rate) {
+void MediaSinkDesktop::SetPlaybackRate(float rate) {
   DCHECK_GE(rate, 0.0f);
   playback_rate_ = rate;
   time_interpolator_.SetPlaybackRate(playback_rate_);
@@ -42,11 +42,11 @@ void MediaSinkDefault::SetPlaybackRate(float rate) {
   }
 }
 
-base::TimeDelta MediaSinkDefault::GetCurrentPts() {
+base::TimeDelta MediaSinkDesktop::GetCurrentPts() {
   return time_interpolator_.GetInterpolatedTime();
 }
 
-MediaPipelineBackend::BufferStatus MediaSinkDefault::PushBuffer(
+MediaPipelineBackend::BufferStatus MediaSinkDesktop::PushBuffer(
     CastDecoderBuffer* buffer) {
   if (buffer->end_of_stream()) {
     received_eos_ = true;
@@ -72,7 +72,7 @@ MediaPipelineBackend::BufferStatus MediaSinkDefault::PushBuffer(
   return MediaPipelineBackend::kBufferSuccess;
 }
 
-void MediaSinkDefault::ScheduleEndOfStreamTask() {
+void MediaSinkDesktop::ScheduleEndOfStreamTask() {
   DCHECK(received_eos_);
   DCHECK(eos_task_.IsCancelled());
 
