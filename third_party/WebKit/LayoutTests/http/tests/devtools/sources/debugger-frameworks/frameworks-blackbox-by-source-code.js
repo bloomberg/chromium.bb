@@ -1,15 +1,20 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
-function testFunction()
-{
-    debugger;
-    eval("239;//# sourceURL=framework.js");
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests provisional blackboxing.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function testFunction()
+      {
+          debugger;
+          eval("239;//# sourceURL=framework.js");
+      }
+      //# sourceURL=frameworks-blackbox-by-source-code.js
+  `);
+
   SourcesTestRunner.startDebuggerTest(step1, true);
 
   function step1() {
@@ -30,11 +35,4 @@ function test() {
   function step4() {
     SourcesTestRunner.completeDebuggerTest();
   }
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests provisional blackboxing.</p>
-</body>
-</html>
+})();

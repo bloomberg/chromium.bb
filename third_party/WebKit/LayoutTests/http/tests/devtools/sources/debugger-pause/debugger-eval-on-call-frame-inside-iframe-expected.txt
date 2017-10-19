@@ -1,10 +1,9 @@
-
 Test that evaluation on call frame works across all inspected windows in the call stack.
 
 Set timer for test function.
 Call stack:
     0) pauseInsideIframe (:6)
-    1) testFunction (debugger-eval-on-call-frame-inside-iframe.html:35)
+    1) testFunction (debugger-eval-on-call-frame-inside-iframe.js:35)
 
 === Evaluating on iframe ===
 dir() = "overridden dir() in iframe"
@@ -13,9 +12,9 @@ table = "local in iframe"
 clear = 
 x: = VM:1 Uncaught SyntaxError: Unexpected end of input
     at Object.pauseInsideIframe (<anonymous>:6:5)
-    at testFunction (debugger-eval-on-cal…side-iframe.html:35)
+    at testFunction (debugger-eval-on-cal…inside-iframe.js:35)
 pauseInsideIframe @ VM:6
-testFunction @ debugger-eval-on-cal…side-iframe.html:35
+testFunction @ debugger-eval-on-cal…inside-iframe.js:35
 setTimeout (async)
 scheduleTestFunction @ VM:3
 (anonymous) @ VM:1
@@ -27,9 +26,9 @@ table =
 clear = "local in top frame"
 x: = VM:1 Uncaught SyntaxError: Unexpected end of input
     at Object.pauseInsideIframe (<anonymous>:6:5)
-    at testFunction (debugger-eval-on-cal…side-iframe.html:35)
+    at testFunction (debugger-eval-on-cal…inside-iframe.js:35)
 pauseInsideIframe @ VM:6
-testFunction @ debugger-eval-on-cal…side-iframe.html:35
+testFunction @ debugger-eval-on-cal…inside-iframe.js:35
 setTimeout (async)
 scheduleTestFunction @ VM:3
 (anonymous) @ VM:1

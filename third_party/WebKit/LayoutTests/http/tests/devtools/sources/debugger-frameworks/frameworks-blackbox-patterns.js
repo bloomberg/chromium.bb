@@ -1,9 +1,11 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests framework blackbox patterns for various URLs.\n`);
+  await TestRunner.showPanel('sources');
+
   var testCases = [
     'http://www.example.com/foo/jquery-1.7-min.js',
     '/jquery\\-1\\.7\\-min\\.js$',
@@ -42,14 +44,4 @@ function test() {
 
   TestRunner.addResult('\nPASS');
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests framework blackbox patterns for various URLs.
-</p>
-</body>
-</html>
+})();

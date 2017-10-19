@@ -1,26 +1,25 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../../../inspector/console-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-function simpleTestFunction()
-{
-   return 0;
-}
-</script>
+(async function() {
+  TestRunner.addResult(`Tests debug(fn) console command.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function simpleTestFunction()
+      {
+         return 0;
+      }
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function simpleTestFunction1() { return 0; } function simpleTestFunction2() { return 0; }
+    `);
+  await TestRunner.evaluateInPagePromise(`
+      function simpleTestFunction3() { Math.random(); debugger; }
+    `);
 
-<script>
-function simpleTestFunction1() { return 0; } function simpleTestFunction2() { return 0; }
-</script>
-
-<script>
-function simpleTestFunction3() { Math.random(); debugger; }
-</script>
-
-<script>
-var test = function() {
   var currentSourceFrame;
   SourcesTestRunner.setQuiet(true);
   SourcesTestRunner.runDebuggerTestSuite([
@@ -73,15 +72,4 @@ var test = function() {
       next();
     }
   }
-};
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests debug(fn) console command.
-</p>
-
-</body>
-</html>
+})();

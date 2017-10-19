@@ -1,24 +1,27 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/console-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function slave(x)
-{
-    var y = 20;
-    debugger;
-}
+(async function() {
+  TestRunner.addResult(`Tests that modifying local variables works fine.\n`);
+  await TestRunner.loadModule('console_test_runner');
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.evaluateInPagePromise(`
+      function slave(x)
+      {
+          var y = 20;
+          debugger;
+      }
 
-function testFunction()
-{
-    var localObject1 = { a: 310 };
-    var localObject2 = 42;
-    slave(4000);
-}
+      function testFunction()
+      {
+          var localObject1 = { a: 310 };
+          var localObject2 = 42;
+          slave(4000);
+      }
+  `);
 
-var test = function() {
   SourcesTestRunner.startDebuggerTest(step1, true);
 
   function evalLocalVariables(callback) {
@@ -58,14 +61,4 @@ var test = function() {
   function step7() {
     SourcesTestRunner.completeDebuggerTest();
   }
-};
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that modifying local variables works fine.
-</p>
-</body>
-</html>
+})();

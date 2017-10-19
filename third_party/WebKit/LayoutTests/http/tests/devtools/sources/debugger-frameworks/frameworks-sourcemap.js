@@ -1,22 +1,25 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
-<script src="../debugger/resources/framework-with-sourcemap.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function testFunction()
-{
-    debugger;
-    return foo(callback);
-}
+(async function() {
+  TestRunner.addResult(`Tests framework blackboxing feature with sourcemaps.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.addScriptTag('../debugger/resources/framework-with-sourcemap.js');
+  await TestRunner.evaluateInPagePromise(`
+      function testFunction()
+      {
+          debugger;
+          return foo(callback);
+      }
 
-function callback(i)
-{
-    return i;
-}
+      function callback(i)
+      {
+          return i;
+      }
+  `);
 
-function test() {
   TestRunner.addSniffer(Bindings.BlackboxManager.prototype, '_patternChangeFinishedForTests', step1);
   var frameworkRegexString = '/framework\\.js$';
   Common.settingForTest('skipStackFramesPattern').set(frameworkRegexString);
@@ -41,10 +44,4 @@ function test() {
   function step4() {
     SourcesTestRunner.completeDebuggerTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests framework blackboxing feature with sourcemaps.</p>
-</body>
-</html>
+})();
