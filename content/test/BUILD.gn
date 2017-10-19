@@ -1328,7 +1328,6 @@ test("content_unittests") {
     "../browser/renderer_host/input/gesture_event_queue_unittest.cc",
     "../browser/renderer_host/input/input_router_impl_unittest.cc",
     "../browser/renderer_host/input/legacy_input_router_impl_unittest.cc",
-    "../browser/renderer_host/input/legacy_touch_event_queue_unittest.cc",
     "../browser/renderer_host/input/mock_input_disposition_handler.cc",
     "../browser/renderer_host/input/mock_input_disposition_handler.h",
     "../browser/renderer_host/input/mock_input_router_client.cc",

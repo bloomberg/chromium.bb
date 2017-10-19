@@ -179,7 +179,6 @@ WebScopedInputEvent WebInputEventTraits::Clone(const WebInputEvent& event) {
 
 bool WebInputEventTraits::ShouldBlockEventStream(
     const WebInputEvent& event,
-    bool raf_aligned_touch_enabled,
     bool wheel_scroll_latching_enabled) {
   switch (event.GetType()) {
     case WebInputEvent::kContextMenu:
@@ -210,15 +209,9 @@ bool WebInputEventTraits::ShouldBlockEventStream(
              WebInputEvent::kBlocking;
 
     case WebInputEvent::kTouchMove:
-      // Non-blocking touch moves can be ack'd right away if raf_aligned
-      // touch is enabled.
-      if (raf_aligned_touch_enabled) {
-        return static_cast<const WebTouchEvent&>(event).dispatch_type ==
-               WebInputEvent::kBlocking;
-      }
-      // Touch move events may be non-blocking but are always explicitly
-      // acknowledge by the renderer so they block the event stream.
-      return true;
+      // Non-blocking touch moves can be ack'd right away.
+      return static_cast<const WebTouchEvent&>(event).dispatch_type ==
+             WebInputEvent::kBlocking;
 
     case WebInputEvent::kMouseWheel:
       return static_cast<const WebMouseWheelEvent&>(event).dispatch_type ==

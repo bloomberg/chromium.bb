@@ -574,18 +574,15 @@ class RenderWidgetHostTest : public testing::Test {
 
     switch (wheel_scrolling_mode) {
       case kWheelScrollingModeNone:
-        features.push_back(features::kRafAlignedTouchInputEvents.name);
         disabled_features.push_back(
             features::kTouchpadAndWheelScrollLatching.name);
         disabled_features.push_back(features::kAsyncWheelEvents.name);
         break;
       case kWheelScrollLatching:
-        features.push_back(features::kRafAlignedTouchInputEvents.name);
         features.push_back(features::kTouchpadAndWheelScrollLatching.name);
         disabled_features.push_back(features::kAsyncWheelEvents.name);
         break;
       case kAsyncWheelEvents:
-        features.push_back(features::kRafAlignedTouchInputEvents.name);
         features.push_back(features::kTouchpadAndWheelScrollLatching.name);
         features.push_back(features::kAsyncWheelEvents.name);
         break;

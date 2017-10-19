@@ -1202,8 +1202,6 @@ source_set("browser") {
     "renderer_host/input/legacy_input_router_impl.h",
     "renderer_host/input/legacy_ipc_widget_input_handler.cc",
     "renderer_host/input/legacy_ipc_widget_input_handler.h",
-    "renderer_host/input/legacy_touch_event_queue.cc",
-    "renderer_host/input/legacy_touch_event_queue.h",
     "renderer_host/input/motion_event_web.cc",
     "renderer_host/input/motion_event_web.h",
     "renderer_host/input/mouse_wheel_event_queue.cc",

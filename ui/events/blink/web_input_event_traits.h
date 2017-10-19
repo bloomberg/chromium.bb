@@ -29,7 +29,6 @@ class WebInputEventTraits {
   static size_t GetSize(blink::WebInputEvent::Type type);
   static WebScopedInputEvent Clone(const blink::WebInputEvent& event);
   static bool ShouldBlockEventStream(const blink::WebInputEvent& event,
-                                     bool raf_aligned_touch_enabled,
                                      bool wheel_scroll_latching_enabled);
 
   static bool CanCauseScroll(const blink::WebMouseWheelEvent& event);
