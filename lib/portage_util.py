@@ -869,6 +869,10 @@ class EBuild(object):
       # If given unstable ebuild, use preferred version rather than 9999.
       stable_version_no_rev = self.GetVersion(srcroot, manifest, '0.0.1')
 
+    old_version = '%s-r%d' % (
+        stable_version_no_rev, self.current_revision)
+    old_stable_ebuild_path = '%s-%s.ebuild' % (
+        self._ebuild_path_no_version, old_version)
     new_version = '%s-r%d' % (
         stable_version_no_rev, self.current_revision + 1)
     new_stable_ebuild_path = '%s-%s.ebuild' % (
@@ -894,12 +898,21 @@ class EBuild(object):
           self.pkgname)
       test_dirs_changed = True
 
+    old_stable_commit = self._RunGit(self.overlay,
+                                     ['log', '--pretty=%H', '-n1', '--',
+                                      old_stable_ebuild_path]).rstrip()
+    output = self._RunGit(self.overlay,
+                          ['log', '%s..HEAD' % old_stable_commit, '--',
+                           self._unstable_ebuild_path])
+
+    unstable_ebuild_changed = bool(output)
+
     # If there has been any change in the tests list, choose to uprev.
-    if not test_dirs_changed and (enforce_subdir_rev and not
-                                  self._ShouldRevEBuild(commit_ids, srcdirs,
-                                                        subdirs_to_rev)):
+    if not test_dirs_changed and not unstable_ebuild_changed and (
+        enforce_subdir_rev and not self._ShouldRevEBuild(commit_ids, srcdirs,
+                                                         subdirs_to_rev)):
       self._Print('Skipping uprev of ebuild %s, none of the rev_subdirs have '
-                  'been modified.')
+                  'been modified, nor has the -9999 ebuild.')
       return
 
     self._Print('Creating new stable ebuild %s' % new_stable_ebuild_path)

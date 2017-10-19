@@ -397,6 +397,8 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
                            'KEYWORDS="x86 arm amd64"\n'
                            'src_unpack(){}\n')
 
+  unstable_ebuild_changed = False
+
   def setUp(self):
     self.overlay = os.path.join(self.tempdir, 'overlay')
     package_name = os.path.join(self.overlay,
@@ -426,6 +428,14 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     def _RunGit(cwd, cmd):
       """Mock function for portage_util.EBuild._RunGit"""
       if cmd[0] == 'log':
+        # special case for git log in the overlay:
+        # report if -9999.ebuild supposedly changed
+        if cwd == self.overlay:
+          if self.unstable_ebuild_changed:
+            return 'file'
+          else:
+            return ''
+
         file_list = cmd[cmd.index('--') + 1:]
         # Return a dummy file if we have changes in any of the listed files.
         if set(self.git_files_changed).intersection(file_list):
@@ -542,7 +552,7 @@ class EBuildRevWorkonTest(cros_test_lib.MockTempDirTestCase):
     CROS_WORKON_SUBDIRS_TO_REV is set and no files in that list are changed in
     git.
     """
-    self.git_files_changed = ['*9999.ebuild']
+    self.unstable_ebuild_changed = True
     self.createRevWorkOnMocks(self._mock_ebuild_subdir, rev=True)
     self.m_ebuild.cros_workon_vars = portage_util.EBuild.GetCrosWorkonVars(
         self.m_ebuild.ebuild_path, 'test-package')
