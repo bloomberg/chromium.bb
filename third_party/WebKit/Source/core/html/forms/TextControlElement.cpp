@@ -45,6 +45,7 @@
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/ShadowElementNames.h"
 #include "core/html_names.h"
@@ -159,8 +160,8 @@ bool TextControlElement::IsPlaceholderEmpty() const {
 }
 
 bool TextControlElement::PlaceholderShouldBeVisible() const {
-  return SupportsPlaceholder() && IsEmptyValue() && IsEmptySuggestedValue() &&
-         !IsPlaceholderEmpty();
+  return SupportsPlaceholder() && InnerEditorValue().IsEmpty() &&
+         (!IsPlaceholderEmpty() || !IsEmptySuggestedValue());
 }
 
 HTMLElement* TextControlElement::PlaceholderElement() const {
@@ -970,6 +971,39 @@ String TextControlElement::DirectionForFormData() const {
   }
 
   return "ltr";
+}
+
+// TODO(crbug.com/772433): Create and use a new suggested-value element instead.
+void TextControlElement::SetSuggestedValue(const String& value) {
+  suggested_value_ = value;
+  if (!suggested_value_.IsEmpty() && !InnerEditorValue().IsEmpty()) {
+    // Save the value that is in the editor and set the editor value to an empty
+    // string. This will allow the suggestion placeholder to be shown to the
+    // user.
+    value_before_set_suggested_value_ = InnerEditorValue();
+    SetInnerEditorValue("");
+  } else if (suggested_value_.IsEmpty() &&
+             !value_before_set_suggested_value_.IsEmpty()) {
+    // Reset the value that was in the editor before showing the suggestion.
+    SetInnerEditorValue(value_before_set_suggested_value_);
+    value_before_set_suggested_value_ = "";
+  }
+
+  UpdatePlaceholderText();
+
+  HTMLElement* placeholder = PlaceholderElement();
+  if (!placeholder)
+    return;
+
+  // Change the pseudo-id to set the style for suggested values or reset the
+  // placeholder style depending on if there is a suggested value.
+  placeholder->SetShadowPseudoId(AtomicString(suggested_value_.IsEmpty()
+                                                  ? "-webkit-input-placeholder"
+                                                  : "-webkit-input-suggested"));
+}
+
+const String& TextControlElement::SuggestedValue() const {
+  return suggested_value_;
 }
 
 HTMLElement* TextControlElement::InnerEditorElement() const {

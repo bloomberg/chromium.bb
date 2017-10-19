@@ -521,6 +521,10 @@ input[type="password" i] {
     -webkit-text-security: disc !important;
 }
 
+input[type="password" i]::-webkit-input-suggested {
+    -webkit-text-security: disc !important;
+}
+
 input[type="hidden" i], input[type="image" i], input[type="file" i] {
     -webkit-appearance: initial;
     padding: initial;
