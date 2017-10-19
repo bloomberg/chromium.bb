@@ -123,8 +123,7 @@ void UiRenderer::DrawUiView(const RenderInfo& render_info,
                             UiRenderer::ReticleMode reticle_mode) {
   TRACE_EVENT0("gpu", "VrShellGl::DrawUiView");
 
-  auto sorted_elements =
-      GetElementsInDrawOrder(render_info.head_pose, elements);
+  auto sorted_elements = GetElementsInDrawOrder(elements);
 
   for (auto& eye_info :
        {render_info.left_eye_info, render_info.right_eye_info}) {
@@ -179,25 +178,16 @@ void UiRenderer::DrawElement(const gfx::Transform& view_proj_matrix,
 }
 
 std::vector<const UiElement*> UiRenderer::GetElementsInDrawOrder(
-    const gfx::Transform& view_matrix,
     const std::vector<const UiElement*>& elements) {
   std::vector<const UiElement*> sorted_elements = elements;
 
   // Sort elements primarily based on their draw phase (lower draw phase first)
-  // and secondarily based on their z-axis distance (more distant first).
-  // TODO(mthiesse, crbug.com/721356): This will not work well for elements not
-  // directly in front of the user, but works well enough for our initial
-  // release, and provides a consistent ordering that we can easily design
-  // around.
-  std::sort(sorted_elements.begin(), sorted_elements.end(),
-            [](const UiElement* first, const UiElement* second) {
-              if (first->draw_phase() != second->draw_phase()) {
-                return first->draw_phase() < second->draw_phase();
-              } else {
-                return first->world_space_transform().matrix().get(2, 3) <
-                       second->world_space_transform().matrix().get(2, 3);
-              }
-            });
+  // and secondarily based on their tree order (as specified by the sorted
+  // |elements| vector).
+  std::stable_sort(sorted_elements.begin(), sorted_elements.end(),
+                   [](const UiElement* first, const UiElement* second) {
+                     return first->draw_phase() < second->draw_phase();
+                   });
 
   return sorted_elements;
 }

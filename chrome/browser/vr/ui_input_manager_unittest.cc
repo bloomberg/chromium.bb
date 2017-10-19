@@ -11,12 +11,12 @@
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/test/animation_utils.h"
+#include "chrome/browser/vr/test/constants.h"
 #include "chrome/browser/vr/test/mock_content_input_delegate.h"
 #include "chrome/browser/vr/test/ui_scene_manager_test.h"
 #include "chrome/browser/vr/ui_scene.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
-#include "ui/gfx/geometry/vector3d_f.h"
 
 namespace vr {
 
@@ -26,8 +26,7 @@ class UiInputManagerTest : public UiSceneManagerTest {
     UiSceneManagerTest::SetUp();
     MakeManager(kNotInCct, kNotInWebVr);
     input_manager_ = base::MakeUnique<UiInputManager>(scene_.get());
-    scene_->OnBeginFrame(MicrosecondsToTicks(1),
-                         gfx::Vector3dF(0.f, 0.f, -1.0f));
+    scene_->OnBeginFrame(MicrosecondsToTicks(1), kForwardVector);
   }
 
  protected:
