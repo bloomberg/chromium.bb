@@ -244,7 +244,7 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int is_integer
 #endif
                                           ) {
-  const int unify_bsize = CONFIG_CB4X4;
+  const int unify_bsize = 1;
   int_mv res;
   const int32_t *mat = gm->wmmat;
   int x, y, tx, ty;

@@ -4640,7 +4640,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 #endif
 #endif  // CONFIG_LPF_SB
   {
-#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
 #if CONFIG_LPF_SB
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0, 0,
                           0);
@@ -4657,14 +4656,6 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
     av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_LPF_SB
-#else
-    if (cpi->num_workers > 1)
-      av1_loop_filter_frame_mt(cm->frame_to_show, cm, xd->plane,
-                               lf->filter_level, 0, 0, cpi->workers,
-                               cpi->num_workers, &cpi->lf_row_sync);
-    else
-      av1_loop_filter_frame(cm->frame_to_show, cm, xd, lf->filter_level, 0, 0);
-#endif
   }
 #endif  // CONFIG_INTRABC
 

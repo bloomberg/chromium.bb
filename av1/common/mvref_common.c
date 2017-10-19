@@ -65,11 +65,7 @@ static uint8_t add_ref_mv_candidate(
     int subsampling_y) {
   int index = 0, ref;
   int newmv_count = 0;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
   assert(weight % 2 == 0);
 #if !CONFIG_EXT_WARPED_MOTION
   (void)bsize;
@@ -274,7 +270,6 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int i;
   uint8_t newmv_count = 0;
   int col_offset = 0;
-#if CONFIG_CB4X4
   const int shift = 0;
   // TODO(jingning): Revisit this part after cb4x4 is stable.
   if (abs(row_offset) > 1) {
@@ -282,10 +277,6 @@ static uint8_t scan_row_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     if (mi_col & 0x01 && xd->n8_w < n8_w_8) --col_offset;
   }
   const int use_step_16 = (xd->n8_w >= 16);
-#else
-  const int shift = 1;
-  const int use_step_16 = (xd->n8_w >= 8);
-#endif
   MODE_INFO **const candidate_mi0 = xd->mi + row_offset * xd->mi_stride;
 
   for (i = 0; i < end_mi && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
@@ -350,17 +341,12 @@ static uint8_t scan_col_mbmi(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   int i;
   uint8_t newmv_count = 0;
   int row_offset = 0;
-#if CONFIG_CB4X4
   const int shift = 0;
   if (abs(col_offset) > 1) {
     row_offset = 1;
     if (mi_row & 0x01 && xd->n8_h < n8_h_8) --row_offset;
   }
   const int use_step_16 = (xd->n8_h >= 16);
-#else
-  const int shift = 1;
-  const int use_step_16 = (xd->n8_h >= 8);
-#endif
 
   for (i = 0; i < end_mi && *refmv_count < MAX_REF_MV_STACK_SIZE;) {
     const MODE_INFO *const candidate_mi =
@@ -751,10 +737,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   const TileInfo *const tile = &xd->tile;
   int max_row_offset = 0, max_col_offset = 0;
-#if CONFIG_CB4X4
   const int row_adj = (xd->n8_h < mi_size_high[BLOCK_8X8]) && (mi_row & 0x01);
   const int col_adj = (xd->n8_w < mi_size_wide[BLOCK_8X8]) && (mi_col & 0x01);
-#endif
   int processed_rows = 0;
   int processed_cols = 0;
   int row_offset, col_offset;
@@ -765,21 +749,13 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
   // Find valid maximum row/col offset.
   if (xd->up_available) {
-#if CONFIG_CB4X4
     max_row_offset = -(MVREF_ROWS << 1) + row_adj;
-#else
-    max_row_offset = -MVREF_ROWS;
-#endif
     max_row_offset =
         find_valid_row_offset(tile, mi_row, cm->mi_rows, cm, max_row_offset);
   }
 
   if (xd->left_available) {
-#if CONFIG_CB4X4
     max_col_offset = -(MVREF_COLS << 1) + col_adj;
-#else
-    max_col_offset = -MVREF_COLS;
-#endif
     max_col_offset = find_valid_col_offset(tile, mi_col, max_col_offset);
   }
 
@@ -860,13 +836,9 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   {
     int blk_row, blk_col;
     int coll_blk_count = 0;
-#if CONFIG_CB4X4
     const int mi_step = (xd->n8_w == 1 || xd->n8_h == 1)
                             ? mi_size_wide[BLOCK_8X8]
                             : mi_size_wide[BLOCK_16X16];
-#else
-    const int mi_step = mi_size_wide[BLOCK_16X16];
-#endif
 
 #if CONFIG_TPL_MV
     // Modified sample positions to be consistent with frame_mvs
@@ -929,13 +901,8 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 #endif  // CONFIG_GLOBAL_MOTION && USE_CUR_GM_REFMV
                 refmv_count);
   for (idx = 2; idx <= MVREF_ROWS; ++idx) {
-#if CONFIG_CB4X4
     row_offset = -(idx << 1) + 1 + row_adj;
     col_offset = -(idx << 1) + 1 + col_adj;
-#else
-    row_offset = -idx;
-    col_offset = -idx;
-#endif
 
     if (abs(row_offset) <= abs(max_row_offset) &&
         abs(row_offset) > processed_rows)
@@ -956,11 +923,7 @@ static void setup_ref_mv_list(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                     max_col_offset, &processed_cols);
   }
 
-#if CONFIG_CB4X4
   col_offset = -(MVREF_COLS << 1) + 1 + col_adj;
-#else
-  col_offset = -MVREF_COLS;
-#endif
   if (abs(col_offset) <= abs(max_col_offset) &&
       abs(col_offset) > processed_cols)
     scan_col_mbmi(cm, xd, mi_row, mi_col, block, rf, col_offset, ref_mv_stack,
@@ -1138,12 +1101,10 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   mv_ref_search[8].row = num_8x8_blocks_high - 1;
   mv_ref_search[8].col = -3;
 
-#if CONFIG_CB4X4
   for (i = 0; i < MVREF_NEIGHBOURS; ++i) {
     mv_ref_search[i].row *= 2;
     mv_ref_search[i].col *= 2;
   }
-#endif  // CONFIG_CB4X4
 
   // The nearest 2 blocks are treated differently
   // if the size < 8x8 we get the mv from the bmi substructure,

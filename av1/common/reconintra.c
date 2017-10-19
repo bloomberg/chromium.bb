@@ -165,7 +165,6 @@ static const uint16_t orders_128x32[4] = {
   0, 1, 2, 3,
 };
 
-#if CONFIG_CB4X4 || CONFIG_EXT_PARTITION
 static const uint16_t orders_16x8[128] = {
   0,  2,  8,  10, 32,  34,  40,  42,  1,  3,  9,  11, 33,  35,  41,  43,
   4,  6,  12, 14, 36,  38,  44,  46,  5,  7,  13, 15, 37,  39,  45,  47,
@@ -207,7 +206,6 @@ static const uint16_t orders_8x8[256] = {
   255,
 };
 
-#if CONFIG_CB4X4 && CONFIG_EXT_PARTITION
 static const uint16_t orders_4x8[512] = {
   0,   1,   2,   3,   8,   9,   10,  11,  32,  33,  34,  35,  40,  41,  42,
   43,  128, 129, 130, 131, 136, 137, 138, 139, 160, 161, 162, 163, 168, 169,
@@ -365,13 +363,10 @@ static const uint16_t orders_4x4[1024] = {
   747,  750,  751,  762,  763,  766,  767,  938,  939,  942,  943,  954,  955,
   958,  959,  1002, 1003, 1006, 1007, 1018, 1019, 1022, 1023,
 };
-#endif
-#endif  // CONFIG_CB4X4 || CONFIG_EXT_PARTITION
 
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_4x4,     orders_4x4,     orders_4x4,
@@ -380,12 +375,6 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
                                   orders_4x4,
   // 4X8,         8X4,            8X8
   orders_4x8,     orders_8x4,     orders_8x8,
-#else  // CONFIG_CHROMA_SUB8X8
-  //                              4X4
-                                  orders_8x8,
-  // 4X8,         8X4,            8X8
-  orders_8x8,     orders_8x8,     orders_8x8,
-#endif
   // 8X16,        16X8,           16X16
   orders_8x16,    orders_16x8,    orders_16x16,
   // 16X32,       32X16,          32X32
@@ -405,7 +394,6 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 #else
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_8x8,     orders_8x8,     orders_8x8,
@@ -414,12 +402,6 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
                                   orders_8x8,
   // 4X8,         8X4,            8X8
   orders_8x16,    orders_16x8,    orders_16x16,
-#else  // CONFIG_CHROMA_SUB8X8
-  //                              4X4
-                                  orders_16x16,
-  // 4X8,         8X4,            8X8
-  orders_16x16,   orders_16x16,   orders_16x16,
-#endif
   // 8X16,        16X8,           16X16
   orders_16x32,   orders_32x16,   orders_32x32,
   // 16X32,       32X16,          32X32
@@ -447,7 +429,6 @@ static const uint16_t orders_verta_16x16[64] = {
   32, 34, 36, 38, 48, 50, 52, 54, 33, 34, 37, 38, 49, 50, 53, 54,
   40, 42, 44, 46, 56, 58, 60, 62, 41, 42, 45, 46, 57, 58, 61, 62,
 };
-#if CONFIG_EXT_PARTITION || CONFIG_CB4X4
 static const uint16_t orders_verta_8x8[256] = {
   0,   2,   4,   6,   16,  18,  20,  22,  64,  66,  68,  70,  80,  82,  84,
   86,  1,   2,   5,   6,   17,  18,  21,  22,  65,  66,  69,  70,  81,  82,
@@ -468,7 +449,6 @@ static const uint16_t orders_verta_8x8[256] = {
   169, 170, 173, 174, 185, 186, 189, 190, 233, 234, 237, 238, 249, 250, 253,
   254,
 };
-#endif  // CONFIG_EXT_PARTITION || CONFIG_CB4X4
 
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
@@ -495,7 +475,6 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 #else
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   // 2X2,             2X4,                4X2
   orders_verta_8x8,   orders_verta_8x8,   orders_verta_8x8,
@@ -504,12 +483,6 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
                                           orders_verta_8x8,
   // 4X8,             8X4,                8X8
   orders_verta_8x8,   orders_verta_8x8,   orders_verta_16x16,
-#else  // CONFIG_CHROMA_SUB8X8
-  //                                      4X4
-                                          orders_verta_16x16,
-  // 4X8,             8X4,                8X8
-  orders_verta_16x16, orders_verta_16x16, orders_verta_16x16,
-#endif
   // 8X16,            16X8,               16X16
   orders_16x32,       orders_32x16,       orders_verta_32x32,
   // 16X32,           32X16,              32X32
@@ -530,24 +503,9 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                          TX_SIZE txsz, int row_off, int col_off, int ss_x) {
   if (!top_available || !right_available) return 0;
 
-#if !CONFIG_CB4X4
-  // TODO(bshacklett, huisu): Currently the RD loop traverses 4X8 blocks in
-  // inverted N order while in the bitstream the subblocks are stored in Z
-  // order. This discrepancy makes this function incorrect when considering 4X8
-  // blocks in the RD loop, so we disable the extended right edge for these
-  // blocks. The correct solution is to change the bitstream to store these
-  // blocks in inverted N order, and then update this function appropriately.
-  if (bsize == BLOCK_4X8 && row_off == 1) return 0;
-#endif
-
   const int bw_unit = block_size_wide[bsize] >> tx_size_wide_log2[0];
   const int plane_bw_unit = AOMMAX(bw_unit >> ss_x, 1);
   const int top_right_count_unit = tx_size_wide_unit[txsz];
-
-#if !CONFIG_CB4X4
-  // Special handling for block sizes 4x8 and 4x4.
-  if (ss_x == 0 && bw_unit < 2 && col_off == 0) return 1;
-#endif
 
   if (row_off > 0) {  // Just need to check if enough pixels on the right.
 #if CONFIG_EXT_PARTITION
@@ -605,11 +563,6 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
     const int bh_unit = block_size_high[bsize] >> tx_size_high_log2[0];
     const int plane_bh_unit = AOMMAX(bh_unit >> ss_y, 1);
     const int bottom_left_count_unit = tx_size_high_unit[txsz];
-
-#if !CONFIG_CB4X4
-    // Special handling for block sizes 8x4 and 4x4.
-    if (ss_y == 0 && bh_unit < 2 && row_off == 0) return 1;
-#endif
 
     // All bottom-left pixels are in the left block, which is already available.
     if (row_off + bottom_left_count_unit < plane_bh_unit) return 1;
@@ -2626,7 +2579,7 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide_unit[tx_size];
-#if CONFIG_CB4X4 && CONFIG_CHROMA_SUB8X8
+#if CONFIG_CHROMA_SUB8X8
   const int have_top = row_off || (pd->subsampling_y ? xd->chroma_up_available
                                                      : xd->up_available);
   const int have_left =
@@ -2645,7 +2598,7 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
 #if !INTRA_USES_RECT_TRANSFORMS
   assert(txwpx == txhpx);
 #endif  // !INTRA_USES_RECT_TRANSFORMS
-#if CONFIG_CB4X4 && !CONFIG_CHROMA_SUB8X8
+#if !CONFIG_CHROMA_SUB8X8
   const int xr_chr_offset = (pd->subsampling_x && bsize < BLOCK_8X8) ? 2 : 0;
   const int yd_chr_offset = (pd->subsampling_y && bsize < BLOCK_8X8) ? 2 : 0;
 #else
@@ -2669,10 +2622,8 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   const PARTITION_TYPE partition = xd->mi[0]->mbmi.partition;
 #endif
 
-#if CONFIG_CB4X4
   // force 4x4 chroma component block size.
   bsize = scale_chroma_bsize(bsize, pd->subsampling_x, pd->subsampling_y);
-#endif
 
   const int have_top_right =
       has_top_right(cm, bsize, mi_row, mi_col, have_top, right_available,

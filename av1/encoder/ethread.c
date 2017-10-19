@@ -81,10 +81,7 @@ void av1_encode_tiles_mt(AV1_COMP *cpi) {
                         aom_memalign(32, sizeof(*thread_data->td)));
         av1_zero(*thread_data->td);
 
-// Set up pc_tree.
-#if !CONFIG_CB4X4
-        thread_data->td->leaf_tree = NULL;
-#endif
+        // Set up pc_tree.
         thread_data->td->pc_tree = NULL;
         av1_setup_pc_tree(cm, thread_data->td);
 

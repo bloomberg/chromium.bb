@@ -45,11 +45,7 @@ extern "C" {
 #define MIN_SB_SIZE_LOG2 6
 
 // Pixels per Mode Info (MI) unit
-#if CONFIG_CB4X4
 #define MI_SIZE_LOG2 2
-#else
-#define MI_SIZE_LOG2 3
-#endif
 #define MI_SIZE (1 << MI_SIZE_LOG2)
 
 // MI-units per max superblock (MI Block - MIB)

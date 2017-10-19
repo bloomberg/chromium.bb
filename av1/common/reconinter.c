@@ -1133,10 +1133,8 @@ static INLINE void build_inter_predictors(
 #endif  // CONFIG_COMPOUND_SINGLEREF
 #endif  // CONFIG_GLOBAL_MOTION
 
-#if CONFIG_CB4X4
   (void)block;
   (void)cm;
-#endif
 
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
@@ -1371,19 +1369,7 @@ static INLINE void build_inter_predictors(
       const struct scale_factors *const sf = &xd->block_refs[ref]->sf;
       struct buf_2d *const pre_buf = &pd->pre[ref];
 #endif  // CONFIG_INTRABC
-#if CONFIG_CB4X4
       const MV mv = mi->mbmi.mv[ref].as_mv;
-#else
-      const MV mv =
-#if CONFIG_MOTION_VAR
-          (mi->mbmi.sb_type < BLOCK_8X8 && !build_for_obmc)
-              ?
-#else
-          mi->mbmi.sb_type < BLOCK_8X8 ?
-#endif
-              average_split_mvs(pd, mi, ref, block)
-              : mi->mbmi.mv[ref].as_mv;
-#endif
 
       const int is_scaled = av1_is_scaled(sf);
       if (is_scaled) {
@@ -1536,21 +1522,15 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
   int plane;
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
     const int bw = pd->width;
     const int bh = pd->height;
 
-#if CONFIG_CB4X4
     if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                              pd->subsampling_y))
       continue;
-#endif
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !unify_bsize) {
       const PARTITION_TYPE bp = bsize - xd->mi[0]->mbmi.sb_type;
@@ -2248,31 +2228,9 @@ void av1_build_prediction_by_bottom_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const struct macroblockd_plane *pd = &xd->plane[j];
       bw = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_x;
       bh = (xd->n8_h << (MI_SIZE_LOG2 - 1)) >> pd->subsampling_y;
-
-      if (mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
-        const PARTITION_TYPE bp = BLOCK_8X8 - mbmi->sb_type;
-        const int have_vsplit = bp != PARTITION_HORZ;
-        const int have_hsplit = bp != PARTITION_VERT;
-        const int num_4x4_w = 2 >> (!have_vsplit);
-        const int num_4x4_h = 2 >> (!have_hsplit);
-        const int pw = 8 >> (have_vsplit + pd->subsampling_x);
-        int x, y;
-
-        for (y = 0; y < num_4x4_h; ++y)
-          for (x = 0; x < num_4x4_w; ++x) {
-            if ((bp == PARTITION_HORZ || bp == PARTITION_SPLIT) && y != 0)
-              continue;
-
-            build_inter_predictors(cm, xd, j, mi, 1, y * 2 + x, bw, bh,
-                                   (4 * x) >> pd->subsampling_x,
-                                   xd->n8_h == 1 ? (4 >> pd->subsampling_y) : 0,
-                                   pw, bh, mi_x, mi_y);
-          }
-      } else {
-        build_inter_predictors(cm, xd, j, mi, 1, 0, bw, bh, 0,
-                               xd->n8_h == 1 ? (4 >> pd->subsampling_y) : 0, bw,
-                               bh, mi_x, mi_y);
-      }
+      build_inter_predictors(cm, xd, j, mi, 1, 0, bw, bh, 0,
+                             xd->n8_h == 1 ? (4 >> pd->subsampling_y) : 0, bw,
+                             bh, mi_x, mi_y);
     }
     *mbmi = backup_mbmi;
   }
@@ -2346,31 +2304,9 @@ void av1_build_prediction_by_right_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
       const struct macroblockd_plane *pd = &xd->plane[j];
       bw = (xd->n8_w << (MI_SIZE_LOG2 - 1)) >> pd->subsampling_x;
       bh = (mi_step << MI_SIZE_LOG2) >> pd->subsampling_y;
-
-      if (mbmi->sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
-        const PARTITION_TYPE bp = BLOCK_8X8 - mbmi->sb_type;
-        const int have_vsplit = bp != PARTITION_HORZ;
-        const int have_hsplit = bp != PARTITION_VERT;
-        const int num_4x4_w = 2 >> (!have_vsplit);
-        const int num_4x4_h = 2 >> (!have_hsplit);
-        const int ph = 8 >> (have_hsplit + pd->subsampling_y);
-        int x, y;
-
-        for (y = 0; y < num_4x4_h; ++y)
-          for (x = 0; x < num_4x4_w; ++x) {
-            if ((bp == PARTITION_VERT || bp == PARTITION_SPLIT) && x != 0)
-              continue;
-
-            build_inter_predictors(cm, xd, j, mi, 1, y * 2 + x, bw, bh,
-                                   xd->n8_w == 1 ? 4 >> pd->subsampling_x : 0,
-                                   (4 * y) >> pd->subsampling_y, bw, ph, mi_x,
-                                   mi_y);
-          }
-      } else {
-        build_inter_predictors(cm, xd, j, mi, 1, 0, bw, bh,
-                               xd->n8_w == 1 ? 4 >> pd->subsampling_x : 0, 0,
-                               bw, bh, mi_x, mi_y);
-      }
+      build_inter_predictors(cm, xd, j, mi, 1, 0, bw, bh,
+                             xd->n8_w == 1 ? 4 >> pd->subsampling_x : 0, 0, bw,
+                             bh, mi_x, mi_y);
     }
     *mbmi = backup_mbmi;
   }
@@ -2964,26 +2900,9 @@ void av1_build_inter_predictors_for_planes_single_buf(
         get_plane_block_size(bsize, &xd->plane[plane]);
     const int bw = block_size_wide[plane_bsize];
     const int bh = block_size_high[plane_bsize];
-
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
-      int x, y;
-      const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-      const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-      assert(bsize == BLOCK_8X8);
-#if CONFIG_COMPOUND_SINGLEREF
-      assert(has_second_ref(&xd->mi[0]->mbmi) ||
-             !is_inter_singleref_comp_mode(xd->mi[0]->mbmi.mode));
-#endif  // CONFIG_COMPOUND_SINGLEREF
-      for (y = 0; y < num_4x4_h; ++y)
-        for (x = 0; x < num_4x4_w; ++x)
-          build_inter_predictors_single_buf(
-              xd, plane, y * 2 + x, bw, bh, 4 * x, 4 * y, 4, 4, mi_x, mi_y, ref,
-              ext_dst[plane], ext_dst_stride[plane]);
-    } else {
-      build_inter_predictors_single_buf(xd, plane, 0, bw, bh, 0, 0, bw, bh,
-                                        mi_x, mi_y, ref, ext_dst[plane],
-                                        ext_dst_stride[plane]);
-    }
+    build_inter_predictors_single_buf(xd, plane, 0, bw, bh, 0, 0, bw, bh, mi_x,
+                                      mi_y, ref, ext_dst[plane],
+                                      ext_dst_stride[plane]);
   }
 }
 
@@ -3065,24 +2984,11 @@ void av1_build_wedge_inter_predictor_from_buf(MACROBLOCKD *xd, BLOCK_SIZE bsize,
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const BLOCK_SIZE plane_bsize =
         get_plane_block_size(bsize, &xd->plane[plane]);
-
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !CONFIG_CB4X4) {
-      int x, y;
-      const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-      const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-      assert(bsize == BLOCK_8X8);
-      for (y = 0; y < num_4x4_h; ++y)
-        for (x = 0; x < num_4x4_w; ++x)
-          build_wedge_inter_predictor_from_buf(
-              xd, plane, 4 * x, 4 * y, 4, 4, ext_dst0[plane],
-              ext_dst_stride0[plane], ext_dst1[plane], ext_dst_stride1[plane]);
-    } else {
-      const int bw = block_size_wide[plane_bsize];
-      const int bh = block_size_high[plane_bsize];
-      build_wedge_inter_predictor_from_buf(
-          xd, plane, 0, 0, bw, bh, ext_dst0[plane], ext_dst_stride0[plane],
-          ext_dst1[plane], ext_dst_stride1[plane]);
-    }
+    const int bw = block_size_wide[plane_bsize];
+    const int bh = block_size_high[plane_bsize];
+    build_wedge_inter_predictor_from_buf(
+        xd, plane, 0, 0, bw, bh, ext_dst0[plane], ext_dst_stride0[plane],
+        ext_dst1[plane], ext_dst_stride1[plane]);
   }
 }
 #if CONFIG_NCOBMC_ADAPT_WEIGHT

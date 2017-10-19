@@ -1522,9 +1522,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     int rate;
     int64_t dist;
 
-#if CONFIG_CB4X4
     if (x->skip_chroma_rd && plane) continue;
-#endif  // CONFIG_CB4X4
 
     // TODO(geza): Write direct sse functions that do not compute
     // variance as well.
@@ -1803,12 +1801,9 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
+#else
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#else   // CONFIG_CB4X4
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
-#endif  // CONFIG_CB4X4
+#endif  // CONFIG_CHROMA_SUB8X8
 
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
@@ -2898,10 +2893,10 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
           *rd_stats = this_rd_stats;
         }
       }
-#if CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+#if !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
       const int is_inter = is_inter_block(mbmi);
       if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
-#endif  // CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+#endif  // !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
     }
 #if CONFIG_LGT_FROM_PRED
     const TX_SIZE rect_tx_size = max_txsize_rect_lookup[bs];
@@ -2964,10 +2959,10 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
           *rd_stats = this_rd_stats;
         }
       }
-#if CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+#if !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
       const int is_inter = is_inter_block(mbmi);
       if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
-#endif  // CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+#endif  // !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
     }
 #if CONFIG_LGT_FROM_PRED
     if (is_lgt_allowed(mbmi->mode, tx_size) && !cm->reduced_tx_set_used) {
@@ -3053,10 +3048,10 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
         best_rd = rd;
         *rd_stats = this_rd_stats;
       }
-#if CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+#if !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
       const int is_inter = is_inter_block(mbmi);
       if (mbmi->sb_type < BLOCK_8X8 && is_inter) break;
-#endif  // CONFIG_CB4X4 && !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+#endif  // !USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
     }
 #if CONFIG_LGT_FROM_PRED
     mbmi->use_lgt = 1;
@@ -3726,15 +3721,9 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
         assert(IMPLIES(tx_size == TX_4X8 || tx_size == TX_8X4,
                        block == 0 || block == 2));
         xd->mi[0]->bmi[block_raster_idx].as_mode = mode;
-        av1_predict_intra_block(cm, xd, pd->width, pd->height,
-                                txsize_to_bsize[tx_size], mode, dst, dst_stride,
-                                dst, dst_stride,
-#if CONFIG_CB4X4
-                                2 * (col + idx), 2 * (row + idy),
-#else
-                                col + idx, row + idy,
-#endif  // CONFIG_CB4X4
-                                0);
+        av1_predict_intra_block(
+            cm, xd, pd->width, pd->height, txsize_to_bsize[tx_size], mode, dst,
+            dst_stride, dst, dst_stride, 2 * (col + idx), 2 * (row + idy), 0);
 #if !CONFIG_PVQ
         aom_subtract_block(tx_height, tx_width, src_diff, 8, src, src_stride,
                            dst, dst_stride);
@@ -3744,27 +3733,15 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
         const SCAN_ORDER *scan_order =
             get_scan(cm, tx_size, tx_type, &xd->mi[0]->mbmi);
         const int coeff_ctx = combine_entropy_contexts(tempa[idx], templ[idy]);
-#if CONFIG_CB4X4
         block = 4 * block;
-#endif  // CONFIG_CB4X4
 #if !CONFIG_PVQ
 #if DISABLE_TRELLISQ_SEARCH
-        av1_xform_quant(cm, x, 0, block,
-#if CONFIG_CB4X4
-                        2 * (row + idy), 2 * (col + idx),
-#else
-                        row + idy, col + idx,
-#endif  // CONFIG_CB4X4
+        av1_xform_quant(cm, x, 0, block, 2 * (row + idy), 2 * (col + idx),
                         BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_B);
 #else
         const AV1_XFORM_QUANT xform_quant =
             is_lossless ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP;
-        av1_xform_quant(cm, x, 0, block,
-#if CONFIG_CB4X4
-                        2 * (row + idy), 2 * (col + idx),
-#else
-                        row + idy, col + idx,
-#endif  // CONFIG_CB4X4
+        av1_xform_quant(cm, x, 0, block, 2 * (row + idy), 2 * (col + idx),
                         BLOCK_8X8, tx_size, coeff_ctx, xform_quant);
 
         av1_optimize_b(cm, x, 0, 0, 0, block, BLOCK_8X8, tx_size, tempa + idx,
@@ -3787,12 +3764,7 @@ static int64_t rd_pick_intra_sub_8x8_y_subblock_mode(
 #else
         (void)scan_order;
 
-        av1_xform_quant(cm, x, 0, block,
-#if CONFIG_CB4X4
-                        2 * (row + idy), 2 * (col + idx),
-#else
-                        row + idy, col + idx,
-#endif  // CONFIG_CB4X4
+        av1_xform_quant(cm, x, 0, block, 2 * (row + idy), 2 * (col + idx),
                         BLOCK_8X8, tx_size, coeff_ctx, AV1_XFORM_QUANT_FP);
 
         ratey += x->rate;
@@ -4582,12 +4554,10 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (ref_best_rd < 0) is_cost_valid = 0;
 
-#if CONFIG_CB4X4
   if (x->skip_chroma_rd) return is_cost_valid;
 
   bsize = scale_chroma_bsize(bsize, xd->plane[1].subsampling_x,
                              xd->plane[1].subsampling_y);
-#endif  // CONFIG_CB4X4
 
 #if !CONFIG_PVQ
   if (is_inter_block(mbmi) && is_cost_valid) {
@@ -5809,11 +5779,9 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   av1_init_rd_stats(rd_stats);
 
-#if CONFIG_CB4X4
   if (x->skip_chroma_rd) return is_cost_valid;
   bsize = scale_chroma_bsize(mbmi->sb_type, xd->plane[1].subsampling_x,
                              xd->plane[1].subsampling_y);
-#endif  // CONFIG_CB4X4
 
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   if (is_rect_tx(mbmi->tx_size)) {
@@ -6519,7 +6487,6 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // Use an estimated rd for uv_intra based on DC_PRED if the
   // appropriate speed flag is set.
   init_sbuv_mode(mbmi);
-#if CONFIG_CB4X4
   if (x->skip_chroma_rd) {
     *rate_uv = 0;
     *rate_uv_tokenonly = 0;
@@ -6534,14 +6501,6 @@ static void choose_intra_uv_mode(const AV1_COMP *const cpi, MACROBLOCK *const x,
   // Only store reconstructed luma when there's chroma RDO. When there's no
   // chroma RDO, the reconstructed luma will be stored in encode_superblock().
   xd->cfl->store_y = !x->skip_chroma_rd;
-#endif  // CONFIG_CFL
-#else
-  bsize = bsize < BLOCK_8X8 ? BLOCK_8X8 : bsize;
-#if CONFIG_CFL
-  xd->cfl->store_y = 1;
-#endif  // CONFIG_CFL
-#endif  // CONFIG_CB4X4
-#if CONFIG_CFL
   if (xd->cfl->store_y) {
     // Perform one extra call to txfm_rd_in_plane(), with the values chosen
     // during luma RDO, so we can store reconstructed luma values
@@ -6818,10 +6777,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 #else
   DECLARE_ALIGNED(16, uint8_t, second_pred[MAX_SB_SQUARE]);
 #endif  // CONFIG_HIGHBITDEPTH
-
-#if CONFIG_CB4X4
   (void)ref_mv_sub8x8;
-#endif  // CONFIG_CB4X4
 
 #if CONFIG_COMPOUND_SINGLEREF
   for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref)
@@ -6829,12 +6785,7 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
   for (ref = 0; ref < 2; ++ref)
 #endif  // CONFIG_COMPOUND_SINGLEREF
   {
-#if !CONFIG_CB4X4
-    if (bsize < BLOCK_8X8 && ref_mv_sub8x8 != NULL)
-      ref_mv[ref].as_int = ref_mv_sub8x8[ref]->as_int;
-    else
-#endif  // !CONFIG_CB4X4
-      ref_mv[ref] = x->mbmi_ext->ref_mvs[refs[ref]][0];
+    ref_mv[ref] = x->mbmi_ext->ref_mvs[refs[ref]][0];
 
     if (scaled_ref_frame[ref]) {
       int i;
@@ -7071,18 +7022,9 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                                   x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
     } else {
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if !CONFIG_CB4X4
-      if (bsize >= BLOCK_8X8)
-#endif  // !CONFIG_CB4X4
-        *rate_mv += av1_mv_bit_cost(&frame_mv[refs[ref]].as_mv,
-                                    &x->mbmi_ext->ref_mvs[refs[ref]][0].as_mv,
-                                    x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
-#if !CONFIG_CB4X4
-      else
-        *rate_mv += av1_mv_bit_cost(&frame_mv[refs[ref]].as_mv,
-                                    &ref_mv_sub8x8[ref]->as_mv, x->nmvjointcost,
-                                    x->mvcost, MV_COST_WEIGHT);
-#endif  // !CONFIG_CB4X4
+      *rate_mv += av1_mv_bit_cost(&frame_mv[refs[ref]].as_mv,
+                                  &x->mbmi_ext->ref_mvs[refs[ref]][0].as_mv,
+                                  x->nmvjointcost, x->mvcost, MV_COST_WEIGHT);
 #if CONFIG_COMPOUND_SINGLEREF
     }
 #endif  // CONFIG_COMPOUND_SINGLEREF
@@ -7363,17 +7305,11 @@ static void setup_buffer_inter(
                         &frame_nearest_mv[ref_frame],
                         &frame_near_mv[ref_frame]);
 #endif
-// Further refinement that is encode side only to test the top few candidates
-// in full and choose the best as the centre point for subsequent searches.
-// The current implementation doesn't support scaling.
-#if CONFIG_CB4X4
+  // Further refinement that is encode side only to test the top few candidates
+  // in full and choose the best as the centre point for subsequent searches.
+  // The current implementation doesn't support scaling.
   av1_mv_pred(cpi, x, yv12_mb[ref_frame][0].buf, yv12->y_stride, ref_frame,
               block_size);
-#else
-  if (!av1_is_scaled(sf) && block_size >= BLOCK_8X8)
-    av1_mv_pred(cpi, x, yv12_mb[ref_frame][0].buf, yv12->y_stride, ref_frame,
-                block_size);
-#endif  // CONFIG_CB4X4
 }
 
 static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -7934,7 +7870,6 @@ static void do_masked_motion_search_indexed(
   int_mv frame_comp_mv[TOTAL_REFS_PER_FRAME];
 #endif  // CONFIG_COMPOUND_SINGLEREF
   MV_REFERENCE_FRAME rf[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
-  assert(bsize >= BLOCK_8X8 || CONFIG_CB4X4);
 
   frame_mv[rf[0]].as_int = cur_mv[0].as_int;
 #if CONFIG_COMPOUND_SINGLEREF
@@ -10082,7 +10017,7 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
   int y_skip = 0, uv_skip = 0;
   int64_t dist_y = 0, dist_uv = 0;
   TX_SIZE max_uv_tx_size;
-  const int unify_bsize = CONFIG_CB4X4;
+  const int unify_bsize = 1;
 
   (void)cm;
 
@@ -10106,13 +10041,9 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
 
   if (intra_yrd < best_rd) {
 #if CONFIG_CFL
-#if CONFIG_CB4X4
     // Only store reconstructed luma when there's chroma RDO. When there's no
     // chroma RDO, the reconstructed luma will be stored in encode_superblock().
     xd->cfl->store_y = !x->skip_chroma_rd;
-#else
-    xd->cfl->store_y = 1;
-#endif  // CONFIG_CB4X4
     if (xd->cfl->store_y) {
       // Perform one extra call to txfm_rd_in_plane(), with the values chosen
       // during luma RDO, so we can store reconstructed luma values
@@ -10126,14 +10057,9 @@ void av1_rd_pick_intra_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     max_uv_tx_size = uv_txsize_lookup[bsize][mbmi->tx_size][pd[1].subsampling_x]
                                      [pd[1].subsampling_y];
     init_sbuv_mode(mbmi);
-#if CONFIG_CB4X4
     if (!x->skip_chroma_rd)
       rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
                               &uv_skip, bsize, max_uv_tx_size);
-#else
-    rd_pick_intra_sbuv_mode(cpi, x, &rate_uv, &rate_uv_tokenonly, &dist_uv,
-                            &uv_skip, AOMMAX(BLOCK_8X8, bsize), max_uv_tx_size);
-#endif  // CONFIG_CB4X4
 
     if (y_skip && (uv_skip || x->skip_chroma_rd)) {
       rd_cost->rate = rate_y + rate_uv - rate_y_tokenonly - rate_uv_tokenonly +
@@ -11139,14 +11065,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #endif  // CONFIG_FILTER_INTRA
 
-#if CONFIG_CB4X4
       rate2 = rate_y + intra_mode_cost[mbmi->mode];
       if (!x->skip_chroma_rd)
         rate2 += rate_uv + x->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
-#else
-      rate2 = rate_y + intra_mode_cost[mbmi->mode] + rate_uv +
-              x->intra_uv_mode_cost[mbmi->mode][mbmi->uv_mode];
-#endif  // CONFIG_CB4X4
 
       if (try_palette && mbmi->mode == DC_PRED) {
         rate2 += x->palette_y_mode_cost[bsize - BLOCK_8X8][palette_ctx][0];
@@ -12683,11 +12604,9 @@ int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
   int64_t this_rd;
   int ref;
 
-#if CONFIG_CB4X4
   x->skip_chroma_rd =
       !is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y);
-#endif
 
   set_ref_ptrs(cm, xd, mbmi->ref_frame[0], mbmi->ref_frame[1]);
   for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {

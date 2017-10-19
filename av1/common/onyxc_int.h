@@ -887,7 +887,6 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 #endif  // CONFIG_EXT_PARTITION_TYPES
 }
 
-#if CONFIG_CB4X4
 static INLINE int is_chroma_reference(int mi_row, int mi_col, BLOCK_SIZE bsize,
                                       int subsampling_x, int subsampling_y) {
 #if CONFIG_CHROMA_SUB8X8
@@ -923,7 +922,6 @@ static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,
 
   return bs;
 }
-#endif
 
 static INLINE aom_cdf_prob cdf_element_prob(const aom_cdf_prob *cdf,
                                             size_t element) {
@@ -1338,11 +1336,7 @@ static INLINE void set_use_reference_buffer(AV1_COMMON *const cm, int use) {
 static INLINE void set_sb_size(AV1_COMMON *const cm, BLOCK_SIZE sb_size) {
   cm->sb_size = sb_size;
   cm->mib_size = mi_size_wide[cm->sb_size];
-#if CONFIG_CB4X4
   cm->mib_size_log2 = b_width_log2_lookup[cm->sb_size];
-#else
-  cm->mib_size_log2 = mi_width_log2_lookup[cm->sb_size];
-#endif
 }
 
 static INLINE int all_lossless(const AV1_COMMON *cm, const MACROBLOCKD *xd) {

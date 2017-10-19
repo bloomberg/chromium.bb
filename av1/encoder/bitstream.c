@@ -709,12 +709,9 @@ static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
-#endif
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#endif  // CONFIG_CHROMA_SUB8X8
 
   adapt = x->daala_enc.state.adapt;
 
@@ -1187,16 +1184,10 @@ static void write_filter_intra_mode_info(const AV1_COMMON *const cm,
     }
   }
 
-#if CONFIG_CB4X4
   if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
                            xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y))
     return;
-#else
-  (void)xd;
-  (void)mi_row;
-  (void)mi_col;
-#endif  // CONFIG_CB4X4
 
   if (mbmi->uv_mode == UV_DC_PRED &&
       mbmi->palette_mode_info.palette_size[1] == 0) {
@@ -1635,11 +1626,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   const int is_inter = is_inter_block(mbmi);
   const int is_compound = has_second_ref(mbmi);
   int skip, ref;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
   (void)mi_row;
   (void)mi_col;
 
@@ -1704,7 +1691,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   write_is_inter(cm, xd, mbmi->segment_id, w, is_inter);
 
   if (cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_CB4X4 && CONFIG_VAR_TX && !CONFIG_RECT_TX
+#if CONFIG_VAR_TX && !CONFIG_RECT_TX
       (bsize >= BLOCK_8X8 || (bsize > BLOCK_4X4 && is_inter)) &&
 #else
       block_signals_txsize(bsize) &&
@@ -1763,23 +1750,16 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         }
       }
     }
-#if CONFIG_CB4X4
     if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                             xd->plane[1].subsampling_y)) {
       write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
-#else  // !CONFIG_CB4X4
-    write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
-#endif  // CONFIG_CB4X4
 
 #if CONFIG_CFL
       if (mbmi->uv_mode == UV_CFL_PRED) {
         write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
       }
 #endif
-
-#if CONFIG_CB4X4
     }
-#endif
 
 #if CONFIG_EXT_INTRA
     write_intra_angle_info(xd, w);
@@ -2084,11 +2064,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   const MODE_INFO *const left_mi = xd->left_mi;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
   (void)mi_row;
   (void)mi_col;
 
@@ -2169,23 +2145,17 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
     }
   }
 
-#if CONFIG_CB4X4
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
     write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
-#else  // !CONFIG_CB4X4
-  write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mbmi->mode, w);
-#endif  // CONFIG_CB4X4
 
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
       write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
     }
 #endif
-
-#if CONFIG_CB4X4
   }
-#endif
+
 #if CONFIG_EXT_INTRA
   write_intra_angle_info(xd, w);
 #endif  // CONFIG_EXT_INTRA
@@ -2507,7 +2477,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
     assert(*tok < tok_end);
 #endif
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
       if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
                                xd->plane[plane].subsampling_x,
                                xd->plane[plane].subsampling_y)) {
@@ -2516,19 +2485,15 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // !CONFIG_LV_MAP
         continue;
       }
-#endif
 #if CONFIG_VAR_TX
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_CHROMA_SUB8X8
       const BLOCK_SIZE plane_bsize =
           AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else
-      const BLOCK_SIZE plane_bsize =
-          get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
-#endif
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#endif  // CONFIG_CHROMA_SUB8X8
 
       const int num_4x4_w =
           block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
@@ -2674,11 +2639,7 @@ static void write_tokens_sb(AV1_COMP *cpi, const TileInfo *const tile,
   const int hbs = mi_size_wide[bsize] / 2;
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -2818,11 +2779,7 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif  // CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 

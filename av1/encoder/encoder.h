@@ -339,9 +339,6 @@ typedef struct ThreadData {
   MACROBLOCK mb;
   RD_COUNTS rd_counts;
   FRAME_COUNTS *counts;
-#if !CONFIG_CB4X4
-  PICK_MODE_CONTEXT *leaf_tree;
-#endif
   PC_TREE *pc_tree;
   PC_TREE *pc_root[MAX_MIB_SIZE_LOG2 - MIN_MIB_SIZE_LOG2 + 1];
 #if CONFIG_MOTION_VAR
@@ -720,13 +717,8 @@ static INLINE unsigned int get_token_alloc(int mb_rows, int mb_cols) {
 // Get the allocated token size for a tile. It does the same calculation as in
 // the frame token allocation.
 static INLINE unsigned int allocated_tokens(TileInfo tile) {
-#if CONFIG_CB4X4
   int tile_mb_rows = (tile.mi_row_end - tile.mi_row_start + 2) >> 2;
   int tile_mb_cols = (tile.mi_col_end - tile.mi_col_start + 2) >> 2;
-#else
-  int tile_mb_rows = (tile.mi_row_end - tile.mi_row_start + 1) >> 1;
-  int tile_mb_cols = (tile.mi_col_end - tile.mi_col_start + 1) >> 1;
-#endif
 
   return get_token_alloc(tile_mb_rows, tile_mb_cols);
 }

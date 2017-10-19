@@ -270,12 +270,9 @@ static int get_block_idx(const MACROBLOCKD *xd, int plane, int row, int col) {
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
-#endif
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#endif  // CONFIG_CHROMA_SUB8X8
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const uint8_t txh_unit = tx_size_high_unit[tx_size];
@@ -845,14 +842,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   }
-
-#if CONFIG_CB4X4
   if (mbmi->skip) av1_reset_skip_context(xd, mi_row, mi_col, bsize);
-#else
-  if (mbmi->skip) {
-    av1_reset_skip_context(xd, mi_row, mi_col, AOMMAX(BLOCK_8X8, bsize));
-  }
-#endif
 
 #if CONFIG_COEF_INTERLEAVE
   {
@@ -991,20 +981,15 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #if CONFIG_CHROMA_SUB8X8
       const BLOCK_SIZE plane_bsize =
           AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else
-      const BLOCK_SIZE plane_bsize =
-          get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
-#endif
+      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#endif  // CONFIG_CHROMA_SUB8X8
       int row, col;
       const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
       const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
-#if CONFIG_CB4X4
       if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                                pd->subsampling_y))
         continue;
-#endif
       int blk_row, blk_col;
       const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
       int mu_blocks_wide =
@@ -1061,12 +1046,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
 
-#if CONFIG_CB4X4
     av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
-#else
-    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL,
-                                  AOMMAX(bsize, BLOCK_8X8));
-#endif
 
 #if CONFIG_MOTION_VAR
     if (mbmi->motion_mode == OBMC_CAUSAL) {
@@ -1096,21 +1076,16 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 #if CONFIG_CHROMA_SUB8X8
         const BLOCK_SIZE plane_bsize =
             AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
-        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 #else
-        const BLOCK_SIZE plane_bsize =
-            get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
-#endif
+        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
+#endif  // CONFIG_CHROMA_SUB8X8
         const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
         const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
         int row, col;
 
-#if CONFIG_CB4X4
         if (!is_chroma_reference(mi_row, mi_col, bsize, pd->subsampling_x,
                                  pd->subsampling_y))
           continue;
-#endif
 
         const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
         int mu_blocks_wide =
@@ -1194,11 +1169,7 @@ static void detoken_and_recon_sb(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                  BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
   const int hbs = mi_size_wide[bsize] >> 1;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
 #if CONFIG_EXT_PARTITION_TYPES
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
 #endif
@@ -1346,11 +1317,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES && CONFIG_EXT_PARTITION_TYPES_AB
   const int qbs = num_8x8_wh >> 2;
 #endif
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
 #if CONFIG_EXT_PARTITION_TYPES
@@ -2923,43 +2890,12 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
     assert(mi_row > 0);
 #endif
 
-// when Parallel deblocking is enabled, deblocking should not
-// be interleaved with decoding. Instead, deblocking should be done
-// after the entire frame is decoded.
-#if !CONFIG_VAR_TX && !CONFIG_PARALLEL_DEBLOCKING && !CONFIG_CB4X4
-    // Loopfilter one tile row.
-    // Note: If out-of-order tile decoding is used(for example, inv_row_order
-    // = 1), the loopfiltering has be done after all tile rows are decoded.
-    if (!inv_row_order && cm->lf.filter_level && !cm->skip_loop_filter) {
-      LFWorkerData *const lf_data = (LFWorkerData *)pbi->lf_worker.data1;
-      const int lf_start = AOMMAX(0, tile_info.mi_row_start - cm->mib_size);
-      const int lf_end = tile_info.mi_row_end - cm->mib_size;
-
-      // Delay the loopfilter if the first tile row is only
-      // a single superblock high.
-      if (lf_end <= 0) continue;
-
-      // Decoding has completed. Finish up the loop filter in this thread.
-      if (tile_info.mi_row_end >= cm->mi_rows) continue;
-
-      winterface->sync(&pbi->lf_worker);
-      lf_data->start = lf_start;
-      lf_data->stop = lf_end;
-      if (pbi->max_threads > 1) {
-        winterface->launch(&pbi->lf_worker);
-      } else {
-        winterface->execute(&pbi->lf_worker);
-      }
-    }
-#endif  // !CONFIG_VAR_TX && !CONFIG_PARALLEL_DEBLOCKING
-
     // After loopfiltering, the last 7 row pixels in each superblock row may
     // still be changed by the longest loopfilter of the next superblock row.
     if (cm->frame_parallel_decode)
       av1_frameworker_broadcast(pbi->cur_buf, mi_row << cm->mib_size_log2);
   }
 
-#if CONFIG_VAR_TX || CONFIG_CB4X4
 #if CONFIG_INTRABC
 // When intraBC is on, do loop filtering per superblock,
 // instead of do it after the whole frame has been encoded,
@@ -2989,27 +2925,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_LOOPFILTER_LEVEL
 #endif  // CONFIG_LPF_SB
 #endif  // CONFIG_INTRABC
-#else
-#if CONFIG_PARALLEL_DEBLOCKING
-  // Loopfilter all rows in the frame in the frame.
-  if (cm->lf.filter_level && !cm->skip_loop_filter) {
-    LFWorkerData *const lf_data = (LFWorkerData *)pbi->lf_worker.data1;
-    winterface->sync(&pbi->lf_worker);
-    lf_data->start = 0;
-    lf_data->stop = cm->mi_rows;
-    winterface->execute(&pbi->lf_worker);
-  }
-#else
-  // Loopfilter remaining rows in the frame.
-  if (cm->lf.filter_level && !cm->skip_loop_filter) {
-    LFWorkerData *const lf_data = (LFWorkerData *)pbi->lf_worker.data1;
-    winterface->sync(&pbi->lf_worker);
-    lf_data->start = lf_data->stop;
-    lf_data->stop = cm->mi_rows;
-    winterface->execute(&pbi->lf_worker);
-  }
-#endif  // CONFIG_PARALLEL_DEBLOCKING
-#endif  // CONFIG_VAR_TX
   if (cm->frame_parallel_decode)
     av1_frameworker_broadcast(pbi->cur_buf, INT_MAX);
 
@@ -3041,276 +2956,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   TileData *const td = pbi->tile_data + endTile;
   return aom_reader_find_end(&td->bit_reader);
 #endif
-#endif  // CONFIG_ANS
-#if CONFIG_EXT_TILE
-  }
-#endif  // CONFIG_EXT_TILE
-}
-
-static int tile_worker_hook(TileWorkerData *const tile_data,
-                            const TileInfo *const tile) {
-  AV1Decoder *const pbi = tile_data->pbi;
-  const AV1_COMMON *const cm = &pbi->common;
-  int mi_row, mi_col;
-
-  if (setjmp(tile_data->error_info.jmp)) {
-    tile_data->error_info.setjmp = 0;
-    aom_merge_corrupted_flag(&tile_data->xd.corrupted, 1);
-    return 0;
-  }
-
-  tile_data->error_info.setjmp = 1;
-  tile_data->xd.error_info = &tile_data->error_info;
-#if CONFIG_DEPENDENT_HORZTILES
-  if (!cm->dependent_horz_tiles || tile->tg_horz_boundary) {
-    av1_zero_above_context(&pbi->common, tile->mi_col_start, tile->mi_col_end);
-  }
-#else
-  av1_zero_above_context(&pbi->common, tile->mi_col_start, tile->mi_col_end);
-#endif
-
-  for (mi_row = tile->mi_row_start; mi_row < tile->mi_row_end;
-       mi_row += cm->mib_size) {
-    av1_zero_left_context(&tile_data->xd);
-
-    for (mi_col = tile->mi_col_start; mi_col < tile->mi_col_end;
-         mi_col += cm->mib_size) {
-      decode_partition(pbi, &tile_data->xd, mi_row, mi_col,
-                       &tile_data->bit_reader, cm->sb_size);
-#if NC_MODE_INFO && CONFIG_MOTION_VAR
-      detoken_and_recon_sb(pbi, &tile_data->xd, mi_row, mi_col,
-                           &tile_data->bit_reader, cm->sb_size);
-#endif
-    }
-  }
-  return !tile_data->xd.corrupted;
-}
-
-// sorts in descending order
-static int compare_tile_buffers(const void *a, const void *b) {
-  const TileBufferDec *const buf1 = (const TileBufferDec *)a;
-  const TileBufferDec *const buf2 = (const TileBufferDec *)b;
-  return (int)(buf2->size - buf1->size);
-}
-
-static const uint8_t *decode_tiles_mt(AV1Decoder *pbi, const uint8_t *data,
-                                      const uint8_t *data_end) {
-  AV1_COMMON *const cm = &pbi->common;
-  const AVxWorkerInterface *const winterface = aom_get_worker_interface();
-  const int tile_cols = cm->tile_cols;
-  const int tile_rows = cm->tile_rows;
-  const int num_workers = AOMMIN(pbi->max_threads & ~1, tile_cols);
-  TileBufferDec(*const tile_buffers)[MAX_TILE_COLS] = pbi->tile_buffers;
-#if CONFIG_EXT_TILE
-  const int dec_tile_row = AOMMIN(pbi->dec_tile_row, tile_rows);
-  const int single_row = pbi->dec_tile_row >= 0;
-  const int dec_tile_col = AOMMIN(pbi->dec_tile_col, tile_cols);
-  const int single_col = pbi->dec_tile_col >= 0;
-#endif  // CONFIG_EXT_TILE
-  int tile_rows_start;
-  int tile_rows_end;
-  int tile_cols_start;
-  int tile_cols_end;
-  int tile_row, tile_col;
-  int i;
-
-#if CONFIG_EXT_TILE
-  if (cm->large_scale_tile) {
-    tile_rows_start = single_row ? dec_tile_row : 0;
-    tile_rows_end = single_row ? dec_tile_row + 1 : tile_rows;
-    tile_cols_start = single_col ? dec_tile_col : 0;
-    tile_cols_end = single_col ? tile_cols_start + 1 : tile_cols;
-  } else {
-#endif  // CONFIG_EXT_TILE
-    tile_rows_start = 0;
-    tile_rows_end = tile_rows;
-    tile_cols_start = 0;
-    tile_cols_end = tile_cols;
-#if CONFIG_EXT_TILE
-  }
-#endif  // CONFIG_EXT_TILE
-
-#if !CONFIG_ANS
-  int final_worker = -1;
-#endif  // !CONFIG_ANS
-
-  assert(tile_rows <= MAX_TILE_ROWS);
-  assert(tile_cols <= MAX_TILE_COLS);
-
-  assert(tile_cols * tile_rows > 1);
-
-  // TODO(jzern): See if we can remove the restriction of passing in max
-  // threads to the decoder.
-  if (pbi->num_tile_workers == 0) {
-    const int num_threads = pbi->max_threads & ~1;
-    CHECK_MEM_ERROR(cm, pbi->tile_workers,
-                    aom_malloc(num_threads * sizeof(*pbi->tile_workers)));
-    // Ensure tile data offsets will be properly aligned. This may fail on
-    // platforms without DECLARE_ALIGNED().
-    assert((sizeof(*pbi->tile_worker_data) % 16) == 0);
-    CHECK_MEM_ERROR(
-        cm, pbi->tile_worker_data,
-        aom_memalign(32, num_threads * sizeof(*pbi->tile_worker_data)));
-    CHECK_MEM_ERROR(cm, pbi->tile_worker_info,
-                    aom_malloc(num_threads * sizeof(*pbi->tile_worker_info)));
-    for (i = 0; i < num_threads; ++i) {
-      AVxWorker *const worker = &pbi->tile_workers[i];
-      ++pbi->num_tile_workers;
-
-      winterface->init(worker);
-      if (i < num_threads - 1 && !winterface->reset(worker)) {
-        aom_internal_error(&cm->error, AOM_CODEC_ERROR,
-                           "Tile decoder thread creation failed");
-      }
-    }
-  }
-
-  // Reset tile decoding hook
-  for (i = 0; i < num_workers; ++i) {
-    AVxWorker *const worker = &pbi->tile_workers[i];
-    winterface->sync(worker);
-    worker->hook = (AVxWorkerHook)tile_worker_hook;
-    worker->data1 = &pbi->tile_worker_data[i];
-    worker->data2 = &pbi->tile_worker_info[i];
-  }
-
-  // Initialize thread frame counts.
-  if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-    for (i = 0; i < num_workers; ++i) {
-      TileWorkerData *const twd = (TileWorkerData *)pbi->tile_workers[i].data1;
-      av1_zero(twd->counts);
-    }
-  }
-
-// Load tile data into tile_buffers
-#if CONFIG_EXT_TILE
-  if (cm->large_scale_tile)
-    get_ls_tile_buffers(pbi, data, data_end, tile_buffers);
-  else
-#endif  // CONFIG_EXT_TILE
-    get_tile_buffers(pbi, data, data_end, tile_buffers, 0,
-                     cm->tile_rows * cm->tile_cols - 1);
-
-  for (tile_row = tile_rows_start; tile_row < tile_rows_end; ++tile_row) {
-    // Sort the buffers in this tile row based on size in descending order.
-    qsort(&tile_buffers[tile_row][tile_cols_start],
-          tile_cols_end - tile_cols_start, sizeof(tile_buffers[0][0]),
-          compare_tile_buffers);
-
-    // Rearrange the tile buffers in this tile row such that per-tile group
-    // the largest, and presumably the most difficult tile will be decoded in
-    // the main thread. This should help minimize the number of instances
-    // where the main thread is waiting for a worker to complete.
-    {
-      int group_start;
-      for (group_start = tile_cols_start; group_start < tile_cols_end;
-           group_start += num_workers) {
-        const int group_end = AOMMIN(group_start + num_workers, tile_cols);
-        const TileBufferDec largest = tile_buffers[tile_row][group_start];
-        memmove(&tile_buffers[tile_row][group_start],
-                &tile_buffers[tile_row][group_start + 1],
-                (group_end - group_start - 1) * sizeof(tile_buffers[0][0]));
-        tile_buffers[tile_row][group_end - 1] = largest;
-      }
-    }
-
-    for (tile_col = tile_cols_start; tile_col < tile_cols_end;) {
-      // Launch workers for individual columns
-      for (i = 0; i < num_workers && tile_col < tile_cols_end;
-           ++i, ++tile_col) {
-        TileBufferDec *const buf = &tile_buffers[tile_row][tile_col];
-        AVxWorker *const worker = &pbi->tile_workers[i];
-        TileWorkerData *const twd = (TileWorkerData *)worker->data1;
-        TileInfo *const tile_info = (TileInfo *)worker->data2;
-
-        twd->pbi = pbi;
-        twd->xd = pbi->mb;
-        twd->xd.corrupted = 0;
-        twd->xd.counts =
-            cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD
-                ? &twd->counts
-                : NULL;
-        av1_zero(twd->dqcoeff);
-        av1_tile_init(tile_info, cm, tile_row, buf->col);
-        av1_tile_init(&twd->xd.tile, cm, tile_row, buf->col);
-
-#if CONFIG_LOOPFILTERING_ACROSS_TILES
-        dec_setup_across_tile_boundary_info(cm, tile_info);
-#endif  // CONFIG_LOOPFILTERING_ACROSS_TILES
-
-        setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
-                           &twd->bit_reader,
-#if CONFIG_ANS && ANS_MAX_SYMBOLS
-                           1 << cm->ans_window_size_log2,
-#endif  // CONFIG_ANS && ANS_MAX_SYMBOLS
-                           pbi->decrypt_cb, pbi->decrypt_state);
-        av1_init_macroblockd(cm, &twd->xd,
-#if CONFIG_PVQ
-                             twd->pvq_ref_coeff,
-#endif
-#if CONFIG_CFL
-                             &twd->cfl,
-#endif
-                             twd->dqcoeff);
-#if CONFIG_PVQ
-        daala_dec_init(cm, &twd->xd.daala_dec, &twd->bit_reader);
-        twd->xd.daala_dec.state.adapt = &twd->tctx.pvq_context;
-#endif
-        // Initialise the tile context from the frame context
-        twd->tctx = *cm->fc;
-        twd->xd.tile_ctx = &twd->tctx;
-        twd->xd.plane[0].color_index_map = twd->color_index_map[0];
-        twd->xd.plane[1].color_index_map = twd->color_index_map[1];
-
-        worker->had_error = 0;
-        if (i == num_workers - 1 || tile_col == tile_cols_end - 1) {
-          winterface->execute(worker);
-        } else {
-          winterface->launch(worker);
-        }
-
-#if !CONFIG_ANS
-        if (tile_row == tile_rows - 1 && buf->col == tile_cols - 1) {
-          final_worker = i;
-        }
-#endif  // !CONFIG_ANS
-      }
-
-      // Sync all workers
-      for (; i > 0; --i) {
-        AVxWorker *const worker = &pbi->tile_workers[i - 1];
-        // TODO(jzern): The tile may have specific error data associated with
-        // its aom_internal_error_info which could be propagated to the main
-        // info in cm. Additionally once the threads have been synced and an
-        // error is detected, there's no point in continuing to decode tiles.
-        pbi->mb.corrupted |= !winterface->sync(worker);
-      }
-    }
-  }
-
-  // Accumulate thread frame counts.
-  if (cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_BACKWARD) {
-    for (i = 0; i < num_workers; ++i) {
-      TileWorkerData *const twd = (TileWorkerData *)pbi->tile_workers[i].data1;
-      av1_accumulate_frame_counts(&cm->counts, &twd->counts);
-    }
-  }
-
-#if CONFIG_EXT_TILE
-  if (cm->large_scale_tile) {
-    // Return the end of the last tile buffer
-    return tile_buffers[tile_rows - 1][tile_cols - 1].raw_data_end;
-  } else {
-#endif  // CONFIG_EXT_TILE
-#if CONFIG_ANS
-    return data_end;
-#else
-  assert(final_worker != -1);
-  {
-    TileWorkerData *const twd =
-        (TileWorkerData *)pbi->tile_workers[final_worker].data1;
-    return aom_reader_find_end(&twd->bit_reader);
-  }
 #endif  // CONFIG_ANS
 #if CONFIG_EXT_TILE
   }
@@ -4595,43 +4240,13 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
 
   dec_setup_frame_boundary_info(cm);
 
-  if (pbi->max_threads > 1 && !CONFIG_CB4X4 &&
-#if CONFIG_EXT_TILE
-      pbi->dec_tile_col < 0 &&  // Decoding all columns
-#endif                          // CONFIG_EXT_TILE
-      cm->tile_cols > 1) {
-    // Multi-threaded tile decoder
-    *p_data_end =
-        decode_tiles_mt(pbi, data + pbi->first_partition_size, data_end);
-    if (!xd->corrupted) {
-      if (!cm->skip_loop_filter) {
-// If multiple threads are used to decode tiles, then we use those
-// threads to do parallel loopfiltering.
-#if CONFIG_LOOPFILTER_LEVEL
-        av1_loop_filter_frame_mt(
-            (YV12_BUFFER_CONFIG *)xd->cur_buf, cm, pbi->mb.plane,
-            cm->lf.filter_level[0], cm->lf.filter_level[1], 0, 0,
-            pbi->tile_workers, pbi->num_tile_workers, &pbi->lf_row_sync);
-#else
-        av1_loop_filter_frame_mt((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
-                                 pbi->mb.plane, cm->lf.filter_level, 0, 0,
-                                 pbi->tile_workers, pbi->num_tile_workers,
-                                 &pbi->lf_row_sync);
-#endif  // CONFIG_LOOPFILTER_LEVEL
-      }
-    } else {
-      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                         "Decode failed. Frame data is corrupted.");
-    }
-  } else {
 #if CONFIG_OBU
-    *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
+  *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
 #else
-    *p_data_end = decode_tiles(
-        pbi, data + pbi->uncomp_hdr_size + pbi->first_partition_size, data_end,
-        startTile, endTile);
+  *p_data_end =
+      decode_tiles(pbi, data + pbi->uncomp_hdr_size + pbi->first_partition_size,
+                   data_end, startTile, endTile);
 #endif
-  }
 
   if (endTile != cm->tile_rows * cm->tile_cols - 1) {
     return;

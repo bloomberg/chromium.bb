@@ -478,12 +478,8 @@ static INLINE int is_intrabc_block(const MB_MODE_INFO *mbmi) {
 #endif
 
 static INLINE PREDICTION_MODE get_y_mode(const MODE_INFO *mi, int block) {
-#if CONFIG_CB4X4
   (void)block;
   return mi->mbmi.mode;
-#else
-  return mi->mbmi.sb_type < BLOCK_8X8 ? mi->bmi[block].as_mode : mi->mbmi.mode;
-#endif
 }
 
 #if CONFIG_CFL
@@ -687,7 +683,6 @@ typedef struct cfl_ctx {
   // Whether the reconstructed luma pixels need to be stored
   int store_y;
 
-#if CONFIG_CB4X4
   int is_chroma_reference;
 #if CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
   // The prediction used for sub8x8 blocks originates from multiple luma blocks,
@@ -695,7 +690,6 @@ typedef struct cfl_ctx {
   // each luma block
   uint8_t sub8x8_val[CFL_SUB8X8_VAL_MI_SQUARE];
 #endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
-#endif  // CONFIG_CB4X4
 } CFL_CTX;
 #endif  // CONFIG_CFL
 
@@ -875,7 +869,7 @@ static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 #endif  // CONFIG_RECT_TX
 
 static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
-#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+#if (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
   return bsize > BLOCK_4X4;
 #else
   return bsize >= BLOCK_8X8;
@@ -975,12 +969,12 @@ static INLINE TxSetType get_ext_tx_set_type(TX_SIZE tx_size, BLOCK_SIZE bs,
                                             int is_inter, int use_reduced_set) {
   const TX_SIZE tx_size_sqr_up = txsize_sqr_up_map[tx_size];
   const TX_SIZE tx_size_sqr = txsize_sqr_map[tx_size];
-#if CONFIG_CB4X4 && USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
+#if USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   (void)bs;
   if (tx_size_sqr_up > TX_32X32) return EXT_TX_SET_DCTONLY;
 #else
   if (tx_size_sqr_up > TX_32X32 || bs < BLOCK_8X8) return EXT_TX_SET_DCTONLY;
-#endif
+#endif  // USE_TXTYPE_SEARCH_FOR_SUB8X8_IN_CB4X4
   if (use_reduced_set)
     return is_inter ? EXT_TX_SET_DCT_IDTX : EXT_TX_SET_DTT4_IDTX;
 #if CONFIG_MRC_TX
@@ -1173,13 +1167,8 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
 #endif  // (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
   (void)is_inter;
 #if CONFIG_VAR_TX && CONFIG_RECT_TX
-#if CONFIG_CB4X4
   if (bsize == BLOCK_4X4)
     return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
-#else
-  if (bsize < BLOCK_8X8)
-    return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
-#endif
   if (txsize_sqr_map[max_rect_tx_size] <= largest_tx_size)
     return max_rect_tx_size;
   else
@@ -1297,38 +1286,23 @@ static INLINE TX_TYPE av1_get_tx_type(PLANE_TYPE plane_type,
   if (xd->lossless[mbmi->segment_id] || txsize_sqr_map[tx_size] > TX_32X32 ||
       (txsize_sqr_map[tx_size] >= TX_32X32 && !is_inter_block(mbmi)))
     return DCT_DCT;
-  if (mbmi->sb_type >= BLOCK_8X8 || CONFIG_CB4X4) {
-    if (plane_type == PLANE_TYPE_Y) {
+  if (plane_type == PLANE_TYPE_Y) {
 #if !ALLOW_INTRA_EXT_TX
-      if (is_inter_block(mbmi))
+    if (is_inter_block(mbmi))
 #endif  // ALLOW_INTRA_EXT_TX
-        return mbmi->tx_type;
-    }
-
-    if (is_inter_block(mbmi)) {
-      // UV Inter only
-      return (mbmi->tx_type == IDTX && txsize_sqr_map[tx_size] >= TX_32X32)
-                 ? DCT_DCT
-                 : mbmi->tx_type;
-    }
+      return mbmi->tx_type;
   }
 
-#if CONFIG_CB4X4
+  if (is_inter_block(mbmi)) {
+    // UV Inter only
+    return (mbmi->tx_type == IDTX && txsize_sqr_map[tx_size] >= TX_32X32)
+               ? DCT_DCT
+               : mbmi->tx_type;
+  }
+
   (void)block;
   return intra_mode_to_tx_type_context[get_uv_mode(mbmi->uv_mode)];
-#else   // CONFIG_CB4X4
-  // Sub8x8-Inter/Intra OR UV-Intra
-  if (is_inter_block(mbmi)) {  // Sub8x8-Inter
-    return DCT_DCT;
-  } else {  // Sub8x8 Intra OR UV-Intra
-    const int block_raster_idx =
-        av1_block_index_to_raster_order(tx_size, block);
-    return intra_mode_to_tx_type_context[plane_type == PLANE_TYPE_Y
-                                             ? get_y_mode(mi, block_raster_idx)
-                                             : get_uv_mode(mbmi->uv_mode)];
-  }
-#endif  // CONFIG_CB4X4
-#else   // CONFIG_EXT_TX
+#else  // CONFIG_EXT_TX
   (void)block;
 #if CONFIG_MRC_TX
   if (mbmi->tx_type == MRC_DCT) {
@@ -1463,14 +1437,8 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
 #if CONFIG_VAR_TX
 static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
                                        BLOCK_SIZE bsize, int subsampled) {
-#if CONFIG_CB4X4
   (void)mbmi;
   TX_SIZE max_txsize = max_txsize_rect_lookup[bsize];
-#else
-  TX_SIZE max_txsize = mbmi->sb_type < BLOCK_8X8
-                           ? max_txsize_rect_lookup[mbmi->sb_type]
-                           : max_txsize_rect_lookup[bsize];
-#endif  // CONFIG_C4X4
 
 #if CONFIG_EXT_PARTITION && CONFIG_TX64X64
   // The decoder is designed so that it can process 64x64 luma pixels at a
@@ -1662,11 +1630,7 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   const MODE_INFO *mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   int ref;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
 
   // First check if all modes are ZEROMV
   if (mbmi->sb_type >= BLOCK_8X8 || unify_bsize) {

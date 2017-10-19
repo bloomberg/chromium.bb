@@ -917,7 +917,6 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
   if (x->skip) return;
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
     const int subsampling_x = xd->plane[plane].subsampling_x;
     const int subsampling_y = xd->plane[plane].subsampling_y;
 
@@ -926,10 +925,6 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
       continue;
 
     bsize = scale_chroma_bsize(bsize, subsampling_x, subsampling_y);
-#else
-    (void)mi_row;
-    (void)mi_col;
-#endif
 
 #if CONFIG_VAR_TX
     // TODO(jingning): Clean this up.
@@ -1102,15 +1097,10 @@ void av1_encode_intra_block_plane(AV1_COMMON *cm, MACROBLOCK *x,
     cm, x, NULL, &xd->mi[0]->mbmi.skip, ta, tl, enable_optimize_b
   };
 
-#if CONFIG_CB4X4
   if (!is_chroma_reference(mi_row, mi_col, bsize,
                            xd->plane[plane].subsampling_x,
                            xd->plane[plane].subsampling_y))
     return;
-#else
-  (void)mi_row;
-  (void)mi_col;
-#endif
 
   if (enable_optimize_b) {
     const struct macroblockd_plane *const pd = &xd->plane[plane];

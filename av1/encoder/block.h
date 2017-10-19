@@ -214,11 +214,7 @@ struct macroblock {
 #endif
 
   int skip;
-
-#if CONFIG_CB4X4
   int skip_chroma_rd;
-#endif
-
   int skip_cost[SKIP_CONTEXTS][2];
 
 #if CONFIG_LV_MAP
@@ -356,13 +352,11 @@ struct macroblock {
 #if CONFIG_DIST_8X8
   int using_dist_8x8;
   aom_tune_metric tune_metric;
-#if CONFIG_CB4X4
 #if CONFIG_HIGHBITDEPTH
   DECLARE_ALIGNED(16, uint16_t, decoded_8x8[8 * 8]);
 #else
   DECLARE_ALIGNED(16, uint8_t, decoded_8x8[8 * 8]);
 #endif
-#endif  // CONFIG_CB4X4
 #endif  // CONFIG_DIST_8X8
 };
 

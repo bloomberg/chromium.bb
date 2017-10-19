@@ -381,11 +381,7 @@ void av1_update_mv_count(ThreadData *td) {
   const MODE_INFO *mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *mbmi_ext = td->mb.mbmi_ext;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-#endif
 #if CONFIG_AMVR
   MvSubpelPrecision precision = 1;
   if (xd->cur_frame_mv_precision_level) {

@@ -178,15 +178,10 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
   int plane;
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y))
       continue;
-#else
-    (void)mi_row;
-    (void)mi_col;
-#endif
     av1_foreach_transformed_block_in_plane(xd, bsize, plane, visit, arg);
   }
 }
@@ -200,11 +195,7 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
   ENTROPY_CONTEXT *const l = pd->left_context + loff;
   const int txs_wide = tx_size_wide_unit[tx_size];
   const int txs_high = tx_size_high_unit[tx_size];
-#if CONFIG_CB4X4
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
-#else
-  const BLOCK_SIZE bsize = AOMMAX(xd->mi[0]->mbmi.sb_type, BLOCK_8X8);
-#endif
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 
   // above
@@ -240,17 +231,11 @@ void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
                             BLOCK_SIZE bsize) {
   int i;
   int nplanes;
-#if CONFIG_CB4X4
   int chroma_ref;
   chroma_ref =
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y);
   nplanes = 1 + (MAX_MB_PLANE - 1) * chroma_ref;
-#else
-  (void)mi_row;
-  (void)mi_col;
-  nplanes = MAX_MB_PLANE;
-#endif
   for (i = 0; i < nplanes; i++) {
     struct macroblockd_plane *const pd = &xd->plane[i];
 #if CONFIG_CHROMA_SUB8X8

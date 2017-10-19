@@ -25,13 +25,8 @@ int av1_get_MBs(int width, int height) {
   const int mi_cols = aligned_width >> MI_SIZE_LOG2;
   const int mi_rows = aligned_height >> MI_SIZE_LOG2;
 
-#if CONFIG_CB4X4
   const int mb_cols = (mi_cols + 2) >> 2;
   const int mb_rows = (mi_rows + 2) >> 2;
-#else
-  const int mb_cols = (mi_cols + 1) >> 1;
-  const int mb_rows = (mi_rows + 1) >> 1;
-#endif
   return mb_rows * mb_cols;
 }
 
@@ -48,13 +43,8 @@ void av1_set_mb_mi(AV1_COMMON *cm, int width, int height) {
   cm->mi_rows = aligned_height >> MI_SIZE_LOG2;
   cm->mi_stride = calc_mi_size(cm->mi_cols);
 
-#if CONFIG_CB4X4
   cm->mb_cols = (cm->mi_cols + 2) >> 2;
   cm->mb_rows = (cm->mi_rows + 2) >> 2;
-#else
-  cm->mb_cols = (cm->mi_cols + 1) >> 1;
-  cm->mb_rows = (cm->mi_rows + 1) >> 1;
-#endif
   cm->MBs = cm->mb_rows * cm->mb_cols;
 }
 

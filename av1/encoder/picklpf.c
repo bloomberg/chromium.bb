@@ -123,18 +123,8 @@ static int try_filter_superblock(const YV12_BUFFER_CONFIG *sd,
   AV1_COMMON *const cm = &cpi->common;
   int filt_err;
 
-#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
   av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level, 1,
                         partial_frame, mi_row, mi_col);
-#else
-  if (cpi->num_workers > 1)
-    av1_loop_filter_frame_mt(cm->frame_to_show, cm, cpi->td.mb.e_mbd.plane,
-                             filt_level, 1, partial_frame, cpi->workers,
-                             cpi->num_workers, &cpi->lf_row_sync);
-  else
-    av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level,
-                          1, partial_frame);
-#endif
 
 #if CONFIG_HIGHBITDEPTH
   if (cm->use_highbitdepth) {
@@ -252,7 +242,6 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   AV1_COMMON *const cm = &cpi->common;
   int64_t filt_err;
 
-#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_CB4X4
 #if CONFIG_LOOPFILTER_LEVEL
   assert(plane >= 0 && plane <= 2);
   int filter_level[2] = { filt_level, filt_level };
@@ -265,15 +254,6 @@ static int64_t try_filter_frame(const YV12_BUFFER_CONFIG *sd,
   av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level, 1,
                         partial_frame);
 #endif  // CONFIG_LOOPFILTER_LEVEL
-#else
-  if (cpi->num_workers > 1)
-    av1_loop_filter_frame_mt(cm->frame_to_show, cm, cpi->td.mb.e_mbd.plane,
-                             filt_level, 1, partial_frame, cpi->workers,
-                             cpi->num_workers, &cpi->lf_row_sync);
-  else
-    av1_loop_filter_frame(cm->frame_to_show, cm, &cpi->td.mb.e_mbd, filt_level,
-                          1, partial_frame);
-#endif
 
   int highbd = 0;
 #if CONFIG_HIGHBITDEPTH

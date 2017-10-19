@@ -899,15 +899,10 @@ static void read_filter_intra_mode_info(AV1_COMMON *const cm,
     }
   }
 
-#if CONFIG_CB4X4
   if (!is_chroma_reference(mi_row, mi_col, mbmi->sb_type,
                            xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y))
     return;
-#else
-  (void)mi_row;
-  (void)mi_col;
-#endif  // CONFIG_CB4X4
 
   if (mbmi->uv_mode == UV_DC_PRED &&
       mbmi->palette_mode_info.palette_size[1] == 0) {
@@ -1270,43 +1265,15 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
 #endif  // CONFIG_INTRABC && CONFIG_VAR_TX
 
-#if CONFIG_CB4X4
   (void)i;
   mbmi->mode =
       read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-#else
-  switch (bsize) {
-    case BLOCK_4X4:
-      for (i = 0; i < 4; ++i)
-        mi->bmi[i].as_mode = read_intra_mode(
-            r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, i));
-      mbmi->mode = mi->bmi[3].as_mode;
-      break;
-    case BLOCK_4X8:
-      mi->bmi[0].as_mode = mi->bmi[2].as_mode =
-          read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-      mi->bmi[1].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-          read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 1));
-      break;
-    case BLOCK_8X4:
-      mi->bmi[0].as_mode = mi->bmi[1].as_mode =
-          read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-      mi->bmi[2].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-          read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 2));
-      break;
-    default:
-      mbmi->mode =
-          read_intra_mode(r, get_y_mode_cdf(ec_ctx, mi, above_mi, left_mi, 0));
-  }
-#endif
 
-#if CONFIG_CB4X4
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
 #if CONFIG_CFL
     xd->cfl->is_chroma_reference = 1;
 #endif  // CONFIG_CFL
-#endif  // CONFIG_CB4X4
     mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
 
 #if CONFIG_CFL
@@ -1318,7 +1285,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     }
 #endif  // CONFIG_CFL
 
-#if CONFIG_CB4X4
   } else {
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
@@ -1327,7 +1293,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     xd->cfl->store_y = 1;
 #endif
   }
-#endif
 
 #if CONFIG_EXT_INTRA
   read_intra_angle_info(xd, r);
@@ -1339,8 +1304,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
-  if (bsize >= BLOCK_8X8 || CONFIG_CB4X4)
-    read_filter_intra_mode_info(cm, xd, mi_row, mi_col, r);
+  read_filter_intra_mode_info(cm, xd, mi_row, mi_col, r);
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL
@@ -1836,43 +1800,12 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-#if CONFIG_CB4X4
   (void)i;
   mbmi->mode = read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
-#else
-  switch (bsize) {
-    case BLOCK_4X4:
-      for (i = 0; i < 4; ++i)
-        mi->bmi[i].as_mode = read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
-      mbmi->mode = mi->bmi[3].as_mode;
-      break;
-    case BLOCK_4X8:
-      mi->bmi[0].as_mode = mi->bmi[2].as_mode =
-          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
-      mi->bmi[1].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
-      break;
-    case BLOCK_8X4:
-      mi->bmi[0].as_mode = mi->bmi[1].as_mode =
-          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
-      mi->bmi[2].as_mode = mi->bmi[3].as_mode = mbmi->mode =
-          read_intra_mode(r, ec_ctx->y_mode_cdf[0]);
-      break;
-    default:
-      mbmi->mode =
-          read_intra_mode(r, ec_ctx->y_mode_cdf[size_group_lookup[bsize]]);
-  }
-#endif
 
-#if CONFIG_CB4X4
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
     mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
-#else
-  mbmi->uv_mode = read_intra_mode_uv(ec_ctx, r, mbmi->mode);
-  (void)mi_row;
-  (void)mi_col;
-#endif
 
 #if CONFIG_CFL
     if (mbmi->uv_mode == UV_CFL_PRED) {
@@ -1884,7 +1817,6 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
     }
 #endif  // CONFIG_CFL
 
-#if CONFIG_CB4X4
   } else {
     // Avoid decoding angle_info if there is is no chroma prediction
     mbmi->uv_mode = UV_DC_PRED;
@@ -1893,7 +1825,6 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
     xd->cfl->store_y = 1;
 #endif
   }
-#endif
 
   // Explicitly ignore cm here to avoid a compile warning if none of
   // ext-intra, palette and filter-intra are enabled.
@@ -1909,8 +1840,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #if CONFIG_FILTER_INTRA
   mbmi->filter_intra_mode_info.use_filter_intra_mode[0] = 0;
   mbmi->filter_intra_mode_info.use_filter_intra_mode[1] = 0;
-  if (bsize >= BLOCK_8X8 || CONFIG_CB4X4)
-    read_filter_intra_mode_info(cm, xd, mi_row, mi_col, r);
+  read_filter_intra_mode_info(cm, xd, mi_row, mi_col, r);
 #endif  // CONFIG_FILTER_INTRA
 }
 
@@ -1931,13 +1861,8 @@ static INLINE int assign_mv(AV1_COMMON *cm, MACROBLOCKD *xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-#if CONFIG_CB4X4
   int_mv *pred_mv = mbmi->pred_mv;
   (void)block;
-#else
-  int_mv *pred_mv =
-      (bsize >= BLOCK_8X8) ? mbmi->pred_mv : xd->mi[0]->bmi[block].pred_mv;
-#endif  // CONFIG_CB4X4
   (void)ref_frame;
   (void)cm;
   (void)mi_row;
@@ -2299,7 +2224,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int allow_hp = cm->allow_high_precision_mv;
-  const int unify_bsize = CONFIG_CB4X4;
+  const int unify_bsize = 1;
   int_mv nearestmv[2], nearmv[2];
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
   int ref, is_compound;
@@ -2926,13 +2851,8 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   xd->left_txfm_context = xd->left_txfm_context_buffer +
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
 
-  if (cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_CB4X4
-      bsize > BLOCK_4X4 &&
-#else
-      bsize >= BLOCK_8X8 &&
-#endif
-      !mbmi->skip && inter_block && !xd->lossless[mbmi->segment_id]) {
+  if (cm->tx_mode == TX_MODE_SELECT && bsize > BLOCK_4X4 && !mbmi->skip &&
+      inter_block && !xd->lossless[mbmi->segment_id]) {
     const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
     const int bh = tx_size_high_unit[max_tx_size];
     const int bw = tx_size_wide_unit[max_tx_size];

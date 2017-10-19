@@ -722,7 +722,6 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 #endif
 
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y)) {
@@ -734,7 +733,6 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 #endif
       continue;
     }
-#endif
     const struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_CHROMA_SUB8X8
     const BLOCK_SIZE plane_bsize =
@@ -806,7 +804,6 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     int plane;
 
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
       if (!is_chroma_reference(mi_row, mi_col, bsize,
                                xd->plane[plane].subsampling_x,
                                xd->plane[plane].subsampling_y)) {
@@ -816,10 +813,6 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
 #endif
         continue;
       }
-#else
-      (void)mi_row;
-      (void)mi_col;
-#endif
       av1_foreach_transformed_block_in_plane(xd, bsize, plane, tokenize_b,
                                              &arg);
 #if !CONFIG_PVQ
@@ -833,30 +826,20 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   else if (dry_run == DRY_RUN_NORMAL) {
     int plane;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
       if (!is_chroma_reference(mi_row, mi_col, bsize,
                                xd->plane[plane].subsampling_x,
                                xd->plane[plane].subsampling_y))
         continue;
-#else
-      (void)mi_row;
-      (void)mi_col;
-#endif
       av1_foreach_transformed_block_in_plane(xd, bsize, plane,
                                              set_entropy_context_b, &arg);
     }
   } else if (dry_run == DRY_RUN_COSTCOEFFS) {
     int plane;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
-#if CONFIG_CB4X4
       if (!is_chroma_reference(mi_row, mi_col, bsize,
                                xd->plane[plane].subsampling_x,
                                xd->plane[plane].subsampling_y))
         continue;
-#else
-      (void)mi_row;
-      (void)mi_col;
-#endif
       av1_foreach_transformed_block_in_plane(xd, bsize, plane, cost_coeffs_b,
                                              &arg);
     }

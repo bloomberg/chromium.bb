@@ -448,7 +448,7 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
   const int mis = cm->mi_stride;
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
-  const int unify_bsize = CONFIG_CB4X4;
+  const int unify_bsize = 1;
 
   int8_t rf_type;
 
@@ -633,12 +633,7 @@ static void set_mode_info_sb(const AV1_COMP *const cpi, ThreadData *td,
   const BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
   const int quarter_step = mi_size_wide[bsize] / 4;
 #endif
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-  assert(bsize >= BLOCK_8X8);
-#endif
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -820,7 +815,7 @@ static int set_segment_rdmult(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return av1_compute_rd_mult(cpi, segment_qindex + cm->y_dc_delta_q);
 }
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
 static void dist_8x8_set_sub8x8_dst(MACROBLOCK *const x, uint8_t *dst8x8,
                                     BLOCK_SIZE bsize, int bw, int bh,
                                     int mi_row, int mi_col) {
@@ -853,7 +848,7 @@ static void dist_8x8_set_sub8x8_dst(MACROBLOCK *const x, uint8_t *dst8x8,
 #endif
   }
 }
-#endif
+#endif  // CONFIG_DIST_8X8
 
 static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                              MACROBLOCK *const x, int mi_row, int mi_col,
@@ -913,11 +908,9 @@ static void rd_pick_sb_modes(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   // Set to zero to make sure we do not use the previous encoded frame stats
   mbmi->skip = 0;
 
-#if CONFIG_CB4X4
   x->skip_chroma_rd =
       !is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y);
-#endif
 
 #if CONFIG_HIGHBITDEPTH
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -1614,12 +1607,7 @@ static void encode_sb(const AV1_COMP *const cpi, ThreadData *td,
 #endif
 #endif
 
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
-#else
-  const int unify_bsize = 0;
-  assert(bsize >= BLOCK_8X8);
-#endif
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
@@ -1893,7 +1881,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
   BLOCK_SIZE bs_type = mib[0]->mbmi.sb_type;
   int do_partition_search = 1;
   PICK_MODE_CONTEXT *ctx_none = &pc_tree->none;
-  const int unify_bsize = CONFIG_CB4X4;
+  const int unify_bsize = 1;
 #if CONFIG_PVQ
   od_rollback_buffer pre_rdo_buf;
 #endif
@@ -2586,7 +2574,7 @@ static void rd_test_partition3(const AV1_COMP *const cpi, ThreadData *td,
 }
 #endif  // CONFIG_EXT_PARTITION_TYPES
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
 static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             uint8_t *y_src_8x8) {
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -2632,7 +2620,7 @@ static int64_t dist_8x8_yuv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 
   return total_dist = dist_8x8 + dist_8x8_uv;
 }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8
 
 // TODO(jingning,jimbankoski,rbultje): properly skip partition types that are
 // unlikely to be selected depending on previous rate-distortion optimization
@@ -2661,7 +2649,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   RD_STATS this_rdc, sum_rdc, best_rdc;
   const int bsize_at_least_8x8 = (bsize >= BLOCK_8X8);
   int do_square_split = bsize_at_least_8x8;
-#if CONFIG_CB4X4
   const int unify_bsize = 1;
   const int pl = bsize_at_least_8x8
                      ? partition_plane_context(xd, mi_row, mi_col,
@@ -2670,14 +2657,6 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
 #endif
                                                bsize)
                      : 0;
-#else
-  const int unify_bsize = 0;
-  const int pl = partition_plane_context(xd, mi_row, mi_col,
-#if CONFIG_UNPOISON_PARTITION_CTX
-                                         has_rows, has_cols,
-#endif
-                                         bsize);
-#endif  // CONFIG_CB4X4
   const int *partition_cost =
       pl >= 0 ? x->partition_cost[pl] : x->partition_cost[0];
 
@@ -3006,7 +2985,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
       }
       reached_last_index = (idx == 4);
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && reached_last_index &&
           sum_rdc.rdcost != INT64_MAX && bsize == BLOCK_8X8) {
         const int src_stride = x->plane[0].src.stride;
@@ -3017,7 +2996,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8
     }
 
 #if CONFIG_CFL && CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
@@ -3083,14 +3062,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        subsize, &pc_tree->horizontal[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
         update_state(cpi, td, &pc_tree->horizontal[1], mi_row + mi_step, mi_col,
                      subsize, DRY_RUN_NORMAL);
         encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row + mi_step, mi_col,
                           subsize, NULL);
       }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8
 
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
@@ -3099,7 +3078,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         sum_rdc.dist += this_rdc.dist;
         sum_rdc.rdcost += this_rdc.rdcost;
       }
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
         const int src_stride = x->plane[0].src.stride;
@@ -3109,7 +3088,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8
     }
 
 #if CONFIG_CFL && CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
@@ -3168,14 +3147,14 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
                        subsize, &pc_tree->vertical[1],
                        best_rdc.rdcost - sum_rdc.rdcost);
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && this_rdc.rate != INT_MAX && bsize == BLOCK_8X8) {
         update_state(cpi, td, &pc_tree->vertical[1], mi_row, mi_col + mi_step,
                      subsize, DRY_RUN_NORMAL);
         encode_superblock(cpi, td, tp, DRY_RUN_NORMAL, mi_row, mi_col + mi_step,
                           subsize, NULL);
       }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8
 
       if (this_rdc.rate == INT_MAX) {
         sum_rdc.rdcost = INT64_MAX;
@@ -3184,7 +3163,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         sum_rdc.dist += this_rdc.dist;
         sum_rdc.rdcost += this_rdc.rdcost;
       }
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
       if (x->using_dist_8x8 && sum_rdc.rdcost != INT64_MAX &&
           bsize == BLOCK_8X8) {
         int64_t dist_8x8;
@@ -3193,7 +3172,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
         sum_rdc.dist = dist_8x8;
         sum_rdc.rdcost = RDCOST(x->rdmult, sum_rdc.rate, sum_rdc.dist);
       }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8
     }
 
 #if CONFIG_CFL && CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
@@ -3448,13 +3427,13 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     }
   }
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
   if (x->using_dist_8x8 && best_rdc.rate < INT_MAX &&
       best_rdc.dist < INT64_MAX && bsize == BLOCK_4X4 && pc_tree->index == 3) {
     encode_sb(cpi, td, tile_info, tp, mi_row, mi_col, DRY_RUN_NORMAL, bsize,
               pc_tree, NULL);
   }
-#endif  // CONFIG_DIST_8X8 && CONFIG_CB4X4
+#endif  // CONFIG_DIST_8X8
 
   if (bsize == cm->sb_size) {
 #if !CONFIG_PVQ && !CONFIG_LV_MAP
@@ -3524,11 +3503,6 @@ static void encode_rd_sb_row(AV1_COMP *cpi, ThreadData *td,
     av1_fill_mode_rates(cm, x, xd->tile_ctx);
 
     if (sf->adaptive_pred_interp_filter) {
-#if !CONFIG_CB4X4
-      for (i = 0; i < leaf_nodes; ++i)
-        td->leaf_tree[i].pred_interp_filter = SWITCHABLE;
-#endif
-
       for (i = 0; i < leaf_nodes; ++i) {
         td->pc_tree[i].vertical[0].pred_interp_filter = SWITCHABLE;
         td->pc_tree[i].vertical[1].pred_interp_filter = SWITCHABLE;
@@ -4713,7 +4687,7 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
   const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
   (void)counts;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int unify_bsize = CONFIG_CB4X4;
+  const int unify_bsize = 1;
 
   if (bsize < BLOCK_8X8 && !unify_bsize) {
     int idx, idy;
@@ -4765,13 +4739,10 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
                  mbmi->filter_intra_mode_info.filter_intra_mode[0],
                  FILTER_INTRA_MODES);
     }
-    if (mbmi->uv_mode == UV_DC_PRED
-#if CONFIG_CB4X4
-        &&
+    if (mbmi->uv_mode == UV_DC_PRED &&
         is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
-                            xd->plane[1].subsampling_y)
-#endif
-        && mbmi->palette_mode_info.palette_size[1] == 0) {
+                            xd->plane[1].subsampling_y) &&
+        mbmi->palette_mode_info.palette_size[1] == 0) {
       const int use_filter_intra_mode =
           mbmi->filter_intra_mode_info.use_filter_intra_mode[1];
       ++counts->filter_intra[1][use_filter_intra_mode];
@@ -4784,15 +4755,9 @@ static void sum_intra_stats(FRAME_COUNTS *counts, MACROBLOCKD *xd,
 #endif  // CONFIG_FILTER_INTRA
   }
 
-#if CONFIG_CB4X4
   if (!is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                            xd->plane[1].subsampling_y))
     return;
-#else
-  (void)mi_row;
-  (void)mi_col;
-  (void)xd;
-#endif
 #if CONFIG_ENTROPY_STATS
   ++counts->uv_mode[y_mode][uv_mode];
 #endif  // CONFIG_ENTROPY_STATS
@@ -5123,11 +5088,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   const int mi_width = mi_size_wide[bsize];
   const int mi_height = mi_size_high[bsize];
   const int is_inter = is_inter_block(mbmi);
-#if CONFIG_CB4X4
   const BLOCK_SIZE block_size = bsize;
-#else
-  const BLOCK_SIZE block_size = AOMMAX(bsize, BLOCK_8X8);
-#endif
 
 #if CONFIG_PVQ
   x->pvq_speed = 0;
@@ -5255,13 +5216,13 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif
   }
 
-#if CONFIG_DIST_8X8 && CONFIG_CB4X4
+#if CONFIG_DIST_8X8
   if (x->using_dist_8x8 && bsize < BLOCK_8X8) {
     dist_8x8_set_sub8x8_dst(x, (uint8_t *)x->decoded_8x8, bsize,
                             block_size_wide[bsize], block_size_high[bsize],
                             mi_row, mi_col);
   }
-#endif
+#endif  // CONFIG_DIST_8X8
 
   if (!dry_run) {
 #if CONFIG_VAR_TX
@@ -5271,11 +5232,11 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     TX_SIZE tx_size = mbmi->tx_size;
 #endif
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&
-#if CONFIG_CB4X4 && (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+#if (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
         mbmi->sb_type > BLOCK_4X4 &&
 #else
         mbmi->sb_type >= BLOCK_8X8 &&
-#endif
+#endif  // (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
         !(is_inter && (mbmi->skip || seg_skip))) {
 #if CONFIG_VAR_TX
       if (is_inter) {
@@ -5353,14 +5314,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
   }
 
 #if CONFIG_VAR_TX
-  if (cm->tx_mode == TX_MODE_SELECT &&
-#if CONFIG_CB4X4
-      mbmi->sb_type > BLOCK_4X4 &&
-#else
-      mbmi->sb_type >= BLOCK_8X8 &&
-#endif
-      is_inter && !(mbmi->skip || seg_skip) &&
-      !xd->lossless[mbmi->segment_id]) {
+  if (cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type > BLOCK_4X4 && is_inter &&
+      !(mbmi->skip || seg_skip) && !xd->lossless[mbmi->segment_id]) {
     if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
   } else {
     TX_SIZE tx_size = mbmi->tx_size;

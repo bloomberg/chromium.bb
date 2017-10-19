@@ -541,12 +541,9 @@ uint8_t av1_read_coeffs_txb_facade(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#elif CONFIG_CB4X4
+#else
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#else   // CONFIG_CB4X4
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
-#endif  // CONFIG_CB4X4
+#endif  // CONFIG_CHROMA_SUB8X8
 
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, pd->above_context + col,

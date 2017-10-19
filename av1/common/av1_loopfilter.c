@@ -2981,13 +2981,6 @@ static void set_lpf_parameters(
         }
       }
 
-#if !CONFIG_CB4X4
-      // prepare internal edge parameters
-      if (curr_level && !curr_skipped) {
-        params->filter_length_internal = (TX_4X4 >= ts) ? (4) : (0);
-      }
-#endif
-
       // prepare common parameters
       if (params->filter_length || params->filter_length_internal) {
         const loop_filter_thresh *const limits = cm->lf_info.lfthr + level;
@@ -3474,9 +3467,6 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   int mi_row, mi_col;
   int plane;
 
-#if CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_EXT_PARTITION_TYPES || \
-    CONFIG_CB4X4
-
 #if !CONFIG_PARALLEL_DEBLOCKING
 #if CONFIG_VAR_TX
   for (int i = 0; i < MAX_MB_PLANE; ++i)
@@ -3521,75 +3511,7 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
       }
     }
   }
-#endif  // CONFIG_PARALLEL_DEBLOCKING
-
-#else  // CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_EXT_PARTITION_TYPES
-
-#if CONFIG_PARALLEL_DEBLOCKING
-  for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
-      av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
-      // filter all vertical edges in every 64x64 super block
-      for (plane = plane_start; plane < plane_end; plane += 1) {
-        av1_filter_block_plane_vert(cm, plane, &planes[plane], mi_row, mi_col);
-      }
-    }
-  }
-  for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
-      av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
-      // filter all horizontal edges in every 64x64 super block
-      for (plane = plane_start; plane < plane_end; plane += 1) {
-        av1_filter_block_plane_horz(cm, plane, &planes[plane], mi_row, mi_col);
-      }
-    }
-  }
-#else   // CONFIG_PARALLEL_DEBLOCKING
-  enum lf_path path;
-  LOOP_FILTER_MASK lfm;
-
-  if (y_only)
-    path = LF_PATH_444;
-  else if (planes[1].subsampling_y == 1 && planes[1].subsampling_x == 1)
-    path = LF_PATH_420;
-  else if (planes[1].subsampling_y == 0 && planes[1].subsampling_x == 0)
-    path = LF_PATH_444;
-  else
-    path = LF_PATH_SLOW;
-
-  for (mi_row = start; mi_row < stop; mi_row += MAX_MIB_SIZE) {
-    MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
-    for (mi_col = 0; mi_col < cm->mi_cols; mi_col += MAX_MIB_SIZE) {
-      av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
-
-      // TODO(JBB): Make setup_mask work for non 420.
-      av1_setup_mask(cm, mi_row, mi_col, mi + mi_col, cm->mi_stride, &lfm);
-
-      av1_filter_block_plane_ss00_ver(cm, &planes[0], mi_row, &lfm);
-      av1_filter_block_plane_ss00_hor(cm, &planes[0], mi_row, &lfm);
-      for (plane = 1; plane < num_planes; ++plane) {
-        switch (path) {
-          case LF_PATH_420:
-            av1_filter_block_plane_ss11_ver(cm, &planes[plane], mi_row, &lfm);
-            av1_filter_block_plane_ss11_hor(cm, &planes[plane], mi_row, &lfm);
-            break;
-          case LF_PATH_444:
-            av1_filter_block_plane_ss00_ver(cm, &planes[plane], mi_row, &lfm);
-            av1_filter_block_plane_ss00_hor(cm, &planes[plane], mi_row, &lfm);
-            break;
-          case LF_PATH_SLOW:
-            av1_filter_block_plane_non420_ver(cm, &planes[plane], mi + mi_col,
-                                              mi_row, mi_col, plane);
-            av1_filter_block_plane_non420_hor(cm, &planes[plane], mi + mi_col,
-                                              mi_row, mi_col, plane);
-
-            break;
-        }
-      }
-    }
-  }
-#endif  // CONFIG_PARALLEL_DEBLOCKING
-#endif  // CONFIG_VAR_TX || CONFIG_EXT_PARTITION || CONFIG_EXT_PARTITION_TYPES
+#endif  // !CONFIG_PARALLEL_DEBLOCKING
 }
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,

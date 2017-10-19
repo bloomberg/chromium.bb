@@ -61,7 +61,6 @@ static const uint8_t b_height_log2_lookup[BLOCK_SIZES_ALL] = {
 };
 // Log 2 conversion lookup tables for modeinfo width and height
 static const uint8_t mi_width_log2_lookup[BLOCK_SIZES_ALL] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   0, 0,
   0,
@@ -76,21 +75,8 @@ static const uint8_t mi_width_log2_lookup[BLOCK_SIZES_ALL] = {
   2, 1,
   3, 2,
   4, IF_EXT_PARTITION(3, 5)
-#else  // CONFIG_CB4X4
-  0, 0,
-  0, 0,
-  0, 1,
-  1, 1,
-  2, 2,
-  2, 3,
-  3, IF_EXT_PARTITION(3, 4, 4) 0,
-  1, 0,
-  2, 1,
-  3, IF_EXT_PARTITION(2, 4)
-#endif
 };
 static const uint8_t mi_height_log2_lookup[BLOCK_SIZES_ALL] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   0, 0,
   0,
@@ -105,44 +91,22 @@ static const uint8_t mi_height_log2_lookup[BLOCK_SIZES_ALL] = {
   0, 3,
   1, 4,
   2, IF_EXT_PARTITION(5, 3)
-#else  // CONFIG_CB4X4
-  0, 0,
-  0, 0,
-  1, 0,
-  1, 2,
-  1, 2,
-  3, 2,
-  3, IF_EXT_PARTITION(4, 3, 4) 1,
-  0, 2,
-  0, 3,
-  1, IF_EXT_PARTITION(2, 4)
-#endif
 };
 
 /* clang-format off */
 static const uint8_t mi_size_wide[BLOCK_SIZES_ALL] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   1, 1, 1,
 #endif
   1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16,
   IF_EXT_PARTITION(16, 32, 32)  1, 4, 2, 8, 4, 16, IF_EXT_PARTITION(8, 32)
-#else  // CONFIG_CB4X4
-  1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, IF_EXT_PARTITION(8, 16, 16) 1, 2, 1, 4,
-  2, 8, IF_EXT_PARTITION(4, 16)
-#endif
 };
 static const uint8_t mi_size_high[BLOCK_SIZES_ALL] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   1, 1, 1,
 #endif
   1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16,
   IF_EXT_PARTITION(32, 16, 32)  4, 1, 8, 2, 16, 4, IF_EXT_PARTITION(32, 8)
-#else  // CONFIG_CB4X4
-  1, 1, 1, 1, 2, 1, 2, 4, 2, 4, 8, 4, 8, IF_EXT_PARTITION(16, 8, 16) 2, 1, 4, 1,
-  8, 2, IF_EXT_PARTITION(16, 4)
-#endif
 };
 /* clang-format on */
 
@@ -748,7 +712,6 @@ static const TX_TYPE_1D htx_tab[TX_TYPES] = {
 // block which may use a rectangular transform, in which  case it is
 // "(max_txsize_lookup[bsize] + 1) - TX_8X8", invalid for bsize < 8X8
 static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
-#if CONFIG_CB4X4
 #if CONFIG_CHROMA_SUB8X8
   // 2X2,             2X4,                4X2,
   INT32_MIN,          INT32_MIN,          INT32_MIN,
@@ -757,12 +720,6 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
                                           INT32_MIN,
   // 4X8,             8X4,                8X8,
   TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,    TX_8X8 - TX_8X8,
-#else  // CONFIG_CB4X4
-  //                                      4X4
-                                          INT32_MIN,
-  // 4X8,             8X4,                8X8
-  INT32_MIN,          INT32_MIN,          TX_8X8 - TX_8X8,
-#endif  // CONFIG_CB4X4
   // 8X16,            16X8,               16X16
   TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8,  TX_16X16 - TX_8X8,
   // 16X32,           32X16,              32X32
@@ -1098,15 +1055,11 @@ static const BLOCK_SIZE ss_size_lookup[BLOCK_SIZES_ALL][2][2] = {
   { { BLOCK_4X4, BLOCK_4X2 }, { BLOCK_2X4, BLOCK_2X2 } },
   { { BLOCK_4X8, BLOCK_4X4 }, { BLOCK_INVALID, BLOCK_2X4 } },
   { { BLOCK_8X4, BLOCK_INVALID }, { BLOCK_4X4, BLOCK_4X2 } },
-#elif CONFIG_CB4X4
+#else
   { { BLOCK_4X4, BLOCK_4X4 }, { BLOCK_4X4, BLOCK_4X4 } },
   { { BLOCK_4X8, BLOCK_4X4 }, { BLOCK_INVALID, BLOCK_4X4 } },
   { { BLOCK_8X4, BLOCK_INVALID }, { BLOCK_4X4, BLOCK_4X4 } },
-#else
-  { { BLOCK_4X4, BLOCK_INVALID }, { BLOCK_INVALID, BLOCK_INVALID } },
-  { { BLOCK_4X8, BLOCK_4X4 }, { BLOCK_INVALID, BLOCK_INVALID } },
-  { { BLOCK_8X4, BLOCK_INVALID }, { BLOCK_4X4, BLOCK_INVALID } },
-#endif
+#endif  // CONFIG_CHROMA_SUB8X8
   { { BLOCK_8X8, BLOCK_8X4 }, { BLOCK_4X8, BLOCK_4X4 } },
   { { BLOCK_8X16, BLOCK_8X8 }, { BLOCK_INVALID, BLOCK_4X8 } },
   { { BLOCK_16X8, BLOCK_INVALID }, { BLOCK_8X8, BLOCK_8X4 } },
