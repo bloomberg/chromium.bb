@@ -217,11 +217,15 @@ interface Coordinator {
   // Registers a client process.
   RegisterClientProcess(ClientProcess client_process, ProcessType process_type);
 
-  // Broadcasts a dump request to all registered client processes, injects the
-  // dump in the trace buffer (if tracing is enabled) and returns a summarized
-  // dump back (if args.dump_type == SUMMARY_ONLY).
+  // Broadcasts a dump request to all registered client processes and returns a
+  // summarized dump back (if args.dump_type == SUMMARY_ONLY).
   RequestGlobalMemoryDump(RequestArgs args) =>
-      (bool success, uint64 dump_id, GlobalMemoryDump? global_memory_dump);
+      (bool success, GlobalMemoryDump? global_memory_dump);
+
+  // Broadcasts a dump request to all registered client processes and injects the
+  // dump in the trace buffer (if tracing is enabled).
+  RequestGlobalMemoryDumpAndAppendToTrace(RequestArgs args) =>
+      (bool success, uint64 dump_id);
 
   // Broadcasts a RequestOSMemoryDump-only request for all registered client
   // processes, retrieves only their memory maps and returns them in the field

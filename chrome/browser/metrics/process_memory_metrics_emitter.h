@@ -44,7 +44,6 @@ class ProcessMemoryMetricsEmitter
   // is finished taking a memory dump.
   virtual void ReceivedMemoryDump(
       bool success,
-      uint64_t dump_guid,
       memory_instrumentation::mojom::GlobalMemoryDumpPtr ptr);
 
   // Virtual for testing. Callback invoked when resource_coordinator service
