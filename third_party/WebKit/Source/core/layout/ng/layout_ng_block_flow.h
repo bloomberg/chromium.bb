@@ -55,6 +55,8 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
   void SetCachedLayoutResult(const NGConstraintSpace&,
                              NGBreakToken*,
                              RefPtr<NGLayoutResult>);
+  // For testing only.
+  RefPtr<NGLayoutResult> CachedLayoutResultForTesting();
 
   NGPaintFragment* PaintFragment() const { return paint_fragment_.get(); }
   void SetPaintFragment(RefPtr<const NGPhysicalFragment>);
