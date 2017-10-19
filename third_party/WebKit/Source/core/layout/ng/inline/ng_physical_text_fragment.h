@@ -109,7 +109,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
  private:
   // The text of NGInlineNode; i.e., of a parent block. The text for this
   // fragment is a substring(start_offset_, end_offset_) of this string.
-  const String& text_;
+  const String text_;
 
   // Deprecating, ItemIndexDeprecated().
   unsigned item_index_;

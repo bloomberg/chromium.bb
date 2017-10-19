@@ -542,10 +542,6 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded() {
 RefPtr<NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token) {
-  // TODO(kojii): Invalidate PrepareLayout() more efficiently.
-  InvalidatePrepareLayout();
-  PrepareLayout();
-
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space,
                                     ToNGInlineBreakToken(break_token));
   RefPtr<NGLayoutResult> result = algorithm.Layout();
@@ -600,10 +596,6 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
 }
 
 MinMaxSize NGInlineNode::ComputeMinMaxSize() {
-  // TODO(kojii): Invalidate PrepareLayout() more efficiently.
-  InvalidatePrepareLayout();
-  PrepareLayout();
-
   // Run line breaking with 0 and indefinite available width.
 
   // TODO(kojii): There are several ways to make this more efficient and faster
@@ -628,9 +620,6 @@ MinMaxSize NGInlineNode::ComputeMinMaxSize() {
 }
 
 NGLayoutInputNode NGInlineNode::NextSibling() {
-  // TODO(kojii): Invalidate PrepareLayout() more efficiently.
-  InvalidatePrepareLayout();
-  PrepareLayout();
   return NGBlockNode(Data().next_sibling_);
 }
 
