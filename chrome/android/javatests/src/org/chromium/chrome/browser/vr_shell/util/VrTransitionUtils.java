@@ -18,6 +18,7 @@ import org.junit.Assert;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.vr_shell.TestVrShellDelegate;
 import org.chromium.chrome.browser.vr_shell.VrClassesWrapperImpl;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
@@ -77,7 +78,7 @@ public class VrTransitionUtils {
         CriteriaHelper.pollUiThread(Criteria.equals(true, new Callable<Boolean>() {
             @Override
             public Boolean call() {
-                return VrShellDelegate.getInstanceForTesting().isVrEntryComplete();
+                return VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete();
             }
         }), timeout, POLL_CHECK_INTERVAL_SHORT_MS);
     }
@@ -123,7 +124,7 @@ public class VrTransitionUtils {
         enterPresentation(cvc);
         Assert.assertTrue(VrTestFramework.pollJavaScriptBoolean(
                 "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, cvc.getWebContents()));
-        Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+        Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
     }
 
     /**
@@ -135,7 +136,7 @@ public class VrTransitionUtils {
             @Override
             public void run() {
                 isBackButtonEnabled.set(
-                        VrShellDelegate.getVrShellForTesting().isBackButtonEnabled());
+                        TestVrShellDelegate.getVrShellForTesting().isBackButtonEnabled());
             }
         });
         return isBackButtonEnabled.get();
@@ -150,7 +151,7 @@ public class VrTransitionUtils {
             @Override
             public void run() {
                 isForwardButtonEnabled.set(
-                        VrShellDelegate.getVrShellForTesting().isForwardButtonEnabled());
+                        TestVrShellDelegate.getVrShellForTesting().isForwardButtonEnabled());
             }
         });
         return isForwardButtonEnabled.get();
@@ -163,7 +164,7 @@ public class VrTransitionUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                VrShellDelegate.getVrShellForTesting().navigateBack();
+                TestVrShellDelegate.getVrShellForTesting().navigateBack();
             }
         });
     }
@@ -175,7 +176,7 @@ public class VrTransitionUtils {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                VrShellDelegate.getVrShellForTesting().navigateForward();
+                TestVrShellDelegate.getVrShellForTesting().navigateForward();
             }
         });
     }

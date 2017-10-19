@@ -181,7 +181,7 @@ public class VrShellTransitionTest {
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         mVrTestFramework.loadUrlAndAwaitInitialization(
                 VrTestFramework.getHtmlTestFile("test_navigation_webvr_page"), PAGE_LOAD_TIMEOUT_S);
-        VrShellImpl vrShellImpl = (VrShellImpl) VrShellDelegate.getVrShellForTesting();
+        VrShellImpl vrShellImpl = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
         float expectedWidth = vrShellImpl.getContentWidthForTesting();
         float expectedHeight = vrShellImpl.getContentHeightForTesting();
         VrTransitionUtils.enterPresentationOrFail(mVrTestFramework.getFirstTabCvc());

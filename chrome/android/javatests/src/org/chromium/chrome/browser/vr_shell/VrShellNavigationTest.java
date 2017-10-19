@@ -113,7 +113,7 @@ public class VrShellNavigationTest {
         Assert.assertEquals("Browser is on correct web site", getUrl(page), wc.getVisibleUrl());
         Assert.assertEquals("Browser is in VR Presentation Mode",
                 presentationMode == PresentationMode.PRESENTING,
-                VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+                TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
         Assert.assertEquals("Browser is in fullscreen",
                 fullscreenMode == FullscreenMode.FULLSCREENED, DOMUtils.isFullscreen(wc));
         // Feedback infobar should never show up during navigations.
