@@ -74,7 +74,7 @@ class SVGPropertyTearOffBase
 
   virtual void Trace(blink::Visitor* visitor) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
   }
 
@@ -115,7 +115,7 @@ class SVGPropertyTearOff : public SVGPropertyTearOffBase {
     SVGPropertyTearOffBase::Trace(visitor);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     SVGPropertyTearOffBase::TraceWrappers(visitor);
   }
 

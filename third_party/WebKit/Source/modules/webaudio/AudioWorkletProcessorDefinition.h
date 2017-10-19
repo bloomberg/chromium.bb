@@ -49,7 +49,7 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(audio_param_descriptors_);
   };
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   AudioWorkletProcessorDefinition(

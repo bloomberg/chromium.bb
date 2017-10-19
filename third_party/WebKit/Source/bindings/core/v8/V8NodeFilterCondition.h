@@ -59,7 +59,7 @@ class V8NodeFilterCondition final
 
   ~V8NodeFilterCondition();
   virtual void Trace(blink::Visitor* visitor) {}
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   unsigned acceptNode(Node*, ExceptionState&) const;
   v8::Local<v8::Value> Callback(v8::Isolate* isolate) const {

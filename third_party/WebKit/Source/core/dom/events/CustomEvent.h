@@ -60,7 +60,7 @@ class CORE_EXPORT CustomEvent final : public Event {
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   CustomEvent();

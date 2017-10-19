@@ -204,7 +204,7 @@ void NodeIterator::Trace(blink::Visitor* visitor) {
   NodeIteratorBase::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(NodeIterator) {
+void NodeIterator::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   NodeIteratorBase::TraceWrappers(visitor);
 }
 

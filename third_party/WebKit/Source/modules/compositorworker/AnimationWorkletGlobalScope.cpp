@@ -56,7 +56,8 @@ void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   ThreadedWorkletGlobalScope::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(AnimationWorkletGlobalScope) {
+void AnimationWorkletGlobalScope::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   for (auto animator : animators_)
     visitor->TraceWrappers(animator);
 

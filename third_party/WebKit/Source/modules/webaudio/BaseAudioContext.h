@@ -113,7 +113,7 @@ class MODULES_EXPORT BaseAudioContext
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   // Is the destination node initialized and ready to handle audio?
   bool IsDestinationInitialized() const {

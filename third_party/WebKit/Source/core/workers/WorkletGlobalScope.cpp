@@ -167,7 +167,8 @@ void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(WorkletGlobalScope) {
+void WorkletGlobalScope::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(modulator_);
 }
 

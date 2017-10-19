@@ -44,7 +44,7 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   double devicePixelRatio() const;
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   PaintWorkletGlobalScope(LocalFrame*,

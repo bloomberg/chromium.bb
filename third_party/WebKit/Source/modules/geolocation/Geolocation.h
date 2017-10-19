@@ -60,7 +60,7 @@ class MODULES_EXPORT Geolocation final
   static Geolocation* Create(ExecutionContext*);
   ~Geolocation();
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
   void ContextDestroyed(ExecutionContext*) override;

@@ -185,7 +185,8 @@ void SVGScriptElement::Trace(blink::Visitor* visitor) {
   ScriptElementBase::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(SVGScriptElement) {
+void SVGScriptElement::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(loader_);
   SVGElement::TraceWrappers(visitor);
 }

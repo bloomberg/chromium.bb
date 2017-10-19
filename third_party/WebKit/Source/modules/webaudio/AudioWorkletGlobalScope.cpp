@@ -331,7 +331,8 @@ void AudioWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   ThreadedWorkletGlobalScope::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(AudioWorkletGlobalScope) {
+void AudioWorkletGlobalScope::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   for (auto definition : processor_definition_map_)
     visitor->TraceWrappers(definition.value);
 

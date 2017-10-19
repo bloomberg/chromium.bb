@@ -50,7 +50,8 @@ void SVGAnimatedAngle::Trace(blink::Visitor* visitor) {
   SVGAnimatedProperty<SVGAngle>::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(SVGAnimatedAngle) {
+void SVGAnimatedAngle::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   SVGAnimatedProperty<SVGAngle>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

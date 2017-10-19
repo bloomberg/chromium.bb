@@ -60,7 +60,7 @@ class CORE_EXPORT Attr final : public Node {
   const AtomicString& prefix() const { return name_.Prefix(); }
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   Attr(Element&, const QualifiedName&);

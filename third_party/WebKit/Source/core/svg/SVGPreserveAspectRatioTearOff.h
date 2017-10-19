@@ -89,7 +89,7 @@ class SVGPreserveAspectRatioTearOff final
   void setMeetOrSlice(unsigned short, ExceptionState&);
   unsigned short meetOrSlice() { return Target()->MeetOrSlice(); }
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   SVGPreserveAspectRatioTearOff(SVGPreserveAspectRatio*,

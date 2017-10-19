@@ -30,7 +30,7 @@ class GeoNotifier final : public GarbageCollectedFinalized<GeoNotifier>,
   }
   ~GeoNotifier() = default;
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   const PositionOptions& Options() const { return options_; }
 

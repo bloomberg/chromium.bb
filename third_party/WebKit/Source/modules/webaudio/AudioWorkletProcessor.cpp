@@ -53,7 +53,8 @@ void AudioWorkletProcessor::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
 }
 
-DEFINE_TRACE_WRAPPERS(AudioWorkletProcessor) {
+void AudioWorkletProcessor::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(instance_.Cast<v8::Value>());
 }
 

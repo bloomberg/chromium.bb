@@ -51,7 +51,8 @@ void ScriptedAnimationController::Trace(blink::Visitor* visitor) {
   visitor->Trace(per_frame_events_);
 }
 
-DEFINE_TRACE_WRAPPERS(ScriptedAnimationController) {
+void ScriptedAnimationController::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_collection_);
 }
 

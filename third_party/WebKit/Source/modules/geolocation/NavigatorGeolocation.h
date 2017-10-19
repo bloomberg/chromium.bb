@@ -42,7 +42,7 @@ class NavigatorGeolocation final
   Geolocation* geolocation();
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   explicit NavigatorGeolocation(Navigator&);

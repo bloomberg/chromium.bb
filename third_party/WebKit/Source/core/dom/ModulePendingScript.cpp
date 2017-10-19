@@ -42,7 +42,8 @@ void ModulePendingScriptTreeClient::Trace(blink::Visitor* visitor) {
   ModuleTreeClient::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(ModulePendingScriptTreeClient) {
+void ModulePendingScriptTreeClient::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(module_script_);
   visitor->TraceWrappers(pending_script_);
   ModuleTreeClient::TraceWrappers(visitor);
@@ -70,7 +71,8 @@ void ModulePendingScript::Trace(blink::Visitor* visitor) {
   PendingScript::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(ModulePendingScript) {
+void ModulePendingScript::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(module_tree_client_);
   PendingScript::TraceWrappers(visitor);
 }

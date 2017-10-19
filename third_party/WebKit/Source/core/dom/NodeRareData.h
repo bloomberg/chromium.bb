@@ -72,7 +72,7 @@ class NodeMutationObserverData final
     visitor->Trace(transient_registry_);
   }
 
-  DEFINE_INLINE_TRACE_WRAPPERS() {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     for (auto registration : registry_) {
       visitor->TraceWrappers(registration);
     }
@@ -155,8 +155,8 @@ class NodeRareData : public GarbageCollectedFinalized<NodeRareData>,
   void TraceAfterDispatch(blink::Visitor*);
   void FinalizeGarbageCollectedObject();
 
-  DECLARE_TRACE_WRAPPERS();
-  DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappersAfterDispatch(const ScriptWrappableVisitor*) const;
 
  protected:
   explicit NodeRareData(NodeRenderingData* node_layout_data)

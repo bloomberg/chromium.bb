@@ -108,7 +108,8 @@ void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   NodeRareData::TraceAfterDispatch(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(ElementRareData) {
+void ElementRareData::TraceWrappersAfterDispatch(
+    const ScriptWrappableVisitor* visitor) const {
   if (attr_node_list_.Get()) {
     for (auto& attr : *attr_node_list_) {
       visitor->TraceWrappers(attr);

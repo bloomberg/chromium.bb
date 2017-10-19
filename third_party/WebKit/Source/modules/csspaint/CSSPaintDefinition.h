@@ -74,7 +74,7 @@ class CSSPaintDefinition final
   }
 
   void Trace(blink::Visitor* visitor){};
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   CSSPaintDefinition(

@@ -81,7 +81,7 @@ class SVGLengthTearOff final : public SVGPropertyTearOff<SVGLength>,
 
   bool HasExposedLengthUnit();
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   SVGLengthTearOff(SVGLength*,

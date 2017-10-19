@@ -641,7 +641,7 @@ void ContainerNode::Trace(blink::Visitor* visitor) {
   Node::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(ContainerNode) {
+void ContainerNode::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(first_child_);
   visitor->TraceWrappers(last_child_);
   Node::TraceWrappers(visitor);

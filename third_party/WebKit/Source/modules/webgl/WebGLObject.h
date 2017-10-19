@@ -94,7 +94,7 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
 
   virtual void Trace(blink::Visitor* visitor) {}
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   explicit WebGLObject(WebGLRenderingContextBase*);

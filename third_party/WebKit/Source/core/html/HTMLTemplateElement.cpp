@@ -76,7 +76,8 @@ void HTMLTemplateElement::Trace(blink::Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(HTMLTemplateElement) {
+void HTMLTemplateElement::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(content_);
   HTMLElement::TraceWrappers(visitor);
 }

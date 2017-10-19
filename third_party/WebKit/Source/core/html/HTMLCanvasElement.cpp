@@ -1101,7 +1101,8 @@ void HTMLCanvasElement::Trace(blink::Visitor* visitor) {
   HTMLElement::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(HTMLCanvasElement) {
+void HTMLCanvasElement::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(context_);
   HTMLElement::TraceWrappers(visitor);
 }

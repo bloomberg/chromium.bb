@@ -56,7 +56,8 @@ void WebGLSharedObject::Trace(blink::Visitor* visitor) {
   WebGLObject::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(WebGLSharedObject) {
+void WebGLSharedObject::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(context_group_);
   WebGLObject::TraceWrappers(visitor);
 }

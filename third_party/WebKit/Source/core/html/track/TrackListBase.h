@@ -85,7 +85,7 @@ class TrackListBase : public EventTargetWithInlineData {
     EventTargetWithInlineData::Trace(visitor);
   }
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     for (auto track : tracks_) {
       visitor->TraceWrappers(track);
     }

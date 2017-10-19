@@ -40,7 +40,7 @@ class WebGLRenderbufferAttachment final
   static WebGLFramebuffer::WebGLAttachment* Create(WebGLRenderbuffer*);
 
   virtual void Trace(blink::Visitor*);
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(renderbuffer_);
   }
 
@@ -113,7 +113,9 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                                                    GLint layer);
 
   virtual void Trace(blink::Visitor*);
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() { visitor->TraceWrappers(texture_); }
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+    visitor->TraceWrappers(texture_);
+  }
 
  private:
   WebGLTextureAttachment(WebGLTexture*,
@@ -542,7 +544,8 @@ void WebGLFramebuffer::Trace(blink::Visitor* visitor) {
   WebGLContextObject::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(WebGLFramebuffer) {
+void WebGLFramebuffer::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   for (const auto& attachment : attachments_) {
     visitor->TraceWrappers(attachment.value);
   }

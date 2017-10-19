@@ -119,7 +119,7 @@ void ScriptLoader::Trace(blink::Visitor* visitor) {
   PendingScriptClient::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(ScriptLoader) {
+void ScriptLoader::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(pending_script_);
   visitor->TraceWrappers(module_tree_client_);
 }

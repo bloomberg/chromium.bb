@@ -18,7 +18,7 @@ class GeolocationWatchers : public TraceWrapperBase {
  public:
   GeolocationWatchers() {}
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   bool Add(int id, GeoNotifier*);
   GeoNotifier* Find(int id);

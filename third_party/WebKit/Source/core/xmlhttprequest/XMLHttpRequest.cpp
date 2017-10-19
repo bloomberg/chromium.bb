@@ -1993,7 +1993,8 @@ void XMLHttpRequest::Trace(blink::Visitor* visitor) {
   SuspendableObject::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(XMLHttpRequest) {
+void XMLHttpRequest::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(response_blob_);
   visitor->TraceWrappers(response_document_);
   visitor->TraceWrappers(response_array_buffer_);

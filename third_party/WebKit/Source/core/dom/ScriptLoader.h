@@ -63,7 +63,7 @@ class CORE_EXPORT ScriptLoader : public GarbageCollectedFinalized<ScriptLoader>,
 
   ~ScriptLoader() override;
   virtual void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   enum LegacyTypeSupport {
     kDisallowLegacyTypeInTypeAttribute,

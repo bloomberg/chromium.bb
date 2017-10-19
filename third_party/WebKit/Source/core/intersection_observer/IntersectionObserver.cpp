@@ -359,7 +359,8 @@ void IntersectionObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(entries_);
 }
 
-DEFINE_TRACE_WRAPPERS(IntersectionObserver) {
+void IntersectionObserver::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(delegate_);
 }
 

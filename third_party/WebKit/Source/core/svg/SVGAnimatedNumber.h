@@ -62,7 +62,7 @@ class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>,
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   SVGAnimatedNumber(SVGElement* context_element,

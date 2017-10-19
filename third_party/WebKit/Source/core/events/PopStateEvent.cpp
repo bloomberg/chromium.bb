@@ -92,7 +92,7 @@ void PopStateEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(PopStateEvent) {
+void PopStateEvent::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(state_);
   Event::TraceWrappers(visitor);
 }

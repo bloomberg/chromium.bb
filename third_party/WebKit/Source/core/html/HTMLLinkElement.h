@@ -112,7 +112,7 @@ class CORE_EXPORT HTMLLinkElement final : public HTMLElement,
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   HTMLLinkElement(Document&, bool created_by_parser);

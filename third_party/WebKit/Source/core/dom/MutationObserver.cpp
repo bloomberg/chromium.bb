@@ -77,7 +77,9 @@ class MutationObserver::V8DelegateImpl final
     ContextClient::Trace(visitor);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() { visitor->TraceWrappers(callback_); }
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+    visitor->TraceWrappers(callback_);
+  }
 
  private:
   V8DelegateImpl(V8MutationCallback* callback,
@@ -372,7 +374,8 @@ void MutationObserver::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(MutationObserver) {
+void MutationObserver::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(delegate_);
   for (auto record : records_)
     visitor->TraceWrappers(record);

@@ -127,7 +127,7 @@ class CORE_EXPORT TextTrack : public EventTargetWithInlineData,
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   TextTrack(const AtomicString& kind,

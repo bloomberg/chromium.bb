@@ -132,7 +132,8 @@ void WebGLVertexArrayObjectBase::Trace(blink::Visitor* visitor) {
   WebGLContextObject::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(WebGLVertexArrayObjectBase) {
+void WebGLVertexArrayObjectBase::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(bound_element_array_buffer_);
   for (size_t i = 0; i < array_buffer_list_.size(); ++i) {
     visitor->TraceWrappers(array_buffer_list_[i]);

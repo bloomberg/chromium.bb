@@ -130,7 +130,7 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>,
     return item;
   }
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   SVGStringListTearOff(SVGStringList*,

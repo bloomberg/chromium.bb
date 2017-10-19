@@ -78,7 +78,7 @@ void CustomEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(CustomEvent) {
+void CustomEvent::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(detail_);
   Event::TraceWrappers(visitor);
 }

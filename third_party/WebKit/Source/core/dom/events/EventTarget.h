@@ -79,7 +79,7 @@ class CORE_EXPORT EventTargetData final
   ~EventTargetData();
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   EventListenerMap event_listener_map;
   std::unique_ptr<FiringEventIteratorVector> firing_event_iterators;
@@ -176,7 +176,7 @@ class CORE_EXPORT EventTarget : public GarbageCollectedFinalized<EventTarget>,
   static DispatchEventResult GetDispatchEventResult(const Event&);
 
   virtual void Trace(blink::Visitor* visitor) {}
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {}
 
   virtual bool KeepEventInNode(Event*) { return false; }
 
@@ -232,7 +232,7 @@ class CORE_EXPORT EventTargetWithInlineData : public EventTarget {
     EventTarget::Trace(visitor);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(event_target_data_);
     EventTarget::TraceWrappers(visitor);
   }

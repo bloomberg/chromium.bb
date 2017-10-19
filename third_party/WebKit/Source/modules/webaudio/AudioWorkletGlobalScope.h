@@ -67,7 +67,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   float sampleRate() const { return sample_rate_; }
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   AudioWorkletGlobalScope(const KURL&,

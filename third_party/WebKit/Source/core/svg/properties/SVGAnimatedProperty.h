@@ -81,7 +81,7 @@ class SVGAnimatedPropertyBase
 
   virtual void Trace(blink::Visitor* visitor) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
   }
 

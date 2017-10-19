@@ -60,7 +60,7 @@ class SVGPointTearOff : public SVGPropertyTearOff<SVGPoint>,
 
   SVGPointTearOff* matrixTransform(SVGMatrixTearOff*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   SVGPointTearOff(SVGPoint*,

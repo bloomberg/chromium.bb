@@ -98,7 +98,7 @@ class HTMLParserScriptRunner final
   }
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   HTMLParserScriptRunner(HTMLParserReentryPermit*,

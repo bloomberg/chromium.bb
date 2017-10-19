@@ -260,6 +260,7 @@ void ElementShadowV0::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_to_insertion_points_);
 }
 
-DEFINE_TRACE_WRAPPERS(ElementShadowV0) {}
+void ElementShadowV0::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {}
 
 }  // namespace blink

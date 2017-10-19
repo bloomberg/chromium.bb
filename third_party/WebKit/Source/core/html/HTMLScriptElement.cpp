@@ -239,7 +239,8 @@ void HTMLScriptElement::Trace(blink::Visitor* visitor) {
   ScriptElementBase::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(HTMLScriptElement) {
+void HTMLScriptElement::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(loader_);
   HTMLElement::TraceWrappers(visitor);
 }

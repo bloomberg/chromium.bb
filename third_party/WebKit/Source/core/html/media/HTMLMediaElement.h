@@ -106,7 +106,7 @@ class CORE_EXPORT HTMLMediaElement
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   void ClearWeakMembers(Visitor*);
   WebMediaPlayer* GetWebMediaPlayer() const { return web_media_player_.get(); }

@@ -237,7 +237,8 @@ void V8AbstractEventListener::Trace(blink::Visitor* visitor) {
   EventListener::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(V8AbstractEventListener) {
+void V8AbstractEventListener::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(listener_.Cast<v8::Value>());
 }
 

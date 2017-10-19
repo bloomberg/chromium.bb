@@ -101,7 +101,7 @@ void ErrorEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(ErrorEvent) {
+void ErrorEvent::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(error_);
   Event::TraceWrappers(visitor);
 }

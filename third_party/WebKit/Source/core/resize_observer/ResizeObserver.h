@@ -54,7 +54,7 @@ class CORE_EXPORT ResizeObserver final
   void ElementSizeChanged();
   bool HasElementSizeChanged() { return element_size_changed_; }
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   ResizeObserver(V8ResizeObserverCallback*, Document&);

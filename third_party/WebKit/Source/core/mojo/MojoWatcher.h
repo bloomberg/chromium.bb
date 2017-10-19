@@ -35,7 +35,7 @@ class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
   MojoResult cancel();
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   // ActiveScriptWrappable
   bool HasPendingActivity() const final;

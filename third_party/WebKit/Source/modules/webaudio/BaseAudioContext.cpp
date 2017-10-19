@@ -1011,7 +1011,8 @@ void BaseAudioContext::Trace(blink::Visitor* visitor) {
   SuspendableObject::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(BaseAudioContext) {
+void BaseAudioContext::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   EventTargetWithInlineData::TraceWrappers(visitor);
 
   // Inform V8's GC that we have references to these objects so they

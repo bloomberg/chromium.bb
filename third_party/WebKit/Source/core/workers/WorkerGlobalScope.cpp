@@ -465,7 +465,8 @@ void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   Supplementable<WorkerGlobalScope>::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(WorkerGlobalScope) {
+void WorkerGlobalScope::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   EventTargetWithInlineData::TraceWrappers(visitor);
   Supplementable<WorkerGlobalScope>::TraceWrappers(visitor);
 }
