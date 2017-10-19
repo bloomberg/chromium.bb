@@ -788,7 +788,7 @@ class PDFiumEngine : public PDFEngine,
   base::Time last_progressive_start_time_;
 
   // The timeout to use for the current progressive paint.
-  int progressive_paint_timeout_;
+  base::TimeDelta progressive_paint_timeout_;
 
   // Shadow matrix for generating the page shadow bitmap.
   std::unique_ptr<ShadowMatrix> page_shadow_;
