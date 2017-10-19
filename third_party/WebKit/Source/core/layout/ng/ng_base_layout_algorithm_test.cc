@@ -41,6 +41,11 @@ NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {
       std::move(space));
 }
 
+const NGPhysicalBoxFragment* NGBaseLayoutAlgorithmTest::CurrentFragmentFor(
+    const LayoutNGBlockFlow* block_flow) {
+  return block_flow->CurrentFragment();
+}
+
 const NGPhysicalBoxFragment* FragmentChildIterator::NextChild() {
   if (!parent_)
     return nullptr;

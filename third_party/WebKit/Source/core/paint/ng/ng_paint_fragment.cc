@@ -10,20 +10,22 @@
 
 namespace blink {
 
-NGPaintFragment::NGPaintFragment(RefPtr<const NGPhysicalFragment> fragment)
+NGPaintFragment::NGPaintFragment(RefPtr<const NGPhysicalFragment> fragment,
+                                 bool stop_at_block_layout_root)
     : physical_fragment_(std::move(fragment)) {
   DCHECK(physical_fragment_);
-  PopulateDescendants();
+  PopulateDescendants(stop_at_block_layout_root);
 }
 
 // Populate descendant NGPaintFragment from NGPhysicalFragment tree.
-void NGPaintFragment::PopulateDescendants() {
-  if (PhysicalFragment().IsContainer()) {
+void NGPaintFragment::PopulateDescendants(bool stop_at_block_layout_root) {
+  if (PhysicalFragment().IsContainer() &&
+      !(stop_at_block_layout_root && PhysicalFragment().IsBlockLayoutRoot())) {
     const NGPhysicalContainerFragment& fragment =
         ToNGPhysicalContainerFragment(PhysicalFragment());
     children_.ReserveCapacity(fragment.Children().size());
     for (const auto& child_fragment : fragment.Children()) {
-      auto child = WTF::MakeUnique<NGPaintFragment>(child_fragment);
+      auto child = WTF::MakeUnique<NGPaintFragment>(child_fragment, true);
       children_.push_back(std::move(child));
     }
   }

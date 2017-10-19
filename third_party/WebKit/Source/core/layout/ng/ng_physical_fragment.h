@@ -49,10 +49,17 @@ class CORE_EXPORT NGPhysicalFragment
   };
   enum NGBoxType {
     kNormalBox,
+    kAnonymousBox,
     kInlineBlock,
     kFloating,
     kOutOfFlowPositioned,
-    kAnonymousBox
+    kOldLayoutRoot,
+    // When adding new values, make sure the bit size of |box_type_| is large
+    // enough to store.
+
+    // Also, add after kMinimumBlockLayoutRoot if the box type is a block layout
+    // root, or before otherwise. See IsBlockLayoutRoot().
+    kMinimumBlockLayoutRoot = kInlineBlock
   };
 
   ~NGPhysicalFragment();
@@ -67,19 +74,23 @@ class CORE_EXPORT NGPhysicalFragment
   bool IsLineBox() const { return Type() == NGFragmentType::kFragmentLineBox; }
 
   // Returns the box type of this fragment.
-  NGBoxType BoxType() const;
+  NGBoxType BoxType() const { return static_cast<NGBoxType>(box_type_); }
   // An inline block is represented as a kFragmentBox.
   // TODO(eae): This isn't true for replaces elements at the moment.
-  bool IsInlineBlock() const;
-  bool IsFloating() const;
-  bool IsOutOfFlowPositioned() const;
+  bool IsInlineBlock() const { return BoxType() == NGBoxType::kInlineBlock; }
+  bool IsFloating() const { return BoxType() == NGBoxType::kFloating; }
+  bool IsOutOfFlowPositioned() const {
+    return BoxType() == NGBoxType::kOutOfFlowPositioned;
+  }
   // A box fragment that do not exist in LayoutObject tree. Its LayoutObject is
   // co-owned by other fragments.
-  bool IsAnonymousBox() const;
+  bool IsAnonymousBox() const { return BoxType() == NGBoxType::kAnonymousBox; }
   // A block sub-layout starts on this fragment. Inline blocks, floats, out of
   // flow positioned objects are such examples. This may be false on NG/legacy
   // boundary.
-  bool IsBlockLayoutRoot() const;
+  bool IsBlockLayoutRoot() const {
+    return BoxType() >= NGBoxType::kMinimumBlockLayoutRoot;
+  }
 
   // The accessors in this class shouldn't be used by layout code directly,
   // instead should be accessed by the NGFragmentBase classes. These accessors
@@ -154,6 +165,7 @@ class CORE_EXPORT NGPhysicalFragment
   RefPtr<NGBreakToken> break_token_;
 
   unsigned type_ : 2;  // NGFragmentType
+  unsigned box_type_ : 3;  // NGBoxType
   unsigned is_placed_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
 

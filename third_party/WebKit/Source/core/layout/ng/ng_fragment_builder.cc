@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/ng_fragment_builder.h"
 
+#include "core/layout/LayoutObject.h"
 #include "core/layout/ng/ng_block_break_token.h"
 #include "core/layout/ng/ng_block_node.h"
 #include "core/layout/ng/ng_break_token.h"
@@ -22,6 +23,7 @@ NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
     : NGContainerFragmentBuilder(style, writing_mode, direction),
       node_(node),
       layout_object_(node.GetLayoutObject()),
+      box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
       did_break_(false) {}
 
 NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
@@ -31,6 +33,7 @@ NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
     : NGContainerFragmentBuilder(style, writing_mode, direction),
       node_(nullptr),
       layout_object_(layout_object),
+      box_type_(NGPhysicalFragment::NGBoxType::kNormalBox),
       did_break_(false) {}
 
 NGFragmentBuilder::~NGFragmentBuilder() {}
@@ -206,6 +209,27 @@ void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   oof_positioned_candidates_.clear();
 }
 
+NGPhysicalFragment::NGBoxType NGFragmentBuilder::BoxType() const {
+  if (box_type_ != NGPhysicalFragment::NGBoxType::kNormalBox)
+    return box_type_;
+  // When implicit, compute from LayoutObject.
+  if (!layout_object_ || layout_object_->Style() != &Style())
+    return NGPhysicalFragment::NGBoxType::kAnonymousBox;
+  if (layout_object_->IsFloating())
+    return NGPhysicalFragment::NGBoxType::kFloating;
+  if (layout_object_->IsOutOfFlowPositioned())
+    return NGPhysicalFragment::NGBoxType::kOutOfFlowPositioned;
+  if (layout_object_->IsAtomicInlineLevel())
+    return NGPhysicalFragment::NGBoxType::kInlineBlock;
+  return NGPhysicalFragment::NGBoxType::kNormalBox;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::SetBoxType(
+    NGPhysicalFragment::NGBoxType box_type) {
+  box_type_ = box_type;
+  return *this;
+}
+
 void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
                                     LayoutUnit offset) {
 #if DCHECK_IS_ON()
@@ -245,8 +269,8 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   RefPtr<NGPhysicalBoxFragment> fragment =
       WTF::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), physical_size, contents_visual_rect,
-          children_, baselines_, border_edges_.ToPhysical(WritingMode()),
-          std::move(break_token)));
+          children_, baselines_, BoxType(),
+          border_edges_.ToPhysical(WritingMode()), std::move(break_token)));
 
   Vector<NGPositionedFloat> positioned_floats;
 

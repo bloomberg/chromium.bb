@@ -69,8 +69,6 @@ void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
         containing_block_size, fragment->Size());
   }
   fragment->SetOffset(physical_offset);
-
-  paint_fragment_ = WTF::MakeUnique<NGPaintFragment>(std::move(fragment));
 }
 
 void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
@@ -198,7 +196,6 @@ void LayoutNGBlockFlow::UpdateOutOfFlowBlockLayout() {
   }
   RefPtr<NGPhysicalFragment> child_fragment = fragment->Children()[0];
   DCHECK_EQ(fragment->Children()[0]->GetLayoutObject(), this);
-  paint_fragment_ = WTF::MakeUnique<NGPaintFragment>(child_fragment.get());
 }
 
 void LayoutNGBlockFlow::UpdateMargins(
@@ -307,11 +304,17 @@ void LayoutNGBlockFlow::SetCachedLayoutResult(
   cached_result_ = layout_result;
 }
 
+void LayoutNGBlockFlow::SetPaintFragment(
+    RefPtr<const NGPhysicalFragment> fragment) {
+  paint_fragment_ = WTF::MakeUnique<NGPaintFragment>(std::move(fragment));
+}
+
 void LayoutNGBlockFlow::PaintObject(const PaintInfo& paint_info,
                                     const LayoutPoint& paint_offset) const {
   // TODO(eae): This logic should go in Paint instead and it should drive the
   // full paint logic for LayoutNGBlockFlow.
-  if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
+  if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled() &&
+      PaintFragment())
     NGBlockFlowPainter(*this).PaintContents(paint_info, paint_offset);
   else
     LayoutBlockFlow::PaintObject(paint_info, paint_offset);
@@ -322,7 +325,8 @@ bool LayoutNGBlockFlow::NodeAtPoint(
     const HitTestLocation& location_in_container,
     const LayoutPoint& accumulated_offset,
     HitTestAction action) {
-  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
+  if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled() ||
+      !PaintFragment()) {
     return LayoutBlockFlow::NodeAtPoint(result, location_in_container,
                                         accumulated_offset, action);
   }
