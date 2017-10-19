@@ -727,8 +727,7 @@ bool ParseEventsFromJson(const std::string& json,
 // TraceAnalyzer
 
 TraceAnalyzer::TraceAnalyzer()
-    : ignore_metadata_events_(false),
-      allow_assocation_changes_(true) {}
+    : ignore_metadata_events_(false), allow_association_changes_(true) {}
 
 TraceAnalyzer::~TraceAnalyzer() {
 }
@@ -786,7 +785,7 @@ void TraceAnalyzer::AssociateAsyncBeginEndEvents(bool match_pid) {
 void TraceAnalyzer::AssociateEvents(const Query& first,
                                     const Query& second,
                                     const Query& match) {
-  DCHECK(allow_assocation_changes_)
+  DCHECK(allow_association_changes_)
       << "AssociateEvents not allowed after FindEvents";
 
   // Search for matching begin/end event pairs. When a matching end is found,
@@ -849,7 +848,7 @@ void TraceAnalyzer::MergeAssociatedEventArgs() {
 }
 
 size_t TraceAnalyzer::FindEvents(const Query& query, TraceEventVector* output) {
-  allow_assocation_changes_ = false;
+  allow_association_changes_ = false;
   output->clear();
   return FindMatchingEvents(
       raw_events_, query, output, ignore_metadata_events_);

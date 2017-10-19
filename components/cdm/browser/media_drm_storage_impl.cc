@@ -216,7 +216,7 @@ base::DictionaryValue* CreateOriginDictAndReturnSessionsDict(
 }
 
 #if DCHECK_IS_ON()
-// Returns whether |dict| has a value assocaited with the |key|.
+// Returns whether |dict| has a value associated with the |key|.
 bool HasEntry(const base::DictionaryValue& dict, const std::string& key) {
   return dict.GetDictionaryWithoutPathExpansion(key, nullptr);
 }

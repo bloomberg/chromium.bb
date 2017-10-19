@@ -236,7 +236,7 @@ function RPCWrapper() {
 
   this.log = function(test_name, message, from_completed_test) {
     if (message == undefined) {
-      // This is a log message that is not assosiated with a test.
+      // This is a log message that is not associated with a test.
       // What we though was the test name is actually the message.
       this._log(test_name);
     } else {

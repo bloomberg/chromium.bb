@@ -29,7 +29,7 @@ class EntryImpl;
 // This class provides support for the sparse capabilities of the disk cache.
 // Basically, sparse IO is directed from EntryImpl to this class, and we split
 // the operation into multiple small pieces, sending each one to the
-// appropriate entry. An instance of this class is asociated with each entry
+// appropriate entry. An instance of this class is associated with each entry
 // used directly for sparse operations (the entry passed in to the constructor).
 class SparseControl {
  public:

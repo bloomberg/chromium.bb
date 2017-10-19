@@ -18,13 +18,13 @@ namespace content {
 // This is analogous to service_manager::InterfaceProvider in that it provides a
 // means of
 // binding proxies to remote interfaces, but this is specifically for interfaces
-// which must be assocaited with an IPC::Channel, i.e. retain FIFO message
+// which must be associated with an IPC::Channel, i.e. retain FIFO message
 // ordering with respect to legacy IPC messages.
 //
 // The Channel with which the remote interfaces are associated depends on
 // the configuration of the specific AssociatedInterfaceProvider instance. For
 // example, RenderFrameHost exposes an instance of this class for which all
-// interfaces are associted with the IPC::ChannelProxy to the render process
+// interfaces are associated with the IPC::ChannelProxy to the render process
 // which hosts its corresponding RenderFrame.
 class AssociatedInterfaceProvider {
  public:

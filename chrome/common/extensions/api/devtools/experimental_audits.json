@@ -51,7 +51,7 @@
           {
             "name": "addResult",
             "type": "function",
-            "description": "Adds an audit result. The results are rendered as bulleted items under the audit category assoicated with the <code>AuditResults</code> object.",
+            "description": "Adds an audit result. The results are rendered as bulleted items under the audit category associated with the <code>AuditResults</code> object.",
             "parameters": [
               {
                 "name": "displayName",

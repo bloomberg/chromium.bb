@@ -21,7 +21,7 @@ class Value;
 // includes a closure and the code to run when the template is invoked.
 //
 // This class is immutable so we can reference it from multiple threads without
-// locking. Normally, this will be assocated with a .gni file and then a
+// locking. Normally, this will be associated with a .gni file and then a
 // reference will be taken by each .gn file that imports it. These files might
 // execute the template in parallel.
 class Template : public base::RefCountedThreadSafe<Template> {
