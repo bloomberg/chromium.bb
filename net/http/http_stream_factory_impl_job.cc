@@ -47,6 +47,7 @@
 #include "net/socket/ssl_client_socket_pool.h"
 #include "net/socket/stream_socket.h"
 #include "net/spdy/chromium/bidirectional_stream_spdy_impl.h"
+#include "net/spdy/chromium/http2_push_promise_index.h"
 #include "net/spdy/chromium/spdy_http_stream.h"
 #include "net/spdy/chromium/spdy_session.h"
 #include "net/spdy/chromium/spdy_session_pool.h"
@@ -925,21 +926,21 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionImpl() {
   // connection this request can pool to.  If so, then go straight to using
   // that.
   if (CanUseExistingSpdySession()) {
-    base::WeakPtr<SpdySession> spdy_session =
+    existing_spdy_session_ =
         session_->spdy_session_pool()->push_promise_index()->Find(
             spdy_session_key_, origin_url_);
-    if (!spdy_session) {
-      spdy_session = session_->spdy_session_pool()->FindAvailableSession(
-          spdy_session_key_, enable_ip_based_pooling_, net_log_);
+    if (!existing_spdy_session_) {
+      existing_spdy_session_ =
+          session_->spdy_session_pool()->FindAvailableSession(
+              spdy_session_key_, enable_ip_based_pooling_, net_log_);
     }
-    if (spdy_session) {
+    if (existing_spdy_session_) {
       // If we're preconnecting, but we already have a SpdySession, we don't
       // actually need to preconnect any sockets, so we're done.
       if (job_type_ == PRECONNECT)
         return OK;
       using_spdy_ = true;
       next_state_ = STATE_CREATE_STREAM;
-      existing_spdy_session_ = spdy_session;
       return OK;
     }
   }
@@ -1200,15 +1201,15 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
     existing_spdy_session_ =
         session_->spdy_session_pool()->push_promise_index()->Find(
             spdy_session_key_, origin_url_);
+    // It is also possible that an HTTP/2 connection has been established since
+    // last time Job checked above.
+    if (!existing_spdy_session_) {
+      existing_spdy_session_ =
+          session_->spdy_session_pool()->FindAvailableSession(
+              spdy_session_key_, enable_ip_based_pooling_, net_log_);
+    }
   }
-  // It is also possible that an HTTP/2 connection has been established since
-  // last time Job checked above.
-  if (!existing_spdy_session_) {
-    existing_spdy_session_ =
-        session_->spdy_session_pool()->FindAvailableSession(
-            spdy_session_key_, enable_ip_based_pooling_, net_log_);
-  }
-  if (existing_spdy_session_.get()) {
+  if (existing_spdy_session_) {
     // We picked up an existing session, so we don't need our socket.
     if (connection_->socket())
       connection_->socket()->Disconnect();
