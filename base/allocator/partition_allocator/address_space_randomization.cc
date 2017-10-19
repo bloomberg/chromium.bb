@@ -37,8 +37,6 @@ struct ranctx {
   uint32_t d;
 };
 
-static LazyInstance<ranctx>::Leaky s_ranctx = LAZY_INSTANCE_INITIALIZER;
-
 #define rot(x, k) (((x) << (k)) | ((x) >> (32 - (k))))
 
 uint32_t ranvalInternal(ranctx* x) {
@@ -83,20 +81,12 @@ uint32_t ranval(ranctx* x) {
   return ret;
 }
 
+static LazyInstance<ranctx>::Leaky s_ranctx = LAZY_INSTANCE_INITIALIZER;
+
 }  // namespace
 
-void SetRandomPageBaseSeed(int64_t seed) {
-// This code must not be included in builds shipped to end users.
-#if defined(UNSAFE_DEVELOPER_BUILD)
-  ranctx* x = s_ranctx.Pointer();
-  subtle::SpinLock::Guard guard(x->lock);
-  // Set RNG to initial state.
-  x->initialized = true;
-  x->a = x->b = static_cast<uint32_t>(seed);
-  x->c = x->d = static_cast<uint32_t>(seed >> 32);
-#endif  // !defined(UNSAFE_DEVELOPER_BUILD)
-}
-
+// Calculates a random preferred mapping address. In calculating an address, we
+// balance good ASLR against not fragmenting the address space too badly.
 void* GetRandomPageBase() {
   uintptr_t random = static_cast<uintptr_t>(ranval(s_ranctx.Pointer()));
 

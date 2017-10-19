@@ -20,9 +20,7 @@
 
 namespace base {
 
-namespace {
-
-uintptr_t GetMask() {
+TEST(AddressSpaceRandomizationTest, GetRandomPageBase) {
   uintptr_t mask = internal::kASLRMask;
 #if defined(ARCH_CPU_64_BITS)
 #if defined(OS_WIN)
@@ -36,28 +34,12 @@ uintptr_t GetMask() {
   if (!IsWow64Process(GetCurrentProcess(), &is_wow64))
     is_wow64 = FALSE;
   if (!is_wow64) {
-    mask = 0;
+    // ASLR is turned off on 32-bit Windows; check that result is null.
+    EXPECT_EQ(nullptr, base::GetRandomPageBase());
+    return;
   }
 #endif  // defined(OS_WIN)
 #endif  // defined(ARCH_CPU_32_BITS)
-  return mask;
-}
-
-}  // namespace
-
-TEST(AddressSpaceRandomizationTest, Unpredictable) {
-  uintptr_t mask = GetMask();
-  if (!mask) {
-#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
-    // ASLR should be turned off on 32-bit Windows.
-    EXPECT_EQ(nullptr, base::GetRandomPageBase());
-#else
-    // Otherwise, nullptr is very unexpected.
-    EXPECT_NE(nullptr, base::GetRandomPageBase());
-#endif
-    return;
-  }
-
   // Sample the first 100 addresses.
   std::set<uintptr_t> addresses;
   uintptr_t address_logical_sum = 0;
@@ -85,47 +67,5 @@ TEST(AddressSpaceRandomizationTest, Unpredictable) {
   EXPECT_EQ(mask, address_logical_sum & mask);
   EXPECT_EQ(0ULL, address_logical_product & mask);
 }
-
-#if defined(UNSAFE_DEVELPER_BUILD)
-TEST(AddressSpaceRandomizationTest, Predictable) {
-  const uintptr_t kInitialSeed = 0xfeed5eedULL;
-  base::SetRandomPageBaseSeed(kInitialSeed);
-  uintptr_t mask = GetMask();
-  if (!mask) {
-#if defined(OS_WIN) && defined(ARCH_CPU_32_BITS)
-    // ASLR should be turned off on 32-bit Windows.
-    EXPECT_EQ(nullptr, base::GetRandomPageBase());
-#else
-    // Otherwise, nullptr is very unexpected.
-    EXPECT_NE(nullptr, base::GetRandomPageBase());
-#endif
-    return;
-  }
-// The first 4 elements of the random sequences generated from kInitialSeed.
-#if ARCH_CPU_32_BITS
-  const uint32_t random[4] = {0x8de352e3, 0xe6da7cd8, 0x9e7eb32d, 0xe8c2b6c};
-#elif ARCH_CPU_64_BITS
-  const uint64_t random[4] = {0x8de352e3e6da7cd8, 0x9e7eb32d0e8c2b6c,
-                              0xd3cc6055308d048d, 0xe229f78b344317a5};
-#endif
-
-  // Make sure the addresses look random but are predictable.
-  std::set<uintptr_t> addresses;
-  for (int i = 0; i < 4; i++) {
-    uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());
-    // Test that address is in range.
-    EXPECT_LE(internal::kASLROffset, address);
-    EXPECT_GE(internal::kASLROffset + mask, address);
-    // Test that address is page aligned.
-    EXPECT_EQ(0ULL, (address & kPageAllocationGranularityOffsetMask));
-    // Test that address is unique (no collisions in 100 tries)
-    CHECK_EQ(0ULL, addresses.count(address));
-    addresses.insert(address);
-    // Test that (address - offset) == (predicted & mask).
-    address -= internal::kASLROffset;
-    EXPECT_EQ(random[i] & internal::kASLRMask, address);
-  }
-}
-#endif  // defined(UNSAFE_DEVELPER_BUILD)
 
 }  // namespace base
