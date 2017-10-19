@@ -354,4 +354,13 @@ TEST(PlatformThreadTest, GetNiceValueToThreadPriority) {
 }
 #endif
 
+TEST(PlatformThreadTest, SetHugeThreadName) {
+  // Construct an excessively long thread name.
+  std::string long_name(1024, 'a');
+
+  // SetName has no return code, so just verify that implementations
+  // don't [D]CHECK().
+  PlatformThread::SetName(long_name);
+}
+
 }  // namespace base
