@@ -33,6 +33,17 @@ namespace printing {
 
 const char kPrinter[] = "printer";
 
+// Keys for a dictionary specifying a custom vendor capability. See
+// settings/advanced_settings/advanced_settings_item.js in
+// chrome/browser/resources/print_preview.
+const char kOptionKey[] = "option";
+const char kSelectCapKey[] = "select_cap";
+const char kSelectString[] = "SELECT";
+const char kTypeKey[] = "type";
+
+// The dictionary key for the CDD item containing custom vendor capabilities.
+const char kVendorCapabilityKey[] = "vendor_capability";
+
 namespace {
 
 // Returns a dictionary representing printer capabilities as CDD.  Returns
@@ -118,6 +129,39 @@ void PrintersToValues(const printing::PrinterList& printer_list,
   }
 }
 
+template <typename Predicate>
+base::Value GetFilteredList(const base::Value* list, Predicate pred) {
+  auto out_list = list->Clone();
+  base::EraseIf(out_list.GetList(), pred);
+  return out_list;
+}
+
+bool ValueIsNull(const base::Value& val) {
+  return val.is_none();
+}
+
+bool VendorCapabilityInvalid(const base::Value& val) {
+  if (!val.is_dict())
+    return true;
+  const base::Value* option_type =
+      val.FindPathOfType({kTypeKey}, base::Value::Type::STRING);
+  if (!option_type)
+    return true;
+  if (option_type->GetString() != kSelectString)
+    return false;
+  const base::Value* select_cap =
+      val.FindPathOfType({kSelectCapKey}, base::Value::Type::DICTIONARY);
+  if (!select_cap)
+    return true;
+  const base::Value* options_list =
+      select_cap->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+  if (!options_list || options_list->GetList().empty() ||
+      GetFilteredList(options_list, ValueIsNull).GetList().empty()) {
+    return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 std::pair<std::string, std::string> GetPrinterNameAndDescription(
@@ -181,4 +225,59 @@ void ConvertPrinterListForCallback(
     callback.Run(printers);
   done_callback.Run();
 }
+
+std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
+    const base::DictionaryValue& cdd) {
+  auto out_final =
+      base::DictionaryValue::From(std::make_unique<base::Value>(cdd.Clone()));
+  const base::Value* caps = cdd.FindPath({kPrinter});
+  if (!caps || !caps->is_dict())
+    return out_final;
+  out_final->RemovePath({kPrinter});
+  auto out_caps = std::make_unique<base::DictionaryValue>();
+  for (const auto capability : caps->DictItems()) {
+    const auto& path = capability.first;
+    const base::Value* dict =
+        caps->FindPathOfType({path}, base::Value::Type::DICTIONARY);
+    const base::Value* list =
+        dict ? dict->FindPathOfType({kOptionKey}, base::Value::Type::LIST)
+             : caps->FindPathOfType({path}, base::Value::Type::LIST);
+    if (!list) {
+      out_caps->SetPath({path}, capability.second.Clone());
+      continue;
+    }
+
+    bool is_vendor_capability = path == kVendorCapabilityKey;
+    auto out_list = GetFilteredList(
+        list, is_vendor_capability ? VendorCapabilityInvalid : ValueIsNull);
+    if (out_list.GetList().empty())  // leave out empty lists.
+      continue;
+    if (is_vendor_capability) {
+      // Need to also filter the individual capability lists.
+      for (auto& vendor_option : out_list.GetList()) {
+        if (vendor_option.FindPathOfType({kTypeKey}, base::Value::Type::STRING)
+                ->GetString() != kSelectString) {
+          continue;
+        }
+        base::Value* options_dict = vendor_option.FindPathOfType(
+            {kSelectCapKey}, base::Value::Type::DICTIONARY);
+        base::Value* options_list =
+            options_dict->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+        options_dict->SetPath({kOptionKey},
+                              GetFilteredList(options_list, ValueIsNull));
+      }
+    }
+    if (dict) {
+      base::Value::DictStorage option_dict;
+      option_dict[kOptionKey] =
+          std::make_unique<base::Value>(std::move(out_list));
+      out_caps->SetPath({path}, base::Value(option_dict));
+    } else {
+      out_caps->SetPath({path}, std::move(out_list));
+    }
+  }
+  out_final->SetDictionary(kPrinter, std::move(out_caps));
+  return out_final;
+}
+
 }  // namespace printing
