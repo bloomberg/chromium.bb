@@ -60,6 +60,9 @@ class UiRenderer {
   void DrawWebVrOverlayForeground(const RenderInfo& render_info,
                                   const ControllerInfo& controller_info);
 
+  static std::vector<const UiElement*> GetElementsInDrawOrder(
+      const std::vector<const UiElement*>& elements);
+
  private:
   enum ReticleMode { kReticleVisible, kReticleHidden };
 
@@ -79,9 +82,6 @@ class UiRenderer {
                     ReticleMode reticle_mode);
   void DrawElement(const gfx::Transform& view_proj_matrix,
                    const UiElement& element);
-  std::vector<const UiElement*> GetElementsInDrawOrder(
-      const gfx::Transform& view_matrix,
-      const std::vector<const UiElement*>& elements);
   void DrawReticle(const gfx::Transform& render_matrix,
                    const RenderInfo& render_info,
                    const ControllerInfo& controller_info);

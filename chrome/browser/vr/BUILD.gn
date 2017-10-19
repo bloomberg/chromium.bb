@@ -226,6 +226,7 @@ test("vr_common_unittests") {
     "test/ui_scene_manager_test.h",
     "ui_input_manager_unittest.cc",
     "ui_pixeltest.cc",
+    "ui_renderer_unittest.cc",
     "ui_scene_manager_unittest.cc",
     "ui_scene_unittest.cc",
     "vr_gl_util_unittest.cc",
