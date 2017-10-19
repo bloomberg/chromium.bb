@@ -540,7 +540,7 @@ bool NetworkIconImpl::UpdateWirelessStrengthIndex(const NetworkState* network) {
 bool NetworkIconImpl::UpdateCellularState(const NetworkState* network) {
   bool dirty = false;
   const Badge technology_badge = BadgeForNetworkTechnology(network, icon_type_);
-  if (technology_badge == technology_badge_) {
+  if (technology_badge != technology_badge_) {
     technology_badge_ = technology_badge;
     dirty = true;
   }
