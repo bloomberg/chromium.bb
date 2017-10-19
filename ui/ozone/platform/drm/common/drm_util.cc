@@ -598,6 +598,23 @@ gfx::ColorSpace GetColorSpaceFromEdid(const std::vector<uint8_t>& edid) {
   if (!display::ParseChromaticityCoordinates(edid, &primaries))
     return gfx::ColorSpace();
 
+  // Sanity check: primaries should verify By <= Ry <= Gy, Bx <= Rx and Gx <=
+  // Rx, to guarantee that the R, G and B colors are each in the correct region.
+  if (!(primaries.fBX <= primaries.fRX && primaries.fGX <= primaries.fRX &&
+        primaries.fBY <= primaries.fRY && primaries.fRY <= primaries.fGY)) {
+    return gfx::ColorSpace();
+  }
+
+  // Sanity check: the area spawned by the primaries' triangle is too small,
+  // i.e. less than half the surface of the triangle spawned by sRGB/BT.709.
+  constexpr double kBT709PrimariesArea = 0.0954;
+  const float primaries_area_twice =
+      (primaries.fRX * primaries.fGY) + (primaries.fBX * primaries.fRY) +
+      (primaries.fGX * primaries.fBY) - (primaries.fBX * primaries.fGY) -
+      (primaries.fGX * primaries.fRY) - (primaries.fRX * primaries.fBY);
+  if (primaries_area_twice < kBT709PrimariesArea)
+    return gfx::ColorSpace();
+
   SkMatrix44 color_space_as_matrix;
   if (!primaries.toXYZD50(&color_space_as_matrix))
     return gfx::ColorSpace();
