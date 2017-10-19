@@ -46,7 +46,7 @@ class StyleInvalidImage final : public StyleImage {
     return false;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { StyleImage::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { StyleImage::Trace(visitor); }
 
  private:
   explicit StyleInvalidImage(const String& url) : url_(url) {

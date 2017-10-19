@@ -102,7 +102,7 @@ bool SpellCheckMarkerListImpl::ShiftMarkers(const String&,
       &markers_, offset, old_length, new_length);
 }
 
-DEFINE_TRACE(SpellCheckMarkerListImpl) {
+void SpellCheckMarkerListImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(markers_);
   DocumentMarkerList::Trace(visitor);
 }

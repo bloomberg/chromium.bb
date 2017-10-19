@@ -47,7 +47,7 @@ WorkerPerformance::WorkerPerformance(WorkerGlobalScope* context)
           TaskRunnerHelper::Get(TaskType::kPerformanceTimeline, context)),
       execution_context_(context) {}
 
-DEFINE_TRACE(WorkerPerformance) {
+void WorkerPerformance::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   PerformanceBase::Trace(visitor);
 }

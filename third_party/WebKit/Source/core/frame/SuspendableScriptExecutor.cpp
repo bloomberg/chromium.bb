@@ -31,7 +31,7 @@ class WebScriptExecutor : public SuspendableScriptExecutor::Executor {
 
   Vector<v8::Local<v8::Value>> Execute(LocalFrame*) override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(sources_);
     SuspendableScriptExecutor::Executor::Trace(visitor);
   }
@@ -242,7 +242,7 @@ void SuspendableScriptExecutor::Dispose() {
   Stop();
 }
 
-DEFINE_TRACE(SuspendableScriptExecutor) {
+void SuspendableScriptExecutor::Trace(blink::Visitor* visitor) {
   visitor->Trace(executor_);
   SuspendableTimer::Trace(visitor);
 }

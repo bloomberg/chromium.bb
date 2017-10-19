@@ -23,7 +23,7 @@ class RTCVoidRequestPromiseImpl final : public RTCVoidRequest {
   void RequestSucceeded() override;
   void RequestFailed(const String& error) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   RTCVoidRequestPromiseImpl(RTCPeerConnection*, ScriptPromiseResolver*);

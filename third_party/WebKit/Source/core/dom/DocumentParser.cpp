@@ -42,7 +42,7 @@ DocumentParser::DocumentParser(Document* document)
 
 DocumentParser::~DocumentParser() {}
 
-DEFINE_TRACE(DocumentParser) {
+void DocumentParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(clients_);
 }

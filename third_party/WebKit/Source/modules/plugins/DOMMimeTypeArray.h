@@ -56,7 +56,7 @@ class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
   // PluginsChangedObserver implementation.
   void PluginsChanged();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit DOMMimeTypeArray(LocalFrame*);

@@ -107,7 +107,7 @@ class CORE_EXPORT TimeRanges final
   double Nearest(double new_playback_position,
                  double current_playback_position) const;
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   TimeRanges() {}

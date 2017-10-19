@@ -46,7 +46,7 @@ class MODULES_EXPORT PaintWorklet final : public Worklet,
   DocumentDefinitionMap& GetDocumentDefinitionMap() {
     return document_definition_map_;
   }
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   friend class PaintWorkletTest;

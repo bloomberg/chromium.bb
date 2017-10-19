@@ -60,7 +60,7 @@ class CORE_EXPORT InputType : public GarbageCollectedFinalized<InputType> {
   static InputType* CreateText(HTMLInputElement&);
   static const AtomicString& NormalizeTypeName(const AtomicString&);
   virtual ~InputType();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   virtual InputTypeView* CreateView() = 0;
   virtual const AtomicString& FormControlType() const = 0;

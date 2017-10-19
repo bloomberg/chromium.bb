@@ -22,7 +22,7 @@ class EmptyMutationCallback : public MutationObserver::Delegate {
 
   void Deliver(const MutationRecordVector&, MutationObserver&) override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(document_);
     MutationObserver::Delegate::Trace(visitor);
   }

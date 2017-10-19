@@ -43,7 +43,7 @@ class WebGLActiveInfo final : public GarbageCollectedFinalized<WebGLActiveInfo>,
   GLenum type() const { return type_; }
   GLint size() const { return size_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   WebGLActiveInfo(const String& name, GLenum type, GLint size)

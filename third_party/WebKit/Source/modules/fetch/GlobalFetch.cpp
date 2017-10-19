@@ -59,7 +59,7 @@ class GlobalFetchImpl final
                                  r->PassRequestData(script_state));
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(fetch_manager_);
     ScopedFetcher::Trace(visitor);
     Supplement<T>::Trace(visitor);
@@ -90,7 +90,7 @@ GlobalFetch::ScopedFetcher* GlobalFetch::ScopedFetcher::From(
                                                   worker.GetExecutionContext());
 }
 
-DEFINE_TRACE(GlobalFetch::ScopedFetcher) {}
+void GlobalFetch::ScopedFetcher::Trace(blink::Visitor* visitor) {}
 
 ScriptPromise GlobalFetch::fetch(ScriptState* script_state,
                                  LocalDOMWindow& window,

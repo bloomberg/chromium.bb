@@ -49,7 +49,7 @@ class CORE_EXPORT FileList final : public GarbageCollected<FileList>,
   void Append(File* file) { files_.push_back(file); }
   Vector<String> PathsForUserVisibleFiles() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   FileList();

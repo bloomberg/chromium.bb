@@ -106,7 +106,7 @@ URLSearchParams* URLSearchParams::Create(
 
 URLSearchParams::~URLSearchParams() {}
 
-DEFINE_TRACE(URLSearchParams) {
+void URLSearchParams::Trace(blink::Visitor* visitor) {
   visitor->Trace(url_object_);
 }
 

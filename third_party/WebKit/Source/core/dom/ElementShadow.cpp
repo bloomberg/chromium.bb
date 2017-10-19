@@ -163,7 +163,7 @@ void ElementShadow::Distribute() {
     V0().Distribute();
 }
 
-DEFINE_TRACE(ElementShadow) {
+void ElementShadow::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_shadow_v0_);
   visitor->Trace(shadow_root_);
 }

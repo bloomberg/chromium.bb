@@ -44,7 +44,7 @@ class MODULES_EXPORT SpeechRecognitionAlternative final
   const String& transcript() const { return transcript_; }
   double confidence() const { return confidence_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   SpeechRecognitionAlternative(const String&, double);

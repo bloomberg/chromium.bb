@@ -86,7 +86,7 @@ class AttributeChange {
 
   void Apply() { element_->setAttribute(name_, AtomicString(value_)); }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(element_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(element_); }
 
  private:
   Member<Element> element_;

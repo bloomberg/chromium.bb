@@ -83,7 +83,7 @@ class CORE_EXPORT CSSStyleDeclaration
   virtual bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
   virtual CSSStyleSheet* ParentStyleSheet() const { return 0; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   CSSStyleDeclaration() {}

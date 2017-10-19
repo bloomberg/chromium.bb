@@ -30,7 +30,9 @@ class MODULES_EXPORT AudioOutputDeviceClientImpl
       std::unique_ptr<WebSetSinkIdCallbacks>) override;
 
   // GarbageCollectedFinalized implementation.
-  DEFINE_INLINE_VIRTUAL_TRACE() { AudioOutputDeviceClient::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    AudioOutputDeviceClient::Trace(visitor);
+  }
 
  private:
   AudioOutputDeviceClientImpl();

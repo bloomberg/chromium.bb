@@ -86,7 +86,7 @@ class Step final : public ParseNode {
       DCHECK(o.merged_predicates_.IsEmpty());
       return *this;
     }
-    DEFINE_INLINE_TRACE() { visitor->Trace(merged_predicates_); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(merged_predicates_); }
 
     Kind GetKind() const { return kind_; }
     const AtomicString& Data() const { return data_; }
@@ -111,7 +111,7 @@ class Step final : public ParseNode {
   Step(Axis, const NodeTest&);
   Step(Axis, const NodeTest&, HeapVector<Member<Predicate>>&);
   ~Step() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   void Optimize();
 

@@ -63,7 +63,7 @@ class CORE_EXPORT HTMLMeterElement final : public LabelableElement {
 
   bool CanContainRangeEndPoint() const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit HTMLMeterElement(Document&);

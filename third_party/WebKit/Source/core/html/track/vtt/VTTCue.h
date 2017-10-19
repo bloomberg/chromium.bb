@@ -152,7 +152,7 @@ class VTTCue final : public TextTrackCue {
   String ToString() const override;
 #endif
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   VTTCue(Document&, double start_time, double end_time, const String& text);

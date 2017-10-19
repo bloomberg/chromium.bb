@@ -62,7 +62,7 @@ Crypto* DOMWindowCrypto::crypto() const {
   return crypto_.Get();
 }
 
-DEFINE_TRACE(DOMWindowCrypto) {
+void DOMWindowCrypto::Trace(blink::Visitor* visitor) {
   visitor->Trace(crypto_);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }

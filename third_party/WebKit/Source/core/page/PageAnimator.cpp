@@ -24,7 +24,7 @@ PageAnimator* PageAnimator::Create(Page& page) {
   return new PageAnimator(page);
 }
 
-DEFINE_TRACE(PageAnimator) {
+void PageAnimator::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
 }
 

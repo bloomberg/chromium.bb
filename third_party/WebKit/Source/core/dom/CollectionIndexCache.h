@@ -66,7 +66,7 @@ class CollectionIndexCache {
   void NodeInserted();
   void NodeRemoved();
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(current_node_); }
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(current_node_); }
 
  protected:
   ALWAYS_INLINE NodeType* CachedNode() const { return current_node_; }

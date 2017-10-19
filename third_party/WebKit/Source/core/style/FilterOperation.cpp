@@ -44,7 +44,7 @@ FilterOperation* FilterOperation::Blend(const FilterOperation* from,
   return from->Blend(0, 1 - progress);
 }
 
-DEFINE_TRACE(ReferenceFilterOperation) {
+void ReferenceFilterOperation::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_proxy_);
   visitor->Trace(filter_);
   FilterOperation::Trace(visitor);

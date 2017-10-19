@@ -101,7 +101,7 @@ void WorkerOrWorkletGlobalScope::Dispose() {
   }
 }
 
-DEFINE_TRACE(WorkerOrWorkletGlobalScope) {
+void WorkerOrWorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_fetcher_);
   visitor->Trace(script_controller_);
   ExecutionContext::Trace(visitor);

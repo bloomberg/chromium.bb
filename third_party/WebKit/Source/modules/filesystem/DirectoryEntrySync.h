@@ -60,7 +60,7 @@ class DirectoryEntrySync final : public EntrySync {
                                    ExceptionState&);
   void removeRecursively(ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   DirectoryEntrySync(DOMFileSystemBase*, const String& full_path);

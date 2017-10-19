@@ -59,7 +59,7 @@ bool EqualIgnoringQueryAndFragment(const KURL& a, const KURL& b) {
 History::History(LocalFrame* frame)
     : DOMWindowClient(frame), last_state_object_requested_(nullptr) {}
 
-DEFINE_TRACE(History) {
+void History::Trace(blink::Visitor* visitor) {
   DOMWindowClient::Trace(visitor);
 }
 

@@ -39,7 +39,7 @@ class CORE_EXPORT TextMatchMarkerListImpl final : public DocumentMarkerList {
                     unsigned offset,
                     unsigned old_length,
                     unsigned new_length) final;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // TextMatchMarkerListImpl-specific
   Vector<IntRect> LayoutRects(const Node&) const;

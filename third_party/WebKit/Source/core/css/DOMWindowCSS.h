@@ -45,7 +45,7 @@ class DOMWindowCSS : public GarbageCollected<DOMWindowCSS>,
   static bool supports(const String& condition_text);
   static String escape(const String& ident);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   DOMWindowCSS() {}

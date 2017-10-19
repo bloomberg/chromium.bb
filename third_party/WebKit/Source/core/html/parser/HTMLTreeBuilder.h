@@ -70,7 +70,7 @@ class HTMLTreeBuilder final
                                parser_content_policy, options);
   }
   ~HTMLTreeBuilder();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   const HTMLElementStack* OpenElements() const { return tree_.OpenElements(); }
 
@@ -236,7 +236,7 @@ class HTMLTreeBuilder final
       return context_element_stack_item_.Get();
     }
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     Member<DocumentFragment> fragment_;

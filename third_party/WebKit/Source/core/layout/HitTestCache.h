@@ -50,7 +50,7 @@ class CORE_EXPORT HitTestCache final
   // Adds a HitTestResult to the cache.
   void AddCachedResult(const HitTestResult&, uint64_t dom_tree_version);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   HitTestCache() : update_index_(0), dom_tree_version_(0) {}

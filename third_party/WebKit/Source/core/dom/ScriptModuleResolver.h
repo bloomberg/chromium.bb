@@ -26,7 +26,7 @@ class CORE_EXPORT ScriptModuleResolver
     : public GarbageCollectedFinalized<ScriptModuleResolver> {
  public:
   virtual ~ScriptModuleResolver() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
   // Notifies the ScriptModuleResolver that a ModuleScript exists.
   // This hook gives a chance for the resolver impl to populate module record

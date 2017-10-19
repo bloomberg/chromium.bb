@@ -1243,7 +1243,7 @@ bool DeleteSelectionCommand::PreservesTypingStyle() const {
   return typing_style_;
 }
 
-DEFINE_TRACE(DeleteSelectionCommand) {
+void DeleteSelectionCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(selection_to_delete_);
   visitor->Trace(upstream_start_);
   visitor->Trace(downstream_start_);

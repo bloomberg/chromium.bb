@@ -36,7 +36,7 @@ class PLATFORM_EXPORT LongTaskDetector final
   void RegisterObserver(LongTaskObserver*);
   void UnregisterObserver(LongTaskObserver*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   static constexpr double kLongTaskThresholdSeconds = 0.05;
 

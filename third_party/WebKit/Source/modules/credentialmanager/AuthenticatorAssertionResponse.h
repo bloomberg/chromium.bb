@@ -30,7 +30,7 @@ class MODULES_EXPORT AuthenticatorAssertionResponse final
 
   DOMArrayBuffer* signature() const { return signature_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit AuthenticatorAssertionResponse(DOMArrayBuffer* client_data_json,

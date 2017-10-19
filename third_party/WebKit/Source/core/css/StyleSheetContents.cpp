@@ -694,7 +694,7 @@ void StyleSheetContents::FindFontFaceRules(
   FindFontFaceRulesFromRules(ChildRules(), font_face_rules);
 }
 
-DEFINE_TRACE(StyleSheetContents) {
+void StyleSheetContents::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_rule_);
   visitor->Trace(import_rules_);
   visitor->Trace(namespace_rules_);

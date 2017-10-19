@@ -64,7 +64,7 @@ class FocusEvent final : public UIEvent {
 
   EventDispatchMediator* CreateMediator() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   FocusEvent();

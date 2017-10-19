@@ -35,7 +35,7 @@ class CORE_EXPORT StylePropertyMapReadonly
 
   virtual Vector<String> getProperties() = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   StylePropertyMapReadonly() = default;

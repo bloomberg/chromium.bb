@@ -45,7 +45,7 @@ class AXMenuListOption final : public AXMockObject {
 
  private:
   AXMenuListOption(HTMLOptionElement*, AXObjectCacheImpl&);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   bool IsMenuListOption() const override { return true; }
 

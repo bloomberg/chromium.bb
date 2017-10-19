@@ -44,7 +44,7 @@ class UserMediaController final
 
  public:
   UserMediaController(LocalFrame&, std::unique_ptr<UserMediaClient>);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   UserMediaClient* Client() const { return client_.get(); }
 

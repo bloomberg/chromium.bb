@@ -104,7 +104,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   void OverrideTimeout(unsigned long timeout) override;
   void Cancel() override;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum BlockingBehavior { kLoadSynchronously, kLoadAsynchronously };
@@ -118,7 +118,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
                                            CrossThreadClosure) = 0;
     virtual void Abort() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void Trace(blink::Visitor* visitor) {}
   };
   class AsyncTaskForwarder;
   struct TaskWithLocation;
@@ -167,7 +167,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
     void ContextDestroyed(WorkerThreadLifecycleContext*) override;
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     MainThreadLoaderHolder(TaskForwarder*, WorkerThreadLifecycleContext*);

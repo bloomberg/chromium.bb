@@ -31,7 +31,7 @@ class CORE_EXPORT ScriptModuleResolverImpl final
     return new ScriptModuleResolverImpl(modulator, execution_context);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   USING_GARBAGE_COLLECTED_MIXIN(ScriptModuleResolverImpl);
 
  private:

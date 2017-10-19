@@ -107,7 +107,7 @@ class PLATFORM_EXPORT MediaStreamComponent final
   }
   void GetSettings(WebMediaStreamTrack::Settings&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   MediaStreamComponent(const String& id, MediaStreamSource*);

@@ -51,7 +51,7 @@ class PointerEventTarget {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
  public:
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(target_node);
     visitor->Trace(target_frame);
   }

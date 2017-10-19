@@ -45,7 +45,7 @@ class PLATFORM_EXPORT Filter final : public GarbageCollected<Filter> {
                         UnitScaling);
   static Filter* Create(float scale);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   float Scale() const { return scale_; }
   FloatRect MapLocalRectToAbsoluteRect(const FloatRect&) const;

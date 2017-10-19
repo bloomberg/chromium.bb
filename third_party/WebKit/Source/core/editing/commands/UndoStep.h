@@ -69,7 +69,7 @@ class UndoStep : public GarbageCollectedFinalized<UndoStep> {
 
   uint64_t SequenceNumber() const { return sequence_number_; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   UndoStep(Document*,

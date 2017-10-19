@@ -96,7 +96,7 @@ bool SharedWorker::HasPendingActivity() const {
   return is_being_connected_;
 }
 
-DEFINE_TRACE(SharedWorker) {
+void SharedWorker::Trace(blink::Visitor* visitor) {
   visitor->Trace(port_);
   AbstractWorker::Trace(visitor);
   Supplementable<SharedWorker>::Trace(visitor);

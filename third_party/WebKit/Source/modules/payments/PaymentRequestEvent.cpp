@@ -107,7 +107,7 @@ void PaymentRequestEvent::respondWith(ScriptState* script_state,
   }
 }
 
-DEFINE_TRACE(PaymentRequestEvent) {
+void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(method_data_);
   visitor->Trace(modifiers_);
   visitor->Trace(observer_);

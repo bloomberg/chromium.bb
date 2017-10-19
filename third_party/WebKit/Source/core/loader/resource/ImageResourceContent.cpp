@@ -30,7 +30,9 @@ class NullImageResourceInfo final
  public:
   NullImageResourceInfo() {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { ImageResourceInfo::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    ImageResourceInfo::Trace(visitor);
+  }
 
  private:
   const KURL& Url() const override { return url_; }
@@ -95,7 +97,7 @@ void ImageResourceContent::SetImageResourceInfo(ImageResourceInfo* info) {
   info_ = info;
 }
 
-DEFINE_TRACE(ImageResourceContent) {
+void ImageResourceContent::Trace(blink::Visitor* visitor) {
   visitor->Trace(info_);
   ImageObserver::Trace(visitor);
 }

@@ -53,7 +53,7 @@ class MODULES_EXPORT FetchDataLoader
 
     virtual void DidFetchDataLoadFailed() = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void Trace(blink::Visitor* visitor) {}
   };
 
   static FetchDataLoader* CreateLoaderAsBlobHandle(const String& mime_type);
@@ -72,7 +72,7 @@ class MODULES_EXPORT FetchDataLoader
 
   virtual void Cancel() = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

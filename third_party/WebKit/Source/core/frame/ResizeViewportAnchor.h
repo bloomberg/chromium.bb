@@ -42,7 +42,7 @@ class CORE_EXPORT ResizeViewportAnchor final
 
   void ResizeFrameView(const IntSize&);
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(page_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(page_); }
 
  private:
   void BeginScope() { scope_count_++; }

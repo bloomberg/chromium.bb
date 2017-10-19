@@ -23,7 +23,7 @@ class CORE_EXPORT WorkletAnimationBase
   // element), so the caller should try again next main frame.
   virtual bool StartOnCompositor() = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

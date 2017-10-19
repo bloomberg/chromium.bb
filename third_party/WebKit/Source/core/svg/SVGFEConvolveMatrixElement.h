@@ -60,7 +60,7 @@ class SVGFEConvolveMatrixElement final
   SVGAnimatedInteger* targetX() { return target_x_.Get(); }
   SVGAnimatedInteger* targetY() { return target_y_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGFEConvolveMatrixElement(Document&);

@@ -93,7 +93,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   void AddConsoleMessage(ConsoleMessage*) const override {}
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(execution_context_);
     BaseFetchContext::Trace(visitor);
   }

@@ -3132,7 +3132,7 @@ String AXNodeObject::PlaceholderFromNativeAttribute() const {
   return ToTextControlElement(node)->StrippedPlaceholder();
 }
 
-DEFINE_TRACE(AXNodeObject) {
+void AXNodeObject::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_);
   AXObject::Trace(visitor);
 }

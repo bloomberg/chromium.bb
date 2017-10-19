@@ -88,7 +88,7 @@ class MediaKeys::PendingAction final
                              min_hdcp_version);
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(result_);
     visitor->Trace(data_);
   }
@@ -147,7 +147,7 @@ class SetCertificateResultPromise
         exception_code, system_code, error_message);
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -179,7 +179,7 @@ class GetStatusForPolicyResultPromise
     Resolve(EncryptedMediaUtils::ConvertKeyStatusToString(key_status));
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(media_keys_);
     ContentDecryptionModuleResultPromise::Trace(visitor);
   }
@@ -402,7 +402,7 @@ WebContentDecryptionModule* MediaKeys::ContentDecryptionModule() {
   return cdm_.get();
 }
 
-DEFINE_TRACE(MediaKeys) {
+void MediaKeys::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_actions_);
   visitor->Trace(media_element_);
   ContextLifecycleObserver::Trace(visitor);

@@ -151,7 +151,7 @@ EventTargetData::EventTargetData() {}
 
 EventTargetData::~EventTargetData() {}
 
-DEFINE_TRACE(EventTargetData) {
+void EventTargetData::Trace(blink::Visitor* visitor) {
   visitor->Trace(event_listener_map);
 }
 

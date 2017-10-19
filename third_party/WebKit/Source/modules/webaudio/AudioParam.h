@@ -213,7 +213,7 @@ class AudioParam final : public GarbageCollectedFinalized<AudioParam>,
                             float min_value,
                             float max_value);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   // |handler| always returns a valid object.
   AudioParamHandler& Handler() const { return *handler_; }
   // |context| always returns a valid object.

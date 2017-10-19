@@ -75,7 +75,9 @@ class CORE_EXPORT StyleInvalidator {
   void RescheduleSiblingInvalidationsAsDescendants(Element&);
   void ClearInvalidation(ContainerNode&);
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(pending_invalidation_map_); }
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(pending_invalidation_map_);
+  }
 
  private:
   struct RecursionData {

@@ -29,7 +29,7 @@ class AudioParamMapIterationSource final
     return true;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(parameter_objects_);
     PairIterable<String, AudioParam*>::IterationSource::Trace(visitor);
   }

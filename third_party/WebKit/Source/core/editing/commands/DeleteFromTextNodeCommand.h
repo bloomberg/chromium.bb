@@ -40,7 +40,7 @@ class DeleteFromTextNodeCommand final : public SimpleEditCommand {
     return new DeleteFromTextNodeCommand(node, offset, count);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   DeleteFromTextNodeCommand(Text*, unsigned offset, unsigned count);

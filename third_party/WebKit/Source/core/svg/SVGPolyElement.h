@@ -35,7 +35,7 @@ class SVGPolyElement : public SVGGeometryElement {
   SVGPointListTearOff* pointsFromJavascript() { return points_->baseVal(); }
   SVGPointListTearOff* animatedPoints() { return points_->animVal(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   SVGPolyElement(const QualifiedName&, Document&);

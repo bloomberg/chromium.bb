@@ -63,7 +63,7 @@ class PublicURLManager final
   // ContextLifecycleObserver interface.
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit PublicURLManager(ExecutionContext*);

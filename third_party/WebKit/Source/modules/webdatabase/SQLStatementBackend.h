@@ -49,7 +49,7 @@ class SQLStatementBackend final
                                      const String& sql_statement,
                                      const Vector<SQLValue>& arguments,
                                      int permissions);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   bool Execute(Database*);
   bool LastExecutionFailedDueToQuota() const;

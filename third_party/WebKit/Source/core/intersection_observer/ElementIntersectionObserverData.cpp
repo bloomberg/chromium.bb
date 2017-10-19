@@ -60,7 +60,7 @@ void ElementIntersectionObserverData::DeactivateAllIntersectionObservers(
       .RemoveTrackedObserversForRoot(node);
 }
 
-DEFINE_TRACE(ElementIntersectionObserverData) {
+void ElementIntersectionObserverData::Trace(blink::Visitor* visitor) {
   visitor->Trace(intersection_observers_);
   visitor->Trace(intersection_observations_);
 }

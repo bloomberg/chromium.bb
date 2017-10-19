@@ -64,7 +64,7 @@ class TextDecoder final : public GarbageCollectedFinalized<TextDecoder>,
   String decode(const BufferSource&, const TextDecodeOptions&, ExceptionState&);
   String decode(ExceptionState&);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignore_bom);

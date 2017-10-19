@@ -42,7 +42,7 @@ class NotificationManager final
       ScriptState*,
       NotificationPermissionCallback* deprecated_callback);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   NotificationManager();

@@ -54,7 +54,7 @@ void WebGLRenderbuffer::DeleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
   object_ = 0;
 }
 
-DEFINE_TRACE(WebGLRenderbuffer) {
+void WebGLRenderbuffer::Trace(blink::Visitor* visitor) {
   WebGLSharedPlatform3DObject::Trace(visitor);
 }
 

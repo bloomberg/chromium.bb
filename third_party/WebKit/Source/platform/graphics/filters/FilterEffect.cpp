@@ -39,7 +39,7 @@ FilterEffect::FilterEffect(Filter* filter)
 
 FilterEffect::~FilterEffect() {}
 
-DEFINE_TRACE(FilterEffect) {
+void FilterEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(input_effects_);
   visitor->Trace(filter_);
 }

@@ -115,7 +115,7 @@ class CORE_EXPORT Blob : public GarbageCollectedFinalized<Blob>,
   // ImageBitmapSource implementation
   bool IsBlob() const override { return true; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  protected:
   explicit Blob(RefPtr<BlobDataHandle>);

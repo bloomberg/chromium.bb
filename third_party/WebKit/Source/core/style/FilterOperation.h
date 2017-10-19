@@ -89,7 +89,7 @@ class CORE_EXPORT FilterOperation
   }
 
   virtual ~FilterOperation() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
   static FilterOperation* Blend(const FilterOperation* from,
                                 const FilterOperation* to,
@@ -149,7 +149,7 @@ class CORE_EXPORT ReferenceFilterOperation : public FilterOperation {
   void AddClient(SVGResourceClient*);
   void RemoveClient(SVGResourceClient*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   ReferenceFilterOperation(const String& url, SVGElementProxy&);

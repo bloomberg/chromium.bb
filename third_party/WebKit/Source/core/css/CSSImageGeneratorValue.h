@@ -77,7 +77,7 @@ class CORE_EXPORT CSSImageGeneratorValue : public CSSValue {
 
   CSSImageGeneratorValue* ValueWithURLsMadeAbsolute();
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     CSSValue::TraceAfterDispatch(visitor);
   }
 

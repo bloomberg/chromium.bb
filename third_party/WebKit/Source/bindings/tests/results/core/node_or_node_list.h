@@ -42,7 +42,7 @@ class CORE_EXPORT NodeOrNodeList final {
   NodeOrNodeList(const NodeOrNodeList&);
   ~NodeOrNodeList();
   NodeOrNodeList& operator=(const NodeOrNodeList&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

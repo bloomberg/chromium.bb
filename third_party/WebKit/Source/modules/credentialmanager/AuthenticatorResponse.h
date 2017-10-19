@@ -24,7 +24,7 @@ class MODULES_EXPORT AuthenticatorResponse
 
   DOMArrayBuffer* clientDataJSON() const { return client_data_json_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   explicit AuthenticatorResponse(DOMArrayBuffer* client_data_json);

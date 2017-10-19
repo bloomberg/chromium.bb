@@ -29,7 +29,7 @@ class CORE_EXPORT VideoTrack final
   }
 
   ~VideoTrack() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   bool selected() const { return selected_; }
   void setSelected(bool);

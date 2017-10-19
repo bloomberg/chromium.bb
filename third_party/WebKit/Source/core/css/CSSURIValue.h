@@ -34,7 +34,7 @@ class CSSURIValue : public CSSValue {
   bool IsLocal(const Document&) const;
   bool Equals(const CSSURIValue&) const;
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSURIValue(const AtomicString&, const KURL&);

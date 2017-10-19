@@ -176,7 +176,7 @@ Document* NavigatorVR::GetDocument() {
   return GetSupplementable()->GetFrame()->GetDocument();
 }
 
-DEFINE_TRACE(NavigatorVR) {
+void NavigatorVR::Trace(blink::Visitor* visitor) {
   visitor->Trace(vr_);
   visitor->Trace(controller_);
   Supplement<Navigator>::Trace(visitor);

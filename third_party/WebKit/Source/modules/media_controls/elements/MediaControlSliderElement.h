@@ -19,7 +19,7 @@ class MODULES_EXPORT MediaControlSliderElement
   USING_GARBAGE_COLLECTED_MIXIN(MediaControlSliderElement);
 
  public:
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // Stores the position of the segment in proportion from 0.0 to 1.0.
   struct Position {

@@ -63,7 +63,7 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
   void duplicateBufferHandle(const MojoDuplicateBufferHandleOptions&,
                              MojoCreateSharedBufferResult&);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit MojoHandle(mojo::ScopedHandle);

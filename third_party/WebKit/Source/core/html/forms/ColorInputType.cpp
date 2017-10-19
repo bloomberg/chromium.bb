@@ -82,7 +82,7 @@ InputType* ColorInputType::Create(HTMLInputElement& element) {
 
 ColorInputType::~ColorInputType() {}
 
-DEFINE_TRACE(ColorInputType) {
+void ColorInputType::Trace(blink::Visitor* visitor) {
   visitor->Trace(chooser_);
   KeyboardClickableInputTypeView::Trace(visitor);
   ColorChooserClient::Trace(visitor);

@@ -31,7 +31,7 @@ class CSSColorValue : public CSSValue {
     return color_ == other.color_;
   }
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     CSSValue::TraceAfterDispatch(visitor);
   }
 

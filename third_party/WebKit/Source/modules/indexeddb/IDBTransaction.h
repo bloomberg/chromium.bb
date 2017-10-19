@@ -82,7 +82,7 @@ class MODULES_EXPORT IDBTransaction final
       IDBOpenDBRequest*,
       const IDBDatabaseMetadata& old_metadata);
   ~IDBTransaction() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   static WebIDBTransactionMode StringToMode(const String&);
 

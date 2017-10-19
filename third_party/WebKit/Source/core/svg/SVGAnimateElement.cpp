@@ -588,7 +588,7 @@ void SVGAnimateElement::ResetAnimatedPropertyType() {
   ClearTargetProperty();
 }
 
-DEFINE_TRACE(SVGAnimateElement) {
+void SVGAnimateElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(from_property_);
   visitor->Trace(to_property_);
   visitor->Trace(to_at_end_of_duration_property_);

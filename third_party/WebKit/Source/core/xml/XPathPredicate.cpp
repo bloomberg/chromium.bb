@@ -38,7 +38,7 @@ namespace XPath {
 
 Number::Number(double value) : value_(value) {}
 
-DEFINE_TRACE(Number) {
+void Number::Trace(blink::Visitor* visitor) {
   visitor->Trace(value_);
   Expression::Trace(visitor);
 }
@@ -49,7 +49,7 @@ Value Number::Evaluate(EvaluationContext&) const {
 
 StringExpression::StringExpression(const String& value) : value_(value) {}
 
-DEFINE_TRACE(StringExpression) {
+void StringExpression::Trace(blink::Visitor* visitor) {
   visitor->Trace(value_);
   Expression::Trace(visitor);
 }
@@ -256,7 +256,7 @@ Value Union::Evaluate(EvaluationContext& context) const {
 
 Predicate::Predicate(Expression* expr) : expr_(expr) {}
 
-DEFINE_TRACE(Predicate) {
+void Predicate::Trace(blink::Visitor* visitor) {
   visitor->Trace(expr_);
 }
 

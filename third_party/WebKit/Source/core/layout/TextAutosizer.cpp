@@ -1403,7 +1403,7 @@ void TextAutosizer::CheckSuperclusterConsistency() {
   potentially_inconsistent_superclusters.clear();
 }
 
-DEFINE_TRACE(TextAutosizer) {
+void TextAutosizer::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
 }
 

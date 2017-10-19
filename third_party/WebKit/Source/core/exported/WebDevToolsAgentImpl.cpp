@@ -267,7 +267,7 @@ WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
   DCHECK(!client_);
 }
 
-DEFINE_TRACE(WebDevToolsAgentImpl) {
+void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(web_local_frame_impl_);
   visitor->Trace(probe_sink_);
   visitor->Trace(resource_content_loader_);

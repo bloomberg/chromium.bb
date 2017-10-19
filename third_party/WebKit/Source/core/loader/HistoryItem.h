@@ -118,7 +118,7 @@ class CORE_EXPORT HistoryItem final
 
   ResourceRequest GenerateResourceRequest(WebCachePolicy);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   HistoryItem();

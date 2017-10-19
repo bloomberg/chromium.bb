@@ -61,7 +61,7 @@ ByteStringOrNodeList::ByteStringOrNodeList(const ByteStringOrNodeList&) = defaul
 ByteStringOrNodeList::~ByteStringOrNodeList() = default;
 ByteStringOrNodeList& ByteStringOrNodeList::operator=(const ByteStringOrNodeList&) = default;
 
-DEFINE_TRACE(ByteStringOrNodeList) {
+void ByteStringOrNodeList::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_list_);
 }
 

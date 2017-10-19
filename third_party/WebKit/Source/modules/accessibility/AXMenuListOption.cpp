@@ -196,7 +196,7 @@ HTMLSelectElement* AXMenuListOption::ParentSelectNode() const {
   return 0;
 }
 
-DEFINE_TRACE(AXMenuListOption) {
+void AXMenuListOption::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   AXMockObject::Trace(visitor);
 }

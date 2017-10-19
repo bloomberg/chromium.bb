@@ -18,7 +18,7 @@ ModuleScriptFetcher* DocumentModulatorImpl::CreateModuleScriptFetcher() {
   return new DocumentModuleScriptFetcher(fetcher_);
 }
 
-DEFINE_TRACE(DocumentModulatorImpl) {
+void DocumentModulatorImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);
   ModulatorImplBase::Trace(visitor);
 }

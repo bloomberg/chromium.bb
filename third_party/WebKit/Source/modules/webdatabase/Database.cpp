@@ -279,7 +279,7 @@ Database::~Database() {
   DCHECK(!opened_);
 }
 
-DEFINE_TRACE(Database) {
+void Database::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_context_);
   visitor->Trace(sqlite_database_);
   visitor->Trace(database_authorizer_);

@@ -708,7 +708,7 @@ bool CSSPrimitiveValue::Equals(const CSSPrimitiveValue& other) const {
   return false;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSPrimitiveValue) {
+void CSSPrimitiveValue::TraceAfterDispatch(blink::Visitor* visitor) {
   switch (GetType()) {
     case UnitType::kCalc:
       visitor->Trace(value_.calc);

@@ -23,7 +23,7 @@ class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>,
   // IDL attributes / methods
   size_t size() const { return entries_.size(); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(entries_); }
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(entries_); }
 
  private:
   // We use HeapVector here to keep the entry order.
@@ -73,7 +73,7 @@ class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>,
       return true;
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE() {
+    virtual void Trace(blink::Visitor* visitor) {
       visitor->Trace(map_);
       PairIterable<String, T*>::IterationSource::Trace(visitor);
     }

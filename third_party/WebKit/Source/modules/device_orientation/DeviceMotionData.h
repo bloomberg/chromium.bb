@@ -50,7 +50,7 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                 bool can_provide_z,
                                 double z);
     static Acceleration* Create(const DeviceAccelerationInit&);
-    DEFINE_INLINE_TRACE() {}
+    void Trace(blink::Visitor* visitor) {}
 
     bool CanProvideX() const { return can_provide_x_; }
     bool CanProvideY() const { return can_provide_y_; }
@@ -87,7 +87,7 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                 bool can_provide_gamma,
                                 double gamma);
     static RotationRate* Create(const DeviceRotationRateInit&);
-    DEFINE_INLINE_TRACE() {}
+    void Trace(blink::Visitor* visitor) {}
 
     bool CanProvideAlpha() const { return can_provide_alpha_; }
     bool CanProvideBeta() const { return can_provide_beta_; }
@@ -121,7 +121,7 @@ class DeviceMotionData final : public GarbageCollected<DeviceMotionData> {
                                   double interval);
   static DeviceMotionData* Create(const DeviceMotionEventInit&);
   static DeviceMotionData* Create(const device::MotionData&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   Acceleration* GetAcceleration() const { return acceleration_.Get(); }
   Acceleration* GetAccelerationIncludingGravity() const {

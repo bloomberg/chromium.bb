@@ -56,7 +56,7 @@ void CSSRule::SetParentRule(CSSRule* rule) {
   ScriptWrappableVisitor::WriteBarrier(parent_rule_);
 }
 
-DEFINE_TRACE(CSSRule) {
+void CSSRule::Trace(blink::Visitor* visitor) {
   // This makes the parent link strong, which is different from the
   // pre-oilpan world, where the parent link is mysteriously zeroed under
   // some circumstances.

@@ -45,7 +45,7 @@ inline SVGCircleElement::SVGCircleElement(Document& document)
   AddToPropertyMap(r_);
 }
 
-DEFINE_TRACE(SVGCircleElement) {
+void SVGCircleElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(cx_);
   visitor->Trace(cy_);
   visitor->Trace(r_);

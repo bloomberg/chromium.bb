@@ -36,7 +36,7 @@ class CORE_EXPORT SnapCoordinator final
  public:
   static SnapCoordinator* Create();
   ~SnapCoordinator();
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   void SnapContainerDidChange(LayoutBox&, ScrollSnapType);
   void SnapAreaDidChange(LayoutBox&, ScrollSnapAlign);

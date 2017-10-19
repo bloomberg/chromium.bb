@@ -166,7 +166,7 @@ void PendingAnimations::NotifyCompositorAnimationStarted(
   }
 }
 
-DEFINE_TRACE(PendingAnimations) {
+void PendingAnimations::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_);
   visitor->Trace(waiting_for_compositor_animation_start_);
 }

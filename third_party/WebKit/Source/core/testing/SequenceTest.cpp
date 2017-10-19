@@ -47,7 +47,7 @@ bool SequenceTest::unionReceivedSequence(const DoubleOrDoubleSequence& arg) {
   return arg.IsDoubleSequence();
 }
 
-DEFINE_TRACE(SequenceTest) {
+void SequenceTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_sequence_);
 }
 

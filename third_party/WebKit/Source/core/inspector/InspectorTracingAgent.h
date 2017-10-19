@@ -39,7 +39,7 @@ class CORE_EXPORT InspectorTracingAgent final
     return new InspectorTracingAgent(client, worker_agent, inspected_frames);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // Base agent methods.
   void Restore() override;

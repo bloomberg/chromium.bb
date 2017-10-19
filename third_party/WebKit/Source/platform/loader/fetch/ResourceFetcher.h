@@ -70,7 +70,7 @@ class PLATFORM_EXPORT ResourceFetcher
     return new ResourceFetcher(context);
   }
   virtual ~ResourceFetcher();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   Resource* RequestResource(FetchParameters&,
                             const ResourceFactory&,

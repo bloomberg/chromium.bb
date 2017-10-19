@@ -33,7 +33,7 @@ class CanvasRenderingContext2DState final
 
   ~CanvasRenderingContext2DState() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   enum ClipListCopyMode { kCopyClipList, kDontCopyClipList };
 

@@ -42,7 +42,7 @@ class PLATFORM_EXPORT FontCacheClient
   virtual ~FontCacheClient() {}
 
   virtual void FontCacheInvalidated() = 0;
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

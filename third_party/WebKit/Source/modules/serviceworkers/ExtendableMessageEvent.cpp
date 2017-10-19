@@ -80,7 +80,7 @@ const AtomicString& ExtendableMessageEvent::InterfaceName() const {
   return EventNames::ExtendableMessageEvent;
 }
 
-DEFINE_TRACE(ExtendableMessageEvent) {
+void ExtendableMessageEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(source_as_client_);
   visitor->Trace(source_as_service_worker_);
   visitor->Trace(source_as_message_port_);

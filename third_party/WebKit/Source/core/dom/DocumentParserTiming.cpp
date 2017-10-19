@@ -65,7 +65,7 @@ void DocumentParserTiming::RecordParserBlockedOnScriptExecutionDuration(
   NotifyDocumentParserTimingChanged();
 }
 
-DEFINE_TRACE(DocumentParserTiming) {
+void DocumentParserTiming::Trace(blink::Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
 }
 

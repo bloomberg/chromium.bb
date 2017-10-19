@@ -29,7 +29,7 @@ class ElementIntersectionObserverData
   void ActivateValidIntersectionObservers(Node&);
   void DeactivateAllIntersectionObservers(Node&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

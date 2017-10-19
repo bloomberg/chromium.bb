@@ -52,7 +52,7 @@ class CORE_EXPORT CSSRotation final : public CSSTransformComponent {
   const DOMMatrix* AsMatrix(ExceptionState&) const final;
   const CSSFunctionValue* ToCSSValue() const final;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(angle_);
     CSSTransformComponent::Trace(visitor);
   }

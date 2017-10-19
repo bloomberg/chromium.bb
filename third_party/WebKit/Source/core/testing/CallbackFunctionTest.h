@@ -26,7 +26,7 @@ class CallbackFunctionTest final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   static CallbackFunctionTest* Create() { return new CallbackFunctionTest(); }
 

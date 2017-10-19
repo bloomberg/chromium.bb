@@ -41,7 +41,7 @@ class CSSGridLineNamesValue : public CSSValueList {
 
   String CustomCSSText() const;
 
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
+  void TraceAfterDispatch(blink::Visitor* visitor) {
     CSSValueList::TraceAfterDispatch(visitor);
   }
 

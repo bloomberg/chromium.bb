@@ -17,7 +17,7 @@ AnimationWorkletProxyClientImpl::AnimationWorkletProxyClientImpl(
   DCHECK(IsMainThread());
 }
 
-DEFINE_TRACE(AnimationWorkletProxyClientImpl) {
+void AnimationWorkletProxyClientImpl::Trace(blink::Visitor* visitor) {
   AnimationWorkletProxyClient::Trace(visitor);
   CompositorAnimator::Trace(visitor);
 }

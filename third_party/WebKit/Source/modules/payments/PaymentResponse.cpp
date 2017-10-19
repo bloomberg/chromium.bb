@@ -70,7 +70,7 @@ ScriptPromise PaymentResponse::complete(ScriptState* script_state,
   return payment_completer_->Complete(script_state, converted_result);
 }
 
-DEFINE_TRACE(PaymentResponse) {
+void PaymentResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_completer_);
 }

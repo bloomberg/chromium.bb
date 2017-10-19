@@ -79,7 +79,9 @@ class CORE_EXPORT DOMArrayBufferView
     return v8::Local<v8::Object>();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(dom_array_buffer_); }
+  virtual void Trace(blink::Visitor* visitor) {
+    visitor->Trace(dom_array_buffer_);
+  }
 
  protected:
   explicit DOMArrayBufferView(RefPtr<WTF::ArrayBufferView> buffer_view)

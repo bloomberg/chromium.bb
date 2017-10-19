@@ -33,7 +33,7 @@ class CORE_EXPORT ResizeObserver final
     virtual ~Delegate() = default;
     virtual void OnResize(
         const HeapVector<Member<ResizeObserverEntry>>& entries) = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void Trace(blink::Visitor* visitor) {}
   };
 
   static ResizeObserver* Create(Document&, V8ResizeObserverCallback*);
@@ -53,7 +53,7 @@ class CORE_EXPORT ResizeObserver final
   void ClearObservations();
   void ElementSizeChanged();
   bool HasElementSizeChanged() { return element_size_changed_; }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

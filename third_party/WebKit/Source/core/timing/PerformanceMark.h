@@ -40,7 +40,9 @@ class CORE_EXPORT PerformanceMark final : public PerformanceEntry {
     return new PerformanceMark(name, start_time);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { PerformanceEntry::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    PerformanceEntry::Trace(visitor);
+  }
 
  private:
   PerformanceMark(const String& name, double start_time)

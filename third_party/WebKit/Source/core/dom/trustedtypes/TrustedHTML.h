@@ -29,7 +29,7 @@ class CORE_EXPORT TrustedHTML final
   static TrustedHTML* escape(ScriptState*, const String& html);
   static TrustedHTML* unsafelyCreate(ScriptState*, const String& html);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  private:
   TrustedHTML(const String& html);

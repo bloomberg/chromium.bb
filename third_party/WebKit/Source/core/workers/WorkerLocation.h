@@ -51,7 +51,7 @@ class WorkerLocation final : public GarbageCollectedFinalized<WorkerLocation>,
     return String();
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit WorkerLocation(const KURL& url) : url_(url) {}

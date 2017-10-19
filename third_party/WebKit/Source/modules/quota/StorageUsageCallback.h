@@ -39,7 +39,7 @@ class StorageUsageCallback
     : public GarbageCollectedFinalized<StorageUsageCallback> {
  public:
   virtual ~StorageUsageCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(uint64_t current_usage_in_bytes,
                            uint64_t current_quota_in_bytes) = 0;
 };

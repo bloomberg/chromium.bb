@@ -52,7 +52,7 @@ class NavigatorWebMIDI final : public GarbageCollected<NavigatorWebMIDI>,
                                          const MIDIOptions&);
   ScriptPromise requestMIDIAccess(ScriptState*, const MIDIOptions&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit NavigatorWebMIDI(Navigator&);

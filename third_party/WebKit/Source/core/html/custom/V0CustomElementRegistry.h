@@ -51,7 +51,7 @@ class V0CustomElementRegistry final {
   DISALLOW_NEW();
 
  public:
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   void DocumentWasDetached() { document_was_detached_ = true; }
 
  protected:

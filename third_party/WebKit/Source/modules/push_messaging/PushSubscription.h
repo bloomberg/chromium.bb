@@ -46,7 +46,7 @@ class PushSubscription final
 
   ScriptValue toJSONForBinding(ScriptState*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   PushSubscription(const WebPushSubscription&, ServiceWorkerRegistration*);

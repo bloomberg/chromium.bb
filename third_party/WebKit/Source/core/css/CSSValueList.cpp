@@ -138,7 +138,7 @@ void CSSValueList::ReResolveUrl(const Document& document) const {
     value->ReResolveUrl(document);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSValueList) {
+void CSSValueList::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(values_);
   CSSValue::TraceAfterDispatch(visitor);
 }

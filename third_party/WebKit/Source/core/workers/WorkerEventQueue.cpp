@@ -46,7 +46,7 @@ WorkerEventQueue::~WorkerEventQueue() {
   DCHECK(pending_events_.IsEmpty());
 }
 
-DEFINE_TRACE(WorkerEventQueue) {
+void WorkerEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(worker_global_scope_);
   visitor->Trace(pending_events_);
   EventQueue::Trace(visitor);

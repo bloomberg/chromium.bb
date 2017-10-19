@@ -48,7 +48,7 @@ class BeforeUnloadEvent final : public Event {
     return EventNames::BeforeUnloadEvent;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   BeforeUnloadEvent();

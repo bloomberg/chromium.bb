@@ -91,7 +91,7 @@ class HTMLParserScheduler final
 
   void Detach();  // Clear active tasks if any.
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   HTMLParserScheduler(HTMLDocumentParser*, RefPtr<WebTaskRunner>);

@@ -15,7 +15,7 @@ SVGAnimatedHref* SVGAnimatedHref::Create(SVGElement* context_element) {
   return new SVGAnimatedHref(context_element);
 }
 
-DEFINE_TRACE(SVGAnimatedHref) {
+void SVGAnimatedHref::Trace(blink::Visitor* visitor) {
   visitor->Trace(xlink_href_);
   SVGAnimatedString::Trace(visitor);
 }

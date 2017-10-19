@@ -81,7 +81,7 @@ std::unique_ptr<TransformationMatrix> VRFrameOfReference::TransformBasePose(
   return nullptr;
 }
 
-DEFINE_TRACE(VRFrameOfReference) {
+void VRFrameOfReference::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounds_);
   VRCoordinateSystem::Trace(visitor);
 }

@@ -144,7 +144,7 @@ void ServiceWorkerContainer::ContextDestroyed(ExecutionContext*) {
   navigator_->ClearServiceWorker();
 }
 
-DEFINE_TRACE(ServiceWorkerContainer) {
+void ServiceWorkerContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
   visitor->Trace(ready_);
   visitor->Trace(navigator_);

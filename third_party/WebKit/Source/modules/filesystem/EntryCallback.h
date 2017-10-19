@@ -40,7 +40,7 @@ class Entry;
 class EntryCallback : public GarbageCollectedFinalized<EntryCallback> {
  public:
   virtual ~EntryCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(Entry*) = 0;
 };
 

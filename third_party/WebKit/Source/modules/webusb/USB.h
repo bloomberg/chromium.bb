@@ -67,7 +67,7 @@ class USB final : public EventTargetWithInlineData,
   void OnDeviceManagerConnectionError();
   void OnChooserServiceConnectionError();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   // EventTarget protected overrides.

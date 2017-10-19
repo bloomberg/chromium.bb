@@ -77,7 +77,7 @@ SQLTransaction::SQLTransaction(Database* db,
 
 SQLTransaction::~SQLTransaction() {}
 
-DEFINE_TRACE(SQLTransaction) {
+void SQLTransaction::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_);
   visitor->Trace(backend_);
   visitor->Trace(callback_);

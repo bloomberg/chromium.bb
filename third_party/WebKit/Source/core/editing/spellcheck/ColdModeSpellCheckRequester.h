@@ -30,7 +30,7 @@ class ColdModeSpellCheckRequester
   void Invoke(IdleDeadline*);
   bool FullDocumentChecked() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit ColdModeSpellCheckRequester(LocalFrame&);

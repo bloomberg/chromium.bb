@@ -54,7 +54,7 @@ class Coordinates : public GarbageCollected<Coordinates>,
                            provides_speed, speed);
   }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   double latitude() const { return latitude_; }
   double longitude() const { return longitude_; }

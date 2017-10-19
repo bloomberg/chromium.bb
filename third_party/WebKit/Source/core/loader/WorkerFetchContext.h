@@ -103,7 +103,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
   RefPtr<WebTaskRunner> GetLoadingTaskRunner() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,

@@ -67,7 +67,7 @@ TestEnumOrDouble::TestEnumOrDouble(const TestEnumOrDouble&) = default;
 TestEnumOrDouble::~TestEnumOrDouble() = default;
 TestEnumOrDouble& TestEnumOrDouble::operator=(const TestEnumOrDouble&) = default;
 
-DEFINE_TRACE(TestEnumOrDouble) {
+void TestEnumOrDouble::Trace(blink::Visitor* visitor) {
 }
 
 void V8TestEnumOrDouble::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, TestEnumOrDouble& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {

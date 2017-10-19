@@ -47,7 +47,7 @@ unsigned NodeIteratorBase::AcceptNode(Node* node,
   return filter_->acceptNode(node, exception_state);
 }
 
-DEFINE_TRACE(NodeIteratorBase) {
+void NodeIteratorBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(root_);
   visitor->Trace(filter_);
 }

@@ -29,7 +29,7 @@ class VRStageParameters final : public GarbageCollected<VRStageParameters>,
 
   void Update(const device::mojom::blink::VRStageParametersPtr&);
 
-  DECLARE_VIRTUAL_TRACE()
+  virtual void Trace(blink::Visitor*);
 
  private:
   Member<DOMFloat32Array> standing_transform_;

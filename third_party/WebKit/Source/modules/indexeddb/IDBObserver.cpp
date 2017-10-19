@@ -98,7 +98,7 @@ void IDBObserver::unobserve(IDBDatabase* database,
     database->RemoveObservers(observer_ids_to_remove);
 }
 
-DEFINE_TRACE(IDBObserver) {
+void IDBObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(observer_ids_);
 }

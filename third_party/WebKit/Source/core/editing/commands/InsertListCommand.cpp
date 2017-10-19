@@ -698,7 +698,7 @@ void InsertListCommand::MoveParagraphOverPositionIntoEmptyListItem(
                 editing_state, kPreserveSelection);
 }
 
-DEFINE_TRACE(InsertListCommand) {
+void InsertListCommand::Trace(blink::Visitor* visitor) {
   CompositeEditCommand::Trace(visitor);
 }
 

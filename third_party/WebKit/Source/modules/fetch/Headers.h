@@ -57,7 +57,7 @@ class MODULES_EXPORT Headers final : public GarbageCollected<Headers>,
   void FillWith(const HeadersInit&, ExceptionState&);
 
   FetchHeaderList* HeaderList() const { return header_list_; }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Headers();

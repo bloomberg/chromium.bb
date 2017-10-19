@@ -85,7 +85,7 @@ HTMLVideoElement* HTMLVideoElement::Create(Document& document) {
   return video;
 }
 
-DEFINE_TRACE(HTMLVideoElement) {
+void HTMLVideoElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(image_loader_);
   visitor->Trace(custom_controls_fullscreen_detector_);
   visitor->Trace(remoting_interstitial_);

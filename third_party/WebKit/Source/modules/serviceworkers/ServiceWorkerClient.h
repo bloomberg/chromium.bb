@@ -46,7 +46,7 @@ class MODULES_EXPORT ServiceWorkerClient
 
   static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);

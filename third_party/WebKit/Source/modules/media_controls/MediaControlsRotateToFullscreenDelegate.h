@@ -35,7 +35,7 @@ class MediaControlsRotateToFullscreenDelegate final : public EventListener {
   // EventListener implementation.
   bool operator==(const EventListener&) const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   friend class MediaControlsRotateToFullscreenDelegateTest;

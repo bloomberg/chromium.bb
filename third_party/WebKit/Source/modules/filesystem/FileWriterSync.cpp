@@ -111,7 +111,7 @@ void FileWriterSync::PrepareForWrite() {
 
 FileWriterSync::~FileWriterSync() {}
 
-DEFINE_TRACE(FileWriterSync) {
+void FileWriterSync::Trace(blink::Visitor* visitor) {
   FileWriterBase::Trace(visitor);
 }
 

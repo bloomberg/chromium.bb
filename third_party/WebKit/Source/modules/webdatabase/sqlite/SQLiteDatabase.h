@@ -122,7 +122,7 @@ class SQLiteDatabase {
   };
   bool TurnOnIncrementalAutoVacuum();
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   static int AuthorizerFunction(void*,

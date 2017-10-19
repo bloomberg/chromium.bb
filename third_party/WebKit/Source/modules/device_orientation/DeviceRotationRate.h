@@ -41,7 +41,7 @@ class DeviceRotationRate final : public GarbageCollected<DeviceRotationRate>,
       DeviceMotionData::RotationRate* rotation_rate) {
     return new DeviceRotationRate(rotation_rate);
   }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   double alpha(bool& is_null) const;
   double beta(bool& is_null) const;

@@ -44,7 +44,7 @@ class BeforeTextInsertedEvent final : public Event {
   const String& GetText() const { return text_; }
   void SetText(const String& s) { text_ = s; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit BeforeTextInsertedEvent(const String&);

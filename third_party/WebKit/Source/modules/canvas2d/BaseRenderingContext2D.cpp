@@ -1901,7 +1901,7 @@ BaseRenderingContext2D::GetUsage() {
   return usage_counters_;
 }
 
-DEFINE_TRACE(BaseRenderingContext2D) {
+void BaseRenderingContext2D::Trace(blink::Visitor* visitor) {
   visitor->Trace(state_stack_);
 }
 

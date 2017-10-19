@@ -40,7 +40,7 @@ class CORE_EXPORT IdlenessDetector
   double GetNetworkAlmostIdleTime();
   double GetNetworkIdleTime();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   friend class IdlenessDetectorTest;

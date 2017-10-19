@@ -37,7 +37,7 @@ class IntersectionObserverEntry final
   bool isIntersecting() const { return is_intersecting_; }
   Element* target() const { return target_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   DOMHighResTimeStamp time_;

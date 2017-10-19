@@ -1024,7 +1024,7 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
   return Response::OK();
 }
 
-DEFINE_TRACE(InspectorPageAgent) {
+void InspectorPageAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   visitor->Trace(inspector_resource_content_loader_);
   InspectorBaseAgent::Trace(visitor);

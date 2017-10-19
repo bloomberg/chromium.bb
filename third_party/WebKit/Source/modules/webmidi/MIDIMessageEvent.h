@@ -57,7 +57,7 @@ class MIDIMessageEvent final : public Event {
     return EventNames::MIDIMessageEvent;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(data_);
     Event::Trace(visitor);
   }

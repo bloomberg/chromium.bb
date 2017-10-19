@@ -218,7 +218,7 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* script_state,
   return promise;
 }
 
-DEFINE_TRACE(Bluetooth) {
+void Bluetooth::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_instance_map_);
 }
 

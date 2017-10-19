@@ -26,7 +26,7 @@ class PaintWorkletPendingGeneratorRegistry
   void NotifyGeneratorReady(const String& name);
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   // The map of CSSPaintImageGeneratorImpl which are waiting for a

@@ -500,7 +500,7 @@ std::unique_ptr<ukm::UkmEntryBuilder> AutoplayUmaHelper::CreateUkmBuilder(
                                        event);
 }
 
-DEFINE_TRACE(AutoplayUmaHelper) {
+void AutoplayUmaHelper::Trace(blink::Visitor* visitor) {
   EventListener::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(element_);

@@ -111,7 +111,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
             std::unique_ptr<SourceLocation>) override;
   void Disconnect() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   class BlobLoader;

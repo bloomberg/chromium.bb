@@ -44,7 +44,7 @@ class EventDispatchMediator
  public:
   static EventDispatchMediator* Create(Event*);
   virtual ~EventDispatchMediator() {}
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   virtual DispatchEventResult DispatchEvent(EventDispatcher&) const;
   Event& GetEvent() const { return *event_; }
 

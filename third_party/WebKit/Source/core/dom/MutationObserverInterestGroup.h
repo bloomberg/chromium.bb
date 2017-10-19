@@ -78,7 +78,7 @@ class MutationObserverInterestGroup final
   bool IsOldValueRequested();
   void EnqueueMutationRecord(MutationRecord*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   static MutationObserverInterestGroup* CreateIfNeeded(

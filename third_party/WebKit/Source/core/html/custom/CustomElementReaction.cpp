@@ -12,7 +12,7 @@ CustomElementReaction::CustomElementReaction(
     CustomElementDefinition* definition)
     : definition_(definition) {}
 
-DEFINE_TRACE(CustomElementReaction) {
+void CustomElementReaction::Trace(blink::Visitor* visitor) {
   visitor->Trace(definition_);
 }
 

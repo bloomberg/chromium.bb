@@ -54,7 +54,7 @@ class PLATFORM_EXPORT FilterEffect
 
  public:
   virtual ~FilterEffect();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   void DisposeImageFilters();
   void DisposeImageFiltersRecursive();

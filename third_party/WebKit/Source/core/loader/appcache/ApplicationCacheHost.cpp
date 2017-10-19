@@ -362,7 +362,7 @@ void ApplicationCacheHost::NotifyErrorEventListener(
                          message);
 }
 
-DEFINE_TRACE(ApplicationCacheHost) {
+void ApplicationCacheHost::Trace(blink::Visitor* visitor) {
   visitor->Trace(dom_application_cache_);
   visitor->Trace(document_loader_);
 }

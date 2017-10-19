@@ -60,7 +60,7 @@ class SpeechRecognitionEvent final : public Event {
   // Event
   const AtomicString& InterfaceName() const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SpeechRecognitionEvent(const AtomicString&,

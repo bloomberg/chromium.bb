@@ -34,7 +34,7 @@ DummyModulator::DummyModulator() : resolver_(new EmptyScriptModuleResolver()) {}
 
 DummyModulator::~DummyModulator() {}
 
-DEFINE_TRACE(DummyModulator) {
+void DummyModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);
   Modulator::Trace(visitor);
 }

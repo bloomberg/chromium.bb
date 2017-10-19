@@ -183,7 +183,7 @@ bool CSSImageSetValue::HasFailedOrCanceledSubresources() const {
   return true;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSImageSetValue) {
+void CSSImageSetValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(cached_image_);
   CSSValueList::TraceAfterDispatch(visitor);
 }

@@ -35,7 +35,7 @@ GeoNotifier::GeoNotifier(Geolocation* geolocation,
   timeout_histogram.Count(options_.timeout());
 }
 
-DEFINE_TRACE(GeoNotifier) {
+void GeoNotifier::Trace(blink::Visitor* visitor) {
   visitor->Trace(geolocation_);
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);

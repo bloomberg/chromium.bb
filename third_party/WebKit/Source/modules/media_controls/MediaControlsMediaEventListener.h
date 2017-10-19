@@ -29,7 +29,7 @@ class MediaControlsMediaEventListener final : public EventListener {
 
   bool operator==(const EventListener&) const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   HTMLMediaElement& GetMediaElement();

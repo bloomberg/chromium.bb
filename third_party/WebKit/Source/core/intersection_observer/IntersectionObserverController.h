@@ -34,7 +34,7 @@ class IntersectionObserverController
   void AddTrackedObserver(IntersectionObserver&);
   void RemoveTrackedObserversForRoot(const Node&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit IntersectionObserverController(Document*);

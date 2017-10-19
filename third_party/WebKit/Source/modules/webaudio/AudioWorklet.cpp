@@ -75,7 +75,7 @@ WorkletGlobalScopeProxy* AudioWorklet::CreateGlobalScope() {
   return proxy;
 }
 
-DEFINE_TRACE(AudioWorklet) {
+void AudioWorklet::Trace(blink::Visitor* visitor) {
   visitor->Trace(contexts_);
   Worklet::Trace(visitor);
 }

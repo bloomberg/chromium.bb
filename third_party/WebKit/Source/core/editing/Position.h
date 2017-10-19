@@ -212,7 +212,7 @@ class CORE_TEMPLATE_CLASS_EXPORT PositionTemplate {
   void ShowTreeForThisInFlatTree() const;
 #endif
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   bool IsAfterAnchorOrAfterChildren() const {

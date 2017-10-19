@@ -31,7 +31,7 @@ class CORE_EXPORT TouchEventManager
  public:
 
   explicit TouchEventManager(LocalFrame&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void HandleTouchPoint(const WebPointerEvent&,
                         const Vector<WebPointerEvent>&,
@@ -51,7 +51,7 @@ class CORE_EXPORT TouchEventManager
   class TouchPointAttributes
       : public GarbageCollectedFinalized<TouchPointAttributes> {
    public:
-    DEFINE_INLINE_TRACE() { visitor->Trace(target_); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(target_); }
 
     TouchPointAttributes() {}
     explicit TouchPointAttributes(WebPointerEvent event)

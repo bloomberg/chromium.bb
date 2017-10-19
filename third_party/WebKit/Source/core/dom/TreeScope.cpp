@@ -528,7 +528,7 @@ void TreeScope::SetNeedsStyleRecalcForViewportUnits() {
   }
 }
 
-DEFINE_TRACE(TreeScope) {
+void TreeScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(root_node_);
   visitor->Trace(document_);
   visitor->Trace(parent_tree_scope_);

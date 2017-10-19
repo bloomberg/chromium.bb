@@ -56,7 +56,7 @@ SpellCheckRequest::SpellCheckRequest(Range* checking_range,
 
 SpellCheckRequest::~SpellCheckRequest() {}
 
-DEFINE_TRACE(SpellCheckRequest) {
+void SpellCheckRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(requester_);
   visitor->Trace(checking_range_);
   visitor->Trace(root_editable_element_);
@@ -279,7 +279,7 @@ void SpellCheckRequester::DidCheckCancel(int sequence) {
   DidCheck(sequence);
 }
 
-DEFINE_TRACE(SpellCheckRequester) {
+void SpellCheckRequester::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(processing_request_);
   visitor->Trace(request_queue_);

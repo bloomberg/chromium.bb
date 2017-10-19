@@ -102,7 +102,7 @@ class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
 
   void Zero();
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(channels_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(channels_); }
 
  private:
   // How to initialize the contents of an AudioBuffer.  Default is to

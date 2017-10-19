@@ -35,7 +35,7 @@ class CORE_EXPORT CSSResourceValue : public CSSStyleValue {
     }
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { CSSStyleValue::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) { CSSStyleValue::Trace(visitor); }
 
  protected:
   CSSResourceValue() {}

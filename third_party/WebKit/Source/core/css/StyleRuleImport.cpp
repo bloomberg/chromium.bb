@@ -57,7 +57,7 @@ void StyleRuleImport::Dispose() {
   resource_ = nullptr;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(StyleRuleImport) {
+void StyleRuleImport::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(style_sheet_client_);
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(style_sheet_);

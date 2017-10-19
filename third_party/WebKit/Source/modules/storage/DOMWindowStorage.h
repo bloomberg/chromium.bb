@@ -28,7 +28,7 @@ class DOMWindowStorage final : public GarbageCollected<DOMWindowStorage>,
   Storage* OptionalSessionStorage() const { return session_storage_.Get(); }
   Storage* OptionalLocalStorage() const { return local_storage_.Get(); }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit DOMWindowStorage(LocalDOMWindow&);

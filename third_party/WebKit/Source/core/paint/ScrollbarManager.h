@@ -32,7 +32,7 @@ class CORE_EXPORT ScrollbarManager {
   virtual void SetHasHorizontalScrollbar(bool has_scrollbar) = 0;
   virtual void SetHasVerticalScrollbar(bool has_scrollbar) = 0;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   // TODO(ymalik): This can be made non-virtual since there's a lot of

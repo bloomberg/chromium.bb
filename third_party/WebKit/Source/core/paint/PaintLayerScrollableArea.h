@@ -488,7 +488,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   uint64_t Id() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit PaintLayerScrollableArea(PaintLayer&);

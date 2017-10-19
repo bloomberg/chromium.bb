@@ -52,7 +52,7 @@ class MODULES_EXPORT InspectorDatabaseAgent final
     return new InspectorDatabaseAgent(page);
   }
   ~InspectorDatabaseAgent() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   protocol::Response disable() override;
   void Restore() override;

@@ -141,7 +141,7 @@ void VRDevice::SetVRDisplayInfo(
   supports_exclusive_ = (display_info_->capabilities->canPresent);
 }
 
-DEFINE_TRACE(VRDevice) {
+void VRDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(vr_);
   EventTargetWithInlineData::Trace(visitor);
 }

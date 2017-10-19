@@ -66,7 +66,7 @@ class CORE_EXPORT V0CustomElementProcessingStack
   static V0CustomElementProcessingStack& Instance();
   void Enqueue(V0CustomElementCallbackQueue*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   V0CustomElementProcessingStack() {

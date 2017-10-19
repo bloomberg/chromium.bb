@@ -32,7 +32,7 @@ RelativeOrientationSensor::RelativeOrientationSensor(
                         exception_state,
                         SensorType::RELATIVE_ORIENTATION_QUATERNION) {}
 
-DEFINE_TRACE(RelativeOrientationSensor) {
+void RelativeOrientationSensor::Trace(blink::Visitor* visitor) {
   OrientationSensor::Trace(visitor);
 }
 

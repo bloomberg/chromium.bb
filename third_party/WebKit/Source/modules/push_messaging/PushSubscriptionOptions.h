@@ -40,7 +40,7 @@ class PushSubscriptionOptions final
     return application_server_key_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit PushSubscriptionOptions(const WebPushSubscriptionOptions&);

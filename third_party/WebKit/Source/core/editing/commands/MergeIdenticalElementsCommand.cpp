@@ -84,7 +84,7 @@ void MergeIdenticalElementsCommand::DoUnapply() {
     element1_->AppendChild(child.Release(), exception_state);
 }
 
-DEFINE_TRACE(MergeIdenticalElementsCommand) {
+void MergeIdenticalElementsCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(element1_);
   visitor->Trace(element2_);
   visitor->Trace(at_child_);

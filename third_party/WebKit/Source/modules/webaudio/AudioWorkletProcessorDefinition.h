@@ -46,7 +46,9 @@ class MODULES_EXPORT AudioWorkletProcessorDefinition final
   bool IsSynchronized() const { return is_synchronized_; }
   void MarkAsSynchronized() { is_synchronized_ = true; }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(audio_param_descriptors_); };
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(audio_param_descriptors_);
+  };
   DECLARE_TRACE_WRAPPERS();
 
  private:

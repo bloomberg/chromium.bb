@@ -33,7 +33,7 @@ void MockResourceClient::Dispose() {
   }
 }
 
-DEFINE_TRACE(MockResourceClient) {
+void MockResourceClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_);
   ResourceClient::Trace(visitor);
 }

@@ -44,7 +44,7 @@ class SpeechRecognitionResultList
   unsigned length() { return results_.size(); }
   SpeechRecognitionResult* item(unsigned index);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit SpeechRecognitionResultList(

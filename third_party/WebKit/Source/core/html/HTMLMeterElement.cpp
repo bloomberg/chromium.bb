@@ -223,7 +223,7 @@ bool HTMLMeterElement::CanContainRangeEndPoint() const {
   return GetComputedStyle() && !GetComputedStyle()->HasAppearance();
 }
 
-DEFINE_TRACE(HTMLMeterElement) {
+void HTMLMeterElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(value_);
   LabelableElement::Trace(visitor);
 }

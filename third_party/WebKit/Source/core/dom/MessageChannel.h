@@ -47,7 +47,7 @@ class MessageChannel final : public GarbageCollected<MessageChannel>,
   MessagePort* port1() const { return port1_; }
   MessagePort* port2() const { return port2_; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit MessageChannel(ExecutionContext*);

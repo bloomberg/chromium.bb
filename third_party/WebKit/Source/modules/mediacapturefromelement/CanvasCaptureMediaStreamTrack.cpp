@@ -49,7 +49,7 @@ CanvasCaptureMediaStreamTrack* CanvasCaptureMediaStreamTrack::clone(
   return cloned_track;
 }
 
-DEFINE_TRACE(CanvasCaptureMediaStreamTrack) {
+void CanvasCaptureMediaStreamTrack::Trace(blink::Visitor* visitor) {
   visitor->Trace(canvas_element_);
   visitor->Trace(draw_listener_);
   MediaStreamTrack::Trace(visitor);

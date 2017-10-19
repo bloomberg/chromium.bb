@@ -79,7 +79,7 @@ void RTCStatsRequestImpl::Clear() {
   requester_.Clear();
 }
 
-DEFINE_TRACE(RTCStatsRequestImpl) {
+void RTCStatsRequestImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(success_callback_);
   visitor->Trace(component_);
   visitor->Trace(requester_);

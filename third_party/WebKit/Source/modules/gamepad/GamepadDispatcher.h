@@ -34,7 +34,7 @@ class GamepadDispatcher final
     return latest_change_;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   GamepadDispatcher();

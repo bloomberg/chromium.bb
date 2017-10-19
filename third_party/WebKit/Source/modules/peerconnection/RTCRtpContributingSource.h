@@ -29,7 +29,7 @@ class RTCRtpContributingSource final
   double timestamp();
   uint32_t source() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   Member<RTCRtpReceiver> receiver_;

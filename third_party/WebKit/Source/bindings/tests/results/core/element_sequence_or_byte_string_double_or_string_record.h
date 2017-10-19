@@ -42,7 +42,7 @@ class CORE_EXPORT ElementSequenceOrByteStringDoubleOrStringRecord final {
   ElementSequenceOrByteStringDoubleOrStringRecord(const ElementSequenceOrByteStringDoubleOrStringRecord&);
   ~ElementSequenceOrByteStringDoubleOrStringRecord();
   ElementSequenceOrByteStringDoubleOrStringRecord& operator=(const ElementSequenceOrByteStringDoubleOrStringRecord&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

@@ -85,7 +85,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
 
   static WebNavigationType ToWebNavigationType(NavigationType);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   WebDocumentLoaderImpl(LocalFrame*,

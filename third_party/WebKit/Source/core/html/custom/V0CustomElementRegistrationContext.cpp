@@ -178,7 +178,7 @@ void V0CustomElementRegistrationContext::SetV1(
   registry_.SetV1(v1);
 }
 
-DEFINE_TRACE(V0CustomElementRegistrationContext) {
+void V0CustomElementRegistrationContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(candidates_);
   visitor->Trace(registry_);
 }

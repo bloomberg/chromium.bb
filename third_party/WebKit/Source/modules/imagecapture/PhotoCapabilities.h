@@ -40,7 +40,7 @@ class PhotoCapabilities final
   }
   bool IsRedEyeReductionControllable() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   PhotoCapabilities() = default;

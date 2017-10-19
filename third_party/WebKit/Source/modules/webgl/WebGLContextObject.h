@@ -42,7 +42,7 @@ class WebGLContextObject : public WebGLObject {
   bool Validate(const WebGLContextGroup*,
                 const WebGLRenderingContextBase*) const final;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 

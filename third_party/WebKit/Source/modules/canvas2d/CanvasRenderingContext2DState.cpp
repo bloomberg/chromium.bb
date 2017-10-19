@@ -129,7 +129,7 @@ void CanvasRenderingContext2DState::FontsNeedUpdate(
   resolved_filter_.reset();
 }
 
-DEFINE_TRACE(CanvasRenderingContext2DState) {
+void CanvasRenderingContext2DState::Trace(blink::Visitor* visitor) {
   visitor->Trace(stroke_style_);
   visitor->Trace(fill_style_);
   visitor->Trace(filter_value_);

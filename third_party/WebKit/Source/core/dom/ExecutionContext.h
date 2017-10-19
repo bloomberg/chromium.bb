@@ -74,7 +74,7 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   MERGE_GARBAGE_COLLECTED_MIXINS();
 
  public:
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   static ExecutionContext* From(const ScriptState*);
 

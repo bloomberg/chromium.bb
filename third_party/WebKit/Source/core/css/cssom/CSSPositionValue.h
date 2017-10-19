@@ -35,7 +35,7 @@ class CORE_EXPORT CSSPositionValue final : public CSSStyleValue {
 
   const CSSValue* ToCSSValue() const final;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(x_);
     visitor->Trace(y_);
     CSSStyleValue::Trace(visitor);

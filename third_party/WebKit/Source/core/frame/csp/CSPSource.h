@@ -64,7 +64,7 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
 
   WebContentSecurityPolicySourceExpression ExposeForNavigationalChecks() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IsSimilar);

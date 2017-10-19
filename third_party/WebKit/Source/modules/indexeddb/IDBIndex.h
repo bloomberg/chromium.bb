@@ -54,7 +54,7 @@ class IDBIndex final : public GarbageCollectedFinalized<IDBIndex>,
     return new IDBIndex(std::move(metadata), object_store, transaction);
   }
   ~IDBIndex();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // Implement the IDL
   const String& name() const { return Metadata().name; }

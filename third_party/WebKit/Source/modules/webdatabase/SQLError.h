@@ -79,7 +79,7 @@ class SQLError final : public GarbageCollectedFinalized<SQLError>,
   static SQLError* Create(const SQLErrorData& data) {
     return new SQLError(data);
   }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   unsigned code() const { return data_.Code(); }
   String message() const { return data_.Message(); }

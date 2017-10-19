@@ -52,7 +52,7 @@ class MODULES_EXPORT FetchHeaderList final
   static bool IsValidHeaderName(const String&);
   static bool IsValidHeaderValue(const String&);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   FetchHeaderList();

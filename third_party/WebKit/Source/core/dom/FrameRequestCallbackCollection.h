@@ -30,7 +30,7 @@ class CORE_EXPORT FrameRequestCallbackCollection final
       : public GarbageCollectedFinalized<FrameCallback>,
         public TraceWrapperBase {
    public:
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void Trace(blink::Visitor* visitor) {}
     DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {}
     virtual ~FrameCallback() = default;
     virtual void Invoke(double) = 0;
@@ -60,7 +60,7 @@ class CORE_EXPORT FrameRequestCallbackCollection final
     static V8FrameCallback* Create(V8FrameRequestCallback* callback) {
       return new V8FrameCallback(callback);
     }
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
     DECLARE_TRACE_WRAPPERS();
     ~V8FrameCallback() override = default;
     void Invoke(double) override;
@@ -76,7 +76,7 @@ class CORE_EXPORT FrameRequestCallbackCollection final
 
   bool IsEmpty() const { return !callbacks_.size(); }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

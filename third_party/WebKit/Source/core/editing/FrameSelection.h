@@ -221,7 +221,7 @@ class CORE_EXPORT FrameSelection final
   base::Optional<int> LayoutSelectionEnd() const;
   void ClearLayoutSelection();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   friend class CaretDisplayItemClientTest;

@@ -48,7 +48,7 @@ class ResourceOwner : public C {
   ~ResourceOwner() override {}
   ResourceType* GetResource() const { return resource_; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(resource_);
     C::Trace(visitor);
   }

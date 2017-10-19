@@ -197,7 +197,7 @@ class ComplexFormDataBytesConsumer final : public BytesConsumer {
   Error GetError() const override { return blob_bytes_consumer_->GetError(); }
   String DebugName() const override { return "ComplexFormDataBytesConsumer"; }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(blob_bytes_consumer_);
     BytesConsumer::Trace(visitor);
   }

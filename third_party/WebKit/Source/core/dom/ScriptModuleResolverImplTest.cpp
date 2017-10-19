@@ -26,7 +26,7 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
   ScriptModuleResolverImplTestModulator() {}
   virtual ~ScriptModuleResolverImplTestModulator() {}
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void SetScriptState(ScriptState* script_state) {
     script_state_ = script_state;
@@ -61,7 +61,7 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
   Member<ModuleScript> module_script_;
 };
 
-DEFINE_TRACE(ScriptModuleResolverImplTestModulator) {
+void ScriptModuleResolverImplTestModulator::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_script_);
   DummyModulator::Trace(visitor);
 }

@@ -74,7 +74,7 @@ class CORE_EXPORT WheelEvent final : public MouseEvent {
 
   const WebMouseWheelEvent& NativeEvent() const { return native_event_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   WheelEvent();

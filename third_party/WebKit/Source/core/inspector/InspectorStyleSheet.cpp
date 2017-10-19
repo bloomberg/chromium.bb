@@ -894,7 +894,7 @@ String InspectorStyle::ShorthandValue(const String& shorthand_property) {
   return builder.ToString();
 }
 
-DEFINE_TRACE(InspectorStyle) {
+void InspectorStyle::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_);
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(source_data_);
@@ -980,7 +980,7 @@ InspectorStyleSheet::InspectorStyleSheet(
 
 InspectorStyleSheet::~InspectorStyleSheet() {}
 
-DEFINE_TRACE(InspectorStyleSheet) {
+void InspectorStyleSheet::Trace(blink::Visitor* visitor) {
   visitor->Trace(resource_container_);
   visitor->Trace(network_agent_);
   visitor->Trace(page_style_sheet_);
@@ -1945,7 +1945,7 @@ const String& InspectorStyleSheetForInlineStyle::ElementStyleText() {
   return element_->getAttribute("style").GetString();
 }
 
-DEFINE_TRACE(InspectorStyleSheetForInlineStyle) {
+void InspectorStyleSheetForInlineStyle::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(inspector_style_);
   InspectorStyleSheetBase::Trace(visitor);

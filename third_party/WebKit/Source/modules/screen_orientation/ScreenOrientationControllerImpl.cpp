@@ -242,7 +242,7 @@ void ScreenOrientationControllerImpl::NotifyDispatcher() {
     StopUpdating();
 }
 
-DEFINE_TRACE(ScreenOrientationControllerImpl) {
+void ScreenOrientationControllerImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(orientation_);
   ContextLifecycleObserver::Trace(visitor);
   Supplement<LocalFrame>::Trace(visitor);

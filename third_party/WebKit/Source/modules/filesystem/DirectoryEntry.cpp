@@ -70,7 +70,7 @@ void DirectoryEntry::removeRecursively(VoidCallback* success_callback,
                                   ScriptErrorCallback::Wrap(error_callback));
 }
 
-DEFINE_TRACE(DirectoryEntry) {
+void DirectoryEntry::Trace(blink::Visitor* visitor) {
   Entry::Trace(visitor);
 }
 

@@ -144,7 +144,7 @@ V0CustomElementCallbackInvocation::CreateAttributeChangedInvocation(
   return new AttributeChangedInvocation(callbacks, name, old_value, new_value);
 }
 
-DEFINE_TRACE(V0CustomElementCallbackInvocation) {
+void V0CustomElementCallbackInvocation::Trace(blink::Visitor* visitor) {
   visitor->Trace(callbacks_);
   V0CustomElementProcessingStep::Trace(visitor);
 }

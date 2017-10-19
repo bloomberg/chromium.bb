@@ -27,7 +27,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   SourceListDirective(const String& name,
                       const String& value,
                       ContentSecurityPolicy*);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void Parse(const UChar* begin, const UChar* end);
 

@@ -68,7 +68,7 @@ IDBOpenDBRequest::IDBOpenDBRequest(ScriptState* script_state,
 
 IDBOpenDBRequest::~IDBOpenDBRequest() {}
 
-DEFINE_TRACE(IDBOpenDBRequest) {
+void IDBOpenDBRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_callbacks_);
   IDBRequest::Trace(visitor);
 }

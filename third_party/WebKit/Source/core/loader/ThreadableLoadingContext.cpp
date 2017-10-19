@@ -28,7 +28,7 @@ class DocumentThreadableLoadingContext final : public ThreadableLoadingContext {
     return document_.Get();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(document_);
     ThreadableLoadingContext::Trace(visitor);
   }
@@ -57,7 +57,7 @@ class WorkerThreadableLoadingContext : public ThreadableLoadingContext {
     return worker_global_scope_.Get();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(worker_global_scope_);
     ThreadableLoadingContext::Trace(visitor);
   }

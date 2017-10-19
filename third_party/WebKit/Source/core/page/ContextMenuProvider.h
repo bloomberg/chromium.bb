@@ -42,7 +42,7 @@ class ContextMenuProvider
     : public GarbageCollectedFinalized<ContextMenuProvider> {
  public:
   virtual ~ContextMenuProvider() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
   virtual void PopulateContextMenu(ContextMenu*) = 0;
   virtual void ContextMenuItemSelected(const ContextMenuItem*) = 0;

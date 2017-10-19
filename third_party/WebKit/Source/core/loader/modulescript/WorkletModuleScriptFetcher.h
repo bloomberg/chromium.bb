@@ -35,7 +35,7 @@ class CORE_EXPORT WorkletModuleScriptFetcher final
   void OnRead(const ModuleScriptCreationParams&) override;
   void OnFailed() override;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   void Finalize(const WTF::Optional<ModuleScriptCreationParams>&,

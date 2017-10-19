@@ -55,7 +55,7 @@ struct CORE_EXPORT EvaluationContext {
 class CORE_EXPORT ParseNode : public GarbageCollectedFinalized<ParseNode> {
  public:
   virtual ~ParseNode() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 class CORE_EXPORT Expression : public ParseNode {
@@ -64,7 +64,7 @@ class CORE_EXPORT Expression : public ParseNode {
  public:
   Expression();
   ~Expression() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   virtual Value Evaluate(EvaluationContext&) const = 0;
 

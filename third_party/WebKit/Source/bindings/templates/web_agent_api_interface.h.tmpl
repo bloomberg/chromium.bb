@@ -26,7 +26,7 @@ class {{class_name.upper_camel_case}} : public {% if not base_class -%}
   static {{class_name.upper_camel_case}}* Create(blink::{{class_name.upper_camel_case}}*);
 
 {% if not base_class %}
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 {% endif %}
 
  protected:

@@ -32,7 +32,7 @@ class CORE_EXPORT TopDocumentRootScrollerController
  public:
   static TopDocumentRootScrollerController* Create(Page&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // This class needs to be informed of changes to compositing so that it can
   // update the compositor when the effective root scroller changes.

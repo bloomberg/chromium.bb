@@ -52,7 +52,7 @@ class MemoryCacheEntry final : public GarbageCollected<MemoryCacheEntry> {
   static MemoryCacheEntry* Create(Resource* resource) {
     return new MemoryCacheEntry(resource);
   }
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   Resource* GetResource() const { return resource_; }
 
   double last_decoded_access_time_;  // Used as a thrash guard
@@ -81,7 +81,7 @@ class PLATFORM_EXPORT MemoryCache final
  public:
   static MemoryCache* Create();
   ~MemoryCache();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   struct TypeStatistic {
     STACK_ALLOCATED();

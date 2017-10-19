@@ -88,7 +88,7 @@ class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
   void DisplayLastVTTCueBox();
   void WillRemoveVTTCueBox(VTTCueBox*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   VTTRegion();

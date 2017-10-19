@@ -51,7 +51,7 @@ class SpeechSynthesisEvent final : public Event {
     return EventNames::SpeechSynthesisEvent;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SpeechSynthesisEvent();

@@ -30,7 +30,7 @@ class PLATFORM_EXPORT ResourceFinishObserver : public GarbageCollectedMixin {
   // Name for debugging
   virtual String DebugName() const = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

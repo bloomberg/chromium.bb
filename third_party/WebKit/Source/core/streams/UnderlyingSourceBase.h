@@ -29,7 +29,7 @@ class CORE_EXPORT UnderlyingSourceBase
   USING_GARBAGE_COLLECTED_MIXIN(UnderlyingSourceBase);
 
  public:
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   virtual ~UnderlyingSourceBase() {}
 
   ScriptPromise startWrapper(ScriptState*, ScriptValue stream);

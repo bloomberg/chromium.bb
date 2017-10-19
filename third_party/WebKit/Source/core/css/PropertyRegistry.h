@@ -19,7 +19,7 @@ class PropertyRegistry : public GarbageCollected<PropertyRegistry> {
   const PropertyRegistration* Registration(const AtomicString&) const;
   size_t RegistrationCount() const { return registrations_.size(); }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(registrations_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(registrations_); }
 
  private:
   HeapHashMap<AtomicString, Member<PropertyRegistration>> registrations_;

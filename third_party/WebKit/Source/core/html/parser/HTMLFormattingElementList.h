@@ -76,7 +76,7 @@ class HTMLFormattingElementList {
       return !item_ ? !!element : item_->GetElement() != element;
     }
 
-    DEFINE_INLINE_TRACE() { visitor->Trace(item_); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(item_); }
 
    private:
     Member<HTMLStackItem> item_;
@@ -121,7 +121,7 @@ class HTMLFormattingElementList {
   const Entry& at(size_t i) const { return entries_[i]; }
   Entry& at(size_t i) { return entries_[i]; }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(entries_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(entries_); }
 
 #ifndef NDEBUG
   void Show();

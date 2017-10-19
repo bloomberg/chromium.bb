@@ -42,7 +42,7 @@ class AudioSourceProviderClient : public GarbageCollectedMixin {
   // changed.
   virtual void OnCurrentSrcChanged(const KURL& current_src) {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   virtual ~AudioSourceProviderClient() {}

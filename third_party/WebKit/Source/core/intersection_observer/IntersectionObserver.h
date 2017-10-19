@@ -85,7 +85,7 @@ class CORE_EXPORT IntersectionObserver final
     return observations_;
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

@@ -63,7 +63,7 @@ ModuleTreeLinker::ModuleTreeLinker(Modulator* modulator,
   CHECK(client);
 }
 
-DEFINE_TRACE(ModuleTreeLinker) {
+void ModuleTreeLinker::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
   visitor->Trace(registry_);
   visitor->Trace(client_);

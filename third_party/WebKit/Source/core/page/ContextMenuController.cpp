@@ -54,7 +54,7 @@ ContextMenuController* ContextMenuController::Create(
   return new ContextMenuController(page, client);
 }
 
-DEFINE_TRACE(ContextMenuController) {
+void ContextMenuController::Trace(blink::Visitor* visitor) {
   visitor->Trace(menu_provider_);
   visitor->Trace(hit_test_result_);
 }

@@ -43,7 +43,7 @@ class CORE_EXPORT TextSuggestionController final
   void OnSuggestionMenuClosed();
   void SuggestionMenuTimeoutCallback(size_t max_number_of_suggestions);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Document& GetDocument() const;

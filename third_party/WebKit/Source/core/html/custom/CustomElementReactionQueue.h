@@ -22,7 +22,7 @@ class CORE_EXPORT CustomElementReactionQueue final
   CustomElementReactionQueue();
   ~CustomElementReactionQueue();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void Add(CustomElementReaction*);
   void InvokeReactions(Element*);

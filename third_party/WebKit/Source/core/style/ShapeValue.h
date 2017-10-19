@@ -81,7 +81,7 @@ class ShapeValue final : public GarbageCollectedFinalized<ShapeValue> {
 
   bool operator==(const ShapeValue& other) const;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(image_); }
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(image_); }
 
  private:
   ShapeValue(RefPtr<BasicShape> shape, CSSBoxType css_box)

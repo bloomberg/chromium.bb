@@ -48,7 +48,7 @@ class InspectorHistory final : public GarbageCollected<InspectorHistory> {
    public:
     explicit Action(const String& name);
     virtual ~Action();
-    DECLARE_VIRTUAL_TRACE();
+    virtual void Trace(blink::Visitor*);
     virtual String ToString();
 
     virtual String MergeId();
@@ -68,7 +68,7 @@ class InspectorHistory final : public GarbageCollected<InspectorHistory> {
   };
 
   InspectorHistory();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   bool Perform(Action*, ExceptionState&);
   void AppendPerformedAction(Action*);

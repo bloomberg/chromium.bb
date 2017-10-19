@@ -64,7 +64,7 @@ void RemoveNodePreservingChildrenCommand::DoApply(EditingState* editing_state) {
   RemoveNode(node_, editing_state, should_assume_content_is_always_editable_);
 }
 
-DEFINE_TRACE(RemoveNodePreservingChildrenCommand) {
+void RemoveNodePreservingChildrenCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_);
   CompositeEditCommand::Trace(visitor);
 }

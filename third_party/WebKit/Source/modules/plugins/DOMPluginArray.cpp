@@ -40,7 +40,7 @@ DOMPluginArray::DOMPluginArray(LocalFrame* frame)
   UpdatePluginData();
 }
 
-DEFINE_TRACE(DOMPluginArray) {
+void DOMPluginArray::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   PluginsChangedObserver::Trace(visitor);
   visitor->Trace(dom_plugins_);

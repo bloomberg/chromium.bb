@@ -74,7 +74,7 @@ UnsignedLongLongOrBooleanOrTestCallbackInterface::UnsignedLongLongOrBooleanOrTes
 UnsignedLongLongOrBooleanOrTestCallbackInterface::~UnsignedLongLongOrBooleanOrTestCallbackInterface() = default;
 UnsignedLongLongOrBooleanOrTestCallbackInterface& UnsignedLongLongOrBooleanOrTestCallbackInterface::operator=(const UnsignedLongLongOrBooleanOrTestCallbackInterface&) = default;
 
-DEFINE_TRACE(UnsignedLongLongOrBooleanOrTestCallbackInterface) {
+void UnsignedLongLongOrBooleanOrTestCallbackInterface::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_callback_interface_);
 }
 

@@ -250,7 +250,7 @@ class XMLHttpRequest::BlobLoader final
 
   void Cancel() { loader_->Cancel(); }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(xhr_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(xhr_); }
 
  private:
   BlobLoader(XMLHttpRequest* xhr, RefPtr<BlobDataHandle> handle)
@@ -1979,7 +1979,7 @@ void XMLHttpRequest::ReportMemoryUsageToV8() {
     isolate_->AdjustAmountOfExternalAllocatedMemory(diff);
 }
 
-DEFINE_TRACE(XMLHttpRequest) {
+void XMLHttpRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(response_blob_);
   visitor->Trace(loader_);
   visitor->Trace(response_document_);

@@ -47,7 +47,7 @@ class MODULES_EXPORT PresentationController final
   static PresentationController* FromContext(ExecutionContext*);
 
   // Implementation of Supplement.
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // Implementation of WebPresentationController.
   WebPresentationConnection* DidStartDefaultPresentation(

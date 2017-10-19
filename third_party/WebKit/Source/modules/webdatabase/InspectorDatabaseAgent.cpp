@@ -99,7 +99,9 @@ class StatementCallback final : public SQLStatementCallback {
 
   ~StatementCallback() override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { SQLStatementCallback::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    SQLStatementCallback::Trace(visitor);
+  }
 
   bool handleEvent(SQLTransaction*, SQLResultSet* result_set) override {
     SQLResultSetRowList* row_list = result_set->rows();
@@ -148,7 +150,9 @@ class StatementErrorCallback final : public SQLStatementErrorCallback {
 
   ~StatementErrorCallback() override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { SQLStatementErrorCallback::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    SQLStatementErrorCallback::Trace(visitor);
+  }
 
   bool handleEvent(SQLTransaction*, SQLError* error) override {
     request_callback_->ReportTransactionFailed(error);
@@ -171,7 +175,9 @@ class TransactionCallback final : public SQLTransactionCallback {
 
   ~TransactionCallback() override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { SQLTransactionCallback::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    SQLTransactionCallback::Trace(visitor);
+  }
 
   bool handleEvent(SQLTransaction* transaction) override {
     Vector<SQLValue> sql_values;
@@ -202,7 +208,9 @@ class TransactionErrorCallback final : public SQLTransactionErrorCallback {
 
   ~TransactionErrorCallback() override {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { SQLTransactionErrorCallback::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    SQLTransactionErrorCallback::Trace(visitor);
+  }
 
   bool handleEvent(SQLError* error) override {
     request_callback_->ReportTransactionFailed(error);
@@ -365,7 +373,7 @@ blink::Database* InspectorDatabaseAgent::DatabaseForId(
   return it->value->GetDatabase();
 }
 
-DEFINE_TRACE(InspectorDatabaseAgent) {
+void InspectorDatabaseAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
   visitor->Trace(resources_);
   InspectorBaseAgent::Trace(visitor);

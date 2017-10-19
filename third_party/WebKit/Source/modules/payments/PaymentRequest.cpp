@@ -1029,7 +1029,7 @@ void PaymentRequest::OnUpdatePaymentDetailsFailure(const String& error) {
   ClearResolversAndCloseMojoConnection();
 }
 
-DEFINE_TRACE(PaymentRequest) {
+void PaymentRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(options_);
   visitor->Trace(shipping_address_);
   visitor->Trace(show_resolver_);

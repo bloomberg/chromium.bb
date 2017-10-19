@@ -426,7 +426,7 @@ Node* MouseEvent::fromElement() const {
   return target() ? target()->ToNode() : nullptr;
 }
 
-DEFINE_TRACE(MouseEvent) {
+void MouseEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(related_target_);
   UIEventWithKeyState::Trace(visitor);
 }

@@ -218,7 +218,7 @@ void ValidationMessageClientImpl::PaintOverlay() {
     overlay_->GetGraphicsLayer()->Paint(nullptr);
 }
 
-DEFINE_TRACE(ValidationMessageClientImpl) {
+void ValidationMessageClientImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(current_anchor_);
   ValidationMessageClient::Trace(visitor);
 }

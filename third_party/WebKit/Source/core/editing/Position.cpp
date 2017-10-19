@@ -52,7 +52,7 @@ bool CanBeAnchorNode<EditingInFlatTreeStrategy>(Node* node) {
 #endif
 
 template <typename Strategy>
-DEFINE_TRACE(PositionTemplate<Strategy>) {
+void PositionTemplate<Strategy>::Trace(blink::Visitor* visitor) {
   visitor->Trace(anchor_node_);
 }
 

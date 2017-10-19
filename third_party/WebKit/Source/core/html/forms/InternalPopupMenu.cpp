@@ -78,7 +78,7 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
   RefPtr<FontData> GetFontData(const FontDescription&,
                                const AtomicString&) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   PopupMenuCSSFontSelector(Document*, CSSFontSelector*);
@@ -107,7 +107,7 @@ void PopupMenuCSSFontSelector::FontsNeedUpdate(FontSelector* font_selector) {
   DispatchInvalidationCallbacks();
 }
 
-DEFINE_TRACE(PopupMenuCSSFontSelector) {
+void PopupMenuCSSFontSelector::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_font_selector_);
   CSSFontSelector::Trace(visitor);
   FontSelectorClient::Trace(visitor);
@@ -223,7 +223,7 @@ InternalPopupMenu::~InternalPopupMenu() {
   DCHECK(!popup_);
 }
 
-DEFINE_TRACE(InternalPopupMenu) {
+void InternalPopupMenu::Trace(blink::Visitor* visitor) {
   visitor->Trace(chrome_client_);
   visitor->Trace(owner_element_);
   PopupMenu::Trace(visitor);

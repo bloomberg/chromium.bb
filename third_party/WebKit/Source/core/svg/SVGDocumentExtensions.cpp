@@ -171,7 +171,7 @@ SVGSVGElement* SVGDocumentExtensions::rootElement() const {
   return rootElement(*document_);
 }
 
-DEFINE_TRACE(SVGDocumentExtensions) {
+void SVGDocumentExtensions::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
   visitor->Trace(time_containers_);
   visitor->Trace(web_animations_pending_svg_elements_);

@@ -49,7 +49,7 @@ bool AudioWorkletProcessor::Process(
       this, input_buses, output_buses, param_value_map, current_time);
 }
 
-DEFINE_TRACE(AudioWorkletProcessor) {
+void AudioWorkletProcessor::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
 }
 

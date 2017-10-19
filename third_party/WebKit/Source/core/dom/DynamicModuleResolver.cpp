@@ -26,7 +26,7 @@ class DynamicImportTreeClient final : public ModuleTreeClient {
     return new DynamicImportTreeClient(url, modulator, promise_resolver);
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   DynamicImportTreeClient(const KURL& url,
@@ -128,7 +128,7 @@ void DynamicImportTreeClient::NotifyModuleTreeLoadFinished(
   promise_resolver_->Resolve(module_namespace);
 }
 
-DEFINE_TRACE(DynamicImportTreeClient) {
+void DynamicImportTreeClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
   visitor->Trace(promise_resolver_);
   ModuleTreeClient::Trace(visitor);
@@ -136,7 +136,7 @@ DEFINE_TRACE(DynamicImportTreeClient) {
 
 }  // namespace
 
-DEFINE_TRACE(DynamicModuleResolver) {
+void DynamicModuleResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(modulator_);
 }
 

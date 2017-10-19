@@ -34,7 +34,7 @@ PerformanceNavigationTiming::PerformanceNavigationTiming(
 
 PerformanceNavigationTiming::~PerformanceNavigationTiming() {}
 
-DEFINE_TRACE(PerformanceNavigationTiming) {
+void PerformanceNavigationTiming::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
   PerformanceResourceTiming::Trace(visitor);
 }

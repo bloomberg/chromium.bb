@@ -44,7 +44,7 @@ class Node;
 class EventDispatchHandlingState
     : public GarbageCollected<EventDispatchHandlingState> {
  public:
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 enum EventDispatchContinuation { kContinueDispatching, kDoneDispatching };

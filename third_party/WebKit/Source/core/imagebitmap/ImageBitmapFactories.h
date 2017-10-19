@@ -92,7 +92,7 @@ class ImageBitmapFactories final
 
   virtual ~ImageBitmapFactories() {}
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  protected:
   static const char* SupplementName();
@@ -112,7 +112,7 @@ class ImageBitmapFactories final
     void LoadBlobAsync(ExecutionContext*, Blob*);
     ScriptPromise Promise() { return resolver_->Promise(); }
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
     ~ImageBitmapLoader() override {}
 

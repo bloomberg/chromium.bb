@@ -35,7 +35,7 @@ DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
   UpdatePluginData();
 }
 
-DEFINE_TRACE(DOMMimeTypeArray) {
+void DOMMimeTypeArray::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(dom_mime_types_);
 }

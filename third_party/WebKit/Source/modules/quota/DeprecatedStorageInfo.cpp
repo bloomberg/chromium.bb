@@ -99,7 +99,7 @@ DeprecatedStorageQuota* DeprecatedStorageInfo::GetStorageQuota(
   return 0;
 }
 
-DEFINE_TRACE(DeprecatedStorageInfo) {
+void DeprecatedStorageInfo::Trace(blink::Visitor* visitor) {
   visitor->Trace(temporary_storage_);
   visitor->Trace(persistent_storage_);
 }

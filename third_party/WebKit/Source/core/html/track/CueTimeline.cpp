@@ -366,7 +366,7 @@ void CueTimeline::EndIgnoringUpdateRequests() {
     UpdateActiveCues(MediaElement().currentTime());
 }
 
-DEFINE_TRACE(CueTimeline) {
+void CueTimeline::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_element_);
 }
 

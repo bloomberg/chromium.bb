@@ -66,7 +66,7 @@ class CORE_EXPORT InspectorLayerTreeAgent final
   }
 
   ~InspectorLayerTreeAgent() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   void Restore() override;
 

@@ -234,7 +234,7 @@ void NavigatorContentUtils::unregisterProtocolHandler(
       scheme, document->CompleteURL(url));
 }
 
-DEFINE_TRACE(NavigatorContentUtils) {
+void NavigatorContentUtils::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   Supplement<Navigator>::Trace(visitor);
 }

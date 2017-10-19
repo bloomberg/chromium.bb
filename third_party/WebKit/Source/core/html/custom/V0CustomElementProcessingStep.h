@@ -47,7 +47,7 @@ class V0CustomElementProcessingStep
   virtual void Dispatch(Element*) = 0;
   virtual bool IsCreatedCallback() const { return false; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

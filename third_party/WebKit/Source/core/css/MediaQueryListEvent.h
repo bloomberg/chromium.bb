@@ -40,7 +40,7 @@ class MediaQueryListEvent final : public Event {
     return EventNames::MediaQueryListEvent;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     Event::Trace(visitor);
     visitor->Trace(media_query_list_);
   }

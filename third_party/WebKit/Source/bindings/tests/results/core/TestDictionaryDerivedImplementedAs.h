@@ -55,7 +55,7 @@ class CORE_EXPORT TestDictionaryDerivedImplementedAs : public TestDictionary {
   void setStringOrDoubleSequenceMember(const HeapVector<StringOrDouble>&);
 
   v8::Local<v8::Value> ToV8Impl(v8::Local<v8::Object>, v8::Isolate*) const override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   bool has_required_long_member_ = false;

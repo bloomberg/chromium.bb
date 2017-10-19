@@ -28,7 +28,7 @@ class CORE_EXPORT PointerEventManager
 
  public:
   PointerEventManager(LocalFrame&, MouseEventManager&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // This is the unified path for handling all input device events. This may
   // cause firing DOM pointerevents, mouseevent, and touch events accordingly.
@@ -102,7 +102,7 @@ class CORE_EXPORT PointerEventManager
     DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
 
    public:
-    DEFINE_INLINE_TRACE() { visitor->Trace(target); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(target); }
     Member<EventTarget> target;
     bool has_recieved_over_event;
     EventTargetAttributes() : target(nullptr), has_recieved_over_event(false) {}

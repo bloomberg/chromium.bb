@@ -39,7 +39,7 @@ class SVGCircleElement final : public SVGGeometryElement {
   SVGAnimatedLength* cy() const { return cy_.Get(); }
   SVGAnimatedLength* r() const { return r_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGCircleElement(Document&);

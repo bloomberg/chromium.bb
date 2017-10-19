@@ -480,7 +480,7 @@ void RootFrameViewport::ClearScrollableArea() {
   VisualViewport().ClearScrollableArea();
 }
 
-DEFINE_TRACE(RootFrameViewport) {
+void RootFrameViewport::Trace(blink::Visitor* visitor) {
   visitor->Trace(visual_viewport_);
   visitor->Trace(layout_viewport_);
   ScrollableArea::Trace(visitor);

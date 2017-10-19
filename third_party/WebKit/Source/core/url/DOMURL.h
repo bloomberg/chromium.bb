@@ -73,7 +73,7 @@ class DOMURL final : public GarbageCollectedFinalized<DOMURL>,
 
   URLSearchParams* searchParams();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   friend class URLSearchParams;

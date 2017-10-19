@@ -55,7 +55,7 @@ class WorkerInspectorController final
  public:
   static WorkerInspectorController* Create(WorkerThread*);
   ~WorkerInspectorController() override;
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   CoreProbeSink* GetProbeSink() const { return probe_sink_.Get(); }
 

@@ -35,7 +35,7 @@ class SVGAnimatedHref final : public SVGAnimatedString {
   static bool IsKnownAttribute(const QualifiedName&);
   void AddToPropertyMap(SVGElement*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit SVGAnimatedHref(SVGElement* context_element);

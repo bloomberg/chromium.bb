@@ -48,7 +48,7 @@ class GarbageCollectedHolderForToV8Test
       GarbageCollectedScriptWrappable* script_wrappable)
       : script_wrappable_(script_wrappable) {}
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(script_wrappable_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(script_wrappable_); }
 
   // This should be public in order to access a Member<X> object.
   Member<GarbageCollectedScriptWrappable> script_wrappable_;

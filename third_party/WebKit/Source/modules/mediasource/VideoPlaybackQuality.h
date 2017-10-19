@@ -53,7 +53,7 @@ class VideoPlaybackQuality : public GarbageCollected<VideoPlaybackQuality>,
   unsigned droppedVideoFrames() const { return dropped_video_frames_; }
   unsigned corruptedVideoFrames() const { return corrupted_video_frames_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   VideoPlaybackQuality(const Document&,

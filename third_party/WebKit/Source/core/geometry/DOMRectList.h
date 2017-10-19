@@ -53,7 +53,7 @@ class CORE_EXPORT DOMRectList final : public GarbageCollected<DOMRectList>,
   unsigned length() const;
   DOMRect* item(unsigned index);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   DOMRectList();

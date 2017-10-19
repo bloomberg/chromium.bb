@@ -98,7 +98,7 @@ class PLATFORM_EXPORT MHTMLArchive final
   ArchiveResource* MainResource() { return main_resource_.Get(); }
   ArchiveResource* SubresourceForURL(const KURL&) const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   MHTMLArchive();

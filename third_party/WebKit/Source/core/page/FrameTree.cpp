@@ -256,7 +256,7 @@ Frame* FrameTree::TraverseNext(const Frame* stay_within) const {
   return nullptr;
 }
 
-DEFINE_TRACE(FrameTree) {
+void FrameTree::Trace(blink::Visitor* visitor) {
   visitor->Trace(this_frame_);
 }
 

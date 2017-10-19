@@ -154,7 +154,7 @@ class ConvertToFileWriterCallback : public FileWriterBaseCallback {
     return new ConvertToFileWriterCallback(callback);
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(callback_);
     FileWriterBaseCallback::Trace(visitor);
   }
@@ -220,7 +220,7 @@ void DOMFileSystem::ScheduleCallback(ExecutionContext* execution_context,
                            WTF::Passed(std::move(identifier))));
 }
 
-DEFINE_TRACE(DOMFileSystem) {
+void DOMFileSystem::Trace(blink::Visitor* visitor) {
   visitor->Trace(root_entry_);
   DOMFileSystemBase::Trace(visitor);
   ContextClient::Trace(visitor);

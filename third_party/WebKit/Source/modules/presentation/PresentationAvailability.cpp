@@ -126,7 +126,7 @@ bool PresentationAvailability::value() const {
   return value_;
 }
 
-DEFINE_TRACE(PresentationAvailability) {
+void PresentationAvailability::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   PageVisibilityObserver::Trace(visitor);
   SuspendableObject::Trace(visitor);

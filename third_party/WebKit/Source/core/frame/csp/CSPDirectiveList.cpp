@@ -1478,7 +1478,7 @@ WebContentSecurityPolicy CSPDirectiveList::ExposeForNavigationalChecks() const {
   return policy;
 }
 
-DEFINE_TRACE(CSPDirectiveList) {
+void CSPDirectiveList::Trace(blink::Visitor* visitor) {
   visitor->Trace(policy_);
   visitor->Trace(plugin_types_);
   visitor->Trace(base_uri_);

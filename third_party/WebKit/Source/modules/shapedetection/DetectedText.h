@@ -26,7 +26,7 @@ class MODULES_EXPORT DetectedText final
   const String& rawValue() const;
   DOMRect* boundingBox() const;
   const HeapVector<Point2D>& cornerPoints() const;
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   DetectedText(String, DOMRect*, HeapVector<Point2D>);

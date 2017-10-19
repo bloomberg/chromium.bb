@@ -20,7 +20,7 @@ template <typename Strategy>
 PositionWithAffinityTemplate<Strategy>::~PositionWithAffinityTemplate() {}
 
 template <typename Strategy>
-DEFINE_TRACE(PositionWithAffinityTemplate<Strategy>) {
+void PositionWithAffinityTemplate<Strategy>::Trace(blink::Visitor* visitor) {
   visitor->Trace(position_);
 }
 

@@ -28,7 +28,7 @@ class CORE_EXPORT BrowserControls final
     return new BrowserControls(page);
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // The height the top controls are hidden; used for viewport adjustments
   // while the controls are resizing.

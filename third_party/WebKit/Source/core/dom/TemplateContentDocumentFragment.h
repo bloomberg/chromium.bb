@@ -40,7 +40,7 @@ class TemplateContentDocumentFragment final : public DocumentFragment {
 
   Element* Host() const { return host_; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(host_);
     DocumentFragment::Trace(visitor);
   }

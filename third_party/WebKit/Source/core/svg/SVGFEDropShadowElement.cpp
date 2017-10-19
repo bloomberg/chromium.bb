@@ -48,7 +48,7 @@ inline SVGFEDropShadowElement::SVGFEDropShadowElement(Document& document)
   AddToPropertyMap(in1_);
 }
 
-DEFINE_TRACE(SVGFEDropShadowElement) {
+void SVGFEDropShadowElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(dx_);
   visitor->Trace(dy_);
   visitor->Trace(std_deviation_);

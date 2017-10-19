@@ -49,7 +49,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
  public:
   static AXNodeObject* Create(Node*, AXObjectCacheImpl&);
   ~AXNodeObject() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   bool children_dirty_;

@@ -46,7 +46,7 @@ class CORE_EXPORT LabelableElement : public HTMLElement {
   LabelsNodeList* labels();
   virtual bool SupportLabels() const { return false; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   LabelableElement(const QualifiedName& tag_name, Document&);

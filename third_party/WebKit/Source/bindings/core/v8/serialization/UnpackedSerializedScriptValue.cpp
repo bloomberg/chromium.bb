@@ -44,7 +44,7 @@ UnpackedSerializedScriptValue::UnpackedSerializedScriptValue(
 
 UnpackedSerializedScriptValue::~UnpackedSerializedScriptValue() {}
 
-DEFINE_TRACE(UnpackedSerializedScriptValue) {
+void UnpackedSerializedScriptValue::Trace(blink::Visitor* visitor) {
   visitor->Trace(array_buffers_);
   visitor->Trace(image_bitmaps_);
 }

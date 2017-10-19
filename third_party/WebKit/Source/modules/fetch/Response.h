@@ -98,7 +98,7 @@ class MODULES_EXPORT Response final : public Body {
 
   const Vector<KURL>& InternalURLList() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit Response(ExecutionContext*);

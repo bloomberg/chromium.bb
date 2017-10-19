@@ -68,7 +68,7 @@ class CORE_EXPORT ScriptRunner final
 
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
  private:

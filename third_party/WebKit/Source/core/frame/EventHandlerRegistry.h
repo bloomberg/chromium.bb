@@ -73,7 +73,7 @@ class CORE_EXPORT EventHandlerRegistry final
   // references to handlers that are no longer related to it.
   void DocumentDetached(Document&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   void ClearWeakMembers(Visitor*);
 
  private:

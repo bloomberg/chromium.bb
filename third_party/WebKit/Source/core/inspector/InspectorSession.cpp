@@ -186,7 +186,7 @@ void InspectorSession::flushProtocolNotifications() {
   notification_queue_.clear();
 }
 
-DEFINE_TRACE(InspectorSession) {
+void InspectorSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(instrumenting_agents_);
   visitor->Trace(agents_);
 }

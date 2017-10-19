@@ -41,7 +41,7 @@ class CORE_EXPORT TestInterfaceGarbageCollectedOrString final {
   TestInterfaceGarbageCollectedOrString(const TestInterfaceGarbageCollectedOrString&);
   ~TestInterfaceGarbageCollectedOrString();
   TestInterfaceGarbageCollectedOrString& operator=(const TestInterfaceGarbageCollectedOrString&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

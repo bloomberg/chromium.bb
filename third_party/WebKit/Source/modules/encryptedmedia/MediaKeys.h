@@ -93,7 +93,7 @@ class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
 
   WebContentDecryptionModule* ContentDecryptionModule();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // ContextLifecycleObserver implementation.
   // FIXME: This class could derive from ContextLifecycleObserver

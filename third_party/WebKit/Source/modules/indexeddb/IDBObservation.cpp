@@ -80,7 +80,7 @@ IDBObservation::IDBObservation(const WebIDBObservation& observation,
       value_(IDBValue::Create(observation.value, isolate)),
       operation_type_(observation.type) {}
 
-DEFINE_TRACE(IDBObservation) {
+void IDBObservation::Trace(blink::Visitor* visitor) {
   visitor->Trace(key_range_);
 }
 

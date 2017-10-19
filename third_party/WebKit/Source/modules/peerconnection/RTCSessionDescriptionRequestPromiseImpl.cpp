@@ -63,7 +63,7 @@ void RTCSessionDescriptionRequestPromiseImpl::Clear() {
   requester_.Clear();
 }
 
-DEFINE_TRACE(RTCSessionDescriptionRequestPromiseImpl) {
+void RTCSessionDescriptionRequestPromiseImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);
   visitor->Trace(requester_);
   RTCSessionDescriptionRequest::Trace(visitor);

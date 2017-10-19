@@ -56,7 +56,7 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
 
   EventDispatchMediator* CreateMediator() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   DragEvent();

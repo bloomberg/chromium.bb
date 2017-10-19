@@ -39,7 +39,7 @@ class StorageQuotaCallback
     : public GarbageCollectedFinalized<StorageQuotaCallback> {
  public:
   virtual ~StorageQuotaCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(uint64_t granted_quota_in_bytes) = 0;
 };
 

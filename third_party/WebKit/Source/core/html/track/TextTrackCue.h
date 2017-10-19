@@ -97,7 +97,7 @@ class TextTrackCue : public EventTargetWithInlineData {
   DEFINE_ATTRIBUTE_EVENT_LISTENER(enter);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(exit);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   TextTrackCue(double start, double end);

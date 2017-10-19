@@ -41,7 +41,7 @@ class CORE_EXPORT HTMLIFrameElement final
 
  public:
   DECLARE_NODE_FACTORY(HTMLIFrameElement);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   ~HTMLIFrameElement() override;
   DOMTokenList* sandbox() const;
 

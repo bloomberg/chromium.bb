@@ -151,7 +151,7 @@ OfflineAudioContext::~OfflineAudioContext() {
 #endif
 }
 
-DEFINE_TRACE(OfflineAudioContext) {
+void OfflineAudioContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(complete_resolver_);
   visitor->Trace(scheduled_suspends_);
   BaseAudioContext::Trace(visitor);

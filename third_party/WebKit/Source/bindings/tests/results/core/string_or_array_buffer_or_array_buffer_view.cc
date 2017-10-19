@@ -74,7 +74,7 @@ StringOrArrayBufferOrArrayBufferView::StringOrArrayBufferOrArrayBufferView(const
 StringOrArrayBufferOrArrayBufferView::~StringOrArrayBufferOrArrayBufferView() = default;
 StringOrArrayBufferOrArrayBufferView& StringOrArrayBufferOrArrayBufferView::operator=(const StringOrArrayBufferOrArrayBufferView&) = default;
 
-DEFINE_TRACE(StringOrArrayBufferOrArrayBufferView) {
+void StringOrArrayBufferOrArrayBufferView::Trace(blink::Visitor* visitor) {
   visitor->Trace(array_buffer_);
   visitor->Trace(array_buffer_view_);
 }

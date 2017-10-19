@@ -34,7 +34,7 @@ class PluginInfo;
 class PLATFORM_EXPORT MimeClassInfo final
     : public GarbageCollectedFinalized<MimeClassInfo> {
  public:
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   MimeClassInfo(const String& type, const String& desc, PluginInfo&);
 
@@ -56,7 +56,7 @@ class PLATFORM_EXPORT MimeClassInfo final
 class PLATFORM_EXPORT PluginInfo final
     : public GarbageCollectedFinalized<PluginInfo> {
  public:
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   PluginInfo(const String& name, const String& filename, const String& desc);
 
@@ -87,7 +87,7 @@ class PLATFORM_EXPORT PluginData final
   WTF_MAKE_NONCOPYABLE(PluginData);
 
  public:
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   static PluginData* Create() { return new PluginData(); }
 

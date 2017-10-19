@@ -251,7 +251,7 @@ ScriptValue ModulatorImplBase::ExecuteModule(
   return ScriptValue();
 }
 
-DEFINE_TRACE(ModulatorImplBase) {
+void ModulatorImplBase::Trace(blink::Visitor* visitor) {
   Modulator::Trace(visitor);
   visitor->Trace(map_);
   visitor->Trace(loader_registry_);

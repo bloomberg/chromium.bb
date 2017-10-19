@@ -17,7 +17,7 @@ Element* HitTestCanvasResult::GetControl() const {
   return control_.Get();
 };
 
-DEFINE_TRACE(HitTestCanvasResult) {
+void HitTestCanvasResult::Trace(blink::Visitor* visitor) {
   visitor->Trace(control_);
 }
 

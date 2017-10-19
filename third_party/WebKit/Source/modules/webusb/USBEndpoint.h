@@ -35,7 +35,7 @@ class USBEndpoint : public GarbageCollected<USBEndpoint>,
   String type() const;
   unsigned packetSize() const { return Info().packet_size; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   Member<const USBAlternateInterface> alternate_;

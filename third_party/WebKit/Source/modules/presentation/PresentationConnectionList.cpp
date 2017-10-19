@@ -62,7 +62,7 @@ bool PresentationConnectionList::IsEmpty() {
   return connections_.IsEmpty();
 }
 
-DEFINE_TRACE(PresentationConnectionList) {
+void PresentationConnectionList::Trace(blink::Visitor* visitor) {
   visitor->Trace(connections_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);

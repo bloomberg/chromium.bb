@@ -34,7 +34,7 @@ class USBOutTransferResult final
   String status() const { return status_; }
   unsigned bytesWritten() const { return bytes_written_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   const String status_;

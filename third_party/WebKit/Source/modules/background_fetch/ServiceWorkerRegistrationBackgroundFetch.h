@@ -30,7 +30,7 @@ class ServiceWorkerRegistrationBackgroundFetch final
   static BackgroundFetchManager* backgroundFetch(ServiceWorkerRegistration&);
   BackgroundFetchManager* backgroundFetch();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit ServiceWorkerRegistrationBackgroundFetch(ServiceWorkerRegistration*);

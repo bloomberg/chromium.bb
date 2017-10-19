@@ -607,7 +607,7 @@ void InsertParagraphSeparatorCommand::DoApply(EditingState* editing_state) {
   ApplyStyleAfterInsertion(start_block, editing_state);
 }
 
-DEFINE_TRACE(InsertParagraphSeparatorCommand) {
+void InsertParagraphSeparatorCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_);
   CompositeEditCommand::Trace(visitor);
 }

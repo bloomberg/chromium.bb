@@ -145,7 +145,7 @@ class CORE_EXPORT ImageBitmap final
     CanvasColorParams color_params;
   };
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   ImageBitmap(ImageElementBase*,

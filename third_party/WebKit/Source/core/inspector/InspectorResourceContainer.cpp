@@ -14,7 +14,7 @@ InspectorResourceContainer::InspectorResourceContainer(
 
 InspectorResourceContainer::~InspectorResourceContainer() {}
 
-DEFINE_TRACE(InspectorResourceContainer) {
+void InspectorResourceContainer::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
 }
 

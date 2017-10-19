@@ -29,7 +29,7 @@ USBConnectionEvent::USBConnectionEvent(const AtomicString& type,
                                        USBDevice* device)
     : Event(type, false, false), device_(device) {}
 
-DEFINE_TRACE(USBConnectionEvent) {
+void USBConnectionEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);
   Event::Trace(visitor);
 }

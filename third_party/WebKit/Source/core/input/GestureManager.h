@@ -32,7 +32,7 @@ class CORE_EXPORT GestureManager
                  MouseEventManager&,
                  PointerEventManager&,
                  SelectionController&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void Clear();
 

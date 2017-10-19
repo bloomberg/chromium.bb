@@ -44,7 +44,7 @@ class PlatformSpeechSynthesizerMock final : public PlatformSpeechSynthesizer {
   void Resume() override;
   void Cancel() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit PlatformSpeechSynthesizerMock(PlatformSpeechSynthesizerClient*,

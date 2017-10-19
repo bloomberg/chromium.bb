@@ -54,7 +54,7 @@ class CORE_EXPORT ScriptFunction
     : public GarbageCollectedFinalized<ScriptFunction> {
  public:
   virtual ~ScriptFunction() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   explicit ScriptFunction(ScriptState* script_state)

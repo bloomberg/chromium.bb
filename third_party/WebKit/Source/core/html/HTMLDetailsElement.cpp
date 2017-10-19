@@ -61,7 +61,9 @@ class FirstSummarySelectFilter final : public HTMLContentSelectFilter {
     return true;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { HTMLContentSelectFilter::Trace(visitor); }
+  virtual void Trace(blink::Visitor* visitor) {
+    HTMLContentSelectFilter::Trace(visitor);
+  }
 
  private:
   FirstSummarySelectFilter() {}

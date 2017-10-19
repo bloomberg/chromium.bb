@@ -134,7 +134,7 @@ void TestDictionary::setUnionWithTypedefs(const FloatOrBoolean& value) {
   union_with_typedefs_ = value;
 }
 
-DEFINE_TRACE(TestDictionary) {
+void TestDictionary::Trace(blink::Visitor* visitor) {
   visitor->Trace(double_or_string_member_);
   visitor->Trace(double_or_string_sequence_member_);
   visitor->Trace(element_or_null_member_);

@@ -46,7 +46,7 @@ class CORE_EXPORT CSSStyleImageValue : public CSSResourceValue,
   }
   bool IsAccelerated() const override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(image_value_);
     CSSResourceValue::Trace(visitor);
   }

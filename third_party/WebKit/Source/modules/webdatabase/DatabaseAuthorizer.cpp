@@ -378,7 +378,7 @@ int DatabaseAuthorizer::UpdateDeletesBasedOnTableName(
   return allow;
 }
 
-DEFINE_TRACE(DatabaseAuthorizer) {
+void DatabaseAuthorizer::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_context_);
 }
 

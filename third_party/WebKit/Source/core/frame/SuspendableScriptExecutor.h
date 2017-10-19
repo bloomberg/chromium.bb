@@ -49,7 +49,7 @@ class CORE_EXPORT SuspendableScriptExecutor final
   void RunAsync(BlockingOption);
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   class Executor : public GarbageCollectedFinalized<Executor> {
    public:
@@ -57,7 +57,7 @@ class CORE_EXPORT SuspendableScriptExecutor final
 
     virtual Vector<v8::Local<v8::Value>> Execute(LocalFrame*) = 0;
 
-    DEFINE_INLINE_VIRTUAL_TRACE(){};
+    virtual void Trace(blink::Visitor* visitor){};
   };
 
  private:

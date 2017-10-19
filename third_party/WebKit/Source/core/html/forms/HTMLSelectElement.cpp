@@ -1807,7 +1807,7 @@ void HTMLSelectElement::UpdateListOnLayoutObject() {
   SetOptionsChangedOnLayoutObject();
 }
 
-DEFINE_TRACE(HTMLSelectElement) {
+void HTMLSelectElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(list_items_);
   visitor->Trace(last_on_change_option_);
   visitor->Trace(active_selection_anchor_);
@@ -2025,7 +2025,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
 
   void Dispose() { observer_->disconnect(); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(select_);
     visitor->Trace(observer_);
     MutationObserver::Delegate::Trace(visitor);

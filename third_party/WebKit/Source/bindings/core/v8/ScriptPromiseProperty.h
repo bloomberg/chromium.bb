@@ -72,7 +72,7 @@ class ScriptPromiseProperty : public ScriptPromisePropertyBase {
   // This method keeps the holder object and the property name.
   void Reset();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   v8::Local<v8::Object> Holder(v8::Isolate*,

@@ -351,7 +351,7 @@ AudioParam* AudioParam::Create(BaseAudioContext& context,
                         max_value);
 }
 
-DEFINE_TRACE(AudioParam) {
+void AudioParam::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
 }
 

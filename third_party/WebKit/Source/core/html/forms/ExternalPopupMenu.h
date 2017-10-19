@@ -65,7 +65,7 @@ class CORE_EXPORT ExternalPopupMenu final : public PopupMenu,
   static int ToPopupMenuItemIndex(int index, HTMLSelectElement&);
   static int ToExternalPopupMenuItemIndex(int index, HTMLSelectElement&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   // PopupMenu methods:

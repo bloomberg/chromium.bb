@@ -21,7 +21,7 @@ class VRStageBounds final : public GarbageCollected<VRStageBounds>,
 
   HeapVector<Member<VRStageBoundsPoint>> geometry() const { return geometry_; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   HeapVector<Member<VRStageBoundsPoint>> geometry_;

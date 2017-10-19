@@ -39,7 +39,7 @@ MatchedProperties::MatchedProperties() : possibly_padded_member(nullptr) {}
 
 MatchedProperties::~MatchedProperties() {}
 
-DEFINE_TRACE(MatchedProperties) {
+void MatchedProperties::Trace(blink::Visitor* visitor) {
   visitor->Trace(properties);
 }
 

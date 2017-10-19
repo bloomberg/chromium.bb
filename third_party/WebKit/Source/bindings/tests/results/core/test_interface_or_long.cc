@@ -62,7 +62,7 @@ TestInterfaceOrLong::TestInterfaceOrLong(const TestInterfaceOrLong&) = default;
 TestInterfaceOrLong::~TestInterfaceOrLong() = default;
 TestInterfaceOrLong& TestInterfaceOrLong::operator=(const TestInterfaceOrLong&) = default;
 
-DEFINE_TRACE(TestInterfaceOrLong) {
+void TestInterfaceOrLong::Trace(blink::Visitor* visitor) {
   visitor->Trace(test_interface_);
 }
 

@@ -51,7 +51,7 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   // ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   BroadcastChannel(ExecutionContext*, const String& name);

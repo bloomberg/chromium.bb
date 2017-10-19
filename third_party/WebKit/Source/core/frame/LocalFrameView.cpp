@@ -244,7 +244,7 @@ LocalFrameView::~LocalFrameView() {
 #endif
 }
 
-DEFINE_TRACE(LocalFrameView) {
+void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(parent_);
   visitor->Trace(fragment_anchor_);

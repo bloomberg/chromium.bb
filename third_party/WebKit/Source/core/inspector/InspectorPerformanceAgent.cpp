@@ -201,7 +201,7 @@ void InspectorPerformanceAgent::DidProcessTask(double start_time,
   task_start_time_ = 0;
 }
 
-DEFINE_TRACE(InspectorPerformanceAgent) {
+void InspectorPerformanceAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(inspected_frames_);
   InspectorBaseAgent<protocol::Performance::Metainfo>::Trace(visitor);
 }

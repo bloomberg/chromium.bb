@@ -107,7 +107,7 @@ class LinkLoader::FinishObserver final
     resource_ = nullptr;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(loader_);
     visitor->Trace(resource_);
     blink::ResourceFinishObserver::Trace(visitor);
@@ -518,7 +518,7 @@ void LinkLoader::Abort() {
   }
 }
 
-DEFINE_TRACE(LinkLoader) {
+void LinkLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(finish_observer_);
   visitor->Trace(client_);
   visitor->Trace(prerender_);

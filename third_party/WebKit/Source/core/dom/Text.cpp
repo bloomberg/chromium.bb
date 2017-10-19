@@ -457,7 +457,7 @@ Text* Text::CloneWithData(const String& data) {
   return Create(GetDocument(), data);
 }
 
-DEFINE_TRACE(Text) {
+void Text::Trace(blink::Visitor* visitor) {
   CharacterData::Trace(visitor);
 }
 

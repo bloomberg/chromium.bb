@@ -74,7 +74,7 @@ const AtomicString& CustomEvent::InterfaceName() const {
   return EventNames::CustomEvent;
 }
 
-DEFINE_TRACE(CustomEvent) {
+void CustomEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 

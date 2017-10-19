@@ -29,7 +29,7 @@ PushMessageData* PushEvent::data() {
   return data_.Get();
 }
 
-DEFINE_TRACE(PushEvent) {
+void PushEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_);
   ExtendableEvent::Trace(visitor);
 }

@@ -113,7 +113,7 @@ class SubtleCrypto final : public GarbageCollected<SubtleCrypto>,
                           bool extractable,
                           const Vector<String>&);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   SubtleCrypto();

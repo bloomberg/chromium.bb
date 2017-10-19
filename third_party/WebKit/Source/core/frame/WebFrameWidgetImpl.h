@@ -151,7 +151,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   Color BaseBackgroundColor() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   friend class WebFrameWidget;  // For WebFrameWidget::create.

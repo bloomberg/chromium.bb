@@ -93,7 +93,7 @@ void OffscreenFontSelector::FontFaceInvalidated() {
   FontCacheInvalidated();
 }
 
-DEFINE_TRACE(OffscreenFontSelector) {
+void OffscreenFontSelector::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(font_face_cache_);
   FontSelector::Trace(visitor);

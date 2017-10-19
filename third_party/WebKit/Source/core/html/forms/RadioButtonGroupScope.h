@@ -37,7 +37,7 @@ class RadioButtonGroupScope {
  public:
   RadioButtonGroupScope();
   ~RadioButtonGroupScope();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   void AddButton(HTMLInputElement*);
   void UpdateCheckedState(HTMLInputElement*);
   void RequiredAttributeChanged(HTMLInputElement*);

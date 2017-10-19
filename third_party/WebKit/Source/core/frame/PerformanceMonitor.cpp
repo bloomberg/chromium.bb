@@ -356,7 +356,7 @@ void PerformanceMonitor::InnerReportGenericViolation(
   }
 }
 
-DEFINE_TRACE(PerformanceMonitor) {
+void PerformanceMonitor::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_root_);
   visitor->Trace(task_execution_context_);
   visitor->Trace(subscriptions_);

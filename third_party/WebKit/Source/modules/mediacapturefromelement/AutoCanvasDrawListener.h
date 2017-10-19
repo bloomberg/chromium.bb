@@ -22,7 +22,7 @@ class AutoCanvasDrawListener final
       std::unique_ptr<WebCanvasCaptureHandler>);
   ~AutoCanvasDrawListener() {}
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   AutoCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>);

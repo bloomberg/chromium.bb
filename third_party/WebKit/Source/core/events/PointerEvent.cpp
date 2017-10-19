@@ -75,7 +75,7 @@ HeapVector<Member<PointerEvent>> PointerEvent::getCoalescedEvents() {
   return coalesced_events_;
 }
 
-DEFINE_TRACE(PointerEvent) {
+void PointerEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(coalesced_events_);
   MouseEvent::Trace(visitor);
 }

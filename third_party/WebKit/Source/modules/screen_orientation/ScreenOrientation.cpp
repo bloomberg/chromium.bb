@@ -186,7 +186,7 @@ ScreenOrientationControllerImpl* ScreenOrientation::Controller() {
   return ScreenOrientationControllerImpl::From(*GetFrame());
 }
 
-DEFINE_TRACE(ScreenOrientation) {
+void ScreenOrientation::Trace(blink::Visitor* visitor) {
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);
 }

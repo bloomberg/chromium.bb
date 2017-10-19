@@ -300,7 +300,7 @@ void FetchResponseData::ReplaceBodyStreamBuffer(BodyStreamBuffer* buffer) {
   }
 }
 
-DEFINE_TRACE(FetchResponseData) {
+void FetchResponseData::Trace(blink::Visitor* visitor) {
   visitor->Trace(header_list_);
   visitor->Trace(internal_response_);
   visitor->Trace(buffer_);

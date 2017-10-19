@@ -113,7 +113,7 @@ class CORE_EXPORT PerformanceTiming final
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   unsigned long long MonotonicTimeToIntegerMilliseconds(double) const;
   double IntegerMillisecondsToMonotonicTime(unsigned long long) const;

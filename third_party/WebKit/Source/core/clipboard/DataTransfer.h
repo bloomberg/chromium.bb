@@ -149,7 +149,7 @@ class CORE_EXPORT DataTransfer final
       const PropertyTreeState&);
   static std::unique_ptr<DragImage> NodeImage(const LocalFrame&, Node&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   DataTransfer(DataTransferType, DataTransferAccessPolicy, DataObject*);

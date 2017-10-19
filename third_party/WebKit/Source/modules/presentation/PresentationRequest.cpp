@@ -222,7 +222,7 @@ const Vector<KURL>& PresentationRequest::Urls() const {
   return urls_;
 }
 
-DEFINE_TRACE(PresentationRequest) {
+void PresentationRequest::Trace(blink::Visitor* visitor) {
   visitor->Trace(availability_property_);
   EventTargetWithInlineData::Trace(visitor);
   ContextClient::Trace(visitor);

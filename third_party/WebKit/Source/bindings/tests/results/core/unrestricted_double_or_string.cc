@@ -56,7 +56,7 @@ UnrestrictedDoubleOrString::UnrestrictedDoubleOrString(const UnrestrictedDoubleO
 UnrestrictedDoubleOrString::~UnrestrictedDoubleOrString() = default;
 UnrestrictedDoubleOrString& UnrestrictedDoubleOrString::operator=(const UnrestrictedDoubleOrString&) = default;
 
-DEFINE_TRACE(UnrestrictedDoubleOrString) {
+void UnrestrictedDoubleOrString::Trace(blink::Visitor* visitor) {
 }
 
 void V8UnrestrictedDoubleOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, UnrestrictedDoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {

@@ -46,7 +46,7 @@ class SQLResultSetRowList final
 
  public:
   static SQLResultSetRowList* Create() { return new SQLResultSetRowList; }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   const Vector<String>& ColumnNames() const { return columns_; }
   const Vector<SQLValue>& Values() const { return result_; }

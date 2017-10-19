@@ -57,7 +57,7 @@ class WebDateTimeChooserCompletionImpl : public WebDateTimeChooserCompletion {
 
 ExternalDateTimeChooser::~ExternalDateTimeChooser() {}
 
-DEFINE_TRACE(ExternalDateTimeChooser) {
+void ExternalDateTimeChooser::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_);
   DateTimeChooser::Trace(visitor);
 }

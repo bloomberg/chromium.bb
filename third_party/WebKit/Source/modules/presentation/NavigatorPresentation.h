@@ -23,7 +23,7 @@ class NavigatorPresentation final
   static NavigatorPresentation& From(Navigator&);
   static Presentation* presentation(Navigator&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   NavigatorPresentation();

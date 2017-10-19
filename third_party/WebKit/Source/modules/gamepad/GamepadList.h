@@ -44,7 +44,7 @@ class GamepadList final : public GarbageCollected<GamepadList>,
   Gamepad* item(unsigned index);
   unsigned length() const { return device::Gamepads::kItemsLengthCap; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   GamepadList();

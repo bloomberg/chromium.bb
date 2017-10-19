@@ -59,7 +59,7 @@ IDBIndex::IDBIndex(RefPtr<IDBIndexMetadata> metadata,
 
 IDBIndex::~IDBIndex() {}
 
-DEFINE_TRACE(IDBIndex) {
+void IDBIndex::Trace(blink::Visitor* visitor) {
   visitor->Trace(object_store_);
   visitor->Trace(transaction_);
 }

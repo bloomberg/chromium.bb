@@ -72,7 +72,7 @@ class BluetoothRemoteGATTCharacteristic final
   ExecutionContext* GetExecutionContext() const;
 
   // Interface required by garbage collection.
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // IDL exposed interface:
   BluetoothRemoteGATTService* service() { return service_; }

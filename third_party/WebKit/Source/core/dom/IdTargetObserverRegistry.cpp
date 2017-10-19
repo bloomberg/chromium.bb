@@ -33,7 +33,7 @@ IdTargetObserverRegistry* IdTargetObserverRegistry::Create() {
   return new IdTargetObserverRegistry();
 }
 
-DEFINE_TRACE(IdTargetObserverRegistry) {
+void IdTargetObserverRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(registry_);
   visitor->Trace(notifying_observers_in_set_);
 }

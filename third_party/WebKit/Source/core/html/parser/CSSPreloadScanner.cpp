@@ -363,7 +363,7 @@ void CSSPreloaderResourceClient::ClearResource() {
   resource_.Clear();
 }
 
-DEFINE_TRACE(CSSPreloaderResourceClient) {
+void CSSPreloaderResourceClient::Trace(blink::Visitor* visitor) {
   visitor->Trace(preloader_);
   visitor->Trace(resource_);
   StyleSheetResourceClient::Trace(visitor);

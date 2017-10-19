@@ -49,7 +49,7 @@ class DocumentPaintDefinition final
     return registered_definitions_count_;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS(){};
 
  private:

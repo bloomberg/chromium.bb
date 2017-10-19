@@ -26,7 +26,7 @@ class TestInterface3 : public blink::GarbageCollected<TestInterface3> {
 
   static TestInterface3* Create(blink::TestInterface3*);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  protected:
   explicit TestInterface3(blink::TestInterface3* test_interface_3);

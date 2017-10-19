@@ -191,7 +191,7 @@ RefPtr<EncodedFormData> PasswordCredential::EncodeFormData(
   return encoded_data;
 }
 
-DEFINE_TRACE(PasswordCredential) {
+void PasswordCredential::Trace(blink::Visitor* visitor) {
   Credential::Trace(visitor);
   visitor->Trace(additional_data_);
 }

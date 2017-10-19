@@ -29,7 +29,7 @@ class SetSinkIdResolver : public ScriptPromiseResolver {
   ~SetSinkIdResolver() override = default;
   void StartAsync();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SetSinkIdResolver(ScriptState*, HTMLMediaElement&, const String& sink_id);
@@ -93,7 +93,7 @@ void SetSinkIdResolver::TimerFired(TimerBase* timer) {
   }
 }
 
-DEFINE_TRACE(SetSinkIdResolver) {
+void SetSinkIdResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   ScriptPromiseResolver::Trace(visitor);
 }
@@ -144,7 +144,7 @@ HTMLMediaElementAudioOutputDevice& HTMLMediaElementAudioOutputDevice::From(
   return *supplement;
 }
 
-DEFINE_TRACE(HTMLMediaElementAudioOutputDevice) {
+void HTMLMediaElementAudioOutputDevice::Trace(blink::Visitor* visitor) {
   Supplement<HTMLMediaElement>::Trace(visitor);
 }
 

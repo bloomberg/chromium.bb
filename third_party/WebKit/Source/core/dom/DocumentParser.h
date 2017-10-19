@@ -43,7 +43,7 @@ class CORE_EXPORT DocumentParser
       public TraceWrapperBase {
  public:
   virtual ~DocumentParser();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   virtual ScriptableDocumentParser* AsScriptableDocumentParser() {
     return nullptr;

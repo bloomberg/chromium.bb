@@ -30,7 +30,7 @@ class WebFormElementObserverImpl::ObserverCallback
 
   void Disconnect();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   Member<HTMLElement> element_;
@@ -102,7 +102,8 @@ void WebFormElementObserverImpl::ObserverCallback::Disconnect() {
   callback_.reset();
 }
 
-DEFINE_TRACE(WebFormElementObserverImpl::ObserverCallback) {
+void WebFormElementObserverImpl::ObserverCallback::Trace(
+    blink::Visitor* visitor) {
   visitor->Trace(element_);
   visitor->Trace(mutation_observer_);
   MutationObserver::Delegate::Trace(visitor);
@@ -137,7 +138,7 @@ void WebFormElementObserverImpl::Disconnect() {
   self_keep_alive_.Clear();
 }
 
-DEFINE_TRACE(WebFormElementObserverImpl) {
+void WebFormElementObserverImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(mutation_callback_);
 }
 

@@ -267,7 +267,7 @@ AudioWorkletHandler& AudioWorkletNode::GetWorkletHandler() const {
   return static_cast<AudioWorkletHandler&>(Handler());
 }
 
-DEFINE_TRACE(AudioWorkletNode) {
+void AudioWorkletNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(parameter_map_);
   AudioNode::Trace(visitor);
 }

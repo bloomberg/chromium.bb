@@ -68,7 +68,7 @@ class FormDataIterationSource final
     return true;
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(form_data_);
     PairIterable<String, FormDataEntryValue>::IterationSource::Trace(visitor);
   }
@@ -93,7 +93,7 @@ FormData::FormData(HTMLFormElement* form) : encoding_(UTF8Encoding()) {
   }
 }
 
-DEFINE_TRACE(FormData) {
+void FormData::Trace(blink::Visitor* visitor) {
   visitor->Trace(entries_);
 }
 
@@ -312,7 +312,7 @@ FormData::StartIteration(ScriptState*, ExceptionState&) {
 
 // ----------------------------------------------------------------
 
-DEFINE_TRACE(FormData::Entry) {
+void FormData::Entry::Trace(blink::Visitor* visitor) {
   visitor->Trace(blob_);
 }
 

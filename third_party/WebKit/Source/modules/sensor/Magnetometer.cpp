@@ -44,7 +44,7 @@ double Magnetometer::z(bool& is_null) const {
   return proxy()->reading().magn.z;
 }
 
-DEFINE_TRACE(Magnetometer) {
+void Magnetometer::Trace(blink::Visitor* visitor) {
   Sensor::Trace(visitor);
 }
 

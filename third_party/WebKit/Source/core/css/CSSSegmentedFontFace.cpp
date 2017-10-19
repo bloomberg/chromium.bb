@@ -191,7 +191,7 @@ void CSSSegmentedFontFace::Match(const String& text,
   }
 }
 
-DEFINE_TRACE(CSSSegmentedFontFace) {
+void CSSSegmentedFontFace::Trace(blink::Visitor* visitor) {
   visitor->Trace(first_non_css_connected_face_);
   visitor->Trace(font_faces_);
 }

@@ -184,7 +184,7 @@ void WebGLRenderingContext::RegisterContextExtensions() {
                                       kBothPrefixes);
 }
 
-DEFINE_TRACE(WebGLRenderingContext) {
+void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(angle_instanced_arrays_);
   visitor->Trace(ext_blend_min_max_);
   visitor->Trace(ext_color_buffer_half_float_);

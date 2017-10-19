@@ -20,7 +20,7 @@ class OrientationSensor : public Sensor {
 
   bool isReadingDirty() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   OrientationSensor(ExecutionContext*,

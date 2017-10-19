@@ -22,7 +22,7 @@ class Gyroscope final : public Sensor {
   double y(bool& is_null) const;
   double z(bool& is_null) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   Gyroscope(ExecutionContext*, const SensorOptions&, ExceptionState&);

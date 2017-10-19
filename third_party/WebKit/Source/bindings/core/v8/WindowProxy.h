@@ -145,7 +145,7 @@ class WindowProxy : public GarbageCollectedFinalized<WindowProxy> {
  public:
   virtual ~WindowProxy();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void InitializeIfNeeded();
 

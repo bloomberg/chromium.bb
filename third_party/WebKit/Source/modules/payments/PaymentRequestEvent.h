@@ -46,7 +46,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   ScriptPromise openWindow(ScriptState*, const String& url);
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   PaymentRequestEvent(const AtomicString& type,

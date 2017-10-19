@@ -74,7 +74,7 @@ class MockScriptLoader final : public ScriptLoader {
   MockScriptLoader* SetupForStreaming(WTF::Closure& finished_callback);
   MockScriptLoader* SetupForNonStreaming();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit MockScriptLoader()

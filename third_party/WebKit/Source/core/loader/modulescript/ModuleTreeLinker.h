@@ -48,7 +48,7 @@ class CORE_EXPORT ModuleTreeLinker final : public SingleModuleClient {
       ModuleTreeClient*);
 
   virtual ~ModuleTreeLinker() = default;
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
 
   bool IsFetching() const {

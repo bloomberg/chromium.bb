@@ -32,7 +32,7 @@ inline SVGMPathElement::SVGMPathElement(Document& document)
   DCHECK(RuntimeEnabledFeatures::SMILEnabled());
 }
 
-DEFINE_TRACE(SVGMPathElement) {
+void SVGMPathElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_id_observer_);
   SVGElement::Trace(visitor);
   SVGURIReference::Trace(visitor);

@@ -38,7 +38,7 @@ class GlobalCookieStoreImpl final
 
   CookieStore* GetCookieStore();
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(cookie_store_);
     Supplement<T>::Trace(visitor);
   }

@@ -148,7 +148,7 @@ void ResizeObserver::ElementSizeChanged() {
     controller_->ObserverChanged();
 }
 
-DEFINE_TRACE(ResizeObserver) {
+void ResizeObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(delegate_);
   visitor->Trace(observations_);

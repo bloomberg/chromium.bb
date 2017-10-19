@@ -116,7 +116,7 @@ class CORE_EXPORT CSSValuePool
     return font_face_value_cache_.insert(string, nullptr);
   }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   CSSValuePool();

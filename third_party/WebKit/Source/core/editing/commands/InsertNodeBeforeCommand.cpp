@@ -71,7 +71,7 @@ void InsertNodeBeforeCommand::DoUnapply() {
   insert_child_->remove(IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-DEFINE_TRACE(InsertNodeBeforeCommand) {
+void InsertNodeBeforeCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(insert_child_);
   visitor->Trace(ref_child_);
   SimpleEditCommand::Trace(visitor);

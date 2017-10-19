@@ -54,7 +54,7 @@ class PLATFORM_EXPORT ArchiveResource final
   const AtomicString& MimeType() const { return mime_type_; }
   const AtomicString& TextEncoding() const { return text_encoding_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   ArchiveResource(RefPtr<SharedBuffer>,

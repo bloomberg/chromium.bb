@@ -158,7 +158,7 @@ ServiceWorker::ServiceWorker(ExecutionContext* execution_context,
 
 ServiceWorker::~ServiceWorker() {}
 
-DEFINE_TRACE(ServiceWorker) {
+void ServiceWorker::Trace(blink::Visitor* visitor) {
   AbstractWorker::Trace(visitor);
 }
 

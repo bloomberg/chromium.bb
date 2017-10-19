@@ -51,7 +51,7 @@ class MODULES_EXPORT MediaDeviceInfo final
 
   ScriptValue toJSONForBinding(ScriptState*);
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit MediaDeviceInfo(const WebMediaDeviceInfo&);

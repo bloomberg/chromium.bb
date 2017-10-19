@@ -84,7 +84,7 @@ ForeignFetchEvent::ForeignFetchEvent(
   }
 }
 
-DEFINE_TRACE(ForeignFetchEvent) {
+void ForeignFetchEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
   visitor->Trace(request_);
   ExtendableEvent::Trace(visitor);

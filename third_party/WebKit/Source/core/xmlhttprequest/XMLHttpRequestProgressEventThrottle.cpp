@@ -187,7 +187,7 @@ void XMLHttpRequestProgressEventThrottle::Resume() {
   StartOneShot(0, BLINK_FROM_HERE);
 }
 
-DEFINE_TRACE(XMLHttpRequestProgressEventThrottle) {
+void XMLHttpRequestProgressEventThrottle::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
 }
 

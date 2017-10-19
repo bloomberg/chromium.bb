@@ -21,7 +21,7 @@ class ScrollStateCallback
 
   virtual ~ScrollStateCallback() {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(ScrollState*) = 0;
 
   void SetNativeScrollBehavior(WebNativeScrollBehavior native_scroll_behavior) {

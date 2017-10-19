@@ -73,7 +73,7 @@ class MODULES_EXPORT ImageCapture final
   void ClearMediaTrackConstraints();
   void GetMediaTrackSettings(MediaTrackSettings&) const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   using PromiseResolverFunction = Function<void(ScriptPromiseResolver*)>;

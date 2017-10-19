@@ -26,7 +26,7 @@ const AtomicString& BlobEvent::InterfaceName() const {
   return EventNames::BlobEvent;
 }
 
-DEFINE_TRACE(BlobEvent) {
+void BlobEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(blob_);
   Event::Trace(visitor);
 }

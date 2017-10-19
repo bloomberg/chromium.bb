@@ -47,7 +47,7 @@ class MODULES_EXPORT MediaSession final
   // internally when a new MediaMetadata object is set.
   void OnMetadataChanged();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  private:

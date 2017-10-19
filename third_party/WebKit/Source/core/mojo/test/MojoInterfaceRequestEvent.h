@@ -38,7 +38,7 @@ class MojoInterfaceRequestEvent final : public Event {
     return EventNames::MojoInterfaceRequestEvent;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit MojoInterfaceRequestEvent(MojoHandle*);

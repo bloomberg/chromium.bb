@@ -61,7 +61,7 @@ class CORE_EXPORT CSSFontFaceSource
   // For UMA reporting
   virtual bool HadBlankText() { return false; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   CSSFontFaceSource() = default;

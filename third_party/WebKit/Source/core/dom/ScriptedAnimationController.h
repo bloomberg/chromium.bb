@@ -51,7 +51,7 @@ class CORE_EXPORT ScriptedAnimationController
   }
   virtual ~ScriptedAnimationController() = default;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   DECLARE_TRACE_WRAPPERS();
   void ClearDocumentPointer() { document_ = nullptr; }
 

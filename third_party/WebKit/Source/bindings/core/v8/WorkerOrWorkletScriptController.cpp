@@ -387,7 +387,7 @@ void WorkerOrWorkletScriptController::RethrowExceptionFromImportedScript(
       V8ThrowException::CreateError(isolate_, error_message));
 }
 
-DEFINE_TRACE(WorkerOrWorkletScriptController) {
+void WorkerOrWorkletScriptController::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
 }
 

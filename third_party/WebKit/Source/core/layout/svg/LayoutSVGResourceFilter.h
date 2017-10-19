@@ -56,7 +56,7 @@ class FilterData final : public GarbageCollected<FilterData> {
 
   void Dispose();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   Member<FilterEffect> last_effect;
   Member<SVGFilterGraphNodeMap> node_map;

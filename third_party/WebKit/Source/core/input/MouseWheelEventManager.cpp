@@ -19,7 +19,7 @@ namespace blink {
 MouseWheelEventManager::MouseWheelEventManager(LocalFrame& frame)
     : frame_(frame), wheel_target_(nullptr) {}
 
-DEFINE_TRACE(MouseWheelEventManager) {
+void MouseWheelEventManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(wheel_target_);
 }

@@ -209,7 +209,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   void InvalidateKeyframeEffect(const TreeScope&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   DispatchEventResult DispatchEventInternal(Event*) override;
@@ -341,7 +341,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
     void Detach();
 
-    DEFINE_INLINE_TRACE() { visitor->Trace(animation_); }
+    void Trace(blink::Visitor* visitor) { visitor->Trace(animation_); }
 
     CompositorAnimationPlayer* Player() const {
       return compositor_player_.get();

@@ -744,7 +744,7 @@ void FontFace::InitCSSFontFace(const unsigned char* data, size_t size) {
   css_font_face_->AddSource(source);
 }
 
-DEFINE_TRACE(FontFace) {
+void FontFace::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_);
   visitor->Trace(weight_);
   visitor->Trace(stretch_);

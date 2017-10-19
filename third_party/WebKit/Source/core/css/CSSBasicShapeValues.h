@@ -58,7 +58,7 @@ class CSSBasicShapeCircleValue final : public CSSValue {
   void SetCenterY(CSSValue* center_y) { center_y_ = center_y; }
   void SetRadius(CSSValue* radius) { radius_ = radius; }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSBasicShapeCircleValue() : CSSValue(kBasicShapeCircleClass) {}
@@ -88,7 +88,7 @@ class CSSBasicShapeEllipseValue final : public CSSValue {
   void SetRadiusX(CSSValue* radius_x) { radius_x_ = radius_x; }
   void SetRadiusY(CSSValue* radius_y) { radius_y_ = radius_y; }
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSBasicShapeEllipseValue() : CSSValue(kBasicShapeEllipseClass) {}
@@ -123,7 +123,7 @@ class CSSBasicShapePolygonValue final : public CSSValue {
   String CustomCSSText() const;
   bool Equals(const CSSBasicShapePolygonValue&) const;
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSBasicShapePolygonValue()
@@ -192,7 +192,7 @@ class CSSBasicShapeInsetValue final : public CSSValue {
   String CustomCSSText() const;
   bool Equals(const CSSBasicShapeInsetValue&) const;
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSBasicShapeInsetValue() : CSSValue(kBasicShapeInsetClass) {}

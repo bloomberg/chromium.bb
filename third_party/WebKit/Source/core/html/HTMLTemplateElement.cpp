@@ -71,7 +71,7 @@ void HTMLTemplateElement::DidMoveToNewDocument(Document& old_document) {
   GetDocument().EnsureTemplateDocument().AdoptIfNeeded(*content_);
 }
 
-DEFINE_TRACE(HTMLTemplateElement) {
+void HTMLTemplateElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(content_);
   HTMLElement::Trace(visitor);
 }

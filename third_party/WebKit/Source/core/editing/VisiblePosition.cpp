@@ -65,7 +65,7 @@ VisiblePositionTemplate<Strategy>::VisiblePositionTemplate(
 }
 
 template <typename Strategy>
-DEFINE_TRACE(VisiblePositionTemplate<Strategy>) {
+void VisiblePositionTemplate<Strategy>::Trace(blink::Visitor* visitor) {
   visitor->Trace(position_with_affinity_);
 }
 

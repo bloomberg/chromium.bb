@@ -72,7 +72,7 @@ class SyncCallbackHelper final
     return ErrorCallbackImpl::Create(this);
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(result_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(result_); }
 
  private:
   SyncCallbackHelper() : error_code_(FileError::kOK), completed_(false) {}
@@ -87,7 +87,7 @@ class SyncCallbackHelper final
 
     virtual void handleEvent(CallbackArg arg) { helper_->SetResult(arg); }
 
-    DEFINE_INLINE_TRACE() {
+    void Trace(blink::Visitor* visitor) {
       visitor->Trace(helper_);
       SuccessCallback::Trace(visitor);
     }
@@ -107,7 +107,7 @@ class SyncCallbackHelper final
       helper_->SetError(error);
     }
 
-    DEFINE_INLINE_TRACE() {
+    void Trace(blink::Visitor* visitor) {
       visitor->Trace(helper_);
       ErrorCallbackBase::Trace(visitor);
     }
@@ -135,7 +135,7 @@ class SyncCallbackHelper final
 struct EmptyType : public GarbageCollected<EmptyType> {
   static EmptyType* Create(EmptyType*) { return 0; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 };
 
 typedef SyncCallbackHelper<EntryCallback, Entry*, EntrySync>

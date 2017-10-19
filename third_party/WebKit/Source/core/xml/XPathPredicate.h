@@ -38,7 +38,7 @@ namespace XPath {
 class CORE_EXPORT Number final : public Expression {
  public:
   explicit Number(double);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   Value Evaluate(EvaluationContext&) const override;
@@ -50,7 +50,7 @@ class CORE_EXPORT Number final : public Expression {
 class CORE_EXPORT StringExpression final : public Expression {
  public:
   explicit StringExpression(const String&);
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   Value Evaluate(EvaluationContext&) const override;
@@ -121,7 +121,7 @@ class Predicate final : public GarbageCollected<Predicate> {
 
  public:
   explicit Predicate(Expression*);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   bool Evaluate(EvaluationContext&) const;
   bool IsContextPositionSensitive() const {

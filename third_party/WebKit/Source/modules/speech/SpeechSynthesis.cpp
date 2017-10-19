@@ -234,7 +234,7 @@ const AtomicString& SpeechSynthesis::InterfaceName() const {
   return EventTargetNames::SpeechSynthesis;
 }
 
-DEFINE_TRACE(SpeechSynthesis) {
+void SpeechSynthesis::Trace(blink::Visitor* visitor) {
   visitor->Trace(platform_speech_synthesizer_);
   visitor->Trace(voice_list_);
   visitor->Trace(utterance_queue_);

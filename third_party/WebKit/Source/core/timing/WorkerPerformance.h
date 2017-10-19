@@ -56,7 +56,7 @@ class WorkerPerformance final : public PerformanceBase {
 
   MemoryInfo* memory();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit WorkerPerformance(WorkerGlobalScope*);

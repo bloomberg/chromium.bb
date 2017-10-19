@@ -48,7 +48,7 @@ MediaElementEventQueue::MediaElementEventQueue(EventTarget* owner,
 
 MediaElementEventQueue::~MediaElementEventQueue() {}
 
-DEFINE_TRACE(MediaElementEventQueue) {
+void MediaElementEventQueue::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);
   visitor->Trace(pending_events_);
   EventQueue::Trace(visitor);

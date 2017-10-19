@@ -111,7 +111,7 @@ void IntersectionObservation::UpdateShouldReportRootBoundsAfterDomChange() {
   }
 }
 
-DEFINE_TRACE(IntersectionObservation) {
+void IntersectionObservation::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
   visitor->Trace(target_);
 }

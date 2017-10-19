@@ -37,7 +37,7 @@ String WorkerNavigator::userAgent() const {
   return user_agent_;
 }
 
-DEFINE_TRACE(WorkerNavigator) {
+void WorkerNavigator::Trace(blink::Visitor* visitor) {
   Supplementable<WorkerNavigator>::Trace(visitor);
 }
 

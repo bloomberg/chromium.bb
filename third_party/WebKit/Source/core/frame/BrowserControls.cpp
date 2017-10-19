@@ -23,7 +23,7 @@ BrowserControls::BrowserControls(const Page& page)
       shrink_viewport_(false),
       permitted_state_(kWebBrowserControlsBoth) {}
 
-DEFINE_TRACE(BrowserControls) {
+void BrowserControls::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_);
 }
 

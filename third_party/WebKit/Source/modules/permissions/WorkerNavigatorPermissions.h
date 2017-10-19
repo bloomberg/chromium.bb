@@ -23,7 +23,7 @@ class WorkerNavigatorPermissions final
   static WorkerNavigatorPermissions& From(WorkerNavigator&);
   static Permissions* permissions(WorkerNavigator&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   static const char* SupplementName();

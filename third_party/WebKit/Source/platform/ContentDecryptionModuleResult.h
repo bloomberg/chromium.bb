@@ -36,7 +36,7 @@ class ContentDecryptionModuleResult
     return WebContentDecryptionModuleResult(this);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

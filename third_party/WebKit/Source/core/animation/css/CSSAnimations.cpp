@@ -1156,7 +1156,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
   previous_iteration_ = current_iteration;
 }
 
-DEFINE_TRACE(CSSAnimations::AnimationEventDelegate) {
+void CSSAnimations::AnimationEventDelegate::Trace(blink::Visitor* visitor) {
   visitor->Trace(animation_target_);
   AnimationEffectReadOnly::EventDelegate::Trace(visitor);
 }
@@ -1189,7 +1189,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
   previous_phase_ = current_phase;
 }
 
-DEFINE_TRACE(CSSAnimations::TransitionEventDelegate) {
+void CSSAnimations::TransitionEventDelegate::Trace(blink::Visitor* visitor) {
   visitor->Trace(transition_target_);
   AnimationEffectReadOnly::EventDelegate::Trace(visitor);
 }
@@ -1263,7 +1263,7 @@ bool CSSAnimations::IsAnimatingCustomProperties(
              IsCustomPropertyHandle);
 }
 
-DEFINE_TRACE(CSSAnimations) {
+void CSSAnimations::Trace(blink::Visitor* visitor) {
   visitor->Trace(transitions_);
   visitor->Trace(pending_update_);
   visitor->Trace(running_animations_);

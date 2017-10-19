@@ -185,7 +185,7 @@ String DataObjectItem::FileSystemId() const {
   return file_system_id_;
 }
 
-DEFINE_TRACE(DataObjectItem) {
+void DataObjectItem::Trace(blink::Visitor* visitor) {
   visitor->Trace(file_);
 }
 

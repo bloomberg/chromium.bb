@@ -61,7 +61,7 @@ class CORE_EXPORT DOMTimer final : public GarbageCollectedFinalized<DOMTimer>,
   // destruction (when lazily swept), but some of its members (m_action) may
   // already have been finalized & must not be accessed.
   EAGERLY_FINALIZE();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   void Stop() override;
 

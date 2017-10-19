@@ -112,7 +112,7 @@ class PLATFORM_EXPORT ScrollAnimatorCompositorCoordinator
 
   RunState RunStateForTesting() { return run_state_; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   explicit ScrollAnimatorCompositorCoordinator();

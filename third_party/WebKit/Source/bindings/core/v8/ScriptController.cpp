@@ -68,7 +68,7 @@
 
 namespace blink {
 
-DEFINE_TRACE(ScriptController) {
+void ScriptController::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(window_proxy_manager_);
 }

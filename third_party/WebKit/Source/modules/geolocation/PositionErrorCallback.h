@@ -36,7 +36,7 @@ class PositionErrorCallback
     : public GarbageCollectedFinalized<PositionErrorCallback> {
  public:
   virtual ~PositionErrorCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(PositionError*) = 0;
 };
 

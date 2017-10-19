@@ -37,7 +37,7 @@ class PresentationConnectionAvailableEvent final : public Event {
 
   const AtomicString& InterfaceName() const override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   PresentationConnectionAvailableEvent(const AtomicString& event_type,

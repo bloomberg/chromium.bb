@@ -31,7 +31,7 @@ class UpdatePaymentDetailsFunction : public ScriptFunction {
     return self->BindToV8Function();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(updater_);
     ScriptFunction::Trace(visitor);
   }
@@ -60,7 +60,7 @@ class UpdatePaymentDetailsErrorFunction : public ScriptFunction {
     return self->BindToV8Function();
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(updater_);
     ScriptFunction::Trace(visitor);
   }
@@ -147,7 +147,7 @@ void PaymentRequestUpdateEvent::OnUpdatePaymentDetailsFailure(
   updater_ = nullptr;
 }
 
-DEFINE_TRACE(PaymentRequestUpdateEvent) {
+void PaymentRequestUpdateEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(updater_);
   Event::Trace(visitor);
 }

@@ -55,7 +55,7 @@ class FileEntrySync final : public EntrySync {
   File* file(ExceptionState&);
   FileWriterSync* createWriter(ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   FileEntrySync(DOMFileSystemBase*, const String& full_path);

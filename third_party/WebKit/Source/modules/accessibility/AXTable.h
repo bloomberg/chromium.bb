@@ -47,7 +47,7 @@ class MODULES_EXPORT AXTable : public AXLayoutObject {
  public:
   static AXTable* Create(LayoutObject*, AXObjectCacheImpl&);
   ~AXTable() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   void Init() final;
 

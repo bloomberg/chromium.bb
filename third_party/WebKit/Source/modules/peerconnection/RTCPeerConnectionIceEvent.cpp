@@ -63,7 +63,7 @@ const AtomicString& RTCPeerConnectionIceEvent::InterfaceName() const {
   return EventNames::RTCPeerConnectionIceEvent;
 }
 
-DEFINE_TRACE(RTCPeerConnectionIceEvent) {
+void RTCPeerConnectionIceEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(candidate_);
   Event::Trace(visitor);
 }

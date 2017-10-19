@@ -56,7 +56,7 @@ class PLATFORM_EXPORT ResourceClient : public GarbageCollectedMixin {
   // Name for debugging, e.g. shown in memory-infra.
   virtual String DebugName() const = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   ResourceClient() {}

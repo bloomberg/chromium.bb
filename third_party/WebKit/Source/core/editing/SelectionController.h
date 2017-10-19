@@ -49,7 +49,7 @@ class CORE_EXPORT SelectionController final
  public:
   static SelectionController* Create(LocalFrame&);
   virtual ~SelectionController();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   bool HandleMousePressEvent(const MouseEventWithHitTestResults&);
   void HandleMouseDraggedEvent(const MouseEventWithHitTestResults&,

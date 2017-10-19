@@ -85,7 +85,7 @@ class CORE_EXPORT SelectionTemplate final {
     explicit InvalidSelectionResetter(const SelectionTemplate&);
     ~InvalidSelectionResetter();
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
    private:
     const Member<const Document> document_;
@@ -122,7 +122,7 @@ class CORE_EXPORT SelectionTemplate final {
   // Returns |SelectionType| for |this| based on |base_| and |extent_|.
   SelectionType Type() const;
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   void PrintTo(std::ostream*, const char* type) const;
 #ifndef NDEBUG

@@ -17,7 +17,7 @@ class PlatformSendRequest;
 class PLATFORM_EXPORT PlatformTraceEventsAgent
     : public GarbageCollected<PlatformTraceEventsAgent> {
  public:
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   void Will(const probe::PlatformSendRequest&);
   void Did(const probe::PlatformSendRequest&);

@@ -130,7 +130,7 @@ void MemoryCoordinator::ClearThreadSpecificMemory() {
   FontGlobalContext::ClearMemory();
 }
 
-DEFINE_TRACE(MemoryCoordinator) {
+void MemoryCoordinator::Trace(blink::Visitor* visitor) {
   visitor->Trace(clients_);
 }
 

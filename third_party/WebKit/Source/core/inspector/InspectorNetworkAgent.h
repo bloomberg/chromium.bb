@@ -78,7 +78,7 @@ class CORE_EXPORT InspectorNetworkAgent final
   void Restore() override;
 
   ~InspectorNetworkAgent() override;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // Probes.
   void DidBlockRequest(ExecutionContext*,

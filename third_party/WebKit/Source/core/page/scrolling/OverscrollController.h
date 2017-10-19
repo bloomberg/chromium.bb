@@ -41,7 +41,7 @@ class OverscrollController : public GarbageCollected<OverscrollController> {
 
   void SetScrollBoundaryBehavior(const WebScrollBoundaryBehavior&);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   OverscrollController(const VisualViewport&, ChromeClient&);

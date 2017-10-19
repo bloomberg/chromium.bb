@@ -43,7 +43,7 @@ class Geoposition final : public GarbageCollected<Geoposition>,
     return new Geoposition(coordinates, timestamp);
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(coordinates_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(coordinates_); }
 
   DOMTimeStamp timestamp() const { return timestamp_; }
   Coordinates* coords() const { return coordinates_; }

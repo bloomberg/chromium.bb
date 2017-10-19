@@ -46,7 +46,7 @@ class CORE_EXPORT UnsignedLongLongOrBooleanOrTestCallbackInterface final {
   UnsignedLongLongOrBooleanOrTestCallbackInterface(const UnsignedLongLongOrBooleanOrTestCallbackInterface&);
   ~UnsignedLongLongOrBooleanOrTestCallbackInterface();
   UnsignedLongLongOrBooleanOrTestCallbackInterface& operator=(const UnsignedLongLongOrBooleanOrTestCallbackInterface&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

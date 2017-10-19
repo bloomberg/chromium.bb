@@ -32,7 +32,7 @@ LinearAccelerationSensor::LinearAccelerationSensor(
                     exception_state,
                     SensorType::LINEAR_ACCELERATION) {}
 
-DEFINE_TRACE(LinearAccelerationSensor) {
+void LinearAccelerationSensor::Trace(blink::Visitor* visitor) {
   Accelerometer::Trace(visitor);
 }
 

@@ -41,7 +41,7 @@ class WebHitTestResultPrivate
  public:
   static WebHitTestResultPrivate* Create(const HitTestResult&);
   static WebHitTestResultPrivate* Create(const WebHitTestResultPrivate&);
-  DEFINE_INLINE_TRACE() { visitor->Trace(result_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(result_); }
   const HitTestResult& Result() const { return result_; }
 
  private:

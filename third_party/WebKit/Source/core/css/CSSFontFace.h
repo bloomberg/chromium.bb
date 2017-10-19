@@ -84,7 +84,7 @@ class CORE_EXPORT CSSFontFace final
 
   bool HadBlankText() { return IsValid() && sources_.front()->HadBlankText(); }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   void SetLoadStatus(FontFace::LoadStatusType);

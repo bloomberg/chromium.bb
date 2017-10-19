@@ -72,7 +72,7 @@ void NotificationResourcesLoader::Stop() {
     image_loader->Stop();
 }
 
-DEFINE_TRACE(NotificationResourcesLoader) {
+void NotificationResourcesLoader::Trace(blink::Visitor* visitor) {
   visitor->Trace(image_loaders_);
 }
 

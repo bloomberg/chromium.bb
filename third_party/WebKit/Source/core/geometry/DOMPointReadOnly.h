@@ -31,7 +31,7 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
   double z() const { return z_; }
   double w() const { return w_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   ScriptValue toJSONForBinding(ScriptState*) const;
   DOMPoint* matrixTransform(DOMMatrixInit&, ExceptionState&);

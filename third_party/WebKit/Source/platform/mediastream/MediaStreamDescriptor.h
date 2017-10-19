@@ -51,7 +51,7 @@ class PLATFORM_EXPORT MediaStreamDescriptorClient
   virtual void StreamEnded() = 0;
   virtual void AddTrackByComponent(MediaStreamComponent*) = 0;
   virtual void RemoveTrackByComponent(MediaStreamComponent*) = 0;
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 class PLATFORM_EXPORT MediaStreamDescriptor final
@@ -111,7 +111,7 @@ class PLATFORM_EXPORT MediaStreamDescriptor final
   // destruction.  So this class is eagerly finalized to finalize |m_extraData|
   // promptly.
   EAGERLY_FINALIZE();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   MediaStreamDescriptor(const String& id,

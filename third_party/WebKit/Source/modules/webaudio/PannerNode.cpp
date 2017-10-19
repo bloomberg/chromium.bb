@@ -796,7 +796,7 @@ void PannerNode::setConeOuterGain(double gain) {
   GetPannerHandler().SetConeOuterGain(gain);
 }
 
-DEFINE_TRACE(PannerNode) {
+void PannerNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(position_x_);
   visitor->Trace(position_y_);
   visitor->Trace(position_z_);

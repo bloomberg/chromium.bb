@@ -272,7 +272,7 @@ void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
         &author_style_sheets_[i]->Contents()->GetRuleSet());
 }
 
-DEFINE_TRACE(ScopedStyleResolver) {
+void ScopedStyleResolver::Trace(blink::Visitor* visitor) {
   visitor->Trace(scope_);
   visitor->Trace(author_style_sheets_);
   visitor->Trace(keyframes_rule_map_);
@@ -374,7 +374,7 @@ bool ScopedStyleResolver::HaveSameStyles(const ScopedStyleResolver* first,
   return true;
 }
 
-DEFINE_TRACE(ScopedStyleResolver::RuleSubSet) {
+void ScopedStyleResolver::RuleSubSet::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_style_sheet_);
   visitor->Trace(rule_set_);
 }

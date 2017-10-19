@@ -56,7 +56,7 @@ XPathExpression* XPathExpression::CreateExpression(
   return expr;
 }
 
-DEFINE_TRACE(XPathExpression) {
+void XPathExpression::Trace(blink::Visitor* visitor) {
   visitor->Trace(top_expression_);
 }
 

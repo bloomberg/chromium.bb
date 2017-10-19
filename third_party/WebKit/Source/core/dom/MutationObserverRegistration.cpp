@@ -148,7 +148,7 @@ void MutationObserverRegistration::AddRegistrationNodesToSet(
     nodes.insert(iter->Get());
 }
 
-DEFINE_TRACE(MutationObserverRegistration) {
+void MutationObserverRegistration::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_);
   visitor->Trace(registration_node_);
   visitor->Trace(registration_node_keep_alive_);

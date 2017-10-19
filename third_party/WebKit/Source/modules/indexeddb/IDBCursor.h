@@ -58,7 +58,7 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
                            IDBAny* source,
                            IDBTransaction*);
   virtual ~IDBCursor();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
   void ContextWillBeDestroyed() { backend_.reset(); }
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(

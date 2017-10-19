@@ -82,7 +82,7 @@ class WorkletModuleResponsesMap::Entry final
     module_fetcher_.Clear();
   }
 
-  DEFINE_INLINE_TRACE() {
+  void Trace(blink::Visitor* visitor) {
     visitor->Trace(module_fetcher_);
     visitor->Trace(clients_);
   }
@@ -198,7 +198,7 @@ void WorkletModuleResponsesMap::Dispose() {
   entries_.clear();
 }
 
-DEFINE_TRACE(WorkletModuleResponsesMap) {
+void WorkletModuleResponsesMap::Trace(blink::Visitor* visitor) {
   visitor->Trace(fetcher_);
   visitor->Trace(entries_);
 }

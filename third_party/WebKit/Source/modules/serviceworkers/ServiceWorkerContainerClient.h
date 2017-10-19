@@ -38,7 +38,7 @@ class MODULES_EXPORT ServiceWorkerContainerClient final
   static const char* SupplementName();
   static ServiceWorkerContainerClient* From(ExecutionContext*);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     Supplement<Document>::Trace(visitor);
     Supplement<WorkerClients>::Trace(visitor);
   }

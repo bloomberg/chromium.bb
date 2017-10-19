@@ -50,7 +50,7 @@ void SetNodeAttributeCommand::DoUnapply() {
   old_value_ = g_null_atom;
 }
 
-DEFINE_TRACE(SetNodeAttributeCommand) {
+void SetNodeAttributeCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
   SimpleEditCommand::Trace(visitor);
 }

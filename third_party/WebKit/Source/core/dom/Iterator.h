@@ -28,7 +28,7 @@ class CORE_EXPORT Iterator : public GarbageCollectedFinalized<Iterator>,
                            ExceptionState&) = 0;
   Iterator* GetIterator(ScriptState*, ExceptionState&) { return this; }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

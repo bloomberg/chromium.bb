@@ -39,7 +39,7 @@ SVGNumberOptionalNumber::SVGNumberOptionalNumber(SVGNumber* first_number,
                                                  SVGNumber* second_number)
     : first_number_(first_number), second_number_(second_number) {}
 
-DEFINE_TRACE(SVGNumberOptionalNumber) {
+void SVGNumberOptionalNumber::Trace(blink::Visitor* visitor) {
   visitor->Trace(first_number_);
   visitor->Trace(second_number_);
   SVGPropertyBase::Trace(visitor);

@@ -88,7 +88,7 @@ LayoutScrollbar::~LayoutScrollbar() {
   UpdateScrollbarParts(true);
 }
 
-DEFINE_TRACE(LayoutScrollbar) {
+void LayoutScrollbar::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_source_);
   Scrollbar::Trace(visitor);
 }

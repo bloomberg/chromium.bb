@@ -66,7 +66,7 @@ const char* IndexedDBClient::SupplementName() {
   return "IndexedDBClient";
 }
 
-DEFINE_TRACE(IndexedDBClient) {
+void IndexedDBClient::Trace(blink::Visitor* visitor) {
   Supplement<LocalFrame>::Trace(visitor);
   Supplement<WorkerClients>::Trace(visitor);
 }

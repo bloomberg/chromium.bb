@@ -97,7 +97,7 @@ ScriptValue ErrorEvent::error(ScriptState* script_state) const {
   return ScriptValue(script_state, error_.NewLocal(script_state->GetIsolate()));
 }
 
-DEFINE_TRACE(ErrorEvent) {
+void ErrorEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 

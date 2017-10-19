@@ -53,7 +53,7 @@ class CORE_EXPORT HTMLOutputElement final : public HTMLFormControlElement {
 
   bool CanContainRangeEndPoint() const override { return false; }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit HTMLOutputElement(Document&);

@@ -39,7 +39,7 @@ double AmbientLightSensor::illuminance(bool& is_null) const {
   return proxy()->reading().als.value;
 }
 
-DEFINE_TRACE(AmbientLightSensor) {
+void AmbientLightSensor::Trace(blink::Visitor* visitor) {
   Sensor::Trace(visitor);
 }
 

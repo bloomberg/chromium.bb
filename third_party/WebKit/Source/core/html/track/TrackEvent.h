@@ -56,7 +56,7 @@ class CORE_EXPORT TrackEvent final : public Event {
 
   void track(VideoTrackOrAudioTrackOrTextTrack&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   TrackEvent();

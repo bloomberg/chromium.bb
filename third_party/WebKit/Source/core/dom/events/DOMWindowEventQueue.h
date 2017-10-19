@@ -43,7 +43,7 @@ class DOMWindowEventQueue final : public EventQueue {
   ~DOMWindowEventQueue() override;
 
   // EventQueue
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   bool EnqueueEvent(const WebTraceLocation&, Event*) override;
   bool CancelEvent(Event*) override;
   void Close() override;

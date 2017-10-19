@@ -29,7 +29,7 @@ const AtomicString& SensorErrorEvent::InterfaceName() const {
   return EventNames::SensorErrorEvent;
 }
 
-DEFINE_TRACE(SensorErrorEvent) {
+void SensorErrorEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(error_);
   Event::Trace(visitor);
 }

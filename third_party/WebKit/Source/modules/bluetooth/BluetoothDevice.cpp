@@ -90,7 +90,7 @@ ExecutionContext* BluetoothDevice::GetExecutionContext() const {
   return ContextLifecycleObserver::GetExecutionContext();
 }
 
-DEFINE_TRACE(BluetoothDevice) {
+void BluetoothDevice::Trace(blink::Visitor* visitor) {
   visitor->Trace(attribute_instance_map_);
   visitor->Trace(gatt_);
   visitor->Trace(bluetooth_);

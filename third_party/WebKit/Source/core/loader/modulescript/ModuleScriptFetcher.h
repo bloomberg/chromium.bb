@@ -34,7 +34,7 @@ class CORE_EXPORT ModuleScriptFetcher
   // ScriptResource::Fetch() requires it.
   virtual void Fetch(FetchParameters&, Client*) = 0;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   void NotifyFetchFinished(const WTF::Optional<ModuleScriptCreationParams>&,

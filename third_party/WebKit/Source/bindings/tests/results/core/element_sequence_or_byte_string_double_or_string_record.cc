@@ -63,7 +63,7 @@ ElementSequenceOrByteStringDoubleOrStringRecord::ElementSequenceOrByteStringDoub
 ElementSequenceOrByteStringDoubleOrStringRecord::~ElementSequenceOrByteStringDoubleOrStringRecord() = default;
 ElementSequenceOrByteStringDoubleOrStringRecord& ElementSequenceOrByteStringDoubleOrStringRecord::operator=(const ElementSequenceOrByteStringDoubleOrStringRecord&) = default;
 
-DEFINE_TRACE(ElementSequenceOrByteStringDoubleOrStringRecord) {
+void ElementSequenceOrByteStringDoubleOrStringRecord::Trace(blink::Visitor* visitor) {
   visitor->Trace(byte_string_double_or_string_record_);
   visitor->Trace(element_sequence_);
 }

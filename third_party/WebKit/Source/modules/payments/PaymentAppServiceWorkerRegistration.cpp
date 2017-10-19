@@ -45,7 +45,7 @@ PaymentManager* PaymentAppServiceWorkerRegistration::paymentManager(
   return payment_manager_.Get();
 }
 
-DEFINE_TRACE(PaymentAppServiceWorkerRegistration) {
+void PaymentAppServiceWorkerRegistration::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(payment_manager_);
   Supplement<ServiceWorkerRegistration>::Trace(visitor);

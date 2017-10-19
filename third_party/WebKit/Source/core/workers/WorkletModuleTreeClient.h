@@ -24,7 +24,7 @@ class WorkletModuleTreeClient final : public ModuleTreeClient {
   // Implements ModuleTreeClient.
   void NotifyModuleTreeLoadFinished(ModuleScript*) final;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   Member<Modulator> modulator_;

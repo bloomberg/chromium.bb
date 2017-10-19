@@ -35,7 +35,7 @@ inline SVGClipPathElement::SVGClipPathElement(Document& document)
   AddToPropertyMap(clip_path_units_);
 }
 
-DEFINE_TRACE(SVGClipPathElement) {
+void SVGClipPathElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(clip_path_units_);
   SVGGraphicsElement::Trace(visitor);
 }

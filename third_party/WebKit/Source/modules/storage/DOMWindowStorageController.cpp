@@ -16,7 +16,7 @@ DOMWindowStorageController::DOMWindowStorageController(Document& document)
   document.domWindow()->RegisterEventListenerObserver(this);
 }
 
-DEFINE_TRACE(DOMWindowStorageController) {
+void DOMWindowStorageController::Trace(blink::Visitor* visitor) {
   Supplement<Document>::Trace(visitor);
 }
 

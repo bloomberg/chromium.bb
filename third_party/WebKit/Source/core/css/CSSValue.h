@@ -166,8 +166,8 @@ class CORE_EXPORT CSSValue : public GarbageCollectedFinalized<CSSValue> {
   bool operator==(const CSSValue&) const;
 
   void FinalizeGarbageCollectedObject();
-  DEFINE_INLINE_TRACE_AFTER_DISPATCH() {}
-  DECLARE_TRACE();
+  void TraceAfterDispatch(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor*);
 
   // ~CSSValue should be public, because non-public ~CSSValue causes C2248
   // error: 'blink::CSSValue::~CSSValue' : cannot access protected member

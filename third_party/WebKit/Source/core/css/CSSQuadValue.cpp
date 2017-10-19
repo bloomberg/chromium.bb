@@ -37,7 +37,7 @@ String CSSQuadValue::CustomCSSText() const {
   return result.ToString();
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSQuadValue) {
+void CSSQuadValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(top_);
   visitor->Trace(right_);
   visitor->Trace(bottom_);

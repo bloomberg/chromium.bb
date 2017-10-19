@@ -81,7 +81,7 @@ class XPathResult final : public GarbageCollected<XPathResult>,
 
   const XPath::Value& GetValue() const { return value_; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   XPathResult(XPath::EvaluationContext&, const XPath::Value&);

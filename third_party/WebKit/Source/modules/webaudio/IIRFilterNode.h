@@ -29,7 +29,7 @@ class IIRFilterNode : public AudioNode {
                                const IIRFilterOptions&,
                                ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // Get the magnitude and phase response of the filter at the given
   // set of frequencies (in Hz). The phase response is in radians.

@@ -36,7 +36,7 @@ class MockPaymentCompleter
 
   MOCK_METHOD2(Complete, ScriptPromise(ScriptState*, PaymentComplete result));
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
  private:
   ScriptPromise dummy_promise_;

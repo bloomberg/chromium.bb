@@ -57,7 +57,7 @@ class MODULES_EXPORT RTCCertificate final
   std::unique_ptr<WebRTCCertificate> CertificateShallowCopy() const;
   const WebRTCCertificate& Certificate() const { return *certificate_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   // Returns the expiration time in ms relative to epoch, 1970-01-01T00:00:00Z.
   DOMTimeStamp expires() const;

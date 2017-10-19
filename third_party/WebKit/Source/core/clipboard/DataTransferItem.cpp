@@ -109,7 +109,7 @@ void DataTransferItem::RunGetAsStringTask(ExecutionContext* context,
   callbacks_.EraseAt(index);
 }
 
-DEFINE_TRACE(DataTransferItem) {
+void DataTransferItem::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_transfer_);
   visitor->Trace(item_);
   visitor->Trace(callbacks_);

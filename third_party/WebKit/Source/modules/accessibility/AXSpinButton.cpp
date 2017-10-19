@@ -41,7 +41,7 @@ AXSpinButton::~AXSpinButton() {
   DCHECK(!spin_button_element_);
 }
 
-DEFINE_TRACE(AXSpinButton) {
+void AXSpinButton::Trace(blink::Visitor* visitor) {
   visitor->Trace(spin_button_element_);
   AXMockObject::Trace(visitor);
 }

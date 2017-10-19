@@ -92,7 +92,7 @@ void CSSPageRule::Reattach(StyleRuleBase* rule) {
     properties_cssom_wrapper_->Reattach(page_rule_->MutableProperties());
 }
 
-DEFINE_TRACE(CSSPageRule) {
+void CSSPageRule::Trace(blink::Visitor* visitor) {
   visitor->Trace(page_rule_);
   visitor->Trace(properties_cssom_wrapper_);
   CSSRule::Trace(visitor);

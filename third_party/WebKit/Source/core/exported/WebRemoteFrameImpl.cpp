@@ -73,7 +73,7 @@ WebRemoteFrameImpl* WebRemoteFrameImpl::CreateMainFrame(
 
 WebRemoteFrameImpl::~WebRemoteFrameImpl() {}
 
-DEFINE_TRACE(WebRemoteFrameImpl) {
+void WebRemoteFrameImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_client_);
   visitor->Trace(frame_);
   WebFrame::TraceFrames(visitor, this);

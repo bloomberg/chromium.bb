@@ -39,7 +39,7 @@ class BluetoothRemoteGATTService final
                              BluetoothDevice*);
 
   // Interface required by garbage collection.
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   // IDL exposed interface:
   String uuid() { return service_->uuid; }

@@ -52,7 +52,7 @@ class CORE_EXPORT SelectorFilter {
     ParentStackFrame() : element(nullptr) {}
     explicit ParentStackFrame(Element& element) : element(&element) {}
 
-    DECLARE_TRACE();
+    void Trace(blink::Visitor*);
 
     Member<Element> element;
     Vector<unsigned, 4> identifier_hashes;
@@ -74,7 +74,7 @@ class CORE_EXPORT SelectorFilter {
                                       unsigned* identifier_hashes,
                                       unsigned maximum_identifier_count);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   void PushParentStackFrame(Element& parent);

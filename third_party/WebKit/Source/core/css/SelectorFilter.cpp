@@ -199,11 +199,11 @@ void SelectorFilter::CollectIdentifierHashes(
   *hash = 0;
 }
 
-DEFINE_TRACE(SelectorFilter::ParentStackFrame) {
+void SelectorFilter::ParentStackFrame::Trace(blink::Visitor* visitor) {
   visitor->Trace(element);
 }
 
-DEFINE_TRACE(SelectorFilter) {
+void SelectorFilter::Trace(blink::Visitor* visitor) {
   visitor->Trace(parent_stack_);
 }
 

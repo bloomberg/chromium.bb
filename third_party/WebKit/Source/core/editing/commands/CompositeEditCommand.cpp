@@ -2017,7 +2017,7 @@ bool CompositeEditCommand::IsNodeVisiblyContainedWithin(
   return start_is_visually_same && end_is_visually_same;
 }
 
-DEFINE_TRACE(CompositeEditCommand) {
+void CompositeEditCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(commands_);
   visitor->Trace(starting_selection_);
   visitor->Trace(ending_selection_);

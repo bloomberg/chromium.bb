@@ -36,7 +36,7 @@ class IdTargetObserverRegistry;
 class IdTargetObserver : public GarbageCollectedFinalized<IdTargetObserver> {
  public:
   virtual ~IdTargetObserver();
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   virtual void IdTargetChanged() = 0;
   virtual void Unregister();
 

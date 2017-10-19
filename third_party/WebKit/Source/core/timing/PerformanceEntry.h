@@ -96,7 +96,7 @@ class CORE_EXPORT PerformanceEntry
 
   static PerformanceEntry::EntryType ToEntryTypeEnum(const String& entry_type);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   PerformanceEntry(const String& name,

@@ -87,7 +87,7 @@ class XMLHttpRequestProgressEventThrottle final
 
   // Need to promptly stop this timer when it is deemed finalizable.
   EAGERLY_FINALIZE();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   explicit XMLHttpRequestProgressEventThrottle(XMLHttpRequest*);

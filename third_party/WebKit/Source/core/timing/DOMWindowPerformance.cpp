@@ -13,7 +13,7 @@ namespace blink {
 DOMWindowPerformance::DOMWindowPerformance(LocalDOMWindow& window)
     : Supplement<LocalDOMWindow>(window) {}
 
-DEFINE_TRACE(DOMWindowPerformance) {
+void DOMWindowPerformance::Trace(blink::Visitor* visitor) {
   visitor->Trace(performance_);
   Supplement<LocalDOMWindow>::Trace(visitor);
 }

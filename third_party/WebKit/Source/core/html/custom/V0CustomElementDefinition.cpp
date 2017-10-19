@@ -43,7 +43,7 @@ V0CustomElementDefinition::V0CustomElementDefinition(
     V0CustomElementLifecycleCallbacks* callbacks)
     : descriptor_(descriptor), callbacks_(callbacks) {}
 
-DEFINE_TRACE(V0CustomElementDefinition) {
+void V0CustomElementDefinition::Trace(blink::Visitor* visitor) {
   visitor->Trace(callbacks_);
 }
 

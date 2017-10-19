@@ -58,7 +58,7 @@ void LayerRectList::Append(Node* layer_root_node,
                                     layer_offset_y, layer_relative_rect));
 }
 
-DEFINE_TRACE(LayerRectList) {
+void LayerRectList::Trace(blink::Visitor* visitor) {
   visitor->Trace(list_);
 }
 

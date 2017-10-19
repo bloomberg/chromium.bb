@@ -106,7 +106,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebWidgetClient* Client() const override { return client_; }
   HitTestResult CoreHitTestResultAt(const WebPoint&) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   PageWidgetEventHandler* GetPageWidgetEventHandler() override;

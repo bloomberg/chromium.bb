@@ -58,7 +58,7 @@ Range* StaticRange::toRange(ExceptionState& exception_state) const {
   return range;
 }
 
-DEFINE_TRACE(StaticRange) {
+void StaticRange::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_document_);
   visitor->Trace(start_container_);
   visitor->Trace(end_container_);

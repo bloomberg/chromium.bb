@@ -46,7 +46,7 @@ class V0CustomElementObserver
   // API for CustomElement to kick off notifications
   static void NotifyElementWasDestroyed(Element*);
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   V0CustomElementObserver() {}

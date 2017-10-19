@@ -59,7 +59,7 @@ class CORE_EXPORT MultipartImageResourceParser final
     virtual ~Client() = default;
     virtual void OnePartInMultipartReceived(const ResourceResponse&) = 0;
     virtual void MultipartDataReceived(const char* bytes, size_t) = 0;
-    DEFINE_INLINE_VIRTUAL_TRACE() {}
+    virtual void Trace(blink::Visitor* visitor) {}
   };
 
   MultipartImageResourceParser(const ResourceResponse&,
@@ -69,7 +69,7 @@ class CORE_EXPORT MultipartImageResourceParser final
   void Finish();
   void Cancel() { is_cancelled_ = true; }
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   static size_t SkippableLengthForTest(const Vector<char>& data, size_t size) {
     return SkippableLength(data, size);

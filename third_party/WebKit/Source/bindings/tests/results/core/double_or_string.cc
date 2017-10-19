@@ -56,7 +56,7 @@ DoubleOrString::DoubleOrString(const DoubleOrString&) = default;
 DoubleOrString::~DoubleOrString() = default;
 DoubleOrString& DoubleOrString::operator=(const DoubleOrString&) = default;
 
-DEFINE_TRACE(DoubleOrString) {
+void DoubleOrString::Trace(blink::Visitor* visitor) {
 }
 
 void V8DoubleOrString::ToImpl(v8::Isolate* isolate, v8::Local<v8::Value> v8Value, DoubleOrString& impl, UnionTypeConversionMode conversionMode, ExceptionState& exceptionState) {

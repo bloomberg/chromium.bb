@@ -297,7 +297,7 @@ void MIDIOutput::DidOpen(bool opened) {
   }
 }
 
-DEFINE_TRACE(MIDIOutput) {
+void MIDIOutput::Trace(blink::Visitor* visitor) {
   MIDIPort::Trace(visitor);
 }
 

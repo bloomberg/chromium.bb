@@ -34,7 +34,7 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
     return const_cast<CSSUnparsedValue*>(fallback_.Get());
   }
 
-  DEFINE_INLINE_TRACE() { visitor->Trace(fallback_); }
+  void Trace(blink::Visitor* visitor) { visitor->Trace(fallback_); }
 
  protected:
   CSSStyleVariableReferenceValue(const String& variable,

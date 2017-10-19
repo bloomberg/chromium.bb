@@ -46,7 +46,7 @@ class TaskAttributionTiming final : public PerformanceEntry {
   String containerName() const;
   String scriptURL() const;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
   ~TaskAttributionTiming() override;
 

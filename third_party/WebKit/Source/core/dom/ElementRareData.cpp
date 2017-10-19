@@ -90,7 +90,7 @@ ElementRareData::EnsureResizeObserverData() {
   return *resize_observer_data_;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(ElementRareData) {
+void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(dataset_);
   visitor->Trace(class_list_);
   visitor->Trace(shadow_);

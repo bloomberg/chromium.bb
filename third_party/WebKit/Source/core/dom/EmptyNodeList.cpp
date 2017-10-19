@@ -42,7 +42,7 @@ Node* EmptyNodeList::VirtualOwnerNode() const {
   return &OwnerNode();
 }
 
-DEFINE_TRACE(EmptyNodeList) {
+void EmptyNodeList::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);
   NodeList::Trace(visitor);
 }

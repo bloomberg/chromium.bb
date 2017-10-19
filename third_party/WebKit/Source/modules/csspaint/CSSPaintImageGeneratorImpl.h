@@ -42,7 +42,7 @@ class CSSPaintImageGeneratorImpl final : public CSSPaintImageGenerator {
   // is registered with the same name.
   void NotifyGeneratorReady();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   CSSPaintImageGeneratorImpl(Observer*, PaintWorklet*, const String&);

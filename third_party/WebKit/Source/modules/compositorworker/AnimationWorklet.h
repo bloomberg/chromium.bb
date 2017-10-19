@@ -25,7 +25,7 @@ class MODULES_EXPORT AnimationWorklet final : public Worklet {
   static AnimationWorklet* Create(LocalFrame*);
   ~AnimationWorklet() override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   explicit AnimationWorklet(LocalFrame*);

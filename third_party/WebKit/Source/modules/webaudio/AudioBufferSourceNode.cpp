@@ -698,7 +698,7 @@ AudioBufferSourceNode* AudioBufferSourceNode::Create(
   return node;
 }
 
-DEFINE_TRACE(AudioBufferSourceNode) {
+void AudioBufferSourceNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(playback_rate_);
   visitor->Trace(detune_);
   AudioScheduledSourceNode::Trace(visitor);

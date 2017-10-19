@@ -78,7 +78,7 @@ class ImageEventListener : public EventListener {
 
   bool operator==(const EventListener& other) const override;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(doc_);
     EventListener::Trace(visitor);
   }
@@ -597,7 +597,7 @@ bool ImageDocument::ShouldShrinkToFit() const {
   return GetFrame()->IsMainFrame() && !is_wrap_content_web_view;
 }
 
-DEFINE_TRACE(ImageDocument) {
+void ImageDocument::Trace(blink::Visitor* visitor) {
   visitor->Trace(div_element_);
   visitor->Trace(image_element_);
   HTMLDocument::Trace(visitor);

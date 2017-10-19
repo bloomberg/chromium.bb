@@ -50,7 +50,7 @@ class HTMLSourceElement::Listener final : public MediaQueryListListener {
   }
 
   void ClearElement() { element_ = nullptr; }
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(element_);
     MediaQueryListListener::Trace(visitor);
   }
@@ -183,7 +183,7 @@ void HTMLSourceElement::NotifyMediaQueryChanged() {
     picture->SourceOrMediaChanged();
 }
 
-DEFINE_TRACE(HTMLSourceElement) {
+void HTMLSourceElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(media_query_list_);
   visitor->Trace(listener_);
   HTMLElement::Trace(visitor);

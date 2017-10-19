@@ -56,7 +56,7 @@ SVGAnimatedIntegerOptionalInteger::SVGAnimatedIntegerOptionalInteger(
   second_integer_->SetParentOptionalInteger(this);
 }
 
-DEFINE_TRACE(SVGAnimatedIntegerOptionalInteger) {
+void SVGAnimatedIntegerOptionalInteger::Trace(blink::Visitor* visitor) {
   visitor->Trace(first_integer_);
   visitor->Trace(second_integer_);
   SVGAnimatedPropertyCommon<SVGIntegerOptionalInteger>::Trace(visitor);

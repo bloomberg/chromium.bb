@@ -57,7 +57,7 @@ DoubleOrLongOrBooleanSequence::DoubleOrLongOrBooleanSequence(const DoubleOrLongO
 DoubleOrLongOrBooleanSequence::~DoubleOrLongOrBooleanSequence() = default;
 DoubleOrLongOrBooleanSequence& DoubleOrLongOrBooleanSequence::operator=(const DoubleOrLongOrBooleanSequence&) = default;
 
-DEFINE_TRACE(DoubleOrLongOrBooleanSequence) {
+void DoubleOrLongOrBooleanSequence::Trace(blink::Visitor* visitor) {
   visitor->Trace(long_or_boolean_sequence_);
 }
 

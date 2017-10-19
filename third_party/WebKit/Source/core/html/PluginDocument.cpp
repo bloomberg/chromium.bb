@@ -51,7 +51,7 @@ class PluginDocumentParser : public RawDataDocumentParser {
     return new PluginDocumentParser(document);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {
+  virtual void Trace(blink::Visitor* visitor) {
     visitor->Trace(embed_element_);
     RawDataDocumentParser::Trace(visitor);
   }
@@ -185,7 +185,7 @@ void PluginDocument::Shutdown() {
   HTMLDocument::Shutdown();
 }
 
-DEFINE_TRACE(PluginDocument) {
+void PluginDocument::Trace(blink::Visitor* visitor) {
   visitor->Trace(plugin_node_);
   HTMLDocument::Trace(visitor);
 }

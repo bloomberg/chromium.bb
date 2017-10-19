@@ -282,7 +282,7 @@ void USB::EnsureDeviceManagerConnection() {
   device_manager_->SetClient(std::move(client));
 }
 
-DEFINE_TRACE(USB) {
+void USB::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_manager_requests_);
   visitor->Trace(chooser_service_requests_);
   visitor->Trace(device_cache_);

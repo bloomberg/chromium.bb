@@ -57,7 +57,7 @@ class LinkImport final : public LinkResource, public HTMLImportChildClient {
   void Process() final;
   LinkResourceType GetType() const final { return kImport; }
   bool HasLoaded() const final;
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   void OwnerInserted() final;
   void OwnerRemoved() final;
 

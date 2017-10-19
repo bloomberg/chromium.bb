@@ -66,7 +66,7 @@ class LayoutImageResource
 
   virtual WrappedImagePtr ImagePtr() const { return cached_image_.Get(); }
 
-  DEFINE_INLINE_VIRTUAL_TRACE() { visitor->Trace(cached_image_); }
+  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(cached_image_); }
 
  protected:
   LayoutImageResource();

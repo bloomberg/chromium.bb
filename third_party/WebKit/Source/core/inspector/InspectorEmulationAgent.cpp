@@ -215,7 +215,7 @@ Response InspectorEmulationAgent::setDefaultBackgroundColorOverride(
   return Response::OK();
 }
 
-DEFINE_TRACE(InspectorEmulationAgent) {
+void InspectorEmulationAgent::Trace(blink::Visitor* visitor) {
   visitor->Trace(web_local_frame_);
   InspectorBaseAgent::Trace(visitor);
 }

@@ -29,7 +29,7 @@ class VRDisplayCapabilities final
   void SetCanPresent(bool value) { can_present_ = value; }
   void SetMaxLayers(unsigned value) { max_layers_ = value; }
 
-  DECLARE_VIRTUAL_TRACE()
+  virtual void Trace(blink::Visitor*);
 
  private:
   bool has_position_;

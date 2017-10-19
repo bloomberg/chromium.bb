@@ -116,7 +116,7 @@ bool CSSPaintValue::Equals(const CSSPaintValue& other) const {
          CustomCSSText() == other.CustomCSSText();
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSPaintValue) {
+void CSSPaintValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(name_);
   visitor->Trace(generator_);
   visitor->Trace(paint_image_generator_observer_);

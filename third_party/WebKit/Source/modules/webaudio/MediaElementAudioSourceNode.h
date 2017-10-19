@@ -122,7 +122,7 @@ class MediaElementAudioSourceNode final : public AudioNode,
       const MediaElementAudioSourceOptions&,
       ExceptionState&);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
   MediaElementAudioSourceHandler& GetMediaElementAudioSourceHandler() const;
 
   HTMLMediaElement* mediaElement() const;

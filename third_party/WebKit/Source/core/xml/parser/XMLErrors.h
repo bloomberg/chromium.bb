@@ -42,7 +42,7 @@ class XMLErrors {
 
  public:
   explicit XMLErrors(Document*);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // Exposed for callbacks:
   enum ErrorType { kErrorTypeWarning, kErrorTypeNonFatal, kErrorTypeFatal };

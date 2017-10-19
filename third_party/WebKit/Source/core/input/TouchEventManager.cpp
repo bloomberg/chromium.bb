@@ -145,7 +145,7 @@ void TouchEventManager::Clear() {
   current_touch_action_ = TouchAction::kTouchActionAuto;
 }
 
-DEFINE_TRACE(TouchEventManager) {
+void TouchEventManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(frame_);
   visitor->Trace(touch_sequence_document_);
   visitor->Trace(touch_attribute_map_);

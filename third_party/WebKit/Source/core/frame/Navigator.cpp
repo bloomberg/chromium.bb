@@ -113,7 +113,7 @@ Vector<String> Navigator::languages() {
   return languages;
 }
 
-DEFINE_TRACE(Navigator) {
+void Navigator::Trace(blink::Visitor* visitor) {
   DOMWindowClient::Trace(visitor);
   Supplementable<Navigator>::Trace(visitor);
 }

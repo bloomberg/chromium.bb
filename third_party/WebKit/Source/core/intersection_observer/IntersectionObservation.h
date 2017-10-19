@@ -29,7 +29,7 @@ class IntersectionObservation final
   void Disconnect();
   void UpdateShouldReportRootBoundsAfterDomChange();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   void SetLastThresholdIndex(unsigned index) { last_threshold_index_ = index; }

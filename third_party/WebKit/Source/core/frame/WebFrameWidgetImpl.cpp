@@ -139,7 +139,7 @@ WebFrameWidgetImpl::WebFrameWidgetImpl(WebWidgetClient* client,
 
 WebFrameWidgetImpl::~WebFrameWidgetImpl() {}
 
-DEFINE_TRACE(WebFrameWidgetImpl) {
+void WebFrameWidgetImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(local_root_);
   visitor->Trace(mouse_capture_node_);
   WebFrameWidgetBase::Trace(visitor);

@@ -123,7 +123,7 @@ String Entry::toURL(ScriptState* script_state) const {
   return static_cast<const EntryBase*>(this)->toURL();
 }
 
-DEFINE_TRACE(Entry) {
+void Entry::Trace(blink::Visitor* visitor) {
   EntryBase::Trace(visitor);
 }
 

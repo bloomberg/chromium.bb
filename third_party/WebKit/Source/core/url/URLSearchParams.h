@@ -62,7 +62,7 @@ class CORE_EXPORT URLSearchParams final
   DOMURL* UrlObject() const;
 #endif
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(URLSearchParamsTest, EncodedFormData);

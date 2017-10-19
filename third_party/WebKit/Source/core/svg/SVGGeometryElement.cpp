@@ -68,7 +68,7 @@ SVGGeometryElement::SVGGeometryElement(const QualifiedName& tag_name,
   AddToPropertyMap(path_length_);
 }
 
-DEFINE_TRACE(SVGGeometryElement) {
+void SVGGeometryElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(path_length_);
   SVGGraphicsElement::Trace(visitor);
 }

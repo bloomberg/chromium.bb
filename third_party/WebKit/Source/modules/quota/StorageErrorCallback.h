@@ -44,7 +44,7 @@ class StorageErrorCallback
     : public GarbageCollectedFinalized<StorageErrorCallback> {
  public:
   virtual ~StorageErrorCallback() {}
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
   virtual void handleEvent(DOMError*) = 0;
 
   MODULES_EXPORT static WTF::Closure CreateSameThreadTask(StorageErrorCallback*,

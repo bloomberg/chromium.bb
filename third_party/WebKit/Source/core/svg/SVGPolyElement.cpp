@@ -35,7 +35,7 @@ SVGPolyElement::SVGPolyElement(const QualifiedName& tag_name,
   AddToPropertyMap(points_);
 }
 
-DEFINE_TRACE(SVGPolyElement) {
+void SVGPolyElement::Trace(blink::Visitor* visitor) {
   visitor->Trace(points_);
   SVGGeometryElement::Trace(visitor);
 }

@@ -81,7 +81,7 @@ void ReplaceNodeWithSpanCommand::DoUnapply() {
                                             *span_element_);
 }
 
-DEFINE_TRACE(ReplaceNodeWithSpanCommand) {
+void ReplaceNodeWithSpanCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_to_replace_);
   visitor->Trace(span_element_);
   SimpleEditCommand::Trace(visitor);

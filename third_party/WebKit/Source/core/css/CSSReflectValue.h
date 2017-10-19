@@ -50,7 +50,7 @@ class CSSReflectValue : public CSSValue {
 
   bool Equals(const CSSReflectValue&) const;
 
-  DECLARE_TRACE_AFTER_DISPATCH();
+  void TraceAfterDispatch(blink::Visitor*);
 
  private:
   CSSReflectValue(CSSIdentifierValue* direction,

@@ -29,7 +29,7 @@ class PerformanceObserverEntryList
   PerformanceEntryVector getEntriesByName(const String& name,
                                           const String& entry_type);
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  protected:
   PerformanceEntryVector performance_entries_;

@@ -15,7 +15,7 @@ class PLATFORM_EXPORT CompositorMutator
  public:
   virtual ~CompositorMutator() {}
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
   // Called from compositor thread to run the animation frame callbacks from all
   // connected AnimationWorklets.

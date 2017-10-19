@@ -36,7 +36,7 @@ class WebAuthenticationClient final
   void GetAssertion(const PublicKeyCredentialRequestOptions&,
                     PublicKeyCallbacks*);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   void OnAuthenticatorConnectionError();

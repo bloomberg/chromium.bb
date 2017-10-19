@@ -49,7 +49,7 @@ DocumentLoadTiming::DocumentLoadTiming(DocumentLoader& document_loader)
       has_same_origin_as_previous_document_(false),
       document_loader_(document_loader) {}
 
-DEFINE_TRACE(DocumentLoadTiming) {
+void DocumentLoadTiming::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_loader_);
 }
 

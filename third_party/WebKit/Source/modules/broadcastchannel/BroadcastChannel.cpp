@@ -90,7 +90,7 @@ void BroadcastChannel::ContextDestroyed(ExecutionContext*) {
   close();
 }
 
-DEFINE_TRACE(BroadcastChannel) {
+void BroadcastChannel::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }

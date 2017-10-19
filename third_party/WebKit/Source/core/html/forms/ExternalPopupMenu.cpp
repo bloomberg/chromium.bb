@@ -74,7 +74,7 @@ ExternalPopupMenu::ExternalPopupMenu(LocalFrame& frame,
 
 ExternalPopupMenu::~ExternalPopupMenu() {}
 
-DEFINE_TRACE(ExternalPopupMenu) {
+void ExternalPopupMenu::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_element_);
   visitor->Trace(local_frame_);
   PopupMenu::Trace(visitor);

@@ -65,7 +65,7 @@ class SVGStaticStringList final : public SVGAnimatedPropertyBase {
   SVGStringList* Value() { return value_.Get(); }
   SVGStringListTearOff* TearOff();
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SVGStaticStringList(SVGElement*, const QualifiedName&);

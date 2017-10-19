@@ -74,7 +74,7 @@ void RemoveNodeCommand::DoUnapply() {
   parent->InsertBefore(node_.Get(), ref_child, IGNORE_EXCEPTION_FOR_TESTING);
 }
 
-DEFINE_TRACE(RemoveNodeCommand) {
+void RemoveNodeCommand::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_);
   visitor->Trace(parent_);
   visitor->Trace(ref_child_);

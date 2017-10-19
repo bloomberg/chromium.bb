@@ -38,7 +38,7 @@ class SimplifyMarkupCommand final : public CompositeEditCommand {
     return new SimplifyMarkupCommand(document, first_node, node_after_last);
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SimplifyMarkupCommand(Document&, Node* first_node, Node* node_after_last);

@@ -56,7 +56,7 @@ InspectorHistory::Action::Action(const String& name) : name_(name) {}
 
 InspectorHistory::Action::~Action() {}
 
-DEFINE_TRACE(InspectorHistory::Action) {}
+void InspectorHistory::Action::Trace(blink::Visitor* visitor) {}
 
 String InspectorHistory::Action::ToString() {
   return name_;
@@ -142,7 +142,7 @@ void InspectorHistory::Reset() {
   history_.clear();
 }
 
-DEFINE_TRACE(InspectorHistory) {
+void InspectorHistory::Trace(blink::Visitor* visitor) {
   visitor->Trace(history_);
 }
 

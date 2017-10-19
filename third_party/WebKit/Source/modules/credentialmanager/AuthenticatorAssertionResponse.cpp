@@ -24,7 +24,7 @@ AuthenticatorAssertionResponse::AuthenticatorAssertionResponse(
 
 AuthenticatorAssertionResponse::~AuthenticatorAssertionResponse() {}
 
-DEFINE_TRACE(AuthenticatorAssertionResponse) {
+void AuthenticatorAssertionResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(authenticator_data_);
   visitor->Trace(signature_);
   AuthenticatorResponse::Trace(visitor);

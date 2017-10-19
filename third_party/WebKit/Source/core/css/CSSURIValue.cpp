@@ -75,7 +75,7 @@ bool CSSURIValue::Equals(const CSSURIValue& other) const {
   return absolute_url_ == other.absolute_url_;
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(CSSURIValue) {
+void CSSURIValue::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(proxy_);
   CSSValue::TraceAfterDispatch(visitor);
 }

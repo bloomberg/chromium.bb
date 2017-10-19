@@ -75,7 +75,7 @@ class RTCDTMFSender final : public EventTargetWithInlineData,
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   RTCDTMFSender(ExecutionContext*,

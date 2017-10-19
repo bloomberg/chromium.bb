@@ -73,7 +73,7 @@ class CORE_EXPORT ScrollingCoordinator final
   static ScrollingCoordinator* Create(Page*);
 
   ~ScrollingCoordinator();
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   // The LocalFrameView argument is optional, nullptr causes the the scrolling
   // animation host and timeline to be owned by the ScrollingCoordinator. When

@@ -187,7 +187,7 @@ EventDispatchMediator* InputEvent::CreateMediator() {
   return InputEventDispatchMediator::Create(this);
 }
 
-DEFINE_TRACE(InputEvent) {
+void InputEvent::Trace(blink::Visitor* visitor) {
   UIEvent::Trace(visitor);
   visitor->Trace(data_transfer_);
   visitor->Trace(ranges_);

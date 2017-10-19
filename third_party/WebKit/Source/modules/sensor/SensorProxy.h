@@ -78,7 +78,7 @@ class SensorProxy final : public GarbageCollectedFinalized<SensorProxy>,
     return frequency_limits_;
   }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   friend class SensorProviderProxy;

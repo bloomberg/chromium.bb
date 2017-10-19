@@ -108,14 +108,14 @@ bool ElementData::IsEquivalent(const ElementData* other) const {
   return true;
 }
 
-DEFINE_TRACE(ElementData) {
+void ElementData::Trace(blink::Visitor* visitor) {
   if (is_unique_)
     ToUniqueElementData(this)->TraceAfterDispatch(visitor);
   else
     ToShareableElementData(this)->TraceAfterDispatch(visitor);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(ElementData) {
+void ElementData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(inline_style_);
 }
 
@@ -182,7 +182,7 @@ ShareableElementData* UniqueElementData::MakeShareableCopy() const {
   return new (slot) ShareableElementData(*this);
 }
 
-DEFINE_TRACE_AFTER_DISPATCH(UniqueElementData) {
+void UniqueElementData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(presentation_attribute_style_);
   ElementData::TraceAfterDispatch(visitor);
 }

@@ -40,7 +40,7 @@ NodeEventContext::NodeEventContext(Node* node, EventTarget* current_target)
   DCHECK(node_);
 }
 
-DEFINE_TRACE(NodeEventContext) {
+void NodeEventContext::Trace(blink::Visitor* visitor) {
   visitor->Trace(node_);
   visitor->Trace(current_target_);
   visitor->Trace(tree_scope_event_context_);

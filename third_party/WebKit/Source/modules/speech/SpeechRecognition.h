@@ -121,7 +121,7 @@ class MODULES_EXPORT SpeechRecognition final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(start);
   DEFINE_ATTRIBUTE_EVENT_LISTENER(end);
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   SpeechRecognition(Page*, ExecutionContext*);

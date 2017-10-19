@@ -37,7 +37,7 @@ class GeolocationError : public GarbageCollectedFinalized<GeolocationError> {
   static GeolocationError* Create(ErrorCode code, const String& message) {
     return new GeolocationError(code, message);
   }
-  DEFINE_INLINE_TRACE() {}
+  void Trace(blink::Visitor* visitor) {}
 
   ErrorCode Code() const { return code_; }
   const String& Message() const { return message_; }

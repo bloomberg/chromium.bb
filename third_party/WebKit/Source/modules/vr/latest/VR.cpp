@@ -160,7 +160,7 @@ void VR::Dispose() {
   OnGetDevices();
 }
 
-DEFINE_TRACE(VR) {
+void VR::Trace(blink::Visitor* visitor) {
   visitor->Trace(devices_);
   visitor->Trace(pending_devices_resolver_);
   ContextLifecycleObserver::Trace(visitor);

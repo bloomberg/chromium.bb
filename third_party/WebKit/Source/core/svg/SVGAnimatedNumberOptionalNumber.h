@@ -63,7 +63,7 @@ class SVGAnimatedNumberOptionalNumber
   SVGAnimatedNumber* FirstNumber() { return first_number_.Get(); }
   SVGAnimatedNumber* SecondNumber() { return second_number_.Get(); }
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  protected:
   SVGAnimatedNumberOptionalNumber(SVGElement* context_element,

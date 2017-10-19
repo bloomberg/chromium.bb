@@ -40,7 +40,7 @@ class CORE_EXPORT UnpackedSerializedScriptValue
  public:
   ~UnpackedSerializedScriptValue();
 
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
   SerializedScriptValue* Value() { return value_.get(); }
   const SerializedScriptValue* Value() const { return value_.get(); }

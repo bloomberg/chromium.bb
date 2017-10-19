@@ -40,7 +40,7 @@ class CORE_EXPORT LongOrTestDictionary final {
   LongOrTestDictionary(const LongOrTestDictionary&);
   ~LongOrTestDictionary();
   LongOrTestDictionary& operator=(const LongOrTestDictionary&);
-  DECLARE_TRACE();
+  void Trace(blink::Visitor*);
 
  private:
   enum class SpecificType {

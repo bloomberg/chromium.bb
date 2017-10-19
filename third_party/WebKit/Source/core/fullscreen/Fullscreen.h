@@ -106,7 +106,7 @@ class CORE_EXPORT Fullscreen final
   // ContextLifecycleObserver:
   void ContextDestroyed(ExecutionContext*) override;
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(blink::Visitor*);
 
  private:
   static Fullscreen* FromIfExistsSlow(Document&);

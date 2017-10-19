@@ -61,7 +61,7 @@ class V0CustomElementLifecycleCallbacks
                                 const AtomicString& old_value,
                                 const AtomicString& new_value) = 0;
 
-  DEFINE_INLINE_VIRTUAL_TRACE() {}
+  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   explicit V0CustomElementLifecycleCallbacks(CallbackType type)
