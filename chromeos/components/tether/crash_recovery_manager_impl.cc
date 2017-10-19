@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/crash_recovery_manager.h"
+#include "chromeos/components/tether/crash_recovery_manager_impl.h"
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
@@ -18,12 +18,12 @@ namespace chromeos {
 namespace tether {
 
 // static
-CrashRecoveryManager::Factory*
-    CrashRecoveryManager::Factory::factory_instance_ = nullptr;
+CrashRecoveryManagerImpl::Factory*
+    CrashRecoveryManagerImpl::Factory::factory_instance_ = nullptr;
 
 // static
 std::unique_ptr<CrashRecoveryManager>
-CrashRecoveryManager::Factory::NewInstance(
+CrashRecoveryManagerImpl::Factory::NewInstance(
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     HostScanCache* host_scan_cache) {
@@ -35,20 +35,21 @@ CrashRecoveryManager::Factory::NewInstance(
 }
 
 // static
-void CrashRecoveryManager::Factory::SetInstanceForTesting(Factory* factory) {
+void CrashRecoveryManagerImpl::Factory::SetInstanceForTesting(
+    Factory* factory) {
   factory_instance_ = factory;
 }
 
 std::unique_ptr<CrashRecoveryManager>
-CrashRecoveryManager::Factory::BuildInstance(
+CrashRecoveryManagerImpl::Factory::BuildInstance(
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     HostScanCache* host_scan_cache) {
-  return base::MakeUnique<CrashRecoveryManager>(network_state_handler,
-                                                active_host, host_scan_cache);
+  return base::MakeUnique<CrashRecoveryManagerImpl>(
+      network_state_handler, active_host, host_scan_cache);
 }
 
-CrashRecoveryManager::CrashRecoveryManager(
+CrashRecoveryManagerImpl::CrashRecoveryManagerImpl(
     NetworkStateHandler* network_state_handler,
     ActiveHost* active_host,
     HostScanCache* host_scan_cache)
@@ -57,9 +58,9 @@ CrashRecoveryManager::CrashRecoveryManager(
       host_scan_cache_(host_scan_cache),
       weak_ptr_factory_(this) {}
 
-CrashRecoveryManager::~CrashRecoveryManager() {}
+CrashRecoveryManagerImpl::~CrashRecoveryManagerImpl() {}
 
-void CrashRecoveryManager::RestorePreCrashStateIfNecessary(
+void CrashRecoveryManagerImpl::RestorePreCrashStateIfNecessary(
     const base::Closure& on_restoration_finished) {
   ActiveHost::ActiveHostStatus status = active_host_->GetActiveHostStatus();
   std::string active_host_device_id = active_host_->GetActiveHostDeviceId();
@@ -67,7 +68,7 @@ void CrashRecoveryManager::RestorePreCrashStateIfNecessary(
   std::string tether_network_guid = active_host_->GetTetherNetworkGuid();
 
   if (status == ActiveHost::ActiveHostStatus::DISCONNECTED) {
-    // There was no active Tether session, so either the last Tether component
+    // There was no active Tether session, so either the last TetherComponent
     // shutdown occurred normally (i.e., without a crash), or it occurred due
     // to a crash and there was no active host at the time of the crash.
     on_restoration_finished.Run();
@@ -92,7 +93,7 @@ void CrashRecoveryManager::RestorePreCrashStateIfNecessary(
                         tether_network_guid, wifi_network_guid);
 }
 
-void CrashRecoveryManager::RestoreConnectedState(
+void CrashRecoveryManagerImpl::RestoreConnectedState(
     const base::Closure& on_restoration_finished,
     const std::string& active_host_device_id,
     const std::string& tether_network_guid,
@@ -144,11 +145,11 @@ void CrashRecoveryManager::RestoreConnectedState(
       tether_network_guid, wifi_network_guid);
 
   active_host_->GetActiveHost(
-      base::Bind(&CrashRecoveryManager::OnActiveHostFetched,
+      base::Bind(&CrashRecoveryManagerImpl::OnActiveHostFetched,
                  weak_ptr_factory_.GetWeakPtr(), on_restoration_finished));
 }
 
-void CrashRecoveryManager::OnActiveHostFetched(
+void CrashRecoveryManagerImpl::OnActiveHostFetched(
     const base::Closure& on_restoration_finished,
     ActiveHost::ActiveHostStatus active_host_status,
     std::shared_ptr<cryptauth::RemoteDevice> active_host,
@@ -163,7 +164,8 @@ void CrashRecoveryManager::OnActiveHostFetched(
   // that there is an active connection.
   //
   // Note: SendActiveHostChangedUpdate() is a protected function of ActiveHost
-  // which is only invoked here because CrashRecoveryManager is a friend class.
+  // which is only invoked here because CrashRecoveryManagerImpl is a friend
+  // class.
   // It is invoked directly here because we are sending out a "fake" change
   // event which has equal old and new values.
   active_host_->SendActiveHostChangedUpdate(
