@@ -2202,6 +2202,8 @@ source_set("browser") {
       "compositor/software_output_device_win.h",
       "compositor/software_output_device_x11.cc",
       "compositor/software_output_device_x11.h",
+      "compositor/viz_process_transport_factory.cc",
+      "compositor/viz_process_transport_factory.h",
       "context_factory.cc",
       "renderer_host/browser_compositor_view_mac.h",
       "renderer_host/browser_compositor_view_mac.mm",
