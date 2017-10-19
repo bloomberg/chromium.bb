@@ -32,6 +32,7 @@
     },
 
     'chromium.android': {
+      'Android ASAN (dbg)': 'android_clang_asan_errorprone_findbugs_debug_bot_minimal_symbols',
       'Android Cronet ARM64 Builder': 'android_cronet_release_bot_minimal_symbols_arm64',
       'Android Cronet ARM64 Builder (dbg)': 'android_cronet_debug_static_bot_arm64',
       'Android Cronet ARMv6 Builder': 'android_cronet_release_bot_minimal_symbols_armv6',
@@ -52,6 +53,9 @@
       'Android arm64 Builder (dbg)': 'android_debug_static_bot_arm64',
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64',
       'Android x86 Builder (dbg)': 'android_debug_static_bot_x86',
+      'Cast Android (dbg)': 'android_cast_debug_static_bot',
+      'KitKat Phone Tester (rel)': 'android_release_bot_minimal_symbols',
+      'Marshmallow Phone Tester (rel)': 'android_release_bot_minimal_symbols_arm64',
     },
 
     'chromium.android.fyi': {
