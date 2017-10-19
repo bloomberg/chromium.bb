@@ -26,7 +26,7 @@ class DOMTimerCoordinator {
   WTF_MAKE_NONCOPYABLE(DOMTimerCoordinator);
 
  public:
-  explicit DOMTimerCoordinator(RefPtr<WebTaskRunner>);
+  explicit DOMTimerCoordinator(scoped_refptr<WebTaskRunner>);
 
   // Creates and installs a new timer. Returns the assigned ID.
   int InstallNewTimeout(ExecutionContext*,
@@ -49,9 +49,11 @@ class DOMTimerCoordinator {
   // deeper timer nesting level, see DOMTimer::DOMTimer.
   void SetTimerNestingLevel(int level) { timer_nesting_level_ = level; }
 
-  void SetTimerTaskRunner(RefPtr<WebTaskRunner>);
+  void SetTimerTaskRunner(scoped_refptr<WebTaskRunner>);
 
-  RefPtr<WebTaskRunner> TimerTaskRunner() const { return timer_task_runner_; }
+  scoped_refptr<WebTaskRunner> TimerTaskRunner() const {
+    return timer_task_runner_;
+  }
 
   void Trace(blink::Visitor*);  // Oilpan.
 
@@ -63,7 +65,7 @@ class DOMTimerCoordinator {
 
   int circular_sequential_id_;
   int timer_nesting_level_;
-  RefPtr<WebTaskRunner> timer_task_runner_;
+  scoped_refptr<WebTaskRunner> timer_task_runner_;
 };
 
 }  // namespace blink

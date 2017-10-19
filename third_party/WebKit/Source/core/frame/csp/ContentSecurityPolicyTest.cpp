@@ -41,7 +41,7 @@ class ContentSecurityPolicyTest : public ::testing::Test {
 
   Persistent<ContentSecurityPolicy> csp;
   KURL secure_url;
-  RefPtr<SecurityOrigin> secure_origin;
+  scoped_refptr<SecurityOrigin> secure_origin;
   Persistent<NullExecutionContext> execution_context;
 };
 

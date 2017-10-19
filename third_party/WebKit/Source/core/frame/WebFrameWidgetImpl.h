@@ -202,7 +202,7 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
 
   // If set, the (plugin) node which has mouse capture.
   Member<Node> mouse_capture_node_;
-  RefPtr<UserGestureToken> mouse_capture_gesture_token_;
+  scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
   // This is owned by the LayerTreeHostImpl, and should only be used on the
   // compositor thread. The LayerTreeHostImpl is indirectly owned by this

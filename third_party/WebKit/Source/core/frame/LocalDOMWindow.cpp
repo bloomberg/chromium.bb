@@ -111,7 +111,7 @@ class PostMessageTimer final
  public:
   PostMessageTimer(LocalDOMWindow& window,
                    MessageEvent* event,
-                   RefPtr<SecurityOrigin> target_origin,
+                   scoped_refptr<SecurityOrigin> target_origin,
                    std::unique_ptr<SourceLocation> location,
                    UserGestureToken* user_gesture_token)
       : SuspendableTimer(window.document(), TaskType::kPostedMessage),
@@ -165,9 +165,9 @@ class PostMessageTimer final
 
   Member<MessageEvent> event_;
   Member<LocalDOMWindow> window_;
-  RefPtr<SecurityOrigin> target_origin_;
+  scoped_refptr<SecurityOrigin> target_origin_;
   std::unique_ptr<SourceLocation> location_;
-  RefPtr<UserGestureToken> user_gesture_token_;
+  scoped_refptr<UserGestureToken> user_gesture_token_;
   bool disposal_allowed_;
 };
 
@@ -413,13 +413,14 @@ void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
 }
 
 void LocalDOMWindow::EnqueuePopstateEvent(
-    RefPtr<SerializedScriptValue> state_object) {
+    scoped_refptr<SerializedScriptValue> state_object) {
   // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36202 Popstate event needs
   // to fire asynchronously
   DispatchEvent(PopStateEvent::Create(std::move(state_object), history()));
 }
 
-void LocalDOMWindow::StatePopped(RefPtr<SerializedScriptValue> state_object) {
+void LocalDOMWindow::StatePopped(
+    scoped_refptr<SerializedScriptValue> state_object) {
   if (!GetFrame())
     return;
 
@@ -608,7 +609,7 @@ Navigator* LocalDOMWindow::navigator() const {
 }
 
 void LocalDOMWindow::SchedulePostMessage(MessageEvent* event,
-                                         RefPtr<SecurityOrigin> target,
+                                         scoped_refptr<SecurityOrigin> target,
                                          Document* source) {
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this

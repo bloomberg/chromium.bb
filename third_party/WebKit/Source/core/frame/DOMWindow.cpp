@@ -150,7 +150,7 @@ bool DOMWindow::IsInsecureScriptAccess(LocalDOMWindow& calling_window,
   return true;
 }
 
-void DOMWindow::postMessage(RefPtr<SerializedScriptValue> message,
+void DOMWindow::postMessage(scoped_refptr<SerializedScriptValue> message,
                             const MessagePortArray& ports,
                             const String& target_origin,
                             LocalDOMWindow* source,
@@ -162,7 +162,7 @@ void DOMWindow::postMessage(RefPtr<SerializedScriptValue> message,
 
   // Compute the target origin.  We need to do this synchronously in order
   // to generate the SyntaxError exception correctly.
-  RefPtr<SecurityOrigin> target;
+  scoped_refptr<SecurityOrigin> target;
   if (target_origin == "/") {
     if (!source_document)
       return;

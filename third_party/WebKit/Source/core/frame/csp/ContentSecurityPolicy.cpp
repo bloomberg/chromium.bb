@@ -293,7 +293,7 @@ bool ContentSecurityPolicy::ShouldEnforceEmbeddersPolicy(
   header = header.StripWhiteSpace();
   if (header == "*")
     return true;
-  if (RefPtr<SecurityOrigin> child_origin =
+  if (scoped_refptr<SecurityOrigin> child_origin =
           SecurityOrigin::CreateFromString(header)) {
     return parent_origin->CanAccess(child_origin.get());
   }
@@ -397,7 +397,7 @@ void ContentSecurityPolicy::SetOverrideURLForSelf(const KURL& url) {
   // before we bind to an execution context (for 'frame-ancestor' resolution,
   // for example). This CSPSource will be overwritten when we bind this object
   // to an execution context.
-  RefPtr<SecurityOrigin> origin = SecurityOrigin::Create(url);
+  scoped_refptr<SecurityOrigin> origin = SecurityOrigin::Create(url);
   self_protocol_ = origin->Protocol();
   self_source_ =
       new CSPSource(this, self_protocol_, origin->Host(), origin->Port(),
@@ -1311,7 +1311,7 @@ void ContentSecurityPolicy::PostViolationReport(
     if (!frame)
       return;
 
-    RefPtr<EncodedFormData> report =
+    scoped_refptr<EncodedFormData> report =
         EncodedFormData::Create(stringified_report.Utf8());
 
     // TODO(andypaicu): for now we can only send reports to report-uri, skip

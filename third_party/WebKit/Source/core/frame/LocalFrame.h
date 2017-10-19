@@ -251,7 +251,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void MaybeAllowImagePlaceholder(FetchParameters&) const;
 
   std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
-                                                RefPtr<WebTaskRunner>);
+                                                scoped_refptr<WebTaskRunner>);
 
   bool IsInert() const { return is_inert_; }
 
@@ -282,7 +282,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // |mime_type| and populated with the contents of |data|. Only intended for
   // use in internal-implementation LocalFrames that aren't in the frame tree.
   void ForceSynchronousDocumentInstall(const AtomicString& mime_type,
-                                       RefPtr<SharedBuffer> data);
+                                       scoped_refptr<SharedBuffer> data);
 
  private:
   friend class FrameNavigationDisabler;

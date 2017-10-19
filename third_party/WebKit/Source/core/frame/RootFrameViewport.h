@@ -108,7 +108,7 @@ class CORE_EXPORT RootFrameViewport final
   FloatQuad LocalToVisibleContentQuad(const FloatQuad&,
                                       const LayoutObject*,
                                       unsigned = 0) const final;
-  RefPtr<WebTaskRunner> GetTimerTaskRunner() const final;
+  scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final;
 
  private:
   RootFrameViewport(ScrollableArea& visual_viewport,

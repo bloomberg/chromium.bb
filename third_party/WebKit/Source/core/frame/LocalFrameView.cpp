@@ -656,7 +656,7 @@ FloatQuad LocalFrameView::LocalToVisibleContentQuad(
   return result;
 }
 
-RefPtr<WebTaskRunner> LocalFrameView::GetTimerTaskRunner() const {
+scoped_refptr<WebTaskRunner> LocalFrameView::GetTimerTaskRunner() const {
   return TaskRunnerHelper::Get(TaskType::kUnspecedTimer, frame_.Get());
 }
 
@@ -2861,7 +2861,7 @@ void LocalFrameView::DidAttachDocument() {
 }
 
 void LocalFrameView::UpdateScrollCorner() {
-  RefPtr<ComputedStyle> corner_style;
+  scoped_refptr<ComputedStyle> corner_style;
   IntRect corner_rect = ScrollCornerRect();
   Document* doc = frame_->GetDocument();
 

@@ -31,7 +31,7 @@ class CORE_EXPORT SuspendableScriptExecutor final
 
   static SuspendableScriptExecutor* Create(
       LocalFrame*,
-      RefPtr<DOMWrapperWorld>,
+      scoped_refptr<DOMWrapperWorld>,
       const HeapVector<ScriptSourceCode>& sources,
       bool user_gesture,
       WebScriptExecutionCallback*);
@@ -71,7 +71,7 @@ class CORE_EXPORT SuspendableScriptExecutor final
   void ExecuteAndDestroySelf();
   void Dispose();
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   WebScriptExecutionCallback* callback_;
   BlockingOption blocking_option_;
 

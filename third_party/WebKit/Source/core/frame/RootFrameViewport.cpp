@@ -116,7 +116,7 @@ FloatQuad RootFrameViewport::LocalToVisibleContentQuad(
   return viewport_quad;
 }
 
-RefPtr<WebTaskRunner> RootFrameViewport::GetTimerTaskRunner() const {
+scoped_refptr<WebTaskRunner> RootFrameViewport::GetTimerTaskRunner() const {
   return LayoutViewport().GetTimerTaskRunner();
 }
 

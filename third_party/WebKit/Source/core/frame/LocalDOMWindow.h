@@ -303,10 +303,10 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   void EnqueueDocumentEvent(Event*);
   void EnqueuePageshowEvent(PageshowEventPersistence);
   void EnqueueHashchangeEvent(const String& old_url, const String& new_url);
-  void EnqueuePopstateEvent(RefPtr<SerializedScriptValue>);
+  void EnqueuePopstateEvent(scoped_refptr<SerializedScriptValue>);
   void DispatchWindowLoadEvent();
   void DocumentWasClosed();
-  void StatePopped(RefPtr<SerializedScriptValue>);
+  void StatePopped(scoped_refptr<SerializedScriptValue>);
 
   // FIXME: This shouldn't be public once LocalDOMWindow becomes
   // ExecutionContext.
@@ -325,7 +325,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
 
   // Protected DOMWindow overrides.
   void SchedulePostMessage(MessageEvent*,
-                           RefPtr<SecurityOrigin> target,
+                           scoped_refptr<SecurityOrigin> target,
                            Document* source) override;
 
  private:
@@ -374,7 +374,7 @@ class CORE_EXPORT LocalDOMWindow final : public DOMWindow,
   mutable Member<ApplicationCache> application_cache_;
 
   Member<DOMWindowEventQueue> event_queue_;
-  RefPtr<SerializedScriptValue> pending_state_object_;
+  scoped_refptr<SerializedScriptValue> pending_state_object_;
 
   HeapHashSet<Member<PostMessageTimer>> post_message_timers_;
   HeapHashSet<WeakMember<EventListenerObserver>> event_listener_observers_;

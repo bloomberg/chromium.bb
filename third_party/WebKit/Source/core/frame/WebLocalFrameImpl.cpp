@@ -56,8 +56,8 @@
 // allocated, WebView and LocalFrameView are currently not. In terms of
 // ownership and control, the relationships stays the same, but the references
 // from the off-heap WebView to the on-heap Page is handled by a Persistent<>,
-// not a RefPtr<>. Similarly, the mutual strong references between the on-heap
-// LocalFrame and the off-heap LocalFrameView is through a RefPtr (from
+// not a scoped_refptr<>. Similarly, the mutual strong references between the
+// on-heap LocalFrame and the off-heap LocalFrameView is through a RefPtr (from
 // LocalFrame to LocalFrameView), and a Persistent refers to the LocalFrame in
 // the other direction.
 //
@@ -754,7 +754,7 @@ void WebLocalFrameImpl::RequestExecuteScriptAndReturnValue(
     WebScriptExecutionCallback* callback) {
   DCHECK(GetFrame());
 
-  RefPtr<DOMWrapperWorld> main_world = &DOMWrapperWorld::MainWorld();
+  scoped_refptr<DOMWrapperWorld> main_world = &DOMWrapperWorld::MainWorld();
   SuspendableScriptExecutor* executor = SuspendableScriptExecutor::Create(
       GetFrame(), std::move(main_world), CreateSourcesVector(&source, 1),
       user_gesture, callback);
@@ -814,7 +814,7 @@ void WebLocalFrameImpl::RequestExecuteScriptInIsolatedWorld(
   CHECK_GT(world_id, 0);
   CHECK_LT(world_id, DOMWrapperWorld::kEmbedderWorldIdLimit);
 
-  RefPtr<DOMWrapperWorld> isolated_world =
+  scoped_refptr<DOMWrapperWorld> isolated_world =
       DOMWrapperWorld::EnsureIsolatedWorld(ToIsolate(GetFrame()), world_id);
   SuspendableScriptExecutor* executor = SuspendableScriptExecutor::Create(
       GetFrame(), std::move(isolated_world),

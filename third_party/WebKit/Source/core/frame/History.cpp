@@ -210,7 +210,7 @@ void History::go(ScriptState* script_state,
   }
 }
 
-void History::pushState(RefPtr<SerializedScriptValue> data,
+void History::pushState(scoped_refptr<SerializedScriptValue> data,
                         const String& title,
                         const String& url,
                         ExceptionState& exception_state) {
@@ -247,7 +247,7 @@ bool History::CanChangeToUrl(const KURL& url,
   if (!EqualIgnoringPathQueryAndFragment(url, document_url))
     return false;
 
-  RefPtr<SecurityOrigin> requested_origin = SecurityOrigin::Create(url);
+  scoped_refptr<SecurityOrigin> requested_origin = SecurityOrigin::Create(url);
   if (requested_origin->IsUnique() ||
       !requested_origin->IsSameSchemeHostPort(document_origin)) {
     return false;
@@ -256,7 +256,7 @@ bool History::CanChangeToUrl(const KURL& url,
   return true;
 }
 
-void History::StateObjectAdded(RefPtr<SerializedScriptValue> data,
+void History::StateObjectAdded(scoped_refptr<SerializedScriptValue> data,
                                const String& /* title */,
                                const String& url_string,
                                HistoryScrollRestorationType restoration_type,

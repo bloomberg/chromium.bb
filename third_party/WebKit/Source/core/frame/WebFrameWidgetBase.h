@@ -165,7 +165,7 @@ class CORE_EXPORT WebFrameWidgetBase
   WebGestureDevice fling_source_device_;
 
   static bool ignore_input_events_;
-  RefPtr<UserGestureToken> pointer_lock_gesture_token_;
+  scoped_refptr<UserGestureToken> pointer_lock_gesture_token_;
 
   friend class WebViewImpl;
 };

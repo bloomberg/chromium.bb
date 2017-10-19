@@ -83,7 +83,7 @@ class V8FunctionExecutor : public SuspendableScriptExecutor::Executor {
   ScopedPersistent<v8::Function> function_;
   ScopedPersistent<v8::Value> receiver_;
   V8PersistentValueVector<v8::Value> args_;
-  RefPtr<UserGestureToken> gesture_token_;
+  scoped_refptr<UserGestureToken> gesture_token_;
 };
 
 V8FunctionExecutor::V8FunctionExecutor(v8::Isolate* isolate,
@@ -128,7 +128,7 @@ Vector<v8::Local<v8::Value>> V8FunctionExecutor::Execute(LocalFrame* frame) {
 
 SuspendableScriptExecutor* SuspendableScriptExecutor::Create(
     LocalFrame* frame,
-    RefPtr<DOMWrapperWorld> world,
+    scoped_refptr<DOMWrapperWorld> world,
     const HeapVector<ScriptSourceCode>& sources,
     bool user_gesture,
     WebScriptExecutionCallback* callback) {
