@@ -1845,12 +1845,7 @@ error::Error GLES2DecoderImpl::HandleGetSynciv(uint32_t immediate_data_size,
   if (result->size != 0) {
     return error::kInvalidArguments;
   }
-  GLsync service_sync = 0;
-  if (!group_->GetSyncServiceId(sync, &service_sync)) {
-    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glGetSynciv", "invalid sync id");
-    return error::kNoError;
-  }
-  glGetSynciv(service_sync, pname, num_values, nullptr, values);
+  DoGetSynciv(sync, pname, num_values, nullptr, values);
   GLenum error = LOCAL_PEEK_GL_ERROR("GetSynciv");
   if (error == GL_NO_ERROR) {
     result->SetNumResults(num_values);
