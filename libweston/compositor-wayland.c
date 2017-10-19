@@ -136,6 +136,7 @@ struct wayland_output {
 };
 
 struct wayland_parent_output {
+	struct wayland_backend *backend;	/**< convenience */
 	struct wayland_output *output;
 	struct wl_list link;
 
@@ -152,6 +153,8 @@ struct wayland_parent_output {
 	int32_t x, y;
 	uint32_t transform;
 	uint32_t scale;
+
+	struct wl_callback *sync_cb;	/**< wl_output < 2 done replacement */
 
 	struct wl_list mode_list;
 	struct weston_mode *preferred_mode;
@@ -2259,6 +2262,24 @@ static const struct wl_output_listener output_listener = {
 };
 
 static void
+output_sync_callback(void *data, struct wl_callback *callback, uint32_t unused)
+{
+	struct wayland_parent_output *output = data;
+
+	assert(output->sync_cb == callback);
+	wl_callback_destroy(callback);
+	output->sync_cb = NULL;
+
+	assert(output->backend->sprawl_across_outputs);
+
+	wayland_output_create_for_parent_output(output->backend, output);
+}
+
+static const struct wl_callback_listener output_sync_listener = {
+	output_sync_callback
+};
+
+static void
 wayland_backend_register_output(struct wayland_backend *b, uint32_t id)
 {
 	struct wayland_parent_output *output;
@@ -2267,6 +2288,7 @@ wayland_backend_register_output(struct wayland_backend *b, uint32_t id)
 	if (!output)
 		return;
 
+	output->backend = b;
 	output->id = id;
 	output->global = wl_registry_bind(b->parent.registry, id,
 					  &wl_output_interface, 1);
@@ -2284,8 +2306,9 @@ wayland_backend_register_output(struct wayland_backend *b, uint32_t id)
 	wl_list_insert(&b->parent.output_list, &output->link);
 
 	if (b->sprawl_across_outputs) {
-		wl_display_roundtrip(b->parent.wl_display);
-		wayland_output_create_for_parent_output(b, output);
+		output->sync_cb = wl_display_sync(b->parent.wl_display);
+		wl_callback_add_listener(output->sync_cb,
+					 &output_sync_listener, output);
 	}
 }
 
@@ -2293,6 +2316,9 @@ static void
 wayland_parent_output_destroy(struct wayland_parent_output *output)
 {
 	struct weston_mode *mode, *next;
+
+	if (output->sync_cb)
+		wl_callback_destroy(output->sync_cb);
 
 	if (output->output)
 		wayland_output_destroy(&output->output->base);
