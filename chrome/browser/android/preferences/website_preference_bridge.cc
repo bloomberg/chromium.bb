@@ -522,17 +522,13 @@ static void RevokeUsbPermission(JNIEnv* env,
 
 namespace {
 
-class SiteDataDeleteHelper :
-      public base::RefCountedThreadSafe<SiteDataDeleteHelper>,
-      public CookiesTreeModel::Observer {
+class SiteDataDeleteHelper : public CookiesTreeModel::Observer {
  public:
   SiteDataDeleteHelper(Profile* profile, const GURL& domain)
       : profile_(profile), domain_(domain), ending_batch_processing_(false) {
   }
 
   void Run() {
-    AddRef();  // Balanced in TreeModelEndBatch.
-
     content::StoragePartition* storage_partition =
         content::BrowserContext::GetDefaultStoragePartition(profile_);
     content::IndexedDBContext* indexed_db_context =
@@ -543,35 +539,33 @@ class SiteDataDeleteHelper :
         storage_partition->GetCacheStorageContext();
     storage::FileSystemContext* file_system_context =
         storage_partition->GetFileSystemContext();
-    LocalDataContainer* container = new LocalDataContainer(
+    auto container = std::make_unique<LocalDataContainer>(
         new BrowsingDataCookieHelper(profile_->GetRequestContext()),
         new BrowsingDataDatabaseHelper(profile_),
-        new BrowsingDataLocalStorageHelper(profile_),
-        nullptr,
+        new BrowsingDataLocalStorageHelper(profile_), nullptr,
         new BrowsingDataAppCacheHelper(profile_),
         new BrowsingDataIndexedDBHelper(indexed_db_context),
         BrowsingDataFileSystemHelper::Create(file_system_context),
         BrowsingDataQuotaHelper::Create(profile_),
         BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(service_worker_context),
-        new BrowsingDataCacheStorageHelper(cache_storage_context),
-        nullptr,
+        new BrowsingDataCacheStorageHelper(cache_storage_context), nullptr,
         nullptr);
 
-    cookies_tree_model_.reset(new CookiesTreeModel(
-        container, profile_->GetExtensionSpecialStoragePolicy()));
+    cookies_tree_model_ = std::make_unique<CookiesTreeModel>(
+        container.release(), profile_->GetExtensionSpecialStoragePolicy());
     cookies_tree_model_->AddCookiesTreeObserver(this);
   }
 
   // TreeModelObserver:
   void TreeNodesAdded(ui::TreeModel* model,
-                              ui::TreeModelNode* parent,
-                              int start,
-                              int count) override {}
+                      ui::TreeModelNode* parent,
+                      int start,
+                      int count) override {}
   void TreeNodesRemoved(ui::TreeModel* model,
-                                ui::TreeModelNode* parent,
-                                int start,
-                                int count) override {}
+                        ui::TreeModelNode* parent,
+                        int start,
+                        int count) override {}
 
   // CookiesTreeModel::Observer:
   void TreeNodeChanged(ui::TreeModel* model, ui::TreeModelNode* node) override {
@@ -587,8 +581,10 @@ class SiteDataDeleteHelper :
 
     RecursivelyFindSiteAndDelete(cookies_tree_model_->GetRoot());
 
-    // This will result in this class getting deleted.
-    BrowserThread::ReleaseSoon(BrowserThread::UI, FROM_HERE, this);
+    // Delete this object after the current iteration of the message loop,
+    // because we are in a callback from the CookiesTreeModel, which we own,
+    // so it will be destroyed with this object.
+    BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
   }
 
   void RecursivelyFindSiteAndDelete(CookieTreeNode* node) {
@@ -602,7 +598,7 @@ class SiteDataDeleteHelper :
   }
 
  private:
-  friend class base::RefCountedThreadSafe<SiteDataDeleteHelper>;
+  friend class base::DeleteHelper<SiteDataDeleteHelper>;
 
   ~SiteDataDeleteHelper() override {}
 
@@ -619,124 +615,88 @@ class SiteDataDeleteHelper :
   DISALLOW_COPY_AND_ASSIGN(SiteDataDeleteHelper);
 };
 
-class StorageInfoReadyCallback {
- public:
-  explicit StorageInfoReadyCallback(const JavaRef<jobject>& java_callback)
-      : env_(base::android::AttachCurrentThread()),
-        java_callback_(java_callback) {
+void OnStorageInfoReady(const ScopedJavaGlobalRef<jobject>& java_callback,
+                        const storage::UsageInfoEntries& entries) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> list =
+      Java_WebsitePreferenceBridge_createStorageInfoList(env);
+
+  storage::UsageInfoEntries::const_iterator i;
+  for (i = entries.begin(); i != entries.end(); ++i) {
+    if (i->usage <= 0)
+      continue;
+    ScopedJavaLocalRef<jstring> host = ConvertUTF8ToJavaString(env, i->host);
+
+    Java_WebsitePreferenceBridge_insertStorageInfoIntoList(env, list, host,
+                                                           i->type, i->usage);
   }
 
-  void OnStorageInfoReady(const storage::UsageInfoEntries& entries) {
-    ScopedJavaLocalRef<jobject> list =
-        Java_WebsitePreferenceBridge_createStorageInfoList(env_);
+  base::android::RunCallbackAndroid(java_callback, list);
+}
 
-    storage::UsageInfoEntries::const_iterator i;
-    for (i = entries.begin(); i != entries.end(); ++i) {
-      if (i->usage <= 0) continue;
-      ScopedJavaLocalRef<jstring> host =
-          ConvertUTF8ToJavaString(env_, i->host);
+void OnStorageInfoCleared(const ScopedJavaGlobalRef<jobject>& java_callback,
+                          storage::QuotaStatusCode code) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-      Java_WebsitePreferenceBridge_insertStorageInfoIntoList(env_, list, host,
-                                                             i->type, i->usage);
-    }
+  Java_StorageInfoClearedCallback_onStorageInfoCleared(
+      base::android::AttachCurrentThread(), java_callback);
+}
 
-    base::android::RunCallbackAndroid(java_callback_, list);
-    delete this;
+void OnLocalStorageModelInfoLoaded(
+    Profile* profile,
+    bool fetch_important,
+    const ScopedJavaGlobalRef<jobject>& java_callback,
+    const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
+        local_storage_info) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> map =
+      Java_WebsitePreferenceBridge_createLocalStorageInfoMap(env);
+
+  std::vector<ImportantSitesUtil::ImportantDomainInfo> important_domains;
+  if (fetch_important) {
+    important_domains = ImportantSitesUtil::GetImportantRegisterableDomains(
+        profile, kMaxImportantSites);
   }
 
- private:
-  JNIEnv* env_;
-  ScopedJavaGlobalRef<jobject> java_callback_;
-};
+  for (const BrowsingDataLocalStorageHelper::LocalStorageInfo& info :
+       local_storage_info) {
+    ScopedJavaLocalRef<jstring> full_origin =
+        ConvertUTF8ToJavaString(env, info.origin_url.spec());
+    std::string origin_str = info.origin_url.GetOrigin().spec();
 
-class StorageInfoClearedCallback {
- public:
-  explicit StorageInfoClearedCallback(const JavaRef<jobject>& java_callback)
-      : env_(base::android::AttachCurrentThread()),
-        java_callback_(java_callback) {
-  }
-
-  void OnStorageInfoCleared(storage::QuotaStatusCode code) {
-    DCHECK_CURRENTLY_ON(BrowserThread::UI);
-
-    Java_StorageInfoClearedCallback_onStorageInfoCleared(env_, java_callback_);
-
-    delete this;
-  }
-
- private:
-  JNIEnv* env_;
-  ScopedJavaGlobalRef<jobject> java_callback_;
-};
-
-class LocalStorageInfoReadyCallback {
- public:
-  LocalStorageInfoReadyCallback(const JavaRef<jobject>& java_callback,
-                                bool fetch_important)
-      : env_(base::android::AttachCurrentThread()),
-        java_callback_(java_callback),
-        fetch_important_(fetch_important) {}
-
-  void OnLocalStorageModelInfoLoaded(
-      Profile* profile,
-      const std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>&
-          local_storage_info) {
-    ScopedJavaLocalRef<jobject> map =
-        Java_WebsitePreferenceBridge_createLocalStorageInfoMap(env_);
-
-    std::vector<ImportantSitesUtil::ImportantDomainInfo> important_domains;
-    if (fetch_important_) {
-      important_domains = ImportantSitesUtil::GetImportantRegisterableDomains(
-          profile, kMaxImportantSites);
-    }
-
-    std::list<BrowsingDataLocalStorageHelper::LocalStorageInfo>::const_iterator
-        i;
-    for (i = local_storage_info.begin(); i != local_storage_info.end(); ++i) {
-      ScopedJavaLocalRef<jstring> full_origin =
-          ConvertUTF8ToJavaString(env_, i->origin_url.spec());
-      std::string origin_str = i->origin_url.GetOrigin().spec();
-
-      bool important = false;
-      if (fetch_important_) {
-        std::string registerable_domain;
-        if (i->origin_url.HostIsIPAddress()) {
-          registerable_domain = i->origin_url.host();
-        } else {
-          registerable_domain =
-              net::registry_controlled_domains::GetDomainAndRegistry(
-                  i->origin_url,
-                  net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-        }
-        auto important_domain_search =
-            [&registerable_domain](
-                const ImportantSitesUtil::ImportantDomainInfo& item) {
-              return item.registerable_domain == registerable_domain;
-            };
-        if (std::find_if(important_domains.begin(), important_domains.end(),
-                         important_domain_search) != important_domains.end()) {
-          important = true;
-        }
+    bool important = false;
+    if (fetch_important) {
+      std::string registerable_domain;
+      if (info.origin_url.HostIsIPAddress()) {
+        registerable_domain = info.origin_url.host();
+      } else {
+        registerable_domain =
+            net::registry_controlled_domains::GetDomainAndRegistry(
+                info.origin_url,
+                net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
       }
-      // Remove the trailing slash so the origin is matched correctly in
-      // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
-      DCHECK_EQ('/', origin_str.back());
-      origin_str.pop_back();
-      ScopedJavaLocalRef<jstring> origin =
-          ConvertUTF8ToJavaString(env_, origin_str);
-      Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(
-          env_, map, origin, full_origin, i->size, important);
+      auto important_domain_search =
+          [&registerable_domain](
+              const ImportantSitesUtil::ImportantDomainInfo& item) {
+            return item.registerable_domain == registerable_domain;
+          };
+      if (std::find_if(important_domains.begin(), important_domains.end(),
+                       important_domain_search) != important_domains.end()) {
+        important = true;
+      }
     }
-
-    base::android::RunCallbackAndroid(java_callback_, map);
-    delete this;
+    // Remove the trailing slash so the origin is matched correctly in
+    // SingleWebsitePreferences.mergePermissionInfoForTopLevelOrigin.
+    DCHECK_EQ('/', origin_str.back());
+    origin_str.pop_back();
+    ScopedJavaLocalRef<jstring> origin =
+        ConvertUTF8ToJavaString(env, origin_str);
+    Java_WebsitePreferenceBridge_insertLocalStorageInfoIntoMap(
+        env, map, origin, full_origin, info.size, important);
   }
 
- private:
-  JNIEnv* env_;
-  ScopedJavaGlobalRef<jobject> java_callback_;
-  bool fetch_important_;
-};
+  base::android::RunCallbackAndroid(java_callback, map);
+}
 
 }  // anonymous namespace
 
@@ -755,14 +715,11 @@ static void FetchLocalStorageInfo(JNIEnv* env,
                                   const JavaParamRef<jobject>& java_callback,
                                   jboolean fetch_important) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
-      new BrowsingDataLocalStorageHelper(profile));
-  // local_storage_callback will delete itself when it is run.
-  LocalStorageInfoReadyCallback* local_storage_callback =
-      new LocalStorageInfoReadyCallback(java_callback, fetch_important);
+  auto local_storage_helper =
+      base::MakeRefCounted<BrowsingDataLocalStorageHelper>(profile);
   local_storage_helper->StartFetching(
-      base::Bind(&LocalStorageInfoReadyCallback::OnLocalStorageModelInfoLoaded,
-                 base::Unretained(local_storage_callback), profile));
+      base::Bind(&OnLocalStorageModelInfoLoaded, profile, fetch_important,
+                 ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void FetchStorageInfo(JNIEnv* env,
@@ -770,22 +727,17 @@ static void FetchStorageInfo(JNIEnv* env,
                              const JavaParamRef<jobject>& java_callback) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
 
-  // storage_info_ready_callback will delete itself when it is run.
-  StorageInfoReadyCallback* storage_info_ready_callback =
-      new StorageInfoReadyCallback(java_callback);
-  scoped_refptr<StorageInfoFetcher> storage_info_fetcher =
-      new StorageInfoFetcher(profile);
-  storage_info_fetcher->FetchStorageInfo(
-      base::Bind(&StorageInfoReadyCallback::OnStorageInfoReady,
-          base::Unretained(storage_info_ready_callback)));
+  auto storage_info_fetcher = base::MakeRefCounted<StorageInfoFetcher>(profile);
+  storage_info_fetcher->FetchStorageInfo(base::Bind(
+      &OnStorageInfoReady, ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void ClearLocalStorageData(JNIEnv* env,
                                   const JavaParamRef<jclass>& clazz,
                                   const JavaParamRef<jstring>& jorigin) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper =
-      new BrowsingDataLocalStorageHelper(profile);
+  auto local_storage_helper =
+      base::MakeRefCounted<BrowsingDataLocalStorageHelper>(profile);
   GURL origin_url = GURL(ConvertJavaStringToUTF8(env, jorigin));
   local_storage_helper->DeleteOrigin(origin_url);
 }
@@ -798,16 +750,11 @@ static void ClearStorageData(JNIEnv* env,
   Profile* profile = ProfileManager::GetActiveUserProfile();
   std::string host = ConvertJavaStringToUTF8(env, jhost);
 
-  // storage_info_cleared_callback will delete itself when it is run.
-  StorageInfoClearedCallback* storage_info_cleared_callback =
-      new StorageInfoClearedCallback(java_callback);
-  scoped_refptr<StorageInfoFetcher> storage_info_fetcher =
-      new StorageInfoFetcher(profile);
+  auto storage_info_fetcher = base::MakeRefCounted<StorageInfoFetcher>(profile);
   storage_info_fetcher->ClearStorage(
-      host,
-      static_cast<storage::StorageType>(type),
-      base::Bind(&StorageInfoClearedCallback::OnStorageInfoCleared,
-          base::Unretained(storage_info_cleared_callback)));
+      host, static_cast<storage::StorageType>(type),
+      base::Bind(&OnStorageInfoCleared,
+                 ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 static void ClearCookieData(JNIEnv* env,
@@ -815,8 +762,10 @@ static void ClearCookieData(JNIEnv* env,
                             const JavaParamRef<jstring>& jorigin) {
   Profile* profile = ProfileManager::GetActiveUserProfile();
   GURL url(ConvertJavaStringToUTF8(env, jorigin));
-  scoped_refptr<SiteDataDeleteHelper> site_data_deleter(
-      new SiteDataDeleteHelper(profile, url));
+
+  // Deletes itself when done.
+  SiteDataDeleteHelper* site_data_deleter =
+      new SiteDataDeleteHelper(profile, url);
   site_data_deleter->Run();
 }
 
