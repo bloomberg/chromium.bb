@@ -3,12 +3,15 @@
 // found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/geolocation/geolocation_permission_context.h"
 #include "chrome/browser/media/midi_permission_context.h"
 #include "chrome/browser/notifications/notification_permission_context.h"
+#include "chrome/browser/permissions/permission_request_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
@@ -26,6 +29,9 @@
 class PermissionContextBaseFeaturePolicyTest
     : public ChromeRenderViewHostTestHarness {
  public:
+  PermissionContextBaseFeaturePolicyTest()
+      : last_request_result_(CONTENT_SETTING_DEFAULT), request_id_(0) {}
+
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();
     feature_list_.InitAndEnableFeature(
@@ -78,7 +84,25 @@ class PermissionContextBaseFeaturePolicyTest
         .content_setting;
   }
 
+  ContentSetting RequestPermissionForFrame(PermissionContextBase* pcb,
+                                           content::RenderFrameHost* rfh) {
+    PermissionRequestID id(rfh, request_id_++);
+    pcb->RequestPermission(content::WebContents::FromRenderFrameHost(rfh), id,
+                           rfh->GetLastCommittedURL(), /*user_gesture=*/true,
+                           base::Bind(&PermissionContextBaseFeaturePolicyTest::
+                                          RequestPermissionForFrameFinished,
+                                      base::Unretained(this)));
+    EXPECT_NE(CONTENT_SETTING_DEFAULT, last_request_result_);
+    ContentSetting result = last_request_result_;
+    last_request_result_ = CONTENT_SETTING_DEFAULT;
+    return result;
+  }
+
  private:
+  void RequestPermissionForFrameFinished(ContentSetting setting) {
+    last_request_result_ = setting;
+  }
+
   void SimulateNavigation(content::RenderFrameHost** rfh, const GURL& url) {
     auto navigation_simulator =
         content::NavigationSimulator::CreateRendererInitiated(url, *rfh);
@@ -86,6 +110,8 @@ class PermissionContextBaseFeaturePolicyTest
     *rfh = navigation_simulator->GetFinalRenderFrameHost();
   }
 
+  ContentSetting last_request_result_;
+  int request_id_;
   base::test::ScopedFeatureList feature_list_;
 };
 
@@ -175,4 +201,26 @@ TEST_F(PermissionContextBaseFeaturePolicyTest, EnabledForChildFrame) {
   GeolocationPermissionContext geolocation(profile());
   EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, parent));
   EXPECT_EQ(CONTENT_SETTING_ASK, GetPermissionForFrame(&geolocation, child));
+}
+
+TEST_F(PermissionContextBaseFeaturePolicyTest, RequestPermission) {
+  content::RenderFrameHost* parent = GetMainRFH(kOrigin1);
+
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_GEOLOCATION,
+                                 CONTENT_SETTING_ALLOW);
+
+  // Request geolocation in the top level frame, request should work.
+  GeolocationPermissionContext geolocation(profile());
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            RequestPermissionForFrame(&geolocation, parent));
+
+  // Disable geolocation in the top level frame.
+  RefreshPageAndSetHeaderPolicy(&parent,
+                                blink::WebFeaturePolicyFeature::kGeolocation,
+                                std::vector<std::string>());
+
+  // Request should fail.
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            RequestPermissionForFrame(&geolocation, parent));
 }
