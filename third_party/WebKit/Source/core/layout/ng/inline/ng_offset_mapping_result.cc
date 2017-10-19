@@ -165,8 +165,9 @@ unsigned NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
   return fallback;
 }
 
-bool NGOffsetMappingResult::IsNonCollapsedCharacter(const Node& node,
-                                                    unsigned offset) const {
+bool NGOffsetMappingResult::IsBeforeNonCollapsedCharacter(
+    const Node& node,
+    unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
   return unit && offset < unit->DOMEnd() &&
          unit->GetType() != NGOffsetMappingUnitType::kCollapsed;

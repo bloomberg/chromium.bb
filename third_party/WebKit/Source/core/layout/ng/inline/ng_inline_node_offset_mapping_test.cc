@@ -68,8 +68,8 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
     return GetOffsetMapping().EndOfLastNonCollapsedCharacter(node, offset);
   }
 
-  bool IsNonCollapsedCharacter(const Node& node, unsigned offset) const {
-    return GetOffsetMapping().IsNonCollapsedCharacter(node, offset);
+  bool IsBeforeNonCollapsedCharacter(const Node& node, unsigned offset) const {
+    return GetOffsetMapping().IsBeforeNonCollapsedCharacter(node, offset);
   }
 
   bool IsAfterNonCollapsedCharacter(const Node& node, unsigned offset) const {
@@ -155,10 +155,11 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   EXPECT_EQ(2u, EndOfLastNonCollapsedCharacter(*foo_node, 2));
   EXPECT_EQ(3u, EndOfLastNonCollapsedCharacter(*foo_node, 3));
 
-  EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_FALSE(IsNonCollapsedCharacter(*foo_node, 3));  // false at node end
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_FALSE(
+      IsBeforeNonCollapsedCharacter(*foo_node, 3));  // false at node end
 
   // false at node start
   EXPECT_FALSE(IsAfterNonCollapsedCharacter(*foo_node, 0));
@@ -205,15 +206,17 @@ TEST_F(NGInlineNodeOffsetMappingTest, TwoTextNodes) {
   EXPECT_EQ(5u, GetTextContentOffset(*bar_node, 2));
   EXPECT_EQ(6u, GetTextContentOffset(*bar_node, 3));
 
-  EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_FALSE(IsNonCollapsedCharacter(*foo_node, 3));  // false at node end
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_FALSE(
+      IsBeforeNonCollapsedCharacter(*foo_node, 3));  // false at node end
 
-  EXPECT_TRUE(IsNonCollapsedCharacter(*bar_node, 0));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*bar_node, 1));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*bar_node, 2));
-  EXPECT_FALSE(IsNonCollapsedCharacter(*bar_node, 3));  // false at node end
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*bar_node, 0));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*bar_node, 1));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*bar_node, 2));
+  EXPECT_FALSE(
+      IsBeforeNonCollapsedCharacter(*bar_node, 3));  // false at node end
 
   // false at node start
   EXPECT_FALSE(IsAfterNonCollapsedCharacter(*foo_node, 0));
@@ -318,15 +321,15 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_EQ(4u, EndOfLastNonCollapsedCharacter(*node, 4));
   EXPECT_EQ(4u, EndOfLastNonCollapsedCharacter(*node, 5));
 
-  EXPECT_TRUE(IsNonCollapsedCharacter(*node, 0));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*node, 1));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*node, 2));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*node, 3));
-  EXPECT_FALSE(IsNonCollapsedCharacter(*node, 4));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*node, 5));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*node, 6));
-  EXPECT_TRUE(IsNonCollapsedCharacter(*node, 7));
-  EXPECT_FALSE(IsNonCollapsedCharacter(*node, 8));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 0));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 1));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 2));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 3));
+  EXPECT_FALSE(IsBeforeNonCollapsedCharacter(*node, 4));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 5));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 6));
+  EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 7));
+  EXPECT_FALSE(IsBeforeNonCollapsedCharacter(*node, 8));
 
   EXPECT_FALSE(IsAfterNonCollapsedCharacter(*node, 0));
   EXPECT_TRUE(IsAfterNonCollapsedCharacter(*node, 1));

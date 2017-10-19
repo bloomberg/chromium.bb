@@ -234,7 +234,7 @@ bool LayoutTextFragment::ContainsCaretOffset(int text_offset) const {
     return false;
   const unsigned dom_offset = text_offset + Start();
   const NGOffsetMappingResult& mapping = GetNGOffsetMapping();
-  if (mapping.IsNonCollapsedCharacter(*node, dom_offset))
+  if (mapping.IsBeforeNonCollapsedCharacter(*node, dom_offset))
     return true;
   if (text_offset == 0)
     return false;
