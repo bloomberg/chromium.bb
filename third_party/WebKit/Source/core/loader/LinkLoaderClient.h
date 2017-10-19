@@ -54,7 +54,7 @@ class CORE_EXPORT LinkLoaderClient : public GarbageCollectedMixin {
   virtual void DidSendLoadForLinkPrerender() = 0;
   virtual void DidSendDOMContentLoadedForLinkPrerender() = 0;
 
-  virtual RefPtr<WebTaskRunner> GetLoadingTaskRunner() = 0;
+  virtual scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() = 0;
 };
 
 }  // namespace blink

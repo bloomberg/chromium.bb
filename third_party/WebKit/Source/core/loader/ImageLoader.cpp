@@ -137,7 +137,7 @@ class ImageLoader::Task {
   WeakPersistent<ImageLoader> loader_;
   BypassMainWorldBehavior should_bypass_main_world_csp_;
   UpdateFromElementBehavior update_behavior_;
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   WeakPtrFactory<Task> weak_factory_;
   ReferrerPolicy referrer_policy_;
   KURL request_url_;

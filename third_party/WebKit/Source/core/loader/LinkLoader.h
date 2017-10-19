@@ -103,7 +103,7 @@ class CORE_EXPORT LinkLoader final
 
  private:
   class FinishObserver;
-  LinkLoader(LinkLoaderClient*, RefPtr<WebTaskRunner>);
+  LinkLoader(LinkLoaderClient*, scoped_refptr<WebTaskRunner>);
 
   void NotifyFinished();
 

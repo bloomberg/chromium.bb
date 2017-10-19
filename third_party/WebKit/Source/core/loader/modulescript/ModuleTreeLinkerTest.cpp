@@ -52,7 +52,7 @@ class TestModuleTreeClient final : public ModuleTreeClient {
 
 class ModuleTreeLinkerTestModulator final : public DummyModulator {
  public:
-  ModuleTreeLinkerTestModulator(RefPtr<ScriptState> script_state)
+  ModuleTreeLinkerTestModulator(scoped_refptr<ScriptState> script_state)
       : script_state_(std::move(script_state)) {}
   ~ModuleTreeLinkerTestModulator() override {}
 
@@ -178,7 +178,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
     return it->value;
   }
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   HeapHashMap<KURL, Member<SingleModuleClient>> pending_clients_;
   HashMap<ScriptModule, Vector<ModuleRequest>> dependency_module_requests_map_;
   HeapHashMap<KURL, Member<ModuleScript>> module_map_;
@@ -209,7 +209,7 @@ class ModuleTreeLinkerTest : public ::testing::Test {
 
 void ModuleTreeLinkerTest::SetUp() {
   dummy_page_holder_ = DummyPageHolder::Create(IntSize(500, 500));
-  RefPtr<ScriptState> script_state =
+  scoped_refptr<ScriptState> script_state =
       ToScriptStateForMainWorld(&dummy_page_holder_->GetFrame());
   modulator_ = new ModuleTreeLinkerTestModulator(script_state);
 }

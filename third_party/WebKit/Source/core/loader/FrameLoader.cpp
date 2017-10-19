@@ -500,7 +500,7 @@ bool FrameLoader::AllowPlugins(ReasonForCallingAllowPlugins reason) {
 void FrameLoader::UpdateForSameDocumentNavigation(
     const KURL& new_url,
     SameDocumentNavigationSource same_document_navigation_source,
-    RefPtr<SerializedScriptValue> data,
+    scoped_refptr<SerializedScriptValue> data,
     HistoryScrollRestorationType scroll_restoration_type,
     FrameLoadType type,
     Document* initiating_document) {
@@ -540,12 +540,13 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader) {
   loader = nullptr;
 }
 
-void FrameLoader::LoadInSameDocument(const KURL& url,
-                                     RefPtr<SerializedScriptValue> state_object,
-                                     FrameLoadType frame_load_type,
-                                     HistoryItem* history_item,
-                                     ClientRedirectPolicy client_redirect,
-                                     Document* initiating_document) {
+void FrameLoader::LoadInSameDocument(
+    const KURL& url,
+    scoped_refptr<SerializedScriptValue> state_object,
+    FrameLoadType frame_load_type,
+    HistoryItem* history_item,
+    ClientRedirectPolicy client_redirect,
+    Document* initiating_document) {
   // If we have a state object, we cannot also be a new navigation.
   DCHECK(!state_object || frame_load_type == kFrameLoadTypeBackForward);
 
@@ -895,7 +896,7 @@ void FrameLoader::Load(const FrameLoadRequest& passed_request,
   // Perform same document navigation.
   if (same_document_history_navigation || same_document_navigation) {
     DCHECK(history_item || !same_document_history_navigation);
-    RefPtr<SerializedScriptValue> state_object =
+    scoped_refptr<SerializedScriptValue> state_object =
         same_document_history_navigation ? history_item->StateObject()
                                          : nullptr;
 
@@ -1050,7 +1051,7 @@ void FrameLoader::CommitProvisionalLoad() {
   // Check if the destination page is allowed to access the previous page's
   // timing information.
   if (frame_->GetDocument()) {
-    RefPtr<SecurityOrigin> security_origin =
+    scoped_refptr<SecurityOrigin> security_origin =
         SecurityOrigin::Create(provisional_document_loader_->Url());
     provisional_document_loader_->GetTiming()
         .SetHasSameOriginAsPreviousDocument(

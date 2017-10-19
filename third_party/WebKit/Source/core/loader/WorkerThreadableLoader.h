@@ -139,12 +139,12 @@ class WorkerThreadableLoader final : public ThreadableLoader {
    public:
     static void CreateAndStart(WorkerThreadableLoader*,
                                ThreadableLoadingContext*,
-                               RefPtr<WebTaskRunner>,
+                               scoped_refptr<WebTaskRunner>,
                                WorkerThreadLifecycleContext*,
                                std::unique_ptr<CrossThreadResourceRequestData>,
                                const ThreadableLoaderOptions&,
                                const ResourceLoaderOptions&,
-                               RefPtr<WaitableEventWithTasks>);
+                               scoped_refptr<WaitableEventWithTasks>);
     ~MainThreadLoaderHolder() override;
 
     void OverrideTimeout(unsigned long timeout_millisecond);

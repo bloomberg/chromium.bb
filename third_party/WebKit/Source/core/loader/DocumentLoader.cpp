@@ -288,7 +288,7 @@ static HistoryCommitType LoadTypeToCommitType(FrameLoadType type) {
 void DocumentLoader::UpdateForSameDocumentNavigation(
     const KURL& new_url,
     SameDocumentNavigationSource same_document_navigation_source,
-    RefPtr<SerializedScriptValue> data,
+    scoped_refptr<SerializedScriptValue> data,
     HistoryScrollRestorationType scroll_restoration_type,
     FrameLoadType type,
     Document* initiating_document) {
@@ -472,7 +472,7 @@ bool DocumentLoader::RedirectReceived(
   // If the redirecting url is not allowed to display content from the target
   // origin, then block the redirect.
   const KURL& request_url = request_.Url();
-  RefPtr<SecurityOrigin> redirecting_origin =
+  scoped_refptr<SecurityOrigin> redirecting_origin =
       SecurityOrigin::Create(redirect_response.Url());
   if (!redirecting_origin->CanDisplay(request_url)) {
     frame_->Console().AddMessage(ConsoleMessage::Create(
@@ -808,7 +808,7 @@ bool DocumentLoader::MaybeCreateArchive() {
   if (!frame_)
     return false;
 
-  RefPtr<SharedBuffer> data(main_resource->Data());
+  scoped_refptr<SharedBuffer> data(main_resource->Data());
   data->ForEachSegment(
       [this](const char* segment, size_t segment_size, size_t segment_offset) {
         CommitData(segment, segment_size);
