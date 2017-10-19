@@ -354,7 +354,6 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 	struct amdgpu_bo_metadata metadata = { 0 };
 	ADDR_COMPUTE_SURFACE_INFO_OUTPUT addr_out = { 0 };
 	uint32_t tiling_flags = 0;
-	uint32_t gem_create_flags = 0;
 	size_t plane;
 	int ret;
 
@@ -372,19 +371,13 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 		bo->strides[0] = addr_out.pixelPitch * DIV_ROUND_UP(addr_out.pixelBits, 8);
 	}
 
-	if (use_flags & (BO_USE_SCANOUT | BO_USE_CURSOR | BO_USE_LINEAR | BO_USE_SW_READ_OFTEN |
-			 BO_USE_SW_WRITE_OFTEN | BO_USE_SW_WRITE_RARELY | BO_USE_SW_READ_RARELY))
-		gem_create_flags |= AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
-	else
-		gem_create_flags |= AMDGPU_GEM_CREATE_NO_CPU_ACCESS;
-
 	memset(&gem_create, 0, sizeof(gem_create));
 
 	gem_create.in.bo_size = bo->total_size;
 	gem_create.in.alignment = addr_out.baseAlign;
 	/* Set the placement. */
 	gem_create.in.domains = AMDGPU_GEM_DOMAIN_VRAM;
-	gem_create.in.domain_flags = gem_create_flags;
+	gem_create.in.domain_flags = AMDGPU_GEM_CREATE_CPU_ACCESS_REQUIRED;
 	/* Allocate the buffer with the preferred heap. */
 	ret = drmCommandWriteRead(drv_get_fd(bo->drv), DRM_AMDGPU_GEM_CREATE, &gem_create,
 				  sizeof(gem_create));
