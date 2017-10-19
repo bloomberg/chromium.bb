@@ -933,6 +933,10 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBody) {
   RunHtmlTest(FILE_PATH_LITERAL("body.html"));
 }
 
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBoundsInherits) {
+  RunHtmlTest(FILE_PATH_LITERAL("bounds-inherits.html"));
+}
+
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, DISABLED_AccessibilityBR) {
   RunHtmlTest(FILE_PATH_LITERAL("br.html"));
 }

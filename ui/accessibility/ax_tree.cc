@@ -221,8 +221,13 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     // The rationale is that it's not useful to the user for an object to
     // have no width or height and it's probably a bug; it's better to
     // reflect the bounds of the nearest ancestor rather than a 0x0 box.
-    if (bounds.width() == 0 && bounds.height() == 0)
+    // Tag this node as 'offscreen' because it has no true size, just a
+    // size inherited from the ancestor.
+    if (bounds.width() == 0 && bounds.height() == 0) {
       bounds.set_size(container_bounds.size());
+      if (offscreen != nullptr)
+        *offscreen = true;
+    }
 
     int scroll_x = 0;
     int scroll_y = 0;
