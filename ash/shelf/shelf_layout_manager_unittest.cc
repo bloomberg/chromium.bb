@@ -795,10 +795,6 @@ TEST_F(ShelfLayoutManagerTest, ShelfUpdatedWhenStatusAreaChangesSize) {
 
 // Various assertions around auto-hide.
 TEST_F(ShelfLayoutManagerTest, AutoHide) {
-  // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   ui::test::EventGenerator& generator(GetEventGenerator());
 
   Shelf* shelf = GetPrimaryShelf();
@@ -865,13 +861,8 @@ TEST_F(ShelfLayoutManagerTest, AutoHide) {
 // Test the behavior of the shelf when it is auto hidden and it is on the
 // boundary between the primary and the secondary display.
 TEST_F(ShelfLayoutManagerTest, AutoHideShelfOnScreenBoundary) {
-  // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   UpdateDisplay("800x600,800x600");
-  // TODO: SetLayoutForCurrentDisplays() needs to ported to mash.
-  // http://crbug.com/698043.
+  // TODO(crbug.com/698043): Port SetLayoutForCurrentDisplays() to mash.
   Shell::Get()->display_manager()->SetLayoutForCurrentDisplays(
       display::test::CreateDisplayLayout(display_manager(),
                                          display::DisplayPlacement::RIGHT, 0));
@@ -1339,10 +1330,6 @@ TEST_F(ShelfLayoutManagerTest, FullscreenWindowOnSecondDisplay) {
 
 // Test for Pinned mode.
 TEST_F(ShelfLayoutManagerTest, PinnedWindowHidesShelf) {
-  // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shelf* shelf = GetPrimaryShelf();
 
   aura::Window* window1 = CreateTestWindow();
@@ -1426,10 +1413,6 @@ TEST_F(ShelfLayoutManagerTest, SetAlignment) {
 }
 
 TEST_F(ShelfLayoutManagerTest, GestureDrag) {
-  // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   // Slop is an implementation detail of gesture recognition, and complicates
   // these tests. Ignore it.
   ui::GestureConfiguration::GetInstance()
@@ -1533,10 +1516,6 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
 
 TEST_F(ShelfLayoutManagerFullscreenAppListTest,
        SwipingUpOnShelfInTabletModeForFullscreenAppList) {
-  // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shell* shell = Shell::Get();
   shell->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   Shelf* shelf = GetPrimaryShelf();
@@ -1629,10 +1608,6 @@ TEST_F(ShelfLayoutManagerFullscreenAppListTest,
 
 TEST_F(ShelfLayoutManagerFullscreenAppListTest,
        SwipingUpOnShelfInLaptopModeForFullscreenAppList) {
-  // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shelf* shelf = GetPrimaryShelf();
   EXPECT_EQ(SHELF_ALIGNMENT_BOTTOM, shelf->alignment());
   EXPECT_EQ(SHELF_AUTO_HIDE_BEHAVIOR_NEVER, shelf->auto_hide_behavior());
@@ -1913,10 +1888,6 @@ TEST_F(ShelfLayoutManagerTest, AutohideShelfForAutohideWhenActiveWindow) {
 }
 
 TEST_F(ShelfLayoutManagerTest, ShelfFlickerOnTrayActivation) {
-  // TODO: investigate failure in mash, http://crbug.com/695686.
-  if (Shell::GetAshConfig() == Config::MASH)
-    return;
-
   Shelf* shelf = GetPrimaryShelf();
 
   // Create a visible window so auto-hide behavior is enforced.
