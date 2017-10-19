@@ -21,9 +21,9 @@ class WM_CORE_EXPORT DefaultScreenPositionClient
 
   // aura::client::ScreenPositionClient overrides:
   void ConvertPointToScreen(const aura::Window* window,
-                            gfx::Point* point) override;
+                            gfx::PointF* point) override;
   void ConvertPointFromScreen(const aura::Window* window,
-                              gfx::Point* point) override;
+                              gfx::PointF* point) override;
   void ConvertHostPointToScreen(aura::Window* window,
                                 gfx::Point* point) override;
   void SetBounds(aura::Window* window,

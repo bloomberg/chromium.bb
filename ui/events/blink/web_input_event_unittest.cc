@@ -30,8 +30,8 @@ namespace ui {
 
 namespace {
 
-gfx::Point GetScreenLocationFromEvent(const LocatedEvent& event) {
-  return event.root_location();
+gfx::PointF GetScreenLocationFromEvent(const LocatedEvent& event) {
+  return event.root_location_f();
 }
 
 }  // namespace

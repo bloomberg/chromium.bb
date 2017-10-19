@@ -24,15 +24,15 @@ namespace chromeos {
 
 namespace {
 
-gfx::Point GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
+gfx::PointF GetScreenLocationFromEvent(const ui::LocatedEvent& event) {
   aura::Window* root =
       static_cast<aura::Window*>(event.target())->GetRootWindow();
   aura::client::ScreenPositionClient* spc =
       aura::client::GetScreenPositionClient(root);
   if (!spc)
-    return event.root_location();
+    return event.root_location_f();
 
-  gfx::Point screen_location(event.root_location());
+  gfx::PointF screen_location(event.root_location_f());
   spc->ConvertPointToScreen(root, &screen_location);
   return screen_location;
 }

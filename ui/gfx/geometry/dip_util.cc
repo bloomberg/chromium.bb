@@ -60,6 +60,12 @@ Point ConvertPointToPixel(float scale_factor, const Point& point_in_dip) {
   return ScaleToFlooredPoint(point_in_dip, scale_factor);
 }
 
+PointF ConvertPointToPixel(float scale_factor, const PointF& point_in_dip) {
+  if (scale_factor == 1.f)
+    return point_in_dip;
+  return ScalePoint(point_in_dip, scale_factor);
+}
+
 Size ConvertSizeToPixel(float scale_factor, const Size& size_in_dip) {
   if (scale_factor == 1.f)
     return size_in_dip;

@@ -30,6 +30,8 @@ GFX_EXPORT gfx::Insets ConvertInsetsToPixel(float scale_factor,
                                             const gfx::Insets& insets_in_dip);
 GFX_EXPORT gfx::Point ConvertPointToPixel(float scale_factor,
                                           const gfx::Point& point_in_dip);
+GFX_EXPORT gfx::PointF ConvertPointToPixel(float scale_factor,
+                                           const gfx::PointF& point_in_dip);
 GFX_EXPORT gfx::Size ConvertSizeToPixel(float scale_factor,
                                         const gfx::Size& size_in_dip);
 GFX_EXPORT gfx::Rect ConvertRectToPixel(float scale_factor,

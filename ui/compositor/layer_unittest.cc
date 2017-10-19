@@ -593,14 +593,14 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Simple) {
   l1->Add(l2.get());
   DrawTree(l1.get());
 
-  gfx::Point point1_in_l2_coords(5, 5);
+  gfx::PointF point1_in_l2_coords(5, 5);
   Layer::ConvertPointToLayer(l2.get(), l1.get(), &point1_in_l2_coords);
-  gfx::Point point1_in_l1_coords(15, 15);
+  gfx::PointF point1_in_l1_coords(15, 15);
   EXPECT_EQ(point1_in_l1_coords, point1_in_l2_coords);
 
-  gfx::Point point2_in_l1_coords(5, 5);
+  gfx::PointF point2_in_l1_coords(5, 5);
   Layer::ConvertPointToLayer(l1.get(), l2.get(), &point2_in_l1_coords);
-  gfx::Point point2_in_l2_coords(-5, -5);
+  gfx::PointF point2_in_l2_coords(-5, -5);
   EXPECT_EQ(point2_in_l2_coords, point2_in_l1_coords);
 }
 
@@ -618,14 +618,14 @@ TEST_F(LayerWithDelegateTest, ConvertPointToLayer_Medium) {
   l2->Add(l3.get());
   DrawTree(l1.get());
 
-  gfx::Point point1_in_l3_coords(5, 5);
+  gfx::PointF point1_in_l3_coords(5, 5);
   Layer::ConvertPointToLayer(l3.get(), l1.get(), &point1_in_l3_coords);
-  gfx::Point point1_in_l1_coords(25, 25);
+  gfx::PointF point1_in_l1_coords(25, 25);
   EXPECT_EQ(point1_in_l1_coords, point1_in_l3_coords);
 
-  gfx::Point point2_in_l1_coords(5, 5);
+  gfx::PointF point2_in_l1_coords(5, 5);
   Layer::ConvertPointToLayer(l1.get(), l3.get(), &point2_in_l1_coords);
-  gfx::Point point2_in_l3_coords(-15, -15);
+  gfx::PointF point2_in_l3_coords(-15, -15);
   EXPECT_EQ(point2_in_l3_coords, point2_in_l1_coords);
 }
 
