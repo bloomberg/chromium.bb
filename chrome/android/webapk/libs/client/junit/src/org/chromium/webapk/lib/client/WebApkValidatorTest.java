@@ -42,6 +42,10 @@ public class WebApkValidatorTest {
     private static final String URL_OF_WEBAPK = "https://www.foo.com";
     private static final String URL_WITHOUT_WEBAPK = "https://www.other.com";
     private static final String TEST_DATA_DIR = "webapks/";
+    private static final String TEST_STARTURL = "https://non-empty.com/starturl";
+    private static final String MAPSLITE_PACKAGE_NAME = "com.google.android.apps.mapslite";
+    private static final String MAPSLITE_EXAMPLE_STARTURL =
+            "https://www.google.com/maps?force=qVTs2FOxxTmHHo79-pwa&source=mlapk";
 
     private static final byte[] EXPECTED_SIGNATURE = new byte[] {48, -126, 3, -121, 48, -126, 2,
             111, -96, 3, 2, 1, 2, 2, 4, 20, -104, -66, -126, 48, 13, 6, 9, 42, -122, 72, -122, -9,
@@ -87,7 +91,7 @@ public class WebApkValidatorTest {
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
             assertEquals(WEBAPK_PACKAGE_NAME,
                     WebApkValidator.queryWebApkPackage(
@@ -107,7 +111,7 @@ public class WebApkValidatorTest {
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
             assertNull(WebApkValidator.queryWebApkPackage(
                     RuntimeEnvironment.application, URL_OF_WEBAPK));
@@ -128,7 +132,7 @@ public class WebApkValidatorTest {
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
             assertNull(WebApkValidator.queryWebApkPackage(
                     RuntimeEnvironment.application, URL_WITHOUT_WEBAPK));
@@ -150,7 +154,7 @@ public class WebApkValidatorTest {
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
             assertTrue(WebApkValidator.canWebApkHandleUrl(
                     RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_OF_WEBAPK));
@@ -172,7 +176,7 @@ public class WebApkValidatorTest {
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                    WEBAPK_PACKAGE_NAME, new Signature(SIGNATURE_1)));
+                    WEBAPK_PACKAGE_NAME, new Signature(SIGNATURE_1), TEST_STARTURL));
 
             assertFalse(WebApkValidator.canWebApkHandleUrl(
                     RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_OF_WEBAPK));
@@ -192,7 +196,7 @@ public class WebApkValidatorTest {
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
             assertFalse(WebApkValidator.canWebApkHandleUrl(
                     RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_OF_WEBAPK));
@@ -214,7 +218,7 @@ public class WebApkValidatorTest {
 
             mPackageManager.addResolveInfoForIntent(intent, newResolveInfo(WEBAPK_PACKAGE_NAME));
             mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                    WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
             assertFalse(WebApkValidator.canWebApkHandleUrl(
                     RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME, URL_WITHOUT_WEBAPK));
@@ -230,7 +234,7 @@ public class WebApkValidatorTest {
     @Test
     public void testIsValidWebApkReturnsTrueForValidWebApk() throws NameNotFoundException {
         mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
         assertTrue(
                 WebApkValidator.isValidWebApk(RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME));
@@ -243,10 +247,36 @@ public class WebApkValidatorTest {
     @Test
     public void testIsValidWebApkFalseForInvalidPackageName() {
         mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
-                INVALID_WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE)));
+                INVALID_WEBAPK_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
 
         assertFalse(WebApkValidator.isValidWebApk(
                 RuntimeEnvironment.application, INVALID_WEBAPK_PACKAGE_NAME));
+    }
+
+    /**
+     * Tests {@link WebApkValidator.isValidWebApk} returns true if the package
+     * name is maps lite and the start url matches the correct prefix.
+     */
+    @Test
+    public void testIsValidWebApkForMapsLite() {
+        mPackageManager.addPackage(newPackageInfoWithBrowserSignature(MAPSLITE_PACKAGE_NAME,
+                new Signature(EXPECTED_SIGNATURE), MAPSLITE_EXAMPLE_STARTURL));
+        assertTrue(WebApkValidator.isValidWebApk(
+                RuntimeEnvironment.application, MAPSLITE_PACKAGE_NAME));
+        assertFalse(WebApkValidator.isValidWebApk(
+                RuntimeEnvironment.application, MAPSLITE_PACKAGE_NAME + ".other"));
+    }
+
+    /**
+     * Tests {@link WebApkValidator.isValidWebApk} returns false when the
+     * startUrl is not correct.
+     */
+    @Test
+    public void testIsNotValidWebApkForMapsLiteBadStartUrl() {
+        mPackageManager.addPackage(newPackageInfoWithBrowserSignature(
+                MAPSLITE_PACKAGE_NAME, new Signature(EXPECTED_SIGNATURE), TEST_STARTURL));
+        assertFalse(WebApkValidator.isValidWebApk(
+                RuntimeEnvironment.application, MAPSLITE_PACKAGE_NAME));
     }
 
     /**
@@ -258,7 +288,8 @@ public class WebApkValidatorTest {
             throws NameNotFoundException {
         Signature[] signatures = new Signature[] {new Signature(SIGNATURE_1),
                 new Signature(EXPECTED_SIGNATURE), new Signature(SIGNATURE_2)};
-        mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures, null));
+        mPackageManager.addPackage(
+                newPackageInfo(WEBAPK_PACKAGE_NAME, signatures, null, TEST_STARTURL));
 
         assertFalse(
                 WebApkValidator.isValidWebApk(RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME));
@@ -273,7 +304,8 @@ public class WebApkValidatorTest {
             throws NameNotFoundException {
         Signature signatures[] =
                 new Signature[] {new Signature(SIGNATURE_1), new Signature(SIGNATURE_2)};
-        mPackageManager.addPackage(newPackageInfo(WEBAPK_PACKAGE_NAME, signatures, null));
+        mPackageManager.addPackage(
+                newPackageInfo(WEBAPK_PACKAGE_NAME, signatures, null, TEST_STARTURL));
 
         assertFalse(
                 WebApkValidator.isValidWebApk(RuntimeEnvironment.application, WEBAPK_PACKAGE_NAME));
@@ -291,7 +323,7 @@ public class WebApkValidatorTest {
         for (String filename : filenames) {
             mPackageManager.removePackage(packageName);
             mPackageManager.addPackage(
-                    newPackageInfo(packageName, signature, testFilePath(filename)));
+                    newPackageInfo(packageName, signature, testFilePath(filename), TEST_STARTURL));
             assertTrue(filename + " did not verify",
                     WebApkValidator.isValidWebApk(RuntimeEnvironment.application, packageName));
         }
@@ -317,7 +349,7 @@ public class WebApkValidatorTest {
         for (String filename : filenames) {
             mPackageManager.removePackage(packageName);
             mPackageManager.addPackage(
-                    newPackageInfo(packageName, signature, testFilePath(filename)));
+                    newPackageInfo(packageName, signature, testFilePath(filename), TEST_STARTURL));
             assertFalse(filename,
                     WebApkValidator.isValidWebApk(RuntimeEnvironment.application, packageName));
         }
@@ -337,13 +369,13 @@ public class WebApkValidatorTest {
     }
 
     private static PackageInfo newPackageInfo(
-            String packageName, Signature[] signatures, String sourceDir) {
+            String packageName, Signature[] signatures, String sourceDir, String startUrl) {
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = packageName;
         packageInfo.signatures = signatures;
         packageInfo.applicationInfo = new ApplicationInfo();
         packageInfo.applicationInfo.metaData = new Bundle();
-        packageInfo.applicationInfo.metaData.putString(START_URL, "https://non-empty.com/starturl");
+        packageInfo.applicationInfo.metaData.putString(START_URL, startUrl);
         packageInfo.applicationInfo.sourceDir = sourceDir;
         return packageInfo;
     }
@@ -351,7 +383,8 @@ public class WebApkValidatorTest {
     // The browser signature is expected to always be the second signature - the first (and any
     // additional ones after the second) are ignored.
     private static PackageInfo newPackageInfoWithBrowserSignature(
-            String packageName, Signature signature) {
-        return newPackageInfo(packageName, new Signature[] {new Signature(""), signature}, null);
+            String packageName, Signature signature, String startUrl) {
+        return newPackageInfo(
+                packageName, new Signature[] {new Signature(""), signature}, null, startUrl);
     }
 }
