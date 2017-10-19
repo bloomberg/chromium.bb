@@ -60,7 +60,7 @@ def main():
 
   if options.developer_dir:
     os.environ['DEVELOPER_DIR'] = options.developer_dir
-    developer_dir = options.developer_dir
+    developer_dir = options.developer_dir + '/Contents/Developer'
   else:
     developer_dir = subprocess.check_output(
         ['xcode-select', '--print-path']).strip()
@@ -68,6 +68,7 @@ def main():
   xctoolchain_libs = glob.glob(developer_dir
       + '/Toolchains/XcodeDefault.xctoolchain/usr/lib'
       + '/clang/*/lib/darwin/*.ios.a')
+  print "Adding xctoolchain_libs: ", xctoolchain_libs
 
   # ld -r concatenates multiple .o files and .a files into a single .o file,
   # while "hiding" symbols not marked as visible.
