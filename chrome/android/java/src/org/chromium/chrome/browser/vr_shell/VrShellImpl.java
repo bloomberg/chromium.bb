@@ -49,7 +49,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.ContentViewCore;
-import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.BrowserControlsState;
 import org.chromium.ui.UiUtils;
@@ -733,13 +732,6 @@ public class VrShellImpl
     private void openNewTab(boolean incognito) {
         mActivity.getTabCreator(incognito).launchUrl(
                 UrlConstants.NTP_URL, TabLaunchType.FROM_CHROME_UI);
-    }
-
-    @CalledByNative
-    private void loadUrl(String url) {
-        // TODO(bshe): reuse voice suggestion provider if possible.
-        assert mTab != null;
-        mTab.loadUrl(new LoadUrlParams(url));
     }
 
     @VisibleForTesting

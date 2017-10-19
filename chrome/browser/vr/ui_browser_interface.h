@@ -11,7 +11,7 @@
 
 namespace vr {
 
-// An interface for the VR UI to communicate with VrShell. Many of the functions
+// An interface for the UI to communicate with VrShell.  Many of the functions
 // in this interface are proxies to methods on VrShell.
 class UiBrowserInterface {
  public:
@@ -25,7 +25,6 @@ class UiBrowserInterface {
   virtual void OnExitVrPromptResult(UiUnsupportedMode reason,
                                     ExitVrPromptChoice choice) = 0;
   virtual void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) = 0;
-  virtual void SetVoiceSearchActivate(bool activate) = 0;
 };
 
 }  // namespace vr
