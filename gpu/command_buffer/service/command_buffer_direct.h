@@ -69,6 +69,10 @@ class GPU_EXPORT CommandBufferDirect : public CommandBuffer,
 
   scoped_refptr<Buffer> CreateTransferBufferWithId(size_t size, int32_t id);
 
+  void SetGetOffsetForTest(int32_t get_offset) {
+    service_.SetGetOffsetForTest(get_offset);
+  }
+
  private:
   CommandBufferService service_;
   SyncPointManager* sync_point_manager_;
