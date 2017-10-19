@@ -136,7 +136,13 @@ class CORE_EXPORT QualifiedName {
   const AtomicString& NamespaceURI() const { return impl_->namespace_; }
 
   // Uppercased localName, cached for efficiency
-  const AtomicString& LocalNameUpper() const;
+  const AtomicString& LocalNameUpper() const {
+    if (impl_->local_name_upper_)
+      return impl_->local_name_upper_;
+    return LocalNameUpperSlow();
+  }
+
+  const AtomicString& LocalNameUpperSlow() const;
 
   String ToString() const;
 
