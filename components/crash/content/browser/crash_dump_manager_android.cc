@@ -75,6 +75,12 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
     return increase_crash_count;
 
   int64_t file_size = 0;
+
+  if (!base::PathExists(minidump_path)) {
+    LOG(ERROR) << "minidump does not exist " << minidump_path.value();
+    return increase_crash_count;
+  }
+
   int r = base::GetFileSize(minidump_path, &file_size);
   DCHECK(r) << "Failed to retrieve size for minidump "
             << minidump_path.value();
