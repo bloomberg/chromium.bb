@@ -37,6 +37,15 @@
         -webkit-margin-end: 20px;
       }
 
+      #enable-section span {
+        color: var(--paper-grey-600);
+        font-weight: 500;
+      }
+
+      #enable-section .enabled-text {
+        color: var(--google-blue-500);
+      }
+
       #container {
         height: 100%;
         overflow: overlay;
@@ -164,19 +173,23 @@
           <img alt="" id="icon" src="[[data.iconUrl]]">
           <span id="name">[[data.name]]</span>
         </div>
-        <div class="section continuation control-line" id="enable-section">
-          <span>[[computeEnabledText_(data.*)]]</span>
-          <div class="layout horizontal">
-            <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
-                tooltip-text="[[data.controlledInfo.text]]"
-                icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
-                icon-aria-label="[[data.controlledInfo.type]]">
-            </cr-tooltip-icon>
-            <cr-toggle id="enable-toggle"
-                checked="[[isEnabled_(data.state)]]"
-                on-change="onEnableChange_"
-                disabled="[[!isEnableToggleEnabled_(data.*)]]">
-            </cr-toggle>
+        <div class="section continuation" id="enable-section">
+          <div class="control-line">
+            <span class$="{{computeEnabledStyle_(data.state)}}">
+              [[computeEnabledText_(data.state)]]
+            </span>
+            <div class="layout horizontal">
+              <cr-tooltip-icon hidden$="[[!data.controlledInfo]]"
+                  tooltip-text="[[data.controlledInfo.text]]"
+                  icon-class="[[getIndicatorIcon_(data.controlledInfo.type)]]"
+                  icon-aria-label="[[data.controlledInfo.type]]">
+              </cr-tooltip-icon>
+              <cr-toggle id="enable-toggle"
+                  checked="[[isEnabled_(data.state)]]"
+                  on-change="onEnableChange_"
+                  disabled="[[!isEnableToggleEnabled_(data.*)]]">
+              </cr-toggle>
+            </div>
           </div>
         </div>
         <div id="warnings" hidden$="[[!hasWarnings_(data.*)]]">
