@@ -33,7 +33,8 @@ inline bool ShouldCreateBoxFragment(const NGInlineItem& item,
   DCHECK(item.Style());
   const ComputedStyle& style = *item.Style();
   // TODO(kojii): We might need more conditions to create box fragments.
-  return style.HasBoxDecorationBackground() || item_result.needs_box_when_empty;
+  return style.HasBoxDecorationBackground() || style.HasOutline() ||
+         item_result.needs_box_when_empty;
 }
 
 NGBfcOffset GetOriginPointForFloats(const NGBfcOffset& container_bfc_offset,
