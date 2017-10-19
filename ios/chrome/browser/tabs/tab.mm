@@ -89,7 +89,6 @@
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
 #import "ios/chrome/browser/ui/open_in_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
-#import "ios/chrome/browser/ui/prerender_delegate.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/web/external_app_launcher.h"
 #import "ios/chrome/browser/web/navigation_manager_util.h"
@@ -1327,8 +1326,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     didLoadPassKitObject:(NSData*)data {
   [self.passKitDialogProvider presentPassKitDialog:data];
 }
-
-#pragma mark - PrerenderDelegate
 
 - (void)discardPrerender {
   DCHECK(_isPrerenderTab);

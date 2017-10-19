@@ -240,7 +240,6 @@ source_set("ui_internal") {
     "open_in_toolbar.mm",
     "page_not_available_controller.h",
     "page_not_available_controller.mm",
-    "prerender_delegate.h",
   ]
   deps = [
     ":resources",
