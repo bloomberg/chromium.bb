@@ -230,9 +230,14 @@ ServiceWorkerDispatcher::GetOrCreateRegistrationForServiceWorkerGlobalScope(
     const ServiceWorkerVersionAttributes& attrs,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
   RegistrationObjectMap::iterator found = registrations_.find(info->handle_id);
-  if (found != registrations_.end())
+  if (found != registrations_.end()) {
+    DCHECK(!info->request.is_pending());
+    found->second->AttachForServiceWorkerGlobalScope(std::move(info),
+                                                     std::move(io_task_runner));
     return found->second;
+  }
 
+  DCHECK(info->request.is_pending());
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration to add itself into |registrations_|.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration =
@@ -266,9 +271,13 @@ ServiceWorkerDispatcher::GetOrCreateRegistrationForServiceWorkerClient(
 
   RegistrationObjectMap::iterator found =
       registrations_.find(registration_handle_id);
-  if (found != registrations_.end())
+  if (found != registrations_.end()) {
+    DCHECK(!info->request.is_pending());
+    found->second->AttachForServiceWorkerClient(std::move(info));
     return found->second;
+  }
 
+  DCHECK(info->request.is_pending());
   // WebServiceWorkerRegistrationImpl constructor calls
   // AddServiceWorkerRegistration to add itself into |registrations_|.
   scoped_refptr<WebServiceWorkerRegistrationImpl> registration =

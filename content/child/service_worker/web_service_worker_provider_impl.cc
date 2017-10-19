@@ -268,7 +268,8 @@ void WebServiceWorkerProviderImpl::OnDidGetRegistration(
     impl = GetDispatcher()->GetOrCreateRegistrationForServiceWorkerClient(
         std::move(registration), *attributes);
   }
-  callbacks->OnSuccess(WebServiceWorkerRegistrationImpl::CreateHandle(impl));
+  callbacks->OnSuccess(
+      WebServiceWorkerRegistrationImpl::CreateHandle(std::move(impl)));
 }
 
 void WebServiceWorkerProviderImpl::OnDidGetRegistrations(
