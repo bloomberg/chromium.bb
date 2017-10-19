@@ -10436,6 +10436,8 @@ static CertStatus ExpectedCertStatusForFailedOnlineRevocationCheck() {
 #if defined(OS_WIN) || defined(OS_MACOSX)
   // Windows can return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION but we don't
   // have that ability on other platforms.
+  // TODO(eroman): Should this also be the return value for
+  //               CertVerifyProcBuiltin?
   return CERT_STATUS_UNABLE_TO_CHECK_REVOCATION;
 #else
   return 0;
@@ -10450,8 +10452,8 @@ static CertStatus ExpectedCertStatusForFailedOnlineRevocationCheck() {
 // If it does not, then tests which rely on 'hard fail' behaviour should be
 // skipped.
 static bool SystemSupportsHardFailRevocationChecking() {
-#if defined(OS_WIN) || defined(USE_NSS_CERTS)
-  // TODO(crbug.com/762380): Enable on Fuchsia once it's implemented.
+#if defined(OS_WIN) || defined(USE_NSS_CERTS) || \
+    defined(USE_BUILTIN_CERT_VERIFIER)
   return true;
 #else
   return false;
@@ -10484,9 +10486,8 @@ static CertStatus ExpectedCertStatusForFailedOnlineEVRevocationCheck() {
 }
 
 static bool SystemSupportsOCSP() {
-#if defined(OS_ANDROID) || defined(USE_BUILTIN_CERT_VERIFIER)
+#if defined(OS_ANDROID)
   // TODO(jnd): http://crbug.com/117478 - EV verification is not yet supported.
-  // TODO(crbug.com/762380): Enable on Fuchsia once it's implemented.
   return false;
 #else
   return true;
@@ -10494,8 +10495,8 @@ static bool SystemSupportsOCSP() {
 }
 
 static bool SystemSupportsOCSPStapling() {
-#if defined(USE_NSS_CERTS) || defined(OS_WIN)
-  // TODO(crbug.com/762380): Enable on Fuchsia once it's implemented.
+#if defined(USE_NSS_CERTS) || defined(OS_WIN) || \
+    defined(USE_BUILTIN_CERT_VERIFIER)
   return true;
 #else
   return false;
@@ -10555,8 +10556,17 @@ TEST_F(HTTPSOCSPTest, Invalid) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
+#if defined(USE_BUILTIN_CERT_VERIFIER)
+  // TODO(649017): This test uses soft-fail revocation checking, but returns an
+  // invalid OCSP response (can't parse). CertVerifyProcBuiltin currently
+  // doesn't consider this a candidate for soft-fail (only considers
+  // network-level failures as skippable).
+  EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+            cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+#else
   EXPECT_EQ(ExpectedCertStatusForFailedOnlineRevocationCheck(),
             cert_status & CERT_STATUS_ALL_ERRORS);
+#endif
 
   // Without a positive OCSP response, we shouldn't show the EV status.
   EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
@@ -11216,10 +11226,17 @@ TEST_F(HTTPSHardFailTest, FailsOnOCSPInvalid) {
   CertStatus cert_status;
   DoConnection(ssl_options, &cert_status);
 
-  EXPECT_EQ(CERT_STATUS_REVOKED,
-            cert_status & CERT_STATUS_REVOKED);
+#if defined(USE_BUILTIN_CERT_VERIFIER)
+  // TODO(crbug.com/649017): Should we consider invalid response as
+  //                         affirmatively revoked?
+  EXPECT_EQ(CERT_STATUS_UNABLE_TO_CHECK_REVOCATION,
+            cert_status & CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
+#else
+  EXPECT_EQ(CERT_STATUS_REVOKED, cert_status & CERT_STATUS_REVOKED);
+#endif
 
   // Without a positive OCSP response, we shouldn't show the EV status.
+  EXPECT_FALSE(cert_status & CERT_STATUS_IS_EV);
   EXPECT_TRUE(cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
