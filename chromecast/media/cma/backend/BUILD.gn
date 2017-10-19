@@ -133,7 +133,7 @@ source_set("audio") {
   ]
 }
 
-source_set("unit_tests") {
+test("cast_audio_backend_unittests") {
   testonly = true
   sources = [
     "filter_group_unittest.cc",
@@ -163,12 +163,6 @@ source_set("unit_tests") {
   if (is_fuchsia) {
     deps += [ "fuchsia:unit_tests" ]
   }
-}
-
-test("cast_audio_backend_unittests") {
-  deps = [
-    ":unit_tests",
-  ]
 }
 
 # This is separate from ":governor" because the associated unittest needs

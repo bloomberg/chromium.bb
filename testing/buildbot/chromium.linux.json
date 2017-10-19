@@ -3097,7 +3097,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cast_alsa_cma_backend_unittests"
+        "test": "cast_audio_backend_unittests"
       },
       {
         "swarming": {
@@ -3281,7 +3281,7 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "cast_alsa_cma_backend_unittests"
+        "test": "cast_audio_backend_unittests"
       },
       {
         "swarming": {
