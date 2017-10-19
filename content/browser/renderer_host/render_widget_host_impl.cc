@@ -32,12 +32,14 @@
 #include "cc/base/switches.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/switches.h"
+#include "components/viz/host/host_frame_sink_manager.h"
 #include "components/viz/service/display_embedder/server_shared_bitmap_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/compositor/surface_utils.h"
 #include "content/browser/fileapi/browser_file_system_helper.h"
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/renderer_host/dip_util.h"
@@ -401,6 +403,7 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
       *base::CommandLine::ForCurrentProcess();
   enable_surface_synchronization_ =
       command_line.HasSwitch(switches::kEnableSurfaceSynchronization);
+  enable_viz_ = command_line.HasSwitch(switches::kEnableViz);
 
   delegate_->RenderWidgetCreated(this);
 }
@@ -2602,6 +2605,12 @@ void RenderWidgetHostImpl::RequestCompositionUpdates(bool immediate_request,
 void RenderWidgetHostImpl::RequestCompositorFrameSink(
     viz::mojom::CompositorFrameSinkRequest request,
     viz::mojom::CompositorFrameSinkClientPtr client) {
+  if (enable_viz_) {
+    GetHostFrameSinkManager()->CreateCompositorFrameSink(
+        view_->GetFrameSinkId(), std::move(request), std::move(client));
+    return;
+  }
+
   if (compositor_frame_sink_binding_.is_bound())
     compositor_frame_sink_binding_.Close();
   compositor_frame_sink_binding_.Bind(

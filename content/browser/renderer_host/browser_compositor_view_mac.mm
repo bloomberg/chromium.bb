@@ -186,7 +186,8 @@ BrowserCompositorMac::BrowserCompositorMac(
   root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
   // TODO(fsamuel): Plumb surface synchronization settings.
   delegated_frame_host_.reset(new DelegatedFrameHost(
-      frame_sink_id, this, false /* enable_surface_synchronization */));
+      frame_sink_id, this, false /* enable_surface_synchronization */,
+      false /* enable_viz */));
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
   SetNSViewAttachedToWindow(ns_view_attached_to_window);
