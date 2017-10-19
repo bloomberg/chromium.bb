@@ -5,14 +5,10 @@
 #include "core/layout/LayoutTestHelper.h"
 
 #include "bindings/core/v8/V8BindingForCore.h"
-#include "bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
-#include "core/css/FontFaceDescriptors.h"
-#include "core/css/FontFaceSetDocument.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/scroll/ScrollbarTheme.h"
-#include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
 
@@ -75,26 +71,6 @@ void RenderingTest::TearDown() {
 void RenderingTest::SetChildFrameHTML(const String& html) {
   ChildDocument().SetBaseURLOverride(KURL(kParsedURLString, "http://test.com"));
   ChildDocument().body()->SetInnerHTMLFromString(html, ASSERT_NO_EXCEPTION);
-}
-
-void RenderingTest::LoadAhem() {
-  LoadAhem(GetFrame());
-}
-
-void RenderingTest::LoadAhem(LocalFrame& frame) {
-  Document& document = *frame.DomWindow()->document();
-  RefPtr<SharedBuffer> shared_buffer =
-      testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
-  StringOrArrayBufferOrArrayBufferView buffer =
-      StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(
-          DOMArrayBuffer::Create(shared_buffer));
-  FontFace* ahem =
-      FontFace::Create(&document, "Ahem", buffer, FontFaceDescriptors());
-
-  ScriptState* script_state = ToScriptStateForMainWorld(&frame);
-  DummyExceptionStateForTesting exception_state;
-  FontFaceSetDocument::From(document)->addForBinding(script_state, ahem,
-                                                     exception_state);
 }
 
 }  // namespace blink

@@ -24,7 +24,6 @@
 #include "core/html/HTMLElement.h"
 #include "core/html/HTMLHtmlElement.h"
 #include "core/html/forms/HTMLTextAreaElement.h"
-#include "core/layout/LayoutTestHelper.h"
 #include "platform/heap/Handle.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Compiler.h"
@@ -263,12 +262,8 @@ TEST_F(RangeTest, ToPosition) {
   EXPECT_EQ(position, range.EndPosition());
 }
 
-static void LoadAhem(DummyPageHolder& page_holder, Document& document) {
-  RenderingTest::LoadAhem(page_holder.GetFrame());
-}
-
 TEST_F(RangeTest, BoundingRectMustIndependentFromSelection) {
-  LoadAhem(GetDummyPageHolder(), GetDocument());
+  LoadAhem();
   GetDocument().body()->SetInnerHTMLFromString(
       "<div style='font: Ahem; width: 2em;letter-spacing: 5px;'>xx xx </div>");
   Node* const div = GetDocument().QuerySelector("div");

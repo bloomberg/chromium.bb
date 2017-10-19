@@ -32,6 +32,15 @@ class PageTestBase : public ::testing::Test {
   FrameSelection& Selection() const;
   DummyPageHolder& GetDummyPageHolder() const { return *dummy_page_holder_; }
 
+  // Load the 'Ahem' font to the LocalFrame.
+  // The 'Ahem' font is the only font whose font metrics is consistent across
+  // platforms, but it's not guaranteed to be available.
+  // See external/wpt/css/fonts/ahem/README for more about the 'Ahem' font.
+  static void LoadAhem(LocalFrame&);
+
+ protected:
+  void LoadAhem();
+
  private:
   std::unique_ptr<DummyPageHolder> dummy_page_holder_;
 };

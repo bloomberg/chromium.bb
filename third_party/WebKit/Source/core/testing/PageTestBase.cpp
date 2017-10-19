@@ -4,9 +4,13 @@
 
 #include "core/testing/PageTestBase.h"
 
+#include "bindings/core/v8/string_or_array_buffer_or_array_buffer_view.h"
+#include "core/css/FontFaceDescriptors.h"
+#include "core/css/FontFaceSetDocument.h"
 #include "core/frame/LocalDOMWindow.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
 
@@ -46,4 +50,25 @@ LocalFrame& PageTestBase::GetFrame() const {
 FrameSelection& PageTestBase::Selection() const {
   return GetFrame().Selection();
 }
+
+void PageTestBase::LoadAhem() {
+  LoadAhem(GetFrame());
+}
+
+void PageTestBase::LoadAhem(LocalFrame& frame) {
+  Document& document = *frame.DomWindow()->document();
+  RefPtr<SharedBuffer> shared_buffer =
+      testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
+  StringOrArrayBufferOrArrayBufferView buffer =
+      StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(
+          DOMArrayBuffer::Create(shared_buffer));
+  FontFace* ahem =
+      FontFace::Create(&document, "Ahem", buffer, FontFaceDescriptors());
+
+  ScriptState* script_state = ToScriptStateForMainWorld(&frame);
+  DummyExceptionStateForTesting exception_state;
+  FontFaceSetDocument::From(document)->addForBinding(script_state, ahem,
+                                                     exception_state);
+}
+
 }  // namespace blink
