@@ -512,6 +512,15 @@ bool HFSBTreeIterator::Next() {
   GetLeafData<uint16_t>();  // keyLength
   auto parent_id = OSSwapBigToHostInt32(*GetLeafData<uint32_t>());
   auto key_string_length = OSSwapBigToHostInt16(*GetLeafData<uint16_t>());
+
+  size_t key_string_end_offset = 0;
+  if (!base::CheckAdd(current_leaf_offset_, key_string_length)
+           .AssignIfValid(&key_string_end_offset) ||
+      key_string_end_offset > leaf_data_.size()) {
+    DLOG(ERROR) << "Key string length larger than leaf data";
+    return false;
+  }
+
   auto* key_string =
       reinterpret_cast<uint16_t*>(&leaf_data_[current_leaf_offset_]);
   for (uint16_t i = 0;
