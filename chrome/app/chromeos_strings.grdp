@@ -5152,8 +5152,11 @@ Battery full
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_NOTIFICATION_RESTART_BUTTON" desc="Label for the button in the notification that navigates the user to sign-out for completing the encryption update step.">
     Sign out &amp; sign back in
   </message>
+  <message name="IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE" desc="Title of the toast shown on the first sign-in after the successfully completed migration needed for using Android apps.">
+    OS update successful
+  </message>
   <message name="IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE" desc="Message of the toast shown on the first sign-in after the successfully completed migration needed for using Android apps.">
-    Update successful. You can now use Android apps.
+    You can now use Android apps.
   </message>
   <message name="IDS_VOICE_INTERACTION_VALUE_PROP_LOADING" desc="Loading message of the voice interaction value prop dialog.">
     Loading Google Assistant...
