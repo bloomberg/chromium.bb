@@ -2574,6 +2574,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_DIALOG_TITLE" desc="Title of the dialog that warns about resetting all permissions for a site.">
     Reset settings for this site?
   </message>
+  <message name="IDS_SETTINGS_LOADING_LOCAL_DATA_LIST" desc="Explanation shown while transferring cookies and local data.">
+    Loading, please wait...
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_RESET_CONFIRMATION" desc="Text for the dialog that warns about resetting all permissions for a site.">
     Chrome will reset permissions to their defaults
   </message>

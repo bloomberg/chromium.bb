@@ -28,7 +28,6 @@ var LocalDataItem;
  * TODO(dschuyler): add |filter| and |order|.
  * @typedef {{
  *   items: !Array<!LocalDataItem>,
- *   start: number,
  *   total: number,
  * }}
  */
@@ -39,13 +38,9 @@ cr.define('settings', function() {
   class LocalDataBrowserProxy {
     /**
      * @param {string} filter Search filter (use "" for none).
-     * @param {number} begin Which element to start with. (Similar to 'offset'
-     *     in SQL). The first item is at 0.
-     * @param {number} count How many list elements are displayed. (Similar to
-     *     'limit' in SQL). Pass -1 to get all remaining items.
      * @return {!Promise<!LocalDataList>}
      */
-    getDisplayList(filter, begin, count) {}
+    getDisplayList(filter) {}
 
     /**
      * Removes all local data (local storage, cookies, etc.).
@@ -93,9 +88,8 @@ cr.define('settings', function() {
    */
   class LocalDataBrowserProxyImpl {
     /** @override */
-    getDisplayList(filter, begin, count) {
-      return cr.sendWithPromise(
-          'localData.getDisplayList', filter, begin, count);
+    getDisplayList(filter) {
+      return cr.sendWithPromise('localData.getDisplayList', filter);
     }
 
     /** @override */

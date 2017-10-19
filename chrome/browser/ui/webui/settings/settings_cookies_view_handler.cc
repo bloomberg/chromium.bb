@@ -134,8 +134,7 @@ CookiesViewHandler::Request::Request() {
 }
 
 void CookiesViewHandler::Request::Clear() {
-  start_index = 0;
-  index_count = 0;
+  should_send_list = false;
   callback_id_.clear();
 }
 
@@ -237,7 +236,7 @@ void CookiesViewHandler::TreeModelEndBatch(CookiesTreeModel* model) {
   DCHECK(batch_update_);
   batch_update_ = false;
   if (IsJavascriptAllowed()) {
-    if (request_.index_count) {
+    if (request_.should_send_list) {
       SendLocalDataList(model->GetRoot());
     } else if (!request_.callback_id_.empty()) {
       ResolveJavascriptCallback(base::Value(request_.callback_id_),
@@ -303,20 +302,13 @@ void CookiesViewHandler::HandleGetCookieDetails(const base::ListValue* args) {
 
 void CookiesViewHandler::HandleGetDisplayList(const base::ListValue* args) {
   CHECK(request_.callback_id_.empty());
-  CHECK_EQ(4U, args->GetSize());
+  CHECK_EQ(2U, args->GetSize());
   CHECK(args->GetString(0, &request_.callback_id_));
   base::string16 filter;
   CHECK(args->GetString(1, &filter));
-  CHECK(args->GetInteger(2, &request_.start_index));
-  CHECK(args->GetInteger(3, &request_.index_count));
-  if (request_.index_count == -1) {
-    // Requesting *all* items.
-    request_.index_count = INT_MAX;
-  }
 
   AllowJavascript();
-  CHECK_GE(request_.start_index, 0);
-  CHECK_GE(request_.index_count, 0);
+  request_.should_send_list = true;
   // Resetting the filter is a heavy operation, avoid unnecessary filtering.
   if (filter != filter_) {
     filter_ = filter;
@@ -392,7 +384,7 @@ void CookiesViewHandler::HandleRemoveItem(const base::ListValue* args) {
 
 void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   CHECK(cookies_tree_model_.get());
-  CHECK(request_.index_count);
+  CHECK(request_.should_send_list);
   const int parent_child_count = parent->child_count();
   if (sorted_sites_.empty()) {
     // Sort the list by site.
@@ -405,12 +397,6 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   }
 
   const int list_item_count = sorted_sites_.size();
-  const int start = request_.start_index;
-  int limit = std::min(start + request_.index_count, list_item_count);
-  // Check for integer wraparound/overflow. The client is not expected to know
-  // the child_count, so this wraparound is not an error.
-  if (limit < 0)
-    limit = list_item_count;
   // The layers in the CookieTree are:
   //   root - Top level.
   //   site - www.google.com, example.com, etc.
@@ -418,7 +404,7 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
   //   item - Info on the actual thing.
   // Gather list of sites with some highlights of the categories and items.
   std::unique_ptr<base::ListValue> site_list(new base::ListValue);
-  for (int i = start; i < limit; ++i) {
+  for (int i = 0; i < list_item_count; ++i) {
     const CookieTreeNode* site = parent->GetChild(sorted_sites_[i].second);
     std::string description;
     for (int k = 0; k < site->child_count(); ++k) {
@@ -457,7 +443,6 @@ void CookiesViewHandler::SendLocalDataList(const CookieTreeNode* parent) {
 
   base::DictionaryValue response;
   response.Set(kItems, std::move(site_list));
-  response.Set(kStart, base::MakeUnique<base::Value>(start));
   response.Set(kTotal, base::MakeUnique<base::Value>(list_item_count));
 
   ResolveJavascriptCallback(base::Value(request_.callback_id_), response);
