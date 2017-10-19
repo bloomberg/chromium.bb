@@ -13,14 +13,15 @@ namespace content {
 
 class AXTreeServer {
  public:
-  explicit AXTreeServer(base::ProcessId pid);
-  explicit AXTreeServer(gfx::AcceleratedWidget widget);
+  AXTreeServer(base::ProcessId pid, base::string16& filters_path);
+  AXTreeServer(gfx::AcceleratedWidget widget, base::string16& filters_path);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXTreeServer);
 
   void Format(AccessibilityTreeFormatter& formatter,
-              base::DictionaryValue& dict);
+              base::DictionaryValue& dict,
+              base::string16& filters_path);
 };
 
 }  // namespace content

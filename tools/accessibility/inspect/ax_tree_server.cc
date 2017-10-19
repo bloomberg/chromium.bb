@@ -9,14 +9,20 @@
 
 #include "base/at_exit.h"
 #include "base/bind.h"
-#include "base/command_line.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 
 namespace content {
 
-AXTreeServer::AXTreeServer(base::ProcessId pid) {
+constexpr char kAllowOptEmptyStr[] = "@ALLOW-EMPTY:";
+constexpr char kAllowOptStr[] = "@ALLOW:";
+constexpr char kDenyOptStr[] = "@DENY:";
+
+AXTreeServer::AXTreeServer(base::ProcessId pid, base::string16& filters_path) {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(
       AccessibilityTreeFormatter::Create());
 
@@ -30,10 +36,11 @@ AXTreeServer::AXTreeServer(base::ProcessId pid) {
     return;
   }
 
-  Format(*formatter, *dict);
+  Format(*formatter, *dict, filters_path);
 }
 
-AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget) {
+AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget,
+                           base::string16& filters_path) {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(
       AccessibilityTreeFormatter::Create());
 
@@ -46,15 +53,54 @@ AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget) {
     return;
   }
 
-  Format(*formatter, *dict);
+  Format(*formatter, *dict, filters_path);
+}
+
+std::vector<AccessibilityTreeFormatter::Filter> GetFilters(
+    const base::string16& filters_path) {
+  std::vector<AccessibilityTreeFormatter::Filter> filters;
+  if (!filters_path.empty()) {
+    std::string raw_filters_text;
+    base::ScopedAllowBlockingForTesting allow_io_for_test_setup;
+    if (base::ReadFileToString(base::FilePath(filters_path),
+                               &raw_filters_text)) {
+      for (const std::string& line :
+           base::SplitString(raw_filters_text, "\n", base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_ALL)) {
+        if (base::StartsWith(line, kAllowOptEmptyStr,
+                             base::CompareCase::SENSITIVE)) {
+          filters.push_back(AccessibilityTreeFormatter::Filter(
+              base::UTF8ToUTF16(line.substr(strlen(kAllowOptEmptyStr))),
+              AccessibilityTreeFormatter::Filter::ALLOW_EMPTY));
+        } else if (base::StartsWith(line, kAllowOptStr,
+                                    base::CompareCase::SENSITIVE)) {
+          filters.push_back(AccessibilityTreeFormatter::Filter(
+              base::UTF8ToUTF16(line.substr(strlen(kAllowOptStr))),
+              AccessibilityTreeFormatter::Filter::ALLOW));
+        } else if (base::StartsWith(line, kDenyOptStr,
+                                    base::CompareCase::SENSITIVE)) {
+          filters.push_back(AccessibilityTreeFormatter::Filter(
+              base::UTF8ToUTF16(line.substr(strlen(kDenyOptStr))),
+              AccessibilityTreeFormatter::Filter::DENY));
+        }
+      }
+    }
+  }
+  if (filters.empty()) {
+    filters = {AccessibilityTreeFormatter::Filter(
+        base::ASCIIToUTF16("*"), AccessibilityTreeFormatter::Filter::ALLOW)};
+  }
+
+  return filters;
 }
 
 void AXTreeServer::Format(AccessibilityTreeFormatter& formatter,
-                          base::DictionaryValue& dict) {
+                          base::DictionaryValue& dict,
+                          base::string16& filters_path) {
+  std::vector<AccessibilityTreeFormatter::Filter> filters =
+      GetFilters(filters_path);
+
   // Set filters.
-  std::vector<AccessibilityTreeFormatter::Filter> filters;
-  filters.push_back(AccessibilityTreeFormatter::Filter(
-      base::ASCIIToUTF16("*"), AccessibilityTreeFormatter::Filter::ALLOW));
   formatter.SetFilters(filters);
 
   // Format accessibility tree as text.
