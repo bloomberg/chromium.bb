@@ -939,6 +939,7 @@ Bug(none) paint/invalidation/svg/use-clipped-hit.svg [ Failure ]
 Bug(none) paint/invalidation/svg/zoom-coords-viewattr-01-b.svg [ Failure ]
 
 # Extra raster invalidations.
+Bug(none) compositing/overflow/do-not-repaint-if-scrolling-composited-layers.html [ Failure ]
 Bug(none) paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Failure ]
 Bug(none) paint/invalidation/compositing/fixed-scroll-in-empty-root-layer.html [ Failure ]
 Bug(none) paint/invalidation/compositing/resize-repaint.html [ Failure ]

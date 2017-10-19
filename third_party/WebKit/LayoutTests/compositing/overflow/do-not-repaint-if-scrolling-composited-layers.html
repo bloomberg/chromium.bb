@@ -8,145 +8,98 @@
     if (window.internals)
         window.internals.settings.setPreferCompositingToLCDTextEnabled(false);
 
-    function hasScrollbarRepaint(layerTree)
-    {
-        return hasScrollbarRepaintHelper(JSON.parse(layerTree));
-    }
-
-    function hasScrollbarRepaintHelper(jsonLayerTree) {
-        var repaintRects = jsonLayerTree["repaintRects"];
-        if (repaintRects) {
-            for (var i = 0; i < repaintRects.length; ++i) {
-                var width = repaintRects[i][2];
-                var height = repaintRects[i][3];
-                if (width != 15 || height != 285)
-                    return true;
-            }
-        }
-        var children = jsonLayerTree["children"];
-        if (children) {
-            for (var i = 0; i < children.length; i++) {
-                if (hasScrollbarRepaintHelper(children[i]))
-                    return true;
-            }
+    function hasRepaint(layerTree) {
+        var layers = JSON.parse(layerTree).layers;
+        for (var i = 0; i < layers.length; ++i) {
+            var layer = layers[i];
+            // Exclude repaint in the vertical scrollbar layer which always happens on scroll.
+            if (layer.name == "Vertical Scrollbar Layer")
+                continue;
+            if (layer.paintInvalidations)
+                return true;
         }
         return false;
     }
 
-    function testRepaint() {
-        var result = "";
-        for (var testIteration = 0; testIteration < 3; ++testIteration) {
-            // In all but the marquee case, we should opt into composited scrolling
-            // and should not repaint.
-            var expected_results = [false, true, false];
-            var container = document.getElementById("container");
-            var marquee = document.getElementById("marquee");
-            var span = document.getElementById("span");
+    function testScrollRepaint(description, expectsRepaint, scroller) {
+        var result = description + ":\n";
+        document.body.offsetTop;
 
-            var toScroll = container;
-            if (testIteration == 0) {
-                var selection = getSelection();
+        if (window.internals)
+            window.internals.startTrackingRepaints(document);
 
-                var range = document.createRange();
-                range.selectNode(document.getElementById("selection-start"));
-                selection.addRange(range);
+        scroller.scrollTop = 100;
 
-                range = document.createRange();
-                range.selectNode(document.getElementById("selection-end"));
-                selection.addRange(range);
-            } else if (testIteration == 1) {
-                marquee.style.display = "block";
-                toScroll = marquee;
-            } else {
-                span.style.display = "inline";
-            }
-
-            document.body.offsetTop;
-
-            if (window.internals)
-                window.internals.startTrackingRepaints(document);
-
-            toScroll.scrollTop = 100;
-
-            if (window.internals) {
-                if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS)) == expected_results[testIteration])
-                    result += "PASS repainted when expected\n";
-                else
-                    result += "FAIL did not repaint when expected\n";
-                window.internals.stopTrackingRepaints(document);
-            }
-
-            // Do all cleanup here (so as not to affect repaint rects).
-            toScroll.scrollTop = 0;
-            span.style.display = "none";
-            marquee.style.display = "none";
-            getSelection().removeAllRanges();
+        if (window.internals) {
+            var layer_tree = window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS);
+            var repainted = hasRepaint(layer_tree);
+            var repaintedMessage = repainted ? "repainted" : "did not repaint";
+            var expectedMessage = expectsRepaint ? " when expected" : " when unexpected";
+            if (repainted == expectsRepaint)
+                result += "PASS " + repaintedMessage + expectedMessage + "\n";
+            else
+                result += "FAIL " + repaintedMessage + expectedMessage + "\n" + layer_tree + "\n";
+            window.internals.stopTrackingRepaints(document);
         }
 
+        // Do all cleanup here (so as not to affect repaint rects).
+        scroller.scrollTop = 0;
         return result;
     }
 
     function testNoRepaint() {
-        var result = "";
-        var container = document.getElementById("container");
+        return testScrollRepaint("Overflow scroll", false, container);
+    }
 
-        document.body.offsetTop;
+    function testWithSelection() {
+        var selection = getSelection();
 
-        if (window.internals)
-            window.internals.startTrackingRepaints(document);
+        var range = document.createRange();
+        range.selectNode(document.getElementById("selection-start"));
+        selection.addRange(range);
 
-        container.scrollTop = 100;
+        range = document.createRange();
+        range.selectNode(document.getElementById("selection-end"));
+        selection.addRange(range);
 
-        if (window.internals) {
-            if (!hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS)))
-                result += "PASS did not repaint as expected\n";
-            else
-                result += "FAIL repainted when unexpected\n";
-            window.internals.stopTrackingRepaints(document);
-        }
+        var result = testScrollRepaint("Overflow scroll with selection", false, container);
 
-        container.scrollTop = 0;
+        getSelection().removeAllRanges();
+        return result;
+    }
 
+    function testMarquee() {
+        container.style.display = "none";
+        marquee.style.display = "block";
+        var result = testScrollRepaint("Marquee", false, marquee);
+        marquee.style.display = "none";
+        container.style.display = "block";
+        return result;
+    }
+
+    function testWithInlineChild() {
+        span.style.display = "inline";
+        var result = testScrollRepaint("Overflow scroll with inline child", false, container);
+        span.style.display = "none";
         return result;
     }
 
     function testOverflowHidden() {
-        var result = "";
-        var container = document.getElementById("container");
-
         container.style.overflow = "hidden";
-        document.body.offsetTop;
-
-        if (window.internals)
-            window.internals.startTrackingRepaints(document);
-
-        container.scrollTop = 100;
-
-        if (window.internals) {
-            if (hasScrollbarRepaint(window.internals.layerTreeAsText(document, internals.LAYER_TREE_INCLUDES_PAINT_INVALIDATIONS)))
-                result += "PASS repainted when expected\n";
-            else
-                result += "FAIL did not repaint when expected\n";
-
-            window.internals.stopTrackingRepaints(document);
-        }
-
-        container.scrollTop = 0;
-
+        var result = testScrollRepaint("Overflow hidden", true, container);
+        container.style.overflow = "scroll";
         return result;
     }
 
     function doTests() {
-        var marquee = document.getElementById("marquee");
         marquee.stop();
-        var result = testRepaint();
-        result += testNoRepaint();
+        var result = testNoRepaint();
+        result += testWithSelection();
+        result += testMarquee();
+        result += testWithInlineChild();
         result += testOverflowHidden();
-        var pre = document.createElement('pre');
-        document.body.appendChild(pre);
-        pre.innerHTML = result;
-        if (!window.internals)
-            document.getElementById("description").style.display = "block";
+        if (window.testRunner)
+            testRunner.setCustomTextOutput(result);
     }
 
     window.onload = doTests;
@@ -195,6 +148,7 @@
         height: 60px;
         backface-visibility: hidden;
         position: relative;
+        display: none;
     }
 </style>
 </head>
