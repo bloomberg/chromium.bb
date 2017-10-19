@@ -10,11 +10,11 @@
     }
     
     #box {
-      animation: anim 2s linear;
+      animation: anim 10s linear;
     }
     
     #box2 {
-      animation: anim2 2s linear;
+      animation: anim2 10s linear;
     }
 
     @keyframes anim {
@@ -31,8 +31,8 @@
   <script type="text/javascript">
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, "box",  "transform", "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -0.0075, 0, 0, 0, 1)", 0.002],
-      [0.5, "box2", "transform", "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -0.00199, 0, 0, 0, 1)", 0.002],
+      [2.5, "box",  "transform", "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -0.0075, 0, 0, 0, 1)", 0.002],
+      [2.5, "box2", "transform", "matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, -0.00199, 0, 0, 0, 1)", 0.002],
     ];
     
     function setupTest()
