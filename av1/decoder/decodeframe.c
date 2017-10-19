@@ -1452,6 +1452,9 @@ static void decode_restoration_mode(AV1_COMMON *cm,
 
 static void read_wiener_filter(int wiener_win, WienerInfo *wiener_info,
                                WienerInfo *ref_wiener_info, aom_reader *rb) {
+  memset(wiener_info->vfilter, 0, sizeof(wiener_info->vfilter));
+  memset(wiener_info->hfilter, 0, sizeof(wiener_info->hfilter));
+
   if (wiener_win == WIENER_WIN)
     wiener_info->vfilter[0] = wiener_info->vfilter[WIENER_WIN - 1] =
         aom_read_primitive_refsubexpfin(
@@ -1526,7 +1529,8 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
                                             MACROBLOCKD *xd,
                                             aom_reader *const r, int plane,
                                             int rtile_idx) {
-  const RestorationInfo *rsi = cm->rst_info + plane;
+  const RestorationInfo *rsi = &cm->rst_info[plane];
+  RestorationUnitInfo *rui = &rsi->unit_info[rtile_idx];
   if (rsi->frame_restoration_type == RESTORE_NONE) return;
 
   const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
@@ -1534,14 +1538,17 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
   SgrprojInfo *sgrproj_info = xd->sgrproj_info + plane;
 
   if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-    rsi->restoration_type[rtile_idx] =
+    rui->restoration_type =
         aom_read_symbol(r, xd->tile_ctx->switchable_restore_cdf,
                         RESTORE_SWITCHABLE_TYPES, ACCT_STR);
-    if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
-      read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
-                         r);
-    } else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ) {
-      read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, r);
+    switch (rui->restoration_type) {
+      case RESTORE_WIENER:
+        read_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, r);
+        break;
+      case RESTORE_SGRPROJ:
+        read_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, r);
+        break;
+      default: assert(rui->restoration_type == RESTORE_NONE); break;
     }
   } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
 #if CONFIG_NEW_MULTISYMBOL
@@ -1549,11 +1556,10 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 #else
     if (aom_read(r, RESTORE_NONE_WIENER_PROB, ACCT_STR)) {
 #endif  // CONFIG_NEW_MULTISYMBOL
-      rsi->restoration_type[rtile_idx] = RESTORE_WIENER;
-      read_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
-                         r);
+      rui->restoration_type = RESTORE_WIENER;
+      read_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, r);
     } else {
-      rsi->restoration_type[rtile_idx] = RESTORE_NONE;
+      rui->restoration_type = RESTORE_NONE;
     }
   } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
 #if CONFIG_NEW_MULTISYMBOL
@@ -1561,10 +1567,10 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 #else
     if (aom_read(r, RESTORE_NONE_SGRPROJ_PROB, ACCT_STR)) {
 #endif  // CONFIG_NEW_MULTISYMBOL
-      rsi->restoration_type[rtile_idx] = RESTORE_SGRPROJ;
-      read_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, r);
+      rui->restoration_type = RESTORE_SGRPROJ;
+      read_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, r);
     } else {
-      rsi->restoration_type[rtile_idx] = RESTORE_NONE;
+      rui->restoration_type = RESTORE_NONE;
     }
   }
 }
@@ -3970,8 +3976,8 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
     aom_extend_frame_borders((YV12_BUFFER_CONFIG *)xd->cur_buf);
-    av1_loop_restoration_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
-                               cm->rst_info, 7, NULL);
+    av1_loop_restoration_filter_frame((YV12_BUFFER_CONFIG *)xd->cur_buf, cm,
+                                      cm->rst_info, 7, NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
 

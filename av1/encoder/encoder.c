@@ -4301,9 +4301,7 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     av1_alloc_restoration_struct(cm, search, frame_width, frame_height);
 #if CONFIG_STRIPED_LOOP_RESTORATION
     // We can share boundary buffers between the search info and the main one
-    search->stripe_boundary_above = rsi->stripe_boundary_above;
-    search->stripe_boundary_below = rsi->stripe_boundary_below;
-    search->stripe_boundary_stride = rsi->stripe_boundary_stride;
+    search->boundaries = rsi->boundaries;
 #endif
   }
 #endif                            // CONFIG_LOOP_RESTORATION
@@ -4671,7 +4669,8 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   if (cm->rst_info[0].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[1].frame_restoration_type != RESTORE_NONE ||
       cm->rst_info[2].frame_restoration_type != RESTORE_NONE) {
-    av1_loop_restoration_frame(cm->frame_to_show, cm, cm->rst_info, 7, NULL);
+    av1_loop_restoration_filter_frame(cm->frame_to_show, cm, cm->rst_info, 7,
+                                      NULL);
   }
 #endif  // CONFIG_LOOP_RESTORATION
   // TODO(debargha): Fix mv search range on encoder side

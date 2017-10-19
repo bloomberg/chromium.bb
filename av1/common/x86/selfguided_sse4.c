@@ -1058,8 +1058,8 @@ void av1_highpass_filter_sse4_1(const uint8_t *dgd, int width, int height,
 
 void apply_selfguided_restoration_sse4_1(const uint8_t *dat, int width,
                                          int height, int stride, int eps,
-                                         int *xqd, uint8_t *dst, int dst_stride,
-                                         int32_t *tmpbuf) {
+                                         const int *xqd, uint8_t *dst,
+                                         int dst_stride, int32_t *tmpbuf) {
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;
@@ -1740,7 +1740,7 @@ void av1_highpass_filter_highbd_sse4_1(const uint16_t *dgd, int width,
 
 void apply_selfguided_restoration_highbd_sse4_1(
     const uint16_t *dat, int width, int height, int stride, int bit_depth,
-    int eps, int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf) {
+    int eps, const int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf) {
   int xq[2];
   int32_t *flt1 = tmpbuf;
   int32_t *flt2 = flt1 + RESTORATION_TILEPELS_MAX;

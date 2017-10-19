@@ -576,7 +576,7 @@ if (aom_config("CONFIG_GLOBAL_MOTION") eq "yes" &&
 # LOOP_RESTORATION functions
 
 if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
-  add_proto qw/void apply_selfguided_restoration/, "const uint8_t *dat, int width, int height, int stride, int eps, int *xqd, uint8_t *dst, int dst_stride, int32_t *tmpbuf";
+  add_proto qw/void apply_selfguided_restoration/, "const uint8_t *dat, int width, int height, int stride, int eps, const int *xqd, uint8_t *dst, int dst_stride, int32_t *tmpbuf";
   specialize qw/apply_selfguided_restoration sse4_1/;
 
   add_proto qw/void av1_selfguided_restoration/, "const uint8_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int r, int eps";
@@ -586,7 +586,7 @@ if (aom_config("CONFIG_LOOP_RESTORATION") eq "yes") {
   specialize qw/av1_highpass_filter sse4_1/;
 
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-    add_proto qw/void apply_selfguided_restoration_highbd/, "const uint16_t *dat, int width, int height, int stride, int bit_depth, int eps, int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf";
+    add_proto qw/void apply_selfguided_restoration_highbd/, "const uint16_t *dat, int width, int height, int stride, int bit_depth, int eps, const int *xqd, uint16_t *dst, int dst_stride, int32_t *tmpbuf";
     specialize qw/apply_selfguided_restoration_highbd sse4_1/;
 
     add_proto qw/void av1_selfguided_restoration_highbd/, "const uint16_t *dgd, int width, int height, int stride, int32_t *dst, int dst_stride, int bit_depth, int r, int eps";

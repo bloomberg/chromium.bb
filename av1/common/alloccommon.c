@@ -162,8 +162,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
     int buf_size = num_stripes * 2 * stride;
     uint8_t *above_buf, *below_buf;
 
-    aom_free(cm->rst_info[p].stripe_boundary_above);
-    aom_free(cm->rst_info[p].stripe_boundary_below);
+    RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
+    aom_free(boundaries->stripe_boundary_above);
+    aom_free(boundaries->stripe_boundary_below);
 
 #if CONFIG_HIGHBITDEPTH
     if (cm->use_highbitdepth) buf_size = buf_size * 2;
@@ -172,9 +173,9 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
                     (uint8_t *)aom_memalign(1 << align_bits, buf_size));
     CHECK_MEM_ERROR(cm, below_buf,
                     (uint8_t *)aom_memalign(1 << align_bits, buf_size));
-    cm->rst_info[p].stripe_boundary_above = above_buf;
-    cm->rst_info[p].stripe_boundary_below = below_buf;
-    cm->rst_info[p].stripe_boundary_stride = stride;
+    boundaries->stripe_boundary_above = above_buf;
+    boundaries->stripe_boundary_below = below_buf;
+    boundaries->stripe_boundary_stride = stride;
   }
 #endif  // CONFIG_STRIPED_LOOP_RESTORATION
 }

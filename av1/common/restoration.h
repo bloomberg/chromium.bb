@@ -207,18 +207,38 @@ typedef struct {
 } sgr_params_type;
 
 typedef struct {
-  int restoration_tilesize;
-  int procunit_width, procunit_height;
-  RestorationType frame_restoration_type;
-  RestorationType *restoration_type;
-  // Wiener filter
-  WienerInfo *wiener_info;
-  // Selfguided proj filter
-  SgrprojInfo *sgrproj_info;
+  RestorationType restoration_type;
+  WienerInfo wiener_info;
+  SgrprojInfo sgrproj_info;
+} RestorationUnitInfo;
+
 #if CONFIG_STRIPED_LOOP_RESTORATION
+// A restoration line buffer needs space for two lines plus a horizontal filter
+// margin of RESTORATION_EXTRA_HORZ on each side.
+#define RESTORATION_LINEBUFFER_WIDTH \
+  (RESTORATION_TILESIZE_MAX + 2 * RESTORATION_EXTRA_HORZ)
+
+typedef struct {
+  // Temporary buffers to save/restore 2 lines above/below the restoration
+  // stripe.
+  uint16_t tmp_save_above[2][RESTORATION_LINEBUFFER_WIDTH];
+  uint16_t tmp_save_below[2][RESTORATION_LINEBUFFER_WIDTH];
+} RestorationLineBuffers;
+
+typedef struct {
   uint8_t *stripe_boundary_above;
   uint8_t *stripe_boundary_below;
   int stripe_boundary_stride;
+} RestorationStripeBoundaries;
+#endif
+
+typedef struct {
+  RestorationType frame_restoration_type;
+  int restoration_tilesize;
+  int procunit_width, procunit_height;
+  RestorationUnitInfo *unit_info;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  RestorationStripeBoundaries boundaries;
 #endif
 } RestorationInfo;
 
@@ -290,10 +310,43 @@ void av1_free_restoration_struct(RestorationInfo *rst_info);
 
 void extend_frame(uint8_t *data, int width, int height, int stride,
                   int border_horz, int border_vert, int highbd);
-void decode_xq(int *xqd, int *xq);
-void av1_loop_restoration_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
-                                RestorationInfo *rsi, int components_pattern,
-                                YV12_BUFFER_CONFIG *dst);
+void decode_xq(const int *xqd, int *xq);
+
+// Filter a single loop restoration unit.
+//
+// limits is the limits of the unit. rui gives the mode to use for this unit
+// and its coefficients. If striped loop restoration is enabled, rsb contains
+// deblocked pixels to use for stripe boundaries; rlbs is just some space to
+// use as a scratch buffer. ss_y is a flag which should be 1 if this is a plane
+// with vertical subsampling.
+//
+// procunit_width and procunit_height are the width and height in which to
+// process the data. highbd is a flag which should be 1 in high bit depth mode,
+// in which case bit_depth is the bit depth.
+//
+// data8 is the frame data (pointing at the top-left corner of the frame, not
+// the restoration unit) and stride is its stride. dst8 is the buffer where the
+// results will be written and has stride dst_stride. Like data8, dst8 should
+// point at the top-left corner of the frame.
+//
+// Finally tmpbuf is a scratch buffer used by the sgrproj filter which should
+// be at least SGRPROJ_TMPBUF_SIZE big.
+void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
+                                      const RestorationUnitInfo *rui,
+#if CONFIG_STRIPED_LOOP_RESTORATION
+                                      const RestorationStripeBoundaries *rsb,
+                                      RestorationLineBuffers *rlbs, int ss_y,
+#endif
+                                      int procunit_height, int procunit_width,
+                                      int highbd, int bit_depth, uint8_t *data8,
+                                      int stride, uint8_t *dst8, int dst_stride,
+                                      int32_t *tmpbuf);
+
+void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
+                                       struct AV1Common *cm,
+                                       RestorationInfo *rsi,
+                                       int components_pattern,
+                                       YV12_BUFFER_CONFIG *dst);
 void av1_loop_restoration_precal();
 
 // Return 1 iff the block at mi_row, mi_col with size bsize is a
@@ -310,7 +363,7 @@ int av1_loop_restoration_corners_in_sb(const struct AV1Common *cm, int plane,
                                        int *rcol0, int *rcol1, int *rrow0,
                                        int *rrow1, int *nhtiles);
 
-void av1_loop_restoration_save_boundary_lines(YV12_BUFFER_CONFIG *frame,
+void av1_loop_restoration_save_boundary_lines(const YV12_BUFFER_CONFIG *frame,
                                               struct AV1Common *cm);
 #ifdef __cplusplus
 }  // extern "C"

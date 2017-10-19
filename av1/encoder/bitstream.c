@@ -82,8 +82,8 @@ static struct av1_token compound_type_encodings[COMPOUND_TYPES];
 #if CONFIG_LOOP_RESTORATION
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
-                                             aom_writer *const w, int plane,
-                                             int rtile_idx);
+                                             const RestorationUnitInfo *rui,
+                                             aom_writer *const w, int plane);
 #endif  // CONFIG_LOOP_RESTORATION
 #if CONFIG_OBU
 static void write_uncompressed_header_obu(AV1_COMP *cpi,
@@ -2748,7 +2748,9 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
       for (int rrow = rrow0; rrow < rrow1; ++rrow) {
         for (int rcol = rcol0; rcol < rcol1; ++rcol) {
           int rtile_idx = rcol + rrow * nhtiles;
-          loop_restoration_write_sb_coeffs(cm, xd, w, plane, rtile_idx);
+          const RestorationUnitInfo *rui =
+              &cm->rst_info[plane].unit_info[rtile_idx];
+          loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane);
         }
       }
     }
@@ -2857,7 +2859,7 @@ static void encode_restoration_mode(AV1_COMMON *cm,
   }
 }
 
-static void write_wiener_filter(int wiener_win, WienerInfo *wiener_info,
+static void write_wiener_filter(int wiener_win, const WienerInfo *wiener_info,
                                 WienerInfo *ref_wiener_info, aom_writer *wb) {
   if (wiener_win == WIENER_WIN)
     aom_write_primitive_refsubexpfin(
@@ -2900,7 +2902,7 @@ static void write_wiener_filter(int wiener_win, WienerInfo *wiener_info,
   memcpy(ref_wiener_info, wiener_info, sizeof(*wiener_info));
 }
 
-static void write_sgrproj_filter(SgrprojInfo *sgrproj_info,
+static void write_sgrproj_filter(const SgrprojInfo *sgrproj_info,
                                  SgrprojInfo *ref_sgrproj_info,
                                  aom_writer *wb) {
   aom_write_literal(wb, sgrproj_info->ep, SGRPROJ_PARAMS_BITS);
@@ -2917,47 +2919,48 @@ static void write_sgrproj_filter(SgrprojInfo *sgrproj_info,
 
 static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
                                              MACROBLOCKD *xd,
-                                             aom_writer *const w, int plane,
-                                             int rtile_idx) {
+                                             const RestorationUnitInfo *rui,
+                                             aom_writer *const w, int plane) {
   const RestorationInfo *rsi = cm->rst_info + plane;
-  if (rsi->frame_restoration_type == RESTORE_NONE) return;
+  RestorationType frame_rtype = rsi->frame_restoration_type;
+  if (frame_rtype == RESTORE_NONE) return;
 
   const int wiener_win = (plane > 0) ? WIENER_WIN_CHROMA : WIENER_WIN;
   WienerInfo *wiener_info = xd->wiener_info + plane;
   SgrprojInfo *sgrproj_info = xd->sgrproj_info + plane;
+  RestorationType unit_rtype = rui->restoration_type;
 
-  if (rsi->frame_restoration_type == RESTORE_SWITCHABLE) {
-    aom_write_symbol(w, rsi->restoration_type[rtile_idx],
-                     xd->tile_ctx->switchable_restore_cdf,
+  if (frame_rtype == RESTORE_SWITCHABLE) {
+    aom_write_symbol(w, unit_rtype, xd->tile_ctx->switchable_restore_cdf,
                      RESTORE_SWITCHABLE_TYPES);
-    if (rsi->restoration_type[rtile_idx] == RESTORE_WIENER) {
-      write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
-                          w);
-    } else if (rsi->restoration_type[rtile_idx] == RESTORE_SGRPROJ) {
-      write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, w);
+    switch (unit_rtype) {
+      case RESTORE_WIENER:
+        write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
+        break;
+      case RESTORE_SGRPROJ:
+        write_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, w);
+        break;
+      default: assert(unit_rtype == RESTORE_NONE); break;
     }
-  } else if (rsi->frame_restoration_type == RESTORE_WIENER) {
+  } else if (frame_rtype == RESTORE_WIENER) {
 #if CONFIG_NEW_MULTISYMBOL
-    aom_write_symbol(w, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
+    aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->wiener_restore_cdf, 2);
 #else
-    aom_write(w, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
-              RESTORE_NONE_WIENER_PROB);
+    aom_write(w, unit_rtype != RESTORE_NONE, RESTORE_NONE_WIENER_PROB);
 #endif  // CONFIG_NEW_MULTISYMBOL
-    if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
-      write_wiener_filter(wiener_win, &rsi->wiener_info[rtile_idx], wiener_info,
-                          w);
+    if (unit_rtype != RESTORE_NONE) {
+      write_wiener_filter(wiener_win, &rui->wiener_info, wiener_info, w);
     }
-  } else if (rsi->frame_restoration_type == RESTORE_SGRPROJ) {
+  } else if (frame_rtype == RESTORE_SGRPROJ) {
 #if CONFIG_NEW_MULTISYMBOL
-    aom_write_symbol(w, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
+    aom_write_symbol(w, unit_rtype != RESTORE_NONE,
                      xd->tile_ctx->sgrproj_restore_cdf, 2);
 #else
-    aom_write(w, rsi->restoration_type[rtile_idx] != RESTORE_NONE,
-              RESTORE_NONE_SGRPROJ_PROB);
+    aom_write(w, unit_rtype != RESTORE_NONE, RESTORE_NONE_SGRPROJ_PROB);
 #endif  // CONFIG_NEW_MULTISYMBOL
-    if (rsi->restoration_type[rtile_idx] != RESTORE_NONE) {
-      write_sgrproj_filter(&rsi->sgrproj_info[rtile_idx], sgrproj_info, w);
+    if (unit_rtype != RESTORE_NONE) {
+      write_sgrproj_filter(&rui->sgrproj_info, sgrproj_info, w);
     }
   }
 }
