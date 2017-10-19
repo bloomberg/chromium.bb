@@ -4,8 +4,8 @@
 
 module resource_coordinator.mojom;
 
+import "mojo/common/time.mojom";
 import "signals.mojom";
-import "mojo/common/values.mojom";
 
 // Any new type here needs to be mirrored between coordination_unit_types.h and
 // coordination_unit.mojom, and have mappings between the two defined in
@@ -21,6 +21,7 @@ struct CoordinationUnitID {
   int64 id;
 };
 
+// TODO(lpy) Remove this interface once the per-type interface is fully in use.
 interface CoordinationUnit {
   // Mainly used to force a round-trip to the service over the pipe for
   // a specific unit, so we don't have to deal with possibly-not-yet-created
@@ -43,4 +44,36 @@ interface CoordinationUnit {
 
   // Sets a property on the CoordinationUnit's internal key-value store.
   SetProperty(PropertyType property_type, int64 value);
+};
+
+// A FrameCoordinationUnit has at most one ProcessCoordinationUnit as its
+// parent, at most one PageCoordinationUnit as its parent, at most one
+// FrameCoordinationUnit as parent frame, and can have many child frames.
+interface FrameCoordinationUnit {
+  // Property signals.
+  SetAudibility(bool audible);
+  SetNetworkAlmostIdleness(bool idle);
+
+  // Event signals.
+  OnAlertFired();
+  OnNonPersistentNotificationCreated();
+};
+
+interface PageCoordinationUnit {
+  // Property signals.
+  SetVisibility(bool visible);
+  SetUKMSourceId(int64 ukm_source_id);
+
+  // Event signals.
+  OnFaviconUpdated();
+  OnTitleUpdated();
+  OnMainFrameNavigationCommitted();
+};
+
+interface ProcessCoordinationUnit {
+  // Property signals.
+  SetCPUUsage(double cpu_usage);
+  SetExpectedTaskQueueingDuration(mojo.common.mojom.TimeDelta duration);
+  SetLaunchTime(mojo.common.mojom.Time launch_time);
+  SetPID(int64 pid);
 };

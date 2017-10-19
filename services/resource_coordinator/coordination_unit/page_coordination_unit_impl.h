@@ -14,12 +14,20 @@
 
 namespace resource_coordinator {
 
-class PageCoordinationUnitImpl : public CoordinationUnitBase {
+class PageCoordinationUnitImpl : public CoordinationUnitBase,
+                                 public mojom::PageCoordinationUnit {
  public:
   PageCoordinationUnitImpl(
       const CoordinationUnitID& id,
       std::unique_ptr<service_manager::ServiceContextRef> service_ref);
   ~PageCoordinationUnitImpl() override;
+
+  // mojom::PageCoordinationUnit implementation.
+  void SetVisibility(bool visible) override;
+  void SetUKMSourceId(int64_t ukm_source_id) override;
+  void OnFaviconUpdated() override;
+  void OnTitleUpdated() override;
+  void OnMainFrameNavigationCommitted() override;
 
   // CoordinationUnitBase implementation.
   std::set<CoordinationUnitBase*> GetAssociatedCoordinationUnitsOfType(

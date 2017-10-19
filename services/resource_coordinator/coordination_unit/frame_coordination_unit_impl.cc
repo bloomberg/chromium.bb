@@ -60,6 +60,22 @@ FrameCoordinationUnitImpl::GetAssociatedCoordinationUnitsOfType(
   }
 }
 
+void FrameCoordinationUnitImpl::SetAudibility(bool audible) {
+  SetProperty(mojom::PropertyType::kAudible, audible);
+}
+
+void FrameCoordinationUnitImpl::SetNetworkAlmostIdleness(bool idle) {
+  SetProperty(mojom::PropertyType::kNetworkAlmostIdle, idle);
+}
+
+void FrameCoordinationUnitImpl::OnAlertFired() {
+  SendEvent(mojom::Event::kAlertFired);
+}
+
+void FrameCoordinationUnitImpl::OnNonPersistentNotificationCreated() {
+  SendEvent(mojom::Event::kNonPersistentNotificationCreated);
+}
+
 PageCoordinationUnitImpl* FrameCoordinationUnitImpl::GetPageCoordinationUnit()
     const {
   for (auto* parent : parents_) {
