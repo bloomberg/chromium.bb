@@ -63,7 +63,8 @@ if (is_android) {
   }
 
   if (!defined(default_android_keystore_path)) {
-    default_android_keystore_path = "//build/android/chromium-debug.keystore"
+    default_android_keystore_path =
+        "//build/android/ant/chromium-debug.keystore"
     default_android_keystore_name = "chromiumdebugkey"
     default_android_keystore_password = "chromium"
   }
