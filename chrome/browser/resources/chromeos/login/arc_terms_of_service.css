@@ -66,8 +66,7 @@ p {
 }
 
 #arc-tos-skip-button-md {
-  --oobe-text-button-border-color: rgba(0, 0, 0, 0.1);
-   color: rgba(0, 0, 0, 0.54);
+  color: rgba(0, 0, 0, 0.54);
 }
 
 #arc-tos-view-md {
