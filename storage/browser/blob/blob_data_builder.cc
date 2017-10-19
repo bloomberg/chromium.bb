@@ -86,6 +86,7 @@ void BlobDataBuilder::AppendIPCDataElement(const DataElement& ipc_data) {
     case DataElement::TYPE_BYTES_DESCRIPTION:
     case DataElement::TYPE_UNKNOWN:
     case DataElement::TYPE_DISK_CACHE_ENTRY:  // This type can't be sent by IPC.
+    case DataElement::TYPE_DATA_PIPE:
       NOTREACHED();
       break;
   }

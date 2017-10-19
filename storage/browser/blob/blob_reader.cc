@@ -666,6 +666,7 @@ std::unique_ptr<FileStreamReader> BlobReader::CreateFileStreamReader(
     case DataElement::TYPE_BYTES:
     case DataElement::TYPE_BYTES_DESCRIPTION:
     case DataElement::TYPE_DISK_CACHE_ENTRY:
+    case DataElement::TYPE_DATA_PIPE:
     case DataElement::TYPE_UNKNOWN:
       break;
   }

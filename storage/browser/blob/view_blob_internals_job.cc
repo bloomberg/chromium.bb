@@ -278,6 +278,10 @@ void ViewBlobInternalsJob::GenerateHTMLForBlobData(
         break;
       case DataElement::TYPE_BYTES_DESCRIPTION:
         AddHTMLListItem(kType, "pending data", out);
+        break;
+      case DataElement::TYPE_DATA_PIPE:
+        AddHTMLListItem(kType, "data pipe", out);
+        break;
       case DataElement::TYPE_UNKNOWN:
         NOTREACHED();
         break;
