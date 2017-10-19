@@ -7,8 +7,11 @@
 #include <algorithm>
 
 #include "base/stl_util.h"
+#include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/log_manager.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/sync/driver/sync_service.h"
 #include "crypto/openssl_util.h"
@@ -124,6 +127,27 @@ bool ManualPasswordGenerationEnabled(syncer::SyncService* sync_service) {
               password_manager::features::kEnableManualPasswordGeneration) &&
           (password_manager_util::GetPasswordSyncState(sync_service) ==
            password_manager::SYNCING_NORMAL_ENCRYPTION));
+}
+
+bool ShowAllSavedPasswordsContextMenuEnabled() {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::
+              kEnableShowAllSavedPasswordsContextMenu)) {
+    return false;
+  }
+  LogContextOfShowAllSavedPasswordsShown(
+      password_manager::metrics_util::
+          SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
+  return true;
+}
+
+void UserTriggeredShowAllSavedPasswordsFromContextMenu(
+    autofill::AutofillClient* autofill_client) {
+  autofill_client->ExecuteCommand(
+      autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY);
+  password_manager::metrics_util::LogContextOfShowAllSavedPasswordsAccepted(
+      password_manager::metrics_util::
+          SHOW_ALL_SAVED_PASSWORDS_CONTEXT_CONTEXT_MENU);
 }
 
 }  // namespace password_manager_util

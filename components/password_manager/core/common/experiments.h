@@ -10,10 +10,6 @@ namespace password_manager {
 // True iff the force-saving of passwords is enabled.
 bool ForceSavingExperimentEnabled();
 
-// True iff the "Show all saved passwords" option should be shown in Context
-// Menu.
-bool ShowAllSavedPasswordsContextMenuEnabled();
-
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_EXPERIMENTS_H_
