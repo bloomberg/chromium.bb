@@ -786,7 +786,11 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   if (!navigation->GetError()) {
-    [self addCurrentEntryToHistoryDB];
+    bool is404Page = navigation->GetResponseHeaders() &&
+                     navigation->GetResponseHeaders()->response_code() == 404;
+    if (!is404Page) {
+      [self addCurrentEntryToHistoryDB];
+    }
     [self countMainFrameLoad];
   }
 
