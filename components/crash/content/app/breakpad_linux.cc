@@ -49,7 +49,7 @@
 #include "third_party/breakpad/breakpad/src/client/linux/handler/exception_handler.h"
 #include "third_party/breakpad/breakpad/src/client/linux/minidump_writer/directory_reader.h"
 #include "third_party/breakpad/breakpad/src/common/linux/linux_libc_support.h"
-#include "third_party/breakpad/breakpad/src/common/memory.h"
+#include "third_party/breakpad/breakpad/src/common/memory_allocator.h"
 
 #if defined(OS_ANDROID)
 #include <android/log.h>
