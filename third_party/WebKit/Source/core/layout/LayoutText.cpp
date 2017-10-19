@@ -1992,7 +1992,21 @@ bool LayoutText::HasNonCollapsedText() const {
 }
 
 bool LayoutText::ContainsCaretOffset(int text_offset) const {
-  // TODO(crbug.com/771398): Add LayoutNG alternative.
+  DCHECK_GE(text_offset, 0);
+  if (ShouldUseNGAlternatives()) {
+    // ::first-letter handling should be done by LayoutTextFragment override.
+    DCHECK(!IsTextFragment());
+    if (!GetNode())
+      return false;
+    const NGOffsetMappingResult& mapping = GetNGOffsetMapping();
+    if (mapping.IsNonCollapsedCharacter(*GetNode(), text_offset))
+      return true;
+    if (!mapping.IsAfterNonCollapsedCharacter(*GetNode(), text_offset))
+      return false;
+    return *mapping.GetCharacterBefore(*GetNode(), text_offset) !=
+           kNewlineCharacter;
+  }
+
   for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
     if (text_offset < static_cast<int>(box->Start()) &&
         !ContainsReversedText()) {

@@ -222,4 +222,25 @@ unsigned LayoutTextFragment::ResolvedTextLength() const {
   return end - start;
 }
 
+bool LayoutTextFragment::ContainsCaretOffset(int text_offset) const {
+  if (!ShouldUseNGAlternatives())
+    return LayoutText::ContainsCaretOffset(text_offset);
+
+  DCHECK_GE(text_offset, 0);
+  if (text_offset > static_cast<int>(FragmentLength()))
+    return false;
+  const Node* node = AssociatedTextNode();
+  if (!node)
+    return false;
+  const unsigned dom_offset = text_offset + Start();
+  const NGOffsetMappingResult& mapping = GetNGOffsetMapping();
+  if (mapping.IsNonCollapsedCharacter(*node, dom_offset))
+    return true;
+  if (text_offset == 0)
+    return false;
+  if (!mapping.IsAfterNonCollapsedCharacter(*node, dom_offset))
+    return false;
+  return *mapping.GetCharacterBefore(*node, dom_offset) != kNewlineCharacter;
+}
+
 }  // namespace blink

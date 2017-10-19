@@ -9,6 +9,7 @@
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/HashMap.h"
+#include "platform/wtf/Optional.h"
 #include "platform/wtf/Vector.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -110,16 +111,19 @@ class CORE_EXPORT NGOffsetMappingResult {
                                                       unsigned) const;
 
   // Returns the text content offset corresponding to the given DOM offset.
+  // TODO(xiaochengh): Use Optional<> return type to indicate inexistent result.
   size_t GetTextContentOffset(const Node&, unsigned) const;
 
   // Starting from the given DOM offset in the node, finds the first
   // non-collapsed character and returns its offset; Or returns the last offset
   // in the node if such a character does not exist.
+  // TODO(xiaochengh): Use Optional<> return type to indicate inexistent result.
   unsigned StartOfNextNonCollapsedCharacter(const Node&, unsigned offset) const;
 
   // Starting from the given DOM offset in the node, reversely finds the first
   // non-collapsed character and returns 1 + its offset; Or returns 0 if such a
   // character does not exist.
+  // TODO(xiaochengh): Use Optional<> return type to indicate inexistent result.
   unsigned EndOfLastNonCollapsedCharacter(const Node&, unsigned offset) const;
 
   // Returns true if the character at the position is non-collapsed. If the
@@ -130,6 +134,10 @@ class CORE_EXPORT NGOffsetMappingResult {
   // Returns true if the offset is right after a non-collapsed character. If the
   // offset is at the beginning of the node, returns false.
   bool IsAfterNonCollapsedCharacter(const Node&, unsigned offset) const;
+
+  // Maps the given DOM offset to text content, and then returns the text
+  // content character before the offset. Returns nullopt if it does not exist.
+  Optional<UChar> GetCharacterBefore(const Node&, unsigned offset) const;
 
   // TODO(xiaochengh): Add APIs for reverse mapping.
 
