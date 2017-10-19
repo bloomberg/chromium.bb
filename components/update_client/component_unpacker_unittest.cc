@@ -113,6 +113,7 @@ TEST_F(ComponentUnpackerTest, UnpackFullCrx) {
   base::FilePath unpack_path = result_.unpack_path;
   EXPECT_FALSE(unpack_path.empty());
   EXPECT_TRUE(base::DirectoryExists(unpack_path));
+  EXPECT_EQ(jebg_public_key, result_.public_key);
 
   int64_t file_size = 0;
   EXPECT_TRUE(
