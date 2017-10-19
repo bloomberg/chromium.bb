@@ -4,6 +4,8 @@
 
 static_library("machine_intelligence") {
   sources = [
+    "generic_logistic_regression_inference.cc",
+    "generic_logistic_regression_inference.h",
     "ranker_example_util.cc",
     "ranker_example_util.h",
     "ranker_model.cc",
@@ -27,6 +29,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "generic_logistic_regression_inference_unittest.cc",
     "ranker_example_util_unittest.cc",
     "ranker_model_loader_unittest.cc",
     "ranker_model_unittest.cc",

@@ -17,7 +17,7 @@ message Feature {
     bool bool_value = 1;
     // Float and int values can be used for scalar and bucketized features.
     float float_value = 2;
-    int64 int64_value = 3;
+    int32 int32_value = 3;
     // String values are used for one-hot features.
     bytes string_value = 4;
   }

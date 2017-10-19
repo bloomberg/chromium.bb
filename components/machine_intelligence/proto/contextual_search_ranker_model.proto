@@ -1,0 +1,23 @@
+// Copyright (c) 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Assist Model for Contextual Search.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+import "generic_logistic_regression_model.proto";
+
+package machine_intelligence;
+
+// Defines a Contextual Search Ranker Model.
+message ContextualSearchRankerModel {
+  // A number that identifies the version of this model.
+  optional uint32 version = 1;
+
+  oneof model_revision {
+    GenericLogisticRegressionModel generic_logistic_regression_model = 2;
+  }
+}
