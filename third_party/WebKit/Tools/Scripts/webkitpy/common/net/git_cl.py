@@ -51,13 +51,14 @@ class GitCL(object):
         return self._host.executive.run_command(command, cwd=self._cwd)
 
     def trigger_try_jobs(self, builders):
-        # This method assumes the bots to be triggered are Blink try bots,
-        # which are all on the master tryserver.blink except android_blink_rel.
+        # Hack: This method assumes the bots to be triggered are Blink try bots,
+        # which are all on the master tryserver.blink, except android_blink_rel.
         if 'android_blink_rel' in builders:
             self.run(['try', '-b', 'android_blink_rel'])
-            builders.remove('android_blink_rel')
-        # TODO(qyearsley): Stop explicitly adding the master name when
-        # git cl try can get the master name; see http://crbug.com/700523.
+            builders = builders - {'android_blink_rel'}
+        # The master name has to be explicitly added for some builders since
+        # git cl try doesn't necessarily have a reliable map of builder names
+        # to masters. See https://crbug.com/700552.
         command = ['try', '-m', 'tryserver.blink']
         for builder in sorted(builders):
             command.extend(['-b', builder])
