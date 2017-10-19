@@ -69,10 +69,10 @@ class COMPONENTS_PREFS_EXPORT PrefRegistry
   const_iterator begin() const;
   const_iterator end() const;
 
-  // Changes the default value for a preference. Takes ownership of |value|.
+  // Changes the default value for a preference.
   //
   // |pref_name| must be a previously registered preference.
-  void SetDefaultPrefValue(const std::string& pref_name, base::Value* value);
+  void SetDefaultPrefValue(const std::string& pref_name, base::Value value);
 
   // Registers a pref owned by another service for use with the current service.
   // The owning service must register that pref with the |PUBLIC| flag.

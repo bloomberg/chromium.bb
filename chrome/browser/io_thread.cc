@@ -352,10 +352,9 @@ IOThread::IOThread(
           local_state,
           BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)));
 
-  base::Value* dns_client_enabled_default =
-      new base::Value(base::FeatureList::IsEnabled(features::kAsyncDns));
-  local_state->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
-                                   dns_client_enabled_default);
+  local_state->SetDefaultPrefValue(
+      prefs::kBuiltInDnsClientEnabled,
+      base::Value(base::FeatureList::IsEnabled(features::kAsyncDns)));
 
   dns_client_enabled_.Init(prefs::kBuiltInDnsClientEnabled,
                            local_state,
@@ -364,11 +363,9 @@ IOThread::IOThread(
   dns_client_enabled_.MoveToThread(io_thread_proxy);
 
 #if defined(OS_POSIX)
-  base::Value* ntlm_v2_enabled_default =
-      new base::Value(base::FeatureList::IsEnabled(features::kNtlmV2Enabled));
-  local_state->SetDefaultPrefValue(prefs::kNtlmV2Enabled,
-                                   ntlm_v2_enabled_default);
-
+  local_state->SetDefaultPrefValue(
+      prefs::kNtlmV2Enabled,
+      base::Value(base::FeatureList::IsEnabled(features::kNtlmV2Enabled)));
   ntlm_v2_enabled_.Init(
       prefs::kNtlmV2Enabled, local_state,
       base::Bind(&IOThread::UpdateNtlmV2Enabled, base::Unretained(this)));

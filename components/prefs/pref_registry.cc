@@ -38,15 +38,15 @@ PrefRegistry::const_iterator PrefRegistry::end() const {
 }
 
 void PrefRegistry::SetDefaultPrefValue(const std::string& pref_name,
-                                       base::Value* value) {
-  DCHECK(value);
-  const base::Value* current_value = NULL;
+                                       base::Value value) {
+  const base::Value* current_value = nullptr;
   DCHECK(defaults_->GetValue(pref_name, &current_value))
       << "Setting default for unregistered pref: " << pref_name;
-  DCHECK(value->IsType(current_value->type()))
+  DCHECK(value.IsType(current_value->type()))
       << "Wrong type for new default: " << pref_name;
 
-  defaults_->ReplaceDefaultValue(pref_name, base::WrapUnique(value));
+  defaults_->ReplaceDefaultValue(
+      pref_name, std::make_unique<base::Value>(std::move(value)));
 }
 
 void PrefRegistry::SetDefaultForeignPrefValue(

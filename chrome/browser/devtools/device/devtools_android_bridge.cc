@@ -168,11 +168,11 @@ DevToolsAndroidBridge::DevToolsAndroidBridge(
   pref_change_registrar_.Add(prefs::kDevToolsDiscoverTCPTargetsEnabled,
       base::Bind(&DevToolsAndroidBridge::CreateDeviceProviders,
                  base::Unretained(this)));
-  base::ListValue* target_discovery = new base::ListValue();
-  target_discovery->AppendString(kChromeDiscoveryURL);
-  target_discovery->AppendString(kNodeDiscoveryURL);
-  profile->GetPrefs()->SetDefaultPrefValue(
-      prefs::kDevToolsTCPDiscoveryConfig, target_discovery);
+  base::Value target_discovery(base::Value::Type::LIST);
+  target_discovery.GetList().emplace_back(kChromeDiscoveryURL);
+  target_discovery.GetList().emplace_back(kNodeDiscoveryURL);
+  profile->GetPrefs()->SetDefaultPrefValue(prefs::kDevToolsTCPDiscoveryConfig,
+                                           std::move(target_discovery));
   CreateDeviceProviders();
 }
 
