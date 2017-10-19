@@ -1,19 +1,15 @@
-<html>
-<head>
-<script>
-function f4()
-{
-    return 0;
-}
-f4();
-</script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/debugger-test.js"></script>
+(async function() {
+  TestRunner.addResult(
+      `Tests that all inlined scripts from the same document are shown in the same source frame with html script tags. Bug 54544.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
 
-<script>
+  await TestRunner.navigatePromise('resources/inline-scripts.html');
 
-var test = function() {
   SourcesTestRunner.startDebuggerTest(step0, true);
 
   function step0() {
@@ -22,20 +18,20 @@ var test = function() {
 
   function step1(loc) {
     TestRunner.addResult('window.location: ' + loc.description);
-    SourcesTestRunner.showScriptSource('debug-inlined-scripts-fragment-id.html', step2);
+    SourcesTestRunner.showScriptSource('inline-scripts.html', step2);
   }
 
   function step2(sourceFrame) {
     TestRunner.addResult('Script source was shown.');
     SourcesTestRunner.setBreakpoint(sourceFrame, 5, '', true);
     SourcesTestRunner.waitUntilPaused(step3);
-    TestRunner.reloadPage(SourcesTestRunner.completeDebuggerTest.bind(InspectorTest));
+    TestRunner.reloadPage(SourcesTestRunner.completeDebuggerTest.bind(SourcesTestRunner));
   }
 
   function step3(callFrames) {
     TestRunner.addResult('Script execution paused.');
     SourcesTestRunner.captureStackTrace(callFrames);
-    SourcesTestRunner.showScriptSource('debug-inlined-scripts-fragment-id.html', step4);
+    SourcesTestRunner.showScriptSource('inline-scripts.html', step4);
   }
 
   function step4(sourceFrame) {
@@ -50,7 +46,7 @@ var test = function() {
     }
     TestRunner.addResult('Script execution paused.');
     SourcesTestRunner.captureStackTrace(callFrames);
-    SourcesTestRunner.showScriptSource('debug-inlined-scripts-fragment-id.html', step6);
+    SourcesTestRunner.showScriptSource('inline-scripts.html', step6);
   }
 
   function step6(sourceFrame) {
@@ -61,17 +57,4 @@ var test = function() {
   function step7() {
     SourcesTestRunner.resumeExecution(SourcesTestRunner.waitUntilPaused.bind(null, step5));
   }
-};
-
-</script>
-
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that all inlined scripts from the same document are shown in the same source frame with html script tags.
-<a id="hash" href="https://bugs.webkit.org/show_bug.cgi?id=54544">Bug 54544.</a>
-</p>
-
-</body>
-</html>
+})();
