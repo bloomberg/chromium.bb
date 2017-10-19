@@ -8,45 +8,64 @@ option optimize_for = LITE_RUNTIME;
 
 package login_manager;
 
+// Specifies the account type that the |account_id| in PolicyDescriptor
+// references.
+enum PolicyAccountType {
+  // |account_id| must be empty. Policy is stored in a device-wide root-owned
+  // location.
+  ACCOUNT_TYPE_DEVICE = 0;
+
+  // |account_id| references a user account. Policy is stored on the user's
+  // cryptohome.
+  ACCOUNT_TYPE_USER = 1;
+
+  // |account_id| references a user account where the user session hasn't been
+  // added to Session Manager yet. Special case to retrieve user policy on the
+  // login screen.
+  ACCOUNT_TYPE_SESSIONLESS_USER = 2;
+
+  // |account_id| references a device local account. Policy is stored in a
+  // device-wide root-owned location in a folder that depends on |account_id|.
+  ACCOUNT_TYPE_DEVICE_LOCAL_ACCOUNT = 3;
+
+  // Next ID to use: 4
+};
+
+// Within a given account, policies are namespaced by a
+// (|domain|, |component_id|) pair in PolicyDescriptor.
+// The meaning of the |component_id| depends on the domain, see below.
+enum PolicyDomain {
+  // Domain for Chrome policies. |component_id| must be empty.
+  POLICY_DOMAIN_CHROME = 0;
+
+  // Domain for policies for regular Chrome extensions. |component_id| must be
+  // equal to the extension ID.
+  POLICY_DOMAIN_EXTENSIONS = 1;
+
+  // Domain for policies for Chrome extensions running under the Chrome OS
+  // signin profile. |component_id| must be equal to the extension ID.
+  POLICY_DOMAIN_SIGNIN_EXTENSIONS = 2;
+
+  // Next ID to use: 3
+};
+
 // Descriptor for policy blobs to give SessionManager's StorePolicy*Ex and
 // RetrievePolicyEx enough context to decide how to store policy.
 message PolicyDescriptor {
-  // Specifies the type of policy to store or retrieve.
-  enum PolicyType {
-    // Chrome user policy. |account_id| must be set to the user's account ID.
-    // |component_id| must be empty.
-    USER_POLICY = 0;
+  // The pair (|account_type|, |account_id|) determines the account for policy
+  // storage.
+  optional PolicyAccountType account_type = 1;
 
-    // Chrome user policy for users without a session. |account_id| must be set
-    // to the user's account ID. |component_id| must be empty. Only policy
-    // retrieval allowed, no storage.
-    SESSIONLESS_USER_POLICY = 1;
-
-    // Chrome user policy for device local accounts. |account_id| must be set to
-    // the user's account ID. |component_id| must be empty.
-    DEVICE_LOCAL_ACCOUNT_POLICY = 2;
-
-    // Chrome device policy. |account_id| and |component_id| must be empty.
-    DEVICE_POLICY = 3;
-
-    // Chrome extension policy. If |account_id| is set, the policy is stored on
-    // the user's cryptohome, otherwise in an area accessible to all users.
-    // |component_id| must be the 32-byte extension ID.
-    EXTENSION_POLICY = 4;
-
-    // Next ID to use: 5
-  }
-
-  // Determines the type of policy to store or retrieve.
-  optional PolicyType type = 1;
-
-  // Account id for policy stored on the user's cryptohome (e.g. user policy),
-  // empty for policy stored in an area accessible to all users (e.g. device
-  // policy).
+  // The meaning of |account_id| depends on |account_type|, see
+  // PolicyAccountType.
   optional string account_id = 2;
 
-  // Meaning of the component ID depends on |type|, see PolicyType.
-  optional string component_id = 3;
+  // The pair (|domain|, |component_id|) determines the namespace for policy
+  // storage.
+  optional PolicyDomain domain = 3;
 
-  // Next ID to use: 4
+  // The meaning of |component_id| depends on |domain|, see PolicyDomain.
+  optional string component_id = 4;
+
+  // Next ID to use: 5
 }
