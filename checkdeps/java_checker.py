@@ -78,14 +78,16 @@ class JavaChecker(object):
         for package in re.findall('^package\s+([\w\.]+);', line):
           full_class_name = package + '.' + short_class_name
           if full_class_name in self._classmap:
-            print 'WARNING: multiple definitions of %s:' % full_class_name
-            print '    ' + filepath
-            print '    ' + self._classmap[full_class_name]
-            print
+            if self._verbose:
+              print 'WARNING: multiple definitions of %s:' % full_class_name
+              print '    ' + filepath
+              print '    ' + self._classmap[full_class_name]
+              print
           else:
             self._classmap[full_class_name] = filepath
           return
-      print 'WARNING: no package definition found in %s' % filepath
+      if self._verbose:
+        print 'WARNING: no package definition found in %s' % filepath
 
   def CheckLine(self, rules, line, filepath, fail_on_temp_allow=False):
     """Checks the given line with the given rule set.
