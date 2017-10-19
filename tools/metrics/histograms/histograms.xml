@@ -2861,6 +2861,16 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Ash.PowerButtonScreenshot.DelayBetweenAccelKeyPressed"
+    units="ms">
+  <owner>warx@chromium.org</owner>
+  <summary>
+    Record the delay when power button and volume down key are both pressed,
+    which indicates user might want to use accelerator to take screenshot. This
+    will help us determine the best chord delay among metrics.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Rotation.AnimationSmoothness" units="%">
   <owner>wutao@chromium.org</owner>
   <summary>
