@@ -66,9 +66,14 @@ bool IsLeftWindowOnTopOrLeftOfScreen(
 
 }  // namespace
 
-SplitViewController::SplitViewController() {}
+SplitViewController::SplitViewController() {
+  screen_orientation_ =
+      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+  display::Screen::GetScreen()->AddObserver(this);
+}
 
 SplitViewController::~SplitViewController() {
+  display::Screen::GetScreen()->RemoveObserver(this);
   EndSplitView();
 }
 
@@ -131,12 +136,9 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
     Shell::Get()->activation_client()->AddObserver(this);
-    display::Screen::GetScreen()->AddObserver(this);
     Shell::Get()->tablet_mode_controller()->AddObserver(this);
     Shell::Get()->NotifySplitViewModeStarting();
 
-    screen_orientation_ =
-        Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
     divider_position_ = GetDefaultDividerPosition(window);
     default_snap_position_ = snap_position;
     split_view_divider_ =
@@ -218,12 +220,7 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
   if (snap_position == NONE)
     return work_area_bounds_in_screen;
 
-  // |screen_orientation_| and |divide_position_| might not be properly
-  // initialized yet.
-  if (screen_orientation_ == blink::kWebScreenOrientationLockDefault) {
-    screen_orientation_ =
-        Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
-  }
+  // |divide_position_| might not be properly initialized yet.
   divider_position_ = (divider_position_ < 0)
                           ? GetDefaultDividerPosition(window)
                           : divider_position_;
@@ -324,7 +321,6 @@ void SplitViewController::EndSplitView() {
   // Remove observers when the split view mode ends.
   Shell::Get()->RemoveShellObserver(this);
   Shell::Get()->activation_client()->RemoveObserver(this);
-  display::Screen::GetScreen()->RemoveObserver(this);
   Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
 
   StopObserving(left_window_);
@@ -334,7 +330,6 @@ void SplitViewController::EndSplitView() {
   split_view_divider_.reset();
   black_scrim_layer_.reset();
   default_snap_position_ = NONE;
-  screen_orientation_ = blink::kWebScreenOrientationLockDefault;
   divider_position_ = -1;
 
   State previous_state = state_;
@@ -447,7 +442,18 @@ void SplitViewController::OnOverviewModeEnded() {
 void SplitViewController::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
-  DCHECK(IsSplitViewModeActive());
+  if (!display.IsInternal())
+    return;
+
+  // We need update |screen_orientation_| even though split view mode is not
+  // active at the moment.
+  blink::WebScreenOrientationLockType previous_screen_orientation =
+      screen_orientation_;
+  screen_orientation_ =
+      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+
+  if (!IsSplitViewModeActive())
+    return;
 
   display::Display current_display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
@@ -462,11 +468,6 @@ void SplitViewController::OnDisplayMetricsChanged(
     EndSplitView();
     return;
   }
-
-  blink::WebScreenOrientationLockType previous_screen_orientation =
-      screen_orientation_;
-  screen_orientation_ =
-      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
 
   // Update |divider_position_| if the top/left window changes.
   if ((metrics & (display::DisplayObserver::DISPLAY_METRIC_ROTATION)) &&
