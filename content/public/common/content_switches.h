@@ -74,6 +74,7 @@ CONTENT_EXPORT extern const char kDisableLocalStorage[];
 CONTENT_EXPORT extern const char kDisableLogging[];
 CONTENT_EXPORT extern const char kDisableMojoLocalStorage[];
 CONTENT_EXPORT extern const char kDisableNamespaceSandbox[];
+CONTENT_EXPORT extern const char kDisableNewContentRenderingTimeout[];
 CONTENT_EXPORT extern const char kDisableNotifications[];
 CONTENT_EXPORT extern const char kDisableOriginTrialControlledBlinkFeatures[];
 CONTENT_EXPORT extern const char kDisablePartialRaster[];
