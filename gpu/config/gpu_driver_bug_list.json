@@ -1,6 +1,6 @@
 {
   "name": "gpu driver bug list",
-  "version": "10.32",
+  "version": "10.33",
   "entries": [
     {
       "id": 1,
@@ -1046,7 +1046,8 @@
     {
       "id": 116,
       "description": "Adreno 420 support for EXT_multisampled_render_to_texture is buggy on Android < 5.1",
-      "cr_bugs": [490379],
+      "comment": "Corresponds to software rendering list #149",
+      "cr_bugs": [490379, 767913],
       "os": {
         "type": "android",
         "version": {
@@ -1057,6 +1058,9 @@
       "gl_renderer": "Adreno \\(TM\\) 4.*",
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
+      ],
+      "features": [
+        "disable_chromium_framebuffer_multisample"
       ]
     },
     {

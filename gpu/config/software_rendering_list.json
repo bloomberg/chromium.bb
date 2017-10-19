@@ -1,6 +1,6 @@
 {
   "name": "software rendering list",
-  "version": "13.12",
+  "version": "13.13",
   "entries": [
     {
       "id": 1,
@@ -1537,6 +1537,23 @@
       "gl_renderer": ".*VideoCore V.*",
       "features": [
         "gpu_rasterization"
+      ]
+    },
+    {
+      "id": 149,
+      "description": "Adreno 420 support for EXT_multisampled_render_to_texture is buggy on Android < 5.1",
+      "comment": "Corresponds to GPU driver bug #116",
+      "cr_bugs": [490379, 767913],
+      "os": {
+        "type": "android",
+        "version": {
+          "op": "<",
+          "value": "5.1"
+        }
+      },
+      "gl_renderer": "Adreno \\(TM\\) 4.*",
+      "features": [
+        "accelerated_webgl2"
       ]
     }
   ],
