@@ -904,11 +904,8 @@ static LayoutPoint ComputeOffsetFromCompositedAncestor(
   // there is one and only one fragment.
   LayoutPoint offset = layer->VisualOffsetFromAncestor(
       composited_ancestor, local_representative_point_for_fragmentation);
-  if (composited_ancestor) {
-    offset.Move(composited_ancestor->GetCompositedLayerMapping()
-                    ->OwningLayer()
-                    .SubpixelAccumulation());
-  }
+  if (composited_ancestor)
+    offset.Move(composited_ancestor->SubpixelAccumulation());
   offset.MoveBy(-local_representative_point_for_fragmentation);
   offset.MoveBy(-LayoutPoint(offset_for_sticky_position));
   return offset;
@@ -977,11 +974,11 @@ void CompositedLayerMapping::ComputeBoundsOfOwningLayer(
 void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     const IntPoint& graphics_layer_parent_location,
     const PaintLayer* compositing_container,
+    const IntPoint& snapped_offset_from_composited_ancestor,
     Vector<GraphicsLayerPaintInfo>& layers,
-    GraphicsLayer* squashing_layer,
     LayoutPoint* offset_from_transformed_ancestor,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
-  if (!squashing_layer)
+  if (!squashing_layer_)
     return;
 
   LayoutPoint compositing_container_offset_from_parent_graphics_layer =
@@ -1088,8 +1085,15 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     layers[i].paint_layer->SetSubpixelAccumulation(subpixel_accumulation);
   }
 
-  squashing_layer->SetPosition(squash_layer_bounds.Location());
-  squashing_layer->SetSize(FloatSize(squash_layer_bounds.Size()));
+  squashing_layer_->SetPosition(squash_layer_bounds.Location());
+  squashing_layer_->SetSize(FloatSize(squash_layer_bounds.Size()));
+  // We can't squashing_layer_->SetOffsetFromLayoutObject().
+  // Squashing layer has special paint and invalidation logic that already
+  // compensated for compositing bounds, setting it here would end up
+  // double adjustment. The value is stored to be used by SPv175.
+  squashing_layer_offset_from_layout_object_ =
+      squash_layer_bounds.Location() - snapped_offset_from_composited_ancestor +
+      ToIntSize(graphics_layer_parent_location);
 
   *offset_from_transformed_ancestor =
       compositing_container_offset_from_transformed_ancestor;
@@ -1166,8 +1170,8 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
       snapped_offset_from_composited_ancestor, graphics_layer_parent_location);
   UpdateStickyConstraints(GetLayoutObject().StyleRef());
   UpdateSquashingLayerGeometry(
-      graphics_layer_parent_location, compositing_container, squashed_layers_,
-      squashing_layer_.get(),
+      graphics_layer_parent_location, compositing_container,
+      snapped_offset_from_composited_ancestor, squashed_layers_,
       &squashing_layer_offset_from_transformed_ancestor_,
       layers_needing_paint_invalidation);
 
@@ -1596,7 +1600,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   IntSize old_scrolling_layer_offset =
       scrolling_layer_->OffsetFromLayoutObject();
   scrolling_layer_->SetOffsetFromLayoutObject(
-      -ToIntSize(overflow_clip_rect.Location()));
+      ToIntSize(overflow_clip_rect.Location()));
 
   if (child_clipping_mask_layer_ && !GetLayoutObject().Style()->ClipPath()) {
     child_clipping_mask_layer_->SetPosition(scrolling_layer_->GetPosition());

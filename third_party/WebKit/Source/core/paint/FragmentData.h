@@ -29,7 +29,7 @@ class CORE_EXPORT FragmentData {
   ObjectPaintProperties& EnsurePaintProperties();
   void ClearPaintProperties();
 
-  FragmentData* NextFragment() { return next_fragment_.get(); }
+  FragmentData* NextFragment() const { return next_fragment_.get(); }
   FragmentData& EnsureNextFragment();
   void ClearNextFragment() { next_fragment_.reset(); }
 
@@ -43,6 +43,11 @@ class CORE_EXPORT FragmentData {
 
   void ClearLocalBorderBoxProperties();
   void SetLocalBorderBoxProperties(PropertyTreeState&);
+
+  // This is the complete set of property nodes that is inherited
+  // from the ancestor before applying any local CSS properties,
+  // but includes paint offset transform.
+  PropertyTreeState PreEffectProperties() const;
 
   // This is the complete set of property nodes that can be used to
   // paint the contents of this fragment. It is similar to
@@ -67,6 +72,12 @@ class CORE_EXPORT FragmentData {
   }
 
  private:
+  const TransformPaintPropertyNode* GetPreTransform() const;
+  const TransformPaintPropertyNode* GetPostScrollTranslation() const;
+  const ClipPaintPropertyNode* GetPreCssClip() const;
+  const ClipPaintPropertyNode* GetPostOverflowClip() const;
+  const EffectPaintPropertyNode* GetPreEffect() const;
+
   // Holds references to the paint property nodes created by this object.
   std::unique_ptr<ObjectPaintProperties> paint_properties_;
 
