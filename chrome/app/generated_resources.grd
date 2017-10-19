@@ -2131,10 +2131,26 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
         Always block multiple automatic downloads on <ph name="HOST">$1<ex>example.com</ex></ph>
       </message>
 
-      <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to write cookies or other site data.">
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Short title of the bubble showing that a page was blocked from using cookies.">
+          Cookies Blocked
+        </message>
+        <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Short title of the bubble showing that a page wrote cookies or other site data.">
+          Cookies Set
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_COOKIES_TITLE" desc="Short title of the bubble showing that a page was blocked from using cookies.">
+          Cookies blocked
+        </message>
+        <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Short title of the bubble showing that a page wrote cookies or other site data.">
+          Cookies set
+        </message>
+      </if>
+      <message name="IDS_BLOCKED_COOKIES_MESSAGE" desc="Tooltip and bubble message text when a page is not allowed to write cookies or other site data.">
         This page was prevented from setting cookies.
       </message>
-      <message name="IDS_ACCESSED_COOKIES_TITLE" desc="Tooltip and bubble info header text when a page wrote cookies or other site data.">
+      <message name="IDS_ACCESSED_COOKIES_MESSAGE" desc="Tooltip and bubble info header text when a page wrote cookies or other site data.">
         This page set cookies.
       </message>
       <message name="IDS_BLOCKED_COOKIES_LINK" desc="Link to cookie section of content blocking management dialog, displayed in bubble when a page tries to write cookies or other site data.">
@@ -2143,7 +2159,17 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_BLOCKED_COOKIES_INFO" desc="Info link to a dialog showing the blocked/allowed cookies, displayed in bubble when a page tries to write cookies or other site data.">
         Show cookies and other site data...
       </message>
-      <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
+          Images Blocked
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_IMAGES_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
+          Images blocked
+        </message>
+      </if>
+      <message name="IDS_BLOCKED_IMAGES_MESSAGE" desc="Tooltip and bubble info header text when a page is not allowed to display images.">
         Images were blocked on this page.
       </message>
       <message name="IDS_BLOCKED_COOKIES_UNBLOCK" desc="Radio button choice to unblock a site from setting cookies, displayed in bubble when a page tries to set cookies.">
@@ -2170,7 +2196,17 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_BLOCKED_POPUPS_TOOLTIP" desc="Tooltip text when a page is not allowed to display popups.">
         Pop-ups were blocked on this page.
       </message>
-      <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble info header text when a page is not allowed to display popups.  This appears above a list of popup titles.">
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble title when a page is not allowed to display popups.">
+          Pop-ups Blocked
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_POPUPS_TITLE" desc="Bubble title when a page is not allowed to display popups.">
+          Pop-ups blocked
+        </message>
+      </if>
+      <message name="IDS_BLOCKED_POPUPS_MESSAGE" desc="Bubble info header text when a page is not allowed to display popups.  This appears above a list of popup titles.">
         The following pop-ups were blocked on this page:
       </message>
       <message name="IDS_BLOCKED_POPUPS_UNBLOCK" desc="Radio button choice to unblock a site from showing popups, displayed in bubble when a page tries to display popups.">
@@ -2233,7 +2269,17 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_BLOCKED_PLUGIN_EXPLANATORY_TEXT" desc="Explanatory animated text that appears (and then disappears) in the address line when plugin is blocked">
         Plugin blocked
       </message>
-      <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to run JavaScript.">
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Title for the bubble shown when a page is not allowed to run JavaScript.">
+          JavaScript Blocked
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_JAVASCRIPT_TITLE" desc="Title for the bubble shown when a page is not allowed to run JavaScript.">
+          JavaScript blocked
+        </message>
+      </if>
+      <message name="IDS_BLOCKED_JAVASCRIPT_MESSAGE" desc="Tooltip and bubble info header text when a page is not allowed to run JavaScript.">
         JavaScript was blocked on this page.
       </message>
       <message name="IDS_BLOCKED_JAVASCRIPT_UNBLOCK" desc="Radio button choice to unblock a site from running JavaScript, displayed in bubble when a page tries to run JavaScript.">
@@ -4892,10 +4938,26 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PEPPER_BROKER_DENY_BUTTON" desc="Text for the deny button on the pepper broker launch prompt">
         Deny
       </message>
-      <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper broker access was blocked">
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was blocked.">
+          Unsandboxed Plugin Blocked
+        </message>
+        <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was allowed.">
+          Unsandboxed Plugin Allowed
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was blocked.">
+          Unsandboxed plugin blocked
+        </message>
+        <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper sandbox access was allowed.">
+          Unsandboxed plugin allowed
+        </message>
+      </if>
+      <message name="IDS_BLOCKED_PPAPI_BROKER_MESSAGE" desc="Message for the page action when Pepper broker access was blocked">
         An unsandboxed plugin was prevented from running on this page.
       </message>
-      <message name="IDS_ALLOWED_PPAPI_BROKER_TITLE" desc="Title for the page action when Pepper broker access was allowed">
+      <message name="IDS_ALLOWED_PPAPI_BROKER_MESSAGE" desc="Message for the page action when Pepper broker access was allowed">
         An unsandboxed plugin was allowed to run on this page.
       </message>
       <message name="IDS_BLOCKED_PPAPI_BROKER_UNBLOCK" desc="Radio button to unblock the Pepper broker">
@@ -4915,6 +4977,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Blocked Displaying/Running Insecure Content info bar -->
+      <if expr="use_titlecase">
+        <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="Title of the bubble shown when a message has asked Chrome to display mixed content.">
+          Insecure Content Blocked
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT_TITLE" desc="Title of the bubble shown when a message has asked Chrome to display mixed content.">
+          Insecure content blocked
+        </message>
+      </if>
       <message name="IDS_BLOCKED_DISPLAYING_INSECURE_CONTENT" desc="Message shown when a website has asked Chrome to display mixed content.  The message is followed by a learn more link and an allow button.">
         This page is trying to load scripts from unauthenticated sources.
       </message>
