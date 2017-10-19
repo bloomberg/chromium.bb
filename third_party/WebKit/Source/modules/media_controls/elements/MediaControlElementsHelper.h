@@ -9,9 +9,15 @@
 #include "modules/media_controls/elements/MediaControlElementType.h"
 #include "platform/wtf/Allocator.h"
 
+namespace WTF {
+class AtomicString;
+}  // namespace WTF
+
 namespace blink {
 
+class ContainerNode;
 class Event;
+class HTMLDivElement;
 class HTMLMediaElement;
 class LayoutObject;
 class Node;
@@ -38,6 +44,10 @@ class MediaControlElementsHelper final {
   // Exported to be used by the accessibility module.
   MODULES_EXPORT static const HTMLMediaElement* ToParentMediaElement(
       const Node*);
+
+  // Utility function for quickly creating div elements.
+  static HTMLDivElement* CreateDiv(const WTF::AtomicString& id,
+                                   ContainerNode* parent);
 };
 
 }  // namespace blink

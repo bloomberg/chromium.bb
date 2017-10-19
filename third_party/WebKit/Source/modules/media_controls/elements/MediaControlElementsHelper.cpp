@@ -5,6 +5,7 @@
 #include "modules/media_controls/elements/MediaControlElementsHelper.h"
 
 #include "core/dom/events/Event.h"
+#include "core/html/HTMLDivElement.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "core/layout/LayoutSlider.h"
 #include "core/layout/api/LayoutSliderItem.h"
@@ -73,6 +74,15 @@ const HTMLMediaElement* MediaControlElementsHelper::ToParentMediaElement(
 
   return IsHTMLMediaElement(shadow_host) ? ToHTMLMediaElement(shadow_host)
                                          : nullptr;
+}
+
+// static
+HTMLDivElement* MediaControlElementsHelper::CreateDiv(const AtomicString& id,
+                                                      ContainerNode* parent) {
+  HTMLDivElement* element = HTMLDivElement::Create(parent->GetDocument());
+  element->SetShadowPseudoId(id);
+  parent->AppendChild(element);
+  return element;
 }
 
 }  // namespace blink
