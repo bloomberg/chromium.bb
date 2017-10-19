@@ -1305,6 +1305,24 @@ __gCrWeb.autofill.InferLabelFromValueAttr = function(element) {
 };
 
 /**
+ * Helper for |InferLabelForElement()| that tests if an inferred label is valid
+ * or not. A valid label is a label that does not only contains special
+ * characters.
+ *
+ * It is based on the logic in
+ *     bool IsLabelValid(base::StringPiece16 inferred_label,
+ *         const std::vector<base::char16>& stop_words)
+ * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc.
+ * The list of characters that are considered special is hard-coded in a regexp.
+ *
+ * @param {string} label An element to examine.
+ * @return {boolean} Whether the label contains not special characters.
+ */
+__gCrWeb.autofill.IsLabelValid = function(label) {
+  return label.search(/[^ *:()\u2013-]/) >= 0;
+};
+
+/**
  * Helper for |InferLabelForElement()| that infers a label, if possible, from
  * enclosing list item, e.g.
  *     <li>Some Text<input ...><input ...><input ...></li>
@@ -1695,19 +1713,19 @@ __gCrWeb.autofill.inferLabelForElement = function(element) {
   var inferredLabel;
   if (__gCrWeb.autofill.isCheckableElement(element)) {
     inferredLabel = __gCrWeb.autofill.inferLabelFromNext(element);
-    if (inferredLabel.length > 0) {
+    if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
       return inferredLabel;
     }
   }
 
   inferredLabel = __gCrWeb.autofill.inferLabelFromPrevious(element);
-  if (inferredLabel.length > 0) {
+  if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 
   // If we didn't find a label, check for the placeholder case.
   inferredLabel = __gCrWeb.autofill.inferLabelFromPlaceholder(element);
-  if (inferredLabel.length > 0) {
+  if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 
@@ -1726,7 +1744,7 @@ __gCrWeb.autofill.inferLabelForElement = function(element) {
       inferredLabel = __gCrWeb.autofill.inferLabelFromDivTable(element);
     } else if (tagName === "TD") {
       inferredLabel = __gCrWeb.autofill.inferLabelFromTableColumn(element);
-      if (inferredLabel.length === 0)
+      if (!__gCrWeb.autofill.IsLabelValid(inferredLabel))
         inferredLabel = __gCrWeb.autofill.inferLabelFromTableRow(element);
     } else if (tagName === "DD") {
       inferredLabel = __gCrWeb.autofill.inferLabelFromDefinitionList(element);
@@ -1736,13 +1754,13 @@ __gCrWeb.autofill.inferLabelForElement = function(element) {
       break;
     }
 
-    if (inferredLabel.length > 0) {
+    if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
       return inferredLabel;
     }
   }
   // If we didn't find a label, check for the value attribute case.
   inferredLabel = __gCrWeb.autofill.InferLabelFromValueAttr(element);
-  if (inferredLabel.length > 0) {
+  if (__gCrWeb.autofill.IsLabelValid(inferredLabel)) {
     return inferredLabel;
   }
 
