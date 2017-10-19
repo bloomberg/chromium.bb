@@ -37,6 +37,7 @@ import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.vr_shell.util.VrShellDelegateUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTestRuleUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeActivityTestRule;
@@ -97,7 +98,7 @@ public class WebVrInputTest {
         // Wait on VrShellImpl to say that its parent consumed the touch event
         // Set to 2 because there's an ACTION_DOWN followed by ACTION_UP
         final CountDownLatch touchRegisteredLatch = new CountDownLatch(2);
-        ((VrShellImpl) VrShellDelegate.getVrShellForTesting())
+        ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
                 .setOnDispatchTouchEventForTesting(new OnDispatchTouchEventCallback() {
                     @Override
                     public void onDispatchTouchEvent(boolean parentConsumed) {
@@ -156,7 +157,7 @@ public class WebVrInputTest {
         // TODO(mthiesse, crbug.com/758374): Injecting touch events into the root GvrLayout
         // (VrShellImpl) is flaky. Sometimes the events just don't get routed to the presentation
         // view for no apparent reason. We should figure out why this is and see if it's fixable.
-        final View presentationView = ((VrShellImpl) VrShellDelegate.getVrShellForTesting())
+        final View presentationView = ((VrShellImpl) TestVrShellDelegate.getVrShellForTesting())
                                               .getPresentationViewForTesting();
         long downTime = SystemClock.uptimeMillis();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -245,14 +246,15 @@ public class WebVrInputTest {
         CriteriaHelper.pollUiThread(new Criteria("DisplayActivate was never registered.") {
             @Override
             public boolean isSatisfied() {
-                return VrShellDelegate.getInstanceForTesting().isListeningForWebVrActivate();
+                return VrShellDelegateUtils.getDelegateInstance().isListeningForWebVrActivate();
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 mVrTestRule.getActivity().getCurrentContentViewCore().onPause();
-                Assert.assertTrue(VrShellDelegate.getInstanceForTesting().isClearActivatePending());
+                Assert.assertTrue(
+                        VrShellDelegateUtils.getDelegateInstance().isClearActivatePending());
             }
         });
     }

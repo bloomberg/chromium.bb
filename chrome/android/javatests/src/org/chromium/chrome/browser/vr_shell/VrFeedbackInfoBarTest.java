@@ -135,7 +135,7 @@ public class VrFeedbackInfoBarTest {
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
-        Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+        Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
 
         // Exiting VR should not prompt for feedback since the no VR browsing was performed.
         VrTransitionUtils.forceExitVr();
@@ -156,7 +156,7 @@ public class VrFeedbackInfoBarTest {
         VrTransitionUtils.enterPresentationAndWait(
                 mVrTestFramework.getFirstTabCvc(), mVrTestFramework.getFirstTabWebContents());
         assertState(true /* isInVr */, false /* isInfobarVisible  */);
-        Assert.assertTrue(VrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
+        Assert.assertTrue(TestVrShellDelegate.getVrShellForTesting().getWebVrModeEnabled());
 
         // Exit presentation mode by navigating to a different url.
         ChromeTabUtils.waitForTabPageLoaded(
