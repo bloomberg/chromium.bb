@@ -45,6 +45,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/IntentHelper.java",
   "java/src/org/chromium/chrome/browser/ItemChooserDialog.java",
   "java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java",
+  "java/src/org/chromium/chrome/browser/JavascriptTabModalDialog.java",
   "java/src/org/chromium/chrome/browser/KeyboardShortcuts.java",
   "java/src/org/chromium/chrome/browser/DelayedScreenLockIntentHandler.java",
   "java/src/org/chromium/chrome/browser/LaunchIntentDispatcher.java",

@@ -18,6 +18,9 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "ui/gfx/text_elider.h"
+#if defined(OS_ANDROID)
+#include "chrome/browser/android/tab_android.h"
+#endif
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
 
@@ -28,9 +31,14 @@ app_modal::JavaScriptDialogManager* AppModalDialogManager() {
 }
 
 bool IsWebContentsForemost(content::WebContents* web_contents) {
+#if defined(OS_ANDROID)
+  TabAndroid* tab = TabAndroid::FromWebContents(web_contents);
+  return tab && tab->IsUserInteractable();
+#else
   Browser* browser = BrowserList::GetInstance()->GetLastActive();
   DCHECK(browser);
   return browser->tab_strip_model()->GetActiveWebContents() == web_contents;
+#endif
 }
 
 }  // namespace
@@ -140,7 +148,9 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
                  base::Unretained(this),
                  DismissalCause::DIALOG_BUTTON_CLICKED));
 
+#if !defined(OS_ANDROID)
   BrowserList::AddObserver(this);
+#endif
 
   // Message suppression is something that we don't give the user a checkbox
   // for any more. It was useful back in the day when dialogs were app-modal
@@ -227,11 +237,13 @@ void JavaScriptDialogTabHelper::DidStartNavigationToPendingEntry(
     CloseDialog(DismissalCause::TAB_NAVIGATED, false, base::string16());
 }
 
+#if !defined(OS_ANDROID)
 void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
   if (dialog_ && !IsWebContentsForemost(web_contents())) {
     CloseDialog(DismissalCause::BROWSER_SWITCHED, false, base::string16());
   }
 }
+#endif
 
 void JavaScriptDialogTabHelper::LogDialogDismissalCause(
     JavaScriptDialogTabHelper::DismissalCause cause) {
@@ -273,5 +285,7 @@ void JavaScriptDialogTabHelper::CloseDialog(DismissalCause cause,
   std::move(dialog_callback_).Run(success, user_input);
 
   dialog_.reset();
+#if !defined(OS_ANDROID)
   BrowserList::RemoveObserver(this);
+#endif
 }

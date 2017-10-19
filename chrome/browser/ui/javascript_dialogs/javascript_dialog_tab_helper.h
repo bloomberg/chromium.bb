@@ -10,11 +10,15 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/ui/browser_list_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog.h"
 #include "content/public/browser/javascript_dialog_manager.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+
+#if !defined(OS_ANDROID)
+#include "chrome/browser/ui/browser_list_observer.h"
+#endif
 
 // A class, attached to WebContentses in browser windows, that is the
 // JavaScriptDialogManager for them and handles displaying their dialogs.
@@ -30,7 +34,9 @@
 class JavaScriptDialogTabHelper
     : public content::JavaScriptDialogManager,
       public content::WebContentsObserver,
+#if !defined(OS_ANDROID)
       public chrome::BrowserListObserver,
+#endif
       public content::WebContentsUserData<JavaScriptDialogTabHelper> {
  public:
   explicit JavaScriptDialogTabHelper(content::WebContents* web_contents);
@@ -64,8 +70,10 @@ class JavaScriptDialogTabHelper
       const GURL& url,
       content::ReloadType reload_type) override;
 
+#if !defined(OS_ANDROID)
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;
+#endif
 
  private:
   friend class content::WebContentsUserData<JavaScriptDialogTabHelper>;

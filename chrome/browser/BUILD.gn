@@ -4038,6 +4038,7 @@ if (is_android) {
       "../android/java/src/org/chromium/chrome/browser/DevToolsServer.java",
       "../android/java/src/org/chromium/chrome/browser/IntentHelper.java",
       "../android/java/src/org/chromium/chrome/browser/JavascriptAppModalDialog.java",
+      "../android/java/src/org/chromium/chrome/browser/JavascriptTabModalDialog.java",
       "../android/java/src/org/chromium/chrome/browser/PasswordUIView.java",
       "../android/java/src/org/chromium/chrome/browser/SSLClientCertificateRequest.java",
       "../android/java/src/org/chromium/chrome/browser/SearchGeolocationDisclosureTabHelper.java",

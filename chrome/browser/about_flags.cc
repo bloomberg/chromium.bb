@@ -1918,6 +1918,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kChromeMemexDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeMemexFeature)},
 #endif  // OS_ANDROID
+#if defined(OS_ANDROID)
+    {"enable-tab-modal-js-dialog-android",
+     flag_descriptions::kTabModalJsDialogName,
+     flag_descriptions::kTabModalJsDialogDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kTabModalJsDialog)},
+#endif  // OS_ANDROID
     {"in-product-help-demo-mode-choice",
      flag_descriptions::kInProductHelpDemoModeChoiceName,
      flag_descriptions::kInProductHelpDemoModeChoiceDescription, kOsAll,

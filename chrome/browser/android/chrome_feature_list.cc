@@ -298,6 +298,9 @@ const base::Feature kSpecialLocaleFeature{"SpecialLocale",
 const base::Feature kSpecialLocaleWrapper{"SpecialLocaleWrapper",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kTabModalJsDialog{"TabModalJsDialog",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kTabReparenting{"TabReparenting",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
