@@ -125,7 +125,7 @@ chrome_ios_eg_test("ios_chrome_device_check_egtests") {
   ]
   deps = [
     ":test_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//url",
   ]
 }
@@ -152,7 +152,7 @@ chrome_ios_eg_test("ios_chrome_smoke_egtests") {
   deps = [
     ":test_support",
     "//ios/chrome/test/app:test_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
   ]
   libs = [ "XCTest.framework" ]
 }
@@ -216,7 +216,7 @@ source_set("test_support") {
 
   public_deps = [
     "//build/config/ios:xctest",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web/public/test/fakes",
     "//net:test_support",
   ]

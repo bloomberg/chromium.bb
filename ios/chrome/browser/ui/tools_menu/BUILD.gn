@@ -100,7 +100,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui:ui_internal",
     "//ios/chrome/test/earl_grey:test_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",
     "//ui/base",

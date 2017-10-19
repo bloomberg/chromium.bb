@@ -282,7 +282,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/third_party/material_components_ios",
     "//ios/web",
     "//ios/web:earl_grey_test_support",

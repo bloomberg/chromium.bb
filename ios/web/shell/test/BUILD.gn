@@ -64,7 +64,7 @@ source_set("earl_grey_test_support") {
     "//base/test:test_support",
     "//ios/testing:ios_test_support",
     "//ios/testing/earl_grey:earl_grey_support",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//ios/web",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",

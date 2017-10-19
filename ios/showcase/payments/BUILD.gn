@@ -43,7 +43,7 @@ source_set("eg_tests") {
     "//ios/chrome/browser/ui/settings",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/showcase/test",
-    "//ios/third_party/earl_grey",
+    "//ios/third_party/earl_grey:earl_grey+link",
     "//ui/base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
