@@ -68,8 +68,10 @@ bool LauncherContextMenu::IsCommandIdEnabled(int command_id) const {
 void LauncherContextMenu::ExecuteCommand(int command_id, int event_flags) {
   switch (static_cast<MenuItem>(command_id)) {
     case MENU_OPEN_NEW:
-      controller_->LaunchApp(item_.id, ash::LAUNCH_FROM_UNKNOWN, ui::EF_NONE,
-                             display_id_);
+      // Use a copy of the id to avoid crashes, as this menu's owner will be
+      // destroyed if LaunchApp replaces the ShelfItemDelegate instance.
+      controller_->LaunchApp(ash::ShelfID(item_.id), ash::LAUNCH_FROM_UNKNOWN,
+                             ui::EF_NONE, display_id_);
       break;
     case MENU_CLOSE:
       if (item_.type == ash::TYPE_DIALOG) {
