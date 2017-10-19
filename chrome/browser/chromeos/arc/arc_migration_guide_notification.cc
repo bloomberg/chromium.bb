@@ -56,16 +56,31 @@ class ArcMigrationGuideNotificationDelegate
 
 void DoShowArcMigrationSuccessNotification(
     const message_center::NotifierId& notifier_id) {
-  message_center::MessageCenter::Get()->AddNotification(
-      std::make_unique<message_center::Notification>(
-          message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
-          base::string16(),  // title
-          l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
-          gfx::Image(gfx::CreateVectorIcon(
-              kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
-          base::string16(), GURL(), notifier_id,
-          message_center::RichNotificationData(),
-          new message_center::NotificationDelegate()));
+  if (message_center::IsNewStyleNotificationEnabled()) {
+    message_center::MessageCenter::Get()->AddNotification(
+        message_center::Notification::CreateSystemNotification(
+            message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
+            l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
+            l10n_util::GetStringUTF16(
+                IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
+            gfx::Image(), base::string16(), GURL(), notifier_id,
+            message_center::RichNotificationData(),
+            new message_center::NotificationDelegate(),
+            ash::kNotificationSettingsIcon,
+            message_center::SystemNotificationWarningLevel::NORMAL));
+  } else {
+    message_center::MessageCenter::Get()->AddNotification(
+        std::make_unique<message_center::Notification>(
+            message_center::NOTIFICATION_TYPE_SIMPLE, kSuccessNotificationId,
+            l10n_util::GetStringUTF16(IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_TITLE),
+            l10n_util::GetStringUTF16(
+                IDS_ARC_MIGRATE_ENCRYPTION_SUCCESS_MESSAGE),
+            gfx::Image(gfx::CreateVectorIcon(
+                kArcMigrateEncryptionNotificationIcon, gfx::kPlaceholderColor)),
+            base::string16(), GURL(), notifier_id,
+            message_center::RichNotificationData(),
+            new message_center::NotificationDelegate()));
+  }
 }
 
 }  // namespace
