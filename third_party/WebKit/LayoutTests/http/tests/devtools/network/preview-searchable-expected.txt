@@ -1,11 +1,11 @@
-CONSOLE MESSAGE: line 6: XHR loaded: 1
-CONSOLE MESSAGE: line 6: XHR loaded: 2
-CONSOLE MESSAGE: line 6: XHR loaded: 3
-CONSOLE MESSAGE: line 6: XHR loaded: 4
-CONSOLE MESSAGE: line 6: XHR loaded: 5
-CONSOLE MESSAGE: line 6: XHR loaded: 6
-CONSOLE MESSAGE: line 6: XHR loaded: 7
-CONSOLE MESSAGE: line 6: XHR loaded: 8
+CONSOLE MESSAGE: line 5: XHR loaded: 1
+CONSOLE MESSAGE: line 5: XHR loaded: 2
+CONSOLE MESSAGE: line 5: XHR loaded: 3
+CONSOLE MESSAGE: line 5: XHR loaded: 4
+CONSOLE MESSAGE: line 5: XHR loaded: 5
+CONSOLE MESSAGE: line 5: XHR loaded: 6
+CONSOLE MESSAGE: line 5: XHR loaded: 7
+CONSOLE MESSAGE: line 5: XHR loaded: 8
 Tests that resources with JSON MIME types are previewed with the JSON viewer.
 
 

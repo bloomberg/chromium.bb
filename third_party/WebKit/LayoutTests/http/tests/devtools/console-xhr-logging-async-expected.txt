@@ -1,12 +1,12 @@
-CONSOLE MESSAGE: line 6: XHR loaded: 1
-CONSOLE MESSAGE: line 6: XHR loaded: 2
+CONSOLE MESSAGE: line 5: XHR loaded: 1
+CONSOLE MESSAGE: line 5: XHR loaded: 2
 Tests that XMLHttpRequest Logging works when Enabled and doesn't show logs when Disabled for asynchronous XHRs.
 
 Bug 79229
-network-test.js:6 XHR loaded: 1
-network-test.js:37 XHR finished loading: GET "http://127.0.0.1:8000/devtools/resources/xhr-exists.html".
-makeXHR @ network-test.js:37
-makeXHRForJSONArguments @ network-test.js:43
+VM:5 XHR loaded: 1
+VM:37 XHR finished loading: GET "http://127.0.0.1:8000/devtools/resources/xhr-exists.html".
+makeXHR @ VM:37
+makeXHRForJSONArguments @ VM:43
 (anonymous) @ VM:1
-network-test.js:6 XHR loaded: 2
+VM:5 XHR loaded: 2
 

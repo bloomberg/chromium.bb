@@ -1,4 +1,4 @@
-CONSOLE MESSAGE: line 6: XHR loaded: 1
+CONSOLE MESSAGE: line 5: XHR loaded: 1
 Tests that XHR redirects preserve http-method.
 
 PUT http://127.0.0.1:8000/devtools/network/resources/redirect.cgi?status=301&ttl=3
