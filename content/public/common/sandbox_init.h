@@ -78,7 +78,7 @@ CONTENT_EXPORT bool InitializeSandbox();
 
 // Initializes the sandbox, as described above, but executes the callback after
 // warmup and before initialization.
-CONTENT_EXPORT bool InitializeSandboxWithPostWarmupHook(base::OnceClosure hook);
+CONTENT_EXPORT bool InitializeSandbox(base::OnceClosure post_warmup_hook);
 
 #elif defined(OS_LINUX) || defined(OS_NACL_NONSFI)
 

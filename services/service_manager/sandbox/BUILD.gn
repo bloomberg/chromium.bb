@@ -5,6 +5,8 @@
 component("sandbox") {
   sources = [
     "export.h",
+    "sandbox.cc",
+    "sandbox.h",
     "sandbox_delegate.h",
     "sandbox_type.cc",
     "sandbox_type.h",

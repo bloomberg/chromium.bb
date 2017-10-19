@@ -163,8 +163,8 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   if (sandbox_initialized) {
     DisconnectWindowServer();
   } else {
-    sandbox_initialized = InitializeSandboxWithPostWarmupHook(
-        base::BindOnce(&DisconnectWindowServer));
+    sandbox_initialized =
+        InitializeSandbox(base::BindOnce(&DisconnectWindowServer));
   }
 
   // The sandbox is now engaged. Make sure that the renderer has not connected

@@ -38,37 +38,39 @@ void SetParametersForTest(sandbox::SandboxCompiler* compiler,
                           const base::FilePath& executable_path) {
   bool enable_logging = true;
   CHECK(compiler->InsertBooleanParam(
-      service_manager::Sandbox::kSandboxEnableLogging, enable_logging));
+      service_manager::SandboxMac::kSandboxEnableLogging, enable_logging));
   CHECK(compiler->InsertBooleanParam(
-      service_manager::Sandbox::kSandboxDisableDenialLogging, !enable_logging));
+      service_manager::SandboxMac::kSandboxDisableDenialLogging,
+      !enable_logging));
 
   std::string homedir =
-      service_manager::Sandbox::GetCanonicalSandboxPath(base::GetHomeDir())
-          .value();
+      service_manager::SandboxMac::GetCanonicalPath(base::GetHomeDir()).value();
   CHECK(compiler->InsertStringParam(
-      service_manager::Sandbox::kSandboxHomedirAsLiteral, homedir));
+      service_manager::SandboxMac::kSandboxHomedirAsLiteral, homedir));
 
   int32_t major_version, minor_version, bugfix_version;
   base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
                                                &bugfix_version);
   int32_t os_version = (major_version * 100) + minor_version;
-  CHECK(compiler->InsertStringParam(service_manager::Sandbox::kSandboxOSVersion,
-                                    std::to_string(os_version)));
-
-  std::string bundle_path = service_manager::Sandbox::GetCanonicalSandboxPath(
-                                base::mac::MainBundlePath())
-                                .value();
   CHECK(compiler->InsertStringParam(
-      service_manager::Sandbox::kSandboxBundlePath, bundle_path));
+      service_manager::SandboxMac::kSandboxOSVersion,
+      std::to_string(os_version)));
+
+  std::string bundle_path =
+      service_manager::SandboxMac::GetCanonicalPath(base::mac::MainBundlePath())
+          .value();
+  CHECK(compiler->InsertStringParam(
+      service_manager::SandboxMac::kSandboxBundlePath, bundle_path));
 
   CHECK(compiler->InsertStringParam(
-      service_manager::Sandbox::kSandboxChromeBundleId,
+      service_manager::SandboxMac::kSandboxChromeBundleId,
       "com.google.Chrome.test.sandbox"));
   CHECK(compiler->InsertStringParam(
-      service_manager::Sandbox::kSandboxBrowserPID, std::to_string(getpid())));
+      service_manager::SandboxMac::kSandboxBrowserPID,
+      std::to_string(getpid())));
 
   CHECK(compiler->InsertStringParam(
-      service_manager::Sandbox::kSandboxLoggingPathAsLiteral,
+      service_manager::SandboxMac::kSandboxLoggingPathAsLiteral,
       logging_path.value()));
 
   // Parameters normally set by the main executable.
@@ -97,7 +99,7 @@ MULTIPROCESS_TEST_MAIN(SandboxProfileProcess) {
   CHECK(temp_dir.CreateUniqueTempDir());
   CHECK(temp_dir.IsValid());
   base::FilePath temp_path = temp_dir.GetPath();
-  temp_path = service_manager::Sandbox::GetCanonicalSandboxPath(temp_path);
+  temp_path = service_manager::SandboxMac::GetCanonicalPath(temp_path);
   const base::FilePath log_file = temp_path.Append("log-file");
   const base::FilePath exec_file("/bin/ls");
 

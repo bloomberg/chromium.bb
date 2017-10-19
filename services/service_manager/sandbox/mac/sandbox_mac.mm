@@ -82,20 +82,20 @@ static_assert(arraysize(kDefaultSandboxTypeToResourceIDMapping) ==
 }  // namespace
 
 // Static variable declarations.
-const char* Sandbox::kSandboxBrowserPID = "BROWSER_PID";
-const char* Sandbox::kSandboxBundlePath = "BUNDLE_PATH";
-const char* Sandbox::kSandboxChromeBundleId = "BUNDLE_ID";
-const char* Sandbox::kSandboxComponentPath = "COMPONENT_PATH";
-const char* Sandbox::kSandboxDisableDenialLogging =
+const char* SandboxMac::kSandboxBrowserPID = "BROWSER_PID";
+const char* SandboxMac::kSandboxBundlePath = "BUNDLE_PATH";
+const char* SandboxMac::kSandboxChromeBundleId = "BUNDLE_ID";
+const char* SandboxMac::kSandboxComponentPath = "COMPONENT_PATH";
+const char* SandboxMac::kSandboxDisableDenialLogging =
     "DISABLE_SANDBOX_DENIAL_LOGGING";
-const char* Sandbox::kSandboxEnableLogging = "ENABLE_LOGGING";
-const char* Sandbox::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
-const char* Sandbox::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
-const char* Sandbox::kSandboxOSVersion = "OS_VERSION";
-const char* Sandbox::kSandboxPermittedDir = "PERMITTED_DIR";
-const char* Sandbox::kSandboxElCapOrLater = "ELCAP_OR_LATER";
-const char* Sandbox::kSandboxMacOS1013 = "MACOS_1013";
-const char* Sandbox::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
+const char* SandboxMac::kSandboxEnableLogging = "ENABLE_LOGGING";
+const char* SandboxMac::kSandboxHomedirAsLiteral = "USER_HOMEDIR_AS_LITERAL";
+const char* SandboxMac::kSandboxLoggingPathAsLiteral = "LOG_FILE_PATH";
+const char* SandboxMac::kSandboxOSVersion = "OS_VERSION";
+const char* SandboxMac::kSandboxPermittedDir = "PERMITTED_DIR";
+const char* SandboxMac::kSandboxElCapOrLater = "ELCAP_OR_LATER";
+const char* SandboxMac::kSandboxMacOS1013 = "MACOS_1013";
+const char* SandboxMac::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
 
 // Warm up System APIs that empirically need to be accessed before the Sandbox
 // is turned on.
@@ -106,7 +106,7 @@ const char* Sandbox::kSandboxBundleVersionPath = "BUNDLE_VERSION_PATH";
 //     10.5.6, 10.6.0
 
 // static
-void Sandbox::SandboxWarmup(SandboxType sandbox_type) {
+void SandboxMac::Warmup(SandboxType sandbox_type) {
   base::mac::ScopedNSAutoreleasePool scoped_pool;
 
   {  // CGColorSpaceCreateWithName(), CGBitmapContextCreate() - 10.5.6
@@ -198,8 +198,8 @@ std::string LoadSandboxTemplate(SandboxType sandbox_type) {
 // Turns on the OS X sandbox for this process.
 
 // static
-bool Sandbox::EnableSandbox(SandboxType sandbox_type,
-                            const base::FilePath& allowed_dir) {
+bool SandboxMac::Enable(SandboxType sandbox_type,
+                        const base::FilePath& allowed_dir) {
   // Sanity - currently only some sandboxes support a directory being
   // passed in.
   if (sandbox_type != SANDBOX_TYPE_UTILITY) {
@@ -215,7 +215,7 @@ bool Sandbox::EnableSandbox(SandboxType sandbox_type,
 
   if (!allowed_dir.empty()) {
     // Add the sandbox parameters necessary to access the given directory.
-    base::FilePath allowed_dir_canonical = GetCanonicalSandboxPath(allowed_dir);
+    base::FilePath allowed_dir_canonical = GetCanonicalPath(allowed_dir);
     if (!compiler.InsertStringParam(kSandboxPermittedDir,
                                     allowed_dir_canonical.value()))
       return false;
@@ -239,14 +239,13 @@ bool Sandbox::EnableSandbox(SandboxType sandbox_type,
   // Splice the path of the user's home directory into the sandbox profile
   // (see renderer.sb for details).
   std::string home_dir = [NSHomeDirectory() fileSystemRepresentation];
-
   base::FilePath home_dir_canonical =
-      GetCanonicalSandboxPath(base::FilePath(home_dir));
+      GetCanonicalPath(base::FilePath(home_dir));
 
   if (!compiler.InsertStringParam(kSandboxHomedirAsLiteral,
-                                  home_dir_canonical.value()))
+                                  home_dir_canonical.value())) {
     return false;
-
+  }
   bool elcap_or_later = base::mac::IsAtLeastOS10_11();
   if (!compiler.InsertBooleanParam(kSandboxElCapOrLater, elcap_or_later))
     return false;
@@ -256,7 +255,7 @@ bool Sandbox::EnableSandbox(SandboxType sandbox_type,
     return false;
 
   if (sandbox_type == service_manager::SANDBOX_TYPE_CDM) {
-    base::FilePath bundle_path = Sandbox::GetCanonicalSandboxPath(
+    base::FilePath bundle_path = SandboxMac::GetCanonicalPath(
         base::mac::FrameworkBundlePath().DirName());
     if (!compiler.InsertStringParam(kSandboxBundleVersionPath,
                                     bundle_path.value()))
@@ -272,12 +271,12 @@ bool Sandbox::EnableSandbox(SandboxType sandbox_type,
 }
 
 // static
-bool Sandbox::SandboxIsCurrentlyActive() {
+bool SandboxMac::IsCurrentlyActive() {
   return gSandboxIsActive;
 }
 
 // static
-base::FilePath Sandbox::GetCanonicalSandboxPath(const base::FilePath& path) {
+base::FilePath SandboxMac::GetCanonicalPath(const base::FilePath& path) {
   base::ScopedFD fd(HANDLE_EINTR(open(path.value().c_str(), O_RDONLY)));
   if (!fd.is_valid()) {
     DPLOG(FATAL) << "GetCanonicalSandboxPath() failed for: " << path.value();
