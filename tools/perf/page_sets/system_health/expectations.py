@@ -9,9 +9,8 @@ class SystemHealthDesktopCommonExpectations(expectations.StoryExpectations):
     self.DisableStory('browse:news:hackernews',
                       [expectations.ALL_WIN, expectations.ALL_MAC],
                       'crbug.com/676336')
-    self.DisableStory('browse:search:google',
-                      [expectations.ALL_WIN],
-                      'win:crbug.com/673775, mac:crbug.com/756027')
+    self.DisableStory('browse:search:google', [expectations.ALL_WIN],
+                      'crbug.com/673775')
     self.DisableStory('play:media:google_play_music', [expectations.ALL],
                       'crbug.com/649392')
     self.DisableStory('play:media:soundcloud', [expectations.ALL_WIN],
