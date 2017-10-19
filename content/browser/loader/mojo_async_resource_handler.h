@@ -126,6 +126,7 @@ class CONTENT_EXPORT MojoAsyncResourceHandler : public ResourceHandler,
                   mojom::URLLoaderClientPtr url_loader_client);
   void SendUploadProgress(const net::UploadProgress& progress);
   void OnUploadProgressACK();
+  static void InitializeResourceBufferConstants();
 
   ResourceDispatcherHostImpl* rdh_;
   mojo::Binding<mojom::URLLoader> binding_;

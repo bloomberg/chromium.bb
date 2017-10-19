@@ -163,6 +163,7 @@ class CONTENT_EXPORT ResourceHandler {
   net::URLRequest* request() const { return request_; }
 
   // Convenience functions.
+  static void GetNumericArg(const std::string& name, int* result);
   ResourceRequestInfoImpl* GetRequestInfo() const;
   int GetRequestID() const;
   ResourceMessageFilter* GetFilter() const;

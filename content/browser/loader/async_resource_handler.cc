@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 
-#include "base/command_line.h"
 #include "base/containers/hash_tables.h"
 #include "base/debug/alias.h"
 #include "base/logging.h"
@@ -15,7 +14,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/shared_memory.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "content/browser/loader/resource_buffer.h"
 #include "content/browser/loader/resource_controller.h"
@@ -39,38 +37,22 @@ using base::TimeTicks;
 namespace content {
 namespace {
 
-static int kBufferSize = 1024 * 512;
-static int kMinAllocationSize = 1024 * 4;
-static int kMaxAllocationSize = 1024 * 32;
-
-void GetNumericArg(const std::string& name, int* result) {
-  const std::string& value =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(name);
-  if (!value.empty())
-    base::StringToInt(value, result);
-}
-
-void InitializeResourceBufferConstants() {
-  static bool did_init = false;
-  if (did_init)
-    return;
-  did_init = true;
-
-  GetNumericArg("resource-buffer-size", &kBufferSize);
-  GetNumericArg("resource-buffer-min-allocation-size", &kMinAllocationSize);
-  GetNumericArg("resource-buffer-max-allocation-size", &kMaxAllocationSize);
-}
+static int g_async_loader_buffer_size = 1024 * 512;
+static int g_async_loader_min_buffer_allocation_size = 1024 * 4;
+static int g_async_loader_max_buffer_allocation_size = 1024 * 32;
 
 }  // namespace
 
-class DependentIOBuffer : public net::WrappedIOBuffer {
+// Used to write into an existing IOBuffer at a given offset. This is
+// very similar to DependentIOBufferForRedirectToFile and
+// DependentIOBufferForMimeSniffing but not identical.
+class DependentIOBufferForAsyncLoading : public net::WrappedIOBuffer {
  public:
-  DependentIOBuffer(ResourceBuffer* backing, char* memory)
-      : net::WrappedIOBuffer(memory),
-        backing_(backing) {
-  }
+  DependentIOBufferForAsyncLoading(ResourceBuffer* backing, char* memory)
+      : net::WrappedIOBuffer(memory), backing_(backing) {}
+
  private:
-  ~DependentIOBuffer() override {}
+  ~DependentIOBufferForAsyncLoading() override {}
   scoped_refptr<ResourceBuffer> backing_;
 };
 
@@ -93,6 +75,19 @@ AsyncResourceHandler::AsyncResourceHandler(net::URLRequest* request,
 AsyncResourceHandler::~AsyncResourceHandler() {
   if (has_checked_for_sufficient_resources_)
     rdh_->FinishedWithResourcesForRequest(request());
+}
+
+void AsyncResourceHandler::InitializeResourceBufferConstants() {
+  static bool did_init = false;
+  if (did_init)
+    return;
+  did_init = true;
+
+  GetNumericArg("resource-buffer-size", &g_async_loader_buffer_size);
+  GetNumericArg("resource-buffer-min-allocation-size",
+                &g_async_loader_min_buffer_allocation_size);
+  GetNumericArg("resource-buffer-max-allocation-size",
+                &g_async_loader_max_buffer_allocation_size);
 }
 
 bool AsyncResourceHandler::OnMessageReceived(const IPC::Message& message) {
@@ -249,7 +244,7 @@ void AsyncResourceHandler::OnWillRead(
   char* memory = buffer_->Allocate(&allocation_size_);
   CHECK(memory);
 
-  *buf = new DependentIOBuffer(buffer_.get(), memory);
+  *buf = new DependentIOBufferForAsyncLoading(buffer_.get(), memory);
   *buf_size = allocation_size_;
 
   controller->Resume();
@@ -376,9 +371,9 @@ bool AsyncResourceHandler::EnsureResourceBufferIsInitialized() {
     return true;
 
   buffer_ = new ResourceBuffer();
-  return buffer_->Initialize(kBufferSize,
-                             kMinAllocationSize,
-                             kMaxAllocationSize);
+  return buffer_->Initialize(g_async_loader_buffer_size,
+                             g_async_loader_min_buffer_allocation_size,
+                             g_async_loader_max_buffer_allocation_size);
 }
 
 void AsyncResourceHandler::ResumeIfDeferred() {
