@@ -30,6 +30,8 @@
 #include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/language/language_model_factory.h"
+#include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/media_engagement_service_factory.h"
 #include "chrome/browser/media/router/media_router_factory.h"
@@ -67,6 +69,7 @@
 #include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/browser/thumbnails/thumbnail_service_factory.h"
+#include "chrome/browser/translate/translate_ranker_factory.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service_factory.h"
 #include "chrome/browser/ui/find_bar/find_bar_state_factory.h"
 #include "chrome/browser/ui/prefs/prefs_tab_helper.h"
@@ -277,6 +280,7 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
       ->SetUIDelegateFactory(std::move(networking_private_ui_delegate_factory));
 #endif
 #endif
+  LanguageModelFactory::GetInstance();
   if (MediaEngagementService::IsEnabled())
     MediaEngagementServiceFactory::GetInstance();
   media_router::MediaRouterFactory::GetInstance();
@@ -345,10 +349,12 @@ EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();
+  translate::TranslateRankerFactory::GetInstance();
 #if defined(OS_WIN)
   TriggeredProfileResetterFactory::GetInstance();
 #endif
   UINetworkQualityEstimatorServiceFactory::GetInstance();
+  UrlLanguageHistogramFactory::GetInstance();
 #if !defined(OS_ANDROID)
   UsbChooserContextFactory::GetInstance();
 #endif

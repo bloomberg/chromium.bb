@@ -77,7 +77,6 @@
 #include "components/feature_engagement/features.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/gcm_driver/gcm_channel_status_syncer.h"
-#include "components/language/core/browser/url_language_histogram.h"
 #include "components/network_time/network_time_tracker.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/ntp_snippets/remote/remote_suggestions_provider_impl.h"
@@ -473,7 +472,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   ImportantSitesUtil::RegisterProfilePrefs(registry);
   IncognitoModePrefs::RegisterProfilePrefs(registry);
   InstantUI::RegisterProfilePrefs(registry);
-  language::UrlLanguageHistogram::RegisterProfilePrefs(registry);
   MediaCaptureDevicesDispatcher::RegisterProfilePrefs(registry);
   MediaDeviceIDSalt::RegisterProfilePrefs(registry);
   MediaEngagementService::RegisterProfilePrefs(registry);

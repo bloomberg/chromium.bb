@@ -8,6 +8,7 @@
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
+#include "components/pref_registry/pref_registry_syncable.h"
 
 // static
 UrlLanguageHistogramFactory* UrlLanguageHistogramFactory::GetInstance() {
@@ -33,4 +34,9 @@ KeyedService* UrlLanguageHistogramFactory::BuildServiceInstanceFor(
     content::BrowserContext* const browser_context) const {
   Profile* const profile = Profile::FromBrowserContext(browser_context);
   return new language::UrlLanguageHistogram(profile->GetPrefs());
+}
+
+void UrlLanguageHistogramFactory::RegisterProfilePrefs(
+    user_prefs::PrefRegistrySyncable* const registry) {
+  language::UrlLanguageHistogram::RegisterProfilePrefs(registry);
 }
