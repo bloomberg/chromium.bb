@@ -14,10 +14,6 @@
 
 #include "./aom_dsp_rtcd.h"
 #include "aom_dsp/inv_txfm.h"
-#if CONFIG_DAALA_TX4 || CONFIG_DAALA_TX8 || CONFIG_DAALA_TX16 || \
-    CONFIG_DAALA_TX32 || CONFIG_DAALA_TX64
-#include "av1/common/daala_tx.h"
-#endif
 
 void aom_iwht4x4_16_add_c(const tran_low_t *input, uint8_t *dest, int stride) {
   /* 4-point reversible, orthonormal inverse Walsh-Hadamard in 3.5 adds,
