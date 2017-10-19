@@ -9,8 +9,8 @@
 
 #include "base/bind.h"
 #include "base/test/scoped_task_environment.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_lorgnette_manager_client.h"
-#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -24,84 +24,95 @@ class DocumentScanInterfaceChromeosTest : public testing::Test {
   DocumentScanInterfaceChromeosTest() = default;
   ~DocumentScanInterfaceChromeosTest() override = default;
 
-  void SetUp() override {
-    scan_interface_.lorgnette_manager_client_ = &client_;
+  void SetUp() override { chromeos::DBusThreadManager::Initialize(); }
+
+  void TearDown() override { chromeos::DBusThreadManager::Shutdown(); }
+
+  chromeos::FakeLorgnetteManagerClient* GetLorgnetteManagerClient() {
+    return static_cast<chromeos::FakeLorgnetteManagerClient*>(
+        chromeos::DBusThreadManager::Get()->GetLorgnetteManagerClient());
   }
-
-  MOCK_METHOD2(OnListScannersResultReceived,
-               void(const std::vector<
-                        DocumentScanInterface::ScannerDescription>& scanners,
-                    const std::string& error));
-
-  MOCK_METHOD3(OnScanCompleted,
-               void(const std::string& scanned_image,
-                    const std::string& mime_type,
-                    const std::string& error));
 
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
-  chromeos::FakeLorgnetteManagerClient client_;
   DocumentScanInterfaceChromeos scan_interface_;
 };
 
-MATCHER_P5(IsScannerDescription, name, manufacturer, model, type, mime, "") {
-  return arg.name == name && arg.manufacturer == manufacturer &&
-         arg.model == model && arg.scanner_type == type &&
-         arg.image_mime_type == mime;
-}
-
 TEST_F(DocumentScanInterfaceChromeosTest, ListScanners) {
-  constexpr char kScannerName[] = "Monet";
-  constexpr char kScannerManufacturer[] = "Jacques-Louis David";
-  constexpr char kScannerModel[] = "Le Havre";
-  constexpr char kScannerType[] = "Impressionism";
-  client_.AddScannerTableEntry(
+  // Use constexpr const char* instead of constexpr char[] because implicit
+  // conversion in lambda doesn't work.
+  constexpr const char* kScannerName = "Monet";
+  constexpr const char* kScannerManufacturer = "Jacques-Louis David";
+  constexpr const char* kScannerModel = "Le Havre";
+  constexpr const char* kScannerType = "Impressionism";
+  GetLorgnetteManagerClient()->AddScannerTableEntry(
       kScannerName,
       {{lorgnette::kScannerPropertyManufacturer, kScannerManufacturer},
        {lorgnette::kScannerPropertyModel, kScannerModel},
        {lorgnette::kScannerPropertyType, kScannerType}});
-  EXPECT_CALL(*this, OnListScannersResultReceived(
-                         testing::ElementsAre(IsScannerDescription(
-                             kScannerName, kScannerManufacturer, kScannerModel,
-                             kScannerType, "image/png")),
-                         std::string()));
 
+  base::RunLoop run_loop;
   scan_interface_.ListScanners(base::Bind(
-      &DocumentScanInterfaceChromeosTest::OnListScannersResultReceived,
-      base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+      [](base::RunLoop* run_loop,
+         const std::vector<DocumentScanInterface::ScannerDescription>&
+             descriptions,
+         const std::string& error) {
+        run_loop->Quit();
+        ASSERT_EQ(1u, descriptions.size());
+        // Wrap by std::string explicitly, because const reference of the
+        // constexpr in the enclosing scope, which EXPECT_EQ macro uses,
+        // cannot be taken.
+        EXPECT_EQ(std::string(kScannerName), descriptions[0].name);
+        EXPECT_EQ(std::string(kScannerManufacturer),
+                  descriptions[0].manufacturer);
+        EXPECT_EQ(std::string(kScannerModel), descriptions[0].model);
+        EXPECT_EQ(std::string(kScannerType), descriptions[0].scanner_type);
+        EXPECT_EQ("image/png", descriptions[0].image_mime_type);
+        EXPECT_EQ("", error);
+      },
+      &run_loop));
+  run_loop.Run();
 }
 
 TEST_F(DocumentScanInterfaceChromeosTest, ScanFailure) {
-  constexpr char kScannerName[] = "Monet";
-  constexpr int kResolution = 4096;
-  EXPECT_CALL(*this, OnScanCompleted("data:image/png;base64,", "image/png",
-                                     "Image scan failed"));
-
+  base::RunLoop run_loop;
   scan_interface_.Scan(
-      kScannerName, DocumentScanInterface::kScanModeColor, kResolution,
-      base::Bind(&DocumentScanInterfaceChromeosTest::OnScanCompleted,
-                 base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+      "Monet", DocumentScanInterface::kScanModeColor, 4096,
+      base::Bind(
+          [](base::RunLoop* run_loop, const std::string& scanned_image,
+             const std::string& mime_type, const std::string& error) {
+            run_loop->Quit();
+            EXPECT_EQ("data:image/png;base64,", scanned_image);
+            EXPECT_EQ("image/png", mime_type);
+            EXPECT_EQ("Image scan failed", error);
+          },
+          &run_loop));
+  run_loop.Run();
 }
 
 TEST_F(DocumentScanInterfaceChromeosTest, ScanSuccess) {
   constexpr char kScannerName[] = "Monet";
   constexpr int kResolution = 4096;
-  // Data URL plus base64 representation of "PrettyPicture".
-  constexpr char kExpectedImageData[] =
-      "data:image/png;base64,UHJldHR5UGljdHVyZQ==";
-  client_.AddScanData(kScannerName,
-                      chromeos::LorgnetteManagerClient::ScanProperties{
-                          lorgnette::kScanPropertyModeColor, kResolution},
-                      "PrettyPicture");
-  EXPECT_CALL(*this, OnScanCompleted(kExpectedImageData, "image/png", ""));
-
+  GetLorgnetteManagerClient()->AddScanData(
+      kScannerName,
+      chromeos::LorgnetteManagerClient::ScanProperties{
+          lorgnette::kScanPropertyModeColor, kResolution},
+      "PrettyPicture");
+  base::RunLoop run_loop;
   scan_interface_.Scan(
       kScannerName, DocumentScanInterface::kScanModeColor, kResolution,
-      base::Bind(&DocumentScanInterfaceChromeosTest::OnScanCompleted,
-                 base::Unretained(this)));
-  base::RunLoop().RunUntilIdle();
+      base::Bind(
+          [](base::RunLoop* run_loop, const std::string& scanned_image,
+             const std::string& mime_type, const std::string& error) {
+            run_loop->Quit();
+            // Data URL plus base64 representation of "PrettyPicture".
+            EXPECT_EQ("data:image/png;base64,UHJldHR5UGljdHVyZQ==",
+                      scanned_image);
+            EXPECT_EQ("image/png", mime_type);
+            EXPECT_EQ("", error);
+          },
+          &run_loop));
+  run_loop.Run();
 }
 
 }  // namespace api
