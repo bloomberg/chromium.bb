@@ -62,13 +62,16 @@ class BitmapImageTest : public ::testing::Test {
       last_decoded_size_ = new_size;
     }
     bool ShouldPauseAnimation(const Image*) override { return false; }
-    void AnimationAdvanced(const Image*) override {}
+    void AnimationAdvanced(const Image*) override {
+      animation_advanced_ = true;
+    }
     void AsyncLoadCompleted(const Image*) override { NOTREACHED(); }
 
     virtual void ChangedInRect(const Image*, const IntRect&) {}
 
     size_t last_decoded_size_;
     int last_decoded_size_changed_delta_;
+    bool animation_advanced_ = false;
   };
 
   static RefPtr<SharedBuffer> ReadFile(const char* file_name) {
@@ -509,6 +512,7 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
 
   // Start the animation at 10s. This should schedule a timer for the next frame
   // after 10 seconds.
+  EXPECT_FALSE(image_observer_->animation_advanced_);
   StartAnimation();
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 0u);
 
@@ -517,42 +521,51 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
 
   // Advance the time to 15s. The frame is still at 0u because the posted task
   // should run at 20s.
+  image_observer_->animation_advanced_ = false;
   task_runner->AdvanceTimeAndRun(5);
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 0u);
+  EXPECT_FALSE(image_observer_->animation_advanced_);
 
   // Advance the time to 20s. The task runs and advances the animation forward
   // to 1u.
   task_runner->AdvanceTimeAndRun(5);
-  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 1u);
-  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 0u);
+  EXPECT_TRUE(image_observer_->animation_advanced_);
 
-  // Set now_ to 41 seconds. Since the animation started at 10s, and each frame
-  // has a duration of 10s, we should see the fourth frame at 41 seconds.
+  // If we were to paint now, we should use the second frame.
+  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 1u);
+
+  // Now assume painting the next frame was delayed to 41 seconds. We should
+  // first draw with the |current_frame_index_| and then call StartAnimation to
+  // advance the frame.
+  // Since the animation started at 10s, and each frame has a duration of 10s,
+  // we should see the fourth frame at 41 seconds.
   now_ = 41;
   task_runner->SetTime(41);
   StartAnimation();
+
+  // Since we just skipped frames while advancing this animation, we should see
+  // a notification to dirty immediately.
+  image_observer_->animation_advanced_ = false;
+  task_runner->AdvanceTimeAndRun(0);
+  EXPECT_TRUE(image_observer_->animation_advanced_);
+
+  // On the next draw, we should see the fourth frame.
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 3u);
   EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 1u);
 
-  // We should have scheduled a task to move to the fifth frame in
-  // StartAnimation above, at 50s.
-  // Advance by 5s, not time for the next frame yet.
-  task_runner->AdvanceTimeAndRun(5);
-  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 3u);
-
-  // Advance to the fifth frame.
-  task_runner->SetTime(50);
-  task_runner->AdvanceTimeAndRun(0);
-  EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 4u);
-
-  // At 70s, we would want to display the last frame and would skip 1 frame.
-  // But because its incomplete, we advanced to the sixth frame and did not need
-  // to skip anything.
+  // At 70s, we would want to display the last frame and would skip 2 frames.
+  // But because its incomplete, we advanced to the sixth frame and only skipped
+  // 1 frame.
   now_ = 71;
   task_runner->SetTime(71);
   StartAnimation();
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 5u);
-  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 0u);
+  EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 1u);
+
+  // We should still see a notification to move to the sixth frame.
+  image_observer_->animation_advanced_ = false;
+  task_runner->AdvanceTimeAndRun(0);
+  EXPECT_TRUE(image_observer_->animation_advanced_);
 
   // Run any pending tasks and try to animate again. Can't advance the animation
   // because the last frame is not complete.
@@ -565,9 +578,15 @@ TEST_F(BitmapImageTestWithMockDecoder, FrameSkipTracking) {
   // But no frame skipped because we just advanced to the last frame.
   last_frame_complete_ = true;
   image_->SetData(SharedBuffer::Create("data", sizeof("data")), true);
+
   StartAnimation();
   EXPECT_EQ(image_->PaintImageForCurrentFrame().frame_index(), 6u);
   EXPECT_EQ(image_->last_num_frames_skipped_for_testing().value(), 0u);
+
+  // Finishing the animation always notifies observers async.
+  image_observer_->animation_advanced_ = false;
+  task_runner->AdvanceTimeAndRun(0);
+  EXPECT_TRUE(image_observer_->animation_advanced_);
 }
 
 TEST_F(BitmapImageTestWithMockDecoder, ResetAnimation) {
