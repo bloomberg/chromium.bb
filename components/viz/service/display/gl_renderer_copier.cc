@@ -205,8 +205,8 @@ GLuint GLRendererCopier::RenderResultTexture(
     DCHECK_SIZE_EQ(scaled_copy_rect.size(), result_rect.size());
     std::unique_ptr<GLHelper::ScalerInterface> scaler =
         TakeCachedScalerOrCreate(request);
-    scaler->Scale(source_texture, source_texture_size, result_texture,
-                  scaled_copy_rect);
+    scaler->Scale(source_texture, source_texture_size, gfx::Vector2dF(),
+                  result_texture, scaled_copy_rect);
     CacheScalerOrDelete(SourceOf(request), std::move(scaler));
   } else {
     DCHECK_SIZE_EQ(source_copy_rect.size(), result_rect.size());

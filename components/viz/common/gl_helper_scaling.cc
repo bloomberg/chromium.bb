@@ -27,6 +27,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 using gpu::gles2::GLES2Interface;
 
@@ -82,7 +83,7 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
         program_(gl_->CreateProgram()),
         position_location_(-1),
         texcoord_location_(-1),
-        sampling_rect_location_(-1),
+        src_rect_location_(-1),
         src_pixelsize_location_(-1),
         scaling_vector_location_(-1),
         rgb_to_plane0_location_(-1),
@@ -95,12 +96,12 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
 
   // UseProgram must be called with GL_ARRAY_BUFFER bound to a vertex attribute
   // buffer. |src_texture_size| is the size of the entire source texture,
-  // regardless of which region is to be sampled. |sampling_rect| is the source
-  // region to be sampled to produce the scaled image placed at
-  // Rect(0, 0, dst_size.width(), dst_size.height()) in the destination
-  // texture(s).
+  // regardless of which region is to be sampled. |src_rect| is the source
+  // region not including overscan pixels past the edges. The program produces a
+  // scaled image placed at Rect(0, 0, dst_size.width(), dst_size.height()) in
+  // the destination texture(s).
   void UseProgram(const gfx::Size& src_texture_size,
-                  const gfx::RectF& sampling_rect,
+                  const gfx::RectF& src_rect,
                   const gfx::Size& dst_size,
                   bool scale_x,
                   bool flip_y,
@@ -125,9 +126,9 @@ class ShaderProgram : public base::RefCounted<ShaderProgram> {
   GLint texcoord_location_;
   // The location of the source texture in the program.
   GLint texture_location_;
-  // The location of the texture coordinate of the sampling rectangle in the
+  // The location of the texture coordinate of the source rectangle in the
   // program.
-  GLint sampling_rect_location_;
+  GLint src_rect_location_;
   // Location of size of source image in pixels.
   GLint src_pixelsize_location_;
   // Location of vector for scaling ratio between source and dest textures.
@@ -178,21 +179,81 @@ class ScalerImpl : public GLHelper::ScalerInterface {
 
   void ScaleToMultipleOutputs(GLuint src_texture,
                               const gfx::Size& src_texture_size,
+                              const gfx::Vector2dF& src_offset,
                               GLuint dest_texture_0,
                               GLuint dest_texture_1,
                               const gfx::Rect& output_rect) override {
+    // TODO(crbug.com/775740): Do not accept non-whole-numbered offsets
+    // until the shader programs produce the correct output for them.
+    DCHECK_EQ(src_offset.x(), std::floor(src_offset.x()));
+    DCHECK_EQ(src_offset.y(), std::floor(src_offset.y()));
+
     if (output_rect.IsEmpty())
       return;  // No work to do.
-    gfx::RectF sampling_rect = ToSourceRect(output_rect);
+    gfx::RectF src_rect = ToSourceRect(output_rect);
     if (subscaler_) {
+      gfx::RectF overscan_rect = src_rect;
+      PadForOverscan(&overscan_rect);
       const auto intermediate = subscaler_->GenerateIntermediateTexture(
-          src_texture, src_texture_size, gfx::ToEnclosingRect(sampling_rect));
-      sampling_rect -= intermediate.second.OffsetFromOrigin();
-      Execute(intermediate.first, intermediate.second.size(), sampling_rect,
+          src_texture, src_texture_size, src_offset,
+          gfx::ToEnclosingRect(overscan_rect));
+      src_rect -= intermediate.second.OffsetFromOrigin();
+      Execute(intermediate.first, intermediate.second.size(), src_rect,
               dest_texture_0, dest_texture_1, output_rect.size());
     } else {
-      Execute(src_texture, src_texture_size, sampling_rect, dest_texture_0,
+      if (spec_.vertically_flip_texture) {
+        src_rect.set_x(src_rect.x() + src_offset.x());
+        src_rect.set_y(src_texture_size.height() - src_rect.bottom() -
+                       src_offset.y());
+      } else {
+        src_rect += src_offset;
+      }
+      Execute(src_texture, src_texture_size, src_rect, dest_texture_0,
               dest_texture_1, output_rect.size());
+    }
+  }
+
+  void ComputeRegionOfInfluence(const gfx::Size& src_texture_size,
+                                const gfx::Vector2dF& src_offset,
+                                const gfx::Rect& output_rect,
+                                gfx::Rect* sampling_rect,
+                                gfx::Vector2dF* offset) const override {
+    // This mimics the recursive behavior of GenerateIntermediateTexture(),
+    // computing the size of the intermediate texture required by each scaler
+    // in the chain.
+    gfx::Rect intermediate_rect = output_rect;
+    const ScalerImpl* scaler = this;
+    while (scaler->subscaler_) {
+      gfx::RectF overscan_rect = scaler->ToSourceRect(intermediate_rect);
+      scaler->PadForOverscan(&overscan_rect);
+      intermediate_rect = gfx::ToEnclosingRect(overscan_rect);
+      scaler = scaler->subscaler_.get();
+    }
+
+    // At this point, |scaler| points to the first scaler in the chain. Compute
+    // the source rect that would have been used with the shader program, and
+    // then pad that to account for the shader program's overscan pixels.
+    const auto rects = scaler->ComputeBaseCaseRects(
+        src_texture_size, src_offset, intermediate_rect);
+    gfx::RectF src_overscan_rect = rects.first;
+    scaler->PadForOverscan(&src_overscan_rect);
+
+    // Provide a whole-numbered Rect result along with the offset to the origin
+    // point.
+    *sampling_rect = gfx::ToEnclosingRect(src_overscan_rect);
+    sampling_rect->Intersect(gfx::Rect(src_texture_size));
+    *offset = gfx::ScaleVector2d(
+        output_rect.OffsetFromOrigin(),
+        static_cast<float>(chain_properties_->scale_from.x()) /
+            chain_properties_->scale_to.x(),
+        static_cast<float>(chain_properties_->scale_from.y()) /
+            chain_properties_->scale_to.y());
+    if (scaler->spec_.vertically_flip_texture) {
+      offset->set_x(offset->x() - sampling_rect->x());
+      offset->set_y(offset->y() -
+                    (src_texture_size.height() - sampling_rect->bottom()));
+    } else {
+      *offset -= sampling_rect->OffsetFromOrigin();
     }
   }
 
@@ -223,6 +284,8 @@ class ScalerImpl : public GLHelper::ScalerInterface {
   // Expands the given |sampling_rect| to account for the extra pixels bordering
   // it that will be sampled by the shaders.
   void PadForOverscan(gfx::RectF* sampling_rect) const {
+    // Room for optimization: These are conservative calculations. Some of the
+    // shaders actually require fewer overscan pixels.
     float overscan_x = 0;
     float overscan_y = 0;
     switch (spec_.shader) {
@@ -234,8 +297,6 @@ class ScalerImpl : public GLHelper::ScalerInterface {
       case GLHelperScaling::SHADER_PLANAR:
       case GLHelperScaling::SHADER_YUV_MRT_PASS1:
       case GLHelperScaling::SHADER_YUV_MRT_PASS2:
-        // Room for optimization: This is a conservative calculation. Some of
-        // the shaders require fewer overscan pixels.
         overscan_x =
             static_cast<float>(spec_.scale_from.x()) / spec_.scale_to.x();
         overscan_y =
@@ -256,15 +317,14 @@ class ScalerImpl : public GLHelper::ScalerInterface {
         DCHECK_GE(spec_.scale_from.y(), spec_.scale_to.y());
         // kLobeDist is the largest pixel read offset in the shader program.
         constexpr float kLobeDist = 11.0f / 4.0f;
-        constexpr float kRelativeSamplingRadius = kLobeDist / 2.0f;
-        overscan_x = (kRelativeSamplingRadius * spec_.scale_from.x()) /
-                     spec_.scale_to.x();
-        overscan_y = (kRelativeSamplingRadius * spec_.scale_from.y()) /
-                     spec_.scale_to.y();
+        overscan_x = kLobeDist * spec_.scale_from.x() / spec_.scale_to.x();
+        overscan_y = kLobeDist * spec_.scale_from.y() / spec_.scale_to.y();
         break;
       }
     }
-    sampling_rect->Inset(-overscan_x, -overscan_y);
+    // Because the texture sampler sometimes reads between pixels, an extra one
+    // must be accounted for.
+    sampling_rect->Inset(-(overscan_x + 1.0f), -(overscan_y + 1.0f));
   }
 
   // Returns the given |rect| in source coordinates.
@@ -283,6 +343,52 @@ class ScalerImpl : public GLHelper::ScalerInterface {
         static_cast<float>(spec_.scale_to.y()) / spec_.scale_from.y()));
   }
 
+  // Returns the source and output rects to use with the shader program,
+  // assuming this scaler is the "base case" (i.e., it has no subscaler). The
+  // returned output rect is clamped according to what the source texture can
+  // provide.
+  std::pair<gfx::RectF, gfx::Rect> ComputeBaseCaseRects(
+      const gfx::Size& src_texture_size,
+      const gfx::Vector2dF& src_offset,
+      const gfx::Rect& requested_output_rect) const {
+    DCHECK(!subscaler_);
+
+    // The output rect will be the |requested_output_rect|, clamped to just
+    // the region the source texture can provide.
+    gfx::Rect output_rect = requested_output_rect;
+    const gfx::RectF src_bounds = gfx::RectF(gfx::SizeF(src_texture_size));
+    const gfx::Rect output_bounds = ToOutputRect(src_bounds - src_offset);
+    output_rect.Intersect(output_bounds);
+
+    // The source rect is computed based on the clamped output rect, and then
+    // transformed further to account for both the |src_offset| re-positioning
+    // and vertical flipping.
+    gfx::RectF src_rect = ToSourceRect(output_rect);
+    if (spec_.vertically_flip_texture) {
+      src_rect.set_x(src_rect.x() + src_offset.x());
+      src_rect.set_y(src_texture_size.height() - src_rect.bottom() -
+                     src_offset.y());
+    } else {
+      src_rect += src_offset;
+    }
+
+    return std::make_pair(src_rect, output_rect);
+  }
+
+  // Generates the intermediate texture and/or re-defines it if its size has
+  // changed.
+  void EnsureIntermediateTextureDefined(const gfx::Size& size) {
+    // Reallocate a new texture, if needed.
+    if (!intermediate_texture_)
+      gl_->GenTextures(1, &intermediate_texture_);
+    if (intermediate_texture_size_ != size) {
+      gl_->BindTexture(GL_TEXTURE_2D, intermediate_texture_);
+      gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.width(), size.height(), 0,
+                      GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+      intermediate_texture_size_ = size;
+    }
+  }
+
   // Returns a texture of this intermediate scaling step. The caller does NOT
   // own the returned texture. The texture may be smaller than the
   // |requested_output_rect.size()|, if that eliminates data redundancy that
@@ -290,65 +396,63 @@ class ScalerImpl : public GLHelper::ScalerInterface {
   std::pair<GLuint, gfx::Rect> GenerateIntermediateTexture(
       GLuint src_texture,
       const gfx::Size& src_texture_size,
+      const gfx::Vector2dF& src_offset,
       const gfx::Rect& requested_output_rect) {
-    // Compute the region of all input pixels that will be sampled. This region
-    // might extend beyond the source texture's bounds.
-    gfx::RectF sampling_rect = ToSourceRect(requested_output_rect);
-    PadForOverscan(&sampling_rect);
-
-    // If there is a sub-scaler, have it produce an intermediate texture to
-    // source from. Otherwise, use |src_texture| as the input.
-    GLuint sampling_texture;
-    gfx::Rect sampling_bounds;
-    if (subscaler_) {
-      const auto intermediate = subscaler_->GenerateIntermediateTexture(
-          src_texture, src_texture_size, gfx::ToEnclosingRect(sampling_rect));
-      sampling_texture = intermediate.first;
-      sampling_bounds = intermediate.second;
-    } else {
-      sampling_texture = src_texture;
-      sampling_bounds = gfx::Rect(src_texture_size);
+    // Base case: If there is no subscaler, render the intermediate texture from
+    // the |src_texture| and return it.
+    if (!subscaler_) {
+      const auto rects = ComputeBaseCaseRects(src_texture_size, src_offset,
+                                              requested_output_rect);
+      EnsureIntermediateTextureDefined(rects.second.size());
+      Execute(src_texture, src_texture_size, rects.first, intermediate_texture_,
+              0, rects.second.size());
+      return std::make_pair(intermediate_texture_, rects.second);
     }
 
-    // If the sampling region extends beyond the bounds of the texture, clamp it
-    // and compute an |output_rect| that contains the non-redundant subset of
-    // what was requested.
+    // Recursive case: Output from the subscaler is needed to generate this
+    // scaler's intermediate texture. Compute the region of pixels that will be
+    // sampled, and request those pixels from the subscaler.
+    gfx::RectF sampling_rect = ToSourceRect(requested_output_rect);
+    PadForOverscan(&sampling_rect);
+    const auto intermediate = subscaler_->GenerateIntermediateTexture(
+        src_texture, src_texture_size, src_offset,
+        gfx::ToEnclosingRect(sampling_rect));
+    const GLuint& sampling_texture = intermediate.first;
+    const gfx::Rect& sampling_bounds = intermediate.second;
+
+    // The subscaler might not have provided pixels for the entire requested
+    // |sampling_rect| because they would be redundant (i.e., GL_CLAMP_TO_EDGE
+    // behavior will generate the redundant pixel values in the rendering step,
+    // below). Thus, re-compute |requested_output_rect| and |sampling_rect| when
+    // this has occurred.
     gfx::Rect output_rect;
     if (sampling_bounds.Contains(gfx::ToEnclosingRect(sampling_rect))) {
       output_rect = requested_output_rect;
     } else {
       sampling_rect.Intersect(gfx::RectF(sampling_bounds));
       output_rect = ToOutputRect(sampling_rect);
-      // Re-compute the sampling region. This might, again, extend beyond the
-      // bounds of the source texture, but only by a smaller, necessary amount.
+      // The new sampling rect might exceed the bounds slightly, but only by the
+      // minimal amount necessary to populate the entire output.
       sampling_rect = ToSourceRect(output_rect);
     }
 
-    // Reallocate a new texture, if needed.
-    if (!intermediate_texture_)
-      gl_->GenTextures(1, &intermediate_texture_);
-    if (intermediate_texture_size_ != output_rect.size()) {
-      gl_->BindTexture(GL_TEXTURE_2D, intermediate_texture_);
-      gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, output_rect.width(),
-                      output_rect.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
-                      nullptr);
-      intermediate_texture_size_ = output_rect.size();
-    }
-
+    // Render the output, but do not account for |src_offset| nor vertical
+    // flipping because that should have been handled in the base case.
+    EnsureIntermediateTextureDefined(output_rect.size());
+    DCHECK(!spec_.vertically_flip_texture);
     Execute(sampling_texture, sampling_bounds.size(),
             sampling_rect - sampling_bounds.OffsetFromOrigin(),
             intermediate_texture_, 0, output_rect.size());
-
     return std::make_pair(intermediate_texture_, output_rect);
   }
 
   // Executes the scale, mapping pixels from |src_texture| to one or two
-  // outputs, transforming the source pixels in |sampling_rect| to produce a
+  // outputs, transforming the source pixels in |src_rect| to produce a
   // result of the given size. |src_texture_size| is the size of the entire
   // |src_texture|, regardless of the sampled region.
   void Execute(GLuint src_texture,
                const gfx::Size& src_texture_size,
-               const gfx::RectF& sampling_rect,
+               const gfx::RectF& src_rect,
                GLuint dest_texture_0,
                GLuint dest_texture_1,
                const gfx::Size& result_size) {
@@ -373,7 +477,7 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     // Prepare the shader program for drawing.
     ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(
         gl_, scaler_helper_->vertex_attributes_buffer_);
-    shader_program_->UseProgram(src_texture_size, sampling_rect, result_size,
+    shader_program_->UseProgram(src_texture_size, src_rect, result_size,
                                 spec_.scale_x, spec_.vertically_flip_texture,
                                 color_weights_);
 
@@ -693,7 +797,7 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
         "precision highp float;\n"
         "attribute vec2 a_position;\n"
         "attribute vec2 a_texcoord;\n"
-        "uniform vec4 sampling_rect;\n");
+        "uniform vec4 src_rect;\n");
 
     fragment_header.append(
         "precision mediump float;\n"
@@ -701,8 +805,7 @@ scoped_refptr<ShaderProgram> GLHelperScaling::GetShaderProgram(ShaderType type,
 
     vertex_program.append(
         "  gl_Position = vec4(a_position, 0.0, 1.0);\n"
-        "  vec2 texcoord = \n"
-        "      sampling_rect.xy + a_texcoord * sampling_rect.zw;\n");
+        "  vec2 texcoord = src_rect.xy + a_texcoord * src_rect.zw;\n");
 
     switch (type) {
       case SHADER_BILINEAR:
@@ -1012,7 +1115,7 @@ void ShaderProgram::Setup(const GLchar* vertex_shader_text,
   position_location_ = gl_->GetAttribLocation(program_, "a_position");
   texcoord_location_ = gl_->GetAttribLocation(program_, "a_texcoord");
   texture_location_ = gl_->GetUniformLocation(program_, "s_texture");
-  sampling_rect_location_ = gl_->GetUniformLocation(program_, "sampling_rect");
+  src_rect_location_ = gl_->GetUniformLocation(program_, "src_rect");
   src_pixelsize_location_ = gl_->GetUniformLocation(program_, "src_pixelsize");
   scaling_vector_location_ =
       gl_->GetUniformLocation(program_, "scaling_vector");
@@ -1026,7 +1129,7 @@ void ShaderProgram::Setup(const GLchar* vertex_shader_text,
 }
 
 void ShaderProgram::UseProgram(const gfx::Size& src_texture_size,
-                               const gfx::RectF& sampling_rect,
+                               const gfx::RectF& src_rect,
                                const gfx::Size& dst_size,
                                bool scale_x,
                                bool flip_y,
@@ -1049,21 +1152,21 @@ void ShaderProgram::UseProgram(const gfx::Size& src_texture_size,
 
   gl_->Uniform1i(texture_location_, 0);
 
-  // Convert |sampling_rect| from pixel coordinates to texture coordinates. The
+  // Convert |src_rect| from pixel coordinates to texture coordinates. The
   // source texture coordinates are in the range [0.0,1.0] for each dimension,
   // but the sampling rect may slightly "spill" outside that range (e.g., for
   // scaler overscan).
-  GLfloat sampling_rect_texcoord[4] = {
-      sampling_rect.x() / src_texture_size.width(),
-      sampling_rect.y() / src_texture_size.height(),
-      sampling_rect.width() / src_texture_size.width(),
-      sampling_rect.height() / src_texture_size.height(),
+  GLfloat src_rect_texcoord[4] = {
+      src_rect.x() / src_texture_size.width(),
+      src_rect.y() / src_texture_size.height(),
+      src_rect.width() / src_texture_size.width(),
+      src_rect.height() / src_texture_size.height(),
   };
   if (flip_y) {
-    sampling_rect_texcoord[1] += sampling_rect_texcoord[3];
-    sampling_rect_texcoord[3] *= -1.0;
+    src_rect_texcoord[1] += src_rect_texcoord[3];
+    src_rect_texcoord[3] *= -1.0f;
   }
-  gl_->Uniform4fv(sampling_rect_location_, 1, sampling_rect_texcoord);
+  gl_->Uniform4fv(src_rect_location_, 1, src_rect_texcoord);
 
   // Set shader-specific uniform inputs. The |scaling_vector| is the ratio of
   // the number of source pixels sampled per dest pixels output. It is used by
@@ -1084,17 +1187,17 @@ void ShaderProgram::UseProgram(const gfx::Size& src_texture_size,
     case GLHelperScaling::SHADER_YUV_MRT_PASS2:
       if (scale_x) {
         gl_->Uniform2f(scaling_vector_location_,
-                       sampling_rect_texcoord[2] / dst_size.width(), 0.0);
+                       src_rect_texcoord[2] / dst_size.width(), 0.0);
       } else {
         gl_->Uniform2f(scaling_vector_location_, 0.0,
-                       sampling_rect_texcoord[3] / dst_size.height());
+                       src_rect_texcoord[3] / dst_size.height());
       }
       break;
 
     case GLHelperScaling::SHADER_BILINEAR2X2:
       gl_->Uniform2f(scaling_vector_location_,
-                     sampling_rect_texcoord[2] / dst_size.width(),
-                     sampling_rect_texcoord[3] / dst_size.height());
+                     src_rect_texcoord[2] / dst_size.width(),
+                     src_rect_texcoord[3] / dst_size.height());
       break;
 
     case GLHelperScaling::SHADER_BICUBIC_UPSCALE:

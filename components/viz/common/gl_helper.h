@@ -20,6 +20,7 @@ namespace gfx {
 class Point;
 class Rect;
 class Vector2d;
+class Vector2dF;
 }  // namespace gfx
 
 namespace gpu {
@@ -284,6 +285,12 @@ class VIZ_COMMON_EXPORT GLHelper {
     // is required for computing texture coordinate transforms (and only because
     // the OpenGL ES 2.0 API lacks the ability to query this info).
     //
+    // |src_offset| is the offset in the source texture corresponding to point
+    // (0,0) in the source/output coordinate spaces. This prevents the need for
+    // extra texture copies just to re-position the source coordinate system.
+    // TODO(crbug.com/775740): This must be set to whole-numbered values for
+    // now, until the implementation is modified to handle fractional offsets.
+    //
     // |output_rect| selects the region to draw (in the scaled, not the source,
     // coordinate space). This is used to save work in cases where only a
     // portion needs to be re-scaled. The implementation will back-compute,
@@ -296,18 +303,35 @@ class VIZ_COMMON_EXPORT GLHelper {
     // and wrap_s/t set to CLAMP_TO_EDGE in this call.
     void Scale(GLuint src_texture,
                const gfx::Size& src_texture_size,
+               const gfx::Vector2dF& src_offset,
                GLuint dest_texture,
                const gfx::Rect& output_rect) {
-      ScaleToMultipleOutputs(src_texture, src_texture_size, dest_texture, 0,
-                             output_rect);
+      ScaleToMultipleOutputs(src_texture, src_texture_size, src_offset,
+                             dest_texture, 0, output_rect);
     }
 
     // Same as above, but for shaders that output to two textures at once.
     virtual void ScaleToMultipleOutputs(GLuint src_texture,
                                         const gfx::Size& src_texture_size,
+                                        const gfx::Vector2dF& src_offset,
                                         GLuint dest_texture_0,
                                         GLuint dest_texture_1,
                                         const gfx::Rect& output_rect) = 0;
+
+    // Given the |src_texture_size|, |src_offset| and |output_rect| arguments
+    // that would be passed to Scale(), compute the region of pixels in the
+    // source texture that would be sampled to produce a scaled result. The
+    // result is stored in |sampling_rect|, along with the |offset| to the (0,0)
+    // point relative to |sampling_rect|'s origin.
+    //
+    // This is used by clients that need to know the minimal portion of a source
+    // buffer that must be copied without affecting Scale()'s results. This
+    // method also accounts for vertical flipping.
+    virtual void ComputeRegionOfInfluence(const gfx::Size& src_texture_size,
+                                          const gfx::Vector2dF& src_offset,
+                                          const gfx::Rect& output_rect,
+                                          gfx::Rect* sampling_rect,
+                                          gfx::Vector2dF* offset) const = 0;
 
     // Returns true if from:to represent the same scale ratio as that provided
     // by this scaler.
@@ -429,14 +453,16 @@ class I420Converter {
 
   // Transforms a RGBA |src_texture| into three textures, each containing bytes
   // in I420 planar form. See the GLHelper::ScalerInterface::Scale() method
-  // comments for the meaning/semantics of |src_texture_size| and |output_rect|.
-  // If |optional_scaler| is not null, it will first be used to scale the source
-  // texture into an intermediate texture before generating the Y+U+V planes.
+  // comments for the meaning/semantics of |src_texture_size|, |src_offset| and
+  // |output_rect|. If |optional_scaler| is not null, it will first be used to
+  // scale the source texture into an intermediate texture before generating the
+  // Y+U+V planes.
   //
   // See notes for CreateI420Converter() regarding the semantics of the output
   // textures.
   virtual void Convert(GLuint src_texture,
                        const gfx::Size& src_texture_size,
+                       const gfx::Vector2dF& src_offset,
                        GLHelper::ScalerInterface* optional_scaler,
                        const gfx::Rect& output_rect,
                        GLuint y_plane_texture,
