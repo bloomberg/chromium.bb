@@ -21,6 +21,9 @@
 #ifndef WTF_GetPtr_h
 #define WTF_GetPtr_h
 
+template <typename>
+class scoped_refptr;
+
 namespace WTF {
 
 template <typename T>
@@ -31,6 +34,11 @@ inline T* GetPtr(T* p) {
 template <typename T>
 inline T* GetPtr(T& p) {
   return &p;
+}
+
+template <typename T>
+inline T* GetPtr(const scoped_refptr<T>& p) {
+  return p.get();
 }
 
 }  // namespace WTF
