@@ -62,7 +62,7 @@ class ChildListRecord : public MutationRecord {
     MutationRecord::Trace(visitor);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(target_);
     visitor->TraceWrappers(added_nodes_);
     visitor->TraceWrappers(removed_nodes_);
@@ -96,7 +96,7 @@ class RecordWithEmptyNodeLists : public MutationRecord {
     MutationRecord::Trace(visitor);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(target_);
     visitor->TraceWrappers(added_nodes_);
     visitor->TraceWrappers(removed_nodes_);
@@ -164,7 +164,7 @@ class MutationRecordWithNullOldValue : public MutationRecord {
     MutationRecord::Trace(visitor);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(record_);
     MutationRecord::TraceWrappers(visitor);
   }

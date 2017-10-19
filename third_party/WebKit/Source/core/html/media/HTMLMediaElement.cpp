@@ -3878,7 +3878,8 @@ void HTMLMediaElement::Trace(blink::Visitor* visitor) {
   SuspendableObject::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(HTMLMediaElement) {
+void HTMLMediaElement::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(video_tracks_);
   visitor->TraceWrappers(audio_tracks_);
   visitor->TraceWrappers(text_tracks_);

@@ -1646,7 +1646,8 @@ void LocalDOMWindow::Trace(blink::Visitor* visitor) {
   Supplementable<LocalDOMWindow>::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(LocalDOMWindow) {
+void LocalDOMWindow::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(custom_elements_);
   visitor->TraceWrappers(document_);
   visitor->TraceWrappers(modulator_);

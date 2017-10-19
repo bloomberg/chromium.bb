@@ -107,7 +107,7 @@ class CORE_EXPORT WorkletGlobalScope
   }
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   // Partial implementation of the "set up a worklet environment settings

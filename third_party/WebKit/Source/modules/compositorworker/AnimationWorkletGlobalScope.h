@@ -40,7 +40,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
       WorkerClients*);
   ~AnimationWorkletGlobalScope() override;
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
   void Dispose() override;
   bool IsAnimationWorkletGlobalScope() const final { return true; }
 

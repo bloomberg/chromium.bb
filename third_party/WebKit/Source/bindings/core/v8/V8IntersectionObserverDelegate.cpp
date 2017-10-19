@@ -32,7 +32,8 @@ void V8IntersectionObserverDelegate::Trace(blink::Visitor* visitor) {
   IntersectionObserverDelegate::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(V8IntersectionObserverDelegate) {
+void V8IntersectionObserverDelegate::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
   IntersectionObserverDelegate::TraceWrappers(visitor);
 }

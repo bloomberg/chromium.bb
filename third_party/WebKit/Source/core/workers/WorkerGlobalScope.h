@@ -158,7 +158,7 @@ class CORE_EXPORT WorkerGlobalScope
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,

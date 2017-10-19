@@ -1351,7 +1351,7 @@ void StyleEngine::Trace(blink::Visitor* visitor) {
   FontSelectorClient::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(StyleEngine) {
+void StyleEngine::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (const auto& sheet : user_style_sheets_) {
     visitor->TraceWrappers(sheet.second);
   }

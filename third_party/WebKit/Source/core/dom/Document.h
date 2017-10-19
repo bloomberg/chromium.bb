@@ -1293,7 +1293,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   AtomicString ConvertLocalName(const AtomicString&);
 

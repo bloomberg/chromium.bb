@@ -113,7 +113,7 @@ void Geolocation::Trace(blink::Visitor* visitor) {
   PageVisibilityObserver::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(Geolocation) {
+void Geolocation::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (const auto& one_shot : one_shots_)
     visitor->TraceWrappers(one_shot);
   visitor->TraceWrappers(watchers_);

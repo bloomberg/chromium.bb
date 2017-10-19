@@ -115,7 +115,8 @@ void DataTransferItem::Trace(blink::Visitor* visitor) {
   visitor->Trace(callbacks_);
 }
 
-DEFINE_TRACE_WRAPPERS(DataTransferItem) {
+void DataTransferItem::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   for (auto callback : callbacks_)
     visitor->TraceWrappers(callback);
 }

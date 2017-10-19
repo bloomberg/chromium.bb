@@ -44,7 +44,8 @@ SVGStringListTearOff::SVGStringListTearOff(
                                         property_is_anim_val,
                                         attribute_name) {}
 
-DEFINE_TRACE_WRAPPERS(SVGStringListTearOff) {
+void SVGStringListTearOff::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   SVGPropertyTearOff<SVGStringList>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

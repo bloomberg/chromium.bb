@@ -222,7 +222,7 @@ class CORE_EXPORT HTMLCanvasElement final
                            unsigned resource_id) override;
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   void CreateImageBufferUsingSurfaceForTesting(
       std::unique_ptr<ImageBufferSurface>);

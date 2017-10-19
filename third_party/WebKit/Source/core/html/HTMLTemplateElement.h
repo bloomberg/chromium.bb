@@ -49,7 +49,7 @@ class CORE_EXPORT HTMLTemplateElement final : public HTMLElement {
 
   DocumentFragment* content() const;
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   Node* cloneNode(bool deep, ExceptionState&) override;

@@ -156,7 +156,8 @@ void ResizeObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(controller_);
 }
 
-DEFINE_TRACE_WRAPPERS(ResizeObserver) {
+void ResizeObserver::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
 }
 

@@ -63,7 +63,7 @@ void NodeRareData::Trace(blink::Visitor* visitor) {
     TraceAfterDispatch(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(NodeRareData) {
+void NodeRareData::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   if (is_element_rare_data_)
     static_cast<const ElementRareData*>(this)->TraceWrappersAfterDispatch(
         visitor);
@@ -71,7 +71,8 @@ DEFINE_TRACE_WRAPPERS(NodeRareData) {
     TraceWrappersAfterDispatch(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(NodeRareData) {
+void NodeRareData::TraceWrappersAfterDispatch(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(node_lists_);
   visitor->TraceWrappers(mutation_observer_data_);
 }

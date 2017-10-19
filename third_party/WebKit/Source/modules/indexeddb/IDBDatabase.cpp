@@ -126,7 +126,7 @@ void IDBDatabase::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(IDBDatabase) {
+void IDBDatabase::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (const auto& observer : observers_.Values()) {
     visitor->TraceWrappers(observer);
   }

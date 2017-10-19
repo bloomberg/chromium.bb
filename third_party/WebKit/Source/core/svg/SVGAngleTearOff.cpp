@@ -134,7 +134,8 @@ SVGAngleTearOff* SVGAngleTearOff::CreateDetached() {
                 QualifiedName::Null());
 }
 
-DEFINE_TRACE_WRAPPERS(SVGAngleTearOff) {
+void SVGAngleTearOff::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   SVGPropertyTearOff<SVGAngle>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

@@ -57,7 +57,7 @@ class CORE_EXPORT HTMLScriptElement final : public HTMLElement,
   Document& GetDocument() const override;
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   HTMLScriptElement(Document&,

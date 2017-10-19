@@ -57,7 +57,8 @@ SVGNumberTearOff* SVGNumberTearOff::CreateDetached() {
                 QualifiedName::Null());
 }
 
-DEFINE_TRACE_WRAPPERS(SVGNumberTearOff) {
+void SVGNumberTearOff::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   SVGPropertyTearOff<SVGNumber>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

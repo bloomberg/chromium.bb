@@ -30,7 +30,7 @@ class ModulatorImplBase : public Modulator {
  public:
   virtual ~ModulatorImplBase();
   void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   ExecutionContext* GetExecutionContext() const;
 

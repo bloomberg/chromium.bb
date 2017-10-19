@@ -286,7 +286,7 @@ void Database::Trace(blink::Visitor* visitor) {
   visitor->Trace(creation_callback_);
 }
 
-DEFINE_TRACE_WRAPPERS(Database) {
+void Database::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(creation_callback_);
 }
 

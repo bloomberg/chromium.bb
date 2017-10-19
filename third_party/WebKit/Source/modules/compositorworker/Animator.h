@@ -25,7 +25,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Object> instance);
   ~Animator();
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
   void Animate(ScriptState*) const;
 

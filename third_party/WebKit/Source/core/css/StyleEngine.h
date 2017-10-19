@@ -295,7 +295,7 @@ class CORE_EXPORT StyleEngine final
   void MarkForWhitespaceReattachment();
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   // FontSelectorClient implementation.

@@ -115,7 +115,7 @@ class StyleRuleCSSStyleDeclaration : public PropertySetCSSStyleDeclaration {
   void Reattach(MutableStylePropertySet&);
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   StyleRuleCSSStyleDeclaration(MutableStylePropertySet&, CSSRule*);

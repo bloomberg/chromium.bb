@@ -16,7 +16,8 @@ CallbackFunctionBase::CallbackFunctionBase(ScriptState* scriptState,
 
 CallbackFunctionBase::~CallbackFunctionBase() = default;
 
-DEFINE_TRACE_WRAPPERS(CallbackFunctionBase) {
+void CallbackFunctionBase::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
 }
 

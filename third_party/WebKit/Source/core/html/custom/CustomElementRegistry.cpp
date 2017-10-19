@@ -94,7 +94,8 @@ void CustomElementRegistry::Trace(blink::Visitor* visitor) {
   visitor->Trace(when_defined_promise_map_);
 }
 
-DEFINE_TRACE_WRAPPERS(CustomElementRegistry) {
+void CustomElementRegistry::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(reaction_stack_);
   for (auto definition : definitions_)
     visitor->TraceWrappers(definition);

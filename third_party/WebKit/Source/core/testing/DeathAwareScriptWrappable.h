@@ -45,7 +45,7 @@ class DeathAwareScriptWrappable
     visitor->Trace(wrapped_hash_map_dependency_);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     visitor->TraceWrappers(wrapped_dependency_);
     for (auto dep : wrapped_vector_dependency_) {
       visitor->TraceWrappers(dep);

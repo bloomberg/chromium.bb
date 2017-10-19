@@ -168,7 +168,7 @@ class NodeListsNodeData final : public GarbageCollected<NodeListsNodeData> {
   }
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   NodeListsNodeData() : child_node_list_(nullptr) {}

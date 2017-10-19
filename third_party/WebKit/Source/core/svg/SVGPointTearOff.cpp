@@ -72,7 +72,8 @@ SVGPointTearOff* SVGPointTearOff::CreateDetached(const FloatPoint& point) {
                 QualifiedName::Null());
 }
 
-DEFINE_TRACE_WRAPPERS(SVGPointTearOff) {
+void SVGPointTearOff::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   SVGPropertyTearOff<SVGPoint>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

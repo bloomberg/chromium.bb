@@ -47,7 +47,7 @@ class SVGAnimatedRect : public SVGAnimatedProperty<SVGRect>,
     return new SVGAnimatedRect(context_element, attribute_name);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     SVGAnimatedProperty<SVGRect>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

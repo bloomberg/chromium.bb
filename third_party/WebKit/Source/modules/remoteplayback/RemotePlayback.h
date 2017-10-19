@@ -133,7 +133,7 @@ class MODULES_EXPORT RemotePlayback final
   DEFINE_ATTRIBUTE_EVENT_LISTENER(disconnect);
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   friend class V8RemotePlayback;

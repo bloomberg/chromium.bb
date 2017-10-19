@@ -94,7 +94,7 @@ class ErrorEvent final : public Event {
   void SetUnsanitizedMessage(const String&);
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   ErrorEvent();

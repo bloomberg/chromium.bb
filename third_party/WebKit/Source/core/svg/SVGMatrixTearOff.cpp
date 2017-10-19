@@ -49,7 +49,8 @@ void SVGMatrixTearOff::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_transform_);
 }
 
-DEFINE_TRACE_WRAPPERS(SVGMatrixTearOff) {
+void SVGMatrixTearOff::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(context_transform_);
 }
 

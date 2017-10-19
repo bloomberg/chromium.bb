@@ -976,7 +976,7 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
   GLint GetMaxTransformFeedbackSeparateAttribs() const;
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   friend class V8WebGL2RenderingContext;

@@ -103,7 +103,7 @@ void IDBObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(observer_ids_);
 }
 
-DEFINE_TRACE_WRAPPERS(IDBObserver) {
+void IDBObserver::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
   ScriptWrappable::TraceWrappers(visitor);
 }

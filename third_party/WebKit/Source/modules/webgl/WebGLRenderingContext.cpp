@@ -216,7 +216,8 @@ void WebGLRenderingContext::Trace(blink::Visitor* visitor) {
   WebGLRenderingContextBase::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(WebGLRenderingContext) {
+void WebGLRenderingContext::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   // Extensions are managed base WebGLRenderingContextBase.
   WebGLRenderingContextBase::TraceWrappers(visitor);
 }

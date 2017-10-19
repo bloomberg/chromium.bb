@@ -74,7 +74,7 @@ class HTMLImportsController final
 
   void Dispose();
 
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   explicit HTMLImportsController(Document&);

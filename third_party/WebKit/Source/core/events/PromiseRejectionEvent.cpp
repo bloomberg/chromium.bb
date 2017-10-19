@@ -66,7 +66,8 @@ void PromiseRejectionEvent::Trace(blink::Visitor* visitor) {
   Event::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(PromiseRejectionEvent) {
+void PromiseRejectionEvent::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(promise_);
   visitor->TraceWrappers(reason_);
 }

@@ -1043,7 +1043,7 @@ void VRDisplay::Trace(blink::Visitor* visitor) {
   ContextLifecycleObserver::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(VRDisplay) {
+void VRDisplay::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(scripted_animation_controller_);
   EventTargetWithInlineData::TraceWrappers(visitor);
 }

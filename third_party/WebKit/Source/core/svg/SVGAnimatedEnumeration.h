@@ -70,7 +70,7 @@ class SVGAnimatedEnumeration : public SVGAnimatedEnumerationBase {
         SVGAnimatedEnumerationBase::CurrentValue());
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     SVGAnimatedEnumerationBase::TraceWrappers(visitor);
   }
 

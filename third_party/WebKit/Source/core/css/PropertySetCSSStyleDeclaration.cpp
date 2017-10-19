@@ -393,7 +393,8 @@ void StyleRuleCSSStyleDeclaration::Trace(blink::Visitor* visitor) {
   PropertySetCSSStyleDeclaration::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(StyleRuleCSSStyleDeclaration) {
+void StyleRuleCSSStyleDeclaration::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(parent_rule_);
   PropertySetCSSStyleDeclaration::TraceWrappers(visitor);
 }

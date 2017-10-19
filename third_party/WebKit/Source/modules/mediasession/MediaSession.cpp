@@ -234,7 +234,7 @@ void MediaSession::Trace(blink::Visitor* visitor) {
   ContextClient::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(MediaSession) {
+void MediaSession::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   for (auto handler : action_handlers_.Values())
     visitor->TraceWrappers(handler);
 }

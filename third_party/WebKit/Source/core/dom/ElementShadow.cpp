@@ -168,7 +168,7 @@ void ElementShadow::Trace(blink::Visitor* visitor) {
   visitor->Trace(shadow_root_);
 }
 
-DEFINE_TRACE_WRAPPERS(ElementShadow) {
+void ElementShadow::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(element_shadow_v0_);
   visitor->TraceWrappers(shadow_root_);
 }

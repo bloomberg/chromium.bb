@@ -51,7 +51,7 @@ class SVGAnimatedLengthList final : public SVGAnimatedProperty<SVGLengthList>,
                                      initial_value);
   }
 
-  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
     SVGAnimatedProperty<SVGLengthList>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

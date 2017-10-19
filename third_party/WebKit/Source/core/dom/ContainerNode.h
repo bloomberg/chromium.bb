@@ -338,7 +338,7 @@ class CORE_EXPORT ContainerNode : public Node {
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   ContainerNode(TreeScope*, ConstructionType = kCreateContainer);

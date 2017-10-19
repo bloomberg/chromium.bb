@@ -7259,7 +7259,7 @@ void Document::RecordUkmOutliveTimeAfterShutdown(int outlive_time_count) {
       .Record(ukm_recorder_.get());
 }
 
-DEFINE_TRACE_WRAPPERS(Document) {
+void Document::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   // node_lists_ are traced in their corresponding NodeListsNodeData, keeping
   // them only alive for live nodes. Otherwise we would keep lists of dead
   // nodes alive that have not yet been invalidated.

@@ -52,7 +52,7 @@ class CORE_EXPORT ScriptedAnimationController
   virtual ~ScriptedAnimationController() = default;
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
   void ClearDocumentPointer() { document_ = nullptr; }
 
   // Animation frame callbacks are used for requestAnimationFrame().

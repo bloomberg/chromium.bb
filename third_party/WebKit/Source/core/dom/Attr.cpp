@@ -117,7 +117,7 @@ void Attr::Trace(blink::Visitor* visitor) {
   Node::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(Attr) {
+void Attr::TraceWrappers(const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(element_);
   Node::TraceWrappers(visitor);
 }

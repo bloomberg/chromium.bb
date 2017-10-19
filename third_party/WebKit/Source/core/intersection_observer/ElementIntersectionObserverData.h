@@ -30,7 +30,7 @@ class ElementIntersectionObserverData
   void DeactivateAllIntersectionObservers(Node&);
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   // IntersectionObservers for which the Node owning this data is root.

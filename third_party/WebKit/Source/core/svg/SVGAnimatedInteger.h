@@ -62,7 +62,7 @@ class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger>,
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   SVGAnimatedInteger(SVGElement* context_element,

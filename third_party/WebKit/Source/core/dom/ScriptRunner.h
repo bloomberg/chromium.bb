@@ -69,7 +69,7 @@ class CORE_EXPORT ScriptRunner final
   static void MovePendingScript(Document&, Document&, ScriptLoader*);
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   class Task;

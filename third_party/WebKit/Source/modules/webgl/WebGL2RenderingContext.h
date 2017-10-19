@@ -49,7 +49,7 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   WebGL2RenderingContext(

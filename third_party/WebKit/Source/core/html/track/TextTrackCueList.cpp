@@ -146,7 +146,8 @@ void TextTrackCueList::Trace(blink::Visitor* visitor) {
   visitor->Trace(list_);
 }
 
-DEFINE_TRACE_WRAPPERS(TextTrackCueList) {
+void TextTrackCueList::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   for (auto cue : list_) {
     visitor->TraceWrappers(cue);
   }

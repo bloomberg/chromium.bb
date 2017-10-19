@@ -131,7 +131,8 @@ void PerformanceObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(performance_entries_);
 }
 
-DEFINE_TRACE_WRAPPERS(PerformanceObserver) {
+void PerformanceObserver::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(callback_);
 }
 

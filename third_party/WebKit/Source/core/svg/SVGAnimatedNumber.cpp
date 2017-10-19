@@ -49,7 +49,8 @@ void SVGAnimatedNumber::Trace(blink::Visitor* visitor) {
   SVGAnimatedProperty<SVGNumber>::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(SVGAnimatedNumber) {
+void SVGAnimatedNumber::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   SVGAnimatedProperty<SVGNumber>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

@@ -50,7 +50,7 @@ class DocumentPaintDefinition final
   }
 
   virtual void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS(){};
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {};
 
  private:
   Member<CSSPaintDefinition> paint_definition_;

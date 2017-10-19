@@ -5513,7 +5513,8 @@ void WebGL2RenderingContextBase::Trace(blink::Visitor* visitor) {
   WebGLRenderingContextBase::Trace(visitor);
 }
 
-DEFINE_TRACE_WRAPPERS(WebGL2RenderingContextBase) {
+void WebGL2RenderingContextBase::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(read_framebuffer_binding_);
   visitor->TraceWrappers(transform_feedback_binding_);
   visitor->TraceWrappers(bound_copy_read_buffer_);

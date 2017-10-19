@@ -834,7 +834,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   virtual void Trace(blink::Visitor*);
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   enum NodeFlags {

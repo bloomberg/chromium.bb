@@ -81,7 +81,8 @@ SVGPreserveAspectRatioTearOff::SVGPreserveAspectRatioTearOff(
                                                  property_is_anim_val,
                                                  attribute_name) {}
 
-DEFINE_TRACE_WRAPPERS(SVGPreserveAspectRatioTearOff) {
+void SVGPreserveAspectRatioTearOff::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   SVGPropertyTearOff<SVGPreserveAspectRatio>::TraceWrappers(visitor);
   ScriptWrappable::TraceWrappers(visitor);
 }

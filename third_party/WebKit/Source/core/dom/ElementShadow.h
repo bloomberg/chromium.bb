@@ -81,7 +81,7 @@ class CORE_EXPORT ElementShadow final : public GarbageCollected<ElementShadow>,
   }
 
   void Trace(blink::Visitor*);
-  DECLARE_TRACE_WRAPPERS();
+  void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   ElementShadow();

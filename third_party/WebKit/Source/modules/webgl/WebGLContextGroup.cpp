@@ -50,7 +50,8 @@ uint32_t WebGLContextGroup::NumberOfContextLosses() const {
   return number_of_context_losses_;
 }
 
-DEFINE_TRACE_WRAPPERS(WebGLContextGroup) {
+void WebGLContextGroup::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   for (auto context : contexts_) {
     visitor->TraceWrappers(context);
   }
