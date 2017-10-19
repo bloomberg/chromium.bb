@@ -75,6 +75,7 @@ void RecordBlobItemSizeStats(const DataElement& input_element) {
       UMA_HISTOGRAM_COUNTS_1M("Storage.BlobItemSize.CacheEntry",
                               (length - input_element.offset()) / 1024);
       break;
+    case DataElement::TYPE_DATA_PIPE:
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();
       break;
@@ -366,6 +367,7 @@ BlobStorageContext::BlobSlice::BlobSlice(const BlobEntry& source,
         break;
       }
       case DataElement::TYPE_BLOB:
+      case DataElement::TYPE_DATA_PIPE:
       case DataElement::TYPE_UNKNOWN:
         CHECK(false) << "Illegal blob item type: " << type;
     }
@@ -793,6 +795,7 @@ void BlobStorageContext::FinishBuilding(BlobEntry* entry) {
         case DataElement::TYPE_BYTES_DESCRIPTION:
         case DataElement::TYPE_FILE_FILESYSTEM:
         case DataElement::TYPE_DISK_CACHE_ENTRY:
+        case DataElement::TYPE_DATA_PIPE:
           NOTREACHED();
           break;
       }

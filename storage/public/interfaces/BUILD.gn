@@ -7,6 +7,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 mojom("interfaces") {
   sources = [
     "blobs.mojom",
+    "size_getter.mojom",
   ]
 
   public_deps = [

@@ -19,7 +19,6 @@ DataElement::DataElement()
       offset_(0),
       length_(std::numeric_limits<uint64_t>::max()) {}
 
-
 DataElement::~DataElement() {}
 
 DataElement::DataElement(DataElement&& other) = default;
@@ -64,6 +63,20 @@ void DataElement::SetToDiskCacheEntryRange(uint64_t offset, uint64_t length) {
   length_ = length;
 }
 
+void DataElement::SetToDataPipe(mojo::ScopedDataPipeConsumerHandle handle,
+                                mojom::SizeGetterPtr size_getter) {
+  type_ = TYPE_DATA_PIPE;
+  data_pipe_ = std::move(handle);
+  data_pipe_size_getter_ = std::move(size_getter);
+}
+
+mojo::ScopedDataPipeConsumerHandle DataElement::ReleaseDataPipe(
+    mojom::SizeGetterPtr* size_getter) {
+  if (size_getter)
+    *size_getter = std::move(data_pipe_size_getter_);
+  return std::move(data_pipe_);
+}
+
 void PrintTo(const DataElement& x, std::ostream* os) {
   const uint64_t kMaxDataPrintLength = 40;
   *os << "<DataElement>{type: ";
@@ -94,6 +107,9 @@ void PrintTo(const DataElement& x, std::ostream* os) {
     case DataElement::TYPE_BYTES_DESCRIPTION:
       *os << "TYPE_BYTES_DESCRIPTION";
       break;
+    case DataElement::TYPE_DATA_PIPE:
+      *os << "TYPE_DATA_ELEMENT";
+      break;
     case DataElement::TYPE_UNKNOWN:
       *os << "TYPE_UNKNOWN";
       break;
@@ -121,6 +137,8 @@ bool operator==(const DataElement& a, const DataElement& b) {
       return true;
     case DataElement::TYPE_BYTES_DESCRIPTION:
       return true;
+    case DataElement::TYPE_DATA_PIPE:
+      return false;
     case DataElement::TYPE_UNKNOWN:
       NOTREACHED();
       return false;
