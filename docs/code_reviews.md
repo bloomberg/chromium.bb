@@ -23,6 +23,9 @@ If you have multiple reviewers, make it clear in the message you send
 requesting review what you expect from each reviewer. Otherwise people might
 assume their input is not required or waste time with redundant reviews.
 
+Please also read [Respectful Changes](cl_respect.md) and
+[Respectful Code Reviews](cr_respect.md).
+
 #### Expectations for all reviewers
 
   * Aim to provide some kind of actionable response within 24 hours of receipt
