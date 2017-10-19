@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// Experimental Translation Assist Model to allow/suppress translation prompts.
+// Translation Assist Model to allow/suppress translation prompts.
 
 syntax = "proto2";
 

@@ -9,6 +9,7 @@ syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
 import "translate_ranker_model.proto";
+import "contextual_search_ranker_model.proto";
 
 package machine_intelligence;
 
@@ -45,5 +46,8 @@ message RankerModelProto {
   // Metadata.
   optional RankerModelMetadata metadata = 1;
 
-  oneof model { TranslateRankerModel translate = 2; }
+  oneof model {
+    TranslateRankerModel translate = 2;
+    ContextualSearchRankerModel contextual_search = 3;
+  }
 }

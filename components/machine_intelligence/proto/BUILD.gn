@@ -6,6 +6,8 @@ import("//third_party/protobuf/proto_library.gni")
 
 proto_library("proto") {
   sources = [
+    "contextual_search_ranker_model.proto",
+    "generic_logistic_regression_model.proto",
     "ranker_example.proto",
     "ranker_model.proto",
     "translate_ranker_model.proto",
