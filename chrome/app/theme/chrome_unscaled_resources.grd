@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- This grd file contains images that are not pre-scaled for device
      scale factors. The image returned by
-     ui::ResourceBundle::GetImageNamed() only contains 100P, and
+     |base::ResourceBundle::GetImageNamed| only contains 100P, and
      it is the caller's responsibility to do the right thing when the
      display is not at 100P device scale factor.
   -->

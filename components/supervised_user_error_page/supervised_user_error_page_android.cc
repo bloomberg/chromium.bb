@@ -16,9 +16,8 @@ std::string BuildHtmlFromWebRestrictionsResult(
     const std::string app_locale) {
   // Check if Webview has the resources it needs to build the error page.
   // It only will have it is built as Monochrome.
-  if (ui::ResourceBundle::GetSharedInstance()
-          .GetRawDataResource(IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML)
-          .empty()) {
+  if (ResourceBundle::GetSharedInstance().GetRawDataResource(
+      IDR_SUPERVISED_USER_BLOCK_INTERSTITIAL_HTML).empty()) {
     return std::string();
   }
   return BuildHtml(

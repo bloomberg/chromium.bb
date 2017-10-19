@@ -98,8 +98,7 @@ const gfx::Image& ProfileAttributesEntry::GetAvatarIcon() const {
 
   int resource_id =
       profiles::GetDefaultAvatarIconResourceIDAtIndex(GetAvatarIconIndex());
-  return ui::ResourceBundle::GetSharedInstance().GetNativeImageNamed(
-      resource_id);
+  return ResourceBundle::GetSharedInstance().GetNativeImageNamed(resource_id);
 }
 
 std::string ProfileAttributesEntry::GetLocalAuthCredentials() const {

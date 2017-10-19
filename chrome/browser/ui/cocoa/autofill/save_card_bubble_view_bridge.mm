@@ -246,7 +246,7 @@ void SaveCardBubbleViewBridge::Hide() {
   [[cardIcon layer]
       setBorderColor:skia::CGColorCreateFromSkColor(kIconBorderColor)];
   [cardIcon
-      setImage:ui::ResourceBundle::GetSharedInstance()
+      setImage:ResourceBundle::GetSharedInstance()
                    .GetNativeImageNamed(
                        autofill::CreditCard::IconResourceId(card.network()))
                    .AsNSImage()];
