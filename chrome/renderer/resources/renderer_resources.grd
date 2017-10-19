@@ -20,11 +20,6 @@
       <include name="IDR_PREFER_HTML_PLUGIN_HTML" file="plugins/prefer_html_plugin.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_PLUGIN_POSTER_HTML" file="plugins/plugin_poster.html" flattenhtml="true" type="BINDATA" />
 
-      <!-- Searchbox API -->
-      <if expr="enable_extensions or is_android">
-        <include name="IDR_SEARCHBOX_API" file="extensions\searchbox_api.js" type="BINDATA" />
-      </if>
-
       <!-- Extension libraries. -->
       <if expr="enable_extensions">
         <!-- Custom bindings for extension APIs. -->

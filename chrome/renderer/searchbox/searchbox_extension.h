@@ -8,23 +8,19 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-namespace v8 {
-class Extension;
-}
-
 namespace blink {
 class WebLocalFrame;
 }
 
-namespace extensions_v8 {
+namespace content {
+class RenderFrame;
+}
 
-// Reference implementation of the SearchBox API as described in:
-// http://dev.chromium.org/searchbox
+// Javascript bindings for the chrome.embeddedSearch APIs. See
+// https://www.chromium.org/embeddedsearch.
 class SearchBoxExtension {
  public:
-  // Returns the v8::Extension object handling searchbox bindings. Returns null
-  // if match-preview is not enabled. Caller takes ownership of returned object.
-  static v8::Extension* Get();
+  static void Install(content::RenderFrame* render_frame);
 
   // Helpers to dispatch Javascript events.
   static void DispatchChromeIdentityCheckResult(blink::WebLocalFrame* frame,
@@ -42,7 +38,5 @@ class SearchBoxExtension {
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SearchBoxExtension);
 };
-
-}  // namespace extensions_v8
 
 #endif  // CHROME_RENDERER_SEARCHBOX_SEARCHBOX_EXTENSION_H_

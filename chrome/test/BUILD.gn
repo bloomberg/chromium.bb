@@ -3476,7 +3476,6 @@ test("unit_tests") {
     "../renderer/plugins/plugin_uma_unittest.cc",
     "../renderer/prerender/prerender_dispatcher_unittest.cc",
     "../renderer/searchbox/search_bouncer_unittest.cc",
-    "../renderer/searchbox/searchbox_extension_unittest.cc",
     "../renderer/searchbox/searchbox_unittest.cc",
     "../renderer/web_apps_unittest.cc",
     "../test/base/chrome_render_view_test.cc",
