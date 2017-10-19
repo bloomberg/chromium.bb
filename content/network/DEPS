@@ -9,6 +9,7 @@ include_rules = [
   "+content/public/common/appcache_info.h",
   "+content/public/common/content_client.h",
   "+content/public/common/content_switches.h",
+  "+content/public/common/network_change_manager.mojom.h",
   "+content/public/common/network_service.mojom.h",
   "+content/public/common/referrer.h",
   "+content/public/common/resource_request.h",

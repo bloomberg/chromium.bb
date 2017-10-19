@@ -4,6 +4,7 @@
 
 module content.mojom;
 
+import "network_change_manager.mojom";
 import "mojo/common/file_path.mojom";
 import "mojo/common/time.mojom";
 import "url_loader.mojom";
@@ -81,12 +82,12 @@ interface NetworkContext {
   CreateURLLoaderFactory(URLLoaderFactory& url_loader_factory,
                          uint32 process_id);
 
-  // Handle a request to display cache data to the user. |url| is parsed to
+  // Handles a request to display cache data to the user. |url| is parsed to
   // display different parts of the cache.
   HandleViewCacheRequest(url.mojom.Url url,
                          URLLoaderClient client);
 
-  // Get the CookieManager associated with this network context.
+  // Gets the CookieManager associated with this network context.
   GetCookieManager(network.mojom.CookieManager& cookie_manager);
 
   // TODO(crbug.com/729800): Switch from {process,frame}_id to the network
@@ -128,4 +129,7 @@ interface NetworkService {
   // permission increases risks in case the child process becomes compromised,
   // so this should be done only in specific cases (e.g. DevTools attached).
   SetRawHeadersAccess(uint32 process_id, bool allow);
+
+  // Gets the NetworkChangeManager.
+  GetNetworkChangeManager(NetworkChangeManager& network_change_manager);
 };
