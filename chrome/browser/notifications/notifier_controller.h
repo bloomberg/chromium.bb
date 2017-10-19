@@ -46,6 +46,17 @@ class NotifierController {
                                   const message_center::NotifierId& notifier_id,
                                   bool enabled) = 0;
 
+  // Returns true if the given notifier should have an advanced settings button.
+  virtual bool HasAdvancedSettings(
+      Profile* profile,
+      const message_center::NotifierId& notifier_id) const;
+
+  // Called when the advanced settings button has been clicked.
+  virtual void OnNotifierAdvancedSettingsRequested(
+      Profile* profile,
+      const message_center::NotifierId& notifier_id,
+      const std::string* notification_id) {}
+
   // Release temporary resouces tagged with notifier list that is returned last
   // time.
   virtual void OnNotifierSettingsClosing() {}

@@ -26,7 +26,7 @@ namespace ash {
 class MessageCenterView;
 
 // MessageCenterButtonBar is the class that shows the content outside the main
-// notification area - the label (or NotifierGroup switcher) and the buttons.
+// notification area - the label and the buttons.
 class MessageCenterButtonBar : public views::View,
                                public views::ButtonListener {
  public:

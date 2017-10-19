@@ -52,7 +52,6 @@ namespace ash {
 
 using message_center::MessageCenter;
 using message_center::Notifier;
-using message_center::NotifierGroup;
 using message_center::NotifierId;
 using message_center::NotifierSettingsProvider;
 
@@ -496,17 +495,6 @@ void NotifierSettingsView::UpdateIconImage(const NotifierId& notifier_id,
     }
   }
 }
-
-void NotifierSettingsView::NotifierGroupChanged() {
-  std::vector<std::unique_ptr<Notifier>> notifiers;
-  if (provider_)
-    provider_->GetNotifierList(&notifiers);
-
-  UpdateContentsView(std::move(notifiers));
-}
-
-void NotifierSettingsView::NotifierEnabledChanged(const NotifierId& notifier_id,
-                                                  bool enabled) {}
 
 void NotifierSettingsView::UpdateContentsView(
     std::vector<std::unique_ptr<Notifier>> notifiers) {

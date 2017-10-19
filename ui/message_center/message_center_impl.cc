@@ -89,14 +89,12 @@ class ScopedNotificationsIterationLock {
 
 MessageCenterImpl::MessageCenterImpl()
     : MessageCenter(),
-      popup_timers_controller_(new PopupTimersController(this)),
-      settings_provider_(NULL) {
+      popup_timers_controller_(new PopupTimersController(this)) {
   notification_list_.reset(new NotificationList(this));
   notification_change_queue_.reset(new ChangeQueue());
 }
 
 MessageCenterImpl::~MessageCenterImpl() {
-  SetNotifierSettingsProvider(NULL);
 }
 
 void MessageCenterImpl::AddObserver(MessageCenterObserver* observer) {
@@ -153,15 +151,6 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
   }
   for (auto& observer : observer_list_)
     observer.OnBlockingStateChanged(blocker);
-}
-
-void MessageCenterImpl::UpdateIconImage(const NotifierId& notifier_id,
-                                        const gfx::Image& icon) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-}
-
-void MessageCenterImpl::NotifierGroupChanged() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void MessageCenterImpl::NotifierEnabledChanged(
@@ -622,20 +611,16 @@ void MessageCenterImpl::DisplayedNotification(
 }
 
 void MessageCenterImpl::SetNotifierSettingsProvider(
-    NotifierSettingsProvider* provider) {
+    std::unique_ptr<NotifierSettingsProvider> provider) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (settings_provider_) {
-    settings_provider_->RemoveObserver(this);
-    settings_provider_ = NULL;
-  }
-  settings_provider_ = provider;
-  if (settings_provider_)
-    settings_provider_->AddObserver(this);
+  DCHECK(!settings_provider_);
+  settings_provider_ = std::move(provider);
+  settings_provider_->AddObserver(this);
 }
 
 NotifierSettingsProvider* MessageCenterImpl::GetNotifierSettingsProvider() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  return settings_provider_;
+  return settings_provider_.get();
 }
 
 void MessageCenterImpl::SetQuietMode(bool in_quiet_mode) {

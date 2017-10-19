@@ -9,6 +9,8 @@
 #include "chrome/browser/notifications/notifier_state_tracker.h"
 #include "chrome/browser/notifications/notifier_state_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/extensions/api/notifications.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
 #include "extensions/common/permissions/api_permission.h"
@@ -67,6 +69,33 @@ void ExtensionNotifierController::SetNotifierEnabled(
   NotifierStateTrackerFactory::GetForProfile(profile)->SetNotifierEnabled(
       notifier_id, enabled);
   observer_->OnNotifierEnabledChanged(notifier_id, enabled);
+}
+
+bool ExtensionNotifierController::HasAdvancedSettings(
+    Profile* profile,
+    const message_center::NotifierId& notifier_id) const {
+  const std::string& extension_id = notifier_id.id;
+
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
+
+  return event_router->ExtensionHasEventListener(
+      extension_id, extensions::api::notifications::OnShowSettings::kEventName);
+}
+
+void ExtensionNotifierController::OnNotifierAdvancedSettingsRequested(
+    Profile* profile,
+    const message_center::NotifierId& notifier_id,
+    const std::string* notification_id) {
+  const std::string& extension_id = notifier_id.id;
+
+  extensions::EventRouter* event_router = extensions::EventRouter::Get(profile);
+  std::unique_ptr<base::ListValue> args(new base::ListValue());
+
+  std::unique_ptr<extensions::Event> event(new extensions::Event(
+      extensions::events::NOTIFICATIONS_ON_SHOW_SETTINGS,
+      extensions::api::notifications::OnShowSettings::kEventName,
+      std::move(args)));
+  event_router->DispatchEventToExtension(extension_id, std::move(event));
 }
 
 void ExtensionNotifierController::OnAppImageUpdated(
