@@ -953,9 +953,6 @@
       status: "experimental",
     },
     {
-      name: "SkipCompositingSmallScrollers",
-    },
-    {
       name: "SlimmingPaintStrictCullRectClipping",
     },
     {

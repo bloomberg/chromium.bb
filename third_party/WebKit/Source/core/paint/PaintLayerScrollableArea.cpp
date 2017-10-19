@@ -96,11 +96,6 @@ namespace {
 // minimum size used by firefox is 15x15.
 static const int kDefaultMinimumWidthForResizing = 15;
 static const int kDefaultMinimumHeightForResizing = 15;
-// By not compositing scrollers smaller than 160000px (400 * 400), on android
-// devices we might affect roughly 90% scrollers for memory saving while at
-// most 30% scrolls may be slowed down. On non-android devices, it  affects
-// roughly 50% scrollers and 13% scrolls.
-static constexpr int kSmallScrollerThreshold = 160000;
 
 }  // namespace
 
@@ -1986,17 +1981,8 @@ bool PaintLayerScrollableArea::ComputeNeedsCompositedScrolling(
   if (layer->Size().IsEmpty())
     return false;
 
-  // This is for an experiment aiming at memory save by not compositing certain
-  // scrollers. See http://crbug.com/746018, http://crbug.com/684631.
-  // TODO(yigu): Report this main thread scrolling reason once the patch is
-  // landed.
-  CheckedNumeric<int> size = VisibleContentRect().Width();
-  size *= VisibleContentRect().Height();
   if (!layer_has_been_composited &&
-      ((RuntimeEnabledFeatures::SkipCompositingSmallScrollersEnabled() &&
-        size.ValueOrDefault(std::numeric_limits<int>::max()) <
-            kSmallScrollerThreshold) ||
-       !LayerNodeMayNeedCompositedScrolling(layer))) {
+      !LayerNodeMayNeedCompositedScrolling(layer)) {
     return false;
   }
 
