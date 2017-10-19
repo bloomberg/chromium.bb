@@ -76,6 +76,11 @@ public final class EventConstants {
     public static final String CONTEXTUAL_SEARCH_PANEL_OPENED = "contextual_search_panel_opened";
 
     /**
+     * User performed a web search for a query by choosing the Web Search option on the popup menu.
+     */
+    public static final String WEB_SEARCH_PERFORMED = "web_search_performed";
+
+    /**
      * Contextual Search showed an entity result for the searched query.
      */
     public static final String CONTEXTUAL_SEARCH_ENTITY_RESULT = "contextual_search_entity_result";
