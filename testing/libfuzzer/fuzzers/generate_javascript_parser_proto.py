@@ -100,7 +100,8 @@ def main(argv):
                   '}\n'
                   '\n'
                   'message Source {\n'
-                  '  repeated Token tokens = 1;\n'
+                  '  required bool is_module = 1;\n'
+                  '  repeated Token tokens = 2;\n'
                   '}\n')
 
   proto_contents = proto_header + GenerateProtoContents(words) + proto_footer

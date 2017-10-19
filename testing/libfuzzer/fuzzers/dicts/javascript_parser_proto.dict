@@ -182,6 +182,18 @@ $0 "," $1
 "for (" $0 "in" $1 ") {" $2 "}"
 "for (" $0 "of" $1 ")" $2
 "for (" $0 "of" $1 ") {" $2 "}"
+"for (" $0 ";" $1 ";" $2 ")" $3
+"for (" $0 ";" $1 ";" $2 ") {" $3 "}"
+"for await (" $0 ")" $1
+"for await (" $0 ") {" $1 " }"
+"for await (" $0 "in" $1 ")" $2
+"for await (" $0 "in" $1 ") {" $2 "}"
+"for await (" $0 "of" $1 ")" $2
+"for await (" $0 "of" $1 ") {" $2 "}"
+"for await (" $0 ";" $1 ";" $2 ")" $3
+"for await (" $0 ";" $1 ";" $2 ") {" $3 "}"
+"while (" $0 ")" $1
+"while (" $0 ") {" $1 "}"
 "continue"
 "continue;"
 "continue" $0
@@ -195,7 +207,9 @@ $0 "," $1
 
 # Switch statements
 "switch (" $0 ")" $1
+"switch (" $0 ") {" $1 "}"
 "case" $0 ": " $1
+"case" $0 ": {" $1 "}"
 "default :" $0
 
 # Try-catch statements
@@ -278,3 +292,16 @@ $0 "`foo`"
 
 # Conditional expression
 $0 "?" $1 ":" $2
+$0 "?" $1 ":" $2 ";"
+
+# Assignment expressions
+$0 "=" $1
+$0 "=" $1 ";"
+
+# Import / export (for modules)
+"import" $0 ";"
+"export" $0 ";"
+
+# Misc.
+"eval('');"
+
