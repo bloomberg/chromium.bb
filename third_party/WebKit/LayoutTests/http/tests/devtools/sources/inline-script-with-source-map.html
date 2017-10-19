@@ -1,0 +1,39 @@
+<html>
+<head>
+<script src="../../inspector/inspector-test.js"></script>
+<script src="../../inspector/debugger-test.js"></script>
+<script src="../../inspector/console-test.js"></script>
+<!-- identity source map -->
+<script>function foo() {
+    console.log(42);
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJmaWxlIjoiYS5qcyIsInNvdXJjZVJvb3QiOiIiLCJzb3VyY2VzIjpbImEudHMiXSwibmFtZXMiOlsiZm9vIl0sIm1hcHBpbmdzIjoiQUFBQTtJQUNFQSxPQUFPQSxDQUFDQSxHQUFHQSxDQUFDQSxFQUFFQSxDQUFDQSxDQUFDQTtBQUNsQkEsQ0FBQ0EiLCJzb3VyY2VzQ29udGVudCI6WyJmdW5jdGlvbiBmb28oKSB7XG4gIGNvbnNvbGUubG9nKDQyKTtcbn1cbiJdfQ==
+</script>
+<script>
+async function test() {
+  TestRunner.addResult(`Tests inline source with source map.`);
+  await SourcesTestRunner.startDebuggerTestPromise();
+
+  TestRunner.addResult('Set breakpoint at console.log line');
+  let sourceFrame = await new Promise(resolve => SourcesTestRunner.showScriptSource('a.ts', resolve));
+  SourcesTestRunner.toggleBreakpoint(sourceFrame, 1, false);
+  await SourcesTestRunner.waitJavaScriptSourceFrameBreakpoints(sourceFrame);
+
+  TestRunner.addResult('Call function and dump stack trace');
+  TestRunner.evaluateInPageAnonymously('foo()');
+  let callFrames = await SourcesTestRunner.waitUntilPausedPromise();
+  SourcesTestRunner.captureStackTrace(callFrames);
+
+  TestRunner.addResult('Dump console mesage with its location:');
+  let messagePromise = ConsoleTestRunner.waitUntilMessageReceivedPromise();
+  SourcesTestRunner.resumeExecution();
+  await messagePromise;
+  ConsoleTestRunner.dumpConsoleMessages();
+
+  SourcesTestRunner.completeDebuggerTest();
+}
+</script>
+</head>
+<body onload="runTest()">
+</body>
+</html>
