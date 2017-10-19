@@ -67,12 +67,13 @@ void NetworkConnectDelegateChromeOS::ShowMobileSetupDialog(
 void NetworkConnectDelegateChromeOS::ShowNetworkConnectError(
     const std::string& error_name,
     const std::string& network_id) {
-  network_state_notifier_->ShowNetworkConnectError(error_name, network_id);
+  network_state_notifier_->ShowNetworkConnectErrorForGuid(error_name,
+                                                          network_id);
 }
 
 void NetworkConnectDelegateChromeOS::ShowMobileActivationError(
     const std::string& network_id) {
-  network_state_notifier_->ShowMobileActivationError(network_id);
+  network_state_notifier_->ShowMobileActivationErrorForGuid(network_id);
 }
 
 }  // namespace chromeos

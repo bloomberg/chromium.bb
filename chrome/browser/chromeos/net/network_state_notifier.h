@@ -39,6 +39,21 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   NetworkStateNotifier();
   ~NetworkStateNotifier() override;
 
+  // Show a connection error notification. If |error_name| matches an error
+  // defined in NetworkConnectionHandler for connect, configure, or activation
+  // failed, then the associated message is shown; otherwise use the last_error
+  // value for the network or a Shill property if available.
+  void ShowNetworkConnectErrorForGuid(const std::string& error_name,
+                                      const std::string& guid);
+
+  // Show a mobile activation error notification.
+  void ShowMobileActivationErrorForGuid(const std::string& guid);
+
+  static const char kNetworkConnectNotificationId[];
+  static const char kNetworkActivateNotificationId[];
+  static const char kNetworkOutOfCreditsNotificationId[];
+
+ private:
   // NetworkConnectionObserver
   void ConnectToNetworkRequested(const std::string& service_path) override;
   void ConnectSucceeded(const std::string& service_path) override;
@@ -51,21 +66,6 @@ class NetworkStateNotifier : public NetworkConnectionObserver,
   void NetworkConnectionStateChanged(const NetworkState* network) override;
   void NetworkPropertiesUpdated(const NetworkState* network) override;
 
-  // Show a connection error notification. If |error_name| matches an error
-  // defined in NetworkConnectionHandler for connect, configure, or activation
-  // failed, then the associated message is shown; otherwise use the last_error
-  // value for the network or a Shill property if available.
-  void ShowNetworkConnectError(const std::string& error_name,
-                               const std::string& service_path);
-
-  // Show a mobile activation error notification.
-  void ShowMobileActivationError(const std::string& service_path);
-
-  static const char kNetworkConnectNotificationId[];
-  static const char kNetworkActivateNotificationId[];
-  static const char kNetworkOutOfCreditsNotificationId[];
-
- private:
   void ConnectErrorPropertiesSucceeded(
       const std::string& error_name,
       const std::string& service_path,
