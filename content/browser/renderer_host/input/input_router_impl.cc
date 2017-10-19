@@ -16,7 +16,6 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/input_disposition_handler.h"
 #include "content/browser/renderer_host/input/input_router_client.h"
-#include "content/browser/renderer_host/input/legacy_touch_event_queue.h"
 #include "content/browser/renderer_host/input/passthrough_touch_event_queue.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
@@ -105,8 +104,6 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
       touch_scroll_started_sent_(false),
       wheel_scroll_latching_enabled_(base::FeatureList::IsEnabled(
           features::kTouchpadAndWheelScrollLatching)),
-      raf_aligned_touch_enabled_(
-          base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents)),
       wheel_event_queue_(this, wheel_scroll_latching_enabled_),
       gesture_event_queue_(this, this, config.gesture_config),
       device_scale_factor_(1.f),
@@ -114,13 +111,8 @@ InputRouterImpl::InputRouterImpl(InputRouterImplClient* client,
       weak_ptr_factory_(this) {
   weak_this_ = weak_ptr_factory_.GetWeakPtr();
 
-  if (raf_aligned_touch_enabled_) {
-    touch_event_queue_.reset(
-        new PassthroughTouchEventQueue(this, config.touch_config));
-  } else {
-    touch_event_queue_.reset(
-        new LegacyTouchEventQueue(this, config.touch_config));
-  }
+  touch_event_queue_.reset(
+      new PassthroughTouchEventQueue(this, config.touch_config));
 
   DCHECK(client);
   DCHECK(disposition_handler);
@@ -412,8 +404,7 @@ void InputRouterImpl::FilterAndSendWebInputEvent(
   std::unique_ptr<InputEvent> event = base::MakeUnique<InputEvent>(
       ScaleEvent(input_event, device_scale_factor_), latency_info);
   if (WebInputEventTraits::ShouldBlockEventStream(
-          input_event, raf_aligned_touch_enabled_,
-          wheel_scroll_latching_enabled_)) {
+          input_event, wheel_scroll_latching_enabled_)) {
     client_->IncrementInFlightEventCount(input_event.GetType());
     client_->GetWidgetInputHandler()->DispatchEvent(std::move(event),
                                                     std::move(callback));

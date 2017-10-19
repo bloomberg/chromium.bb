@@ -753,16 +753,6 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   const ui::MotionEventAura& pointer_state() { return view_->pointer_state(); }
 
-  void EnableRafAlignedTouchInput() {
-    feature_list_.InitFromCommandLine(
-        features::kRafAlignedTouchInputEvents.name, "");
-  }
-
-  void DisableRafAlignedTouchInput() {
-    feature_list_.InitFromCommandLine(
-        "", features::kRafAlignedTouchInputEvents.name);
-  }
-
   void EnableWheelScrollLatching() {
     feature_list_.InitFromCommandLine(
         features::kTouchpadAndWheelScrollLatching.name, "");
@@ -774,39 +764,18 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   }
 
   void SetFeatureList(
-      bool raf_aligned_touch,
       WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching) {
-    if (raf_aligned_touch && wheel_scrolling_mode == kAsyncWheelEvents) {
-      feature_list_.InitWithFeatures({features::kRafAlignedTouchInputEvents,
-                                      features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents},
-                                     {});
-    } else if (raf_aligned_touch &&
-               wheel_scrolling_mode == kWheelScrollLatching) {
-      feature_list_.InitWithFeatures(
-          {features::kRafAlignedTouchInputEvents,
-           features::kTouchpadAndWheelScrollLatching},
-          {features::kAsyncWheelEvents});
-    } else if (raf_aligned_touch &&
-               wheel_scrolling_mode == kWheelScrollingModeNone) {
-      feature_list_.InitWithFeatures({features::kRafAlignedTouchInputEvents},
-                                     {features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents});
-    } else if (!raf_aligned_touch &&
-               wheel_scrolling_mode == kAsyncWheelEvents) {
+    if (wheel_scrolling_mode == kAsyncWheelEvents) {
       feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents},
-                                     {features::kRafAlignedTouchInputEvents});
-    } else if (!raf_aligned_touch &&
-               wheel_scrolling_mode == kWheelScrollLatching) {
+                                     {});
+    } else if (wheel_scrolling_mode == kWheelScrollLatching) {
       feature_list_.InitWithFeatures(
           {features::kTouchpadAndWheelScrollLatching},
-          {features::kRafAlignedTouchInputEvents, features::kAsyncWheelEvents});
-    } else {  // !raf_aligned_touch && wheel_scroll_latching ==
-              // kWheelScrollingModeNone.
+          {features::kAsyncWheelEvents});
+    } else if (wheel_scrolling_mode == kWheelScrollingModeNone) {
       feature_list_.InitWithFeatures({},
-                                     {features::kRafAlignedTouchInputEvents,
-                                      features::kTouchpadAndWheelScrollLatching,
+                                     {features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents});
     }
 
@@ -883,28 +852,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewAuraTest);
 };
 
-class RenderWidgetHostViewAuraRafAlignedTouchEnabledTest
-    : public RenderWidgetHostViewAuraTest {
- public:
-  void SetUp() override {
-    EnableRafAlignedTouchInput();
-    RenderWidgetHostViewAuraTest::SetUp();
-  }
-};
-
 class RenderWidgetHostViewAuraSurfaceSynchronizationTest
     : public RenderWidgetHostViewAuraTest {
   void SetUp() override {
     SetUpEnvironment(true /* enable_surface_synchronization */);
-  }
-};
-
-class RenderWidgetHostViewAuraRafAlignedTouchDisabledTest
-    : public RenderWidgetHostViewAuraTest {
- public:
-  void SetUp() override {
-    DisableRafAlignedTouchInput();
-    RenderWidgetHostViewAuraTest::SetUp();
   }
 };
 
@@ -1020,7 +971,7 @@ class RenderWidgetHostViewAuraOverscrollTest
   void SetUpOverscrollEnvironment() { SetUpOverscrollEnvironmentImpl(0); }
 
   void SetUpOverscrollEnvironmentImpl(int debounce_interval_in_ms) {
-    SetFeatureList(true, wheel_scrolling_mode_);
+    SetFeatureList(wheel_scrolling_mode_);
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         debounce_interval_in_ms);
 
@@ -1756,110 +1707,7 @@ TEST_F(RenderWidgetHostViewAuraTest, WasOccluded) {
 }
 
 // Checks that touch-event state is maintained correctly.
-TEST_F(RenderWidgetHostViewAuraRafAlignedTouchDisabledTest, TouchEventState) {
-  view_->InitAsChild(nullptr);
-  view_->Show();
-
-  // Start with no touch-event handler in the renderer.
-  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-
-  ui::TouchEvent press(
-      ui::ET_TOUCH_PRESSED, gfx::Point(30, 30), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent move(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  ui::TouchEvent release(
-      ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), ui::EventTimeForNow(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-
-  // The touch events should get forwarded from the view, but they should not
-  // reach the renderer.
-  view_->OnTouchEvent(&press);
-  base::RunLoop().RunUntilIdle();
-
-  MockWidgetInputHandler::MessageVector events =
-      GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
-
-  view_->OnTouchEvent(&move);
-  base::RunLoop().RunUntilIdle();
-  events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-
-  view_->OnTouchEvent(&release);
-  base::RunLoop().RunUntilIdle();
-  events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(0U, pointer_state().GetPointerCount());
-
-  // Now install some touch-event handlers and do the same steps. The touch
-  // events should now be consumed. However, the touch-event state should be
-  // updated as before.
-  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, true));
-
-  view_->OnTouchEvent(&press);
-  base::RunLoop().RunUntilIdle();
-  events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(1U, events.size());
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-
-  view_->OnTouchEvent(&move);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(move.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-  view_->OnTouchEvent(&release);
-  EXPECT_TRUE(release.synchronous_handling_disabled());
-  EXPECT_EQ(0U, pointer_state().GetPointerCount());
-
-  // Now start a touch event, and remove the event-handlers before the release.
-  view_->OnTouchEvent(&press);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_DOWN, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-
-  widget_host_->OnMessageReceived(ViewHostMsg_HasTouchEventHandlers(0, false));
-
-  // Ack'ing the outstanding event should flush the pending touch queue.
-  InputEventAck ack(
-      InputEventAckSource::COMPOSITOR_THREAD, blink::WebInputEvent::kTouchStart,
-      INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, press.unique_event_id());
-  widget_host_->OnMessageReceived(InputHostMsg_HandleInputEvent_ACK(0, ack));
-  events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(0U, events.size());
-
-  ui::TouchEvent move2(
-      ui::ET_TOUCH_MOVED, gfx::Point(20, 20), base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  view_->OnTouchEvent(&move2);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(ui::MotionEvent::ACTION_MOVE, pointer_state().GetAction());
-  EXPECT_EQ(1U, pointer_state().GetPointerCount());
-
-  ui::TouchEvent release2(
-      ui::ET_TOUCH_RELEASED, gfx::Point(20, 20), base::TimeTicks::Now(),
-      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_TOUCH, 0));
-  view_->OnTouchEvent(&release2);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(press.synchronous_handling_disabled());
-  EXPECT_EQ(0U, pointer_state().GetPointerCount());
-  events = GetAndResetDispatchedMessages();
-  EXPECT_EQ(1U, events.size());
-}
-
-// Checks that touch-event state is maintained correctly.
-TEST_F(RenderWidgetHostViewAuraRafAlignedTouchEnabledTest, TouchEventState) {
+TEST_F(RenderWidgetHostViewAuraTest, TouchEventState) {
   view_->InitAsChild(nullptr);
   view_->Show();
 

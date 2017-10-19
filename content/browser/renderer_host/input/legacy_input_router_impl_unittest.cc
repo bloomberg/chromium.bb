@@ -67,7 +67,6 @@ namespace {
 bool ShouldBlockEventStream(const blink::WebInputEvent& event) {
   return ui::WebInputEventTraits::ShouldBlockEventStream(
       event,
-      base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents),
       base::FeatureList::IsEnabled(features::kTouchpadAndWheelScrollLatching));
 }
 
@@ -133,43 +132,22 @@ enum WheelScrollingMode {
 class LegacyInputRouterImplTest : public testing::Test {
  public:
   LegacyInputRouterImplTest(
-      bool raf_aligned_touch = true,
       WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
       : wheel_scroll_latching_enabled_(wheel_scrolling_mode !=
                                        kWheelScrollingModeNone),
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI) {
-    if (raf_aligned_touch && wheel_scrolling_mode == kAsyncWheelEvents) {
-      feature_list_.InitWithFeatures({features::kRafAlignedTouchInputEvents,
-                                      features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents},
-                                     {});
-    } else if (raf_aligned_touch &&
-               wheel_scrolling_mode == kWheelScrollLatching) {
-      feature_list_.InitWithFeatures(
-          {features::kRafAlignedTouchInputEvents,
-           features::kTouchpadAndWheelScrollLatching},
-          {features::kAsyncWheelEvents});
-    } else if (raf_aligned_touch &&
-               wheel_scrolling_mode == kWheelScrollingModeNone) {
-      feature_list_.InitWithFeatures({features::kRafAlignedTouchInputEvents},
-                                     {features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents});
-    } else if (!raf_aligned_touch &&
-               wheel_scrolling_mode == kAsyncWheelEvents) {
+    if (wheel_scrolling_mode == kAsyncWheelEvents) {
       feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents},
-                                     {features::kRafAlignedTouchInputEvents});
-    } else if (!raf_aligned_touch &&
-               wheel_scrolling_mode == kWheelScrollLatching) {
+                                     {});
+    } else if (wheel_scrolling_mode == kWheelScrollLatching) {
       feature_list_.InitWithFeatures(
           {features::kTouchpadAndWheelScrollLatching},
-          {features::kRafAlignedTouchInputEvents, features::kAsyncWheelEvents});
-    } else {  // !raf_aligned_touch && wheel_scroll_latching ==
-              // kWheelScrollingModeNone.
+          {features::kAsyncWheelEvents});
+    } else if (wheel_scrolling_mode == kWheelScrollingModeNone) {
       feature_list_.InitWithFeatures({},
-                                     {features::kRafAlignedTouchInputEvents,
-                                      features::kTouchpadAndWheelScrollLatching,
+                                     {features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents});
     }
 
@@ -429,25 +407,18 @@ class LegacyInputRouterImplTest : public testing::Test {
   std::unique_ptr<TestBrowserContext> browser_context_;
 };
 
-class LegacyInputRouterImplRafAlignedTouchDisabledTest
-    : public LegacyInputRouterImplTest {
- public:
-  LegacyInputRouterImplRafAlignedTouchDisabledTest()
-      : LegacyInputRouterImplTest(false, kWheelScrollingModeNone) {}
-};
-
 class LegacyInputRouterImplWheelScrollLatchingDisabledTest
     : public LegacyInputRouterImplTest {
  public:
   LegacyInputRouterImplWheelScrollLatchingDisabledTest()
-      : LegacyInputRouterImplTest(true, kWheelScrollingModeNone) {}
+      : LegacyInputRouterImplTest(kWheelScrollingModeNone) {}
 };
 
 class LegacyInputRouterImplAsyncWheelEventEnabledTest
     : public LegacyInputRouterImplTest {
  public:
   LegacyInputRouterImplAsyncWheelEventEnabledTest()
-      : LegacyInputRouterImplTest(true, kAsyncWheelEvents) {}
+      : LegacyInputRouterImplTest(kAsyncWheelEvents) {}
 };
 
 TEST_F(LegacyInputRouterImplTest, CoalescesRangeSelection) {
@@ -853,41 +824,6 @@ TEST_F(LegacyInputRouterImplTest, CoalescesWheelEvents) {
   SendInputEventACK(WebInputEvent::kMouseWheel, INPUT_EVENT_ACK_STATE_CONSUMED);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-}
-
-// Tests that touch-events are queued properly.
-TEST_F(LegacyInputRouterImplRafAlignedTouchDisabledTest, TouchEventQueue) {
-  OnHasTouchEventHandlers(true);
-
-  PressTouchPoint(1, 1);
-  uint32_t touch_press_event_id = SendTouchEvent();
-  EXPECT_TRUE(client_->GetAndResetFilterEventCalled());
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  EXPECT_FALSE(TouchEventQueueEmpty());
-
-  // The second touch should not be sent since one is already in queue.
-  MoveTouchPoint(0, 5, 5);
-  uint32_t touch_move_event_id = SendTouchEvent();
-  EXPECT_FALSE(client_->GetAndResetFilterEventCalled());
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-  EXPECT_FALSE(TouchEventQueueEmpty());
-
-  // Receive an ACK for the first touch-event.
-  SendTouchEventACK(WebInputEvent::kTouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
-                    touch_press_event_id);
-  EXPECT_FALSE(TouchEventQueueEmpty());
-  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(WebInputEvent::kTouchStart,
-            disposition_handler_->acked_touch_event().event.GetType());
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-
-  SendTouchEventACK(WebInputEvent::kTouchMove, INPUT_EVENT_ACK_STATE_CONSUMED,
-                    touch_move_event_id);
-  EXPECT_TRUE(TouchEventQueueEmpty());
-  EXPECT_EQ(1U, disposition_handler_->GetAndResetAckCount());
-  EXPECT_EQ(WebInputEvent::kTouchMove,
-            disposition_handler_->acked_touch_event().event.GetType());
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
 }
 
@@ -1702,74 +1638,6 @@ TEST_F(LegacyInputRouterImplTest, DoubleTapGestureDependsOnFirstTap) {
 
   // Second Tap.
   EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-  SimulateGestureEvent(WebInputEvent::kGestureTapDown,
-                       blink::kWebGestureDeviceTouchscreen);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-
-  // Although the touch-action is now auto, the double tap still won't be
-  // dispatched, because the first tap occured when the touch-action was none.
-  SimulateGestureEvent(WebInputEvent::kGestureDoubleTap,
-                       blink::kWebGestureDeviceTouchscreen);
-  // This test will become invalid if GestureDoubleTap stops requiring an ack.
-  ASSERT_TRUE(ShouldBlockEventStream(
-      GetEventWithType(WebInputEvent::kGestureDoubleTap)));
-  EXPECT_EQ(1, client_->in_flight_event_count());
-  SendInputEventACK(WebInputEvent::kGestureTap, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(0, client_->in_flight_event_count());
-}
-
-// Test that the double tap gesture depends on the touch action of the first
-// tap.
-TEST_F(LegacyInputRouterImplRafAlignedTouchDisabledTest,
-       DoubleTapGestureDependsOnFirstTap) {
-  OnHasTouchEventHandlers(true);
-
-  // Sequence 1.
-  PressTouchPoint(1, 1);
-  uint32_t touch_press_event_id1 = SendTouchEvent();
-  OnSetTouchAction(cc::kTouchActionNone);
-  SendTouchEventACK(WebInputEvent::kTouchStart, INPUT_EVENT_ACK_STATE_CONSUMED,
-                    touch_press_event_id1);
-
-  ReleaseTouchPoint(0);
-  uint32_t touch_release_event_id = SendTouchEvent();
-
-  // Sequence 2
-  PressTouchPoint(1, 1);
-  uint32_t touch_press_event_id2 = SendTouchEvent();
-
-  // First tap.
-  EXPECT_EQ(2U, GetSentMessageCountAndResetSink());
-  SimulateGestureEvent(WebInputEvent::kGestureTapDown,
-                       blink::kWebGestureDeviceTouchscreen);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-
-  // The GestureTapUnconfirmed is converted into a tap, as the touch action is
-  // none.
-  SimulateGestureEvent(WebInputEvent::kGestureTapUnconfirmed,
-                       blink::kWebGestureDeviceTouchscreen);
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
-  // This test will become invalid if GestureTap stops requiring an ack.
-  ASSERT_TRUE(
-      ShouldBlockEventStream(GetEventWithType(WebInputEvent::kGestureTap)));
-  EXPECT_EQ(2, client_->in_flight_event_count());
-  SendInputEventACK(WebInputEvent::kGestureTap, INPUT_EVENT_ACK_STATE_CONSUMED);
-  EXPECT_EQ(1, client_->in_flight_event_count());
-
-  // This tap gesture is dropped, since the GestureTapUnconfirmed was turned
-  // into a tap.
-  SimulateGestureEvent(WebInputEvent::kGestureTap,
-                       blink::kWebGestureDeviceTouchscreen);
-  EXPECT_EQ(0U, GetSentMessageCountAndResetSink());
-
-  SendTouchEventACK(WebInputEvent::kTouchEnd, INPUT_EVENT_ACK_STATE_CONSUMED,
-                    touch_release_event_id);
-  SendTouchEventACK(WebInputEvent::kTouchStart,
-                    INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS,
-                    touch_press_event_id2);
-
-  // Second Tap.
-  EXPECT_EQ(1U, GetSentMessageCountAndResetSink());
   SimulateGestureEvent(WebInputEvent::kGestureTapDown,
                        blink::kWebGestureDeviceTouchscreen);
   EXPECT_EQ(1U, GetSentMessageCountAndResetSink());

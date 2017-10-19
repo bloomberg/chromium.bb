@@ -116,7 +116,6 @@ class CONTENT_EXPORT MainThreadEventQueue
                              const ui::LatencyInfo& latency,
                              InputEventDispatchType original_dispatch_type);
 
-  bool IsRafAlignedInputDisabled() const;
   bool IsRafAlignedEvent(
       const std::unique_ptr<MainThreadEventQueueTask>& item) const;
   void RafFallbackTimerFired();

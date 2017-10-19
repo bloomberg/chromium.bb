@@ -238,9 +238,6 @@ MainThreadEventQueue::MainThreadEventQueue(
       enable_non_blocking_due_to_main_thread_responsiveness_flag_(
           base::FeatureList::IsEnabled(
               features::kMainThreadBusyScrollIntervention)),
-      handle_raf_aligned_touch_input_(
-          allow_raf_aligned_input &&
-          base::FeatureList::IsEnabled(features::kRafAlignedTouchInputEvents)),
       handle_raf_aligned_mouse_input_(
           allow_raf_aligned_input &&
           base::FeatureList::IsEnabled(features::kRafAlignedMouseInputEvents)),
@@ -379,8 +376,6 @@ void MainThreadEventQueue::QueueClosure(base::OnceClosure closure) {
 }
 
 void MainThreadEventQueue::PossiblyScheduleMainFrame() {
-  if (IsRafAlignedInputDisabled())
-    return;
   bool needs_main_frame = false;
   {
     base::AutoLock lock(shared_state_lock_);
@@ -447,9 +442,6 @@ void MainThreadEventQueue::RafFallbackTimerFired() {
 }
 
 void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
-  if (IsRafAlignedInputDisabled())
-    return;
-
   raf_fallback_timer_.Stop();
   size_t queue_size_at_start;
 
@@ -471,8 +463,7 @@ void MainThreadEventQueue::DispatchRafAlignedInput(base::TimeTicks frame_time) {
 
       if (IsRafAlignedEvent(shared_state_.events_.front())) {
         // Throttle touchmoves that are async.
-        if (handle_raf_aligned_touch_input_ &&
-            IsAsyncTouchMove(shared_state_.events_.front())) {
+        if (IsAsyncTouchMove(shared_state_.events_.front())) {
           if (shared_state_.events_.size() == 1 &&
               frame_time < shared_state_.last_async_touch_move_timestamp_ +
                                kAsyncTouchMoveInterval) {
@@ -523,10 +514,6 @@ void MainThreadEventQueue::QueueEvent(
     SetNeedsMainFrame();
 }
 
-bool MainThreadEventQueue::IsRafAlignedInputDisabled() const {
-  return !handle_raf_aligned_mouse_input_ && !handle_raf_aligned_touch_input_;
-}
-
 bool MainThreadEventQueue::IsRafAlignedEvent(
     const std::unique_ptr<MainThreadEventQueueTask>& item) const {
   if (!item->IsWebInputEvent())
@@ -538,7 +525,7 @@ bool MainThreadEventQueue::IsRafAlignedEvent(
     case blink::WebInputEvent::kMouseWheel:
       return handle_raf_aligned_mouse_input_ && !needs_low_latency_;
     case blink::WebInputEvent::kTouchMove:
-      return handle_raf_aligned_touch_input_ && !needs_low_latency_;
+      return !needs_low_latency_;
     default:
       return false;
   }

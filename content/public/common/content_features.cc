@@ -233,10 +233,6 @@ const base::Feature kPurgeAndSuspend {
 const base::Feature kRafAlignedMouseInputEvents{
     "RafAlignedMouseInput", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// RAF aligned touch input events support.
-const base::Feature kRafAlignedTouchInputEvents{
-    "RafAlignedTouchInput", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If Pepper 3D Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kPepper3DImageChromium {
