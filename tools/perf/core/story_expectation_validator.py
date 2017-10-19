@@ -3,6 +3,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Script to check validity of StoryExpectations."""
+
+import argparse
+import json
 import os
 
 from core import benchmark_finders
@@ -52,9 +55,45 @@ def validate_story_names(benchmarks):
     assert not failed_stories, 'Incorrect story names: %s' % str(failed_stories)
 
 
+def GetDisabledStories(benchmarks):
+  # Creates a dictionary of the format:
+  # {
+  #   'benchmark_name1' : {
+  #     'story_1': [
+  #       {'conditions': conditions, 'reason': reason},
+  #       ...
+  #     ],
+  #     ...
+  #   },
+  #   ...
+  # }
+  disables = {}
+  for benchmark in benchmarks:
+    name = benchmark.Name()
+    disables[name] = {}
+    expectations = benchmark().GetExpectations().AsDict()['stories']
+    for story in expectations:
+      for conditions, reason in  expectations[story]:
+        if not disables[name].get(story):
+          disables[name][story] = []
+          conditions_str = [str(a) for a in conditions]
+        disables[name][story].append((conditions_str, reason))
+  return disables
+
+
 def main(args):
-  del args  # unused
+  parser = argparse.ArgumentParser(
+      description=('Tests if disabled stories exist.'))
+  parser.add_argument(
+      '--list', action='store_true', default=False,
+      help=('Prints list of disabled stories.'))
+  options = parser.parse_args(args)
   benchmarks = benchmark_finders.GetAllBenchmarks()
-  validate_story_names(benchmarks)
-  check_decorators(benchmarks)
+
+  if options.list:
+    stories = GetDisabledStories(benchmarks)
+    print json.dumps(stories, sort_keys=True, indent=4, separators=(',', ': '))
+  else:
+    validate_story_names(benchmarks)
+    check_decorators(benchmarks)
   return 0
