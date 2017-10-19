@@ -208,6 +208,11 @@ const char kDisableMojoLocalStorage[] = "disable-mojo-local-storage";
 // Disables usage of the namespace sandbox.
 const char kDisableNamespaceSandbox[]       = "disable-namespace-sandbox";
 
+// Disables clearing the rendering output of a renderer when it didn't commit
+// new output for a while after a top-frame navigation.
+const char kDisableNewContentRenderingTimeout[] =
+    "disable-new-content-rendering-timeout";
+
 // Disables the Web Notification and the Push APIs.
 const char kDisableNotifications[]          = "disable-notifications";
 

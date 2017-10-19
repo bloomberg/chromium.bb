@@ -390,9 +390,12 @@ RenderWidgetHostImpl::RenderWidgetHostImpl(RenderWidgetHostDelegate* delegate,
                    weak_factory_.GetWeakPtr())));
   }
 
-  new_content_rendering_timeout_.reset(new TimeoutMonitor(
-      base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
-                 weak_factory_.GetWeakPtr())));
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableNewContentRenderingTimeout)) {
+    new_content_rendering_timeout_.reset(new TimeoutMonitor(
+        base::Bind(&RenderWidgetHostImpl::ClearDisplayedGraphics,
+                   weak_factory_.GetWeakPtr())));
+  }
 
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -1080,6 +1083,10 @@ void RenderWidgetHostImpl::LogHangMonitorUnresponsive() {
 void RenderWidgetHostImpl::StartNewContentRenderingTimeout(
     uint32_t next_source_id) {
   current_content_source_id_ = next_source_id;
+
+  if (!new_content_rendering_timeout_)
+    return;
+
   // It is possible for a compositor frame to arrive before the browser is
   // notified about the page being committed, in which case no timer is
   // necessary.
@@ -2704,7 +2711,8 @@ void RenderWidgetHostImpl::SubmitCompositorFrame(
 
   // After navigation, if a frame belonging to the new page is received, stop
   // the timer that triggers clearing the graphics of the last page.
-  if (last_received_content_source_id_ >= current_content_source_id_ &&
+  if (new_content_rendering_timeout_ &&
+      last_received_content_source_id_ >= current_content_source_id_ &&
       new_content_rendering_timeout_->IsRunning()) {
     new_content_rendering_timeout_->Stop();
   }
