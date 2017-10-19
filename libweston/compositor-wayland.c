@@ -2333,6 +2333,9 @@ wayland_parent_output_destroy(struct wayland_parent_output *output)
 		wl_list_remove(&mode->link);
 		free(mode);
 	}
+
+	wl_list_remove(&output->link);
+	free(output);
 }
 
 static void
@@ -2385,9 +2388,9 @@ registry_handle_global_remove(void *data, struct wl_registry *registry,
 			      uint32_t name)
 {
 	struct wayland_backend *b = data;
-	struct wayland_parent_output *output;
+	struct wayland_parent_output *output, *next;
 
-	wl_list_for_each(output, &b->parent.output_list, link)
+	wl_list_for_each_safe(output, next, &b->parent.output_list, link)
 		if (output->id == name)
 			wayland_parent_output_destroy(output);
 }
