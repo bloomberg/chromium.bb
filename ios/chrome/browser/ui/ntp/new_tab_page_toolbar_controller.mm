@@ -97,9 +97,9 @@ enum {
 
     _omniboxFocuser.translatesAutoresizingMaskIntoConstraints = NO;
 
-    [self.view addSubview:_backButton];
-    [self.view addSubview:_forwardButton];
-    [self.view addSubview:_omniboxFocuser];
+    [self.contentView addSubview:_backButton];
+    [self.contentView addSubview:_forwardButton];
+    [self.contentView addSubview:_omniboxFocuser];
     [NSLayoutConstraint activateConstraints:@[
       [_omniboxFocuser.leadingAnchor
           constraintEqualToAnchor:_forwardButton.trailingAnchor],
