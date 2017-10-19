@@ -39,6 +39,7 @@
 #include "net/http/http_util.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "url/gurl.h"
 
 using blink::MessagePortChannel;
@@ -604,7 +605,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
           sender_provider_host->running_hosted_version()->remaining_timeout();
       RunSoon(base::Bind(
           &ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal<
-              ServiceWorkerObjectInfo>,
+              blink::mojom::ServiceWorkerObjectInfo>,
           this, worker, message, source_origin, sent_message_ports,
           base::make_optional(timeout), callback,
           sender_provider_host->GetOrCreateServiceWorkerHandle(
@@ -685,7 +686,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
     const base::Optional<base::TimeDelta>& timeout,
     const StatusCallback& callback,
     const SourceInfo& source_info) {
-  if (!source_info.IsValid()) {
+  if (!IsValidSourceInfo(source_info)) {
     DidFailToDispatchExtendableMessageEvent<SourceInfo>(
         sent_message_ports, source_info, callback, SERVICE_WORKER_ERROR_FAILED);
     return;
@@ -756,9 +757,20 @@ void ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent(
     const SourceInfo& source_info,
     const StatusCallback& callback,
     ServiceWorkerStatusCode status) {
-  if (source_info.IsValid())
+  if (IsValidSourceInfo(source_info))
     ReleaseSourceInfo(source_info);
   callback.Run(status);
+}
+
+bool ServiceWorkerDispatcherHost::IsValidSourceInfo(
+    const ServiceWorkerClientInfo& source_info) {
+  return source_info.IsValid();
+}
+
+bool ServiceWorkerDispatcherHost::IsValidSourceInfo(
+    const blink::mojom::ServiceWorkerObjectInfo& source_info) {
+  return source_info.handle_id != blink::mojom::kInvalidServiceWorkerHandleId &&
+         source_info.version_id != blink::mojom::kInvalidServiceWorkerVersionId;
 }
 
 void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
@@ -768,7 +780,7 @@ void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
 }
 
 void ServiceWorkerDispatcherHost::ReleaseSourceInfo(
-    const ServiceWorkerObjectInfo& source_info) {
+    const blink::mojom::ServiceWorkerObjectInfo& source_info) {
   ServiceWorkerHandle* handle = handles_.Lookup(source_info.handle_id);
   DCHECK(handle);
   handle->DecrementRefCount();

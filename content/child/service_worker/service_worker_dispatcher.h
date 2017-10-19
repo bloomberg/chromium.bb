@@ -22,6 +22,7 @@
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_state.mojom.h"
 
@@ -43,7 +44,6 @@ class ServiceWorkerProviderContext;
 class ThreadSafeSender;
 class WebServiceWorkerImpl;
 class WebServiceWorkerRegistrationImpl;
-struct ServiceWorkerObjectInfo;
 struct ServiceWorkerVersionAttributes;
 
 // This class manages communication with the browser process about
@@ -220,7 +220,7 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // Assumes that the given object information retains an interprocess handle
   // reference passed from the browser process, and adopts it.
   std::unique_ptr<ServiceWorkerHandleReference> Adopt(
-      const ServiceWorkerObjectInfo& info);
+      const blink::mojom::ServiceWorkerObjectInfo& info);
 
   UnregistrationCallbackMap pending_unregistration_callbacks_;
   EnableNavigationPreloadCallbackMap enable_navigation_preload_callbacks_;

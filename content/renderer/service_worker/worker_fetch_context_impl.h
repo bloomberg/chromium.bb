@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/WebApplicationCacheHost.h"
 #include "third_party/WebKit/public/platform/WebWorkerFetchContext.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -99,7 +100,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
 
   // Updated when mojom::ServiceWorkerWorkerClient::SetControllerServiceWorker()
   // is called from the browser process via mojo IPC.
-  int controller_version_id_ = kInvalidServiceWorkerVersionId;
+  int controller_version_id_ = blink::mojom::kInvalidServiceWorkerVersionId;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   std::unique_ptr<blink::WebDocumentSubresourceFilter::Builder>

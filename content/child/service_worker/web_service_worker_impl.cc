@@ -17,6 +17,7 @@
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProxy.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 
 using blink::WebSecurityOrigin;
 using blink::WebString;
@@ -48,7 +49,8 @@ WebServiceWorkerImpl::WebServiceWorkerImpl(
       state_(handle_ref_->state()),
       thread_safe_sender_(thread_safe_sender),
       proxy_(nullptr) {
-  DCHECK_NE(kInvalidServiceWorkerHandleId, handle_ref_->handle_id());
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerHandleId,
+            handle_ref_->handle_id());
   ServiceWorkerDispatcher* dispatcher =
       ServiceWorkerDispatcher::GetThreadSpecificInstance();
   DCHECK(dispatcher);

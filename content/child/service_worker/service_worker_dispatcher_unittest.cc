@@ -104,11 +104,12 @@ class ServiceWorkerDispatcherTest : public testing::Test {
     return ContainsKey(dispatcher_->registrations_, registration_handle_id);
   }
 
-  void OnSetControllerServiceWorker(int thread_id,
-                                    int provider_id,
-                                    const ServiceWorkerObjectInfo& info,
-                                    bool should_notify_controllerchange,
-                                    const std::set<uint32_t>& used_features) {
+  void OnSetControllerServiceWorker(
+      int thread_id,
+      int provider_id,
+      const blink::mojom::ServiceWorkerObjectInfo& info,
+      bool should_notify_controllerchange,
+      const std::set<uint32_t>& used_features) {
     ServiceWorkerMsg_SetControllerServiceWorker_Params params;
     params.thread_id = thread_id;
     params.provider_id = provider_id;
@@ -123,7 +124,7 @@ class ServiceWorkerDispatcherTest : public testing::Test {
   }
 
   std::unique_ptr<ServiceWorkerHandleReference> Adopt(
-      const ServiceWorkerObjectInfo& info) {
+      const blink::mojom::ServiceWorkerObjectInfo& info) {
     return dispatcher_->Adopt(info);
   }
 
@@ -299,9 +300,10 @@ TEST_F(ServiceWorkerDispatcherTest, OnSetControllerServiceWorker_Null) {
       nullptr /* loader_factory_getter */);
 
   // Set the controller to kInvalidServiceWorkerHandle.
-  OnSetControllerServiceWorker(
-      kDocumentMainThreadId, kProviderId, ServiceWorkerObjectInfo(),
-      should_notify_controllerchange, std::set<uint32_t>());
+  OnSetControllerServiceWorker(kDocumentMainThreadId, kProviderId,
+                               blink::mojom::ServiceWorkerObjectInfo(),
+                               should_notify_controllerchange,
+                               std::set<uint32_t>());
 
   // Check that it became null.
   EXPECT_EQ(nullptr, provider_context->controller());
@@ -367,7 +369,8 @@ TEST_F(ServiceWorkerDispatcherTest, GetServiceWorker) {
 
   // Should return nullptr when a given object is invalid.
   scoped_refptr<WebServiceWorkerImpl> invalid_worker =
-      dispatcher()->GetOrCreateServiceWorker(Adopt(ServiceWorkerObjectInfo()));
+      dispatcher()->GetOrCreateServiceWorker(
+          Adopt(blink::mojom::ServiceWorkerObjectInfo()));
   EXPECT_FALSE(invalid_worker);
   EXPECT_EQ(0UL, ipc_sink()->message_count());
 }

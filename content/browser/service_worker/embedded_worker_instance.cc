@@ -30,6 +30,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/web/WebConsoleMessage.h"
 #include "url/gurl.h"
 
@@ -488,7 +489,8 @@ void EmbeddedWorkerInstance::Start(
   DCHECK_EQ(EmbeddedWorkerStatus::STOPPED, status_);
 
   DCHECK(!params->pause_after_download || !params->is_installed);
-  DCHECK_NE(kInvalidServiceWorkerVersionId, params->service_worker_version_id);
+  DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
+            params->service_worker_version_id);
 
   step_time_ = base::TimeTicks::Now();
   status_ = EmbeddedWorkerStatus::STARTING;

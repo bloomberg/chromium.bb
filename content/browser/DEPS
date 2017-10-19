@@ -119,6 +119,7 @@ include_rules = [
   "+third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerResponseError.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_error_type.mojom.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h",
+  "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_state.mojom.h",
   "+third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h",

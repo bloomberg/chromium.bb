@@ -5,9 +5,9 @@
 #include "content/browser/devtools/protocol/service_worker_handler.h"
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/containers/flat_set.h"
 #include "content/browser/background_sync/background_sync_context.h"
 #include "content/browser/background_sync/background_sync_manager.h"
 #include "content/browser/devtools/service_worker_devtools_agent_host.h"
@@ -28,6 +28,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.mojom.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -282,7 +283,7 @@ Response ServiceWorkerHandler::InspectWorker(const std::string& version_id) {
   if (!context_)
     return CreateContextErrorResponse();
 
-  int64_t id = kInvalidServiceWorkerVersionId;
+  int64_t id = blink::mojom::kInvalidServiceWorkerVersionId;
   if (!base::StringToInt64(version_id, &id))
     return CreateInvalidVersionIdErrorResponse();
   BrowserThread::PostTask(

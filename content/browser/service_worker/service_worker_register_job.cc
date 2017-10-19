@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/base/net_errors.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 
 namespace content {
 
@@ -373,7 +374,7 @@ void ServiceWorkerRegisterJob::UpdateAndContinue() {
   context_->storage()->NotifyInstallingRegistration(registration());
 
   int64_t version_id = context_->storage()->NewVersionId();
-  if (version_id == kInvalidServiceWorkerVersionId) {
+  if (version_id == blink::mojom::kInvalidServiceWorkerVersionId) {
     Complete(SERVICE_WORKER_ERROR_ABORT);
     return;
   }

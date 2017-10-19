@@ -9,6 +9,7 @@
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "ipc/ipc_message.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -41,7 +42,7 @@ ServiceWorkerVersionInfo::ServiceWorkerVersionInfo()
       fetch_handler_existence(
           ServiceWorkerVersion::FetchHandlerExistence::UNKNOWN),
       registration_id(blink::mojom::kInvalidServiceWorkerRegistrationId),
-      version_id(kInvalidServiceWorkerVersionId),
+      version_id(blink::mojom::kInvalidServiceWorkerVersionId),
       process_id(ChildProcessHost::kInvalidUniqueID),
       thread_id(kInvalidEmbeddedWorkerThreadId),
       devtools_agent_route_id(MSG_ROUTING_NONE) {}

@@ -40,6 +40,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 using net::IOBuffer;
@@ -684,7 +685,8 @@ TEST_F(ServiceWorkerStorageTest, DisabledStorage) {
   // Next available ids should be invalid.
   EXPECT_EQ(blink::mojom::kInvalidServiceWorkerRegistrationId,
             storage()->NewRegistrationId());
-  EXPECT_EQ(kInvalidServiceWorkerVersionId, storage()->NewVersionId());
+  EXPECT_EQ(blink::mojom::kInvalidServiceWorkerVersionId,
+            storage()->NewVersionId());
   EXPECT_EQ(kInvalidServiceWorkerResourceId, storage()->NewRegistrationId());
 }
 

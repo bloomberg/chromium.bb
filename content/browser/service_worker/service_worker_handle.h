@@ -45,7 +45,7 @@ class CONTENT_EXPORT ServiceWorkerHandle
   // ServiceWorkerVersion::Listener overrides.
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
 
-  ServiceWorkerObjectInfo GetObjectInfo();
+  blink::mojom::ServiceWorkerObjectInfo GetObjectInfo();
 
   int provider_id() const { return provider_id_; }
   int handle_id() const { return handle_id_; }
