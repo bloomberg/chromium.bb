@@ -286,11 +286,9 @@ class PrintPreviewHandler
 
   // Called when an extension or privet print job is completed.
   // |callback_id|: The javascript callback to run.
-  // |success|: Whether the job succeeded.
   // |error|: The returned print job error. Useful for reporting a specific
-  //     error.
+  //     error. None type implies no error.
   void OnPrintResult(const std::string& callback_id,
-                     bool success,
                      const base::Value& error);
 
   // A count of how many requests received to regenerate preview data.

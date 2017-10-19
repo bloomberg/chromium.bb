@@ -14,6 +14,7 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
+class Value;
 }
 
 namespace content {
@@ -38,8 +39,7 @@ class PrinterProviderAPI : public KeyedService {
       base::Callback<void(const base::ListValue& printers, bool done)>;
   using GetCapabilityCallback =
       base::Callback<void(const base::DictionaryValue& capability)>;
-  using PrintCallback =
-      base::Callback<void(bool success, const std::string& error)>;
+  using PrintCallback = base::Callback<void(const base::Value& error)>;
   using GetPrinterInfoCallback =
       base::Callback<void(const base::DictionaryValue& printer_info)>;
 

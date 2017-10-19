@@ -231,11 +231,12 @@ void RecordCapability(size_t* call_count,
 void RecordPrintResult(size_t* call_count,
                        bool* success_out,
                        std::string* status_out,
-                       bool success,
                        const base::Value& status) {
   ++(*call_count);
+  bool success = status.is_none();
+  std::string status_str = success ? kPrintRequestSuccess : status.GetString();
   *success_out = success;
-  *status_out = status.GetString();
+  *status_out = status_str;
 }
 
 // Used as a callback to StartGrantPrinterAccess in tests.
@@ -423,8 +424,10 @@ class FakePrinterProviderAPI : public PrinterProviderAPI {
 
   void TriggerNextPrintCallback(const std::string& result) {
     ASSERT_GT(pending_print_count(), 0u);
-    pending_print_requests_.front().callback.Run(result == kPrintRequestSuccess,
-                                                 result);
+    base::Value result_value;
+    if (result != kPrintRequestSuccess)
+      result_value = base::Value(result);
+    pending_print_requests_.front().callback.Run(result_value);
     pending_print_requests_.pop();
   }
 

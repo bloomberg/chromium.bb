@@ -1340,10 +1340,9 @@ void PrintPreviewHandler::OnGotExtensionPrinterInfo(
 }
 
 void PrintPreviewHandler::OnPrintResult(const std::string& callback_id,
-                                        bool success,
                                         const base::Value& error) {
-  if (success) {
-    ResolveJavascriptCallback(base::Value(callback_id), base::Value());
+  if (error.is_none()) {
+    ResolveJavascriptCallback(base::Value(callback_id), error);
     return;
   }
   RejectJavascriptCallback(base::Value(callback_id), error);

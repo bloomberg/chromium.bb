@@ -93,7 +93,7 @@ void PrivetPrinterHandler::StartPrint(
           base::Bind(&PrivetPrinterHandler::PrintUpdateClient,
                      weak_ptr_factory_.GetWeakPtr(), callback, job_title,
                      print_data, ticket_json, capability, page_size))) {
-    callback.Run(false, base::Value(-1));
+    callback.Run(base::Value(-1));
   }
 }
 
@@ -120,14 +120,14 @@ void PrivetPrinterHandler::LocalPrinterCacheFlushed() {}
 void PrivetPrinterHandler::OnPrivetPrintingDone(
     const cloud_print::PrivetLocalPrintOperation* print_operation) {
   DCHECK(print_callback_);
-  print_callback_.Run(true, base::Value());
+  print_callback_.Run(base::Value());
 }
 
 void PrivetPrinterHandler::OnPrivetPrintingError(
     const cloud_print::PrivetLocalPrintOperation* print_operation,
     int http_code) {
   DCHECK(print_callback_);
-  print_callback_.Run(false, base::Value(http_code));
+  print_callback_.Run(base::Value(http_code));
 }
 
 void PrivetPrinterHandler::StartLister(
@@ -210,7 +210,7 @@ void PrivetPrinterHandler::PrintUpdateClient(
     const gfx::Size& page_size,
     std::unique_ptr<cloud_print::PrivetHTTPClient> http_client) {
   if (!UpdateClient(std::move(http_client))) {
-    callback.Run(false, base::Value(-1));
+    callback.Run(base::Value(-1));
     return;
   }
   print_callback_ = callback;

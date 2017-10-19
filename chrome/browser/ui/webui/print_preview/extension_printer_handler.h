@@ -100,8 +100,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
   void WrapGetCapabilityCallback(const GetCapabilityCallback& callback,
                                  const base::DictionaryValue& capability);
   void WrapPrintCallback(const PrintCallback& callback,
-                         bool success,
-                         const std::string& status);
+                         const base::Value& status);
   void WrapGetPrinterInfoCallback(const GetPrinterInfoCallback& callback,
                                   const base::DictionaryValue& printer_info);
 
@@ -110,7 +109,7 @@ class ExtensionPrinterHandler : public PrinterHandler {
       const GetPrintersDoneCallback& done_callback,
       const std::vector<scoped_refptr<device::UsbDevice>>& devices);
 
-  Profile* profile_;
+  Profile* const profile_;
 
   std::unique_ptr<printing::PWGRasterConverter> pwg_raster_converter_;
   int pending_enumeration_count_ = 0;

@@ -215,7 +215,7 @@ void PdfPrinterHandler::FileSelected(const base::FilePath& path,
 }
 
 void PdfPrinterHandler::FileSelectionCanceled(void* params) {
-  print_callback_.Run(false, base::Value());
+  print_callback_.Run(base::Value("PDFPrintCanceled"));
   print_callback_.Reset();
 }
 
@@ -235,7 +235,7 @@ void PdfPrinterHandler::SelectFile(const base::FilePath& default_filename,
     ChromeSelectFilePolicy policy(initiator);
     if (!policy.CanOpenSelectFileDialog()) {
       policy.SelectFileDenied();
-      print_callback_.Run(false, base::Value());
+      print_callback_.Run(base::Value("PDFPrintCannotSelect"));
       print_callback_.Reset();
       return;
     }
@@ -278,7 +278,7 @@ void PdfPrinterHandler::PostPrintToPdfTask() {
       base::BindOnce(&PrintToPdfCallback, print_data_, print_to_pdf_path_,
                      pdf_file_saved_closure_));
   print_to_pdf_path_.clear();
-  print_callback_.Run(true, base::Value());
+  print_callback_.Run(base::Value());
   print_callback_.Reset();
 }
 
