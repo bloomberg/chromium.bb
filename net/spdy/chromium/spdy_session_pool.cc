@@ -50,6 +50,7 @@ SpdySessionPool::SpdySessionPool(
     TransportSecurityState* transport_security_state,
     const QuicTransportVersionVector& quic_supported_versions,
     bool enable_ping_based_connection_checking,
+    bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,
     const SettingsMap& initial_settings,
     SpdySessionPool::TimeFunc time_func,
@@ -62,6 +63,7 @@ SpdySessionPool::SpdySessionPool(
       enable_sending_initial_data_(true),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
+      support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       session_max_recv_window_size_(session_max_recv_window_size),
       initial_settings_(initial_settings),
       time_func_(time_func),
@@ -102,9 +104,9 @@ base::WeakPtr<SpdySession> SpdySessionPool::CreateAvailableSessionFromSocket(
   auto new_session = std::make_unique<SpdySession>(
       key, http_server_properties_, transport_security_state_,
       quic_supported_versions_, enable_sending_initial_data_,
-      enable_ping_based_connection_checking_, session_max_recv_window_size_,
-      initial_settings_, time_func_, push_delegate_, proxy_delegate_,
-      net_log.net_log());
+      enable_ping_based_connection_checking_, support_ietf_format_quic_altsvc_,
+      session_max_recv_window_size_, initial_settings_, time_func_,
+      push_delegate_, proxy_delegate_, net_log.net_log());
 
   new_session->InitializeWithSocket(std::move(connection), this);
 

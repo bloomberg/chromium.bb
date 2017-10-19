@@ -145,6 +145,13 @@ bool ShouldRetryWithoutAltSvcOnQuicErrors(
       "true");
 }
 
+bool ShouldSupportIetfFormatQuicAltSvc(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "support_ietf_format_quic_altsvc"),
+      "true");
+}
+
 net::QuicTagVector GetQuicConnectionOptions(
     const VariationParameters& quic_trial_params) {
   VariationParameters::const_iterator it =
@@ -267,6 +274,9 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
 
   params->retry_without_alt_svc_on_quic_errors =
       ShouldRetryWithoutAltSvcOnQuicErrors(quic_trial_params);
+
+  params->support_ietf_format_quic_altsvc =
+      ShouldSupportIetfFormatQuicAltSvc(quic_trial_params);
 
   if (params->enable_quic) {
     params->quic_connection_options =

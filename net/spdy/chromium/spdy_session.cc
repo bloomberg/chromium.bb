@@ -40,6 +40,7 @@
 #include "net/log/net_log_source_type.h"
 #include "net/log/net_log_with_source.h"
 #include "net/proxy/proxy_server.h"
+#include "net/quic/chromium/quic_http_utils.h"
 #include "net/socket/socket.h"
 #include "net/socket/ssl_client_socket.h"
 #include "net/spdy/chromium/header_coalescer.h"
@@ -727,6 +728,7 @@ SpdySession::SpdySession(
     const QuicTransportVersionVector& quic_supported_versions,
     bool enable_sending_initial_data,
     bool enable_ping_based_connection_checking,
+    bool support_ietf_format_quic_altsvc,
     size_t session_max_recv_window_size,
     const SettingsMap& initial_settings,
     TimeFunc time_func,
@@ -779,6 +781,7 @@ SpdySession::SpdySession(
       enable_sending_initial_data_(enable_sending_initial_data),
       enable_ping_based_connection_checking_(
           enable_ping_based_connection_checking),
+      support_ietf_format_quic_altsvc_(support_ietf_format_quic_altsvc),
       connection_at_risk_of_loss_time_(
           base::TimeDelta::FromSeconds(kDefaultConnectionAtRiskOfLossSeconds)),
       hung_interval_(base::TimeDelta::FromSeconds(kHungIntervalSeconds)),
@@ -2964,25 +2967,13 @@ void SpdySession::OnAltSvc(
     if (protocol == kProtoUnknown)
       continue;
 
-    // TODO(zhongyi): refactor the QUIC version filtering to a single function
-    // so that SpdySession::OnAltSvc and
-    // HttpStreamFactory::ProcessAlternativeServices
-    // could use the the same function.
     // Check if QUIC version is supported. Filter supported QUIC versions.
     QuicTransportVersionVector advertised_versions;
     if (protocol == kProtoQUIC && !altsvc.version.empty()) {
-      bool match_found = false;
-      for (const QuicTransportVersion& supported : quic_supported_versions_) {
-        for (const uint16_t& advertised : altsvc.version) {
-          if (supported == advertised) {
-            match_found = true;
-            advertised_versions.push_back(supported);
-          }
-        }
-      }
-      if (!match_found) {
+      advertised_versions = FilterSupportedAltSvcVersions(
+          altsvc, quic_supported_versions_, support_ietf_format_quic_altsvc_);
+      if (advertised_versions.empty())
         continue;
-      }
     }
 
     const AlternativeService alternative_service(protocol, altsvc.host,

@@ -144,6 +144,9 @@ class NET_EXPORT HttpNetworkSession : public base::MemoryCoordinatorClient {
     // Retry requests which fail with QUIC_PROTOCOL_ERROR, and mark QUIC
     // broken if the retry succeeds.
     bool retry_without_alt_svc_on_quic_errors;
+    // If true, alt-svc headers advertising QUIC in IETF format will be
+    // supported.
+    bool support_ietf_format_quic_altsvc;
     // Specifies QUIC idle connection state lifetime.
     int quic_idle_connection_timeout_seconds;
     // Specifies the reduced ping timeout subsequent connections should use when
