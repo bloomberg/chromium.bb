@@ -86,8 +86,17 @@ void LayoutImageResource::ResetAnimation() {
 LayoutSize LayoutImageResource::ImageSize(float multiplier) const {
   if (!cached_image_)
     return LayoutSize();
-  LayoutSize size = cached_image_->ImageSize(
-      LayoutObject::ShouldRespectImageOrientation(layout_object_), multiplier);
+  LayoutSize size(cached_image_->IntrinsicSize(
+      LayoutObject::ShouldRespectImageOrientation(layout_object_)));
+  if (multiplier != 1 && !ImageHasRelativeSize()) {
+    // Don't let images that have a width/height >= 1 shrink below 1 when
+    // zoomed.
+    LayoutSize minimum_size(
+        size.Width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
+        size.Height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit());
+    size.Scale(multiplier);
+    size.ClampToMinimumSize(minimum_size);
+  }
   if (layout_object_ && layout_object_->IsLayoutImage() && size.Width() &&
       size.Height())
     size.Scale(ToLayoutImage(layout_object_)->ImageDevicePixelRatio());

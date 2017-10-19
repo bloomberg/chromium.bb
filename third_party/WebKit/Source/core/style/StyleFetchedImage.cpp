@@ -90,7 +90,8 @@ LayoutSize StyleFetchedImage::ImageSize(
   // border-image, etc.)
   //
   // https://drafts.csswg.org/css-images-3/#the-image-orientation
-  return image_->ImageSize(kDoNotRespectImageOrientation, multiplier);
+  LayoutSize size(image_->IntrinsicSize(kDoNotRespectImageOrientation));
+  return ApplyZoom(size, multiplier);
 }
 
 bool StyleFetchedImage::ImageHasRelativeSize() const {

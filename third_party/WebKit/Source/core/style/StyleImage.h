@@ -116,7 +116,7 @@ class CORE_EXPORT StyleImage : public GarbageCollectedFinalized<StyleImage> {
 
   bool is_ua_css_resource_ = false;
 
-  static LayoutSize ApplyZoom(const LayoutSize&, float multiplier);
+  LayoutSize ApplyZoom(const LayoutSize&, float multiplier) const;
   LayoutSize ImageSizeForSVGImage(SVGImage*,
                                   float multiplier,
                                   const LayoutSize& default_object_size) const;

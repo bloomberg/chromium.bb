@@ -254,26 +254,6 @@ IntSize ImageResourceContent::IntrinsicSize(
   return image_->Size();
 }
 
-LayoutSize ImageResourceContent::ImageSize(
-    RespectImageOrientationEnum should_respect_image_orientation,
-    float multiplier) {
-  if (!image_)
-    return LayoutSize();
-
-  LayoutSize size(IntrinsicSize(should_respect_image_orientation));
-
-  if (multiplier == 1 || image_->HasRelativeSize())
-    return size;
-
-  // Don't let images that have a width/height >= 1 shrink below 1 when zoomed.
-  LayoutSize minimum_size(
-      size.Width() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit(),
-      size.Height() > LayoutUnit() ? LayoutUnit(1) : LayoutUnit());
-  size.Scale(multiplier);
-  size.ClampToMinimumSize(minimum_size);
-  return size;
-}
-
 void ImageResourceContent::NotifyObservers(
     NotifyFinishOption notifying_finish_option,
     const IntRect* change_rect) {
