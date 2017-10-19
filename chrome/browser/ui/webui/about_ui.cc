@@ -323,7 +323,7 @@ std::string ChromeURLs() {
       "<p>The following pages are for debugging purposes only. Because they "
       "crash or hang the renderer, they're not linked directly; you can type "
       "them into the address bar if you need them.</p>\n<ul>";
-  for (int i = 0; i < chrome::kNumberOfChromeDebugURLs; i++)
+  for (size_t i = 0; i < chrome::kNumberOfChromeDebugURLs; i++)
     html += "<li>" + std::string(chrome::kChromeDebugURLs[i]) + "</li>\n";
   html += "</ul>\n";
   AppendFooter(&html);

@@ -34,7 +34,7 @@ per-file *.typemap=file://ipc/SECURITY_OWNERS
 per-file *.mojom=set noparent
 per-file *.mojom=file://ipc/SECURITY_OWNERS
 
-#Content settings
+# Content settings
 per-file content_settings*=markusheintz@chromium.org
 
 # Pepper files.
@@ -51,3 +51,7 @@ per-file crash_keys*=rsesek@chromium.org
 per-file trace_event_args_whitelist*=nduca@chromium.org
 per-file trace_event_args_whitelist*=dsinclair@chromium.org
 per-file trace_event_args_whitelist*=oysteine@chromium.org
+
+# WebUI. See also chrome/browser/ui/webui/OWNERS.
+per-file webui_url_constants.cc=file://ui/webui/PLATFORM_OWNERS
+per-file webui_url_constants.h=file://ui/webui/PLATFORM_OWNERS

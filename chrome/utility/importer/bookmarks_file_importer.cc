@@ -60,7 +60,7 @@ bool CanImportURL(const GURL& url) {
         return true;
     }
 
-    for (int i = 0; i < chrome::kNumberOfChromeDebugURLs; ++i) {
+    for (size_t i = 0; i < chrome::kNumberOfChromeDebugURLs; ++i) {
       if (fixed_url == chrome::kChromeDebugURLs[i])
         return true;
     }

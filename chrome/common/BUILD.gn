@@ -191,6 +191,8 @@ static_library("common") {
     "url_constants.h",
     "web_application_info.cc",
     "web_application_info.h",
+    "webui_url_constants.cc",
+    "webui_url_constants.h",
   ]
   defines = []
 
