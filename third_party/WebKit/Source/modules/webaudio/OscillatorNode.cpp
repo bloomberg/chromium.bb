@@ -229,6 +229,110 @@ bool OscillatorHandler::CalculateSampleAccuratePhaseIncrements(
   return has_sample_accurate_values;
 }
 
+static float DoInterpolation(double virtual_read_index,
+                             float incr,
+                             unsigned read_index_mask,
+                             float table_interpolation_factor,
+                             const float* lower_wave_data,
+                             const float* higher_wave_data) {
+  DCHECK_GE(incr, 0);
+
+  double sample_lower = 0;
+  double sample_higher = 0;
+
+  unsigned read_index_0 = static_cast<unsigned>(virtual_read_index);
+
+  // Consider a typical sample rate of 44100 Hz and max periodic wave
+  // size of 4096.  The relationship between |incr| and the frequency
+  // of the oscillator is |incr| = freq * 4096/44100. Or freq =
+  // |incr|*44100/4096 = 10.8*|incr|.
+  //
+  // For the |incr| thresholds below, this means that we use linear
+  // interpolation for all freq >= 3.2 Hz, 3-point Lagrange
+  // for freq >= 1.7 Hz and 5-point Lagrange for every thing else.
+  //
+  // We use Lagrange interpolation because it's relatively simple to
+  // implement and fairly inexpensive, and the interpolator always
+  // passes through known points.
+  if (incr >= 0.3) {
+    // Increment is fairly large, so we're doing no more than about 3
+    // points between each wave table entry. Assume linear
+    // interpolation between points is good enough.
+    unsigned read_index2 = read_index_0 + 1;
+
+    // Contain within valid range.
+    read_index_0 = read_index_0 & read_index_mask;
+    read_index2 = read_index2 & read_index_mask;
+
+    float sample1_lower = lower_wave_data[read_index_0];
+    float sample2_lower = lower_wave_data[read_index2];
+    float sample1_higher = higher_wave_data[read_index_0];
+    float sample2_higher = higher_wave_data[read_index2];
+
+    // Linearly interpolate within each table (lower and higher).
+    double interpolation_factor =
+        static_cast<float>(virtual_read_index) - read_index_0;
+    sample_higher = (1 - interpolation_factor) * sample1_higher +
+                    interpolation_factor * sample2_higher;
+    sample_lower = (1 - interpolation_factor) * sample1_lower +
+                   interpolation_factor * sample2_lower;
+
+  } else if (incr >= .16) {
+    // We're doing about 6 interpolation values between each wave
+    // table sample. Just use a 3-point Lagrange interpolator to get a
+    // better estimate than just linear.
+    //
+    // See 3-point formula in http://dlmf.nist.gov/3.3#ii
+    unsigned read_index[3];
+
+    for (int k = -1; k <= 1; ++k) {
+      read_index[k + 1] = (read_index_0 + k) & read_index_mask;
+    }
+
+    double a[3];
+    double t = virtual_read_index - read_index_0;
+
+    a[0] = 0.5 * t * (t - 1);
+    a[1] = 1 - t * t;
+    a[2] = 0.5 * t * (t + 1);
+
+    for (int k = 0; k < 3; ++k) {
+      sample_lower += a[k] * lower_wave_data[read_index[k]];
+      sample_higher += a[k] * higher_wave_data[read_index[k]];
+    }
+  } else {
+    // For everything else (more than 6 points per entry), we'll do a
+    // 5-point Lagrange interpolator.  This is a trade-off between
+    // quality and speed.
+    //
+    // See 5-point formula in http://dlmf.nist.gov/3.3#ii
+    unsigned read_index[5];
+    for (int k = -2; k <= 2; ++k) {
+      read_index[k + 2] = (read_index_0 + k) & read_index_mask;
+    }
+
+    double a[5];
+    double t = virtual_read_index - read_index_0;
+    double t2 = t * t;
+
+    a[0] = t * (t2 - 1) * (t - 2) / 24;
+    a[1] = -t * (t - 1) * (t2 - 4) / 6;
+    a[2] = (t2 - 1) * (t2 - 4) / 4;
+    a[3] = -t * (t + 1) * (t2 - 4) / 6;
+    a[4] = t * (t2 - 1) * (t + 2) / 24;
+
+    for (int k = 0; k < 5; ++k) {
+      sample_lower += a[k] * lower_wave_data[read_index[k]];
+      sample_higher += a[k] * higher_wave_data[read_index[k]];
+    }
+  }
+
+  // Then interpolate between the two tables.
+  float sample = (1 - table_interpolation_factor) * sample_higher +
+                 table_interpolation_factor * sample_lower;
+  return sample;
+}
+
 void OscillatorHandler::Process(size_t frames_to_process) {
   AudioBus* output_bus = Output(0).Bus();
 
@@ -321,13 +425,6 @@ void OscillatorHandler::Process(size_t frames_to_process) {
   }
 
   while (n--) {
-    unsigned read_index = static_cast<unsigned>(virtual_read_index);
-    unsigned read_index2 = read_index + 1;
-
-    // Contain within valid range.
-    read_index = read_index & read_index_mask;
-    read_index2 = read_index2 & read_index_mask;
-
     if (has_sample_accurate_values) {
       incr = *phase_increments++;
 
@@ -337,22 +434,9 @@ void OscillatorHandler::Process(size_t frames_to_process) {
           table_interpolation_factor);
     }
 
-    float sample1_lower = lower_wave_data[read_index];
-    float sample2_lower = lower_wave_data[read_index2];
-    float sample1_higher = higher_wave_data[read_index];
-    float sample2_higher = higher_wave_data[read_index2];
-
-    // Linearly interpolate within each table (lower and higher).
-    float interpolation_factor =
-        static_cast<float>(virtual_read_index) - read_index;
-    float sample_higher = (1 - interpolation_factor) * sample1_higher +
-                          interpolation_factor * sample2_higher;
-    float sample_lower = (1 - interpolation_factor) * sample1_lower +
-                         interpolation_factor * sample2_lower;
-
-    // Then interpolate between the two tables.
-    float sample = (1 - table_interpolation_factor) * sample_higher +
-                   table_interpolation_factor * sample_lower;
+    float sample = DoInterpolation(virtual_read_index, fabs(incr),
+                                   read_index_mask, table_interpolation_factor,
+                                   lower_wave_data, higher_wave_data);
 
     *dest_p++ = sample;
 
