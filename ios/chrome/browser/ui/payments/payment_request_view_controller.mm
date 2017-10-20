@@ -456,8 +456,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addItem:shippingAddressItem
       toSectionWithIdentifier:SectionIdentifierShipping];
 
-  if ([_dataSource canShip]) {
-    CollectionViewItem* shippingOptionItem = [_dataSource shippingOptionItem];
+  CollectionViewItem* shippingOptionItem = [_dataSource shippingOptionItem];
+  if (shippingOptionItem) {
     [shippingOptionItem setType:ItemTypeShippingOption];
     shippingOptionItem.accessibilityTraits |= UIAccessibilityTraitButton;
     [model addItem:shippingOptionItem

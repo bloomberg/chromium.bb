@@ -42,10 +42,6 @@
   return YES;
 }
 
-- (BOOL)canShip {
-  return YES;
-}
-
 - (BOOL)hasPaymentItems {
   return YES;
 }
@@ -121,14 +117,6 @@
 @end
 
 @interface TestPaymentRequestMediatorCantShip : TestPaymentRequestMediator
-
-@end
-
-@implementation TestPaymentRequestMediatorCantShip
-
-- (BOOL)canShip {
-  return NO;
-}
 
 @end
 
@@ -246,21 +234,6 @@ TEST_F(PaymentRequestViewControllerTest, TestModelNoContactInfo) {
   ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(3)));
   CollectionViewItem* item = GetCollectionViewItem(3, 0);
   EXPECT_TRUE([item isMemberOfClass:[CollectionViewFooterItem class]]);
-}
-
-// Tests that the correct items are displayed after loading the model, when
-// shipping can't be made.
-TEST_F(PaymentRequestViewControllerTest, TestModelCantShip) {
-  mediator_ = [[TestPaymentRequestMediatorCantShip alloc] init];
-
-  CreateController();
-  CheckController();
-
-  // There should only be one item in the Shipping section and it should be of
-  // type AutofillProfileItem.
-  ASSERT_EQ(1U, static_cast<unsigned int>(NumberOfItemsInSection(1)));
-  id item = GetCollectionViewItem(1, 0);
-  EXPECT_TRUE([item isMemberOfClass:[AutofillProfileItem class]]);
 }
 
 // Tests that the correct items are displayed after updating the Shipping
