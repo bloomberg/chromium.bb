@@ -30,7 +30,10 @@ void EnsureAllChildrenAreVisible(ui::Layer* layer) {
 
 }  // namespace
 
-WindowMirrorView::WindowMirrorView(aura::Window* window) : target_(window) {
+WindowMirrorView::WindowMirrorView(aura::Window* window,
+                                   bool trilinear_filtering_on_init)
+    : target_(window),
+      trilinear_filtering_on_init_(trilinear_filtering_on_init) {
   DCHECK(window);
 }
 
@@ -82,14 +85,21 @@ void WindowMirrorView::InitLayerOwner() {
   layer_owner_ = ::wm::MirrorLayers(target_, false /* sync_bounds */);
 
   SetPaintToLayer();
-  layer()->Add(GetMirrorLayer());
+
+  ui::Layer* mirror_layer = GetMirrorLayer();
+  layer()->Add(mirror_layer);
   // This causes us to clip the non-client areas of the window.
   layer()->SetMasksToBounds(true);
 
   // Some extra work is needed when the target window is minimized.
   if (wm::GetWindowState(target_)->IsMinimized()) {
-    GetMirrorLayer()->SetOpacity(1);
-    EnsureAllChildrenAreVisible(GetMirrorLayer());
+    mirror_layer->SetOpacity(1);
+    EnsureAllChildrenAreVisible(mirror_layer);
+  }
+
+  if (trilinear_filtering_on_init_) {
+    mirror_layer->AddCacheRenderSurfaceRequest();
+    mirror_layer->AddTrilinearFilteringRequest();
   }
 
   Layout();
@@ -100,10 +110,10 @@ ui::Layer* WindowMirrorView::GetMirrorLayer() {
 }
 
 gfx::Rect WindowMirrorView::GetClientAreaBounds() const {
-  int insets = target_->GetProperty(aura::client::kTopViewInset);
-  if (insets > 0) {
+  int inset = target_->GetProperty(aura::client::kTopViewInset);
+  if (inset > 0) {
     gfx::Rect bounds(target_->bounds().size());
-    bounds.Inset(0, insets, 0, 0);
+    bounds.Inset(0, inset, 0, 0);
     return bounds;
   }
   // The target window may not have a widget in unit tests.

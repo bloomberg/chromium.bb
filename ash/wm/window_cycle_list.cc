@@ -70,7 +70,9 @@ class WindowPreviewView : public views::View, public aura::WindowObserver {
   explicit WindowPreviewView(aura::Window* window)
       : window_title_(new views::Label),
         preview_background_(new views::View),
-        mirror_view_(new wm::WindowMirrorView(window)),
+        mirror_view_(
+            new wm::WindowMirrorView(window,
+                                     /*trilinear_filtering_on_init=*/true)),
         window_observer_(this) {
     window_observer_.Add(window);
     window_title_->SetText(window->GetTitle());
@@ -239,6 +241,8 @@ class WindowCycleView : public views::WidgetDelegateView {
 
     for (auto* window : windows) {
       // |mirror_container_| owns |view|.
+      // The |mirror_view_| in |view| will use trilinear filtering in
+      // InitLayerOwner().
       views::View* view = new WindowPreviewView(window);
       window_view_map_[window] = view;
       mirror_container_->AddChildView(view);
