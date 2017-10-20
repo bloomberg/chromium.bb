@@ -990,9 +990,6 @@ extern const char kBackgroundLoaderForDownloadsDescription[];
 extern const char kChromeHomeBottomNavLabelsName[];
 extern const char kChromeHomeBottomNavLabelsDescription[];
 
-extern const char kChromeHomeDoodleName[];
-extern const char kChromeHomeDoodleDescription[];
-
 extern const char kChromeHomeOptOutSnackbarName[];
 extern const char kChromeHomeOptOutSnackbarDescription[];
 

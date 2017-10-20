@@ -246,7 +246,6 @@
 
     <dimen name="toolbar_edge_padding">8dp</dimen>
     <dimen name="location_bar_google_g_width">24dp</dimen>
-    <dimen name="location_bar_google_g_width_bottom_sheet">20dp</dimen>
     <dimen name="location_bar_google_g_margin">8dp</dimen>
     <!-- location_bar_google_g_width + 2 * location_bar_google_g_margin -->
     <dimen name="location_bar_google_g_container_width">40dp</dimen>

@@ -9,10 +9,8 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.compositor.layouts.EmptyOverviewModeObserver;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
 import org.chromium.chrome.browser.compositor.layouts.OverviewModeBehavior.OverviewModeObserver;
-import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.BottomToolbarPhone;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
 
 import java.util.ArrayList;
@@ -169,17 +167,6 @@ public class BottomSheetNewTabController extends EmptyBottomSheetObserver {
      */
     public boolean isShowingNewTabUi() {
         return mIsShowingNewTabUi;
-    }
-
-    /**
-     * @return Whether the Google 'G' logo should be shown in the location bar.
-     */
-    public boolean shouldShowGoogleGInLocationBar() {
-        return mIsShowingNewTabUi
-                && mBottomSheet.getTargetSheetState() != BottomSheet.SHEET_STATE_PEEK
-                && !mTabModelSelector.isIncognitoSelected()
-                && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle()
-                && !FeatureUtilities.isChromeHomeDoodleEnabled();
     }
 
     @Override

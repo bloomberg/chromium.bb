@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.search_engines.TemplateUrlService.TemplateUrl
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -326,8 +325,7 @@ public class SuggestionsBottomSheetContent implements BottomSheet.BottomSheetCon
         boolean showLogo = mSearchProviderHasLogo && mNewTabShown && mSheet.isSheetOpen()
                 && !mActivity.getTabModelSelector().isIncognitoSelected() && mIsAttachedToWindow
                 && !mSheet.isSmallScreen()
-                && mActivity.getTabModelSelector().getModel(false).getCount() > 0
-                && FeatureUtilities.isChromeHomeDoodleEnabled();
+                && mActivity.getTabModelSelector().getModel(false).getCount() > 0;
 
         if (!showLogo) {
             mLogoView.setVisibility(View.GONE);
