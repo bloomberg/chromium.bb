@@ -180,7 +180,7 @@ public class OfflinePageBridge {
      * @param callback The callback to run when the operation completes.
      */
     @VisibleForTesting
-    void getAllPages(final Callback<List<OfflinePageItem>> callback) {
+    public void getAllPages(final Callback<List<OfflinePageItem>> callback) {
         List<OfflinePageItem> result = new ArrayList<>();
         nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
     }
