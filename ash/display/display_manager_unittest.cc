@@ -3108,7 +3108,10 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
       display::FakeDisplaySnapshot::Builder()
           .SetId(id2)
           .SetNativeMode(MakeDisplayMode())
+          .SetOrigin({0, 1000})
           .Build();
+  snapshot1->set_current_mode(snapshot1->native_mode());
+  snapshot2->set_current_mode(snapshot2->native_mode());
 
   outputs.push_back(snapshot1.get());
   outputs.push_back(snapshot2.get());
@@ -3118,6 +3121,13 @@ TEST_F(DisplayManagerTest, ForcedMirrorMode) {
 
   display_manager()->layout_store()->set_forced_mirror_mode(true);
 
+  observer.OnDisplayModeChanged(outputs);
+
+  const display::DisplayIdList current_list =
+      display_manager()->GetCurrentDisplayIdList();
+  display_manager()->layout_store()->UpdateMultiDisplayState(
+      current_list, true /* mirrored */, false /* unified */);
+  EXPECT_FALSE(display_manager()->GetCurrentDisplayLayout().mirrored);
   EXPECT_EQ(display::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR,
             observer.GetStateForDisplayIds(outputs));
 
