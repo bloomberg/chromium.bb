@@ -1183,6 +1183,10 @@ void DevToolsUIBindings::FileSystemRemoved(
                      &file_system_path_value, NULL, NULL);
 }
 
+void DevToolsUIBindings::FailedToAddFileSystem() {
+  CallClientFunction("DevToolsAPI.failedToAddFileSystem", NULL, NULL, NULL);
+}
+
 void DevToolsUIBindings::FilePathsChanged(
     const std::vector<std::string>& changed_paths,
     const std::vector<std::string>& added_paths,
