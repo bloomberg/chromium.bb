@@ -6,20 +6,30 @@
 import argparse
 import os
 import sys
+import zipfile
 
 _BUILD_ANDROID = os.path.join(os.path.dirname(__file__), os.pardir)
 sys.path.append(_BUILD_ANDROID)
 from pylib.constants import host_paths
 
+sys.path.append(os.path.join(_BUILD_ANDROID, 'gyp'))
+from util import build_utils
+
 sys.path.append(os.path.join(host_paths.DIR_SOURCE_ROOT, 'build'))
 import find_depot_tools  # pylint: disable=import-error,unused-import
 import download_from_google_storage
+import upload_to_google_storage
 
-CURRENT_MILESTONE = '61'
+CURRENT_MILESTONE = '63'
 DEFAULT_BUCKET = 'gs://chromium-android-tools/apks'
 DEFAULT_DOWNLOAD_PATH = os.path.join(os.path.dirname(__file__), 'apks')
 DEFAULT_BUILDER = 'Android_Builder'
 DEFAULT_APK = 'MonochromePublic.apk'
+_ALL_BUILDER_APKS = {
+  'Android Builder': ['ChromePublic.apk', 'ChromeModernPublic.apk',
+                      'MonochromePublic.apk'],
+  'Android arm64 Builder': ['ChromePublic.apk', 'ChromeModernPublic.apk'],
+}
 
 
 def MaybeDownloadApk(builder, milestone, apk, download_path, bucket):
@@ -52,6 +62,52 @@ def MaybeDownloadApk(builder, milestone, apk, download_path, bucket):
     return apk_path
 
 
+def _UpdateReferenceApks(milestones):
+  """Update reference APKs and creates .sha1 files ready for commit.
+
+  Will fail if perf builders were broken for the given milestone (use next
+  passing build in this case).
+  """
+  with build_utils.TempDir() as temp_dir:
+    for milestone, crrev in milestones:
+      for builder, apks in _ALL_BUILDER_APKS.iteritems():
+        tools_builder_path = builder.replace(' ', '_')
+        zip_path = os.path.join(temp_dir, 'build_product.zip')
+        commit = build_utils.CheckOutput(['git', 'crrev-parse', crrev]).strip()
+        # Download build product from perf builders.
+        build_utils.CheckOutput([
+            'gsutil', 'cp', 'gs://chrome-perf/%s/full-build-linux_%s.zip' % (
+            builder, commit), zip_path])
+
+        # Extract desired .apks.
+        with zipfile.ZipFile(zip_path) as z:
+          in_zip_paths = z.namelist()
+          out_dir = os.path.commonprefix(in_zip_paths)
+          for apk_name in apks:
+            output_path = os.path.join(
+                DEFAULT_DOWNLOAD_PATH, tools_builder_path, milestone)
+            apk_path = os.path.join(out_dir, 'apks', apk_name)
+            zip_info = z.getinfo(apk_path)
+            zip_info.filename = apk_path.replace(apk_path, apk_name)
+            z.extract(zip_info, output_path)
+            input_files = [os.path.join(output_path, apk_name)]
+            bucket_path = os.path.join(
+                DEFAULT_BUCKET, tools_builder_path, milestone)
+
+            # Upload .apks to chromium-android-tools so that they aren't
+            # automatically removed in the future.
+            upload_to_google_storage.upload_to_google_storage(
+                input_files,
+                bucket_path,
+                upload_to_google_storage.Gsutil(
+                    upload_to_google_storage.GSUTIL_DEFAULT_PATH),
+                False,  # force
+                False,  # use_md5
+                10,  # num_threads
+                False,  # skip_hashing
+                None)  # gzip
+
+
 def main():
   argparser = argparse.ArgumentParser(
       description='Utility for downloading archived APKs used for measuring '
@@ -66,9 +122,16 @@ def main():
                          help='Builder name.')
   argparser.add_argument('--bucket', default=DEFAULT_BUCKET,
                          help='Google storage bucket where APK is stored.')
+  argparser.add_argument('--update', action='append', nargs=2,
+                        help='List of MILESTONE CRREV pairs to upload '
+                        'reference APKs for. Mutally exclusive with '
+                        'downloading reference APKs.')
   args = argparser.parse_args()
-  MaybeDownloadApk(
-      args.builder, args.milestone, args.apk, args.download_path, args.bucket)
+  if args.update:
+    _UpdateReferenceApks(args.update)
+  else:
+    MaybeDownloadApk(args.builder, args.milestone, args.apk,
+                     args.download_path, args.bucket)
 
 
 if __name__ == '__main__':

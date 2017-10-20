@@ -1,27 +1,41 @@
-### Updating APKs in this folder (for new milestones, builders, or APKs)
+## Milestone Reference APKs
 
-1. Find the commit as close as possible to the current branch point (i.e. if the
-latest builds are m59, we want to compare to the commit before the m58 branch
-point).
+This folder contains APKs for official (upstream) builds for each milestone.
+The primary use for these APKs is per-milestone binary size analysis.
+  * `//build/android/resource_sizes.py` uses them for calculating patch size
+  * They can be used with `tools/binary_size/diagnose_bloat.py` for analyzing
+    what grew in an APK milestone-to-milestone
 
-2. Download and unzip build artifacts from the relevant perf builder.
+## Downloading Reference APKs
 
-    gsutil.py cp 'gs://chrome-perf/Android Builder/full-build-linux_COMMITHASH.zip' /dest/dir
+```bash
+# Downloads ARM 32 MonochromePublic.apk for the latest milestone that we've
+# uploaded APKs for.
+build/android/binary_size/apk_downloader.py
 
-3. Unzip. Steps 4, 5, and 6 must be done for MonochromePublic.apk for
-`gs://chrome-perf/Android Builder` and ChromeModernPublic.apk for
-`gs://chrome-perf/Android arm64 Builder` (and can be done for additional APKS,
-but these are the ones used by `build/android/resource_sizes.py`)
+# Print usage and see all options.
+build/android/binary_size/apk_downloader.py -h
+```
 
-4. Upload the apk (replacing the bolded parts again - note that we use
-**Android_Builder** instead of **Android Builder** (replace spaces with
-underscores):
+## Updating Reference APKs
+```bash
+# Downloads build products from perf builders and uploads the following APKs
+# for M62 and M63:
+#   ARM 32 - ChromePublic.apk, ChromeModernPublic.apk, MonochromePublic.apk
+#   ARM 64 - ChromePublic.apk ChromeModernPublic.apk
+build/android/binary_size/apk_downloader.py --update 63 508578 --update 62 499187
+```
 
-    upload_to_google_storage.py --bucket 'chromium-android-tools/apks/Android_Builder/58' dest/dir/MonochromePublic.apk
+  * **Remember to commit the generated .sha1 files, update the
+    CURRENT_MILESTONE variable in apk_downloader.py, and update the list of
+    revisions below**
 
-5. Move the generated .sha1 file to the corresponding place in
-`//build/android/binary_size/apks/`. In this case, the path would be
-`//build/android/binary_size/apks/Android_Builder/58`
-
-6. Commit the added .sha1 files and (optionally) update the `CURRENT_MILESTONE`
-in apk_downloader.py
+## Chromium revisions for each APK
+  * [M56](https://crrev.com/433059)
+  * [M57](https://crrev.com/444943)
+  * [M58](https://crrev.com/454471)
+  * [M59](https://crrev.com/464641)
+  * [M60](https://crrev.com/474934)
+  * [M61](https://crrev.com/488528)
+  * [M62](https://crrev.com/499187)
+  * [M63](https://crrev.com/508578)
