@@ -252,6 +252,10 @@ void WebFrameWidgetImpl::BeginFrame(double last_frame_time_monotonic) {
   TRACE_EVENT1("blink", "WebFrameWidgetImpl::beginFrame", "frameTime",
                last_frame_time_monotonic);
   DCHECK(last_frame_time_monotonic);
+
+  if (!local_root_)
+    return;
+
   UpdateGestureAnimation(last_frame_time_monotonic);
   PageWidgetDelegate::Animate(*GetPage(), last_frame_time_monotonic);
   GetPage()->GetValidationMessageClient().LayoutOverlay();
