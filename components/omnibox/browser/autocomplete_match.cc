@@ -200,7 +200,6 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
     case Type::SEARCH_HISTORY:
     case Type::SEARCH_SUGGEST:
     case Type::SEARCH_SUGGEST_ENTITY:
-    case Type::SEARCH_SUGGEST_TAIL:
     case Type::SEARCH_SUGGEST_PERSONALIZED:
     case Type::SEARCH_SUGGEST_PROFILE:
     case Type::SEARCH_OTHER_ENGINE:
@@ -213,6 +212,9 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type) {
 
     case Type::CALCULATOR:
       return omnibox::kCalculatorIcon;
+
+    case Type::SEARCH_SUGGEST_TAIL:
+      return omnibox::kBlankIcon;
 
     case Type::NUM_TYPES:
       NOTREACHED();
