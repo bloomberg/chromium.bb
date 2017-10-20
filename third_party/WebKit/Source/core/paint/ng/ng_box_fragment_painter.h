@@ -32,19 +32,6 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   NGBoxFragmentPainter(const NGPaintFragment&);
 
   void Paint(const PaintInfo&, const LayoutPoint&);
-  void PaintChildren(const PaintInfo&, const LayoutPoint&);
-
-  void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-  void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
-                                            const LayoutPoint&,
-                                            const LayoutRect&);
-
-  static bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
-      const NGPaintFragment&,
-      const PaintInfo&);
-
-  LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
-                                      const LayoutPoint& adjusted_paint_offset);
 
   // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
   bool NodeAtPoint(HitTestResult&,
@@ -70,12 +57,35 @@ class NGBoxFragmentPainter : public BoxPainterBase {
                                       const LayoutRect&) override;
 
  private:
+  bool IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
+      const NGPaintFragment&,
+      const PaintInfo&);
+  LayoutRect BoundsForDrawingRecorder(const PaintInfo&,
+                                      const LayoutPoint& adjusted_paint_offset);
+  bool IntersectsPaintRect(const PaintInfo&, const LayoutPoint&) const;
+
+  void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
+  void PaintBoxDecorationBackgroundWithRect(const PaintInfo&,
+                                            const LayoutPoint&,
+                                            const LayoutRect&);
+  void PaintAllPhasesAtomically(const PaintInfo&, const LayoutPoint&);
   void PaintChildren(const Vector<std::unique_ptr<const NGPaintFragment>>&,
                      const PaintInfo&,
                      const LayoutPoint&);
   void PaintText(const NGPaintFragment&,
                  const PaintInfo&,
                  const LayoutPoint& paint_offset);
+  void PaintObject(const PaintInfo&, const LayoutPoint&);
+  void PaintInlineObject(const PaintInfo&, const LayoutPoint&);
+  void PaintContents(const PaintInfo&, const LayoutPoint&);
+  void PaintFloats(const PaintInfo&, const LayoutPoint&);
+  void PaintMask(const PaintInfo&, const LayoutPoint&);
+  void PaintClippingMask(const PaintInfo&, const LayoutPoint&);
+  void PaintOverflowControlsIfNeeded(const PaintInfo&, const LayoutPoint&);
+  void PaintInlineBlock(const PaintInfo&, const LayoutPoint& paint_offset);
+  void PaintLineBox(const NGPaintFragment&,
+                    const PaintInfo&,
+                    const LayoutPoint&);
   void PaintBackground(const PaintInfo&,
                        const LayoutRect&,
                        const Color& background_color,

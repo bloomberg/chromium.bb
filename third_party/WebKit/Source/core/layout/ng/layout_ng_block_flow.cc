@@ -323,15 +323,13 @@ void LayoutNGBlockFlow::SetPaintFragment(
   paint_fragment_ = WTF::MakeUnique<NGPaintFragment>(std::move(fragment));
 }
 
-void LayoutNGBlockFlow::PaintObject(const PaintInfo& paint_info,
-                                    const LayoutPoint& paint_offset) const {
-  // TODO(eae): This logic should go in Paint instead and it should drive the
-  // full paint logic for LayoutNGBlockFlow.
+void LayoutNGBlockFlow::Paint(const PaintInfo& paint_info,
+                              const LayoutPoint& paint_offset) const {
   if (RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled() &&
       PaintFragment())
-    NGBlockFlowPainter(*this).PaintContents(paint_info, paint_offset);
+    NGBlockFlowPainter(*this).Paint(paint_info, paint_offset + Location());
   else
-    LayoutBlockFlow::PaintObject(paint_info, paint_offset);
+    LayoutBlockFlow::Paint(paint_info, paint_offset);
 }
 
 bool LayoutNGBlockFlow::NodeAtPoint(
