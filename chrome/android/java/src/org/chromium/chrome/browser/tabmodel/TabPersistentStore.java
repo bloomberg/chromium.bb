@@ -22,6 +22,7 @@ import org.chromium.base.Log;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -181,7 +182,9 @@ public class TabPersistentStore extends TabPersister {
 
     private SharedPreferences mPreferences;
     private AsyncTask<Void, Void, DataInputStream> mPrefetchTabListTask;
-    private AsyncTask<Void, Void, DataInputStream> mPrefetchTabListToMergeTask;
+    private List<Pair<AsyncTask<Void, Void, DataInputStream>, String>> mPrefetchTabListToMergeTasks;
+    // A set of filenames which are tracked to merge.
+    private Set<String> mMergedFileNames;
     private byte[] mLastSavedMetadata;
 
     // Tracks whether this TabPersistentStore's tabs are being loaded.
@@ -212,12 +215,17 @@ public class TabPersistentStore extends TabPersister {
         mObserver = observer;
         mPreferences = ContextUtils.getAppSharedPreferences();
 
+        mPrefetchTabListToMergeTasks = new ArrayList<>();
+        mMergedFileNames = new HashSet<>();
+
         assert isStateFile(policy.getStateFileName()) : "State file name is not valid";
         boolean needsInitialization = mPersistencePolicy.performInitialization(
                 AsyncTask.SERIAL_EXECUTOR);
 
         if (mPersistencePolicy.isMergeInProgress()) return;
 
+        // TODO: create a state controller to sequence initializations rather than relying on
+        // the SERIAL_EXECUTOR. http://crbug.com/776554
         Executor executor = needsInitialization
                 ? AsyncTask.SERIAL_EXECUTOR : AsyncTask.THREAD_POOL_EXECUTOR;
 
@@ -226,9 +234,11 @@ public class TabPersistentStore extends TabPersister {
         startPrefetchActiveTabTask(executor);
 
         if (mPersistencePolicy.shouldMergeOnStartup()) {
-            assert mPersistencePolicy.getStateToBeMergedFileName() != null;
-            mPrefetchTabListToMergeTask = startFetchTabListTask(
-                    executor, mPersistencePolicy.getStateToBeMergedFileName());
+            for (String mergedFileName : mPersistencePolicy.getStateToBeMergedFileNames()) {
+                AsyncTask<Void, Void, DataInputStream> task =
+                        startFetchTabListTask(executor, mergedFileName);
+                mPrefetchTabListToMergeTasks.add(Pair.create(task, mergedFileName));
+            }
         }
     }
 
@@ -337,6 +347,7 @@ public class TabPersistentStore extends TabPersister {
      *
      * @param ignoreIncognitoFiles Whether to skip loading incognito tabs.
      */
+    @SuppressFBWarnings("REC_CATCH_EXCEPTION")
     public void loadState(boolean ignoreIncognitoFiles) {
         long time = SystemClock.uptimeMillis();
 
@@ -375,21 +386,27 @@ public class TabPersistentStore extends TabPersister {
 
             // Restore the tabs for the other TabPeristentStore instance if its tab metadata file
             // exists.
-            if (mPrefetchTabListToMergeTask != null) {
-                long timeMergingState = SystemClock.uptimeMillis();
-                stream = mPrefetchTabListToMergeTask.get();
-                if (stream != null) {
-                    logExecutionTime("MergeStateInternalFetchTime", timeMergingState);
+            if (mPrefetchTabListToMergeTasks.size() > 0) {
+                for (Pair<AsyncTask<Void, Void, DataInputStream>, String> mergeTask :
+                        mPrefetchTabListToMergeTasks) {
+                    time = SystemClock.uptimeMillis();
+                    AsyncTask<Void, Void, DataInputStream> task = mergeTask.first;
+                    stream = task.get();
+                    if (stream == null) continue;
+
+                    logExecutionTime("MergeStateInternalFetchTime", time);
+                    mMergedFileNames.add(mergeTask.second);
                     mPersistencePolicy.setMergeInProgress(true);
-                    readSavedStateFile(
-                            stream,
+                    readSavedStateFile(stream,
                             createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(),
                                     mTabsToRestore.size() == 0 ? false : true),
-                            null,
-                            true);
-                    logExecutionTime("MergeStateInternalTime", timeMergingState);
+                            null, true);
+                    logExecutionTime("MergeStateInternalTime", time);
+                }
+                if (!mMergedFileNames.isEmpty()) {
                     RecordUserAction.record("Android.MergeState.ColdStart");
                 }
+                mPrefetchTabListToMergeTasks.clear();
             }
         } catch (Exception e) {
             // Catch generic exception to prevent a corrupted state from crashing app on startup.
@@ -420,22 +437,21 @@ public class TabPersistentStore extends TabPersister {
         initializeRestoreVars(false);
 
         try {
-            long time = SystemClock.uptimeMillis();
             // Read the tab state metadata file.
-            DataInputStream stream = startFetchTabListTask(
-                    AsyncTask.SERIAL_EXECUTOR,
-                    mPersistencePolicy.getStateToBeMergedFileName()).get();
+            for (String mergeFileName : mPersistencePolicy.getStateToBeMergedFileNames()) {
+                long time = SystemClock.uptimeMillis();
+                DataInputStream stream =
+                        startFetchTabListTask(AsyncTask.SERIAL_EXECUTOR, mergeFileName).get();
+                if (stream == null) continue;
 
-            // Return early if the stream is null, which indicates there isn't a second instance
-            // to merge.
-            if (stream == null) return;
-            logExecutionTime("MergeStateInternalFetchTime", time);
-            mPersistencePolicy.setMergeInProgress(true);
-            readSavedStateFile(stream,
-                    createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(), true),
-                    null,
-                    true);
-            logExecutionTime("MergeStateInternalTime", time);
+                logExecutionTime("MergeStateInternalFetchTime", time);
+                mMergedFileNames.add(mergeFileName);
+                mPersistencePolicy.setMergeInProgress(true);
+                readSavedStateFile(stream,
+                        createOnTabStateReadCallback(mTabModelSelector.isIncognitoSelected(), true),
+                        null, true);
+                logExecutionTime("MergeStateInternalTime", time);
+            }
         } catch (Exception e) {
             // Catch generic exception to prevent a corrupted state from crashing app.
             Log.d(TAG, "meregeState exception: " + e.toString(), e);
@@ -1205,7 +1221,9 @@ public class TabPersistentStore extends TabPersister {
                         saveTabListAsynchronously();
                     }
                 });
-                deleteFileAsync(mPersistencePolicy.getStateToBeMergedFileName());
+                for (String mergedFileName : new HashSet<String>(mMergedFileNames)) {
+                    deleteFileAsync(mergedFileName);
+                }
                 if (mObserver != null) mObserver.onStateMerged();
             }
 
@@ -1250,9 +1268,10 @@ public class TabPersistentStore extends TabPersister {
                 if (stateFile.exists()) {
                     if (!stateFile.delete()) Log.e(TAG, "Failed to delete file: " + stateFile);
 
-                    // The merge isn't completely finished until the other TabPersistentStore's
-                    // metadata file is deleted.
-                    if (file.equals(mPersistencePolicy.getStateToBeMergedFileName())) {
+                    // The merge isn't completely finished until the other TabPersistentStores'
+                    // metadata files are deleted.
+                    boolean wasMergeFile = mMergedFileNames.remove(file);
+                    if (wasMergeFile && mMergedFileNames.isEmpty()) {
                         mPersistencePolicy.setMergeInProgress(false);
                     }
                 }
