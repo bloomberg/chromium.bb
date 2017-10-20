@@ -8957,18 +8957,27 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 
 <histogram name="ChromeOS.DetachableBase.PairResult"
     enum="DetachableBasePairResult">
+  <obsolete>
+    Deprecated 10/2017 and replaced by Platform.DetachableBase.PairResult.
+  </obsolete>
   <owner>kitching@google.com</owner>
   <summary>Result of a Chrome OS detachable base pair operation.</summary>
 </histogram>
 
 <histogram name="ChromeOS.DetachableBase.ROUpdateMetric"
     enum="DetachableBaseROUpdateResult">
+  <obsolete>
+    Deprecated 10/2017 and replaced by Platform.DetachableBase.ROUpdateMetric.
+  </obsolete>
   <owner>kitching@google.com</owner>
   <summary>Result of a Chrome OS detachable base RO firmware update.</summary>
 </histogram>
 
 <histogram name="ChromeOS.DetachableBase.RWUpdateMetric"
     enum="DetachableBaseRWUpdateResult">
+  <obsolete>
+    Deprecated 10/2017 and replaced by Platform.DetachableBase.RWUpdateMetric.
+  </obsolete>
   <owner>kitching@google.com</owner>
   <summary>Result of a Chrome OS detachable base RW firmware update.</summary>
 </histogram>
@@ -59145,6 +59154,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Total use time (device ON and not asleep) in the previous day, or the most
     recent day the device was in use.  Reported at most once a day.
   </summary>
+</histogram>
+
+<histogram name="Platform.DetachableBase.PairResult"
+    enum="DetachableBasePairResult">
+  <owner>kitching@google.com</owner>
+  <summary>Result of a detachable base pair operation.</summary>
+</histogram>
+
+<histogram name="Platform.DetachableBase.ROUpdateMetric"
+    enum="DetachableBaseROUpdateResult">
+  <owner>kitching@google.com</owner>
+  <summary>Result of a detachable base RO firmware update.</summary>
+</histogram>
+
+<histogram name="Platform.DetachableBase.RWUpdateMetric"
+    enum="DetachableBaseRWUpdateResult">
+  <owner>kitching@google.com</owner>
+  <summary>Result of a detachable base RW firmware update.</summary>
 </histogram>
 
 <histogram name="Platform.DiskUsage.Cache_Avg" units="KB">
