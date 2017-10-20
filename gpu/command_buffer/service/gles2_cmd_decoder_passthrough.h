@@ -299,6 +299,8 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   const char* GetCommandName(unsigned int command_id) const;
 
+  void SetOptionalExtensionsRequestedForTesting(bool request_extensions);
+
   void* GetScratchMemory(size_t size);
 
   template <typename T>
@@ -409,6 +411,10 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<ContextGroup> group_;
   scoped_refptr<FeatureInfo> feature_info_;
+
+  // By default, all requestable extensions should be loaded at initialization
+  // time. Can be disabled for testing with only specific extensions enabled.
+  bool request_optional_extensions_ = true;
 
   // Some objects may generate resources when they are bound even if they were
   // not generated yet: texture, buffer, renderbuffer, framebuffer, transform
