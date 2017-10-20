@@ -523,6 +523,103 @@ void GraphicsContext::DrawInnerShadow(const FloatRoundedRect& rect,
   FillRectWithRoundedHole(outer_rect, rounded_hole, fill_color);
 }
 
+static void EnforceDotsAtEndpoints(GraphicsContext& context,
+                                   FloatPoint& p1,
+                                   FloatPoint& p2,
+                                   const int path_length,
+                                   const int width,
+                                   const PaintFlags& flags,
+                                   const bool is_vertical_line) {
+  // For narrow lines, we always want integral dot and dash sizes, and start
+  // and end points, to prevent anti-aliasing from erasing the dot effect.
+  // For 1-pixel wide lines, we must make one end a dash. Otherwise we have
+  // a little more scope to distribute the error. But we never want to reduce
+  // the size of the end dots because doing so makes corners of all-dotted
+  // paths look odd.
+  //
+  // There is no way to give custom start and end dash sizes or gaps to Skia,
+  // so if we need non-uniform gaps we need to draw the start, and maybe the
+  // end dot ourselves, and move the line start (and end) to the start/end of
+  // the second dot.
+  DCHECK_LE(width, 3);  // Width is max 3 according to StrokeIsDashed
+  int mod_4 = path_length % 4;
+  int mod_6 = path_length % 6;
+  // New start dot to be explicitly drawn, if needed, and the amount to grow the
+  // start dot and the offset for first gap.
+  bool use_start_dot = false;
+  int start_dot_growth = 0;
+  int start_line_offset = 0;
+  // New end dot to be explicitly drawn, if needed, and the amount to grow the
+  // second dot.
+  bool use_end_dot = false;
+  int end_dot_growth = 0;
+  if ((width == 1 && path_length % 2 == 0) || (width == 3 && mod_6 == 0)) {
+    // Cases where we add one pixel to the first dot.
+    use_start_dot = true;
+    start_dot_growth = 1;
+    start_line_offset = 1;
+  }
+  if ((width == 2 && (mod_4 == 0 || mod_4 == 1)) ||
+      (width == 3 && (mod_6 == 1 || mod_6 == 2))) {
+    // Cases where we drop 1 pixel from the start gap
+    use_start_dot = true;
+    start_line_offset = -1;
+  }
+  if ((width == 2 && mod_4 == 0) || (width == 3 && mod_6 == 1)) {
+    // Cases where we drop 1 pixel from the end gap
+    use_end_dot = true;
+  }
+  if ((width == 2 && mod_4 == 3) ||
+      (width == 3 && (mod_6 == 4 || mod_6 == 5))) {
+    // Cases where we add 1 pixel to the start gap
+    use_start_dot = true;
+    start_line_offset = 1;
+  }
+  if (width == 3 && mod_6 == 5) {
+    // Case where we add 1 pixel to the end gap and leave the end
+    // dot the same size.
+    use_end_dot = true;
+  } else if (width == 3 && mod_6 == 0) {
+    // Case where we add one pixel gap and one pixel to the dot at the end
+    use_end_dot = true;
+    end_dot_growth = 1;  // Moves the larger end pt for this case
+  }
+
+  if (use_start_dot || use_end_dot) {
+    PaintFlags fill_flags;
+    fill_flags.setColor(flags.getColor());
+    if (use_start_dot) {
+      SkRect start_dot;
+      if (is_vertical_line) {
+        start_dot.set(p1.X() - width / 2, p1.Y(), p1.X() + width - width / 2,
+                      p1.Y() + width + start_dot_growth);
+        p1.SetY(p1.Y() + (2 * width + start_line_offset));
+      } else {
+        start_dot.set(p1.X(), p1.Y() - width / 2,
+                      p1.X() + width + start_dot_growth,
+                      p1.Y() + width - width / 2);
+        p1.SetX(p1.X() + (2 * width + start_line_offset));
+      }
+      context.DrawRect(start_dot, fill_flags);
+    }
+    if (use_end_dot) {
+      SkRect end_dot;
+      if (is_vertical_line) {
+        end_dot.set(p2.X() - width / 2, p2.Y() - width - end_dot_growth,
+                    p2.X() + width - width / 2, p2.Y());
+        // Be sure to stop drawing before we get to the last dot
+        p2.SetY(p2.Y() - (width + end_dot_growth + 1));
+      } else {
+        end_dot.set(p2.X() - width - end_dot_growth, p2.Y() - width / 2, p2.X(),
+                    p2.Y() + width - width / 2);
+        // Be sure to stop drawing before we get to the last dot
+        p2.SetX(p2.X() - (width + end_dot_growth + 1));
+      }
+      context.DrawRect(end_dot, fill_flags);
+    }
+  }
+}
+
 void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   if (ContextDisabled())
     return;
@@ -544,39 +641,31 @@ void GraphicsContext::DrawLine(const IntPoint& point1, const IntPoint& point2) {
   int length = SkScalarRoundToInt(disp.Width() + disp.Height());
   PaintFlags flags(ImmutableState()->StrokeFlags(length));
 
-  if (StrokeData::StrokeIsDashed(width, GetStrokeStyle())) {
-    // Do a rect fill of our endpoints.  This ensures we always have the
-    // appearance of being a border. We then draw the actual dotted/dashed
-    // line.
-    SkRect r1, r2;
-    r1.set(p1.X(), p1.Y(), p1.X() + width, p1.Y() + width);
-    r2.set(p2.X(), p2.Y(), p2.X() + width, p2.Y() + width);
-
-    if (is_vertical_line) {
-      r1.offset(-width / 2, 0);
-      r2.offset(-width / 2, -width);
+  if (pen_style == kDottedStroke) {
+    if (StrokeData::StrokeIsDashed(width, pen_style)) {
+      // We draw thin dotted lines as dashes and gaps that are always
+      // exactly the size of the width. When the length of the line is
+      // an odd multiple of the width, things work well because we get
+      // dots at each end of the line, but if the length is anything else,
+      // we get gaps or partial dots at the end of the line. Fix that by
+      // explicitly enforcing full dots at the ends of lines.
+      EnforceDotsAtEndpoints(*this, p1, p2, length, width, flags,
+                             is_vertical_line);
     } else {
-      r1.offset(0, -width / 2);
-      r2.offset(-width, -width / 2);
-    }
-    PaintFlags fill_flags;
-    fill_flags.setColor(flags.getColor());
-    DrawRect(r1, fill_flags);
-    DrawRect(r2, fill_flags);
-  } else if (GetStrokeStyle() == kDottedStroke) {
-    // We draw thick dotted lines with 0 length dash strokes and round endcaps,
-    // producing circles. The endcaps extend beyond the line's endpoints,
-    // so move the start and end in.
-    if (is_vertical_line) {
-      p1.SetY(p1.Y() + width / 2.f);
-      p2.SetY(p2.Y() - width / 2.f);
-    } else {
-      p1.SetX(p1.X() + width / 2.f);
-      p2.SetX(p2.X() - width / 2.f);
+      // We draw thick dotted lines with 0 length dash strokes and round
+      // endcaps, producing circles. The endcaps extend beyond the line's
+      // endpoints, so move the start and end in.
+      if (is_vertical_line) {
+        p1.SetY(p1.Y() + width / 2.f);
+        p2.SetY(p2.Y() - width / 2.f);
+      } else {
+        p1.SetX(p1.X() + width / 2.f);
+        p2.SetX(p2.X() - width / 2.f);
+      }
     }
   }
 
-  AdjustLineToPixelBoundaries(p1, p2, width, pen_style);
+  AdjustLineToPixelBoundaries(p1, p2, width);
   canvas_->drawLine(p1.X(), p1.Y(), p2.X(), p2.Y(),
                     ApplyHighContrastFilter(&flags));
 }
@@ -1283,23 +1372,12 @@ void GraphicsContext::FillRectWithRoundedHole(
 
 void GraphicsContext::AdjustLineToPixelBoundaries(FloatPoint& p1,
                                                   FloatPoint& p2,
-                                                  float stroke_width,
-                                                  StrokeStyle pen_style) {
+                                                  float stroke_width) {
   // For odd widths, we add in 0.5 to the appropriate x/y so that the float
-  // arithmetic works out.  For example, with a border width of 3, WebKit will
+  // arithmetic works out.  For example, with a border width of 3, painting will
   // pass us (y1+y2)/2, e.g., (50+53)/2 = 103/2 = 51 when we want 51.5.  It is
   // always true that an even width gave us a perfect position, but an odd width
   // gave us a position that is off by exactly 0.5.
-  if (StrokeData::StrokeIsDashed(stroke_width, pen_style)) {
-    if (p1.X() == p2.X()) {
-      p1.SetY(p1.Y() + stroke_width);
-      p2.SetY(p2.Y() - stroke_width);
-    } else {
-      p1.SetX(p1.X() + stroke_width);
-      p2.SetX(p2.X() - stroke_width);
-    }
-  }
-
   if (static_cast<int>(stroke_width) % 2) {  // odd
     if (p1.X() == p2.X()) {
       // We're a vertical line.  Adjust our x.
