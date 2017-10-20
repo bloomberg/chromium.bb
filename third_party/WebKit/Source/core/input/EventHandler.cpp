@@ -239,10 +239,10 @@ HitTestResult EventHandler::HitTestResultAtPoint(
       LocalFrameView* frame_view = frame_->View();
       LocalFrameView* main_view = main_frame.View();
       if (frame_view && main_view) {
-        IntPoint main_frame_point = main_view->RootFrameToContents(
-            frame_view->ContentsToRootFrame(RoundedIntPoint(point)));
+        LayoutPoint main_content_point = main_view->RootFrameToContents(
+            frame_view->ContentsToRootFrame(point));
         return main_frame.GetEventHandler().HitTestResultAtPoint(
-            main_frame_point, hit_type, padding);
+            main_content_point, hit_type, padding);
       }
     }
   }

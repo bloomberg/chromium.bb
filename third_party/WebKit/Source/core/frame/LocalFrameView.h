@@ -364,6 +364,9 @@ class CORE_EXPORT LocalFrameView final
   IntRect ConvertToLayoutItem(const LayoutItem&, const IntRect&) const;
   IntPoint ConvertFromLayoutItem(const LayoutItem&, const IntPoint&) const;
   IntPoint ConvertToLayoutItem(const LayoutItem&, const IntPoint&) const;
+  LayoutPoint ConvertFromLayoutItem(const LayoutItem&,
+                                    const LayoutPoint&) const;
+  LayoutPoint ConvertToLayoutItem(const LayoutItem&, const LayoutPoint&) const;
 
   bool IsFrameViewScrollCorner(LayoutScrollbarPart* scroll_corner) const {
     return scroll_corner_ == scroll_corner;
@@ -622,14 +625,17 @@ class CORE_EXPORT LocalFrameView final
   // http://www.chromium.org/developers/design-documents/blink-coordinate-spaces
   IntPoint RootFrameToContents(const IntPoint&) const;
   FloatPoint RootFrameToContents(const FloatPoint&) const;
+  LayoutPoint RootFrameToContents(const LayoutPoint&) const;
   IntRect RootFrameToContents(const IntRect&) const;
   IntPoint ContentsToRootFrame(const IntPoint&) const;
+  LayoutPoint ContentsToRootFrame(const LayoutPoint&) const;
   IntRect ContentsToRootFrame(const IntRect&) const;
 
   IntRect ViewportToContents(const IntRect&) const;
   IntRect ContentsToViewport(const IntRect&) const;
   IntPoint ContentsToViewport(const IntPoint&) const;
   IntPoint ViewportToContents(const IntPoint&) const;
+  LayoutPoint ViewportToContents(const LayoutPoint&) const;
 
   // FIXME: Some external callers expect to get back a rect that's positioned
   // in viewport space, but sized in CSS pixels. This is an artifact of the
@@ -643,9 +649,12 @@ class CORE_EXPORT LocalFrameView final
   // relative to the document's top left corner and thus are not affected by
   // scroll offset.
   IntPoint ContentsToFrame(const IntPoint&) const;
+  LayoutPoint ContentsToFrame(const LayoutPoint&) const;
+  FloatPoint ContentsToFrame(const FloatPoint&) const;
   IntRect ContentsToFrame(const IntRect&) const;
   IntPoint FrameToContents(const IntPoint&) const;
   FloatPoint FrameToContents(const FloatPoint&) const;
+  LayoutPoint FrameToContents(const LayoutPoint&) const;
   IntRect FrameToContents(const IntRect&) const;
 
   // Functions for converting to screen coordinates.
@@ -657,9 +666,11 @@ class CORE_EXPORT LocalFrameView final
 
   IntRect ConvertToRootFrame(const IntRect&) const;
   IntPoint ConvertToRootFrame(const IntPoint&) const;
+  LayoutPoint ConvertToRootFrame(const LayoutPoint&) const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
+  LayoutPoint ConvertFromRootFrame(const LayoutPoint&) const;
   IntPoint ConvertSelfToChild(const EmbeddedContentView&,
                               const IntPoint&) const;
 
@@ -992,8 +1003,11 @@ class CORE_EXPORT LocalFrameView final
   // transforms into account.
   IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertToContainingEmbeddedContentView(const IntPoint&) const;
+  LayoutPoint ConvertToContainingEmbeddedContentView(const LayoutPoint&) const;
   IntRect ConvertFromContainingEmbeddedContentView(const IntRect&) const;
   IntPoint ConvertFromContainingEmbeddedContentView(const IntPoint&) const;
+  LayoutPoint ConvertFromContainingEmbeddedContentView(
+      const LayoutPoint&) const;
 
   void DidChangeGlobalRootScroller() override;
 

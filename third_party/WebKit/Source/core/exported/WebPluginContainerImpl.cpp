@@ -543,8 +543,8 @@ bool WebPluginContainerImpl::IsRectTopmost(const WebRect& rect) {
   if (!frame)
     return false;
 
-  IntRect document_rect(frame_rect_.X() + rect.x, frame_rect_.Y() + rect.y,
-                        rect.width, rect.height);
+  LayoutRect document_rect(frame_rect_.X() + rect.x, frame_rect_.Y() + rect.y,
+                           rect.width, rect.height);
   // hitTestResultAtPoint() takes a padding rectangle.
   // FIXME: We'll be off by 1 when the width or height is even.
   LayoutPoint center = document_rect.Center();

@@ -159,7 +159,8 @@ class WebFrameWidgetImpl final : public WebFrameWidgetBase,
   explicit WebFrameWidgetImpl(WebWidgetClient*, WebLocalFrame*);
 
   // Perform a hit test for a point relative to the root frame of the page.
-  HitTestResult HitTestResultForRootFramePos(const IntPoint& pos_in_root_frame);
+  HitTestResult HitTestResultForRootFramePos(
+      const LayoutPoint& pos_in_root_frame);
 
   void InitializeLayerTreeView();
 

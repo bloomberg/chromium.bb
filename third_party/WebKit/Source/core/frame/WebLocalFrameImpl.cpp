@@ -1015,7 +1015,7 @@ size_t WebLocalFrameImpl::CharacterIndexForPoint(
   if (!GetFrame())
     return kNotFound;
 
-  IntPoint point = GetFrame()->View()->ViewportToContents(point_in_viewport);
+  LayoutPoint point = GetFrame()->View()->ViewportToContents(point_in_viewport);
   HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtPoint(
       point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   const EphemeralRange range =
