@@ -4481,6 +4481,7 @@ test("unit_tests") {
     deps += [
       ":test_proto",
       "//components/safe_browsing:base_ping_manager_unittest",
+      "//components/safe_browsing/browser:unittests",
       "//components/safe_browsing/db:v4_test_util",
       "//components/safe_browsing/renderer:websocket_sb_handshake_throttle_unittest",
     ]

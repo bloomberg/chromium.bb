@@ -39,3 +39,21 @@ source_set("browser") {
     "//net:extras",
   ]
 }
+
+source_set("unittests") {
+  testonly = true
+  sources = [
+    "base_parallel_resource_throttle_unittest.cc",
+  ]
+
+  deps = [
+    ":browser",
+    "//base",
+    "//components/safe_browsing",
+    "//components/safe_browsing/db:test_database_manager",
+    "//content/public/browser",
+    "//content/test:test_support",
+    "//net:test_support",
+    "//testing/gtest",
+  ]
+}
