@@ -10,6 +10,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/test_mock_time_task_runner.h"
+#include "base/time/tick_clock.h"
 #include "base/timer/mock_timer.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "net/base/net_errors.h"
@@ -35,13 +37,18 @@ class MockTimerWithMonitoredReset : public base::MockTimer {
 
   // Instrumentation point for determining how many times Reset() was called.
   MOCK_METHOD0(ResetTriggered, void(void));
-  MOCK_METHOD0(Stop, void(void));
+  MOCK_METHOD0(StopTriggered, void(void));
 
   // Passes through the Reset call to the base MockTimer and visits the mock
   // ResetTriggered method.
   void Reset() override {
     base::MockTimer::Reset();
     ResetTriggered();
+  }
+
+  void Stop() override {
+    base::MockTimer::Stop();
+    StopTriggered();
   }
 };
 
@@ -62,8 +69,8 @@ class KeepAliveDelegateTest : public testing::Test {
         base::TimeDelta::FromMilliseconds(kTestLivenessTimeoutMillis)));
     liveness_timer_ = new MockTimerWithMonitoredReset(true, false);
     ping_timer_ = new MockTimerWithMonitoredReset(true, false);
-    EXPECT_CALL(*liveness_timer_, Stop()).Times(0);
-    EXPECT_CALL(*ping_timer_, Stop()).Times(0);
+    EXPECT_CALL(*liveness_timer_, StopTriggered()).Times(0);
+    EXPECT_CALL(*ping_timer_, StopTriggered()).Times(0);
     keep_alive_->SetTimersForTest(base::WrapUnique(ping_timer_),
                                   base::WrapUnique(liveness_timer_));
   }
@@ -87,6 +94,7 @@ class KeepAliveDelegateTest : public testing::Test {
 };
 
 TEST_F(KeepAliveDelegateTest, TestErrorHandledBeforeStarting) {
+  EXPECT_CALL(*inner_delegate_, OnError(ChannelError::CONNECT_ERROR));
   keep_alive_->OnError(ChannelError::CONNECT_ERROR);
 }
 
@@ -98,14 +106,17 @@ TEST_F(KeepAliveDelegateTest, TestPing) {
       .WillOnce(PostCompletionCallbackTask<1>(net::OK));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(2);
-  EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(2);
-  EXPECT_CALL(*ping_timer_, Stop());
+  EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(3);
+  EXPECT_CALL(*ping_timer_, StopTriggered());
 
   keep_alive_->Start();
   ping_timer_->Fire();
+  EXPECT_FALSE(ping_timer_->IsRunning());
+
   keep_alive_->OnMessage(KeepAliveDelegate::CreateKeepAliveMessage(
       KeepAliveDelegate::kHeartbeatPongType));
   RunPendingTasks();
+  EXPECT_TRUE(ping_timer_->IsRunning());
 }
 
 TEST_F(KeepAliveDelegateTest, TestPingFailed) {
@@ -118,8 +129,8 @@ TEST_F(KeepAliveDelegateTest, TestPingFailed) {
   EXPECT_CALL(*inner_delegate_, OnError(ChannelError::CAST_SOCKET_ERROR));
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(1);
-  EXPECT_CALL(*liveness_timer_, Stop());
-  EXPECT_CALL(*ping_timer_, Stop()).Times(2);
+  EXPECT_CALL(*liveness_timer_, StopTriggered());
+  EXPECT_CALL(*ping_timer_, StopTriggered()).Times(2);
 
   keep_alive_->Start();
   ping_timer_->Fire();
@@ -139,9 +150,9 @@ TEST_F(KeepAliveDelegateTest, TestPingAndLivenessTimeout) {
   EXPECT_CALL(*inner_delegate_, OnError(ChannelError::PING_TIMEOUT));
   EXPECT_CALL(*inner_delegate_, Start());
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(1);
-  EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(1);
-  EXPECT_CALL(*liveness_timer_, Stop()).Times(2);
-  EXPECT_CALL(*ping_timer_, Stop()).Times(2);
+  EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(2);
+  EXPECT_CALL(*liveness_timer_, StopTriggered()).Times(2);
+  EXPECT_CALL(*ping_timer_, StopTriggered()).Times(2);
 
   keep_alive_->Start();
   ping_timer_->Fire();
@@ -174,8 +185,8 @@ TEST_F(KeepAliveDelegateTest, TestPassthroughMessagesAfterError) {
   EXPECT_CALL(*inner_delegate_, Start()).Times(1);
   EXPECT_CALL(*ping_timer_, ResetTriggered()).Times(2);
   EXPECT_CALL(*liveness_timer_, ResetTriggered()).Times(2);
-  EXPECT_CALL(*liveness_timer_, Stop()).Times(1);
-  EXPECT_CALL(*ping_timer_, Stop()).Times(1);
+  EXPECT_CALL(*liveness_timer_, StopTriggered()).Times(1);
+  EXPECT_CALL(*ping_timer_, StopTriggered()).Times(1);
 
   Sequence message_and_error_sequence;
   EXPECT_CALL(*inner_delegate_, OnMessage(EqualsProto(message)))
@@ -209,6 +220,45 @@ TEST_F(KeepAliveDelegateTest, TestPassthroughMessagesAfterError) {
   // Process a late-arriving PING/PONG message, which should have no effect.
   keep_alive_->OnMessage(late_ping_message);
   RunPendingTasks();
+}
+
+TEST_F(KeepAliveDelegateTest, TestLivenessTimerResetAfterSendingMessage) {
+  scoped_refptr<base::TestMockTimeTaskRunner> mock_time_task_runner(
+      new base::TestMockTimeTaskRunner());
+  std::unique_ptr<base::TickClock> tick_clock =
+      mock_time_task_runner->GetMockTickClock();
+
+  std::unique_ptr<base::Timer> liveness_timer =
+      base::MakeUnique<base::Timer>(true, false, tick_clock.get());
+  std::unique_ptr<base::Timer> ping_timer =
+      base::MakeUnique<base::Timer>(true, false, tick_clock.get());
+  ping_timer->SetTaskRunner(mock_time_task_runner);
+  liveness_timer->SetTaskRunner(mock_time_task_runner);
+  keep_alive_->SetTimersForTest(std::move(ping_timer),
+                                std::move(liveness_timer));
+
+  // At time 0, start.
+  EXPECT_CALL(*inner_delegate_, Start());
+  keep_alive_->Start();
+
+  EXPECT_CALL(*socket_.mock_transport(),
+              SendMessage(EqualsProto(KeepAliveDelegate::CreateKeepAliveMessage(
+                              KeepAliveDelegate::kHeartbeatPingType)),
+                          _))
+      .WillOnce(PostCompletionCallbackTask<1>(net::OK));
+  // Forward 1s, at time 1, fire ping timer.
+  mock_time_task_runner->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kTestPingTimeoutMillis));
+
+  // Forward 9s, at Time 10, do not fire liveness timer.
+  EXPECT_CALL(*inner_delegate_, OnError(_)).Times(0);
+  mock_time_task_runner->FastForwardBy(base::TimeDelta::FromMilliseconds(
+      kTestLivenessTimeoutMillis - kTestPingTimeoutMillis));
+
+  // Forward 1s, at time 11s, fire liveness timer.
+  EXPECT_CALL(*inner_delegate_, OnError(_));
+  mock_time_task_runner->FastForwardBy(
+      base::TimeDelta::FromMilliseconds(kTestPingTimeoutMillis));
 }
 
 }  // namespace
