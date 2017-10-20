@@ -58285,6 +58285,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.IsTagged" enum="BooleanIsTagged">
+  <owner>hnakashima@chromium.org</owner>
+  <summary>
+    Tracks documents opened in the PDF viewer that are Tagged PDFs.
+  </summary>
+</histogram>
+
 <histogram name="PDF.LoadStatus" enum="ChromePDFViewerLoadStatus">
   <owner>tommycli@chromium.org</owner>
   <summary>
