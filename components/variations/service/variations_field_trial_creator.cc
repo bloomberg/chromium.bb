@@ -148,6 +148,8 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   CHECK(!create_trials_from_seed_called_);
 
+  base::TimeTicks start_time = base::TimeTicks::Now();
+
   create_trials_from_seed_called_ = true;
 
   VariationsSeed seed;
@@ -202,6 +204,8 @@ bool VariationsFieldTrialCreator::CreateTrialsFromSeed(
                                 50);
   }
 
+  UMA_HISTOGRAM_TIMES("Variations.SeedProcessingTime",
+                      base::TimeTicks::Now() - start_time);
   return true;
 }
 

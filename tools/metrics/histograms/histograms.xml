@@ -90133,6 +90133,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Variations.SeedProcessingTime" units="ms">
+  <owner>gayane@chromium.org</owner>
+  <summary>
+    Records how long it takes to load and process variations seed. This metric
+    is recorded only when loading and processing of the seed is successful.
+  </summary>
+</histogram>
+
 <histogram name="Variations.SeedStoreResult" enum="VariationsSeedStoreResult">
   <owner>asvitkine@chromium.org</owner>
   <summary>
