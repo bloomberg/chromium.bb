@@ -26,7 +26,7 @@ namespace wm {
 // A view that mirrors the client area of a single window.
 class WindowMirrorView : public views::View {
  public:
-  explicit WindowMirrorView(aura::Window* window);
+  WindowMirrorView(aura::Window* window, bool trilinear_filtering);
   ~WindowMirrorView() override;
 
   // views::View:
@@ -52,6 +52,10 @@ class WindowMirrorView : public views::View {
   // Retains ownership of the mirror layer tree. This is lazily initialized
   // the first time the view becomes visible.
   std::unique_ptr<ui::LayerTreeOwner> layer_owner_;
+
+  // True if trilinear filtering should be performed on the layer in
+  // InitLayerOwner().
+  bool trilinear_filtering_on_init_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowMirrorView);
 };
