@@ -25,7 +25,7 @@ namespace {
 void GiveItSomeTime() {
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(10));
+      FROM_HERE, run_loop.QuitClosure(), base::TimeDelta::FromMilliseconds(20));
   run_loop.Run();
 }
 
@@ -288,14 +288,74 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 
   // Wait for the document event listenr to handle the second wheel event.
   while (ExecuteScriptAndExtractInt("documentWheelEventCounter") != 1) {
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-        FROM_HERE, run_loop.QuitClosure(),
-        base::TimeDelta::FromMilliseconds(10));
-    run_loop.Run();
+    GiveItSomeTime();
   }
 
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
+}
+
+IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
+                       WheelScrollingRelatchWhenLatchedScrollerRemoved) {
+  LoadURL();
+  EXPECT_EQ(ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop"),
+            0);
+  EXPECT_EQ(ExecuteScriptAndExtractInt("scrollableDiv.scrollTop"), 0);
+  float x = (ExecuteScriptAndExtractInt(
+                 "scrollableDiv.getBoundingClientRect().left") +
+             ExecuteScriptAndExtractInt(
+                 "scrollableDiv.getBoundingClientRect().right")) /
+            2;
+  float y =
+      (ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top") +
+       ExecuteScriptAndExtractInt(
+           "scrollableDiv.getBoundingClientRect().bottom")) /
+      2;
+#if defined(OS_CHROMEOS)
+  bool precise = true;
+#else
+  bool precise = false;
+#endif
+  // Send a GSB event to start scrolling the scrollableDiv.
+  blink::WebGestureEvent gesture_scroll_begin(
+      blink::WebGestureEvent::kGestureScrollBegin,
+      blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::kTimeStampForTesting);
+  gesture_scroll_begin.source_device = blink::kWebGestureDeviceTouchpad;
+  gesture_scroll_begin.data.scroll_begin.delta_hint_units =
+      precise ? blink::WebGestureEvent::ScrollUnits::kPrecisePixels
+              : blink::WebGestureEvent::ScrollUnits::kPixels;
+  gesture_scroll_begin.data.scroll_begin.delta_x_hint = 0.f;
+  gesture_scroll_begin.data.scroll_begin.delta_y_hint = -20.f;
+  gesture_scroll_begin.x = x;
+  gesture_scroll_begin.y = y;
+  gesture_scroll_begin.global_x = x;
+  gesture_scroll_begin.global_y = y;
+  GetRootView()->ProcessGestureEvent(gesture_scroll_begin, ui::LatencyInfo());
+
+  // Send the first GSU event.
+  blink::WebGestureEvent gesture_scroll_update(gesture_scroll_begin);
+  gesture_scroll_update.SetType(blink::WebGestureEvent::kGestureScrollUpdate);
+  gesture_scroll_update.data.scroll_update.delta_units =
+      precise ? blink::WebGestureEvent::ScrollUnits::kPrecisePixels
+              : blink::WebGestureEvent::ScrollUnits::kPixels;
+  gesture_scroll_update.data.scroll_update.delta_x = 0.f;
+  gesture_scroll_update.data.scroll_update.delta_y = -20.f;
+  GetRootView()->ProcessGestureEvent(gesture_scroll_update, ui::LatencyInfo());
+
+  // Wait for the scrollableDiv to scroll.
+  while (ExecuteScriptAndExtractInt("scrollableDiv.scrollTop") < 20)
+    GiveItSomeTime();
+
+  // Remove the scrollableDiv which is the current scroller and send the second
+  // GSU.
+  EXPECT_TRUE(ExecuteScript(
+      shell(), "scrollableDiv.parentNode.removeChild(scrollableDiv)"));
+  GiveItSomeTime();
+  GetRootView()->ProcessGestureEvent(gesture_scroll_update, ui::LatencyInfo());
+  while (ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop") <
+         20) {
+    GiveItSomeTime();
+  }
 }
 
 }  // namespace content

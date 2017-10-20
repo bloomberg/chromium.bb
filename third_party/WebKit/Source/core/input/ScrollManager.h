@@ -119,6 +119,9 @@ class CORE_EXPORT ScrollManager
       bool* scroller_size_updated);
   void RecordScrollRelatedMetrics(const WebGestureDevice);
 
+  WebGestureEvent SynthesizeGestureScrollBegin(
+      const WebGestureEvent& update_event);
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |ScrollManager::clear()|.
 
