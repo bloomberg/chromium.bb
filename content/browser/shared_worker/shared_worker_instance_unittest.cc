@@ -55,7 +55,7 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
       blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-      false /* data_saver_enabled */);
+      false /* data_saver_enabled */, base::UnguessableToken::Create());
   EXPECT_TRUE(Matches(instance1, "http://example.com/w.js", ""));
   EXPECT_FALSE(Matches(instance1, "http://example.com/w2.js", ""));
   EXPECT_FALSE(Matches(instance1, "http://example.net/w.js", ""));
@@ -70,7 +70,7 @@ TEST_F(SharedWorkerInstanceTest, MatchesTest) {
       blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-      false /* data_saver_enabled */);
+      false /* data_saver_enabled */, base::UnguessableToken::Create());
   EXPECT_FALSE(Matches(instance2, "http://example.com/w.js", ""));
   EXPECT_FALSE(Matches(instance2, "http://example.com/w2.js", ""));
   EXPECT_FALSE(Matches(instance2, "http://example.net/w.js", ""));
@@ -93,7 +93,7 @@ TEST_F(SharedWorkerInstanceTest, AddressSpace) {
         static_cast<blink::WebAddressSpace>(i),
         browser_context_->GetResourceContext(), partition_id_,
         blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-        false /* data_saver_enabled */);
+        false /* data_saver_enabled */, base::UnguessableToken::Create());
     EXPECT_EQ(static_cast<blink::WebAddressSpace>(i),
               instance.creation_address_space());
   }

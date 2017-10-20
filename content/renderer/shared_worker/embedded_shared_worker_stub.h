@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/unguessable_token.h"
 #include "content/child/child_message_filter.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
@@ -57,6 +58,7 @@ class EmbeddedSharedWorkerStub : public IPC::Listener,
   EmbeddedSharedWorkerStub(
       mojom::SharedWorkerInfoPtr info,
       bool pause_on_start,
+      const base::UnguessableToken& devtools_worker_token,
       int route_id,
       blink::mojom::WorkerContentSettingsProxyPtr content_settings,
       mojom::SharedWorkerHostPtr host,

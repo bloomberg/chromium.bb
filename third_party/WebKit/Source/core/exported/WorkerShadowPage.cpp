@@ -14,14 +14,14 @@
 namespace blink {
 
 WorkerShadowPage::WorkerShadowPage(Client* client)
-    : web_view_(WebViewImpl::Create(nullptr, kWebPageVisibilityStateVisible)),
+    : client_(client),
+      web_view_(WebViewImpl::Create(nullptr, kWebPageVisibilityStateVisible)),
       main_frame_(WebLocalFrameImpl::CreateMainFrame(web_view_,
                                                      this,
                                                      nullptr,
                                                      nullptr,
                                                      g_empty_atom,
-                                                     WebSandboxFlags::kNone)),
-      client_(client) {
+                                                     WebSandboxFlags::kNone)) {
   DCHECK(IsMainThread());
 
   // TODO(http://crbug.com/363843): This needs to find a better way to
@@ -81,6 +81,10 @@ std::unique_ptr<blink::WebURLLoader> WorkerShadowPage::CreateURLLoader(
   DCHECK(IsMainThread());
   // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
   return Platform::Current()->CreateURLLoader(request, task_runner);
+}
+
+WebString WorkerShadowPage::GetInstrumentationToken() {
+  return client_->GetInstrumentationToken();
 }
 
 bool WorkerShadowPage::WasInitialized() const {

@@ -123,7 +123,7 @@ void SharedWorkerServiceImpl::ConnectToWorker(
       info->url, info->name, info->content_security_policy,
       info->content_security_policy_type, info->creation_address_space,
       resource_context, partition_id, creation_context_type,
-      info->data_saver_enabled);
+      info->data_saver_enabled, base::UnguessableToken::Create());
 
   SharedWorkerHost* host = FindAvailableSharedWorkerHost(*instance);
   if (host) {

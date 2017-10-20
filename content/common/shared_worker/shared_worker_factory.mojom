@@ -7,6 +7,7 @@ module content.mojom;
 import "content/common/shared_worker/shared_worker.mojom";
 import "content/common/shared_worker/shared_worker_host.mojom";
 import "content/common/shared_worker/shared_worker_info.mojom";
+import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
 
@@ -24,6 +25,7 @@ interface SharedWorkerFactory {
   CreateSharedWorker(
       SharedWorkerInfo info,
       bool pause_on_start,
+      mojo.common.mojom.UnguessableToken devtools_worker_token,
       int32 route_id,
       blink.mojom.WorkerContentSettingsProxy content_settings,
       SharedWorkerHost host,

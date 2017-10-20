@@ -5,6 +5,7 @@
 #ifndef CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_START_PARAMS_H_
 #define CONTENT_COMMON_SERVICE_WORKER_EMBEDDED_WORKER_START_PARAMS_H_
 
+#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/embedded_worker_settings.h"
 #include "url/gurl.h"
@@ -19,6 +20,7 @@ struct CONTENT_EXPORT EmbeddedWorkerStartParams {
   GURL scope;
   GURL script_url;
   int worker_devtools_agent_route_id;
+  base::UnguessableToken devtools_worker_token;
   bool pause_after_download;
   bool wait_for_debugger;
   bool is_installed;

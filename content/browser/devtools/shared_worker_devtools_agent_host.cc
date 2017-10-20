@@ -24,7 +24,7 @@ void TerminateSharedWorkerOnIO(
 SharedWorkerDevToolsAgentHost::SharedWorkerDevToolsAgentHost(
     WorkerId worker_id,
     const SharedWorkerInstance& shared_worker)
-    : WorkerDevToolsAgentHost(worker_id),
+    : WorkerDevToolsAgentHost(shared_worker.devtools_worker_token(), worker_id),
       shared_worker_(new SharedWorkerInstance(shared_worker)) {
   NotifyCreated();
 }

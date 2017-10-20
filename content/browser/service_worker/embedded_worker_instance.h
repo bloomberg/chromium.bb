@@ -20,6 +20,7 @@
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
@@ -335,6 +336,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Whether devtools is attached or not.
   bool devtools_attached_;
+
+  // Unique token identifying this worker for DevTools.
+  base::UnguessableToken devtools_worker_token_;
 
   // True if the script load request accessed the network. If the script was
   // served from HTTPCache or ServiceWorkerDatabase this value is false.

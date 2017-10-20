@@ -152,8 +152,10 @@ bool WorkerDevToolsAgentHost::IsTerminated() {
   return state_ == WORKER_TERMINATED;
 }
 
-WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(WorkerId worker_id)
-    : DevToolsAgentHostImpl(base::GenerateGUID()),
+WorkerDevToolsAgentHost::WorkerDevToolsAgentHost(
+    const base::UnguessableToken& devtools_worker_token,
+    WorkerId worker_id)
+    : DevToolsAgentHostImpl(devtools_worker_token.ToString()),
       state_(WORKER_UNINSPECTED),
       worker_id_(worker_id) {
   WorkerCreated();

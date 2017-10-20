@@ -18,20 +18,19 @@ ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
     base::WeakPtr<ServiceWorkerContextCore> context_weak,
     int64_t version_id,
     const GURL& url,
-    const GURL& scope)
+    const GURL& scope,
+    const base::UnguessableToken& devtools_worker_token)
     : context_(context),
       context_weak_(context_weak),
       version_id_(version_id),
       url_(url),
-      scope_(scope) {}
+      scope_(scope),
+      devtools_worker_token_(devtools_worker_token) {
+  DCHECK(!devtools_worker_token_.is_empty());
+}
 
 ServiceWorkerDevToolsManager::ServiceWorkerIdentifier::ServiceWorkerIdentifier(
-    const ServiceWorkerIdentifier& other)
-    : context_(other.context_),
-      context_weak_(other.context_weak_),
-      version_id_(other.version_id_),
-      url_(other.url_),
-      scope_(other.scope_) {}
+    const ServiceWorkerIdentifier& other) = default;
 
 ServiceWorkerDevToolsManager::
 ServiceWorkerIdentifier::~ServiceWorkerIdentifier() {
@@ -101,7 +100,6 @@ bool ServiceWorkerDevToolsManager::WorkerCreated(
   agent_host->WorkerRestarted(id);
   workers_.erase(it);
   workers_[id] = agent_host;
-
   return agent_host->IsAttached();
 }
 
