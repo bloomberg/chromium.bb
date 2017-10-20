@@ -128,6 +128,12 @@ TEST(VerifiedContents, Simple) {
   EXPECT_TRUE(contents.TreeHashRootEquals(
       base::FilePath::FromUTF8Unsafe("MixedCase.Html"),
       DecodeBase64Url("nKRqUcJg1_QZWAeCb4uFd5ouC0McuGavKp8TFDRqBgg")));
+
+  // Regression test for https://crbug.com/776609.
+  EXPECT_FALSE(contents.TreeHashRootEquals(
+      base::FilePath::FromUTF8Unsafe("allcaps.html"),
+      // This is the hash of "mixedcase.html".
+      DecodeBase64Url("zEAO9FwciigMNy3NtU2XNb-dS5TQMmVNx0T9h7WvXbQ")));
 }
 
 TEST(VerifiedContents, FailsOnBase64) {
