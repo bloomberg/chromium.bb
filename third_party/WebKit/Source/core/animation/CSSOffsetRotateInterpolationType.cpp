@@ -61,25 +61,24 @@ class UnderlyingRotationTypeChecker
   OffsetRotationType underlying_rotation_type_;
 };
 
-class InheritedRotationTypeChecker
+class InheritedRotationChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedRotationTypeChecker> Create(
-      OffsetRotationType inherited_rotation_type) {
-    return WTF::WrapUnique(
-        new InheritedRotationTypeChecker(inherited_rotation_type));
+  static std::unique_ptr<InheritedRotationChecker> Create(
+      StyleOffsetRotation inherited_rotation) {
+    return WTF::WrapUnique(new InheritedRotationChecker(inherited_rotation));
   }
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue& underlying) const final {
-    return inherited_rotation_type_ == state.ParentStyle()->OffsetRotate().type;
+    return inherited_rotation_ == state.ParentStyle()->OffsetRotate();
   }
 
  private:
-  InheritedRotationTypeChecker(OffsetRotationType inherited_rotation_type)
-      : inherited_rotation_type_(inherited_rotation_type) {}
+  InheritedRotationChecker(StyleOffsetRotation inherited_rotation)
+      : inherited_rotation_(inherited_rotation) {}
 
-  OffsetRotationType inherited_rotation_type_;
+  StyleOffsetRotation inherited_rotation_;
 };
 
 InterpolationValue ConvertOffsetRotate(const StyleOffsetRotation& rotation) {
@@ -111,11 +110,11 @@ InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertInitial(
 InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertInherit(
     const StyleResolverState& state,
     ConversionCheckers& conversion_checkers) const {
-  OffsetRotationType inherited_rotation_type =
-      state.ParentStyle()->OffsetRotate().type;
+  const StyleOffsetRotation& inherited_rotation =
+      state.ParentStyle()->OffsetRotate();
   conversion_checkers.push_back(
-      InheritedRotationTypeChecker::Create(inherited_rotation_type));
-  return ConvertOffsetRotate(state.ParentStyle()->OffsetRotate());
+      InheritedRotationChecker::Create(inherited_rotation));
+  return ConvertOffsetRotate(inherited_rotation);
 }
 
 InterpolationValue CSSOffsetRotateInterpolationType::MaybeConvertValue(
