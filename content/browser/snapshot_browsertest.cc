@@ -249,7 +249,16 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SingleWindowTest) {
   }
 }
 
-IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SyncMultiWindowTest) {
+// Seem to time out because they're too slow on Windows Debug: crbug.com/771119
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_SyncMultiWindowTest DISABLED_SyncMultiWindowTest
+#define MAYBE_AsyncMultiWindowTest DISABLED_AsyncMultiWindowTest
+#else
+#define MAYBE_SyncMultiWindowTest SyncMultiWindowTest
+#define MAYBE_AsyncMultiWindowTest AsyncMultiWindowTest
+#endif
+
+IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_SyncMultiWindowTest) {
   SetupTestServer();
 
   for (int i = 0; i < 3; ++i) {
@@ -304,9 +313,7 @@ IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, SyncMultiWindowTest) {
   }
 }
 
-// Seen to time out / fail on Mac and Win bots; crbug.com/772379,
-// crbug.com/771119.
-IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, AsyncMultiWindowTest) {
+IN_PROC_BROWSER_TEST_F(SnapshotBrowserTest, MAYBE_AsyncMultiWindowTest) {
   SetupTestServer();
 
   for (int i = 0; i < 3; ++i) {
