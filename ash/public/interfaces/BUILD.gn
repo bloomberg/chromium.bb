@@ -14,6 +14,7 @@ mojom("interfaces_internal") {
   sources = [
     "accelerator_controller.mojom",
     "ash_display_controller.mojom",
+    "ash_message_center_controller.mojom",
     "cast_config.mojom",
     "constants.mojom",
     "event_properties.mojom",
@@ -52,6 +53,7 @@ mojom("interfaces_internal") {
     "//skia/public/interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/image/mojo:interfaces",
+    "//ui/message_center/mojo:mojo",
   ]
 
   component_output_prefix = "ash_public_interfaces_internal"

@@ -10,6 +10,7 @@
         "system_ui": [
           "app_list::mojom::AppList",
           "ash::mojom::AcceleratorController",
+          "ash::mojom::AshMessageCenterController",
           "ash::mojom::CastConfig",
           "ash::mojom::HighlighterController",
           "ash::mojom::ImeController",
