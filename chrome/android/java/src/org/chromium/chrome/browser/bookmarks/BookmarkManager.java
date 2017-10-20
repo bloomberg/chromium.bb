@@ -66,6 +66,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
     private LargeIconBridge mLargeIconBridge;
     private String mInitialUrl;
     private boolean mIsDialogUi;
+    private boolean mIsDestroyed;
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
 
@@ -190,6 +191,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
      * Destroys and cleans up itself. This must be called after done using this class.
      */
     public void destroy() {
+        mIsDestroyed = true;
+
         mSelectableListLayout.onDestroyed();
 
         for (BookmarkUIObserver observer : mUIObservers) {
@@ -213,6 +216,8 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
      * @return True if manager handles this event, false if it decides to ignore.
      */
     public boolean onBackPressed() {
+        if (mIsDestroyed) return false;
+
         // TODO(twellington): replicate this behavior for other list UIs during unification.
         if (mSelectionDelegate.isSelectionEnabled()) {
             mSelectionDelegate.clearSelection();
