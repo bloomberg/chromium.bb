@@ -406,6 +406,11 @@ void GetFormAndField(autofill::FormData* form,
     if (formData->GetBoolean("is_form_tag", &is_form_tag))
       form.is_form_tag = is_form_tag;
 
+    // Is formless checkout tag is optional.
+    bool is_formless_checkout;
+    if (formData->GetBoolean("is_formless_checkout", &is_formless_checkout))
+      form.is_formless_checkout = is_formless_checkout;
+
     // Field list (mandatory) is extracted.
     const base::ListValue* fieldsList;
     if (!formData->GetList("fields", &fieldsList))
