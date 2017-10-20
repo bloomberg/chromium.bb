@@ -29,8 +29,7 @@ bool PaletteContainsPointInScreen(const gfx::Point& point) {
 
 bool IsInUserSession() {
   SessionController* session_controller = Shell::Get()->session_controller();
-  return !session_controller->IsUserSessionBlocked() &&
-         session_controller->GetSessionState() ==
+  return session_controller->GetSessionState() ==
              session_manager::SessionState::ACTIVE &&
          !session_controller->IsRunningInAppMode();
 }
