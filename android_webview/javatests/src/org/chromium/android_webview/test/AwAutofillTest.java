@@ -398,6 +398,13 @@ public class AwAutofillTest {
         private boolean mChecked;
     }
 
+    // crbug.com/776230: On Android L, declaring variables of unsupported classes causes an error.
+    // Wrapped them in a class to avoid it.
+    private static class TestValues {
+        public TestViewStructure testViewStructure;
+        public ArrayList<Pair<Integer, AutofillValue>> changedValues;
+    }
+
     private class TestAwAutofillManager extends AwAutofillManager {
         public TestAwAutofillManager(Context context) {
             super(context);
@@ -417,10 +424,10 @@ public class AwAutofillTest {
 
         @Override
         public void notifyVirtualValueChanged(View parent, int childId, AutofillValue value) {
-            if (mChangedValues == null) {
-                mChangedValues = new ArrayList<Pair<Integer, AutofillValue>>();
+            if (mTestValues.changedValues == null) {
+                mTestValues.changedValues = new ArrayList<Pair<Integer, AutofillValue>>();
             }
-            mChangedValues.add(new Pair<Integer, AutofillValue>(childId, value));
+            mTestValues.changedValues.add(new Pair<Integer, AutofillValue>(childId, value));
             mEventQueue.add(AUTOFILL_VALUE_CHANGED);
             mCallbackHelper.notifyCalled();
         }
@@ -454,9 +461,8 @@ public class AwAutofillTest {
     private TestAwContentsClient mContentsClient;
     private CallbackHelper mCallbackHelper = new CallbackHelper();
     private AwContents mAwContents;
-    private TestViewStructure mTestViewStructure;
-    private ArrayList<Pair<Integer, AutofillValue>> mChangedValues;
     private ConcurrentLinkedQueue<Integer> mEventQueue = new ConcurrentLinkedQueue<>();
+    private TestValues mTestValues = new TestValues();
 
     @Before
     public void setUp() throws Exception {
@@ -553,7 +559,7 @@ public class AwAutofillTest {
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
                             AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
             invokeOnProvideAutoFillVirtualStructure();
-            TestViewStructure viewStructure = mTestViewStructure;
+            TestViewStructure viewStructure = mTestValues.testViewStructure;
             assertNotNull(viewStructure);
             assertEquals(totalControls, viewStructure.getChildCount());
 
@@ -845,16 +851,16 @@ public class AwAutofillTest {
     }
 
     private ArrayList<Pair<Integer, AutofillValue>> getChangedValues() {
-        return mChangedValues;
+        return mTestValues.changedValues;
     }
 
     private void clearChangedValues() {
-        if (mChangedValues != null) mChangedValues.clear();
+        if (mTestValues.changedValues != null) mTestValues.changedValues.clear();
     }
 
     private void invokeOnProvideAutoFillVirtualStructure() {
-        mTestViewStructure = new TestViewStructure();
-        mAwContents.onProvideAutoFillVirtualStructure(mTestViewStructure, 1);
+        mTestValues.testViewStructure = new TestViewStructure();
+        mAwContents.onProvideAutoFillVirtualStructure(mTestValues.testViewStructure, 1);
     }
 
     private void invokeAutofill(SparseArray<AutofillValue> values) {
