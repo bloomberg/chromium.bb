@@ -233,6 +233,54 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIOnlyAvailableOnNTP) {
   EXPECT_TRUE(result);
 }
 
+// Regression test for crbug.com/776660 and crbug.com/776655.
+IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIExposesStaticFunctions) {
+  // Open an NTP.
+  content::WebContents* active_tab =
+      OpenNewTab(browser(), GURL(chrome::kChromeUINewTabURL));
+  ASSERT_TRUE(search::IsInstantNTP(active_tab));
+
+  struct TestCase {
+    const char* function_name;
+    const char* args;
+  } test_cases[] = {
+      {"window.chrome.embeddedSearch.searchBox.paste", "\"text\""},
+      {"window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes", ""},
+      {"window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes", ""},
+      {"window.chrome.embeddedSearch.newTabPage.checkIsUserSignedIntoChromeAs",
+       "\"user@email.com\""},
+      {"window.chrome.embeddedSearch.newTabPage.checkIsUserSyncingHistory",
+       "\"user@email.com\""},
+      {"window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem", "1"},
+      {"window.chrome.embeddedSearch.newTabPage.getMostVisitedItemData", "1"},
+      {"window.chrome.embeddedSearch.newTabPage.logEvent", "1"},
+      {"window.chrome.embeddedSearch.newTabPage.undoAllMostVisitedDeletions",
+       ""},
+      {"window.chrome.embeddedSearch.newTabPage.undoMostVisitedDeletion", "1"},
+  };
+
+  for (const TestCase& test_case : test_cases) {
+    // Make sure that the API function exists.
+    bool result = false;
+    ASSERT_TRUE(instant_test_utils::GetBoolFromJS(
+        active_tab, base::StringPrintf("!!%s", test_case.function_name),
+        &result));
+    ASSERT_TRUE(result);
+
+    // Check that it can be called normally.
+    EXPECT_TRUE(content::ExecuteScript(
+        active_tab,
+        base::StringPrintf("%s(%s)", test_case.function_name, test_case.args)));
+
+    // Check that it can be called even after it's assigned to a var, i.e.
+    // without a "this" binding.
+    EXPECT_TRUE(content::ExecuteScript(
+        active_tab,
+        base::StringPrintf("var f = %s; f(%s)", test_case.function_name,
+                           test_case.args)));
+  }
+}
+
 IN_PROC_BROWSER_TEST_F(LocalNTPTest, NTPRespectsBrowserLanguageSetting) {
   // If the platform cannot load the French locale (GetApplicationLocale() is
   // platform specific, and has been observed to fail on a small number of

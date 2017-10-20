@@ -386,7 +386,7 @@ void ChromeRenderFrameObserver::DidClearWindowObject() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(switches::kInstantProcess))
-    SearchBoxExtension::Install(render_frame());
+    SearchBoxExtension::Install(render_frame()->GetWebFrame());
 }
 
 void ChromeRenderFrameObserver::CapturePageText(TextCaptureType capture_type) {
