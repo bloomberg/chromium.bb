@@ -32,6 +32,7 @@ class XboxController {
     XBOX_360_CONTROLLER,
     XBOX_ONE_CONTROLLER_2013,
     XBOX_ONE_CONTROLLER_2015,
+    XBOX_ONE_ELITE_CONTROLLER,
     XBOX_ONE_S_CONTROLLER
   };
 
@@ -194,6 +195,8 @@ class XboxDataFetcher : public GamepadDataFetcher,
   base::mac::ScopedIOObject<io_iterator_t> xbox_one_2013_device_removed_iter_;
   base::mac::ScopedIOObject<io_iterator_t> xbox_one_2015_device_added_iter_;
   base::mac::ScopedIOObject<io_iterator_t> xbox_one_2015_device_removed_iter_;
+  base::mac::ScopedIOObject<io_iterator_t> xbox_one_elite_device_added_iter_;
+  base::mac::ScopedIOObject<io_iterator_t> xbox_one_elite_device_removed_iter_;
   base::mac::ScopedIOObject<io_iterator_t> xbox_one_s_device_added_iter_;
   base::mac::ScopedIOObject<io_iterator_t> xbox_one_s_device_removed_iter_;
 

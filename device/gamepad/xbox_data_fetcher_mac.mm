@@ -25,6 +25,7 @@ const int kVendorMicrosoft = 0x045e;
 const int kProductXbox360Controller = 0x028e;
 const int kProductXboxOneController2013 = 0x02d1;
 const int kProductXboxOneController2015 = 0x02dd;
+const int kProductXboxOneEliteController = 0x02e3;
 const int kProductXboxOneSController = 0x02ea;
 
 const int kXbox360ReadEndpoint = 1;
@@ -116,10 +117,21 @@ struct XboxOneButtonData {
   int16_t stick_right_x;
   int16_t stick_right_y;
 };
+
+struct XboxOneEliteButtonData {
+  // The Xbox One Elite controller supports button remapping and exposes both
+  // the mapped and unmapped data in the button state report.
+  XboxOneButtonData button_data;
+  XboxOneButtonData true_button_data;
+  int8_t paddle;
+};
+
 #pragma pack(pop)
 
 static_assert(sizeof(Xbox360ButtonData) == 18, "xbox button data wrong size");
 static_assert(sizeof(XboxOneButtonData) == 14, "xbox button data wrong size");
+static_assert(sizeof(XboxOneEliteButtonData) == 29,
+              "xbox button data wrong size");
 
 // From MSDN:
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ee417001(v=vs.85).aspx#dead_zone
@@ -245,6 +257,8 @@ XboxController::ControllerType ControllerTypeFromIds(int vendor_id,
         return XboxController::XBOX_ONE_CONTROLLER_2013;
       case kProductXboxOneController2015:
         return XboxController::XBOX_ONE_CONTROLLER_2015;
+      case kProductXboxOneEliteController:
+        return XboxController::XBOX_ONE_ELITE_CONTROLLER;
       case kProductXboxOneSController:
         return XboxController::XBOX_ONE_S_CONTROLLER;
       default:
@@ -318,6 +332,7 @@ bool XboxController::OpenDevice(io_service_t service) {
       break;
     case XBOX_ONE_CONTROLLER_2013:
     case XBOX_ONE_CONTROLLER_2015:
+    case XBOX_ONE_ELITE_CONTROLLER:
     case XBOX_ONE_S_CONTROLLER:
       read_endpoint_ = kXboxOneReadEndpoint;
       control_endpoint_ = kXboxOneControlEndpoint;
@@ -445,6 +460,7 @@ bool XboxController::OpenDevice(io_service_t service) {
         return false;
       if (controller_type_ == XBOX_ONE_CONTROLLER_2013 ||
           controller_type_ == XBOX_ONE_CONTROLLER_2015 ||
+          controller_type_ == XBOX_ONE_ELITE_CONTROLLER ||
           controller_type_ == XBOX_ONE_S_CONTROLLER)
         WriteXboxOneInit();
     }
@@ -486,6 +502,7 @@ int XboxController::GetVendorId() const {
     case XBOX_360_CONTROLLER:
     case XBOX_ONE_CONTROLLER_2013:
     case XBOX_ONE_CONTROLLER_2015:
+    case XBOX_ONE_ELITE_CONTROLLER:
     case XBOX_ONE_S_CONTROLLER:
       return kVendorMicrosoft;
     default:
@@ -501,6 +518,8 @@ int XboxController::GetProductId() const {
       return kProductXboxOneController2013;
     case XBOX_ONE_CONTROLLER_2015:
       return kProductXboxOneController2015;
+    case XBOX_ONE_ELITE_CONTROLLER:
+      return kProductXboxOneEliteController;
     case XBOX_ONE_S_CONTROLLER:
       return kProductXboxOneSController;
     default:
@@ -599,7 +618,8 @@ void XboxController::ProcessXboxOnePacket(size_t length) {
   length -= 4;
   switch (type) {
     case XBOX_ONE_STATUS_MESSAGE_BUTTONS: {
-      if (length != sizeof(XboxOneButtonData))
+      if (length != sizeof(XboxOneButtonData) &&
+          length != sizeof(XboxOneEliteButtonData))
         return;
       XboxOneButtonData* data = reinterpret_cast<XboxOneButtonData*>(buffer);
       Data normalized_data;
@@ -718,6 +738,12 @@ bool XboxDataFetcher::RegisterForNotifications() {
   CFRunLoopAddSource(CFRunLoopGetCurrent(), source_, kCFRunLoopDefaultMode);
 
   listening_ = true;
+
+  if (!RegisterForDeviceNotifications(kVendorMicrosoft,
+                                      kProductXboxOneEliteController,
+                                      &xbox_one_elite_device_added_iter_,
+                                      &xbox_one_elite_device_removed_iter_))
+    return false;
 
   if (!RegisterForDeviceNotifications(kVendorMicrosoft,
                                       kProductXboxOneController2013,
