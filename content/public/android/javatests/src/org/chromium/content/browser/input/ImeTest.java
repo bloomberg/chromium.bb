@@ -1252,12 +1252,37 @@ public class ImeTest {
     @SmallTest
     @Feature({"TextInput", "Main"})
     public void testDpadKeyCodesWhileSwipingText() throws Throwable {
+        int showCount = mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
         mRule.focusElement("textarea");
 
-        // DPAD_CENTER should cause keyboard to appear
+        // focusElement() calls showSoftInput().
+        CriteriaHelper.pollUiThread(Criteria.equals(showCount + 1, new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
+            }
+        }));
+
+        // DPAD_CENTER should cause keyboard to appear on keyup.
         mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_CENTER));
 
-        // TODO(changwan): should really check this.
+        // Should not have called showSoftInput() on keydown.
+        CriteriaHelper.pollUiThread(Criteria.equals(showCount + 1, new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
+            }
+        }));
+
+        mRule.dispatchKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_CENTER));
+
+        // Should have called showSoftInput() on keyup.
+        CriteriaHelper.pollUiThread(Criteria.equals(showCount + 2, new Callable<Integer>() {
+            @Override
+            public Integer call() {
+                return mRule.getInputMethodManagerWrapper().getShowSoftInputCounter();
+            }
+        }));
     }
 
     @Test
