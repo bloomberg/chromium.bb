@@ -45,7 +45,7 @@ class CONTENT_EXPORT WebRTCEventLogHost {
  private:
   // Actually start the eventlog for a single PeerConnection using the path
   // stored in base_file_path_.
-  bool StartEventLogForPeerConnection(int peer_connection_local_id);
+  void StartEventLogForPeerConnection(int peer_connection_local_id);
 
   // Send the platform file to the render process using an IPC message.
   void SendEventLogFileToRenderer(int peer_connection_local_id,

@@ -132,7 +132,7 @@ base::WeakPtr<WebRTCEventLogHost> WebRTCEventLogHost::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-bool WebRTCEventLogHost::StartEventLogForPeerConnection(
+void WebRTCEventLogHost::StartEventLogForPeerConnection(
     int peer_connection_local_id) {
   if (number_active_log_files_ < kMaxNumberLogFiles) {
     ++number_active_log_files_;
@@ -143,7 +143,6 @@ bool WebRTCEventLogHost::StartEventLogForPeerConnection(
         base::Bind(&WebRTCEventLogHost::SendEventLogFileToRenderer,
                    weak_ptr_factory_.GetWeakPtr(), peer_connection_local_id));
   }
-  return true;
 }
 
 void WebRTCEventLogHost::SendEventLogFileToRenderer(
