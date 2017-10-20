@@ -41,6 +41,7 @@
 #include "content/browser/download/download_task_runner.h"
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/download/slow_download_http_response.h"
+#include "content/browser/download/test_download_http_response.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/download_danger_type.h"
@@ -53,7 +54,6 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
-#include "content/public/test/test_download_request_handler.h"
 #include "content/public/test/test_file_error_injector.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -96,6 +96,7 @@ constexpr int kTestRequestCount = 3;
 
 const std::string kOriginOne = "one.example";
 const std::string kOriginTwo = "two.example";
+const std::string kOriginThree = "example.com";
 
 class MockDownloadItemObserver : public DownloadItem::Observer {
  public:
@@ -380,6 +381,100 @@ class CountingDownloadFileFactory : public DownloadFileFactory {
   }
 };
 
+class ErrorInjectionDownloadFile : public DownloadFileImpl {
+ public:
+  ErrorInjectionDownloadFile(
+      std::unique_ptr<DownloadSaveInfo> save_info,
+      const base::FilePath& default_downloads_directory,
+      std::unique_ptr<DownloadManager::InputStream> stream,
+      const net::NetLogWithSource& net_log,
+      base::WeakPtr<DownloadDestinationObserver> observer)
+      : DownloadFileImpl(std::move(save_info),
+                         default_downloads_directory,
+                         std::move(stream),
+                         net_log,
+                         observer),
+        error_stream_offset_(-1),
+        error_stream_length_(0) {}
+
+  ~ErrorInjectionDownloadFile() override = default;
+
+  void InjectStreamError(int64_t error_stream_offset,
+                         int64_t error_stream_length) {
+    error_stream_offset_ = error_stream_offset;
+    error_stream_length_ = error_stream_length;
+  }
+
+  DownloadInterruptReason HandleStreamCompletionStatus(
+      SourceStream* source_stream) override {
+    if (source_stream->offset() == error_stream_offset_ &&
+        source_stream->bytes_written() >= error_stream_length_) {
+      return DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED;
+    }
+    return DownloadFileImpl::HandleStreamCompletionStatus(source_stream);
+  }
+
+ private:
+  int64_t error_stream_offset_;
+  int64_t error_stream_length_;
+};
+
+// Factory for creating download files that allow error injection. All routines
+// on this class must be called on the UI thread.
+class ErrorInjectionDownloadFileFactory : public DownloadFileFactory {
+ public:
+  ErrorInjectionDownloadFileFactory()
+      : download_file_(nullptr), weak_ptr_factory_(this) {}
+  ~ErrorInjectionDownloadFileFactory() override = default;
+
+  // DownloadFileFactory interface.
+  DownloadFile* CreateFile(
+      std::unique_ptr<DownloadSaveInfo> save_info,
+      const base::FilePath& default_download_directory,
+      std::unique_ptr<DownloadManager::InputStream> stream,
+      const net::NetLogWithSource& net_log,
+      base::WeakPtr<DownloadDestinationObserver> observer) override {
+    ErrorInjectionDownloadFile* download_file = new ErrorInjectionDownloadFile(
+        std::move(save_info), default_download_directory, std::move(stream),
+        net_log, observer);
+    download_file_ = download_file;
+    if (injected_error_offset_ >= 0)
+      InjectErrorIntoDownloadFile();
+    return download_file;
+  }
+
+  void InjectError(int64_t offset, int64_t length) {
+    injected_error_offset_ = offset;
+    injected_error_length_ = length;
+    if (!download_file_)
+      return;
+    InjectErrorIntoDownloadFile();
+  }
+
+  base::WeakPtr<ErrorInjectionDownloadFileFactory> GetWeakPtr() {
+    return weak_ptr_factory_.GetWeakPtr();
+  }
+
+ private:
+  void InjectErrorIntoDownloadFile() {
+    GetDownloadTaskRunner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&ErrorInjectionDownloadFile::InjectStreamError,
+                       base::Unretained(download_file_), injected_error_offset_,
+                       injected_error_length_));
+    injected_error_offset_ = -1;
+    injected_error_length_ = 0;
+    download_file_ = nullptr;
+  }
+
+  ErrorInjectionDownloadFile* download_file_;
+  int64_t injected_error_offset_ = -1;
+  int64_t injected_error_length_ = 0;
+  base::WeakPtrFactory<ErrorInjectionDownloadFileFactory> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(ErrorInjectionDownloadFileFactory);
+};
+
 class TestShellDownloadManagerDelegate : public ShellDownloadManagerDelegate {
  public:
   TestShellDownloadManagerDelegate()
@@ -518,52 +613,68 @@ net::EmbeddedTestServer::HandleRequestCallback CreateBasicResponseHandler(
 }
 
 // Helper class to "flatten" handling of
-// TestDownloadRequestHandler::OnStartHandler.
-class TestRequestStartHandler {
+// TestDownloadHttpResponse::OnPauseHandler.
+class TestRequestPauseHandler {
  public:
-  // Construct an OnStartHandler that can be set as the on_start_handler for
-  // TestDownloadRequestHandler::Parameters.
-  TestDownloadRequestHandler::OnStartHandler GetOnStartHandler() {
-    EXPECT_FALSE(used_) << "GetOnStartHandler() should only be called once for "
-                           "an instance of TestRequestStartHandler.";
+  // Construct an OnPauseHandler that can be set as the on_pause_handler for
+  // TestDownloadHttpResponse::Parameters.
+  TestDownloadHttpResponse::OnPauseHandler GetOnPauseHandler() {
+    EXPECT_FALSE(used_) << "GetOnPauseHandler() should only be called once for "
+                           "an instance of TestRequestPauseHandler.";
     used_ = true;
-    return base::Bind(&TestRequestStartHandler::OnStartHandler,
+    return base::Bind(&TestRequestPauseHandler::OnPauseHandler,
                       base::Unretained(this));
   }
 
-  // Wait until the OnStartHandlers returned in a prior call to
-  // GetOnStartHandler() is invoked.
+  // Wait until the OnPauseHandler returned in a prior call to
+  // GetOnPauseHandler() is invoked.
   void WaitForCallback() {
-    if (response_callback_.is_null())
+    if (resume_callback_.is_null())
       run_loop_.Run();
   }
 
-  // Respond to the OnStartHandler() invocation using |headers| and |error|.
-  void RespondWith(const std::string& headers, net::Error error) {
-    ASSERT_FALSE(response_callback_.is_null());
-    response_callback_.Run(headers, error);
-  }
-
-  // Return the headers returned from the invocation of OnStartHandler.
-  const net::HttpRequestHeaders& headers() const {
-    EXPECT_FALSE(response_callback_.is_null());
-    return request_headers_;
+  // Resume the server response.
+  void Resume() {
+    ASSERT_FALSE(resume_callback_.is_null());
+    std::move(resume_callback_).Run();
   }
 
  private:
-  void OnStartHandler(const net::HttpRequestHeaders& headers,
-                      const TestDownloadRequestHandler::OnStartResponseCallback&
-                          response_callback) {
-    request_headers_ = headers;
-    response_callback_ = response_callback;
+  void OnPauseHandler(const base::Closure& resume_callback) {
+    resume_callback_ = resume_callback;
     if (run_loop_.running())
       run_loop_.Quit();
   }
 
   bool used_ = false;
   base::RunLoop run_loop_;
-  net::HttpRequestHeaders request_headers_;
-  TestDownloadRequestHandler::OnStartResponseCallback response_callback_;
+  base::OnceClosure resume_callback_;
+};
+
+// Class for creating and monitoring the completed response from the server.
+class TestDownloadResponseHandler {
+ public:
+  static std::unique_ptr<net::test_server::HttpResponse>
+  HandleTestDownloadRequest(
+      const TestDownloadHttpResponse::OnResponseSentCallback& callback,
+      const net::test_server::HttpRequest& request) {
+    return TestDownloadHttpResponse::Create(request, callback);
+  }
+
+  TestDownloadResponseHandler() = default;
+
+  void OnRequestCompleted(
+      std::unique_ptr<TestDownloadHttpResponse::CompletedRequest> request) {
+    completed_requests_.push_back(std::move(request));
+  }
+
+  using CompletedRequests =
+      std::vector<std::unique_ptr<TestDownloadHttpResponse::CompletedRequest>>;
+  CompletedRequests const& completed_requests() { return completed_requests_; }
+
+ private:
+  CompletedRequests completed_requests_;
+  DISALLOW_COPY_AND_ASSIGN(TestDownloadResponseHandler);
 };
 
 class DownloadContentTest : public ContentBrowserTest {
@@ -584,12 +695,19 @@ class DownloadContentTest : public ContentBrowserTest {
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     embedded_test_server()->RegisterRequestHandler(
         base::Bind(&SlowDownloadHttpResponse::HandleSlowDownloadRequest));
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&TestDownloadResponseHandler::HandleTestDownloadRequest,
+                   base::Bind(&TestDownloadResponseHandler::OnRequestCompleted,
+                              base::Unretained(&test_response_handler_))));
     ASSERT_TRUE(embedded_test_server()->Start());
     const std::string real_host =
         embedded_test_server()->host_port_pair().host();
     host_resolver()->AddRule(kOriginOne, real_host);
     host_resolver()->AddRule(kOriginTwo, real_host);
+    host_resolver()->AddRule(kOriginThree, real_host);
     host_resolver()->AddRule(SlowDownloadHttpResponse::kSlowDownloadHostName,
+                             real_host);
+    host_resolver()->AddRule(TestDownloadHttpResponse::kTestDownloadHostName,
                              real_host);
   }
 
@@ -649,6 +767,15 @@ class DownloadContentTest : public ContentBrowserTest {
     return CountingDownloadFile::GetNumberActiveFilesFromFileThread() == 0;
   }
 
+  void SetupErrorInjectionDownloads() {
+    auto factory = base::MakeUnique<ErrorInjectionDownloadFileFactory>();
+    inject_error_callback_ = base::Bind(
+        &ErrorInjectionDownloadFileFactory::InjectError, factory->GetWeakPtr());
+
+    DownloadManagerForShell(shell())->SetDownloadFileFactoryForTesting(
+        std::move(factory));
+  }
+
   void NavigateToURLAndWaitForDownload(
       Shell* shell,
       const GURL& url,
@@ -699,6 +826,10 @@ class DownloadContentTest : public ContentBrowserTest {
     return observer->WaitForFinished();
   }
 
+  TestDownloadResponseHandler* test_response_handler() {
+    return &test_response_handler_;
+  }
+
   static bool PathExists(const base::FilePath& path) {
     base::ThreadRestrictions::ScopedAllowIO allow_io_during_test_verification;
     return base::PathExists(path);
@@ -714,7 +845,7 @@ class DownloadContentTest : public ContentBrowserTest {
     ASSERT_EQ(expected_size, file_length);
 
     const int64_t kBufferSize = 64 * 1024;
-    std::vector<char> pattern;
+    std::string pattern;
     std::vector<char> data;
     pattern.resize(kBufferSize);
     data.resize(kBufferSize);
@@ -723,19 +854,25 @@ class DownloadContentTest : public ContentBrowserTest {
       ASSERT_LT(0, bytes_read);
       ASSERT_GE(kBufferSize, bytes_read);
 
-      TestDownloadRequestHandler::GetPatternBytes(seed, offset, bytes_read,
-                                                  &pattern.front());
-      ASSERT_EQ(0, memcmp(&pattern.front(), &data.front(), bytes_read))
+      pattern =
+          TestDownloadHttpResponse::GetPatternBytes(seed, offset, bytes_read);
+      ASSERT_EQ(0, memcmp(pattern.data(), &data.front(), bytes_read))
           << "Comparing block at offset " << offset << " and length "
           << bytes_read;
       offset += bytes_read;
     }
   }
 
+  TestDownloadHttpResponse::InjectErrorCallback inject_error_callback() {
+    return inject_error_callback_;
+  }
+
  private:
   // Location of the downloads directory for these tests
   base::ScopedTempDir downloads_directory_;
   std::unique_ptr<TestShellDownloadManagerDelegate> test_delegate_;
+  TestDownloadResponseHandler test_response_handler_;
+  TestDownloadHttpResponse::InjectErrorCallback inject_error_callback_;
 };
 
 // Test fixture for parallel downloading.
@@ -1094,18 +1231,19 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ShutdownAtRelease) {
 
 // Test resumption with a response that contains strong validators.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  const TestDownloadRequestHandler::InjectedError interruption =
-      parameters.injected_errors.front();
-  request_handler.StartServing(parameters);
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  int64_t interruption_offset = parameters.injected_errors.front();
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
-  ASSERT_EQ(interruption.offset, download->GetReceivedBytes());
+  ASSERT_EQ(interruption_offset, download->GetReceivedBytes());
   ASSERT_EQ(parameters.size, download->GetTotalBytes());
 
   download->Resume();
@@ -1121,75 +1259,82 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, StrongValidators) {
   // that were sent out while downloading our resource. These requests
   // correspond to the requests that were generated by the browser and the
   // downloads system and may change as implementation details change.
-  TestDownloadRequestHandler::CompletedRequests requests;
-  request_handler.GetCompletedRequestInfo(&requests);
+  const TestDownloadResponseHandler::CompletedRequests& requests =
+      test_response_handler()->completed_requests();
 
   ASSERT_EQ(2u, requests.size());
 
   // The first request only transferrs bytes up until the interruption point.
-  EXPECT_EQ(interruption.offset, requests[0]->transferred_byte_count);
+  EXPECT_EQ(interruption_offset, requests[0]->transferred_byte_count);
 
   // The next request should only have transferred the remainder of the
   // resource.
-  EXPECT_EQ(parameters.size - interruption.offset,
+  EXPECT_EQ(parameters.size - interruption_offset,
             requests[1]->transferred_byte_count);
 
   std::string value;
-  ASSERT_TRUE(requests[1]->request_headers.GetHeader(
-      net::HttpRequestHeaders::kIfRange, &value));
-  EXPECT_EQ(parameters.etag, value);
+  ASSERT_TRUE(requests[1]->http_request.headers.find(
+                  net::HttpRequestHeaders::kIfRange) !=
+              requests[1]->http_request.headers.end());
+  EXPECT_EQ(parameters.etag, requests[1]->http_request.headers.at(
+                                 net::HttpRequestHeaders::kIfRange));
 
-  ASSERT_TRUE(requests[1]->request_headers.GetHeader(
-      net::HttpRequestHeaders::kRange, &value));
-  EXPECT_EQ(base::StringPrintf("bytes=%" PRId64 "-", interruption.offset),
-            value);
+  ASSERT_TRUE(
+      requests[1]->http_request.headers.find(net::HttpRequestHeaders::kRange) !=
+      requests[1]->http_request.headers.end());
+  EXPECT_EQ(
+      base::StringPrintf("bytes=%" PRId64 "-", interruption_offset),
+      requests[1]->http_request.headers.at(net::HttpRequestHeaders::kRange));
 }
 
 // Resumption should only attempt to contact the final URL if the download has a
 // URL chain.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectBeforeResume) {
-  TestDownloadRequestHandler request_handler_1(
-      GURL("http://example.com/first-url"));
-  request_handler_1.StartServingStaticResponse(
-      "HTTP/1.1 302 Redirect\r\n"
-      "Location: http://example.com/second-url\r\n"
-      "\r\n");
+  SetupErrorInjectionDownloads();
+  GURL first_url = embedded_test_server()->GetURL("example.com", "/first-url");
+  GURL second_url =
+      embedded_test_server()->GetURL("example.com", "/second-url");
+  GURL third_url = embedded_test_server()->GetURL("example.com", "/third-url");
+  GURL download_url =
+      embedded_test_server()->GetURL("example.com", "/download");
+  TestDownloadHttpResponse::StartServingStaticResponse(
+      base::StringPrintf("HTTP/1.1 302 Redirect\r\n"
+                         "Location: %s\r\n\r\n",
+                         second_url.spec().c_str()),
+      first_url);
 
-  TestDownloadRequestHandler request_handler_2(
-      GURL("http://example.com/second-url"));
-  request_handler_2.StartServingStaticResponse(
-      "HTTP/1.1 302 Redirect\r\n"
-      "Location: http://example.com/third-url\r\n"
-      "\r\n");
+  TestDownloadHttpResponse::StartServingStaticResponse(
+      base::StringPrintf("HTTP/1.1 302 Redirect\r\n"
+                         "Location: %s\r\n\r\n",
+                         third_url.spec().c_str()),
+      second_url);
 
-  TestDownloadRequestHandler request_handler_3(
-      GURL("http://example.com/third-url"));
-  request_handler_3.StartServingStaticResponse(
-      "HTTP/1.1 302 Redirect\r\n"
-      "Location: http://example.com/download\r\n"
-      "\r\n");
+  TestDownloadHttpResponse::StartServingStaticResponse(
+      base::StringPrintf("HTTP/1.1 302 Redirect\r\n"
+                         "Location: %s\r\n\r\n",
+                         download_url.spec().c_str()),
+      third_url);
 
-  TestDownloadRequestHandler resumable_request_handler(
-      GURL("http://example.com/download"));
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  resumable_request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  TestDownloadHttpResponse::StartServing(parameters, download_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler_1.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), first_url);
   WaitForInterrupt(download);
 
   EXPECT_EQ(4u, download->GetUrlChain().size());
-  EXPECT_EQ(request_handler_1.url(), download->GetOriginalUrl());
-  EXPECT_EQ(resumable_request_handler.url(), download->GetURL());
+  EXPECT_EQ(first_url, download->GetOriginalUrl());
+  EXPECT_EQ(download_url, download->GetURL());
 
   // Now that the download is interrupted, make all intermediate servers return
   // a 404. The only way a resumption request would succeed if the resumption
   // request is sent to the final server in the chain.
   const char k404Response[] = "HTTP/1.1 404 Not found\r\n\r\n";
-  request_handler_1.StartServingStaticResponse(k404Response);
-  request_handler_2.StartServingStaticResponse(k404Response);
-  request_handler_3.StartServingStaticResponse(k404Response);
+  TestDownloadHttpResponse::StartServingStaticResponse(k404Response, first_url);
+  TestDownloadHttpResponse::StartServingStaticResponse(k404Response,
+                                                       second_url);
+  TestDownloadHttpResponse::StartServingStaticResponse(k404Response, third_url);
 
   download->Resume();
   WaitForCompletion(download);
@@ -1202,30 +1347,31 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectBeforeResume) {
 // If a resumption request results in a redirect, the response should be ignored
 // and the download should be marked as interrupted again.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
-  TestDownloadRequestHandler request_handler(
-      GURL("http://example.com/first-url"));
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  SetupErrorInjectionDownloads();
+  GURL first_url = embedded_test_server()->GetURL("example.com", "/first-url");
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
   ++parameters.pattern_generator_seed;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::StartServing(parameters, first_url);
 
   // We should never send a request to the decoy. If we do, the request will
   // always succeed, which results in behavior that diverges from what we want,
   // which is for the download to return to being interrupted.
-  TestDownloadRequestHandler decoy_request_handler(
-      GURL("http://example.com/decoy"));
-  decoy_request_handler.StartServing(TestDownloadRequestHandler::Parameters());
+  GURL second_url = embedded_test_server()->GetURL("example.com", "/decoy");
+  TestDownloadHttpResponse::StartServing(TestDownloadHttpResponse::Parameters(),
+                                         second_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), first_url);
   WaitForInterrupt(download);
 
   // Upon resumption, the server starts responding with a redirect. This
   // response should not be accepted.
-  request_handler.StartServingStaticResponse(
-      "HTTP/1.1 302 Redirect\r\n"
-      "Location: http://example.com/decoy\r\n"
-      "\r\n");
+  TestDownloadHttpResponse::StartServingStaticResponse(
+      base::StringPrintf("HTTP/1.1 302 Redirect\r\n"
+                         "Location: %s\r\n\r\n",
+                         second_url.spec().c_str()),
+      first_url);
   download->Resume();
   WaitForInterrupt(download);
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_UNREACHABLE,
@@ -1233,7 +1379,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
 
   // Back to the original request handler. Resumption should now succeed, and
   // use the partial data it had prior to the first interruption.
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::StartServing(parameters, first_url);
   download->Resume();
   WaitForCompletion(download);
 
@@ -1247,8 +1393,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
   // that were sent out while downloading our resource. These requests
   // correspond to the requests that were generated by the browser and the
   // downloads system and may change as implementation details change.
-  TestDownloadRequestHandler::CompletedRequests requests;
-  request_handler.GetCompletedRequestInfo(&requests);
+  const TestDownloadResponseHandler::CompletedRequests& requests =
+      test_response_handler()->completed_requests();
 
   ASSERT_EQ(3u, requests.size());
 
@@ -1264,20 +1410,23 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RedirectWhileResume) {
 // header), then the download should be marked as interrupted again without
 // discarding the partial state.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  request_handler.StartServing(parameters);
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   // Upon resumption, the server starts responding with a bad range header.
-  request_handler.StartServingStaticResponse(
+  TestDownloadHttpResponse::StartServingStaticResponse(
       "HTTP/1.1 206 Partial Content\r\n"
       "Content-Range: bytes 1000000-2000000/3000000\r\n"
-      "\r\n");
+      "\r\n",
+      server_url);
   download->Resume();
   WaitForInterrupt(download);
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
@@ -1285,20 +1434,22 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
 
   // Or this time, the server sends a response with an invalid Content-Range
   // header.
-  request_handler.StartServingStaticResponse(
+  TestDownloadHttpResponse::StartServingStaticResponse(
       "HTTP/1.1 206 Partial Content\r\n"
       "Content-Range: ooga-booga-booga-booga\r\n"
-      "\r\n");
+      "\r\n",
+      server_url);
   download->Resume();
   WaitForInterrupt(download);
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
             download->GetLastReason());
 
   // Or no Content-Range header at all.
-  request_handler.StartServingStaticResponse(
+  TestDownloadHttpResponse::StartServingStaticResponse(
       "HTTP/1.1 206 Partial Content\r\n"
       "Some-Headers: ooga-booga-booga-booga\r\n"
-      "\r\n");
+      "\r\n",
+      server_url);
   download->Resume();
   WaitForInterrupt(download);
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_SERVER_BAD_CONTENT,
@@ -1306,7 +1457,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
 
   // Back to the original request handler. Resumption should now succeed, and
   // use the partial data it had prior to the first interruption.
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
   download->Resume();
   WaitForCompletion(download);
 
@@ -1320,8 +1471,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
   // that were sent out while downloading our resource. These requests
   // correspond to the requests that were generated by the browser and the
   // downloads system and may change as implementation details change.
-  TestDownloadRequestHandler::CompletedRequests requests;
-  request_handler.GetCompletedRequestInfo(&requests);
+  const TestDownloadResponseHandler::CompletedRequests& requests =
+      test_response_handler()->completed_requests();
 
   ASSERT_EQ(5u, requests.size());
 
@@ -1339,29 +1490,29 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, BadRangeHeader) {
 // respond with a 200. So this test case covers both validation failure and
 // ignoring the range request.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNotPartialResponse) {
+  SetupErrorInjectionDownloads();
   const int kOriginalPatternGeneratorSeed = 1;
   const int kNewPatternGeneratorSeed = 2;
 
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
   parameters.pattern_generator_seed = kOriginalPatternGeneratorSeed;
-  const TestDownloadRequestHandler::InjectedError interruption =
-      parameters.injected_errors.front();
+  int64_t interruption_offset = parameters.injected_errors.front();
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(parameters);
-
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
-  ASSERT_EQ(interruption.offset, download->GetReceivedBytes());
+  ASSERT_EQ(interruption_offset, download->GetReceivedBytes());
   ASSERT_EQ(parameters.size, download->GetTotalBytes());
 
-  parameters = TestDownloadRequestHandler::Parameters();
+  parameters = TestDownloadHttpResponse::Parameters();
   parameters.support_byte_ranges = false;
   parameters.pattern_generator_seed = kNewPatternGeneratorSeed;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   download->Resume();
   WaitForCompletion(download);
@@ -1377,48 +1528,53 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNotPartialResponse) {
   // see two requests:
   // * The original request which transfers upto our interruption point.
   // * The resumption attempt, which receives the entire entity.
-  TestDownloadRequestHandler::CompletedRequests requests;
-  request_handler.GetCompletedRequestInfo(&requests);
+  const TestDownloadResponseHandler::CompletedRequests& requests =
+      test_response_handler()->completed_requests();
 
   ASSERT_EQ(2u, requests.size());
 
   // The first request only transfers data up to the interruption point.
-  EXPECT_EQ(interruption.offset, requests[0]->transferred_byte_count);
+  EXPECT_EQ(interruption_offset, requests[0]->transferred_byte_count);
 
   // The second request transfers the entire response.
   EXPECT_EQ(parameters.size, requests[1]->transferred_byte_count);
 
-  std::string value;
-  ASSERT_TRUE(requests[1]->request_headers.GetHeader(
-      net::HttpRequestHeaders::kIfRange, &value));
-  EXPECT_EQ(parameters.etag, value);
+  ASSERT_TRUE(requests[1]->http_request.headers.find(
+                  net::HttpRequestHeaders::kIfRange) !=
+              requests[1]->http_request.headers.end());
+  EXPECT_EQ(parameters.etag, requests[1]->http_request.headers.at(
+                                 net::HttpRequestHeaders::kIfRange));
 
-  ASSERT_TRUE(requests[1]->request_headers.GetHeader(
-      net::HttpRequestHeaders::kRange, &value));
-  EXPECT_EQ(base::StringPrintf("bytes=%" PRId64 "-", interruption.offset),
-            value);
+  ASSERT_TRUE(
+      requests[1]->http_request.headers.find(net::HttpRequestHeaders::kRange) !=
+      requests[1]->http_request.headers.end());
+  EXPECT_EQ(
+      base::StringPrintf("bytes=%" PRId64 "-", interruption_offset),
+      requests[1]->http_request.headers.at(net::HttpRequestHeaders::kRange));
 }
 
 // Confirm we restart if we don't have a verifier.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoETag) {
+  SetupErrorInjectionDownloads();
   const int kOriginalPatternGeneratorSeed = 1;
   const int kNewPatternGeneratorSeed = 2;
 
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
   ASSERT_EQ(1u, parameters.injected_errors.size());
   parameters.etag.clear();
   parameters.pattern_generator_seed = kOriginalPatternGeneratorSeed;
 
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(parameters);
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   parameters.pattern_generator_seed = kNewPatternGeneratorSeed;
   parameters.ClearInjectedErrors();
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   download->Resume();
   WaitForCompletion(download);
@@ -1429,28 +1585,31 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoETag) {
       ReadAndVerifyFileContents(kNewPatternGeneratorSeed, parameters.size,
                                 download->GetTargetFilePath()));
 
-  TestDownloadRequestHandler::CompletedRequests requests;
-  request_handler.GetCompletedRequestInfo(&requests);
+  const TestDownloadResponseHandler::CompletedRequests& requests =
+      test_response_handler()->completed_requests();
 
   // Neither If-Range nor Range headers should be present in the second request.
   ASSERT_EQ(2u, requests.size());
-  std::string value;
-  EXPECT_FALSE(requests[1]->request_headers.GetHeader(
-      net::HttpRequestHeaders::kIfRange, &value));
-  EXPECT_FALSE(requests[1]->request_headers.GetHeader(
-      net::HttpRequestHeaders::kRange, &value));
+  EXPECT_TRUE(requests[1]->http_request.headers.find(
+                  net::HttpRequestHeaders::kIfRange) ==
+              requests[1]->http_request.headers.end());
+  EXPECT_TRUE(
+      requests[1]->http_request.headers.find(net::HttpRequestHeaders::kRange) ==
+      requests[1]->http_request.headers.end());
 }
 
 // Partial file goes missing before the download is resumed. The download should
 // restart.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
 
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(parameters);
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   // Delete the intermediate file.
@@ -1461,7 +1620,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
   }
 
   parameters.ClearInjectedErrors();
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   download->Resume();
   WaitForCompletion(download);
@@ -1474,8 +1633,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RestartIfNoPartialFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromInitFileError) {
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(TestDownloadRequestHandler::Parameters());
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(TestDownloadHttpResponse::Parameters(),
+                                         server_url);
 
   // Setup the error injector.
   scoped_refptr<TestFileErrorInjector> injector(
@@ -1487,8 +1648,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromInitFileError) {
   injector->InjectError(err);
 
   // Start and watch for interrupt.
-  DownloadItem* download(
-      StartDownloadAndReturnItem(shell(), request_handler.url()));
+  DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   WaitForInterrupt(download);
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
@@ -1514,8 +1674,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromInitFileError) {
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        RecoverFromIntermediateFileRenameError) {
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(TestDownloadRequestHandler::Parameters());
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(TestDownloadHttpResponse::Parameters(),
+                                         server_url);
 
   // Setup the error injector.
   scoped_refptr<TestFileErrorInjector> injector(
@@ -1527,8 +1689,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
   injector->InjectError(err);
 
   // Start and watch for interrupt.
-  DownloadItem* download(
-      StartDownloadAndReturnItem(shell(), request_handler.url()));
+  DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   WaitForInterrupt(download);
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_NO_SPACE,
@@ -1554,8 +1715,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromFinalRenameError) {
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(TestDownloadRequestHandler::Parameters());
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(TestDownloadHttpResponse::Parameters(),
+                                         server_url);
 
   // Setup the error injector.
   scoped_refptr<TestFileErrorInjector> injector(
@@ -1567,8 +1730,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromFinalRenameError) {
   injector->InjectError(err);
 
   // Start and watch for interrupt.
-  DownloadItem* download(
-      StartDownloadAndReturnItem(shell(), request_handler.url()));
+  DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   WaitForInterrupt(download);
   ASSERT_EQ(DownloadItem::INTERRUPTED, download->GetState());
   EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_FILE_FAILED, download->GetLastReason());
@@ -1591,37 +1753,33 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RecoverFromFinalRenameError) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, Resume_Hash) {
-  using InjectedError = TestDownloadRequestHandler::InjectedError;
   const char kExpectedHash[] =
       "\xa7\x44\x49\x86\x24\xc6\x84\x6c\x89\xdf\xd8\xec\xa0\xe0\x61\x12\xdc\x80"
       "\x13\xf2\x83\x49\xa9\x14\x52\x32\xf0\x95\x20\xca\x5b\x30";
   std::string expected_hash(kExpectedHash);
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
+  TestDownloadHttpResponse::Parameters parameters;
 
   // As a control, let's try GetHash() on an uninterrupted download.
-  request_handler.StartServing(parameters);
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
   DownloadItem* uninterrupted_download(
-      StartDownloadAndReturnItem(shell(), request_handler.url()));
+      StartDownloadAndReturnItem(shell(), server_url));
   WaitForCompletion(uninterrupted_download);
   EXPECT_EQ(expected_hash, uninterrupted_download->GetHash());
 
+  SetupErrorInjectionDownloads();
   // Now with interruptions.
-  parameters.injected_errors.push(
-      InjectedError(100, net::ERR_CONNECTION_RESET));
-  parameters.injected_errors.push(
-      InjectedError(211, net::ERR_CONNECTION_RESET));
-  parameters.injected_errors.push(
-      InjectedError(337, net::ERR_CONNECTION_RESET));
-  parameters.injected_errors.push(
-      InjectedError(400, net::ERR_CONNECTION_RESET));
-  parameters.injected_errors.push(
-      InjectedError(512, net::ERR_CONNECTION_RESET));
-  request_handler.StartServing(parameters);
+  parameters.inject_error_cb = inject_error_callback();
+  parameters.injected_errors.push(100);
+  parameters.injected_errors.push(211);
+  parameters.injected_errors.push(337);
+  parameters.injected_errors.push(400);
+  parameters.injected_errors.push(512);
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   // Start and watch for interrupt.
-  DownloadItem* download(
-      StartDownloadAndReturnItem(shell(), request_handler.url()));
+  DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   WaitForInterrupt(download);
 
   download->Resume();
@@ -1645,12 +1803,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, Resume_Hash) {
 // An interrupted download should remove the intermediate file when it is
 // cancelled.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption());
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback()),
+      server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   base::FilePath intermediate_path = download->GetFullPath();
@@ -1666,12 +1827,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelInterruptedDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveInterruptedDownload) {
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption());
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback()),
+      server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   base::FilePath intermediate_path = download->GetFullPath();
@@ -1688,12 +1852,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveInterruptedDownload) {
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveCompletedDownload) {
   // A completed download shouldn't delete the downloaded file when it is
   // removed.
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(TestDownloadRequestHandler::Parameters());
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(TestDownloadHttpResponse::Parameters(),
+                                         server_url);
+
   std::unique_ptr<DownloadTestObserver> completion_observer(
       CreateWaiter(shell(), 1));
-  DownloadItem* download(
-      StartDownloadAndReturnItem(shell(), request_handler.url()));
+  DownloadItem* download(StartDownloadAndReturnItem(shell(), server_url));
   completion_observer->WaitForFinished();
 
   // The target path should exist.
@@ -1707,13 +1873,14 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveCompletedDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(parameters);
-
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   base::FilePath intermediate_path(download->GetFullPath());
@@ -1723,46 +1890,47 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumingDownload) {
   // Resume and remove download. We expect only a single OnDownloadCreated()
   // call, and that's for the second download created below.
   MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
-  EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
+  EXPECT_CALL(dm_observer, OnDownloadCreated(_, _)).Times(1);
 
-  TestRequestStartHandler request_start_handler;
-  parameters.on_start_handler = request_start_handler.GetOnStartHandler();
-  request_handler.StartServing(parameters);
+  TestRequestPauseHandler request_pause_handler;
+  parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
+  parameters.pause_offset = -1;
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   download->Resume();
-  request_start_handler.WaitForCallback();
+  request_pause_handler.WaitForCallback();
 
   // At this point, the download resumption request has been sent out, but the
   // response hasn't been received yet.
   download->Remove();
-
-  request_start_handler.RespondWith(std::string(), net::OK);
+  request_pause_handler.Resume();
 
   // The intermediate file should now be gone.
   RunAllTasksUntilIdle();
   EXPECT_FALSE(PathExists(intermediate_path));
 
   parameters.ClearInjectedErrors();
-  parameters.on_start_handler.Reset();
-  request_handler.StartServing(parameters);
+  parameters.on_pause_handler.Reset();
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   // Start the second download and wait until it's done. This exercises the
   // entire downloads stack and effectively flushes all of our worker threads.
   // We are testing whether the URL request created in the previous
   // DownloadItem::Resume() call reulted in a new download or not.
-  NavigateToURLAndWaitForDownload(shell(), request_handler.url(),
-                                  DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(shell(), server_url, DownloadItem::COMPLETE);
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(parameters);
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   base::FilePath intermediate_path(download->GetFullPath());
@@ -1774,18 +1942,19 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   MockDownloadManagerObserver dm_observer(DownloadManagerForShell(shell()));
   EXPECT_CALL(dm_observer, OnDownloadCreated(_,_)).Times(1);
 
-  TestRequestStartHandler request_start_handler;
-  parameters.on_start_handler = request_start_handler.GetOnStartHandler();
-  request_handler.StartServing(parameters);
+  TestRequestPauseHandler request_pause_handler;
+  parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
+  parameters.pause_offset = -1;
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   download->Resume();
-  request_start_handler.WaitForCallback();
+  request_pause_handler.WaitForCallback();
 
   // At this point, the download item has initiated a network request for the
   // resumption attempt, but hasn't received a response yet.
   download->Cancel(true /* user_cancel */);
 
-  request_start_handler.RespondWith(std::string(), net::OK);
+  request_pause_handler.Resume();
 
   // The intermediate file should now be gone.
   RunAllPendingInMessageLoop(BrowserThread::IO);
@@ -1793,26 +1962,27 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumingDownload) {
   EXPECT_FALSE(PathExists(intermediate_path));
 
   parameters.ClearInjectedErrors();
-  parameters.on_start_handler.Reset();
-  request_handler.StartServing(parameters);
+  parameters.on_pause_handler.Reset();
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   // Start the second download and wait until it's done. This exercises the
   // entire downloads stack and effectively flushes all of our worker threads.
   // We are testing whether the URL request created in the previous
   // DownloadItem::Resume() call reulted in a new download or not.
-  NavigateToURLAndWaitForDownload(shell(), request_handler.url(),
-                                  DownloadItem::COMPLETE);
+  NavigateToURLAndWaitForDownload(shell(), server_url, DownloadItem::COMPLETE);
   EXPECT_TRUE(EnsureNoPendingDownloads());
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumedDownload) {
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(parameters);
+  SetupErrorInjectionDownloads();
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   base::FilePath intermediate_path(download->GetFullPath());
@@ -1838,13 +2008,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, RemoveResumedDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumedDownload) {
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  TestDownloadRequestHandler request_handler;
-  request_handler.StartServing(parameters);
+  SetupErrorInjectionDownloads();
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
   WaitForInterrupt(download);
 
   base::FilePath intermediate_path(download->GetFullPath());
@@ -1870,16 +2042,17 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, CancelResumedDownload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
   std::vector<GURL> url_chain;
 
   const int kIntermediateSize = 1331;
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
       "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
@@ -1899,8 +2072,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
                             parameters.size,
                             download->GetTargetFilePath());
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& requests =
+      test_response_handler()->completed_requests();
 
   // There will be two requests. The first one is issued optimistically assuming
   // that the intermediate file exists and matches the size expectations set
@@ -1919,30 +2092,30 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoFile) {
   //
   // TODO(asanka): Ideally we'll check that the intermediate file matches
   // expectations prior to issuing the first resumption request.
-  ASSERT_EQ(2u, completed_requests.size());
-  EXPECT_EQ(parameters.size, completed_requests[1]->transferred_byte_count);
+  ASSERT_EQ(2u, requests.size());
+  EXPECT_EQ(parameters.size, requests[1]->transferred_byte_count);
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
   std::vector<GURL> url_chain;
 
   const int kIntermediateSize = 1331;
-  std::vector<char> buffer(kIntermediateSize);
-  request_handler.GetPatternBytes(
-      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  std::string output = TestDownloadHttpResponse::GetPatternBytes(
+      parameters.pattern_generator_seed, 0, kIntermediateSize);
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
     ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
-                                                 buffer.data(), buffer.size()));
+                                                 output.data(), output.size()));
   }
 
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
       "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
@@ -1962,8 +2135,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
                             parameters.size,
                             download->GetTargetFilePath());
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
 
   // There's only one network request issued, and that is for the remainder of
   // the file.
@@ -1974,25 +2147,25 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_NoHash) {
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        ResumeRestoredDownload_EtagMismatch) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
   std::vector<GURL> url_chain;
 
   const int kIntermediateSize = 1331;
-  std::vector<char> buffer(kIntermediateSize);
-  request_handler.GetPatternBytes(
-      parameters.pattern_generator_seed + 1, 0, buffer.size(), buffer.data());
+  std::string output = TestDownloadHttpResponse::GetPatternBytes(
+      parameters.pattern_generator_seed + 1, 0, kIntermediateSize);
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
     ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
-                                                 buffer.data(), buffer.size()));
+                                                 output.data(), output.size()));
   }
 
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
       "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
@@ -2012,8 +2185,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                             parameters.size,
                             download->GetTargetFilePath());
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
 
   // There's only one network request issued. The If-Range header allows the
   // server to respond with the entire entity in one go. The existing contents
@@ -2024,22 +2197,22 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                        ResumeRestoredDownload_CorrectHash) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
   std::vector<GURL> url_chain;
 
   const int kIntermediateSize = 1331;
-  std::vector<char> buffer(kIntermediateSize);
-  request_handler.GetPatternBytes(
-      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  std::string output = TestDownloadHttpResponse::GetPatternBytes(
+      parameters.pattern_generator_seed, 0, kIntermediateSize);
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
     ASSERT_EQ(kIntermediateSize, base::WriteFile(intermediate_file_path,
-                                                 buffer.data(), buffer.size()));
+                                                 output.data(), output.size()));
   }
   // SHA-256 hash of the pattern bytes in buffer.
   static const uint8_t kPartialHash[] = {
@@ -2047,7 +2220,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
       0xcf, 0xdd, 0x46, 0xa2, 0x61, 0x96, 0xff, 0xc3, 0xbb, 0x49, 0x30,
       0xaf, 0x31, 0x3a, 0x64, 0x0b, 0xd5, 0xfa, 0xb1, 0xe3, 0x81};
 
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
       "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
@@ -2068,8 +2241,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                             parameters.size,
                             download->GetTargetFilePath());
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
 
   // There's only one network request issued, and that is for the remainder of
   // the file.
@@ -2087,9 +2260,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
@@ -2109,7 +2283,7 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
       0xcf, 0xdd, 0x46, 0xa2, 0x61, 0x96, 0xff, 0xc3, 0xbb, 0x49, 0x30,
       0xaf, 0x31, 0x3a, 0x64, 0x0b, 0xd5, 0xfa, 0xb1, 0xe3, 0x81};
 
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
       "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
@@ -2130,8 +2304,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
                             parameters.size,
                             download->GetTargetFilePath());
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
 
   // There will be two requests. The first one is issued optimistically assuming
   // that the intermediate file exists and matches the size expectations set
@@ -2162,9 +2336,10 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_WrongHash) {
 }
 
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
@@ -2172,16 +2347,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
 
   const int kIntermediateSize = 1331;
   // Size of file is slightly shorter than the size known to DownloadItem.
-  std::vector<char> buffer(kIntermediateSize - 100);
-  request_handler.GetPatternBytes(
-      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  std::string output = TestDownloadHttpResponse::GetPatternBytes(
+      parameters.pattern_generator_seed, 0, kIntermediateSize - 100);
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
     ASSERT_EQ(
         kIntermediateSize - 100,
-        base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+        base::WriteFile(intermediate_file_path, output.data(), output.size()));
   }
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
       "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
@@ -2201,8 +2375,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_ShortFile) {
                             parameters.size,
                             download->GetTargetFilePath());
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
 
   // There will be two requests. The first one is issued optimistically assuming
   // that the intermediate file exists and matches the size expectations set
@@ -2231,26 +2405,26 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
   const int kFileSize = 1024 * 1024;
   const int kIntermediateSize = kFileSize / 2 + 111;
 
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
+  TestDownloadHttpResponse::Parameters parameters;
   parameters.size = kFileSize;
-  request_handler.StartServing(parameters);
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
   std::vector<GURL> url_chain;
 
   // Size of file is slightly longer than the size known to DownloadItem.
-  std::vector<char> buffer(kIntermediateSize + 100);
-  request_handler.GetPatternBytes(
-      parameters.pattern_generator_seed, 0, buffer.size(), buffer.data());
+  std::string output = TestDownloadHttpResponse::GetPatternBytes(
+      parameters.pattern_generator_seed, 0, kIntermediateSize + 100);
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
     ASSERT_EQ(
         kIntermediateSize + 100,
-        base::WriteFile(intermediate_file_path, buffer.data(), buffer.size()));
+        base::WriteFile(intermediate_file_path, output.data(), output.size()));
   }
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   DownloadItem* download = DownloadManagerForShell(shell())->CreateDownloadItem(
       "F7FB1F59-7DE1-4845-AFDB-8A688F70F583", 1, intermediate_file_path,
@@ -2270,8 +2444,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
                             parameters.size,
                             download->GetTargetFilePath());
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
 
   // There should be only one request. The intermediate file should be truncated
   // to the expected size, and the request should be issued for the remainder.
@@ -2286,14 +2460,17 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ResumeRestoredDownload_LongFile) {
 // Test that the referrer header is set correctly for a download that's resumed
 // partially.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  request_handler.StartServing(parameters);
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   GURL document_url = embedded_test_server()->GetURL(
       std::string("/download/download-link.html?dl=")
-          .append(request_handler.url().spec()));
+          .append(server_url.spec()));
 
   DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
   WaitForInterrupt(download);
@@ -2307,11 +2484,15 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, ReferrerForPartialResumption) {
       parameters.pattern_generator_seed, parameters.size,
       download->GetTargetFilePath()));
 
-  TestDownloadRequestHandler::CompletedRequests requests;
-  request_handler.GetCompletedRequestInfo(&requests);
+  const TestDownloadResponseHandler::CompletedRequests& requests =
+      test_response_handler()->completed_requests();
 
   ASSERT_GE(2u, requests.size());
-  EXPECT_EQ(document_url.spec(), requests.back()->referrer);
+  net::test_server::HttpRequest last_request = requests.back()->http_request;
+  EXPECT_TRUE(last_request.headers.find(net::HttpRequestHeaders::kReferer) !=
+              last_request.headers.end());
+  EXPECT_EQ(document_url.spec(),
+            last_request.headers.at(net::HttpRequestHeaders::kReferer));
 }
 
 // Test that the referrer header is dropped for HTTP downloads from HTTPS.
@@ -2526,32 +2707,26 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {
             download->GetLastReason());
 }
 
-namespace {
-
-void ErrorReturningRequestHandler(
-    const net::HttpRequestHeaders& headers,
-    const TestDownloadRequestHandler::OnStartResponseCallback& callback) {
-  callback.Run(std::string(), net::ERR_INTERNET_DISCONNECTED);
-}
-
-}  // namespace
-
 // A request that fails before it gets a response from the server should also
 // result in a DownloadItem that's created in an interrupted state.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeNetworkError) {
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
-
-  parameters.on_start_handler = base::Bind(&ErrorReturningRequestHandler);
-  request_handler.StartServing(parameters);
+  SetupErrorInjectionDownloads();
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters;
+  // Simulate a network failure by injecting an error before the response
+  // header.
+  parameters.injected_errors.push(-1);
+  parameters.inject_error_cb = inject_error_callback();
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   GURL document_url = embedded_test_server()->GetURL(
       std::string("/download/download-attribute.html?target=") +
-      request_handler.url().spec());
+      server_url.spec());
   DownloadItem* download = StartDownloadAndReturnItem(shell(), document_url);
   WaitForInterrupt(download);
 
-  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_DISCONNECTED,
+  EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NETWORK_FAILED,
             download->GetLastReason());
 }
 
@@ -2728,23 +2903,34 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
 IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters;
   parameters.etag = "ABC";
   parameters.size = 5097152;
+
   // Only parallel download needs to specify the connection type to http 1.1,
   // other tests will automatically fall back to non-parallel download even if
   // the ParallelDownloading feature is enabled based on
   // fieldtrial_testing_config.json.
   parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
-  request_handler.StartServing(parameters);
+  TestRequestPauseHandler request_pause_handler;
+  parameters.on_pause_handler = request_pause_handler.GetOnPauseHandler();
+  parameters.pause_offset = 10000;
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
-  DownloadItem* download =
-      StartDownloadAndReturnItem(shell(), request_handler.url());
+  DownloadItem* download = StartDownloadAndReturnItem(shell(), server_url);
+  // Send some data for the first request and pause it so download won't
+  // complete before other parallel requests are created.
+  request_pause_handler.WaitForCallback();
+  while (test_response_handler()->completed_requests().size() == 0)
+    base::RunLoop().RunUntilIdle();
+  // Now resume the first request.
+  request_pause_handler.Resume();
   WaitForCompletion(download);
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
   EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
 
   ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
@@ -2755,41 +2941,40 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
 IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(features::kParallelDownloading));
 
-  TestDownloadRequestHandler request_handler;
-  TestDownloadRequestHandler::Parameters parameters;
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters;
   parameters.etag = "ABC";
   parameters.size = 3000000;
   parameters.last_modified = std::string();
   parameters.connection_type = net::HttpResponseInfo::CONNECTION_INFO_HTTP1_1;
-  request_handler.StartServing(parameters);
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   base::FilePath intermediate_file_path =
       GetDownloadDirectory().AppendASCII("intermediate");
   std::vector<GURL> url_chain;
-  url_chain.push_back(request_handler.url());
+  url_chain.push_back(server_url);
 
   // Create an intermediate file that contains 3 chunks of data.
   const int kIntermediateSize = 1000;
-  std::vector<char> buffer(kIntermediateSize);
-  request_handler.GetPatternBytes(parameters.pattern_generator_seed, 0,
-                                  buffer.size(), buffer.data());
+  std::string output;
   {
     base::ThreadRestrictions::ScopedAllowIO allow_io_for_test_setup;
     base::File file(intermediate_file_path,
                     base::File::FLAG_CREATE | base::File::FLAG_WRITE);
     ASSERT_TRUE(file.IsValid());
-    request_handler.GetPatternBytes(parameters.pattern_generator_seed, 0,
-                                    buffer.size(), buffer.data());
+    output = TestDownloadHttpResponse::GetPatternBytes(
+        parameters.pattern_generator_seed, 0, kIntermediateSize);
     EXPECT_EQ(kIntermediateSize,
-              file.Write(0, buffer.data(), kIntermediateSize));
-    request_handler.GetPatternBytes(parameters.pattern_generator_seed, 1000000,
-                                    buffer.size(), buffer.data());
+              file.Write(0, output.data(), kIntermediateSize));
+    output = TestDownloadHttpResponse::GetPatternBytes(
+        parameters.pattern_generator_seed, 1000000, kIntermediateSize);
     EXPECT_EQ(kIntermediateSize,
-              file.Write(1000000, buffer.data(), kIntermediateSize));
-    request_handler.GetPatternBytes(parameters.pattern_generator_seed, 2000000,
-                                    buffer.size(), buffer.data());
+              file.Write(1000000, output.data(), kIntermediateSize));
+    output = TestDownloadHttpResponse::GetPatternBytes(
+        parameters.pattern_generator_seed, 2000000, kIntermediateSize);
     EXPECT_EQ(kIntermediateSize,
-              file.Write(2000000, buffer.data(), kIntermediateSize));
+              file.Write(2000000, output.data(), kIntermediateSize));
     file.Close();
   }
 
@@ -2813,8 +2998,8 @@ IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadResumption) {
   download->Resume();
   WaitForCompletion(download);
 
-  TestDownloadRequestHandler::CompletedRequests completed_requests;
-  request_handler.GetCompletedRequestInfo(&completed_requests);
+  const TestDownloadResponseHandler::CompletedRequests& completed_requests =
+      test_response_handler()->completed_requests();
   EXPECT_EQ(kTestRequestCount, static_cast<int>(completed_requests.size()));
 
   ReadAndVerifyFileContents(parameters.pattern_generator_seed, parameters.size,
@@ -2890,19 +3075,20 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBody) {
 // and the second response is HTTP 404, the response body of 404 should be
 // fetched.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
+  SetupErrorInjectionDownloads();
   const std::string kNotFoundResponseBody = "This is 404 response body.";
-  GURL url;
 
-  TestDownloadRequestHandler server;
-  TestDownloadRequestHandler::Parameters server_params =
-      TestDownloadRequestHandler::Parameters::WithSingleInterruption();
-  url = server.url();
-  server.StartServing(server_params);
+  GURL url = TestDownloadHttpResponse::GetNextURLForDownload();
+  GURL server_url = embedded_test_server()->GetURL(url.host(), url.path());
+  TestDownloadHttpResponse::Parameters parameters =
+      TestDownloadHttpResponse::Parameters::WithSingleInterruption(
+          inject_error_callback());
+  TestDownloadHttpResponse::StartServing(parameters, server_url);
 
   // Wait for an interrupted download.
   std::unique_ptr<DownloadUrlParameters> download_parameters(
       DownloadUrlParameters::CreateForWebContentsMainFrame(
-          shell()->web_contents(), url, TRAFFIC_ANNOTATION_FOR_TESTS));
+          shell()->web_contents(), server_url, TRAFFIC_ANNOTATION_FOR_TESTS));
   download_parameters->set_fetch_error_body(true);
   DownloadManager* download_manager = DownloadManagerForShell(shell());
 
@@ -2910,17 +3096,16 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
   observer.reset(new content::DownloadTestObserverInterrupted(
       download_manager, 1,
       content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL));
-
   download_manager->DownloadUrl(std::move(download_parameters));
   observer->WaitForFinished();
-
   std::vector<DownloadItem*> items;
   download_manager->GetAllDownloads(&items);
   EXPECT_EQ(1u, items.size());
 
   // Now server will start to response 404 with empty body.
   const std::string k404ResponseHeader = "HTTP/1.1 404 Not found\r\n\r\n";
-  server.StartServingStaticResponse(k404ResponseHeader);
+  TestDownloadHttpResponse::StartServingStaticResponse(k404ResponseHeader,
+                                                       server_url);
   DownloadItem* download = items[0];
 
   // The fetch error body should be cached in download item. The download should

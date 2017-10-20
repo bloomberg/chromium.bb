@@ -402,6 +402,22 @@ bool DownloadFileImpl::ShouldRetryFailedRename(DownloadInterruptReason reason) {
   return reason == DOWNLOAD_INTERRUPT_REASON_FILE_TRANSIENT_ERROR;
 }
 
+DownloadInterruptReason DownloadFileImpl::HandleStreamCompletionStatus(
+    SourceStream* source_stream) {
+  DownloadInterruptReason reason = source_stream->GetCompletionStatus();
+  if (source_stream->length() == DownloadSaveInfo::kLengthFullContent &&
+      !received_slices_.empty() &&
+      (source_stream->offset() == received_slices_.back().offset +
+                                      received_slices_.back().received_bytes) &&
+      reason ==
+          DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
+    // We are probably reaching the end of the stream, don't treat this
+    // as an error.
+    return DOWNLOAD_INTERRUPT_REASON_NONE;
+  }
+  return reason;
+}
+
 void DownloadFileImpl::RenameWithRetryInternal(
     std::unique_ptr<RenameParameters> parameters) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -624,17 +640,8 @@ void DownloadFileImpl::StreamActive(SourceStream* source_stream,
 }
 
 void DownloadFileImpl::OnStreamCompleted(SourceStream* source_stream) {
-  DownloadInterruptReason reason = source_stream->GetCompletionStatus();
-  if (source_stream->length() == DownloadSaveInfo::kLengthFullContent &&
-      !received_slices_.empty() &&
-      (source_stream->offset() == received_slices_.back().offset +
-                                      received_slices_.back().received_bytes) &&
-      reason ==
-          DownloadInterruptReason::DOWNLOAD_INTERRUPT_REASON_SERVER_NO_RANGE) {
-    // We are probably reaching the end of the stream, don't treat this
-    // as an error.
-    reason = DOWNLOAD_INTERRUPT_REASON_NONE;
-  }
+  DownloadInterruptReason reason = HandleStreamCompletionStatus(source_stream);
+
   SendUpdate();
 
   NotifyObserver(source_stream, reason, SourceStream::COMPLETE, false);
