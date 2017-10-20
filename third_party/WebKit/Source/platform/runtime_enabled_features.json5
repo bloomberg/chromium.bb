@@ -1045,6 +1045,9 @@
       status: "stable",
     },
     {
+      name: "UserActivationV2",
+    },
+    {
       name: "V8ContextSnapshot",
       status: "test",
     },

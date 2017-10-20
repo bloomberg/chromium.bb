@@ -877,6 +877,9 @@ extern const char kUiPartialSwapDescription[];
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
 
+extern const char kUserActivationV2Name[];
+extern const char kUserActivationV2Description[];
+
 extern const char kUserConsentForExtensionScriptsName[];
 extern const char kUserConsentForExtensionScriptsDescription[];
 

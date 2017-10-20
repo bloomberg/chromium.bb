@@ -33,6 +33,7 @@
 #include "core/frame/FrameLifecycle.h"
 #include "core/frame/FrameTypes.h"
 #include "core/frame/FrameView.h"
+#include "core/frame/UserActivationState.h"
 #include "core/loader/FrameLoaderTypes.h"
 #include "core/page/FrameTree.h"
 #include "platform/heap/Handle.h"
@@ -145,10 +146,21 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
 
   void UpdateUserActivationInFrameTree();
 
-  bool HasReceivedUserGesture() const { return has_received_user_gesture_; }
-  void ClearDocumentHasReceivedUserGesture() {
-    has_received_user_gesture_ = false;
+  // TODO(mustaq): make this name consistent with the term "activation".
+  bool HasReceivedUserGesture() const {
+    return user_activation_state_.HasBeenActive();
   }
+
+  bool HasTransientUserActivation() {
+    return user_activation_state_.IsActive();
+  }
+
+  bool ConsumeTransientUserActivation() {
+    return user_activation_state_.ConsumeIfActive();
+  }
+
+  // TODO(mustaq): make this name consistent with the term "activation".
+  void ClearDocumentHasReceivedUserGesture() { user_activation_state_.Clear(); }
 
   void SetDocumentHasReceivedUserGestureBeforeNavigation(bool value) {
     has_received_user_gesture_before_nav_ = value;
@@ -181,7 +193,7 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   Member<FrameOwner> owner_;
   Member<DOMWindow> dom_window_;
 
-  bool has_received_user_gesture_ = false;
+  UserActivationState user_activation_state_;
   bool has_received_user_gesture_before_nav_ = false;
 
   FrameLifecycle lifecycle_;

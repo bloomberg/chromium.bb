@@ -1425,6 +1425,11 @@ const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";
 
+const char kUserActivationV2Name[] = "User Activation v2";
+const char kUserActivationV2Description[] =
+    "Enable simple user activation for APIs that are otherwise controlled by "
+    "user gesture tokens.";
+
 const char kUserConsentForExtensionScriptsName[] =
     "User consent for extension scripts";
 const char kUserConsentForExtensionScriptsDescription[] =
