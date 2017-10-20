@@ -182,7 +182,7 @@ class Handler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
     md = markdown.Markdown(extensions=extensions,
                            extension_configs=extension_configs,
-                           tab_length=2,
+                           tab_length=4,
                            output_format='html4')
 
     has_a_single_h1 = (len([line for line in contents.splitlines()
