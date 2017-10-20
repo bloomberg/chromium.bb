@@ -19,7 +19,6 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_scheduler.h"
-#include "content/browser/loader/upload_progress_tracker.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/common/resource_request_completion_status.h"
 #include "content/public/common/resource_response.h"

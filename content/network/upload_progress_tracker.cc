@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/upload_progress_tracker.h"
+#include "content/network/upload_progress_tracker.h"
 
 #include "base/logging.h"
 #include "net/base/upload_progress.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/loader/upload_progress_tracker.h"
+#include "content/network/upload_progress_tracker.h"
 
 #include "base/bind.h"
 #include "base/location.h"
@@ -276,4 +276,4 @@ TEST_F(UploadProgressTrackerTest, Completed) {
   EXPECT_FALSE(mock_task_runner_->HasPendingTask());
 }
 
-}  // namespace context
+}  // namespace content

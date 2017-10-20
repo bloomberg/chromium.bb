@@ -65,6 +65,8 @@ source_set("network_sources") {
     "throttling/throttling_network_transaction_factory.h",
     "throttling/throttling_upload_data_stream.cc",
     "throttling/throttling_upload_data_stream.h",
+    "upload_progress_tracker.cc",
+    "upload_progress_tracker.h",
     "url_loader_impl.cc",
     "url_loader_impl.h",
   ]

@@ -303,6 +303,14 @@ URLLoaderImpl::URLLoaderImpl(
             {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
     url_request_->set_upload(
         CreateUploadDataStream(request.request_body.get(), task_runner.get()));
+
+    if (request.enable_upload_progress) {
+      upload_progress_tracker_ = base::MakeUnique<UploadProgressTracker>(
+          FROM_HERE,
+          base::BindRepeating(&URLLoaderImpl::SendUploadProgress,
+                              base::Unretained(this)),
+          url_request_.get());
+    }
   }
 
   int load_flags = BuildLoadFlagsForRequest(request, false);
@@ -418,6 +426,11 @@ void URLLoaderImpl::OnResponseStarted(net::URLRequest* url_request,
     NotifyCompleted(net_error);
     // |this| may have been deleted.
     return;
+  }
+
+  if (upload_progress_tracker_) {
+    upload_progress_tracker_->OnUploadCompleted();
+    upload_progress_tracker_ = nullptr;
   }
 
   response_ = new ResourceResponse();
@@ -564,6 +577,14 @@ base::WeakPtr<URLLoaderImpl> URLLoaderImpl::GetWeakPtrForTests() {
 }
 
 void URLLoaderImpl::NotifyCompleted(int error_code) {
+  // Ensure sending the final upload progress message here, since
+  // OnResponseCompleted can be called without OnResponseStarted on cancellation
+  // or error cases.
+  if (upload_progress_tracker_) {
+    upload_progress_tracker_->OnUploadCompleted();
+    upload_progress_tracker_ = nullptr;
+  }
+
   if (consumer_handle_.is_valid())
     SendResponseToClient();
 
@@ -662,6 +683,18 @@ void URLLoaderImpl::UpdateBodyReadBeforePaused() {
             body_read_before_paused_);
   body_read_before_paused_ =
       pending_write_buffer_offset_ + total_written_bytes_;
+}
+
+void URLLoaderImpl::SendUploadProgress(const net::UploadProgress& progress) {
+  url_loader_client_->OnUploadProgress(
+      progress.position(), progress.size(),
+      base::BindOnce(&URLLoaderImpl::OnUploadProgressACK,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void URLLoaderImpl::OnUploadProgressACK() {
+  if (upload_progress_tracker_)
+    upload_progress_tracker_->OnAckReceived();
 }
 
 }  // namespace content
