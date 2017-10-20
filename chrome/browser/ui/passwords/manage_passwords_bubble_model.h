@@ -118,6 +118,8 @@ class ManagePasswordsBubbleModel {
 
   bool hide_eye_icon() const { return hide_eye_icon_; }
 
+  bool enable_editing() const { return enable_editing_; }
+
   Profile* GetProfile() const;
   content::WebContents* GetWebContents() const;
 
@@ -168,6 +170,9 @@ class ManagePasswordsBubbleModel {
 
   // True iff the eye icon should be hidden for privacy reasons.
   bool hide_eye_icon_;
+
+  // True iff username/password editing should be enabled.
+  bool enable_editing_;
 
   DISALLOW_COPY_AND_ASSIGN(ManagePasswordsBubbleModel);
 };
