@@ -568,8 +568,8 @@ typedef struct macroblockd_plane {
   uint8_t width, height;
 
 #if CONFIG_AOM_QM
-  qm_val_t *seg_iqmatrix[MAX_SEGMENTS][2][TX_SIZES_ALL];
-  qm_val_t *seg_qmatrix[MAX_SEGMENTS][2][TX_SIZES_ALL];
+  qm_val_t *seg_iqmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
+  qm_val_t *seg_qmatrix[MAX_SEGMENTS][TX_SIZES_ALL];
 #endif
   // encoder
   const int16_t *dequant;

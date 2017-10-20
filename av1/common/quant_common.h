@@ -33,7 +33,6 @@ extern "C" {
  * blocks*/
 #define DEFAULT_QM_FIRST 5
 #define DEFAULT_QM_LAST 9
-#define DEFAULT_QM_INTER_OFFSET 0
 #endif
 
 struct AV1Common;
@@ -52,9 +51,9 @@ static INLINE int aom_get_qmlevel(int qindex, int first, int last) {
 }
 void aom_qm_init(struct AV1Common *cm);
 qm_val_t *aom_iqmatrix(struct AV1Common *cm, int qindex, int comp,
-                       TX_SIZE tx_size, int is_intra);
+                       TX_SIZE tx_size);
 qm_val_t *aom_qmatrix(struct AV1Common *cm, int qindex, int comp,
-                      TX_SIZE tx_size, int is_intra);
+                      TX_SIZE tx_size);
 #endif
 
 #if CONFIG_NEW_QUANT

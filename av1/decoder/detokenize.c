@@ -120,7 +120,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
                         dequant_val_type_nuq *dq_val,
 #else
 #if CONFIG_AOM_QM
-                        qm_val_t *iqm[2][TX_SIZES_ALL],
+                        qm_val_t *iqm[TX_SIZES_ALL],
 #endif  // CONFIG_AOM_QM
 #endif  // CONFIG_NEW_QUANT
                         int ctx, const int16_t *scan, const int16_t *nb,
@@ -129,7 +129,7 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
   const int max_eob = tx_size_2d[tx_size];
   const int ref = is_inter_block(&xd->mi[0]->mbmi);
 #if CONFIG_AOM_QM && !CONFIG_NEW_QUANT
-  const qm_val_t *iqmatrix = iqm[!ref][tx_size];
+  const qm_val_t *iqmatrix = iqm[tx_size];
 #endif  // CONFIG_AOM_QM
   (void)tx_type;
   int band, c = 0;

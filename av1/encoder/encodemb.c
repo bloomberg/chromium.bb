@@ -148,10 +148,9 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
-  const qm_val_t *iqmatrix =
-      IS_2D_TRANSFORM(tx_type)
-          ? pd->seg_iqmatrix[seg_id][!ref][tx_size]
-          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][0][tx_size];
+  const qm_val_t *iqmatrix = IS_2D_TRANSFORM(tx_type)
+                                 ? pd->seg_iqmatrix[seg_id][tx_size]
+                                 : cm->giqmatrix[NUM_QM_LEVELS - 1][0][tx_size];
 #endif
 #if CONFIG_NEW_QUANT
   int dq = get_dq_profile_from_ctx(mb->qindex, ctx, ref, plane_type);
@@ -455,10 +454,9 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
 
-#if CONFIG_AOM_QM || CONFIG_NEW_QUANT
+#if CONFIG_NEW_QUANT
   const int is_inter = is_inter_block(mbmi);
 #endif
-
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, mbmi);
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
@@ -468,13 +466,12 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
 #if CONFIG_AOM_QM
   int seg_id = mbmi->segment_id;
   // Use a flat matrix (i.e. no weighting) for 1D and Identity transforms
-  const qm_val_t *qmatrix =
-      IS_2D_TRANSFORM(tx_type) ? pd->seg_qmatrix[seg_id][!is_inter][tx_size]
-                               : cm->gqmatrix[NUM_QM_LEVELS - 1][0][0][tx_size];
-  const qm_val_t *iqmatrix =
-      IS_2D_TRANSFORM(tx_type)
-          ? pd->seg_iqmatrix[seg_id][!is_inter][tx_size]
-          : cm->giqmatrix[NUM_QM_LEVELS - 1][0][0][tx_size];
+  const qm_val_t *qmatrix = IS_2D_TRANSFORM(tx_type)
+                                ? pd->seg_qmatrix[seg_id][tx_size]
+                                : cm->gqmatrix[NUM_QM_LEVELS - 1][0][tx_size];
+  const qm_val_t *iqmatrix = IS_2D_TRANSFORM(tx_type)
+                                 ? pd->seg_iqmatrix[seg_id][tx_size]
+                                 : cm->giqmatrix[NUM_QM_LEVELS - 1][0][tx_size];
 #endif
 
   TxfmParam txfm_param;
