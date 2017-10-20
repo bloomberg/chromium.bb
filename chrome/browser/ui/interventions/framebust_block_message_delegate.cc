@@ -36,7 +36,7 @@ FramebustBlockMessageDelegate::~FramebustBlockMessageDelegate() = default;
 
 int FramebustBlockMessageDelegate::GetIconId() const {
 #if defined(OS_ANDROID)
-  return IDR_BLOCKED_POPUPS;
+  return IDR_ANDROID_INFOBAR_FRAMEBUST;
 #else
   NOTREACHED();
   return 0;
