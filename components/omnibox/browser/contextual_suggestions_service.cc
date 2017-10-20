@@ -24,7 +24,7 @@
 namespace {
 
 // Server address for the experimental suggestions service.
-const char kExperimentalServerAddress[] =
+const char kDefaultExperimentalServerAddress[] =
     "https://cuscochromeextension-pa.googleapis.com/v1/omniboxsuggestions";
 
 void AddVariationHeaders(std::unique_ptr<net::URLFetcher>& fetcher) {
@@ -161,7 +161,11 @@ GURL ContextualSuggestionsService::ExperimentalContextualSuggestionsUrl(
     return GURL();
   }
 
-  GURL suggest_url(kExperimentalServerAddress);
+  const std::string server_address_param =
+      OmniboxFieldTrial::GetZeroSuggestRedirectToChromeServerAddress();
+  GURL suggest_url(server_address_param.empty()
+                       ? kDefaultExperimentalServerAddress
+                       : server_address_param);
   // Check that the suggest URL for redirect to chrome field trial is valid.
   if (!suggest_url.is_valid()) {
     return GURL();

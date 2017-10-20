@@ -216,6 +216,9 @@ class OmniboxFieldTrial {
   // Returns -1 if there is no associated experiment ID.
   static int GetZeroSuggestRedirectToChromeExperimentId();
 
+  // Returns the server address associated with the current field trial.
+  static std::string GetZeroSuggestRedirectToChromeServerAddress();
+
   // ---------------------------------------------------------
   // For the ShortcutsScoringMaxRelevance experiment that's part of the
   // bundled omnibox field trial.
@@ -505,6 +508,7 @@ class OmniboxFieldTrial {
 
   // Parameter names used by Zero Suggest Redirect to Chrome.
   static const char kZeroSuggestRedirectToChromeExperimentIdParam[];
+  static const char kZeroSuggestRedirectToChromeServerAddressParam[];
 
   // The amount of time to wait before sending a new suggest request after the
   // previous one unless overridden by a field trial parameter.
