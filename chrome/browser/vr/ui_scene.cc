@@ -9,6 +9,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/time/time.h"
+#include "base/trace_event/trace_event.h"
 #include "base/values.h"
 #include "chrome/browser/vr/databinding/binding_base.h"
 #include "chrome/browser/vr/elements/draw_phase.h"
@@ -57,43 +58,59 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
   initialized_scene_ = true;
   is_dirty_ = false;
 
-  // Process all animations and pre-binding work. I.e., induce any time-related
-  // "dirtiness" on the scene graph.
-  for (auto& element : *root_element_) {
-    element.set_update_phase(UiElement::kDirty);
-    if (element.DoBeginFrame(current_time, look_at))
-      scene_dirty = true;
-    element.set_update_phase(UiElement::kUpdatedAnimations);
+  {
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateAnimations");
+
+    // Process all animations and pre-binding work. I.e., induce any
+    // time-related "dirtiness" on the scene graph.
+    for (auto& element : *root_element_) {
+      element.set_update_phase(UiElement::kDirty);
+      if (element.DoBeginFrame(current_time, look_at))
+        scene_dirty = true;
+      element.set_update_phase(UiElement::kUpdatedAnimations);
+    }
   }
 
-  // Propagate updates across bindings.
-  for (auto& element : *root_element_) {
-    if (element.UpdateBindings())
-      scene_dirty = true;
-    element.set_update_phase(UiElement::kUpdatedBindings);
+  {
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateBindings");
+
+    // Propagate updates across bindings.
+    for (auto& element : *root_element_) {
+      if (element.UpdateBindings())
+        scene_dirty = true;
+      element.set_update_phase(UiElement::kUpdatedBindings);
+    }
   }
 
-  if (scene_dirty) {
-    // We must now update visibility since some texture update optimizations
-    // rely on accurate visibility information.
-    root_element_->UpdateComputedOpacityRecursive();
-  } else {
-    for (auto& element : *root_element_)
-      element.set_update_phase(UiElement::kUpdatedComputedOpacity);
+  {
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateOpacity");
+
+    if (scene_dirty) {
+      // We must now update visibility since some texture update optimizations
+      // rely on accurate visibility information.
+      root_element_->UpdateComputedOpacityRecursive();
+    } else {
+      for (auto& element : *root_element_)
+        element.set_update_phase(UiElement::kUpdatedComputedOpacity);
+    }
   }
 
-  // Update textures and sizes.
-  // TODO(mthiesse): We should really only be updating the sizes here, and not
-  // actually redrawing the textures because we draw all of the textures as a
-  // second phase after OnBeginFrame, once we've processed input. For now this
-  // is fine, it's just a small amount of duplicated work.
-  // Textures will have to know what their size would be, if they were to draw
-  // with their current state, and changing anything other than texture
-  // synchronously in response to input should be prohibited.
-  for (auto& element : *root_element_) {
-    if (element.PrepareToDraw())
-      needs_redraw = true;
-    element.set_update_phase(UiElement::kUpdatedTexturesAndSizes);
+  {
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateTexturesAndSizes");
+
+    // Update textures and sizes.
+    // TODO(mthiesse): We should really only be updating the sizes here, and not
+    // actually redrawing the textures because we draw all of the textures as a
+    // second phase after OnBeginFrame, once we've processed input. For now this
+    // is fine, it's just a small amount of duplicated work.
+    // Textures will have to know what their size would be, if they were to draw
+    // with their current state, and changing anything other than texture
+    // synchronously in response to input should be prohibited.
+    for (auto& element : *root_element_) {
+      if (element.PrepareToDraw())
+        needs_redraw = true;
+      element.set_update_phase(UiElement::kUpdatedTexturesAndSizes);
+    }
   }
 
   if (!scene_dirty) {
@@ -105,15 +122,24 @@ bool UiScene::OnBeginFrame(const base::TimeTicks& current_time,
     return needs_redraw;
   }
 
-  // Update layout, which depends on size.
-  for (auto& element : *root_element_) {
-    element.LayOutChildren();
-    element.set_update_phase(UiElement::kUpdatedLayout);
+  {
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateLayout");
+
+    // Update layout, which depends on size.
+    for (auto& element : *root_element_) {
+      element.LayOutChildren();
+      element.set_update_phase(UiElement::kUpdatedLayout);
+    }
   }
 
-  // Now that we have finalized our local values, we can safely update our
-  // final, baked transform.
-  root_element_->UpdateWorldSpaceTransformRecursive();
+  {
+    TRACE_EVENT0("gpu", "UiScene::OnBeginFrame.UpdateWorldSpaceTransform");
+
+    // Now that we have finalized our local values, we can safely update our
+    // final, baked transform.
+    root_element_->UpdateWorldSpaceTransformRecursive();
+  }
+
   return scene_dirty || needs_redraw;
 }
 
