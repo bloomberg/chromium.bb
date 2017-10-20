@@ -3454,7 +3454,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptProceeds) {
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::Source<NavigationController>(&tab->GetController()));
-  int result = -1;
+  int result = security_interstitials::CMD_ERROR;
   const std::string javascript =
       base::StringPrintf("window.domAutomationController.send(%d);",
                          security_interstitials::CMD_PROCEED);
@@ -3489,7 +3489,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialJavaScriptGoesBack) {
             interstitial_page->GetDelegateForTesting()->GetTypeForTesting());
   content::RenderViewHost* interstitial_rvh =
       interstitial_page->GetMainFrame()->GetRenderViewHost();
-  int result = -1;
+  int result = security_interstitials::CMD_ERROR;
   const std::string javascript =
       base::StringPrintf("window.domAutomationController.send(%d);",
                          security_interstitials::CMD_DONT_PROCEED);
@@ -3610,7 +3610,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestInterstitialLinksOpenInNewTab) {
 
   EXPECT_EQ(1, browser()->tab_strip_model()->count());
 
-  int result = -1;
+  int result = security_interstitials::CMD_ERROR;
   const std::string javascript =
       base::StringPrintf("window.domAutomationController.send(%d);",
                          security_interstitials::CMD_OPEN_HELP_CENTER);
