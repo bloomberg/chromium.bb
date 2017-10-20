@@ -161,8 +161,8 @@ const char kDisableGpuMemoryBufferCompositorResources[] =
 const char kDisableGpuMemoryBufferVideoFrames[] =
     "disable-gpu-memory-buffer-video-frames";
 
-// Disable the limit on the number of times the GPU process may be restarted.
-// For tests and platforms where software fallback is disabled.
+// For tests, to disable the limit on the number of times the GPU process may be
+// restarted.
 const char kDisableGpuProcessCrashLimit[] = "disable-gpu-process-crash-limit";
 
 // When using CPU rasterizing disable low resolution tiling. This uses

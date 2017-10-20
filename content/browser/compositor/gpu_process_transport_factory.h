@@ -112,7 +112,6 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
   void EstablishedGpuChannel(
       base::WeakPtr<ui::Compositor> compositor,
       bool create_gpu_output_surface,
-      int num_attempts,
       scoped_refptr<gpu::GpuChannelHost> established_channel_host);
 
   void OnLostMainThreadSharedContextInsideCallback();

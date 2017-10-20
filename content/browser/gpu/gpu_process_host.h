@@ -163,6 +163,12 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   // Tells the GPU process that the given surface is being destroyed so that it
   // can stop using it.
   void SendDestroyingVideoSurface(int surface_id, const base::Closure& done_cb);
+
+  // Android-only notification when a context is initialized. Because the gpu
+  // process can be killed arbitrarily on this OS, the host needs to always
+  // restart it. This signal is used to differentiate a repeatedly failing gpu
+  // process from one that was functional but killed.
+  void DidSuccessfullyInitializeContext();
 #endif
 
   // What kind of GPU process, e.g. sandboxed or unsandboxed.

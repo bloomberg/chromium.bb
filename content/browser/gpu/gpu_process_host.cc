@@ -767,6 +767,10 @@ void GpuProcessHost::SendDestroyingVideoSurface(int surface_id,
       surface_id, base::Bind(&GpuProcessHost::OnDestroyingVideoSurfaceAck,
                              weak_ptr_factory_.GetWeakPtr()));
 }
+
+void GpuProcessHost::DidSuccessfullyInitializeContext() {
+  gpu_recent_crash_count_ = 0;
+}
 #endif
 
 void GpuProcessHost::OnChannelEstablished(
@@ -1127,10 +1131,16 @@ void GpuProcessHost::BlockLiveOffscreenContexts() {
 }
 
 void GpuProcessHost::RecordProcessCrash() {
+#if !defined(OS_ANDROID)
   // Maximum number of times the GPU process is allowed to crash in a session.
   // Once this limit is reached, any request to launch the GPU process will
   // fail.
   const int kGpuMaxCrashCount = 3;
+#else
+  // On android there is no way to recover without gpu, and the OS can kill the
+  // gpu process arbitrarily, so use a higher count to allow for that.
+  const int kGpuMaxCrashCount = 6;
+#endif
 
   // Last time the GPU process crashed.
   static base::Time last_gpu_crash_time;
@@ -1178,7 +1188,16 @@ void GpuProcessHost::RecordProcessCrash() {
       if ((gpu_recent_crash_count_ >= kGpuMaxCrashCount ||
            status_ == FAILURE) &&
           !disable_crash_limit) {
-#if !defined(OS_CHROMEOS)
+#if defined(OS_ANDROID)
+        // Android can not fall back to software. If things are too unstable
+        // then we just crash chrome to reset everything. Sorry.
+        LOG(FATAL) << "Unable to start gpu process, giving up.";
+#elif defined(OS_CHROMEOS)
+        // ChromeOS also can not fall back to software. There we will just
+        // keep retrying to make the gpu process forever. Good luck.
+        DLOG(ERROR) << "Gpu process is unstable and crashing repeatedly, if "
+                       "you didn't notice already.";
+#else
         // The GPU process is too unstable to use. Disable it for current
         // session.
         hardware_gpu_enabled_ = false;

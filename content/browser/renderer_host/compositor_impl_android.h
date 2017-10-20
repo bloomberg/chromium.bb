@@ -141,6 +141,8 @@ class CONTENT_EXPORT CompositorImpl
       scoped_refptr<viz::VulkanContextProvider> vulkan_context_provider,
       scoped_refptr<viz::ContextProvider> context_provider);
   void DidSwapBuffers();
+  // Reports back when the gpu process is functioning. See crbug.com/772049.
+  void DidSuccessfullyInitializeContext();
 
   bool HavePendingReadbacks();
 
@@ -177,8 +179,6 @@ class CONTENT_EXPORT CompositorImpl
   // The number of SubmitFrame calls that have not returned and ACK'd from
   // the GPU thread.
   unsigned int pending_frames_;
-
-  size_t num_successive_context_creation_failures_;
 
   base::OneShotTimer establish_gpu_channel_timeout_;
 
