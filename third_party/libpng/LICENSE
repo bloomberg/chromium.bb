@@ -12,8 +12,8 @@ Using custom versions of pnglibconf.h and pngprefix.h for Chrome.
 
 This code is released under the libpng license.
 
-libpng versions 1.0.7, July 1, 2000 through 1.6.22, May 26, 2016 are
-Copyright (c) 2000-2002, 2004, 2006-2016 Glenn Randers-Pehrson, are
+libpng versions 1.0.7, July 1, 2000 through 1.6.34, September 29, 2017 are
+Copyright (c) 2000-2002, 2004, 2006-2017 Glenn Randers-Pehrson, are
 derived from libpng-1.0.6, and are distributed according to the same
 disclaimer and license as libpng-1.0.6 with the following individuals
 added to the list of Contributing Authors:
@@ -24,6 +24,9 @@ added to the list of Contributing Authors:
    Cosmin Truta
    Gilles Vollant
    James Yu
+   Mandar Sahastrabuddhe
+   Google Inc.
+   Vadim Barkov
 
 and with the following additions to the disclaimer:
 
@@ -129,4 +132,4 @@ any encryption software.  See the EAR, paragraphs 734.3(b)(3) and
 
 Glenn Randers-Pehrson
 glennrp at users.sourceforge.net
-May 26, 2016
+September 29, 2017
