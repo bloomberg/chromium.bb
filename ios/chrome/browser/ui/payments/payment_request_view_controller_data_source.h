@@ -18,10 +18,6 @@
 // be enabled.
 - (BOOL)canPay;
 
-// Returns whether shipment can be done and therefore the shipping options
-// should be presented.
-- (BOOL)canShip;
-
 // Returns whether the total price is itemized.
 - (BOOL)hasPaymentItems;
 
