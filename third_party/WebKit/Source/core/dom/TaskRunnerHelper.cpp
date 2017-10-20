@@ -18,54 +18,7 @@
 namespace blink {
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, LocalFrame* frame) {
-  DCHECK(frame);
-  // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
-  switch (type) {
-    case TaskType::kJavascriptTimer:
-      return frame->FrameScheduler()->ThrottleableTaskRunner();
-    case TaskType::kUnspecedLoading:
-    case TaskType::kNetworking:
-      return frame->FrameScheduler()->LoadingTaskRunner();
-    case TaskType::kNetworkingControl:
-      return frame->FrameScheduler()->LoadingControlTaskRunner();
-    // Throttling following tasks may break existing web pages, so tentatively
-    // these are unthrottled.
-    // TODO(nhiroki): Throttle them again after we're convinced that it's safe
-    // or provide a mechanism that web pages can opt-out it if throttling is not
-    // desirable.
-    case TaskType::kDatabaseAccess:
-    case TaskType::kDOMManipulation:
-    case TaskType::kHistoryTraversal:
-    case TaskType::kEmbed:
-    case TaskType::kCanvasBlobSerialization:
-    case TaskType::kRemoteEvent:
-    case TaskType::kWebSocket:
-    case TaskType::kMicrotask:
-    case TaskType::kUnshippedPortMessage:
-    case TaskType::kFileReading:
-    case TaskType::kPresentation:
-    case TaskType::kSensor:
-    case TaskType::kPerformanceTimeline:
-    case TaskType::kWebGL:
-    case TaskType::kIdleTask:
-    case TaskType::kUnspecedTimer:
-    case TaskType::kMiscPlatformAPI:
-      // TODO(altimin): Move appropriate tasks to throttleable task queue.
-      return frame->FrameScheduler()->DeferrableTaskRunner();
-    // PostedMessage can be used for navigation, so we shouldn't defer it
-    // when expecting a user gesture.
-    case TaskType::kPostedMessage:
-    // UserInteraction tasks should be run even when expecting a user gesture.
-    case TaskType::kUserInteraction:
-    // Media events should not be deferred to ensure that media playback is
-    // smooth.
-    case TaskType::kMediaElementEvent:
-      return frame->FrameScheduler()->PausableTaskRunner();
-    case TaskType::kUnthrottled:
-      return frame->FrameScheduler()->UnpausableTaskRunner();
-  }
-  NOTREACHED();
-  return nullptr;
+  return frame->FrameScheduler()->GetTaskRunner(type);
 }
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type, Document* document) {

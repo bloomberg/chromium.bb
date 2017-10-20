@@ -212,6 +212,57 @@ WebFrameScheduler::FrameType WebFrameSchedulerImpl::GetFrameType() const {
   return frame_type_;
 }
 
+RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::GetTaskRunner(
+    TaskType type) {
+  // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
+  switch (type) {
+    case TaskType::kJavascriptTimer:
+      return ThrottleableTaskRunner();
+    case TaskType::kUnspecedLoading:
+    case TaskType::kNetworking:
+      return LoadingTaskRunner();
+    case TaskType::kNetworkingControl:
+      return LoadingControlTaskRunner();
+    // Throttling following tasks may break existing web pages, so tentatively
+    // these are unthrottled.
+    // TODO(nhiroki): Throttle them again after we're convinced that it's safe
+    // or provide a mechanism that web pages can opt-out it if throttling is not
+    // desirable.
+    case TaskType::kDatabaseAccess:
+    case TaskType::kDOMManipulation:
+    case TaskType::kHistoryTraversal:
+    case TaskType::kEmbed:
+    case TaskType::kCanvasBlobSerialization:
+    case TaskType::kRemoteEvent:
+    case TaskType::kWebSocket:
+    case TaskType::kMicrotask:
+    case TaskType::kUnshippedPortMessage:
+    case TaskType::kFileReading:
+    case TaskType::kPresentation:
+    case TaskType::kSensor:
+    case TaskType::kPerformanceTimeline:
+    case TaskType::kWebGL:
+    case TaskType::kIdleTask:
+    case TaskType::kUnspecedTimer:
+    case TaskType::kMiscPlatformAPI:
+      // TODO(altimin): Move appropriate tasks to throttleable task queue.
+      return DeferrableTaskRunner();
+    // PostedMessage can be used for navigation, so we shouldn't defer it
+    // when expecting a user gesture.
+    case TaskType::kPostedMessage:
+    // UserInteraction tasks should be run even when expecting a user gesture.
+    case TaskType::kUserInteraction:
+    // Media events should not be deferred to ensure that media playback is
+    // smooth.
+    case TaskType::kMediaElementEvent:
+      return PausableTaskRunner();
+    case TaskType::kUnthrottled:
+      return UnpausableTaskRunner();
+  }
+  NOTREACHED();
+  return nullptr;
+}
+
 RefPtr<blink::WebTaskRunner> WebFrameSchedulerImpl::LoadingTaskRunner() {
   DCHECK(parent_web_view_scheduler_);
   if (!loading_task_queue_) {
