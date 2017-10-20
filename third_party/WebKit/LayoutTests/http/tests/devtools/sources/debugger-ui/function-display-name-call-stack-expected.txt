@@ -3,13 +3,13 @@ Tests that we display function's "displayName" property in the call stack. CrBug
 Set timer for test function.
 Script execution paused.
 Call stack:
-    0) my.framework.foo (function-display-name-call-stack.html:10)
-    1) my.framework.bar (function-display-name-call-stack.html:15)
-    2) func3 (function-display-name-call-stack.html:20)
-    3) func4 (function-display-name-call-stack.html:23)
-    4) func5 (function-display-name-call-stack.html:26)
-    5) func6 (function-display-name-call-stack.html:30)
-    6) <anonymous_inside_testFunction> (function-display-name-call-stack.html:37)
-    7) <InspectorTest::testFunction> (function-display-name-call-stack.html:38)
+    0) my.framework.foo (function-display-name-call-stack.js:19)
+    1) my.framework.bar (function-display-name-call-stack.js:24)
+    2) func3 (function-display-name-call-stack.js:29)
+    3) func4 (function-display-name-call-stack.js:32)
+    4) func5 (function-display-name-call-stack.js:35)
+    5) func6 (function-display-name-call-stack.js:39)
+    6) <anonymous_inside_testFunction> (function-display-name-call-stack.js:46)
+    7) <InspectorTest::testFunction> (function-display-name-call-stack.js:47)
 Script execution resumed.
 
