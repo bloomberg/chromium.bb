@@ -360,8 +360,8 @@ public class AccountSigninView extends FrameLayout {
 
         boolean selectedAccountChanged = oldAccountNames != null && !oldAccountNames.isEmpty()
                 && (mAccountNames.isEmpty()
-                           || mAccountNames.get(accountToSelect)
-                                      .equals(oldAccountNames.get(oldSelectedAccount)));
+                           || !mAccountNames.get(accountToSelect)
+                                       .equals(oldAccountNames.get(oldSelectedAccount)));
         if (selectedAccountChanged) {
             // Any dialogs that may have been showing are now invalid (they were created
             // for the previously selected account).
