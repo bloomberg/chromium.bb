@@ -487,7 +487,7 @@ class SingleTestRunner(object):
         # and only really handle the first of the references in the result.
         reftest_type = list(set([reference_file[0] for reference_file in self._reference_files]))
         return TestResult(self._test_name, test_result.failures, total_test_time,
-                          test_result.has_stderr, reftest_type=reftest_type, pid=test_result.pid,
+                          test_result.has_stderr, reftest_type=reftest_type, pid=test_result.pid, crash_site=test_result.crash_site,
                           references=reference_test_names, has_repaint_overlay=test_result.has_repaint_overlay)
 
     # The returned TestResult always has 0 test_run_time. _run_reftest() calculates total_run_time from test outputs.
@@ -497,10 +497,11 @@ class SingleTestRunner(object):
         failures.extend(self._handle_error(actual_driver_output))
         if failures:
             # Don't continue any more if we already have crash or timeout.
-            return TestResult(self._test_name, failures, 0, has_stderr)
+            return TestResult(self._test_name, failures, 0, has_stderr, crash_site=actual_driver_output.crash_site)
         failures.extend(self._handle_error(reference_driver_output, reference_filename=reference_filename))
         if failures:
-            return TestResult(self._test_name, failures, 0, has_stderr, pid=actual_driver_output.pid)
+            return TestResult(self._test_name, failures, 0, has_stderr, pid=actual_driver_output.pid,
+                              crash_site=reference_driver_output.crash_site)
 
         if not actual_driver_output.image_hash:
             failures.append(test_failures.FailureReftestNoImageGenerated(reference_filename))
