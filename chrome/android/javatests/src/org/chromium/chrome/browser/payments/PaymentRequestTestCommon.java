@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
 import org.chromium.chrome.browser.payments.PaymentRequestImpl.PaymentRequestServiceObserverForTest;
+import org.chromium.chrome.browser.payments.ui.EditorObserverForTest;
 import org.chromium.chrome.browser.payments.ui.EditorTextField;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection.OptionRow;
@@ -52,7 +53,7 @@ import java.util.concurrent.atomic.AtomicReference;
 // TODO(yolandyan): move this class to its test rule once JUnit4 migration is over
 final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
                                                 PaymentRequestServiceObserverForTest,
-                                                CardUnmaskObserverForTest {
+                                                CardUnmaskObserverForTest, EditorObserverForTest {
     /** Flag for installing a payment app without instruments. */
     static final int NO_INSTRUMENTS = 0;
 
@@ -143,7 +144,8 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
         ThreadUtils.runOnUiThreadBlocking(() -> {
             mViewCoreRef.set(mCallback.getActivity().getCurrentContentViewCore());
             mWebContentsRef.set(mViewCoreRef.get().getWebContents());
-            PaymentRequestUI.setObserverForTest(PaymentRequestTestCommon.this);
+            PaymentRequestUI.setEditorObserverForTest(PaymentRequestTestCommon.this);
+            PaymentRequestUI.setPaymentRequestObserverForTest(PaymentRequestTestCommon.this);
             PaymentRequestImpl.setObserverForTest(PaymentRequestTestCommon.this);
             CardUnmaskPrompt.setObserverForTest(PaymentRequestTestCommon.this);
         });
@@ -659,19 +661,19 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     }
 
     @Override
-    public void onPaymentRequestReadyToEdit() {
+    public void onEditorReadyToEdit() {
         ThreadUtils.assertOnUiThread();
         mReadyToEdit.notifyCalled();
     }
 
     @Override
-    public void onPaymentRequestEditorValidationError() {
+    public void onEditorValidationError() {
         ThreadUtils.assertOnUiThread();
         mEditorValidationError.notifyCalled();
     }
 
     @Override
-    public void onPaymentRequestEditorTextUpdate() {
+    public void onEditorTextUpdate() {
         ThreadUtils.assertOnUiThread();
         mEditorTextUpdate.notifyCalled();
     }
@@ -695,7 +697,7 @@ final class PaymentRequestTestCommon implements PaymentRequestObserverForTest,
     }
 
     @Override
-    public void onPaymentRequestDismiss() {
+    public void onEditorDismiss() {
         ThreadUtils.assertOnUiThread();
         mDismissed.notifyCalled();
     }

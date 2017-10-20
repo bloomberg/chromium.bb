@@ -389,7 +389,7 @@ public class PaymentRequestImpl
 
         mApps = new ArrayList<>();
 
-        mAddressEditor = new AddressEditor();
+        mAddressEditor = new AddressEditor(/*emailFieldIncluded=*/false);
         mCardEditor = new CardEditor(mWebContents, mAddressEditor, sObserverForTest);
 
         ChromeActivity activity = ChromeActivity.fromWebContents(mWebContents);

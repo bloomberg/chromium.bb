@@ -40,7 +40,6 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.preferences.autofill.CreditCardNumberFormattingTextWatcher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.widget.AlwaysDismissedDialog;
@@ -72,7 +71,7 @@ public class EditorDialog
     private static final int DIALOG_EXIT_ANIMATION_MS = 195;
 
     private final Context mContext;
-    private final PaymentRequestObserverForTest mObserverForTest;
+    private final EditorObserverForTest mObserverForTest;
     private final Handler mHandler;
     private final TextView.OnEditorActionListener mEditorActionListener;
     private final int mHalfRowMargin;
@@ -96,14 +95,17 @@ public class EditorDialog
     private TextView mPhoneInput;
 
     private Animator mDialogInOutAnimator;
-
+    @Nullable
+    private Runnable mDeleteRunnable;
     /**
      * Builds the editor dialog.
      *
      * @param activity        The activity on top of which the UI should be displayed.
      * @param observerForTest Optional event observer for testing.
+     * @param deleteRunnable  The runnable that when called will delete the profile.
      */
-    public EditorDialog(Activity activity, PaymentRequestObserverForTest observerForTest) {
+    public EditorDialog(
+            Activity activity, EditorObserverForTest observerForTest, Runnable deleteRunnable) {
         super(activity, R.style.FullscreenWhite);
         // Sets transparent background for animating content view.
         getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -154,6 +156,7 @@ public class EditorDialog
         };
 
         mCardNumberFormatter = new CreditCardNumberFormattingTextWatcher();
+        mDeleteRunnable = deleteRunnable;
     }
 
     /** Prevents screenshots of this editor. */
@@ -180,13 +183,19 @@ public class EditorDialog
         EditorDialogToolbar toolbar = (EditorDialogToolbar) mLayout.findViewById(R.id.action_bar);
         toolbar.setTitle(mEditorModel.getTitle());
         toolbar.setTitleTextColor(Color.WHITE);
-        toolbar.setShowDeleteMenuItem(false);
+        toolbar.setShowDeleteMenuItem(mDeleteRunnable != null);
 
-        // Show the help article when the user asks.
+        // Show the help article when the help icon is clicked on, or delete
+        // the profile and go back when the delete icon is clicked on.
         toolbar.setOnMenuItemClickListener(new OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
-                launchAutofillHelpPage(mContext);
+                if (item.getItemId() == R.id.delete_menu_id) {
+                    mDeleteRunnable.run();
+                    animateOutDialog();
+                } else if (item.getItemId() == R.id.help_menu_id) {
+                    launchAutofillHelpPage(mContext);
+                }
                 return true;
             }
         });
@@ -271,7 +280,7 @@ public class EditorDialog
                 return;
             }
 
-            if (mObserverForTest != null) mObserverForTest.onPaymentRequestEditorValidationError();
+            if (mObserverForTest != null) mObserverForTest.onEditorValidationError();
         } else if (view.getId() == R.id.payments_edit_cancel_button) {
             animateOutDialog();
         }
@@ -413,7 +422,7 @@ public class EditorDialog
 
                     // The fields may have changed.
                     prepareEditor();
-                    if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
+                    if (mObserverForTest != null) mObserverForTest.onEditorReadyToEdit();
                 }
             };
             EditorDropdownField dropdownView = new EditorDropdownField(
@@ -431,7 +440,7 @@ public class EditorDialog
                 @Override
                 public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                     fieldModel.setIsChecked(isChecked);
-                    if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
+                    if (mObserverForTest != null) mObserverForTest.onEditorReadyToEdit();
                 }
             });
 
@@ -501,7 +510,7 @@ public class EditorDialog
 
     @Override
     public void onShow(DialogInterface dialog) {
-        assert mDialogInOutAnimator == null;
+        if (mDialogInOutAnimator != null) return;
 
         // Hide keyboard and disable EditText views for animation efficiency.
         if (getCurrentFocus() != null) UiUtils.hideKeyboard(getCurrentFocus());
@@ -545,12 +554,12 @@ public class EditorDialog
                 @Override
                 public void run() {
                     invalidViews.get(0).scrollToAndFocus();
-                    if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
+                    if (mObserverForTest != null) mObserverForTest.onEditorReadyToEdit();
                 }
             });
         } else {
             // The first field will be focused, we are ready to edit.
-            if (mObserverForTest != null) mObserverForTest.onPaymentRequestReadyToEdit();
+            if (mObserverForTest != null) mObserverForTest.onEditorReadyToEdit();
         }
     }
 
