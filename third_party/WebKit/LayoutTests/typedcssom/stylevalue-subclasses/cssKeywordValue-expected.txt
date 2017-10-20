@@ -1,0 +1,12 @@
+This is a testharness.js-based test.
+PASS Constructing CSSKeywordValue with an empty string throws a TypeError
+FAIL Updating CSSKeywordValue.value with an empty string throws a TypeError assert_throws: function "() => result.value = value" did not throw
+PASS Constructing CSSKeywordValue with an object that serializes to empty string throws a TypeError
+FAIL Updating CSSKeywordValue.value with an object that serializes to empty string throws a TypeError assert_throws: function "() => result.value = value" did not throw
+PASS CSSKeywordValue can be constructed from a CSS keyword
+PASS CSSKeywordValue can be constructed from an unsupported CSS keyword
+PASS CSSKeywordValue can be constructed from a string containing multiple tokens
+PASS CSSKeywordValue can be constructed from a unicode string
+PASS CSSKeywordValue can be constructed from an object that serializes to a nonempty string
+Harness: the test ran to completion.
+
