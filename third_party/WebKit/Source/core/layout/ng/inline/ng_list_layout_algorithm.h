@@ -7,6 +7,8 @@
 
 #include "core/CoreExport.h"
 
+#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
+
 namespace blink {
 
 class LayoutUnit;
@@ -24,7 +26,7 @@ class CORE_EXPORT NGListLayoutAlgorithm final {
                                     const NGLineInfo&,
                                     LayoutUnit line_width,
                                     unsigned list_marker_index,
-                                    NGLineBoxFragmentBuilder*);
+                                    NGLineBoxFragmentBuilder::ChildList*);
 };
 
 }  // namespace blink

@@ -10,6 +10,7 @@
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "core/layout/ng/ng_constraint_space_builder.h"
 #include "core/layout/ng/ng_fragment_builder.h"
 #include "core/layout/ng/ng_layout_algorithm.h"
@@ -60,27 +61,22 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                  scoped_refptr<const ComputedStyle>,
                  LayoutUnit* position,
                  NGInlineBoxState*,
-                 NGTextFragmentBuilder*,
-                 NGLineBoxFragmentBuilder*);
+                 NGTextFragmentBuilder*);
   void PlaceGeneratedContent(scoped_refptr<const ShapeResult>,
                              scoped_refptr<const ComputedStyle>,
                              LayoutUnit* position,
                              NGInlineBoxState*,
-                             NGTextFragmentBuilder*,
-                             NGLineBoxFragmentBuilder*);
+                             NGTextFragmentBuilder*);
   NGInlineBoxState* PlaceAtomicInline(const NGInlineItem&,
                                       NGInlineItemResult*,
                                       const NGLineInfo&,
-                                      LayoutUnit position,
-                                      NGLineBoxFragmentBuilder*);
+                                      LayoutUnit position);
   void PlaceLayoutResult(NGInlineItemResult*,
                          LayoutUnit position,
-                         NGInlineBoxState*,
-                         NGLineBoxFragmentBuilder*);
+                         NGInlineBoxState*);
   void PlaceListMarker(const NGInlineItem&,
                        NGInlineItemResult*,
-                       const NGLineInfo&,
-                       NGLineBoxFragmentBuilder*);
+                       const NGLineInfo&);
 
   void ApplyTextAlign(const NGLineInfo&,
                       ETextAlign,
@@ -97,6 +93,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
                    const NGPhysicalFragment*,
                    LayoutUnit child_offset);
 
+  NGLineBoxFragmentBuilder::ChildList line_box_;
   NGInlineLayoutStateStack box_states_;
   LayoutUnit content_size_;
   LayoutUnit max_inline_size_;

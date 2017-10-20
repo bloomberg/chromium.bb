@@ -7,7 +7,6 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/ng/inline/ng_inline_box_state.h"
 #include "core/layout/ng/inline/ng_inline_item_result.h"
-#include "core/layout/ng/inline/ng_line_box_fragment_builder.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment.h"
 #include "core/layout/ng/ng_layout_result.h"
@@ -19,26 +18,26 @@ void NGListLayoutAlgorithm::SetListMarkerPosition(
     const NGLineInfo& line_info,
     LayoutUnit line_width,
     unsigned list_marker_index,
-    NGLineBoxFragmentBuilder* line_box) {
+    NGLineBoxFragmentBuilder::ChildList* line_box) {
   // The list marker fragment is at next to a text fragment, see
   // NGInlineLayoutAlgorithm::PlaceLayoutResult().
   if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
     list_marker_index++;
-  const NGPhysicalFragment& physical_fragment =
-      *line_box->Children()[list_marker_index];
-  NGFragment list_marker(constraint_space.WritingMode(), physical_fragment);
+  const NGPhysicalFragment* physical_fragment =
+      (*line_box)[list_marker_index].PhysicalFragment();
+  DCHECK(physical_fragment);
+  NGFragment list_marker(constraint_space.WritingMode(), *physical_fragment);
 
   // Compute the inline offset relative to the line.
   bool is_image = false;  // TODO(kojii): implement
   auto margins = LayoutListMarker::InlineMarginsForOutside(
-      physical_fragment.Style(), is_image, list_marker.InlineSize());
+      physical_fragment->Style(), is_image, list_marker.InlineSize());
   LayoutUnit line_offset = IsLtr(line_info.BaseDirection())
                                ? margins.first
                                : line_width + margins.second;
-  Vector<NGLogicalOffset>& offsets = line_box->MutableOffsets();
-  offsets[list_marker_index].inline_offset = line_offset;
+  (*line_box)[list_marker_index].offset.inline_offset = line_offset;
   if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled())
-    offsets[list_marker_index - 1].inline_offset = line_offset;
+    (*line_box)[list_marker_index - 1].offset.inline_offset = line_offset;
 }
 
 }  // namespace blink
