@@ -90,10 +90,10 @@ void SharedWorkerHost::Start(mojom::SharedWorkerFactoryPtr factory,
       instance_->content_security_policy_type(),
       instance_->creation_address_space(), instance_->data_saver_enabled()));
 
-  factory->CreateSharedWorker(std::move(info), pause_on_start, route_id_,
-                              std::move(content_settings), std::move(host),
-                              mojo::MakeRequest(&worker_),
-                              std::move(interface_provider));
+  factory->CreateSharedWorker(
+      std::move(info), pause_on_start, instance_->devtools_worker_token(),
+      route_id_, std::move(content_settings), std::move(host),
+      mojo::MakeRequest(&worker_), std::move(interface_provider));
 
   // Monitor the lifetime of the worker.
   worker_.set_connection_error_handler(base::BindOnce(

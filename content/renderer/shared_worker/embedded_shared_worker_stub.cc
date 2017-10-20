@@ -129,6 +129,7 @@ class WebServiceWorkerNetworkProviderForSharedWorker
 EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
     mojom::SharedWorkerInfoPtr info,
     bool pause_on_start,
+    const base::UnguessableToken& devtools_worker_token,
     int route_id,
     blink::mojom::WorkerContentSettingsProxyPtr content_settings,
     mojom::SharedWorkerHostPtr host,
@@ -152,7 +153,9 @@ EmbeddedSharedWorkerStub::EmbeddedSharedWorkerStub(
       url_, blink::WebString::FromUTF8(name_),
       blink::WebString::FromUTF8(info->content_security_policy),
       info->content_security_policy_type, info->creation_address_space,
-      info->data_saver_enabled, content_settings.PassInterface().PassHandle(),
+      info->data_saver_enabled,
+      blink::WebString::FromUTF8(devtools_worker_token.ToString()),
+      content_settings.PassInterface().PassHandle(),
       interface_provider.PassInterface().PassHandle());
 
   // If the host drops its connection, then self-destruct.

@@ -104,6 +104,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   void ResumeStartup() override;
   WebDevToolsAgentClient::WebKitClientMessageLoop* CreateClientMessageLoop()
       override;
+  const WebString& GetInstrumentationToken() override;
 
   void OnScriptLoaderFinished();
   void StartWorkerThread();
@@ -136,7 +137,12 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
     kIsPausedAfterDownload
   } pause_after_download_state_;
 
+  // Whether to pause the initialization and wait for debugger to attach
+  // before proceeding. This technique allows debugging worker startup.
   WaitingForDebuggerState waiting_for_debugger_state_;
+  // Unique worker token used by DevTools to attribute different instrumentation
+  // to the same worker.
+  WebString instrumentation_token_;
 
   service_manager::mojom::blink::InterfaceProviderPtrInfo
       interface_provider_info_;

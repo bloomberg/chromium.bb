@@ -109,7 +109,7 @@ TEST_F(SharedWorkerDevToolsManagerTest, BasicTest) {
       blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-      false /* data_saver_enabled */);
+      false /* data_saver_enabled */, base::UnguessableToken::Create());
 
   agent_host = manager_->GetDevToolsAgentHostForWorker(1, 1);
   EXPECT_FALSE(agent_host.get());
@@ -192,13 +192,13 @@ TEST_F(SharedWorkerDevToolsManagerTest, AttachTest) {
       blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-      false /* data_saver_enabled */);
+      false /* data_saver_enabled */, base::UnguessableToken::Create());
   SharedWorkerInstance instance2(
       GURL("http://example.com/w2.js"), std::string(), std::string(),
       blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-      false /* data_saver_enabled */);
+      false /* data_saver_enabled */, base::UnguessableToken::Create());
 
   // Created -> GetDevToolsAgentHost -> Register -> Started -> Destroyed
   std::unique_ptr<TestDevToolsClientHost> client_host1(
@@ -279,7 +279,7 @@ TEST_F(SharedWorkerDevToolsManagerTest, ReattachTest) {
       blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-      false /* data_saver_enabled */);
+      false /* data_saver_enabled */, base::UnguessableToken::Create());
   std::unique_ptr<TestDevToolsClientHost> client_host(
       new TestDevToolsClientHost());
   // Created -> GetDevToolsAgentHost -> Register -> Destroyed
@@ -311,7 +311,7 @@ TEST_F(SharedWorkerDevToolsManagerTest, PauseOnStartTest) {
       blink::kWebContentSecurityPolicyTypeReport, blink::kWebAddressSpacePublic,
       browser_context_->GetResourceContext(), partition_id_,
       blink::mojom::SharedWorkerCreationContextType::kNonsecure,
-      false /* data_saver_enabled */);
+      false /* data_saver_enabled */, base::UnguessableToken::Create());
   std::unique_ptr<TestDevToolsClientHost> client_host(
       new TestDevToolsClientHost());
   manager_->WorkerCreated(3, 1, instance);

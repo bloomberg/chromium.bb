@@ -165,6 +165,10 @@ WebSharedWorkerImpl::CreateClientMessageLoop() {
   return client_->CreateDevToolsMessageLoop();
 }
 
+const WebString& WebSharedWorkerImpl::GetInstrumentationToken() {
+  return instrumentation_token_;
+}
+
 void WebSharedWorkerImpl::CountFeature(WebFeature feature) {
   DCHECK(IsMainThread());
   client_->CountFeature(feature);
@@ -222,6 +226,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
     WebContentSecurityPolicyType policy_type,
     WebAddressSpace creation_address_space,
     bool data_saver_enabled,
+    const WebString& instrumentation_token,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     mojo::ScopedMessagePipeHandle interface_provider) {
   DCHECK(IsMainThread());
@@ -233,6 +238,7 @@ void WebSharedWorkerImpl::StartWorkerContext(
       std::move(content_settings_handle), 0u);
   pending_interface_provider_.set_handle(std::move(interface_provider));
 
+  instrumentation_token_ = instrumentation_token;
   shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
   shadow_page_->GetSettings()->SetDataSaverEnabled(data_saver_enabled);
 

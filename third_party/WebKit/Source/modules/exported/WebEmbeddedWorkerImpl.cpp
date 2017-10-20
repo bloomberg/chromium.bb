@@ -141,6 +141,7 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
       WebEmbeddedWorkerStartData::kPauseAfterDownload)
     pause_after_download_state_ = kDoPauseAfterDownload;
 
+  instrumentation_token_ = data.instrumentation_token;
   shadow_page_ = WTF::MakeUnique<WorkerShadowPage>(this);
   WebSettings* settings = shadow_page_->GetSettings();
   settings->SetDataSaverEnabled(worker_start_data_.data_saver_enabled);
@@ -329,6 +330,10 @@ void WebEmbeddedWorkerImpl::ResumeStartup() {
 WebDevToolsAgentClient::WebKitClientMessageLoop*
 WebEmbeddedWorkerImpl::CreateClientMessageLoop() {
   return worker_context_client_->CreateDevToolsMessageLoop();
+}
+
+const WebString& WebEmbeddedWorkerImpl::GetInstrumentationToken() {
+  return instrumentation_token_;
 }
 
 void WebEmbeddedWorkerImpl::OnScriptLoaderFinished() {

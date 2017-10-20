@@ -13,6 +13,7 @@
 #include "base/memory/singleton.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/unguessable_token.h"
 #include "content/public/browser/devtools_agent_host.h"
 
 namespace content {
@@ -48,7 +49,8 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
         base::WeakPtr<ServiceWorkerContextCore> context_weak,
         int64_t version_id,
         const GURL& url,
-        const GURL& scope);
+        const GURL& scope,
+        const base::UnguessableToken& devtools_worker_token);
     ServiceWorkerIdentifier(const ServiceWorkerIdentifier& other);
     ~ServiceWorkerIdentifier();
 
@@ -61,6 +63,9 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     int64_t version_id() const { return version_id_; }
     GURL url() const { return url_; }
     GURL scope() const { return scope_; }
+    const base::UnguessableToken& devtools_worker_token() const {
+      return devtools_worker_token_;
+    }
 
    private:
     const ServiceWorkerContextCore* const context_;
@@ -68,6 +73,7 @@ class CONTENT_EXPORT ServiceWorkerDevToolsManager {
     const int64_t version_id_;
     const GURL url_;
     const GURL scope_;
+    const base::UnguessableToken devtools_worker_token_;
   };
 
   // Returns the ServiceWorkerDevToolsManager singleton.

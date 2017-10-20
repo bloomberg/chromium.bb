@@ -49,7 +49,12 @@ struct WebEmbeddedWorkerStartData {
   WebURL script_url;
   WebString user_agent;
   PauseAfterDownloadMode pause_after_download_mode;
+  // Whether to pause the initialization and wait for debugger to attach
+  // before proceeding. This technique allows debugging worker startup.
   WaitForDebuggerMode wait_for_debugger_mode;
+  // Unique worker token used by DevTools to attribute different instrumentation
+  // to the same worker.
+  WebString instrumentation_token;
   WebSettings::V8CacheOptions v8_cache_options;
   bool data_saver_enabled;
 
