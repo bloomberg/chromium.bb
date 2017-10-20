@@ -34,7 +34,7 @@ namespace blink {
 
 class StyleReflection : public RefCounted<StyleReflection> {
  public:
-  static RefPtr<StyleReflection> Create() {
+  static scoped_refptr<StyleReflection> Create() {
     return WTF::AdoptRef(new StyleReflection);
   }
 

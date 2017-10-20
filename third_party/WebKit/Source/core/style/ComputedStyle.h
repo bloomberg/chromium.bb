@@ -91,7 +91,7 @@ class TransformationMatrix;
 
 class ContentData;
 
-typedef Vector<RefPtr<ComputedStyle>, 4> PseudoStyleCache;
+typedef Vector<scoped_refptr<ComputedStyle>, 4> PseudoStyleCache;
 
 // ComputedStyle stores the computed value [1] for every CSS property on an
 // element and provides the interface between the style engine and the rest of
@@ -194,16 +194,16 @@ class ComputedStyle : public ComputedStyleBase,
   ALWAYS_INLINE ComputedStyle();
   ALWAYS_INLINE ComputedStyle(const ComputedStyle&);
 
-  static RefPtr<ComputedStyle> CreateInitialStyle();
+  static scoped_refptr<ComputedStyle> CreateInitialStyle();
   // TODO(shend): Remove this. Initial style should not be mutable.
   CORE_EXPORT static ComputedStyle& MutableInitialStyle();
 
  public:
-  CORE_EXPORT static RefPtr<ComputedStyle> Create();
-  static RefPtr<ComputedStyle> CreateAnonymousStyleWithDisplay(
+  CORE_EXPORT static scoped_refptr<ComputedStyle> Create();
+  static scoped_refptr<ComputedStyle> CreateAnonymousStyleWithDisplay(
       const ComputedStyle& parent_style,
       EDisplay);
-  CORE_EXPORT static RefPtr<ComputedStyle> Clone(const ComputedStyle&);
+  CORE_EXPORT static scoped_refptr<ComputedStyle> Clone(const ComputedStyle&);
   static const ComputedStyle& InitialStyle() { return MutableInitialStyle(); }
   static void InvalidateInitialStyle();
 
@@ -249,7 +249,7 @@ class ComputedStyle : public ComputedStyleBase,
   void SetStyleType(PseudoId style_type) { SetStyleTypeInternal(style_type); }
 
   ComputedStyle* GetCachedPseudoStyle(PseudoId) const;
-  ComputedStyle* AddCachedPseudoStyle(RefPtr<ComputedStyle>);
+  ComputedStyle* AddCachedPseudoStyle(scoped_refptr<ComputedStyle>);
   void RemoveCachedPseudoStyle(PseudoId);
 
   const PseudoStyleCache* CachedPseudoStyles() const {
@@ -1012,7 +1012,7 @@ class ComputedStyle : public ComputedStyleBase,
   void SetCy(const Length& cy) { AccessSVGStyle().SetCy(cy); }
 
   // d
-  void SetD(RefPtr<StylePath> d) { AccessSVGStyle().SetD(std::move(d)); }
+  void SetD(scoped_refptr<StylePath> d) { AccessSVGStyle().SetD(std::move(d)); }
 
   // x
   void SetX(const Length& x) { AccessSVGStyle().SetX(x); }
@@ -1066,7 +1066,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // stroke-dasharray
   SVGDashArray* StrokeDashArray() const { return SvgStyle().StrokeDashArray(); }
-  void SetStrokeDashArray(RefPtr<SVGDashArray> array) {
+  void SetStrokeDashArray(scoped_refptr<SVGDashArray> array) {
     AccessSVGStyle().SetStrokeDashArray(std::move(array));
   }
 
@@ -1138,17 +1138,17 @@ class ComputedStyle : public ComputedStyleBase,
   StyleNonInheritedVariables* NonInheritedVariables() const;
 
   void SetUnresolvedInheritedVariable(const AtomicString&,
-                                      RefPtr<CSSVariableData>);
+                                      scoped_refptr<CSSVariableData>);
   void SetUnresolvedNonInheritedVariable(const AtomicString&,
-                                         RefPtr<CSSVariableData>);
+                                         scoped_refptr<CSSVariableData>);
 
   void SetResolvedUnregisteredVariable(const AtomicString&,
-                                       RefPtr<CSSVariableData>);
+                                       scoped_refptr<CSSVariableData>);
   void SetResolvedInheritedVariable(const AtomicString&,
-                                    RefPtr<CSSVariableData>,
+                                    scoped_refptr<CSSVariableData>,
                                     const CSSValue*);
   void SetResolvedNonInheritedVariable(const AtomicString&,
-                                       RefPtr<CSSVariableData>,
+                                       scoped_refptr<CSSVariableData>,
                                        const CSSValue*);
 
   void RemoveVariable(const AtomicString&, bool is_inherited_property);

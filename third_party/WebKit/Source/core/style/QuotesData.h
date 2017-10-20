@@ -31,11 +31,13 @@ namespace blink {
 
 class QuotesData : public RefCounted<QuotesData> {
  public:
-  static RefPtr<QuotesData> Create() { return WTF::AdoptRef(new QuotesData()); }
-  static RefPtr<QuotesData> Create(UChar open1,
-                                   UChar close1,
-                                   UChar open2,
-                                   UChar close2);
+  static scoped_refptr<QuotesData> Create() {
+    return WTF::AdoptRef(new QuotesData());
+  }
+  static scoped_refptr<QuotesData> Create(UChar open1,
+                                          UChar close1,
+                                          UChar open2,
+                                          UChar close2);
 
   bool operator==(const QuotesData& o) const {
     return quote_pairs_ == o.quote_pairs_;

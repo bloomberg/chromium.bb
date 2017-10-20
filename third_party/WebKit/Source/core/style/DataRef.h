@@ -65,7 +65,7 @@ class DataRef {
   void operator=(std::nullptr_t) { data_ = nullptr; }
 
  private:
-  RefPtr<T> data_;
+  scoped_refptr<T> data_;
 };
 
 }  // namespace blink

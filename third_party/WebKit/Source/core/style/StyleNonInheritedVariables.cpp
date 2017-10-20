@@ -14,7 +14,7 @@ bool StyleNonInheritedVariables::operator==(
     return false;
 
   for (const auto& iter : data_) {
-    RefPtr<CSSVariableData> other_data = other.data_.at(iter.key);
+    scoped_refptr<CSSVariableData> other_data = other.data_.at(iter.key);
     if (!DataEquivalent(iter.value, other_data))
       return false;
   }

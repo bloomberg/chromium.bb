@@ -23,11 +23,11 @@
 
 namespace blink {
 
-RefPtr<QuotesData> QuotesData::Create(UChar open1,
-                                      UChar close1,
-                                      UChar open2,
-                                      UChar close2) {
-  RefPtr<QuotesData> data = QuotesData::Create();
+scoped_refptr<QuotesData> QuotesData::Create(UChar open1,
+                                             UChar close1,
+                                             UChar open2,
+                                             UChar close2) {
+  scoped_refptr<QuotesData> data = QuotesData::Create();
   data->AddPair(std::make_pair(String(&open1, 1), String(&close1, 1)));
   data->AddPair(std::make_pair(String(&open2, 1), String(&close2, 1)));
   return data;
