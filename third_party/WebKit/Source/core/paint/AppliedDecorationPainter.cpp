@@ -65,8 +65,7 @@ Path AppliedDecorationPainter::PrepareDottedDashedStrokePath() {
   FloatPoint rounded_end_point(rounded_start_point +
                                FloatPoint(decoration_info_.width, 0));
   context_.AdjustLineToPixelBoundaries(rounded_start_point, rounded_end_point,
-                                       roundf(decoration_info_.thickness),
-                                       context_.GetStrokeStyle());
+                                       roundf(decoration_info_.thickness));
   stroke_path.MoveTo(rounded_start_point);
   stroke_path.AddLineTo(rounded_end_point);
   return stroke_path;
@@ -168,8 +167,7 @@ Path AppliedDecorationPainter::PrepareWavyStrokePath() {
       start_point_ +
       FloatPoint(decoration_info_.width, double_offset_ * wavy_offset_factor_));
 
-  context_.AdjustLineToPixelBoundaries(p1, p2, decoration_info_.thickness,
-                                       context_.GetStrokeStyle());
+  context_.AdjustLineToPixelBoundaries(p1, p2, decoration_info_.thickness);
 
   Path path;
   path.MoveTo(p1);
