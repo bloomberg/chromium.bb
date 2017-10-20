@@ -300,7 +300,8 @@ std::unique_ptr<views::Combobox> CreatePasswordDropdownView(
 void BuildCredentialRows(views::GridLayout* layout,
                          views::View* username_field,
                          views::View* password_field,
-                         views::ToggleImageButton* password_view_button) {
+                         views::ToggleImageButton* password_view_button,
+                         bool show_password_label) {
   // Username row.
   BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_USERNAME);
   layout->StartRow(0, DOUBLE_VIEW_COLUMN_SET_USERNAME);
@@ -309,7 +310,9 @@ void BuildCredentialRows(views::GridLayout* layout,
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   username_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
   std::unique_ptr<views::Label> password_label(new views::Label(
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL),
+      show_password_label
+          ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL)
+          : base::string16(),
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
   password_label->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_RIGHT);
   int labels_width = std::max(username_label->GetPreferredSize().width(),
@@ -449,7 +452,7 @@ class ManagePasswordsBubbleView::PendingView : public views::View,
   // View:
   gfx::Size CalculatePreferredSize() const override;
 
-  void CreateAndSetLayout();
+  void CreateAndSetLayout(bool show_password_label);
   void CreatePasswordField();
   void TogglePasswordVisibility();
   void UpdateUsernameAndPasswordInModel();
@@ -484,6 +487,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
   // Create credentials row.
   const autofill::PasswordForm& password_form =
       parent_->model()->pending_password();
+  const bool is_password_credential = password_form.federation_origin.unique();
   if (base::FeatureList::IsEnabled(
           password_manager::features::kEnableUsernameCorrection)) {
     username_field_ = CreateUsernameEditable(password_form).release();
@@ -495,8 +499,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
 
   if (base::FeatureList::IsEnabled(
           password_manager::features::kEnablePasswordSelection) &&
-      !parent_->model()->hide_eye_icon() &&
-      parent_->model()->pending_password().federation_origin.unique()) {
+      !parent_->model()->hide_eye_icon() && is_password_credential) {
     password_view_button_ = CreatePasswordViewButton(this).release();
   }
 
@@ -507,7 +510,7 @@ ManagePasswordsBubbleView::PendingView::PendingView(
       this,
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_BUBBLE_BLACKLIST_BUTTON));
 
-  CreateAndSetLayout();
+  CreateAndSetLayout(is_password_credential);
   if (base::FeatureList::IsEnabled(
           password_manager::features::kEnableUsernameCorrection) &&
       parent_->model()->pending_password().username_value.empty()) {
@@ -548,7 +551,8 @@ gfx::Size ManagePasswordsBubbleView::PendingView::CalculatePreferredSize()
                        this, kDesiredBubbleWidth));
 }
 
-void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
+void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout(
+    bool show_password_label) {
   views::GridLayout* layout = views::GridLayout::CreateAndInstall(this);
   layout->set_minimum_size(gfx::Size(kDesiredBubbleWidth, 0));
 
@@ -556,7 +560,7 @@ void ManagePasswordsBubbleView::PendingView::CreateAndSetLayout() {
       password_dropdown_ ? static_cast<views::View*>(password_dropdown_)
                          : static_cast<views::View*>(password_label_);
   BuildCredentialRows(layout, username_field_, password_field,
-                      password_view_button_);
+                      password_view_button_, show_password_label);
   layout->AddPaddingRow(
       0, ChromeLayoutProvider::Get()->GetDistanceMetric(
              views::DISTANCE_DIALOG_CONTENT_MARGIN_BOTTOM_CONTROL));
@@ -894,7 +898,8 @@ ManagePasswordsBubbleView::UpdatePendingView::UpdatePendingView(
         parent_->model()->pending_password();
     BuildCredentialRows(layout, CreateUsernameLabel(password_form).release(),
                         CreatePasswordLabel(password_form, false).release(),
-                        nullptr);
+                        nullptr, /* password_view_button */
+                        true /* show_password_label */);
   }
   layout->AddPaddingRow(
       0, layout_provider->GetDistanceMetric(
