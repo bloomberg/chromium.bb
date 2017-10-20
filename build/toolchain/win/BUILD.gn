@@ -186,6 +186,7 @@ template("msvc_toolchain") {
 
     tool("rc") {
       command = "$python_path $tool_wrapper_path rc-wrapper $env rc.exe {{defines}} {{include_dirs}} /fo{{output}} {{source}}"
+      depsformat = "msvc"
       outputs = [
         "$object_subdir/{{source_name_part}}.res",
       ]
