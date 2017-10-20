@@ -299,15 +299,15 @@ class CHROMEOS_EXPORT SessionManagerClient : public DBusClient {
   // param. The ID is passed to ArcInstanceStopped() to identify which instance
   // is stopped.
   using StartArcInstanceCallback =
-      base::Callback<void(StartArcInstanceResult result,
-                          const std::string& container_instance_id,
-                          base::ScopedFD server_socket)>;
+      base::OnceCallback<void(StartArcInstanceResult result,
+                              const std::string& container_instance_id,
+                              base::ScopedFD server_socket)>;
   virtual void StartArcInstance(ArcStartupMode startup_mode,
                                 const cryptohome::Identification& cryptohome_id,
                                 bool skip_boot_completed_broadcast,
                                 bool scan_vendor_priv_app,
                                 bool native_bridge_experiment,
-                                const StartArcInstanceCallback& callback) = 0;
+                                StartArcInstanceCallback callback) = 0;
 
   // Asynchronously stops the ARC instance.  Upon completion, invokes
   // |callback| with the result; true on success, false on failure (either

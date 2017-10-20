@@ -274,7 +274,7 @@ class ArcSessionImpl : public ArcSession,
   // Sends a StartArcInstance D-Bus request to session_manager.
   static void SendStartArcInstanceDBusMessage(
       ArcInstanceMode target_mode,
-      const chromeos::SessionManagerClient::StartArcInstanceCallback& cb);
+      chromeos::SessionManagerClient::StartArcInstanceCallback callback);
 
   // Checks whether a function runs on the thread where the instance is
   // created.
@@ -350,8 +350,9 @@ void ArcSessionImpl::StartMiniInstance() {
   VLOG(2) << "Starting ARC mini instance";
   state_ = State::STARTING_MINI_INSTANCE;
   SendStartArcInstanceDBusMessage(
-      target_mode_.value(), base::Bind(&ArcSessionImpl::OnMiniInstanceStarted,
-                                       weak_factory_.GetWeakPtr()));
+      target_mode_.value(),
+      base::BindOnce(&ArcSessionImpl::OnMiniInstanceStarted,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void ArcSessionImpl::OnMiniInstanceStarted(
@@ -397,8 +398,8 @@ void ArcSessionImpl::StartFullInstance() {
       state_ = State::STARTING_FULL_INSTANCE;
       SendStartArcInstanceDBusMessage(
           target_mode_.value(),
-          base::Bind(&ArcSessionImpl::OnFullInstanceStarted,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&ArcSessionImpl::OnFullInstanceStarted,
+                         weak_factory_.GetWeakPtr()));
       break;
     case State::STARTING_MINI_INSTANCE:
       VLOG(2) << "Requested to upgrade a starting ARC mini instance";
@@ -409,8 +410,8 @@ void ArcSessionImpl::StartFullInstance() {
       state_ = State::STARTING_FULL_INSTANCE;
       SendStartArcInstanceDBusMessage(
           target_mode_.value(),
-          base::Bind(&ArcSessionImpl::OnFullInstanceStarted,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&ArcSessionImpl::OnFullInstanceStarted,
+                         weak_factory_.GetWeakPtr()));
       break;
     case State::STARTING_FULL_INSTANCE:
     case State::CONNECTING_MOJO:
@@ -481,7 +482,7 @@ void ArcSessionImpl::OnFullInstanceStarted(
 // static
 void ArcSessionImpl::SendStartArcInstanceDBusMessage(
     ArcInstanceMode target_mode,
-    const chromeos::SessionManagerClient::StartArcInstanceCallback& cb) {
+    chromeos::SessionManagerClient::StartArcInstanceCallback callback) {
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   const bool native_bridge_experiment =
@@ -489,9 +490,9 @@ void ArcSessionImpl::SendStartArcInstanceDBusMessage(
   if (target_mode == ArcInstanceMode::MINI_INSTANCE) {
     session_manager_client->StartArcInstance(
         chromeos::SessionManagerClient::ArcStartupMode::LOGIN_SCREEN,
-        // All variables below except |cb| will be ignored.
-        cryptohome::Identification(), false, false,
-        native_bridge_experiment, cb);
+        // All variables below except |callback| will be ignored.
+        cryptohome::Identification(), false, false, native_bridge_experiment,
+        std::move(callback));
     return;
   }
   DCHECK_EQ(ArcInstanceMode::FULL_INSTANCE, target_mode);
@@ -512,7 +513,7 @@ void ArcSessionImpl::SendStartArcInstanceDBusMessage(
   session_manager_client->StartArcInstance(
       chromeos::SessionManagerClient::ArcStartupMode::FULL, cryptohome_id,
       skip_boot_completed_broadcast, scan_vendor_priv_app,
-      native_bridge_experiment, cb);
+      native_bridge_experiment, std::move(callback));
 }
 
 // static
