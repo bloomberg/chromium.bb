@@ -78,7 +78,7 @@ DataObjectItem* DataObjectItem::CreateFromHTML(const String& html,
 }
 
 DataObjectItem* DataObjectItem::CreateFromSharedBuffer(
-    RefPtr<SharedBuffer> buffer,
+    scoped_refptr<SharedBuffer> buffer,
     const KURL& source_url,
     const String& filename_extension,
     const AtomicString& content_disposition) {

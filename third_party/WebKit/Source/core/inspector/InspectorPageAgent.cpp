@@ -226,7 +226,7 @@ static void MaybeEncodeTextContent(const String& text_content,
 }
 
 static void MaybeEncodeTextContent(const String& text_content,
-                                   RefPtr<const SharedBuffer> buffer,
+                                   scoped_refptr<const SharedBuffer> buffer,
                                    String* result,
                                    bool* base64_encoded) {
   if (!buffer) {
@@ -240,11 +240,12 @@ static void MaybeEncodeTextContent(const String& text_content,
 }
 
 // static
-bool InspectorPageAgent::SharedBufferContent(RefPtr<const SharedBuffer> buffer,
-                                             const String& mime_type,
-                                             const String& text_encoding_name,
-                                             String* result,
-                                             bool* base64_encoded) {
+bool InspectorPageAgent::SharedBufferContent(
+    scoped_refptr<const SharedBuffer> buffer,
+    const String& mime_type,
+    const String& text_encoding_name,
+    String* result,
+    bool* base64_encoded) {
   if (!buffer)
     return false;
 
@@ -275,9 +276,9 @@ bool InspectorPageAgent::CachedResourceContent(Resource* cached_resource,
     return false;
 
   if (!HasTextContent(cached_resource)) {
-    RefPtr<const SharedBuffer> buffer = has_zero_size
-                                            ? SharedBuffer::Create()
-                                            : cached_resource->ResourceBuffer();
+    scoped_refptr<const SharedBuffer> buffer =
+        has_zero_size ? SharedBuffer::Create()
+                      : cached_resource->ResourceBuffer();
     if (!buffer)
       return false;
 
@@ -1000,14 +1001,14 @@ protocol::Response InspectorPageAgent::createIsolatedWorld(
   if (!frame)
     return Response::Error("No frame for given id found");
 
-  RefPtr<DOMWrapperWorld> world =
+  scoped_refptr<DOMWrapperWorld> world =
       frame->GetScriptController().CreateNewInspectorIsolatedWorld(
           world_name.fromMaybe(""));
   if (!world)
     return Response::Error("Could not create isolated world");
 
   if (grant_universal_access.fromMaybe(false)) {
-    RefPtr<SecurityOrigin> security_origin =
+    scoped_refptr<SecurityOrigin> security_origin =
         frame->GetSecurityContext()->GetSecurityOrigin()->IsolatedCopy();
     security_origin->GrantUniversalAccess();
     DOMWrapperWorld::SetIsolatedWorldSecurityOrigin(world->GetWorldId(),

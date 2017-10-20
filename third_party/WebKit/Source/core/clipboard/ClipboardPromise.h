@@ -34,7 +34,7 @@ class ClipboardPromise final
  private:
   ClipboardPromise(ScriptState*);
 
-  RefPtr<WebTaskRunner> GetTaskRunner();
+  scoped_refptr<WebTaskRunner> GetTaskRunner();
 
   void HandleRead();
   void HandleReadText();

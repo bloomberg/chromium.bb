@@ -97,7 +97,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
       WebAssociatedURLLoaderClient*,
       const WebAssociatedURLLoaderOptions&,
       WebURLRequest::FetchRequestMode,
-      RefPtr<WebTaskRunner>);
+      scoped_refptr<WebTaskRunner>);
 
   // ThreadableLoaderClient
   void DidSendData(unsigned long long /*bytesSent*/,
@@ -140,7 +140,7 @@ class WebAssociatedURLLoaderImpl::ClientAdapter final
                 WebAssociatedURLLoaderClient*,
                 const WebAssociatedURLLoaderOptions&,
                 WebURLRequest::FetchRequestMode,
-                RefPtr<WebTaskRunner>);
+                scoped_refptr<WebTaskRunner>);
 
   void NotifyError(TimerBase*);
 
@@ -161,7 +161,7 @@ WebAssociatedURLLoaderImpl::ClientAdapter::Create(
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
     WebURLRequest::FetchRequestMode fetch_request_mode,
-    RefPtr<WebTaskRunner> task_runner) {
+    scoped_refptr<WebTaskRunner> task_runner) {
   return WTF::WrapUnique(new ClientAdapter(loader, client, options,
                                            fetch_request_mode, task_runner));
 }
@@ -171,7 +171,7 @@ WebAssociatedURLLoaderImpl::ClientAdapter::ClientAdapter(
     WebAssociatedURLLoaderClient* client,
     const WebAssociatedURLLoaderOptions& options,
     WebURLRequest::FetchRequestMode fetch_request_mode,
-    RefPtr<WebTaskRunner> task_runner)
+    scoped_refptr<WebTaskRunner> task_runner)
     : loader_(loader),
       client_(client),
       options_(options),
@@ -386,7 +386,7 @@ void WebAssociatedURLLoaderImpl::LoadAsynchronously(
     }
   }
 
-  RefPtr<WebTaskRunner> task_runner = TaskRunnerHelper::Get(
+  scoped_refptr<WebTaskRunner> task_runner = TaskRunnerHelper::Get(
       TaskType::kUnspecedLoading,
       observer_ ? ToDocument(observer_->LifecycleContext()) : nullptr);
   client_ = client;

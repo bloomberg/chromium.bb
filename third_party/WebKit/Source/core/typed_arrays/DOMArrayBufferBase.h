@@ -36,12 +36,12 @@ class CORE_EXPORT DOMArrayBufferBase
   virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
-  explicit DOMArrayBufferBase(RefPtr<WTF::ArrayBuffer> buffer)
+  explicit DOMArrayBufferBase(scoped_refptr<WTF::ArrayBuffer> buffer)
       : buffer_(std::move(buffer)) {
     DCHECK(buffer_);
   }
 
-  RefPtr<WTF::ArrayBuffer> buffer_;
+  scoped_refptr<WTF::ArrayBuffer> buffer_;
 };
 
 }  // namespace blink

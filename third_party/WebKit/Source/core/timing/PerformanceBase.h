@@ -153,7 +153,7 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   void AddPaintTiming(PerformancePaintTiming::PaintType, double start_time);
 
  protected:
-  explicit PerformanceBase(double time_origin, RefPtr<WebTaskRunner>);
+  explicit PerformanceBase(double time_origin, scoped_refptr<WebTaskRunner>);
 
   // Expect Performance to override this method,
   // WorkerPerformance doesn't have to override this.

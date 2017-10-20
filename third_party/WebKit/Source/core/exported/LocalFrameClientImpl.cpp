@@ -1091,7 +1091,7 @@ TextCheckerClient& LocalFrameClientImpl::GetTextCheckerClient() const {
 
 std::unique_ptr<blink::WebURLLoader> LocalFrameClientImpl::CreateURLLoader(
     const ResourceRequest& request,
-    RefPtr<WebTaskRunner> task_runner) {
+    scoped_refptr<WebTaskRunner> task_runner) {
   WrappedResourceRequest wrapped(request);
   return web_frame_->CreateURLLoader(wrapped,
                                      task_runner->ToSingleThreadTaskRunner());

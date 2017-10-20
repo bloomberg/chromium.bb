@@ -1021,8 +1021,9 @@ TEST_P(ParameterizedWebFrameTest, DispatchMessageEventWithOriginCheck) {
 
 namespace {
 
-RefPtr<SerializedScriptValue> SerializeString(const StringView& message,
-                                              ScriptState* script_state) {
+scoped_refptr<SerializedScriptValue> SerializeString(
+    const StringView& message,
+    ScriptState* script_state) {
   // This is inefficient, but avoids duplicating serialization logic for the
   // sake of this test.
   NonThrowableExceptionState exception_state;
@@ -1041,7 +1042,7 @@ TEST_P(ParameterizedWebFrameTest, PostMessageThenDetach) {
   LocalFrame* frame =
       ToLocalFrame(web_view_helper.WebView()->GetPage()->MainFrame());
   NonThrowableExceptionState exception_state;
-  RefPtr<SerializedScriptValue> message =
+  scoped_refptr<SerializedScriptValue> message =
       SerializeString("message", ToScriptStateForMainWorld(frame));
   MessagePortArray message_ports;
   frame->DomWindow()->postMessage(message, message_ports, "*",
@@ -11795,7 +11796,7 @@ TEST_F(WebFrameTest, RecordSameDocumentNavigationToHistogram) {
 
   FrameLoader& main_frame_loader =
       web_view_helper.WebView()->MainFrameImpl()->GetFrame()->Loader();
-  RefPtr<SerializedScriptValue> message =
+  scoped_refptr<SerializedScriptValue> message =
       SerializeString("message", ToScriptStateForMainWorld(frame));
   tester.ExpectTotalCount(histogramName, 0);
   main_frame_loader.UpdateForSameDocumentNavigation(

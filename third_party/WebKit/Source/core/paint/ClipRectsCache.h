@@ -46,7 +46,7 @@ class ClipRectsCache {
     {
     }
     const PaintLayer* root;
-    RefPtr<ClipRects> clip_rects;
+    scoped_refptr<ClipRects> clip_rects;
 #if DCHECK_IS_ON()
     OverlayScrollbarClipBehavior overlay_scrollbar_clip_behavior;
 #endif

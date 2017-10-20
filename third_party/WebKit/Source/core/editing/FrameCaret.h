@@ -86,7 +86,7 @@ class CORE_EXPORT FrameCaret final
   const DisplayItemClient& CaretDisplayItemClientForTesting() const;
   const LayoutBlock* CaretLayoutBlockForTesting() const;
   bool ShouldPaintCaretForTesting() const { return should_paint_caret_; }
-  void RecreateCaretBlinkTimerForTesting(RefPtr<WebTaskRunner>);
+  void RecreateCaretBlinkTimerForTesting(scoped_refptr<WebTaskRunner>);
 
   void Trace(blink::Visitor*);
 

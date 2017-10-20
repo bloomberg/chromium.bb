@@ -56,7 +56,7 @@ class CORE_EXPORT MessageEvent final : public Event {
     return new MessageEvent(origin, last_event_id, source, ports, suborigin);
   }
   static MessageEvent* Create(MessagePortArray* ports,
-                              RefPtr<SerializedScriptValue> data,
+                              scoped_refptr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& last_event_id = String(),
                               EventTarget* source = nullptr,
@@ -65,7 +65,7 @@ class CORE_EXPORT MessageEvent final : public Event {
                             ports, suborigin);
   }
   static MessageEvent* Create(Vector<MessagePortChannel> channels,
-                              RefPtr<SerializedScriptValue> data,
+                              scoped_refptr<SerializedScriptValue> data,
                               const String& origin = String(),
                               const String& last_event_id = String(),
                               EventTarget* source = nullptr,
@@ -104,7 +104,7 @@ class CORE_EXPORT MessageEvent final : public Event {
   void initMessageEvent(const AtomicString& type,
                         bool can_bubble,
                         bool cancelable,
-                        RefPtr<SerializedScriptValue> data,
+                        scoped_refptr<SerializedScriptValue> data,
                         const String& origin,
                         const String& last_event_id,
                         EventTarget* source,
@@ -181,13 +181,13 @@ class CORE_EXPORT MessageEvent final : public Event {
                EventTarget* source,
                MessagePortArray*,
                const String& suborigin);
-  MessageEvent(RefPtr<SerializedScriptValue> data,
+  MessageEvent(scoped_refptr<SerializedScriptValue> data,
                const String& origin,
                const String& last_event_id,
                EventTarget* source,
                MessagePortArray*,
                const String& suborigin);
-  MessageEvent(RefPtr<SerializedScriptValue> data,
+  MessageEvent(scoped_refptr<SerializedScriptValue> data,
                const String& origin,
                const String& last_event_id,
                EventTarget* source,

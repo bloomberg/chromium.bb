@@ -211,7 +211,7 @@ TEST_F(CompositingReasonFinderTest, OnlyOpaqueFixedLayersPromoted) {
 }
 
 TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
-  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetSubtreeWillChangeContents(false);
 
   style->SetHasCurrentTransformAnimation(false);
@@ -262,7 +262,7 @@ TEST_F(CompositingReasonFinderTest, RequiresCompositingForTransformAnimation) {
 }
 
 TEST_F(CompositingReasonFinderTest, RequiresCompositingForEffectAnimation) {
-  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
 
   style->SetSubtreeWillChangeContents(false);
 

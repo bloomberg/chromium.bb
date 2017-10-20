@@ -152,7 +152,7 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
 
  public:
   InspectorFileReaderLoaderClient(
-      RefPtr<BlobDataHandle> blob,
+      scoped_refptr<BlobDataHandle> blob,
       const String& mime_type,
       const String& text_encoding_name,
       std::unique_ptr<GetResponseBodyCallback> callback)
@@ -201,12 +201,12 @@ class InspectorFileReaderLoaderClient final : public FileReaderLoaderClient {
     delete this;
   }
 
-  RefPtr<BlobDataHandle> blob_;
+  scoped_refptr<BlobDataHandle> blob_;
   String mime_type_;
   String text_encoding_name_;
   std::unique_ptr<GetResponseBodyCallback> callback_;
   std::unique_ptr<FileReaderLoader> loader_;
-  RefPtr<SharedBuffer> raw_data_;
+  scoped_refptr<SharedBuffer> raw_data_;
 };
 
 KURL UrlWithoutFragment(const KURL& url) {
@@ -944,14 +944,15 @@ void InspectorNetworkAgent::
   ClearPendingRequestData();
 }
 
-void InspectorNetworkAgent::WillLoadXHR(XMLHttpRequest* xhr,
-                                        ThreadableLoaderClient* client,
-                                        const AtomicString& method,
-                                        const KURL& url,
-                                        bool async,
-                                        RefPtr<EncodedFormData> form_data,
-                                        const HTTPHeaderMap& headers,
-                                        bool include_credentials) {
+void InspectorNetworkAgent::WillLoadXHR(
+    XMLHttpRequest* xhr,
+    ThreadableLoaderClient* client,
+    const AtomicString& method,
+    const KURL& url,
+    bool async,
+    scoped_refptr<EncodedFormData> form_data,
+    const HTTPHeaderMap& headers,
+    bool include_credentials) {
   DCHECK(xhr);
   DCHECK(!pending_request_);
   pending_request_ = client;
@@ -1438,10 +1439,10 @@ Response InspectorNetworkAgent::getCertificate(
     const String& origin,
     std::unique_ptr<protocol::Array<String>>* certificate) {
   *certificate = protocol::Array<String>::create();
-  RefPtr<SecurityOrigin> security_origin =
+  scoped_refptr<SecurityOrigin> security_origin =
       SecurityOrigin::CreateFromString(origin);
   for (auto& resource : resources_data_->Resources()) {
-    RefPtr<SecurityOrigin> resource_origin =
+    scoped_refptr<SecurityOrigin> resource_origin =
         SecurityOrigin::Create(resource->RequestedURL());
     if (resource_origin->IsSameSchemeHostPort(security_origin.get()) &&
         resource->Certificate().size()) {

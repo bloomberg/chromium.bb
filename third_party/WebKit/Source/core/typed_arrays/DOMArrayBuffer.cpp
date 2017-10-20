@@ -16,7 +16,7 @@ static void AccumulateArrayBuffersForAllWorlds(
     v8::Isolate* isolate,
     DOMArrayBuffer* object,
     Vector<v8::Local<v8::ArrayBuffer>, 4>& buffers) {
-  Vector<RefPtr<DOMWrapperWorld>> worlds;
+  Vector<scoped_refptr<DOMWrapperWorld>> worlds;
   DOMWrapperWorld::AllWorldsInCurrentThread(worlds);
   for (const auto& world : worlds) {
     v8::Local<v8::Object> wrapper = world->DomDataStore().Get(object, isolate);
@@ -61,8 +61,9 @@ bool DOMArrayBuffer::Transfer(v8::Isolate* isolate,
 DOMArrayBuffer* DOMArrayBuffer::CreateUninitializedOrNull(
     unsigned num_elements,
     unsigned element_byte_size) {
-  RefPtr<ArrayBuffer> buffer = WTF::ArrayBuffer::CreateUninitializedOrNull(
-      num_elements, element_byte_size);
+  scoped_refptr<ArrayBuffer> buffer =
+      WTF::ArrayBuffer::CreateUninitializedOrNull(num_elements,
+                                                  element_byte_size);
   if (!buffer)
     return nullptr;
   return Create(std::move(buffer));
@@ -80,7 +81,8 @@ v8::Local<v8::Object> DOMArrayBuffer::Wrap(
   return AssociateWithWrapper(isolate, wrapper_type_info, wrapper);
 }
 
-DOMArrayBuffer* DOMArrayBuffer::Create(RefPtr<SharedBuffer> shared_buffer) {
+DOMArrayBuffer* DOMArrayBuffer::Create(
+    scoped_refptr<SharedBuffer> shared_buffer) {
   WTF::ArrayBufferContents contents(shared_buffer->size(), 1,
                                     WTF::ArrayBufferContents::kNotShared,
                                     WTF::ArrayBufferContents::kDontInitialize);

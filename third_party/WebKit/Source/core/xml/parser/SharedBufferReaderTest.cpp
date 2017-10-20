@@ -45,7 +45,7 @@ TEST(SharedBufferReaderTest, readDataWithNullSharedBuffer) {
 }
 
 TEST(SharedBufferReaderTest, readDataWith0BytesRequest) {
-  RefPtr<SharedBuffer> shared_buffer = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> shared_buffer = SharedBuffer::Create();
   SharedBufferReader reader(shared_buffer);
 
   EXPECT_EQ(0, reader.ReadData(nullptr, 0));
@@ -53,7 +53,7 @@ TEST(SharedBufferReaderTest, readDataWith0BytesRequest) {
 
 TEST(SharedBufferReaderTest, readDataWithSizeBiggerThanSharedBufferSize) {
   static const char kTestData[] = "hello";
-  RefPtr<SharedBuffer> shared_buffer =
+  scoped_refptr<SharedBuffer> shared_buffer =
       SharedBuffer::Create(kTestData, sizeof(kTestData));
 
   SharedBufferReader reader(shared_buffer);
@@ -81,7 +81,7 @@ TEST(SharedBufferReaderTest, readDataInMultiples) {
   Vector<char> test_data(kIterationsCount * kBytesPerIteration);
   std::generate(test_data.begin(), test_data.end(), &std::rand);
 
-  RefPtr<SharedBuffer> shared_buffer =
+  scoped_refptr<SharedBuffer> shared_buffer =
       SharedBuffer::Create(&test_data[0], test_data.size());
   SharedBufferReader reader(shared_buffer);
 
@@ -102,7 +102,7 @@ TEST(SharedBufferReaderTest, clearSharedBufferBetweenCallsToReadData) {
   Vector<char> test_data(128);
   std::generate(test_data.begin(), test_data.end(), &std::rand);
 
-  RefPtr<SharedBuffer> shared_buffer =
+  scoped_refptr<SharedBuffer> shared_buffer =
       SharedBuffer::Create(&test_data[0], test_data.size());
   SharedBufferReader reader(shared_buffer);
 

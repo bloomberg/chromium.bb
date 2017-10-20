@@ -294,7 +294,7 @@ class CORE_EXPORT ObjectPaintProperties {
   // deleted), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode>
-  bool Clear(RefPtr<PaintPropertyNode>& field) {
+  bool Clear(scoped_refptr<PaintPropertyNode>& field) {
     if (field) {
       field = nullptr;
       return true;
@@ -306,7 +306,7 @@ class CORE_EXPORT ObjectPaintProperties {
   // created), and false otherwise. See the class-level comment ("update & clear
   // implementation note") for details about why this is needed for efficiency.
   template <typename PaintPropertyNode, typename... Args>
-  UpdateResult Update(RefPtr<PaintPropertyNode>& field, Args&&... args) {
+  UpdateResult Update(scoped_refptr<PaintPropertyNode>& field, Args&&... args) {
     if (field) {
       return field->Update(std::forward<Args>(args)...)
                  ? UpdateResult::kValueChanged
@@ -318,23 +318,23 @@ class CORE_EXPORT ObjectPaintProperties {
 
   // ATTENTION! Make sure to keep FindPropertiesNeedingUpdate.h in sync when
   // new properites are added!
-  RefPtr<TransformPaintPropertyNode> paint_offset_translation_;
-  RefPtr<TransformPaintPropertyNode> transform_;
-  RefPtr<EffectPaintPropertyNode> effect_;
-  RefPtr<EffectPaintPropertyNode> filter_;
-  RefPtr<EffectPaintPropertyNode> mask_;
-  RefPtr<ClipPaintPropertyNode> fragment_clip_;
-  RefPtr<ClipPaintPropertyNode> mask_clip_;
-  RefPtr<ClipPaintPropertyNode> css_clip_;
-  RefPtr<ClipPaintPropertyNode> css_clip_fixed_position_;
-  RefPtr<ClipPaintPropertyNode> inner_border_radius_clip_;
-  RefPtr<ClipPaintPropertyNode> overflow_clip_;
-  RefPtr<TransformPaintPropertyNode> perspective_;
+  scoped_refptr<TransformPaintPropertyNode> paint_offset_translation_;
+  scoped_refptr<TransformPaintPropertyNode> transform_;
+  scoped_refptr<EffectPaintPropertyNode> effect_;
+  scoped_refptr<EffectPaintPropertyNode> filter_;
+  scoped_refptr<EffectPaintPropertyNode> mask_;
+  scoped_refptr<ClipPaintPropertyNode> fragment_clip_;
+  scoped_refptr<ClipPaintPropertyNode> mask_clip_;
+  scoped_refptr<ClipPaintPropertyNode> css_clip_;
+  scoped_refptr<ClipPaintPropertyNode> css_clip_fixed_position_;
+  scoped_refptr<ClipPaintPropertyNode> inner_border_radius_clip_;
+  scoped_refptr<ClipPaintPropertyNode> overflow_clip_;
+  scoped_refptr<TransformPaintPropertyNode> perspective_;
   // TODO(pdr): Only LayoutSVGRoot needs this and it should be moved there.
-  RefPtr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
-  RefPtr<ScrollPaintPropertyNode> scroll_;
-  RefPtr<TransformPaintPropertyNode> scroll_translation_;
-  RefPtr<TransformPaintPropertyNode> scrollbar_paint_offset_;
+  scoped_refptr<TransformPaintPropertyNode> svg_local_to_border_box_transform_;
+  scoped_refptr<ScrollPaintPropertyNode> scroll_;
+  scoped_refptr<TransformPaintPropertyNode> scroll_translation_;
+  scoped_refptr<TransformPaintPropertyNode> scrollbar_paint_offset_;
 };
 
 }  // namespace blink

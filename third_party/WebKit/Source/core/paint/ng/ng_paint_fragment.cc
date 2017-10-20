@@ -10,8 +10,9 @@
 
 namespace blink {
 
-NGPaintFragment::NGPaintFragment(RefPtr<const NGPhysicalFragment> fragment,
-                                 bool stop_at_block_layout_root)
+NGPaintFragment::NGPaintFragment(
+    scoped_refptr<const NGPhysicalFragment> fragment,
+    bool stop_at_block_layout_root)
     : physical_fragment_(std::move(fragment)) {
   DCHECK(physical_fragment_);
   PopulateDescendants(stop_at_block_layout_root);

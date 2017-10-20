@@ -112,7 +112,7 @@ class CORE_EXPORT ReadableStreamController final
   }
 
  private:
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   ScopedPersistent<v8::Value> js_controller_;
 };
 

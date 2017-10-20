@@ -224,7 +224,7 @@ TEST_F(VirtualTimeTest, MAYBE_DOMTimersSuspended) {
       "setTimeout(() => { run_order.push(1); }, 1000);"
       "setTimeout(() => { run_order.push(2); }, 1001);");
 
-  RefPtr<WebTaskRunner> runner = TaskRunnerHelper::Get(
+  scoped_refptr<WebTaskRunner> runner = TaskRunnerHelper::Get(
       TaskType::kJavascriptTimer, Window().GetExecutionContext());
 
   // Schedule a task to suspend virtual time at the same point in time.

@@ -15,7 +15,8 @@ TEST(FileListTest, pathsForUserVisibleFiles) {
   file_list->Append(File::Create("/native/path"));
 
   // Blob file.
-  const RefPtr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
+  const scoped_refptr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create();
   file_list->Append(File::Create("name", 0.0, blob_data_handle));
 
   // User visible snapshot file.

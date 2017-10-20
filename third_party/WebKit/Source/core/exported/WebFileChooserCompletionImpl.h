@@ -43,13 +43,13 @@ namespace blink {
 class CORE_EXPORT WebFileChooserCompletionImpl final
     : public WebFileChooserCompletion {
  public:
-  explicit WebFileChooserCompletionImpl(RefPtr<FileChooser>);
+  explicit WebFileChooserCompletionImpl(scoped_refptr<FileChooser>);
   ~WebFileChooserCompletionImpl() override;
   void DidChooseFile(const WebVector<WebString>& file_names) override;
   void DidChooseFile(const WebVector<SelectedFileInfo>& files) override;
 
  private:
-  RefPtr<FileChooser> file_chooser_;
+  scoped_refptr<FileChooser> file_chooser_;
 };
 
 }  // namespace blink

@@ -239,7 +239,7 @@ class CORE_EXPORT EventHandler final
 
   void NotifyElementActivated();
 
-  RefPtr<UserGestureToken> TakeLastMouseDownGestureToken() {
+  scoped_refptr<UserGestureToken> TakeLastMouseDownGestureToken() {
     return std::move(last_mouse_down_user_gesture_token_);
   }
 
@@ -396,7 +396,7 @@ class CORE_EXPORT EventHandler final
 
   Member<HTMLFrameSetElement> frame_set_being_resized_;
 
-  RefPtr<UserGestureToken> last_mouse_down_user_gesture_token_;
+  scoped_refptr<UserGestureToken> last_mouse_down_user_gesture_token_;
 
   Member<ScrollManager> scroll_manager_;
   Member<MouseEventManager> mouse_event_manager_;

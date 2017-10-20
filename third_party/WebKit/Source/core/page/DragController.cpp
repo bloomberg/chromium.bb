@@ -1042,7 +1042,7 @@ static std::unique_ptr<DragImage> DragImageForImage(
 
   // Substitute an appropriately-sized SVGImageForContainer, to ensure dragged
   // SVG images scale seamlessly.
-  RefPtr<SVGImageForContainer> svg_image;
+  scoped_refptr<SVGImageForContainer> svg_image;
   if (image->IsSVGImage()) {
     KURL url = element->GetDocument().CompleteURL(element->ImageSourceURL());
     svg_image = SVGImageForContainer::Create(

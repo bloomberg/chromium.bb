@@ -136,7 +136,7 @@ class CORE_EXPORT Fullscreen final
 
   LayoutFullScreen* full_screen_layout_object_;
   LayoutRect saved_placeholder_frame_rect_;
-  RefPtr<ComputedStyle> saved_placeholder_computed_style_;
+  scoped_refptr<ComputedStyle> saved_placeholder_computed_style_;
 };
 
 inline Fullscreen* Fullscreen::FromIfExists(Document& document) {

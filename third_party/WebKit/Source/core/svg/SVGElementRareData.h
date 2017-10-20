@@ -117,7 +117,7 @@ class SVGElementRareData
   bool web_animated_attributes_dirty_ : 1;
   HashSet<const QualifiedName*> web_animated_attributes_;
   Member<MutableStylePropertySet> animated_smil_style_properties_;
-  RefPtr<ComputedStyle> override_computed_style_;
+  scoped_refptr<ComputedStyle> override_computed_style_;
   // Used by <animateMotion>
   AffineTransform animate_motion_transform_;
 };

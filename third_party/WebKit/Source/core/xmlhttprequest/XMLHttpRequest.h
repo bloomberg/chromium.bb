@@ -157,7 +157,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   String responseURL();
 
   // For Inspector.
-  void SendForInspectorXHRReplay(RefPtr<EncodedFormData>, ExceptionState&);
+  void SendForInspectorXHRReplay(scoped_refptr<EncodedFormData>,
+                                 ExceptionState&);
 
   XMLHttpRequestUpload* upload();
   bool IsAsync() { return async_; }
@@ -172,7 +173,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   XMLHttpRequest(ExecutionContext*,
                  v8::Isolate*,
                  bool is_isolated_world,
-                 RefPtr<SecurityOrigin>);
+                 scoped_refptr<SecurityOrigin>);
 
   Document* GetDocument() const;
 
@@ -199,7 +200,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void DidFinishLoadingFromBlob();
   void DidFailLoadingFromBlob();
 
-  RefPtr<BlobDataHandle> CreateBlobDataHandleFromResponse();
+  scoped_refptr<BlobDataHandle> CreateBlobDataHandleFromResponse();
 
   // DocumentParserClient
   void NotifyParserStopped() override;
@@ -261,7 +262,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   void ClearResponse();
   void ClearRequest();
 
-  void CreateRequest(RefPtr<EncodedFormData>, ExceptionState&);
+  void CreateRequest(scoped_refptr<EncodedFormData>, ExceptionState&);
 
   // Dispatches a response ProgressEvent.
   void DispatchProgressEvent(const AtomicString&, long long, long long);
@@ -321,7 +322,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   TraceWrapperMember<Document> response_document_;
   Member<DocumentParser> response_document_parser_;
 
-  RefPtr<SharedBuffer> binary_response_builder_;
+  scoped_refptr<SharedBuffer> binary_response_builder_;
   size_t binary_response_builder_last_reported_size_ = 0;
   long long length_downloaded_to_file_;
   long long length_downloaded_to_file_last_reported_ = 0;
@@ -346,7 +347,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Set to true if the XMLHttpRequest was created in an isolated world.
   bool is_isolated_world_;
   // Stores the SecurityOrigin associated with the isolated world if any.
-  RefPtr<SecurityOrigin> isolated_world_security_origin_;
+  scoped_refptr<SecurityOrigin> isolated_world_security_origin_;
 
   // This blob loader will be used if |m_downloadingToFile| is true and
   // |m_responseTypeCode| is NOT ResponseTypeBlob.

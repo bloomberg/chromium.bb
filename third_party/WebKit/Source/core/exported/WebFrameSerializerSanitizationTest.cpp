@@ -139,7 +139,7 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
     mhtml.Append(body_result.Data(), body_result.size());
 
     if (!only_body_parts) {
-      RefPtr<RawData> footer_data = RawData::Create();
+      scoped_refptr<RawData> footer_data = RawData::Create();
       MHTMLArchive::GenerateMHTMLFooterForTesting(boundary,
                                                   *footer_data->MutableData());
       mhtml.Append(footer_data->data(), footer_data->length());

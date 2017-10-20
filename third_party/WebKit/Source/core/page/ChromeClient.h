@@ -231,7 +231,7 @@ class CORE_EXPORT ChromeClient : public PlatformChromeClient {
 
   virtual void OpenTextDataListChooser(HTMLInputElement&) = 0;
 
-  virtual void OpenFileChooser(LocalFrame*, RefPtr<FileChooser>) = 0;
+  virtual void OpenFileChooser(LocalFrame*, scoped_refptr<FileChooser>) = 0;
 
   // Asychronous request to enumerate all files in a directory chosen by the
   // user.

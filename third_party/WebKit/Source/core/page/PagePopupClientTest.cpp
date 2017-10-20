@@ -10,7 +10,7 @@
 namespace blink {
 
 TEST(PagePopupClientTest, AddJavaScriptString) {
-  RefPtr<SharedBuffer> buffer = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> buffer = SharedBuffer::Create();
   PagePopupClient::AddJavaScriptString(
       String::FromUTF8("abc\r\n'\"</script>\t\f\v\xE2\x80\xA8\xE2\x80\xA9"),
       buffer.get());

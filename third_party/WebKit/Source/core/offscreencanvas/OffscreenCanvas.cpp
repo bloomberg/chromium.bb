@@ -115,7 +115,7 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
   return image;
 }
 
-RefPtr<Image> OffscreenCanvas::GetSourceImageForCanvas(
+scoped_refptr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint hint,
     SnapshotReason reason,
@@ -131,7 +131,7 @@ RefPtr<Image> OffscreenCanvas::GetSourceImageForCanvas(
     *status = kZeroSizeCanvasSourceImageStatus;
     return nullptr;
   }
-  RefPtr<Image> image = context_->GetImage(hint, reason);
+  scoped_refptr<Image> image = context_->GetImage(hint, reason);
   if (!image) {
     *status = kInvalidSourceImageStatus;
   } else {
@@ -287,7 +287,7 @@ ImageBuffer* OffscreenCanvas::GetOrCreateImageBuffer() {
   return image_buffer_.get();
 }
 
-ScriptPromise OffscreenCanvas::Commit(RefPtr<StaticBitmapImage> image,
+ScriptPromise OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> image,
                                       const SkIRect& damage_rect,
                                       bool is_web_gl_software_rendering,
                                       ScriptState* script_state,

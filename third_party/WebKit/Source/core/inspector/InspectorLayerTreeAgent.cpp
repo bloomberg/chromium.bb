@@ -454,7 +454,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
   GraphicsContext context(layer->GetPaintController());
   context.BeginRecording(interest_rect);
   layer->GetPaintController().GetPaintArtifact().Replay(context);
-  RefPtr<PictureSnapshot> snapshot = WTF::AdoptRef(
+  scoped_refptr<PictureSnapshot> snapshot = WTF::AdoptRef(
       new PictureSnapshot(ToSkPicture(context.EndRecording(), interest_rect)));
 
   *snapshot_id = String::Number(++last_snapshot_id_);
@@ -468,7 +468,7 @@ Response InspectorLayerTreeAgent::loadSnapshot(
     String* snapshot_id) {
   if (!tiles->length())
     return Response::Error("Invalid argument, no tiles provided");
-  Vector<RefPtr<PictureSnapshot::TilePictureStream>> decoded_tiles;
+  Vector<scoped_refptr<PictureSnapshot::TilePictureStream>> decoded_tiles;
   decoded_tiles.Grow(tiles->length());
   for (size_t i = 0; i < tiles->length(); ++i) {
     protocol::LayerTree::PictureTile* tile = tiles->get(i);
@@ -477,7 +477,8 @@ Response InspectorLayerTreeAgent::loadSnapshot(
     if (!Base64Decode(tile->getPicture(), decoded_tiles[i]->data))
       return Response::Error("Invalid base64 encoding");
   }
-  RefPtr<PictureSnapshot> snapshot = PictureSnapshot::Load(decoded_tiles);
+  scoped_refptr<PictureSnapshot> snapshot =
+      PictureSnapshot::Load(decoded_tiles);
   if (!snapshot)
     return Response::Error("Invalid snapshot format");
   if (snapshot->IsEmpty())

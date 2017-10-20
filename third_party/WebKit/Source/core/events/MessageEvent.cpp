@@ -74,7 +74,7 @@ MessageEvent::MessageEvent(const String& origin,
   DCHECK(IsValidSource(source_.Get()));
 }
 
-MessageEvent::MessageEvent(RefPtr<SerializedScriptValue> data,
+MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
@@ -94,7 +94,7 @@ MessageEvent::MessageEvent(RefPtr<SerializedScriptValue> data,
   DCHECK(IsValidSource(source_.Get()));
 }
 
-MessageEvent::MessageEvent(RefPtr<SerializedScriptValue> data,
+MessageEvent::MessageEvent(scoped_refptr<SerializedScriptValue> data,
                            const String& origin,
                            const String& last_event_id,
                            EventTarget* source,
@@ -178,7 +178,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
 void MessageEvent::initMessageEvent(const AtomicString& type,
                                     bool can_bubble,
                                     bool cancelable,
-                                    RefPtr<SerializedScriptValue> data,
+                                    scoped_refptr<SerializedScriptValue> data,
                                     const String& origin,
                                     const String& last_event_id,
                                     EventTarget* source,

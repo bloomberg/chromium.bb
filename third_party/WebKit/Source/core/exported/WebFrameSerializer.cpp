@@ -442,7 +442,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLHeader(
 
   Document* document = web_local_frame->GetFrame()->GetDocument();
 
-  RefPtr<RawData> buffer = RawData::Create();
+  scoped_refptr<RawData> buffer = RawData::Create();
   MHTMLArchive::GenerateMHTMLHeader(
       boundary, document->Url(), document->title(),
       document->SuggestedMIMEType(), *buffer->MutableData());
@@ -492,7 +492,7 @@ WebThreadSafeData WebFrameSerializer::GenerateMHTMLParts(
     return WebThreadSafeData();
 
   // Encode serialized resources as MHTML.
-  RefPtr<RawData> output = RawData::Create();
+  scoped_refptr<RawData> output = RawData::Create();
   {
     SCOPED_BLINK_UMA_HISTOGRAM_TIMER(
         "PageSerialization.MhtmlGeneration.EncodingTime.SingleFrame");

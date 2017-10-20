@@ -155,7 +155,7 @@ FilterEffect* SVGFEDiffuseLightingElement::Build(
 
   const SVGFELightElement* light_node =
       SVGFELightElement::FindLightElement(*this);
-  RefPtr<LightSource> light_source =
+  scoped_refptr<LightSource> light_source =
       light_node ? light_node->GetLightSource(filter) : nullptr;
 
   FilterEffect* effect = FEDiffuseLighting::Create(

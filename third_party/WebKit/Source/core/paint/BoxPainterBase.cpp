@@ -551,7 +551,7 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
   LayoutRect scrolled_paint_rect =
       AdjustForScrolledContent(paint_info, info, rect);
 
-  RefPtr<Image> image;
+  scoped_refptr<Image> image;
   SkBlendMode composite_op = op;
   Optional<InterpolationQualityContext> interpolation_quality_context;
   if (info.should_paint_image) {

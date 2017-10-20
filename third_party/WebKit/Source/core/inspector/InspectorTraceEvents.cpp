@@ -501,7 +501,7 @@ InspectorStyleInvalidatorInvalidateEvent::SelectorPart(
 std::unique_ptr<TracedValue>
 InspectorStyleInvalidatorInvalidateEvent::InvalidationList(
     ContainerNode& node,
-    const Vector<RefPtr<InvalidationSet>>& invalidation_list) {
+    const Vector<scoped_refptr<InvalidationSet>>& invalidation_list) {
   std::unique_ptr<TracedValue> value =
       FillCommonPart(node, kElementHasPendingInvalidationList);
   value->BeginArray("invalidationList");

@@ -591,7 +591,7 @@ static void* OpenFunc(const char* uri) {
     return &g_global_descriptor;
 
   KURL final_url;
-  RefPtr<const SharedBuffer> data;
+  scoped_refptr<const SharedBuffer> data;
 
   {
     Document* document = XMLDocumentParserScope::current_document_;
@@ -657,7 +657,7 @@ static void InitializeLibXMLIfNecessary() {
   did_init = true;
 }
 
-RefPtr<XMLParserContext> XMLParserContext::CreateStringParser(
+scoped_refptr<XMLParserContext> XMLParserContext::CreateStringParser(
     xmlSAXHandlerPtr handlers,
     void* user_data) {
   InitializeLibXMLIfNecessary();
@@ -670,7 +670,7 @@ RefPtr<XMLParserContext> XMLParserContext::CreateStringParser(
 }
 
 // Chunk should be encoded in UTF-8
-RefPtr<XMLParserContext> XMLParserContext::CreateMemoryParser(
+scoped_refptr<XMLParserContext> XMLParserContext::CreateMemoryParser(
     xmlSAXHandlerPtr handlers,
     void* user_data,
     const CString& chunk) {
@@ -814,7 +814,7 @@ void XMLDocumentParser::DoWrite(const String& parse_string) {
     InitializeParserContext();
 
   // Protect the libxml context from deletion during a callback
-  RefPtr<XMLParserContext> context = context_;
+  scoped_refptr<XMLParserContext> context = context_;
 
   // libXML throws an error if you try to switch the encoding for an empty
   // string.
@@ -1647,7 +1647,7 @@ HashMap<String, String> ParseAttributes(const String& string, bool& attrs_ok) {
   memset(&sax, 0, sizeof(sax));
   sax.startElementNs = AttributesStartElementNsHandler;
   sax.initialized = XML_SAX2_MAGIC;
-  RefPtr<XMLParserContext> parser =
+  scoped_refptr<XMLParserContext> parser =
       XMLParserContext::CreateStringParser(&sax, &state);
   String parse_string = "<?xml version=\"1.0\"?><attrs " + string + " />";
   ParseChunk(parser->Context(), parse_string);

@@ -113,7 +113,7 @@ static xmlDocPtr DocLoaderFunc(const xmlChar* uri,
           RawResource::FetchSynchronously(params, g_global_resource_fetcher);
       if (!resource || !g_global_processor)
         return nullptr;
-      RefPtr<const SharedBuffer> data = resource->ResourceBuffer();
+      scoped_refptr<const SharedBuffer> data = resource->ResourceBuffer();
       if (!data)
         return nullptr;
 

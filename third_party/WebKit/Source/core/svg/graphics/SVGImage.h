@@ -57,8 +57,8 @@ class SVGImageForContainer;
 // needed by SVGImage.
 class CORE_EXPORT SVGImage final : public Image {
  public:
-  static RefPtr<SVGImage> Create(ImageObserver* observer,
-                                 bool is_multipart = false) {
+  static scoped_refptr<SVGImage> Create(ImageObserver* observer,
+                                        bool is_multipart = false) {
     return WTF::AdoptRef(new SVGImage(observer, is_multipart));
   }
 

@@ -68,7 +68,7 @@ class SVGImageTest : public ::testing::Test {
     bool should_pause_;
   };
   Persistent<PauseControlImageObserver> observer_;
-  RefPtr<SVGImage> image_;
+  scoped_refptr<SVGImage> image_;
 };
 
 const char kAnimatedDocument[] =

@@ -44,7 +44,7 @@ XHRReplayData* XHRReplayData::Create(ExecutionContext* execution_context,
                                      const AtomicString& method,
                                      const KURL& url,
                                      bool async,
-                                     RefPtr<EncodedFormData> form_data,
+                                     scoped_refptr<EncodedFormData> form_data,
                                      bool include_credentials) {
   return new XHRReplayData(execution_context, method, url, async,
                            std::move(form_data), include_credentials);
@@ -59,7 +59,7 @@ XHRReplayData::XHRReplayData(ExecutionContext* execution_context,
                              const AtomicString& method,
                              const KURL& url,
                              bool async,
-                             RefPtr<EncodedFormData> form_data,
+                             scoped_refptr<EncodedFormData> form_data,
                              bool include_credentials)
     : execution_context_(execution_context),
       method_(method),
@@ -303,7 +303,7 @@ void NetworkResourcesData::MaybeAddResourceData(const String& request_id,
 
 void NetworkResourcesData::MaybeAddResourceData(
     const String& request_id,
-    RefPtr<const SharedBuffer> data) {
+    scoped_refptr<const SharedBuffer> data) {
   DCHECK(data);
   if (ResourceData* resource_data =
           PrepareToAddResourceData(request_id, data->size())) {
