@@ -112,14 +112,6 @@ TabWebContentsDelegateAndroid::~TabWebContentsDelegateAndroid() {
   notification_registrar_.RemoveAll();
 }
 
-void TabWebContentsDelegateAndroid::LoadingStateChanged(
-    WebContents* source, bool to_different_document) {
-  bool has_stopped = source == nullptr || !source->IsLoading();
-  WebContentsDelegateAndroid::LoadingStateChanged(
-      source, to_different_document);
-  LoadProgressChanged(source, has_stopped ? 1 : 0);
-}
-
 void TabWebContentsDelegateAndroid::RunFileChooser(
     content::RenderFrameHost* render_frame_host,
     const FileChooserParams& params) {
