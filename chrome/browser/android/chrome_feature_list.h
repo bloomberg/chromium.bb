@@ -25,7 +25,6 @@ extern const base::Feature kCCTRedirectPreconnect;
 extern const base::Feature kChromeHomeFeature;
 extern const base::Feature kChromeHomeDestroySuggestions;
 extern const base::Feature kChromeHomeBottomNavLabels;
-extern const base::Feature kChromeHomeDoodle;
 extern const base::Feature kChromeHomePromo;
 extern const base::Feature kChromeHomeOptOutSnackbar;
 extern const base::Feature kChromeHomeSwipeLogic;

@@ -161,7 +161,6 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_HOME = "ChromeHome";
     public static final String CHROME_HOME_DESTROY_SUGGESTIONS = "ChromeHomeDestroySuggestions";
     public static final String CHROME_HOME_BOTTOM_NAV_LABELS = "ChromeHomeBottomNavLabels";
-    public static final String CHROME_HOME_DOODLE = "ChromeHomeDoodle";
     public static final String CHROME_HOME_OPT_OUT_SNACKBAR = "ChromeHomeOptOutSnackbar";
     public static final String CHROME_HOME_PERSONALIZED_OMNIBOX_SUGGESTIONS =
             "ChromeHomePersonalizedOmniboxSuggestions";

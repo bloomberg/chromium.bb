@@ -209,6 +209,9 @@ public class LocationBarPhone extends LocationBarLayout {
     }
 
     private void updateGoogleG() {
+        // The Google 'G' is not shown in Chrome Home.
+        if (mBottomSheet != null) return;
+
         // The toolbar data provider can be null during startup, before the ToolbarManager has been
         // initialized.
         ToolbarDataProvider toolbarDataProvider = getToolbarDataProvider();
@@ -228,10 +231,7 @@ public class LocationBarPhone extends LocationBarLayout {
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.NTP_SHOW_GOOGLE_G_IN_OMNIBOX)
                 && TemplateUrlService.getInstance().isDefaultSearchEngineGoogle();
 
-        boolean isShownInBottomSheetNtp =
-                mBottomSheet != null && mBottomSheet.shouldShowGoogleGInLocationBar();
-
-        if (!isShownInRegularNtp && !isShownInBottomSheetNtp) {
+        if (!isShownInRegularNtp) {
             mGoogleGContainer.setVisibility(View.GONE);
             return;
         }
@@ -378,11 +378,10 @@ public class LocationBarPhone extends LocationBarLayout {
             }
         });
 
-        // TODO(twellington): Remove after flag to enable search provider logo is removed and
-        // clear out variables associated with Google G. This will help reduce Java heap memory.
-        mGoogleGWidth = getResources().getDimensionPixelSize(
-                R.dimen.location_bar_google_g_width_bottom_sheet);
-        mGoogleG.getLayoutParams().width = mGoogleGWidth;
+        // The Google 'G' is not shown in Chrome Home.
+        removeView(mGoogleGContainer);
+        mGoogleGContainer = null;
+        mGoogleG = null;
 
         // Chrome Home does not use the incognito badge. Remove the View to save memory.
         removeView(mIncognitoBadge);
