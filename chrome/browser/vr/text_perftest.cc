@@ -81,4 +81,26 @@ TEST_F(TextPerfTest, RenderLoremIpsum700Chars) {
   PrintResults("render_lorem_ipsum_700_chars");
 }
 
+TEST_F(TextPerfTest, RenderLoremIpsum100Chars_NoTextChange) {
+  base::string16 text = base::UTF8ToUTF16(kLoremIpsum100Chars);
+  text_element_->SetText(text);
+  TexturedElement::SetRerenderIfNotDirtyForTesting();
+  timer_.Reset();
+  for (size_t i = 0; i < kNumberOfRuns; i++) {
+    RenderAndLapTimer();
+  }
+  PrintResults("render_lorem_ipsum_100_chars_no_text_change");
+}
+
+TEST_F(TextPerfTest, RenderLoremIpsum700Chars_NoTextChange) {
+  base::string16 text = base::UTF8ToUTF16(kLoremIpsum700Chars);
+  text_element_->SetText(text);
+  TexturedElement::SetRerenderIfNotDirtyForTesting();
+  timer_.Reset();
+  for (size_t i = 0; i < kNumberOfRuns; i++) {
+    RenderAndLapTimer();
+  }
+  PrintResults("render_lorem_ipsum_700_chars_no_text_change");
+}
+
 }  // namespace vr

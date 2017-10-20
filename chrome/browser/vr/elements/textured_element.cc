@@ -15,6 +15,7 @@ namespace vr {
 
 namespace {
 static bool g_initialized_for_testing_ = false;
+static bool g_rerender_if_not_dirty_for_testing_ = false;
 }
 
 TexturedElement::TexturedElement(int maximum_width)
@@ -36,8 +37,15 @@ void TexturedElement::SetInitializedForTesting() {
   g_initialized_for_testing_ = true;
 }
 
+// static
+void TexturedElement::SetRerenderIfNotDirtyForTesting() {
+  g_rerender_if_not_dirty_for_testing_ = true;
+}
+
 bool TexturedElement::UpdateTexture() {
-  if (!initialized_ || !GetTexture()->dirty() || !IsVisible())
+  if (!initialized_ ||
+      !(GetTexture()->dirty() || g_rerender_if_not_dirty_for_testing_) ||
+      !IsVisible())
     return false;
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(
       texture_size_.width(), texture_size_.height());

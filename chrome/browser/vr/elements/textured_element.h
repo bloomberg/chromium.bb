@@ -30,6 +30,7 @@ class TexturedElement : public UiElement {
               const gfx::Transform& model_view_proj_matrix) const final;
 
   static void SetInitializedForTesting();
+  static void SetRerenderIfNotDirtyForTesting();
 
  protected:
   virtual UiTexture* GetTexture() const = 0;
