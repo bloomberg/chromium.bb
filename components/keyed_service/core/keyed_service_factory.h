@@ -33,8 +33,9 @@ class KEYED_SERVICE_EXPORT KeyedServiceFactory
   // A function that supplies the instance of a KeyedService for a given
   // |context|. This is used primarily for testing, where we want to feed
   // a specific mock into the KeyedServiceFactory system.
-  typedef std::unique_ptr<KeyedService> (*TestingFactoryFunction)(
-      base::SupportsUserData* context);
+  typedef std::function<std::unique_ptr<KeyedService>(
+      base::SupportsUserData* context)>
+      TestingFactoryFunction;
 
   // Associates |factory| with |context| so that |factory| is used to create
   // the KeyedService when requested.  |factory| can be NULL to signal that

@@ -191,9 +191,6 @@ src:*third_party/WebKit/Source/platform/wtf/*
 # v8/src/intl.cc
 fun:*LocaleConvertCase*
 
-src:*components/keyed_service/core/keyed_service_factory.cc
-src:*components/keyed_service/core/refcounted_keyed_service_factory.cc
-
 src:*third_party/boringssl/*
 src:*third_party/freetype/*
 src:*third_party/harfbuzz-ng/*
