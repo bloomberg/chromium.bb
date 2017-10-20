@@ -361,11 +361,11 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     InProcessBrowserTest::SetUpOnMainThread();
     https_server_.StartAcceptingConnections();
 
-    // The token service should have loaded all its credentials by the time
-    // |SetUpOnMainThread| is called. Check that here as all tests depend on
-    // the token service being in a stable state.
-    ASSERT_TRUE(GetTokenService()->AreAllCredentialsLoaded());
     GetTokenService()->AddObserver(this);
+    // Wait for the token service to be ready.
+    if (!GetTokenService()->AreAllCredentialsLoaded())
+      WaitForClosure(&tokens_loaded_quit_closure_);
+    ASSERT_TRUE(GetTokenService()->AreAllCredentialsLoaded());
 
     AccountReconcilor* reconcilor =
         AccountReconcilorFactory::GetForProfile(browser()->profile());
@@ -393,6 +393,10 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   void OnRefreshTokenRevoked(const std::string& account_id) override {
     ++token_revoked_notification_count_;
+  }
+
+  void OnRefreshTokensLoaded() override {
+    RunClosureIfValid(&tokens_loaded_quit_closure_);
   }
 
   // Calls |closure| if it is not null and resets it after.
@@ -485,6 +489,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   base::Closure refresh_token_available_quit_closure_;
   base::Closure service_login_quit_closure_;
   base::Closure unblock_count_quit_closure_;
+  base::Closure tokens_loaded_quit_closure_;
 };
 
 class DiceBrowserTest : public DiceBrowserTestBase {
