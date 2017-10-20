@@ -392,9 +392,9 @@ cvox.CommandStore.CMD_WHITELIST = {
     category: 'information'
   },
 
-  'undarkenScreen': {msgId: 'undarken_screen', category: 'help_commands'},
+  'undarkenScreen': {msgId: 'undarken_screen'},
 
-  'darkenScreen': {msgId: 'darken_screen', category: 'help_commands'},
+  'darkenScreen': {msgId: 'darken_screen'},
 
   'toggleBrailleTable':
       {msgId: 'toggle_braille_table', category: 'help_commands'},
