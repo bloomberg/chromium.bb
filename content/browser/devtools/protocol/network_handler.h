@@ -122,6 +122,7 @@ class NetworkHandler : public DevToolsDomainHandler,
 
   Network::Frontend* frontend() const { return frontend_.get(); }
 
+  static GURL ClearUrlRef(const GURL& url);
   static std::unique_ptr<Network::Request> CreateRequestFromURLRequest(
       const net::URLRequest* request);
 

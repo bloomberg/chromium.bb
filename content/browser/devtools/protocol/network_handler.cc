@@ -1185,6 +1185,15 @@ void NetworkHandler::ContinueInterceptedRequest(
 }
 
 // static
+GURL NetworkHandler::ClearUrlRef(const GURL& url) {
+  if (!url.has_ref())
+    return url;
+  GURL::Replacements replacements;
+  replacements.ClearRef();
+  return url.ReplaceComponents(replacements);
+}
+
+// static
 std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
     const net::URLRequest* request) {
   std::unique_ptr<DictionaryValue> headers_dict(DictionaryValue::create());
@@ -1194,7 +1203,7 @@ std::unique_ptr<Network::Request> NetworkHandler::CreateRequestFromURLRequest(
   }
   std::unique_ptr<protocol::Network::Request> request_object =
       Network::Request::Create()
-          .SetUrl(request->url().spec())
+          .SetUrl(ClearUrlRef(request->url()).spec())
           .SetMethod(request->method())
           .SetHeaders(Object::fromValue(headers_dict.get(), nullptr))
           .SetInitialPriority(resourcePriority(request->priority()))
