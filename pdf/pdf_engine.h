@@ -67,6 +67,8 @@ class PDFEngine {
     // Whether the document is linearized (see Appendix F "Linearized PDF" of
     // PDF Reference 1.7).
     bool is_linearized = false;
+    // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
+    bool is_tagged = false;
   };
 
   // The interface that's provided to the rendering engine.

@@ -3560,6 +3560,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Is Shared"/>
 </enum>
 
+<enum name="BooleanIsTagged">
+  <int value="0" label="Not Tagged"/>
+  <int value="1" label="Is Tagged"/>
+</enum>
+
 <enum name="BooleanLoaded">
   <int value="0" label="Not loaded"/>
   <int value="1" label="Loaded"/>
