@@ -750,6 +750,10 @@ HttpHandler::PrepareStandardResponse(
     case kJavaScriptError:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_BAD_REQUEST));
       break;
+    case kMoveTargetOutOfBounds:
+      response.reset(
+          new net::HttpServerResponseInfo(net::HTTP_INTERNAL_SERVER_ERROR));
+      break;
     case kNoSuchCookie:
       response.reset(new net::HttpServerResponseInfo(net::HTTP_NOT_FOUND));
       break;
