@@ -1,0 +1,46 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [500, 400],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 200, 500, 200],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 300, 60, 22],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [485, 0, 15, 200],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutIFrame (positioned) IFRAME",
+      "reason": "incremental"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll control"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "geometry"
+    }
+  ]
+}
+

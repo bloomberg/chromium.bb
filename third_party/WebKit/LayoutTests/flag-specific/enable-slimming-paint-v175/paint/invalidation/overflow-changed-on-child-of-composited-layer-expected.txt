@@ -1,0 +1,45 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='parent'",
+      "bounds": [745, 102],
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='parent'",
+          "rect": [0, 0, 745, 102],
+          "reason": "full layer"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='parent'",
+          "rect": [0, 0, 744, 100],
+          "reason": "full"
+        }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [27, 19, 0, 1]
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='test'",
+      "reason": "style change"
+    }
+  ]
+}
+

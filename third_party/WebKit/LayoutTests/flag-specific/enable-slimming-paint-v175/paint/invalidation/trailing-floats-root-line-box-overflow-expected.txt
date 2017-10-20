@@ -1,0 +1,18 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "rect": [8, 58, 100, 100],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ]
+}
+

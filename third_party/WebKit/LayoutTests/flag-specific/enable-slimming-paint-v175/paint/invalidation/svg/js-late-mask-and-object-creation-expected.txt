@@ -1,0 +1,47 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 100, 800, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRect rect",
+          "rect": [0, 100, 800, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRoot svg id='svg-root'",
+          "rect": [0, 100, 800, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRoot svg id='svg-root'",
+          "rect": [0, 100, 800, 100],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGContainer g id='content'",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "appeared"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "style change"
+    }
+  ]
+}
+

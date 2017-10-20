@@ -1,0 +1,55 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutTextControl INPUT id='root'",
+      "position": [7, 7],
+      "bounds": [66, 24],
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 66, 24],
+          "reason": "full layer"
+        },
+        {
+          "object": "LayoutTextControl INPUT id='root'",
+          "rect": [0, 0, 64, 22],
+          "reason": "full"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTextControl INPUT id='root'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "Caret",
+      "reason": "caret"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'test test test'",
+      "reason": "subtree"
+    }
+  ]
+}
+

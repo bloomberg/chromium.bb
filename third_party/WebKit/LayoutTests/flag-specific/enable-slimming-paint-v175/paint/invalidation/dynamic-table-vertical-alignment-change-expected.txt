@@ -1,0 +1,44 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [808, 585],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (floating) DIV id='target'",
+          "rect": [11, 75, 100, 100],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (floating) DIV id='target'",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutTableCell TD",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    }
+  ]
+}
+
