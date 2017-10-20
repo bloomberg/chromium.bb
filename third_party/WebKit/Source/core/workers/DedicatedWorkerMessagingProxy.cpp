@@ -30,7 +30,7 @@ namespace {
 
 service_manager::mojom::blink::InterfaceProviderPtrInfo
 ConnectToWorkerInterfaceProvider(Document* document,
-                                 RefPtr<SecurityOrigin> script_origin) {
+                                 scoped_refptr<SecurityOrigin> script_origin) {
   mojom::blink::DedicatedWorkerFactoryPtr worker_factory;
   document->GetInterfaceProvider()->GetInterface(&worker_factory);
   service_manager::mojom::blink::InterfaceProviderPtrInfo
@@ -43,7 +43,7 @@ ConnectToWorkerInterfaceProvider(Document* document,
 }  // namespace
 
 struct DedicatedWorkerMessagingProxy::QueuedTask {
-  RefPtr<SerializedScriptValue> message;
+  scoped_refptr<SerializedScriptValue> message;
   Vector<MessagePortChannel> channels;
 };
 
@@ -98,7 +98,7 @@ void DedicatedWorkerMessagingProxy::StartWorkerGlobalScope(
 }
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerGlobalScope(
-    RefPtr<SerializedScriptValue> message,
+    scoped_refptr<SerializedScriptValue> message,
     Vector<MessagePortChannel> channels) {
   DCHECK(IsParentContextThread());
   if (AskedToTerminate())
@@ -141,7 +141,7 @@ bool DedicatedWorkerMessagingProxy::HasPendingActivity() const {
 }
 
 void DedicatedWorkerMessagingProxy::PostMessageToWorkerObject(
-    RefPtr<SerializedScriptValue> message,
+    scoped_refptr<SerializedScriptValue> message,
     Vector<MessagePortChannel> channels) {
   DCHECK(IsParentContextThread());
   if (!worker_object_ || AskedToTerminate())

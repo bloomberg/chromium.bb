@@ -42,13 +42,13 @@ class CORE_EXPORT ParentFrameTaskRunners final
 
   // Might return nullptr for unsupported task types. This can be called from
   // any threads.
-  RefPtr<WebTaskRunner> Get(TaskType);
+  scoped_refptr<WebTaskRunner> Get(TaskType);
 
   virtual void Trace(blink::Visitor*);
 
  private:
   using TaskRunnerHashMap = HashMap<TaskType,
-                                    RefPtr<WebTaskRunner>,
+                                    scoped_refptr<WebTaskRunner>,
                                     WTF::IntHash<TaskType>,
                                     TaskTypeTraits>;
 

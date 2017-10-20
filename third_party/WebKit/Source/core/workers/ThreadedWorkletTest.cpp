@@ -113,7 +113,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
   void TestTaskRunner() {
     EXPECT_TRUE(IsCurrentThread());
-    RefPtr<WebTaskRunner> task_runner =
+    scoped_refptr<WebTaskRunner> task_runner =
         TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GlobalScope());
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     GetParentFrameTaskRunners()
@@ -124,7 +124,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
  private:
   WorkerOrWorkletGlobalScope* CreateWorkerGlobalScope(
       std::unique_ptr<GlobalScopeCreationParams> creation_params) final {
-    RefPtr<SecurityOrigin> security_origin =
+    scoped_refptr<SecurityOrigin> security_origin =
         SecurityOrigin::Create(creation_params->script_url);
     return new ThreadedWorkletGlobalScope(
         creation_params->script_url, creation_params->user_agent,
@@ -174,7 +174,7 @@ class ThreadedWorkletMessagingProxyForTest
     return WTF::MakeUnique<ThreadedWorkletThreadForTest>(WorkletObjectProxy());
   }
 
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<SecurityOrigin> security_origin_;
 };
 
 class ThreadedWorkletTest : public ::testing::Test {

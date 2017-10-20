@@ -138,7 +138,7 @@ class WorkerThreadTest : public ::testing::Test {
 
   ExitCode GetExitCode() { return worker_thread_->GetExitCodeForTesting(); }
 
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<MockWorkerReportingProxy> reporting_proxy_;
   std::unique_ptr<WorkerThreadForTest> worker_thread_;
   Persistent<MockWorkerThreadLifecycleObserver> lifecycle_observer_;

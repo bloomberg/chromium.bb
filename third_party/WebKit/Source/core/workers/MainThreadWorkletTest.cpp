@@ -98,7 +98,7 @@ TEST_F(MainThreadWorkletTest, UseCounter) {
 }
 
 TEST_F(MainThreadWorkletTest, TaskRunner) {
-  RefPtr<WebTaskRunner> task_runner =
+  scoped_refptr<WebTaskRunner> task_runner =
       TaskRunnerHelper::Get(TaskType::kUnthrottled, global_scope_);
   EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
 }

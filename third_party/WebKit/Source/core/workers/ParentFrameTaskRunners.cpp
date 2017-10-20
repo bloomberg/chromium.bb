@@ -38,7 +38,7 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
   }
 }
 
-RefPtr<WebTaskRunner> ParentFrameTaskRunners::Get(TaskType type) {
+scoped_refptr<WebTaskRunner> ParentFrameTaskRunners::Get(TaskType type) {
   MutexLocker lock(task_runners_mutex_);
   return task_runners_.at(type);
 }
