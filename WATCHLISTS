@@ -1201,7 +1201,9 @@
       'filepath': 'chrome/android/java/src/org/chromium/chrome/browser/omnibox/|'\
                   'chrome/android/javatests/src/org/chromium/chrome/browser/omnibox/|'\
                   'chrome/browser/autocomplete/|'\
+                  'chrome/browser/ui/location_bar/|'\
                   'chrome/browser/ui/omnibox/|'\
+                  'chrome/browser/ui/.*/location_bar/|'\
                   'chrome/browser/ui/.*/omnibox/|'\
                   'components/omnibox/|'\
                   'ios/chrome/browser/ui/omnibox/'
