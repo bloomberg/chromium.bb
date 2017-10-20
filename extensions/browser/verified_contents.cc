@@ -5,6 +5,7 @@
 #include "extensions/browser/verified_contents.h"
 
 #include <stddef.h>
+#include <algorithm>
 
 #include "base/base64url.h"
 #include "base/files/file_util.h"
@@ -178,10 +179,11 @@ bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
                                           const std::string& expected) const {
   base::FilePath::StringType path = base::ToLowerASCII(
       relative_path.NormalizePathSeparatorsTo('/').value());
-  for (RootHashes::const_iterator i = root_hashes_.find(path);
-       i != root_hashes_.end();
-       ++i) {
-    if (expected == i->second)
+  std::pair<RootHashes::const_iterator, RootHashes::const_iterator> hashes =
+      root_hashes_.equal_range(path);
+  for (RootHashes::const_iterator iter = hashes.first; iter != hashes.second;
+       ++iter) {
+    if (expected == iter->second)
       return true;
   }
   return false;
