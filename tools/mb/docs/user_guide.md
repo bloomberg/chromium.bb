@@ -179,6 +179,9 @@ refs/meta/config:refs/remotes/origin/meta/config && git checkout
 -t -b meta_config origin/meta/config && mv buildbucket.config.new
 buildbucket.config` to update the file.
 
+Note that after committing, `git cl upload` will not work. Instead, use `git
+push origin HEAD:refs/for/refs/meta/config` to upload the CL for review.
+
 ## Isolates and Swarming
 
 `mb gen` is also responsible for generating the `.isolate` and
