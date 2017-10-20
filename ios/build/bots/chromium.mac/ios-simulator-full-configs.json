@@ -19,6 +19,101 @@
   "configuration": "Debug",
   "sdk": "iphonesimulator11.0",
   "tests": [
-
+    {
+      "app": "ios_chrome_ui_egtests",
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_web_egtests",
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_settings_egtests",
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_payments_egtests",
+      "test args": [
+        "--enable-features=WebPayments"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_reading_list_egtests",
+      "test args": [
+        "--enable-reading-list"
+      ],
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_showcase_egtests",
+      "device type": "iPhone 6s",
+      "os": "11.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_ui_egtests",
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_web_egtests",
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_settings_egtests",
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_payments_egtests",
+      "test args": [
+          "--enable-features=WebPayments"
+        ],
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_chrome_reading_list_egtests",
+      "test args": [
+          "--enable-reading-list"
+        ],
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "9.0",
+      "xctest": true
+    },
+    {
+      "app": "ios_showcase_egtests",
+      "device type": "iPad Air 2",
+      "os": "10.0",
+      "xcode version": "9.0",
+      "xctest": true
+    }
   ]
 }
