@@ -25,13 +25,7 @@ def main(args):
   # tokenize the string before doing string matching.
   gyp_defines = os.environ.get('GYP_DEFINES', '').split()
   if options.gyp_condition in gyp_defines:
-    print 'Found matching condition in GYP_DEFINES. Execute: %s' % (
-        ' '.join(script_args))
     subprocess.check_call(script_args)
-  else:
-    print ('Not found "%s" condition in GYP_DEFINES="%s". '
-           'Skip script execution.' %
-           (options.gyp_condition, gyp_defines))
   return 0
 
 
