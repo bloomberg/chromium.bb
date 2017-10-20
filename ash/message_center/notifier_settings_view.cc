@@ -21,12 +21,14 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/compositor/paint_recorder.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/skia_paint_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/vector_icons.h"
@@ -180,6 +182,40 @@ void EntryView::OnBlur() {
   // We render differently when focused.
   SchedulePaint();
 }
+
+// ScrollContentsView ----------------------------------------------------------
+
+class ScrollContentsView : public views::View {
+ public:
+  ScrollContentsView() = default;
+
+ private:
+  void PaintChildren(const views::PaintInfo& paint_info) override {
+    views::View::PaintChildren(paint_info);
+
+    if (y() == 0)
+      return;
+
+    // Draw a shadow at the top of the viewport when scrolled.
+    const ui::PaintContext& context = paint_info.context();
+    gfx::Rect shadowed_area(0, 0, width(), -y());
+
+    ui::PaintRecorder recorder(context, size());
+    gfx::Canvas* canvas = recorder.canvas();
+    gfx::ShadowValues shadow;
+    shadow.emplace_back(
+        gfx::Vector2d(0, message_center_style::kScrollShadowOffsetY),
+        message_center_style::kScrollShadowBlur,
+        message_center_style::kScrollShadowColor);
+    cc::PaintFlags flags;
+    flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
+    flags.setAntiAlias(true);
+    canvas->ClipRect(shadowed_area, SkClipOp::kDifference);
+    canvas->DrawRect(shadowed_area, flags);
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ScrollContentsView);
+};
 
 // EmptyNotifierView -----------------------------------------------------------
 
@@ -459,6 +495,7 @@ NotifierSettingsView::NotifierSettingsView(NotifierSettingsProvider* provider)
   scroller_->SetBackgroundColor(message_center_style::kBackgroundColor);
   scroller_->SetVerticalScrollBar(new views::OverlayScrollBar(false));
   scroller_->SetHorizontalScrollBar(new views::OverlayScrollBar(true));
+  scroller_->set_draw_overflow_indicator(false);
   AddChildView(scroller_);
 
   no_notifiers_view_ = new EmptyNotifierView();
@@ -500,7 +537,7 @@ void NotifierSettingsView::UpdateContentsView(
     std::vector<std::unique_ptr<Notifier>> notifiers) {
   buttons_.clear();
 
-  views::View* contents_view = new views::View();
+  views::View* contents_view = new ScrollContentsView();
   contents_view->SetLayoutManager(new views::BoxLayout(
       views::BoxLayout::kVertical, gfx::Insets(0, kHorizontalMargin)));
 
