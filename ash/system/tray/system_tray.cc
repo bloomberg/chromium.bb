@@ -270,10 +270,7 @@ void SystemTray::CreateItems() {
     tray_night_light_ = new TrayNightLight(this);
     AddTrayItem(base::WrapUnique(tray_night_light_));
   }
-  // TODO(jamescook): Remove this when mash has support for display management
-  // and we have a DisplayManager equivalent. See http://crbug.com/548429
-  if (Shell::GetAshConfig() != Config::MASH)
-    AddTrayItem(std::make_unique<TrayRotationLock>(this));
+  AddTrayItem(std::make_unique<TrayRotationLock>(this));
   tray_update_ = new TrayUpdate(this);
   AddTrayItem(base::WrapUnique(tray_update_));
   tray_tiles_ = new TrayTiles(this);
