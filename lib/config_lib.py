@@ -602,6 +602,11 @@ def DefaultSettings():
       # mark the builder as important=True.
       important=False,
 
+      # If True, build config should always be run as if --debug was set
+      # on the cbuildbot command line. This is different from 'important'
+      # and is usually correlated with tryjob build configs.
+      debug=False,
+
       # Timeout for the build as a whole (in seconds).
       build_timeout=(4 * 60 + 30) * 60,
 

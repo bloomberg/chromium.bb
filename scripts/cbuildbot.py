@@ -702,6 +702,11 @@ def _PostParseCheck(parser, options, site_config):
     cros_build_lib.Die('payload configs (%s) require --channel to do anything'
                        ' useful.' % options.build_config_name)
 
+  # If the build config explicitly forces the debug flag, set the debug flag
+  # as if it was set from the command line.
+  if build_config.debug:
+    options.debug = True
+
   # The --version option is not compatible with an external target unless the
   # --buildbot option is specified.  More correctly, only "paladin versions"
   # will work with external targets, and those are only used with --buildbot.
