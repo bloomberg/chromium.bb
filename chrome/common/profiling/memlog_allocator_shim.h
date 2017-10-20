@@ -10,6 +10,11 @@
 
 namespace profiling {
 
+// Initializes the TLS slot globally. This will be called early in Chrome's
+// lifecycle to prevent re-entrancy from occurring while trying to set up the
+// TLS slot, which is the entity that's supposed to prevent re-entrancy.
+void InitTLSSlot();
+
 // Begin profiling all allocations in the process. Send the results to
 // |sender_pipe|.
 void InitAllocatorShim(MemlogSenderPipe* sender_pipe);
