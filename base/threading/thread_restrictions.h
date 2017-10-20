@@ -79,7 +79,6 @@ class GpuState;
 namespace net {
 class MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
 class NetworkChangeNotifierMac;
-class OCSPScopedAllowBaseSyncPrimitives;
 namespace internal {
 class AddressTrackerLinux;
 }
@@ -239,7 +238,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class leveldb::LevelDBMojoProxy;
   friend class media::BlockingUrlProtocol;
   friend class net::MultiThreadedCertVerifierScopedAllowBaseSyncPrimitives;
-  friend class net::OCSPScopedAllowBaseSyncPrimitives;
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
