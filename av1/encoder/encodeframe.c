@@ -3153,12 +3153,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // subsample to 16x2, which doesn't have an enum. Also, there's no BLOCK_8X2
   // or BLOCK_2X8, so we can't do 4:1 or 1:4 partitions for BLOCK_16X16 if there
   // is any subsampling.
-  const int horz4_partition_allowed = ext_partition_allowed &&
-                                      partition_horz_allowed && yss <= xss &&
-                                      (xss == 0 || bsize > BLOCK_16X16);
-  const int vert4_partition_allowed = ext_partition_allowed &&
-                                      partition_vert_allowed && xss <= yss &&
-                                      (yss == 0 || bsize > BLOCK_16X16);
+  const int horz4_partition_allowed =
+      ext_partition_allowed && partition_horz_allowed;
+  const int vert4_partition_allowed =
+      ext_partition_allowed && partition_vert_allowed;
 
 #if CONFIG_EXT_PARTITION_TYPES_AB
   // The alternative AB partitions are allowed iff the corresponding 4:1
