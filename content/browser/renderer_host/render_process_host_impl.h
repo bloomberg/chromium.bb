@@ -445,6 +445,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // mojom::RendererHost
   void GetBlobURLLoaderFactory(mojom::URLLoaderFactoryRequest request) override;
+  using BrowserHistogramCallback =
+      mojom::RendererHost::GetBrowserHistogramCallback;
+  void GetBrowserHistogram(const std::string& name,
+                           BrowserHistogramCallback callback) override;
 
   void BindRouteProvider(mojom::RouteProviderAssociatedRequest request);
 
