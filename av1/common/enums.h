@@ -194,7 +194,12 @@ typedef char PARTITION_CONTEXT;
 #endif
 
 // block transform size
+#if defined(_MSC_VER)
+typedef uint8_t TX_SIZE;
+enum ATTRIBUTE_PACKED {
+#else
 typedef enum ATTRIBUTE_PACKED {
+#endif
   TX_4X4,    // 4x4 transform
   TX_8X8,    // 8x8 transform
   TX_16X16,  // 16x16 transform
@@ -219,7 +224,11 @@ typedef enum ATTRIBUTE_PACKED {
   TX_SIZES_ALL,       // Includes rectangular transforms
   TX_SIZES = TX_4X8,  // Does NOT include rectangular transforms
   TX_INVALID = 255    // Invalid transform size
+#if defined(_MSC_VER)
+};
+#else
 } TX_SIZE;
+#endif
 
 #define TX_SIZE_LUMA_MIN (TX_4X4)
 /* We don't need to code a transform size unless the allowed size is at least
