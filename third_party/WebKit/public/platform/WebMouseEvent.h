@@ -30,6 +30,27 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
   WebMenuSourceType menu_source_type;
 
   WebMouseEvent(Type type_param,
+                int x_param,
+                int y_param,
+                int global_x_param,
+                int global_y_param,
+                int modifiers_param,
+                double time_stamp_seconds_param,
+                PointerId id_param = kMousePointerId)
+      : WebInputEvent(sizeof(WebMouseEvent),
+                      type_param,
+                      modifiers_param,
+                      time_stamp_seconds_param),
+        WebPointerProperties(id_param,
+                             PointerType::kUnknown,
+                             Button::kNoButton,
+                             WebFloatPoint(x_param, y_param),
+                             WebFloatPoint(global_x_param, global_y_param)) {
+    DCHECK_GE(type_param, kMouseTypeFirst);
+    DCHECK_LE(type_param, kMouseTypeLast);
+  }
+
+  WebMouseEvent(Type type_param,
                 WebFloatPoint position,
                 WebFloatPoint global_position,
                 Button button_param,
@@ -88,11 +109,11 @@ class WebMouseEvent : public WebInputEvent, public WebPointerProperties {
 #endif
 
   void SetPositionInWidget(float x, float y) {
-    position_in_widget_ = WebFloatPoint(x, y);
+    position_in_widget_ = WebFloatPoint(floor(x), floor(y));
   }
 
   void SetPositionInScreen(float x, float y) {
-    position_in_screen_ = WebFloatPoint(x, y);
+    position_in_screen_ = WebFloatPoint(floor(x), floor(y));
   }
 
  protected:
