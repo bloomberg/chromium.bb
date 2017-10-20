@@ -1276,11 +1276,11 @@ __gCrWeb.autofill.inferLabelFromNext = function(element) {
  * @return {string} The label of element.
  */
 __gCrWeb.autofill.inferLabelFromPlaceholder = function(element) {
-  if (!element || !element.placeholder) {
+  if (!element) {
     return '';
   }
 
-  return element.placeholder;
+  return element.placeholder || element.getAttribute('placeholder') || '';
 };
 
 /**
@@ -1949,11 +1949,32 @@ __gCrWeb.autofill.nodeValue = function(node) {
  * used in src/components/autofill/content/renderer/form_autofill_util.h.
  * Newlines and tabs are stripped.
  *
+ * Note: this method tries to match the behavior of Blink for the select
+ * element. On Blink, a select element with a first option that is disabled and
+ * not explicitly selected will automatically select the second element.
+ * On WebKit, the disabled element is enabled until user interacts with it.
+ * As the result of this method will be used by code written for Blink, match
+ * the behavior on it.
+ *
  * @param {Element} element An element to examine.
  * @return {string} The value for |element|.
  */
 __gCrWeb.autofill.value = function(element) {
-  return (element.value || '').replace(/[\n\t]/gm, '');
+   var value = element.value;
+   if (__gCrWeb.autofill.isSelectElement(element)) {
+     if (element.options.length > 0 && element.selectedIndex == 0 &&
+         element.options[0].disabled &&
+         !element.options[0].hasAttribute('selected')) {
+       for (var i = 0; i < element.options.length; i++) {
+         if (!element.options[i].disabled ||
+             element.options[i].hasAttribute('selected')) {
+           value = element.options[i].value;
+           break;
+         }
+       }
+     }
+   }
+   return (value || '').replace(/[\n\t]/gm, '');
 };
 
 /**

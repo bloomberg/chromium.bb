@@ -61,11 +61,9 @@ base::FilePath GetIOSOutputDirectory(
 // TODO(crbug.com/762970): Reduce the amount of failing tests.
 const std::set<std::string>& FailingTestData() {
   static std::set<std::string> failing_tests = {
-      "110_checkout_harryanddavid.com.html",
       "115_checkout_walgreens.com.html",
       "116_cc_checkout_walgreens.com.html",
       "137_bug_555010.html",
-      "144_cc_checkout_m_jcp.com.html",
   };
   return failing_tests;
 }
