@@ -1581,7 +1581,8 @@ LRESULT HWNDMessageHandler::OnGetObject(UINT message,
   DWORD obj_id = static_cast<DWORD>(static_cast<DWORD_PTR>(l_param));
 
   // Accessibility readers will send an OBJID_CLIENT message
-  if (static_cast<DWORD>(OBJID_CLIENT) == obj_id) {
+  if (delegate_->GetNativeViewAccessible() &&
+      static_cast<DWORD>(OBJID_CLIENT) == obj_id) {
     // Retrieve MSAA dispatch object for the root view.
     Microsoft::WRL::ComPtr<IAccessible> root(
         delegate_->GetNativeViewAccessible());
