@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009-2017 The OTS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -478,17 +478,18 @@ bool ProcessWOFF2(ots::OpenTypeFile *header,
     return OTS_FAILURE_MSG_HDR("Size of decompressed WOFF 2.0 font exceeds 30MB");
   }
 
-  std::vector<uint8_t> decompressed_buffer(decompressed_size);
-  if (!woff2::ConvertWOFF2ToTTF(&decompressed_buffer[0], decompressed_size,
-                                data, length)) {
+  std::string buf(decompressed_size, 0);
+  woff2::WOFF2StringOut out(&buf);
+  if (!woff2::ConvertWOFF2ToTTF(data, length, &out)) {
     return OTS_FAILURE_MSG_HDR("Failed to convert WOFF 2.0 font to SFNT");
   }
+  const uint8_t *decompressed = reinterpret_cast<const uint8_t*>(buf.data());
 
   if (data[4] == 't' && data[5] == 't' && data[6] == 'c' && data[7] == 'f') {
-    return ProcessTTC(header, output, &decompressed_buffer[0], decompressed_size, index);
+    return ProcessTTC(header, output, decompressed, out.Size(), index);
   } else {
     ots::Font font(header);
-    return ProcessTTF(header, &font, output, &decompressed_buffer[0], decompressed_size);
+    return ProcessTTF(header, &font, output, decompressed, out.Size());
   }
 }
 
@@ -673,6 +674,12 @@ bool ProcessGeneric(ots::OpenTypeFile *header,
     }
   }
 
+#define PASSTHRU(c1,c2,c3,c4) \
+  ( \
+   table_map.find(OTS_TAG(c1,c2,c3,c4)) != table_map.end() && \
+   GetTableAction(header, OTS_TAG(c1,c2,c3,c4)) == ots::TABLE_ACTION_PASSTHRU \
+  )
+
   if (font->cff) {
     // font with PostScript glyph
     if (font->version != OTS_TAG('O','T','T','O')) {
@@ -685,17 +692,17 @@ bool ProcessGeneric(ots::OpenTypeFile *header,
   } else {
     if (!font->glyf || !font->loca) {
       // No TrueType glyph found.
-#define PASSTHRU_TABLE(tag_) (table_map.find(tag_) != table_map.end() && \
-                              GetTableAction(header, tag_) == ots::TABLE_ACTION_PASSTHRU)
-      // We don't sanitise bitmap table, but don't reject bitmap-only fonts if
-      // we keep the tables.
-      if (!PASSTHRU_TABLE(OTS_TAG('C','B','D','T')) ||
-          !PASSTHRU_TABLE(OTS_TAG('C','B','L','C'))) {
+      //
+      // We don't sanitize bitmap tables, but don’t reject bitmap-only fonts if
+      // we are asked to pass them thru.
+      // Also don’t reject if we are asked to pass glyf/loca thru.
+      if (!(PASSTHRU('C','B','D','T') && PASSTHRU('C','B','L','C')) &&
+          !(PASSTHRU('g','l','y','f') && PASSTHRU('l','o','c','a'))) {
         return OTS_FAILURE_MSG_HDR("no supported glyph shapes table(s) present");
       }
-#undef PASSTHRU_TABLE
     }
   }
+#undef PASSTHRU
 
   uint16_t num_output_tables = 0;
   for (std::map<uint32_t, OpenTypeTable>::const_iterator it = table_map.begin();
