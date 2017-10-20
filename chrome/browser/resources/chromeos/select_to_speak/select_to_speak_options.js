@@ -22,6 +22,7 @@ SelectToSpeakOptionsPage.prototype = {
     }.bind(this));
     this.syncSelectControlToPref_('voice', 'voice');
     this.syncSelectControlToPref_('rate', 'rate');
+    this.syncCheckboxControlToPref_('wordHighlight', 'wordHighlight');
   },
 
   /**
@@ -80,6 +81,34 @@ SelectToSpeakOptionsPage.prototype = {
         select.updateFunction();
       }
     });
+  },
+
+  /**
+   * Populate a checkbox with its current setting.
+   * @param {string} checkboxId The id of the checkbox element.
+   * @private
+   */
+  syncCheckboxControlToPref_: function(checkboxId, pref) {
+    let checkbox = document.getElementById(checkboxId);
+
+    function updateFromPref() {
+      chrome.storage.sync.get(pref, function(items) {
+        let value = items[pref];
+        if (value != null) {
+          checkbox.checked = value;
+        }
+      });
+    }
+
+    checkbox.addEventListener('change', function() {
+      let setParams = {};
+      setParams[pref] = checkbox.checked;
+      chrome.storage.sync.set(setParams);
+    });
+
+    checkbox.updateFunction = updateFromPref;
+    updateFromPref();
+    chrome.storage.onChanged.addListener(updateFromPref);
   },
 
   /**
