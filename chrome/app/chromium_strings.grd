@@ -242,7 +242,7 @@ If you update this file, be sure also to update google_chrome_strings.grd. -->
         </message>
       </if>
       <message name="IDS_IMPORTER_LOCK_TEXT" desc="The message to be displayed on dialog">
-        Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Chromium, save your work and close all Firefox windows. Then click Continue.
+        To finish importing, close all Firefox windows.
       </message>
       <!-- Uninstall messages -->
       <if expr="is_win">
