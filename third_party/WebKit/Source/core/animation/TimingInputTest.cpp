@@ -333,7 +333,7 @@ TEST_F(AnimationTimingInputTest, TimingInputDirection) {
 
 TEST_F(AnimationTimingInputTest, TimingInputTimingFunction) {
   V8TestingScope scope;
-  const RefPtr<TimingFunction> default_timing_function =
+  const scoped_refptr<TimingFunction> default_timing_function =
       LinearTimingFunction::Shared();
   bool success;
 

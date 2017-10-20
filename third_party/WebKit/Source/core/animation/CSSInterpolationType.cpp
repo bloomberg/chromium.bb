@@ -103,7 +103,7 @@ class ResolvedRegisteredCustomPropertyChecker
  public:
   static std::unique_ptr<ResolvedRegisteredCustomPropertyChecker> Create(
       const CSSCustomPropertyDeclaration& declaration,
-      RefPtr<CSSVariableData> resolved_tokens) {
+      scoped_refptr<CSSVariableData> resolved_tokens) {
     return WTF::WrapUnique(new ResolvedRegisteredCustomPropertyChecker(
         declaration, std::move(resolved_tokens)));
   }
@@ -111,7 +111,7 @@ class ResolvedRegisteredCustomPropertyChecker
  private:
   ResolvedRegisteredCustomPropertyChecker(
       const CSSCustomPropertyDeclaration& declaration,
-      RefPtr<CSSVariableData> resolved_tokens)
+      scoped_refptr<CSSVariableData> resolved_tokens)
       : declaration_(declaration),
         resolved_tokens_(std::move(resolved_tokens)) {}
 
@@ -119,7 +119,7 @@ class ResolvedRegisteredCustomPropertyChecker
                const InterpolationValue&) const final {
     DCHECK(ToCSSInterpolationEnvironment(environment).HasVariableResolver());
     bool cycle_detected;
-    RefPtr<CSSVariableData> resolved_tokens =
+    scoped_refptr<CSSVariableData> resolved_tokens =
         ToCSSInterpolationEnvironment(environment)
             .VariableResolver()
             .ResolveCustomPropertyAnimationKeyframe(*declaration_,
@@ -129,7 +129,7 @@ class ResolvedRegisteredCustomPropertyChecker
   }
 
   Persistent<const CSSCustomPropertyDeclaration> declaration_;
-  RefPtr<CSSVariableData> resolved_tokens_;
+  scoped_refptr<CSSVariableData> resolved_tokens_;
 };
 
 CSSInterpolationType::CSSInterpolationType(
@@ -229,7 +229,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertCustomPropertyDeclaration(
     return MaybeConvertValue(*value, &state, conversion_checkers);
   }
 
-  RefPtr<CSSVariableData> resolved_tokens;
+  scoped_refptr<CSSVariableData> resolved_tokens;
   if (declaration.Value()->NeedsVariableResolution()) {
     bool cycle_detected;
     resolved_tokens = variable_resolver.ResolveCustomPropertyAnimationKeyframe(
@@ -304,7 +304,7 @@ void CSSInterpolationType::ApplyCustomPropertyValue(
   const auto tokens = tokenizer.TokenizeToEOF();
   bool is_animation_tainted = true;
   bool needs_variable_resolution = false;
-  RefPtr<CSSVariableData> variable_data =
+  scoped_refptr<CSSVariableData> variable_data =
       CSSVariableData::Create(CSSParserTokenRange(tokens), is_animation_tainted,
                               needs_variable_resolution);
   ComputedStyle& style = *state.Style();

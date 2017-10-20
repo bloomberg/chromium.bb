@@ -31,10 +31,10 @@ namespace blink {
 // objects.
 class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
  public:
-  static RefPtr<InvalidatableInterpolation> Create(
+  static scoped_refptr<InvalidatableInterpolation> Create(
       const PropertyHandle& property,
-      RefPtr<PropertySpecificKeyframe> start_keyframe,
-      RefPtr<PropertySpecificKeyframe> end_keyframe) {
+      scoped_refptr<PropertySpecificKeyframe> start_keyframe,
+      scoped_refptr<PropertySpecificKeyframe> end_keyframe) {
     return WTF::AdoptRef(new InvalidatableInterpolation(
         property, std::move(start_keyframe), std::move(end_keyframe)));
   }
@@ -52,9 +52,10 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   }
 
  private:
-  InvalidatableInterpolation(const PropertyHandle& property,
-                             RefPtr<PropertySpecificKeyframe> start_keyframe,
-                             RefPtr<PropertySpecificKeyframe> end_keyframe)
+  InvalidatableInterpolation(
+      const PropertyHandle& property,
+      scoped_refptr<PropertySpecificKeyframe> start_keyframe,
+      scoped_refptr<PropertySpecificKeyframe> end_keyframe)
       : Interpolation(),
         property_(property),
         interpolation_types_(nullptr),
@@ -91,8 +92,8 @@ class CORE_EXPORT InvalidatableInterpolation : public Interpolation {
   const PropertyHandle property_;
   mutable const InterpolationTypes* interpolation_types_;
   mutable size_t interpolation_types_version_;
-  RefPtr<PropertySpecificKeyframe> start_keyframe_;
-  RefPtr<PropertySpecificKeyframe> end_keyframe_;
+  scoped_refptr<PropertySpecificKeyframe> start_keyframe_;
+  scoped_refptr<PropertySpecificKeyframe> end_keyframe_;
   double current_fraction_;
   mutable bool is_conversion_cached_;
   mutable std::unique_ptr<PrimitiveInterpolation> cached_pair_conversion_;

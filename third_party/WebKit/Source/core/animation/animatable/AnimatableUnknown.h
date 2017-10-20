@@ -41,10 +41,10 @@ class AnimatableUnknown final : public AnimatableValue {
  public:
   ~AnimatableUnknown() override {}
 
-  static RefPtr<AnimatableUnknown> Create(const CSSValue* value) {
+  static scoped_refptr<AnimatableUnknown> Create(const CSSValue* value) {
     return WTF::AdoptRef(new AnimatableUnknown(value));
   }
-  static RefPtr<AnimatableUnknown> Create(CSSValueID value) {
+  static scoped_refptr<AnimatableUnknown> Create(CSSValueID value) {
     return WTF::AdoptRef(
         new AnimatableUnknown(CSSIdentifierValue::Create(value)));
   }
@@ -55,8 +55,8 @@ class AnimatableUnknown final : public AnimatableValue {
   }
 
  protected:
-  RefPtr<AnimatableValue> InterpolateTo(const AnimatableValue* value,
-                                        double fraction) const override {
+  scoped_refptr<AnimatableValue> InterpolateTo(const AnimatableValue* value,
+                                               double fraction) const override {
     return DefaultInterpolateTo(this, value, fraction);
   }
 

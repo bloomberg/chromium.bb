@@ -66,7 +66,7 @@ bool KeyframeEffectModelBase::Sample(
     int iteration,
     double fraction,
     double iteration_duration,
-    Vector<RefPtr<Interpolation>>& result) const {
+    Vector<scoped_refptr<Interpolation>>& result) const {
   DCHECK_GE(iteration, 0);
   DCHECK(!IsNull(fraction));
   EnsureKeyframeGroups();
@@ -186,7 +186,7 @@ void KeyframeEffectModelBase::EnsureKeyframeGroups() const {
     return;
 
   keyframe_groups_ = WTF::WrapUnique(new KeyframeGroupMap);
-  RefPtr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
+  scoped_refptr<TimingFunction> zero_offset_easing = default_keyframe_easing_;
   for (const auto& keyframe : NormalizedKeyframes(GetFrames())) {
     if (keyframe->Offset() == 0)
       zero_offset_easing = &keyframe->Easing();
@@ -273,7 +273,7 @@ bool KeyframeEffectModelBase::IsReplaceOnly() {
 
 Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
     double offset,
-    RefPtr<TimingFunction> easing,
+    scoped_refptr<TimingFunction> easing,
     EffectModel::CompositeOperation composite)
     : offset_(offset), easing_(std::move(easing)), composite_(composite) {
   DCHECK(!IsNull(offset));
@@ -282,7 +282,7 @@ Keyframe::PropertySpecificKeyframe::PropertySpecificKeyframe(
 }
 
 void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::AppendKeyframe(
-    RefPtr<Keyframe::PropertySpecificKeyframe> keyframe) {
+    scoped_refptr<Keyframe::PropertySpecificKeyframe> keyframe) {
   DCHECK(keyframes_.IsEmpty() ||
          keyframes_.back()->Offset() <= keyframe->Offset());
   keyframes_.push_back(std::move(keyframe));
@@ -309,7 +309,8 @@ void KeyframeEffectModelBase::PropertySpecificKeyframeGroup::
 }
 
 bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::
-    AddSyntheticKeyframeIfRequired(RefPtr<TimingFunction> zero_offset_easing) {
+    AddSyntheticKeyframeIfRequired(
+        scoped_refptr<TimingFunction> zero_offset_easing) {
   DCHECK(!keyframes_.IsEmpty());
 
   bool added_synthetic_keyframe = false;

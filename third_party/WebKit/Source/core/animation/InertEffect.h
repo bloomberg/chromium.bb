@@ -47,7 +47,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffectReadOnly {
                              const Timing&,
                              bool paused,
                              double inherited_time);
-  void Sample(Vector<RefPtr<Interpolation>>&) const;
+  void Sample(Vector<scoped_refptr<Interpolation>>&) const;
   EffectModel* Model() const { return model_.Get(); }
   bool Paused() const { return paused_; }
 

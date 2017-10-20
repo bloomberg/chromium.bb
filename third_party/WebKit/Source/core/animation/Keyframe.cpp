@@ -8,7 +8,8 @@
 
 namespace blink {
 
-RefPtr<Interpolation> Keyframe::PropertySpecificKeyframe::CreateInterpolation(
+scoped_refptr<Interpolation>
+Keyframe::PropertySpecificKeyframe::CreateInterpolation(
     const PropertyHandle& property_handle,
     const Keyframe::PropertySpecificKeyframe& end) const {
   // const_cast to take refs.

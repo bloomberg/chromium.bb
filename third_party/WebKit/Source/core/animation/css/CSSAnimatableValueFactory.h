@@ -44,7 +44,8 @@ class CSSAnimatableValueFactory {
   STATIC_ONLY(CSSAnimatableValueFactory);
 
  public:
-  static RefPtr<AnimatableValue> Create(CSSPropertyID, const ComputedStyle&);
+  static scoped_refptr<AnimatableValue> Create(CSSPropertyID,
+                                               const ComputedStyle&);
 };
 
 }  // namespace blink

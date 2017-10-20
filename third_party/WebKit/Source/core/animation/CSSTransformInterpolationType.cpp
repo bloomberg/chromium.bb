@@ -20,13 +20,13 @@ namespace blink {
 
 class CSSTransformNonInterpolableValue : public NonInterpolableValue {
  public:
-  static RefPtr<CSSTransformNonInterpolableValue> Create(
+  static scoped_refptr<CSSTransformNonInterpolableValue> Create(
       TransformOperations&& transform) {
     return WTF::AdoptRef(new CSSTransformNonInterpolableValue(
         true, std::move(transform), EmptyTransformOperations(), false, false));
   }
 
-  static RefPtr<CSSTransformNonInterpolableValue> Create(
+  static scoped_refptr<CSSTransformNonInterpolableValue> Create(
       CSSTransformNonInterpolableValue&& start,
       double start_fraction,
       CSSTransformNonInterpolableValue&& end,
@@ -37,7 +37,7 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
         end.IsAdditive()));
   }
 
-  RefPtr<CSSTransformNonInterpolableValue> Composite(
+  scoped_refptr<CSSTransformNonInterpolableValue> Composite(
       const CSSTransformNonInterpolableValue& other,
       double other_progress) {
     DCHECK(!IsAdditive());
@@ -99,9 +99,10 @@ class CSSTransformNonInterpolableValue : public NonInterpolableValue {
     return result;
   }
 
-  Vector<RefPtr<TransformOperation>> Concat(const TransformOperations& a,
-                                            const TransformOperations& b) {
-    Vector<RefPtr<TransformOperation>> result;
+  Vector<scoped_refptr<TransformOperation>> Concat(
+      const TransformOperations& a,
+      const TransformOperations& b) {
+    Vector<scoped_refptr<TransformOperation>> result;
     result.ReserveCapacity(a.size() + b.size());
     result.AppendVector(a.Operations());
     result.AppendVector(b.Operations());

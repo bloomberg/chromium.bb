@@ -20,8 +20,9 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
                                                                  *document);
   }
 
-  RefPtr<TimingFunction> ParseTimingFunction(const String& string,
-                                             ExceptionState& exception_state) {
+  scoped_refptr<TimingFunction> ParseTimingFunction(
+      const String& string,
+      ExceptionState& exception_state) {
     return AnimationInputHelpers::ParseTimingFunction(string, document,
                                                       exception_state);
   }
@@ -29,7 +30,7 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
   void TimingFunctionRoundTrips(const String& string,
                                 ExceptionState& exception_state) {
     ASSERT_FALSE(exception_state.HadException());
-    RefPtr<TimingFunction> timing_function =
+    scoped_refptr<TimingFunction> timing_function =
         ParseTimingFunction(string, exception_state);
     EXPECT_FALSE(exception_state.HadException());
     EXPECT_NE(nullptr, timing_function);
@@ -40,7 +41,7 @@ class AnimationAnimationInputHelpersTest : public ::testing::Test {
   void TimingFunctionThrows(const String& string,
                             ExceptionState& exception_state) {
     ASSERT_FALSE(exception_state.HadException());
-    RefPtr<TimingFunction> timing_function =
+    scoped_refptr<TimingFunction> timing_function =
         ParseTimingFunction(string, exception_state);
     EXPECT_TRUE(exception_state.HadException());
     EXPECT_EQ(kV8TypeError, exception_state.Code());

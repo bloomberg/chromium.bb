@@ -170,7 +170,7 @@ void KeyframeEffectReadOnly::ApplyEffects() {
                              IterationDuration(),
                              sampled_effect_->MutableInterpolations());
   } else {
-    Vector<RefPtr<Interpolation>> interpolations;
+    Vector<scoped_refptr<Interpolation>> interpolations;
     model_->Sample(clampTo<int>(iteration, 0), Progress(), IterationDuration(),
                    interpolations);
     if (!interpolations.IsEmpty()) {

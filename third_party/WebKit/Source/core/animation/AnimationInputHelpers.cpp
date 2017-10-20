@@ -211,7 +211,7 @@ const QualifiedName* AnimationInputHelpers::KeyframeAttributeToSVGAttribute(
   return iter->value;
 }
 
-RefPtr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
+scoped_refptr<TimingFunction> AnimationInputHelpers::ParseTimingFunction(
     const String& string,
     Document* document,
     ExceptionState& exception_state) {

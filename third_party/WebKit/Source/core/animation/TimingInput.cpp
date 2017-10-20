@@ -112,7 +112,7 @@ bool TimingInput::SetTimingFunction(Timing& timing,
                                     const String& timing_function_string,
                                     Document* document,
                                     ExceptionState& exception_state) {
-  if (RefPtr<TimingFunction> timing_function =
+  if (scoped_refptr<TimingFunction> timing_function =
           AnimationInputHelpers::ParseTimingFunction(
               timing_function_string, document, exception_state)) {
     timing.timing_function = timing_function;
