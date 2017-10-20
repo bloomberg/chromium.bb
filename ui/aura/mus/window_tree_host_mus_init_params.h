@@ -39,6 +39,11 @@ struct AURA_EXPORT DisplayInitParams {
   ui::mojom::WmViewportMetrics viewport_metrics;
 
   bool is_primary_display = false;
+
+  // |mirrors| contains a list of physical displays presenting contents mirrored
+  // from another physical display, or from part of a virtual unified display.
+  // See |display::DisplayManager::software_mirroring_display_list_| for info.
+  std::vector<display::Display> mirrors;
 };
 
 // Used to create a WindowTreeHostMus. The typical case is to use

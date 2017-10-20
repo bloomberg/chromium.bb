@@ -58,7 +58,8 @@ void DisplaySynchronizer::SendDisplayConfigurationToServer() {
   }
   window_manager_client_->SetDisplayConfiguration(
       displays, std::move(metrics),
-      WindowTreeHostManager::GetPrimaryDisplayId());
+      WindowTreeHostManager::GetPrimaryDisplayId(),
+      display_manager->software_mirroring_display_list());
 
   sent_initial_config_ = true;
 }

@@ -317,14 +317,15 @@ std::unique_ptr<AshWindowTreeHost> ShellPortMash::CreateAshWindowTreeHost(
       init_params.device_scale_factor;
   display_params->viewport_metrics.ui_scale_factor =
       init_params.ui_scale_factor;
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display::Display mirrored_display =
-      Shell::Get()->display_manager()->GetMirroringDisplayById(
-          init_params.display_id);
+      display_manager->GetMirroringDisplayById(init_params.display_id);
   if (mirrored_display.is_valid()) {
     display_params->display =
         std::make_unique<display::Display>(mirrored_display);
   }
   display_params->is_primary_display = true;
+  display_params->mirrors = display_manager->software_mirroring_display_list();
   aura::WindowTreeHostMusInitParams aura_init_params =
       window_manager_->window_manager_client()->CreateInitParamsForNewDisplay();
   aura_init_params.display_id = init_params.display_id;
