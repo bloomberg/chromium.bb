@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 
@@ -41,7 +40,7 @@ class WeeklyTime {
   WeeklyTime AddMilliseconds(int milliseconds) const;
 
   // Return current time in WeeklyTime structure.
-  static WeeklyTime GetCurrentWeeklyTime(base::Clock* clock);
+  static WeeklyTime GetCurrentWeeklyTime();
 
  private:
   // Number of weekday (1 = Monday, 2 = Tuesday, etc.)
