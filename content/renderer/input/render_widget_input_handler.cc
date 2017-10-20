@@ -241,7 +241,13 @@ void RenderWidgetInputHandler::HandleInputEvent(
         static_cast<const WebKeyboardEvent&>(input_event);
     if (key_event.native_key_code == AKEYCODE_DPAD_CENTER &&
         widget_->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE) {
-      widget_->ShowVirtualKeyboardOnElementFocus();
+      // Show the keyboard on keyup (not keydown) to match the behavior of
+      // Android's TextView.
+      if (key_event.GetType() == WebInputEvent::kKeyUp)
+        widget_->ShowVirtualKeyboardOnElementFocus();
+      // Prevent default for both keydown and keyup (letting the keydown go
+      // through to the web app would cause compatibility problems since
+      // DPAD_CENTER is also used as a "confirm" button).
       prevent_default = true;
     }
 #endif
