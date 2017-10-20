@@ -11,6 +11,8 @@
 // handling responses from, Google's SafeBrowsing servers. The purpose of this
 // class is to get full hash matches from the SB server for the given set of
 // hash prefixes.
+//
+// Design doc: go/design-doc-v4-full-hash-manager
 
 #include <memory>
 #include <string>
@@ -177,16 +179,10 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   // Retrieve the full hash and API metadata for the origin of |url|, and invoke
   // the callback argument when the results are retrieved. The callback may be
   // invoked synchronously.
-  // GetFullHashesWithApis is a special case of GetFullHashes. It is here
-  // primarily for legacy reasons: so that DatabaseManager, which speaks PVer3,
-  // and V4LocalDatabaseManager, which speaks PVer4, can both use this class to
-  // perform API lookups. Once PVer4 migration is complete, DatabaseManager
-  // should be deleted and then this method can be moved to the
-  // V4LocalDatabaseManager class.
-  // TODO(vakh): Move this method to V4LocalDatabaseManager after launching
-  // PVer4 in Chromium.
-  virtual void GetFullHashesWithApis(const GURL& url,
-                                     ThreatMetadataForApiCallback api_callback);
+  virtual void GetFullHashesWithApis(
+      const GURL& url,
+      const std::vector<std::string>& list_client_states,
+      ThreatMetadataForApiCallback api_callback);
 
   // net::URLFetcherDelegate interface.
   void OnURLFetchComplete(const net::URLFetcher* source) override;

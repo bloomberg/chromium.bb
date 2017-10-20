@@ -338,6 +338,12 @@ class V4ProtocolManagerUtil {
   static bool IPAddressToEncodedIPV6Hash(const std::string& ip_address,
                                          FullHash* hashed_encoded_ip);
 
+  // Stores the client state values for each of the lists in |store_state_map|
+  // into |list_client_states|.
+  static void GetListClientStatesFromStoreStateMap(
+      const std::unique_ptr<StoreStateMap>& store_state_map,
+      std::vector<std::string>* list_client_states);
+
  private:
   V4ProtocolManagerUtil() {}
 

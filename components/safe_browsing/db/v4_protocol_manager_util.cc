@@ -593,4 +593,16 @@ bool V4ProtocolManagerUtil::IPAddressToEncodedIPV6Hash(
   return true;
 }
 
+// static
+void V4ProtocolManagerUtil::GetListClientStatesFromStoreStateMap(
+    const std::unique_ptr<StoreStateMap>& store_state_map,
+    std::vector<std::string>* list_client_states) {
+  std::transform(
+      store_state_map->begin(), store_state_map->end(),
+      std::back_inserter(*list_client_states),
+      [](const std::map<ListIdentifier, std::string>::value_type& pair) {
+        return pair.second;
+      });
+}
+
 }  // namespace safe_browsing
