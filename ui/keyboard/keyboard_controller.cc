@@ -700,4 +700,8 @@ const gfx::Rect KeyboardController::AdjustSetBoundsRequest(
                                                      requested_bounds);
 }
 
+bool KeyboardController::IsOverscrollAllowed() const {
+  return container_behavior_->IsOverscrollAllowed();
+}
+
 }  // namespace keyboard

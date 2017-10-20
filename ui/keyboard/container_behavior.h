@@ -38,6 +38,11 @@ class KEYBOARD_EXPORT ContainerBehavior {
   virtual const gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds) const = 0;
+
+  // A ContainerBehavior can choose to not allow overscroll to be used. It is
+  // important to note that the word "Allowed" is used because whether or not
+  // overscroll is "enabled" depends on multiple external factors.
+  virtual bool IsOverscrollAllowed() const = 0;
 };
 
 }  // namespace keyboard
