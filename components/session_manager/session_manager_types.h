@@ -17,14 +17,13 @@ enum class SessionState {
   // Running out of box UI.
   OOBE,
 
-  // Running login UI (primary user) but user sign in hasn't completed yet.
+  // Running login UI (primary user), including the post login steps such as
+  // selecting avatar, agreeing to terms of service etc.
   LOGIN_PRIMARY,
 
-  // Running login UI (primary or secondary user), user sign in has been
-  // completed but login UI hasn't been hidden yet. This means that either
-  // some session initialization is happening or user has to go through some
-  // UI flow on the same login UI like select avatar, agree to terms of
-  // service etc.
+  // A transient state between LOGIN_PRIMARY/LOGIN_SECONDARY and ACTIVE to
+  // prepare user desktop environment (e.g. launching browser windows) while the
+  // login screen is still visible.
   LOGGED_IN_NOT_ACTIVE,
 
   // A user(s) has logged in *and* login UI is hidden i.e. user session is
