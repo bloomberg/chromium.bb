@@ -114,7 +114,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void AppendToFile(const std::string& url,
                     const std::string& content) override;
   void RequestFileSystems() override;
-  void AddFileSystem(const std::string& file_system_path) override;
+  void AddFileSystem(const std::string& type) override;
   void RemoveFileSystem(const std::string& file_system_path) override;
   void UpgradeDraggedFileSystemPermissions(
       const std::string& file_system_url) override;
@@ -190,9 +190,9 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
 
   // DevToolsFileHelper::Delegate overrides.
   void FileSystemAdded(
-      const DevToolsFileHelper::FileSystem& file_system) override;
+      const std::string& error,
+      const DevToolsFileHelper::FileSystem* file_system) override;
   void FileSystemRemoved(const std::string& file_system_path) override;
-  void FailedToAddFileSystem() override;
   void FilePathsChanged(const std::vector<std::string>& changed_paths,
                         const std::vector<std::string>& added_paths,
                         const std::vector<std::string>& removed_paths) override;

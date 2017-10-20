@@ -55,6 +55,8 @@ using std::set;
 namespace {
 
 static const char kRootName[] = "<root>";
+static const char kPermissionDenied[] = "<permission denied>";
+static const char kAlreadyAdded[] = "<already added>";
 
 base::LazyInstance<base::FilePath>::Leaky
     g_last_save_path = LAZY_INSTANCE_INITIALIZER;
@@ -170,6 +172,7 @@ std::string RegisterFileSystem(WebContents* web_contents,
 
 DevToolsFileHelper::FileSystem CreateFileSystemStruct(
     WebContents* web_contents,
+    const std::string& type,
     const std::string& file_system_id,
     const std::string& file_system_path) {
   const GURL origin = web_contents->GetURL().GetOrigin();
@@ -177,34 +180,40 @@ DevToolsFileHelper::FileSystem CreateFileSystemStruct(
       storage::GetIsolatedFileSystemName(origin, file_system_id);
   std::string root_url = storage::GetIsolatedFileSystemRootURIString(
       origin, file_system_id, kRootName);
-  return DevToolsFileHelper::FileSystem(file_system_name,
-                                        root_url,
+  return DevToolsFileHelper::FileSystem(type, file_system_name, root_url,
                                         file_system_path);
 }
 
-set<std::string> GetAddedFileSystemPaths(Profile* profile) {
+using PathToType = std::map<std::string, std::string>;
+PathToType GetAddedFileSystemPaths(Profile* profile) {
   const base::DictionaryValue* file_systems_paths_value =
       profile->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
-  set<std::string> result;
+  PathToType result;
   for (base::DictionaryValue::Iterator it(*file_systems_paths_value);
        !it.IsAtEnd(); it.Advance()) {
-    result.insert(it.key());
+    std::string type =
+        it.value().is_string() ? it.value().GetString() : std::string();
+    result[it.key()] = type;
   }
   return result;
 }
 
 }  // namespace
 
-DevToolsFileHelper::FileSystem::FileSystem() {
-}
+DevToolsFileHelper::FileSystem::FileSystem() = default;
 
-DevToolsFileHelper::FileSystem::FileSystem(const std::string& file_system_name,
+DevToolsFileHelper::FileSystem::~FileSystem() = default;
+
+DevToolsFileHelper::FileSystem::FileSystem(const FileSystem& other) = default;
+
+DevToolsFileHelper::FileSystem::FileSystem(const std::string& type,
+                                           const std::string& file_system_name,
                                            const std::string& root_url,
                                            const std::string& file_system_path)
-    : file_system_name(file_system_name),
+    : type(type),
+      file_system_name(file_system_name),
       root_url(root_url),
-      file_system_path(file_system_path) {
-}
+      file_system_path(file_system_path) {}
 
 DevToolsFileHelper::DevToolsFileHelper(WebContents* web_contents,
                                        Profile* profile,
@@ -298,38 +307,16 @@ void DevToolsFileHelper::SaveAsFileSelected(const std::string& url,
 }
 
 void DevToolsFileHelper::AddFileSystem(
-    const std::string& file_system_path,
+    const std::string& type,
     const ShowInfoBarCallback& show_info_bar_callback) {
-  if (file_system_path.empty()) {
-    scoped_refptr<SelectFileDialog> select_file_dialog = new SelectFileDialog(
-        Bind(&DevToolsFileHelper::InnerAddFileSystem,
-             weak_factory_.GetWeakPtr(), show_info_bar_callback),
-        Bind(&DevToolsFileHelper::FailedToAddFileSystem,
-             weak_factory_.GetWeakPtr()),
-        web_contents_);
-    select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
-                             base::FilePath());
-  } else {
-    file_task_runner_->PostTask(
-        FROM_HERE,
-        BindOnce(&DevToolsFileHelper::CheckProjectFileExistsAndAddFileSystem,
-                 weak_factory_.GetWeakPtr(), show_info_bar_callback,
-                 base::FilePath::FromUTF8Unsafe(file_system_path)));
-  }
-}
-
-// static
-void DevToolsFileHelper::CheckProjectFileExistsAndAddFileSystem(
-    base::WeakPtr<DevToolsFileHelper> self,
-    ShowInfoBarCallback show_info_bar_callback,
-    base::FilePath path) {
-  base::AssertBlockingAllowed();
-  if (base::PathExists(path.Append(FILE_PATH_LITERAL(".devtools")))) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        BindOnce(&DevToolsFileHelper::InnerAddFileSystem, std::move(self),
-                 std::move(show_info_bar_callback), path));
-  }
+  scoped_refptr<SelectFileDialog> select_file_dialog = new SelectFileDialog(
+      Bind(&DevToolsFileHelper::InnerAddFileSystem, weak_factory_.GetWeakPtr(),
+           show_info_bar_callback, type),
+      Bind(&DevToolsFileHelper::FailedToAddFileSystem,
+           weak_factory_.GetWeakPtr(), kPermissionDenied),
+      web_contents_);
+  select_file_dialog->Show(ui::SelectFileDialog::SELECT_FOLDER,
+                           base::FilePath());
 }
 
 void DevToolsFileHelper::UpgradeDraggedFileSystemPermissions(
@@ -347,34 +334,34 @@ void DevToolsFileHelper::UpgradeDraggedFileSystemPermissions(
   std::vector<storage::MountPoints::MountPointInfo>::const_iterator it =
       mount_points.begin();
   for (; it != mount_points.end(); ++it)
-    InnerAddFileSystem(show_info_bar_callback, it->path);
+    InnerAddFileSystem(show_info_bar_callback, std::string(), it->path);
 }
 
 void DevToolsFileHelper::InnerAddFileSystem(
     const ShowInfoBarCallback& show_info_bar_callback,
+    const std::string& type,
     const base::FilePath& path) {
   std::string file_system_path = path.AsUTF8Unsafe();
 
-  const base::DictionaryValue* file_systems_paths_value =
-      profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
-  if (file_systems_paths_value->HasKey(file_system_path))
+  if (IsFileSystemAdded(file_system_path)) {
+    FailedToAddFileSystem(kAlreadyAdded);
     return;
+  }
 
   std::string path_display_name = path.AsEndingWithSeparator().AsUTF8Unsafe();
   base::string16 message = l10n_util::GetStringFUTF16(
       IDS_DEV_TOOLS_CONFIRM_ADD_FILE_SYSTEM_MESSAGE,
       base::UTF8ToUTF16(path_display_name));
   show_info_bar_callback.Run(
-      message,
-      Bind(&DevToolsFileHelper::AddUserConfirmedFileSystem,
-           weak_factory_.GetWeakPtr(), path));
+      message, Bind(&DevToolsFileHelper::AddUserConfirmedFileSystem,
+                    weak_factory_.GetWeakPtr(), type, path));
 }
 
-void DevToolsFileHelper::AddUserConfirmedFileSystem(
-    const base::FilePath& path,
-    bool allowed) {
+void DevToolsFileHelper::AddUserConfirmedFileSystem(const std::string& type,
+                                                    const base::FilePath& path,
+                                                    bool allowed) {
   if (!allowed) {
-    FailedToAddFileSystem();
+    FailedToAddFileSystem(kPermissionDenied);
     return;
   }
 
@@ -385,11 +372,11 @@ void DevToolsFileHelper::AddUserConfirmedFileSystem(
                               prefs::kDevToolsFileSystemPaths);
   base::DictionaryValue* file_systems_paths_value = update.Get();
   file_systems_paths_value->SetWithoutPathExpansion(
-      file_system_path, base::MakeUnique<base::Value>());
+      file_system_path, base::MakeUnique<base::Value>(type));
 }
 
-void DevToolsFileHelper::FailedToAddFileSystem() {
-  delegate_->FailedToAddFileSystem();
+void DevToolsFileHelper::FailedToAddFileSystem(const std::string& error) {
+  delegate_->FileSystemAdded(error, nullptr);
 }
 
 std::vector<DevToolsFileHelper::FileSystem>
@@ -407,11 +394,12 @@ DevToolsFileHelper::GetFileSystems() {
                    base::Unretained(this)));
   }
   for (auto file_system_path : file_system_paths_) {
-    base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
+    base::FilePath path =
+        base::FilePath::FromUTF8Unsafe(file_system_path.first);
     std::string file_system_id = RegisterFileSystem(web_contents_, path);
-    FileSystem filesystem = CreateFileSystemStruct(web_contents_,
-                                                   file_system_id,
-                                                   file_system_path);
+    FileSystem filesystem =
+        CreateFileSystemStruct(web_contents_, file_system_path.second,
+                               file_system_id, file_system_path.first);
     file_systems.push_back(filesystem);
     file_watcher_->AddWatch(std::move(path));
   }
@@ -432,33 +420,34 @@ void DevToolsFileHelper::RemoveFileSystem(const std::string& file_system_path) {
 bool DevToolsFileHelper::IsFileSystemAdded(
     const std::string& file_system_path) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  set<std::string> file_system_paths = GetAddedFileSystemPaths(profile_);
-  return file_system_paths.find(file_system_path) != file_system_paths.end();
+
+  const base::DictionaryValue* file_systems_paths_value =
+      profile_->GetPrefs()->GetDictionary(prefs::kDevToolsFileSystemPaths);
+  return file_systems_paths_value->HasKey(file_system_path);
 }
 
 void DevToolsFileHelper::FileSystemPathsSettingChanged() {
-  std::set<std::string> remaining;
+  PathToType remaining;
   remaining.swap(file_system_paths_);
   DCHECK(file_watcher_.get());
 
-  for (auto file_system_path : GetAddedFileSystemPaths(profile_)) {
-    if (remaining.find(file_system_path) == remaining.end()) {
-      base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
+  for (auto file_system : GetAddedFileSystemPaths(profile_)) {
+    if (remaining.find(file_system.first) == remaining.end()) {
+      base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system.first);
       std::string file_system_id = RegisterFileSystem(web_contents_, path);
-      FileSystem filesystem = CreateFileSystemStruct(web_contents_,
-                                                     file_system_id,
-                                                     file_system_path);
-      delegate_->FileSystemAdded(filesystem);
+      FileSystem filesystem = CreateFileSystemStruct(
+          web_contents_, file_system.second, file_system_id, file_system.first);
+      delegate_->FileSystemAdded(std::string(), &filesystem);
       file_watcher_->AddWatch(std::move(path));
     } else {
-      remaining.erase(file_system_path);
+      remaining.erase(file_system.first);
     }
-    file_system_paths_.insert(file_system_path);
+    file_system_paths_[file_system.first] = file_system.second;
   }
 
-  for (auto file_system_path : remaining) {
-    delegate_->FileSystemRemoved(file_system_path);
-    base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system_path);
+  for (auto file_system : remaining) {
+    delegate_->FileSystemRemoved(file_system.first);
+    base::FilePath path = base::FilePath::FromUTF8Unsafe(file_system.first);
     file_watcher_->RemoveWatch(std::move(path));
   }
 }

@@ -34,10 +34,14 @@ class DevToolsFileHelper {
  public:
   struct FileSystem {
     FileSystem();
-    FileSystem(const std::string& file_system_name,
+    ~FileSystem();
+    FileSystem(const FileSystem& other);
+    FileSystem(const std::string& type,
+               const std::string& file_system_name,
                const std::string& root_url,
                const std::string& file_system_path);
 
+    std::string type;
     std::string file_system_name;
     std::string root_url;
     std::string file_system_path;
@@ -46,9 +50,9 @@ class DevToolsFileHelper {
   class Delegate {
    public:
     virtual ~Delegate() {}
-    virtual void FileSystemAdded(const FileSystem& file_system) = 0;
+    virtual void FileSystemAdded(const std::string& error,
+                                 const FileSystem* file_system) = 0;
     virtual void FileSystemRemoved(const std::string& file_system_path) = 0;
-    virtual void FailedToAddFileSystem() = 0;
     virtual void FilePathsChanged(
         const std::vector<std::string>& changed_paths,
         const std::vector<std::string>& added_paths,
@@ -83,20 +87,14 @@ class DevToolsFileHelper {
               const std::string& content,
               const AppendCallback& callback);
 
-  // 1. If empty |file_system_path| is passed, shows select folder dialog.
-  //    If user cancels folder selection, passes empty FileSystem struct to
-  //    |callback|.
-  //    If non-empty |file_system_path| is passed, verifies that corresponding
-  //    folder contains the ".devtools" project file, if not, passes empty
-  //    FileSystem struct to |callback|.
-  // 2. Shows infobar by means of |show_info_bar_callback| to let the user
-  //    decide whether to grant security permissions or not.
-  //    If user allows adding file system in infobar, grants renderer
-  //    read/write permissions, registers isolated file system for it and
-  //    passes FileSystem struct to |callback|. Saves file system path to prefs.
-  //    If user denies adding file system in infobar, passes error string to
-  //    |callback|.
-  void AddFileSystem(const std::string& file_system_path,
+  // Shows infobar by means of |show_info_bar_callback| to let the user
+  // decide whether to grant security permissions or not.
+  // If user allows adding file system in infobar, grants renderer
+  // read/write permissions, registers isolated file system for it and
+  // passes FileSystem struct to |callback|. Saves file system path to prefs.
+  // If user denies adding file system in infobar, passes error string to
+  // |callback|. Marks filesystem as of arbitrary |type|.
+  void AddFileSystem(const std::string& type,
                      const ShowInfoBarCallback& show_info_bar_callback);
 
   // Upgrades dragged file system permissions to a read-write access.
@@ -128,23 +126,17 @@ class DevToolsFileHelper {
                           const std::string& content,
                           const SaveCallback& callback,
                           const base::FilePath& path);
-  void InnerAddFileSystem(
-      const ShowInfoBarCallback& show_info_bar_callback,
-      const base::FilePath& path);
-  void AddUserConfirmedFileSystem(
-      const base::FilePath& path,
-      bool allowed);
-  void FailedToAddFileSystem();
+  void InnerAddFileSystem(const ShowInfoBarCallback& show_info_bar_callback,
+                          const std::string& type,
+                          const base::FilePath& path);
+  void AddUserConfirmedFileSystem(const std::string& type,
+                                  const base::FilePath& path,
+                                  bool allowed);
+  void FailedToAddFileSystem(const std::string& error);
   void FileSystemPathsSettingChanged();
   void FilePathsChanged(const std::vector<std::string>& changed_paths,
                         const std::vector<std::string>& added_paths,
                         const std::vector<std::string>& removed_paths);
-
-  // This should only be called on the file sequence.
-  static void CheckProjectFileExistsAndAddFileSystem(
-      base::WeakPtr<DevToolsFileHelper> self,
-      ShowInfoBarCallback show_info_bar_callback,
-      base::FilePath path);
 
   content::WebContents* web_contents_;
   Profile* profile_;
@@ -152,7 +144,8 @@ class DevToolsFileHelper {
   typedef std::map<std::string, base::FilePath> PathsMap;
   PathsMap saved_files_;
   PrefChangeRegistrar pref_change_registrar_;
-  std::set<std::string> file_system_paths_;
+  using PathToType = std::map<std::string, std::string>;
+  PathToType file_system_paths_;
   std::unique_ptr<DevToolsFileWatcher, DevToolsFileWatcher::Deleter>
       file_watcher_;
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;

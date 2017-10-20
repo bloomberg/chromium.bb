@@ -118,6 +118,7 @@ base::LazyInstance<DevToolsUIBindingsList>::Leaky g_instances =
 std::unique_ptr<base::DictionaryValue> CreateFileSystemValue(
     DevToolsFileHelper::FileSystem file_system) {
   auto file_system_value = base::MakeUnique<base::DictionaryValue>();
+  file_system_value->SetString("type", file_system.type);
   file_system_value->SetString("fileSystemName", file_system.file_system_name);
   file_system_value->SetString("rootURL", file_system.root_url);
   file_system_value->SetString("fileSystemPath", file_system.file_system_path);
@@ -787,12 +788,11 @@ void DevToolsUIBindings::RequestFileSystems() {
                      &file_systems_value, NULL, NULL);
 }
 
-void DevToolsUIBindings::AddFileSystem(const std::string& file_system_path) {
+void DevToolsUIBindings::AddFileSystem(const std::string& type) {
   CHECK(IsValidFrontendURL(web_contents_->GetURL()) && frontend_host_);
   file_helper_->AddFileSystem(
-      file_system_path,
-      base::Bind(&DevToolsUIBindings::ShowDevToolsConfirmInfoBar,
-                 weak_factory_.GetWeakPtr()));
+      type, base::Bind(&DevToolsUIBindings::ShowDevToolsConfirmInfoBar,
+                       weak_factory_.GetWeakPtr()));
 }
 
 void DevToolsUIBindings::RemoveFileSystem(const std::string& file_system_path) {
@@ -1169,11 +1169,13 @@ void DevToolsUIBindings::AppendedTo(const std::string& url) {
 }
 
 void DevToolsUIBindings::FileSystemAdded(
-    const DevToolsFileHelper::FileSystem& file_system) {
+    const std::string& error,
+    const DevToolsFileHelper::FileSystem* file_system) {
+  base::Value error_value(error);
   std::unique_ptr<base::DictionaryValue> file_system_value(
-      CreateFileSystemValue(file_system));
-  CallClientFunction("DevToolsAPI.fileSystemAdded",
-                     file_system_value.get(), NULL, NULL);
+      file_system ? CreateFileSystemValue(*file_system) : nullptr);
+  CallClientFunction("DevToolsAPI.fileSystemAdded", &error_value,
+                     file_system_value.get(), NULL);
 }
 
 void DevToolsUIBindings::FileSystemRemoved(
@@ -1181,10 +1183,6 @@ void DevToolsUIBindings::FileSystemRemoved(
   base::Value file_system_path_value(file_system_path);
   CallClientFunction("DevToolsAPI.fileSystemRemoved",
                      &file_system_path_value, NULL, NULL);
-}
-
-void DevToolsUIBindings::FailedToAddFileSystem() {
-  CallClientFunction("DevToolsAPI.failedToAddFileSystem", NULL, NULL, NULL);
 }
 
 void DevToolsUIBindings::FilePathsChanged(
