@@ -80,25 +80,6 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
   void Resume() override;
 
  protected:
-  // For test class overrides.
-  // Write data from the offset to the file.
-  // On OS level, it will seek to the |offset| and write from there.
-  virtual DownloadInterruptReason WriteDataToFile(int64_t offset,
-                                                  const char* data,
-                                                  size_t data_len);
-
-  virtual base::TimeDelta GetRetryDelayForFailedRename(int attempt_number);
-
-  virtual bool ShouldRetryFailedRename(DownloadInterruptReason reason);
-
- private:
-  friend class DownloadFileTest;
-
-  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
-                   const base::FilePath& default_downloads_directory,
-                   const net::NetLogWithSource& net_log,
-                   base::WeakPtr<DownloadDestinationObserver> observer);
-
   // Wrapper of a ByteStreamReader or ScopedDataPipeConsumerHandle, and the meta
   // data needed to write to a slice of the target file.
   //
@@ -206,8 +187,27 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
     DISALLOW_COPY_AND_ASSIGN(SourceStream);
   };
 
-  typedef std::unordered_map<int64_t, std::unique_ptr<SourceStream>>
-      SourceStreams;
+  // For test class overrides.
+  // Write data from the offset to the file.
+  // On OS level, it will seek to the |offset| and write from there.
+  virtual DownloadInterruptReason WriteDataToFile(int64_t offset,
+                                                  const char* data,
+                                                  size_t data_len);
+
+  virtual base::TimeDelta GetRetryDelayForFailedRename(int attempt_number);
+
+  virtual bool ShouldRetryFailedRename(DownloadInterruptReason reason);
+
+  virtual DownloadInterruptReason HandleStreamCompletionStatus(
+      SourceStream* source_stream);
+
+ private:
+  friend class DownloadFileTest;
+
+  DownloadFileImpl(std::unique_ptr<DownloadSaveInfo> save_info,
+                   const base::FilePath& default_downloads_directory,
+                   const net::NetLogWithSource& net_log,
+                   base::WeakPtr<DownloadDestinationObserver> observer);
 
   // Options for RenameWithRetryInternal.
   enum RenameOption {
@@ -321,6 +321,8 @@ class CONTENT_EXPORT DownloadFileImpl : public DownloadFile {
 
   // Map of the offset and the source stream that represents the slice
   // starting from offset.
+  typedef std::unordered_map<int64_t, std::unique_ptr<SourceStream>>
+      SourceStreams;
   SourceStreams source_streams_;
 
   // Used to cancel the request on UI thread, since the ByteStreamReader can't
