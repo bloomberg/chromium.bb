@@ -25,16 +25,41 @@ NGLogicalSize NGLineBoxFragmentBuilder::Size() const {
   return {inline_size_, metrics_.LineHeight()};
 }
 
-void NGLineBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta) {
-  for (auto& offset : offsets_)
-    offset.block_offset += delta;
+const NGPhysicalFragment* NGLineBoxFragmentBuilder::Child::PhysicalFragment()
+    const {
+  return layout_result ? layout_result->PhysicalFragment().get()
+                       : fragment.get();
 }
 
-void NGLineBoxFragmentBuilder::MoveChildrenInBlockDirection(LayoutUnit delta,
-                                                            unsigned start,
-                                                            unsigned end) {
+void NGLineBoxFragmentBuilder::ChildList::AddChild(
+    scoped_refptr<NGLayoutResult> layout_result,
+    const NGLogicalOffset& child_offset) {
+  children_.push_back(Child{std::move(layout_result), nullptr, child_offset});
+}
+
+void NGLineBoxFragmentBuilder::ChildList::AddChild(
+    scoped_refptr<NGPhysicalFragment> fragment,
+    const NGLogicalOffset& child_offset) {
+  children_.push_back(Child{nullptr, std::move(fragment), child_offset});
+}
+
+void NGLineBoxFragmentBuilder::ChildList::AddChild(
+    std::nullptr_t,
+    const NGLogicalOffset& child_offset) {
+  children_.push_back(Child{nullptr, nullptr, child_offset});
+}
+
+void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(
+    LayoutUnit delta) {
+  for (auto& child : children_)
+    child.offset.block_offset += delta;
+}
+
+void NGLineBoxFragmentBuilder::ChildList::MoveInBlockDirection(LayoutUnit delta,
+                                                               unsigned start,
+                                                               unsigned end) {
   for (unsigned index = start; index < end; index++)
-    offsets_[index].block_offset += delta;
+    children_[index].offset.block_offset += delta;
 }
 
 void NGLineBoxFragmentBuilder::SetMetrics(const NGLineHeightMetrics& metrics) {
@@ -51,14 +76,29 @@ void NGLineBoxFragmentBuilder::SetBreakToken(
   break_token_ = std::move(break_token);
 }
 
+void NGLineBoxFragmentBuilder::AddChildren(ChildList& children) {
+  offsets_.ReserveCapacity(children.size());
+  children_.ReserveCapacity(children.size());
+
+  for (auto& child : children) {
+    if (child.layout_result) {
+      DCHECK(!child.fragment);
+      AddChild(std::move(child.layout_result), child.offset);
+      DCHECK(!child.layout_result);
+    } else {
+      DCHECK(child.fragment);
+      AddChild(std::move(child.fragment), child.offset);
+      DCHECK(!child.fragment);
+    }
+  }
+}
+
 scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGWritingMode writing_mode(
       FromPlatformWritingMode(node_.Style().GetWritingMode()));
-  NGPhysicalSize physical_size =
-      NGLogicalSize(inline_size_, Metrics().LineHeight())
-          .ConvertToPhysical(writing_mode);
+  NGPhysicalSize physical_size = Size().ConvertToPhysical(writing_mode);
 
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();

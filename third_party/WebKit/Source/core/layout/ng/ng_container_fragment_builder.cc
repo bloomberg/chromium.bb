@@ -71,14 +71,6 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
   return *this;
 }
 
-NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    std::nullptr_t,
-    const NGLogicalOffset& child_offset) {
-  children_.push_back(nullptr);
-  offsets_.push_back(child_offset);
-  return *this;
-}
-
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddOutOfFlowDescendant(
     NGOutOfFlowPositionedDescendant descendant) {
   oof_positioned_descendants_.push_back(descendant);

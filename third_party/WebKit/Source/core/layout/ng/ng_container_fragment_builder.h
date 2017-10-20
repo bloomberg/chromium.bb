@@ -53,9 +53,6 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
   virtual NGContainerFragmentBuilder& AddChild(
       scoped_refptr<NGPhysicalFragment>,
       const NGLogicalOffset&);
-  // TODO(layout-dev): Explain why we have this.
-  virtual NGContainerFragmentBuilder& AddChild(std::nullptr_t,
-                                               const NGLogicalOffset&);
 
   const Vector<scoped_refptr<NGPhysicalFragment>>& Children() const {
     return children_;
