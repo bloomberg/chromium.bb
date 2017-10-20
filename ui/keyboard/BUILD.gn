@@ -163,6 +163,7 @@ mojom("mojom") {
 
 test("keyboard_unittests") {
   sources = [
+    "container_full_width_behavior_unittest.cc",
     "keyboard_controller_unittest.cc",
     "keyboard_event_filter_unittest.cc",
     "keyboard_util_unittest.cc",

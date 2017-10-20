@@ -693,4 +693,11 @@ void KeyboardController::ReportLingeringState() {
                             state_, KeyboardControllerState::COUNT);
 }
 
+const gfx::Rect KeyboardController::AdjustSetBoundsRequest(
+    const gfx::Rect& display_bounds,
+    const gfx::Rect& requested_bounds) const {
+  return container_behavior_->AdjustSetBoundsRequest(display_bounds,
+                                                     requested_bounds);
+}
+
 }  // namespace keyboard
