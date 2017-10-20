@@ -1860,7 +1860,7 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   manager.reset();
 }
 
-TEST_F(BrowserAccessibilityTest, TestMisspellingsInSimpleTextFields) {
+TEST_F(BrowserAccessibilityTest, TestExistingMisspellingsInSimpleTextFields) {
   std::string value1("Testing .");
   // The word "helo" is misspelled.
   std::string value2("Helo there.");
@@ -1947,6 +1947,134 @@ TEST_F(BrowserAccessibilityTest, TestMisspellingsInSimpleTextFields) {
   }
 
   // Ensure that "helo" is marked misspelled.
+  for (LONG offset = value1_length; offset < value1_length + 4; ++offset) {
+    hr = ax_combo_box->GetCOM()->get_attributes(
+        offset, &start_offset, &end_offset, text_attributes.Receive());
+    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(value1_length, start_offset);
+    EXPECT_EQ(value1_length + 4, end_offset);
+    EXPECT_NE(base::string16::npos,
+              base::string16(text_attributes).find(L"invalid:spelling"));
+    text_attributes.Reset();
+  }
+
+  // Ensure that the last part of the value is not marked misspelled.
+  for (LONG offset = value1_length + 4; offset < combo_box_value_length;
+       ++offset) {
+    hr = ax_combo_box->GetCOM()->get_attributes(
+        offset, &start_offset, &end_offset, text_attributes.Receive());
+    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(value1_length + 4, start_offset);
+    EXPECT_EQ(combo_box_value_length, end_offset);
+    EXPECT_EQ(base::string16::npos,
+              base::string16(text_attributes).find(L"invalid:spelling"));
+    text_attributes.Reset();
+  }
+
+  manager.reset();
+}
+
+TEST_F(BrowserAccessibilityTest, TestNewMisspellingsInSimpleTextFields) {
+  std::string value1("Testing .");
+  // The word "helo" is misspelled.
+  std::string value2("Helo there.");
+
+  LONG value1_length = static_cast<LONG>(value1.length());
+  LONG value2_length = static_cast<LONG>(value2.length());
+  LONG combo_box_value_length = value1_length + value2_length;
+
+  ui::AXNodeData root;
+  root.id = 1;
+  root.role = ui::AX_ROLE_ROOT_WEB_AREA;
+  root.AddState(ui::AX_STATE_FOCUSABLE);
+
+  ui::AXNodeData combo_box;
+  combo_box.id = 2;
+  combo_box.role = ui::AX_ROLE_COMBO_BOX;
+  combo_box.AddState(ui::AX_STATE_EDITABLE);
+  combo_box.AddState(ui::AX_STATE_FOCUSABLE);
+  combo_box.SetValue(value1 + value2);
+
+  ui::AXNodeData combo_box_div;
+  combo_box_div.id = 3;
+  combo_box_div.role = ui::AX_ROLE_GENERIC_CONTAINER;
+  combo_box_div.AddState(ui::AX_STATE_EDITABLE);
+
+  ui::AXNodeData static_text1;
+  static_text1.id = 4;
+  static_text1.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text1.AddState(ui::AX_STATE_EDITABLE);
+  static_text1.SetName(value1);
+
+  ui::AXNodeData static_text2;
+  static_text2.id = 5;
+  static_text2.role = ui::AX_ROLE_STATIC_TEXT;
+  static_text2.AddState(ui::AX_STATE_EDITABLE);
+  static_text2.SetName(value2);
+
+  root.child_ids.push_back(combo_box.id);
+  combo_box.child_ids.push_back(combo_box_div.id);
+  combo_box_div.child_ids.push_back(static_text1.id);
+  combo_box_div.child_ids.push_back(static_text2.id);
+
+  std::unique_ptr<BrowserAccessibilityManager> manager(
+      BrowserAccessibilityManager::Create(
+          MakeAXTreeUpdate(root, combo_box, combo_box_div, static_text1,
+                           static_text2),
+          nullptr, new BrowserAccessibilityFactory()));
+
+  ASSERT_NE(nullptr, manager->GetRoot());
+  BrowserAccessibilityWin* ax_root =
+      ToBrowserAccessibilityWin(manager->GetRoot());
+  ASSERT_NE(nullptr, ax_root);
+  ASSERT_EQ(1U, ax_root->PlatformChildCount());
+
+  BrowserAccessibilityWin* ax_combo_box =
+      ToBrowserAccessibilityWin(ax_root->PlatformGetChild(0));
+  ASSERT_NE(nullptr, ax_combo_box);
+  ASSERT_EQ(1U, ax_combo_box->PlatformChildCount());
+
+  HRESULT hr;
+  LONG start_offset, end_offset;
+  base::win::ScopedBstr text_attributes;
+
+  // Ensure that nothing is marked misspelled.
+  for (LONG offset = 0; offset < combo_box_value_length; ++offset) {
+    hr = ax_combo_box->GetCOM()->get_attributes(
+        offset, &start_offset, &end_offset, text_attributes.Receive());
+    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(0, start_offset);
+    EXPECT_EQ(combo_box_value_length, end_offset);
+    EXPECT_EQ(base::string16::npos,
+              base::string16(text_attributes).find(L"invalid:spelling"));
+    text_attributes.Reset();
+  }
+
+  // Add the spelling markers on "helo".
+  std::vector<int32_t> marker_types{
+      static_cast<int32_t>(ui::AX_MARKER_TYPE_SPELLING)};
+  std::vector<int32_t> marker_starts{0};
+  std::vector<int32_t> marker_ends{4};
+  static_text2.AddIntListAttribute(ui::AX_ATTR_MARKER_TYPES, marker_types);
+  static_text2.AddIntListAttribute(ui::AX_ATTR_MARKER_STARTS, marker_starts);
+  static_text2.AddIntListAttribute(ui::AX_ATTR_MARKER_ENDS, marker_ends);
+  ui::AXTree* tree = const_cast<ui::AXTree*>(manager->ax_tree());
+  ASSERT_NE(nullptr, tree);
+  ASSERT_TRUE(tree->Unserialize(MakeAXTreeUpdate(static_text2)));
+
+  // Ensure that value1 is still not marked misspelled.
+  for (LONG offset = 0; offset < value1_length; ++offset) {
+    hr = ax_combo_box->GetCOM()->get_attributes(
+        offset, &start_offset, &end_offset, text_attributes.Receive());
+    EXPECT_EQ(S_OK, hr);
+    EXPECT_EQ(0, start_offset);
+    EXPECT_EQ(value1_length, end_offset);
+    EXPECT_EQ(base::string16::npos,
+              base::string16(text_attributes).find(L"invalid:spelling"));
+    text_attributes.Reset();
+  }
+
+  // Ensure that "helo" is now marked misspelled.
   for (LONG offset = value1_length; offset < value1_length + 4; ++offset) {
     hr = ax_combo_box->GetCOM()->get_attributes(
         offset, &start_offset, &end_offset, text_attributes.Receive());
