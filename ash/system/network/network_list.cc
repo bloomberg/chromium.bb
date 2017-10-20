@@ -482,9 +482,15 @@ void NetworkListView::UpdateNetworks(
   for (auto& info : network_list_)
     last_network_info_map_[info->guid] = std::move(info);
 
+  bool cellular_enabled =
+      NetworkHandler::Get()->network_state_handler()->IsTechnologyEnabled(
+          NetworkTypePattern::Cellular());
   network_list_.clear();
   for (const auto* network : networks) {
     if (!NetworkTypePattern::NonVirtual().MatchesType(network->type()))
+      continue;
+    // If cellular is disabled, skip the default cellular service.
+    if (network->Matches(NetworkTypePattern::Cellular()) && !cellular_enabled)
       continue;
     network_list_.push_back(std::make_unique<NetworkInfo>(network->guid()));
   }
