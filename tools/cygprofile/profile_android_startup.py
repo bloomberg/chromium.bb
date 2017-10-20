@@ -19,8 +19,8 @@ import sys
 import tempfile
 import time
 
-sys.path.append(os.path.join(sys.path[0], '..', '..',
-    'third_party', 'catapult', 'devil'))
+_SRC_PATH = os.path.join(os.path.dirname(__file__), os.pardir, os.pardir)
+sys.path.append(os.path.join(_SRC_PATH, 'third_party', 'catapult', 'devil'))
 from devil.android import apk_helper
 from devil.android import device_errors
 from devil.android import device_utils
@@ -28,11 +28,11 @@ from devil.android import flag_changer
 from devil.android import forwarder
 from devil.android.sdk import intent
 
-sys.path.append(os.path.join(sys.path[0], '..', '..', 'build', 'android'))
+sys.path.append(os.path.join(_SRC_PATH, 'build', 'android'))
 import devil_chromium
 from pylib import constants
 
-sys.path.append(os.path.join(sys.path[0], '..', '..', 'tools', 'perf'))
+sys.path.append(os.path.join(_SRC_PATH, 'tools', 'perf'))
 from core import path_util
 sys.path.append(path_util.GetTelemetryDir())
 from telemetry.internal.util import webpagereplay_go_server
