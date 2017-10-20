@@ -18,7 +18,7 @@
 #include "chromeos/components/tether/disconnect_tethering_request_sender_impl.h"
 #include "chromeos/components/tether/host_connection_metrics_logger.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer_impl.h"
-#include "chromeos/components/tether/host_scan_scheduler.h"
+#include "chromeos/components/tether/host_scan_scheduler_impl.h"
 #include "chromeos/components/tether/host_scanner.h"
 #include "chromeos/components/tether/keep_alive_scheduler.h"
 #include "chromeos/components/tether/master_host_scan_cache.h"
@@ -243,7 +243,7 @@ void TetherComponentImpl::CreateComponent() {
       tether_host_response_recorder_.get(), notification_presenter_,
       device_id_tether_network_guid_map_.get(), master_host_scan_cache_.get(),
       clock_.get());
-  host_scan_scheduler_ = base::MakeUnique<HostScanScheduler>(
+  host_scan_scheduler_ = base::MakeUnique<HostScanSchedulerImpl>(
       network_state_handler_, host_scanner_.get());
   host_connection_metrics_logger_ =
       base::MakeUnique<HostConnectionMetricsLogger>();

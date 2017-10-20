@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/host_scan_scheduler.h"
+#include "chromeos/components/tether/host_scan_scheduler_impl.h"
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -80,7 +80,7 @@ std::string CreateConfigurationJsonString(const std::string& guid,
 
 }  // namespace
 
-class HostScanSchedulerTest : public NetworkStateTest {
+class HostScanSchedulerImplTest : public NetworkStateTest {
  protected:
   void SetUp() override {
     DBusThreadManager::Initialize();
@@ -98,8 +98,8 @@ class HostScanSchedulerTest : public NetworkStateTest {
 
     fake_host_scanner_ = base::MakeUnique<FakeHostScanner>();
 
-    host_scan_scheduler_ = base::WrapUnique(new HostScanScheduler(
-        network_state_handler(), fake_host_scanner_.get()));
+    host_scan_scheduler_ = base::MakeUnique<HostScanSchedulerImpl>(
+        network_state_handler(), fake_host_scanner_.get());
 
     mock_timer_ = new base::MockTimer(true /* retain_user_task */,
                                       false /* is_repeating */);
@@ -118,6 +118,8 @@ class HostScanSchedulerTest : public NetworkStateTest {
     NetworkStateTest::TearDown();
     DBusThreadManager::Shutdown();
   }
+
+  void RequestScan() { host_scan_scheduler_->ScanRequested(); }
 
   // Disconnects the Ethernet network and manually sets the default network to
   // |new_default_service_path|. If |new_default_service_path| is empty then no
@@ -180,10 +182,10 @@ class HostScanSchedulerTest : public NetworkStateTest {
 
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 
-  std::unique_ptr<HostScanScheduler> host_scan_scheduler_;
+  std::unique_ptr<HostScanSchedulerImpl> host_scan_scheduler_;
 };
 
-TEST_F(HostScanSchedulerTest, ScheduleScan) {
+TEST_F(HostScanSchedulerImplTest, ScheduleScan) {
   host_scan_scheduler_->ScheduleScan();
   EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
@@ -200,15 +202,15 @@ TEST_F(HostScanSchedulerTest, ScheduleScan) {
   VerifyScanDuration(5u /* expected_num_sections */);
 }
 
-TEST_F(HostScanSchedulerTest, ScanRequested) {
+TEST_F(HostScanSchedulerImplTest, ScanRequested) {
   // Begin scanning.
-  host_scan_scheduler_->ScanRequested();
+  RequestScan();
   EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 
   // Should not begin a new scan while a scan is active.
-  host_scan_scheduler_->ScanRequested();
+  RequestScan();
   EXPECT_EQ(1, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
@@ -222,13 +224,13 @@ TEST_F(HostScanSchedulerTest, ScanRequested) {
   VerifyScanDuration(5u /* expected_num_sections */);
 
   // A new scan should be allowed once a scan is not active.
-  host_scan_scheduler_->ScanRequested();
+  RequestScan();
   EXPECT_EQ(2, fake_host_scanner_->num_scans_started());
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
 }
 
-TEST_F(HostScanSchedulerTest, HostScanSchedulerDestroyed) {
+TEST_F(HostScanSchedulerImplTest, HostScanSchedulerDestroyed) {
   host_scan_scheduler_->ScheduleScan();
   EXPECT_TRUE(
       network_state_handler()->GetScanningByType(NetworkTypePattern::Tether()));
@@ -242,7 +244,7 @@ TEST_F(HostScanSchedulerTest, HostScanSchedulerDestroyed) {
   VerifyScanDuration(5u /* expected_num_sections */);
 }
 
-TEST_F(HostScanSchedulerTest, HostScanBatchMetric) {
+TEST_F(HostScanSchedulerImplTest, HostScanBatchMetric) {
   // The first scan takes 5 seconds. After stopping, the timer should be
   // running.
   host_scan_scheduler_->ScheduleScan();
@@ -298,7 +300,7 @@ TEST_F(HostScanSchedulerTest, HostScanBatchMetric) {
   VerifyScanDuration(5u /* expected_num_sections */);
 }
 
-TEST_F(HostScanSchedulerTest, DefaultNetworkChanged) {
+TEST_F(HostScanSchedulerImplTest, DefaultNetworkChanged) {
   // When no Tether network is present, a scan should start when the default
   // network is disconnected.
   SetEthernetNetworkConnecting();

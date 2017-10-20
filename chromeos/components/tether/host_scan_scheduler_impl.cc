@@ -1,8 +1,8 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromeos/components/tether/host_scan_scheduler.h"
+#include "chromeos/components/tether/host_scan_scheduler_impl.h"
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -39,8 +39,9 @@ const int kNumMetricsBuckets = 1000;
 
 }  // namespace
 
-HostScanScheduler::HostScanScheduler(NetworkStateHandler* network_state_handler,
-                                     HostScanner* host_scanner)
+HostScanSchedulerImpl::HostScanSchedulerImpl(
+    NetworkStateHandler* network_state_handler,
+    HostScanner* host_scanner)
     : network_state_handler_(network_state_handler),
       host_scanner_(host_scanner),
       timer_(base::MakeUnique<base::OneShotTimer>()),
@@ -50,7 +51,7 @@ HostScanScheduler::HostScanScheduler(NetworkStateHandler* network_state_handler,
   host_scanner_->AddObserver(this);
 }
 
-HostScanScheduler::~HostScanScheduler() {
+HostScanSchedulerImpl::~HostScanSchedulerImpl() {
   network_state_handler_->SetTetherScanState(false);
   network_state_handler_->RemoveObserver(this, FROM_HERE);
   host_scanner_->RemoveObserver(this);
@@ -69,39 +70,39 @@ HostScanScheduler::~HostScanScheduler() {
   LogHostScanBatchMetric();
 }
 
-void HostScanScheduler::ScheduleScan() {
+void HostScanSchedulerImpl::ScheduleScan() {
   EnsureScan();
 }
 
-void HostScanScheduler::DefaultNetworkChanged(const NetworkState* network) {
+void HostScanSchedulerImpl::DefaultNetworkChanged(const NetworkState* network) {
   if ((!network || !network->IsConnectingOrConnected()) &&
       !IsTetherNetworkConnectingOrConnected()) {
     EnsureScan();
   }
 }
 
-void HostScanScheduler::ScanRequested() {
+void HostScanSchedulerImpl::ScanRequested() {
   EnsureScan();
 }
 
-void HostScanScheduler::ScanFinished() {
+void HostScanSchedulerImpl::ScanFinished() {
   network_state_handler_->SetTetherScanState(false);
 
   last_scan_end_timestamp_ = clock_->Now();
   timer_->Start(FROM_HERE,
                 base::TimeDelta::FromSeconds(kMaxNumSecondsBetweenBatchScans),
-                base::Bind(&HostScanScheduler::LogHostScanBatchMetric,
+                base::Bind(&HostScanSchedulerImpl::LogHostScanBatchMetric,
                            weak_ptr_factory_.GetWeakPtr()));
 }
 
-void HostScanScheduler::SetTestDoubles(
+void HostScanSchedulerImpl::SetTestDoubles(
     std::unique_ptr<base::Timer> test_timer,
     std::unique_ptr<base::Clock> test_clock) {
   timer_ = std::move(test_timer);
   clock_ = std::move(test_clock);
 }
 
-void HostScanScheduler::EnsureScan() {
+void HostScanSchedulerImpl::EnsureScan() {
   if (host_scanner_->IsScanActive())
     return;
 
@@ -118,14 +119,14 @@ void HostScanScheduler::EnsureScan() {
   network_state_handler_->SetTetherScanState(true);
 }
 
-bool HostScanScheduler::IsTetherNetworkConnectingOrConnected() {
+bool HostScanSchedulerImpl::IsTetherNetworkConnectingOrConnected() {
   return network_state_handler_->ConnectingNetworkByType(
              NetworkTypePattern::Tether()) ||
          network_state_handler_->ConnectedNetworkByType(
              NetworkTypePattern::Tether());
 }
 
-void HostScanScheduler::LogHostScanBatchMetric() {
+void HostScanSchedulerImpl::LogHostScanBatchMetric() {
   DCHECK(!last_scan_batch_start_timestamp_.is_null());
   DCHECK(!last_scan_end_timestamp_.is_null());
 
