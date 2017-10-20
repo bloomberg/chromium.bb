@@ -12424,6 +12424,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.InvalidResponseHeadersReceived.NetError"
+    enum="NetErrorCodes">
+  <owner>tbansal@chromium.org</owner>
+  <summary>
+    Net error codes observed when invalid response headers were received from
+    data reduction proxy.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.LevelDBOpenStatus"
     enum="DataReductionProxyStoreStatus">
   <owner>kundaji@chromium.org</owner>

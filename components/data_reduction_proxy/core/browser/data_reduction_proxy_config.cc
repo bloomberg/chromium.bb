@@ -141,9 +141,15 @@ void DataReductionProxyConfig::InitializeOnIOThread(
       new SecureProxyChecker(basic_url_request_context_getter));
   warmup_url_fetcher_.reset(new WarmupURLFetcher(url_request_context_getter));
 
-  AddDefaultProxyBypassRules();
+  if (ShouldAddDefaultProxyBypassRules())
+    AddDefaultProxyBypassRules();
   net::NetworkChangeNotifier::AddIPAddressObserver(this);
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+}
+
+bool DataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return true;
 }
 
 void DataReductionProxyConfig::ReloadConfig() {
