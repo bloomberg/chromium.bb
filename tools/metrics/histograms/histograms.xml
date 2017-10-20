@@ -18236,6 +18236,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Enterprise.InvalidDevicePolicyFiles" units="files">
+  <owner>igorcov@chromium.org</owner>
+  <summary>
+    Chrome OS only. Number of policy files that turned out to be invalid when
+    reading the device policy data. In success scenario the latest policy file
+    read is successful and has valid data submitting zero for this statistic.
+  </summary>
+</histogram>
+
 <histogram name="Enterprise.IOSPolicies">
   <owner>mnissler@chromium.org</owner>
   <summary>
