@@ -1565,6 +1565,7 @@ jumbo_source_set("unit_tests") {
     "input/ImeOnFocusTest.cpp",
     "input/ScrollBoundaryBehaviorTest.cpp",
     "input/TouchActionTest.cpp",
+    "input/TouchEventManagerTest.cpp",
     "inspector/ProtocolParserTest.cpp",
     "intersection_observer/IntersectionObserverTest.cpp",
     "layout/CollapsedBorderValueTest.cpp",
