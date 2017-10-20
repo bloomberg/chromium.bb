@@ -46,6 +46,7 @@ enum {
 
 enum {
   XBOX_ONE_STATUS_MESSAGE_BUTTONS = 0x20,
+  XBOX_ONE_STATUS_MESSAGE_GUIDE = 0x07
 };
 
 enum {
@@ -126,12 +127,17 @@ struct XboxOneEliteButtonData {
   int8_t paddle;
 };
 
+struct XboxOneGuideData {
+  uint8_t down;
+  uint8_t dummy1;
+};
 #pragma pack(pop)
 
 static_assert(sizeof(Xbox360ButtonData) == 18, "xbox button data wrong size");
 static_assert(sizeof(XboxOneButtonData) == 14, "xbox button data wrong size");
 static_assert(sizeof(XboxOneEliteButtonData) == 29,
               "xbox button data wrong size");
+static_assert(sizeof(XboxOneGuideData) == 2, "xbox button data wrong size");
 
 // From MSDN:
 // http://msdn.microsoft.com/en-us/library/windows/desktop/ee417001(v=vs.85).aspx#dead_zone
@@ -230,7 +236,6 @@ void NormalizeXboxOneButtonData(const XboxOneButtonData& data,
   normalized_data->buttons[11] = data.dpad_down;
   normalized_data->buttons[12] = data.dpad_left;
   normalized_data->buttons[13] = data.dpad_right;
-  normalized_data->buttons[14] = data.sync;
   normalized_data->triggers[0] = NormalizeXboxOneTrigger(data.trigger_left);
   normalized_data->triggers[1] = NormalizeXboxOneTrigger(data.trigger_right);
   NormalizeAxis(data.stick_left_x, data.stick_left_y, kLeftThumbDeadzone,
@@ -627,6 +632,13 @@ void XboxController::ProcessXboxOnePacket(size_t length) {
       delegate_->XboxControllerGotData(this, normalized_data);
       break;
     }
+    case XBOX_ONE_STATUS_MESSAGE_GUIDE: {
+      if (length != sizeof(XboxOneGuideData))
+        return;
+      XboxOneGuideData* data = reinterpret_cast<XboxOneGuideData*>(buffer);
+      delegate_->XboxControllerGotGuideData(this, data->down);
+      break;
+    }
     default:
       // Unknown packet: ignore!
       break;
@@ -901,15 +913,33 @@ void XboxDataFetcher::XboxControllerGotData(XboxController* controller,
   pad.buttons[6].value = data.triggers[0];
   pad.buttons[7].pressed = data.triggers[1] > kDefaultButtonPressedThreshold;
   pad.buttons[7].value = data.triggers[1];
-  for (size_t i = 8; i < 17; i++) {
+  for (size_t i = 8; i < 16; i++) {
     pad.buttons[i].pressed = data.buttons[i - 2];
     pad.buttons[i].value = data.buttons[i - 2] ? 1.0f : 0.0f;
+  }
+  if (controller->GetControllerType() == XboxController::XBOX_360_CONTROLLER) {
+    pad.buttons[16].pressed = data.buttons[14];
+    pad.buttons[16].value = data.buttons[14] ? 1.0f : 0.0f;
   }
   for (size_t i = 0; i < arraysize(data.axes); i++) {
     pad.axes[i] = data.axes[i];
   }
 
-  pad.timestamp = base::TimeTicks::Now().ToInternalValue();
+  pad.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
+}
+
+void XboxDataFetcher::XboxControllerGotGuideData(XboxController* controller,
+                                                 bool guide) {
+  PadState* state = GetPadState(controller->location_id());
+  if (!state)
+    return;  // No available slot for this device
+
+  Gamepad& pad = state->data;
+
+  pad.buttons[16].pressed = guide;
+  pad.buttons[16].value = guide ? 1.0f : 0.0f;
+
+  pad.timestamp = (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 }
 
 void XboxDataFetcher::XboxControllerError(XboxController* controller) {

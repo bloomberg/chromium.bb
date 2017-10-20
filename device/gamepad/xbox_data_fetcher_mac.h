@@ -82,6 +82,8 @@ class XboxController {
    public:
     virtual void XboxControllerGotData(XboxController* controller,
                                        const Data& data) = 0;
+    virtual void XboxControllerGotGuideData(XboxController* controller,
+                                            bool guide) = 0;
     virtual void XboxControllerError(XboxController* controller) = 0;
   };
 
@@ -179,6 +181,8 @@ class XboxDataFetcher : public GamepadDataFetcher,
   void RemoveControllerByLocationID(uint32_t id);
   void XboxControllerGotData(XboxController* controller,
                              const XboxController::Data& data) override;
+  void XboxControllerGotGuideData(XboxController* controller,
+                                  bool guide) override;
   void XboxControllerError(XboxController* controller) override;
 
   std::set<XboxController*> controllers_;
