@@ -29,7 +29,6 @@
 #include "content/public/common/page_zoom.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view.h"
 #include "gin/data_object_builder.h"
 #include "gin/handle.h"
@@ -327,18 +326,19 @@ v8::Local<v8::Object> GenerateThemeBackgroundInfo(
   return builder.Build();
 }
 
-content::RenderFrame* GetMainFrame(content::RenderFrame* render_frame) {
-  if (!render_frame)
+content::RenderFrame* GetMainRenderFrameForCurrentContext() {
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::FrameForCurrentContext();
+  if (!frame)
     return nullptr;
-  content::RenderFrame* main_frame = content::RenderFrame::FromWebFrame(
-      render_frame->GetWebFrame()->LocalRoot());
+  content::RenderFrame* main_frame =
+      content::RenderFrame::FromWebFrame(frame->LocalRoot());
   if (!main_frame || !main_frame->IsMainFrame())
     return nullptr;
   return main_frame;
 }
 
-SearchBox* GetSearchBox(content::RenderFrame* render_frame) {
-  content::RenderFrame* main_frame = GetMainFrame(render_frame);
+SearchBox* GetSearchBoxForCurrentContext() {
+  content::RenderFrame* main_frame = GetMainRenderFrameForCurrentContext();
   if (!main_frame)
     return nullptr;
   return SearchBox::Get(main_frame);
@@ -434,12 +434,11 @@ static const char kDispatchThemeChangeEventScript[] =
 
 // ----------------------------------------------------------------------------
 
-class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings>,
-                          public content::RenderFrameObserver {
+class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  explicit SearchBoxBindings(content::RenderFrame* render_frame);
+  SearchBoxBindings();
   ~SearchBoxBindings() override;
 
  private:
@@ -447,23 +446,19 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings>,
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
 
-  // content::RenderFrameObserver:
-  void OnDestruct() override;
-
-  bool GetRightToLeft();
-  bool IsFocused();
-  bool IsKeyCaptureEnabled();
-  void Paste(const std::string& text);
-  void StartCapturingKeyStrokes();
-  void StopCapturingKeyStrokes();
+  static bool GetRightToLeft();
+  static bool IsFocused();
+  static bool IsKeyCaptureEnabled();
+  static void Paste(const std::string& text);
+  static void StartCapturingKeyStrokes();
+  static void StopCapturingKeyStrokes();
 
   DISALLOW_COPY_AND_ASSIGN(SearchBoxBindings);
 };
 
 gin::WrapperInfo SearchBoxBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
 
-SearchBoxBindings::SearchBoxBindings(content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {}
+SearchBoxBindings::SearchBoxBindings() = default;
 
 SearchBoxBindings::~SearchBoxBindings() = default;
 
@@ -481,53 +476,55 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
                  &SearchBoxBindings::StopCapturingKeyStrokes);
 }
 
-void SearchBoxBindings::OnDestruct() {}
-
 bool SearchBoxBindings::GetRightToLeft() {
   return base::i18n::IsRTL();
 }
 
+// static
 bool SearchBoxBindings::IsFocused() {
-  const SearchBox* search_box = GetSearchBox(render_frame());
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return false;
   return search_box->is_focused();
 }
 
+// static
 bool SearchBoxBindings::IsKeyCaptureEnabled() {
-  const SearchBox* search_box = GetSearchBox(render_frame());
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return false;
   return search_box->is_key_capture_enabled();
 }
 
+// static
 void SearchBoxBindings::Paste(const std::string& text) {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->Paste(base::UTF8ToUTF16(text));
 }
 
+// static
 void SearchBoxBindings::StartCapturingKeyStrokes() {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->StartCapturingKeyStrokes();
 }
 
+// static
 void SearchBoxBindings::StopCapturingKeyStrokes() {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->StopCapturingKeyStrokes();
 }
 
-class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings>,
-                           public content::RenderFrameObserver {
+class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
  public:
   static gin::WrapperInfo kWrapperInfo;
 
-  explicit NewTabPageBindings(content::RenderFrame* render_frame);
+  NewTabPageBindings();
   ~NewTabPageBindings() override;
 
  private:
@@ -535,40 +532,39 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings>,
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
 
-  // content::RenderFrameObserver:
-  void OnDestruct() override;
+  static bool HasOrigin(const GURL& origin);
 
-  bool HasOrigin(const GURL& origin) const;
+  static bool IsInputInProgress();
+  static v8::Local<v8::Value> GetMostVisited(v8::Isolate* isolate);
+  static v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
 
-  bool IsInputInProgress();
-  v8::Local<v8::Value> GetMostVisited(v8::Isolate* isolate);
-  v8::Local<v8::Value> GetThemeBackgroundInfo(v8::Isolate* isolate);
-
-  void CheckIsUserSignedInToChromeAs(const std::string& identity);
-  void CheckIsUserSyncingHistory();
-  void DeleteMostVisitedItem(int rid);
-  v8::Local<v8::Value> GetMostVisitedItemData(v8::Isolate* isolate, int rid);
-  void LogEvent(int event);
-  void LogMostVisitedImpression(int position,
-                                int tile_title_source,
-                                int tile_source,
-                                int tile_type,
-                                v8::Local<v8::Value> data_generation_time);
-  void LogMostVisitedNavigation(int position,
-                                int tile_title_source,
-                                int tile_source,
-                                int tile_type,
-                                v8::Local<v8::Value> data_generation_time);
-  void UndoAllMostVisitedDeletions();
-  void UndoMostVisitedDeletion(int rid);
+  static void CheckIsUserSignedInToChromeAs(const std::string& identity);
+  static void CheckIsUserSyncingHistory();
+  static void DeleteMostVisitedItem(int rid);
+  static v8::Local<v8::Value> GetMostVisitedItemData(v8::Isolate* isolate,
+                                                     int rid);
+  static void LogEvent(int event);
+  static void LogMostVisitedImpression(
+      int position,
+      int tile_title_source,
+      int tile_source,
+      int tile_type,
+      v8::Local<v8::Value> data_generation_time);
+  static void LogMostVisitedNavigation(
+      int position,
+      int tile_title_source,
+      int tile_source,
+      int tile_type,
+      v8::Local<v8::Value> data_generation_time);
+  static void UndoAllMostVisitedDeletions();
+  static void UndoMostVisitedDeletion(int rid);
 
   DISALLOW_COPY_AND_ASSIGN(NewTabPageBindings);
 };
 
 gin::WrapperInfo NewTabPageBindings::kWrapperInfo = {gin::kEmbedderNativeGin};
 
-NewTabPageBindings::NewTabPageBindings(content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame) {}
+NewTabPageBindings::NewTabPageBindings() = default;
 
 NewTabPageBindings::~NewTabPageBindings() = default;
 
@@ -598,36 +594,38 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::UndoMostVisitedDeletion);
 }
 
-void NewTabPageBindings::OnDestruct() {}
-
-bool NewTabPageBindings::HasOrigin(const GURL& origin) const {
-  if (!render_frame())
+// static
+bool NewTabPageBindings::HasOrigin(const GURL& origin) {
+  blink::WebLocalFrame* frame = blink::WebLocalFrame::FrameForCurrentContext();
+  if (!frame)
     return false;
-  GURL url(render_frame()->GetWebFrame()->GetDocument().Url());
+  GURL url(frame->GetDocument().Url());
   return url.GetOrigin() == origin.GetOrigin();
 }
 
+// static
 bool NewTabPageBindings::IsInputInProgress() {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return false;
   return search_box->is_input_in_progress();
 }
 
+// static
 v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
-  const SearchBox* search_box = GetSearchBox(render_frame());
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return v8::Null(isolate);
 
-  content::RenderView* render_view = render_frame()->GetRenderView();
+  content::RenderView* render_view =
+      GetMainRenderFrameForCurrentContext()->GetRenderView();
 
   // This corresponds to "window.devicePixelRatio" in JavaScript.
   float zoom_factor =
       content::ZoomLevelToZoomFactor(render_view->GetZoomLevel());
   float device_pixel_ratio = render_view->GetDeviceScaleFactor() * zoom_factor;
 
-  int render_view_id =
-      GetMainFrame(render_frame())->GetRenderView()->GetRoutingID();
+  int render_view_id = render_view->GetRoutingID();
 
   std::vector<InstantMostVisitedItemIDPair> instant_mv_items;
   search_box->GetMostVisitedItems(&instant_mv_items);
@@ -641,41 +639,46 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
   return v8_mv_items;
 }
 
+// static
 v8::Local<v8::Value> NewTabPageBindings::GetThemeBackgroundInfo(
     v8::Isolate* isolate) {
-  const SearchBox* search_box = GetSearchBox(render_frame());
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return v8::Null(isolate);
   const ThemeBackgroundInfo& theme_info = search_box->GetThemeBackgroundInfo();
   return GenerateThemeBackgroundInfo(isolate, theme_info);
 }
 
+// static
 void NewTabPageBindings::CheckIsUserSignedInToChromeAs(
     const std::string& identity) {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->CheckIsUserSignedInToChromeAs(base::UTF8ToUTF16(identity));
 }
 
+// static
 void NewTabPageBindings::CheckIsUserSyncingHistory() {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->CheckIsUserSyncingHistory();
 }
 
+// static
 void NewTabPageBindings::DeleteMostVisitedItem(int rid) {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->DeleteMostVisitedItem(rid);
 }
 
+// static
 v8::Local<v8::Value> NewTabPageBindings::GetMostVisitedItemData(
     v8::Isolate* isolate,
     int rid) {
-  const SearchBox* search_box = GetSearchBox(render_frame());
+  const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
     return v8::Null(isolate);
 
@@ -684,12 +687,13 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisitedItemData(
     return v8::Null(isolate);
 
   int render_view_id =
-      GetMainFrame(render_frame())->GetRenderView()->GetRoutingID();
+      GetMainRenderFrameForCurrentContext()->GetRenderView()->GetRoutingID();
   return GenerateMostVisitedItemData(isolate, render_view_id, rid, item);
 }
 
+// static
 void NewTabPageBindings::LogEvent(int event) {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box || !(HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)) ||
                        HasOrigin(GURL(chrome::kChromeSearchLocalNtpUrl)))) {
     return;
@@ -698,13 +702,14 @@ void NewTabPageBindings::LogEvent(int event) {
     search_box->LogEvent(static_cast<NTPLoggingEventType>(event));
 }
 
+// static
 void NewTabPageBindings::LogMostVisitedImpression(
     int position,
     int tile_title_source,
     int tile_source,
     int tile_type,
     v8::Local<v8::Value> data_generation_time) {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
     return;
 
@@ -721,13 +726,14 @@ void NewTabPageBindings::LogMostVisitedImpression(
   }
 }
 
+// static
 void NewTabPageBindings::LogMostVisitedNavigation(
     int position,
     int tile_title_source,
     int tile_source,
     int tile_type,
     v8::Local<v8::Value> data_generation_time) {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box || !HasOrigin(GURL(chrome::kChromeSearchMostVisitedUrl)))
     return;
 
@@ -744,15 +750,17 @@ void NewTabPageBindings::LogMostVisitedNavigation(
   }
 }
 
+// static
 void NewTabPageBindings::UndoAllMostVisitedDeletions() {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->UndoAllMostVisitedDeletions();
 }
 
+// static
 void NewTabPageBindings::UndoMostVisitedDeletion(int rid) {
-  SearchBox* search_box = GetSearchBox(render_frame());
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return;
   search_box->UndoMostVisitedDeletion(rid);
@@ -761,23 +769,22 @@ void NewTabPageBindings::UndoMostVisitedDeletion(int rid) {
 }  // namespace
 
 // static
-void SearchBoxExtension::Install(content::RenderFrame* render_frame) {
+void SearchBoxExtension::Install(blink::WebLocalFrame* frame) {
   v8::Isolate* isolate = blink::MainThreadIsolate();
   v8::HandleScope handle_scope(isolate);
-  v8::Local<v8::Context> context =
-      render_frame->GetWebFrame()->MainWorldScriptContext();
+  v8::Local<v8::Context> context = frame->MainWorldScriptContext();
   if (context.IsEmpty())
     return;
 
   v8::Context::Scope context_scope(context);
 
   gin::Handle<SearchBoxBindings> searchbox_controller =
-      gin::CreateHandle(isolate, new SearchBoxBindings(render_frame));
+      gin::CreateHandle(isolate, new SearchBoxBindings());
   if (searchbox_controller.IsEmpty())
     return;
 
   gin::Handle<NewTabPageBindings> newtabpage_controller =
-      gin::CreateHandle(isolate, new NewTabPageBindings(render_frame));
+      gin::CreateHandle(isolate, new NewTabPageBindings());
   if (newtabpage_controller.IsEmpty())
     return;
 

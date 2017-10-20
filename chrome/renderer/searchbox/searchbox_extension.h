@@ -12,15 +12,11 @@ namespace blink {
 class WebLocalFrame;
 }
 
-namespace content {
-class RenderFrame;
-}
-
 // Javascript bindings for the chrome.embeddedSearch APIs. See
 // https://www.chromium.org/embeddedsearch.
 class SearchBoxExtension {
  public:
-  static void Install(content::RenderFrame* render_frame);
+  static void Install(blink::WebLocalFrame* frame);
 
   // Helpers to dispatch Javascript events.
   static void DispatchChromeIdentityCheckResult(blink::WebLocalFrame* frame,
