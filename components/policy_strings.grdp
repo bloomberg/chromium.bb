@@ -252,6 +252,9 @@
   <message name="IDS_POLICY_TOOL_CORRUPTED_FILE" desc="A message that is shown to the user when the session file is corrupted.">
     The file seems to be corrupted. Click the 'Reset' button to reset the session.
   </message>
+  <message name="IDS_POLICY_TOOL_DELETE_FAILED" desc="A message that is shown to the user when deleting the session fails because the session name that is sent from Javascript is invalid.">
+    The session with this name is not valid for deletion.
+  </message>
   <!-- chrome://policy -->
   <message name="IDS_POLICY_TITLE" desc="Page title and the title of the section that lists policies.">
     Policies

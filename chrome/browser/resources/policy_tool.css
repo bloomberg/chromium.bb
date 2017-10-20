@@ -39,3 +39,7 @@ tbody.value-editing-on .value {
 #saving span {
   font-weight: bold;
 }
+
+#session-actions {
+  float: left;
+}
