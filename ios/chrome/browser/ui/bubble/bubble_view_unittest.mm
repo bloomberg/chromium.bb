@@ -50,8 +50,14 @@ TEST_F(BubbleViewTest, BubbleSizeShortText) {
   EXPECT_NEAR(61.5f, bubbleSize.height, 1.0f);
 }
 
-// Test |sizeThatFits| given text that should wrap onto multiple lines.
-TEST_F(BubbleViewTest, BubbleSizeMultipleLineText) {
+// Tests |sizeThatFits| given text that should wrap onto multiple lines.
+// TODO(crbug.com/776592): Enable this test on device.
+#if TARGET_IPHONE_SIMULATOR
+#define MAYBE_BubbleSizeMultipleLineText BubbleSizeMultipleLineText
+#else
+#define MAYBE_BubbleSizeMultipleLineText FLAKY_BubbleSizeMultipleLineText
+#endif
+TEST_F(BubbleViewTest, MAYBE_BubbleSizeMultipleLineText) {
   BubbleView* bubble = [[BubbleView alloc] initWithText:longText_
                                          arrowDirection:arrowDirection_
                                               alignment:alignment_];
