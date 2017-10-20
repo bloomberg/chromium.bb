@@ -1,6 +1,5 @@
 Tests tabbed pane tabs to show calculation.
 
-Bug 75085
 Running tabs to show test:
     widths = [50,50,60,60,70,70]
     tabsHistory = [tab 0,tab 1,tab 2,tab 3,tab 4,tab 5]

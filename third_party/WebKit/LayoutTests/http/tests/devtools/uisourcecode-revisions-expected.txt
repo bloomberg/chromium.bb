@@ -1,6 +1,5 @@
 Tests revision support in UISourceCode.
 
-Bug 97669
 
 Running: testAddRevisionsRevertToOriginal
 First revision added.

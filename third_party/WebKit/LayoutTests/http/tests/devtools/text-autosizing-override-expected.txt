@@ -1,3 +1,5 @@
+This text should be autosized to 40px computed font-size (16 * 800/320).
+
 
 Running: checkNotAutosizedWithoutPageAgent
 Text was not autosized. PASS

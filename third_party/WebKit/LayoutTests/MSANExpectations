@@ -64,7 +64,7 @@ crbug.com/769729 [ Linux ] paint/invalidation/video-paint-invalidation.html [ Cr
 # marking them as "Timeout" while crbug.com/729136 is worked out.
 crbug.com/729136 [ Linux ] external/wpt/encoding/textdecoder-fatal-single-byte.html [ Timeout ]
 crbug.com/729136 [ Linux ] fast/css/css-selector-deeply-nested.html [ Timeout ]
-crbug.com/729136 [ Linux ] http/tests/devtools/forced-layout-in-microtask.html [ Timeout ]
+crbug.com/729136 [ Linux ] http/tests/devtools/forced-layout-in-microtask.js [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/tracing/timeline-xhr-response-type-blob-event.html [ Timeout ]
 crbug.com/729136 [ Linux ] http/tests/devtools/components/file-path-scoring.html [ Timeout ]
 crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/components/file-path-scoring.html [ Timeout ]
