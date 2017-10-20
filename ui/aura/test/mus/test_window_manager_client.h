@@ -48,12 +48,14 @@ class TestWindowManagerClient : public ui::mojom::WindowManagerClient {
                       ui::mojom::WmViewportMetricsPtr viewport_metrics,
                       bool is_primary_display,
                       Id window_id,
+                      const std::vector<display::Display>& mirrors,
                       const SetDisplayRootCallback& callback) override;
   void SetDisplayConfiguration(
       const std::vector<display::Display>& displays,
       std::vector<::ui::mojom::WmViewportMetricsPtr> viewport_metrics,
       int64_t primary_display_id,
       int64_t internal_display_id,
+      const std::vector<display::Display>& mirrors,
       const SetDisplayConfigurationCallback& callback) override;
   void SwapDisplayRoots(int64_t display_id1,
                         int64_t display_id2,

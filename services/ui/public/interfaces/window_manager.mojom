@@ -292,29 +292,31 @@ interface WindowManagerClient {
   // The cursor will automatically be unhidden on the next mouse event.
   SetKeyEventsThatDontHideCursor(array<EventMatcher> dont_hide_cursor_list);
 
-  // Sets the root of a particular display. This is only applicable when the
-  // WindowTree was created with a value of false for
-  // |automatically_create_display_roots| (see
+  // Sets the root window for a new |display|. This is only applicable if the
+  // WindowTree does not |automatically_create_display_roots| (see
   // WindowManagerWindowTreeFactory::CreateWindowTree() for details).
-  // |local_surface_id| identifies the ID to use to submit CompositorFrames.
-  // base::nullopt indicates failure.
-  // This function may also be used to move an existing display root to a new
-  // display.
+  // This may also be called to move an existing root window to a new display.
+  // |mirrors| contains a list of physical displays presenting contents mirrored
+  // from another physical display, or from part of a virtual unified display.
   SetDisplayRoot(display.mojom.Display display,
                  WmViewportMetrics viewport_metrics,
                  bool is_primary_display,
-                 uint32 window_id) => (bool success);
+                 uint32 window_id,
+                 array<display.mojom.Display> mirrors) => (bool success);
 
-  // Configures the metrics for the displays and notifies observers. This is
-  // only applicable when WindowTree was created with a value of false for
-  // |automatically_create_display_roots|. This *must* be called after any
-  // display related changes to inform observers, for example, after calling
-  // SetDisplayRoot() this must be called to inform observers of the display
-  // changes.
-  SetDisplayConfiguration(array<display.mojom.Display> displays,
-                          array<WmViewportMetrics> viewport_metrics,
-                          int64 primary_display_id,
-                          int64 internal_display_id) => (bool success);
+  // Configures metrics for the displays and notifies observers. This is only
+  // applicable if the WindowTree does not |automatically_create_display_roots|.
+  // This *must* be called after any display related changes to inform
+  // observers, for example, after calling SetDisplayRoot() this must be called
+  // to inform observers of the display changes.
+  // |mirrors| contains a list of physical displays presenting contents mirrored
+  // from another physical display, or from part of a virtual unified display.
+  SetDisplayConfiguration(
+      array<display.mojom.Display> displays,
+      array<WmViewportMetrics> viewport_metrics,
+      int64 primary_display_id,
+      int64 internal_display_id,
+      array<display.mojom.Display> mirrors) => (bool success);
 
   // Swaps the display roots of the two displays.
   SwapDisplayRoots(int64 display_id1, int64 display_id2) => (bool success);

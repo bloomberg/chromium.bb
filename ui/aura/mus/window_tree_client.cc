@@ -831,7 +831,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
       window_manager_client_->SetDisplayRoot(
           display, display_init_params->viewport_metrics.Clone(),
           display_init_params->is_primary_display, window->server_id(),
-          base::Bind(&OnAckMustSucceed));
+          display_init_params->mirrors, base::Bind(&OnAckMustSucceed));
     }
   }
 }
@@ -2088,7 +2088,8 @@ void WindowTreeClient::RequestClose(Window* window) {
 void WindowTreeClient::SetDisplayConfiguration(
     const std::vector<display::Display>& displays,
     std::vector<ui::mojom::WmViewportMetricsPtr> viewport_metrics,
-    int64_t primary_display_id) {
+    int64_t primary_display_id,
+    const std::vector<display::Display>& mirrors) {
   DCHECK_EQ(displays.size(), viewport_metrics.size());
   if (window_manager_client_) {
     const int64_t internal_display_id =
@@ -2097,7 +2098,7 @@ void WindowTreeClient::SetDisplayConfiguration(
             : display::kInvalidDisplayId;
     window_manager_client_->SetDisplayConfiguration(
         displays, std::move(viewport_metrics), primary_display_id,
-        internal_display_id, base::Bind(&OnAckMustSucceed));
+        internal_display_id, mirrors, base::Bind(&OnAckMustSucceed));
   }
 }
 
@@ -2108,13 +2109,15 @@ void WindowTreeClient::AddDisplayReusingWindowTreeHost(
   DCHECK_NE(display.id(), window_tree_host->display_id());
   window_tree_host->set_display_id(display.id());
   if (window_manager_client_) {
-    // NOTE: The value of |is_primary_display| doesn't really matter as shortly
-    // after this SetDisplayConfiguration() is called.
+    // NOTE: The values of |is_primary_display| and |mirrors| do not matter,
+    // because SetDisplayConfiguration() is called shortly after this completes.
     const bool is_primary_display = true;
+    std::vector<display::Display> mirrors;
     WindowMus* display_root_window = WindowMus::Get(window_tree_host->window());
     window_manager_client_->SetDisplayRoot(
         display, std::move(viewport_metrics), is_primary_display,
-        display_root_window->server_id(), base::Bind(&OnAckMustSucceed));
+        display_root_window->server_id(), mirrors,
+        base::Bind(&OnAckMustSucceed));
     window_tree_host->compositor()->SetLocalSurfaceId(
         display_root_window->GetOrAllocateLocalSurfaceId(
             window_tree_host->GetBoundsInPixels().size()));

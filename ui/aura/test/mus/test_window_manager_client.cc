@@ -54,6 +54,7 @@ void TestWindowManagerClient::SetDisplayRoot(
     ui::mojom::WmViewportMetricsPtr viewport_metrics,
     bool is_primary_display,
     Id window_id,
+    const std::vector<display::Display>& mirrors,
     const SetDisplayRootCallback& callback) {}
 
 void TestWindowManagerClient::SetDisplayConfiguration(
@@ -61,6 +62,7 @@ void TestWindowManagerClient::SetDisplayConfiguration(
     std::vector<::ui::mojom::WmViewportMetricsPtr> viewport_metrics,
     int64_t primary_display_id,
     int64_t internal_display_id,
+    const std::vector<display::Display>& mirrors,
     const SetDisplayConfigurationCallback& callback) {
   last_internal_display_id_ = internal_display_id;
   changes_.push_back(WindowManagerClientChangeType::SET_DISPLAY_CONFIGURATION);
