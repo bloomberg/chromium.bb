@@ -30131,6 +30131,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="LevelDB.SharedCache.BytesUsed" units="Bytes">
+  <obsolete>
+    Deprecated 2017-10. Superceded by LevelDB.SharedCache.KBUsed.
+  </obsolete>
   <owner>cmumford@chromium.org</owner>
   <summary>
     The estimated size (in bytes) of the leveldb shared cache. Recorded once per
@@ -30143,6 +30146,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     The number of databases currently using the shared block cache. Recorded
     once per UMA ping.
+  </summary>
+</histogram>
+
+<histogram name="LevelDB.SharedCache.KBUsed" units="KB">
+  <owner>cmumford@chromium.org</owner>
+  <summary>
+    The estimated size (in kilobytes) of the leveldb shared cache. Recorded once
+    per UMA ping.
   </summary>
 </histogram>
 
@@ -99384,6 +99395,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="InMemory" label="Cache shared all in-memory databases."/>
   <affected-histogram name="LevelDB.SharedCache.BytesUsed"/>
   <affected-histogram name="LevelDB.SharedCache.DBCount"/>
+  <affected-histogram name="LevelDB.SharedCache.KBUsed"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="LocalNetReqsLocalhostResources" separator=".">
