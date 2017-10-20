@@ -7,6 +7,9 @@ static_library("mus") {
   visibility = [ "//content/renderer/*" ]
 
   sources = [
+    "mus_embedded_frame.cc",
+    "mus_embedded_frame.h",
+    "mus_embedded_frame_delegate.h",
     "render_widget_window_tree_client_factory.cc",
     "render_widget_window_tree_client_factory.h",
     "renderer_window_tree_client.cc",
