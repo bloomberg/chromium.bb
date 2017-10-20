@@ -35,8 +35,6 @@ class TabWebContentsDelegateAndroid
   TabWebContentsDelegateAndroid(JNIEnv* env, jobject obj);
   ~TabWebContentsDelegateAndroid() override;
 
-  void LoadingStateChanged(content::WebContents* source,
-                           bool to_different_document) override;
   void RunFileChooser(content::RenderFrameHost* render_frame_host,
                       const content::FileChooserParams& params) override;
   std::unique_ptr<content::BluetoothChooser> RunBluetoothChooser(
