@@ -34,15 +34,15 @@ using ::i18n::addressinput::Storage;
 
 class AddressNormalizerImpl::NormalizationRequest {
  public:
-  // The |delegate| and |address_validator| need to outlive this Request.
+  // |address_validator| needs to outlive this Request.
   NormalizationRequest(const AutofillProfile& profile,
                        const std::string& region_code,
                        int timeout_seconds,
-                       AddressNormalizer::Delegate* delegate,
+                       AddressNormalizer::NormalizationCallback callback,
                        AddressValidator* address_validator)
       : profile_(profile),
         region_code_(region_code),
-        delegate_(delegate),
+        callback_(std::move(callback)),
         address_validator_(address_validator),
         has_responded_(false),
         on_timeout_(base::Bind(&NormalizationRequest::OnRulesLoaded,
@@ -67,7 +67,7 @@ class AddressNormalizerImpl::NormalizationRequest {
     FormatPhoneNumberForResponse();
 
     if (!success) {
-      delegate_->OnCouldNotNormalize(profile_);
+      std::move(callback_).Run(/*success=*/false, profile_);
       return;
     }
 
@@ -90,7 +90,7 @@ class AddressNormalizerImpl::NormalizationRequest {
                           base::UTF8ToUTF16(address_data.dependent_locality));
     }
 
-    delegate_->OnAddressNormalized(profile_);
+    std::move(callback_).Run(/*success=*/true, profile_);
   }
 
  private:
@@ -111,7 +111,7 @@ class AddressNormalizerImpl::NormalizationRequest {
 
   AutofillProfile profile_;
   std::string region_code_;
-  AddressNormalizer::Delegate* delegate_;
+  AddressNormalizer::NormalizationCallback callback_;
   AddressValidator* address_validator_;
 
   bool has_responded_;
@@ -135,20 +135,20 @@ bool AddressNormalizerImpl::AreRulesLoadedForRegion(
   return address_validator_.AreRulesLoadedForRegion(region_code);
 }
 
-void AddressNormalizerImpl::StartAddressNormalization(
+void AddressNormalizerImpl::NormalizeAddress(
     const AutofillProfile& profile,
     const std::string& region_code,
     int timeout_seconds,
-    AddressNormalizer::Delegate* requester) {
+    AddressNormalizer::NormalizationCallback callback) {
   DCHECK_GE(timeout_seconds, 0);
 
   std::unique_ptr<NormalizationRequest> request =
-      std::make_unique<NormalizationRequest>(profile, region_code,
-                                             timeout_seconds, requester,
-                                             &address_validator_);
+      std::make_unique<NormalizationRequest>(
+          profile, region_code, timeout_seconds, std::move(callback),
+          &address_validator_);
 
-  // If the rules are already loaded for |region_code|, the |request| will call
-  // back to the delegate (|requester|) synchronously.
+  // If the rules are already loaded for |region_code|, the |request| will
+  // callback synchronously.
   if (AreRulesLoadedForRegion(region_code)) {
     request->OnRulesLoaded(true);
     return;

@@ -6,6 +6,8 @@
 
 #include <utility>
 
+#include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -22,8 +24,7 @@ constexpr int kAddressNormalizationTimeoutSeconds = 5;
 
 // Implements the AddressNormalizer::Delegate interface, and notifies its parent
 // AddressNormalizationManager when normalization has completed.
-class AddressNormalizationManager::NormalizerDelegate
-    : public AddressNormalizer::Delegate {
+class AddressNormalizationManager::NormalizerDelegate {
  public:
   // |owner| is the parent AddressNormalizationManager, |address_normalizer|
   // is a pointer to an instance of AddressNormalizer which will handle
@@ -36,9 +37,8 @@ class AddressNormalizationManager::NormalizerDelegate
   // Returns whether this delegate has completed or not.
   bool has_completed() const { return has_completed_; }
 
-  // AddressNormalizer::Delegate:
-  void OnAddressNormalized(const AutofillProfile& normalized_profile) override;
-  void OnCouldNotNormalize(const AutofillProfile& profile) override;
+  // To be used as AddressNormalizer::NormalizationCallback.
+  void OnAddressNormalized(bool success, const AutofillProfile& profile);
 
  private:
   // Helper method that handles when normalization has completed.
@@ -108,20 +108,18 @@ AddressNormalizationManager::NormalizerDelegate::NormalizerDelegate(
   const std::string country_code =
       autofill::data_util::GetCountryCodeWithFallback(*profile_,
                                                       owner->app_locale_);
-  address_normalizer->StartAddressNormalization(
-      *profile_, country_code, kAddressNormalizationTimeoutSeconds, this);
+  address_normalizer->NormalizeAddress(
+      *profile_, country_code, kAddressNormalizationTimeoutSeconds,
+      base::BindOnce(&NormalizerDelegate::OnAddressNormalized,
+                     base::Unretained(this)));
 }
 
 void AddressNormalizationManager::NormalizerDelegate::OnAddressNormalized(
+    bool success,
     const AutofillProfile& normalized_profile) {
-  OnCompletion(normalized_profile);
-}
-
-void AddressNormalizationManager::NormalizerDelegate::OnCouldNotNormalize(
-    const AutofillProfile& profile) {
   // Since the phone number is formatted in either case, this profile should
-  // be used.
-  OnCompletion(profile);
+  // be used regardless of |success|.
+  OnCompletion(normalized_profile);
 }
 
 void AddressNormalizationManager::NormalizerDelegate::OnCompletion(

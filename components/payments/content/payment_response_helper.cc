@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_split.h"
 #include "base/strings/utf_string_conversions.h"
@@ -36,7 +37,8 @@ PaymentResponseHelper::PaymentResponseHelper(
       delegate_(delegate),
       selected_instrument_(selected_instrument),
       payment_request_delegate_(payment_request_delegate),
-      selected_contact_profile_(selected_contact_profile) {
+      selected_contact_profile_(selected_contact_profile),
+      weak_ptr_factory_(this) {
   DCHECK(spec_);
   DCHECK(selected_instrument_);
   DCHECK(delegate_);
@@ -55,9 +57,11 @@ PaymentResponseHelper::PaymentResponseHelper(
     const std::string country_code =
         autofill::data_util::GetCountryCodeWithFallback(
             *selected_shipping_profile, app_locale_);
-    payment_request_delegate_->GetAddressNormalizer()
-        ->StartAddressNormalization(*selected_shipping_profile, country_code,
-                                    /*timeout_seconds=*/5, this);
+    payment_request_delegate_->GetAddressNormalizer()->NormalizeAddress(
+        *selected_shipping_profile, country_code,
+        /*timeout_seconds=*/5,
+        base::BindOnce(&PaymentResponseHelper::OnAddressNormalized,
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 
   // Start to get the instrument details. Will call back into
@@ -124,6 +128,7 @@ void PaymentResponseHelper::OnInstrumentDetailsReady(
 }
 
 void PaymentResponseHelper::OnAddressNormalized(
+    bool success,
     const autofill::AutofillProfile& normalized_profile) {
   if (is_waiting_for_shipping_address_normalization_) {
     shipping_address_ = normalized_profile;
@@ -132,13 +137,6 @@ void PaymentResponseHelper::OnAddressNormalized(
     if (!is_waiting_for_instrument_details_)
       GeneratePaymentResponse();
   }
-}
-
-void PaymentResponseHelper::OnCouldNotNormalize(
-    const autofill::AutofillProfile& profile) {
-  // Since the phone number is formatted in either case, this profile should be
-  // used.
-  OnAddressNormalized(profile);
 }
 
 void PaymentResponseHelper::GeneratePaymentResponse() {

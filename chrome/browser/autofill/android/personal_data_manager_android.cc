@@ -281,38 +281,6 @@ class FullCardRequester : public payments::FullCardRequest::ResultDelegate,
   DISALLOW_COPY_AND_ASSIGN(FullCardRequester);
 };
 
-class AndroidAddressNormalizerDelegate
-    : public AddressNormalizer::Delegate,
-      public base::SupportsWeakPtr<AndroidAddressNormalizerDelegate> {
- public:
-  AndroidAddressNormalizerDelegate(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& jdelegate) {
-    jdelegate_.Reset(env, jdelegate);
-  }
-
-  void OnAddressNormalized(const AutofillProfile& normalized_profile) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_NormalizedAddressRequestDelegate_onAddressNormalized(
-        env, jdelegate_, CreateJavaProfileFromNative(env, normalized_profile));
-    delete this;
-  }
-
-  void OnCouldNotNormalize(const AutofillProfile& profile) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_NormalizedAddressRequestDelegate_onCouldNotNormalize(
-        env, jdelegate_, CreateJavaProfileFromNative(env, profile));
-    delete this;
-  }
-
- private:
-  ~AndroidAddressNormalizerDelegate() override {}
-
-  ScopedJavaGlobalRef<jobject> jdelegate_;
-
-  DISALLOW_COPY_AND_ASSIGN(AndroidAddressNormalizerDelegate);
-};
-
 void OnSubKeysReceived(ScopedJavaGlobalRef<jobject> jdelegate,
                        const std::vector<std::string>& subkeys_codes,
                        const std::vector<std::string>& subkeys_names) {
@@ -320,6 +288,19 @@ void OnSubKeysReceived(ScopedJavaGlobalRef<jobject> jdelegate,
   Java_GetSubKeysRequestDelegate_onSubKeysReceived(
       env, jdelegate, base::android::ToJavaArrayOfStrings(env, subkeys_codes),
       base::android::ToJavaArrayOfStrings(env, subkeys_names));
+}
+
+void OnAddressNormalized(ScopedJavaGlobalRef<jobject> jdelegate,
+                         bool success,
+                         const AutofillProfile& profile) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  if (success) {
+    Java_NormalizedAddressRequestDelegate_onAddressNormalized(
+        env, jdelegate, CreateJavaProfileFromNative(env, profile));
+  } else {
+    Java_NormalizedAddressRequestDelegate_onCouldNotNormalize(
+        env, jdelegate, CreateJavaProfileFromNative(env, profile));
+  }
 }
 
 }  // namespace
@@ -742,13 +723,11 @@ void PersonalDataManagerAndroid::StartAddressNormalization(
   AutofillProfile profile;
   PopulateNativeProfileFromJava(jprofile, env, &profile);
 
-  // Self-deleting object.
-  AndroidAddressNormalizerDelegate* requester =
-      new AndroidAddressNormalizerDelegate(env, jdelegate);
-
   // Start the normalization.
-  address_normalizer_.StartAddressNormalization(profile, region_code,
-                                                jtimeout_seconds, requester);
+  address_normalizer_.NormalizeAddress(
+      profile, region_code, jtimeout_seconds,
+      base::BindOnce(&OnAddressNormalized,
+                     ScopedJavaGlobalRef<jobject>(jdelegate)));
 }
 
 jboolean PersonalDataManagerAndroid::HasProfiles(

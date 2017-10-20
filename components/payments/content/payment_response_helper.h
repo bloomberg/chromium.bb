@@ -6,6 +6,7 @@
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_RESPONSE_HELPER_H_
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 #include "components/payments/core/payment_instrument.h"
@@ -17,8 +18,9 @@ class PaymentRequestDelegate;
 class PaymentRequestSpec;
 
 // A helper class to facilitate the creation of the PaymentResponse.
-class PaymentResponseHelper : public PaymentInstrument::Delegate,
-                              public autofill::AddressNormalizer::Delegate {
+class PaymentResponseHelper
+    : public PaymentInstrument::Delegate,
+      public base::SupportsWeakPtr<PaymentResponseHelper> {
  public:
   class Delegate {
    public:
@@ -50,14 +52,13 @@ class PaymentResponseHelper : public PaymentInstrument::Delegate,
       const std::string& stringified_details) override;
   void OnInstrumentDetailsError() override {}
 
-  // AddressNormalizer::Delegate
-  void OnAddressNormalized(
-      const autofill::AutofillProfile& normalized_profile) override;
-  void OnCouldNotNormalize(const autofill::AutofillProfile& profile) override;
-
  private:
   // Generates the Payment Response and sends it to the delegate.
   void GeneratePaymentResponse();
+
+  // To be used as AddressNormalizer::NormalizationCallback.
+  void OnAddressNormalized(bool success,
+                           const autofill::AutofillProfile& normalized_profile);
 
   const std::string& app_locale_;
   bool is_waiting_for_shipping_address_normalization_;
@@ -79,6 +80,8 @@ class PaymentResponseHelper : public PaymentInstrument::Delegate,
   // Instrument Details.
   std::string method_name_;
   std::string stringified_details_;
+
+  base::WeakPtrFactory<PaymentResponseHelper> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PaymentResponseHelper);
 };

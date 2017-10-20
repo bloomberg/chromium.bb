@@ -2,28 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <utility>
+
 #include "components/autofill/core/browser/test_address_normalizer.h"
 
 namespace autofill {
+
+TestAddressNormalizer::TestAddressNormalizer() {}
+TestAddressNormalizer::~TestAddressNormalizer() {}
 
 bool TestAddressNormalizer::AreRulesLoadedForRegion(
     const std::string& region_code) {
   return true;
 }
 
-void TestAddressNormalizer::StartAddressNormalization(
+void TestAddressNormalizer::NormalizeAddress(
     const AutofillProfile& profile,
     const std::string& region_code,
     int timeout_seconds,
-    AddressNormalizer::Delegate* requester) {
+    AddressNormalizer::NormalizationCallback callback) {
   if (instantaneous_normalization_) {
-    requester->OnAddressNormalized(profile);
+    std::move(callback).Run(/*success=*/true, profile);
     return;
   }
 
   // Setup the necessary variables for the delayed normalization.
   profile_ = profile;
-  requester_ = requester;
+  callback_ = std::move(callback);
 }
 
 void TestAddressNormalizer::DelayNormalization() {
@@ -32,7 +37,7 @@ void TestAddressNormalizer::DelayNormalization() {
 
 void TestAddressNormalizer::CompleteAddressNormalization() {
   DCHECK(instantaneous_normalization_ == false);
-  requester_->OnAddressNormalized(profile_);
+  std::move(callback_).Run(/*success=*/true, profile_);
 }
 
 }  // namespace autofill
