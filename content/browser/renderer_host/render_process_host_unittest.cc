@@ -425,12 +425,13 @@ TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcess) {
 }
 
 // Tests that RenderProcessHost reuse considers navigations correctly during
-// redirects in a renderer-initiated navigation.
+// redirects in a renderer-initiated navigation.    Also ensures that with
+// --site-per-process, there's no mismatch in origin locks for
+// https://crbug.com/773809.
 TEST_F(RenderProcessHostUnitTest,
        ReuseNavigationProcessRedirectsRendererInitiated) {
   // This is only applicable to PlzNavigate.
-  // TODO(clamy): This test should work with --site-per-process.
-  if (!IsBrowserSideNavigationEnabled() || AreAllSitesIsolatedForTesting())
+  if (!IsBrowserSideNavigationEnabled())
     return;
 
   const GURL kUrl("http://foo.com");
@@ -447,28 +448,31 @@ TEST_F(RenderProcessHostUnitTest,
 
   // Start a navigation. Now getting RenderProcessHost with the
   // REUSE_PENDING_OR_COMMITTED_SITE policy should return the current process.
-  main_test_rfh()->SimulateNavigationStart(kUrl);
+  auto simulator =
+      NavigationSimulator::CreateRendererInitiated(kUrl, main_test_rfh());
+  simulator->Start();
+
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
+  // Note that with --site-per-process, the GetProcess() call on
+  // |site_instance| will also lock the current process to http://foo.com.
   EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
 
   // Simulate a same-site redirect. Getting RenderProcessHost with the
   // REUSE_PENDING_OR_COMMITTED_SITE policy should return the current process.
-  main_test_rfh()->SimulateRedirect(kRedirectUrl1);
+  simulator->Redirect(kRedirectUrl1);
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
 
-  // Simulate a cross-site redirect. Getting a RenderProcessHost with the
-  // REUSE_PENDING_OR_COMMITTED_SITE policy should return the current
-  // process for the new site since this is a renderer-intiated navigation which
-  // does not swap processes on cross-site redirects. However, getting a
-  // RenderProcessHost with the REUSE_PENDING_OR_COMMITTED_SITE policy should no
-  // longer return the current process for the initial site we were trying to
-  // navigate to.
-  main_test_rfh()->SimulateRedirect(kRedirectUrl2);
+  // Simulate a cross-site redirect.  Getting a RenderProcessHost with the
+  // REUSE_PENDING_OR_COMMITTED_SITE policy for the initial foo.com site should
+  // no longer return the original process.  Getting a RenderProcessHost with
+  // the REUSE_PENDING_OR_COMMITTED_SITE policy for the new bar.com site should
+  // return the the original process, unless we're in --site-per-process mode.
+  simulator->Redirect(kRedirectUrl2);
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
@@ -477,21 +481,37 @@ TEST_F(RenderProcessHostUnitTest,
       SiteInstanceImpl::CreateForURL(browser_context(), kRedirectUrl2);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
-  EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  if (AreAllSitesIsolatedForTesting()) {
+    // In --site-per-process, we should've recognized that we will need to swap
+    // to a new process; however, the new process won't be created until
+    // ready-to-commit time, when the final response comes from bar.com.  Thus,
+    // we should have neither foo.com nor bar.com in the original process's
+    // list of pending sites, and |site_instance| should create a brand new
+    // process that does not match any existing one.  In
+    // https://crbug.com/773809, the site_instance->GetProcess() call tried to
+    // reuse the original process (already locked to foo.com), leading to
+    // origin lock mismatch.
+    EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  } else {
+    EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  }
 
-  // Once the navigation is ready to commit, Getting RenderProcessHost with the
+  // Once the navigation is ready to commit, getting RenderProcessHost with the
   // REUSE_PENDING_OR_COMMITTED_SITE policy should return the current
   // process for the final site, but not the initial one.
-  main_test_rfh()->PrepareForCommit();
+  simulator->ReadyToCommit();
+  RenderProcessHost* post_redirect_process =
+      simulator->GetFinalRenderFrameHost()->GetProcess();
   site_instance = SiteInstanceImpl::CreateForURL(browser_context(), kUrl);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   EXPECT_NE(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  EXPECT_NE(post_redirect_process, site_instance->GetProcess());
   site_instance =
       SiteInstanceImpl::CreateForURL(browser_context(), kRedirectUrl2);
   site_instance->set_process_reuse_policy(
       SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
-  EXPECT_EQ(main_test_rfh()->GetProcess(), site_instance->GetProcess());
+  EXPECT_EQ(post_redirect_process, site_instance->GetProcess());
 }
 
 // Tests that RenderProcessHost reuse considers navigations correctly during

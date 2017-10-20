@@ -522,6 +522,63 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
             new_shell->web_contents()->GetMainFrame()->GetProcess());
 }
 
+// When a navigation uses a siteless SiteInstance, and a second navigation
+// commits an isolated origin which reuses the siteless SiteInstance's process
+// before the first navigation's response is received, ensure that the first
+// navigation can still finish properly and transfer to a new process, without
+// an origin lock mismatch. See https://crbug.com/773809.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       ProcessReuseWithLazilyAssignedSiteInstance) {
+  // This test requires PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Start from an about:blank page, where the SiteInstance will not have a
+  // site assigned, but will have an associated process.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  SiteInstanceImpl* starting_site_instance = static_cast<SiteInstanceImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(starting_site_instance->HasSite());
+  EXPECT_TRUE(starting_site_instance->HasProcess());
+
+  // Inject and click a link to a non-isolated origin www.foo.com.  Note that
+  // setting location.href won't work here, as that goes through OpenURL
+  // instead of OnBeginNavigation when starting from an about:blank page, and
+  // that doesn't trigger this bug.
+  GURL foo_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  TestNavigationManager manager(shell()->web_contents(), foo_url);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "var link = document.createElement('a');"
+                            "link.href = '" + foo_url.spec() + "';"
+                            "document.body.appendChild(link);"
+                            "link.click();"));
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // Before response is received, open a new, unrelated tab and navigate it to
+  // isolated.foo.com. This reuses the first process, which is still considered
+  // unused at this point, and locks it to isolated.foo.com.
+  Shell* new_shell = CreateBrowser();
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, isolated_url));
+  EXPECT_EQ(web_contents()->GetMainFrame()->GetProcess(),
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+
+  // Wait for response from the redirect in the first tab.  This should notice
+  // that the first process is no longer suitable for the final destination
+  // (which is an unisolated URL) and transfer to another process.  In
+  // https://crbug.com/773809, this led to a CHECK due to origin lock mismatch.
+  manager.WaitForNavigationFinished();
+
+  // Ensure that the isolated origin did not share a process with the first
+  // tab.
+  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(),
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+}
+
 // Verify that a navigation to an unisolated origin cannot reuse a process from
 // a pending navigation to an isolated origin.  Similar to
 // ProcessReuseWithResponseStartedFromIsolatedOrigin, but here the non-isolated

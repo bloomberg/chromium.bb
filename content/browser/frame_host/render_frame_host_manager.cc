@@ -1477,8 +1477,19 @@ bool RenderFrameHostManager::IsRendererTransferNeededForNavigation(
     const GURL& dest_url) {
   // A transfer is not needed if the current SiteInstance doesn't yet have a
   // site.  This is the case for tests that use NavigateToURL.
+  //
+  // One exception is that a siteless SiteInstance may still have a process,
+  // which might be unsuitable for |dest_url|.  For example, another navigation
+  // could share that process (e.g., when over process limit) and lock it to a
+  // different origin before this SiteInstance sets its site.  Hence, we also
+  // check for cases like this.  See https://crbug.com/773809.
+  //
+  // TODO(alexmos): We should always check HasWrongProcessForURL regardless of
+  // HasSite, but currently we cannot do that because of hosted app workarounds
+  // (see https://crbug.com/92669).  Revisit this once hosted apps swap
+  // processes for cross-site web iframes and popups.
   if (!rfh->GetSiteInstance()->HasSite())
-    return false;
+    return rfh->GetSiteInstance()->HasWrongProcessForURL(dest_url);
 
   // We do not currently swap processes for navigations in webview tag guests.
   if (rfh->GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme))
