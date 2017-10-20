@@ -22,6 +22,7 @@ source_set("providers") {
     "//ios/chrome/browser/providers/ui",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/distribution",
+    "//ios/public/provider/chrome/browser/external_search",
     "//ios/public/provider/chrome/browser/signin",
     "//ios/public/provider/chrome/browser/spotlight",
     "//ios/public/provider/chrome/browser/ui",

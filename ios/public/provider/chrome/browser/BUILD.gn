@@ -33,6 +33,7 @@ source_set("test_support") {
     ":browser",
     "//base",
     "//ios/public/provider/chrome/browser/distribution:test_support",
+    "//ios/public/provider/chrome/browser/external_search:test_support",
     "//ios/public/provider/chrome/browser/images:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",

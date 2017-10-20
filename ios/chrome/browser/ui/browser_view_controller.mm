@@ -127,6 +127,7 @@
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_presenter_impl.h"
 #import "ios/chrome/browser/ui/elements/activity_overlay_coordinator.h"
 #import "ios/chrome/browser/ui/external_file_controller.h"
+#import "ios/chrome/browser/ui/external_search/external_search_coordinator.h"
 #import "ios/chrome/browser/ui/find_bar/find_bar_controller_ios.h"
 #import "ios/chrome/browser/ui/first_run/welcome_to_chrome_view_controller.h"
 #import "ios/chrome/browser/ui/fullscreen_controller.h"
@@ -558,6 +559,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Coordinator for the toolbar.
   LegacyToolbarCoordinator* _toolbarCoordinator;
+
+  // Coordinator for the External Search UI.
+  ExternalSearchCoordinator* _externalSearchCoordinator;
 
   // Fake status bar view used to blend the toolbar into the status bar.
   UIView* _fakeStatusBarView;
@@ -1817,6 +1821,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_qrScannerCoordinator disconnect];
   [_tabHistoryCoordinator disconnect];
   [_pageInfoCoordinator disconnect];
+  [_externalSearchCoordinator disconnect];
   [self.tabStripCoordinator stop];
   self.tabStripCoordinator = nil;
   self.tabStripView = nil;
@@ -1968,6 +1973,9 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   _pageInfoCoordinator.loader = self;
   _pageInfoCoordinator.presentationProvider = self;
   _pageInfoCoordinator.tabModel = _model;
+
+  _externalSearchCoordinator = [[ExternalSearchCoordinator alloc] init];
+  _externalSearchCoordinator.dispatcher = _dispatcher;
 
   if (base::FeatureList::IsEnabled(payments::features::kWebPayments)) {
     _paymentRequestManager = [[PaymentRequestManager alloc]

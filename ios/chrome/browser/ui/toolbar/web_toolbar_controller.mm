@@ -42,7 +42,8 @@
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
-#include "ios/chrome/browser/ui/commands/start_voice_search_command.h"
+#import "ios/chrome/browser/ui/commands/external_search_commands.h"
+#import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/image_util.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller.h"
 #include "ios/chrome/browser/ui/omnibox/location_bar_controller_impl.h"
@@ -1268,6 +1269,10 @@ using ios::material::TimingFunction;
 - (void)keyboardAccessoryCameraSearchTouchUp {
   base::RecordAction(UserMetricsAction("MobileCustomRowCameraSearch"));
   [self.dispatcher showQRScanner];
+}
+
+- (void)keyboardAccessoryExternalSearchTouchUp {
+  [self.dispatcher launchExternalSearch];
 }
 
 - (void)keyPressed:(NSString*)title {

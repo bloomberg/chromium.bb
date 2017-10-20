@@ -18,6 +18,7 @@
 
 class AppDistributionProvider;
 class BrandedImageProvider;
+class ExternalSearchProvider;
 class OmahaServiceProvider;
 class SpotlightProvider;
 class UserFeedbackProvider;
@@ -152,6 +153,9 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the spotlight provider.
   virtual SpotlightProvider* GetSpotlightProvider() const;
+
+  // Returns an instance of the External Search provider.
+  virtual ExternalSearchProvider* GetExternalSearchProvider() const;
 
   // Checks for native iOS apps that are installed.
   virtual void CheckForFirstPartyApps() const;

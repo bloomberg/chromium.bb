@@ -14,6 +14,7 @@ source_set("commands") {
     "clear_browsing_data_command.mm",
     "command_dispatcher.h",
     "command_dispatcher.mm",
+    "external_search_commands.h",
     "generic_chrome_command.h",
     "generic_chrome_command.mm",
     "history_popup_commands.h",

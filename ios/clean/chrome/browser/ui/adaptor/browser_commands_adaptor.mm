@@ -130,6 +130,10 @@
   [self showAlert:@"showQRScanner"];
 }
 
+- (void)launchExternalSearch {
+  [self showAlert:@"launchExternalSearch"];
+}
+
 - (void)showTabHistoryPopupForBackwardHistory {
   [self showAlert:@"showTabHistoryPopupForBackwardHistory"];
 }

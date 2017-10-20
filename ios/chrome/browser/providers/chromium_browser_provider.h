@@ -28,6 +28,7 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   AppDistributionProvider* GetAppDistributionProvider() const override;
   BrandedImageProvider* GetBrandedImageProvider() const override;
   SpotlightProvider* GetSpotlightProvider() const override;
+  ExternalSearchProvider* GetExternalSearchProvider() const override;
 
  private:
   std::unique_ptr<AppDistributionProvider> app_distribution_provider_;
@@ -38,6 +39,7 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   std::unique_ptr<UserFeedbackProvider> user_feedback_provider_;
   std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
   std::unique_ptr<SpotlightProvider> spotlight_provider_;
+  std::unique_ptr<ExternalSearchProvider> external_search_provider_;
 };
 
 #endif  // IOS_CHROME_BROWSER_PROVIDERS_CHROMIUM_BROWSER_PROVIDER_H_
