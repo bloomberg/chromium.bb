@@ -42,11 +42,18 @@ void PaymentRequestWebContentsManager::CreatePaymentRequest(
 
 void PaymentRequestWebContentsManager::DidStartNavigation(
     content::NavigationHandle* navigation_handle) {
+  // Navigations that are not in the main frame (e.g. iframe) or that are in the
+  // same document do not close the Payment Request. Disregard those.
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument()) {
+    return;
+  }
   for (auto& it : payment_requests_) {
     // Since the PaymentRequest dialog blocks the content of the page, the user
     // cannot click on a link to navigate away. Therefore, if the navigation
     // is initiated in the renderer, it does not come from the user.
-    it.second->DidStartNavigation(!navigation_handle->IsRendererInitiated());
+    it.second->DidStartMainFrameNavigationToDifferentDocument(
+        !navigation_handle->IsRendererInitiated());
   }
 }
 

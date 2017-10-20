@@ -82,9 +82,9 @@ class PaymentRequest : public mojom::PaymentRequest,
   // OnConnectionTerminated).
   void UserCancelled();
 
-  // Called when the frame attached to this PaymentRequest is navigating away,
-  // but before the PaymentRequest is destroyed.
-  void DidStartNavigation(bool is_user_initiated);
+  // Called when the main frame attached to this PaymentRequest is navigating to
+  // another document, but before the PaymentRequest is destroyed.
+  void DidStartMainFrameNavigationToDifferentDocument(bool is_user_initiated);
 
   // As a result of a browser-side error or renderer-initiated mojo channel
   // closure (e.g. there was an error on the renderer side, or payment was
