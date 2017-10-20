@@ -89,12 +89,6 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
-  // Schedules an embed of a client. See
-  // mojom::WindowTreeClient::ScheduleEmbed() for details.
-  void ScheduleEmbed(
-      ui::mojom::WindowTreeClientPtr client,
-      base::OnceCallback<void(const base::UnguessableToken&)> callback);
-
   std::unique_ptr<viz::ClientLayerTreeFrameSink> RequestLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);
