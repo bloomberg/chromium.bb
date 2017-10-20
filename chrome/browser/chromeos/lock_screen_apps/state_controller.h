@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/scoped_observer.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/state_observer.h"
 #include "chrome/browser/profiles/profile.h"
@@ -91,6 +92,8 @@ class StateController : public ash::mojom::TrayActionClient,
   // Sets the callback that will be run when the state controller is fully
   // initialized and ready for action.
   void SetReadyCallbackForTesting(const base::Closure& ready_callback);
+  // Sets the tick clock to be used in tests.
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> clock);
   // Sets test AppManager implementation. Should be called before
   // |SetPrimaryProfile|
   void SetAppManagerForTesting(std::unique_ptr<AppManager> app_manager);
@@ -160,11 +163,27 @@ class StateController : public ash::mojom::TrayActionClient,
   // Returns whether the focus has been taken from the app window.
   bool HandleTakeFocus(content::WebContents* web_contents, bool reverse);
 
+  // Called from the lock screen Web UI when the animation shown on a note
+  // action launch finishes (the animation is started when the lock screen
+  // note state changes to kLaunching).
+  void NewNoteLaunchAnimationDone();
+
   FirstAppRunToastManager* first_app_run_toast_manager() {
     return first_app_run_toast_manager_.get();
   }
 
  private:
+  // The screen state determined by observing brightness changes from power
+  // manager client.
+  enum class ScreenState {
+    // The screen state has not yet been initialized.
+    kUnknown,
+    // The screen is on - i.e. not completely dimmed.
+    kOn,
+    // The screen is off - it's brightness level is 0.
+    kOff
+  };
+
   // Called when profiles needed to run lock screen apps are ready - i.e. when
   // primary user profile was set using |SetPrimaryProfile| and the profile in
   // which app lock screen windows will be run creation is done.
@@ -189,6 +208,11 @@ class StateController : public ash::mojom::TrayActionClient,
   // input has been detected.
   void InitializeWithStylusInputPresent();
 
+  // Issues a lock screen note app launch request to |app_manager_|.
+  // Expected to be called only in kLaunching state. In the case the launch is
+  // not successful, the note taking action state will be changed accordingly.
+  void StartLaunchRequest();
+
   // Called when app manager reports that note taking availability has changed.
   void OnNoteTakingAvailabilityChanged();
 
@@ -212,6 +236,16 @@ class StateController : public ash::mojom::TrayActionClient,
   // It focuses the app window.
   void FocusAppWindow(bool reverse);
 
+  // Updates the screen state to match the current screen brightness - no-op
+  // unless the current screen state is unknown.
+  void SetInitialScreenState(double screen_brightness);
+
+  // Updates ths screen state - if the stylus was recently removed and screen
+  // has turned on, this will launch a new note action (stylus being removed
+  // should launch the note action, but this is deferred if the screen is off
+  // when the removal event occurs).
+  void SetScreenState(ScreenState screen_state);
+
   // Lock screen note action state.
   ash::mojom::TrayActionState lock_screen_note_state_ =
       ash::mojom::TrayActionState::kNotAvailable;
@@ -222,6 +256,22 @@ class StateController : public ash::mojom::TrayActionClient,
   ash::mojom::TrayActionPtr tray_action_ptr_;
 
   Profile* lock_screen_profile_ = nullptr;
+
+  // The current screen state.
+  ScreenState screen_state_ = ScreenState::kUnknown;
+
+  // The time-stamp of the last observed stylus eject event. This will get set
+  // if stylus was ejected while the screen was off, and the note action launch
+  // was thus deferred. If the screen is turned on soon after the stylus is
+  // ejected, lock screen note action will be launched.
+  base::TimeTicks stylus_eject_timestamp_;
+
+  // Whether sending app launch request to the note taking app (using
+  // |app_manager_|) was delayed until the note action launch animation is
+  // completed by lock screen UI - this is only used with Web UI lock
+  // implementation, and for note action launch requests that don't come from
+  // the lock UI (i.e. stylus removal).
+  bool app_launch_delayed_for_animation_ = false;
 
   // Whether lock screen apps initialization was stopped due to stylus input
   // missing (or stylus not being otherwise enabled). If stylus availability

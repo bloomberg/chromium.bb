@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/stylus_utils.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/wm/window_animations.h"
@@ -52,6 +53,10 @@ using ash::mojom::TrayActionState;
 namespace lock_screen_apps {
 
 namespace {
+
+// The time span a stylus eject is considered valid - i.e. the time period
+// within a stylus eject event can cause a lock screen note launch.
+constexpr int kStylusEjectValidityMs = 1000;
 
 // Key for user pref that contains the 256 bit AES key that should be used to
 // encrypt persisted user data created on the lock screen.
@@ -121,6 +126,12 @@ void StateController::SetReadyCallbackForTesting(
   ready_callback_ = ready_callback;
 }
 
+void StateController::SetTickClockForTesting(
+    std::unique_ptr<base::TickClock> clock) {
+  DCHECK(!tick_clock_);
+  tick_clock_ = std::move(clock);
+}
+
 void StateController::SetAppManagerForTesting(
     std::unique_ptr<AppManager> app_manager) {
   DCHECK(!app_manager_);
@@ -128,7 +139,8 @@ void StateController::SetAppManagerForTesting(
 }
 
 void StateController::Initialize() {
-  tick_clock_ = base::MakeUnique<base::DefaultTickClock>();
+  if (!tick_clock_)
+    tick_clock_ = base::MakeUnique<base::DefaultTickClock>();
 
   // The tray action ptr might be set previously if the client was being created
   // for testing.
@@ -275,6 +287,11 @@ void StateController::InitializeWithCryptoKey(Profile* profile,
 void StateController::InitializeWithStylusInputPresent() {
   stylus_input_missing_ = false;
 
+  chromeos::DBusThreadManager::Get()
+      ->GetPowerManagerClient()
+      ->GetScreenBrightnessPercent(
+          base::Bind(&StateController::SetInitialScreenState,
+                     weak_ptr_factory_.GetWeakPtr()));
   power_manager_client_observer_.Add(
       chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   session_observer_.Add(session_manager::SessionManager::Get());
@@ -323,6 +340,26 @@ void StateController::RequestNewLockScreenNote(LockScreenNoteOrigin origin) {
   // Update state to launching even if app fails to launch - this is to notify
   // listeners that a lock screen note request was handled.
   UpdateLockScreenNoteState(TrayActionState::kLaunching);
+
+  // Defer app launch for stylus eject with Web UI based lock screen until the
+  // note action launch animation finishes. The goal is to ensure the app
+  // window is not shown before the animation completes.
+  // This is not needed for views based lock screen - the views implementation
+  // already ensures UI animation is done before the app window is shown.
+  // This is not needed for requests that come from the lock UI as the lock
+  // screen UI sends these requests *after* the note action launch animation.
+  if (origin == LockScreenNoteOrigin::kStylusEject &&
+      !ash::switches::IsUsingMdLogin()) {
+    app_launch_delayed_for_animation_ = true;
+    return;
+  }
+
+  StartLaunchRequest();
+}
+
+void StateController::StartLaunchRequest() {
+  DCHECK_EQ(lock_screen_note_state_, TrayActionState::kLaunching);
+
   if (!app_manager_->LaunchNoteTaking()) {
     UpdateLockScreenNoteState(TrayActionState::kAvailable);
     return;
@@ -375,8 +412,16 @@ void StateController::OnStylusStateChanged(ui::StylusState state) {
   if (lock_screen_note_state_ != TrayActionState::kAvailable)
     return;
 
-  if (state == ui::StylusState::REMOVED)
+  if (state != ui::StylusState::REMOVED) {
+    stylus_eject_timestamp_ = base::TimeTicks();
+    return;
+  }
+
+  if (screen_state_ == ScreenState::kOn) {
     RequestNewLockScreenNote(LockScreenNoteOrigin::kStylusEject);
+  } else {
+    stylus_eject_timestamp_ = tick_clock_->NowTicks();
+  }
 }
 
 void StateController::OnTouchscreenDeviceConfigurationChanged() {
@@ -389,6 +434,8 @@ void StateController::BrightnessChanged(int level, bool user_initiated) {
     ResetNoteTakingWindowAndMoveToNextState(
         true /*close_window*/, CloseLockScreenNoteReason::kScreenDimmed);
   }
+
+  SetScreenState(level == 0 ? ScreenState::kOff : ScreenState::kOn);
 }
 
 void StateController::SuspendImminent() {
@@ -440,6 +487,15 @@ bool StateController::HandleTakeFocus(content::WebContents* web_contents,
   return true;
 }
 
+void StateController::NewNoteLaunchAnimationDone() {
+  if (!app_launch_delayed_for_animation_)
+    return;
+  DCHECK_EQ(TrayActionState::kLaunching, lock_screen_note_state_);
+
+  app_launch_delayed_for_animation_ = false;
+  StartLaunchRequest();
+}
+
 void StateController::OnNoteTakingAvailabilityChanged() {
   if (!app_manager_->IsNoteTakingAppAvailable() ||
       (note_app_window_ && note_app_window_->GetExtension()->id() !=
@@ -466,10 +522,33 @@ void StateController::FocusAppWindow(bool reverse) {
   note_app_window_->web_contents()->Focus();
 }
 
+void StateController::SetInitialScreenState(double screen_brightness) {
+  if (screen_state_ != ScreenState::kUnknown)
+    return;
+
+  SetScreenState(screen_brightness == 0 ? ScreenState::kOff : ScreenState::kOn);
+}
+
+void StateController::SetScreenState(ScreenState screen_state) {
+  if (screen_state_ == screen_state)
+    return;
+
+  screen_state_ = screen_state;
+
+  if (screen_state_ == ScreenState::kOn && !stylus_eject_timestamp_.is_null() &&
+      tick_clock_->NowTicks() - stylus_eject_timestamp_ <
+          base::TimeDelta::FromMilliseconds(kStylusEjectValidityMs)) {
+    stylus_eject_timestamp_ = base::TimeTicks();
+    RequestNewLockScreenNote(LockScreenNoteOrigin::kStylusEject);
+  }
+}
+
 void StateController::ResetNoteTakingWindowAndMoveToNextState(
     bool close_window,
     CloseLockScreenNoteReason reason) {
   app_window_observer_.RemoveAll();
+  stylus_eject_timestamp_ = base::TimeTicks();
+  app_launch_delayed_for_animation_ = false;
   if (first_app_run_toast_manager_)
     first_app_run_toast_manager_->Reset();
 

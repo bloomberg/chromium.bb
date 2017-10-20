@@ -418,7 +418,6 @@ login.createScreen('AccountPickerScreen', 'account-picker', function() {
           this.lockScreenAppsState_ === LOCK_SCREEN_APPS_STATE.FOREGROUND;
       this.lockScreenAppsState_ = state;
 
-      $('login-header-bar').lockScreenAppsState = state;
       $('top-header-bar').lockScreenAppsState = state;
 
       // Reset the focused pod if app window is being shown on top of the user

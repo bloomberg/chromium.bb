@@ -429,6 +429,7 @@ class SigninScreenHandler
   void HandleMaxIncorrectPasswordAttempts(const AccountId& account_id);
   void HandleSendFeedbackAndResyncUserData();
   void HandleRequestNewNoteAction(const std::string& request_type);
+  void HandleNewNoteLaunchAnimationDone();
   void HandleCloseLockScreenApp();
 
   // Sends the list of |keyboard_layouts| available for the |locale| that is
