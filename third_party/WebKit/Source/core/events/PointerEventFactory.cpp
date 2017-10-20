@@ -152,12 +152,12 @@ void UpdateMousePointerEventInit(const WebMouseEvent& mouse_event,
   pointer_event_init->setScreenX(mouse_event.PositionInScreen().x);
   pointer_event_init->setScreenY(mouse_event.PositionInScreen().y);
 
-  FloatPoint location_in_frame_zoomed;
+  IntPoint location_in_frame_zoomed;
   if (view && view->GetFrame() && view->GetFrame()->View()) {
     LocalFrame* frame = view->GetFrame();
     LocalFrameView* frame_view = frame->View();
-    FloatPoint location_in_contents =
-        frame_view->RootFrameToContents(mouse_event.PositionInRootFrame());
+    IntPoint location_in_contents = frame_view->RootFrameToContents(
+        FlooredIntPoint(mouse_event.PositionInRootFrame()));
     location_in_frame_zoomed =
         frame_view->ContentsToFrame(location_in_contents);
     float scale_factor = 1 / frame->PageZoomFactor();
