@@ -10732,6 +10732,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="ContentSettings.Popups.StrongBlocker.NumBlocked"
+    units="popups">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The total number of popups blocked by the strong blocker for a given page
+    load. Logged when the page is navigated away from, or the tab is closed.
+    Only logged for pages which are triggered for strong popup blocking, aka
+    abusive experience enforcement.
+  </summary>
+</histogram>
+
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
     enum="StrongPopupBlockerAction">
   <owner>csharrison@chromium.org</owner>
