@@ -11,4 +11,10 @@ import "content/public/common/url_loader_factory.mojom";
 interface RendererHost {
   // Requests a URLLoaderFactory for the blob scheme.
   GetBlobURLLoaderFactory(URLLoaderFactory& loader);
+
+  // Request a histogram from the browser. The browser will send the histogram
+  // data only if it has been passed the command line flag
+  // switches::kDomAutomationController.
+  [Sync]
+  GetBrowserHistogram(string name) => (string histogram_json);
 };

@@ -832,8 +832,6 @@ source_set("browser") {
     "histogram_internals_request_job.h",
     "histogram_internals_url_loader.cc",
     "histogram_internals_url_loader.h",
-    "histogram_message_filter.cc",
-    "histogram_message_filter.h",
     "histogram_subscriber.h",
     "histogram_synchronizer.cc",
     "histogram_synchronizer.h",

@@ -27,7 +27,6 @@
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/histogram_controller.h"
-#include "content/browser/histogram_message_filter.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/tracing/trace_message_filter.h"
@@ -158,7 +157,6 @@ BrowserChildProcessHostImpl::BrowserChildProcessHostImpl(
 
   child_process_host_.reset(ChildProcessHost::Create(this));
   AddFilter(new TraceMessageFilter(data_.id));
-  AddFilter(new HistogramMessageFilter);
 
   g_child_process_list.Get().push_back(this);
   GetContentClient()->browser()->BrowserChildProcessHostCreated(this);

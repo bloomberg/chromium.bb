@@ -79,13 +79,6 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ChildProcessHostMsg_HasGpuProcess,
 
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ShutdownRequest)
 
-// Request a histogram from the browser. The browser will send the histogram
-// data only if it has been passed the command line flag
-// switches::kDomAutomationController.
-IPC_SYNC_MESSAGE_CONTROL1_1(ChildProcessHostMsg_GetBrowserHistogram,
-                            std::string, /* histogram_name */
-                            std::string /* histogram_json */)
-
 #if defined(OS_WIN)
 // Request that the given font be loaded by the host so it's cached by the
 // OS. Please see ChildProcessHost::PreCacheFont for details.
