@@ -22,6 +22,14 @@
 // simd_cmp_sse2.cc, simd_cmp_ssse3.cc etc which define the macros
 // ARCH (=neon, sse2, ssse3, etc), SIMD_NAMESPACE and ARCH_POSTFIX().
 
+#ifdef _MSC_VER
+// Disable "value of intrinsic immediate argument 'value' is out of range
+// 'lowerbound - upperbound'" warning. Visual Studio emits this warning though
+// the parameters are conditionally checked in e.g., v256_shr_n_byte. Adding a
+// mask doesn't always appear to be sufficient.
+#pragma warning(disable : 4556)
+#endif
+
 using libaom_test::ACMRandom;
 
 namespace SIMD_NAMESPACE {
