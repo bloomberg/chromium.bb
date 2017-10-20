@@ -8,12 +8,17 @@
 #include <map>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/ble_scanner.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/remote_device.h"
 #include "device/bluetooth/bluetooth_adapter.h"
+
+namespace base {
+class TaskRunner;
+}  // namespace base
 
 namespace device {
 class BluetoothDevice;
@@ -89,7 +94,8 @@ class BleScannerImpl : public BleScanner,
 
   void SetTestDoubles(
       std::unique_ptr<ServiceDataProvider> service_data_provider,
-      std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator);
+      std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
+      scoped_refptr<base::TaskRunner> test_task_runner);
 
   bool IsDeviceRegistered(const std::string& device_id);
 
@@ -114,6 +120,8 @@ class BleScannerImpl : public BleScanner,
   void CheckForMatchingScanFilters(device::BluetoothDevice* bluetooth_device,
                                    std::string& service_data);
 
+  void ScheduleStatusChangeNotification(bool discovery_session_active);
+
   scoped_refptr<device::BluetoothAdapter> adapter_;
   cryptauth::LocalDeviceDataProvider* local_device_data_provider_;
   BleSynchronizerBase* ble_synchronizer_;
@@ -125,6 +133,7 @@ class BleScannerImpl : public BleScanner,
 
   bool is_initializing_discovery_session_ = false;
   bool is_stopping_discovery_session_ = false;
+  scoped_refptr<base::TaskRunner> task_runner_;
   std::unique_ptr<device::BluetoothDiscoverySession> discovery_session_;
   std::unique_ptr<base::WeakPtrFactory<device::BluetoothDiscoverySession>>
       discovery_session_weak_ptr_factory_;

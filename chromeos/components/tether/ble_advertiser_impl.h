@@ -8,11 +8,16 @@
 #include <array>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/tether/ble_advertiser.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "components/cryptauth/foreground_eid_generator.h"
 #include "components/cryptauth/remote_device.h"
+
+namespace base {
+class TaskRunner;
+}  // namespace base
 
 namespace cryptauth {
 class LocalDeviceDataProvider;
@@ -74,8 +79,9 @@ class BleAdvertiserImpl : public BleAdvertiser {
     std::unique_ptr<cryptauth::DataWithTimestamp> service_data;
   };
 
-  void SetEidGeneratorForTest(
-      std::unique_ptr<cryptauth::ForegroundEidGenerator> test_eid_generator);
+  void SetTestDoubles(
+      std::unique_ptr<cryptauth::ForegroundEidGenerator> test_eid_generator,
+      scoped_refptr<base::TaskRunner> test_task_runner);
   void UpdateAdvertisements();
   void OnAdvertisementStopped(size_t index);
 
@@ -84,6 +90,7 @@ class BleAdvertiserImpl : public BleAdvertiser {
   BleSynchronizerBase* ble_synchronizer_;
 
   std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator_;
+  scoped_refptr<base::TaskRunner> task_runner_;
 
   // |registered_device_ids_| holds the device IDs that are currently
   // registered and is always up-to-date. |advertisements_| contains the active

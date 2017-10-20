@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/callback_forward.h"
 #include "base/stl_util.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
 #include "chromeos/components/tether/fake_ble_synchronizer.h"
@@ -97,7 +99,7 @@ class FakeErrorTolerantBleAdvertisementFactory
   size_t num_created_ = 0;
 };
 
-class TestObserver : public BleAdvertiser::Observer {
+class TestObserver final : public BleAdvertiser::Observer {
  public:
   TestObserver() {}
   ~TestObserver() override {}
@@ -115,6 +117,26 @@ class TestObserver : public BleAdvertiser::Observer {
   size_t num_times_all_advertisements_unregistered_ = 0;
 };
 
+// Deletes the BleAdvertiser when notified.
+class DeletingObserver final : public BleAdvertiser::Observer {
+ public:
+  DeletingObserver(std::unique_ptr<BleAdvertiserImpl>& ble_advertiser)
+      : ble_advertiser_(ble_advertiser) {
+    ble_advertiser_->AddObserver(this);
+  }
+
+  ~DeletingObserver() override {}
+
+  // BleAdvertiser::Observer:
+  void OnAllAdvertisementsUnregistered() override {
+    ble_advertiser_->RemoveObserver(this);
+    ble_advertiser_.reset();
+  }
+
+ private:
+  std::unique_ptr<BleAdvertiserImpl>& ble_advertiser_;
+};
+
 }  // namespace
 
 class BleAdvertiserImplTest : public testing::Test {
@@ -126,10 +148,6 @@ class BleAdvertiserImplTest : public testing::Test {
   void SetUp() override {
     mock_adapter_ =
         base::MakeRefCounted<StrictMock<device::MockBluetoothAdapter>>();
-
-    std::unique_ptr<cryptauth::MockForegroundEidGenerator> eid_generator =
-        base::MakeUnique<cryptauth::MockForegroundEidGenerator>();
-    mock_eid_generator_ = eid_generator.get();
 
     mock_seed_fetcher_ =
         base::MakeUnique<cryptauth::MockRemoteBeaconSeedFetcher>();
@@ -158,17 +176,20 @@ class BleAdvertiserImplTest : public testing::Test {
     ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(
         fake_advertisement_factory_.get());
 
-    test_observer_ = base::WrapUnique(new TestObserver());
-
     ble_advertiser_ = base::MakeUnique<BleAdvertiserImpl>(
         mock_local_data_provider_.get(), mock_seed_fetcher_.get(),
         fake_ble_synchronizer_.get());
-    ble_advertiser_->SetEidGeneratorForTest(std::move(eid_generator));
+
+    mock_eid_generator_ = new cryptauth::MockForegroundEidGenerator();
+    test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+    ble_advertiser_->SetTestDoubles(base::WrapUnique(mock_eid_generator_),
+                                    test_task_runner_);
+
+    test_observer_ = base::WrapUnique(new TestObserver());
     ble_advertiser_->AddObserver(test_observer_.get());
   }
 
   void TearDown() override {
-    ble_advertiser_->RemoveObserver(test_observer_.get());
     ErrorTolerantBleAdvertisementImpl::Factory::SetInstanceForTesting(nullptr);
   }
 
@@ -190,15 +211,18 @@ class BleAdvertiserImplTest : public testing::Test {
     advertisement->InvokeStopCallback();
   }
 
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const std::vector<cryptauth::RemoteDevice> fake_devices_;
   const std::vector<cryptauth::DataWithTimestamp> fake_advertisements_;
 
   scoped_refptr<StrictMock<device::MockBluetoothAdapter>> mock_adapter_;
-  cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
   std::unique_ptr<cryptauth::MockRemoteBeaconSeedFetcher> mock_seed_fetcher_;
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_data_provider_;
   std::unique_ptr<FakeBleSynchronizer> fake_ble_synchronizer_;
+
+  cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
 
   std::unique_ptr<TestObserver> test_observer_;
 
@@ -271,6 +295,7 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully) {
   // Invoke the stop callback and ensure the advertisement was deleted.
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[0].GetDeviceId());
+  test_task_runner_->RunUntilIdle();
   EXPECT_EQ(0u, fake_advertisement_factory_->active_advertisements().size());
   EXPECT_FALSE(ble_advertiser_->AreAdvertisementsRegistered());
   EXPECT_EQ(1u, test_observer_->num_times_all_advertisements_unregistered());
@@ -309,6 +334,7 @@ TEST_F(BleAdvertiserImplTest, AdvertisementRegisteredSuccessfully_TwoDevices) {
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[1].GetDeviceId());
+  test_task_runner_->RunUntilIdle();
   EXPECT_EQ(0u, fake_advertisement_factory_->active_advertisements().size());
   EXPECT_FALSE(ble_advertiser_->AreAdvertisementsRegistered());
   EXPECT_EQ(1u, test_observer_->num_times_all_advertisements_unregistered());
@@ -354,6 +380,7 @@ TEST_F(BleAdvertiserImplTest, TooManyDevicesRegistered) {
   // for device 2 to be created.
   InvokeAdvertisementStoppedCallback(1u /* index */,
                                      fake_devices_[1].GetDeviceId());
+  test_task_runner_->RunUntilIdle();
   EXPECT_EQ(3u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(2u, fake_advertisement_factory_->active_advertisements().size());
 
@@ -402,8 +429,29 @@ TEST_F(BleAdvertiserImplTest, SameAdvertisementAdded_FirstHasNotBeenStopped) {
   // be generated, but only the new one should be active.
   InvokeAdvertisementStoppedCallback(0u /* index */,
                                      fake_devices_[0].GetDeviceId());
+  test_task_runner_->RunUntilIdle();
   EXPECT_EQ(2u, fake_advertisement_factory_->num_created());
   EXPECT_EQ(1u, fake_advertisement_factory_->active_advertisements().size());
+}
+
+// Regression test for crbug.com/776241. This bug could cause a crash if, when
+// BleAdvertiserImpl notifies observers that all advertisements were
+// unregistered, an observer deletes BleAdvertiserImpl. The fix for this issue
+// is simply processing the next advertisement in a new task so that the new
+// task will be canceled if the object is deleted. Without the fix for
+// crbug.com/776241, this test would crash.
+TEST_F(BleAdvertiserImplTest, ObserverDeletesObjectWhenNotified) {
+  // For this test, use a DeletingObserver instead.
+  DeletingObserver deleting_observer(ble_advertiser_);
+  ble_advertiser_->RemoveObserver(test_observer_.get());
+
+  mock_eid_generator_->set_advertisement(
+      base::MakeUnique<cryptauth::DataWithTimestamp>(fake_advertisements_[0]));
+  ble_advertiser_->StartAdvertisingToDevice(fake_devices_[0]);
+  ble_advertiser_->StopAdvertisingToDevice(fake_devices_[0]);
+  InvokeAdvertisementStoppedCallback(0u /* index */,
+                                     fake_devices_[0].GetDeviceId());
+  test_task_runner_->RunUntilIdle();
 }
 
 }  // namespace tether

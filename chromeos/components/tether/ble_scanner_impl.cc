@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/ble_synchronizer.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
@@ -77,6 +78,7 @@ BleScannerImpl::BleScannerImpl(
       ble_synchronizer_(ble_synchronizer),
       service_data_provider_(base::MakeUnique<ServiceDataProviderImpl>()),
       eid_generator_(base::MakeUnique<cryptauth::ForegroundEidGenerator>()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
   adapter_->AddObserver(this);
 }
@@ -150,9 +152,11 @@ bool BleScannerImpl::IsDiscoverySessionActive() {
 
 void BleScannerImpl::SetTestDoubles(
     std::unique_ptr<ServiceDataProvider> service_data_provider,
-    std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator) {
+    std::unique_ptr<cryptauth::ForegroundEidGenerator> eid_generator,
+    scoped_refptr<base::TaskRunner> test_task_runner) {
   service_data_provider_ = std::move(service_data_provider);
   eid_generator_ = std::move(eid_generator);
+  task_runner_ = test_task_runner;
 }
 
 bool BleScannerImpl::IsDeviceRegistered(const std::string& device_id) {
@@ -196,7 +200,7 @@ void BleScannerImpl::ResetDiscoverySessionIfNotActive() {
   is_stopping_discovery_session_ = false;
   weak_ptr_factory_.InvalidateWeakPtrs();
 
-  NotifyDiscoverySessionStateChanged(false /* discovery_session_active */);
+  ScheduleStatusChangeNotification(false /* discovery_session_active */);
 }
 
 void BleScannerImpl::UpdateDiscoveryStatus() {
@@ -231,7 +235,7 @@ void BleScannerImpl::OnDiscoverySessionStarted(
       base::MakeUnique<base::WeakPtrFactory<device::BluetoothDiscoverySession>>(
           discovery_session_.get());
 
-  NotifyDiscoverySessionStateChanged(true /* discovery_session_active */);
+  ScheduleStatusChangeNotification(true /* discovery_session_active */);
 
   UpdateDiscoveryStatus();
 }
@@ -264,7 +268,7 @@ void BleScannerImpl::OnDiscoverySessionStopped() {
   discovery_session_.reset();
   discovery_session_weak_ptr_factory_.reset();
 
-  NotifyDiscoverySessionStateChanged(false /* discovery_session_active */);
+  ScheduleStatusChangeNotification(false /* discovery_session_active */);
 
   UpdateDiscoveryStatus();
 }
@@ -320,6 +324,20 @@ void BleScannerImpl::CheckForMatchingScanFilters(
   // that device, which would change the value of that pointer.
   const cryptauth::RemoteDevice copy = *identified_device;
   NotifyReceivedAdvertisementFromDevice(copy, bluetooth_device);
+}
+
+void BleScannerImpl::ScheduleStatusChangeNotification(
+    bool discovery_session_active) {
+  // Schedule the task to run after the current task has completed. This is
+  // necessary because the completion of a Bluetooth task may cause the Tether
+  // component to be shut down; if that occurs, then we cannot reference
+  // instance variables in this class after the object has been deleted.
+  // Completing the current command as part of the next task ensures that this
+  // cannot occur. See crbug.com/776241.
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&BleScannerImpl::NotifyDiscoverySessionStateChanged,
+                 weak_ptr_factory_.GetWeakPtr(), discovery_session_active));
 }
 
 }  // namespace tether

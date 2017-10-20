@@ -5,6 +5,7 @@
 #include "chromeos/components/tether/ble_advertiser_impl.h"
 
 #include "base/bind.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/components/tether/error_tolerant_ble_advertisement_impl.h"
 #include "components/cryptauth/local_device_data_provider.h"
 #include "components/cryptauth/proto/cryptauth_api.pb.h"
@@ -60,6 +61,7 @@ BleAdvertiserImpl::BleAdvertiserImpl(
       local_device_data_provider_(local_device_data_provider),
       ble_synchronizer_(ble_synchronizer),
       eid_generator_(base::MakeUnique<cryptauth::ForegroundEidGenerator>()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {}
 
 BleAdvertiserImpl::~BleAdvertiserImpl() {}
@@ -149,9 +151,11 @@ bool BleAdvertiserImpl::AreAdvertisementsRegistered() {
   return false;
 }
 
-void BleAdvertiserImpl::SetEidGeneratorForTest(
-    std::unique_ptr<cryptauth::ForegroundEidGenerator> test_eid_generator) {
+void BleAdvertiserImpl::SetTestDoubles(
+    std::unique_ptr<cryptauth::ForegroundEidGenerator> test_eid_generator,
+    scoped_refptr<base::TaskRunner> test_task_runner) {
   eid_generator_ = std::move(test_eid_generator);
+  task_runner_ = test_task_runner;
 }
 
 void BleAdvertiserImpl::UpdateAdvertisements() {
@@ -188,10 +192,14 @@ void BleAdvertiserImpl::OnAdvertisementStopped(size_t index) {
   DCHECK(advertisements_[index] && advertisements_[index]->HasBeenStopped());
   advertisements_[index].reset();
 
+  // Update advertisements, but do so as part of a new task in the run loop to
+  // prevent the possibility of a crash. See crbug.com/776241.
+  task_runner_->PostTask(FROM_HERE,
+                         base::Bind(&BleAdvertiserImpl::UpdateAdvertisements,
+                                    weak_ptr_factory_.GetWeakPtr()));
+
   if (!AreAdvertisementsRegistered())
     NotifyAllAdvertisementsUnregistered();
-
-  UpdateAdvertisements();
 }
 
 }  // namespace tether
