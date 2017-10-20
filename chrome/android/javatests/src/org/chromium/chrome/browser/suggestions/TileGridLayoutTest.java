@@ -235,6 +235,7 @@ public class TileGridLayoutTest {
     @MediumTest
     @Feature({"NewTabPage", "RenderTest"})
     @ChromeHome
+    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     public void testTileAppearanceModern()
             throws IOException, InterruptedException, TimeoutException {
         List<SiteSuggestion> suggestions = makeSuggestions(2);
