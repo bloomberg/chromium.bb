@@ -7,6 +7,7 @@
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/metrics/proto/ukm/entry.pb.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
@@ -927,6 +928,7 @@ TEST(JourneyLoggerTest, RecordJourneyStatsHistograms_TwoPaymentRequests) {
 // the Payment Request.
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CheckoutFunnelUkm_UserAborted) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   using UkmEntry = ukm::builders::PaymentRequest_CheckoutEvents;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   char test_url[] = "http://www.google.com/";
@@ -979,6 +981,7 @@ TEST(JourneyLoggerTest,
 // completes the Payment Request.
 TEST(JourneyLoggerTest,
      RecordJourneyStatsHistograms_CheckoutFunnelUkm_Completed) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   using UkmEntry = ukm::builders::PaymentRequest_CheckoutEvents;
   ukm::TestAutoSetUkmRecorder ukm_recorder;
   char test_url[] = "http://www.google.com/";

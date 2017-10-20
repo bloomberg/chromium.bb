@@ -94,7 +94,7 @@ UkmService::UkmService(PrefService* pref_service,
 
   StoreWhitelistedEntries();
 
-  DelegatingUkmRecorder::Get()->AddDelegate(this);
+  DelegatingUkmRecorder::Get()->AddDelegate(self_ptr_factory_.GetWeakPtr());
 }
 
 UkmService::~UkmService() {

@@ -14,6 +14,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "components/ukm/ukm_recorder_impl.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/interfaces/ukm_interface.mojom.h"
@@ -142,6 +143,9 @@ class TestAutoSetUkmRecorder : public TestUkmRecorder {
  public:
   TestAutoSetUkmRecorder();
   ~TestAutoSetUkmRecorder() override;
+
+ private:
+  base::WeakPtrFactory<TestAutoSetUkmRecorder> self_ptr_factory_;
 };
 
 }  // namespace ukm
