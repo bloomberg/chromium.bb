@@ -38,7 +38,7 @@ sk_sp<PaintRecord> SVGFilterRecordingContext::EndContent(
   context_->BeginRecording(bounds);
   paint_controller_->CommitNewDisplayItems();
 
-  paint_controller_->GetPaintArtifact().Replay(bounds, *context_);
+  paint_controller_->GetPaintArtifact().Replay(*context_);
 
   sk_sp<PaintRecord> content = context_->EndRecording();
   // Content is cached by the source graphic so temporaries can be freed.

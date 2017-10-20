@@ -65,15 +65,11 @@ class PLATFORM_EXPORT PaintArtifact final {
   size_t ApproximateUnsharedMemoryUsage() const;
 
   // Draws the paint artifact to a GraphicsContext.
-  // |bounds| is the bounding box of the paint artifact's display list.
-  void Replay(const FloatRect& bounds, GraphicsContext&) const;
+  void Replay(GraphicsContext&) const;
 
-  // Draws the paint artifact to a PaintCanvas.
-  // |bounds| is the bounding box of the paint artifact's display list.
-  // SPv2 only.
-  // In SPv2 mode, replays into the ancestor state given by |replayState|.
+  // Draws the paint artifact to a PaintCanvas. For SPv175+ only.
+  // Replays into the ancestor state given by |replay_state|.
   void Replay(
-      const FloatRect& bounds,
       PaintCanvas&,
       const PropertyTreeState& replay_state = PropertyTreeState::Root()) const;
 
