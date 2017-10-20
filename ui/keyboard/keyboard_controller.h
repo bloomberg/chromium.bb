@@ -139,6 +139,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
 
   KeyboardControllerState GetStateForTest() const { return state_; }
 
+  const gfx::Rect AdjustSetBoundsRequest(
+      const gfx::Rect& display_bounds,
+      const gfx::Rect& requested_bounds) const;
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;
