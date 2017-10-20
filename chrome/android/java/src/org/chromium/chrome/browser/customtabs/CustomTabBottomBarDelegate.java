@@ -170,8 +170,8 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
                 @Override
                 public void onShowContextualSearch(
                         @Nullable GSAContextDisplaySelection selectionContext) {
-                    getBottomBarView()
-                            .animate()
+                    if (mBottomBarView == null) return;
+                    mBottomBarView.animate()
                             .alpha(0)
                             .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
                             .setDuration(SLIDE_ANIMATION_DURATION_MS)
@@ -179,8 +179,8 @@ class CustomTabBottomBarDelegate implements FullscreenListener {
                 }
                 @Override
                 public void onHideContextualSearch() {
-                    getBottomBarView()
-                            .animate()
+                    if (mBottomBarView == null) return;
+                    mBottomBarView.animate()
                             .alpha(1)
                             .setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE)
                             .setDuration(SLIDE_ANIMATION_DURATION_MS)
