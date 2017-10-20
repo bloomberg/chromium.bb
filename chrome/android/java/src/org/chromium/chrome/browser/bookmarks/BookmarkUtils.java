@@ -270,7 +270,14 @@ public class BookmarkUtils {
      */
     public static TintedDrawable getFolderIcon(Resources res) {
         return TintedDrawable.constructTintedDrawable(
-                res, R.drawable.ic_folder_blue_24dp, R.color.dark_mode_tint);
+                res, R.drawable.ic_folder_blue_24dp, getFolderIconTint());
+    }
+
+    /**
+     * @return The tint used on the bookmark folder icon.
+     */
+    public static int getFolderIconTint() {
+        return R.color.dark_mode_tint;
     }
 
     private static void openUrl(Activity activity, String url, ComponentName componentName) {
