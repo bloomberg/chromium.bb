@@ -65,6 +65,9 @@ blink_core_sources("xml") {
     "parser/XMLErrors.cpp",
     "parser/XMLErrors.h",
     "parser/XMLParserInput.h",
+    "parser/XMLParserScriptRunner.cpp",
+    "parser/XMLParserScriptRunner.h",
+    "parser/XMLParserScriptRunnerHost.h",
   ]
 
   configs += [
