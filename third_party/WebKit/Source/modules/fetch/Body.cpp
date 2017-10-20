@@ -290,10 +290,14 @@ bool Body::HasPendingActivity() const {
 Body::Body(ExecutionContext* context) : ContextClient(context) {}
 
 ScriptPromise Body::RejectInvalidConsumption(ScriptState* script_state) {
-  if (IsBodyLocked() || bodyUsed())
+  const bool used = bodyUsed();
+  if (IsBodyLocked() || used) {
     return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(), "Already read"));
+        script_state,
+        V8ThrowException::CreateTypeError(
+            script_state->GetIsolate(),
+            used ? "body stream already read" : "body stream is locked"));
+  }
   return ScriptPromise();
 }
 
