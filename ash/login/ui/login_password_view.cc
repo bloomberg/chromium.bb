@@ -58,7 +58,7 @@ constexpr int kCapsLockIconSizeDp = 20;
 constexpr SkColor kTextColor = SkColorSetARGBMacro(0xAB, 0xFF, 0xFF, 0xFF);
 
 // Width and height of the easy unlock icon.
-constexpr const int kEasyUnlockIconSizeDp = 16;
+constexpr const int kEasyUnlockIconSizeDp = 20;
 
 // Horizontal distance/margin between the easy unlock icon and the start of
 // the password view.

@@ -194,13 +194,6 @@ TEST_F(LockScreenSanityTest, ShiftTabGoesFromLockToStatusAreaAndBackToLock) {
   EXPECT_TRUE(VerifyFocused(lock));
   EXPECT_TRUE(VerifyNotFocused(status_area));
 
-  // Two shift+tab bring focus to the status area.
-  // TODO(crbug.com/768076): Only one shift+tab is needed as the focus should
-  // go directly to status area from password view.
-  //
-  // Focus from password view to user view (user dropdown button).
-  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
-
   // Focus from user view to the status area.
   GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_TAB, ui::EF_SHIFT_DOWN);
 
