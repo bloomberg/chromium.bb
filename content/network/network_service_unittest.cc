@@ -364,7 +364,7 @@ class TestNetworkChangeManagerClient
 #if defined(OS_CHROMEOS)
 #define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
 #else
-#define MAYBE_NetworkChangeManagerRequest NetworkChangeManagerRequest
+#define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
 #endif
 TEST_F(NetworkServiceTest, MAYBE_NetworkChangeManagerRequest) {
   TestNetworkChangeManagerClient manager_client(service());

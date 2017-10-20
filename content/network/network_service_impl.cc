@@ -76,6 +76,7 @@ NetworkServiceImpl::NetworkServiceImpl(
 
     // Set up net::NetworkChangeNotifier to watch for network change events.
     std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier;
+    /* disabled temporarily
 #if defined(OS_ANDROID)
     network_change_notifier_factory_ =
         std::make_unique<net::NetworkChangeNotifierFactoryAndroid>();
@@ -90,6 +91,7 @@ NetworkServiceImpl::NetworkServiceImpl(
     network_change_notifier =
         base::WrapUnique(net::NetworkChangeNotifier::Create());
 #endif
+    */
     network_change_manager_ = std::make_unique<NetworkChangeManagerImpl>(
         std::move(network_change_notifier));
   } else {
