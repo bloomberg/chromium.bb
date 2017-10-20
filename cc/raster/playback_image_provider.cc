@@ -83,15 +83,6 @@ PlaybackImageProvider::GetDecodedDrawImage(const DrawImage& draw_image) {
                            ? paint_image.frame_index()
                            : it->second;
 
-  // Clamp the frame index to the last frame available in the PaintImage.
-  // Ideally all PaintImages on a tile should have the same number of frames
-  // available but since repainting of offscreen animated images is throttled in
-  // blink, its possible to have a tile with 2 PaintImages for the same id and
-  // one of them is using a cached recording which does not have the data to
-  // decode the frame index selected for playback.
-  // TODO(khushalsagar): Remove this when crbug.com/775558 is resolved.
-  frame_index = std::min(frame_index, paint_image.FrameCount() - 1);
-
   DrawImage adjusted_image(draw_image, 1.f, frame_index, target_color_space_);
   auto decoded_draw_image = cache_->GetDecodedImageForDraw(adjusted_image);
 
