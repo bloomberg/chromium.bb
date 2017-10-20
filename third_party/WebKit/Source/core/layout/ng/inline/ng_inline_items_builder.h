@@ -114,10 +114,6 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   // white space is collapsed.
   OffsetMappingBuilder mapping_builder_;
 
-  // Indicates whether we are appending a string not, to help updating
-  // |mapping_builder_|.
-  bool is_appending_string_ = false;
-
   typedef struct OnExitNode {
     LayoutObject* node;
     UChar character;
