@@ -25,6 +25,7 @@
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
+#include "media/audio/audio_input_controller.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/fake_audio_log_factory.h"
 #include "media/audio/fake_audio_manager.h"
@@ -323,7 +324,7 @@ TEST_F(AudioInputRendererHostTest, CreateWithDefaultDevice) {
   EXPECT_CALL(*controller_factory_.controller(0), DidClose());
 }
 
-// If authorization hasn't been granted, only reply with and error and do
+// If authorization hasn't been granted, only reply with an error and do
 // nothing else.
 TEST_F(AudioInputRendererHostTest, CreateWithoutAuthorization_Error) {
   EXPECT_CALL(renderer_, NotifyStreamError(kStreamId));

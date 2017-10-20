@@ -62,7 +62,7 @@ class CONTENT_EXPORT AudioOutputDelegateImpl
   ~AudioOutputDelegateImpl() override;
 
   // AudioOutputDelegate implementation.
-  int GetStreamId() const override;
+  int GetStreamId() override;
   void OnPlayStream() override;
   void OnPauseStream() override;
   void OnSetVolume(double volume) override;
