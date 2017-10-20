@@ -91,22 +91,26 @@ class UnderlyingIndentModeChecker
   const IndentMode mode_;
 };
 
-class InheritedIndentModeChecker
+class InheritedIndentChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  static std::unique_ptr<InheritedIndentModeChecker> Create(
+  static std::unique_ptr<InheritedIndentChecker> Create(
+      const Length& length,
       const IndentMode& mode) {
-    return WTF::WrapUnique(new InheritedIndentModeChecker(mode));
+    return WTF::WrapUnique(new InheritedIndentChecker(length, mode));
   }
 
   bool IsValid(const StyleResolverState& state,
                const InterpolationValue&) const final {
-    return mode_ == IndentMode(*state.ParentStyle());
+    return length_ == state.ParentStyle()->TextIndent() &&
+           mode_ == IndentMode(*state.ParentStyle());
   }
 
  private:
-  InheritedIndentModeChecker(const IndentMode& mode) : mode_(mode) {}
+  InheritedIndentChecker(const Length& length, const IndentMode& mode)
+      : length_(length), mode_(mode) {}
 
+  const Length length_;
   const IndentMode mode_;
 };
 
@@ -147,7 +151,8 @@ InterpolationValue CSSTextIndentInterpolationType::MaybeConvertInherit(
     ConversionCheckers& conversion_checkers) const {
   const ComputedStyle& parent_style = *state.ParentStyle();
   IndentMode mode(parent_style);
-  conversion_checkers.push_back(InheritedIndentModeChecker::Create(mode));
+  conversion_checkers.push_back(
+      InheritedIndentChecker::Create(parent_style.TextIndent(), mode));
   return CreateValue(parent_style.TextIndent(), mode,
                      parent_style.EffectiveZoom());
 }
