@@ -233,13 +233,6 @@ bool FindBadConstructsConsumer::VisitVarDecl(clang::VarDecl* var_decl) {
 void FindBadConstructsConsumer::CheckChromeClass(LocationType location_type,
                                                  SourceLocation record_location,
                                                  CXXRecordDecl* record) {
-  // TODO(dcheng): This is needed because some of the diagnostics for refcounted
-  // classes use DiagnosticsEngine::Report() directly, and there are existing
-  // violations in Blink. This should be removed once the checks are
-  // modularized.
-  if (location_type == LocationType::kBlink)
-    return;
-
   bool implementation_file = InImplementationFile(record_location);
 
   if (!implementation_file) {
@@ -262,7 +255,12 @@ void FindBadConstructsConsumer::CheckChromeClass(LocationType location_type,
   if (!IsPodOrTemplateType(*record))
     CheckVirtualMethods(record_location, record, warn_on_inline_bodies);
 
-  CheckRefCountedDtors(record_location, record);
+  // TODO(dcheng): This is needed because some of the diagnostics for refcounted
+  // classes use DiagnosticsEngine::Report() directly, and there are existing
+  // violations in Blink. This should be removed once the checks are
+  // modularized.
+  if (location_type != LocationType::kBlink)
+    CheckRefCountedDtors(record_location, record);
 
   CheckWeakPtrFactoryMembers(record_location, record);
 }
@@ -473,8 +471,23 @@ FindBadConstructsConsumer::ReportIfSpellingLocNotIgnored(
     unsigned diagnostic_id) {
   LocationType type =
       ClassifyLocation(instance().getSourceManager().getSpellingLoc(loc));
-  bool ignored =
-      type == LocationType::kThirdParty || type == LocationType::kBlink;
+  bool ignored = type == LocationType::kThirdParty;
+  if (type == LocationType::kBlink) {
+    if (!options_.enforce_in_thirdparty_webkit) {
+      ignored = true;
+    } else if (diagnostic_id == diag_no_explicit_ctor_ ||
+               diagnostic_id == diag_no_explicit_copy_ctor_ ||
+               diagnostic_id == diag_inline_complex_ctor_ ||
+               diagnostic_id == diag_no_explicit_dtor_ ||
+               diagnostic_id == diag_inline_complex_dtor_ ||
+               diagnostic_id ==
+                   diag_refcounted_with_protected_non_virtual_dtor_ ||
+               diagnostic_id == diag_virtual_with_inline_body_) {
+      // Certain checks are ignored in Blink for historical reasons.
+      // TODO(dcheng): Make this list smaller.
+      ignored = true;
+    }
+  }
   return SuppressibleDiagnosticBuilder(&diagnostic(), loc, diagnostic_id,
                                        ignored);
 }
