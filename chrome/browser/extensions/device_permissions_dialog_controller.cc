@@ -57,12 +57,6 @@ base::string16 DevicePermissionsDialogController::GetOption(
                    prompt_->GetDeviceSerialNumber(index));
 }
 
-void DevicePermissionsDialogController::RefreshOptions() {}
-
-base::string16 DevicePermissionsDialogController::GetStatus() const {
-  return base::string16();
-}
-
 void DevicePermissionsDialogController::Select(
     const std::vector<size_t>& indices) {
   for (size_t index : indices)

@@ -167,7 +167,6 @@ void ChooserBubbleUiViewDelegate::UpdateAnchor(Browser* browser) {
 void ChooserBubbleUiViewDelegate::set_bubble_reference(
     BubbleReference bubble_reference) {
   bubble_reference_ = bubble_reference;
-  DCHECK(bubble_reference_);
 }
 
 void ChooserBubbleUiViewDelegate::UpdateTableView() const {

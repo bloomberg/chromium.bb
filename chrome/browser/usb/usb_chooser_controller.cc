@@ -115,12 +115,6 @@ bool UsbChooserController::IsPaired(size_t index) const {
       chooser_context_.get(), requesting_origin_, embedding_origin_, device);
 }
 
-void UsbChooserController::RefreshOptions() {}
-
-base::string16 UsbChooserController::GetStatus() const {
-  return base::string16();
-}
-
 void UsbChooserController::Select(const std::vector<size_t>& indices) {
   DCHECK_EQ(1u, indices.size());
   size_t index = indices[0];
