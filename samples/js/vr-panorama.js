@@ -160,10 +160,15 @@ window.VRPanorama = (function () {
       }, false);
 
       video.loop = true;
-      video.autoplay = true;
+      // Videos must be muted to play without a user gesture.
+      video.muted = true;
       video.crossOrigin = 'anonymous';
       video.setAttribute('webkit-playsinline', '');
       video.src = url;
+      // As the video is never visible on the page, we must explicitly
+      // call play to start the video instead of being able to use
+      // autoplay attributes.
+      video.play();
     });
   };
 
