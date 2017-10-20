@@ -89,6 +89,10 @@ namespace media {
 
 namespace {
 
+// TODO(apacible): Remove when crbug/747082 is stable.
+const double kMinRate = 0.0625;
+const double kMaxRate = 16.0;
+
 void SetSinkIdOnMediaThread(scoped_refptr<WebAudioSourceProviderImpl> sink,
                             const std::string& device_id,
                             const url::Origin& security_origin,
@@ -709,6 +713,13 @@ void WebMediaPlayerImpl::SetRate(double rate) {
         << "Effective playback rate changed from " << playback_rate_ << " to "
         << rate;
   }
+
+  // TODO(apacible): Remove clamping when crbug/747082 is stable.
+  // Limit rates to reasonable values by clamping.
+  if (rate < 0.0)
+    return;
+  if (rate != 0.0)
+    rate = std::min(std::max(rate, kMinRate), kMaxRate);
 
   playback_rate_ = rate;
   if (!paused_) {
