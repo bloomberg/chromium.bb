@@ -70,12 +70,20 @@ static void fwd_txfm_16x8(const int16_t *src_diff, tran_low_t *coeff,
 
 static void fwd_txfm_16x32(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+  av1_fht16x32_c(src_diff, coeff, diff_stride, txfm_param);
+#else
   av1_fht16x32(src_diff, coeff, diff_stride, txfm_param);
+#endif
 }
 
 static void fwd_txfm_32x16(const int16_t *src_diff, tran_low_t *coeff,
                            int diff_stride, TxfmParam *txfm_param) {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+  av1_fht32x16_c(src_diff, coeff, diff_stride, txfm_param);
+#else
   av1_fht32x16(src_diff, coeff, diff_stride, txfm_param);
+#endif
 }
 
 static void fwd_txfm_8x8(const int16_t *src_diff, tran_low_t *coeff,

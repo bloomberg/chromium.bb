@@ -2273,6 +2273,26 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+    { daala_fdct32, daala_fdct16 },  // DCT_DCT
+    { daala_fdst32, daala_fdct16 },  // ADST_DCT
+    { daala_fdct32, daala_fdst16 },  // DCT_ADST
+    { daala_fdst32, daala_fdst16 },  // ADST_ADST
+#if CONFIG_EXT_TX
+    { daala_fdst32, daala_fdct16 },  // FLIPADST_DCT
+    { daala_fdct32, daala_fdst16 },  // DCT_FLIPADST
+    { daala_fdst32, daala_fdst16 },  // FLIPADST_FLIPADST
+    { daala_fdst32, daala_fdst16 },  // ADST_FLIPADST
+    { daala_fdst32, daala_fdst16 },  // FLIPADST_ADST
+    { daala_idtx32, daala_idtx16 },  // IDTX
+    { daala_fdct32, daala_idtx16 },  // V_DCT
+    { daala_idtx32, daala_fdct16 },  // H_DCT
+    { daala_fdst32, daala_idtx16 },  // V_ADST
+    { daala_idtx32, daala_fdst16 },  // H_ADST
+    { daala_fdst32, daala_idtx16 },  // V_FLIPADST
+    { daala_idtx32, daala_fdst16 },  // H_FLIPADST
+#endif
+#else
     { fdct32, fdct16 },         // DCT_DCT
     { fhalfright32, fdct16 },   // ADST_DCT
     { fdct32, fadst16 },        // DCT_ADST
@@ -2291,6 +2311,7 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
     { fhalfright32, fidtx16 },  // V_FLIPADST
     { fidtx32, fadst16 },       // H_FLIPADST
 #endif
+#endif
   };
   const transform_2d ht = FHT[tx_type];
   const int n = 16;
@@ -2305,12 +2326,22 @@ void av1_fht16x32_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Rows
   for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+      temp_in[j] = input[i * stride + j] * 16;
+#else
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[i * stride + j] * 4 * Sqrt2);
+#endif
+    }
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#else
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
+#endif
+    }
   }
 
   // Columns
@@ -2332,6 +2363,26 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+    { daala_fdct16, daala_fdct32 },  // DCT_DCT
+    { daala_fdst16, daala_fdct32 },  // ADST_DCT
+    { daala_fdct16, daala_fdst32 },  // DCT_ADST
+    { daala_fdst16, daala_fdst32 },  // ADST_ADST
+#if CONFIG_EXT_TX
+    { daala_fdst16, daala_fdct32 },  // FLIPADST_DCT
+    { daala_fdct16, daala_fdst32 },  // DCT_FLIPADST
+    { daala_fdst16, daala_fdst32 },  // FLIPADST_FLIPADST
+    { daala_fdst16, daala_fdst32 },  // ADST_FLIPADST
+    { daala_fdst16, daala_fdst32 },  // FLIPADST_ADST
+    { daala_idtx16, daala_idtx32 },  // IDTX
+    { daala_fdct16, daala_idtx32 },  // V_DCT
+    { daala_idtx16, daala_fdct32 },  // H_DCT
+    { daala_fdst16, daala_idtx32 },  // V_ADST
+    { daala_idtx16, daala_fdst32 },  // H_ADST
+    { daala_fdst16, daala_idtx32 },  // V_FLIPADST
+    { daala_idtx16, daala_fdst32 },  // H_FLIPADST
+#endif
+#else
     { fdct16, fdct32 },         // DCT_DCT
     { fadst16, fdct32 },        // ADST_DCT
     { fdct16, fhalfright32 },   // DCT_ADST
@@ -2350,6 +2401,7 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
     { fadst16, fidtx32 },       // V_FLIPADST
     { fidtx16, fhalfright32 },  // H_FLIPADST
 #endif
+#endif
   };
   const transform_2d ht = FHT[tx_type];
   const int n = 16;
@@ -2364,12 +2416,22 @@ void av1_fht32x16_c(const int16_t *input, tran_low_t *output, int stride,
 
   // Columns
   for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+      temp_in[j] = input[j * stride + i] * 16;
+#else
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[j * stride + i] * 4 * Sqrt2);
+#endif
+    }
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX16 && CONFIG_DAALA_TX32
+      out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#else
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 4);
+#endif
+    }
   }
 
   // Rows
