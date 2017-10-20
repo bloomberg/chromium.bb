@@ -185,7 +185,8 @@ std::unique_ptr<SandboxBPFBasePolicy> GetGpuProcessSandbox(
 // Initialize the seccomp-bpf sandbox.
 bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
                      base::ScopedFD proc_fd,
-                     SandboxSeccompBPF::Options options) {
+                     SandboxSeccompBPF::PreSandboxHook hook,
+                     const SandboxSeccompBPF::Options& options) {
   std::unique_ptr<SandboxBPFBasePolicy> policy;
   switch (sandbox_type) {
     case service_manager::SANDBOX_TYPE_GPU:
@@ -213,11 +214,9 @@ bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
       policy = std::make_unique<AllowAllPolicy>();
       break;
   }
-  if (options.pre_sandbox_hook) {
-    SandboxSeccompBPF::PreSandboxHook hook =
-        std::move(options.pre_sandbox_hook);
-    CHECK(std::move(hook).Run(policy.get(), std::move(options)));
-  }
+  if (hook)
+    CHECK(std::move(hook).Run(policy.get(), options));
+
   StartSandboxWithPolicy(std::move(policy), std::move(proc_fd));
   RunSandboxSanityChecks(sandbox_type);
   return true;
@@ -228,10 +227,6 @@ bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
 }  // namespace
 
 #endif  // USE_SECCOMP_BPF
-
-SandboxSeccompBPF::Options::Options() = default;
-SandboxSeccompBPF::Options::Options(Options&&) = default;
-SandboxSeccompBPF::Options::~Options() = default;
 
 // Is seccomp BPF globally enabled?
 bool SandboxSeccompBPF::IsSeccompBPFDesired() {
@@ -264,15 +259,16 @@ bool SandboxSeccompBPF::SupportsSandboxWithTsync() {
 
 bool SandboxSeccompBPF::StartSandbox(service_manager::SandboxType sandbox_type,
                                      base::ScopedFD proc_fd,
-                                     Options options) {
+                                     PreSandboxHook hook,
+                                     const Options& options) {
 #if BUILDFLAG(USE_SECCOMP_BPF)
   if (!IsUnsandboxedSandboxType(sandbox_type) &&
       IsSeccompBPFDesired() &&  // Global switches policy.
       SupportsSandbox()) {
     // If the kernel supports the sandbox, and if the command line says we
     // should enable it, enable it or die.
-    CHECK(
-        StartBPFSandbox(sandbox_type, std::move(proc_fd), std::move(options)));
+    CHECK(StartBPFSandbox(sandbox_type, std::move(proc_fd), std::move(hook),
+                          options));
     return true;
   }
 #endif
