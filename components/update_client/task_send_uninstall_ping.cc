@@ -17,12 +17,12 @@ TaskSendUninstallPing::TaskSendUninstallPing(UpdateEngine* update_engine,
                                              const std::string& id,
                                              const base::Version& version,
                                              int reason,
-                                             const Callback& callback)
+                                             Callback callback)
     : update_engine_(update_engine),
       id_(id),
       version_(version),
       reason_(reason),
-      callback_(callback) {}
+      callback_(std::move(callback)) {}
 
 TaskSendUninstallPing::~TaskSendUninstallPing() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -55,7 +55,7 @@ void TaskSendUninstallPing::TaskComplete(Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback_, this, error));
+      FROM_HERE, base::BindOnce(std::move(callback_), this, error));
 }
 
 }  // namespace update_client

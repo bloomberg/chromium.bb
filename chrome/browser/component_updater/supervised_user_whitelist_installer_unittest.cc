@@ -144,8 +144,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
   }
 
   // OnDemandUpdater implementation:
-  void OnDemandUpdate(const std::string& crx_id,
-                      const Callback& callback) override {
+  void OnDemandUpdate(const std::string& crx_id, Callback callback) override {
     on_demand_update_called_ = true;
 
     if (!component_) {

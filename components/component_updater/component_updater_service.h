@@ -168,8 +168,7 @@ class OnDemandUpdater {
   // the update will be applied. The caller can subscribe to component update
   // service notifications and provide an optional callback to get the result
   // of the call. The function does not implement any cooldown interval.
-  virtual void OnDemandUpdate(const std::string& id,
-                              const Callback& callback) = 0;
+  virtual void OnDemandUpdate(const std::string& id, Callback callback) = 0;
 };
 
 // Creates the component updater.

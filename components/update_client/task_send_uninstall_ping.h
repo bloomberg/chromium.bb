@@ -26,7 +26,7 @@ enum class Error;
 // Defines a specialized task for sending the uninstall ping.
 class TaskSendUninstallPing : public Task {
  public:
-  using Callback = base::Callback<void(Task* task, Error error)>;
+  using Callback = base::OnceCallback<void(Task* task, Error error)>;
 
   // |update_engine| is injected here to handle the task.
   // |id| represents the CRX to send the ping for.
@@ -36,7 +36,7 @@ class TaskSendUninstallPing : public Task {
                         const std::string& id,
                         const base::Version& version,
                         int reason,
-                        const Callback& callback);
+                        Callback callback);
   ~TaskSendUninstallPing() override;
 
   void Run() override;
@@ -56,7 +56,7 @@ class TaskSendUninstallPing : public Task {
   const std::string id_;
   const base::Version version_;
   int reason_;
-  const Callback callback_;
+  Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskSendUninstallPing);
 };

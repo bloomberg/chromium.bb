@@ -253,19 +253,19 @@ void CrxUpdateService::MaybeThrottle(const std::string& id,
 }
 
 void CrxUpdateService::OnDemandUpdate(const std::string& id,
-                                      const Callback& callback) {
+                                      Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!GetComponent(id)) {
     if (!callback.is_null()) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(
-          FROM_HERE,
-          base::BindOnce(callback, update_client::Error::INVALID_ARGUMENT));
+          FROM_HERE, base::BindOnce(std::move(callback),
+                                    update_client::Error::INVALID_ARGUMENT));
     }
     return;
   }
 
-  OnDemandUpdateInternal(id, callback);
+  OnDemandUpdateInternal(id, std::move(callback));
 }
 
 bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
@@ -287,15 +287,16 @@ bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
 }
 
 void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
-                                              const Callback& callback) {
+                                              Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.Calls", UPDATE_TYPE_MANUAL,
                             UPDATE_TYPE_COUNT);
   update_client_->Install(
       id, base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
-      base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
-                 callback, base::TimeTicks::Now()));
+      base::BindOnce(&CrxUpdateService::OnUpdateComplete,
+                     base::Unretained(this), std::move(callback),
+                     base::TimeTicks::Now()));
 }
 
 bool CrxUpdateService::CheckForUpdates() {
@@ -320,16 +321,18 @@ bool CrxUpdateService::CheckForUpdates() {
     update_client_->Update(
         unsecure_ids,
         base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
-        base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
-                   Callback(), base::TimeTicks::Now()));
+        base::BindOnce(&CrxUpdateService::OnUpdateComplete,
+                       base::Unretained(this), Callback(),
+                       base::TimeTicks::Now()));
   }
 
   if (!secure_ids.empty()) {
     update_client_->Update(
         secure_ids,
         base::Bind(&CrxUpdateService::OnUpdate, base::Unretained(this)),
-        base::Bind(&CrxUpdateService::OnUpdateComplete, base::Unretained(this),
-                   Callback(), base::TimeTicks::Now()));
+        base::BindOnce(&CrxUpdateService::OnUpdateComplete,
+                       base::Unretained(this), Callback(),
+                       base::TimeTicks::Now()));
   }
 
   return true;
@@ -388,7 +391,7 @@ void CrxUpdateService::OnUpdateComplete(Callback callback,
 
   if (!callback.is_null()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, error));
+        FROM_HERE, base::BindOnce(std::move(callback), error));
   }
 }
 

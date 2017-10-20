@@ -111,7 +111,7 @@ class ComponentInstaller final : public update_client::CrxInstaller {
   // Registers the component for update checks and installs.
   // The passed |callback| will be called once the initial check for installed
   // versions is done and the component has been registered.
-  void Register(ComponentUpdateService* cus, const base::Closure& callback);
+  void Register(ComponentUpdateService* cus, base::OnceClosure callback);
 
   // Overrides from update_client::CrxInstaller.
   void OnUpdateError(int error) override;
@@ -161,7 +161,7 @@ class ComponentInstaller final : public update_client::CrxInstaller {
   void FinishRegistration(
       const scoped_refptr<RegistrationInfo>& registration_info,
       ComponentUpdateService* cus,
-      const base::Closure& callback);
+      base::OnceClosure callback);
   void ComponentReady(std::unique_ptr<base::DictionaryValue> manifest);
   void UninstallOnTaskRunner();
 

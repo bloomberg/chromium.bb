@@ -59,7 +59,7 @@ ComponentInstaller::ComponentInstaller(
 ComponentInstaller::~ComponentInstaller() {}
 
 void ComponentInstaller::Register(ComponentUpdateService* cus,
-                                  const base::Closure& callback) {
+                                  base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
@@ -74,10 +74,10 @@ void ComponentInstaller::Register(ComponentUpdateService* cus,
   auto registration_info = base::MakeRefCounted<RegistrationInfo>();
   task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::Bind(&ComponentInstaller::StartRegistration, this,
-                 registration_info, cus),
-      base::Bind(&ComponentInstaller::FinishRegistration, this,
-                 registration_info, cus, callback));
+      base::BindOnce(&ComponentInstaller::StartRegistration, this,
+                     registration_info, cus),
+      base::BindOnce(&ComponentInstaller::FinishRegistration, this,
+                     registration_info, cus, std::move(callback)));
 }
 
 void ComponentInstaller::OnUpdateError(int error) {
@@ -380,7 +380,7 @@ void ComponentInstaller::UninstallOnTaskRunner() {
 void ComponentInstaller::FinishRegistration(
     const scoped_refptr<RegistrationInfo>& registration_info,
     ComponentUpdateService* cus,
-    const base::Closure& callback) {
+    base::OnceClosure callback) {
   VLOG(1) << __func__ << " for " << installer_policy_->GetName();
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -408,7 +408,7 @@ void ComponentInstaller::FinishRegistration(
   }
 
   if (!callback.is_null())
-    callback.Run();
+    std::move(callback).Run();
 
   if (!registration_info->manifest) {
     DVLOG(1) << "No component found for " << installer_policy_->GetName();
