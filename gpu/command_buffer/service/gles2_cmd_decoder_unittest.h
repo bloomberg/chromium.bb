@@ -112,6 +112,13 @@ class GLES2DecoderPassthroughTest : public GLES2DecoderPassthroughTestBase {
       : GLES2DecoderPassthroughTestBase(CONTEXT_TYPE_OPENGLES2) {}
 };
 
+class GLES2WebGLDecoderPassthroughTest
+    : public GLES2DecoderPassthroughTestBase {
+ public:
+  GLES2WebGLDecoderPassthroughTest()
+      : GLES2DecoderPassthroughTestBase(CONTEXT_TYPE_WEBGL1) {}
+};
+
 class GLES3DecoderPassthroughTest : public GLES2DecoderPassthroughTestBase {
  public:
   GLES3DecoderPassthroughTest()

@@ -2275,6 +2275,11 @@ void GLES2DecoderPassthroughTestBase::SetUp() {
 
   decoder_.reset(new GLES2DecoderPassthroughImpl(
       this, command_buffer_service_.get(), &outputter_, group_.get()));
+
+  // Don't request any optional extensions at startup, individual tests will
+  // request what they need.
+  decoder_->SetOptionalExtensionsRequestedForTesting(false);
+
   ASSERT_EQ(
       group_->Initialize(decoder_.get(), context_creation_attribs_.context_type,
                          DisallowedFeatures()),

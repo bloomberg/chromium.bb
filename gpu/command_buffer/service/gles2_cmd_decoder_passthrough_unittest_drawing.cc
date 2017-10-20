@@ -10,7 +10,7 @@ namespace gles2 {
 
 using namespace cmds;
 
-TEST_F(GLES2DecoderPassthroughTest, DrawArraysInstancedANGLEEnablement) {
+TEST_F(GLES2WebGLDecoderPassthroughTest, DrawArraysInstancedANGLEEnablement) {
   DrawArraysInstancedANGLE cmd;
   cmd.Init(GL_TRIANGLES, 0, 3, 1);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
@@ -19,7 +19,7 @@ TEST_F(GLES2DecoderPassthroughTest, DrawArraysInstancedANGLEEnablement) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderPassthroughTest, VertexAttribDivisorANGLEEnablement) {
+TEST_F(GLES2WebGLDecoderPassthroughTest, VertexAttribDivisorANGLEEnablement) {
   VertexAttribDivisorANGLE cmd;
   cmd.Init(0, 1);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
@@ -28,7 +28,7 @@ TEST_F(GLES2DecoderPassthroughTest, VertexAttribDivisorANGLEEnablement) {
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
-TEST_F(GLES2DecoderPassthroughTest, DrawElementsInstancedANGLEEnablement) {
+TEST_F(GLES2WebGLDecoderPassthroughTest, DrawElementsInstancedANGLEEnablement) {
   DrawElementsInstancedANGLE cmd;
   cmd.Init(GL_TRIANGLES, 6, GL_UNSIGNED_SHORT, 0, 1);
   EXPECT_EQ(error::kUnknownCommand, ExecuteCmd(cmd));
