@@ -355,7 +355,8 @@ bool RenderWidgetHostViewGuest::OnMessageReceived(const IPC::Message& msg) {
 
 void RenderWidgetHostViewGuest::InitAsChild(
     gfx::NativeView parent_view) {
-  platform_view_->InitAsChild(parent_view);
+  // This should never get called.
+  NOTREACHED();
 }
 
 void RenderWidgetHostViewGuest::InitAsPopup(
