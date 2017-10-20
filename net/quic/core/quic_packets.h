@@ -238,9 +238,6 @@ struct QUIC_EXPORT_PRIVATE SerializedPacket {
   // The largest acked of the AckFrame in this packet if has_ack is true,
   // 0 otherwise.
   QuicPacketNumber largest_acked;
-
-  // Optional notifiers which will be informed when this packet has been ACKed.
-  std::list<AckListenerWrapper> listeners;
 };
 
 // Deletes and clears all the frames and the packet from serialized packet.

@@ -39,6 +39,21 @@ TEST_F(QuicFramesTest, AckFrameToString) {
       stream.str());
 }
 
+TEST_F(QuicFramesTest, BigAckFrameToString) {
+  QuicAckFrame frame;
+  frame.largest_observed = 500;
+  frame.ack_delay_time = QuicTime::Delta::FromMicroseconds(3);
+  frame.packets.AddRange(4, 501);
+  frame.received_packet_times = {
+      {500, QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(7)}};
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ(
+      "{ largest_observed: 500, ack_delay_time: 3, "
+      "packets: [ 4...500  ], received_packets: [ 500 at 7  ] }\n",
+      stream.str());
+}
+
 TEST_F(QuicFramesTest, PaddingFrameToString) {
   QuicPaddingFrame frame;
   frame.num_padding_bytes = 1;

@@ -876,7 +876,7 @@ TEST_P(QuicPacketCreatorTest, SerializeAndSendStreamFrame) {
       .WillOnce(Invoke(this, &QuicPacketCreatorTest::SaveSerializedPacket));
   size_t num_bytes_consumed;
   creator_.CreateAndSerializeStreamFrame(kHeadersStreamId, iov, 0, 0, true,
-                                         nullptr, &num_bytes_consumed);
+                                         &num_bytes_consumed);
   EXPECT_EQ(4u, num_bytes_consumed);
 
   // Ensure the packet is successfully created.

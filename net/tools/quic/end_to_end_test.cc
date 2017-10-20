@@ -1316,14 +1316,10 @@ TEST_P(EndToEndTest, NegotiateCongestionControl) {
 
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
-  CongestionControlType expected_congestion_control_type = kReno;
+  CongestionControlType expected_congestion_control_type = kRenoBytes;
   switch (GetParam().congestion_control_tag) {
     case kRENO:
-      if (!FLAGS_quic_reloadable_flag_quic_disable_packets_based_cc) {
-        expected_congestion_control_type = kReno;
-      } else {
-        expected_congestion_control_type = kRenoBytes;
-      }
+      expected_congestion_control_type = kRenoBytes;
       break;
     case kTBBR:
       expected_congestion_control_type = kBBR;

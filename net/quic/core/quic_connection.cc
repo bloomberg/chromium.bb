@@ -1086,12 +1086,10 @@ void QuicConnection::SendVersionNegotiationPacket() {
   pending_version_negotiation_packet_ = false;
 }
 
-QuicConsumedData QuicConnection::SendStreamData(
-    QuicStreamId id,
-    QuicIOVector iov,
-    QuicStreamOffset offset,
-    StreamSendingState state,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+QuicConsumedData QuicConnection::SendStreamData(QuicStreamId id,
+                                                QuicIOVector iov,
+                                                QuicStreamOffset offset,
+                                                StreamSendingState state) {
   if (state == NO_FIN && iov.total_length == 0) {
     QUIC_BUG << "Attempt to send empty stream frame";
     return QuicConsumedData(0, false);
@@ -1104,8 +1102,7 @@ QuicConsumedData QuicConnection::SendStreamData(
   // SHLO from the server, leading to two different decrypters at the server.)
   ScopedRetransmissionScheduler alarm_delayer(this);
   ScopedPacketBundler ack_bundler(this, SEND_ACK_IF_PENDING);
-  return packet_generator_.ConsumeData(id, iov, offset, state,
-                                       std::move(ack_listener));
+  return packet_generator_.ConsumeData(id, iov, offset, state);
 }
 
 void QuicConnection::SendRstStream(QuicStreamId id,
@@ -1309,12 +1306,8 @@ bool QuicConnection::ProcessValidatedPacket(const QuicPacketHeader& header) {
     if (self_address_.port() != last_packet_destination_address_.port() ||
         self_address_.host().Normalized() !=
             last_packet_destination_address_.host().Normalized()) {
-      if (FLAGS_quic_reloadable_flag_quic_allow_one_address_change &&
-          AllowSelfAddressChange()) {
-        QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_allow_one_address_change, 2,
-                          2);
-        OnSelfAddressChange();
-      } else {
+      if (!FLAGS_quic_reloadable_flag_quic_allow_address_change_for_udp_proxy ||
+          !visitor_->AllowSelfAddressChange()) {
         CloseConnection(
             QUIC_ERROR_MIGRATING_ADDRESS,
             "Self address migration is not supported at the server.",
@@ -1681,10 +1674,6 @@ bool QuicConnection::ShouldDiscardPacket(const SerializedPacket& packet) {
     return true;
   }
 
-  return false;
-}
-
-bool QuicConnection::AllowSelfAddressChange() const {
   return false;
 }
 
@@ -2365,7 +2354,7 @@ void QuicConnection::SendMtuDiscoveryPacket(QuicByteCount target_mtu) {
   DCHECK_EQ(target_mtu, GetLimitedMaxPacketSize(target_mtu));
 
   // Send the probe.
-  packet_generator_.GenerateMtuDiscoveryPacket(target_mtu, nullptr);
+  packet_generator_.GenerateMtuDiscoveryPacket(target_mtu);
 }
 
 void QuicConnection::DiscoverMtu() {

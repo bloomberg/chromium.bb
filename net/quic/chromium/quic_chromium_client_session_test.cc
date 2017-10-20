@@ -1153,8 +1153,7 @@ TEST_P(QuicChromiumClientSessionTest, MigrateToSocket) {
       QuicIOVector(iov, arraysize(iov), 4), 0, 4);
   QuicStreamPeer::SetStreamBytesWritten(4, stream);
   session_->WritevData(stream, stream->id(),
-                       QuicIOVector(iov, arraysize(iov), 4), 0, NO_FIN,
-                       nullptr);
+                       QuicIOVector(iov, arraysize(iov), 4), 0, NO_FIN);
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());

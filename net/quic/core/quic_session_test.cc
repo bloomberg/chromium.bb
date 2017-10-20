@@ -191,19 +191,15 @@ class TestSession : public QuicSpdySession {
     return QuicSpdySession::GetOrCreateDynamicStream(stream_id);
   }
 
-  QuicConsumedData WritevData(
-      QuicStream* stream,
-      QuicStreamId id,
-      QuicIOVector data,
-      QuicStreamOffset offset,
-      StreamSendingState state,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener)
-      override {
+  QuicConsumedData WritevData(QuicStream* stream,
+                              QuicStreamId id,
+                              QuicIOVector data,
+                              QuicStreamOffset offset,
+                              StreamSendingState state) override {
     bool fin = state != NO_FIN;
     QuicConsumedData consumed(data.total_length, fin);
     if (!writev_consumes_all_data_) {
-      consumed = QuicSession::WritevData(stream, id, data, offset, state,
-                                         std::move(ack_listener));
+      consumed = QuicSession::WritevData(stream, id, data, offset, state);
     }
     if (fin && consumed.fin_consumed) {
       stream->set_fin_sent(true);
@@ -225,7 +221,7 @@ class TestSession : public QuicSpdySession {
     QuicStreamPeer::SendBuffer(stream).SaveStreamData(
         MakeIOVector("not empty", &iov), 0, 9);
     QuicConsumedData consumed = WritevData(
-        stream, stream->id(), MakeIOVector("not empty", &iov), 0, FIN, nullptr);
+        stream, stream->id(), MakeIOVector("not empty", &iov), 0, FIN);
     return consumed;
   }
 
@@ -235,7 +231,7 @@ class TestSession : public QuicSpdySession {
     iov.iov_base = nullptr;  // should not be read.
     iov.iov_len = static_cast<size_t>(bytes);
     return WritevData(stream, stream->id(), QuicIOVector(&iov, 1, bytes), 0,
-                      FIN, nullptr);
+                      FIN);
   }
 
   using QuicSession::PostProcessAfterData;

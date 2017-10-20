@@ -124,14 +124,11 @@ class MockQuicConnectionWithSendStreamData : public MockQuicConnection {
                            perspective,
                            supported_versions) {}
 
-  MOCK_METHOD5(
-      SendStreamData,
-      QuicConsumedData(
-          QuicStreamId id,
-          QuicIOVector iov,
-          QuicStreamOffset offset,
-          StreamSendingState state,
-          QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener));
+  MOCK_METHOD4(SendStreamData,
+               QuicConsumedData(QuicStreamId id,
+                                QuicIOVector iov,
+                                QuicStreamOffset offset,
+                                StreamSendingState state));
 };
 
 class MockQuicSimpleServerSession : public QuicSimpleServerSession {
@@ -511,7 +508,7 @@ class QuicSimpleServerSessionServerPushTest
                     WriteHeadersMock(stream_id, _, false, kDefaultPriority, _));
         // Since flow control window is smaller than response body, not the
         // whole body will be sent.
-        EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN, _))
+        EXPECT_CALL(*connection_, SendStreamData(stream_id, _, 0, NO_FIN))
             .WillOnce(
                 Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
         EXPECT_CALL(*connection_, SendBlocked(stream_id));
@@ -550,7 +547,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   EXPECT_CALL(*session_, WriteHeadersMock(next_out_going_stream_id, _, false,
                                           kDefaultPriority, _));
   EXPECT_CALL(*connection_,
-              SendStreamData(next_out_going_stream_id, _, 0, NO_FIN, _))
+              SendStreamData(next_out_going_stream_id, _, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
   EXPECT_CALL(*connection_, SendBlocked(next_out_going_stream_id));
   session_->StreamDraining(2);
@@ -585,7 +582,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
   InSequence s;
   EXPECT_CALL(*session_, WriteHeadersMock(stream_not_reset, _, false,
                                           kDefaultPriority, _));
-  EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN, _))
+  EXPECT_CALL(*connection_, SendStreamData(stream_not_reset, _, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
   EXPECT_CALL(*connection_, SendBlocked(stream_not_reset));
   EXPECT_CALL(*session_,
@@ -611,7 +608,7 @@ TEST_P(QuicSimpleServerSessionServerPushTest,
               SendRstStream(stream_got_reset, QUIC_RST_ACKNOWLEDGEMENT, _));
   EXPECT_CALL(*session_,
               WriteHeadersMock(stream_to_open, _, false, kDefaultPriority, _));
-  EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN, _))
+  EXPECT_CALL(*connection_, SendStreamData(stream_to_open, _, 0, NO_FIN))
       .WillOnce(Return(QuicConsumedData(kStreamFlowControlWindowSize, false)));
 
   EXPECT_CALL(*connection_, SendBlocked(stream_to_open));

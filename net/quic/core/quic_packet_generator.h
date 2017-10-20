@@ -90,36 +90,27 @@ class QUIC_EXPORT_PRIVATE QuicPacketGenerator {
   // Given some data, may consume part or all of it and pass it to the
   // packet creator to be serialized into packets. If not in batch
   // mode, these packets will also be sent during this call.
-  // |delegate| (if not nullptr) will be informed once all packets sent as a
-  // result of this call are ACKed by the peer.
   // When |state| is FIN_AND_PADDING, random padding of size [1, 256] will be
   // added after stream frames. If current constructed packet cannot
   // accommodate, the padding will overflow to the next packet(s).
-  QuicConsumedData ConsumeData(
-      QuicStreamId id,
-      QuicIOVector iov,
-      QuicStreamOffset offset,
-      StreamSendingState state,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+  QuicConsumedData ConsumeData(QuicStreamId id,
+                               QuicIOVector iov,
+                               QuicStreamOffset offset,
+                               StreamSendingState state);
 
   // Sends as many data only packets as allowed by the send algorithm and the
   // available iov.
   // This path does not support padding, or bundling pending frames.
   // In case we access this method from ConsumeData, total_bytes_consumed
   // keeps track of how many bytes have already been consumed.
-  QuicConsumedData ConsumeDataFastPath(
-      QuicStreamId id,
-      const QuicIOVector& iov,
-      QuicStreamOffset offset,
-      bool fin,
-      size_t total_bytes_consumed,
-      const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-          ack_listener);
+  QuicConsumedData ConsumeDataFastPath(QuicStreamId id,
+                                       const QuicIOVector& iov,
+                                       QuicStreamOffset offset,
+                                       bool fin,
+                                       size_t total_bytes_consumed);
 
   // Generates an MTU discovery packet of specified size.
-  void GenerateMtuDiscoveryPacket(
-      QuicByteCount target_mtu,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+  void GenerateMtuDiscoveryPacket(QuicByteCount target_mtu);
 
   // Indicates whether batch mode is currently enabled.
   bool InBatchMode();

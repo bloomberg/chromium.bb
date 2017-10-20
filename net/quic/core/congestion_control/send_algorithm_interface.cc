@@ -6,7 +6,6 @@
 
 #include "net/quic/core/congestion_control/bbr_sender.h"
 #include "net/quic/core/congestion_control/tcp_cubic_sender_bytes.h"
-#include "net/quic/core/congestion_control/tcp_cubic_sender_packets.h"
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_bug_tracker.h"
 #include "net/quic/platform/api/quic_flag_utils.h"
@@ -39,26 +38,10 @@ SendAlgorithmInterface* SendAlgorithmInterface::Create(
                                max_congestion_window);
       }
     // Fall back to CUBIC if PCC is disabled.
-    case kCubic:
-      if (!FLAGS_quic_reloadable_flag_quic_disable_packets_based_cc) {
-        return new TcpCubicSenderPackets(
-            clock, rtt_stats, false /* don't use Reno */,
-            initial_congestion_window, max_congestion_window, stats);
-      }
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_disable_packets_based_cc, 1,
-                        2);
     case kCubicBytes:
       return new TcpCubicSenderBytes(
           clock, rtt_stats, false /* don't use Reno */,
           initial_congestion_window, max_congestion_window, stats);
-    case kReno:
-      if (!FLAGS_quic_reloadable_flag_quic_disable_packets_based_cc) {
-        return new TcpCubicSenderPackets(clock, rtt_stats, true /* use Reno */,
-                                         initial_congestion_window,
-                                         max_congestion_window, stats);
-      }
-      QUIC_FLAG_COUNT_N(quic_reloadable_flag_quic_disable_packets_based_cc, 2,
-                        2);
     case kRenoBytes:
       return new TcpCubicSenderBytes(clock, rtt_stats, true /* use Reno */,
                                      initial_congestion_window,

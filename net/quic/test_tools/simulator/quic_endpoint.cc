@@ -167,6 +167,10 @@ bool QuicEndpoint::HasOpenDynamicStreams() const {
   return true;
 }
 
+bool QuicEndpoint::AllowSelfAddressChange() const {
+  return false;
+}
+
 QuicEndpoint::Writer::Writer(QuicEndpoint* endpoint)
     : endpoint_(endpoint), is_blocked_(false) {}
 
@@ -240,7 +244,7 @@ void QuicEndpoint::WriteStreamData() {
     iov.iov_len = transmission_size;
     QuicIOVector io_vector(&iov, 1, transmission_size);
     QuicConsumedData consumed_data = connection_.SendStreamData(
-        kDataStream, io_vector, bytes_transferred_, NO_FIN, nullptr);
+        kDataStream, io_vector, bytes_transferred_, NO_FIN);
 
     DCHECK(consumed_data.bytes_consumed <= transmission_size);
     bytes_transferred_ += consumed_data.bytes_consumed;

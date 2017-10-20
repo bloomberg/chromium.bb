@@ -311,13 +311,16 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // Current state of recovery.
   RecoveryState recovery_state_;
   // Receiving acknowledgement of a packet after |end_recovery_at_| will cause
-  // BBR to exit the recovery mode.
+  // BBR to exit the recovery mode.  A value above zero indicates at least one
+  // loss has been detected, so it must not be set back to zero.
   QuicPacketNumber end_recovery_at_;
   // A window used to limit the number of bytes in flight during loss recovery.
   QuicByteCount recovery_window_;
 
   // When true, recovery is rate based rather than congestion window based.
   bool rate_based_recovery_;
+  // When true, pace at 1.5x and disable packet conservation in STARTUP.
+  bool slower_startup_;
 
   DISALLOW_COPY_AND_ASSIGN(BbrSender);
 };

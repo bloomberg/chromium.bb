@@ -731,7 +731,6 @@ TEST_F(BbrSenderTest, SimpleTransfer2RTTStartup) {
 
 // Test exiting STARTUP earlier upon loss due to the LRTT connection option.
 TEST_F(BbrSenderTest, SimpleTransferLRTTStartup) {
-  FLAGS_quic_reloadable_flag_quic_bbr_exit_startup_on_loss = true;
   CreateDefaultSetup();
 
   SetConnectionOption(kLRTT);
@@ -760,7 +759,6 @@ TEST_F(BbrSenderTest, SimpleTransferLRTTStartup) {
 
 // Test exiting STARTUP earlier upon loss due to the LRTT connection option.
 TEST_F(BbrSenderTest, SimpleTransferLRTTStartupSmallBuffer) {
-  FLAGS_quic_reloadable_flag_quic_bbr_exit_startup_on_loss = true;
   CreateSmallBufferSetup();
 
   SetConnectionOption(kLRTT);
@@ -783,6 +781,43 @@ TEST_F(BbrSenderTest, SimpleTransferLRTTStartupSmallBuffer) {
   EXPECT_EQ(BbrSender::DRAIN, sender_->ExportDebugState().mode);
   EXPECT_EQ(2u, sender_->ExportDebugState().round_trip_count - max_bw_round);
   EXPECT_EQ(1u, sender_->ExportDebugState().rounds_without_bandwidth_gain);
+  EXPECT_NE(0u, bbr_sender_.connection()->GetStats().packets_lost);
+  EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
+}
+
+// Test slower pacing after loss in STARTUP due to the BBRS connection option.
+TEST_F(BbrSenderTest, SimpleTransferSlowerStartup) {
+  // Adding TSO CWND causes packet loss before exiting startup.
+  FLAGS_quic_reloadable_flag_quic_bbr_add_tso_cwnd = false;
+  FLAGS_quic_reloadable_flag_quic_bbr_slower_startup = true;
+  CreateSmallBufferSetup();
+
+  SetConnectionOption(kBBRS);
+  EXPECT_EQ(3u, sender_->num_startup_rtts());
+
+  // Run until the full bandwidth is reached and check how many rounds it was.
+  bbr_sender_.AddBytesToTransfer(12 * 1024 * 1024);
+  QuicRoundTripCount max_bw_round = 0;
+  QuicBandwidth max_bw(QuicBandwidth::Zero());
+  bool simulator_result = simulator_.RunUntilOrTimeout(
+      [this, &max_bw, &max_bw_round]() {
+        if (max_bw < sender_->ExportDebugState().max_bandwidth) {
+          max_bw = sender_->ExportDebugState().max_bandwidth;
+          max_bw_round = sender_->ExportDebugState().round_trip_count;
+        }
+        // Expect the pacing rate in STARTUP to decrease once packet loss
+        // is observed, but the CWND does not.
+        if (bbr_sender_.connection()->GetStats().packets_lost > 0 &&
+            !sender_->ExportDebugState().is_at_full_bandwidth) {
+          EXPECT_EQ(1.5f * max_bw, sender_->PacingRate(0));
+        }
+        return sender_->ExportDebugState().is_at_full_bandwidth;
+      },
+      QuicTime::Delta::FromSeconds(5));
+  ASSERT_TRUE(simulator_result);
+  EXPECT_EQ(BbrSender::DRAIN, sender_->ExportDebugState().mode);
+  EXPECT_GE(3u, sender_->ExportDebugState().round_trip_count - max_bw_round);
+  EXPECT_EQ(3u, sender_->ExportDebugState().rounds_without_bandwidth_gain);
   EXPECT_NE(0u, bbr_sender_.connection()->GetStats().packets_lost);
   EXPECT_FALSE(sender_->ExportDebugState().last_sample_is_app_limited);
 }

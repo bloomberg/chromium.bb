@@ -53,8 +53,6 @@ struct QUIC_EXPORT_PRIVATE QuicTransmissionInfo {
   // Stores the packet number of the next retransmission of this packet.
   // Zero if the packet has not been retransmitted.
   QuicPacketNumber retransmission;
-  // Non-empty if there is a listener for this packet.
-  std::list<AckListenerWrapper> ack_listeners;
   // The largest_acked in the ack frame, if the packet contains an ack.
   QuicPacketNumber largest_acked;
 };

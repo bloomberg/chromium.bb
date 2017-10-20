@@ -109,15 +109,11 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
     SetSendAlgorithm(kBBR);
   }
   if (config.HasClientRequestedIndependentOption(kRENO, perspective_)) {
-    if (config.HasClientRequestedIndependentOption(kBYTE, perspective_)) {
-      SetSendAlgorithm(kRenoBytes);
-    } else {
-      SetSendAlgorithm(kReno);
-    }
-  } else if (config.HasClientRequestedIndependentOption(kBYTE, perspective_)) {
-    SetSendAlgorithm(kCubic);
-  } else if (FLAGS_quic_reloadable_flag_quic_default_to_bbr &&
-             config.HasClientRequestedIndependentOption(kQBIC, perspective_)) {
+    SetSendAlgorithm(kRenoBytes);
+  } else if (config.HasClientRequestedIndependentOption(kBYTE, perspective_) ||
+             (FLAGS_quic_reloadable_flag_quic_default_to_bbr &&
+              config.HasClientRequestedIndependentOption(kQBIC,
+                                                         perspective_))) {
     SetSendAlgorithm(kCubicBytes);
   } else if (FLAGS_quic_reloadable_flag_quic_enable_pcc &&
              config.HasClientRequestedIndependentOption(kTPCC, perspective_)) {
@@ -452,15 +448,9 @@ void QuicSentPacketManager::MarkPacketHandled(QuicPacketNumber packet_number,
   // Remove the most recent packet, if it is pending retransmission.
   pending_retransmissions_.erase(newest_transmission);
 
-  // The AckListener needs to be notified about the most recent
-  // transmission, since that's the one only one it tracks.
   if (newest_transmission == packet_number) {
     unacked_packets_.NotifyStreamFramesAcked(*info, ack_delay_time);
-    unacked_packets_.NotifyAndClearListeners(&info->ack_listeners,
-                                             ack_delay_time);
   } else {
-    unacked_packets_.NotifyAndClearListeners(newest_transmission,
-                                             ack_delay_time);
     RecordSpuriousRetransmissions(*info, packet_number);
     // Remove the most recent packet from flight if it's a crypto handshake
     // packet, since they won't be acked now that one has been processed.

@@ -233,7 +233,6 @@ SerializedPacket::SerializedPacket(SerializedPacket&& other)
       original_packet_number(other.original_packet_number),
       largest_acked(other.largest_acked) {
   retransmittable_frames.swap(other.retransmittable_frames);
-  listeners.swap(other.listeners);
 }
 
 SerializedPacket::~SerializedPacket() {}
