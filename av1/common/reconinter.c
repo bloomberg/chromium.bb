@@ -1142,17 +1142,8 @@ static INLINE void build_inter_predictors(
   const BLOCK_SIZE bsize = mi->mbmi.sb_type;
   const int ss_x = pd->subsampling_x;
   const int ss_y = pd->subsampling_y;
-  int sub8x8_inter =
-      AOMMIN(block_size_wide[bsize], block_size_high[bsize]) < 8 &&
-      (ss_x || ss_y);
-
-#if CONFIG_EXT_PARTITION_TYPES
-  // Temporarily turn off sub8x8_inter for 16x4 and 4x16 blocks based on
-  // color subsampling until 8x2 and 2x8 block sizes are properly supported.
-  if (sub8x8_inter)
-    if ((bsize == BLOCK_4X16 && ss_x) || (bsize == BLOCK_16X4 && ss_y))
-      sub8x8_inter = 0;
-#endif  // CONFIG_EXT_PARTITION_TYPES
+  int sub8x8_inter = (block_size_wide[bsize] < 8 && ss_x) ||
+                     (block_size_high[bsize] < 8 && ss_y);
 
 #if CONFIG_INTRABC
   if (is_intrabc) {
