@@ -178,28 +178,6 @@ public class OfflinePageBridgeTest {
     @Test
     @SmallTest
     @RetryOnFailure
-    public void testCheckPagesExistOffline() throws Exception {
-        // If we save a page, then it should exist in the result.
-        mActivityTestRule.loadUrl(mTestPage);
-        savePage(SavePageResult.SUCCESS, mTestPage);
-        Set<String> testCases = new HashSet<>();
-        testCases.add(mTestPage);
-
-        // Querying for a page that hasn't been saved should not affect the result.
-        testCases.add(mTestPage + "?foo=bar");
-
-        Set<String> pages = checkPagesExistOffline(testCases);
-
-        Assert.assertEquals(
-                "We only saved one page and queried for it, so the result should be one string.", 1,
-                pages.size());
-        Assert.assertTrue("The only page returned should be the page that was actually saved.",
-                pages.contains(mTestPage));
-    }
-
-    @Test
-    @SmallTest
-    @RetryOnFailure
     public void testGetRequestsInQueue() throws Exception {
         String url = "https://www.google.com/";
         String namespace = "custom_tabs";
@@ -286,7 +264,7 @@ public class OfflinePageBridgeTest {
             offlineIdsToDelete.add(savePage(SavePageResult.SUCCESS, url));
         }
         Assert.assertEquals("The pages should exist now that we saved them.", pagesToDeleteCount,
-                checkPagesExistOffline(pageUrls).size());
+                getUrlsExistOfflineFromSet(pageUrls).size());
 
         // Save one more page but don't save the offline ID, this page should not be deleted.
         Set<String> pageUrlsToSave = new HashSet<>();
@@ -298,16 +276,16 @@ public class OfflinePageBridgeTest {
             savePage(SavePageResult.SUCCESS, pageToSave);
         }
         Assert.assertEquals("The pages should exist now that we saved them.", pagesToSaveCount,
-                checkPagesExistOffline(pageUrlsToSave).size());
+                getUrlsExistOfflineFromSet(pageUrlsToSave).size());
 
         // Delete the first 3 pages.
         deletePages(offlineIdsToDelete);
         Assert.assertEquals(
-                "The page should cease to exist.", 0, checkPagesExistOffline(pageUrls).size());
+                "The page should cease to exist.", 0, getUrlsExistOfflineFromSet(pageUrls).size());
 
         // We should not have deleted the one we didn't ask to delete.
         Assert.assertEquals("The page should not be deleted.", pagesToSaveCount,
-                checkPagesExistOffline(pageUrlsToSave).size());
+                getUrlsExistOfflineFromSet(pageUrlsToSave).size());
     }
 
     @Test
@@ -579,23 +557,31 @@ public class OfflinePageBridgeTest {
         return result[0];
     }
 
-    private Set<String> checkPagesExistOffline(final Set<String> query)
+    private Set<String> getUrlsExistOfflineFromSet(final Set<String> query)
             throws InterruptedException {
         final Set<String> result = new HashSet<>();
+        final List<OfflinePageItem> pages = new ArrayList<>();
         final Semaphore semaphore = new Semaphore(0);
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mOfflinePageBridge.checkPagesExistOffline(query, new Callback<Set<String>>() {
+                mOfflinePageBridge.getAllPages(new Callback<List<OfflinePageItem>>() {
                     @Override
-                    public void onResult(Set<String> offlinedPages) {
-                        result.addAll(offlinedPages);
+                    public void onResult(List<OfflinePageItem> offlinePages) {
+                        pages.addAll(offlinePages);
                         semaphore.release();
                     }
                 });
             }
         });
         Assert.assertTrue(semaphore.tryAcquire(TIMEOUT_MS, TimeUnit.MILLISECONDS));
+        for (String url : query) {
+            for (OfflinePageItem page : pages) {
+                if (url.equals(page.getUrl())) {
+                    result.add(page.getUrl());
+                }
+            }
+        }
         return result;
     }
 
