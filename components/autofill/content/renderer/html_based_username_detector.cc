@@ -3,8 +3,10 @@
 // found in the LICENSE file.
 
 #include "components/autofill/content/renderer/html_based_username_detector.h"
+#include <third_party/WebKit/public/web/WebFormElement.h>
 
 #include <algorithm>
+#include <map>
 
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_split.h"
@@ -12,6 +14,7 @@
 #include "components/autofill/content/renderer/form_autofill_util.h"
 
 using blink::WebFormControlElement;
+using blink::WebFormElement;
 using blink::WebInputElement;
 
 namespace autofill {
@@ -432,9 +435,8 @@ bool FormContainsWordFromCategory(
   return false;
 }
 
-}  // namespace
-
-bool GetUsernameFieldBasedOnHtmlAttributes(
+// Find username element if there is no cached result for the given form.
+bool FindUsernameFieldInternal(
     const std::vector<blink::WebInputElement>& all_possible_usernames,
     const FormData& form_data,
     WebInputElement* username_element) {
@@ -480,6 +482,37 @@ bool GetUsernameFieldBasedOnHtmlAttributes(
     }
   }
   return false;
+}
+
+}  // namespace
+
+using UsernameFieldCache =
+    std::map<const blink::WebFormElement, const blink::WebInputElement>;
+
+bool GetUsernameFieldBasedOnHtmlAttributes(
+    const std::vector<blink::WebInputElement>& all_possible_usernames,
+    const FormData& form_data,
+    WebInputElement* username_element) {
+  DCHECK(username_element);
+
+  if (all_possible_usernames.empty())
+    return false;
+
+  static std::map<blink::WebFormElement, blink::WebInputElement> cache;
+  const blink::WebFormElement form = all_possible_usernames[0].Form();
+  if (cache.find(form) == cache.end()) {
+    if (FindUsernameFieldInternal(all_possible_usernames, form_data,
+                                  username_element)) {
+      cache[form] = *username_element;
+      return true;
+    } else {
+      cache[form] = blink::WebInputElement();
+      return false;
+    }
+  } else {
+    *username_element = cache[form];
+    return !username_element->IsNull();
+  }
 }
 
 }  // namespace autofill

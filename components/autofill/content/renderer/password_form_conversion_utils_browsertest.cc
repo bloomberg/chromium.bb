@@ -1932,4 +1932,23 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest,
   EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
 }
 
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, ResetPasswordForm) {
+  // GetPassword (including HTML classifier) should process correctly forms
+  // without any text fields.
+  PasswordFormBuilder builder(kTestFormActionURL);
+  builder.AddPasswordField("password", "secret", nullptr);
+  builder.AddSubmitButton("submit");
+  std::string html = builder.ProduceHTML();
+
+  std::unique_ptr<PasswordForm> password_form =
+      LoadHTMLAndConvertForm(html, nullptr, false);
+
+  ASSERT_TRUE(password_form);
+
+  EXPECT_TRUE(password_form->username_element.empty());
+  EXPECT_TRUE(password_form->username_value.empty());
+  EXPECT_EQ(base::UTF8ToUTF16("password"), password_form->password_element);
+  EXPECT_EQ(base::UTF8ToUTF16("secret"), password_form->password_value);
+}
+
 }  // namespace autofill
