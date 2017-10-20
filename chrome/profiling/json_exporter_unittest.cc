@@ -168,6 +168,7 @@ TEST(ProfilingJsonExporterTest, TraceHeader) {
   std::ostringstream stream;
 
   ExportParams params;
+  params.process_type = mojom::ProcessType::BROWSER;
   params.min_size_threshold = kNoSizeThreshold;
   params.min_count_threshold = kNoCountThreshold;
   ExportAllocationEventSetToJSON(1234, params, nullptr, stream);
