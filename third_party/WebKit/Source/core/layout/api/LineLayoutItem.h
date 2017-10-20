@@ -246,7 +246,8 @@ class LineLayoutItem {
   }
 
   // TODO(dgrogan/eae): Needed for Color::current. Can we move this somewhere?
-  Color ResolveColor(const ComputedStyle& style_to_use, int color_property) {
+  Color ResolveColor(const ComputedStyle& style_to_use,
+                     CSSPropertyID color_property) {
     return layout_object_->ResolveColor(style_to_use, color_property);
   }
 

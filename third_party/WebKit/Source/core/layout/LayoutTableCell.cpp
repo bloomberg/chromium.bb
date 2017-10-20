@@ -533,9 +533,9 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedStartBorder() const {
 
   // For the start border, we need to check, in order of precedence:
   // (1) Our start border.
-  int start_color_property =
+  CSSPropertyID start_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderStartColor);
-  int end_color_property =
+  CSSPropertyID end_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderEndColor);
   CollapsedBorderValue result(BorderStartInTableDirection(),
                               ResolveColor(start_color_property),
@@ -666,9 +666,9 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedEndBorder() const {
 
   // For end border, we need to check, in order of precedence:
   // (1) Our end border.
-  int start_color_property =
+  CSSPropertyID start_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderStartColor);
-  int end_color_property =
+  CSSPropertyID end_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderEndColor);
   CollapsedBorderValue result = CollapsedBorderValue(
       BorderEndInTableDirection(), ResolveColor(end_color_property),
@@ -791,9 +791,9 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedBeforeBorder() const {
 
   // For before border, we need to check, in order of precedence:
   // (1) Our before border.
-  int before_color_property =
+  CSSPropertyID before_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderBeforeColor);
-  int after_color_property =
+  CSSPropertyID after_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderAfterColor);
   CollapsedBorderValue result = CollapsedBorderValue(
       Style()->BorderBeforeStyle(), Style()->BorderBeforeWidth(),
@@ -922,9 +922,9 @@ CollapsedBorderValue LayoutTableCell::ComputeCollapsedAfterBorder() const {
 
   // For after border, we need to check, in order of precedence:
   // (1) Our after border.
-  int before_color_property =
+  CSSPropertyID before_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderBeforeColor);
-  int after_color_property =
+  CSSPropertyID after_color_property =
       ResolveBorderProperty(CSSPropertyWebkitBorderAfterColor);
   CollapsedBorderValue result = CollapsedBorderValue(
       Style()->BorderAfterStyle(), Style()->BorderAfterWidth(),

@@ -1363,11 +1363,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   inline const ComputedStyle& StyleRef(bool first_line) const;
 
   static inline Color ResolveColor(const ComputedStyle& style_to_use,
-                                   int color_property) {
+                                   CSSPropertyID color_property) {
     return style_to_use.VisitedDependentColor(color_property);
   }
 
-  inline Color ResolveColor(int color_property) const {
+  inline Color ResolveColor(CSSPropertyID color_property) const {
     return Style()->VisitedDependentColor(color_property);
   }
 

@@ -1778,7 +1778,7 @@ StyleColor ComputedStyle::DecorationColorIncludingFallback(
   return visited_link ? VisitedLinkTextFillColor() : TextFillColor();
 }
 
-Color ComputedStyle::ColorIncludingFallback(int color_property,
+Color ComputedStyle::ColorIncludingFallback(CSSPropertyID color_property,
                                             bool visited_link) const {
   StyleColor result(StyleColor::CurrentColor());
   EBorderStyle border_style = EBorderStyle::kNone;
@@ -1865,7 +1865,7 @@ Color ComputedStyle::ColorIncludingFallback(int color_property,
   return visited_link ? VisitedLinkColor() : GetColor();
 }
 
-Color ComputedStyle::VisitedDependentColor(int color_property) const {
+Color ComputedStyle::VisitedDependentColor(CSSPropertyID color_property) const {
   Color unvisited_color = ColorIncludingFallback(color_property, false);
   if (InsideLink() != EInsideLink::kInsideVisitedLink)
     return unvisited_color;
