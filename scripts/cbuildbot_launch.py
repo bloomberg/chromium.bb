@@ -114,10 +114,6 @@ def PreParseArguments(argv):
   if not options.buildroot:
     cros_build_lib.Die('--buildroot is a required option.')
 
-  if len(options.build_targets) != 1:
-    cros_build_lib.Die('Exactly one build target required, got: %s',
-                       ', '.join(options.build_targets) or 'None')
-
   return options
 
 
@@ -364,11 +360,10 @@ def _main(argv):
   root = options.buildroot
   buildroot = os.path.join(root, 'repository')
   depot_tools_path = os.path.join(buildroot, constants.DEPOT_TOOLS_SUBPATH)
-  build_config = options.build_targets[0]
 
   metrics_fields = {
       'branch_name': branchname,
-      'build_config': build_config,
+      'build_config': options.build_config_name,
       'tryjob': options.remote_trybot,
   }
 

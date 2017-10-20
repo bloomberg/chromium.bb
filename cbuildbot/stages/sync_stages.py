@@ -247,7 +247,7 @@ class BootstrapStage(PatchChangesStage):
   def FilterArgsForTargetCbuildbot(cls, buildroot, cbuildbot_path, options):
     _, minor = cros_build_lib.GetTargetChromiteApiVersion(buildroot)
     args = [cbuildbot_path]
-    args.extend(options.build_targets)
+    args.append(options.build_config_name)
     args.extend(cls._FilterArgsForApi(options.parsed_args, minor))
 
     # Only pass down --cache-dir if it was specified. By default, we want

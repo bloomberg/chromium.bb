@@ -101,7 +101,8 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
       bot_id: Name of build config to use, defaults to self.BOT_ID.
       extra_config: Dict used to add to the build config for the given
         bot_id.  Example: {'push_image': True}.
-      cmd_args: List to override the default cbuildbot command args.
+      cmd_args: List to override the default cbuildbot command args, including
+        the bot_id.
       extra_cmd_args: List to add to default cbuildbot command args.  This
         is a good way to adjust an options value for your test.
         Example: ['branch-name', 'some-branch-name'] will effectively cause
@@ -113,32 +114,23 @@ class StageTestCase(cros_test_lib.MockOutputTestCase,
       master_build_id: mock build id of master build.
       site_config: SiteConfig to use (or MockSiteConfig)
     """
+    assert not bot_id or not cmd_args
+
     # Use cbuildbot parser to create options object and populate default values.
-    parser = cbuildbot._CreateParser()
     if not cmd_args:
       # Fill in default command args.
       cmd_args = [
           '-r', self.build_root, '--buildbot', '--noprebuilts',
           '--buildnumber', str(DEFAULT_BUILD_NUMBER),
           '--branch', self.TARGET_MANIFEST_BRANCH,
+          bot_id or self.BOT_ID
       ]
     if extra_cmd_args:
       cmd_args += extra_cmd_args
-    (options, args) = parser.parse_args(cmd_args)
-    # Mimic cbuildbot.ParseCommandLine.
-    options.build_targets = args
 
-    # The bot_id can either be specified as arg to _Prepare method or in the
-    # cmd_args (as cbuildbot normally accepts it from command line).
-    if options.build_targets:
-      self._bot_id = options.build_targets[-1]
-      if bot_id:
-        # This means bot_id was specified as _Prepare arg and in cmd_args.
-        # Make sure they are the same.
-        self.assertEquals(self._bot_id, bot_id)
-    else:
-      self._bot_id = bot_id or self.BOT_ID
-    cbuildbot._FinishParsing(options)
+    parser = cbuildbot._CreateParser()
+    options = cbuildbot.ParseCommandLine(parser, cmd_args)
+    self._bot_id = options.build_config_name
 
     if site_config is None:
       site_config = chromeos_config.GetConfig()

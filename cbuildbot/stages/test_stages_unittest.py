@@ -162,13 +162,14 @@ class HWTestStageTest(generic_stages_unittest.AbstractStageTestCase,
 
   def testRemoteTrybotWithHWTest(self):
     """Test remote trybot with hw test enabled"""
-    cmd_args = ['--remote-trybot', '-r', self.build_root, '--hwtest']
+    cmd_args = ['--remote-trybot', '-r', self.build_root, '--hwtest',
+                self.BOT_ID]
     self._Prepare(cmd_args=cmd_args)
     self._RunHWTestSuite()
 
   def testRemoteTrybotNoHWTest(self):
     """Test remote trybot with no hw test"""
-    cmd_args = ['--remote-trybot', '-r', self.build_root]
+    cmd_args = ['--remote-trybot', '-r', self.build_root, self.BOT_ID]
     self._Prepare(cmd_args=cmd_args)
     self._RunHWTestSuite(debug=True)
 

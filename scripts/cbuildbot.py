@@ -588,10 +588,6 @@ def _FinishParsing(options):
   if not options.buildroot:
     cros_build_lib.Die('A buildroot is required to build.')
 
-  if len(options.build_targets) > 1:
-    cros_build_lib.Die('Multiple configs not supported. Got %r',
-                       options.build_targets)
-
   if options.chrome_root:
     if options.chrome_rev != constants.CHROME_REV_LOCAL:
       cros_build_lib.Die('Chrome rev must be %s if chrome_root is set.' %
@@ -627,7 +623,7 @@ def _FinishParsing(options):
   # We force --debug to be set for builds that are not 'official'.
   options.debug = options.debug or not options.buildbot
 
-  if constants.BRANCH_UTIL_CONFIG in options.build_targets:
+  if constants.BRANCH_UTIL_CONFIG == options.build_config_name:
     if not options.branch_name:
       cros_build_lib.Die(
           'Must specify --branch-name with the %s config.',
@@ -676,9 +672,6 @@ def _PostParseCheck(parser, options, site_config):
     options: The options returned by optparse.
     site_config: config_lib.SiteConfig containing all config info.
   """
-  if not options.build_targets:
-    parser.error('Invalid usage: no configuration targets provided.'
-                 'Use -h to see usage.  Use -l to list supported configs.')
 
   if not options.branch:
     options.branch = git.GetChromiteTrackingBranch()
@@ -695,53 +688,46 @@ def _PostParseCheck(parser, options, site_config):
   osutils.SafeMakedirsNonRoot(options.cache_dir)
 
   # Ensure that all args are legitimate config targets.
-  invalid_targets = []
-  for arg in options.build_targets:
-    if arg not in site_config:
-      invalid_targets.append(arg)
-      logging.error('No such configuraton target: "%s".', arg)
-      continue
+  if options.build_config_name not in site_config:
+    cros_build_lib.Die('Unkonwn build config: "%s"' % options.build_config_name)
 
-    build_config = site_config[arg]
+  build_config = site_config[options.build_config_name]
+  is_payloads_build = build_config.build_type == constants.PAYLOADS_TYPE
 
-    is_payloads_build = build_config.build_type == constants.PAYLOADS_TYPE
+  if options.channels and not is_payloads_build:
+    cros_build_lib.Die('--channel must only be used with a payload config,'
+                       ' not target (%s).' % options.build_config_name)
 
-    if options.channels and not is_payloads_build:
-      cros_build_lib.Die('--channel must only be used with a payload config,'
-                         ' not target (%s).' % arg)
+  if not options.channels and is_payloads_build:
+    cros_build_lib.Die('payload configs (%s) require --channel to do anything'
+                       ' useful.' % options.build_config_name)
 
-    if not options.channels and is_payloads_build:
-      cros_build_lib.Die('payload configs (%s) require --channel to do anything'
-                         ' useful.' % arg)
-
-    # The --version option is not compatible with an external target unless the
-    # --buildbot option is specified.  More correctly, only "paladin versions"
-    # will work with external targets, and those are only used with --buildbot.
-    # If --buildbot is specified, then user should know what they are doing and
-    # only specify a version that will work.  See crbug.com/311648.
-    if (options.force_version and
-        not (options.buildbot or build_config.internal)):
-      cros_build_lib.Die('Cannot specify --version without --buildbot for an'
-                         ' external target (%s).' % arg)
-
-  if invalid_targets:
-    cros_build_lib.Die('One or more invalid configuration targets specified. '
-                       'You can check the available configs by running '
-                       '`cbuildbot --list --all`')
+  # The --version option is not compatible with an external target unless the
+  # --buildbot option is specified.  More correctly, only "paladin versions"
+  # will work with external targets, and those are only used with --buildbot.
+  # If --buildbot is specified, then user should know what they are doing and
+  # only specify a version that will work.  See crbug.com/311648.
+  if (options.force_version and
+      not (options.buildbot or build_config.internal)):
+    cros_build_lib.Die('Cannot specify --version without --buildbot for an'
+                       ' external target (%s).' % options.build_config_name)
 
 
 def ParseCommandLine(parser, argv):
   """Completely parse the commandline arguments"""
   (options, args) = parser.parse_args(argv)
 
-  # Record the configs targeted.
-  # Strip out null arguments.
-  # TODO(rcui): Remove when buildbot is fixed
-  options.build_targets = [x for x in args if x]
-
+  # Handle the request for the reexec command line API version number.
   if options.output_api_version:
     print(constants.REEXEC_API_VERSION)
     sys.exit(0)
+
+  # Record the configs targeted. Strip out null arguments.
+  build_config_names = [x for x in args if x]
+  if len(build_config_names) != 1:
+    cros_build_lib.Die('Expected exactly one build config. Got: %r',
+                       build_config_names)
+  options.build_config_name = build_config_names[-1]
 
   _FinishParsing(options)
   return options
@@ -852,8 +838,7 @@ def main(argv):
       cros_build_lib.Die('This host is not a supported build machine.')
 
   # Only one config arg is allowed in this mode, which was confirmed earlier.
-  bot_id = options.build_targets[-1]
-  build_config = site_config[bot_id]
+  build_config = site_config[options.build_config_name]
 
   # TODO: Re-enable this block when reference_repo support handles this
   #       properly. (see chromium:330775)
