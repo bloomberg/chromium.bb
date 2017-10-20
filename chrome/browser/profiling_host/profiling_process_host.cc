@@ -293,6 +293,20 @@ void ProfilingProcessHost::AddClientToProfilingService(
     profiling::mojom::ProcessType process_type) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
+#if defined(OS_MACOSX)
+  // On macOS, we create a pipe() rather than a socketpair(). This causes
+  // writes to be much more performant.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=776435
+  int fds[2];
+  pipe(fds);
+  PCHECK(fcntl(fds[0], F_SETFL, O_NONBLOCK) == 0);
+  PCHECK(fcntl(fds[0], F_SETNOSIGPIPE, 1) == 0);
+  PCHECK(fcntl(fds[1], F_SETNOSIGPIPE, 1) == 0);
+
+  profiling_service_->AddProfilingClient(
+      pid, std::move(client), mojo::WrapPlatformFile(fds[1]),
+      mojo::WrapPlatformFile(fds[0]), process_type);
+#else
   // Writes to the data_channel must be atomic to ensure that the profiling
   // process can demux the messages. We accomplish this by making writes
   // synchronous, and protecting the write() itself with a Lock.
@@ -310,6 +324,7 @@ void ProfilingProcessHost::AddClientToProfilingService(
       mojo::WrapPlatformFile(data_channel.PassClientHandle().release().handle),
       mojo::WrapPlatformFile(data_channel.PassServerHandle().release().handle),
       process_type);
+#endif
 }
 
 // static
