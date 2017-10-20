@@ -194,7 +194,10 @@ void NonEmbedderProcessInit() {
   // names in all loaded libraries will be cached.
   // NOTE: On Chrome OS, crash reporting for the root process and non-browser
   // service processes is handled by the OS-level crash_reporter.
-  base::debug::EnableInProcessStackDumping();
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableInProcessStackTraces)) {
+    base::debug::EnableInProcessStackDumping();
+  }
 #endif
 
   base::TaskScheduler::CreateAndStartWithDefaultParams("ServiceManagerProcess");

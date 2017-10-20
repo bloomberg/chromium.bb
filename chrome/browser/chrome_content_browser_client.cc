@@ -1581,7 +1581,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     client_info->client_id);
   }
 #elif defined(OS_POSIX)
-  if (breakpad::IsCrashReporterEnabled()) {
+  bool enable_crash_reporter = breakpad::IsCrashReporterEnabled();
+#if defined(OS_CHROMEOS)
+  // Chrome OS uses the OS-level crash_reporter for mash services, so disable
+  // breakpad in-process crashing dumping.
+  if (command_line->HasSwitch(switches::kMashServiceName))
+    enable_crash_reporter = false;
+#endif
+  if (enable_crash_reporter) {
     std::string switch_value;
     std::unique_ptr<metrics::ClientInfo> client_info =
         GoogleUpdateSettings::LoadMetricsClientInfo();
@@ -1857,11 +1864,9 @@ void ChromeContentBrowserClient::AdjustUtilityServiceProcessCommandLine(
     const service_manager::Identity& identity,
     base::CommandLine* command_line) {
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
-  // Mash services do their own resource loading.
   if (mash_service_registry::IsMashServiceName(identity.name())) {
-    // This switch is used purely for debugging to make it easier to know what
-    // service a process is running.
-    command_line->AppendSwitchASCII("mash-service-name", identity.name());
+    command_line->AppendSwitchASCII(switches::kMashServiceName,
+                                    identity.name());
   }
   bool copy_switches = false;
   if (identity.name() == ui::mojom::kServiceName) {

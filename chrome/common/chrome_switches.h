@@ -296,6 +296,7 @@ extern const char kWindows10CustomTitlebar[];
 
 #if BUILDFLAG(ENABLE_PACKAGE_MASH_SERVICES)
 extern const char kMash[];
+extern const char kMashServiceName[];
 extern const char kMus[];
 #endif
 
