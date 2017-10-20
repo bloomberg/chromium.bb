@@ -17,6 +17,11 @@ struct BLINK_COMMON_EXPORT
   static base::span<const uint8_t> encoded_message(
       blink::CloneableMessage& input);
 
+  static std::vector<blink::mojom::SerializedBlobPtr>& blobs(
+      blink::CloneableMessage& input) {
+    return input.blobs;
+  }
+
   static bool Read(blink::mojom::CloneableMessage::DataView data,
                    blink::CloneableMessage* out);
 };
