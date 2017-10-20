@@ -505,7 +505,11 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
     # Just in case we're hitting a different git server than the one from
     # which the target revision was polled, we retry some.
     done = False
-    deadline = time.time() + 60  # One minute (5 tries with exp. backoff).
+
+    # One minute (5 tries with exp. backoff). We retry at least once regardless
+    # of deadline in case initial fetch takes longer than the deadline but does
+    # not contain the required revision.
+    deadline = time.time() + 60
     tries = 0
     while not done:
       name = sln['name']
@@ -563,7 +567,9 @@ def git_checkout(solutions, revisions, shallow, refs, git_cache_dir,
         # Exited abnormally, theres probably something wrong.
         print 'Something failed: %s.' % str(e)
 
-        if time.time() > deadline:
+        # Only kick in deadline after trying once, in case the revision hasn't
+        # yet propagated.
+        if tries >= 1 and time.time() > deadline:
           overrun = time.time() - deadline
           print 'Ran %s seconds past deadline. Aborting.' % overrun
           raise
