@@ -53,6 +53,24 @@ class GitCLTest(unittest.TestCase):
             ],
         ])
 
+    def test_trigger_try_jobs_with_list(self):
+        host = MockHost()
+        git_cl = GitCL(host, auth_refresh_token_json='token.json')
+        git_cl.trigger_try_jobs(['builder-a', 'android_blink_rel'])
+        self.assertEqual(host.executive.calls, [
+            [
+                'git', 'cl', 'try',
+                '-b', 'android_blink_rel',
+                '--auth-refresh-token-json', 'token.json'
+            ],
+            [
+                'git', 'cl', 'try',
+                '-m', 'tryserver.blink',
+                '-b', 'builder-a',
+                '--auth-refresh-token-json', 'token.json'
+            ],
+        ])
+
     def test_trigger_try_jobs_with_android_blink_rel(self):
         # The trigger_try_jobs method may be called with an immutable set.
         # It has special logic which assumes most builders to trigger are
