@@ -22,6 +22,7 @@ const char kAccountConsistencyFeatureMethodParameter[] = "method";
 const char kAccountConsistencyFeatureMethodMirror[] = "mirror";
 const char kAccountConsistencyFeatureMethodDiceFixAuthErrors[] =
     "dice_fix_auth_errors";
+const char kAccountConsistencyFeatureMethodDiceMigration[] = "dice_migration";
 const char kAccountConsistencyFeatureMethodDice[] = "dice";
 
 AccountConsistencyMethod GetAccountConsistencyMethod() {
@@ -40,6 +41,8 @@ AccountConsistencyMethod GetAccountConsistencyMethod() {
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   else if (method_value == kAccountConsistencyFeatureMethodDiceFixAuthErrors)
     return AccountConsistencyMethod::kDiceFixAuthErrors;
+  else if (method_value == kAccountConsistencyFeatureMethodDiceMigration)
+    return AccountConsistencyMethod::kDiceMigration;
   else if (method_value == kAccountConsistencyFeatureMethodDice)
     return AccountConsistencyMethod::kDice;
 #endif
@@ -52,13 +55,16 @@ bool IsAccountConsistencyMirrorEnabled() {
   return GetAccountConsistencyMethod() == AccountConsistencyMethod::kMirror;
 }
 
-bool IsAccountConsistencyDiceEnabled() {
-  return (GetAccountConsistencyMethod() == AccountConsistencyMethod::kDice);
+bool IsDiceMigrationEnabled() {
+  return (GetAccountConsistencyMethod() ==
+          AccountConsistencyMethod::kDiceMigration) ||
+         (GetAccountConsistencyMethod() == AccountConsistencyMethod::kDice);
 }
 
 bool IsDiceFixAuthErrorsEnabled() {
   AccountConsistencyMethod method = GetAccountConsistencyMethod();
   return (method == AccountConsistencyMethod::kDiceFixAuthErrors) ||
+         (method == AccountConsistencyMethod::kDiceMigration) ||
          (method == AccountConsistencyMethod::kDice);
 }
 

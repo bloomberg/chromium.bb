@@ -180,7 +180,7 @@ std::string DiceHeaderHelper::BuildRequestHeader(
   parts.push_back("signin_mode=" + signin_mode);
 
   // Show the signout confirmation only when Dice is fully enabled.
-  std::string signout_mode = IsAccountConsistencyDiceEnabled()
+  std::string signout_mode = IsDiceMigrationEnabled()
                                  ? kRequestSignoutShowConfirmation
                                  : kRequestSignoutNoConfirmation;
   parts.push_back("signout_mode=" + signout_mode);

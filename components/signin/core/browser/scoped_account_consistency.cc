@@ -45,6 +45,9 @@ ScopedAccountConsistency::ScopedAccountConsistency(
     case AccountConsistencyMethod::kDiceFixAuthErrors:
       feature_value = kAccountConsistencyFeatureMethodDiceFixAuthErrors;
       break;
+    case AccountConsistencyMethod::kDiceMigration:
+      feature_value = kAccountConsistencyFeatureMethodDiceMigration;
+      break;
     case AccountConsistencyMethod::kDice:
       feature_value = kAccountConsistencyFeatureMethodDice;
       break;
