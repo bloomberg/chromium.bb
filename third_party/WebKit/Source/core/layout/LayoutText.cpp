@@ -40,6 +40,7 @@
 #include "core/layout/LayoutTextCombine.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/api/LineLayoutAPIShim.h"
 #include "core/layout/api/LineLayoutBox.h"
 #include "core/layout/line/AbstractInlineTextBox.h"
 #include "core/layout/line/EllipsisBox.h"
@@ -2010,6 +2011,108 @@ bool LayoutText::ContainsCaretOffset(int text_offset) const {
       return false;
     }
     if (box->ContainsCaretOffset(text_offset))
+      return true;
+  }
+  return false;
+}
+
+// Returns true if |box| at |text_offset| can not continue on next line.
+static bool CanNotContinueOnNextLine(const LayoutText& text_layout_object,
+                                     InlineBox* box,
+                                     unsigned text_offset) {
+  InlineTextBox* const last_text_box = text_layout_object.LastTextBox();
+  if (box == last_text_box)
+    return true;
+  return LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()) ==
+             text_layout_object &&
+         ToInlineTextBox(box)->Start() >= text_offset;
+}
+
+// The text continues on the next line only if the last text box is not on this
+// line and none of the boxes on this line have a larger start offset.
+static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
+                                   InlineBox* box,
+                                   unsigned text_offset) {
+  InlineTextBox* const last_text_box = text_layout_object.LastTextBox();
+  DCHECK_NE(box, last_text_box);
+  for (InlineBox* runner = box->NextLeafChild(); runner;
+       runner = runner->NextLeafChild()) {
+    if (CanNotContinueOnNextLine(text_layout_object, runner, text_offset))
+      return false;
+  }
+
+  for (InlineBox* runner = box->PrevLeafChild(); runner;
+       runner = runner->PrevLeafChild()) {
+    if (CanNotContinueOnNextLine(text_layout_object, runner, text_offset))
+      return false;
+  }
+
+  return true;
+}
+
+bool LayoutText::IsBeforeNonCollapsedCharacter(unsigned text_offset) const {
+  if (ShouldUseNGAlternatives()) {
+    // ::first-letter handling should be done by LayoutTextFragment override.
+    DCHECK(!IsTextFragment());
+    if (!GetNode())
+      return false;
+    return GetNGOffsetMapping().IsBeforeNonCollapsedCharacter(*GetNode(),
+                                                              text_offset);
+  }
+
+  InlineTextBox* const last_text_box = LastTextBox();
+  for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
+    if (text_offset <= box->end()) {
+      if (text_offset >= box->Start())
+        return true;
+      continue;
+    }
+
+    if (box == last_text_box || text_offset != box->Start() + box->Len())
+      continue;
+
+    // Now that |text_offset == box->Start() + box->Len()|, check if this is the
+    // start offset of a whitespace collapsed due to line wrapping, e.g.
+    // <div style="width: 100px">foooooooooooooooo baaaaaaaaaaaaaaaaaaaar</div>
+    // The whitespace is collapsed away due to line wrapping, while the two
+    // positions next to it are still different caret positions. Hence, when the
+    // offset is at "...oo| baa...", we should return true.
+    if (DoesContinueOnNextLine(*this, box, text_offset))
+      return true;
+  }
+  return false;
+}
+
+bool LayoutText::IsAfterNonCollapsedCharacter(unsigned text_offset) const {
+  if (ShouldUseNGAlternatives()) {
+    // ::first-letter handling should be done by LayoutTextFragment override.
+    DCHECK(!IsTextFragment());
+    if (!GetNode())
+      return false;
+    return GetNGOffsetMapping().IsAfterNonCollapsedCharacter(*GetNode(),
+                                                             text_offset);
+  }
+
+  InlineTextBox* const last_text_box = LastTextBox();
+  for (InlineTextBox* box : InlineTextBoxesOf(*this)) {
+    if (text_offset == box->Start())
+      continue;
+    if (text_offset <= box->Start() + box->Len()) {
+      if (text_offset > box->Start())
+        return true;
+      continue;
+    }
+
+    if (box == last_text_box || text_offset != box->Start() + box->Len() + 1)
+      continue;
+
+    // Now that |text_offset == box->Start() + box->Len() + 1|, check if this is
+    // the end offset of a whitespace collapsed due to line wrapping, e.g.
+    // <div style="width: 100px">foooooooooooooooo baaaaaaaaaaaaaaaaaaaar</div>
+    // The whitespace is collapsed away due to line wrapping, while the two
+    // positions next to it are still different caret positions. Hence, when the
+    // offset is at "...oo |baa...", we should return true.
+    if (DoesContinueOnNextLine(*this, box, text_offset + 1))
       return true;
   }
   return false;

@@ -52,6 +52,8 @@ class CORE_EXPORT LayoutTextFragment final : public LayoutText {
   bool IsTextFragment() const override { return true; }
 
   bool ContainsCaretOffset(int) const override;
+  bool IsBeforeNonCollapsedCharacter(unsigned) const override;
+  bool IsAfterNonCollapsedCharacter(unsigned) const override;
   int CaretMinOffset() const override;
   int CaretMaxOffset() const override;
   unsigned ResolvedTextLength() const override;

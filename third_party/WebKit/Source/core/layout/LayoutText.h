@@ -208,6 +208,11 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // InlineTextBox::ContainsCaretOffset(). Try to understand it.
   virtual bool ContainsCaretOffset(int) const;
 
+  // Return true if the offset (0-based in the |text_| string) is before/after a
+  // non-collapsed character in this LayoutText, respectively.
+  virtual bool IsBeforeNonCollapsedCharacter(unsigned) const;
+  virtual bool IsAfterNonCollapsedCharacter(unsigned) const;
+
   int CaretMinOffset() const override;
   int CaretMaxOffset() const override;
   virtual unsigned ResolvedTextLength() const;
