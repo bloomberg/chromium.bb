@@ -248,7 +248,8 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
     properties->set_icon(FilePath(temp), temp_index);
   }
 
-  if (options & ShortcutProperties::PROPERTIES_WIN7) {
+  if (options & (ShortcutProperties::PROPERTIES_APP_ID |
+                 ShortcutProperties::PROPERTIES_DUAL_MODE)) {
     ComPtr<IPropertyStore> property_store;
     if (FAILED(i_shell_link.CopyTo(property_store.GetAddressOf())))
       return false;

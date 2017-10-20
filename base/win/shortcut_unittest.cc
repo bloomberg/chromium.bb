@@ -82,9 +82,6 @@ class ShortcutTest : public testing::Test {
 }  // namespace
 
 TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
-  uint32_t valid_properties = ShortcutProperties::PROPERTIES_BASIC;
-  valid_properties |= ShortcutProperties::PROPERTIES_WIN7;
-
   // Test all properties.
   FilePath file_1(temp_dir_.GetPath().Append(L"Link1.lnk"));
   ASSERT_TRUE(CreateOrUpdateShortcutLink(
@@ -93,7 +90,7 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   ShortcutProperties properties_read_1;
   ASSERT_TRUE(ResolveShortcutProperties(
       file_1, ShortcutProperties::PROPERTIES_ALL, &properties_read_1));
-  EXPECT_EQ(valid_properties, properties_read_1.options);
+  EXPECT_EQ(ShortcutProperties::PROPERTIES_ALL, properties_read_1.options);
   ValidatePathsAreEqual(link_properties_.target, properties_read_1.target);
   ValidatePathsAreEqual(link_properties_.working_dir,
                         properties_read_1.working_dir);
@@ -114,7 +111,7 @@ TEST_F(ShortcutTest, CreateAndResolveShortcutProperties) {
   ShortcutProperties properties_read_2;
   ASSERT_TRUE(ResolveShortcutProperties(
       file_2, ShortcutProperties::PROPERTIES_ALL, &properties_read_2));
-  EXPECT_EQ(valid_properties, properties_read_2.options);
+  EXPECT_EQ(ShortcutProperties::PROPERTIES_ALL, properties_read_2.options);
   ValidatePathsAreEqual(only_target_properties.target,
                         properties_read_2.target);
   ValidatePathsAreEqual(FilePath(), properties_read_2.working_dir);
