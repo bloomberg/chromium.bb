@@ -96,7 +96,9 @@ class BaseResourceThrottle
 
   // Called by OnBlockingPageComplete when proceed == false. This removes the
   // blocking page. This calls ResourceThrottle::Cancel() to show the previous
-  // page, but may be overridden in a subclass.
+  // page, but may be overridden in a subclass. The override in subclass should
+  // call this base implementation for cancellation, instead of calling
+  // ResourceThrottle::Cancel() directly.
   virtual void CancelResourceLoad();
 
   // Starts running |url| through the safe browsing check. Returns true if the
