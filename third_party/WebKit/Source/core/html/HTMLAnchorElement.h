@@ -120,9 +120,9 @@ class CORE_EXPORT HTMLAnchorElement : public HTMLElement, public DOMURLUtils {
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void HandleClick(Event*);
 
-  uint32_t link_relations_;
+  unsigned link_relations_ : 31;
+  unsigned was_focused_by_mouse_ : 1;
   mutable LinkHash cached_visited_link_hash_;
-  bool was_focused_by_mouse_;
 };
 
 inline LinkHash HTMLAnchorElement::VisitedLinkHash() const {
