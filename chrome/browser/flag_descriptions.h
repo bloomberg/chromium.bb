@@ -514,6 +514,9 @@ extern const char kModuleScriptsDescription[];
 extern const char kModuleScriptsDynamicImportName[];
 extern const char kModuleScriptsDynamicImportDescription[];
 
+extern const char kModuleScriptsImportMetaUrlName[];
+extern const char kModuleScriptsImportMetaUrlDescription[];
+
 extern const char kNewAudioRenderingMixingStrategyName[];
 extern const char kNewAudioRenderingMixingStrategyDescription[];
 

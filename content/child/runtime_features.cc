@@ -374,6 +374,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableModuleScriptsDynamicImport(
       base::FeatureList::IsEnabled(features::kModuleScriptsDynamicImport));
 
+  WebRuntimeFeatures::EnableModuleScriptsImportMetaUrl(
+      base::FeatureList::IsEnabled(features::kModuleScriptsImportMetaUrl));
+
   WebRuntimeFeatures::EnableOverflowIconsForMediaControls(
       base::FeatureList::IsEnabled(media::kOverflowIconsForMediaControls));
 
