@@ -90,48 +90,17 @@ const char* StringForAllocatorType(uint32_t type) {
   }
 }
 
-std::string ProcessNameFromProcessType(mojom::ProcessType process_type) {
-  switch (process_type) {
-    case mojom::ProcessType::BROWSER:
-      return "Browser";
-    case mojom::ProcessType::RENDERER:
-      return "Renderer";
-    case mojom::ProcessType::GPU:
-      return "Gpu";
-    case mojom::ProcessType::OTHER:
-      return "Other";
-  }
-  return "Unknown";
-}
-
-std::string ProcessMainThreadNameFromProcessType(
-    mojom::ProcessType process_type) {
-  switch (process_type) {
-    case mojom::ProcessType::BROWSER:
-      return "CrBrowserMain";
-    case mojom::ProcessType::RENDERER:
-      return "CrRendererMain";
-    case mojom::ProcessType::GPU:
-      return "CrGpuMain";
-    case mojom::ProcessType::OTHER:
-      return "CrOtherMain";
-  }
-  return "CrUnknownMain";
-}
-
 // Writes a dummy process name entry given a PID. When we have more information
 // on a process it can be filled in here. But for now the tracing tools expect
 // this entry since everything is associated with a PID.
-void WriteProcessName(int pid, const ExportParams& params, std::ostream& out) {
+void WriteProcessName(int pid, std::ostream& out) {
   out << "{ \"pid\":" << pid << ", \"ph\":\"M\", \"name\":\"process_name\", "
-      << "\"args\":{\"name\":\""
-      << ProcessNameFromProcessType(params.process_type) << "\"}},";
+      << "\"args\":{\"name\":\"Browser\"}},";
 
   // Catapult needs a thread named "CrBrowserMain" to recognize Chrome browser.
   out << "{ \"pid\":" << pid << ", \"ph\":\"M\", \"name\":\"thread_name\", "
       << "\"tid\": 1,"
-      << "\"args\":{\"name\":\""
-      << ProcessMainThreadNameFromProcessType(params.process_type) << "\"}},";
+      << "\"args\":{\"name\":\"CrBrowserMain\"}},";
 
   // At least, one event must be present on the thread to avoid being pruned.
   out << "{ \"name\": \"MemlogTraceEvent\", \"cat\": \"memlog\", "
@@ -441,7 +410,7 @@ void ExportAllocationEventSetToJSON(
     std::unique_ptr<base::DictionaryValue> metadata_dict,
     std::ostream& out) {
   out << "{ \"traceEvents\": [";
-  WriteProcessName(pid, params, out);
+  WriteProcessName(pid, out);
   out << ",\n";
   WriteDumpsHeader(pid, out);
   ExportMemoryMapsAndV2StackTraceToJSON(params, out);

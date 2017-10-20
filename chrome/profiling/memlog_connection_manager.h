@@ -99,16 +99,20 @@ class MemlogConnectionManager {
   struct Connection;
   struct DumpProcessesForTracingTracking;
 
+  // Schedules the given callback to execute after the given process ID has
+  // been synchronized. If the process ID isn't found, the callback will be
+  // asynchronously run with "false" as the success parameter.
+  void SynchronizeOnPid(base::ProcessId process_id,
+                        AllocationTracker::SnapshotCallback callback);
+
   // Actually does the dump assuming the given process has been synchronized.
   void DoDumpProcess(DumpProcessArgs args,
-                     mojom::ProcessType process_type,
                      bool success,
                      AllocationCountMap counts,
                      AllocationTracker::ContextMap context);
   void DoDumpOneProcessForTracing(
       scoped_refptr<DumpProcessesForTracingTracking> tracking,
       base::ProcessId pid,
-      mojom::ProcessType process_type,
       bool success,
       AllocationCountMap counts,
       AllocationTracker::ContextMap context);
