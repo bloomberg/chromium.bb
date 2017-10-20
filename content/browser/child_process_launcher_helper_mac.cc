@@ -58,6 +58,10 @@ void ChildProcessLauncherHelper::BeforeLaunchOnLauncherThread(
 
   if (base::FeatureList::IsEnabled(features::kMacV2Sandbox) &&
       GetProcessType() == switches::kRendererProcess && !no_sandbox) {
+    // Disable os logging to com.apple.diagnosticd which is a performance
+    // problem.
+    options->environ.insert(std::make_pair("OS_ACTIVITY_MODE", "disable"));
+
     seatbelt_exec_client_ = base::MakeUnique<sandbox::SeatbeltExecClient>();
     seatbelt_exec_client_->SetProfile(
         service_manager::kSeatbeltPolicyString_renderer_v2);
