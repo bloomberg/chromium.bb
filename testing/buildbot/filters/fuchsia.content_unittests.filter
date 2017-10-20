@@ -40,3 +40,6 @@
 
 # Failing: https://crbug.com/771701.
 -IndexedDBFactoryTest.DataFormatVersion
+
+# Flaky: https://crbug.com/776424.
+-RenderWidgetHostViewAuraOverscrollTest.*
