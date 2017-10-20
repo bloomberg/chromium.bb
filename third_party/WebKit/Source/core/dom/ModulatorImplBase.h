@@ -35,7 +35,7 @@ class ModulatorImplBase : public Modulator {
   ExecutionContext* GetExecutionContext() const;
 
  protected:
-  explicit ModulatorImplBase(RefPtr<ScriptState>);
+  explicit ModulatorImplBase(scoped_refptr<ScriptState>);
 
  private:
   // Implements Modulator
@@ -77,8 +77,8 @@ class ModulatorImplBase : public Modulator {
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   ScriptValue ExecuteModule(const ModuleScript*, CaptureEvalErrorFlag) override;
 
-  RefPtr<ScriptState> script_state_;
-  RefPtr<WebTaskRunner> task_runner_;
+  scoped_refptr<ScriptState> script_state_;
+  scoped_refptr<WebTaskRunner> task_runner_;
   TraceWrapperMember<ModuleMap> map_;
   Member<ModuleScriptLoaderRegistry> loader_registry_;
   TraceWrapperMember<ModuleTreeLinkerRegistry> tree_linker_registry_;

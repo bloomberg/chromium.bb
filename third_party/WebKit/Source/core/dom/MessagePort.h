@@ -58,7 +58,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   ~MessagePort() override;
 
   void postMessage(ScriptState*,
-                   RefPtr<SerializedScriptValue> message,
+                   scoped_refptr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
   static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
@@ -139,7 +139,7 @@ class CORE_EXPORT MessagePort : public EventTargetWithInlineData,
   bool started_ = false;
   bool closed_ = false;
 
-  RefPtr<WebTaskRunner> task_runner_;
+  scoped_refptr<WebTaskRunner> task_runner_;
 };
 
 }  // namespace blink

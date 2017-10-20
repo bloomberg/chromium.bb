@@ -531,8 +531,9 @@ class CORE_EXPORT Document : public ContainerNode,
   void UpdateStyleAndLayoutIgnorePendingStylesheets(
       RunPostLayoutTasks = kRunPostLayoutTasksAsyhnchronously);
   void UpdateStyleAndLayoutIgnorePendingStylesheetsForNode(Node*);
-  RefPtr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(Element*);
-  RefPtr<ComputedStyle> StyleForPage(int page_index);
+  scoped_refptr<ComputedStyle> StyleForElementIgnoringPendingStylesheets(
+      Element*);
+  scoped_refptr<ComputedStyle> StyleForPage(int page_index);
 
   // Ensures that location-based data will be valid for a given node.
   //
@@ -1072,7 +1073,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void EnforceSandboxFlags(SandboxFlags mask) override;
 
-  void StatePopped(RefPtr<SerializedScriptValue>);
+  void StatePopped(scoped_refptr<SerializedScriptValue>);
 
   enum LoadEventProgress {
     kLoadEventNotRun,
@@ -1282,7 +1283,7 @@ class CORE_EXPORT Document : public ContainerNode,
   enum HttpRefreshType { kHttpRefreshFromHeader, kHttpRefreshFromMetaTag };
   void MaybeHandleHttpRefresh(const String&, HttpRefreshType);
 
-  void UpdateSecurityOrigin(RefPtr<SecurityOrigin>);
+  void UpdateSecurityOrigin(scoped_refptr<SecurityOrigin>);
 
   void SetHasViewportUnits() { has_viewport_units_ = true; }
   bool HasViewportUnits() const { return has_viewport_units_; }

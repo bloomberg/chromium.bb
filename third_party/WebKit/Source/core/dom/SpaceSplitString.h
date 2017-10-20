@@ -61,8 +61,8 @@ class CORE_EXPORT SpaceSplitString {
  private:
   class Data : public RefCounted<Data> {
    public:
-    static RefPtr<Data> Create(const AtomicString&);
-    static RefPtr<Data> CreateUnique(const Data&);
+    static scoped_refptr<Data> Create(const AtomicString&);
+    static scoped_refptr<Data> CreateUnique(const Data&);
 
     ~Data();
 
@@ -106,7 +106,7 @@ class CORE_EXPORT SpaceSplitString {
       data_ = Data::CreateUnique(*data_);
   }
 
-  RefPtr<Data> data_;
+  scoped_refptr<Data> data_;
 };
 
 }  // namespace blink

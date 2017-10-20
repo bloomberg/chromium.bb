@@ -82,7 +82,7 @@ class CORE_EXPORT ScriptedIdleTaskController
   friend class internal::IdleRequestCallbackWrapper;
   explicit ScriptedIdleTaskController(ExecutionContext*);
 
-  void ScheduleCallback(RefPtr<internal::IdleRequestCallbackWrapper>,
+  void ScheduleCallback(scoped_refptr<internal::IdleRequestCallbackWrapper>,
                         long long timeout_millis);
 
   int NextCallbackId();

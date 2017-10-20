@@ -516,7 +516,7 @@ class CORE_EXPORT Element : public ContainerNode {
   }
 
   bool ShouldStoreNonLayoutObjectComputedStyle(const ComputedStyle&) const;
-  void StoreNonLayoutObjectComputedStyle(RefPtr<ComputedStyle>);
+  void StoreNonLayoutObjectComputedStyle(scoped_refptr<ComputedStyle>);
 
   // Methods for indicating the style is affected by dynamic updates (e.g.,
   // children changing, our position changing in our sibling list, etc.)
@@ -685,7 +685,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   ComputedStyle* PseudoStyle(const PseudoStyleRequest&,
                              const ComputedStyle* parent_style = nullptr);
-  RefPtr<ComputedStyle> GetUncachedPseudoStyle(
+  scoped_refptr<ComputedStyle> GetUncachedPseudoStyle(
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style = nullptr);
   bool CanGeneratePseudoElement(PseudoId) const;
@@ -765,7 +765,7 @@ class CORE_EXPORT Element : public ContainerNode {
   bool IsSpellCheckingEnabled() const;
 
   // FIXME: public for LayoutTreeBuilder, we shouldn't expose this though.
-  RefPtr<ComputedStyle> StyleForLayoutObject();
+  scoped_refptr<ComputedStyle> StyleForLayoutObject();
 
   bool HasID() const;
   bool HasClass() const;
@@ -843,7 +843,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   virtual void WillRecalcStyle(StyleRecalcChange);
   virtual void DidRecalcStyle();
-  virtual RefPtr<ComputedStyle> CustomStyleForLayoutObject();
+  virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject();
 
   virtual NamedItemType GetNamedItemType() const {
     return NamedItemType::kNone;
@@ -869,7 +869,7 @@ class CORE_EXPORT Element : public ContainerNode {
 
   static bool AttributeValueIsJavaScriptURL(const Attribute&);
 
-  RefPtr<ComputedStyle> OriginalStyleForLayoutObject();
+  scoped_refptr<ComputedStyle> OriginalStyleForLayoutObject();
 
   Node* InsertAdjacent(const String& where, Node* new_child, ExceptionState&);
 
@@ -909,7 +909,7 @@ class CORE_EXPORT Element : public ContainerNode {
   // these changes can be directly propagated to this element (the child).
   // If these conditions are met, propagates the changes to the current style
   // and returns the new style. Otherwise, returns null.
-  RefPtr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
+  scoped_refptr<ComputedStyle> PropagateInheritedProperties(StyleRecalcChange);
 
   StyleRecalcChange RecalcOwnStyle(StyleRecalcChange);
   void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);

@@ -2040,7 +2040,8 @@ void Document::PropagateStyleToViewport() {
                 scroll_boundary_behavior_y)));
   }
 
-  RefPtr<ComputedStyle> viewport_style = GetLayoutViewItem().MutableStyle();
+  scoped_refptr<ComputedStyle> viewport_style =
+      GetLayoutViewItem().MutableStyle();
   if (viewport_style->GetWritingMode() != root_writing_mode ||
       viewport_style->Direction() != root_direction ||
       viewport_style->VisitedDependentColor(CSSPropertyBackgroundColor) !=
@@ -2056,7 +2057,8 @@ void Document::PropagateStyleToViewport() {
       viewport_style->GetScrollBehavior() != scroll_behavior ||
       viewport_style->ScrollBoundaryBehaviorX() != scroll_boundary_behavior_x ||
       viewport_style->ScrollBoundaryBehaviorY() != scroll_boundary_behavior_y) {
-    RefPtr<ComputedStyle> new_style = ComputedStyle::Clone(*viewport_style);
+    scoped_refptr<ComputedStyle> new_style =
+        ComputedStyle::Clone(*viewport_style);
     new_style->SetWritingMode(root_writing_mode);
     new_style->SetDirection(root_direction);
     new_style->SetBackgroundColor(background_color);
@@ -2222,7 +2224,7 @@ void Document::UpdateStyle() {
 
   if (change == kForce) {
     has_nodes_with_placeholder_style_ = false;
-    RefPtr<ComputedStyle> viewport_style =
+    scoped_refptr<ComputedStyle> viewport_style =
         StyleResolver::StyleForViewport(*this);
     StyleRecalcChange local_change = ComputedStyle::StylePropagationDiff(
         viewport_style.get(), GetLayoutViewItem().Style());
@@ -2475,8 +2477,8 @@ void Document::UpdateStyleAndLayoutIgnorePendingStylesheets(
     View()->FlushAnyPendingPostLayoutTasks();
 }
 
-RefPtr<ComputedStyle> Document::StyleForElementIgnoringPendingStylesheets(
-    Element* element) {
+scoped_refptr<ComputedStyle>
+Document::StyleForElementIgnoringPendingStylesheets(Element* element) {
   DCHECK_EQ(element->GetDocument(), this);
   StyleEngine::IgnoringPendingStylesheet ignoring(GetStyleEngine());
   if (!element->CanParticipateInFlatTree())
@@ -2495,7 +2497,7 @@ RefPtr<ComputedStyle> Document::StyleForElementIgnoringPendingStylesheets(
                                                layout_parent_style);
 }
 
-RefPtr<ComputedStyle> Document::StyleForPage(int page_index) {
+scoped_refptr<ComputedStyle> Document::StyleForPage(int page_index) {
   UpdateDistribution();
   return EnsureStyleResolver().StyleForPage(page_index);
 }
@@ -2535,7 +2537,7 @@ void Document::PageSizeAndMarginsInPixels(int page_index,
                                           int& margin_right,
                                           int& margin_bottom,
                                           int& margin_left) {
-  RefPtr<ComputedStyle> style = StyleForPage(page_index);
+  scoped_refptr<ComputedStyle> style = StyleForPage(page_index);
 
   double width = page_size.Width();
   double height = page_size.Height();
@@ -5568,7 +5570,7 @@ KURL Document::OpenSearchDescriptionURL() {
 
     // Count usage; perhaps we can lock this to secure contexts.
     WebFeature osd_disposition;
-    RefPtr<SecurityOrigin> target =
+    scoped_refptr<SecurityOrigin> target =
         SecurityOrigin::Create(link_element->Href());
     if (IsSecureContext()) {
       osd_disposition = target->IsPotentiallyTrustworthy()
@@ -6151,7 +6153,7 @@ void Document::InitContentSecurityPolicy(
 }
 
 bool Document::IsSecureTransitionTo(const KURL& url) const {
-  RefPtr<SecurityOrigin> other = SecurityOrigin::Create(url);
+  scoped_refptr<SecurityOrigin> other = SecurityOrigin::Create(url);
   return GetSecurityOrigin()->CanAccess(other.get());
 }
 
@@ -6223,7 +6225,7 @@ bool Document::AllowInlineEventHandler(Node* node,
 }
 
 void Document::EnforceSandboxFlags(SandboxFlags mask) {
-  RefPtr<SecurityOrigin> stand_in_origin = GetSecurityOrigin();
+  scoped_refptr<SecurityOrigin> stand_in_origin = GetSecurityOrigin();
   ApplySandboxFlags(mask);
   // Send a notification if the origin has been updated.
   if (stand_in_origin && !stand_in_origin->IsUnique() &&
@@ -6235,7 +6237,7 @@ void Document::EnforceSandboxFlags(SandboxFlags mask) {
   }
 }
 
-void Document::UpdateSecurityOrigin(RefPtr<SecurityOrigin> origin) {
+void Document::UpdateSecurityOrigin(scoped_refptr<SecurityOrigin> origin) {
   SetSecurityOrigin(std::move(origin));
   DidUpdateSecurityOrigin();
 }

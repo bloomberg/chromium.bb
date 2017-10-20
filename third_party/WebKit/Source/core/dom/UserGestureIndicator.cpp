@@ -95,7 +95,8 @@ void UserGestureIndicator::UpdateRootToken() {
   }
 }
 
-UserGestureIndicator::UserGestureIndicator(RefPtr<UserGestureToken> token) {
+UserGestureIndicator::UserGestureIndicator(
+    scoped_refptr<UserGestureToken> token) {
   if (!IsMainThread() || !token || token == root_token_)
     return;
   token_ = std::move(token);

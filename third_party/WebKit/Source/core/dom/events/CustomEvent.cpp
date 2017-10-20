@@ -63,7 +63,7 @@ ScriptValue CustomEvent::detail(ScriptState* script_state) const {
   // Returns a clone of |detail_| if the world is different.
   if (!world_ || world_->GetWorldId() != script_state->World().GetWorldId()) {
     v8::Local<v8::Value> value = detail_.NewLocal(isolate);
-    RefPtr<SerializedScriptValue> serialized =
+    scoped_refptr<SerializedScriptValue> serialized =
         SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
     return ScriptValue(script_state, serialized->Deserialize(isolate));
   }

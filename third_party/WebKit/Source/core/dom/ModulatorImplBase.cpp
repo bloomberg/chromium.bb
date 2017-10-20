@@ -21,7 +21,7 @@ ExecutionContext* ModulatorImplBase::GetExecutionContext() const {
   return ExecutionContext::From(script_state_.get());
 }
 
-ModulatorImplBase::ModulatorImplBase(RefPtr<ScriptState> script_state)
+ModulatorImplBase::ModulatorImplBase(scoped_refptr<ScriptState> script_state)
     : script_state_(std::move(script_state)),
       task_runner_(
           TaskRunnerHelper::Get(TaskType::kNetworking, script_state_.get())),

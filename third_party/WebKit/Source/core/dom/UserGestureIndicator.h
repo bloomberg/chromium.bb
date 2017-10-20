@@ -71,7 +71,7 @@ class CORE_EXPORT UserGestureIndicator final {
 
   static void SetTimeoutPolicy(UserGestureToken::TimeoutPolicy);
 
-  explicit UserGestureIndicator(RefPtr<UserGestureToken>);
+  explicit UserGestureIndicator(scoped_refptr<UserGestureToken>);
 
   // Constructs a UserGestureIndicator with a new UserGestureToken of the given
   // status.
@@ -84,7 +84,7 @@ class CORE_EXPORT UserGestureIndicator final {
 
   static UserGestureToken* root_token_;
 
-  RefPtr<UserGestureToken> token_;
+  scoped_refptr<UserGestureToken> token_;
 };
 
 }  // namespace blink

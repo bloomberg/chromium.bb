@@ -18,7 +18,7 @@ struct CORE_EXPORT BlinkCloneableMessage {
   BlinkCloneableMessage();
   ~BlinkCloneableMessage();
 
-  RefPtr<blink::SerializedScriptValue> message;
+  scoped_refptr<blink::SerializedScriptValue> message;
 };
 
 }  // namespace blink

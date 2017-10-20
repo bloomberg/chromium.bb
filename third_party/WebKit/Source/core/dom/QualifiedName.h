@@ -54,10 +54,11 @@ class CORE_EXPORT QualifiedName {
  public:
   class QualifiedNameImpl : public RefCounted<QualifiedNameImpl> {
    public:
-    static RefPtr<QualifiedNameImpl> Create(const AtomicString& prefix,
-                                            const AtomicString& local_name,
-                                            const AtomicString& namespace_uri,
-                                            bool is_static) {
+    static scoped_refptr<QualifiedNameImpl> Create(
+        const AtomicString& prefix,
+        const AtomicString& local_name,
+        const AtomicString& namespace_uri,
+        bool is_static) {
       return WTF::AdoptRef(
           new QualifiedNameImpl(prefix, local_name, namespace_uri, is_static));
     }
@@ -170,7 +171,7 @@ class CORE_EXPORT QualifiedName {
                 const AtomicString& namespace_uri,
                 bool is_static);
 
-  RefPtr<QualifiedNameImpl> impl_;
+  scoped_refptr<QualifiedNameImpl> impl_;
 };
 
 extern const QualifiedName& g_any_name;
@@ -237,14 +238,15 @@ struct HashTraits<blink::QualifiedName>
 
   static bool IsDeletedValue(const blink::QualifiedName& value) {
     using QualifiedNameImpl = blink::QualifiedName::QualifiedNameImpl;
-    return HashTraits<RefPtr<QualifiedNameImpl>>::IsDeletedValue(value.impl_);
+    return HashTraits<scoped_refptr<QualifiedNameImpl>>::IsDeletedValue(
+        value.impl_);
   }
 
   static void ConstructDeletedValue(blink::QualifiedName& slot,
                                     bool zero_value) {
     using QualifiedNameImpl = blink::QualifiedName::QualifiedNameImpl;
-    HashTraits<RefPtr<QualifiedNameImpl>>::ConstructDeletedValue(slot.impl_,
-                                                                 zero_value);
+    HashTraits<scoped_refptr<QualifiedNameImpl>>::ConstructDeletedValue(
+        slot.impl_, zero_value);
   }
 };
 

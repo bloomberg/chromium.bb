@@ -139,8 +139,9 @@ struct SameSizeAsNode : EventTarget {
   void* pointer_;
 };
 
-NodeRenderingData::NodeRenderingData(LayoutObject* layout_object,
-                                     RefPtr<ComputedStyle> non_attached_style)
+NodeRenderingData::NodeRenderingData(
+    LayoutObject* layout_object,
+    scoped_refptr<ComputedStyle> non_attached_style)
     : layout_object_(layout_object), non_attached_style_(non_attached_style) {}
 
 NodeRenderingData::~NodeRenderingData() {
@@ -148,7 +149,7 @@ NodeRenderingData::~NodeRenderingData() {
 }
 
 void NodeRenderingData::SetNonAttachedStyle(
-    RefPtr<ComputedStyle> non_attached_style) {
+    scoped_refptr<ComputedStyle> non_attached_style) {
   DCHECK_NE(&SharedEmptyData(), this);
   non_attached_style_ = non_attached_style;
 }
@@ -659,7 +660,8 @@ void Node::SetLayoutObject(LayoutObject* layout_object) {
     data_.node_layout_data_ = node_layout_data;
 }
 
-void Node::SetNonAttachedStyle(RefPtr<ComputedStyle> non_attached_style) {
+void Node::SetNonAttachedStyle(
+    scoped_refptr<ComputedStyle> non_attached_style) {
   NodeRenderingData* node_layout_data =
       HasRareData() ? data_.rare_data_->GetNodeRenderingData()
                     : data_.node_layout_data_;

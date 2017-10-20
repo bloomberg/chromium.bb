@@ -100,7 +100,7 @@ class LayoutTreeBuilderForElement : public LayoutTreeBuilder<Element> {
   ComputedStyle& Style() const;
   void CreateLayoutObject();
 
-  mutable RefPtr<ComputedStyle> style_;
+  mutable scoped_refptr<ComputedStyle> style_;
 };
 
 class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
@@ -110,7 +110,7 @@ class LayoutTreeBuilderForText : public LayoutTreeBuilder<Text> {
                            ComputedStyle* style_from_parent)
       : LayoutTreeBuilder(text, layout_parent), style_(style_from_parent) {}
 
-  RefPtr<ComputedStyle> style_;
+  scoped_refptr<ComputedStyle> style_;
   void CreateLayoutObject();
 };
 
