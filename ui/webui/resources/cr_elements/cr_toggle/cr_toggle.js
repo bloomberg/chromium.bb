@@ -189,8 +189,10 @@ Polymer({
    * @private
    */
   onKeyPress_: function(e) {
-    if (e.code == 'Space' || e.code == 'Enter')
+    if (e.code == 'Space' || e.code == 'Enter') {
+      e.preventDefault();
       this.toggleState_(true);
+    }
   },
 
   // customize the element's ripple
