@@ -95,7 +95,8 @@ class LinuxSandbox {
   // limitations. This will instantiate the LinuxSandbox singleton if it
   // doesn't already exist.
   // This function should only be called without any thread running.
-  static bool InitializeSandbox(SandboxSeccompBPF::Options options);
+  static bool InitializeSandbox(SandboxSeccompBPF::PreSandboxHook hook,
+                                const SandboxSeccompBPF::Options& options);
 
   // Stop |thread| in a way that can be trusted by the sandbox.
   static void StopThread(base::Thread* thread);
@@ -123,11 +124,13 @@ class LinuxSandbox {
   // never be called with threads started. If we detect that threads have
   // started we will crash.
   bool StartSeccompBPF(service_manager::SandboxType sandbox_type,
-                       SandboxSeccompBPF::Options opts);
+                       SandboxSeccompBPF::PreSandboxHook hook,
+                       const SandboxSeccompBPF::Options& options);
 
   // Limit the address space of the current process (and its children).
   // to make some vulnerabilities harder to exploit.
-  bool LimitAddressSpace(const std::string& process_type);
+  bool LimitAddressSpace(const std::string& process_type,
+                         const SandboxSeccompBPF::Options& options);
 
   // Returns a file descriptor to proc. The file descriptor is no longer valid
   // after the sandbox has been sealed.
@@ -150,7 +153,8 @@ class LinuxSandbox {
 
   // Some methods are static and get an instance of the Singleton. These
   // are the non-static implementations.
-  bool InitializeSandboxImpl(SandboxSeccompBPF::Options options);
+  bool InitializeSandboxImpl(SandboxSeccompBPF::PreSandboxHook hook,
+                             const SandboxSeccompBPF::Options& options);
   void StopThreadImpl(base::Thread* thread);
   // We must have been pre_initialized_ before using these.
   bool seccomp_bpf_supported() const;

@@ -22,27 +22,23 @@ namespace content {
 // a public content/ API and uses a supplied policy.
 class SandboxSeccompBPF {
  public:
-  struct Options;
-  using PreSandboxHook =
-      base::OnceCallback<bool(sandbox::bpf_dsl::Policy*, Options)>;
-
   struct Options {
-    Options();
-    Options(Options&& that);
-    ~Options();
-
     bool use_amd_specific_policies = false;  // For ChromiumOS.
 
-    // Callers can provide this hook to run code right before the policy
-    // is passed to the BPF compiler and the sandbox is engaged. If
-    // pre_sandbox_hook() returns true, the sandbox will be engaged
-    // afterwards, otherwise the process is terminated.
-    PreSandboxHook pre_sandbox_hook;
+    // Options for Web Assembly.
+    bool has_wasm_trap_handler = false;
 
-    // Options for GPU pre_sandbox_hook
+    // Options for GPU's PreSandboxHook.
     bool accelerated_video_decode_enabled = false;
     bool vaapi_accelerated_video_encode_enabled = false;
   };
+
+  // Callers can provide this hook to run code right before the policy
+  // is passed to the BPF compiler and the sandbox is engaged. If
+  // pre_sandbox_hook() returns true, the sandbox will be engaged
+  // afterwards, otherwise the process is terminated.
+  using PreSandboxHook =
+      base::OnceCallback<bool(sandbox::bpf_dsl::Policy*, Options)>;
 
   // This is the API to enable a seccomp-bpf sandbox for content/
   // process-types:
@@ -50,17 +46,21 @@ class SandboxSeccompBPF {
   // This looks at global command line flags to see if the sandbox
   // should be enabled at all.
   static bool IsSeccompBPFDesired();
+
   // Check if the kernel supports seccomp-bpf.
   static bool SupportsSandbox();
 
 #if !defined(OS_NACL_NONSFI)
   // Check if the kernel supports TSYNC (thread synchronization) with seccomp.
   static bool SupportsSandboxWithTsync();
+
   // Start the sandbox and apply the policy for sandbox_type, depending on
-  // command line switches and options.
+  // command line switches and options. |hook|, if non-empty is run right
+  // before the sandbox is engaged.
   static bool StartSandbox(service_manager::SandboxType sandbox_type,
                            base::ScopedFD proc_fd,
-                           Options options);
+                           PreSandboxHook hook,
+                           const Options& options);
 #endif  // !defined(OS_NACL_NONSFI)
 
   // This is the API to enable a seccomp-bpf sandbox by using an
@@ -68,6 +68,7 @@ class SandboxSeccompBPF {
   static bool StartSandboxWithExternalPolicy(
       std::unique_ptr<sandbox::bpf_dsl::Policy> policy,
       base::ScopedFD proc_fd);
+
   // The "baseline" policy can be a useful base to build a sandbox policy.
   static std::unique_ptr<sandbox::bpf_dsl::Policy> GetBaselinePolicy();
 

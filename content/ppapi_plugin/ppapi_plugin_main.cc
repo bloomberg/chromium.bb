@@ -121,7 +121,8 @@ int PpapiPluginMain(const MainFunctionParams& parameters) {
 #endif
 
 #if defined(OS_LINUX)
-  LinuxSandbox::InitializeSandbox(SandboxSeccompBPF::Options());
+  LinuxSandbox::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(),
+                                  SandboxSeccompBPF::Options());
 #endif
 
   ChildProcess ppapi_process;

@@ -34,7 +34,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
-#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/services/credentials.h"
@@ -200,8 +199,11 @@ std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
   return fds;
 }
 
-bool LinuxSandbox::InitializeSandbox(SandboxSeccompBPF::Options options) {
-  return LinuxSandbox::GetInstance()->InitializeSandboxImpl(std::move(options));
+bool LinuxSandbox::InitializeSandbox(
+    SandboxSeccompBPF::PreSandboxHook hook,
+    const SandboxSeccompBPF::Options& options) {
+  return LinuxSandbox::GetInstance()->InitializeSandboxImpl(std::move(hook),
+                                                            options);
 }
 
 void LinuxSandbox::StopThread(base::Thread* thread) {
@@ -273,14 +275,15 @@ sandbox::SetuidSandboxClient*
 
 // For seccomp-bpf, we use the SandboxSeccompBPF class.
 bool LinuxSandbox::StartSeccompBPF(service_manager::SandboxType sandbox_type,
-                                   SandboxSeccompBPF::Options opts) {
+                                   SandboxSeccompBPF::PreSandboxHook hook,
+                                   const SandboxSeccompBPF::Options& opts) {
   CHECK(!seccomp_bpf_started_);
   CHECK(pre_initialized_);
   if (!seccomp_bpf_supported())
     return false;
 
   if (!SandboxSeccompBPF::StartSandbox(sandbox_type, OpenProc(proc_fd_),
-                                       std::move(opts))) {
+                                       std::move(hook), opts)) {
     return false;
   }
   seccomp_bpf_started_ = true;
@@ -288,7 +291,9 @@ bool LinuxSandbox::StartSeccompBPF(service_manager::SandboxType sandbox_type,
   return true;
 }
 
-bool LinuxSandbox::InitializeSandboxImpl(SandboxSeccompBPF::Options options) {
+bool LinuxSandbox::InitializeSandboxImpl(
+    SandboxSeccompBPF::PreSandboxHook hook,
+    const SandboxSeccompBPF::Options& options) {
   DCHECK(!initialize_sandbox_ran_);
   initialize_sandbox_ran_ = true;
 
@@ -355,9 +360,9 @@ bool LinuxSandbox::InitializeSandboxImpl(SandboxSeccompBPF::Options options) {
       "opened. This breaks the security of the setuid sandbox.";
 
   // Attempt to limit the future size of the address space of the process.
-  LimitAddressSpace(process_type);
+  LimitAddressSpace(process_type, options);
 
-  return StartSeccompBPF(sandbox_type, std::move(options));
+  return StartSeccompBPF(sandbox_type, std::move(hook), options);
 }
 
 void LinuxSandbox::StopThreadImpl(base::Thread* thread) {
@@ -375,8 +380,9 @@ bool LinuxSandbox::seccomp_bpf_with_tsync_supported() const {
   return seccomp_bpf_with_tsync_supported_;
 }
 
-bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
-  (void) process_type;
+bool LinuxSandbox::LimitAddressSpace(
+    const std::string& process_type,
+    const SandboxSeccompBPF::Options& options) {
 #if !defined(ANY_OF_AMTLU_SANITIZER)
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   if (service_manager::SandboxTypeFromCommandLine(*command_line) ==
@@ -401,12 +407,12 @@ bool LinuxSandbox::LimitAddressSpace(const std::string& process_type) {
     if (process_type == switches::kRendererProcess ||
         process_type == switches::kGpuProcess) {
       address_space_limit = 1ULL << 34;
-      // WebAssembly memory objects use a large amount of address space when
-      // trap-based bounds checks are enabled. To accomodate this, we allow the
-      // address space limit to adjust dynamically up to a certain limit. The
-      // limit is currently 4TiB, which should allow enough address space for
-      // any reasonable page. See https://crbug.com/750378.
-      if (base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler)) {
+      if (options.has_wasm_trap_handler) {
+        // WebAssembly memory objects use a large amount of address space when
+        // trap-based bounds checks are enabled. To accomodate this, we allow
+        // the address space limit to adjust dynamically up to a certain limit.
+        // The limit is currently 4TiB, which should allow enough address space
+        // for any reasonable page. See https://crbug.com/750378.
         address_space_limit_max = 1ULL << 42;
       } else {
         // If we are not using trap-based bounds checks, there's no reason to

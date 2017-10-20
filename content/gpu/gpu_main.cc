@@ -353,16 +353,17 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
   SandboxSeccompBPF::Options sandbox_options;
   sandbox_options.use_amd_specific_policies =
       gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id);
-  sandbox_options.pre_sandbox_hook =
-      GetGpuProcessPreSandboxHook(sandbox_options.use_amd_specific_policies);
   sandbox_options.accelerated_video_decode_enabled =
       !gpu_prefs.disable_accelerated_video_decode;
+
 #if defined(OS_CHROMEOS)
   sandbox_options.vaapi_accelerated_video_encode_enabled =
       !gpu_prefs.disable_vaapi_accelerated_video_encode;
 #endif
 
-  bool res = LinuxSandbox::InitializeSandbox(std::move(sandbox_options));
+  bool res = LinuxSandbox::InitializeSandbox(
+      GetGpuProcessPreSandboxHook(sandbox_options.use_amd_specific_policies),
+      sandbox_options);
 
   if (watchdog_thread) {
     base::Thread::Options thread_options;
