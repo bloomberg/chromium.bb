@@ -719,17 +719,9 @@ using NoTabletModePowerButtonControllerTest = NoTabletModePowerButtonTestBase;
 TEST_F(NoTabletModePowerButtonControllerTest,
        HasAccelerometerUpdateButNoTabletModeSwitch) {
   InitPowerButtonControllerMembers(true /* send_accelerometer_update */);
-  ASSERT_TRUE(tablet_controller_);
   ASSERT_FALSE(base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kAshEnableTabletMode));
-
-  // Advance a long duration from initialized last resume time in
-  // |tablet_controller_| to avoid cross interference.
-  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(3000));
-
-  PressPowerButton();
-  ReleasePowerButton();
-  ASSERT_FALSE(power_manager_client_->backlights_forced_off());
+  EXPECT_FALSE(tablet_controller_);
 }
 
 }  // namespace ash
