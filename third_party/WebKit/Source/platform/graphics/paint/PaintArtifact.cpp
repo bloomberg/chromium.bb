@@ -79,19 +79,17 @@ size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
          paint_chunks_.capacity() * sizeof(paint_chunks_[0]);
 }
 
-void PaintArtifact::Replay(const FloatRect& bounds,
-                           GraphicsContext& graphics_context) const {
+void PaintArtifact::Replay(GraphicsContext& graphics_context) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
   if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
     for (const DisplayItem& display_item : display_item_list_)
       display_item.Replay(graphics_context);
   } else {
-    Replay(bounds, *graphics_context.Canvas());
+    Replay(*graphics_context.Canvas());
   }
 }
 
-void PaintArtifact::Replay(const FloatRect& bounds,
-                           PaintCanvas& canvas,
+void PaintArtifact::Replay(PaintCanvas& canvas,
                            const PropertyTreeState& replay_state) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV175Enabled());

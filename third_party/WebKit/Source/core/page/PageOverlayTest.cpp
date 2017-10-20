@@ -146,7 +146,7 @@ TEST_F(PageOverlayTest, PageOverlay_AcceleratedCompositing) {
   PaintController& paint_controller = graphics_layer->GetPaintController();
   GraphicsContext graphics_context(paint_controller);
   graphics_context.BeginRecording(int_rect);
-  paint_controller.GetPaintArtifact().Replay(int_rect, graphics_context);
+  paint_controller.GetPaintArtifact().Replay(graphics_context);
   graphics_context.EndRecording()->Playback(&canvas);
 }
 

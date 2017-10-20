@@ -453,7 +453,7 @@ Response InspectorLayerTreeAgent::makeSnapshot(const String& layer_id,
 
   GraphicsContext context(layer->GetPaintController());
   context.BeginRecording(interest_rect);
-  layer->GetPaintController().GetPaintArtifact().Replay(interest_rect, context);
+  layer->GetPaintController().GetPaintArtifact().Replay(context);
   RefPtr<PictureSnapshot> snapshot = WTF::AdoptRef(
       new PictureSnapshot(ToSkPicture(context.EndRecording(), interest_rect)));
 
