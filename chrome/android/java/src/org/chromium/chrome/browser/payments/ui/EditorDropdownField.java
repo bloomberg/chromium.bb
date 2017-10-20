@@ -18,7 +18,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.browser.preferences.autofill.AutofillProfileBridge.DropdownKeyValue;
 import org.chromium.ui.UiUtils;
 
@@ -37,7 +36,7 @@ class EditorDropdownField implements EditorFieldView {
     private final Spinner mDropdown;
     private int mSelectedIndex;
     @Nullable
-    private PaymentRequestObserverForTest mObserverForTest;
+    private EditorObserverForTest mObserverForTest;
 
     /**
      * Builds a dropdown view.
@@ -49,7 +48,7 @@ class EditorDropdownField implements EditorFieldView {
      *                        processed.
      */
     public EditorDropdownField(Context context, ViewGroup root, final EditorFieldModel fieldModel,
-            final Runnable changedCallback, @Nullable PaymentRequestObserverForTest observer) {
+            final Runnable changedCallback, @Nullable EditorObserverForTest observer) {
         assert fieldModel.getInputTypeHint() == EditorFieldModel.INPUT_TYPE_HINT_DROPDOWN;
         mFieldModel = fieldModel;
         mObserverForTest = observer;
@@ -104,7 +103,7 @@ class EditorDropdownField implements EditorFieldView {
                             changedCallback);
                 }
                 if (mObserverForTest != null) {
-                    mObserverForTest.onPaymentRequestEditorTextUpdate();
+                    mObserverForTest.onEditorTextUpdate();
                 }
             }
 

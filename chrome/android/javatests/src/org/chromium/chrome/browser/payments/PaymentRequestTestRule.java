@@ -455,16 +455,16 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mTestCommon.onPaymentRequestReadyForInput(ui);
     }
 
-    public void onPaymentRequestReadyToEdit() {
-        mTestCommon.onPaymentRequestReadyToEdit();
+    public void onEditorReadyToEdit() {
+        mTestCommon.onEditorReadyToEdit();
     }
 
-    public void onPaymentRequestEditorValidationError() {
-        mTestCommon.onPaymentRequestEditorValidationError();
+    public void onEditorValidationError() {
+        mTestCommon.onEditorValidationError();
     }
 
-    public void onPaymentRequestEditorTextUpdate() {
-        mTestCommon.onPaymentRequestEditorTextUpdate();
+    public void onEditorTextUpdate() {
+        mTestCommon.onEditorTextUpdate();
     }
 
     public void onPaymentRequestReadyToPay(PaymentRequestUI ui) {
@@ -479,8 +479,8 @@ public class PaymentRequestTestRule extends ChromeActivityTestRule<ChromeTabbedA
         mTestCommon.onPaymentRequestResultReady(ui);
     }
 
-    public void onPaymentRequestDismiss() {
-        mTestCommon.onPaymentRequestDismiss();
+    public void onEditorDismiss() {
+        mTestCommon.onEditorDismiss();
     }
 
     public void onPaymentRequestServiceUnableToAbort() {

@@ -45,6 +45,8 @@ public class AddressEditor
     private EditorFieldModel mCountryField;
     @Nullable
     private EditorFieldModel mPhoneField;
+    @Nullable
+    private EditorFieldModel mEmailField;
     private PhoneNumberUtil.CountryAwareFormatTextWatcher mPhoneFormatter;
     private CountryAwarePhoneNumberValidator mPhoneValidator;
     @Nullable
@@ -55,11 +57,18 @@ public class AddressEditor
     private AutofillProfile mProfile;
     private EditorModel mEditor;
     private ProgressDialog mProgressDialog;
+    private boolean mEmailFieldIncluded;
 
-    /** Builds an address editor. */
-    public AddressEditor() {
+    /**
+     * Builds an address editor.
+     *
+     * @param emailFieldIncluded True if the address editor has an email field. The autofill form
+     * has an email address, and the payment request doesn't.
+     */
+    public AddressEditor(boolean emailFieldIncluded) {
         mPhoneFormatter = new PhoneNumberUtil.CountryAwareFormatTextWatcher();
         mPhoneValidator = new CountryAwarePhoneNumberValidator();
+        mEmailFieldIncluded = emailFieldIncluded;
     }
 
     /**
@@ -187,6 +196,20 @@ public class AddressEditor
         // that's being edited.
         mPhoneField.setValue(mProfile.getPhoneNumber());
 
+        // Email address is present and required if the mEmailFieldIncluded is true.
+        if (mEmailFieldIncluded) {
+            if (mEmailField == null) {
+                mEmailField = EditorFieldModel.createTextInput(
+                        EditorFieldModel.INPUT_TYPE_HINT_EMAIL,
+                        mContext.getString(R.string.autofill_profile_editor_email_address), null,
+                        null, null, null, null,
+                        mContext.getString(R.string.payments_email_invalid_validation_message),
+                        null);
+            }
+            // Retrieve and set the email address field.
+            mEmailField.setValue(mProfile.getEmailAddress());
+        }
+
         // If the user clicks [Cancel], send |toEdit| address back to the caller, which was the
         // original state (could be null, a complete address, a partial address).
         mEditor.setCancelCallback(() -> {
@@ -207,7 +230,7 @@ public class AddressEditor
             callback.onResult(address);
         });
 
-        loadAdminAreasForCountry(mProfile.getCountryCode());
+        loadAdminAreasForCountry(mCountryField.getValue().toString());
     }
 
     private void showProgressDialog() {
@@ -229,6 +252,9 @@ public class AddressEditor
         // editor model.
         profile.setCountryCode(mCountryField.getValue().toString());
         profile.setPhoneNumber(mPhoneField.getValue().toString());
+        if (mEmailFieldIncluded) {
+            profile.setEmailAddress(mEmailField.getValue().toString());
+        }
 
         // Autofill profile bridge normalizes the language code for the autofill profile.
         profile.setLanguageCode(mAutofillProfileBridge.getCurrentBestLanguageCode());
@@ -336,8 +362,8 @@ public class AddressEditor
         } else {
             // This should be called when all required fields are put in mAddressField.
             setAddressFieldValuesFromCache();
-            addAddressFieldsToEditor(mProfile.getCountryCode(), mProfile.getLanguageCode(),
-                    adminAreaCodes, adminAreaNames);
+            addAddressFieldsToEditor(mCountryField.getValue().toString(),
+                    mProfile.getLanguageCode(), adminAreaCodes, adminAreaNames);
             mEditorDialog.show(mEditor);
         }
     }
@@ -404,8 +430,11 @@ public class AddressEditor
             }
             mEditor.addField(field);
         }
-        // Phone number must be the last field.
+        // Phone number (and email if applicable) are the last fields of the address.
         mEditor.addField(mPhoneField);
+        if (mEmailFieldIncluded) {
+            mEditor.addField(mEmailField);
+        }
     }
 
     /** Country based phone number validator. */
