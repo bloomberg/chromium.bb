@@ -104,7 +104,8 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
           viz::ContextProvider* context_provider,
           gfx::GpuMemoryBuffer* gpu_memory_buffer,
           unsigned texture_target,
-          unsigned query_type);
+          unsigned query_type,
+          base::TimeDelta wait_for_release_time);
   ~Texture() override;
 
   // Overridden from ui::ContextFactoryObserver:
@@ -157,6 +158,7 @@ class Buffer::Texture : public ui::ContextFactoryObserver {
   unsigned texture_id_ = 0;
   gpu::Mailbox mailbox_;
   base::Closure release_callback_;
+  const base::TimeDelta wait_for_release_delay_;
   base::TimeTicks wait_for_release_time_;
   bool wait_for_release_pending_ = false;
   base::WeakPtrFactory<Texture> weak_ptr_factory_;
@@ -185,13 +187,15 @@ Buffer::Texture::Texture(ui::ContextFactory* context_factory,
                          viz::ContextProvider* context_provider,
                          gfx::GpuMemoryBuffer* gpu_memory_buffer,
                          unsigned texture_target,
-                         unsigned query_type)
+                         unsigned query_type,
+                         base::TimeDelta wait_for_release_delay)
     : gpu_memory_buffer_(gpu_memory_buffer),
       context_factory_(context_factory),
       context_provider_(context_provider),
       texture_target_(texture_target),
       query_type_(query_type),
       internalformat_(GLInternalFormat(gpu_memory_buffer->GetFormat())),
+      wait_for_release_delay_(wait_for_release_delay),
       weak_ptr_factory_(this) {
   gpu::gles2::GLES2Interface* gles2 = context_provider_->ContextGL();
   gfx::Size size = gpu_memory_buffer->GetSize();
@@ -333,10 +337,8 @@ void Buffer::Texture::ReleaseWhenQueryResultIsAvailable(
   DCHECK(context_provider_);
   DCHECK(release_callback_.is_null());
   release_callback_ = callback;
-  base::TimeDelta wait_for_release_delay =
-      base::TimeDelta::FromMilliseconds(kWaitForReleaseDelayMs);
-  wait_for_release_time_ = base::TimeTicks::Now() + wait_for_release_delay;
-  ScheduleWaitForRelease(wait_for_release_delay);
+  wait_for_release_time_ = base::TimeTicks::Now() + wait_for_release_delay_;
+  ScheduleWaitForRelease(wait_for_release_delay_);
   TRACE_EVENT_ASYNC_STEP_INTO0("exo", "BufferInUse", gpu_memory_buffer_,
                                "pending_query");
   context_provider_->ContextSupport()->SignalQuery(
@@ -393,11 +395,11 @@ void Buffer::Texture::WaitForRelease() {
 // Buffer, public:
 
 Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer)
-    : gpu_memory_buffer_(std::move(gpu_memory_buffer)),
-      texture_target_(GL_TEXTURE_2D),
-      query_type_(GL_COMMANDS_COMPLETED_CHROMIUM),
-      use_zero_copy_(true),
-      is_overlay_candidate_(false) {}
+    : Buffer(std::move(gpu_memory_buffer),
+             GL_TEXTURE_2D /* texture_target */,
+             GL_COMMANDS_COMPLETED_CHROMIUM /* query_type */,
+             true /* use_zero_copy */,
+             false /* is_overlay_candidate */) {}
 
 Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
                unsigned texture_target,
@@ -408,7 +410,9 @@ Buffer::Buffer(std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer,
       texture_target_(texture_target),
       query_type_(query_type),
       use_zero_copy_(use_zero_copy),
-      is_overlay_candidate_(is_overlay_candidate) {}
+      is_overlay_candidate_(is_overlay_candidate),
+      wait_for_release_delay_(
+          base::TimeDelta::FromMilliseconds(kWaitForReleaseDelayMs)) {}
 
 Buffer::~Buffer() {}
 
@@ -448,7 +452,7 @@ bool Buffer::ProduceTransferableResource(
   if (!contents_texture_) {
     contents_texture_ = std::make_unique<Texture>(
         context_factory, context_provider.get(), gpu_memory_buffer_.get(),
-        texture_target_, query_type_);
+        texture_target_, query_type_, wait_for_release_delay_);
   }
   Texture* contents_texture = contents_texture_.get();
 

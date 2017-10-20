@@ -37,6 +37,10 @@ TEST_F(BufferTest, ReleaseCallback) {
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
 
+  // This is needed to ensure that RunAllPendingInMessageLoop() call below
+  // is always sufficient for buffer to be released.
+  buffer->set_wait_for_release_delay_for_testing(base::TimeDelta());
+
   // Set the release callback.
   int release_call_count = 0;
   buffer->set_release_callback(
@@ -151,6 +155,10 @@ TEST_F(BufferTest, SurfaceTreeHostDestruction) {
       std::make_unique<SurfaceTreeHost>("BufferTest", nullptr);
   LayerTreeFrameSinkHolder* frame_sink_holder =
       surface_tree_host->layer_tree_frame_sink_holder();
+
+  // This is needed to ensure that RunAllPendingInMessageLoop() call below
+  // is always sufficient for buffer to be released.
+  buffer->set_wait_for_release_delay_for_testing(base::TimeDelta());
 
   // Set the release callback.
   int release_call_count = 0;

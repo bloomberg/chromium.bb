@@ -72,6 +72,12 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // Returns a trace value representing the state of the buffer.
   std::unique_ptr<base::trace_event::TracedValue> AsTracedValue() const;
 
+  // Set the amount of time to wait for buffer release.
+  void set_wait_for_release_delay_for_testing(
+      base::TimeDelta wait_for_release_delay) {
+    wait_for_release_delay_ = wait_for_release_delay;
+  }
+
  private:
   class Texture;
 
@@ -125,6 +131,9 @@ class Buffer : public base::SupportsWeakPtr<Buffer> {
   // Cancelable release contents callback. This is set when a release callback
   // is pending.
   base::CancelableClosure release_contents_callback_;
+
+  // The amount of time to wait for buffer release.
+  base::TimeDelta wait_for_release_delay_;
 
   DISALLOW_COPY_AND_ASSIGN(Buffer);
 };
