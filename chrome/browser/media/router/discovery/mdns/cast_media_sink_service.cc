@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor.h"
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
@@ -211,11 +212,19 @@ void CastMediaSinkService::OnDnsSdEvent(
     cast_sinks_.push_back(cast_sink);
   }
 
-  task_runner_->PostTask(
+  // Add a random backoff between 0s to 5s before opening channels to prevent
+  // different browser instances connecting to the same receiver at the same
+  // time.
+  base::TimeDelta delay =
+      base::TimeDelta::FromMilliseconds(base::RandInt(0, 50) * 100);
+  DVLOG(2) << "Open channels in [" << delay.InSeconds() << "] seconds";
+
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CastMediaSinkServiceImpl::OpenChannels,
                      cast_media_sink_service_impl_->AsWeakPtr(), cast_sinks_,
-                     CastMediaSinkServiceImpl::SinkSource::kMdns));
+                     CastMediaSinkServiceImpl::SinkSource::kMdns),
+      delay);
 }
 
 void CastMediaSinkService::OnDialSinkAdded(const MediaSinkInternal& sink) {
