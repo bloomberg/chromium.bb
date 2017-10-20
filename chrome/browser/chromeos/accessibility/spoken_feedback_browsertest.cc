@@ -394,6 +394,9 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OpenStatusTray) {
   EXPECT_EQ("window", speech_monitor_.GetNextUtterance());
 }
 
+// Fails on ASAN. See http://crbug.com/776308 . (Note MAYBE_ doesn't work well
+// with parameterized tests).
+#if !defined(ADDRESS_SANITIZER)
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
   EnableChromeVox();
 
@@ -452,6 +455,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, NavigateSystemTray) {
       break;
   }
 }
+#endif  // !defined(ADDRESS_SANITIZER)
 
 // See http://crbug.com/443608
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ScreenBrightness) {
