@@ -1604,6 +1604,7 @@ crbug.com/694525 external/wpt/content-security-policy/object-src [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/reporting [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/script-src/script-src-1_10.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/script-src/script-src-strict_dynamic_in_img-src.html [ Skip ]
+crbug.com/694525 external/wpt/content-security-policy/unsafe-eval/eval-blocked-in-about-blank-iframe.sub.html [ Skip ]
 
 # These wpt/mixed-content tests consistently time out.
 crbug.com/626703 external/wpt/mixed-content/blockable/http-csp/cross-origin-http/form-tag/top-level/keep-scheme-redirect/opt-in-blocks.https.html [ Timeout ]
