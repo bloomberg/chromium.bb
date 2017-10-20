@@ -62,6 +62,12 @@ enum PasswordGenerationEvent {
   // new-password are set.
   AUTOCOMPLETE_ATTRIBUTES_ENABLED_GENERATION,
 
+  // Generation is triggered by the user from the context menu.
+  PASSWORD_GENERATION_CONTEXT_MENU_PRESSED,
+
+  // Context menu with generation item was shown.
+  PASSWORD_GENERATION_CONTEXT_MENU_SHOWN,
+
   // Number of enum entries, used for UMA histogram reporting macros.
   EVENT_ENUM_COUNT
 };

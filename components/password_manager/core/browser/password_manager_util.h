@@ -17,6 +17,10 @@ struct PasswordForm;
 class AutofillClient;
 }
 
+namespace password_manager {
+class PasswordManagerClient;
+}
+
 namespace syncer {
 class SyncService;
 }
@@ -67,6 +71,10 @@ bool ShowAllSavedPasswordsContextMenuEnabled();
 // Opens Password Manager setting page and records the metrics.
 void UserTriggeredShowAllSavedPasswordsFromContextMenu(
     autofill::AutofillClient* autofill_client);
+
+// Triggers password generation flow and records the metrics.
+void UserTriggeredManualGenerationFromContextMenu(
+    password_manager::PasswordManagerClient* password_manager_client);
 
 }  // namespace password_manager_util
 
