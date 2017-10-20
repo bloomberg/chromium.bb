@@ -176,7 +176,7 @@ if (pdf_enable_xfa) {
     deps = [
       "//third_party/pdfium/testing/libfuzzer:pdf_fm2js_fuzzer",
     ]
-    dict = "dicts/pdf_fm2js.dict"
+    dict = "dicts/pdf_formcalc.dict"
   }
 
   fuzzer_test("pdf_formcalc_fuzzer") {
