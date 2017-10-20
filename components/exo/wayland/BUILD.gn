@@ -291,6 +291,7 @@ if (ozone_platform_gbm) {
     deps = [
       ":client_support",
       "//base",
+      "//build/config:exe_and_shlib_deps",
       "//skia",
       "//third_party/wayland:wayland_client",
       "//third_party/wayland-protocols:linux_dmabuf_protocol",
