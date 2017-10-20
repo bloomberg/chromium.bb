@@ -50,6 +50,7 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_util.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
 
 namespace content {
@@ -440,7 +441,7 @@ void PageHandler::CaptureScreenshot(
     widget_host->GetSnapshotFromBrowser(
         base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
                    base::Passed(std::move(callback)), screenshot_format,
-                   screenshot_quality, gfx::Size(),
+                   screenshot_quality, gfx::Size(), gfx::Size(),
                    blink::WebDeviceEmulationParams()),
         false);
     return;
@@ -462,9 +463,9 @@ void PageHandler::CaptureScreenshot(
   gfx::Size emulated_view_size = modified_params.view_size;
 
   double dpfactor = 1;
+  ScreenInfo screen_info;
+  widget_host->GetScreenInfo(&screen_info);
   if (emulation_enabled) {
-    ScreenInfo screen_info;
-    widget_host->GetScreenInfo(&screen_info);
     // When emulating, emulate again and scale to make resulting image match
     // physical DP resolution. If view_size is not overriden, use actual view
     // size.
@@ -518,11 +519,26 @@ void PageHandler::CaptureScreenshot(
     widget_host->GetView()->SetSize(
         gfx::ScaleToFlooredSize(emulated_view_size, dpfactor));
   }
+  gfx::Size requested_image_size = gfx::Size();
+  if (emulation_enabled || clip.isJust()) {
+    if (clip.isJust()) {
+      requested_image_size =
+          gfx::Size(clip.fromJust()->GetWidth(), clip.fromJust()->GetHeight());
+    } else {
+      requested_image_size = emulated_view_size;
+    }
+    double scale = emulation_enabled ? original_params.device_scale_factor
+                                     : screen_info.device_scale_factor;
+    if (clip.isJust())
+      scale *= clip.fromJust()->GetScale();
+    requested_image_size = gfx::ScaleToRoundedSize(requested_image_size, scale);
+  }
 
   widget_host->GetSnapshotFromBrowser(
       base::Bind(&PageHandler::ScreenshotCaptured, weak_factory_.GetWeakPtr(),
                  base::Passed(std::move(callback)), screenshot_format,
-                 screenshot_quality, original_view_size, original_params),
+                 screenshot_quality, original_view_size, requested_image_size,
+                 original_params),
       true);
 }
 
@@ -812,6 +828,7 @@ void PageHandler::ScreenshotCaptured(
     const std::string& format,
     int quality,
     const gfx::Size& original_view_size,
+    const gfx::Size& requested_image_size,
     const blink::WebDeviceEmulationParams& original_emulation_params,
     const gfx::Image& image) {
   if (original_view_size.width()) {
@@ -825,7 +842,18 @@ void PageHandler::ScreenshotCaptured(
     return;
   }
 
-  callback->sendSuccess(EncodeImage(image, format, quality));
+  if (!requested_image_size.IsEmpty() &&
+      (image.Width() != requested_image_size.width() ||
+       image.Height() != requested_image_size.height())) {
+    const SkBitmap* bitmap = image.ToSkBitmap();
+    SkBitmap cropped = SkBitmapOperations::CreateTiledBitmap(
+        *bitmap, 0, 0, requested_image_size.width(),
+        requested_image_size.height());
+    gfx::Image croppedImage = gfx::Image::CreateFrom1xBitmap(cropped);
+    callback->sendSuccess(EncodeImage(croppedImage, format, quality));
+  } else {
+    callback->sendSuccess(EncodeImage(image, format, quality));
+  }
 }
 
 Response PageHandler::StopLoading() {

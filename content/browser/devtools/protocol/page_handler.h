@@ -150,6 +150,7 @@ class PageHandler : public DevToolsDomainHandler,
       const std::string& format,
       int quality,
       const gfx::Size& original_view_size,
+      const gfx::Size& requested_image_size,
       const blink::WebDeviceEmulationParams& original_params,
       const gfx::Image& image);
 
