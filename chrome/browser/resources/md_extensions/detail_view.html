@@ -242,22 +242,24 @@
           <div class="section-title">$i18n{itemIdHeading}</div>
           <div class="section-content">[[data.id]]</div>
         </div>
-        <div class="section block" id="inspectable-views"
-            hidden$="[[!inDevMode]]">
-          <div class="section-title">$i18n{itemInspectViews}</div>
-          <div class="section-content">
-            <ul id="inspect-views">
-              <template is="dom-repeat" items="[[data.views]]">
-                <li>
-                  <a is="action-link" class="inspectable-view"
-                      on-tap="onInspectTap_">
-                    [[computeInspectLabel_(item)]]
-                  </a>
-                </li>
-              </template>
-            </ul>
+        <template is="dom-if" if="[[inDevMode]]">
+          <div class="section block" id="inspectable-views"
+              hidden="[[!data.views.length]]">
+            <div class="section-title">$i18n{itemInspectViews}</div>
+            <div class="section-content">
+              <ul id="inspect-views">
+                <template is="dom-repeat" items="[[data.views]]">
+                  <li>
+                    <a is="action-link" class="inspectable-view"
+                        on-tap="onInspectTap_">
+                      [[computeInspectLabel_(item)]]
+                    </a>
+                  </li>
+                </template>
+              </ul>
+            </div>
           </div>
-        </div>
+        </template>
         <div class="section block">
           <div class="section-title">$i18n{itemPermissions}</div>
           <div class="section-content">
