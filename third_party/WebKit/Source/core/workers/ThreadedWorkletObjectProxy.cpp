@@ -26,7 +26,7 @@ void ThreadedWorkletObjectProxy::FetchAndInvokeScript(
     const KURL& module_url_record,
     WorkletModuleResponsesMap* module_responses_map,
     WebURLRequest::FetchCredentialsMode credentials_mode,
-    RefPtr<WebTaskRunner> outside_settings_task_runner,
+    scoped_refptr<WebTaskRunner> outside_settings_task_runner,
     WorkletPendingTasks* pending_tasks,
     WorkerThread* worker_thread) {
   ThreadedWorkletGlobalScope* global_scope =

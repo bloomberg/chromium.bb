@@ -62,10 +62,10 @@ class CORE_EXPORT DedicatedWorkerObjectProxy : public ThreadedObjectProxyBase {
       ParentFrameTaskRunners*);
   ~DedicatedWorkerObjectProxy() override;
 
-  void PostMessageToWorkerObject(RefPtr<SerializedScriptValue>,
+  void PostMessageToWorkerObject(scoped_refptr<SerializedScriptValue>,
                                  Vector<MessagePortChannel>);
   void ProcessUnhandledException(int exception_id, WorkerThread*);
-  void ProcessMessageFromWorkerObject(RefPtr<SerializedScriptValue>,
+  void ProcessMessageFromWorkerObject(scoped_refptr<SerializedScriptValue>,
                                       Vector<MessagePortChannel>,
                                       WorkerThread*);
 

@@ -79,7 +79,7 @@ struct CORE_EXPORT GlobalScopeCreationParams final {
   // For Worklets, the origin is used for fetching module scripts. Worklet
   // scripts need to be fetched as sub-resources of the Document, and a module
   // script loader uses Document's SecurityOrigin for security checks.
-  RefPtr<SecurityOrigin> starter_origin;
+  scoped_refptr<SecurityOrigin> starter_origin;
 
   // This object is created and initialized on the thread creating
   // a new worker context, but ownership of it and this

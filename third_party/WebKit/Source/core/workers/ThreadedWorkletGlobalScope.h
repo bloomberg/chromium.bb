@@ -26,12 +26,13 @@ class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
   WorkerThread* GetThread() const { return thread_; }
 
  protected:
-  ThreadedWorkletGlobalScope(const KURL&,
-                             const String& user_agent,
-                             RefPtr<SecurityOrigin> document_security_origin,
-                             v8::Isolate*,
-                             WorkerThread*,
-                             WorkerClients*);
+  ThreadedWorkletGlobalScope(
+      const KURL&,
+      const String& user_agent,
+      scoped_refptr<SecurityOrigin> document_security_origin,
+      v8::Isolate*,
+      WorkerThread*,
+      WorkerClients*);
 
  private:
   friend class ThreadedWorkletThreadForTest;

@@ -69,7 +69,7 @@ class DedicatedWorkerThreadForTest final : public DedicatedWorkerThread {
 
   void TestTaskRunner() {
     EXPECT_TRUE(IsCurrentThread());
-    RefPtr<WebTaskRunner> task_runner =
+    scoped_refptr<WebTaskRunner> task_runner =
         TaskRunnerHelper::Get(TaskType::kUnspecedTimer, GlobalScope());
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     GetParentFrameTaskRunners()
@@ -166,7 +166,7 @@ class DedicatedWorkerMessagingProxyForTest
 
   Member<MockWorkerThreadLifecycleObserver>
       mock_worker_thread_lifecycle_observer_;
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<SecurityOrigin> security_origin_;
 };
 
 class DedicatedWorkerTest : public ::testing::Test {

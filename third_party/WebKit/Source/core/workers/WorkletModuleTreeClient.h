@@ -17,9 +17,10 @@ class ModuleScript;
 // A ModuleTreeClient that lives on the worklet context's thread.
 class WorkletModuleTreeClient final : public ModuleTreeClient {
  public:
-  WorkletModuleTreeClient(Modulator*,
-                          RefPtr<WebTaskRunner> outside_settings_task_runner,
-                          WorkletPendingTasks*);
+  WorkletModuleTreeClient(
+      Modulator*,
+      scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+      WorkletPendingTasks*);
 
   // Implements ModuleTreeClient.
   void NotifyModuleTreeLoadFinished(ModuleScript*) final;
@@ -28,7 +29,7 @@ class WorkletModuleTreeClient final : public ModuleTreeClient {
 
  private:
   Member<Modulator> modulator_;
-  RefPtr<WebTaskRunner> outside_settings_task_runner_;
+  scoped_refptr<WebTaskRunner> outside_settings_task_runner_;
   CrossThreadPersistent<WorkletPendingTasks> pending_tasks_;
 };
 

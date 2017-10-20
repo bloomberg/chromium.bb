@@ -275,7 +275,7 @@ WorkerGlobalScope::LoadingScriptFromWorkerScriptLoader(
     String* out_source_code,
     std::unique_ptr<Vector<char>>* out_cached_meta_data) {
   ExecutionContext* execution_context = GetExecutionContext();
-  RefPtr<WorkerScriptLoader> script_loader(WorkerScriptLoader::Create());
+  scoped_refptr<WorkerScriptLoader> script_loader(WorkerScriptLoader::Create());
   script_loader->LoadSynchronously(
       *execution_context, script_url, WebURLRequest::kRequestContextScript,
       execution_context->GetSecurityContext().AddressSpace());

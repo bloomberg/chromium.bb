@@ -26,7 +26,7 @@ class ClientAdapter final : public GarbageCollectedFinalized<ClientAdapter>,
  public:
   static ClientAdapter* Create(
       WorkletModuleResponsesMap::Client* client,
-      RefPtr<WebTaskRunner> inside_settings_task_runner) {
+      scoped_refptr<WebTaskRunner> inside_settings_task_runner) {
     return new ClientAdapter(client, std::move(inside_settings_task_runner));
   }
 
@@ -51,20 +51,20 @@ class ClientAdapter final : public GarbageCollectedFinalized<ClientAdapter>,
 
  private:
   ClientAdapter(WorkletModuleResponsesMap::Client* client,
-                RefPtr<WebTaskRunner> inside_settings_task_runner)
+                scoped_refptr<WebTaskRunner> inside_settings_task_runner)
       : client_(client),
         inside_settings_task_runner_(std::move(inside_settings_task_runner)) {}
 
   CrossThreadPersistent<WorkletModuleResponsesMap::Client> client_;
-  RefPtr<WebTaskRunner> inside_settings_task_runner_;
+  scoped_refptr<WebTaskRunner> inside_settings_task_runner_;
 };
 
 }  // namespace
 
 WorkletModuleResponsesMapProxy* WorkletModuleResponsesMapProxy::Create(
     WorkletModuleResponsesMap* module_responses_map,
-    RefPtr<WebTaskRunner> outside_settings_task_runner,
-    RefPtr<WebTaskRunner> inside_settings_task_runner) {
+    scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+    scoped_refptr<WebTaskRunner> inside_settings_task_runner) {
   return new WorkletModuleResponsesMapProxy(
       module_responses_map, std::move(outside_settings_task_runner),
       std::move(inside_settings_task_runner));
@@ -85,8 +85,8 @@ void WorkletModuleResponsesMapProxy::Trace(blink::Visitor* visitor) {}
 
 WorkletModuleResponsesMapProxy::WorkletModuleResponsesMapProxy(
     WorkletModuleResponsesMap* module_responses_map,
-    RefPtr<WebTaskRunner> outside_settings_task_runner,
-    RefPtr<WebTaskRunner> inside_settings_task_runner)
+    scoped_refptr<WebTaskRunner> outside_settings_task_runner,
+    scoped_refptr<WebTaskRunner> inside_settings_task_runner)
     : module_responses_map_(module_responses_map),
       outside_settings_task_runner_(outside_settings_task_runner),
       inside_settings_task_runner_(inside_settings_task_runner) {

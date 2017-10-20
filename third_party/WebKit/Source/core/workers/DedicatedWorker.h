@@ -45,7 +45,7 @@ class CORE_EXPORT DedicatedWorker final
   ~DedicatedWorker() override;
 
   void postMessage(ScriptState*,
-                   RefPtr<SerializedScriptValue> message,
+                   scoped_refptr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
   static bool CanTransferArrayBuffersAndImageBitmaps() { return true; }
@@ -84,7 +84,7 @@ class CORE_EXPORT DedicatedWorker final
   const KURL script_url_;
   const Member<DedicatedWorkerMessagingProxy> context_proxy_;
 
-  RefPtr<WorkerScriptLoader> script_loader_;
+  scoped_refptr<WorkerScriptLoader> script_loader_;
 };
 
 }  // namespace blink
