@@ -2093,7 +2093,7 @@ test("base_unittests") {
     "message_loop/message_loop_unittest.cc",
     "message_loop/message_pump_glib_unittest.cc",
     "message_loop/message_pump_io_ios_unittest.cc",
-    "message_loop/message_pump_mac_unittest.cc",
+    "message_loop/message_pump_mac_unittest.mm",
     "metrics/bucket_ranges_unittest.cc",
     "metrics/field_trial_params_unittest.cc",
     "metrics/field_trial_unittest.cc",

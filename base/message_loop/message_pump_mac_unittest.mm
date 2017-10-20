@@ -5,10 +5,23 @@
 #include "base/message_loop/message_pump_mac.h"
 
 #include "base/mac/scoped_cftyperef.h"
+#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+@interface TestModalAlertCloser : NSObject
+- (void)runTestThenCloseAlert:(NSAlert*)alert;
+@end
+
+namespace {
+
+// Internal constants from message_pump_mac.mm.
+constexpr int kAllModesMask = 0xf;
+constexpr int kNSApplicationModalSafeModeMask = 0x3;
+
+}  // namespace
 
 namespace base {
 
@@ -170,4 +183,42 @@ TEST(MessagePumpMacTest, ScopedPumpMessagesInPrivateModes) {
   EXPECT_NO_FATAL_FAILURE(RunLoop().RunUntilIdle());
 }
 
+// Tests that private message loop modes are not pumped while a modal dialog is
+// present.
+TEST(MessagePumpMacTest, ScopedPumpMessagesAttemptWithModalDialog) {
+  MessageLoopForUI message_loop;
+
+  {
+    base::ScopedPumpMessagesInPrivateModes allow_private;
+    // No modal window, so all modes should be pumped.
+    EXPECT_EQ(kAllModesMask, allow_private.GetModeMaskForTest());
+  }
+
+  base::scoped_nsobject<NSAlert> alert([[NSAlert alloc] init]);
+  [alert addButtonWithTitle:@"OK"];
+  base::scoped_nsobject<TestModalAlertCloser> closer(
+      [[TestModalAlertCloser alloc] init]);
+  [closer performSelector:@selector(runTestThenCloseAlert:)
+               withObject:alert
+               afterDelay:0
+                  inModes:@[ NSModalPanelRunLoopMode ]];
+  NSInteger result = [alert runModal];
+  EXPECT_EQ(NSAlertFirstButtonReturn, result);
+}
+
 }  // namespace base
+
+@implementation TestModalAlertCloser
+
+- (void)runTestThenCloseAlert:(NSAlert*)alert {
+  EXPECT_TRUE([NSApp modalWindow]);
+  {
+    base::ScopedPumpMessagesInPrivateModes allow_private;
+    // With a modal window, only safe modes should be pumped.
+    EXPECT_EQ(kNSApplicationModalSafeModeMask,
+              allow_private.GetModeMaskForTest());
+  }
+  [[alert buttons][0] performClick:nil];
+}
+
+@end
