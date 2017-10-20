@@ -311,6 +311,8 @@ public class SelectableListToolbar<E> extends Toolbar implements SelectionObserv
 
     @Override
     public void onClick(View view) {
+        if (mIsDestroyed) return;
+
         switch (mNavigationButton) {
             case NAVIGATION_BUTTON_NONE:
                 break;
