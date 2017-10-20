@@ -310,7 +310,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   // Navigate to a Gaia URL setting the Google-Accounts-SignOut header.
   void SignOutWithDice(SignoutType signout_type) {
     NavigateToURL(base::StringPrintf("%s?%i", kSignoutURL, signout_type));
-    if (signin::IsAccountConsistencyDiceEnabled()) {
+    if (signin::IsDiceMigrationEnabled()) {
       EXPECT_EQ(1, reconcilor_blocked_count_);
       WaitForReconcilorUnblockedCount(1);
     } else {
@@ -337,6 +337,9 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     switch (account_consistency_method_) {
       case signin::AccountConsistencyMethod::kDiceFixAuthErrors:
         dice_method_name = "dice_fix_auth_errors";
+        break;
+      case signin::AccountConsistencyMethod::kDiceMigration:
+        dice_method_name = "dice_migration";
         break;
       case signin::AccountConsistencyMethod::kDice:
         dice_method_name = "dice";
@@ -410,7 +413,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   // FakeGaia callbacks:
   void OnSigninRequest(const std::string& dice_request_header) {
-    EXPECT_EQ(signin::IsAccountConsistencyDiceEnabled(), IsReconcilorBlocked());
+    EXPECT_EQ(signin::IsDiceMigrationEnabled(), IsReconcilorBlocked());
     dice_request_header_ = dice_request_header;
   }
 
@@ -422,7 +425,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
   void OnTokenExchangeRequest() {
     // The token must be exchanged only once.
     EXPECT_FALSE(token_requested_);
-    EXPECT_EQ(signin::IsAccountConsistencyDiceEnabled(), IsReconcilorBlocked());
+    EXPECT_EQ(signin::IsDiceMigrationEnabled(), IsReconcilorBlocked());
     token_requested_ = true;
     RunClosureIfValid(&token_requested_quit_closure_);
   }

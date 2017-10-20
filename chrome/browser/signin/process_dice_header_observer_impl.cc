@@ -20,7 +20,7 @@ ProcessDiceHeaderObserverImpl::ProcessDiceHeaderObserverImpl(
 void ProcessDiceHeaderObserverImpl::WillStartRefreshTokenFetch(
     const std::string& gaia_id,
     const std::string& email) {
-  if (!signin::IsAccountConsistencyDiceEnabled())
+  if (!signin::IsDiceMigrationEnabled())
     return;
   if (!web_contents())
     return;
@@ -33,7 +33,7 @@ void ProcessDiceHeaderObserverImpl::WillStartRefreshTokenFetch(
 void ProcessDiceHeaderObserverImpl::DidFinishRefreshTokenFetch(
     const std::string& gaia_id,
     const std::string& email) {
-  if (!signin::IsAccountConsistencyDiceEnabled())
+  if (!signin::IsDiceMigrationEnabled())
     return;
   content::WebContents* web_contents = this->web_contents();
   if (!web_contents || !should_start_sync_) {

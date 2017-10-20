@@ -16,7 +16,7 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethodMirror) {
   // Mirror is enabled by default on some platforms.
   EXPECT_EQ(AccountConsistencyMethod::kMirror, GetAccountConsistencyMethod());
   EXPECT_TRUE(IsAccountConsistencyMirrorEnabled());
-  EXPECT_FALSE(IsAccountConsistencyDiceEnabled());
+  EXPECT_FALSE(IsDiceMigrationEnabled());
   EXPECT_FALSE(IsDiceFixAuthErrorsEnabled());
 }
 #else
@@ -24,7 +24,7 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
   // By default account consistency is disabled.
   EXPECT_EQ(AccountConsistencyMethod::kDisabled, GetAccountConsistencyMethod());
   EXPECT_FALSE(IsAccountConsistencyMirrorEnabled());
-  EXPECT_FALSE(IsAccountConsistencyDiceEnabled());
+  EXPECT_FALSE(IsDiceMigrationEnabled());
   EXPECT_FALSE(IsDiceFixAuthErrorsEnabled());
 
   // Check that feature flags work.
@@ -32,13 +32,14 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
     AccountConsistencyMethod method;
     bool expect_mirror_enabled;
     bool expect_dice_fix_auth_errors;
-    bool expect_dice_enabled;
+    bool expect_dice_migration;
   };
 
   TestCase test_cases[] = {
     {AccountConsistencyMethod::kDisabled, false, false, false},
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
     {AccountConsistencyMethod::kDiceFixAuthErrors, false, true, false},
+    {AccountConsistencyMethod::kDiceMigration, false, true, true},
     {AccountConsistencyMethod::kDice, false, true, true},
 #endif
     {AccountConsistencyMethod::kMirror, true, false, false}
@@ -51,7 +52,7 @@ TEST(ProfileManagementSwitchesTest, GetAccountConsistencyMethod) {
               IsAccountConsistencyMirrorEnabled());
     EXPECT_EQ(test_case.expect_dice_fix_auth_errors,
               IsDiceFixAuthErrorsEnabled());
-    EXPECT_EQ(test_case.expect_dice_enabled, IsAccountConsistencyDiceEnabled());
+    EXPECT_EQ(test_case.expect_dice_migration, IsDiceMigrationEnabled());
   }
 }
 #endif  // BUILDFLAG(ENABLE_MIRROR)

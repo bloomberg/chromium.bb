@@ -46,7 +46,7 @@ SignInInternalsUI::SignInInternalsUI(content::WebUI* web_ui)
     if (about_signin_internals)
       about_signin_internals->AddSigninObserver(this);
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
-    if (signin::IsAccountConsistencyDiceEnabled()) {
+    if (signin::IsDiceMigrationEnabled()) {
       web_ui->AddMessageHandler(
           base::MakeUnique<SigninDiceInternalsHandler>(profile));
     }
