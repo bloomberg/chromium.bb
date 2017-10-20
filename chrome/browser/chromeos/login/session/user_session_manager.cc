@@ -666,6 +666,9 @@ void UserSessionManager::SetAppModeChromeClientOAuthInfo(
 
 void UserSessionManager::DoBrowserLaunch(Profile* profile,
                                          LoginDisplayHost* login_host) {
+  session_manager::SessionManager::Get()->SetSessionState(
+      session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
+
   ui_shown_time_ = base::Time::Now();
   DoBrowserLaunchInternal(profile, login_host, false /* locale_pref_checked */);
 }
@@ -1264,13 +1267,6 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
   }
 
   profile->OnLogin();
-
-  // Skip LOGGED_IN_NOT_ACTIVE state for kiosk launching so that login dialog
-  // such as network config during launch is put on top of the login screen.
-  if (!user_manager->IsLoggedInAsKioskApp()) {
-    session_manager::SessionManager::Get()->SetSessionState(
-        session_manager::SessionState::LOGGED_IN_NOT_ACTIVE);
-  }
 
   // Send the notification before creating the browser so additional objects
   // that need the profile (e.g. the launcher) can be created first.
