@@ -18,6 +18,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/simple_test_tick_clock.h"
+#include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/app_manager.h"
 #include "chrome/browser/chromeos/lock_screen_apps/first_app_run_toast_manager.h"
@@ -105,6 +107,20 @@ scoped_refptr<extensions::Extension> CreateTestNoteTakingApp(
       .SetID(app_id)
       .Build();
 }
+
+class TestPowerManagerClient : public chromeos::FakePowerManagerClient {
+ public:
+  TestPowerManagerClient() = default;
+  ~TestPowerManagerClient() override = default;
+
+  void GetScreenBrightnessPercent(
+      const GetScreenBrightnessPercentCallback& callback) override {
+    callback.Run(80);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestPowerManagerClient);
+};
 
 class TestFocusCyclerDelegate : public lock_screen_apps::FocusCyclerDelegate {
  public:
@@ -396,12 +412,13 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     command_line_ = base::MakeUnique<base::test::ScopedCommandLine>();
     command_line_->GetProcessCommandLine()->InitFromArgv({""});
+    SetUpCommandLine(command_line_->GetProcessCommandLine());
 
     ASSERT_TRUE(profile_manager_.SetUp());
 
     SetUpStylusAvailability();
 
-    auto power_client = base::MakeUnique<chromeos::FakePowerManagerClient>();
+    auto power_client = base::MakeUnique<TestPowerManagerClient>();
     power_manager_client_ = power_client.get();
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
@@ -437,9 +454,15 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     focus_cycler_delegate_ = base::MakeUnique<TestFocusCyclerDelegate>();
 
+    auto tick_clock = std::make_unique<base::SimpleTestTickClock>();
+    // Advance the clock to have non-null value.
+    tick_clock->Advance(base::TimeDelta::FromMilliseconds(1));
+    tick_clock_ = tick_clock.get();
+
     state_controller_ = base::MakeUnique<lock_screen_apps::StateController>();
     state_controller_->SetTrayActionPtrForTesting(
         tray_action_.CreateInterfacePtrAndBind());
+    state_controller_->SetTickClockForTesting(std::move(tick_clock));
     state_controller_->SetAppManagerForTesting(std::move(app_manager));
     state_controller_->SetReadyCallbackForTesting(ready_waiter_.QuitClosure());
     state_controller_->Initialize();
@@ -489,6 +512,9 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   virtual void AddTestUser(const AccountId& account_id) {
     fake_user_manager()->AddUser(account_id);
   }
+
+  // Exposed so test fixtures can override default (empty) command line.
+  virtual void SetUpCommandLine(base::CommandLine* command_line) {}
 
   // Sets up input device manager so stylus input is present.
   // Virtual so test fixture can override initial stylus availability.
@@ -666,6 +692,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
     return focus_cycler_delegate_.get();
   }
 
+  base::SimpleTestTickClock* tick_clock() { return tick_clock_; }
+
  protected:
   // Should be set by tests that excercise the logic for the first lock screen
   // app run - i.e. logic for showing the first run toast dialog.
@@ -712,6 +740,8 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   std::unique_ptr<TestAppWindow> app_window_;
   scoped_refptr<const extensions::Extension> app_;
 
+  base::SimpleTestTickClock* tick_clock_;
+
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateTest);
 };
 
@@ -738,6 +768,20 @@ class LockScreenAppStateNoStylusInputTest : public LockScreenAppStateTest {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateNoStylusInputTest);
+};
+
+// Tests with show-md-login flag set.
+class LockScreenAppStateMdLoginTest : public LockScreenAppStateTest {
+ public:
+  LockScreenAppStateMdLoginTest() = default;
+  ~LockScreenAppStateMdLoginTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitch(ash::switches::kShowMdLogin);
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(LockScreenAppStateMdLoginTest);
 };
 
 }  // namespace
@@ -1151,6 +1195,34 @@ TEST_F(LockScreenAppStateTest, LaunchActionWhenStylusGetsRemoved) {
   ExpectObservedStatesMatch({TrayActionState::kLaunching},
                             "Launch on new note request");
   ClearObservedStates();
+  // The app should not be launched until the lock UI reports the animation as
+  // complete.
+  EXPECT_EQ(0, app_manager()->launch_count());
+  state_controller()->NewNoteLaunchAnimationDone();
+  EXPECT_EQ(1, app_manager()->launch_count());
+
+  // If the stylus is inserted and removed while launching the app, there should
+  // be no new launch event.
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::INSERTED);
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+  EXPECT_EQ(0u, observer()->observed_states().size());
+  EXPECT_EQ(0u, tray_action()->observed_states().size());
+  state_controller()->NewNoteLaunchAnimationDone();
+  EXPECT_EQ(1, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateMdLoginTest, LaunchActionWhenStylusGetsRemoved) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
+                                      true /* enable_app_launch */));
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  ExpectObservedStatesMatch({TrayActionState::kLaunching},
+                            "Launch on new note request");
+  ClearObservedStates();
+  // When show-md-login flag is present, the action launch process should not
+  // wait for launch animation in lock UI to finish (as is the case with Web UI
+  // base lock).
   EXPECT_EQ(1, app_manager()->launch_count());
 
   // If the stylus is inserted and removed while launching the app, there should
@@ -1160,6 +1232,35 @@ TEST_F(LockScreenAppStateTest, LaunchActionWhenStylusGetsRemoved) {
   EXPECT_EQ(0u, observer()->observed_states().size());
   EXPECT_EQ(0u, tray_action()->observed_states().size());
   EXPECT_EQ(1, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateTest,
+       LaunchActionWhenStylusRemoved_ActionClosedBeforeAnimationDone) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
+                                      true /* enable_app_launch */));
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  ExpectObservedStatesMatch({TrayActionState::kLaunching},
+                            "Launch on new note request");
+  ClearObservedStates();
+  // The app should not be launched until the lock UI reports the animation as
+  // complete.
+  EXPECT_EQ(0, app_manager()->launch_count());
+
+  state_controller()->CloseLockScreenNote(
+      CloseLockScreenNoteReason::kUnlockButtonPressed);
+
+  ExpectObservedStatesMatch({TrayActionState::kAvailable},
+                            "Close note before launch animation done.");
+  ClearObservedStates();
+
+  // The app should not be launched when the animation completes if the action
+  // is closed/canceled before that.
+  state_controller()->NewNoteLaunchAnimationDone();
+  EXPECT_EQ(0, app_manager()->launch_count());
+  EXPECT_TRUE(observer()->observed_states().empty());
+  EXPECT_TRUE(tray_action()->observed_states().empty());
 }
 
 TEST_F(LockScreenAppStateTest, StylusRemovedBeforeScreenLock) {
@@ -1178,6 +1279,92 @@ TEST_F(LockScreenAppStateTest, StylusRemovedBeforeScreenLock) {
 
   ClearObservedStates();
   EXPECT_EQ(0, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateTest, StylusRemovedWhileScreenOff) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
+                                      true /* enable_app_launch */));
+
+  power_manager_client()->SendBrightnessChanged(0 /* level */,
+                                                true /* user_initiated */);
+
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  // State should not change if the stylus is removed while the screen is off.
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_TRUE(observer()->observed_states().empty());
+  EXPECT_TRUE(tray_action()->observed_states().empty());
+
+  // The note action should be launched if the screen brightness is turned back
+  // up soon after stylus eject.
+  power_manager_client()->SendBrightnessChanged(70 /* level */,
+                                                true /* user_initiated */);
+  EXPECT_EQ(TrayActionState::kLaunching,
+            state_controller()->GetLockScreenNoteState());
+  ExpectObservedStatesMatch({TrayActionState::kLaunching},
+                            "Launch on new note request");
+  ClearObservedStates();
+
+  state_controller()->NewNoteLaunchAnimationDone();
+  EXPECT_EQ(1, app_manager()->launch_count());
+}
+
+TEST_F(LockScreenAppStateTest,
+       StylusRemovedWhileScreenOff_LongDelayBeforeScreenOn) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
+                                      true /* enable_app_launch */));
+
+  power_manager_client()->SendBrightnessChanged(0 /* level */,
+                                                true /* user_initiated */);
+
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  // State should not change if the stylus is removed while the screen is off.
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_TRUE(observer()->observed_states().empty());
+  EXPECT_TRUE(tray_action()->observed_states().empty());
+
+  // If sufficient time has passed, turning screen brightness up should not
+  // launch a lock screen note.
+  tick_clock()->Advance(base::TimeDelta::FromSeconds(10));
+  power_manager_client()->SendBrightnessChanged(70 /* level */,
+                                                true /* user_initiated */);
+
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_TRUE(observer()->observed_states().empty());
+  EXPECT_TRUE(tray_action()->observed_states().empty());
+}
+
+TEST_F(LockScreenAppStateTest, StylusRemovedAndInsertedWhileScreenOff) {
+  ui::test::DeviceDataManagerTestAPI devices_test_api;
+  ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
+                                      true /* enable_app_launch */));
+
+  power_manager_client()->SendBrightnessChanged(0 /* level */,
+                                                true /* user_initiated */);
+
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
+
+  // State should not change if the stylus is removed while the screen is off.
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_TRUE(observer()->observed_states().empty());
+  EXPECT_TRUE(tray_action()->observed_states().empty());
+
+  // Turning the screen brightness up soon after stylus eject should not launch
+  // note taking app if the stylus has been inserted back.
+  devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::INSERTED);
+  power_manager_client()->SendBrightnessChanged(70 /* level */,
+                                                true /* user_initiated */);
+  EXPECT_EQ(TrayActionState::kAvailable,
+            state_controller()->GetLockScreenNoteState());
+  EXPECT_TRUE(observer()->observed_states().empty());
+  EXPECT_TRUE(tray_action()->observed_states().empty());
 }
 
 TEST_F(LockScreenAppStateTest, StylusRemovedWhileActive) {

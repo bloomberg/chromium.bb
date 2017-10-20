@@ -537,6 +537,8 @@ void SigninScreenHandler::RegisterMessages() {
               &SigninScreenHandler::HandleCloseLockScreenApp);
   AddCallback("requestNewLockScreenNote",
               &SigninScreenHandler::HandleRequestNewNoteAction);
+  AddCallback("newNoteLaunchAnimationDone",
+              &SigninScreenHandler::HandleNewNoteLaunchAnimationDone);
 }
 
 void SigninScreenHandler::Show(const LoginScreenContext& context) {
@@ -1530,6 +1532,10 @@ void SigninScreenHandler::HandleRequestNewNoteAction(
   } else {
     NOTREACHED() << "Unknown request type " << request_type;
   }
+}
+
+void SigninScreenHandler::HandleNewNoteLaunchAnimationDone() {
+  lock_screen_apps::StateController::Get()->NewNoteLaunchAnimationDone();
 }
 
 void SigninScreenHandler::HandleCloseLockScreenApp() {
