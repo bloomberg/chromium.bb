@@ -1626,7 +1626,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   const int is_inter = is_inter_block(mbmi);
   const int is_compound = has_second_ref(mbmi);
   int skip, ref;
-  const int unify_bsize = 1;
   (void)mi_row;
   (void)mi_col;
 
@@ -1732,19 +1731,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
   }
 
   if (!is_inter) {
-    if (bsize >= BLOCK_8X8 || unify_bsize) {
-      write_intra_mode(ec_ctx, bsize, mode, w);
-    } else {
-      int idx, idy;
-      const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
-      const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
-      for (idy = 0; idy < 2; idy += num_4x4_h) {
-        for (idx = 0; idx < 2; idx += num_4x4_w) {
-          const PREDICTION_MODE b_mode = mi->bmi[idy * 2 + idx].as_mode;
-          write_intra_mode(ec_ctx, bsize, b_mode, w);
-        }
-      }
-    }
+    write_intra_mode(ec_ctx, bsize, mode, w);
     if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                             xd->plane[1].subsampling_y)) {
       write_intra_uv_mode(ec_ctx, mbmi->uv_mode, mode, w);
@@ -1762,8 +1749,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
       write_palette_mode_info(cm, xd, mi, w);
 #if CONFIG_FILTER_INTRA
-    if (bsize >= BLOCK_8X8 || unify_bsize)
-      write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
+    write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
 #endif  // CONFIG_FILTER_INTRA
   } else {
     int16_t mode_ctx;
@@ -1791,128 +1777,74 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
     // If segment skip is not enabled code the mode.
     if (!segfeature_active(seg, segment_id, SEG_LVL_SKIP)) {
-      if (bsize >= BLOCK_8X8 || unify_bsize) {
-        if (is_inter_compound_mode(mode))
-          write_inter_compound_mode(cm, xd, w, mode, mode_ctx);
+      if (is_inter_compound_mode(mode))
+        write_inter_compound_mode(cm, xd, w, mode, mode_ctx);
 #if CONFIG_COMPOUND_SINGLEREF
-        else if (is_inter_singleref_comp_mode(mode))
-          write_inter_singleref_comp_mode(xd, w, mode, mode_ctx);
+      else if (is_inter_singleref_comp_mode(mode))
+        write_inter_singleref_comp_mode(xd, w, mode, mode_ctx);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-        else if (is_inter_singleref_mode(mode))
-          write_inter_mode(w, mode, ec_ctx, mode_ctx);
+      else if (is_inter_singleref_mode(mode))
+        write_inter_mode(w, mode, ec_ctx, mode_ctx);
 
-        if (mode == NEWMV || mode == NEW_NEWMV ||
+      if (mode == NEWMV || mode == NEW_NEWMV ||
 #if CONFIG_COMPOUND_SINGLEREF
-            mbmi->mode == SR_NEW_NEWMV ||
+          mbmi->mode == SR_NEW_NEWMV ||
 #endif  // CONFIG_COMPOUND_SINGLEREF
-            have_nearmv_in_inter_mode(mode))
-          write_drl_idx(ec_ctx, mbmi, mbmi_ext, w);
-        else
-          assert(mbmi->ref_mv_idx == 0);
-      }
+          have_nearmv_in_inter_mode(mode))
+        write_drl_idx(ec_ctx, mbmi, mbmi_ext, w);
+      else
+        assert(mbmi->ref_mv_idx == 0);
     }
 
 #if !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION && !CONFIG_GLOBAL_MOTION
     write_mb_interp_filter(cpi, xd, w);
 #endif  // !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
-    if (bsize < BLOCK_8X8 && !unify_bsize) {
-#if CONFIG_COMPOUND_SINGLEREF
-      /// NOTE: Single ref comp mode does not support sub8x8.
-      assert(is_compound || !is_inter_singleref_comp_mode(mbmi->mode));
-#endif  // CONFIG_COMPOUND_SINGLEREF
-      const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
-      const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
-      int idx, idy;
-      for (idy = 0; idy < 2; idy += num_4x4_h) {
-        for (idx = 0; idx < 2; idx += num_4x4_w) {
-          const int j = idy * 2 + idx;
-          const PREDICTION_MODE b_mode = mi->bmi[j].as_mode;
-          if (!is_compound)
-            mode_ctx = av1_mode_context_analyzer(mbmi_ext->mode_context,
-                                                 mbmi->ref_frame, bsize, j);
-          if (is_inter_compound_mode(b_mode))
-            write_inter_compound_mode(cm, xd, w, b_mode, mode_ctx);
-          else if (is_inter_singleref_mode(b_mode))
-            write_inter_mode(w, b_mode, ec_ctx, mode_ctx);
-
-          if (b_mode == NEWMV || b_mode == NEW_NEWMV) {
-            for (ref = 0; ref < 1 + is_compound; ++ref) {
-              int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-              int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                                        mbmi_ext->ref_mv_stack[rf_type], ref,
-                                        mbmi->ref_mv_idx);
-              nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
-              av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[ref].as_mv,
-                            &mi->bmi[j].ref_mv[ref].as_mv, nmvc, allow_hp);
-            }
-          } else if (b_mode == NEAREST_NEWMV || b_mode == NEAR_NEWMV) {
-            int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-            int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                                      mbmi_ext->ref_mv_stack[rf_type], 1,
-                                      mbmi->ref_mv_idx);
-            nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
-            av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[1].as_mv,
-                          &mi->bmi[j].ref_mv[1].as_mv, nmvc, allow_hp);
-          } else if (b_mode == NEW_NEARESTMV || b_mode == NEW_NEARMV) {
-            int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-            int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                                      mbmi_ext->ref_mv_stack[rf_type], 0,
-                                      mbmi->ref_mv_idx);
-            nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
-            av1_encode_mv(cpi, w, &mi->bmi[j].as_mv[0].as_mv,
-                          &mi->bmi[j].ref_mv[0].as_mv, nmvc, allow_hp);
-          }
-        }
+    if (mode == NEWMV || mode == NEW_NEWMV) {
+      int_mv ref_mv;
+      for (ref = 0; ref < 1 + is_compound; ++ref) {
+        int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+        int nmv_ctx =
+            av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                        mbmi_ext->ref_mv_stack[rf_type], ref, mbmi->ref_mv_idx);
+        nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
+        ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0];
+        av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv, &ref_mv.as_mv, nmvc,
+                      allow_hp);
       }
-    } else {
-      if (mode == NEWMV || mode == NEW_NEWMV) {
-        int_mv ref_mv;
-        for (ref = 0; ref < 1 + is_compound; ++ref) {
-          int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-          int nmv_ctx = av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                                    mbmi_ext->ref_mv_stack[rf_type], ref,
-                                    mbmi->ref_mv_idx);
-          nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
-          ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[ref]][0];
-          av1_encode_mv(cpi, w, &mbmi->mv[ref].as_mv, &ref_mv.as_mv, nmvc,
-                        allow_hp);
-        }
-      } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
-        int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-        int nmv_ctx =
-            av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                        mbmi_ext->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
-        nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
-        av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv,
-                      &mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0].as_mv, nmvc,
-                      allow_hp);
-      } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
-        int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-        int nmv_ctx =
-            av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                        mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
-        nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
-        av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv,
-                      &mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv, nmvc,
-                      allow_hp);
+    } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
+      int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+      int nmv_ctx =
+          av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                      mbmi_ext->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
+      nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
+      av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv,
+                    &mbmi_ext->ref_mvs[mbmi->ref_frame[1]][0].as_mv, nmvc,
+                    allow_hp);
+    } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
+      int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+      int nmv_ctx =
+          av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                      mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
+      nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
+      av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv,
+                    &mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0].as_mv, nmvc,
+                    allow_hp);
 #if CONFIG_COMPOUND_SINGLEREF
-      } else if (  //  mode == SR_NEAREST_NEWMV ||
-          mode == SR_NEAR_NEWMV || mode == SR_ZERO_NEWMV ||
-          mode == SR_NEW_NEWMV) {
-        int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-        int nmv_ctx =
-            av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                        mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
-        nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
-        int_mv ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0];
-        if (mode == SR_NEW_NEWMV)
-          av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv, &ref_mv.as_mv, nmvc,
-                        allow_hp);
-        av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv, &ref_mv.as_mv, nmvc,
+    } else if (  //  mode == SR_NEAREST_NEWMV ||
+        mode == SR_NEAR_NEWMV || mode == SR_ZERO_NEWMV ||
+        mode == SR_NEW_NEWMV) {
+      int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
+      int nmv_ctx =
+          av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
+                      mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
+      nmv_context *nmvc = &ec_ctx->nmvc[nmv_ctx];
+      int_mv ref_mv = mbmi_ext->ref_mvs[mbmi->ref_frame[0]][0];
+      if (mode == SR_NEW_NEWMV)
+        av1_encode_mv(cpi, w, &mbmi->mv[0].as_mv, &ref_mv.as_mv, nmvc,
                       allow_hp);
+      av1_encode_mv(cpi, w, &mbmi->mv[1].as_mv, &ref_mv.as_mv, nmvc, allow_hp);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-      }
     }
 
 #if CONFIG_INTERINTRA
@@ -2059,7 +1991,6 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   const MODE_INFO *const left_mi = xd->left_mi;
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int unify_bsize = 1;
   (void)mi_row;
   (void)mi_col;
 
@@ -2124,21 +2055,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
 #endif  // CONFIG_INTRABC && CONFIG_VAR_TX
 
-  if (bsize >= BLOCK_8X8 || unify_bsize) {
-    write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, 0, mbmi->mode, w);
-  } else {
-    const int num_4x4_w = num_4x4_blocks_wide_lookup[bsize];
-    const int num_4x4_h = num_4x4_blocks_high_lookup[bsize];
-    int idx, idy;
-
-    for (idy = 0; idy < 2; idy += num_4x4_h) {
-      for (idx = 0; idx < 2; idx += num_4x4_w) {
-        const int block = idy * 2 + idx;
-        write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, block,
-                            mi->bmi[block].as_mode, w);
-      }
-    }
-  }
+  write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, 0, mbmi->mode, w);
 
   if (is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
@@ -2157,8 +2074,7 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
   if (av1_allow_palette(cm->allow_screen_content_tools, bsize))
     write_palette_mode_info(cm, xd, mi, w);
 #if CONFIG_FILTER_INTRA
-  if (bsize >= BLOCK_8X8 || unify_bsize)
-    write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
+  write_filter_intra_mode_info(cm, xd, mbmi, mi_row, mi_col, w);
 #endif  // CONFIG_FILTER_INTRA
 
 #if !CONFIG_TXK_SEL
@@ -2634,66 +2550,61 @@ static void write_tokens_sb(AV1_COMP *cpi, const TileInfo *const tile,
   const int hbs = mi_size_wide[bsize] / 2;
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
-  const int unify_bsize = 1;
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   partition = get_partition(cm, mi_row, mi_col, bsize);
   subsize = get_subsize(bsize, partition);
 
-  if (subsize < BLOCK_8X8 && !unify_bsize) {
-    write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-  } else {
-    switch (partition) {
-      case PARTITION_NONE:
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        break;
-      case PARTITION_HORZ:
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        if (mi_row + hbs < cm->mi_rows)
-          write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        break;
-      case PARTITION_VERT:
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        if (mi_col + hbs < cm->mi_cols)
-          write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        break;
-      case PARTITION_SPLIT:
-        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, subsize);
-        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs,
-                        subsize);
-        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col,
-                        subsize);
-        write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs,
-                        subsize);
-        break;
+  switch (partition) {
+    case PARTITION_NONE:
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      break;
+    case PARTITION_HORZ:
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      if (mi_row + hbs < cm->mi_rows)
+        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      break;
+    case PARTITION_VERT:
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      if (mi_col + hbs < cm->mi_cols)
+        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      break;
+    case PARTITION_SPLIT:
+      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, subsize);
+      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs,
+                      subsize);
+      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col,
+                      subsize);
+      write_tokens_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs,
+                      subsize);
+      break;
 #if CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_EXT_PARTITION_TYPES_AB
 #error NC_MODE_INFO+MOTION_VAR not yet supported for new HORZ/VERT_AB partitions
 #endif
-      case PARTITION_HORZ_A:
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        break;
-      case PARTITION_HORZ_B:
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
-        break;
-      case PARTITION_VERT_A:
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        break;
-      case PARTITION_VERT_B:
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
-        break;
+    case PARTITION_HORZ_A:
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      break;
+    case PARTITION_HORZ_B:
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
+      break;
+    case PARTITION_VERT_A:
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      break;
+    case PARTITION_VERT_B:
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      write_tokens_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
+      break;
 #endif  // CONFIG_EXT_PARTITION_TYPES
-      default: assert(0);
-    }
+    default: assert(0);
   }
 }
 #endif
@@ -2774,102 +2685,95 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif  // CONFIG_EXT_PARTITION_TYPES
   const PARTITION_TYPE partition = get_partition(cm, mi_row, mi_col, bsize);
   const BLOCK_SIZE subsize = get_subsize(bsize, partition);
-  const int unify_bsize = 1;
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
   write_partition(cm, xd, hbs, mi_row, mi_col, partition, bsize, w);
-  if (subsize < BLOCK_8X8 && !unify_bsize) {
-    write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-  } else {
-    switch (partition) {
-      case PARTITION_NONE:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        break;
-      case PARTITION_HORZ:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        if (mi_row + hbs < cm->mi_rows)
-          write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        break;
-      case PARTITION_VERT:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        if (mi_col + hbs < cm->mi_cols)
-          write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        break;
-      case PARTITION_SPLIT:
-        write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, subsize);
-        write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs,
-                       subsize);
-        write_modes_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col,
-                       subsize);
-        write_modes_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs,
-                       subsize);
-        break;
+  switch (partition) {
+    case PARTITION_NONE:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      break;
+    case PARTITION_HORZ:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      if (mi_row + hbs < cm->mi_rows)
+        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      break;
+    case PARTITION_VERT:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      if (mi_col + hbs < cm->mi_cols)
+        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      break;
+    case PARTITION_SPLIT:
+      write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col, subsize);
+      write_modes_sb(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs, subsize);
+      write_modes_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col, subsize);
+      write_modes_sb(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs,
+                     subsize);
+      break;
 #if CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_EXT_PARTITION_TYPES_AB
-      case PARTITION_HORZ_A:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + qbs, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        break;
-      case PARTITION_HORZ_B:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        if (mi_row + 3 * qbs < cm->mi_rows)
-          write_modes_b(cpi, tile, w, tok, tok_end, mi_row + 3 * qbs, mi_col);
-        break;
-      case PARTITION_VERT_A:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + qbs);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        break;
-      case PARTITION_VERT_B:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        if (mi_col + 3 * qbs < cm->mi_cols)
-          write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + 3 * qbs);
-        break;
+    case PARTITION_HORZ_A:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + qbs, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      break;
+    case PARTITION_HORZ_B:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      if (mi_row + 3 * qbs < cm->mi_rows)
+        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + 3 * qbs, mi_col);
+      break;
+    case PARTITION_VERT_A:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + qbs);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      break;
+    case PARTITION_VERT_B:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      if (mi_col + 3 * qbs < cm->mi_cols)
+        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + 3 * qbs);
+      break;
 #else
-      case PARTITION_HORZ_A:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        break;
-      case PARTITION_HORZ_B:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
-        break;
-      case PARTITION_VERT_A:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        break;
-      case PARTITION_VERT_B:
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
-        write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
-        break;
+    case PARTITION_HORZ_A:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      break;
+    case PARTITION_HORZ_B:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
+      break;
+    case PARTITION_VERT_A:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      break;
+    case PARTITION_VERT_B:
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row, mi_col + hbs);
+      write_modes_b(cpi, tile, w, tok, tok_end, mi_row + hbs, mi_col + hbs);
+      break;
 #endif
-      case PARTITION_HORZ_4:
-        for (i = 0; i < 4; ++i) {
-          int this_mi_row = mi_row + i * quarter_step;
-          if (i > 0 && this_mi_row >= cm->mi_rows) break;
+    case PARTITION_HORZ_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_row = mi_row + i * quarter_step;
+        if (i > 0 && this_mi_row >= cm->mi_rows) break;
 
-          write_modes_b(cpi, tile, w, tok, tok_end, this_mi_row, mi_col);
-        }
-        break;
-      case PARTITION_VERT_4:
-        for (i = 0; i < 4; ++i) {
-          int this_mi_col = mi_col + i * quarter_step;
-          if (i > 0 && this_mi_col >= cm->mi_cols) break;
+        write_modes_b(cpi, tile, w, tok, tok_end, this_mi_row, mi_col);
+      }
+      break;
+    case PARTITION_VERT_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_col = mi_col + i * quarter_step;
+        if (i > 0 && this_mi_col >= cm->mi_cols) break;
 
-          write_modes_b(cpi, tile, w, tok, tok_end, mi_row, this_mi_col);
-        }
-        break;
+        write_modes_b(cpi, tile, w, tok, tok_end, mi_row, this_mi_col);
+      }
+      break;
 #endif  // CONFIG_EXT_PARTITION_TYPES
-      default: assert(0);
-    }
+    default: assert(0);
   }
 
 // update partition context

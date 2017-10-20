@@ -244,10 +244,10 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
                                           int is_integer
 #endif
                                           ) {
-  const int unify_bsize = 1;
   int_mv res;
   const int32_t *mat = gm->wmmat;
   int x, y, tx, ty;
+  (void)block_idx;
 
   if (gm->wmtype == TRANSLATION) {
     // All global motion vectors are stored with WARPEDMODEL_PREC_BITS (16)
@@ -269,15 +269,8 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
     return res;
   }
 
-  if (bsize >= BLOCK_8X8 || unify_bsize) {
-    x = block_center_x(mi_col, bsize);
-    y = block_center_y(mi_row, bsize);
-  } else {
-    x = block_center_x(mi_col, bsize);
-    y = block_center_y(mi_row, bsize);
-    x += (block_idx & 1) * MI_SIZE / 2;
-    y += (block_idx & 2) * MI_SIZE / 4;
-  }
+  x = block_center_x(mi_col, bsize);
+  y = block_center_y(mi_row, bsize);
 
   if (gm->wmtype == ROTZOOM) {
     assert(gm->wmmat[5] == gm->wmmat[2]);

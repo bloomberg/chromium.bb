@@ -65,7 +65,6 @@ static uint8_t add_ref_mv_candidate(
     int subsampling_y) {
   int index = 0, ref;
   int newmv_count = 0;
-  const int unify_bsize = 1;
   assert(weight % 2 == 0);
 #if !CONFIG_EXT_WARPED_MOTION
   (void)bsize;
@@ -146,33 +145,6 @@ static uint8_t add_ref_mv_candidate(
 
           if (candidate->mode == NEWMV) ++newmv_count;
         }
-
-        if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0 &&
-            !unify_bsize) {
-          int alt_block = 3 - block;
-          this_refmv = get_sub_block_mv(candidate_mi, ref, col, alt_block);
-#if CONFIG_AMVR
-          lower_mv_precision(&this_refmv.as_mv, use_hp, is_integer);
-#else
-          lower_mv_precision(&this_refmv.as_mv, use_hp);
-#endif
-          for (index = 0; index < *refmv_count; ++index)
-            if (ref_mv_stack[index].this_mv.as_int == this_refmv.as_int) break;
-
-          if (index < *refmv_count) ref_mv_stack[index].weight += len;
-
-          // Add a new item to the list.
-          if (index == *refmv_count) {
-            ref_mv_stack[index].this_mv = this_refmv;
-            ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
-                get_sub_block_pred_mv(candidate_mi, ref, col, alt_block),
-                this_refmv);
-            ref_mv_stack[index].weight = len;
-            ++(*refmv_count);
-
-            if (candidate->mode == NEWMV) ++newmv_count;
-          }
-        }
       }
     }
   } else {
@@ -213,43 +185,6 @@ static uint8_t add_ref_mv_candidate(
         ++(*refmv_count);
 
         if (candidate->mode == NEW_NEWMV) ++newmv_count;
-      }
-
-      if (candidate_mi->mbmi.sb_type < BLOCK_8X8 && block >= 0 &&
-          !unify_bsize) {
-        int alt_block = 3 - block;
-        this_refmv[0] = get_sub_block_mv(candidate_mi, 0, col, alt_block);
-        this_refmv[1] = get_sub_block_mv(candidate_mi, 1, col, alt_block);
-
-        for (ref = 0; ref < 2; ++ref) {
-#if CONFIG_AMVR
-          lower_mv_precision(&this_refmv[ref].as_mv, use_hp, is_integer);
-#else
-          lower_mv_precision(&this_refmv[ref].as_mv, use_hp);
-#endif
-        }
-        for (index = 0; index < *refmv_count; ++index)
-          if (ref_mv_stack[index].this_mv.as_int == this_refmv[0].as_int &&
-              ref_mv_stack[index].comp_mv.as_int == this_refmv[1].as_int)
-            break;
-
-        if (index < *refmv_count) ref_mv_stack[index].weight += len;
-
-        // Add a new item to the list.
-        if (index == *refmv_count) {
-          ref_mv_stack[index].this_mv = this_refmv[0];
-          ref_mv_stack[index].comp_mv = this_refmv[1];
-          ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
-              get_sub_block_pred_mv(candidate_mi, 0, col, block),
-              this_refmv[0]);
-          ref_mv_stack[index].pred_diff[0] = av1_get_pred_diff_ctx(
-              get_sub_block_pred_mv(candidate_mi, 1, col, block),
-              this_refmv[1]);
-          ref_mv_stack[index].weight = len;
-          ++(*refmv_count);
-
-          if (candidate->mode == NEW_NEWMV) ++newmv_count;
-        }
       }
     }
   }

@@ -1169,7 +1169,6 @@ static void detoken_and_recon_sb(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                                  BLOCK_SIZE bsize) {
   AV1_COMMON *const cm = &pbi->common;
   const int hbs = mi_size_wide[bsize] >> 1;
-  const int unify_bsize = 1;
 #if CONFIG_EXT_PARTITION_TYPES
   BLOCK_SIZE bsize2 = get_subsize(bsize, PARTITION_SPLIT);
 #endif
@@ -1183,62 +1182,54 @@ static void detoken_and_recon_sb(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   partition = get_partition(cm, mi_row, mi_col, bsize);
   subsize = subsize_lookup[partition][bsize];
 
-  if (!hbs && !unify_bsize) {
-    xd->bmode_blocks_wl = 1 >> !!(partition & PARTITION_VERT);
-    xd->bmode_blocks_hl = 1 >> !!(partition & PARTITION_HORZ);
-    decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-  } else {
-    switch (partition) {
-      case PARTITION_NONE:
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
-        break;
-      case PARTITION_HORZ:
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-        if (has_rows)
-          decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r,
-                                       subsize);
-        break;
-      case PARTITION_VERT:
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-        if (has_cols)
-          decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r,
-                                       subsize);
-        break;
-      case PARTITION_SPLIT:
-        detoken_and_recon_sb(pbi, xd, mi_row, mi_col, r, subsize);
-        detoken_and_recon_sb(pbi, xd, mi_row, mi_col + hbs, r, subsize);
-        detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col, r, subsize);
-        detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col + hbs, r, subsize);
-        break;
+  switch (partition) {
+    case PARTITION_NONE:
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize);
+      break;
+    case PARTITION_HORZ:
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+      if (has_rows)
+        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, subsize);
+      break;
+    case PARTITION_VERT:
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+      if (has_cols)
+        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, subsize);
+      break;
+    case PARTITION_SPLIT:
+      detoken_and_recon_sb(pbi, xd, mi_row, mi_col, r, subsize);
+      detoken_and_recon_sb(pbi, xd, mi_row, mi_col + hbs, r, subsize);
+      detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col, r, subsize);
+      detoken_and_recon_sb(pbi, xd, mi_row + hbs, mi_col + hbs, r, subsize);
+      break;
 #if CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_EXT_PARTITION_TYPES_AB
 #error NC_MODE_INFO+MOTION_VAR not yet supported for new HORZ/VERT_AB partitions
 #endif
-      case PARTITION_HORZ_A:
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
-        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, subsize);
-        break;
-      case PARTITION_HORZ_B:
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
-        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
-                                     bsize2);
-        break;
-      case PARTITION_VERT_A:
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
-        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, subsize);
-        break;
-      case PARTITION_VERT_B:
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
-        decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
-        decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
-                                     bsize2);
-        break;
+    case PARTITION_HORZ_A:
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
+      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, subsize);
+      break;
+    case PARTITION_HORZ_B:
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
+      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
+                                   bsize2);
+      break;
+    case PARTITION_VERT_A:
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, bsize2);
+      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col, r, bsize2);
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, subsize);
+      break;
+    case PARTITION_VERT_B:
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col, r, subsize);
+      decode_token_and_recon_block(pbi, xd, mi_row, mi_col + hbs, r, bsize2);
+      decode_token_and_recon_block(pbi, xd, mi_row + hbs, mi_col + hbs, r,
+                                   bsize2);
+      break;
 #endif
-      default: assert(0 && "Invalid partition type");
-    }
+    default: assert(0 && "Invalid partition type");
   }
 }
 #endif
@@ -1317,7 +1308,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #if CONFIG_EXT_PARTITION_TYPES && CONFIG_EXT_PARTITION_TYPES_AB
   const int qbs = num_8x8_wh >> 2;
 #endif
-  const int unify_bsize = 1;
   PARTITION_TYPE partition;
   BLOCK_SIZE subsize;
 #if CONFIG_EXT_PARTITION_TYPES
@@ -1363,93 +1353,86 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 #define DEC_PARTITION(db_r, db_c, db_subsize) \
   decode_partition(pbi, xd, DEC_BLOCK_STX_ARG(db_r), (db_c), r, (db_subsize))
 
-  if (!hbs && !unify_bsize) {
-    // calculate bmode block dimensions (log 2)
-    xd->bmode_blocks_wl = 1 >> !!(partition & PARTITION_VERT);
-    xd->bmode_blocks_hl = 1 >> !!(partition & PARTITION_HORZ);
-    DEC_BLOCK(mi_row, mi_col, subsize);
-  } else {
-    switch (partition) {
-      case PARTITION_NONE: DEC_BLOCK(mi_row, mi_col, subsize); break;
-      case PARTITION_HORZ:
-        DEC_BLOCK(mi_row, mi_col, subsize);
-        if (has_rows) DEC_BLOCK(mi_row + hbs, mi_col, subsize);
-        break;
-      case PARTITION_VERT:
-        DEC_BLOCK(mi_row, mi_col, subsize);
-        if (has_cols) DEC_BLOCK(mi_row, mi_col + hbs, subsize);
-        break;
-      case PARTITION_SPLIT:
-        DEC_PARTITION(mi_row, mi_col, subsize);
-        DEC_PARTITION(mi_row, mi_col + hbs, subsize);
-        DEC_PARTITION(mi_row + hbs, mi_col, subsize);
-        DEC_PARTITION(mi_row + hbs, mi_col + hbs, subsize);
-        break;
+  switch (partition) {
+    case PARTITION_NONE: DEC_BLOCK(mi_row, mi_col, subsize); break;
+    case PARTITION_HORZ:
+      DEC_BLOCK(mi_row, mi_col, subsize);
+      if (has_rows) DEC_BLOCK(mi_row + hbs, mi_col, subsize);
+      break;
+    case PARTITION_VERT:
+      DEC_BLOCK(mi_row, mi_col, subsize);
+      if (has_cols) DEC_BLOCK(mi_row, mi_col + hbs, subsize);
+      break;
+    case PARTITION_SPLIT:
+      DEC_PARTITION(mi_row, mi_col, subsize);
+      DEC_PARTITION(mi_row, mi_col + hbs, subsize);
+      DEC_PARTITION(mi_row + hbs, mi_col, subsize);
+      DEC_PARTITION(mi_row + hbs, mi_col + hbs, subsize);
+      break;
 #if CONFIG_EXT_PARTITION_TYPES
 #if CONFIG_EXT_PARTITION_TYPES_AB
-      case PARTITION_HORZ_A:
-        DEC_BLOCK(mi_row, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
-        DEC_BLOCK(mi_row + qbs, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
-        DEC_BLOCK(mi_row + hbs, mi_col, subsize);
-        break;
-      case PARTITION_HORZ_B:
-        DEC_BLOCK(mi_row, mi_col, subsize);
-        DEC_BLOCK(mi_row + hbs, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
-        if (mi_row + 3 * qbs < cm->mi_rows)
-          DEC_BLOCK(mi_row + 3 * qbs, mi_col,
-                    get_subsize(bsize, PARTITION_HORZ_4));
-        break;
-      case PARTITION_VERT_A:
-        DEC_BLOCK(mi_row, mi_col, get_subsize(bsize, PARTITION_VERT_4));
-        DEC_BLOCK(mi_row, mi_col + qbs, get_subsize(bsize, PARTITION_VERT_4));
-        DEC_BLOCK(mi_row, mi_col + hbs, subsize);
-        break;
-      case PARTITION_VERT_B:
-        DEC_BLOCK(mi_row, mi_col, subsize);
-        DEC_BLOCK(mi_row, mi_col + hbs, get_subsize(bsize, PARTITION_VERT_4));
-        if (mi_col + 3 * qbs < cm->mi_cols)
-          DEC_BLOCK(mi_row, mi_col + 3 * qbs,
-                    get_subsize(bsize, PARTITION_VERT_4));
-        break;
+    case PARTITION_HORZ_A:
+      DEC_BLOCK(mi_row, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
+      DEC_BLOCK(mi_row + qbs, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
+      DEC_BLOCK(mi_row + hbs, mi_col, subsize);
+      break;
+    case PARTITION_HORZ_B:
+      DEC_BLOCK(mi_row, mi_col, subsize);
+      DEC_BLOCK(mi_row + hbs, mi_col, get_subsize(bsize, PARTITION_HORZ_4));
+      if (mi_row + 3 * qbs < cm->mi_rows)
+        DEC_BLOCK(mi_row + 3 * qbs, mi_col,
+                  get_subsize(bsize, PARTITION_HORZ_4));
+      break;
+    case PARTITION_VERT_A:
+      DEC_BLOCK(mi_row, mi_col, get_subsize(bsize, PARTITION_VERT_4));
+      DEC_BLOCK(mi_row, mi_col + qbs, get_subsize(bsize, PARTITION_VERT_4));
+      DEC_BLOCK(mi_row, mi_col + hbs, subsize);
+      break;
+    case PARTITION_VERT_B:
+      DEC_BLOCK(mi_row, mi_col, subsize);
+      DEC_BLOCK(mi_row, mi_col + hbs, get_subsize(bsize, PARTITION_VERT_4));
+      if (mi_col + 3 * qbs < cm->mi_cols)
+        DEC_BLOCK(mi_row, mi_col + 3 * qbs,
+                  get_subsize(bsize, PARTITION_VERT_4));
+      break;
 #else
-      case PARTITION_HORZ_A:
-        DEC_BLOCK(mi_row, mi_col, bsize2);
-        DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
-        DEC_BLOCK(mi_row + hbs, mi_col, subsize);
-        break;
-      case PARTITION_HORZ_B:
-        DEC_BLOCK(mi_row, mi_col, subsize);
-        DEC_BLOCK(mi_row + hbs, mi_col, bsize2);
-        DEC_BLOCK(mi_row + hbs, mi_col + hbs, bsize2);
-        break;
-      case PARTITION_VERT_A:
-        DEC_BLOCK(mi_row, mi_col, bsize2);
-        DEC_BLOCK(mi_row + hbs, mi_col, bsize2);
-        DEC_BLOCK(mi_row, mi_col + hbs, subsize);
-        break;
-      case PARTITION_VERT_B:
-        DEC_BLOCK(mi_row, mi_col, subsize);
-        DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
-        DEC_BLOCK(mi_row + hbs, mi_col + hbs, bsize2);
-        break;
+    case PARTITION_HORZ_A:
+      DEC_BLOCK(mi_row, mi_col, bsize2);
+      DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
+      DEC_BLOCK(mi_row + hbs, mi_col, subsize);
+      break;
+    case PARTITION_HORZ_B:
+      DEC_BLOCK(mi_row, mi_col, subsize);
+      DEC_BLOCK(mi_row + hbs, mi_col, bsize2);
+      DEC_BLOCK(mi_row + hbs, mi_col + hbs, bsize2);
+      break;
+    case PARTITION_VERT_A:
+      DEC_BLOCK(mi_row, mi_col, bsize2);
+      DEC_BLOCK(mi_row + hbs, mi_col, bsize2);
+      DEC_BLOCK(mi_row, mi_col + hbs, subsize);
+      break;
+    case PARTITION_VERT_B:
+      DEC_BLOCK(mi_row, mi_col, subsize);
+      DEC_BLOCK(mi_row, mi_col + hbs, bsize2);
+      DEC_BLOCK(mi_row + hbs, mi_col + hbs, bsize2);
+      break;
 #endif
-      case PARTITION_HORZ_4:
-        for (i = 0; i < 4; ++i) {
-          int this_mi_row = mi_row + i * quarter_step;
-          if (i > 0 && this_mi_row >= cm->mi_rows) break;
-          DEC_BLOCK(this_mi_row, mi_col, subsize);
-        }
-        break;
-      case PARTITION_VERT_4:
-        for (i = 0; i < 4; ++i) {
-          int this_mi_col = mi_col + i * quarter_step;
-          if (i > 0 && this_mi_col >= cm->mi_cols) break;
-          DEC_BLOCK(mi_row, this_mi_col, subsize);
-        }
-        break;
+    case PARTITION_HORZ_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_row = mi_row + i * quarter_step;
+        if (i > 0 && this_mi_row >= cm->mi_rows) break;
+        DEC_BLOCK(this_mi_row, mi_col, subsize);
+      }
+      break;
+    case PARTITION_VERT_4:
+      for (i = 0; i < 4; ++i) {
+        int this_mi_col = mi_col + i * quarter_step;
+        if (i > 0 && this_mi_col >= cm->mi_cols) break;
+        DEC_BLOCK(mi_row, this_mi_col, subsize);
+      }
+      break;
 #endif  // CONFIG_EXT_PARTITION_TYPES
-      default: assert(0 && "Invalid partition type");
-    }
+    default: assert(0 && "Invalid partition type");
   }
 
 #undef DEC_PARTITION

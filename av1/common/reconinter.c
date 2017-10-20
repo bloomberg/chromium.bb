@@ -1524,7 +1524,6 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
   int plane;
   const int mi_x = mi_col * MI_SIZE;
   const int mi_y = mi_row * MI_SIZE;
-  const int unify_bsize = 1;
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
     const int bw = pd->width;
@@ -1534,33 +1533,11 @@ static void build_inter_predictors_for_planes(const AV1_COMMON *cm,
                              pd->subsampling_y))
       continue;
 
-    if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8 && !unify_bsize) {
-      const PARTITION_TYPE bp = bsize - xd->mi[0]->mbmi.sb_type;
-      const int have_vsplit = bp != PARTITION_HORZ;
-      const int have_hsplit = bp != PARTITION_VERT;
-      const int num_4x4_w = 2 >> ((!have_vsplit) | pd->subsampling_x);
-      const int num_4x4_h = 2 >> ((!have_hsplit) | pd->subsampling_y);
-      const int pw = 8 >> (have_vsplit | pd->subsampling_x);
-      const int ph = 8 >> (have_hsplit | pd->subsampling_y);
-      int x, y;
-      assert(bp != PARTITION_NONE && bp < PARTITION_TYPES);
-      assert(bsize == BLOCK_8X8);
-      assert(pw * num_4x4_w == bw && ph * num_4x4_h == bh);
-      for (y = 0; y < num_4x4_h; ++y)
-        for (x = 0; x < num_4x4_w; ++x)
-          build_inter_predictors(cm, xd, plane,
+    build_inter_predictors(cm, xd, plane,
 #if CONFIG_MOTION_VAR
-                                 xd->mi[0], 0,
+                           xd->mi[0], 0,
 #endif  // CONFIG_MOTION_VAR
-                                 y * 2 + x, bw, bh, 4 * x, 4 * y, pw, ph, mi_x,
-                                 mi_y);
-    } else {
-      build_inter_predictors(cm, xd, plane,
-#if CONFIG_MOTION_VAR
-                             xd->mi[0], 0,
-#endif  // CONFIG_MOTION_VAR
-                             0, bw, bh, 0, 0, bw, bh, mi_x, mi_y);
-    }
+                           0, bw, bh, 0, 0, bw, bh, mi_x, mi_y);
   }
 }
 

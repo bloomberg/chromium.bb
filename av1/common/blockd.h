@@ -1632,18 +1632,9 @@ static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
   const MODE_INFO *mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   int ref;
-  const int unify_bsize = 1;
 
   // First check if all modes are ZEROMV
-  if (mbmi->sb_type >= BLOCK_8X8 || unify_bsize) {
-    if (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV) return 0;
-  } else {
-    if ((mi->bmi[0].as_mode != ZEROMV && mi->bmi[0].as_mode != ZERO_ZEROMV) ||
-        (mi->bmi[1].as_mode != ZEROMV && mi->bmi[1].as_mode != ZERO_ZEROMV) ||
-        (mi->bmi[2].as_mode != ZEROMV && mi->bmi[2].as_mode != ZERO_ZEROMV) ||
-        (mi->bmi[3].as_mode != ZEROMV && mi->bmi[3].as_mode != ZERO_ZEROMV))
-      return 0;
-  }
+  if (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV) return 0;
 
 #if !GLOBAL_SUB8X8_USED
   if (mbmi->sb_type < BLOCK_8X8) return 0;

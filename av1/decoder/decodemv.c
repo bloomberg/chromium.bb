@@ -197,17 +197,13 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
 #else
   is_newmv = aom_read(r, ec_ctx->newmv_prob[mode_ctx], ACCT_STR) == 0;
 #endif
-
   if (is_newmv) {
     if (counts) ++counts->newmv_mode[mode_ctx][0];
     return NEWMV;
   }
   if (counts) ++counts->newmv_mode[mode_ctx][1];
-
   if (ctx & (1 << ALL_ZERO_FLAG_OFFSET)) return ZEROMV;
-
   mode_ctx = (ctx >> ZEROMV_OFFSET) & ZEROMV_CTX_MASK;
-
 #if CONFIG_NEW_MULTISYMBOL
   is_zeromv =
       aom_read_symbol(r, ec_ctx->zeromv_cdf[mode_ctx], 2, ACCT_STR) == 0;
@@ -219,28 +215,22 @@ static PREDICTION_MODE read_inter_mode(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
     return ZEROMV;
   }
   if (counts) ++counts->zeromv_mode[mode_ctx][1];
-
   mode_ctx = (ctx >> REFMV_OFFSET) & REFMV_CTX_MASK;
-
   if (ctx & (1 << SKIP_NEARESTMV_OFFSET)) mode_ctx = 6;
   if (ctx & (1 << SKIP_NEARMV_OFFSET)) mode_ctx = 7;
   if (ctx & (1 << SKIP_NEARESTMV_SUB8X8_OFFSET)) mode_ctx = 8;
-
 #if CONFIG_NEW_MULTISYMBOL
   is_refmv = aom_read_symbol(r, ec_ctx->refmv_cdf[mode_ctx], 2, ACCT_STR) == 0;
 #else
   is_refmv = aom_read(r, ec_ctx->refmv_prob[mode_ctx], ACCT_STR) == 0;
 #endif
-
   if (is_refmv) {
     if (counts) ++counts->refmv_mode[mode_ctx][0];
-
     return NEARESTMV;
   } else {
     if (counts) ++counts->refmv_mode[mode_ctx][1];
     return NEARMV;
   }
-
   // Invalid prediction mode.
   assert(0);
 }
@@ -249,7 +239,6 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
                          MB_MODE_INFO *mbmi, aom_reader *r) {
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   mbmi->ref_mv_idx = 0;
-
   if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV
 #if CONFIG_COMPOUND_SINGLEREF
       || mbmi->mode == SR_NEW_NEWMV
@@ -270,7 +259,6 @@ static void read_drl_idx(FRAME_CONTEXT *ec_ctx, MACROBLOCKD *xd,
       }
     }
   }
-
   if (have_nearmv_in_inter_mode(mbmi->mode)) {
     int idx;
     // Offset the NEARESTMV mode.
@@ -377,9 +365,7 @@ static PREDICTION_MODE read_inter_compound_mode(AV1_COMMON *cm, MACROBLOCKD *xd,
       aom_read_symbol(r, xd->tile_ctx->inter_compound_mode_cdf[ctx],
                       INTER_COMPOUND_MODES, ACCT_STR);
   FRAME_COUNTS *counts = xd->counts;
-
   if (counts) ++counts->inter_compound_mode[ctx][mode];
-
   assert(is_inter_compound_mode(NEAREST_NEARESTMV + mode));
   return NEAREST_NEARESTMV + mode;
 }
@@ -2224,7 +2210,6 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   const int allow_hp = cm->allow_high_precision_mv;
-  const int unify_bsize = 1;
   int_mv nearestmv[2], nearmv[2];
   int_mv ref_mvs[MODE_CTX_REF_FRAMES][MAX_MV_REF_CANDIDATES];
   int ref, is_compound;
@@ -2233,7 +2218,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif  // CONFIG_COMPOUND_SINGLEREF
   int16_t inter_mode_ctx[MODE_CTX_REF_FRAMES];
   int16_t compound_inter_mode_ctx[MODE_CTX_REF_FRAMES];
-  int16_t mode_ctx = 0;
+  int mode_ctx = 0;
 #if CONFIG_WARPED_MOTION
   int pts[SAMPLES_ARRAY_SIZE], pts_inref[SAMPLES_ARRAY_SIZE];
 #if CONFIG_EXT_WARPED_MOTION
@@ -2350,32 +2335,23 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #endif
   {
     mbmi->mode = ZEROMV;
-    if (bsize < BLOCK_8X8 && !unify_bsize) {
-      aom_internal_error(xd->error_info, AOM_CODEC_UNSUP_BITSTREAM,
-                         "Invalid usage of segment feature on small blocks");
-      return;
-    }
   } else {
-    if (bsize >= BLOCK_8X8 || unify_bsize) {
-      if (is_compound)
-        mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
+    if (is_compound) mbmi->mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
 #if CONFIG_COMPOUND_SINGLEREF
-      else if (is_singleref_comp_mode)
-        mbmi->mode = read_inter_singleref_comp_mode(xd, r, mode_ctx);
+    else if (is_singleref_comp_mode)
+      mbmi->mode = read_inter_singleref_comp_mode(xd, r, mode_ctx);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-      else
-        mbmi->mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
-      if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
+    else
+      mbmi->mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
+    if (mbmi->mode == NEWMV || mbmi->mode == NEW_NEWMV ||
 #if CONFIG_COMPOUND_SINGLEREF
-          mbmi->mode == SR_NEW_NEWMV ||
+        mbmi->mode == SR_NEW_NEWMV ||
 #endif  // CONFIG_COMPOUND_SINGLEREF
-          have_nearmv_in_inter_mode(mbmi->mode))
-        read_drl_idx(ec_ctx, xd, mbmi, r);
-    }
+        have_nearmv_in_inter_mode(mbmi->mode))
+      read_drl_idx(ec_ctx, xd, mbmi, r);
   }
 
-  if ((bsize < BLOCK_8X8 && !unify_bsize) ||
-      (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV)) {
+  if (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV) {
     for (ref = 0; ref < 1 + is_compound; ++ref) {
 #if CONFIG_AMVR
       av1_find_best_ref_mvs(allow_hp, ref_mvs[mbmi->ref_frame[ref]],
@@ -2389,11 +2365,9 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
 #if CONFIG_COMPOUND_SINGLEREF
-  if ((is_compound || is_singleref_comp_mode) &&
-      (bsize >= BLOCK_8X8 || unify_bsize) && mbmi->mode != ZERO_ZEROMV)
-#else   // !CONFIG_COMPOUND_SINGLEREF
-  if (is_compound && (bsize >= BLOCK_8X8 || unify_bsize) &&
-      mbmi->mode != ZERO_ZEROMV)
+  if ((is_compound || is_singleref_comp_mode) && mbmi->mode != ZERO_ZEROMV)
+#else  // !CONFIG_COMPOUND_SINGLEREF
+  if (is_compound && mbmi->mode != ZERO_ZEROMV)
 #endif  // CONFIG_COMPOUND_SINGLEREF
   {
     uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
@@ -2481,159 +2455,77 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   read_mb_interp_filter(cm, xd, mbmi, r);
 #endif  // !CONFIG_DUAL_FILTER && !CONFIG_WARPED_MOTION
 
-  if (bsize < BLOCK_8X8 && !unify_bsize) {
-    const int num_4x4_w = 1 << xd->bmode_blocks_wl;
-    const int num_4x4_h = 1 << xd->bmode_blocks_hl;
-    int idx, idy;
-    PREDICTION_MODE b_mode;
-    int_mv nearest_sub8x8[2], near_sub8x8[2];
-    int_mv ref_mv[2][2];
-    for (idy = 0; idy < 2; idy += num_4x4_h) {
-      for (idx = 0; idx < 2; idx += num_4x4_w) {
-        int_mv block[2];
-        const int j = idy * 2 + idx;
-        int_mv ref_mv_s8[2];
-        if (!is_compound)
-          mode_ctx = av1_mode_context_analyzer(inter_mode_ctx, mbmi->ref_frame,
-                                               bsize, j);
-        if (is_compound)
-          b_mode = read_inter_compound_mode(cm, xd, r, mode_ctx);
-        else
-          b_mode = read_inter_mode(ec_ctx, xd, r, mode_ctx);
+  int_mv ref_mv[2];
+  ref_mv[0] = nearestmv[0];
+  ref_mv[1] = nearestmv[1];
 
-        if (b_mode != ZEROMV && b_mode != ZERO_ZEROMV) {
-          CANDIDATE_MV ref_mv_stack[2][MAX_REF_MV_STACK_SIZE];
-          uint8_t ref_mv_count[2];
-          for (ref = 0; ref < 1 + is_compound; ++ref) {
-            int_mv mv_ref_list[MAX_MV_REF_CANDIDATES];
-            av1_update_mv_context(cm, xd, mi, mbmi->ref_frame[ref], mv_ref_list,
-                                  j, mi_row, mi_col, NULL);
-            av1_append_sub8x8_mvs_for_idx(cm, xd, j, ref, mi_row, mi_col,
-                                          ref_mv_stack[ref], &ref_mv_count[ref],
-                                          mv_ref_list, &nearest_sub8x8[ref],
-                                          &near_sub8x8[ref]);
-            if (have_newmv_in_inter_mode(b_mode)) {
-              mv_ref_list[0].as_int = nearest_sub8x8[ref].as_int;
-              mv_ref_list[1].as_int = near_sub8x8[ref].as_int;
-#if CONFIG_AMVR
-              av1_find_best_ref_mvs(allow_hp, mv_ref_list, &ref_mv[0][ref],
-                                    &ref_mv[1][ref],
-                                    cm->cur_frame_mv_precision_level);
-#else
-              av1_find_best_ref_mvs(allow_hp, mv_ref_list, &ref_mv[0][ref],
-                                    &ref_mv[1][ref]);
-#endif
-            }
-          }
-        }
+  if (is_compound) {
+    int ref_mv_idx = mbmi->ref_mv_idx;
+    // Special case: NEAR_NEWMV and NEW_NEARMV modes use
+    // 1 + mbmi->ref_mv_idx (like NEARMV) instead of
+    // mbmi->ref_mv_idx (like NEWMV)
+    if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
+      ref_mv_idx = 1 + mbmi->ref_mv_idx;
 
-        for (ref = 0; ref < 1 + is_compound && b_mode != ZEROMV; ++ref) {
-          ref_mv_s8[ref] = nearest_sub8x8[ref];
-#if CONFIG_AMVR
-          lower_mv_precision(&ref_mv_s8[ref].as_mv, allow_hp,
-                             cm->cur_frame_mv_precision_level);
-#else
-          lower_mv_precision(&ref_mv_s8[ref].as_mv, allow_hp);
-#endif
-        }
-        (void)ref_mv_s8;
-
-        if (!assign_mv(cm, xd, b_mode, mbmi->ref_frame, j, block, ref_mv[0],
-                       nearest_sub8x8, near_sub8x8, mi_row, mi_col, is_compound,
-                       allow_hp, r)) {
-          aom_merge_corrupted_flag(&xd->corrupted, 1);
-          break;
-        };
-
-        mi->bmi[j].as_mv[0].as_int = block[0].as_int;
-        mi->bmi[j].as_mode = b_mode;
-        if (is_compound) mi->bmi[j].as_mv[1].as_int = block[1].as_int;
-
-        if (num_4x4_h == 2) mi->bmi[j + 2] = mi->bmi[j];
-        if (num_4x4_w == 2) mi->bmi[j + 1] = mi->bmi[j];
+    if (compound_ref0_mode(mbmi->mode) == NEWMV) {
+      uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+      if (xd->ref_mv_count[ref_frame_type] > 1) {
+        ref_mv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
+        clamp_mv_ref(&ref_mv[0].as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
       }
+      nearestmv[0] = ref_mv[0];
     }
-
-    mbmi->pred_mv[0].as_int = mi->bmi[3].pred_mv[0].as_int;
-    mbmi->pred_mv[1].as_int = mi->bmi[3].pred_mv[1].as_int;
-    mi->mbmi.mode = b_mode;
-
-    mbmi->mv[0].as_int = mi->bmi[3].as_mv[0].as_int;
-    mbmi->mv[1].as_int = mi->bmi[3].as_mv[1].as_int;
-  } else {
-    int_mv ref_mv[2];
-    ref_mv[0] = nearestmv[0];
-    ref_mv[1] = nearestmv[1];
-
-    if (is_compound) {
-      int ref_mv_idx = mbmi->ref_mv_idx;
-      // Special case: NEAR_NEWMV and NEW_NEARMV modes use
-      // 1 + mbmi->ref_mv_idx (like NEARMV) instead of
-      // mbmi->ref_mv_idx (like NEWMV)
-      if (mbmi->mode == NEAR_NEWMV || mbmi->mode == NEW_NEARMV)
-        ref_mv_idx = 1 + mbmi->ref_mv_idx;
-
-      if (compound_ref0_mode(mbmi->mode) == NEWMV) {
-        uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-        if (xd->ref_mv_count[ref_frame_type] > 1) {
-          ref_mv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-          clamp_mv_ref(&ref_mv[0].as_mv, xd->n8_w << MI_SIZE_LOG2,
-                       xd->n8_h << MI_SIZE_LOG2, xd);
-        }
-        nearestmv[0] = ref_mv[0];
+    if (compound_ref1_mode(mbmi->mode) == NEWMV) {
+      uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+      if (xd->ref_mv_count[ref_frame_type] > 1) {
+        ref_mv[1] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
+        clamp_mv_ref(&ref_mv[1].as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
       }
-      if (compound_ref1_mode(mbmi->mode) == NEWMV) {
-        uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-        if (xd->ref_mv_count[ref_frame_type] > 1) {
-          ref_mv[1] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].comp_mv;
-          clamp_mv_ref(&ref_mv[1].as_mv, xd->n8_w << MI_SIZE_LOG2,
-                       xd->n8_h << MI_SIZE_LOG2, xd);
-        }
-        nearestmv[1] = ref_mv[1];
-      }
+      nearestmv[1] = ref_mv[1];
+    }
 #if CONFIG_COMPOUND_SINGLEREF
-    } else if (is_singleref_comp_mode) {
-      int ref_mv_idx = mbmi->ref_mv_idx;
-      // Special case: SR_NEAR_NEWMV use 1 + mbmi->ref_mv_idx (like NEARMV)
-      //               instead of mbmi->ref_mv_idx (like NEWMV)
-      if (mbmi->mode == SR_NEAR_NEWMV) ref_mv_idx = 1 + mbmi->ref_mv_idx;
+  } else if (is_singleref_comp_mode) {
+    int ref_mv_idx = mbmi->ref_mv_idx;
+    // Special case: SR_NEAR_NEWMV use 1 + mbmi->ref_mv_idx (like NEARMV)
+    //               instead of mbmi->ref_mv_idx (like NEWMV)
+    if (mbmi->mode == SR_NEAR_NEWMV) ref_mv_idx = 1 + mbmi->ref_mv_idx;
 
-      if (compound_ref0_mode(mbmi->mode) == NEWMV ||
-          compound_ref1_mode(mbmi->mode) == NEWMV) {
+    if (compound_ref0_mode(mbmi->mode) == NEWMV ||
+        compound_ref1_mode(mbmi->mode) == NEWMV) {
+      uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
+      if (xd->ref_mv_count[ref_frame_type] > 1) {
+        ref_mv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
+        clamp_mv_ref(&ref_mv[0].as_mv, xd->n8_w << MI_SIZE_LOG2,
+                     xd->n8_h << MI_SIZE_LOG2, xd);
+      }
+      // TODO(zoeliu): To further investigate why this would not cause a
+      //               mismatch for the mode of SR_NEAREST_NEWMV.
+      nearestmv[0] = ref_mv[0];
+    }
+#endif  // CONFIG_COMPOUND_SINGLEREF
+  } else {
+    if (mbmi->mode == NEWMV) {
+      for (ref = 0; ref < 1 + is_compound; ++ref) {
         uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
         if (xd->ref_mv_count[ref_frame_type] > 1) {
-          ref_mv[0] = xd->ref_mv_stack[ref_frame_type][ref_mv_idx].this_mv;
-          clamp_mv_ref(&ref_mv[0].as_mv, xd->n8_w << MI_SIZE_LOG2,
+          ref_mv[ref] =
+              (ref == 0)
+                  ? xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].this_mv
+                  : xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].comp_mv;
+          clamp_mv_ref(&ref_mv[ref].as_mv, xd->n8_w << MI_SIZE_LOG2,
                        xd->n8_h << MI_SIZE_LOG2, xd);
         }
-        // TODO(zoeliu): To further investigate why this would not cause a
-        //               mismatch for the mode of SR_NEAREST_NEWMV.
-        nearestmv[0] = ref_mv[0];
-      }
-#endif  // CONFIG_COMPOUND_SINGLEREF
-    } else {
-      if (mbmi->mode == NEWMV) {
-        for (ref = 0; ref < 1 + is_compound; ++ref) {
-          uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
-          if (xd->ref_mv_count[ref_frame_type] > 1) {
-            ref_mv[ref] =
-                (ref == 0)
-                    ? xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx].this_mv
-                    : xd->ref_mv_stack[ref_frame_type][mbmi->ref_mv_idx]
-                          .comp_mv;
-            clamp_mv_ref(&ref_mv[ref].as_mv, xd->n8_w << MI_SIZE_LOG2,
-                         xd->n8_h << MI_SIZE_LOG2, xd);
-          }
-          nearestmv[ref] = ref_mv[ref];
-        }
+        nearestmv[ref] = ref_mv[ref];
       }
     }
-
-    int mv_corrupted_flag =
-        !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, 0, mbmi->mv, ref_mv,
-                   nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
-    aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
   }
+
+  int mv_corrupted_flag =
+      !assign_mv(cm, xd, mbmi->mode, mbmi->ref_frame, 0, mbmi->mv, ref_mv,
+                 nearestmv, nearmv, mi_row, mi_col, is_compound, allow_hp, r);
+  aom_merge_corrupted_flag(&xd->corrupted, mv_corrupted_flag);
 
 #if CONFIG_INTERINTRA
   mbmi->use_wedge_interintra = 0;

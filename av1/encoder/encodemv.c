@@ -317,71 +317,11 @@ static void inc_mvs(const MB_MODE_INFO *mbmi, const MB_MODE_INFO_EXT *mbmi_ext,
   }
 }
 
-static void inc_mvs_sub8x8(const MODE_INFO *mi, int block, const int_mv mvs[2],
-                           const MB_MODE_INFO_EXT *mbmi_ext,
-                           nmv_context_counts *nmv_counts
-#if CONFIG_AMVR
-                           ,
-                           MvSubpelPrecision precision
-#endif
-                           ) {
-  int i;
-  PREDICTION_MODE mode = mi->bmi[block].as_mode;
-  const MB_MODE_INFO *mbmi = &mi->mbmi;
-
-  if (mode == NEWMV || mode == NEW_NEWMV) {
-    for (i = 0; i < 1 + has_second_ref(&mi->mbmi); ++i) {
-      const MV *ref = &mi->bmi[block].ref_mv[i].as_mv;
-      const MV diff = { mvs[i].as_mv.row - ref->row,
-                        mvs[i].as_mv.col - ref->col };
-      int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-      int nmv_ctx =
-          av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                      mbmi_ext->ref_mv_stack[rf_type], i, mbmi->ref_mv_idx);
-      nmv_context_counts *counts = &nmv_counts[nmv_ctx];
-#if CONFIG_AMVR
-      av1_inc_mv(&diff, counts, precision);
-#else
-      av1_inc_mv(&diff, counts, 1);
-#endif
-    }
-  } else if (mode == NEAREST_NEWMV || mode == NEAR_NEWMV) {
-    const MV *ref = &mi->bmi[block].ref_mv[1].as_mv;
-    const MV diff = { mvs[1].as_mv.row - ref->row,
-                      mvs[1].as_mv.col - ref->col };
-    int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-    int nmv_ctx =
-        av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                    mbmi_ext->ref_mv_stack[rf_type], 1, mbmi->ref_mv_idx);
-    nmv_context_counts *counts = &nmv_counts[nmv_ctx];
-#if CONFIG_AMVR
-    av1_inc_mv(&diff, counts, precision);
-#else
-    av1_inc_mv(&diff, counts, 1);
-#endif
-  } else if (mode == NEW_NEARESTMV || mode == NEW_NEARMV) {
-    const MV *ref = &mi->bmi[block].ref_mv[0].as_mv;
-    const MV diff = { mvs[0].as_mv.row - ref->row,
-                      mvs[0].as_mv.col - ref->col };
-    int8_t rf_type = av1_ref_frame_type(mbmi->ref_frame);
-    int nmv_ctx =
-        av1_nmv_ctx(mbmi_ext->ref_mv_count[rf_type],
-                    mbmi_ext->ref_mv_stack[rf_type], 0, mbmi->ref_mv_idx);
-    nmv_context_counts *counts = &nmv_counts[nmv_ctx];
-#if CONFIG_AMVR
-    av1_inc_mv(&diff, counts, precision);
-#else
-    av1_inc_mv(&diff, counts, 1);
-#endif
-  }
-}
-
 void av1_update_mv_count(ThreadData *td) {
   const MACROBLOCKD *xd = &td->mb.e_mbd;
   const MODE_INFO *mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const MB_MODE_INFO_EXT *mbmi_ext = td->mb.mbmi_ext;
-  const int unify_bsize = 1;
 #if CONFIG_AMVR
   MvSubpelPrecision precision = 1;
   if (xd->cur_frame_mv_precision_level) {
@@ -389,33 +329,10 @@ void av1_update_mv_count(ThreadData *td) {
   }
 #endif
 
-  if (mbmi->sb_type < BLOCK_8X8 && !unify_bsize) {
-    const int num_4x4_w = num_4x4_blocks_wide_lookup[mbmi->sb_type];
-    const int num_4x4_h = num_4x4_blocks_high_lookup[mbmi->sb_type];
-    int idx, idy;
-
-    for (idy = 0; idy < 2; idy += num_4x4_h) {
-      for (idx = 0; idx < 2; idx += num_4x4_w) {
-        const int i = idy * 2 + idx;
-
-        if (have_newmv_in_inter_mode(mi->bmi[i].as_mode))
-
+  if (have_newmv_in_inter_mode(mbmi->mode))
 #if CONFIG_AMVR
-          inc_mvs_sub8x8(mi, i, mi->bmi[i].as_mv, mbmi_ext, td->counts->mv,
-                         precision);
+    inc_mvs(mbmi, mbmi_ext, mbmi->mv, mbmi->pred_mv, td->counts->mv, precision);
 #else
-          inc_mvs_sub8x8(mi, i, mi->bmi[i].as_mv, mbmi_ext, td->counts->mv);
+    inc_mvs(mbmi, mbmi_ext, mbmi->mv, mbmi->pred_mv, td->counts->mv);
 #endif
-      }
-    }
-  } else {
-    if (have_newmv_in_inter_mode(mbmi->mode))
-
-#if CONFIG_AMVR
-      inc_mvs(mbmi, mbmi_ext, mbmi->mv, mbmi->pred_mv, td->counts->mv,
-              precision);
-#else
-      inc_mvs(mbmi, mbmi_ext, mbmi->mv, mbmi->pred_mv, td->counts->mv);
-#endif
-  }
 }
