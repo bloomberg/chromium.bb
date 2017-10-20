@@ -1920,11 +1920,11 @@ int LayoutText::CaretMinOffset() const {
     DCHECK(!IsTextFragment());
     if (!GetNode())
       return 0;
-    const unsigned candidate =
+    Optional<unsigned> candidate =
         GetNGOffsetMapping().StartOfNextNonCollapsedCharacter(*GetNode(), 0);
     // Align with the legacy behavior that 0 is returned if the entire node
     // contains only collapsed whitespaces.
-    return candidate == TextLength() ? 0 : candidate;
+    return candidate ? *candidate : 0;
   }
 
   InlineTextBox* box = FirstTextBox();
@@ -1942,12 +1942,12 @@ int LayoutText::CaretMaxOffset() const {
     DCHECK(!IsTextFragment());
     if (!GetNode())
       return TextLength();
-    const unsigned candidate =
+    Optional<unsigned> candidate =
         GetNGOffsetMapping().EndOfLastNonCollapsedCharacter(*GetNode(),
                                                             TextLength());
     // Align with the legacy behavior that |TextLength()| is returned if the
     // entire node contains only collapsed whitespaces.
-    return candidate == 0u ? TextLength() : candidate;
+    return candidate ? *candidate : TextLength();
   }
 
   InlineTextBox* box = LastTextBox();

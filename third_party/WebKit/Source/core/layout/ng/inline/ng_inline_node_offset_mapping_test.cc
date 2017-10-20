@@ -58,13 +58,13 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
     return GetOffsetMapping().GetTextContentOffset(node, offset);
   }
 
-  unsigned StartOfNextNonCollapsedCharacter(const Node& node,
-                                            unsigned offset) const {
+  Optional<unsigned> StartOfNextNonCollapsedCharacter(const Node& node,
+                                                      unsigned offset) const {
     return GetOffsetMapping().StartOfNextNonCollapsedCharacter(node, offset);
   }
 
-  unsigned EndOfLastNonCollapsedCharacter(const Node& node,
-                                          unsigned offset) const {
+  Optional<unsigned> EndOfLastNonCollapsedCharacter(const Node& node,
+                                                    unsigned offset) const {
     return GetOffsetMapping().EndOfLastNonCollapsedCharacter(node, offset);
   }
 
@@ -145,15 +145,15 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNode) {
   EXPECT_EQ(2u, GetTextContentOffset(*foo_node, 2));
   EXPECT_EQ(3u, GetTextContentOffset(*foo_node, 3));
 
-  EXPECT_EQ(0u, StartOfNextNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_EQ(1u, StartOfNextNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_EQ(2u, StartOfNextNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_EQ(3u, StartOfNextNonCollapsedCharacter(*foo_node, 3));
+  EXPECT_EQ(0u, *StartOfNextNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_EQ(1u, *StartOfNextNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_EQ(2u, *StartOfNextNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*foo_node, 3));
 
-  EXPECT_EQ(0u, EndOfLastNonCollapsedCharacter(*foo_node, 0));
-  EXPECT_EQ(1u, EndOfLastNonCollapsedCharacter(*foo_node, 1));
-  EXPECT_EQ(2u, EndOfLastNonCollapsedCharacter(*foo_node, 2));
-  EXPECT_EQ(3u, EndOfLastNonCollapsedCharacter(*foo_node, 3));
+  EXPECT_FALSE(EndOfLastNonCollapsedCharacter(*foo_node, 0));
+  EXPECT_EQ(1u, *EndOfLastNonCollapsedCharacter(*foo_node, 1));
+  EXPECT_EQ(2u, *EndOfLastNonCollapsedCharacter(*foo_node, 2));
+  EXPECT_EQ(3u, *EndOfLastNonCollapsedCharacter(*foo_node, 3));
 
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 0));
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*foo_node, 1));
@@ -313,13 +313,13 @@ TEST_F(NGInlineNodeOffsetMappingTest, OneTextNodeWithCollapsedSpace) {
   EXPECT_EQ(6u, GetTextContentOffset(*node, 7));
   EXPECT_EQ(7u, GetTextContentOffset(*node, 8));
 
-  EXPECT_EQ(3u, StartOfNextNonCollapsedCharacter(*node, 3));
-  EXPECT_EQ(5u, StartOfNextNonCollapsedCharacter(*node, 4));
-  EXPECT_EQ(5u, StartOfNextNonCollapsedCharacter(*node, 5));
+  EXPECT_EQ(3u, *StartOfNextNonCollapsedCharacter(*node, 3));
+  EXPECT_EQ(5u, *StartOfNextNonCollapsedCharacter(*node, 4));
+  EXPECT_EQ(5u, *StartOfNextNonCollapsedCharacter(*node, 5));
 
-  EXPECT_EQ(3u, EndOfLastNonCollapsedCharacter(*node, 3));
-  EXPECT_EQ(4u, EndOfLastNonCollapsedCharacter(*node, 4));
-  EXPECT_EQ(4u, EndOfLastNonCollapsedCharacter(*node, 5));
+  EXPECT_EQ(3u, *EndOfLastNonCollapsedCharacter(*node, 3));
+  EXPECT_EQ(4u, *EndOfLastNonCollapsedCharacter(*node, 4));
+  EXPECT_EQ(4u, *EndOfLastNonCollapsedCharacter(*node, 5));
 
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 0));
   EXPECT_TRUE(IsBeforeNonCollapsedCharacter(*node, 1));
@@ -396,8 +396,8 @@ TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
   EXPECT_EQ(6u, GetTextContentOffset(*bar_node, 2));
   EXPECT_EQ(7u, GetTextContentOffset(*bar_node, 3));
 
-  EXPECT_EQ(0u, EndOfLastNonCollapsedCharacter(*space_node, 1u));
-  EXPECT_EQ(1u, StartOfNextNonCollapsedCharacter(*space_node, 0u));
+  EXPECT_FALSE(EndOfLastNonCollapsedCharacter(*space_node, 1u));
+  EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*space_node, 0u));
 }
 
 TEST_F(NGInlineNodeOffsetMappingTest, ReplacedElement) {
@@ -584,8 +584,8 @@ TEST_F(NGInlineNodeOffsetMappingTest, WhiteSpaceTextNodeWithoutLayoutText) {
   Element* div = GetDocument().getElementById("t");
   const Node* text_node = div->firstChild();
 
-  EXPECT_EQ(0u, EndOfLastNonCollapsedCharacter(*text_node, 1u));
-  EXPECT_EQ(1u, StartOfNextNonCollapsedCharacter(*text_node, 0u));
+  EXPECT_FALSE(EndOfLastNonCollapsedCharacter(*text_node, 1u));
+  EXPECT_FALSE(StartOfNextNonCollapsedCharacter(*text_node, 0u));
 }
 
 }  // namespace blink
