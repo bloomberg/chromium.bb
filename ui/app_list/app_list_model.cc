@@ -69,6 +69,7 @@ void AppListModel::SetStateFullscreen(AppListView::AppListState state) {
 
 void AppListModel::SetTabletMode(bool started) {
   is_tablet_mode_ = started;
+  search_box_->SetTabletMode(started);
 }
 
 AppListItem* AppListModel::FindItem(const std::string& id) {
