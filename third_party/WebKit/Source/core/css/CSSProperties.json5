@@ -41,6 +41,29 @@
       valid_type: "list",
       valid_values: ["ParseSingleValue", "ParseShorthand", "IsLayoutDependent"],
     },
+    // - api_custom_apply_functions_all
+    // - api_custom_apply_functions_initial
+    // - api_custom_apply_functions_inherit
+    // - api_custom_apply_functions_value
+    // Handlers of the given types will be declared but not defined. Setting
+    // api_custom_apply_functions_all is equivalent to setting the other three flags
+    api_custom_apply_functions_all: {
+      default: false,
+      valid_type: "bool",
+    },
+    api_custom_apply_functions_initial: {
+      default: false,
+      valid_type: "bool",
+    },
+    api_custom_apply_functions_inherit: {
+      default: false,
+      valid_type: "bool",
+    },
+    api_custom_apply_functions_value: {
+      default: false,
+      valid_type: "bool",
+    },
+
 
     // - is_descriptor
     // Whether it is a CSS descriptor. Descriptors define the characteristics of
@@ -283,29 +306,6 @@
     converter: {
     },
 
-    // - custom_initial
-    // - custom_inherit
-    // - custom_value
-    // - custom_all
-    // Handlers of the given types will be declared but not defined. Setting
-    // custom_all is equivalent to setting the other three flags
-    custom_all: {
-      default: false,
-      valid_type: "bool",
-    },
-    custom_initial: {
-      default: false,
-      valid_type: "bool",
-    },
-    custom_inherit: {
-      default: false,
-      valid_type: "bool",
-    },
-    custom_value: {
-      default: false,
-      valid_type: "bool",
-    },
-
     // - use_handlers_for: "CSSPropertyTransform"
     // Use handlers for the specified property instead of defining new ones
     use_handlers_for: {
@@ -355,7 +355,7 @@
       name: "animation-delay",
       api_class: "CSSPropertyAPIDelay",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
@@ -364,21 +364,21 @@
       api_methods: ["ParseSingleValue"],
       keywords: ["normal", "reverse", "alternate", "alternate-reverse"],
       separator: ",",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-duration",
       api_class: "CSSPropertyAPIDuration",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-fill-mode",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
@@ -387,56 +387,56 @@
       api_methods: ["ParseSingleValue"],
       keywords: ["infinite"],
       separator: ",",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-name",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-play-state",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "animation-timing-function",
       api_class: "CSSPropertyAPITimingFunction",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "transition-delay",
       api_class: "CSSPropertyAPIDelay",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "transition-duration",
       api_class: "CSSPropertyAPIDuration",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "transition-property",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
     {
       name: "transition-timing-function",
       api_class: "CSSPropertyAPITimingFunction",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "Animation",
     },
 
@@ -455,7 +455,7 @@
       default_value: "Color::kBlack",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "High",
     },
     {
@@ -468,7 +468,7 @@
       keywords: ["ltr", "rtl"],
       default_value: "ltr",
       type_name: "TextDirection",
-      custom_value: true,
+      api_custom_apply_functions_value: true,
       priority: "High",
     },
     {
@@ -628,7 +628,7 @@
       api_methods: ["ParseSingleValue"],
       inherited: true,
       font: true,
-      custom_value: true,
+      api_custom_apply_functions_value: true,
       priority: "High",
     },
     {
@@ -640,7 +640,7 @@
       keywords: ["sideways", "mixed", "upright"],
       default_value: "mixed",
       getter: "GetTextOrientation",
-      custom_value: true,
+      api_custom_apply_functions_value: true,
       priority: "High",
     },
     {
@@ -648,7 +648,7 @@
       api_class: "CSSPropertyAPIInherited",
       inherited: true,
       type_name: "TextOrientation",
-      custom_value: true,
+      api_custom_apply_functions_value: true,
       priority: "High",
     },
     {
@@ -660,7 +660,7 @@
       keywords: ["horizontal-tb", "vertical-rl", "vertical-lr"],
       default_value: "horizontal-tb",
       type_name: "WritingMode",
-      custom_value: true,
+      api_custom_apply_functions_value: true,
       priority: "High",
     },
     {
@@ -668,7 +668,7 @@
       api_class: "CSSPropertyAPIInherited",
       inherited: true,
       type_name: "WritingMode",
-      custom_value: true,
+      api_custom_apply_functions_value: true,
       priority: "High",
     },
     {
@@ -689,7 +689,7 @@
       default_value: "1.0",
       type_name: "float",
       computed_style_custom_functions: ["setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
       priority: "High",
     },
     {
@@ -755,19 +755,19 @@
       name: "background-attachment",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-blend-mode",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-clip",
       api_class: "CSSPropertyAPIBackgroundBox",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-color",
@@ -780,7 +780,7 @@
       default_value: "StyleColor(Color::kTransparent)",
       type_name: "StyleColor",
       computed_style_custom_functions: ["getter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-image",
@@ -789,42 +789,42 @@
       interpolable: true,
       keywords: ["auto", "none"],
       typedom_types: ["Image"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-origin",
       api_class: "CSSPropertyAPIBackgroundBox",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-position-x",
       api_class: "CSSPropertyAPIPositionX",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-position-y",
       api_class: "CSSPropertyAPIPositionY",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-repeat-x",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-repeat-y",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "background-size",
       api_class: "CSSPropertyAPIBackgroundOrMaskSize",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "baseline-shift",
@@ -832,8 +832,8 @@
       api_methods: ["ParseSingleValue"],
       interpolable: true,
       svg: true,
-      custom_inherit: true,
-      custom_value: true,
+      api_custom_apply_functions_inherit: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "border-bottom-color",
@@ -846,7 +846,7 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -913,20 +913,20 @@
       api_class: "CSSPropertyAPIBorderImageOutset",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-image-repeat",
       api_class: "CSSPropertyAPIBorderImageRepeat",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-image-slice",
       api_class: "CSSPropertyAPIBorderImageSlice",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-image-source",
@@ -935,14 +935,14 @@
       interpolable: true,
       keywords: ["none"],
       typedom_types: ["Image"],
-      custom_value: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "border-image-width",
       api_class: "CSSPropertyAPIBorderImageWidth",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-left-color",
@@ -955,7 +955,7 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-left-style",
@@ -995,7 +995,7 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-right-style",
@@ -1035,7 +1035,7 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "border-top-left-radius",
@@ -1177,7 +1177,7 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "clear",
@@ -1197,7 +1197,7 @@
       type_name: "LengthBox",
       computed_style_custom_functions: ["setter"],
       converter: "ConvertClip",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "clip-path",
@@ -1271,19 +1271,19 @@
       separator: ",",
       type_name: "ContentData",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "counter-increment",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "counter-reset",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "cursor",
@@ -1301,7 +1301,7 @@
         "zoom-out", "-webkit-grab", "-webkit-grabbing"
       ],
       default_value: "auto",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "cx",
@@ -1362,7 +1362,7 @@
       inherited: true,
       svg: true,
       setter: "SetFillPaint",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "fill-opacity",
@@ -1562,7 +1562,7 @@
       name: "grid-template-areas",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "grid-template-columns",
@@ -1573,7 +1573,7 @@
       include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "grid-template-rows",
@@ -1584,7 +1584,7 @@
       include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
       default_value: "Vector<GridTrackSize>()",
       type_name: "Vector<GridTrackSize>",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "height",
@@ -1742,7 +1742,7 @@
       typedom_types: ["Image"],
       type_name: "StyleImage",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_value: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "list-style-position",
@@ -1855,7 +1855,7 @@
       api_class: true,
       api_methods: ["ParseSingleValue"],
       runtime_flag: "CSSMaskSourceType",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "mask-type",
@@ -2044,7 +2044,7 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "outline-offset",
@@ -2068,7 +2068,7 @@
       ],
       default_value: "none",
       type_name: "EBorderStyle",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "outline-width",
@@ -2214,7 +2214,7 @@
       ],
       default_value: "static",
       getter: "GetPosition",
-      custom_inherit: true,
+      api_custom_apply_functions_inherit: true,
     },
     {
       name: "quotes",
@@ -2235,7 +2235,7 @@
       field_template: "keyword",
       keywords: ["none", "both", "horizontal", "vertical"],
       default_value: "none",
-      custom_value: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "right",
@@ -2581,7 +2581,7 @@
       name: "size",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "speak",
@@ -2619,7 +2619,7 @@
       inherited: true,
       svg: true,
       setter: "SetStrokePaint",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "stroke-dasharray",
@@ -2718,7 +2718,7 @@
       ],
       default_value: "start",
       getter: "GetTextAlign",
-      custom_value: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "text-align-last",
@@ -2755,7 +2755,7 @@
       include_paths: ["core/css/StyleColor.h"],
       default_value: "StyleColor::CurrentColor()",
       type_name: "StyleColor",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "text-decoration-line",
@@ -2798,7 +2798,7 @@
       field_group: "*",
       field_template: "<length>",
       default_value: "Length(kFixed)",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "text-justify",
@@ -2999,8 +2999,8 @@
       api_class: true,
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_inherit: true,
-      custom_value: true,
+      api_custom_apply_functions_inherit: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "visibility",
@@ -3043,7 +3043,7 @@
       keywords: ["none", "drag", "no-drag"],
       default_value: "none",
       name_for_methods: "DraggableRegionMode",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-background-clip",
@@ -3074,7 +3074,7 @@
       name: "-webkit-border-image",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_value: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "-webkit-border-vertical-spacing",
@@ -3186,7 +3186,7 @@
       default_value: "1",
       type_name: "unsigned short",
       computed_style_custom_functions: ["setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "column-gap",
@@ -3199,7 +3199,7 @@
       type_name: "float",
       computed_style_custom_functions: ["setter"],
       converter: "ConvertComputedLength<float>",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "column-rule-color",
@@ -3212,7 +3212,7 @@
       default_value: "0",
       type_name: "Color",
       computed_style_custom_functions: ["getter","setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "column-rule-style",
@@ -3259,7 +3259,7 @@
       type_name: "float",
       computed_style_custom_functions: ["setter"],
       converter: "ConvertComputedLength<float>",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-highlight",
@@ -3344,88 +3344,88 @@
       api_class: "CSSPropertyAPIBorderImageOutset",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-repeat",
       api_class: "CSSPropertyAPIBorderImageRepeat",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-slice",
       api_class: "CSSPropertyAPIBorderImageSlice",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-box-image-source",
       api_class: "CSSPropertyAPIImageSource",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_value: true,
+      api_custom_apply_functions_value: true,
     },
     {
       name: "-webkit-mask-box-image-width",
       api_class: "CSSPropertyAPIBorderImageWidth",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-clip",
       api_class: "CSSPropertyAPIWebkitClip",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-composite",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-image",
       api_class: "CSSPropertyAPIBackgroundOrMaskImage",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-origin",
       api_class: "CSSPropertyAPIWebkitOrigin",
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-x",
       api_class: "CSSPropertyAPIPositionX",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-position-y",
       api_class: "CSSPropertyAPIPositionY",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-repeat-x",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-repeat-y",
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-mask-size",
       api_class: "CSSPropertyAPIBackgroundOrMaskSize",
       api_methods: ["ParseSingleValue"],
       interpolable: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-perspective-origin-x",
@@ -3499,7 +3499,7 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-text-emphasis-position",
@@ -3518,7 +3518,7 @@
       api_class: true,
       api_methods: ["ParseSingleValue"],
       inherited: true,
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-text-fill-color",
@@ -3531,7 +3531,7 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-text-security",
@@ -3554,7 +3554,7 @@
       default_value: "Color()",
       type_name: "Color",
       computed_style_custom_functions: ["getter", "setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "-webkit-text-stroke-width",
@@ -3652,7 +3652,7 @@
       name: "will-change",
       api_class: true,
       api_methods: ["ParseSingleValue"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
     {
       name: "word-break",
@@ -3691,7 +3691,7 @@
       default_value: "0",
       type_name: "int",
       computed_style_custom_functions: ["setter"],
-      custom_all: true,
+      api_custom_apply_functions_all: true,
     },
 
     // CSS logical props
