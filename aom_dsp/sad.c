@@ -33,6 +33,28 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
   return sad;
 }
 
+#if CONFIG_JNT_COMP
+#define sadMxN(m, n)                                                          \
+  unsigned int aom_sad##m##x##n##_c(const uint8_t *src, int src_stride,       \
+                                    const uint8_t *ref, int ref_stride) {     \
+    return sad(src, src_stride, ref, ref_stride, m, n);                       \
+  }                                                                           \
+  unsigned int aom_sad##m##x##n##_avg_c(const uint8_t *src, int src_stride,   \
+                                        const uint8_t *ref, int ref_stride,   \
+                                        const uint8_t *second_pred) {         \
+    uint8_t comp_pred[m * n];                                                 \
+    aom_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride);         \
+    return sad(src, src_stride, comp_pred, m, m, n);                          \
+  }                                                                           \
+  unsigned int aom_jnt_sad##m##x##n##_avg_c(                                  \
+      const uint8_t *src, int src_stride, const uint8_t *ref, int ref_stride, \
+      const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {         \
+    uint8_t comp_pred[m * n];                                                 \
+    aom_jnt_comp_avg_pred(comp_pred, second_pred, m, n, ref, ref_stride,      \
+                          jcp_param);                                         \
+    return sad(src, src_stride, comp_pred, m, m, n);                          \
+  }
+#else  // CONFIG_JNT_COMP
 #define sadMxN(m, n)                                                        \
   unsigned int aom_sad##m##x##n##_c(const uint8_t *src, int src_stride,     \
                                     const uint8_t *ref, int ref_stride) {   \
@@ -45,6 +67,7 @@ static INLINE unsigned int sad(const uint8_t *a, int a_stride, const uint8_t *b,
     aom_comp_avg_pred_c(comp_pred, second_pred, m, n, ref, ref_stride);     \
     return sad(src, src_stride, comp_pred, m, m, n);                        \
   }
+#endif  // CONFIG_JNT_COMP
 
 // depending on call sites, pass **ref_array to avoid & in subsequent call and
 // de-dup with 4D below.

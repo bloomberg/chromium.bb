@@ -180,6 +180,43 @@ static void var_filter_block2d_bil_second_pass(const uint16_t *a, uint8_t *b,
     return aom_variance##W##x##H##_c(temp2, W, b, b_stride, sse);       \
   }
 
+#if CONFIG_JNT_COMP
+#define SUBPIX_AVG_VAR(W, H)                                              \
+  uint32_t aom_sub_pixel_avg_variance##W##x##H##_c(                       \
+      const uint8_t *a, int a_stride, int xoffset, int yoffset,           \
+      const uint8_t *b, int b_stride, uint32_t *sse,                      \
+      const uint8_t *second_pred) {                                       \
+    uint16_t fdata3[(H + 1) * W];                                         \
+    uint8_t temp2[H * W];                                                 \
+    DECLARE_ALIGNED(16, uint8_t, temp3[H * W]);                           \
+                                                                          \
+    var_filter_block2d_bil_first_pass(a, fdata3, a_stride, 1, H + 1, W,   \
+                                      bilinear_filters_2t[xoffset]);      \
+    var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,         \
+                                       bilinear_filters_2t[yoffset]);     \
+                                                                          \
+    aom_comp_avg_pred(temp3, second_pred, W, H, temp2, W);                \
+                                                                          \
+    return aom_variance##W##x##H##_c(temp3, W, b, b_stride, sse);         \
+  }                                                                       \
+  uint32_t aom_jnt_sub_pixel_avg_variance##W##x##H##_c(                   \
+      const uint8_t *a, int a_stride, int xoffset, int yoffset,           \
+      const uint8_t *b, int b_stride, uint32_t *sse,                      \
+      const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param) {     \
+    uint16_t fdata3[(H + 1) * W];                                         \
+    uint8_t temp2[H * W];                                                 \
+    DECLARE_ALIGNED(16, uint8_t, temp3[H * W]);                           \
+                                                                          \
+    var_filter_block2d_bil_first_pass(a, fdata3, a_stride, 1, H + 1, W,   \
+                                      bilinear_filters_2t[xoffset]);      \
+    var_filter_block2d_bil_second_pass(fdata3, temp2, W, W, H, W,         \
+                                       bilinear_filters_2t[yoffset]);     \
+                                                                          \
+    aom_jnt_comp_avg_pred(temp3, second_pred, W, H, temp2, W, jcp_param); \
+                                                                          \
+    return aom_variance##W##x##H##_c(temp3, W, b, b_stride, sse);         \
+  }
+#else  // CONFIG_JNT_COMP
 #define SUBPIX_AVG_VAR(W, H)                                            \
   uint32_t aom_sub_pixel_avg_variance##W##x##H##_c(                     \
       const uint8_t *a, int a_stride, int xoffset, int yoffset,         \
@@ -198,6 +235,7 @@ static void var_filter_block2d_bil_second_pass(const uint16_t *a, uint8_t *b,
                                                                         \
     return aom_variance##W##x##H##_c(temp3, W, b, b_stride, sse);       \
   }
+#endif  // CONFIG_JNT_COMP
 
 /* Identical to the variance call except it takes an additional parameter, sum,
  * and returns that value using pass-by-reference instead of returning
@@ -275,23 +313,11 @@ MSE(8, 8)
 void aom_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
                          int height, const uint8_t *ref, int ref_stride) {
   int i, j;
-#if CONFIG_JNT_COMP
-  int bck_offset = pred[4096];
-  int fwd_offset = pred[4097];
-  double sum = bck_offset + fwd_offset;
-#endif  // CONFIG_JNT_COMP
 
   for (i = 0; i < height; ++i) {
     for (j = 0; j < width; ++j) {
-#if CONFIG_JNT_COMP
-      int tmp = pred[j] * fwd_offset + ref[j] * bck_offset;
-      tmp = (int)(0.5 + tmp / sum);
-      if (tmp > 255) tmp = 255;
-      comp_pred[j] = (uint8_t)tmp;
-#else
       const int tmp = pred[j] + ref[j];
       comp_pred[j] = ROUND_POWER_OF_TWO(tmp, 1);
-#endif  // CONFIG_JNT_COMP
     }
     comp_pred += width;
     pred += width;
@@ -352,35 +378,65 @@ void aom_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
                                    int subpel_y_q3, const uint8_t *ref,
                                    int ref_stride) {
   int i, j;
-#if CONFIG_JNT_COMP
-  int bck_offset = pred[4096];
-  int fwd_offset = pred[4097];
-  double sum = bck_offset + fwd_offset;
-#endif  // CONFIG_JNT_COMP
 
-#if CONFIG_JNT_COMP
-  aom_upsampled_pred_c(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
-                       ref_stride);
-#else
   aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
                      ref_stride);
-#endif  // CONFIG_JNT_COMP
-
   for (i = 0; i < height; i++) {
     for (j = 0; j < width; j++) {
-#if CONFIG_JNT_COMP
-      int tmp = pred[j] * fwd_offset + comp_pred[j] * bck_offset;
-      tmp = (int)(0.5 + tmp / sum);
-      if (tmp > 255) tmp = 255;
-      comp_pred[j] = (uint8_t)tmp;
-#else
       comp_pred[j] = ROUND_POWER_OF_TWO(comp_pred[j] + pred[j], 1);
-#endif  // CONFIG_JNT_COMP
     }
     comp_pred += width;
     pred += width;
   }
 }
+
+#if CONFIG_JNT_COMP
+void aom_jnt_comp_avg_pred_c(uint8_t *comp_pred, const uint8_t *pred, int width,
+                             int height, const uint8_t *ref, int ref_stride,
+                             const JNT_COMP_PARAMS *jcp_param) {
+  int i, j;
+  const int fwd_offset = jcp_param->fwd_offset;
+  const int bck_offset = jcp_param->bck_offset;
+  double sum = bck_offset + fwd_offset;
+
+  for (i = 0; i < height; ++i) {
+    for (j = 0; j < width; ++j) {
+      int tmp = pred[j] * bck_offset + ref[j] * fwd_offset;
+      tmp = (int)(0.5 + tmp / sum);
+      if (tmp > 255) tmp = 255;
+      comp_pred[j] = (uint8_t)tmp;
+    }
+    comp_pred += width;
+    pred += width;
+    ref += ref_stride;
+  }
+}
+
+void aom_jnt_comp_avg_upsampled_pred_c(uint8_t *comp_pred, const uint8_t *pred,
+                                       int width, int height, int subpel_x_q3,
+                                       int subpel_y_q3, const uint8_t *ref,
+                                       int ref_stride,
+                                       const JNT_COMP_PARAMS *jcp_param) {
+  int i, j;
+  const int fwd_offset = jcp_param->fwd_offset;
+  const int bck_offset = jcp_param->bck_offset;
+  double sum = bck_offset + fwd_offset;
+
+  aom_upsampled_pred(comp_pred, width, height, subpel_x_q3, subpel_y_q3, ref,
+                     ref_stride);
+
+  for (i = 0; i < height; i++) {
+    for (j = 0; j < width; j++) {
+      int tmp = pred[j] * bck_offset + comp_pred[j] * fwd_offset;
+      tmp = (int)(0.5 + tmp / sum);
+      if (tmp > 255) tmp = 255;
+      comp_pred[j] = (uint8_t)tmp;
+    }
+    comp_pred += width;
+    pred += width;
+  }
+}
+#endif  // CONFIG_JNT_COMP
 
 #if CONFIG_HIGHBITDEPTH
 static void highbd_variance64(const uint8_t *a8, int a_stride,

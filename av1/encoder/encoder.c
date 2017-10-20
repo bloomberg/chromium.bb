@@ -2758,6 +2758,19 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   av1_set_speed_features_framesize_independent(cpi);
   av1_set_speed_features_framesize_dependent(cpi);
 
+#if CONFIG_JNT_COMP
+#define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX3F, SDX8F, SDX4DF, JSDAF, JSVAF) \
+  cpi->fn_ptr[BT].sdf = SDF;                                                  \
+  cpi->fn_ptr[BT].sdaf = SDAF;                                                \
+  cpi->fn_ptr[BT].vf = VF;                                                    \
+  cpi->fn_ptr[BT].svf = SVF;                                                  \
+  cpi->fn_ptr[BT].svaf = SVAF;                                                \
+  cpi->fn_ptr[BT].sdx3f = SDX3F;                                              \
+  cpi->fn_ptr[BT].sdx8f = SDX8F;                                              \
+  cpi->fn_ptr[BT].sdx4df = SDX4DF;                                            \
+  cpi->fn_ptr[BT].jsdaf = JSDAF;                                              \
+  cpi->fn_ptr[BT].jsvaf = JSVAF;
+#else  // CONFIG_JNT_COMP
 #define BFP(BT, SDF, SDAF, VF, SVF, SVAF, SDX3F, SDX8F, SDX4DF) \
   cpi->fn_ptr[BT].sdf = SDF;                                    \
   cpi->fn_ptr[BT].sdaf = SDAF;                                  \
@@ -2767,7 +2780,142 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   cpi->fn_ptr[BT].sdx3f = SDX3F;                                \
   cpi->fn_ptr[BT].sdx8f = SDX8F;                                \
   cpi->fn_ptr[BT].sdx4df = SDX4DF;
+#endif  // CONFIG_JNT_COMP
 
+#if CONFIG_JNT_COMP
+#if CONFIG_EXT_PARTITION_TYPES
+  BFP(BLOCK_4X16, aom_sad4x16, aom_sad4x16_avg, aom_variance4x16,
+      aom_sub_pixel_variance4x16, aom_sub_pixel_avg_variance4x16, NULL, NULL,
+      aom_sad4x16x4d, aom_jnt_sad4x16_avg_c,
+      aom_jnt_sub_pixel_avg_variance4x16_c)
+
+  BFP(BLOCK_16X4, aom_sad16x4, aom_sad16x4_avg, aom_variance16x4,
+      aom_sub_pixel_variance16x4, aom_sub_pixel_avg_variance16x4, NULL, NULL,
+      aom_sad16x4x4d, aom_jnt_sad16x4_avg_c,
+      aom_jnt_sub_pixel_avg_variance16x4_c)
+
+  BFP(BLOCK_8X32, aom_sad8x32, aom_sad8x32_avg, aom_variance8x32,
+      aom_sub_pixel_variance8x32, aom_sub_pixel_avg_variance8x32, NULL, NULL,
+      aom_sad8x32x4d, aom_jnt_sad8x32_avg_c,
+      aom_jnt_sub_pixel_avg_variance8x32_c)
+
+  BFP(BLOCK_32X8, aom_sad32x8, aom_sad32x8_avg, aom_variance32x8,
+      aom_sub_pixel_variance32x8, aom_sub_pixel_avg_variance32x8, NULL, NULL,
+      aom_sad32x8x4d, aom_jnt_sad32x8_avg_c,
+      aom_jnt_sub_pixel_avg_variance32x8_c)
+
+  BFP(BLOCK_16X64, aom_sad16x64, aom_sad16x64_avg, aom_variance16x64,
+      aom_sub_pixel_variance16x64, aom_sub_pixel_avg_variance16x64, NULL, NULL,
+      aom_sad16x64x4d, aom_jnt_sad16x64_avg_c,
+      aom_jnt_sub_pixel_avg_variance16x64_c)
+
+  BFP(BLOCK_64X16, aom_sad64x16, aom_sad64x16_avg, aom_variance64x16,
+      aom_sub_pixel_variance64x16, aom_sub_pixel_avg_variance64x16, NULL, NULL,
+      aom_sad64x16x4d, aom_jnt_sad64x16_avg_c,
+      aom_jnt_sub_pixel_avg_variance64x16_c)
+
+#if CONFIG_EXT_PARTITION
+  BFP(BLOCK_32X128, aom_sad32x128, aom_sad32x128_avg, aom_variance32x128,
+      aom_sub_pixel_variance32x128, aom_sub_pixel_avg_variance32x128, NULL,
+      NULL, aom_sad32x128x4d, aom_jnt_sad32x128_avg_c,
+      aom_jnt_sub_pixel_avg_variance32x128_c)
+
+  BFP(BLOCK_128X32, aom_sad128x32, aom_sad128x32_avg, aom_variance128x32,
+      aom_sub_pixel_variance128x32, aom_sub_pixel_avg_variance128x32, NULL,
+      NULL, aom_sad128x32x4d, aom_jnt_sad128x32_avg_c,
+      aom_jnt_sub_pixel_avg_variance128x32_c)
+#endif  // CONFIG_EXT_PARTITION
+#endif  // CONFIG_EXT_PARTITION_TYPES
+
+#if CONFIG_EXT_PARTITION
+  BFP(BLOCK_128X128, aom_sad128x128, aom_sad128x128_avg, aom_variance128x128,
+      aom_sub_pixel_variance128x128, aom_sub_pixel_avg_variance128x128,
+      aom_sad128x128x3, aom_sad128x128x8, aom_sad128x128x4d,
+      aom_jnt_sad128x128_avg_c, aom_jnt_sub_pixel_avg_variance128x128_c)
+
+  BFP(BLOCK_128X64, aom_sad128x64, aom_sad128x64_avg, aom_variance128x64,
+      aom_sub_pixel_variance128x64, aom_sub_pixel_avg_variance128x64, NULL,
+      NULL, aom_sad128x64x4d, aom_jnt_sad128x64_avg_c,
+      aom_jnt_sub_pixel_avg_variance128x64_c)
+
+  BFP(BLOCK_64X128, aom_sad64x128, aom_sad64x128_avg, aom_variance64x128,
+      aom_sub_pixel_variance64x128, aom_sub_pixel_avg_variance64x128, NULL,
+      NULL, aom_sad64x128x4d, aom_jnt_sad64x128_avg_c,
+      aom_jnt_sub_pixel_avg_variance64x128_c)
+#endif  // CONFIG_EXT_PARTITION
+
+  BFP(BLOCK_32X16, aom_sad32x16, aom_sad32x16_avg, aom_variance32x16,
+      aom_sub_pixel_variance32x16, aom_sub_pixel_avg_variance32x16, NULL, NULL,
+      aom_sad32x16x4d, aom_jnt_sad32x16_avg_c,
+      aom_jnt_sub_pixel_avg_variance32x16_c)
+
+  BFP(BLOCK_16X32, aom_sad16x32, aom_sad16x32_avg, aom_variance16x32,
+      aom_sub_pixel_variance16x32, aom_sub_pixel_avg_variance16x32, NULL, NULL,
+      aom_sad16x32x4d, aom_jnt_sad16x32_avg_c,
+      aom_jnt_sub_pixel_avg_variance16x32_c)
+
+  BFP(BLOCK_64X32, aom_sad64x32, aom_sad64x32_avg, aom_variance64x32,
+      aom_sub_pixel_variance64x32, aom_sub_pixel_avg_variance64x32, NULL, NULL,
+      aom_sad64x32x4d, aom_jnt_sad64x32_avg_c,
+      aom_jnt_sub_pixel_avg_variance64x32_c)
+
+  BFP(BLOCK_32X64, aom_sad32x64, aom_sad32x64_avg, aom_variance32x64,
+      aom_sub_pixel_variance32x64, aom_sub_pixel_avg_variance32x64, NULL, NULL,
+      aom_sad32x64x4d, aom_jnt_sad32x64_avg_c,
+      aom_jnt_sub_pixel_avg_variance32x64_c)
+
+  BFP(BLOCK_32X32, aom_sad32x32, aom_sad32x32_avg, aom_variance32x32,
+      aom_sub_pixel_variance32x32, aom_sub_pixel_avg_variance32x32,
+      aom_sad32x32x3, aom_sad32x32x8, aom_sad32x32x4d, aom_jnt_sad32x32_avg_c,
+      aom_jnt_sub_pixel_avg_variance32x32_c)
+
+  BFP(BLOCK_64X64, aom_sad64x64, aom_sad64x64_avg, aom_variance64x64,
+      aom_sub_pixel_variance64x64, aom_sub_pixel_avg_variance64x64,
+      aom_sad64x64x3, aom_sad64x64x8, aom_sad64x64x4d, aom_jnt_sad64x64_avg_c,
+      aom_jnt_sub_pixel_avg_variance64x64_c)
+
+  BFP(BLOCK_16X16, aom_sad16x16, aom_sad16x16_avg, aom_variance16x16,
+      aom_sub_pixel_variance16x16, aom_sub_pixel_avg_variance16x16,
+      aom_sad16x16x3, aom_sad16x16x8, aom_sad16x16x4d, aom_jnt_sad16x16_avg_c,
+      aom_jnt_sub_pixel_avg_variance16x16_c)
+
+  BFP(BLOCK_16X8, aom_sad16x8, aom_sad16x8_avg, aom_variance16x8,
+      aom_sub_pixel_variance16x8, aom_sub_pixel_avg_variance16x8, aom_sad16x8x3,
+      aom_sad16x8x8, aom_sad16x8x4d, aom_jnt_sad16x8_avg_c,
+      aom_jnt_sub_pixel_avg_variance16x8_c)
+
+  BFP(BLOCK_8X16, aom_sad8x16, aom_sad8x16_avg, aom_variance8x16,
+      aom_sub_pixel_variance8x16, aom_sub_pixel_avg_variance8x16, aom_sad8x16x3,
+      aom_sad8x16x8, aom_sad8x16x4d, aom_jnt_sad8x16_avg_c,
+      aom_jnt_sub_pixel_avg_variance8x16_c)
+
+  BFP(BLOCK_8X8, aom_sad8x8, aom_sad8x8_avg, aom_variance8x8,
+      aom_sub_pixel_variance8x8, aom_sub_pixel_avg_variance8x8, aom_sad8x8x3,
+      aom_sad8x8x8, aom_sad8x8x4d, aom_jnt_sad8x8_avg_c,
+      aom_jnt_sub_pixel_avg_variance8x8_c)
+
+  BFP(BLOCK_8X4, aom_sad8x4, aom_sad8x4_avg, aom_variance8x4,
+      aom_sub_pixel_variance8x4, aom_sub_pixel_avg_variance8x4, NULL,
+      aom_sad8x4x8, aom_sad8x4x4d, aom_jnt_sad8x4_avg_c,
+      aom_jnt_sub_pixel_avg_variance8x4_c)
+
+  BFP(BLOCK_4X8, aom_sad4x8, aom_sad4x8_avg, aom_variance4x8,
+      aom_sub_pixel_variance4x8, aom_sub_pixel_avg_variance4x8, NULL,
+      aom_sad4x8x8, aom_sad4x8x4d, aom_jnt_sad4x8_avg_c,
+      aom_jnt_sub_pixel_avg_variance4x8_c)
+
+  BFP(BLOCK_4X4, aom_sad4x4, aom_sad4x4_avg, aom_variance4x4,
+      aom_sub_pixel_variance4x4, aom_sub_pixel_avg_variance4x4, aom_sad4x4x3,
+      aom_sad4x4x8, aom_sad4x4x4d, aom_jnt_sad4x4_avg_c,
+      aom_jnt_sub_pixel_avg_variance4x4_c)
+
+  BFP(BLOCK_2X2, NULL, NULL, aom_variance2x2, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL)
+  BFP(BLOCK_2X4, NULL, NULL, aom_variance2x4, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL)
+  BFP(BLOCK_4X2, NULL, NULL, aom_variance4x2, NULL, NULL, NULL, NULL, NULL,
+      NULL, NULL)
+#else  // CONFIG_JNT_COMP
 #if CONFIG_EXT_PARTITION_TYPES
   BFP(BLOCK_4X16, aom_sad4x16, aom_sad4x16_avg, aom_variance4x16,
       aom_sub_pixel_variance4x16, aom_sub_pixel_avg_variance4x16, NULL, NULL,
@@ -2818,59 +2966,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
       NULL, aom_sad64x128x4d)
 #endif  // CONFIG_EXT_PARTITION
 
-#if CONFIG_JNT_COMP
-  BFP(BLOCK_32X16, aom_sad32x16, aom_sad32x16_avg_c, aom_variance32x16,
-      aom_sub_pixel_variance32x16, aom_sub_pixel_avg_variance32x16, NULL, NULL,
-      aom_sad32x16x4d)
-
-  BFP(BLOCK_16X32, aom_sad16x32, aom_sad16x32_avg_c, aom_variance16x32,
-      aom_sub_pixel_variance16x32, aom_sub_pixel_avg_variance16x32, NULL, NULL,
-      aom_sad16x32x4d)
-
-  BFP(BLOCK_64X32, aom_sad64x32, aom_sad64x32_avg_c, aom_variance64x32,
-      aom_sub_pixel_variance64x32, aom_sub_pixel_avg_variance64x32, NULL, NULL,
-      aom_sad64x32x4d)
-
-  BFP(BLOCK_32X64, aom_sad32x64, aom_sad32x64_avg_c, aom_variance32x64,
-      aom_sub_pixel_variance32x64, aom_sub_pixel_avg_variance32x64, NULL, NULL,
-      aom_sad32x64x4d)
-
-  BFP(BLOCK_32X32, aom_sad32x32, aom_sad32x32_avg_c, aom_variance32x32,
-      aom_sub_pixel_variance32x32, aom_sub_pixel_avg_variance32x32,
-      aom_sad32x32x3, aom_sad32x32x8, aom_sad32x32x4d)
-
-  BFP(BLOCK_64X64, aom_sad64x64, aom_sad64x64_avg_c, aom_variance64x64,
-      aom_sub_pixel_variance64x64, aom_sub_pixel_avg_variance64x64,
-      aom_sad64x64x3, aom_sad64x64x8, aom_sad64x64x4d)
-
-  BFP(BLOCK_16X16, aom_sad16x16, aom_sad16x16_avg_c, aom_variance16x16,
-      aom_sub_pixel_variance16x16, aom_sub_pixel_avg_variance16x16,
-      aom_sad16x16x3, aom_sad16x16x8, aom_sad16x16x4d)
-
-  BFP(BLOCK_16X8, aom_sad16x8, aom_sad16x8_avg_c, aom_variance16x8,
-      aom_sub_pixel_variance16x8, aom_sub_pixel_avg_variance16x8, aom_sad16x8x3,
-      aom_sad16x8x8, aom_sad16x8x4d)
-
-  BFP(BLOCK_8X16, aom_sad8x16, aom_sad8x16_avg_c, aom_variance8x16,
-      aom_sub_pixel_variance8x16, aom_sub_pixel_avg_variance8x16, aom_sad8x16x3,
-      aom_sad8x16x8, aom_sad8x16x4d)
-
-  BFP(BLOCK_8X8, aom_sad8x8, aom_sad8x8_avg_c, aom_variance8x8,
-      aom_sub_pixel_variance8x8, aom_sub_pixel_avg_variance8x8, aom_sad8x8x3,
-      aom_sad8x8x8, aom_sad8x8x4d)
-
-  BFP(BLOCK_8X4, aom_sad8x4, aom_sad8x4_avg_c, aom_variance8x4,
-      aom_sub_pixel_variance8x4, aom_sub_pixel_avg_variance8x4, NULL,
-      aom_sad8x4x8, aom_sad8x4x4d)
-
-  BFP(BLOCK_4X8, aom_sad4x8, aom_sad4x8_avg_c, aom_variance4x8,
-      aom_sub_pixel_variance4x8, aom_sub_pixel_avg_variance4x8, NULL,
-      aom_sad4x8x8, aom_sad4x8x4d)
-
-  BFP(BLOCK_4X4, aom_sad4x4, aom_sad4x4_avg_c, aom_variance4x4,
-      aom_sub_pixel_variance4x4, aom_sub_pixel_avg_variance4x4, aom_sad4x4x3,
-      aom_sad4x4x8, aom_sad4x4x4d)
-#else
   BFP(BLOCK_32X16, aom_sad32x16, aom_sad32x16_avg, aom_variance32x16,
       aom_sub_pixel_variance32x16, aom_sub_pixel_avg_variance32x16, NULL, NULL,
       aom_sad32x16x4d)
@@ -2922,11 +3017,11 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   BFP(BLOCK_4X4, aom_sad4x4, aom_sad4x4_avg, aom_variance4x4,
       aom_sub_pixel_variance4x4, aom_sub_pixel_avg_variance4x4, aom_sad4x4x3,
       aom_sad4x4x8, aom_sad4x4x4d)
-#endif  // CONFIG_JNT_COMP
 
   BFP(BLOCK_2X2, NULL, NULL, aom_variance2x2, NULL, NULL, NULL, NULL, NULL)
   BFP(BLOCK_2X4, NULL, NULL, aom_variance2x4, NULL, NULL, NULL, NULL, NULL)
   BFP(BLOCK_4X2, NULL, NULL, aom_variance4x2, NULL, NULL, NULL, NULL, NULL)
+#endif  // CONFIG_JNT_COMP
 
 #define OBFP(BT, OSDF, OVF, OSVF) \
   cpi->fn_ptr[BT].osdf = OSDF;    \

@@ -7,6 +7,7 @@ print <<EOF
 #include "aom/aom_integer.h"
 #include "aom_dsp/aom_dsp_common.h"
 #include "av1/common/enums.h"
+#include "av1/common/blockd.h"
 
 EOF
 }
@@ -829,6 +830,9 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     ($w, $h) = @$_;
     add_proto qw/unsigned int/, "aom_sad${w}x${h}", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride";
     add_proto qw/unsigned int/, "aom_sad${w}x${h}_avg", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred";
+    if (aom_config("CONFIG_JNT_COMP") eq "yes") {
+      add_proto qw/unsigned int/, "aom_jnt_sad${w}x${h}_avg", "const uint8_t *src_ptr, int src_stride, const uint8_t *ref_ptr, int ref_stride, const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param";
+    }
   }
 
   specialize qw/aom_sad128x128    avx2          sse2/;
@@ -1100,8 +1104,13 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   #
   add_proto qw/void aom_upsampled_pred/, "uint8_t *comp_pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride";
   specialize qw/aom_upsampled_pred sse2/;
+
   add_proto qw/void aom_comp_avg_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride";
   specialize qw/aom_comp_avg_upsampled_pred sse2/;
+
+  if (aom_config("CONFIG_JNT_COMP") eq "yes") {
+    add_proto qw/void aom_jnt_comp_avg_upsampled_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref, int ref_stride, const JNT_COMP_PARAMS *jcp_param";
+  }
 
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/void aom_highbd_upsampled_pred/, "uint16_t *comp_pred, int width, int height, int subsample_x_q3, int subsample_y_q3, const uint8_t *ref8, int ref_stride, int bd";
@@ -1133,6 +1142,9 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
     add_proto qw/unsigned int/, "aom_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
     add_proto qw/uint32_t/, "aom_sub_pixel_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse";
     add_proto qw/uint32_t/, "aom_sub_pixel_avg_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred";
+    if (aom_config("CONFIG_JNT_COMP") eq "yes") {
+      add_proto qw/uint32_t/, "aom_jnt_sub_pixel_avg_variance${w}x${h}", "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred, const JNT_COMP_PARAMS *jcp_param";
+    }
   }
 
   specialize qw/aom_variance64x64     sse2 avx2 neon msa/;
@@ -1309,7 +1321,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 
   add_proto qw/uint32_t aom_sub_pixel_avg_variance4x4/, "const uint8_t *src_ptr, int source_stride, int xoffset, int  yoffset, const uint8_t *ref_ptr, int ref_stride, uint32_t *sse, const uint8_t *second_pred";
   specialize qw/aom_sub_pixel_avg_variance4x4 msa sse2 ssse3/;
-
   #
   # Specialty Subpixel
   #
@@ -1326,6 +1337,9 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
   # Comp Avg
   #
   add_proto qw/void aom_comp_avg_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride";
+  if (aom_config("CONFIG_JNT_COMP") eq "yes") {
+    add_proto qw/void aom_jnt_comp_avg_pred/, "uint8_t *comp_pred, const uint8_t *pred, int width, int height, const uint8_t *ref, int ref_stride, const JNT_COMP_PARAMS *jcp_param";
+  }
   if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
     add_proto qw/unsigned int aom_highbd_12_variance64x64/, "const uint8_t *src_ptr, int source_stride, const uint8_t *ref_ptr, int ref_stride, unsigned int *sse";
     specialize qw/aom_highbd_12_variance64x64 sse2/;

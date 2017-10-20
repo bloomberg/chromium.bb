@@ -929,10 +929,11 @@ typedef struct SubpelParams {
 } SubpelParams;
 
 #if CONFIG_JNT_COMP
-static void jnt_comp_weight_assign(const AV1_COMMON *cm,
-                                   const MB_MODE_INFO *mbmi,
-                                   ConvolveParams *conv_params,
-                                   int is_compound) {
+void av1_jnt_comp_weight_assign(const AV1_COMMON *cm, const MB_MODE_INFO *mbmi,
+                                int order_idx, int *fwd_offset, int *bck_offset,
+                                int is_compound) {
+  assert(fwd_offset != NULL && bck_offset != NULL);
+
   if (is_compound) {
     int bck_idx = cm->frame_refs[mbmi->ref_frame[0] - LAST_FRAME].idx;
     int fwd_idx = cm->frame_refs[mbmi->ref_frame[1] - LAST_FRAME].idx;
@@ -947,8 +948,8 @@ static void jnt_comp_weight_assign(const AV1_COMMON *cm,
       fwd_frame_index = cm->buffer_pool->frame_bufs[fwd_idx].cur_frame_offset;
     }
 
-    conv_params->bck_offset = abs(cur_frame_index - bck_frame_index);
-    conv_params->fwd_offset = abs(fwd_frame_index - cur_frame_index);
+    *bck_offset = abs(cur_frame_index - bck_frame_index);
+    *fwd_offset = abs(fwd_frame_index - cur_frame_index);
 
     const double fwd = abs(fwd_frame_index - cur_frame_index);
     const double bck = abs(cur_frame_index - bck_frame_index);
@@ -967,22 +968,21 @@ static void jnt_comp_weight_assign(const AV1_COMMON *cm,
       for (quant_dist_idx = 0; quant_dist_idx < 4; ++quant_dist_idx) {
         if (ratio < quant_dist_category[quant_dist_idx]) break;
       }
-      conv_params->fwd_offset =
-          quant_dist_lookup_table[0][quant_dist_idx][order];
-      conv_params->bck_offset =
-          quant_dist_lookup_table[0][quant_dist_idx][1 - order];
+      *fwd_offset = quant_dist_lookup_table[order_idx][quant_dist_idx][order];
+      *bck_offset =
+          quant_dist_lookup_table[order_idx][quant_dist_idx][1 - order];
     } else {
-      conv_params->fwd_offset = (DIST_PRECISION >> 1);
-      conv_params->bck_offset = (DIST_PRECISION >> 1);
+      *fwd_offset = (DIST_PRECISION >> 1);
+      *bck_offset = (DIST_PRECISION >> 1);
     }
 
     if (mbmi->compound_idx) {
-      conv_params->fwd_offset = -1;
-      conv_params->bck_offset = -1;
+      *fwd_offset = -1;
+      *bck_offset = -1;
     }
   } else {
-    conv_params->bck_offset = -1;
-    conv_params->fwd_offset = -1;
+    *bck_offset = -1;
+    *fwd_offset = -1;
   }
 }
 #endif  // CONFIG_JNT_COMP
@@ -1288,7 +1288,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     ConvolveParams conv_params =
         get_conv_params_no_round(ref, ref, plane, tmp_dst, MAX_SB_SIZE);
 #if CONFIG_JNT_COMP
-    jnt_comp_weight_assign(cm, &mi->mbmi, &conv_params, is_compound);
+    av1_jnt_comp_weight_assign(cm, &mi->mbmi, 0, &conv_params.fwd_offset,
+                               &conv_params.bck_offset, is_compound);
 #endif  // CONFIG_JNT_COMP
 
 #else

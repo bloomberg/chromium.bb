@@ -625,6 +625,13 @@ typedef struct cfl_ctx {
 } CFL_CTX;
 #endif  // CONFIG_CFL
 
+#if CONFIG_JNT_COMP
+typedef struct jnt_comp_params {
+  int fwd_offset;
+  int bck_offset;
+} JNT_COMP_PARAMS;
+#endif  // CONFIG_JNT_COMP
+
 typedef struct macroblockd {
   struct macroblockd_plane plane[MAX_MB_PLANE];
   uint8_t bmode_blocks_wl;
@@ -744,6 +751,10 @@ typedef struct macroblockd {
 
 #if CONFIG_CFL
   CFL_CTX *cfl;
+#endif
+
+#if CONFIG_JNT_COMP
+  JNT_COMP_PARAMS jcp_param;
 #endif
 } MACROBLOCKD;
 
