@@ -16,8 +16,9 @@
 .abs { height: 5px; position: absolute; width: 100%; }
 
 </style>
-<!-- Explicitly not using layout-th because it does not allow multiple checkLayout(). -->
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <script>
 function setGridTemplate(id, gridTemplateRows, gridTemplateColumns)
 {
@@ -44,7 +45,7 @@ function testGridDefinitions(gridItemsData)
         item.setAttribute("data-offset-y", gridItemsData[i].y);
     }
 
-    checkLayout(".grid");
+    checkLayout(".grid", false);
 }
 
 function testChangingGridDefinitions()
@@ -125,6 +126,8 @@ function testChangingGridDefinitions()
          { 'id': 'a3', 'width': '20', 'height': '5', 'x': '40', 'y': '0' },
          { 'id': 'a4', 'width': '20', 'height': '5', 'x': '60', 'y': '0' }
      ]);
+
+     done();
 }
 
 window.addEventListener("load", testChangingGridDefinitions, false);

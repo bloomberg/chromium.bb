@@ -38,8 +38,9 @@
     background-color: blue;
 }
 </style>
-<!-- Explicitly not using layout-th because it does not allow multiple checkLayout(). -->
-<script src="../../resources/check-layout.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../../resources/check-layout-th.js"></script>
 <script>
 function setGridTemplate(id, gridTemplateRows, gridTemplateColumns)
 {
@@ -75,7 +76,7 @@ function testGridDefinitions(firstGridItemData, secondGridItemData, thirdGridIte
     i3.setAttribute("data-offset-x", thirdGridItemData.x);
     i3.setAttribute("data-offset-y", thirdGridItemData.y);
 
-    checkLayout(".grid");
+    checkLayout(".grid", false);
 }
 
 function testChangingGridDefinitions()
@@ -111,6 +112,8 @@ function testChangingGridDefinitions()
      testGridDefinitions({ 'id': 'i1', 'width': '45', 'height': '25', 'x': '0', 'y': '25' }, { 'id': 'i2', 'width': '45', 'height': '25', 'x': '0', 'y': '0' }, { 'id': 'i3', 'width': '45', 'height': '25', 'x': '45', 'y': '25' });
      setGridSize('grid2', '100px', '100px');
      testGridDefinitions({ 'id': 'i21', 'width': '25', 'height': '45', 'x': '0', 'y': '0' }, { 'id': 'i22', 'width': '25', 'height': '45', 'x': '25', 'y': '0' }, { 'id': 'i23', 'width': '25', 'height': '45', 'x': '25', 'y': '45' });
+
+     done();
 }
 
 window.addEventListener("load", testChangingGridDefinitions, false);
