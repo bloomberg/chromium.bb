@@ -615,7 +615,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
   while (p < stop && p->token != EOSB_TOKEN) {
     const int token = p->token;
-    const int eob_val = p->eob_val;
+    const int8_t eob_val = p->eob_val;
     if (token == BLOCK_Z_TOKEN) {
       aom_write_symbol(w, 0, *p->head_cdf, HEAD_TOKENS + 1);
       p++;

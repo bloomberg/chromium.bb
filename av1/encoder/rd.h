@@ -453,7 +453,8 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
 #endif
 }
 
-static INLINE int av1_get_coeff_token_cost(int token, int eob_val, int is_first,
+static INLINE int av1_get_coeff_token_cost(int token, int8_t eob_val,
+                                           int is_first,
                                            const int *head_cost_table,
                                            const int *tail_cost_table) {
   if (eob_val == LAST_EOB) return av1_cost_zero(128);

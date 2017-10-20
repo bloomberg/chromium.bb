@@ -305,7 +305,7 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
 static INLINE void add_token(TOKENEXTRA **t,
                              aom_cdf_prob (*tail_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
                              aom_cdf_prob (*head_cdf)[CDF_SIZE(ENTROPY_TOKENS)],
-                             int eob_val, int first_val, int32_t extra,
+                             int8_t eob_val, int8_t first_val, int32_t extra,
                              uint8_t token) {
   (*t)->token = token;
   (*t)->extra = extra;
@@ -478,8 +478,8 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   aom_cdf_prob(
       *const coef_tail_cdfs)[COEFF_CONTEXTS][CDF_SIZE(ENTROPY_TOKENS)] =
       ec_ctx->coef_tail_cdfs[txsize_sqr_map[tx_size]][type][ref];
-  int eob_val;
-  int first_val = 1;
+  int8_t eob_val;
+  int8_t first_val = 1;
   const int seg_eob = av1_get_tx_eob(&cpi->common.seg, segment_id, tx_size);
   const uint8_t *const band = get_band_translate(tx_size);
   int16_t token;

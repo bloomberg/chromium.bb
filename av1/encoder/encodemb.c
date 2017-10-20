@@ -194,7 +194,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
     const int sz = -(x < 0);
     const int band_cur = band_translate[i];
     const int ctx_cur = (i == 0) ? ctx : get_coef_context(nb, token_cache, i);
-    const int eob_val =
+    const int8_t eob_val =
         (i + 1 == eob) ? (i + 1 == seg_eob ? LAST_EOB : EARLY_EOB) : NO_EOB;
     const int is_first = (i == 0);
 
@@ -270,7 +270,7 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
         int ctx_next;
         const int band_next = band_translate[i + 1];
         const int token_next = av1_get_token(qcoeff[scan[i + 1]]);
-        const int eob_val_next =
+        const int8_t eob_val_next =
             (i + 2 == eob) ? (i + 2 == seg_eob ? LAST_EOB : EARLY_EOB) : NO_EOB;
 
         token_cache[rc] = av1_pt_energy_class[t0];

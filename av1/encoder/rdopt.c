@@ -1614,7 +1614,7 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   int(*tail_token_costs)[COEFF_CONTEXTS][TAIL_TOKENS] =
       x->token_tail_costs[tx_size_ctx][type][ref];
   const int seg_eob = av1_get_tx_eob(&cm->seg, mbmi->segment_id, tx_size);
-  int eob_val;
+  int8_t eob_val;
 
 #if CONFIG_HIGHBITDEPTH
   const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, xd->bd);
