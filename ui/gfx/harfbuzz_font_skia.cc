@@ -13,9 +13,17 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/render_text.h"
 #include "ui/gfx/skia_util.h"
+
+#if defined(OS_MACOSX)
+#include <hb-coretext.h>
+
+#include "base/mac/scoped_cftyperef.h"
+#include "third_party/skia/include/ports/SkTypeface_mac.h"
+#endif
 
 namespace gfx {
 
@@ -245,6 +253,18 @@ class HarfBuzzFace {
   }
 
   void Init(SkTypeface* skia_face) {
+#if defined(OS_MACOSX)
+    // On Mac, hb_face_t needs to be instantiated using the CoreText constructor
+    // when there is an underlying CTFont. Otherwise the wrong shaping engine is
+    // chosen. See also HarfBuzzFace.cpp in Blink.
+    if (CTFontRef ct_font = SkTypeface_GetCTFontRef(skia_face)) {
+      base::ScopedCFTypeRef<CGFontRef> cg_font(
+          CTFontCopyGraphicsFont(ct_font, nullptr));
+      face_ = hb_coretext_face_create(cg_font);
+      DCHECK(face_);
+      return;
+    }
+#endif
     SkSafeRef(skia_face);
     face_ = hb_face_create_for_tables(GetFontTable, skia_face, UnrefSkTypeface);
     DCHECK(face_);
