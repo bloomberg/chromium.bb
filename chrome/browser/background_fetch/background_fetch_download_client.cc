@@ -10,6 +10,7 @@
 #include "chrome/browser/background_fetch/background_fetch_delegate_impl.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "components/download/public/download_metadata.h"
+#include "components/download/public/download_service.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_context.h"
 #include "url/origin.h"
@@ -23,11 +24,20 @@ BackgroundFetchDownloadClient::~BackgroundFetchDownloadClient() = default;
 void BackgroundFetchDownloadClient::OnServiceInitialized(
     bool state_lost,
     const std::vector<download::DownloadMetaData>& downloads) {
-  // TODO(delphick): Do something with outstanding downloads
   delegate_ = static_cast<BackgroundFetchDelegateImpl*>(
                   browser_context_->GetBackgroundFetchDelegate())
                   ->GetWeakPtr();
   DCHECK(delegate_);
+
+  // TODO(delphick): Reconnect the outstanding downloads with the content layer
+  // part of background_fetch. For now we just cancel all the downloads.
+  if (downloads.size() > 0) {
+    download::DownloadService* download_service =
+        DownloadServiceFactory::GetInstance()->GetForBrowserContext(
+            browser_context_);
+    for (const auto& download : downloads)
+      download_service->CancelDownload(download.guid);
+  }
 }
 
 void BackgroundFetchDownloadClient::OnServiceUnavailable() {}
