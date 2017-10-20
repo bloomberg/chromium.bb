@@ -459,8 +459,10 @@ void NGBlockNode::CopyChildFragmentPosition(
     FloatingObject* floating_object =
         ToLayoutBlockFlow(box_)->InsertFloatingObject(*layout_box);
     floating_object->SetIsInPlacedTree(false);
-    floating_object->SetX(fragment.Offset().left + additional_offset.left);
-    floating_object->SetY(fragment.Offset().top + additional_offset.top);
+    floating_object->SetX(fragment.Offset().left + additional_offset.left -
+                          layout_box->MarginLeft());
+    floating_object->SetY(fragment.Offset().top + additional_offset.top -
+                          layout_box->MarginTop());
     floating_object->SetIsPlaced(true);
     floating_object->SetIsInPlacedTree(true);
   }
