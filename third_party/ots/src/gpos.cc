@@ -1,4 +1,4 @@
-// Copyright (c) 2011 The Chromium Authors. All rights reserved.
+// Copyright (c) 2011-2017 The OTS Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,9 +76,23 @@ const ots::LookupSubtableParser kGposLookupSubtableParser = {
 
 // Shared Tables: ValueRecord, Anchor Table, and MarkArray
 
+size_t CalcValueRecordSize(const uint16_t value_format) {
+  size_t size = 0;
+  for (unsigned i = 0; i < 8; ++i) {
+    if ((value_format >> i) & 0x1) {
+      size += 2;
+    }
+  }
+
+  return size;
+}
+
 bool ParseValueRecord(const ots::Font *font,
-                      ots::Buffer* subtable, const uint8_t *data,
-                      const size_t length, const uint16_t value_format) {
+                      ots::Buffer* subtable,
+                      const uint16_t value_format) {
+  const uint8_t *data = subtable->buffer();
+  const size_t length = subtable->length();
+
   // Check existence of adjustment fields.
   for (unsigned i = 0; i < 4; ++i) {
     if ((value_format >> i) & 0x1) {
@@ -218,7 +232,7 @@ bool ParseSingleAdjustment(const ots::Font *font, const uint8_t *data,
 
   if (format == 1) {
     // Format 1 exactly one value record.
-    if (!ParseValueRecord(font, &subtable, data, length, value_format)) {
+    if (!ParseValueRecord(font, &subtable, value_format)) {
       return OTS_FAILURE_MSG("Failed to parse format 1 single adjustment table");
     }
   } else if (format == 2) {
@@ -227,7 +241,7 @@ bool ParseSingleAdjustment(const ots::Font *font, const uint8_t *data,
       return OTS_FAILURE_MSG("Failed to parse format 2 single adjustment table");
     }
     for (unsigned i = 0; i < value_count; ++i) {
-      if (!ParseValueRecord(font, &subtable, data, length, value_format)) {
+      if (!ParseValueRecord(font, &subtable, value_format)) {
         return OTS_FAILURE_MSG("Failed to parse value record %d in format 2 single adjustment table", i);
       }
     }
@@ -268,10 +282,10 @@ bool ParsePairSetTable(const ots::Font *font,
     if (glyph_id >= num_glyphs) {
       return OTS_FAILURE_MSG("glyph id %d too high >= %d", glyph_id, num_glyphs);
     }
-    if (!ParseValueRecord(font, &subtable, data, length, value_format1)) {
+    if (!ParseValueRecord(font, &subtable, value_format1)) {
       return OTS_FAILURE_MSG("Failed to parse value record in format 1 pair set table");
     }
-    if (!ParseValueRecord(font, &subtable, data, length, value_format2)) {
+    if (!ParseValueRecord(font, &subtable, value_format2)) {
       return OTS_FAILURE_MSG("Failed to parse value record in format 2 pair set table");
     }
   }
@@ -341,26 +355,36 @@ bool ParsePairPosFormat2(const ots::Font *font,
     return OTS_FAILURE_MSG("Failed to read pair pos format 2 data");
   }
 
+  size_t value_record1_size = CalcValueRecordSize(value_format1);
+  size_t value_record2_size = CalcValueRecordSize(value_format2);
+  size_t value_records_size = size_t(class1_count) * size_t(class2_count) *
+    (value_record1_size + value_record2_size);
+
+  // Check the validity of class definition offsets.
+  if (offset_class_def1 < subtable.offset() + value_records_size ||
+      offset_class_def2 < subtable.offset() + value_records_size ||
+      offset_class_def1 >= length || offset_class_def2 >= length) {
+    return OTS_FAILURE_MSG("Bad ParsePairPosFormat2 class definition offsets %d or %d", offset_class_def1, offset_class_def2);
+  }
+
   // Check class 1 records.
-  for (unsigned i = 0; i < class1_count; ++i) {
-    // Check class 2 records.
-    for (unsigned j = 0; j < class2_count; ++j) {
-      if (value_format1 && !ParseValueRecord(font, &subtable, data, length,
-                                             value_format1)) {
-        return OTS_FAILURE_MSG("Failed to parse value record 1 %d and %d", j, i);
-      }
-      if (value_format2 && !ParseValueRecord(font, &subtable, data, length,
-                                             value_format2)) {
-        return OTS_FAILURE_MSG("Falied to parse value record 2 %d and %d", j, i);
+  if (value_record1_size || value_record2_size) {
+    for (unsigned i = 0; i < class1_count; ++i) {
+      // Check class 2 records.
+      for (unsigned j = 0; j < class2_count; ++j) {
+        if (value_format1 && value_record2_size &&
+            !ParseValueRecord(font, &subtable, value_format1)) {
+          return OTS_FAILURE_MSG("Failed to parse value record 1 %d and %d", j, i);
+        }
+        if (value_format2 && value_record2_size &&
+            !ParseValueRecord(font, &subtable, value_format2)) {
+          return OTS_FAILURE_MSG("Falied to parse value record 2 %d and %d", j, i);
+        }
       }
     }
   }
 
   // Check class definition tables.
-  if (offset_class_def1 < subtable.offset() || offset_class_def1 >= length ||
-      offset_class_def2 < subtable.offset() || offset_class_def2 >= length) {
-    return OTS_FAILURE_MSG("Bad class definition table offsets %d or %d", offset_class_def1, offset_class_def2);
-  }
   if (!ots::ParseClassDefTable(font, data + offset_class_def1,
                                length - offset_class_def1,
                                num_glyphs, kMaxClassDefValue)) {
@@ -676,52 +700,6 @@ bool ParseExtensionPositioning(const ots::Font *font,
 }  // namespace
 
 namespace ots {
-
-// As far as I checked, following fonts contain invalid GPOS table and
-// OTS will drop their GPOS table.
-//
-// # invalid delta format in device table
-// samanata.ttf
-//
-// # bad size range in device table
-// Sarai_07.ttf
-//
-// # bad offset to PairSetTable
-// chandas1-2.ttf
-//
-// # bad offset to FeatureTable
-// glrso12.ttf
-// gllr12.ttf
-// glbo12.ttf
-// glb12.ttf
-// glro12.ttf
-// glbso12.ttf
-// glrc12.ttf
-// glrsc12.ttf
-// glbs12.ttf
-// glrs12.ttf
-// glr12.ttf
-//
-// # ScriptRecords aren't sorted by tag
-// Garogier_unhinted.otf
-//
-// # bad start coverage index in CoverageFormat2
-// AndBasR.ttf
-// CharisSILB.ttf
-// CharisSILBI.ttf
-// CharisSILI.ttf
-// CharisSILR.ttf
-// DoulosSILR.ttf
-// GenBasBI.ttf
-// GenBasI.ttf
-// GenBkBasI.ttf
-// GenBkBasB.ttf
-// GenBkBasR.ttf
-// Padauk-Bold.ttf
-// Padauk.ttf
-//
-// # Contour point indexes aren't sorted
-// Arial Unicode.ttf
 
 bool ots_gpos_parse(Font *font, const uint8_t *data, size_t length) {
   // Parsing GPOS table requires num_glyphs which is contained in maxp table.

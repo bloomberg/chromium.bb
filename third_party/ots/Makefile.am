@@ -3,22 +3,24 @@ NULL =
 ACLOCAL_AMFLAGS = -I m4
 
 bin_PROGRAMS = \
-  ot-sanitise \
+  ots-sanitize \
   $(NULL)
 
 noinst_PROGRAMS = $(NULL)
 
 if HAVE_SYSTIME
-noinst_PROGRAMS += perf
+noinst_PROGRAMS += ots-perf
 endif
 
 if HAVE_FREETYPE
 noinst_PROGRAMS += \
-  idempotent \
-  validator-checker \
-  side-by-side \
+  ots-idempotent \
+  ots-validator-checker \
+  ots-side-by-side \
   $(NULL)
 endif
+
+noinst_PROGRAMS += ots-fuzzer
 
 lib_LIBRARIES = \
   libots.a \
@@ -30,10 +32,14 @@ TESTS = \
   cff_type2_charstring_test \
   layout_common_table_test \
   table_dependencies_test \
+  tests/test_fuzzed_fonts.sh \
   $(NULL)
 
 if HAVE_FREETYPE
-TESTS += tests/test_unmalicious_fonts.sh
+TESTS += \
+  tests/test_bad_fonts.sh \
+  tests/test_good_fonts.sh \
+  $(NULL)
 endif
 
 check_PROGRAMS = \
@@ -123,6 +129,7 @@ libbrotli_a_SOURCES = \
   third_party/brotli/dec/context.h \
   third_party/brotli/dec/decode.c \
   third_party/brotli/dec/decode.h \
+  third_party/brotli/dec/dictionary.c \
   third_party/brotli/dec/dictionary.h \
   third_party/brotli/dec/huffman.c \
   third_party/brotli/dec/huffman.h \
@@ -130,8 +137,6 @@ libbrotli_a_SOURCES = \
   third_party/brotli/dec/prefix.h \
   third_party/brotli/dec/state.c \
   third_party/brotli/dec/state.h \
-  third_party/brotli/dec/streams.c \
-  third_party/brotli/dec/streams.h \
   third_party/brotli/dec/transform.h \
   third_party/brotli/dec/types.h \
   $(NULL)
@@ -139,48 +144,50 @@ libbrotli_a_SOURCES = \
 
 libwoff2_a_SOURCES = \
   third_party/woff2/src/buffer.h \
+  third_party/woff2/src/port.h \
   third_party/woff2/src/round.h \
   third_party/woff2/src/store_bytes.h \
   third_party/woff2/src/table_tags.cc \
   third_party/woff2/src/table_tags.h \
-  third_party/woff2/src/woff2_common.cc \
-  third_party/woff2/src/woff2_common.h \
   third_party/woff2/src/variable_length.cc \
   third_party/woff2/src/variable_length.h \
+  third_party/woff2/src/woff2_common.cc \
   third_party/woff2/src/woff2_common.h \
   third_party/woff2/src/woff2_dec.cc \
   third_party/woff2/src/woff2_dec.h \
+  third_party/woff2/src/woff2_out.cc \
+  third_party/woff2/src/woff2_out.h \
   $(NULL)
 
-libwoff2_a_CXXFLAGS = \
-  -std=c++11 \
-  $(NULL)
 
-
-ot_sanitise_SOURCES = \
-  util/ot-sanitise.cc \
-  util/file-stream.h \
+ots_sanitize_SOURCES = \
+  util/ots-sanitize.cc \
   util/test-context.h \
   $(NULL)
 
 
-perf_SOURCES = \
-  util/perf.cc \
+ots_perf_SOURCES = \
+  util/ots-perf.cc \
   $(NULL)
 
 
-idempotent_SOURCES = \
-  util/idempotent.cc \
+ots_idempotent_SOURCES = \
+  util/ots-idempotent.cc \
   util/test-context.h \
   $(NULL)
 
 
-validator_checker_SOURCES = \
-  util/validator-checker.cc \
+ots_validator_checker_SOURCES = \
+  util/ots-validator-checker.cc \
   $(NULL)
 
-side_by_side_SOURCES = \
-  util/side-by-side.cc \
+ots_side_by_side_SOURCES = \
+  util/ots-side-by-side.cc \
+  $(NULL)
+
+
+ots_fuzzer_SOURCES = \
+  util/ots-fuzzer.cc \
   $(NULL)
 
 
@@ -215,8 +222,39 @@ table_dependencies_test_LDADD = \
 
 
 libgtest_a_SOURCES = \
-  third_party/gtest/src/gtest-all.cc \
-  third_party/gtest/src/gtest_main.cc \
+  third_party/googletest/googletest/include/gtest/gtest-death-test.h \
+  third_party/googletest/googletest/include/gtest/gtest.h \
+  third_party/googletest/googletest/include/gtest/gtest-message.h \
+  third_party/googletest/googletest/include/gtest/gtest-param-test.h \
+  third_party/googletest/googletest/include/gtest/gtest_pred_impl.h \
+  third_party/googletest/googletest/include/gtest/gtest-printers.h \
+  third_party/googletest/googletest/include/gtest/gtest_prod.h \
+  third_party/googletest/googletest/include/gtest/gtest-spi.h \
+  third_party/googletest/googletest/include/gtest/gtest-test-part.h \
+  third_party/googletest/googletest/include/gtest/gtest-typed-test.h \
+  third_party/googletest/googletest/include/gtest/internal/custom/gtest.h \
+  third_party/googletest/googletest/include/gtest/internal/custom/gtest-port.h \
+  third_party/googletest/googletest/include/gtest/internal/custom/gtest-printers.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-death-test-internal.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-filepath.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-internal.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-linked_ptr.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-param-util-generated.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-param-util.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-port-arch.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-port.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-string.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-tuple.h \
+  third_party/googletest/googletest/include/gtest/internal/gtest-type-util.h \
+  third_party/googletest/googletest/src/gtest.cc \
+  third_party/googletest/googletest/src/gtest-death-test.cc \
+  third_party/googletest/googletest/src/gtest-filepath.cc \
+  third_party/googletest/googletest/src/gtest-internal-inl.h \
+  third_party/googletest/googletest/src/gtest_main.cc \
+  third_party/googletest/googletest/src/gtest-port.cc \
+  third_party/googletest/googletest/src/gtest-printers.cc \
+  third_party/googletest/googletest/src/gtest-test-part.cc \
+  third_party/googletest/googletest/src/gtest-typed-test.cc \
   $(NULL)
 
 libgtest_a_LIBADD = \
@@ -225,8 +263,8 @@ libgtest_a_LIBADD = \
 
 
 AM_CPPFLAGS = \
-  -I$(top_srcdir)/third_party/gtest/include \
-  -I$(top_srcdir)/third_party/gtest/ \
+  -I$(top_srcdir)/third_party/googletest/googletest/include \
+  -I$(top_srcdir)/third_party/googletest/googletest/ \
   -I$(top_srcdir)/src \
   -I$(top_srcdir)/include \
   -I$(top_srcdir)/third_party/brotli/dec/ \
@@ -235,6 +273,8 @@ AM_CPPFLAGS = \
   $(NULL)
 
 AM_CXXFLAGS = \
+## for woff2
+  -std=c++11 \
   $(CORETEXT_CFLAGS) \
   $(FREETYPE_CFLAGS) \
   $(PTHREAD_CFLAGS) \
@@ -262,10 +302,15 @@ AM_TESTS_ENVIRONMENT = \
 
 EXTRA_DIST = \
   LICENSE \
+  docs/DesignDoc.md \
+  docs/HowToFix.md \
+  docs/HowToTest.md \
   tests/BLACKLIST.txt \
-  tests/test_unmalicious_fonts.sh \
+  tests/test_fuzzed_fonts.sh \
+  tests/test_bad_fonts.sh \
+  tests/test_good_fonts.sh \
   third_party/brotli/LICENSE \
-  third_party/gtest \
+  third_party/googletest/googletest/LICENSE \
   third_party/woff2/LICENSE \
   $(NULL)
 

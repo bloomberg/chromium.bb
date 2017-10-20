@@ -1,5 +1,5 @@
 AC_INIT([OTS],
-        [5.0.1],
+        [5.2.0],
         [https://github.com/khaledhosny/ots/issues],
         [ots],
         [https://github.com/khaledhosny/ots])
@@ -18,6 +18,13 @@ AC_PROG_CC
 AC_PROG_CXX
 AC_PROG_RANLIB
 PKG_PROG_PKG_CONFIG([0.20])
+
+AC_ARG_ENABLE(debug,
+	      AS_HELP_STRING([--enable-debug=@<:@yes/no@:>@],
+			     [Enable extra debugging information for font
+			      sanitization @<:@default=no@:>@]),
+	      AC_DEFINE(OTS_DEBUG, 1, [Enable extra debugging information]),
+	      :)
 
 have_zlib=true
 AX_CHECK_ZLIB([], [have_zlib=false])
