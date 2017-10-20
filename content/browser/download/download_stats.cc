@@ -253,7 +253,8 @@ void RecordDownloadSource(DownloadSource source) {
 }
 
 void RecordDownloadCompleted(const base::TimeTicks& start,
-                             int64_t download_len) {
+                             int64_t download_len,
+                             bool is_parallelizable) {
   RecordDownloadCount(COMPLETED_COUNT);
   UMA_HISTOGRAM_LONG_TIMES("Download.Time", (base::TimeTicks::Now() - start));
   int64_t max = 1024 * 1024 * 1024;  // One Terabyte.
@@ -263,6 +264,10 @@ void RecordDownloadCompleted(const base::TimeTicks& start,
                               1,
                               max,
                               256);
+  if (is_parallelizable) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Download.DownloadSize.Parallelizable",
+                                download_len, 1, max, 256);
+  }
 }
 
 void RecordDownloadInterrupted(DownloadInterruptReason reason,

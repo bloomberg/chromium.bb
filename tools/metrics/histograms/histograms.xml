@@ -16458,7 +16458,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Download.DownloadSize" units="KB">
+<histogram base="true" name="Download.DownloadSize" units="KB">
+<!-- Name completed by histogram_suffixes name="Download.Parallelizable" -->
+
   <owner>asanka@chromium.org</owner>
   <summary>The size of successfully completed downloads.</summary>
 </histogram>
@@ -98116,6 +98118,11 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <suffix name="Google" label="only Google cookies are recorded."/>
   <suffix name="Other" label="only NON-Google cookies are recorded."/>
   <affected-histogram name="Cookie.ReinstatedCookies"/>
+</histogram_suffixes>
+
+<histogram_suffixes name="Download.Parallelizable" separator=".">
+  <suffix name="Parallelizable" label="Parallelizable download."/>
+  <affected-histogram name="Download.DownloadSize"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="Download.Service.CleanUpReason" separator=".">

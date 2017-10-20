@@ -1688,11 +1688,13 @@ void DownloadItemImpl::Completed() {
   DCHECK(AllDataSaved());
   destination_info_.end_time = base::Time::Now();
   TransitionTo(COMPLETE_INTERNAL);
-  RecordDownloadCompleted(start_tick_, GetReceivedBytes());
+
+  bool is_parallelizable = job_ && job_->IsParallelizable();
+  RecordDownloadCompleted(start_tick_, GetReceivedBytes(), is_parallelizable);
   if (!GetBrowserContext()->IsOffTheRecord()) {
     RecordDownloadCount(COMPLETED_COUNT_NORMAL_PROFILE);
   }
-  if (job_ && job_->IsParallelizable()) {
+  if (is_parallelizable) {
     RecordParallelizableDownloadCount(COMPLETED_COUNT,
                                       IsParallelDownloadEnabled());
     int64_t content_length = -1;
