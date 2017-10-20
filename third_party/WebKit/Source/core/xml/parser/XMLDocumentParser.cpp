@@ -30,19 +30,14 @@
 #include <libxml/parserInternals.h>
 #include <libxslt/xslt.h>
 #include <memory>
-#include "bindings/core/v8/ExceptionState.h"
-#include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ScriptSourceCode.h"
 #include "core/css/StyleEngine.h"
 #include "core/dom/CDATASection.h"
-#include "core/dom/ClassicPendingScript.h"
 #include "core/dom/Comment.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentParserTiming.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/ProcessingInstruction.h"
-#include "core/dom/ScriptLoader.h"
 #include "core/dom/TransformSource.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/UseCounter.h"
@@ -375,10 +370,10 @@ bool XMLDocumentParser::UpdateLeafTextNode() {
 }
 
 void XMLDocumentParser::Detach() {
-  if (pending_script_) {
-    pending_script_->StopWatchingForLoad();
-    pending_script_ = nullptr;
-  }
+  if (script_runner_)
+    script_runner_->Detach();
+  script_runner_ = nullptr;
+
   ClearCurrentNodeStack();
   ScriptableDocumentParser::Detach();
 }
@@ -432,30 +427,8 @@ void XMLDocumentParser::InsertErrorMessageBlock() {
   xml_errors_.InsertErrorMessageBlock();
 }
 
-void XMLDocumentParser::PendingScriptFinished(
-    PendingScript* unused_pending_script) {
-  DCHECK_EQ(unused_pending_script, pending_script_);
-  PendingScript* pending_script = pending_script_;
-  pending_script_ = nullptr;
-
-  pending_script->StopWatchingForLoad();
-
-  ScriptLoader* script_loader = script_element_->Loader();
-  script_element_ = nullptr;
-
-  DCHECK(script_loader);
-  CHECK_EQ(script_loader->GetScriptType(), ScriptType::kClassic);
-
-  script_loader->ExecuteScriptBlock(pending_script, NullURL());
-
-  script_element_ = nullptr;
-
-  if (!IsDetached() && !requesting_script_)
-    ResumeParsing();
-}
-
 bool XMLDocumentParser::IsWaitingForScripts() const {
-  return pending_script_;
+  return script_runner_ && script_runner_->HasParserBlockingScript();
 }
 
 void XMLDocumentParser::PauseParsing() {
@@ -741,7 +714,6 @@ bool XMLDocumentParser::SupportsXMLVersion(const String& version) {
 XMLDocumentParser::XMLDocumentParser(Document& document,
                                      LocalFrameView* frame_view)
     : ScriptableDocumentParser(document),
-      has_view_(frame_view),
       context_(nullptr),
       current_node_(&document),
       is_currently_parsing8_bit_chunk_(false),
@@ -754,6 +726,9 @@ XMLDocumentParser::XMLDocumentParser(Document& document,
       requesting_script_(false),
       finish_called_(false),
       xml_errors_(&document),
+      script_runner_(frame_view ? XMLParserScriptRunner::Create(this)
+                                : nullptr),  // Don't execute scripts for
+                                             // documents without frames.
       script_start_position_(TextPosition::BelowRangePosition()),
       parsing_fragment_(false) {
   // This is XML being used as a document resource.
@@ -765,7 +740,6 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
                                      Element* parent_element,
                                      ParserContentPolicy parser_content_policy)
     : ScriptableDocumentParser(fragment->GetDocument(), parser_content_policy),
-      has_view_(false),
       context_(nullptr),
       current_node_(fragment),
       is_currently_parsing8_bit_chunk_(false),
@@ -778,6 +752,7 @@ XMLDocumentParser::XMLDocumentParser(DocumentFragment* fragment,
       requesting_script_(false),
       finish_called_(false),
       xml_errors_(&fragment->GetDocument()),
+      script_runner_(nullptr),  // Don't execute scripts for document fragments.
       script_start_position_(TextPosition::BelowRangePosition()),
       parsing_fragment_(true) {
   // Step 2 of
@@ -820,7 +795,6 @@ XMLParserContext::~XMLParserContext() {
 }
 
 XMLDocumentParser::~XMLDocumentParser() {
-  DCHECK(!pending_script_);
 }
 
 void XMLDocumentParser::Trace(blink::Visitor* visitor) {
@@ -828,10 +802,9 @@ void XMLDocumentParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(current_node_stack_);
   visitor->Trace(leaf_text_node_);
   visitor->Trace(xml_errors_);
-  visitor->Trace(pending_script_);
-  visitor->Trace(script_element_);
+  visitor->Trace(script_runner_);
   ScriptableDocumentParser::Trace(visitor);
-  PendingScriptClient::Trace(visitor);
+  XMLParserScriptRunnerHost::Trace(visitor);
 }
 
 void XMLDocumentParser::DoWrite(const String& parse_string) {
@@ -1057,23 +1030,24 @@ void XMLDocumentParser::EndElementNs() {
   if (current_node_->IsElementNode())
     ToElement(n)->FinishParsingChildren();
 
-  ScriptElementBase* script_element_base =
-      n->IsElementNode()
-          ? ScriptElementBase::FromElementIfPossible(ToElement(n))
-          : nullptr;
-  if (!ScriptingContentIsAllowed(GetParserContentPolicy()) &&
-      script_element_base) {
-    PopCurrentNode();
-    n->remove(IGNORE_EXCEPTION_FOR_TESTING);
-    return;
-  }
-
-  if (!n->IsElementNode() || !has_view_) {
+  if (!n->IsElementNode()) {
     PopCurrentNode();
     return;
   }
 
   Element* element = ToElement(n);
+
+  if (element->IsScriptElement() &&
+      !ScriptingContentIsAllowed(GetParserContentPolicy())) {
+    PopCurrentNode();
+    n->remove(IGNORE_EXCEPTION_FOR_TESTING);
+    return;
+  }
+
+  if (!script_runner_) {
+    PopCurrentNode();
+    return;
+  }
 
   // The element's parent may have already been removed from document.
   // Parsing continues in this case, but scripts aren't executed.
@@ -1082,59 +1056,27 @@ void XMLDocumentParser::EndElementNs() {
     return;
   }
 
-  ScriptLoader* script_loader =
-      script_element_base ? script_element_base->Loader() : nullptr;
-  if (!script_loader) {
+  if (element->IsScriptElement()) {
+    requesting_script_ = true;
+    script_runner_->ProcessScriptElement(*GetDocument(), element,
+                                         script_start_position_);
+    requesting_script_ = false;
+  }
+
+  // A parser-blocking script might be set and synchronously executed in
+  // ProcessScriptElement() if the script was already ready, and in that case
+  // IsWaitingForScripts() is false here.
+  if (IsWaitingForScripts())
+    PauseParsing();
+
+  // JavaScript may have detached the parser
+  if (!IsDetached())
     PopCurrentNode();
-    return;
-  }
+}
 
-  // Don't load external scripts for standalone documents (for now).
-  DCHECK(!pending_script_);
-  requesting_script_ = true;
-
-  bool success = script_loader->PrepareScript(
-      script_start_position_, ScriptLoader::kAllowLegacyTypeInTypeAttribute);
-
-  if (script_loader->GetScriptType() != ScriptType::kClassic) {
-    // XMLDocumentParser does not support a module script, and thus ignores it.
-    success = false;
-    GetDocument()->AddConsoleMessage(
-        ConsoleMessage::Create(kJSMessageSource, kErrorMessageLevel,
-                               "Module scripts in XML documents are currently "
-                               "not supported. See crbug.com/717643"));
-  }
-
-  if (success) {
-    // FIXME: Script execution should be shared between
-    // the libxml2 and Qt XMLDocumentParser implementations.
-
-    if (script_loader->ReadyToBeParserExecuted()) {
-      // 5th Clause, Step 23 of https://html.spec.whatwg.org/#prepare-a-script
-      script_loader->ExecuteScriptBlock(
-          ClassicPendingScript::Create(script_element_base,
-                                       script_start_position_),
-          GetDocument()->Url());
-    } else if (script_loader->WillBeParserExecuted()) {
-      // 1st/2nd Clauses, Step 23 of
-      // https://html.spec.whatwg.org/#prepare-a-script
-      pending_script_ = script_loader->CreatePendingScript();
-      pending_script_->MarkParserBlockingLoadStartTime();
-      script_element_ = script_element_base;
-      pending_script_->WatchForLoad(this);
-      // pending_script_ will be null if script was already ready.
-      if (pending_script_)
-        PauseParsing();
-    } else {
-      script_element_ = nullptr;
-    }
-
-    // JavaScript may have detached the parser
-    if (IsDetached())
-      return;
-  }
-  requesting_script_ = false;
-  PopCurrentNode();
+void XMLDocumentParser::NotifyScriptExecuted() {
+  if (!IsDetached() && !requesting_script_)
+    ResumeParsing();
 }
 
 void XMLDocumentParser::SetScriptStartPosition(TextPosition text_position) {
