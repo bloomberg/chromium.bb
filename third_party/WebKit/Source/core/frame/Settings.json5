@@ -75,7 +75,7 @@
     // draw canvas in software.
     {
       name: "minimumAccelerated2dCanvasSize",
-      initial: "129*128",
+      initial: "65*64",
       type: "int",
     },
 
