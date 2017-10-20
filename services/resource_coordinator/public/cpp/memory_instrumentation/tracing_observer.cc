@@ -96,13 +96,6 @@ bool TracingObserver::ShouldAddToTrace(
   // including PII.
   if (!IsDumpModeAllowed(args.level_of_detail))
     return false;
-
-  // SUMMARY_ONLY dumps are just return the summarized result in the
-  // ProcessMemoryDumpCallback. These shouldn't be added to the trace to
-  // avoid confusing trace consumers.
-  if (args.dump_type == base::trace_event::MemoryDumpType::SUMMARY_ONLY)
-    return false;
-
   return true;
 }
 
@@ -131,6 +124,7 @@ void TracingObserver::AddToTrace(
 
 bool TracingObserver::AddChromeDumpToTraceIfEnabled(
     const base::trace_event::MemoryDumpRequestArgs& args,
+    const base::ProcessId pid,
     const ProcessMemoryDump* process_memory_dump) {
   if (!ShouldAddToTrace(args))
     return false;
@@ -138,7 +132,7 @@ bool TracingObserver::AddChromeDumpToTraceIfEnabled(
   std::unique_ptr<TracedValue> traced_value = base::MakeUnique<TracedValue>();
   process_memory_dump->SerializeAllocatorDumpsInto(traced_value.get());
 
-  AddToTrace(args, base::kNullProcessId, std::move(traced_value));
+  AddToTrace(args, pid, std::move(traced_value));
 
   return true;
 }
