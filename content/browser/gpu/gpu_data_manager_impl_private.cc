@@ -754,10 +754,6 @@ void GpuDataManagerImplPrivate::AppendGpuCommandLine(
     command_line->AppendSwitchASCII(switches::kUseGL, use_gl);
   }
 
-  if (ShouldDisableAcceleratedVideoDecode(command_line)) {
-    command_line->AppendSwitch(switches::kDisableAcceleratedVideoDecode);
-  }
-
 #if defined(USE_OZONE)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableDrmAtomic)) {
@@ -1017,19 +1013,11 @@ bool GpuDataManagerImplPrivate::CanUseGpuBrowserCompositor() const {
 
 bool GpuDataManagerImplPrivate::ShouldDisableAcceleratedVideoDecode(
     const base::CommandLine* command_line) const {
-  // Make sure that we initialize the experiment first to make sure that
-  // statistics are bucket correctly in all cases.
-  // This experiment is temporary and will be removed once enough data
-  // to resolve crbug/442039 has been collected.
-  const std::string group_name = base::FieldTrialList::FindFullName(
-      "DisableAcceleratedVideoDecode");
   if (command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
     // It was already disabled on the command line.
     return false;
   }
   if (IsFeatureBlacklisted(gpu::GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
-    return true;
-  if (group_name == "Disabled")
     return true;
 
   // Accelerated decode is never available with --disable-gpu.

@@ -213,8 +213,11 @@ bool StartBPFSandbox(service_manager::SandboxType sandbox_type,
       policy = std::make_unique<AllowAllPolicy>();
       break;
   }
-  if (options.pre_sandbox_hook)
-    CHECK(std::move(options.pre_sandbox_hook).Run(policy.get()));
+  if (options.pre_sandbox_hook) {
+    SandboxSeccompBPF::PreSandboxHook hook =
+        std::move(options.pre_sandbox_hook);
+    CHECK(std::move(hook).Run(policy.get(), std::move(options)));
+  }
   StartSandboxWithPolicy(std::move(policy), std::move(proc_fd));
   RunSandboxSanityChecks(sandbox_type);
   return true;

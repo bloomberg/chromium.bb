@@ -155,6 +155,17 @@ GpuFeatureStatus GetFlashStage3DBaselineFeatureStatus(
   return kGpuFeatureStatusEnabled;
 }
 
+GpuFeatureStatus GetAcceleratedVideoDecodeFeatureStatus(
+    const std::set<int>& blacklisted_features,
+    bool use_swift_shader,
+    bool use_swift_shader_for_webgl) {
+  if (use_swift_shader || use_swift_shader_for_webgl)
+    return kGpuFeatureStatusDisabled;
+  if (blacklisted_features.count(GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE))
+    return kGpuFeatureStatusBlacklisted;
+  return kGpuFeatureStatusEnabled;
+}
+
 void AppendWorkaroundsToCommandLine(const GpuFeatureInfo& gpu_feature_info,
                                     base::CommandLine* command_line) {
   if (gpu_feature_info.IsWorkaroundEnabled(DISABLE_D3D11)) {
@@ -312,6 +323,9 @@ GpuFeatureInfo ComputeGpuFeatureInfo(const GPUInfo& gpu_info,
                                    use_swift_shader_for_webgl);
   gpu_feature_info.status_values[GPU_FEATURE_TYPE_FLASH_STAGE3D_BASELINE] =
       GetFlashStage3DBaselineFeatureStatus(
+          blacklisted_features, use_swift_shader, use_swift_shader_for_webgl);
+  gpu_feature_info.status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE] =
+      GetAcceleratedVideoDecodeFeatureStatus(
           blacklisted_features, use_swift_shader, use_swift_shader_for_webgl);
 
   std::set<base::StringPiece> all_disabled_extensions;
