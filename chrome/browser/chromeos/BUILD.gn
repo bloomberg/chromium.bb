@@ -1862,6 +1862,8 @@ source_set("unit_tests") {
     "policy/network_configuration_updater_unittest.cc",
     "policy/off_hours/device_off_hours_controller_unittest.cc",
     "policy/off_hours/off_hours_interval_unittest.cc",
+    "policy/off_hours/off_hours_policy_applier_unittest.cc",
+    "policy/off_hours/off_hours_proto_parser_unittest.cc",
     "policy/off_hours/weekly_time_unittest.cc",
     "policy/pre_signin_policy_fetcher_unittest.cc",
     "policy/recommendation_restorer_unittest.cc",

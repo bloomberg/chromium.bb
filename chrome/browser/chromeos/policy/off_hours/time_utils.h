@@ -15,13 +15,16 @@ namespace policy {
 namespace off_hours {
 
 // Put time in milliseconds which is added to local time to get GMT time to
-// |offset| considering current daylight time. Return true if there was no
+// |offset| considering daylight from |clock|. Return true if there was no
 // error.
-bool GetOffsetFromTimezoneToGmt(const std::string& timezone, int* offset);
+bool GetOffsetFromTimezoneToGmt(const std::string& timezone,
+                                base::Clock* clock,
+                                int* offset);
 
 // Convert time intervals from |timezone| to GMT timezone.
 std::vector<OffHoursInterval> ConvertIntervalsToGmt(
     const std::vector<OffHoursInterval>& intervals,
+    base::Clock* clock,
     const std::string& timezone);
 
 // Return duration till next "OffHours" time interval.
