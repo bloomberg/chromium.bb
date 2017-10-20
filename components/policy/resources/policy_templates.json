@@ -2428,9 +2428,7 @@
 
           This policy takes precedence over a potentially conflicting <ph name="EXTENSION_INSTALL_BLACKLIST_POLICY_NAME">ExtensionInstallBlacklist</ph> policy. If an app or extension that previously had been force-installed is removed from this list, it is automatically uninstalled by <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>.
 
-          For Windows instances that are not joined to a Microsoft® Active
-          Directory® domain, forced installation is limited to apps and
-          extensions listed in the Chrome Web Store.
+          For Windows instances that are not joined to a <ph name="MS_AD_NAME">Microsoft® Active Directory®</ph> domain, forced installation is limited to apps and extensions listed in the Chrome Web Store.
 
           Note that the source code of any extension may be altered by users via Developer Tools (potentially rendering the extension dysfunctional). If this is a concern, the <ph name="DEVELOPER_TOOLS_POLICY_NAME">DeveloperToolsDisabled</ph> policy should be set.
 
