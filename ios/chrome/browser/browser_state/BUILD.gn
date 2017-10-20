@@ -91,6 +91,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/google:google_logo",
     "//ios/chrome/browser/history",
     "//ios/chrome/browser/invalidation",
+    "//ios/chrome/browser/language",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/ntp_snippets",
     "//ios/chrome/browser/passwords",

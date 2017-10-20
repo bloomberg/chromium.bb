@@ -15,6 +15,7 @@ source_set("language") {
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
     "//components/language/core/browser",
+    "//components/pref_registry",
     "//components/prefs",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
