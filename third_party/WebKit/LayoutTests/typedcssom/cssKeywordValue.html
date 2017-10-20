@@ -12,14 +12,6 @@ test(function() {
 }, 'toString() returns a string with a format similar to CSS.escape. This test also ' +
     'implies that toCSSValue supports all keywords including custom identifiers');
 
-test(function() {
-  let keywordValue = new CSSKeywordValue('foo');
-  assert_equals(keywordValue.value, 'foo');
-
-  keywordValue.value = 'bar';
-  assert_equals(keywordValue.value, 'bar');
-}, 'The keyword used in KeywordValue can be updated');
-
 </script>
 <body>
 </body>
