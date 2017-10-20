@@ -13,7 +13,7 @@ namespace media {
 
 static void WarnOnNonMonotonicTimestamps(base::TimeDelta last_timestamp,
                                          base::TimeDelta current_timestamp) {
-  if (last_timestamp == kNoTimestamp || last_timestamp < current_timestamp)
+  if (last_timestamp == kNoTimestamp || last_timestamp <= current_timestamp)
     return;
 
   const base::TimeDelta diff = current_timestamp - last_timestamp;
