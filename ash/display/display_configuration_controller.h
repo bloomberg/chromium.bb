@@ -76,6 +76,10 @@ class ASH_EXPORT DisplayConfigurationController
   // Allow tests to skip animations.
   void ResetAnimatorForTest();
 
+  void SetScreenRotationAnimatorForTest(
+      int64_t display_id,
+      std::unique_ptr<ScreenRotationAnimator> animator);
+
  private:
   class DisplayChangeLimiter;
 

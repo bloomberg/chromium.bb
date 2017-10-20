@@ -311,14 +311,10 @@ void ScreenOrientationController::OnDisplayConfigurationChanged() {
           display::Display::InternalDisplayId())) {
     return;
   }
-
-  // TODO(oshima): We should disable the orientation change in settings
-  // because application may not work correctly.
+  // TODO(oshima): remove current_rotation_ and always use the target rotation.
   current_rotation_ =
-      Shell::Get()
-          ->display_manager()
-          ->GetDisplayInfo(display::Display::InternalDisplayId())
-          .GetActiveRotation();
+      Shell::Get()->display_configuration_controller()->GetTargetRotation(
+          display::Display::InternalDisplayId());
 }
 
 void ScreenOrientationController::OnTabletModeStarted() {
@@ -349,6 +345,7 @@ void ScreenOrientationController::OnTabletModeEnding() {
   if (!display::Display::HasInternalDisplay())
     return;
 
+  // TODO(oshima): Remove if when current_rotation_ is removed.
   if (current_rotation_ != user_rotation_) {
     SetDisplayRotation(user_rotation_,
                        display::Display::ROTATION_SOURCE_ACCELEROMETER,

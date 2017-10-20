@@ -7,6 +7,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/macros.h"
 
 namespace ash {
@@ -23,6 +25,10 @@ class DisplayConfigurationControllerTestApi {
   void DisableDisplayAnimator();
   ScreenRotationAnimator* GetScreenRotationAnimatorForDisplay(
       int64_t display_id);
+
+  void SetScreenRotationAnimatorForDisplay(
+      int64_t display_id,
+      std::unique_ptr<ScreenRotationAnimator> animator);
 
  private:
   DisplayConfigurationController* controller_;

@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "ash/display/display_configuration_controller_test_api.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
@@ -28,6 +30,7 @@
 #include "ui/display/display.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
@@ -204,10 +207,11 @@ class ScreenRotationAnimatorSmoothAnimationTest : public AshTestBase {
 
   std::unique_ptr<base::RunLoop> run_loop_;
 
+ protected:
+  std::unique_ptr<TestScreenRotationAnimator> animator_;
+
  private:
   display::Display display_;
-
-  std::unique_ptr<TestScreenRotationAnimator> animator_;
 
   std::unique_ptr<ScreenRotationAnimatorTestApi> test_api_;
 
@@ -643,4 +647,44 @@ TEST_F(ScreenRotationAnimatorSmoothAnimationTest,
   EXPECT_FALSE(test_api()->HasActiveAnimations());
   EXPECT_EQ(display::Display::ROTATE_180, GetDisplayRotation(display_id));
 }
+
+TEST_F(ScreenRotationAnimatorSmoothAnimationTest, DisplayChangeDuringCopy) {
+  // TODO(sky): remove this, temporary until mash_unittests as a separate
+  // executable is nuked. http://crbug.com/729810.
+  if (Shell::GetAshConfig() == Config::MASH)
+    return;
+  const int64_t internal_display_id =
+      display::test::DisplayManagerTestApi(display_manager())
+          .SetFirstDisplayAsInternalDisplay();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
+
+  aura::Window* root_window =
+      Shell::GetRootWindowForDisplayId(internal_display_id);
+  SetScreenRotationAnimator(
+      root_window,
+      base::Bind(
+          &ScreenRotationAnimatorSmoothAnimationTest::QuitWaitForCopyCallback,
+          base::Unretained(this)),
+      run_loop_->QuitWhenIdleClosure());
+  TestScreenRotationAnimator* animator = animator_.get();
+  DisplayConfigurationControllerTestApi(
+      Shell::Get()->display_configuration_controller())
+      .SetScreenRotationAnimatorForDisplay(internal_display_id,
+                                           std::move(animator_));
+  ScreenOrientationControllerTestApi(
+      Shell::Get()->screen_orientation_controller())
+      .SetDisplayRotation(display::Display::ROTATE_90,
+                          display::Display::ROTATION_SOURCE_ACCELEROMETER);
+
+  EXPECT_TRUE(animator->IsRotating());
+  display_manager()->UpdateDisplays();
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(animator->IsRotating());
+
+  WaitForCopyCallback();
+  EXPECT_FALSE(animator->IsRotating());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            GetDisplayRotation(internal_display_id));
+}
+
 }  // namespace ash

@@ -14,8 +14,9 @@ ScreenOrientationControllerTestApi::ScreenOrientationControllerTestApi(
 
 void ScreenOrientationControllerTestApi::SetDisplayRotation(
     display::Display::Rotation rotation,
-    display::Display::RotationSource source) {
-  controller_->SetDisplayRotation(rotation, source);
+    display::Display::RotationSource source,
+    DisplayConfigurationController::RotationAnimation mode) {
+  controller_->SetDisplayRotation(rotation, source, mode);
 }
 
 void ScreenOrientationControllerTestApi::SetRotationLocked(bool locked) {
