@@ -412,7 +412,7 @@ public class TabPersistentStore extends TabPersister {
     public void mergeState() {
         if (mLoadInProgress || mPersistencePolicy.isMergeInProgress()
                 || !mTabsToRestore.isEmpty()) {
-            Log.e(TAG, "Tab load still in progress when merge was attempted.");
+            Log.i(TAG, "Tab load still in progress when merge was attempted.");
             return;
         }
 
@@ -1346,10 +1346,10 @@ public class TabPersistentStore extends TabPersister {
         return new AsyncTask<Void, Void, DataInputStream>() {
             @Override
             protected DataInputStream doInBackground(Void... params) {
-                Log.w(TAG, "Starting to fetch tab list.");
+                Log.i(TAG, "Starting to fetch tab list for " + stateFileName);
                 File stateFile = new File(getStateDirectory(), stateFileName);
                 if (!stateFile.exists()) {
-                    Log.e(TAG, "State file does not exist.");
+                    Log.i(TAG, "State file does not exist.");
                     return null;
                 }
                 if (LibraryLoader.isInitialized()) {
@@ -1369,7 +1369,7 @@ public class TabPersistentStore extends TabPersister {
                 } finally {
                     StreamUtil.closeQuietly(stream);
                 }
-                Log.w(TAG, "Finished fetching tab list.");
+                Log.i(TAG, "Finished fetching tab list.");
                 return new DataInputStream(new ByteArrayInputStream(data));
             }
         }.executeOnExecutor(executor);
