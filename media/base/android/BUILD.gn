@@ -167,6 +167,7 @@ if (is_android) {
       "java/src/org/chromium/media/CodecProfileLevelList.java",
       "java/src/org/chromium/media/MediaCodecBridge.java",
       "java/src/org/chromium/media/MediaCodecUtil.java",
+      "java/src/org/chromium/media/MediaCodecEncoder.java",
       "java/src/org/chromium/media/MediaDrmBridge.java",
       "java/src/org/chromium/media/MediaDrmSessionManager.java",
       "java/src/org/chromium/media/MediaDrmStorageBridge.java",
