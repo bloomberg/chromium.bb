@@ -92,7 +92,7 @@ class MockFetchContext : public FetchContext {
   }
 
   RefPtr<WebTaskRunner> GetLoadingTaskRunner() override {
-    return frame_scheduler_->LoadingTaskRunner();
+    return frame_scheduler_->GetTaskRunner(TaskType::kUnspecedLoading);
   }
 
  private:
@@ -100,14 +100,7 @@ class MockFetchContext : public FetchContext {
    public:
     MockFrameScheduler(RefPtr<WebTaskRunner> runner)
         : runner_(std::move(runner)) {}
-    RefPtr<WebTaskRunner> LoadingTaskRunner() override { return runner_; }
-    RefPtr<WebTaskRunner> LoadingControlTaskRunner() override {
-      return runner_;
-    }
-    RefPtr<WebTaskRunner> ThrottleableTaskRunner() override { return runner_; }
-    RefPtr<WebTaskRunner> DeferrableTaskRunner() override { return runner_; }
-    RefPtr<WebTaskRunner> PausableTaskRunner() override { return runner_; }
-    RefPtr<WebTaskRunner> UnpausableTaskRunner() override { return runner_; }
+    RefPtr<WebTaskRunner> GetTaskRunner(TaskType) override { return runner_; }
 
    private:
     RefPtr<WebTaskRunner> runner_;

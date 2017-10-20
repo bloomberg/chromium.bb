@@ -536,12 +536,13 @@ void NavigationScheduler::StartTimer() {
 
   // wrapWeakPersistent(this) is safe because a posted task is canceled when the
   // task handle is destroyed on the dtor of this NavigationScheduler.
-  navigate_task_handle_ =
-      frame_->FrameScheduler()->LoadingTaskRunner()->PostDelayedCancellableTask(
-          BLINK_FROM_HERE,
-          WTF::Bind(&NavigationScheduler::NavigateTask,
-                    WrapWeakPersistent(this)),
-          TimeDelta::FromSecondsD(redirect_->Delay()));
+  navigate_task_handle_ = frame_->FrameScheduler()
+                              ->GetTaskRunner(TaskType::kUnspecedLoading)
+                              ->PostDelayedCancellableTask(
+                                  BLINK_FROM_HERE,
+                                  WTF::Bind(&NavigationScheduler::NavigateTask,
+                                            WrapWeakPersistent(this)),
+                                  TimeDelta::FromSecondsD(redirect_->Delay()));
 
   probe::frameScheduledNavigation(frame_, redirect_.Get());
 }
