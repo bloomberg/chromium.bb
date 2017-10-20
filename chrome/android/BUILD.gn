@@ -278,6 +278,7 @@ android_library("chrome_java") {
     "//chrome:page_info_connection_type_javagen",
     "//chrome:page_info_action_javagen",
     "//chrome:payments_journey_logger_enum_javagen",
+    "//chrome:pref_enum_javagen",
     "//chrome:quick_action_category_enum_javagen",
     "//chrome:sad_tab_event_enum_javagen",
     "//chrome:signin_metrics_enum_javagen",
