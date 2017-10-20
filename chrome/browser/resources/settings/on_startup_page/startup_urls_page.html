@@ -22,20 +22,16 @@
         max-height: 395px;  /** Enough height to show six entries. */
       }
 
-      #container iron-list > settings-startup-url-entry:not(:first-of-type) {
-        border-top: var(--settings-separator-line);
-      }
-
       #container settings-startup-url-entry {
         cursor: default;
       }
     </style>
-    <div id="outer" class="layout vertical flex vertical-list">
+    <div id="outer" class="layout vertical flex">
       <div id="container" class="scroll-container" scrollable>
         <iron-list items="[[startupPages_]]" scroll-target="container"
-            preserve-focus risk-selection>
+            preserve-focus risk-selection class="cr-separators">
           <template>
-            <settings-startup-url-entry model="[[item]]"
+            <settings-startup-url-entry model="[[item]]" first$="[[!index]]"
                 tabindex$="[[tabIndex]]" iron-list-tab-index="[[tabIndex]]"
                 last-focused="{{lastFocused_}}"
                 editable="[[shouldAllowUrlsEdit_(
