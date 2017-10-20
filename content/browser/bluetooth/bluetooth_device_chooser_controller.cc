@@ -42,35 +42,40 @@ namespace {
 // displayed levels.
 //
 // RSSI values from UMA in RecordRSSISignalStrength are charted here:
-// https://goo.gl/photos/pCoAkF7mPyza9B1k7 (2016-12-08)
+// https://photos.app.goo.gl/6R0ksxWzBsfvrbXH2 (2017-10-18)
 // with a copy-paste of table data at every 5dBm:
 //  dBm   CDF* Histogram Bucket Quantity (hand drawn estimate)
-// -100 00.0%  -
-//  -95 00.4%  --
-//  -90 01.9%  ---
-//  -85 05.1%  ---
-//  -80 09.2%  ----
-//  -75 14.9%  -----
-//  -70 22.0%  ------
-//  -65 32.4%  --------
-//  -60 47.9%  ---------
-//  -55 60.4%  --------
-//  -50 72.8%  ---------
-//  -45 85.5%  -------
-//  -40 94.5%  -----
-//  -35 97.4%  ---
-//  -30 99.0%  --
-//  -25 99.7%  -
+// -100 00.26%
+//  -95 01.22% ---
+//  -90 04.14% -----------
+//  -85 11.24% ----------------------------
+//  -80 18.29% ----------------------------
+//  -75 27.13% -----------------------------------
+//  -70 37.72% ------------------------------------------
+//  -65 49.42% ----------------------------------------------
+//  -60 62.91% -----------------------------------------------------
+//  -55 74.35% ---------------------------------------------
+//  -50 83.07% ----------------------------------
+//  -45 88.43% ---------------------
+//  -40 92.41% ---------------
+//  -35 94.84% ---------
+//  -30 95.96% ----
+//  -25 96.60% --
+//  -20 96.90% -
+//  -15 97.07%
+//  -10 97.21%
+//   -5 97.34%
+//    0 97.47%
 //
 // CDF: Cumulative Distribution Function:
 // https://en.wikipedia.org/wiki/Cumulative_distribution_function
 //
 // Conversion to signal strengths is done by selecting 4 threshold points
 // equally spaced through the CDF.
-const int k20thPercentileRSSI = -71;
-const int k40thPercentileRSSI = -63;
-const int k60thPercentileRSSI = -55;
-const int k80thPercentileRSSI = -47;
+const int k20thPercentileRSSI = -79;
+const int k40thPercentileRSSI = -69;
+const int k60thPercentileRSSI = -61;
+const int k80thPercentileRSSI = -52;
 
 }  // namespace
 
