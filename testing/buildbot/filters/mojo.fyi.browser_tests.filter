@@ -1,6 +1,7 @@
 # Trying to whitelist
 BrowserDialogTest.Invoke
 CastSessionBrowserTest.CreateAndDestroy
+ChromeContentBrowserClientMashTest.CrashReporter
 ChromeContentRendererClientSearchBoxTest.RewriteThumbnailURL
 ChromeRenderFrameObserverTest.SkipCapturingSubFrames
 ChromeRenderViewTest.DidBlockContentType

@@ -272,8 +272,12 @@ class ServiceManagerContext::InProcessServiceManagerContext
 
   static void OnInstanceQuit(const service_manager::Identity& id) {
     if (GetContentClient()->browser()->ShouldTerminateOnServiceQuit(id)) {
-      LOG(FATAL) << "Terminating because service '" << id.name()
+      // Don't LOG(FATAL) because we don't want a browser crash report.
+      LOG(ERROR) << "Terminating because service '" << id.name()
                  << "' quit unexpectedly.";
+      // Skip shutdown to reduce the risk that other code in the browser will
+      // respond to the service pipe closing.
+      exit(1);
     }
   }
 
