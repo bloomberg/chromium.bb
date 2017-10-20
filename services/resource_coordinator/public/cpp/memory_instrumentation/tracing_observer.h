@@ -29,6 +29,7 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT TracingObserver
 
   bool AddChromeDumpToTraceIfEnabled(
       const base::trace_event::MemoryDumpRequestArgs&,
+      const base::ProcessId pid,
       const base::trace_event::ProcessMemoryDump*);
   bool AddOsDumpToTraceIfEnabled(
       const base::trace_event::MemoryDumpRequestArgs&,

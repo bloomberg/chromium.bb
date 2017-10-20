@@ -5,9 +5,12 @@
 #include "services/resource_coordinator/memory_instrumentation/coordinator_impl.h"
 
 #include "base/bind.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/trace_event_analyzer.h"
 #include "base/trace_event/memory_dump_request_args.h"
+#include "base/trace_event/trace_buffer.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -37,17 +40,55 @@ using ::testing::AllOf;
 
 using RequestGlobalMemoryDumpCallback =
     memory_instrumentation::CoordinatorImpl::RequestGlobalMemoryDumpCallback;
+using RequestGlobalMemoryDumpAndAppendToTraceCallback = memory_instrumentation::
+    CoordinatorImpl::RequestGlobalMemoryDumpAndAppendToTraceCallback;
 using GetVmRegionsForHeapProfilerCallback = memory_instrumentation::
     CoordinatorImpl::GetVmRegionsForHeapProfilerCallback;
 using memory_instrumentation::mojom::GlobalMemoryDumpPtr;
 using memory_instrumentation::mojom::GlobalMemoryDump;
+using base::trace_event::MemoryAllocatorDump;
 using base::trace_event::MemoryDumpArgs;
 using base::trace_event::MemoryDumpLevelOfDetail;
-using base::trace_event::ProcessMemoryDump;
-using base::trace_event::MemoryAllocatorDump;
+using base::trace_event::MemoryDumpManager;
 using base::trace_event::MemoryDumpRequestArgs;
+using base::trace_event::MemoryDumpType;
+using base::trace_event::ProcessMemoryDump;
+using base::trace_event::TraceConfig;
+using base::trace_event::TraceLog;
+using base::trace_event::TraceResultBuffer;
 
 namespace memory_instrumentation {
+
+namespace {
+
+std::unique_ptr<trace_analyzer::TraceAnalyzer> GetDeserializedTrace() {
+  // Flush the trace into JSON.
+  TraceResultBuffer buffer;
+  TraceResultBuffer::SimpleOutput trace_output;
+  buffer.SetOutputCallback(trace_output.GetCallback());
+  base::RunLoop run_loop;
+  buffer.Start();
+  auto on_trace_data_collected =
+      [](base::Closure quit_closure, TraceResultBuffer* buffer,
+         const scoped_refptr<base::RefCountedString>& json,
+         bool has_more_events) {
+        buffer->AddFragment(json->data());
+        if (!has_more_events)
+          quit_closure.Run();
+      };
+
+  TraceLog::GetInstance()->Flush(Bind(on_trace_data_collected,
+                                      run_loop.QuitClosure(),
+                                      base::Unretained(&buffer)));
+  run_loop.Run();
+  buffer.Finish();
+
+  // Analyze the JSON.
+  return base::WrapUnique(
+      trace_analyzer::TraceAnalyzer::Create(trace_output.json_output));
+}
+
+}  // namespace
 
 class FakeCoordinatorImpl : public CoordinatorImpl {
  public:
@@ -87,6 +128,12 @@ class CoordinatorImplTest : public testing::Test {
   void RequestGlobalMemoryDump(MemoryDumpRequestArgs args,
                                RequestGlobalMemoryDumpCallback callback) {
     coordinator_->RequestGlobalMemoryDump(args, callback);
+  }
+
+  void RequestGlobalMemoryDumpAndAppendToTrace(
+      MemoryDumpRequestArgs args,
+      RequestGlobalMemoryDumpAndAppendToTraceCallback callback) {
+    coordinator_->RequestGlobalMemoryDumpAndAppendToTrace(args, callback);
   }
 
   void GetVmRegionsForHeapProfiler(
@@ -173,6 +220,19 @@ class MockGlobalMemoryDumpCallback {
   }
 };
 
+class MockGlobalMemoryDumpAndAppendToTraceCallback {
+ public:
+  MockGlobalMemoryDumpAndAppendToTraceCallback() = default;
+  MOCK_METHOD2(OnCall, void(bool, uint64_t));
+
+  void Run(bool success, uint64_t dump_guid) { OnCall(success, dump_guid); }
+
+  RequestGlobalMemoryDumpAndAppendToTraceCallback Get() {
+    return base::Bind(&MockGlobalMemoryDumpAndAppendToTraceCallback::Run,
+                      base::Unretained(this));
+  }
+};
+
 class MockGetVmRegionsForHeapProfilerCallback {
  public:
   MockGetVmRegionsForHeapProfilerCallback() = default;
@@ -213,7 +273,7 @@ mojom::RawOSMemDumpPtr FillRawOSDump(int pid) {
 // Tests that the global dump is acked even in absence of clients.
 TEST_F(CoordinatorImplTest, NoClients) {
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
@@ -228,11 +288,12 @@ TEST_F(CoordinatorImplTest, SeveralClients) {
   NiceMock<MockClientProcess> client_process_1(this, 1,
                                                mojom::ProcessType::BROWSER);
   NiceMock<MockClientProcess> client_process_2(this);
+
   EXPECT_CALL(client_process_1, RequestChromeMemoryDump(_, _)).Times(1);
   EXPECT_CALL(client_process_2, RequestChromeMemoryDump(_, _)).Times(1);
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       MemoryDumpLevelOfDetail::DETAILED};
 
   MockGlobalMemoryDumpCallback callback;
@@ -246,7 +307,7 @@ TEST_F(CoordinatorImplTest, MissingChromeDump) {
   base::RunLoop run_loop;
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       MemoryDumpLevelOfDetail::DETAILED};
 
   NiceMock<MockClientProcess> client_process(this, 1,
@@ -276,7 +337,7 @@ TEST_F(CoordinatorImplTest, MissingOsDump) {
   base::RunLoop run_loop;
 
   base::trace_event::MemoryDumpRequestArgs args = {
-      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      0, base::trace_event::MemoryDumpType::SUMMARY_ONLY,
       MemoryDumpLevelOfDetail::DETAILED};
 
   NiceMock<MockClientProcess> client_process(this, 1,
@@ -605,6 +666,98 @@ TEST_F(CoordinatorImplTest, VmRegionsForHeapProfiler) {
 
   GetVmRegionsForHeapProfiler(callback.Get());
   run_loop.Run();
+}
+
+// RequestGlobalMemoryDump, as opposite to RequestGlobalMemoryDumpAndAddToTrace,
+// shouldn't add anything into the trace
+TEST_F(CoordinatorImplTest, DumpsArentAddedToTraceUnlessRequested) {
+  using trace_analyzer::Query;
+
+  base::RunLoop run_loop;
+
+  base::trace_event::MemoryDumpRequestArgs args = {
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      MemoryDumpLevelOfDetail::DETAILED};
+
+  NiceMock<MockClientProcess> client_process(this, 1,
+                                             mojom::ProcessType::BROWSER);
+
+  EXPECT_CALL(client_process, RequestChromeMemoryDump(_, _))
+      .WillOnce(
+          Invoke([](const MemoryDumpRequestArgs& args,
+                    const MockClientProcess::RequestChromeMemoryDumpCallback&
+                        callback) {
+            MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
+            auto pmd = std::make_unique<ProcessMemoryDump>(nullptr, dump_args);
+            callback.Run(true, args.dump_guid, std::move(pmd));
+          }));
+
+  MockGlobalMemoryDumpCallback callback;
+  EXPECT_CALL(
+      callback,
+      OnCall(true, Pointee(Field(&mojom::GlobalMemoryDump::process_dumps,
+                                 IsEmpty()))))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+
+  TraceLog::GetInstance()->SetEnabled(
+      TraceConfig(MemoryDumpManager::kTraceCategory, ""),
+      TraceLog::RECORDING_MODE);
+  RequestGlobalMemoryDump(args, callback.Get());
+  run_loop.Run();
+  TraceLog::GetInstance()->SetDisabled();
+
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
+      GetDeserializedTrace();
+  trace_analyzer::TraceEventVector events;
+  analyzer->FindEvents(Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
+                       &events);
+
+  ASSERT_EQ(0u, events.size());
+}
+
+TEST_F(CoordinatorImplTest, DumpsAreAddedToTraceWhenRequested) {
+  using trace_analyzer::Query;
+
+  base::RunLoop run_loop;
+
+  base::trace_event::MemoryDumpRequestArgs args = {
+      0, base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
+      MemoryDumpLevelOfDetail::DETAILED};
+
+  NiceMock<MockClientProcess> client_process(this, 1,
+                                             mojom::ProcessType::BROWSER);
+
+  EXPECT_CALL(client_process, RequestChromeMemoryDump(_, _))
+      .WillOnce(
+          Invoke([](const MemoryDumpRequestArgs& args,
+                    const MockClientProcess::RequestChromeMemoryDumpCallback&
+                        callback) {
+            MemoryDumpArgs dump_args{MemoryDumpLevelOfDetail::DETAILED};
+            auto pmd = std::make_unique<ProcessMemoryDump>(nullptr, dump_args);
+            callback.Run(true, args.dump_guid, std::move(pmd));
+          }));
+
+  MockGlobalMemoryDumpAndAppendToTraceCallback callback;
+  EXPECT_CALL(callback, OnCall(true, Ne(0ul)))
+      .WillOnce(RunClosure(run_loop.QuitClosure()));
+
+  TraceLog::GetInstance()->SetEnabled(
+      TraceConfig(MemoryDumpManager::kTraceCategory, ""),
+      TraceLog::RECORDING_MODE);
+  RequestGlobalMemoryDumpAndAppendToTrace(args, callback.Get());
+  run_loop.Run();
+  TraceLog::GetInstance()->SetDisabled();
+
+  std::unique_ptr<trace_analyzer::TraceAnalyzer> analyzer =
+      GetDeserializedTrace();
+  trace_analyzer::TraceEventVector events;
+  analyzer->FindEvents(Query::EventPhaseIs(TRACE_EVENT_PHASE_MEMORY_DUMP),
+                       &events);
+
+  ASSERT_EQ(1u, events.size());
+  ASSERT_TRUE(trace_analyzer::CountMatches(
+      events, Query::EventNameIs(MemoryDumpTypeToString(
+                  MemoryDumpType::EXPLICITLY_TRIGGERED))));
 }
 
 }  // namespace memory_instrumentation

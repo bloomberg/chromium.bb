@@ -269,7 +269,7 @@ void CoordinatorImpl::RequestGlobalMemoryDumpInternal(
     }
   }
 
-  queued_memory_dump_requests_.emplace_back(args, callback);
+  queued_memory_dump_requests_.emplace_back(args, callback, add_to_trace);
 
   // If another dump is already in queued, this dump will automatically be
   // scheduled when the other dump finishes.
@@ -400,7 +400,14 @@ void CoordinatorImpl::OnChromeMemoryDumpResponse(
     return;
   }
 
-  request->responses[client].chrome_dump = std::move(chrome_memory_dump);
+  // Only add to trace if requested.
+  auto* response = &request->responses[client];
+  if (chrome_memory_dump && request->add_to_trace) {
+    bool added_to_trace = tracing_observer_->AddChromeDumpToTraceIfEnabled(
+        request->args, response->process_id, chrome_memory_dump.get());
+    success = success && added_to_trace;
+  }
+  response->chrome_dump = std::move(chrome_memory_dump);
 
   if (!success) {
     request->failed_memory_dump_count++;
@@ -541,8 +548,12 @@ void CoordinatorImpl::FinalizeGlobalMemoryDumpIfAllManagersReplied() {
       continue;
 
     mojom::OSMemDumpPtr os_dump = CreatePublicOSDump(*raw_dumps.raw_os_dump);
-    tracing_observer_->AddOsDumpToTraceIfEnabled(
-        request->args, pid, os_dump.get(), &raw_dumps.raw_os_dump->memory_maps);
+
+    if (request->add_to_trace) {
+      tracing_observer_->AddOsDumpToTraceIfEnabled(
+          request->args, pid, os_dump.get(),
+          &raw_dumps.raw_os_dump->memory_maps);
+    }
 
     if (request->args.dump_type == MemoryDumpType::VM_REGIONS_ONLY) {
       DCHECK(request->wants_mmaps());
@@ -598,8 +609,9 @@ CoordinatorImpl::QueuedMemoryDumpRequest::Response::~Response() {}
 
 CoordinatorImpl::QueuedMemoryDumpRequest::QueuedMemoryDumpRequest(
     const base::trace_event::MemoryDumpRequestArgs& args,
-    const RequestGlobalMemoryDumpInternalCallback& callback)
-    : args(args), callback(callback) {}
+    const RequestGlobalMemoryDumpInternalCallback& callback,
+    bool add_to_trace)
+    : args(args), callback(callback), add_to_trace(add_to_trace) {}
 
 CoordinatorImpl::QueuedMemoryDumpRequest::~QueuedMemoryDumpRequest() {}
 

@@ -79,10 +79,12 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   struct QueuedMemoryDumpRequest {
     QueuedMemoryDumpRequest(
         const base::trace_event::MemoryDumpRequestArgs& args,
-        const RequestGlobalMemoryDumpInternalCallback& callback);
+        const RequestGlobalMemoryDumpInternalCallback& callback,
+        bool add_to_trace);
     ~QueuedMemoryDumpRequest();
     const base::trace_event::MemoryDumpRequestArgs args;
     const RequestGlobalMemoryDumpInternalCallback callback;
+    const bool add_to_trace;
 
     bool wants_mmaps() const {
       return args.level_of_detail ==
