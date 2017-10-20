@@ -19,19 +19,20 @@
 // folder which replaces the current favicons when all are fetched.
 namespace ntp_tile_saver {
 
-// Saves the most visited sites to disk with icons in |faviconsURL|, using
-// |faviconFetcher| to get the favicons.
-void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& mostVisitedData,
-                           id<GoogleLandingDataSource> faviconFetcher,
-                           NSURL* faviconsURL);
+// Saves the most visited sites to disk with icons in |favicons_folder|, using
+// |favicon_fetcher| to get the favicons.
+void SaveMostVisitedToDisk(const ntp_tiles::NTPTilesVector& most_visited_data,
+                           id<GoogleLandingDataSource> favicon_fetcher,
+                           NSURL* favicons_folder);
 
 // Read the current saved most visited sites from disk.
 NSDictionary* ReadSavedMostVisited();
 
-// Fetches the updated favicon for a single site and saves it in |faviconsURL|.
-void UpdateSingleFavicon(const GURL& siteURL,
-                         id<GoogleLandingDataSource> faviconFetcher,
-                         NSURL* faviconsURL);
+// Fetches the updated favicon for a single site and saves it in
+// |favicons_folder|.
+void UpdateSingleFavicon(const GURL& site_url,
+                         id<GoogleLandingDataSource> favicon_fetcher,
+                         NSURL* favicons_folder);
 
 }  // namespace ntp_tile_saver
 
