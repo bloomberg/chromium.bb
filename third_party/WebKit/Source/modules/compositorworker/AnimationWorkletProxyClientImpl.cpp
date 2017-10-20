@@ -39,11 +39,17 @@ void AnimationWorkletProxyClientImpl::Dispose() {
   global_scope_ = nullptr;
 }
 
-void AnimationWorkletProxyClientImpl::Mutate(double monotonic_time_now) {
+void AnimationWorkletProxyClientImpl::Mutate(
+    double monotonic_time_now,
+    const CompositorMutatorInputState& state) {
   DCHECK(global_scope_->IsContextThread());
 
+  std::unique_ptr<CompositorMutatorOutputState> output = nullptr;
+
   if (global_scope_)
-    global_scope_->Mutate();
+    output = global_scope_->Mutate(state);
+
+  mutator_->SetMutationUpdate(std::move(output));
 }
 
 // static

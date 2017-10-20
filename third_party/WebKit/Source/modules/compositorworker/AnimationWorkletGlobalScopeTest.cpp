@@ -152,10 +152,11 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
         )JS";
     ASSERT_TRUE(EvaluateScriptModule(global_scope, source_code));
 
-    ScriptValue constructed =
+    ScriptValue constructed_before =
         global_scope->ScriptController()->EvaluateAndReturnValueForTest(
             ScriptSourceCode("Function('return this')().constructed"));
-    EXPECT_TRUE(ToBoolean(isolate, constructed.V8Value(), ASSERT_NO_EXCEPTION))
+    EXPECT_FALSE(
+        ToBoolean(isolate, constructed_before.V8Value(), ASSERT_NO_EXCEPTION))
         << "constructor is not invoked";
 
     ScriptValue animated_before =
@@ -165,7 +166,24 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
         ToBoolean(isolate, animated_before.V8Value(), ASSERT_NO_EXCEPTION))
         << "animate function is invoked early";
 
-    global_scope->Mutate();
+    // Passing a new input state with a new player id should cause the worklet
+    // to create and animate an animator.
+    CompositorMutatorInputState state;
+    CompositorMutatorInputState::AnimationState test_animation_state;
+    test_animation_state.animation_player_id = 1;
+    test_animation_state.name = "test";
+    state.animations = {test_animation_state};
+
+    std::unique_ptr<CompositorMutatorOutputState> output =
+        global_scope->Mutate(state);
+    EXPECT_TRUE(output);
+
+    ScriptValue constructed_after =
+        global_scope->ScriptController()->EvaluateAndReturnValueForTest(
+            ScriptSourceCode("Function('return this')().constructed"));
+    EXPECT_TRUE(
+        ToBoolean(isolate, constructed_after.V8Value(), ASSERT_NO_EXCEPTION))
+        << "constructor is not invoked";
 
     ScriptValue animated_after =
         global_scope->ScriptController()->EvaluateAndReturnValueForTest(
@@ -173,6 +191,55 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     EXPECT_TRUE(
         ToBoolean(isolate, animated_after.V8Value(), ASSERT_NO_EXCEPTION))
         << "animate function is not invoked";
+
+    waitable_event->Signal();
+  }
+
+  void RunAnimateOutputTestOnWorklet(WorkerThread* thread,
+                                     WaitableEvent* waitable_event) {
+    AnimationWorkletGlobalScope* global_scope =
+        static_cast<AnimationWorkletGlobalScope*>(thread->GlobalScope());
+    ASSERT_TRUE(global_scope);
+    ASSERT_TRUE(global_scope->IsAnimationWorkletGlobalScope());
+    ScriptState* script_state =
+        global_scope->ScriptController()->GetScriptState();
+    ASSERT_TRUE(script_state);
+    v8::Isolate* isolate = script_state->GetIsolate();
+    ASSERT_TRUE(isolate);
+
+    ScriptState::Scope scope(script_state);
+    global_scope->ScriptController()->Evaluate(ScriptSourceCode(
+        R"JS(
+            registerAnimator('test', class {
+              animate (currentTime, effect) {
+                effect.localTime = 123;
+              }
+            });
+          )JS"));
+
+    // Passing a new input state with a new player id should cause the worklet
+    // to create and animate an animator.
+    CompositorMutatorInputState state;
+    CompositorMutatorInputState::AnimationState test_animation_state;
+    test_animation_state.animation_player_id = 1;
+    test_animation_state.name = "test";
+    state.animations = {test_animation_state};
+
+    std::unique_ptr<CompositorMutatorOutputState> output =
+        global_scope->Mutate(state);
+    EXPECT_TRUE(output);
+
+    EXPECT_EQ(output->animations.size(), 1ul);
+    EXPECT_EQ(output->animations[0].local_time,
+              WTF::TimeDelta::FromSecondsD(123));
+
+    // Passing a new empty input state should cause the worklet to remove the
+    // previously constructed animator.
+    CompositorMutatorInputState empty_state;
+    output = global_scope->Mutate(empty_state);
+    EXPECT_TRUE(output);
+    EXPECT_EQ(output->animations.size(), 0ul);
+    EXPECT_EQ(global_scope->GetAnimatorsSizeForTest(), 0u);
 
     waitable_event->Signal();
   }
@@ -209,6 +276,11 @@ TEST_F(AnimationWorkletGlobalScopeTest, BasicParsing) {
 TEST_F(AnimationWorkletGlobalScopeTest, ConstructAndAnimate) {
   RunTestOnWorkletThread(
       &AnimationWorkletGlobalScopeTest::RunConstructAndAnimateTestOnWorklet);
+}
+
+TEST_F(AnimationWorkletGlobalScopeTest, AnimtionOutput) {
+  RunTestOnWorkletThread(
+      &AnimationWorkletGlobalScopeTest::RunAnimateOutputTestOnWorklet);
 }
 
 }  // namespace blink

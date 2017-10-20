@@ -136,6 +136,8 @@ class CC_ANIMATION_EXPORT Animation {
   base::TimeDelta TrimTimeToCurrentIteration(
       base::TimeTicks monotonic_time) const;
 
+  base::TimeTicks ConvertFromActiveTime(base::TimeDelta active_time) const;
+
   std::unique_ptr<Animation> CloneAndInitialize(
       RunState initial_run_state) const;
 

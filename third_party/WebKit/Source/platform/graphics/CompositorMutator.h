@@ -6,6 +6,7 @@
 #define CompositorMutator_h
 
 #include "platform/PlatformExport.h"
+#include "platform/graphics/CompositorAnimatorsState.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -19,7 +20,8 @@ class PLATFORM_EXPORT CompositorMutator
 
   // Called from compositor thread to run the animation frame callbacks from all
   // connected AnimationWorklets.
-  virtual void Mutate(double monotonic_time_now) = 0;
+  virtual void Mutate(double monotonic_time_now,
+                      std::unique_ptr<CompositorMutatorInputState>) = 0;
   // Returns true if Mutate may do something if called 'now'.
   virtual bool HasAnimators() = 0;
 };

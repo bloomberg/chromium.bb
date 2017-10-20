@@ -9,13 +9,67 @@
 #include "base/time/time.h"
 #include "cc/cc_export.h"
 
+#include <memory>
+#include <string>
+#include <vector>
+
 namespace cc {
+
+// TODO(majidvp): Currently the sync mechanism between cc and worklet is
+// stateless meaning that it sends a new copy of the world every sync cycle.
+// This has the benefit of keeping things very simple but we should revisit this
+// and only send data relevant to particular phase of animator lifecycle e.g.,
+// name and options dictionary are used just for construction.
+struct CC_EXPORT MutatorInputState {
+  struct CC_EXPORT AnimationState {
+    int animation_player_id = 0;
+    // Name associated with worklet animation player.
+    std::string name;
+    // Worklet animation player's current time.
+    base::TimeTicks current_time;
+  };
+
+  MutatorInputState();
+  ~MutatorInputState();
+
+  std::vector<AnimationState> animations;
+};
+
+struct CC_EXPORT MutatorOutputState {
+  struct CC_EXPORT AnimationState {
+    int animation_player_id = 0;
+    // The animator effect's local time.
+    // TODO(majidvp): This assumes each animator has a single output effect
+    // which does not hold once we state support group effects.
+    // http://crbug.com/767043
+    base::TimeDelta local_time;
+  };
+
+  MutatorOutputState();
+  ~MutatorOutputState();
+
+  std::vector<AnimationState> animations;
+};
+
+class LayerTreeMutatorClient {
+ public:
+  // Called when mutator needs to update its output.
+  //
+  // |output_state|: Most recent output of the mutator.
+  virtual void SetMutationUpdate(
+      std::unique_ptr<MutatorOutputState> output_state) = 0;
+};
 
 class CC_EXPORT LayerTreeMutator {
  public:
   virtual ~LayerTreeMutator() {}
 
-  virtual void Mutate(base::TimeTicks now) = 0;
+  virtual void SetClient(LayerTreeMutatorClient* client) = 0;
+
+  // TODO(petermayo): get rid of |now| since each animator now receives its own
+  // current time. http://crbug.com/746212
+  virtual void Mutate(base::TimeTicks now,
+                      std::unique_ptr<MutatorInputState> input_state) = 0;
   // TODO(majidvp): Remove when timeline inputs are known.
   virtual bool HasAnimators() = 0;
 };

@@ -865,6 +865,7 @@ jumbo_component("platform") {
     "graphics/ColorSpaceProfileData.h",
     "graphics/CompositingReasons.cpp",
     "graphics/CompositingReasons.h",
+    "graphics/CompositorAnimatorsState.h",
     "graphics/CompositorElementId.cpp",
     "graphics/CompositorElementId.h",
     "graphics/CompositorFilterOperations.cpp",

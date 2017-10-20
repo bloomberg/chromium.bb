@@ -155,6 +155,21 @@ bool Animation::InEffect(base::TimeTicks monotonic_time) const {
          (fill_mode_ == FillMode::BOTH || fill_mode_ == FillMode::BACKWARDS);
 }
 
+base::TimeTicks Animation::ConvertFromActiveTime(
+    base::TimeDelta active_time) const {
+  // When waiting on receiving a start time, then our global clock is 'stuck' at
+  // the initial state.
+  if ((run_state_ == STARTING && !has_set_start_time()) ||
+      needs_synchronized_start_time())
+    return base::TimeTicks();
+
+  // If we're paused, time is 'stuck' at the pause time.
+  if (run_state_ == PAUSED)
+    return pause_time_ - time_offset_;
+
+  return active_time - time_offset_ + start_time_ + total_paused_time_;
+}
+
 base::TimeDelta Animation::ConvertToActiveTime(
     base::TimeTicks monotonic_time) const {
   // If we're just starting or we're waiting on receiving a start time,

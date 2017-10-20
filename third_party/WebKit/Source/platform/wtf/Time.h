@@ -29,6 +29,7 @@ template <class WrappedTimeType>
 class TimeWrapper {
  public:
   TimeWrapper() {}
+  explicit TimeWrapper(WrappedTimeType value) : value_(value) {}
 
   static TimeWrapper Now() {
     if (WTF::GetTimeFunctionForTesting()) {
@@ -46,7 +47,7 @@ class TimeWrapper {
   double InSeconds() const { return (value_ - WrappedTimeType()).InSecondsF(); }
 
   static TimeWrapper FromSeconds(double seconds) {
-    return WrappedTimeType() + TimeDelta::FromSecondsD(seconds);
+    return TimeWrapper() + TimeDelta::FromSecondsD(seconds);
   }
 
   TimeWrapper& operator=(TimeWrapper other) {
@@ -81,7 +82,6 @@ class TimeWrapper {
 
  private:
   WrappedTimeType value_;
-  TimeWrapper(WrappedTimeType value) : value_(value) {}
 };
 
 }  // namespace internal
