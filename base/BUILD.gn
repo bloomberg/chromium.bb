@@ -2824,6 +2824,25 @@ if (is_android) {
   }
 }
 
+# Keep the list of fuzzer_tests in alphabetical order.
+fuzzer_test("base64_decode_fuzzer") {
+  sources = [
+    "base64_decode_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
+fuzzer_test("base64_encode_fuzzer") {
+  sources = [
+    "base64_encode_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+  ]
+}
+
 fuzzer_test("base_json_correctness_fuzzer") {
   sources = [
     "json/correctness_fuzzer.cc",
