@@ -143,6 +143,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds) const;
 
+  // Returns true if overscroll is currently allowed by the active keyboard
+  // container behavior.
+  bool IsOverscrollAllowed() const;
+
  private:
   // For access to Observer methods for simulation.
   friend class KeyboardControllerTest;

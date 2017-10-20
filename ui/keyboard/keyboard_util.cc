@@ -152,7 +152,7 @@ bool IsKeyboardOverscrollEnabled() {
   // Users of the sticky accessibility on-screen keyboard are likely to be using
   // mouse input, which may interfere with overscrolling.
   if (keyboard::KeyboardController::GetInstance() &&
-      keyboard::KeyboardController::GetInstance()->keyboard_locked()) {
+      !keyboard::KeyboardController::GetInstance()->IsOverscrollAllowed()) {
     return false;
   }
 

@@ -32,6 +32,7 @@ class KEYBOARD_EXPORT ContainerFullWidthBehavior : public ContainerBehavior {
   const gfx::Rect AdjustSetBoundsRequest(
       const gfx::Rect& display_bounds,
       const gfx::Rect& requested_bounds) const override;
+  bool IsOverscrollAllowed() const override;
 };
 
 }  // namespace keyboard

@@ -6,6 +6,7 @@
 
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/wm/core/window_animations.h"
 
 namespace keyboard {
@@ -68,6 +69,13 @@ const gfx::Rect ContainerFullWidthBehavior::AdjustSetBoundsRequest(
   new_bounds.set_width(display_bounds.width());
 
   return new_bounds;
+}
+
+bool ContainerFullWidthBehavior::IsOverscrollAllowed() const {
+  // TODO(blakeo): The locked keyboard is essentially its own behavior type and
+  // should be refactored as such. Then this will simply return 'true'.
+  return KeyboardController::GetInstance() &&
+         !KeyboardController::GetInstance()->keyboard_locked();
 }
 
 }  //  namespace keyboard
