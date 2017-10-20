@@ -15,6 +15,7 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/fling_controller.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_source.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
@@ -31,9 +32,9 @@ class CONTENT_EXPORT GestureEventQueueClient {
   virtual void SendGestureEventImmediately(
       const GestureEventWithLatencyInfo& event) = 0;
 
-  virtual void OnGestureEventAck(
-      const GestureEventWithLatencyInfo& event,
-      InputEventAckState ack_result) = 0;
+  virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                                 InputEventAckSource ack_source,
+                                 InputEventAckState ack_result) = 0;
 };
 
 // Maintains WebGestureEvents in a queue before forwarding them to the renderer
@@ -83,7 +84,8 @@ class CONTENT_EXPORT GestureEventQueue {
   // Indicates that the caller has received an acknowledgement from the renderer
   // with state |ack_result| and event |type|. May send events if the queue is
   // not empty.
-  void ProcessGestureAck(InputEventAckState ack_result,
+  void ProcessGestureAck(InputEventAckSource ack_source,
+                         InputEventAckState ack_result,
                          blink::WebInputEvent::Type type,
                          const ui::LatencyInfo& latency);
 
@@ -119,9 +121,14 @@ class CONTENT_EXPORT GestureEventQueue {
    public:
     GestureEventWithLatencyInfoAndAckState(const GestureEventWithLatencyInfo&);
     InputEventAckState ack_state() const { return ack_state_; }
-    void set_ack_state(InputEventAckState state) { ack_state_ = state; }
+    void set_ack_info(InputEventAckSource source, InputEventAckState state) {
+      ack_source_ = source;
+      ack_state_ = state;
+    }
+    InputEventAckSource ack_source() const { return ack_source_; }
 
    private:
+    InputEventAckSource ack_source_ = InputEventAckSource::UNKNOWN;
     InputEventAckState ack_state_ = INPUT_EVENT_ACK_STATE_UNKNOWN;
   };
 
@@ -150,11 +157,13 @@ class CONTENT_EXPORT GestureEventQueue {
   // Will preserve the FIFO order as events originally arrived.
   void AckCompletedEvents();
   void AckGestureEventToClient(const GestureEventWithLatencyInfo&,
+                               InputEventAckSource,
                                InputEventAckState);
 
   // Used when |allow_multiple_inflight_events_| is false. Will only send next
   // event after receiving ACK for the previous one.
-  void LegacyProcessGestureAck(InputEventAckState,
+  void LegacyProcessGestureAck(InputEventAckSource,
+                               InputEventAckState,
                                blink::WebInputEvent::Type,
                                const ui::LatencyInfo&);
 

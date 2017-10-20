@@ -12,6 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_source.h"
 #include "content/common/input/input_event_ack_state.h"
 
 namespace content {
@@ -25,9 +26,9 @@ class CONTENT_EXPORT TouchEventQueueClient {
   virtual void SendTouchEventImmediately(
       const TouchEventWithLatencyInfo& event) = 0;
 
-  virtual void OnTouchEventAck(
-      const TouchEventWithLatencyInfo& event,
-      InputEventAckState ack_result) = 0;
+  virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                               InputEventAckSource ack_source,
+                               InputEventAckState ack_result) = 0;
 
   virtual void OnFilteringTouchEvent(
       const blink::WebTouchEvent& touch_event) = 0;
@@ -76,7 +77,8 @@ class CONTENT_EXPORT TouchEventQueue {
   // touchmove from the front of the queue and decide if it should dispatch the
   // next pending async touch move event, otherwise the queue may send one or
   // more gesture events and/or additional queued touch-events to the renderer.
-  virtual void ProcessTouchAck(InputEventAckState ack_result,
+  virtual void ProcessTouchAck(InputEventAckSource ack_source,
+                               InputEventAckState ack_result,
                                const ui::LatencyInfo& latency_info,
                                const uint32_t unique_touch_event_id) = 0;
 

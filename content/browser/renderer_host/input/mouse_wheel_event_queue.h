@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/common/content_export.h"
+#include "content/common/input/input_event_ack_source.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
@@ -30,6 +31,7 @@ class CONTENT_EXPORT MouseWheelEventQueueClient {
       const blink::WebGestureEvent& event,
       const ui::LatencyInfo& latency_info) = 0;
   virtual void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
+                                    InputEventAckSource ack_source,
                                     InputEventAckState ack_result) = 0;
 };
 
@@ -54,7 +56,8 @@ class CONTENT_EXPORT MouseWheelEventQueue {
 
   // Notifies the queue that a mouse wheel event has been processed by the
   // renderer.
-  void ProcessMouseWheelAck(InputEventAckState ack_result,
+  void ProcessMouseWheelAck(InputEventAckSource ack_source,
+                            InputEventAckState ack_result,
                             const ui::LatencyInfo& latency_info);
 
   // When GestureScrollBegin is received, and it is a different source

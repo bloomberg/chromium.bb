@@ -158,10 +158,11 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
   using RenderWidgetHostImpl::queued_messages_;
 
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                       InputEventAckSource ack_source,
                        InputEventAckState ack_result) override {
     // Sniff touch acks.
     acked_touch_event_type_ = event.event.GetType();
-    RenderWidgetHostImpl::OnTouchEventAck(event, ack_result);
+    RenderWidgetHostImpl::OnTouchEventAck(event, ack_source, ack_result);
   }
 
   void reset_new_content_rendering_timeout_fired() {

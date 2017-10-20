@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DISPOSITION_HANDLER_H_
 
 #include "content/browser/renderer_host/event_with_latency_info.h"
+#include "content/common/input/input_event_ack_source.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
@@ -20,14 +21,19 @@ class CONTENT_EXPORT InputDispositionHandler {
   // Called upon event ack receipt from the renderer.
   virtual void OnKeyboardEventAck(
       const NativeWebKeyboardEventWithLatencyInfo& event,
+      InputEventAckSource ack_source,
       InputEventAckState ack_result) = 0;
   virtual void OnMouseEventAck(const MouseEventWithLatencyInfo& event,
+                               InputEventAckSource ack_source,
                                InputEventAckState ack_result) = 0;
   virtual void OnWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
+                               InputEventAckSource ack_source,
                                InputEventAckState ack_result) = 0;
   virtual void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                               InputEventAckSource ack_source,
                                InputEventAckState ack_result) = 0;
   virtual void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                                 InputEventAckSource ack_source,
                                  InputEventAckState ack_result) = 0;
 
   enum UnexpectedEventAckType {
