@@ -60505,6 +60505,29 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Platform.TPM.FirmwareUpdate.Attempts" units="attempts">
+  <owner>mnissler@chromium.org</owner>
+  <summary>
+    Number of attempts until a successful TPM firmware update. This is the total
+    sum of attempts, i.e. number of failed attempts + 1 for the final successful
+    attempt. Note that we're not in a position to report UMA after failed
+    attempts, so this will only be reported by devices that eventually see a
+    successful attempt.
+  </summary>
+</histogram>
+
+<histogram name="Platform.TPM.FirmwareUpdate.Result"
+    enum="TPMFirmwareUpdateResult">
+  <owner>mnissler@chromium.org</owner>
+  <summary>Status of a complete TPM firmware update attempt.</summary>
+</histogram>
+
+<histogram name="Platform.TPM.FirmwareUpdate.Status"
+    enum="TPMFirmwareUpdateStatus">
+  <owner>mnissler@chromium.org</owner>
+  <summary>Exit status of the TPM firmware updater script.</summary>
+</histogram>
+
 <histogram name="Platform.TPM.VersionFingerprint" enum="TPMVersionFingerprint">
   <owner>mnissler@chromium.org</owner>
   <summary>

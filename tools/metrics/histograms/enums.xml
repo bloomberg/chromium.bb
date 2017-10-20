@@ -39214,6 +39214,23 @@ would be helpful to identify which type is being sent.
       label="Bubbling Root-scroller, scrollable document, handled application"/>
 </enum>
 
+<enum name="TPMFirmwareUpdateResult">
+  <int value="0" label="Success"/>
+  <int value="1" label="Success after retry"/>
+  <int value="2" label="Failure but still booting"/>
+</enum>
+
+<enum name="TPMFirmwareUpdateStatus">
+  <int value="0" label="EXIT_CODE_SUCCESS"/>
+  <int value="1" label="EXIT_CODE_ERROR"/>
+  <int value="3" label="EXIT_CODE_NO_UPDATE"/>
+  <int value="4" label="EXIT_CODE_UPDATE_FAILED"/>
+  <int value="5" label="EXIT_CODE_LOW_BATTERY"/>
+  <int value="6" label="EXIT_CODE_NOT_UPDATABLE"/>
+  <int value="7" label="EXIT_CODE_MISSING_APPROVAL"/>
+  <int value="8" label="EXIT_CODE_SUCCESS_COLD_REBOOT"/>
+</enum>
+
 <enum name="TPMResultCodeEnum">
   <int value="0" label="TPM_SUCCESS"/>
   <int value="1" label="TPM_E_AUTHFAIL"/>
