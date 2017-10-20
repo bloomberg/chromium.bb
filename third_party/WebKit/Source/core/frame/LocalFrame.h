@@ -206,8 +206,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   String SelectedTextForClipboard() const;
 
   PositionWithAffinityTemplate<EditingAlgorithm<NodeTraversal>>
-  PositionForPoint(const IntPoint& frame_point);
-  Document* DocumentAtPoint(const IntPoint&);
+  PositionForPoint(const LayoutPoint& frame_point);
+  Document* DocumentAtPoint(const LayoutPoint&);
   EphemeralRangeTemplate<EditingAlgorithm<NodeTraversal>> RangeForPoint(
       const IntPoint& frame_point);
 
