@@ -91,11 +91,11 @@ struct SameSizeAsComputedStyle : public RefCounted<SameSizeAsComputedStyle> {
 // ComputedStyle.
 ASSERT_SIZE(ComputedStyle, SameSizeAsComputedStyle);
 
-RefPtr<ComputedStyle> ComputedStyle::Create() {
+scoped_refptr<ComputedStyle> ComputedStyle::Create() {
   return WTF::AdoptRef(new ComputedStyle(InitialStyle()));
 }
 
-RefPtr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
+scoped_refptr<ComputedStyle> ComputedStyle::CreateInitialStyle() {
   return WTF::AdoptRef(new ComputedStyle());
 }
 
@@ -110,17 +110,17 @@ void ComputedStyle::InvalidateInitialStyle() {
   MutableInitialStyle().SetTapHighlightColor(InitialTapHighlightColor());
 }
 
-RefPtr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
+scoped_refptr<ComputedStyle> ComputedStyle::CreateAnonymousStyleWithDisplay(
     const ComputedStyle& parent_style,
     EDisplay display) {
-  RefPtr<ComputedStyle> new_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Create();
   new_style->InheritFrom(parent_style);
   new_style->SetUnicodeBidi(parent_style.GetUnicodeBidi());
   new_style->SetDisplay(display);
   return new_style;
 }
 
-RefPtr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
+scoped_refptr<ComputedStyle> ComputedStyle::Clone(const ComputedStyle& other) {
   return WTF::AdoptRef(new ComputedStyle(other));
 }
 
@@ -407,7 +407,7 @@ ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
 }
 
 ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
-    RefPtr<ComputedStyle> pseudo) {
+    scoped_refptr<ComputedStyle> pseudo) {
   if (!pseudo)
     return nullptr;
 
@@ -1432,7 +1432,7 @@ StyleNonInheritedVariables* ComputedStyle::NonInheritedVariables() const {
 }
 
 StyleInheritedVariables& ComputedStyle::MutableInheritedVariables() {
-  RefPtr<StyleInheritedVariables>& variables =
+  scoped_refptr<StyleInheritedVariables>& variables =
       MutableInheritedVariablesInternal();
   if (!variables)
     variables = StyleInheritedVariables::Create();
@@ -1451,28 +1451,29 @@ StyleNonInheritedVariables& ComputedStyle::MutableNonInheritedVariables() {
 
 void ComputedStyle::SetUnresolvedInheritedVariable(
     const AtomicString& name,
-    RefPtr<CSSVariableData> value) {
+    scoped_refptr<CSSVariableData> value) {
   DCHECK(value && value->NeedsVariableResolution());
   MutableInheritedVariables().SetVariable(name, std::move(value));
 }
 
 void ComputedStyle::SetUnresolvedNonInheritedVariable(
     const AtomicString& name,
-    RefPtr<CSSVariableData> value) {
+    scoped_refptr<CSSVariableData> value) {
   DCHECK(value && value->NeedsVariableResolution());
   MutableNonInheritedVariables().SetVariable(name, std::move(value));
 }
 
 void ComputedStyle::SetResolvedUnregisteredVariable(
     const AtomicString& name,
-    RefPtr<CSSVariableData> value) {
+    scoped_refptr<CSSVariableData> value) {
   DCHECK(value && !value->NeedsVariableResolution());
   MutableInheritedVariables().SetVariable(name, std::move(value));
 }
 
-void ComputedStyle::SetResolvedInheritedVariable(const AtomicString& name,
-                                                 RefPtr<CSSVariableData> value,
-                                                 const CSSValue* parsed_value) {
+void ComputedStyle::SetResolvedInheritedVariable(
+    const AtomicString& name,
+    scoped_refptr<CSSVariableData> value,
+    const CSSValue* parsed_value) {
   DCHECK(!!value == !!parsed_value);
   DCHECK(!(value && value->NeedsVariableResolution()));
 
@@ -1483,7 +1484,7 @@ void ComputedStyle::SetResolvedInheritedVariable(const AtomicString& name,
 
 void ComputedStyle::SetResolvedNonInheritedVariable(
     const AtomicString& name,
-    RefPtr<CSSVariableData> value,
+    scoped_refptr<CSSVariableData> value,
     const CSSValue* parsed_value) {
   DCHECK(!!value == !!parsed_value);
   DCHECK(!(value && value->NeedsVariableResolution()));
@@ -1663,7 +1664,7 @@ void ComputedStyle::SetTextAutosizingMultiplier(float multiplier) {
 
 void ComputedStyle::AddAppliedTextDecoration(
     const AppliedTextDecoration& decoration) {
-  RefPtr<AppliedTextDecorationList>& list =
+  scoped_refptr<AppliedTextDecorationList>& list =
       MutableAppliedTextDecorationsInternal();
 
   if (!list)
@@ -1675,7 +1676,7 @@ void ComputedStyle::AddAppliedTextDecoration(
 }
 
 void ComputedStyle::OverrideTextDecorationColors(Color override_color) {
-  RefPtr<AppliedTextDecorationList>& list =
+  scoped_refptr<AppliedTextDecorationList>& list =
       MutableAppliedTextDecorationsInternal();
   DCHECK(list);
   if (!list->HasOneRef())
@@ -1737,7 +1738,7 @@ void ComputedStyle::RestoreParentTextDecorations(
   SetHasSimpleUnderlineInternal(parent_style.HasSimpleUnderlineInternal());
   if (AppliedTextDecorationsInternal() !=
       parent_style.AppliedTextDecorationsInternal()) {
-    SetAppliedTextDecorationsInternal(RefPtr<AppliedTextDecorationList>(
+    SetAppliedTextDecorationsInternal(scoped_refptr<AppliedTextDecorationList>(
         parent_style.AppliedTextDecorationsInternal()));
   }
 }

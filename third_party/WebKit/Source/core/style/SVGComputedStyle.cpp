@@ -111,7 +111,7 @@ void SVGComputedStyle::CopyNonInheritedFromCached(
   resources = other->resources;
 }
 
-RefPtr<SVGDashArray> SVGComputedStyle::InitialStrokeDashArray() {
+scoped_refptr<SVGDashArray> SVGComputedStyle::InitialStrokeDashArray() {
   DEFINE_STATIC_REF(SVGDashArray, initial_dash_array, SVGDashArray::Create());
   return initial_dash_array;
 }

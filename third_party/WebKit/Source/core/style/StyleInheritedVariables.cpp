@@ -22,7 +22,7 @@ bool StyleInheritedVariables::operator==(
     return false;
 
   for (const auto& iter : data_) {
-    RefPtr<CSSVariableData> other_data = other.data_.at(iter.key);
+    scoped_refptr<CSSVariableData> other_data = other.data_.at(iter.key);
     if (!DataEquivalent(iter.value, other_data))
       return false;
   }
@@ -74,16 +74,17 @@ void StyleInheritedVariables::RemoveVariable(const AtomicString& name) {
     iterator->value = nullptr;
 }
 
-std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>>
+std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
 StyleInheritedVariables::GetVariables() const {
-  std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> result;
+  std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>> result;
   if (root_) {
-    result.reset(
-        new HashMap<AtomicString, RefPtr<CSSVariableData>>(root_->data_));
+    result.reset(new HashMap<AtomicString, scoped_refptr<CSSVariableData>>(
+        root_->data_));
     for (auto it = data_.begin(); it != data_.end(); ++it)
       result->Set(it->key, it->value);
   } else {
-    result.reset(new HashMap<AtomicString, RefPtr<CSSVariableData>>(data_));
+    result.reset(
+        new HashMap<AtomicString, scoped_refptr<CSSVariableData>>(data_));
   }
   return result;
 }

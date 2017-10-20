@@ -15,7 +15,7 @@
 namespace blink {
 
 template <typename T>
-RefPtr<T> MemberCopy(const RefPtr<T>& v) {
+scoped_refptr<T> MemberCopy(const scoped_refptr<T>& v) {
   return v;
 }
 

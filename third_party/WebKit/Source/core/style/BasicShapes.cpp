@@ -105,11 +105,11 @@ void BasicShapeCircle::GetPath(Path& path, const FloatRect& bounding_box) {
                             radius * 2));
 }
 
-RefPtr<BasicShape> BasicShapeCircle::Blend(const BasicShape* other,
-                                           double progress) const {
+scoped_refptr<BasicShape> BasicShapeCircle::Blend(const BasicShape* other,
+                                                  double progress) const {
   DCHECK_EQ(GetType(), other->GetType());
   const BasicShapeCircle* o = ToBasicShapeCircle(other);
-  RefPtr<BasicShapeCircle> result = BasicShapeCircle::Create();
+  scoped_refptr<BasicShapeCircle> result = BasicShapeCircle::Create();
 
   result->SetCenterX(center_x_.Blend(o->CenterX(), progress));
   result->SetCenterY(center_y_.Blend(o->CenterY(), progress));
@@ -153,11 +153,11 @@ void BasicShapeEllipse::GetPath(Path& path, const FloatRect& bounding_box) {
                             radius_x * 2, radius_y * 2));
 }
 
-RefPtr<BasicShape> BasicShapeEllipse::Blend(const BasicShape* other,
-                                            double progress) const {
+scoped_refptr<BasicShape> BasicShapeEllipse::Blend(const BasicShape* other,
+                                                   double progress) const {
   DCHECK_EQ(GetType(), other->GetType());
   const BasicShapeEllipse* o = ToBasicShapeEllipse(other);
-  RefPtr<BasicShapeEllipse> result = BasicShapeEllipse::Create();
+  scoped_refptr<BasicShapeEllipse> result = BasicShapeEllipse::Create();
 
   if (radius_x_.GetType() != BasicShapeRadius::kValue ||
       o->RadiusX().GetType() != BasicShapeRadius::kValue ||
@@ -200,8 +200,8 @@ void BasicShapePolygon::GetPath(Path& path, const FloatRect& bounding_box) {
   path.CloseSubpath();
 }
 
-RefPtr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
-                                            double progress) const {
+scoped_refptr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
+                                                   double progress) const {
   DCHECK(other);
   DCHECK(IsSameType(*other));
 
@@ -210,7 +210,7 @@ RefPtr<BasicShape> BasicShapePolygon::Blend(const BasicShape* other,
   DCHECK(!(values_.size() % 2));
 
   size_t length = values_.size();
-  RefPtr<BasicShapePolygon> result = BasicShapePolygon::Create();
+  scoped_refptr<BasicShapePolygon> result = BasicShapePolygon::Create();
   if (!length)
     return result;
 
@@ -271,13 +271,13 @@ static inline LengthSize BlendLengthSize(const LengthSize& to,
       to.Height().Blend(from.Height(), progress, kValueRangeNonNegative));
 }
 
-RefPtr<BasicShape> BasicShapeInset::Blend(const BasicShape* other,
-                                          double progress) const {
+scoped_refptr<BasicShape> BasicShapeInset::Blend(const BasicShape* other,
+                                                 double progress) const {
   DCHECK(other);
   DCHECK(IsSameType(*other));
 
   const BasicShapeInset& other_inset = ToBasicShapeInset(*other);
-  RefPtr<BasicShapeInset> result = BasicShapeInset::Create();
+  scoped_refptr<BasicShapeInset> result = BasicShapeInset::Create();
   result->SetTop(top_.Blend(other_inset.Top(), progress, kValueRangeAll));
   result->SetRight(right_.Blend(other_inset.Right(), progress, kValueRangeAll));
   result->SetBottom(

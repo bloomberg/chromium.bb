@@ -28,7 +28,8 @@ class StyleNonInheritedVariables {
     return !(*this == other);
   }
 
-  void SetVariable(const AtomicString& name, RefPtr<CSSVariableData> value) {
+  void SetVariable(const AtomicString& name,
+                   scoped_refptr<CSSVariableData> value) {
     data_.Set(name, std::move(value));
   }
   CSSVariableData* GetVariable(const AtomicString& name) const;
@@ -45,7 +46,7 @@ class StyleNonInheritedVariables {
 
   friend class CSSVariableResolver;
 
-  HashMap<AtomicString, RefPtr<CSSVariableData>> data_;
+  HashMap<AtomicString, scoped_refptr<CSSVariableData>> data_;
   HashMap<AtomicString, Persistent<CSSValue>> registered_data_;
 };
 
