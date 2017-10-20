@@ -91,14 +91,14 @@ class Globals {
     // leveldb limits the read cache size to 1GB, but its default value is 8MB,
     // and Chrome uses either 1MB or 8MB.
     if (GetSharedWebBlockCache() == GetSharedBrowserBlockCache()) {
-      UMA_HISTOGRAM_COUNTS_10M("LevelDB.SharedCache.BytesUsed.Unified",
-                               browser_block_cache_->TotalCharge());
+      UMA_HISTOGRAM_COUNTS_100000("LevelDB.SharedCache.KBUsed.Unified",
+                                  browser_block_cache_->TotalCharge() / 1024);
       return;
     }
-    UMA_HISTOGRAM_COUNTS_10M("LevelDB.SharedCache.BytesUsed.Web",
-                             web_block_cache_->TotalCharge());
-    UMA_HISTOGRAM_COUNTS_10M("LevelDB.SharedCache.BytesUsed.Browser",
-                             browser_block_cache_->TotalCharge());
+    UMA_HISTOGRAM_COUNTS_100000("LevelDB.SharedCache.KBUsed.Web",
+                                web_block_cache_->TotalCharge() / 1024);
+    UMA_HISTOGRAM_COUNTS_100000("LevelDB.SharedCache.KBUsed.Browser",
+                                browser_block_cache_->TotalCharge() / 1024);
   }
 
  private:
