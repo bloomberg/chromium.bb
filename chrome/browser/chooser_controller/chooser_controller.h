@@ -102,10 +102,10 @@ class ChooserController {
   virtual bool IsPaired(size_t index) const;
 
   // Refresh the list of options.
-  virtual void RefreshOptions() = 0;
+  virtual void RefreshOptions();
 
   // Returns the status text to be shown in the chooser.
-  virtual base::string16 GetStatus() const = 0;
+  virtual base::string16 GetStatus() const;
 
   // These three functions are called just before this object is destroyed:
 

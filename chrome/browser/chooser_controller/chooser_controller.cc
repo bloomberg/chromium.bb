@@ -85,6 +85,14 @@ bool ChooserController::IsPaired(size_t index) const {
   return false;
 }
 
+void ChooserController::RefreshOptions() {
+  NOTREACHED();
+}
+
+base::string16 ChooserController::GetStatus() const {
+  return base::string16();
+}
+
 void ChooserController::OpenAdapterOffHelpUrl() const {
   NOTREACHED();
 }

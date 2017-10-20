@@ -4511,6 +4511,10 @@ static_library("test_support") {
     ]
   } else {
     sources += [
+      "chooser_controller/fake_bluetooth_chooser_controller.cc",
+      "chooser_controller/fake_bluetooth_chooser_controller.h",
+      "chooser_controller/fake_usb_chooser_controller.cc",
+      "chooser_controller/fake_usb_chooser_controller.h",
       "chooser_controller/mock_chooser_controller.cc",
       "chooser_controller/mock_chooser_controller.h",
       "download/test_download_shelf.cc",

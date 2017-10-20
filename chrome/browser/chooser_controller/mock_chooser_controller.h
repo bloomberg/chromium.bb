@@ -12,6 +12,7 @@
 #include "content/public/browser/bluetooth_chooser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
+// Deprecated. Use FakeBluetoothChooserController instead.
 class MockChooserController : public ChooserController {
  public:
   enum ConnectedPairedStatus {
