@@ -209,18 +209,12 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
   // Sends as many bytes in the first |count| buffers of |iov| to the connection
   // as the connection will consume. If FIN is consumed, the write side is
   // immediately closed.
-  // If |ack_listener| is provided, then it will be notified once all
-  // the ACKs for this write have been received.
   // Returns the number of bytes consumed by the connection.
   // Please note: Returned consumed data is the amount of data saved in send
   // buffer. The data is not necessarily consumed by the connection. So write
   // side is closed when FIN is sent.
   // TODO(fayang): Let WritevData return boolean.
-  QuicConsumedData WritevData(
-      const struct iovec* iov,
-      int iov_count,
-      bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+  QuicConsumedData WritevData(const struct iovec* iov, int iov_count, bool fin);
 
   // Same as WritevData except data is provided in reference counted memory so
   // that data copy is avoided.
@@ -228,11 +222,9 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
 
   // Allows override of the session level writev, for the force HOL
   // blocking experiment.
-  virtual QuicConsumedData WritevDataInner(
-      QuicIOVector iov,
-      QuicStreamOffset offset,
-      bool fin,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+  virtual QuicConsumedData WritevDataInner(QuicIOVector iov,
+                                           QuicStreamOffset offset,
+                                           bool fin);
 
   // Close the write side of the socket.  Further writes will fail.
   // Can be called by the subclass or internally.
@@ -282,21 +274,6 @@ class QUIC_EXPORT_PRIVATE QuicStream : public StreamNotifierInterface {
 
   // Subclasses and consumers should use reading_stopped.
   bool read_side_closed() const { return read_side_closed_; }
-
-  struct PendingData {
-    PendingData(
-        std::string data_in,
-        QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
-    ~PendingData();
-
-    // Pending data to be written.
-    std::string data;
-    // Index of the first byte in data still to be written.
-    size_t offset;
-    // AckListener that should be notified when the pending data is acked.
-    // Can be nullptr.
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener;
-  };
 
   // Calls MaybeSendBlocked on the stream's flow controller and the connection
   // level flow controller.  If the stream is flow control blocked by the

@@ -42,15 +42,6 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // Returns true if the packet |packet_number| is unacked.
   bool IsUnacked(QuicPacketNumber packet_number) const;
 
-  // Notifies all the AckListeners attached to the |info| and
-  // clears them to ensure they're not notified again.
-  void NotifyAndClearListeners(std::list<AckListenerWrapper>* ack_listeners,
-                               QuicTime::Delta delta_largest_observed);
-
-  // Notifies all the AckListeners attached to |newest_transmission|.
-  void NotifyAndClearListeners(QuicPacketNumber newest_transmission,
-                               QuicTime::Delta delta_largest_observed);
-
   // Notifies stream_notifier that stream frames have been acked.
   void NotifyStreamFramesAcked(const QuicTransmissionInfo& info,
                                QuicTime::Delta ack_delay);

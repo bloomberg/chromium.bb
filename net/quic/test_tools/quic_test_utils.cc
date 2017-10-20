@@ -369,7 +369,7 @@ MockQuicSession::MockQuicSession(QuicConnection* connection)
     : QuicSession(connection, nullptr, DefaultQuicConfig()) {
   crypto_stream_.reset(new MockQuicCryptoStream(this));
   Initialize();
-  ON_CALL(*this, WritevData(_, _, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 
@@ -386,14 +386,11 @@ const QuicCryptoStream* MockQuicSession::GetCryptoStream() const {
 }
 
 // static
-QuicConsumedData MockQuicSession::ConsumeAllData(
-    QuicStream* /*stream*/,
-    QuicStreamId /*id*/,
-    const QuicIOVector& data,
-    QuicStreamOffset /*offset*/,
-    StreamSendingState state,
-    const QuicReferenceCountedPointer<
-        QuicAckListenerInterface>& /*ack_listener*/) {
+QuicConsumedData MockQuicSession::ConsumeAllData(QuicStream* /*stream*/,
+                                                 QuicStreamId /*id*/,
+                                                 const QuicIOVector& data,
+                                                 QuicStreamOffset /*offset*/,
+                                                 StreamSendingState state) {
   return QuicConsumedData(data.total_length, state != NO_FIN);
 }
 
@@ -423,7 +420,7 @@ MockQuicSpdySession::MockQuicSpdySession(QuicConnection* connection)
     : QuicSpdySession(connection, nullptr, DefaultQuicConfig()) {
   crypto_stream_.reset(new MockQuicCryptoStream(this));
   Initialize();
-  ON_CALL(*this, WritevData(_, _, _, _, _, _))
+  ON_CALL(*this, WritevData(_, _, _, _, _))
       .WillByDefault(testing::Return(QuicConsumedData(0, false)));
 }
 

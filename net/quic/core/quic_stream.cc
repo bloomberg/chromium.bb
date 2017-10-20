@@ -40,15 +40,6 @@ size_t GetReceivedFlowControlWindow(QuicSession* session) {
 
 }  // namespace
 
-QuicStream::PendingData::PendingData(
-    string data_in,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener)
-    : data(std::move(data_in)),
-      offset(0),
-      ack_listener(std::move(ack_listener)) {}
-
-QuicStream::PendingData::~PendingData() {}
-
 QuicStream::QuicStream(QuicStreamId id, QuicSession* session)
     : sequencer_(this, session->connection()->clock()),
       id_(id),
@@ -265,11 +256,9 @@ void QuicStream::MaybeSendBlocked() {
   }
 }
 
-QuicConsumedData QuicStream::WritevData(
-    const struct iovec* iov,
-    int iov_count,
-    bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+QuicConsumedData QuicStream::WritevData(const struct iovec* iov,
+                                        int iov_count,
+                                        bool fin) {
   if (write_side_closed_) {
     QUIC_DLOG(ERROR) << ENDPOINT << "Stream " << id()
                      << "attempting to write when the write side is closed";
@@ -298,7 +287,7 @@ QuicConsumedData QuicStream::WritevData(
     if (consumed_data.bytes_consumed > 0) {
       QuicStreamOffset offset = send_buffer_.stream_offset();
       send_buffer_.SaveStreamData(quic_iovec, 0, write_length);
-      OnDataBuffered(offset, write_length, ack_listener);
+      OnDataBuffered(offset, write_length, nullptr);
     }
   }
   consumed_data.fin_consumed =
@@ -353,17 +342,14 @@ QuicConsumedData QuicStream::WriteMemSlices(QuicMemSliceSpan span, bool fin) {
   return consumed_data;
 }
 
-QuicConsumedData QuicStream::WritevDataInner(
-    QuicIOVector iov,
-    QuicStreamOffset offset,
-    bool fin,
-    QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
+QuicConsumedData QuicStream::WritevDataInner(QuicIOVector iov,
+                                             QuicStreamOffset offset,
+                                             bool fin) {
   StreamSendingState state = fin ? FIN : NO_FIN;
   if (fin && add_random_padding_after_fin_) {
     state = FIN_AND_PADDING;
   }
-  return session()->WritevData(this, id(), iov, offset, state,
-                               std::move(ack_listener));
+  return session()->WritevData(this, id(), iov, offset, state);
 }
 
 void QuicStream::CloseReadSide() {
@@ -580,7 +566,7 @@ void QuicStream::WriteBufferedData() {
 
   QuicConsumedData consumed_data = WritevDataInner(
       QuicIOVector(/*iov=*/nullptr, /*iov_count=*/0, write_length),
-      stream_bytes_written_, fin, nullptr);
+      stream_bytes_written_, fin);
 
   stream_bytes_written_ += consumed_data.bytes_consumed;
   stream_bytes_outstanding_ += consumed_data.bytes_consumed;

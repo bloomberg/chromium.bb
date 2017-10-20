@@ -287,7 +287,7 @@ class QuicHeadersStreamTest : public QuicTestWithParam<TestParamsTuple> {
                                 bool is_request) {
     // Write the headers and capture the outgoing data
     EXPECT_CALL(session_,
-                WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
+                WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
         .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
     QuicSpdySessionPeer::WriteHeadersImpl(
         &session_, stream_id, headers_.Clone(), fin, priority, nullptr);
@@ -407,8 +407,8 @@ TEST_P(QuicHeadersStreamTest, WritePushPromises) {
     QuicStreamId promised_stream_id = NextPromisedStreamId();
     if (perspective() == Perspective::IS_SERVER) {
       // Write the headers and capture the outgoing data
-      EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
-                                       NO_FIN, _))
+      EXPECT_CALL(session_,
+                  WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
           .WillOnce(WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIov)));
       session_.WritePushPromise(stream_id, promised_stream_id,
                                 headers_.Clone());
@@ -467,8 +467,9 @@ TEST_P(QuicHeadersStreamTest, ProcessRawData) {
 }
 
 TEST_P(QuicHeadersStreamTest, ProcessPushPromise) {
-  if (perspective() == Perspective::IS_SERVER)
+  if (perspective() == Perspective::IS_SERVER) {
     return;
+  }
   for (QuicStreamId stream_id = client_id_1_; stream_id < client_id_3_;
        stream_id += next_stream_id_) {
     QuicStreamId promised_stream_id = NextPromisedStreamId();
@@ -872,7 +873,7 @@ TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
 
 TEST_P(QuicHeadersStreamTest, AckSentData) {
   EXPECT_CALL(session_,
-              WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
+              WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   EXPECT_CALL(*connection_, CloseConnection(QUIC_INTERNAL_ERROR, _, _));
   InSequence s;
@@ -931,7 +932,7 @@ TEST_P(QuicHeadersStreamTest, AckSentData) {
 TEST_P(QuicHeadersStreamTest, FrameContainsMultipleHeaders) {
   // In this test, a stream frame can contain multiple headers.
   EXPECT_CALL(session_,
-              WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN, _))
+              WritevData(headers_stream_, kHeadersStreamId, _, _, NO_FIN))
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   InSequence s;
   QuicReferenceCountedPointer<MockAckListener> ack_listener1(

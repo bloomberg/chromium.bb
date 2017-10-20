@@ -414,7 +414,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlBlocked) {
   string body(kWindow + kOverflow, 'a');
 
   EXPECT_CALL(*connection_, SendBlocked(GetNthClientInitiatedId(0)));
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kWindow, true)));
   stream_->WriteOrBufferData(body, false, nullptr);
 
@@ -646,7 +646,7 @@ TEST_P(QuicSpdyStreamTest, StreamFlowControlFinNotBlocked) {
   bool fin = true;
 
   EXPECT_CALL(*connection_, SendBlocked(GetNthClientInitiatedId(0))).Times(0);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(0, fin)));
 
   stream_->WriteOrBufferData(body, fin, nullptr);
@@ -842,7 +842,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersSendsAFin) {
   // Test that writing trailers will send a FIN, as Trailers are the last thing
   // to be sent on a stream.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
 
@@ -862,7 +862,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersFinalOffset) {
   // Test that when writing trailers, the trailers that are actually sent to the
   // peer contain the final offset field indicating last byte of data.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
 
@@ -890,7 +890,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersClosesWriteSide) {
   // Test that if trailers are written after all other data has been written
   // (headers and body), that this closes the stream for writing.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
 
@@ -914,7 +914,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   // Test that the stream is not closed for writing when trailers are sent
   // while there are still body bytes queued.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
 
@@ -924,7 +924,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 
   // Write non-zero body data, but only consume partially, ensuring queueing.
   const int kBodySize = 1 * 1024;  // 1 KB
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(kBodySize - 1, false)));
   stream_->WriteOrBufferData(string(kBodySize, 'x'), false, nullptr);
   EXPECT_EQ(1u, stream_->BufferedDataBytes());
@@ -937,7 +937,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
   EXPECT_FALSE(stream_->write_side_closed());
 
   // Writing the queued bytes will close the write side of the stream.
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .WillOnce(Return(QuicConsumedData(1, false)));
   stream_->OnCanWrite();
   EXPECT_TRUE(stream_->write_side_closed());
@@ -946,7 +946,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersWithQueuedBytes) {
 TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
   // Test that it is not possible to write Trailers after a FIN has been sent.
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
 
@@ -963,7 +963,7 @@ TEST_P(QuicSpdyStreamTest, WritingTrailersAfterFIN) {
 
 TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   testing::InSequence s;
@@ -1002,7 +1002,7 @@ TEST_P(QuicSpdyStreamTest, HeaderStreamNotiferCorrespondingSpdyStream) {
 
 TEST_P(QuicSpdyStreamTest, StreamBecomesZombieWithWriteThatCloses) {
   Initialize(kShouldProcessData);
-  EXPECT_CALL(*session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(*session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   QuicStreamPeer::CloseReadSide(stream_);

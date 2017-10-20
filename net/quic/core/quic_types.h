@@ -209,9 +209,7 @@ enum QuicPacketPrivateFlags {
 // some congestion control algorithms may use the same feedback type
 // (Reno and Cubic are the classic example for that).
 enum CongestionControlType {
-  kCubic,
   kCubicBytes,
-  kReno,
   kRenoBytes,
   kBBR,
   kPCC

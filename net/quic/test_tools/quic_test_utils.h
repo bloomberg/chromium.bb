@@ -311,6 +311,7 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_METHOD0(OnConfigNegotiated, void());
   MOCK_METHOD0(PostProcessAfterData, void());
   MOCK_METHOD0(OnAckNeedsRetransmittableFrame, void());
+  MOCK_CONST_METHOD0(AllowSelfAddressChange, bool());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockQuicConnectionVisitor);
@@ -488,14 +489,12 @@ class MockQuicSession : public QuicSession {
   MOCK_METHOD0(CreateOutgoingDynamicStream, QuicStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream2, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream2, bool());
-  MOCK_METHOD6(
-      WritevData,
-      QuicConsumedData(QuicStream* stream,
-                       QuicStreamId id,
-                       QuicIOVector data,
-                       QuicStreamOffset offset,
-                       StreamSendingState state,
-                       QuicReferenceCountedPointer<QuicAckListenerInterface>));
+  MOCK_METHOD5(WritevData,
+               QuicConsumedData(QuicStream* stream,
+                                QuicStreamId id,
+                                QuicIOVector data,
+                                QuicStreamOffset offset,
+                                StreamSendingState state));
 
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,
@@ -514,14 +513,11 @@ class MockQuicSession : public QuicSession {
 
   // Returns a QuicConsumedData that indicates all of |data| (and |fin| if set)
   // has been consumed.
-  static QuicConsumedData ConsumeAllData(
-      QuicStream* stream,
-      QuicStreamId id,
-      const QuicIOVector& data,
-      QuicStreamOffset offset,
-      StreamSendingState state,
-      const QuicReferenceCountedPointer<QuicAckListenerInterface>&
-          ack_listener);
+  static QuicConsumedData ConsumeAllData(QuicStream* stream,
+                                         QuicStreamId id,
+                                         const QuicIOVector& data,
+                                         QuicStreamOffset offset,
+                                         StreamSendingState state);
 
  private:
   std::unique_ptr<QuicCryptoStream> crypto_stream_;
@@ -565,15 +561,12 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD0(CreateOutgoingDynamicStream, QuicSpdyStream*());
   MOCK_METHOD1(ShouldCreateIncomingDynamicStream, bool(QuicStreamId id));
   MOCK_METHOD0(ShouldCreateOutgoingDynamicStream, bool());
-  MOCK_METHOD6(
-      WritevData,
-      QuicConsumedData(
-          QuicStream* stream,
-          QuicStreamId id,
-          QuicIOVector data,
-          QuicStreamOffset offset,
-          StreamSendingState state,
-          QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener));
+  MOCK_METHOD5(WritevData,
+               QuicConsumedData(QuicStream* stream,
+                                QuicStreamId id,
+                                QuicIOVector data,
+                                QuicStreamOffset offset,
+                                StreamSendingState state));
 
   MOCK_METHOD3(SendRstStream,
                void(QuicStreamId stream_id,

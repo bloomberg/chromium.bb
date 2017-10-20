@@ -93,7 +93,7 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                                 response_cache) {
     set_max_open_incoming_streams(kMaxStreamsForTest);
     set_max_open_outgoing_streams(kMaxStreamsForTest);
-    ON_CALL(*this, WritevData(_, _, _, _, _, _))
+    ON_CALL(*this, WritevData(_, _, _, _, _))
         .WillByDefault(testing::Return(QuicConsumedData(0, false)));
   }
 
@@ -104,14 +104,12 @@ class MockQuicSimpleServerSession : public QuicSimpleServerSession {
                     const string& error_details,
                     ConnectionCloseSource source));
   MOCK_METHOD1(CreateIncomingDynamicStream, QuicSpdyStream*(QuicStreamId id));
-  MOCK_METHOD6(
-      WritevData,
-      QuicConsumedData(QuicStream* stream,
-                       QuicStreamId id,
-                       QuicIOVector data,
-                       QuicStreamOffset offset,
-                       StreamSendingState state,
-                       QuicReferenceCountedPointer<QuicAckListenerInterface>));
+  MOCK_METHOD5(WritevData,
+               QuicConsumedData(QuicStream* stream,
+                                QuicStreamId id,
+                                QuicIOVector data,
+                                QuicStreamOffset offset,
+                                StreamSendingState state));
   MOCK_METHOD4(OnStreamHeaderList,
                void(QuicStreamId stream_id,
                     bool fin,
@@ -237,7 +235,7 @@ INSTANTIATE_TEST_CASE_P(Tests,
                         ::testing::ValuesIn(AllSupportedTransportVersions()));
 
 TEST_P(QuicSimpleServerStreamTest, TestFraming) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   stream_->OnStreamHeaderList(false, kFakeFrameLen, header_list_);
@@ -250,7 +248,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFraming) {
 }
 
 TEST_P(QuicSimpleServerStreamTest, TestFramingOnePacket) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
 
@@ -264,7 +262,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingOnePacket) {
 }
 
 TEST_P(QuicSimpleServerStreamTest, SendQuicRstStreamNoErrorInStopReading) {
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
 
@@ -283,7 +281,7 @@ TEST_P(QuicSimpleServerStreamTest, TestFramingExtraData) {
 
   // We'll automatically write out an error (headers + body)
   EXPECT_CALL(session_, WriteHeadersMock(_, _, _, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .WillOnce(Invoke(MockQuicSession::ConsumeAllData));
   EXPECT_CALL(session_, SendRstStream(_, QUIC_STREAM_NO_ERROR, _)).Times(0);
 
@@ -319,7 +317,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus) {
 
   InSequence s;
   EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(
           strlen(QuicSimpleServerStream::kErrorResponseBody), true)));
@@ -349,7 +347,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithIllegalResponseStatus2) {
 
   InSequence s;
   EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(
           strlen(QuicSimpleServerStream::kErrorResponseBody), true)));
@@ -405,7 +403,7 @@ TEST_P(QuicSimpleServerStreamTest, SendResponseWithValidHeaders) {
 
   InSequence s;
   EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(body.length(), true)));
 
@@ -443,7 +441,7 @@ TEST_P(QuicSimpleServerStreamTest, SendReponseWithPushResources) {
           host + request_path, _,
           QuicSpdySessionPeer::GetNthClientInitiatedStreamId(session_, 0), _));
   EXPECT_CALL(session_, WriteHeadersMock(stream_->id(), _, false, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(body.length(), true)));
   QuicSimpleServerStreamPeer::SendResponse(stream_);
@@ -490,7 +488,7 @@ TEST_P(QuicSimpleServerStreamTest, PushResponseOnServerInitiatedStream) {
   EXPECT_CALL(session_,
               WriteHeadersMock(kServerInitiatedStreamId, _, false,
                                server_initiated_stream->priority(), _));
-  EXPECT_CALL(session_, WritevData(_, kServerInitiatedStreamId, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, kServerInitiatedStreamId, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(kBody.size(), true)));
   server_initiated_stream->PushResponse(std::move(headers));
@@ -509,7 +507,7 @@ TEST_P(QuicSimpleServerStreamTest, TestSendErrorResponse) {
 
   InSequence s;
   EXPECT_CALL(session_, WriteHeadersMock(_, _, _, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(1)
       .WillOnce(Return(QuicConsumedData(3, true)));
 
@@ -526,7 +524,7 @@ TEST_P(QuicSimpleServerStreamTest, InvalidMultipleContentLength) {
   header_list_.OnHeader("content-length", QuicStringPiece("11\00012", 5));
 
   EXPECT_CALL(session_, WriteHeadersMock(_, _, _, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   stream_->OnStreamHeaderList(true, kFakeFrameLen, header_list_);
@@ -544,7 +542,7 @@ TEST_P(QuicSimpleServerStreamTest, InvalidLeadingNullContentLength) {
   header_list_.OnHeader("content-length", QuicStringPiece("\00012", 3));
 
   EXPECT_CALL(session_, WriteHeadersMock(_, _, _, _, _));
-  EXPECT_CALL(session_, WritevData(_, _, _, _, _, _))
+  EXPECT_CALL(session_, WritevData(_, _, _, _, _))
       .Times(AnyNumber())
       .WillRepeatedly(Invoke(MockQuicSession::ConsumeAllData));
   stream_->OnStreamHeaderList(true, kFakeFrameLen, header_list_);

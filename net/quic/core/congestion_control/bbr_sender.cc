@@ -26,6 +26,10 @@ const QuicByteCount kMinimumCongestionWindow = 4 * kMaxSegmentSize;
 
 // The gain used for the slow start, equal to 2/ln(2).
 const float kHighGain = 2.885f;
+// The gain used in STARTUP after loss has been detected.
+// 1.5 is enough to allow for 25% exogenous loss and still observe a 25% growth
+// in measured bandwidth.
+const float kStartupAfterLossGain = 1.5f;
 // The gain used to drain the queue after the slow start.
 const float kDrainGain = 1.f / kHighGain;
 // The cycle of gains used during the PROBE_BW stage.
@@ -40,7 +44,6 @@ const QuicRoundTripCount kBandwidthWindowSize = kGainCycleLength + 2;
 const QuicTime::Delta kMinRttExpiry = QuicTime::Delta::FromSeconds(10);
 // The minimum time the connection can spend in PROBE_RTT mode.
 const QuicTime::Delta kProbeRttTime = QuicTime::Delta::FromMilliseconds(200);
-
 // If the bandwidth does not increase by the factor of |kStartupGrowthTarget|
 // within |kRoundTripsWithoutGrowthBeforeExitingStartup| rounds, the connection
 // will exit the STARTUP mode.
@@ -113,7 +116,8 @@ BbrSender::BbrSender(const RttStats* rtt_stats,
       recovery_state_(NOT_IN_RECOVERY),
       end_recovery_at_(0),
       recovery_window_(max_congestion_window_),
-      rate_based_recovery_(false) {
+      rate_based_recovery_(false),
+      slower_startup_(false) {
   EnterStartupMode();
 }
 
@@ -184,9 +188,7 @@ bool BbrSender::IsProbingForMoreBandwidth() const {
 
 void BbrSender::SetFromConfig(const QuicConfig& config,
                               Perspective perspective) {
-  if (FLAGS_quic_reloadable_flag_quic_bbr_exit_startup_on_loss &&
-      config.HasClientRequestedIndependentOption(kLRTT, perspective)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_exit_startup_on_loss);
+  if (config.HasClientRequestedIndependentOption(kLRTT, perspective)) {
     exit_startup_on_loss_ = true;
   }
   if (config.HasClientRequestedIndependentOption(k1RTT, perspective)) {
@@ -204,6 +206,11 @@ void BbrSender::SetFromConfig(const QuicConfig& config,
   }
   if (config.HasClientRequestedIndependentOption(kBBR2, perspective)) {
     max_aggregation_bytes_multiplier_ = 2;
+  }
+  if (FLAGS_quic_reloadable_flag_quic_bbr_slower_startup &&
+      config.HasClientRequestedIndependentOption(kBBRS, perspective)) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_bbr_slower_startup);
+    slower_startup_ = true;
   }
 }
 
@@ -572,6 +579,12 @@ void BbrSender::CalculatePacingRate() {
   if (pacing_rate_.IsZero() && !rtt_stats_->min_rtt().IsZero()) {
     pacing_rate_ = QuicBandwidth::FromBytesAndTimeDelta(
         initial_congestion_window_, rtt_stats_->min_rtt());
+    return;
+  }
+  // Slow the pacing rate in STARTUP once loss has ever been detected.
+  const bool has_ever_detected_loss = end_recovery_at_ > 0;
+  if (slower_startup_ && has_ever_detected_loss) {
+    pacing_rate_ = kStartupAfterLossGain * BandwidthEstimate();
     return;
   }
 

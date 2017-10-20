@@ -66,7 +66,6 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
 
     packet->retransmittable_frames.swap(
         unacked_packets_.back().retransmittable_frames);
-    unacked_packets_.back().ack_listeners.swap(packet->listeners);
   }
 }
 
@@ -110,9 +109,6 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
       }
     }
   }
-  for (AckListenerWrapper& wrapper : transmission_info->ack_listeners) {
-    wrapper.ack_listener->OnPacketRetransmitted(wrapper.length);
-  }
 
   // Swap the frames and preserve num_padding_bytes and has_crypto_handshake.
   frames->swap(info->retransmittable_frames);
@@ -120,8 +116,6 @@ void QuicUnackedPacketMap::TransferRetransmissionInfo(
   transmission_info->has_crypto_handshake = false;
   info->num_padding_bytes = transmission_info->num_padding_bytes;
 
-  // Transfer the AckListeners if any are present.
-  info->ack_listeners.swap(transmission_info->ack_listeners);
   QUIC_BUG_IF(frames == nullptr)
       << "Attempt to retransmit packet with no "
       << "retransmittable frames: " << old_packet_number;
@@ -216,25 +210,6 @@ bool QuicUnackedPacketMap::IsUnacked(QuicPacketNumber packet_number) const {
   }
   return !IsPacketUseless(packet_number,
                           unacked_packets_[packet_number - least_unacked_]);
-}
-
-void QuicUnackedPacketMap::NotifyAndClearListeners(
-    std::list<AckListenerWrapper>* ack_listeners,
-    QuicTime::Delta ack_delay_time) {
-  for (const AckListenerWrapper& wrapper : *ack_listeners) {
-    wrapper.ack_listener->OnPacketAcked(wrapper.length, ack_delay_time);
-  }
-  ack_listeners->clear();
-}
-
-void QuicUnackedPacketMap::NotifyAndClearListeners(
-    QuicPacketNumber packet_number,
-    QuicTime::Delta ack_delay_time) {
-  DCHECK_GE(packet_number, least_unacked_);
-  DCHECK_LT(packet_number, least_unacked_ + unacked_packets_.size());
-  QuicTransmissionInfo* info =
-      &unacked_packets_[packet_number - least_unacked_];
-  NotifyAndClearListeners(&info->ack_listeners, ack_delay_time);
 }
 
 void QuicUnackedPacketMap::RemoveFromInFlight(QuicTransmissionInfo* info) {

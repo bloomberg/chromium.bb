@@ -160,6 +160,10 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   // Called to ask if any streams are open in this visitor, excluding the
   // reserved crypto and headers stream.
   virtual bool HasOpenDynamicStreams() const = 0;
+
+  // Called when a self address change is observed. Returns true if self address
+  // change is allowed.
+  virtual bool AllowSelfAddressChange() const = 0;
 };
 
 // Interface which gets callbacks from the QuicConnection at interesting
@@ -342,19 +346,14 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void SetNumOpenStreams(size_t num_streams);
 
   // Send the data in |data| to the peer in as few packets as possible.
-  // Returns a pair with the number of bytes consumed from data, and a boolean
-  // indicating if the fin bit was consumed.  This does not indicate the data
-  // has been sent on the wire: it may have been turned into a packet and queued
-  // if the socket was unexpectedly blocked.
-  // If |listener| is provided, then it will be informed once ACKs have been
-  // received for all the packets written in this call.
-  // The |listener| is not owned by the QuicConnection and must outlive it.
-  virtual QuicConsumedData SendStreamData(
-      QuicStreamId id,
-      QuicIOVector iov,
-      QuicStreamOffset offset,
-      StreamSendingState state,
-      QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener);
+  // Returns the number of bytes consumed from data, and a boolean indicating if
+  // the fin bit was consumed.  This does not indicate the data has been sent on
+  // the wire: it may have been turned into a packet and queued if the socket
+  // was unexpectedly blocked.
+  virtual QuicConsumedData SendStreamData(QuicStreamId id,
+                                          QuicIOVector iov,
+                                          QuicStreamOffset offset,
+                                          StreamSendingState state);
 
   // Send a RST_STREAM frame to the peer.
   virtual void SendRstStream(QuicStreamId id,
@@ -757,12 +756,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Returns true if the packet should be discarded and not sent.
   virtual bool ShouldDiscardPacket(const SerializedPacket& packet);
-
-  // Returns true if this connection allows self address change.
-  virtual bool AllowSelfAddressChange() const;
-
-  // Called when a self address change is observed.
-  virtual void OnSelfAddressChange() {}
 
  private:
   friend class test::QuicConnectionPeer;
