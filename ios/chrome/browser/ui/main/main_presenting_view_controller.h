@@ -9,10 +9,14 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol TabSwitcher;
+
 // A UIViewController that uses presentation to display TabSwitchers and
 // BrowserViewControllers..
 @interface MainPresentingViewController
     : UIViewController<ViewControllerSwapping>
+
+@property(nonatomic, readonly, weak) UIViewController<TabSwitcher>* tabSwitcher;
 
 @end
 

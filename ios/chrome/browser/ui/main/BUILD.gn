@@ -30,6 +30,7 @@ source_set("main") {
     "//ios/chrome/browser/sessions:serialisation",
     "//ios/chrome/browser/tabs",
     "//ios/chrome/browser/tabs:tabs_internal",
+    "//ios/chrome/browser/ui/main/transitions",
     "//ios/chrome/browser/ui/tab_switcher",
     "//ios/public/provider/chrome/browser",
   ]

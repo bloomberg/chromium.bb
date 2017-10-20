@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/main/main_presenting_view_controller.h"
 
 #import "base/logging.h"
+#import "ios/chrome/browser/ui/main/transitions/bvc_container_to_tab_switcher_animator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -66,10 +67,14 @@
 
 @end
 
-@interface MainPresentingViewController ()
+@interface MainPresentingViewController ()<
+    UIViewControllerTransitioningDelegate>
 
-@property(nonatomic, weak) UIViewController<TabSwitcher>* tabSwitcher;
 @property(nonatomic, strong) BVCContainerViewController* bvcContainer;
+
+// Redeclared as readwrite.
+@property(nonatomic, readwrite, weak)
+    UIViewController<TabSwitcher>* tabSwitcher;
 
 @end
 
@@ -114,6 +119,7 @@
   // If a BVC is currently being presented, dismiss it.  This will trigger any
   // necessary animations.
   if (self.bvcContainer) {
+    self.bvcContainer.transitioningDelegate = self;
     self.bvcContainer = nil;
     [super dismissViewControllerAnimated:YES completion:completion];
   } else {
@@ -178,6 +184,22 @@
   return self.activeViewController
              ? [self.activeViewController shouldAutorotate]
              : [super shouldAutorotate];
+}
+
+#pragma mark - Transitioning Delegate
+
+- (id<UIViewControllerAnimatedTransitioning>)
+animationControllerForDismissedController:(UIViewController*)dismissed {
+  // Verify that the presenting and dismissed view controllers are of the
+  // expected types.
+  DCHECK([dismissed isKindOfClass:[BVCContainerViewController class]]);
+  DCHECK([dismissed.presentingViewController
+      isKindOfClass:[MainPresentingViewController class]]);
+
+  BVCContainerToTabSwitcherAnimator* animator =
+      [[BVCContainerToTabSwitcherAnimator alloc] init];
+  animator.tabSwitcher = self.tabSwitcher;
+  return animator;
 }
 
 @end

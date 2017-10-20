@@ -500,6 +500,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
 }
 
 @synthesize activeCardSet = _activeCardSet;
+@synthesize animationDelegate = _animationDelegate;
 @synthesize delegate = _delegate;
 @synthesize dummyToolbarBackgroundView = _dummyToolbarBackgroundView;
 @synthesize inActiveDeckChangeAnimation = _inActiveDeckChangeAnimation;
@@ -1581,6 +1582,7 @@ NSString* const kDummyToolbarBackgroundViewAnimationKey =
   DCHECK_NE(self.transitionStyle, STACK_TRANSITION_STYLE_NONE);
   if (self.transitionStyle == STACK_TRANSITION_STYLE_PRESENTING) {
     [_testDelegate stackViewControllerShowWithSelectedTabAnimationDidEnd];
+    [_animationDelegate tabSwitcherPresentationAnimationDidEnd:self];
     [_delegate tabSwitcherPresentationTransitionDidEnd:self];
   } else {
     [_delegate tabSwitcherDismissTransitionDidEnd:self];
