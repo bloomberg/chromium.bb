@@ -7,32 +7,16 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
-#include "base/test/scoped_task_environment.h"
-#include "chromeos/components/tether/active_host.h"
-#include "chromeos/components/tether/fake_notification_presenter.h"
-#include "chromeos/components/tether/host_scan_device_prioritizer.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
-#include "chromeos/network/managed_network_configuration_handler.h"
-#include "chromeos/network/mock_managed_network_configuration_handler.h"
-#include "chromeos/network/network_connect.h"
-#include "chromeos/network/network_connection_handler.h"
-#include "chromeos/network/network_handler.h"
-#include "chromeos/network/network_state_test.h"
-#include "components/cryptauth/cryptauth_device_manager.h"
-#include "components/cryptauth/cryptauth_enroller.h"
-#include "components/cryptauth/cryptauth_enrollment_manager.h"
-#include "components/cryptauth/fake_cryptauth_gcm_manager.h"
-#include "components/cryptauth/fake_cryptauth_service.h"
-#include "components/cryptauth/proto/cryptauth_api.pb.h"
-#include "components/cryptauth/secure_message_delegate.h"
-#include "components/prefs/testing_pref_service.h"
-#include "device/bluetooth/test/mock_bluetooth_adapter.h"
-#include "testing/gmock/include/gmock/gmock.h"
+#include "chromeos/components/tether/asynchronous_shutdown_object_container_impl.h"
+#include "chromeos/components/tether/crash_recovery_manager_impl.h"
+#include "chromeos/components/tether/fake_active_host.h"
+#include "chromeos/components/tether/fake_asynchronous_shutdown_object_container.h"
+#include "chromeos/components/tether/fake_crash_recovery_manager.h"
+#include "chromeos/components/tether/fake_host_scan_scheduler.h"
+#include "chromeos/components/tether/fake_synchronous_shutdown_object_container.h"
+#include "chromeos/components/tether/fake_tether_disconnector.h"
+#include "chromeos/components/tether/synchronous_shutdown_object_container_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
-
-using testing::NiceMock;
 
 namespace chromeos {
 
@@ -40,179 +24,271 @@ namespace tether {
 
 namespace {
 
-class MockCryptAuthDeviceManager : public cryptauth::CryptAuthDeviceManager {
+class TestTetherComponentObserver : public TetherComponent::Observer {
  public:
-  ~MockCryptAuthDeviceManager() override {}
+  TestTetherComponentObserver() {}
+  ~TestTetherComponentObserver() override {}
 
-  MOCK_CONST_METHOD0(GetTetherHosts,
-                     std::vector<cryptauth::ExternalDeviceInfo>());
+  bool shutdown_complete() { return shutdown_complete_; }
+
+  // TetherComponent::Observer:
+  void OnShutdownComplete() override { shutdown_complete_ = true; }
+
+ private:
+  bool shutdown_complete_ = false;
 };
 
-class MockCryptAuthEnrollmentManager
-    : public cryptauth::CryptAuthEnrollmentManager {
+class FakeAsynchronousShutdownObjectContainerFactory
+    : public AsynchronousShutdownObjectContainerImpl::Factory {
  public:
-  explicit MockCryptAuthEnrollmentManager(
-      cryptauth::FakeCryptAuthGCMManager* fake_cryptauth_gcm_manager)
-      : cryptauth::CryptAuthEnrollmentManager(
-            nullptr /* clock */,
-            nullptr /* enroller_factory */,
-            nullptr /* secure_message_delegate */,
-            cryptauth::GcmDeviceInfo(),
-            fake_cryptauth_gcm_manager,
-            nullptr /* pref_service */) {}
-  ~MockCryptAuthEnrollmentManager() override {}
+  FakeAsynchronousShutdownObjectContainerFactory(
+      FakeAsynchronousShutdownObjectContainer* fake_asynchronous_container)
+      : fake_asynchronous_container_(fake_asynchronous_container) {}
 
-  MOCK_CONST_METHOD0(GetUserPrivateKey, std::string());
-};
+  ~FakeAsynchronousShutdownObjectContainerFactory() override {}
 
-class MockNetworkConnect : public NetworkConnect {
- public:
-  MockNetworkConnect() : NetworkConnect() {}
-  ~MockNetworkConnect() override {}
-
-  MOCK_METHOD1(ConnectToNetworkId, void(const std::string&));
-  MOCK_METHOD1(DisconnectFromNetworkId, void(const std::string&));
-  MOCK_METHOD2(MaybeShowConfigureUI,
-               bool(const std::string&, const std::string&));
-  MOCK_METHOD2(SetTechnologyEnabled,
-               void(const chromeos::NetworkTypePattern&, bool));
-  MOCK_METHOD1(ShowMobileSetup, void(const std::string&));
-  MOCK_METHOD3(ConfigureNetworkIdAndConnect,
-               void(const std::string&, const base::DictionaryValue&, bool));
-  MOCK_METHOD2(CreateConfigurationAndConnect,
-               void(base::DictionaryValue*, bool));
-  MOCK_METHOD2(CreateConfiguration, void(base::DictionaryValue*, bool));
-};
-
-class TestNetworkConnectionHandler : public NetworkConnectionHandler {
- public:
-  TestNetworkConnectionHandler() : NetworkConnectionHandler() {}
-  ~TestNetworkConnectionHandler() override {}
-
-  // NetworkConnectionHandler:
-  void ConnectToNetwork(const std::string& service_path,
-                        const base::Closure& success_callback,
-                        const network_handler::ErrorCallback& error_callback,
-                        bool check_error_state) override {}
-
-  void DisconnectNetwork(
-      const std::string& service_path,
-      const base::Closure& success_callback,
-      const network_handler::ErrorCallback& error_callback) override {}
-
-  bool HasConnectingNetwork(const std::string& service_path) override {
-    return false;
+  // AsynchronousShutdownObjectContainerImpl::Factory:
+  std::unique_ptr<AsynchronousShutdownObjectContainer> BuildInstance(
+      scoped_refptr<device::BluetoothAdapter> adapter,
+      cryptauth::CryptAuthService* cryptauth_service,
+      NetworkStateHandler* network_state_handler,
+      ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
+      NetworkConnectionHandler* network_connection_handler,
+      PrefService* pref_service) override {
+    return base::WrapUnique(fake_asynchronous_container_);
   }
 
-  bool HasPendingConnectRequest() override { return false; }
+ private:
+  FakeAsynchronousShutdownObjectContainer* fake_asynchronous_container_;
+};
 
-  void Init(NetworkStateHandler* network_state_handler,
-            NetworkConfigurationHandler* network_configuration_handler,
-            ManagedNetworkConfigurationHandler*
-                managed_network_configuration_handler) override {}
+class FakeSynchronousShutdownObjectContainerFactory
+    : public SynchronousShutdownObjectContainerImpl::Factory {
+ public:
+  FakeSynchronousShutdownObjectContainerFactory(
+      FakeSynchronousShutdownObjectContainer* fake_synchronous_container)
+      : fake_synchronous_container_(fake_synchronous_container) {}
+
+  ~FakeSynchronousShutdownObjectContainerFactory() override {}
+
+  // SynchronousShutdownObjectContainerImpl::Factory:
+  std::unique_ptr<SynchronousShutdownObjectContainer> BuildInstance(
+      AsynchronousShutdownObjectContainer* asychronous_container,
+      NotificationPresenter* notification_presenter,
+      PrefService* pref_service,
+      NetworkStateHandler* network_state_handler,
+      NetworkConnect* network_connect,
+      NetworkConnectionHandler* network_connection_handler) override {
+    return base::WrapUnique(fake_synchronous_container_);
+  }
+
+ private:
+  FakeSynchronousShutdownObjectContainer* fake_synchronous_container_;
+};
+
+class FakeCrashRecoveryManagerFactory
+    : public CrashRecoveryManagerImpl::Factory {
+ public:
+  FakeCrashRecoveryManagerFactory(
+      FakeCrashRecoveryManager* fake_crash_recovery_manager)
+      : fake_crash_recovery_manager_(fake_crash_recovery_manager) {}
+
+  ~FakeCrashRecoveryManagerFactory() override {}
+
+  // CrashRecoveryManagerImpl::Factory:
+  std::unique_ptr<CrashRecoveryManager> BuildInstance(
+      NetworkStateHandler* network_state_handler,
+      ActiveHost* active_host,
+      HostScanCache* host_scan_cache) override {
+    return base::WrapUnique(fake_crash_recovery_manager_);
+  }
+
+ private:
+  FakeCrashRecoveryManager* fake_crash_recovery_manager_;
 };
 
 }  // namespace
 
-class TetherComponentImplTest : public NetworkStateTest {
+class TetherComponentImplTest : public testing::Test {
  protected:
-  TetherComponentImplTest() : NetworkStateTest() {}
+  TetherComponentImplTest() {}
   ~TetherComponentImplTest() override {}
 
   void SetUp() override {
-    DBusThreadManager::Initialize();
-    NetworkHandler::Initialize();
-    NetworkStateTest::SetUp();
+    was_synchronous_container_deleted_ = false;
+    was_asynchronous_container_deleted_ = false;
 
-    network_state_handler()->SetTetherTechnologyState(
-        NetworkStateHandler::TECHNOLOGY_ENABLED);
+    fake_active_host_ = base::MakeUnique<FakeActiveHost>();
+    fake_host_scan_scheduler_ = base::MakeUnique<FakeHostScanScheduler>();
+    fake_tether_disconnector_ = base::MakeUnique<FakeTetherDisconnector>();
 
-    test_pref_service_ = base::MakeUnique<TestingPrefServiceSimple>();
-    TetherComponentImpl::RegisterProfilePrefs(test_pref_service_->registry());
+    fake_synchronous_container_ = new FakeSynchronousShutdownObjectContainer(
+        base::Bind(&TetherComponentImplTest::OnSynchronousContainerDeleted,
+                   base::Unretained(this)));
+    fake_synchronous_container_->set_active_host(fake_active_host_.get());
+    fake_synchronous_container_->set_host_scan_scheduler(
+        fake_host_scan_scheduler_.get());
+    fake_synchronous_container_->set_tether_disconnector(
+        fake_tether_disconnector_.get());
+    fake_synchronous_container_factory_ =
+        base::WrapUnique(new FakeSynchronousShutdownObjectContainerFactory(
+            fake_synchronous_container_));
+    SynchronousShutdownObjectContainerImpl::Factory::SetInstanceForTesting(
+        fake_synchronous_container_factory_.get());
+
+    fake_asynchronous_container_ = new FakeAsynchronousShutdownObjectContainer(
+        base::Bind(&TetherComponentImplTest::OnAsynchronousContainerDeleted,
+                   base::Unretained(this)));
+    fake_asynchronous_container_factory_ =
+        base::WrapUnique(new FakeAsynchronousShutdownObjectContainerFactory(
+            fake_asynchronous_container_));
+    AsynchronousShutdownObjectContainerImpl::Factory::SetInstanceForTesting(
+        fake_asynchronous_container_factory_.get());
+
+    fake_crash_recovery_manager_ = new FakeCrashRecoveryManager();
+    fake_crash_recovery_manager_factory_ = base::WrapUnique(
+        new FakeCrashRecoveryManagerFactory(fake_crash_recovery_manager_));
+    CrashRecoveryManagerImpl::Factory::SetInstanceForTesting(
+        fake_crash_recovery_manager_factory_.get());
+
+    component_ = base::MakeUnique<TetherComponentImpl>(
+        nullptr /* cryptauth_service */, nullptr /* notification_presenter */,
+        nullptr /* pref_service */, nullptr /* network_state_handler */,
+        nullptr /* managed_network_configuration_handler */,
+        nullptr /* network_connect */, nullptr /* network_connection_handler */,
+        nullptr /* adapter */);
+
+    test_observer_ = base::MakeUnique<TestTetherComponentObserver>();
+    component_->AddObserver(test_observer_.get());
   }
 
-  void TearDown() override {
-    ShutdownNetworkState();
-    NetworkStateTest::TearDown();
-    DBusThreadManager::Shutdown();
+  void InvokeCrashRecoveryCallback() {
+    base::Closure& on_restoration_finished_callback =
+        fake_crash_recovery_manager_->on_restoration_finished_callback();
+    EXPECT_FALSE(on_restoration_finished_callback.is_null());
+    on_restoration_finished_callback.Run();
   }
 
-  void InitializeAndDestroy(
-      cryptauth::CryptAuthService* cryptauth_service,
-      NotificationPresenter* notification_presenter,
-      PrefService* pref_service,
-      NetworkStateHandler* network_state_handler,
-      ManagedNetworkConfigurationHandler* managed_network_configuration_handler,
-      NetworkConnect* network_connect,
-      NetworkConnectionHandler* network_connection_handler,
-      scoped_refptr<device::BluetoothAdapter> adapter) {
-    TetherComponent* tether_component = new TetherComponentImpl(
-        cryptauth_service, notification_presenter, pref_service,
-        network_state_handler, managed_network_configuration_handler,
-        network_connect, network_connection_handler, adapter);
-    delete tether_component;
+  void InvokeAsynchronousShutdownCallback() {
+    base::Closure& shutdown_complete_callback =
+        fake_asynchronous_container_->shutdown_complete_callback();
+    EXPECT_FALSE(shutdown_complete_callback.is_null());
+    shutdown_complete_callback.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  void OnSynchronousContainerDeleted() {
+    was_synchronous_container_deleted_ = true;
+  }
 
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service_;
+  void OnAsynchronousContainerDeleted() {
+    was_asynchronous_container_deleted_ = true;
+  }
+
+  bool was_synchronous_container_deleted_;
+  bool was_asynchronous_container_deleted_;
+
+  std::unique_ptr<FakeActiveHost> fake_active_host_;
+  std::unique_ptr<FakeHostScanScheduler> fake_host_scan_scheduler_;
+  std::unique_ptr<FakeTetherDisconnector> fake_tether_disconnector_;
+
+  FakeSynchronousShutdownObjectContainer* fake_synchronous_container_;
+  std::unique_ptr<FakeSynchronousShutdownObjectContainerFactory>
+      fake_synchronous_container_factory_;
+
+  FakeAsynchronousShutdownObjectContainer* fake_asynchronous_container_;
+  std::unique_ptr<FakeAsynchronousShutdownObjectContainerFactory>
+      fake_asynchronous_container_factory_;
+
+  FakeCrashRecoveryManager* fake_crash_recovery_manager_;
+  std::unique_ptr<FakeCrashRecoveryManagerFactory>
+      fake_crash_recovery_manager_factory_;
+
+  std::unique_ptr<TetherComponentImpl> component_;
+
+  std::unique_ptr<TestTetherComponentObserver> test_observer_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TetherComponentImplTest);
 };
 
-// This test ensures that TetherComponentImpl's destructor runs in the correct
-// order and results in a correct clean-up of all created components. If the
-// destructor were to result in an error being thrown, this test would fail.
-TEST_F(TetherComponentImplTest, TestCreateAndDestroy) {
-  std::unique_ptr<NiceMock<MockCryptAuthDeviceManager>> mock_device_manager =
-      base::WrapUnique(new NiceMock<MockCryptAuthDeviceManager>());
+TEST_F(TetherComponentImplTest, TestShutdown_Disconnected) {
+  InvokeCrashRecoveryCallback();
+  EXPECT_FALSE(test_observer_->shutdown_complete());
 
-  std::unique_ptr<cryptauth::FakeCryptAuthGCMManager>
-      fake_cryptauth_gcm_manager =
-          base::MakeUnique<cryptauth::FakeCryptAuthGCMManager>(
-              "registrationId");
+  component_->RequestShutdown();
+  EXPECT_TRUE(was_synchronous_container_deleted_);
+  EXPECT_FALSE(was_asynchronous_container_deleted_);
+  EXPECT_FALSE(test_observer_->shutdown_complete());
 
-  std::unique_ptr<NiceMock<MockCryptAuthEnrollmentManager>>
-      mock_enrollment_manager =
-          base::WrapUnique(new NiceMock<MockCryptAuthEnrollmentManager>(
-              fake_cryptauth_gcm_manager.get()));
+  // No disconnection attempt should have occurred since the active host was
+  // disconnected.
+  EXPECT_TRUE(fake_tether_disconnector_->last_disconnected_tether_network_guid()
+                  .empty());
 
-  std::unique_ptr<cryptauth::FakeCryptAuthService> fake_cryptauth_service =
-      base::MakeUnique<cryptauth::FakeCryptAuthService>();
-  fake_cryptauth_service->set_cryptauth_device_manager(
-      mock_device_manager.get());
-  fake_cryptauth_service->set_cryptauth_enrollment_manager(
-      mock_enrollment_manager.get());
+  InvokeAsynchronousShutdownCallback();
+  EXPECT_TRUE(was_asynchronous_container_deleted_);
+  EXPECT_TRUE(test_observer_->shutdown_complete());
+}
 
-  std::unique_ptr<FakeNotificationPresenter> fake_notification_presenter =
-      base::MakeUnique<FakeNotificationPresenter>();
+TEST_F(TetherComponentImplTest, TestShutdown_Connecting) {
+  InvokeCrashRecoveryCallback();
+  EXPECT_FALSE(test_observer_->shutdown_complete());
 
-  std::unique_ptr<TestingPrefServiceSimple> test_pref_service =
-      base::MakeUnique<TestingPrefServiceSimple>();
+  fake_active_host_->SetActiveHostConnecting("deviceId", "tetherNetworkGuid");
+  component_->RequestShutdown();
+  EXPECT_TRUE(was_synchronous_container_deleted_);
+  EXPECT_FALSE(was_asynchronous_container_deleted_);
+  EXPECT_FALSE(test_observer_->shutdown_complete());
 
-  std::unique_ptr<ManagedNetworkConfigurationHandler>
-      managed_network_configuration_handler = base::WrapUnique(
-          new NiceMock<MockManagedNetworkConfigurationHandler>);
+  // A disconnection attempt should have occurred.
+  EXPECT_EQ("tetherNetworkGuid",
+            fake_tether_disconnector_->last_disconnected_tether_network_guid());
 
-  std::unique_ptr<MockNetworkConnect> mock_network_connect =
-      base::WrapUnique(new NiceMock<MockNetworkConnect>);
+  InvokeAsynchronousShutdownCallback();
+  EXPECT_TRUE(was_asynchronous_container_deleted_);
+  EXPECT_TRUE(test_observer_->shutdown_complete());
+}
 
-  std::unique_ptr<NetworkConnectionHandler> network_connection_handler_ =
-      base::MakeUnique<TestNetworkConnectionHandler>();
+TEST_F(TetherComponentImplTest, TestShutdown_Connected) {
+  InvokeCrashRecoveryCallback();
+  EXPECT_FALSE(test_observer_->shutdown_complete());
 
-  scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter =
-      base::MakeRefCounted<NiceMock<device::MockBluetoothAdapter>>();
+  fake_active_host_->SetActiveHostConnected("deviceId", "tetherNetworkGuid",
+                                            "wifiNetworkGuid");
+  component_->RequestShutdown();
+  EXPECT_TRUE(was_synchronous_container_deleted_);
+  EXPECT_FALSE(was_asynchronous_container_deleted_);
+  EXPECT_FALSE(test_observer_->shutdown_complete());
 
-  // Call an instance method of the test instead of initializing and destroying
-  // here because the friend relationship between TetherComponent and
-  // TetherComponentImplTest only applies to the class itself, not these test
-  // functions.
-  InitializeAndDestroy(
-      fake_cryptauth_service.get(), fake_notification_presenter.get(),
-      test_pref_service_.get(), network_state_handler(),
-      managed_network_configuration_handler.get(), mock_network_connect.get(),
-      network_connection_handler_.get(), mock_adapter);
+  // A disconnection attempt should have occurred.
+  EXPECT_EQ("tetherNetworkGuid",
+            fake_tether_disconnector_->last_disconnected_tether_network_guid());
+
+  InvokeAsynchronousShutdownCallback();
+  EXPECT_TRUE(was_asynchronous_container_deleted_);
+  EXPECT_TRUE(test_observer_->shutdown_complete());
+}
+
+TEST_F(TetherComponentImplTest, TestShutdown_BeforeCrashRecoveryComplete) {
+  component_->RequestShutdown();
+  EXPECT_FALSE(test_observer_->shutdown_complete());
+
+  // A shutdown attempt should not have occurred since crash recovery has
+  // not completed.
+  EXPECT_FALSE(was_synchronous_container_deleted_);
+  EXPECT_FALSE(was_asynchronous_container_deleted_);
+  EXPECT_TRUE(
+      fake_asynchronous_container_->shutdown_complete_callback().is_null());
+
+  InvokeCrashRecoveryCallback();
+  EXPECT_TRUE(was_synchronous_container_deleted_);
+  EXPECT_FALSE(test_observer_->shutdown_complete());
+
+  // Now that crash recovery is complete, a shutdown attempt should have been
+  // started.
+  InvokeAsynchronousShutdownCallback();
+  EXPECT_TRUE(was_asynchronous_container_deleted_);
+  EXPECT_TRUE(test_observer_->shutdown_complete());
 }
 
 }  // namespace tether

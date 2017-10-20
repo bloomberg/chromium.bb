@@ -37,6 +37,7 @@ class CrashRecoveryManagerImpl : public CrashRecoveryManager {
         NetworkStateHandler* network_state_handler,
         ActiveHost* active_host,
         HostScanCache* host_scan_cache);
+    virtual ~Factory();
 
    private:
     static Factory* factory_instance_;
