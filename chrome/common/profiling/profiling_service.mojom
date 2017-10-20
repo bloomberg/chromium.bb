@@ -15,6 +15,16 @@ struct SharedBufferWithSize {
   mojo.common.mojom.ProcessId pid;
 };
 
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum ProcessType {
+  OTHER = 0,
+  BROWSER = 1,
+  RENDERER = 2,
+  GPU = 3,
+  LAST = GPU
+};
+
 // This interface is how the browser process sends commands to the profiling
 // process.
 interface ProfilingService {
@@ -28,7 +38,8 @@ interface ProfilingService {
   AddProfilingClient(mojo.common.mojom.ProcessId pid,
                      ProfilingClient client,
                      handle memlog_pipe_sender,
-                     handle memlog_pipe_receiver);
+                     handle memlog_pipe_receiver,
+                     ProcessType process_type);
 
   // Dumps the memory log of the process with the given |pid| into
   // |output_file|. |metadata| is a dictionary that should be added to the trace

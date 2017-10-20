@@ -29622,6 +29622,19 @@ from previous Chrome versions.
   <int value="10" label="Hide for now"/>
 </enum>
 
+<enum name="OutOfProcessHeapProfilingMode">
+  <int value="0" label="None"/>
+  <int value="1" label="Minimal"/>
+  <int value="2" label="All"/>
+</enum>
+
+<enum name="OutOfProcessHeapProfilingProcessType">
+  <int value="0" label="Other"/>
+  <int value="1" label="Browser"/>
+  <int value="2" label="Renderer"/>
+  <int value="3" label="GPU"/>
+</enum>
+
 <enum name="OutputDeviceStatus">
   <int value="0" label="Ok"/>
   <int value="1" label="Not found"/>

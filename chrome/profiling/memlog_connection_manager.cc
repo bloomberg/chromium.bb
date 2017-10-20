@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
@@ -81,11 +82,13 @@ struct MemlogConnectionManager::Connection {
              BacktraceStorage* backtrace_storage,
              base::ProcessId pid,
              mojom::ProfilingClientPtr client,
-             scoped_refptr<MemlogReceiverPipe> p)
+             scoped_refptr<MemlogReceiverPipe> p,
+             mojom::ProcessType process_type)
       : thread(base::StringPrintf("Sender %lld thread",
                                   static_cast<long long>(pid))),
         client(std::move(client)),
         pipe(p),
+        process_type(process_type),
         tracker(std::move(complete_cb), backtrace_storage) {}
 
   ~Connection() {
@@ -99,20 +102,26 @@ struct MemlogConnectionManager::Connection {
   mojom::ProfilingClientPtr client;
   scoped_refptr<MemlogReceiverPipe> pipe;
   scoped_refptr<MemlogStreamParser> parser;
+  mojom::ProcessType process_type;
 
   // Danger: This lives on the |thread| member above. The connection manager
   // lives on the I/O thread, so accesses to the variable must be synchronized.
   AllocationTracker tracker;
 };
 
-MemlogConnectionManager::MemlogConnectionManager() : weak_factory_(this) {}
+MemlogConnectionManager::MemlogConnectionManager() : weak_factory_(this) {
+  metrics_timer_.Start(FROM_HERE, base::TimeDelta::FromHours(24),
+                       base::Bind(&MemlogConnectionManager::ReportMetrics,
+                                  base::Unretained(this)));
+}
 MemlogConnectionManager::~MemlogConnectionManager() = default;
 
 void MemlogConnectionManager::OnNewConnection(
     base::ProcessId pid,
     mojom::ProfilingClientPtr client,
     mojo::ScopedHandle sender_pipe_end,
-    mojo::ScopedHandle receiver_pipe_end) {
+    mojo::ScopedHandle receiver_pipe_end,
+    mojom::ProcessType process_type) {
   base::AutoLock lock(connections_lock_);
 
   // Shouldn't be asked to profile a process more than once.
@@ -132,9 +141,9 @@ void MemlogConnectionManager::OnNewConnection(
                      base::MessageLoop::current()->task_runner(),
                      weak_factory_.GetWeakPtr(), pid);
 
-  auto connection =
-      base::MakeUnique<Connection>(std::move(complete_cb), &backtrace_storage_,
-                                   pid, std::move(client), new_pipe);
+  auto connection = base::MakeUnique<Connection>(
+      std::move(complete_cb), &backtrace_storage_, pid, std::move(client),
+      new_pipe, process_type);
 
   base::Thread::Options options;
   options.message_loop_type = base::MessageLoop::TYPE_IO;
@@ -158,6 +167,16 @@ void MemlogConnectionManager::OnConnectionComplete(base::ProcessId pid) {
   auto found = connections_.find(pid);
   CHECK(found != connections_.end());
   connections_.erase(found);
+}
+
+void MemlogConnectionManager::ReportMetrics() {
+  base::AutoLock lock(connections_lock_);
+  for (auto& pair : connections_) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "OutOfProcessHeapProfiling.ProfiledProcess.Type",
+        pair.second->process_type,
+        static_cast<int>(profiling::mojom::ProcessType::LAST) + 1);
+  }
 }
 
 // static
