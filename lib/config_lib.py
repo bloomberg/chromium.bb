@@ -70,6 +70,25 @@ CONFIG_TYPE_DUMP_ORDER = (
     'infra-go',
 )
 
+DISPLAY_LABEL_TRYJOB = 'tryjob'
+DISPLAY_LABEL_PRECQ = 'pre_cq'
+DISPLAY_LABEL_UNKNOWN_PRODUCTION = 'production_tryjob'
+
+# These are the build groups against which tryjobs can be run. All other
+# groups MUST be production builds.
+# TODO: crbug.com/776955 Make the above statement true.
+TRYJOB_DISPLAY_LABEL = {
+    DISPLAY_LABEL_TRYJOB,
+    DISPLAY_LABEL_PRECQ,
+}
+
+# This list of constants should be kept in sync with GoldenEye code.
+ALL_DISPLAY_LABEL = {
+    DISPLAY_LABEL_TRYJOB,
+    DISPLAY_LABEL_PRECQ,
+    DISPLAY_LABEL_UNKNOWN_PRODUCTION,
+}
+
 # In the Json, this special build config holds the default values for all
 # other configs.
 DEFAULT_BUILD_CONFIG = '_default'
@@ -585,6 +604,12 @@ def DefaultSettings():
       # A list of ModelTestConfig objects that represent all of the models
       # supported by a given unified build and their corresponding test config.
       models=[],
+
+      # This value defines what part of the Golden Eye UI is responsible for
+      # displaying builds of this build config. The value is required, and
+      # must be in ALL_DISPLAY_LABEL.
+      # TODO: Make the value required after crbug.com/776955 is finished.
+      display_label=None,
 
       # The profile of the variant to set up and build.
       profile=None,

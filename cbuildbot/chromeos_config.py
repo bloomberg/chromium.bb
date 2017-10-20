@@ -1917,6 +1917,7 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
   site_config.AddTemplate(
       'pre_cq',
       site_config.templates.paladin,
+      display_label=config_lib.DISPLAY_LABEL_PRECQ,
       active_waterfall=waterfall.WATERFALL_TRYBOT,
       build_type=constants.PRE_CQ_TYPE,
       pre_cq=True,

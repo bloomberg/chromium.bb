@@ -351,6 +351,15 @@ class CBuildBotTest(ChromeosConfigTestBase):
     for build_name, config in self.site_config.iteritems():
       self.assertTrue(build_name == config['name'])
 
+  def testConfigsHaveValidDisplayLabel(self):
+    """Configs must have names set."""
+    for build_name, config in self.site_config.iteritems():
+      # TODO: Remove 'if' after display_label is fully populated.
+      if config.display_label:
+        self.assertIn(config.display_label, config_lib.ALL_DISPLAY_LABEL,
+                      'Invalid display_label "%s" on "%s"' %
+                      (config.display_label, build_name))
+
   def testMasterSlaveConfigsExist(self):
     """Configs listing slave configs, must list valid configs."""
     for config in self.site_config.itervalues():

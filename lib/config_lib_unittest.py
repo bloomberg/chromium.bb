@@ -39,6 +39,7 @@ def MockSiteConfig():
       'amd64-generic-paladin',
       active_waterfall='chromiumos',
       boards=['amd64-generic'],
+      display_label='MockLabel',
       build_type='paladin',
       chrome_sdk=True,
       chrome_sdk_build_chrome=False,
