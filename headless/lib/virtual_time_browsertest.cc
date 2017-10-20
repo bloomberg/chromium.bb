@@ -9,11 +9,13 @@
 #include "headless/public/devtools/domains/page.h"
 #include "headless/public/devtools/domains/runtime.h"
 #include "headless/public/headless_devtools_client.h"
+#include "headless/public/util/testing/test_in_memory_protocol_handler.h"
 #include "headless/test/headless_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
+using testing::ElementsAre;
 using testing::Contains;
 
 namespace headless {
@@ -23,11 +25,11 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
                                public page::ExperimentalObserver,
                                public runtime::Observer {
  public:
-  explicit VirtualTimeBrowserTest(const std::string& initial_url)
-      : initial_url_(initial_url) {}
+  void SetInitialURL(const std::string& initial_url) {
+    initial_url_ = initial_url;
+  }
 
   void RunDevTooledTest() override {
-    EXPECT_TRUE(embedded_test_server()->Start());
     devtools_client_->GetEmulation()->GetExperimental()->AddObserver(this);
     devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
     devtools_client_->GetRuntime()->AddObserver(this);
@@ -48,13 +50,23 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
     MaybeSetVirtualTimePolicy();
   }
 
-  virtual void MaybeSetVirtualTimePolicy() = 0;
+  virtual void MaybeSetVirtualTimePolicy() {
+    if (!page_enabled || !runtime_enabled)
+      return;
+
+    // To avoid race conditions start with virtual time paused.
+    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
+        emulation::SetVirtualTimePolicyParams::Builder()
+            .SetPolicy(emulation::VirtualTimePolicy::PAUSE)
+            .Build(),
+        base::Bind(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
+                   base::Unretained(this)));
+  }
 
   void SetVirtualTimePolicyDone(
       std::unique_ptr<emulation::SetVirtualTimePolicyResult>) {
     // Virtual time is paused, so start navigating.
-    devtools_client_->GetPage()->Navigate(
-        embedded_test_server()->GetURL(initial_url_).spec());
+    devtools_client_->GetPage()->Navigate(initial_url_);
   }
 
   void OnFrameStartedLoading(
@@ -82,7 +94,7 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
       log_.push_back(args[0]->GetValue()->GetString());
   }
 
-  const std::string initial_url_;
+  std::string initial_url_;
   std::vector<std::string> log_;
   bool initial_load_seen_ = false;
   bool page_enabled = false;
@@ -91,8 +103,11 @@ class VirtualTimeBrowserTest : public HeadlessAsyncDevTooledBrowserTest,
 
 class VirtualTimeObserverTest : public VirtualTimeBrowserTest {
  public:
-  VirtualTimeObserverTest()
-      : VirtualTimeBrowserTest("/virtual_time_test.html") {}
+  VirtualTimeObserverTest() {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    SetInitialURL(
+        embedded_test_server()->GetURL("/virtual_time_test.html").spec());
+  }
 
   // emulation::Observer implementation:
   void OnVirtualTimeBudgetExpired(
@@ -119,19 +134,6 @@ class VirtualTimeObserverTest : public VirtualTimeBrowserTest {
     FinishAsynchronousTest();
   }
 
-  void MaybeSetVirtualTimePolicy() override {
-    if (!page_enabled || !runtime_enabled)
-      return;
-
-    // To avoid race conditions start with virtual time paused.
-    devtools_client_->GetEmulation()->GetExperimental()->SetVirtualTimePolicy(
-        emulation::SetVirtualTimePolicyParams::Builder()
-            .SetPolicy(emulation::VirtualTimePolicy::PAUSE)
-            .Build(),
-        base::Bind(&VirtualTimeBrowserTest::SetVirtualTimePolicyDone,
-                   base::Unretained(this)));
-  }
-
   void OnVirtualTimeAdvanced(
       const emulation::VirtualTimeAdvancedParams& params) override {
     log_.push_back(
@@ -149,8 +151,12 @@ HEADLESS_ASYNC_DEVTOOLED_TEST_F(VirtualTimeObserverTest);
 
 class MaxVirtualTimeTaskStarvationCountTest : public VirtualTimeBrowserTest {
  public:
-  MaxVirtualTimeTaskStarvationCountTest()
-      : VirtualTimeBrowserTest("/virtual_time_starvation_test.html") {}
+  MaxVirtualTimeTaskStarvationCountTest() {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    SetInitialURL(embedded_test_server()
+                      ->GetURL("/virtual_time_starvation_test.html")
+                      .spec());
+  }
 
   void MaybeSetVirtualTimePolicy() override {
     if (!page_enabled || !runtime_enabled)
@@ -176,5 +182,101 @@ class MaxVirtualTimeTaskStarvationCountTest : public VirtualTimeBrowserTest {
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(MaxVirtualTimeTaskStarvationCountTest);
+
+namespace {
+static constexpr char kIndexHtml[] = R"(
+<html>
+<body>
+<iframe src="/iframe.html" width="400" height="200" id="iframe1">
+</iframe>
+</body>
+</html>
+)";
+
+static constexpr char kIFrame[] = R"(
+<html>
+<head>
+<link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<body>
+<h1>Hello from the iframe!</h1>
+</body>
+</html>
+)";
+
+static constexpr char kCss[] = R"(
+.test {
+  color: blue;
+}
+)";
+
+}  // namespace
+
+class FrameDetatchWithPendingResourceLoadVirtualTimeTest
+    : public VirtualTimeBrowserTest,
+      public TestInMemoryProtocolHandler::RequestDeferrer {
+ public:
+  FrameDetatchWithPendingResourceLoadVirtualTimeTest() {
+    SetInitialURL("http://test.com/index.html");
+  }
+
+  ProtocolHandlerMap GetProtocolHandlers() override {
+    ProtocolHandlerMap protocol_handlers;
+    std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), this));
+    http_handler_ = http_handler.get();
+    http_handler->InsertResponse("http://test.com/index.html",
+                                 {kIndexHtml, "text/html"});
+    http_handler->InsertResponse("http://test.com/iframe.html",
+                                 {kIFrame, "text/html"});
+    http_handler->InsertResponse("http://test.com/style.css",
+                                 {kCss, "text/css"});
+    protocol_handlers[url::kHttpScheme] = std::move(http_handler);
+    return protocol_handlers;
+  }
+
+  void RunDevTooledTest() override {
+    http_handler_->SetHeadlessBrowserContext(browser_context_);
+    VirtualTimeBrowserTest::RunDevTooledTest();
+  }
+
+  void OnRequest(const GURL& url, base::Closure complete_request) override {
+    // Note this is called on the IO thread.
+    if (url.spec() == "http://test.com/style.css") {
+      // Detach the iframe but leave the css resource fetch hanging.
+      browser()->BrowserMainThread()->PostTask(
+          FROM_HERE,
+          base::Bind(&FrameDetatchWithPendingResourceLoadVirtualTimeTest::
+                         DetatchIFrame,
+                     base::Unretained(this)));
+    } else {
+      complete_request.Run();
+    }
+  }
+
+  void DetatchIFrame() {
+    devtools_client_->GetRuntime()->Evaluate(
+        "let elem = document.getElementById('iframe1');\n"
+        "elem.parentNode.removeChild(elem);");
+  }
+
+  // emulation::Observer implementation:
+  void OnVirtualTimeBudgetExpired(
+      const emulation::VirtualTimeBudgetExpiredParams& params) override {
+    EXPECT_THAT(
+        http_handler_->urls_requested(),
+        ElementsAre("http://test.com/index.html", "http://test.com/iframe.html",
+                    "http://test.com/style.css"));
+
+    // Virtual time should still expire, despite the CSS resource load not
+    // finishing.
+    FinishAsynchronousTest();
+  }
+
+  TestInMemoryProtocolHandler* http_handler_;  // NOT OWNED
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(
+    FrameDetatchWithPendingResourceLoadVirtualTimeTest);
 
 }  // namespace headless

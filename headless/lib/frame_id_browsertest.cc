@@ -103,7 +103,7 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
     ProtocolHandlerMap protocol_handlers;
     std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
         new TestInMemoryProtocolHandler(browser()->BrowserIOThread(),
-                                        /* simulate_slow_fetch */ false));
+                                        /* request_deferrer */ nullptr));
     http_handler_ = http_handler.get();
     http_handler_->InsertResponse("http://foo.com/index.html",
                                   {kIndexHtml, "text/html"});

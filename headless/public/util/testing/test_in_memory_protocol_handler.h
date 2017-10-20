@@ -19,9 +19,21 @@ class HeadlessBrowserContext;
 class TestInMemoryProtocolHandler
     : public net::URLRequestJobFactory::ProtocolHandler {
  public:
+  class RequestDeferrer {
+   public:
+    virtual ~RequestDeferrer() {}
+
+    // Notifies that the target page has made a request for the |url|. The
+    // request will not be completed until |complete_request| is run.
+    // NOTE this will be called on the IO thread.
+    virtual void OnRequest(const GURL& url, base::Closure complete_request) = 0;
+  };
+
+  // Note |request_deferrer| is optional.  If the test doesn't need to control
+  // when resources are fulfilled then pass in nullptr.
   TestInMemoryProtocolHandler(
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-      bool simulate_slow_fetch);
+      RequestDeferrer* request_deferrer);
 
   ~TestInMemoryProtocolHandler() override;
 
@@ -60,7 +72,7 @@ class TestInMemoryProtocolHandler
     url_to_devtools_frame_id_[url] = devtools_frame_id;
   }
 
-  bool simulate_slow_fetch() const { return simulate_slow_fetch_; }
+  RequestDeferrer* request_deferrer() const { return request_deferrer_; }
 
   class TestDelegate;
   class MockURLFetcher;
@@ -73,7 +85,7 @@ class TestInMemoryProtocolHandler
   HeadlessBrowserContext* headless_browser_context_;
   std::map<std::string, std::string> url_to_devtools_frame_id_;
   std::vector<std::string> urls_requested_;
-  bool simulate_slow_fetch_;
+  RequestDeferrer* request_deferrer_;  // NOT OWNED.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TestInMemoryProtocolHandler);

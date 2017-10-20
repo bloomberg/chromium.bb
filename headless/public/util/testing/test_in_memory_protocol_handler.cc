@@ -13,11 +13,8 @@ namespace headless {
 
 class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
  public:
-  MockURLFetcher(
-      TestInMemoryProtocolHandler* protocol_handler,
-      scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
-      : protocol_handler_(protocol_handler),
-        io_thread_task_runner_(io_thread_task_runner) {}
+  explicit MockURLFetcher(TestInMemoryProtocolHandler* protocol_handler)
+      : protocol_handler_(protocol_handler) {}
   ~MockURLFetcher() override {}
 
   // URLFetcher implementation:
@@ -30,12 +27,10 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
     DCHECK_NE(devtools_frame_id, "") << " For url " << url;
     protocol_handler_->RegisterUrl(url.spec(), devtools_frame_id);
 
-    if (protocol_handler_->simulate_slow_fetch()) {
-      io_thread_task_runner_->PostDelayedTask(
-          FROM_HERE,
-          base::Bind(&MockURLFetcher::FinishFetch, base::Unretained(this),
-                     result_listener, url),
-          base::TimeDelta::FromMilliseconds(100));
+    if (protocol_handler_->request_deferrer()) {
+      protocol_handler_->request_deferrer()->OnRequest(
+          url, base::Bind(&MockURLFetcher::FinishFetch, base::Unretained(this),
+                          result_listener, url));
     } else {
       FinishFetch(result_listener, url);
     }
@@ -55,7 +50,6 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
 
  private:
   TestInMemoryProtocolHandler* protocol_handler_;  // NOT OWNED.
-  scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(MockURLFetcher);
 };
@@ -85,11 +79,11 @@ class TestInMemoryProtocolHandler::TestDelegate
 
 TestInMemoryProtocolHandler::TestInMemoryProtocolHandler(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner,
-    bool simulate_slow_fetch)
+    RequestDeferrer* request_deferrer)
     : test_delegate_(new TestDelegate()),
       dispatcher_(new ExpeditedDispatcher(io_thread_task_runner)),
       headless_browser_context_(nullptr),
-      simulate_slow_fetch_(simulate_slow_fetch),
+      request_deferrer_(request_deferrer),
       io_thread_task_runner_(io_thread_task_runner) {}
 
 TestInMemoryProtocolHandler::~TestInMemoryProtocolHandler() {}
@@ -119,8 +113,7 @@ net::URLRequestJob* TestInMemoryProtocolHandler::MaybeCreateJob(
   return new GenericURLRequestJob(
       request, network_delegate, dispatcher_.get(),
       base::MakeUnique<MockURLFetcher>(
-          const_cast<TestInMemoryProtocolHandler*>(this),
-          io_thread_task_runner_),
+          const_cast<TestInMemoryProtocolHandler*>(this)),
       test_delegate_.get(), headless_browser_context_);
 }
 
