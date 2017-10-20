@@ -3940,6 +3940,30 @@ TEST_P(RenderTextHarfBuzzTest, HarfBuzz_BreakRunsByAscii) {
   EXPECT_EQ("[0->1][2]", GetRunListStructureString());
 }
 
+// Test that, on Mac, font fallback mechanisms and Harfbuzz configuration cause
+// the correct glyphs to be chosen for unicode regional indicators.
+TEST_P(RenderTextHarfBuzzTest, EmojiFlagGlyphCount) {
+  RenderText* render_text = GetRenderText();
+  render_text->SetDisplayRect(Rect(1000, 1000));
+  // Two flags: UK and Japan. Note macOS 10.9 only has flags for 10 countries.
+  base::string16 text(UTF8ToUTF16("🇬🇧🇯🇵"));
+  // Each flag is 4 UTF16 characters (2 surrogate pair code points).
+  EXPECT_EQ(8u, text.length());
+  render_text->SetText(text);
+  test_api()->EnsureLayout();
+
+  const internal::TextRunList* run_list = GetHarfBuzzRunList();
+  ASSERT_EQ(1U, run_list->runs().size());
+#if defined(OS_MACOSX)
+  // On Mac, the flags should be found, so two glyphs result.
+  EXPECT_EQ(2u, run_list->runs()[0]->glyph_count);
+#else
+  // Elsewhere, the flags are not found, so each surrogate pair gets a
+  // placeholder glyph. Eventually, all platforms should have 2 glyphs.
+  EXPECT_EQ(4u, run_list->runs()[0]->glyph_count);
+#endif
+}
+
 TEST_P(RenderTextHarfBuzzTest, GlyphBounds) {
   const char* kTestStrings[] = {"asdf 1234 qwer", "\u0647\u0654",
                                 "\u0645\u0631\u062D\u0628\u0627"};
