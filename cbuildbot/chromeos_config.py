@@ -3447,7 +3447,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'lakitu-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
-          site_config.templates.tast_vm_canary_tests,
           sign_types=['base'],
       ),
 
@@ -3546,6 +3545,9 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'sign_types': ['recovery', 'factory'],
       },
       # --- end from here ---
+
+      'betty-release':
+          site_config.templates.tast_vm_canary_tests,
 
       'auron-paladin': {
           'hw_tests_override': [
