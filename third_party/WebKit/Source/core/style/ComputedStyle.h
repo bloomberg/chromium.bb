@@ -2259,7 +2259,7 @@ class ComputedStyle : public ComputedStyleBase,
   // Color utility functions.
   // TODO(sashab): Rename this to just getColor(), and add a comment explaining
   // how it works.
-  CORE_EXPORT Color VisitedDependentColor(int color_property) const;
+  CORE_EXPORT Color VisitedDependentColor(CSSPropertyID color_property) const;
 
   // -webkit-appearance utility functions.
   bool HasAppearance() const { return Appearance() != kNoControlPart; }
@@ -2487,7 +2487,8 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   StyleColor DecorationColorIncludingFallback(bool visited_link) const;
-  Color ColorIncludingFallback(int color_property, bool visited_link) const;
+  Color ColorIncludingFallback(CSSPropertyID color_property,
+                               bool visited_link) const;
 
   Color StopColor() const { return SvgStyle().StopColor(); }
   Color FloodColor() const { return SvgStyle().FloodColor(); }
