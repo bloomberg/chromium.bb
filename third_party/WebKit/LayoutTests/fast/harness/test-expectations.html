@@ -327,6 +327,7 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
   in format:
     <select id="report_format" onchange="Query.generateReport()">
       <option value="plain" selected>Plain text</option>
+      <option value="plainwrapped">Plain text wrapped</option>
       <option value="expectation">TestExpectations</option>
       <option value="crashsite">Crash site</option>
       <option value="textmismatch">Text mismatch</option>
@@ -471,6 +472,8 @@ const Report = {
         return {print: Report.printTextMismatch, render: Report.renderGroupTextMismatch};
       case "rebaseline":
         return {print: Report.printRebaseline, render: Report.renderResultList};
+      case "plainwrapped":
+        return {print: Report.printPlainTestWrapped, render: Report.renderResultList}
       case "plain":
       default:
         return {print: Report.printPlainTest, render: Report.renderResultList};
@@ -488,6 +491,12 @@ const Report = {
       <div class='details'></div>${Report.printFlag(test)}
      ${pathParser.dir}/<a target='test' tabindex='-1' href='${pathParser.testHref}'>${pathParser.file}</a>
     </div>`;
+    traversal.html.push(html);
+  },
+
+  printPlainTestWrapped: (test, path, traversal) => {
+    let pathParser = new PathParser(path);
+    let html = ` ${pathParser.dir}/${pathParser.file}`;
     traversal.html.push(html);
   },
 
@@ -1034,6 +1043,32 @@ const GUI = {
     }
   },
 
+  showNextExpectation: function(backward) {
+    let nextExpectation;
+    let openDetails = document.querySelector(".details.open");
+    if (openDetails) {
+      let openExpectation = GUI.getExpectation(openDetails, "expect");
+      nextExpectation = backward ?
+        GUI.previousExpectation(openExpectation) :
+        GUI.nextExpectation(openExpectation);
+      GUI.hideResults(openExpectation);
+    } else {
+      if (document.activeElement && document.activeElement.classList.contains("expect"))
+        nextExpectation = document.activeElement;
+      else
+        nextExpectation = document.querySelector(".expect");
+    }
+    if (nextExpectation) {
+      nextExpectation.focus();
+      GUI.showResults(nextExpectation);
+      return true;
+    }
+  },
+
+  activeExpectation: function() {
+    return GUI.closest(document.activeElement, "expect");
+  },
+
   initEvents: function() {
     document.querySelector("#report").addEventListener("mousedown",
       (ev) => { if (GUI.isFlag(ev.target)) ev.preventDefault() }
@@ -1067,25 +1102,24 @@ const GUI = {
             }
             break;
           case " ": // Scroll to next expectation.
-            let nextExpectation;
-            let openDetails = document.querySelector(".details.open");
-            if (openDetails) {
-              let openExpectation = GUI.getExpectation(openDetails, "expect");
-              nextExpectation = ev.shiftKey ?
-                GUI.previousExpectation(openExpectation) :
-                GUI.nextExpectation(openExpectation);
-              GUI.hideResults(openExpectation);
-            } else {
-              if (document.activeElement && document.activeElement.classList.contains("expect"))
-                nextExpectation = document.activeElement;
-              else
-                nextExpectation = document.querySelector(".expect");
-            }
-            if (nextExpectation) {
+            if (GUI.showNextExpectation(ev.shiftKey))
+              ev.preventDefault();
+            break;
+          case "j":
+          case "J": {
+            let current = GUI.activeExpectation();
+            let nextExpectation = current ? GUI.nextExpectation(current) : document.querySelector(".expect");
+            if (nextExpectation)
               nextExpectation.focus();
-              GUI.showResults(nextExpectation);
             }
-            ev.preventDefault();
+            break;
+          case "k":
+          case "K": {
+            let current = GUI.activeExpectation();
+            let nextExpectation = current ? GUI.previousExpectation(current) : document.querySelector(".expect");
+            if (nextExpectation)
+              nextExpectation.focus();
+            }
             break;
           case "Enter":
             let expectation = GUI.getExpectation(ev.target);
