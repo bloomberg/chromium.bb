@@ -44,6 +44,9 @@ case $UNAME in
   aarch64)
     ARCH=arm64
     ;;
+  armv7l)
+    ARCH=armv6l
+    ;;
   arm*)
     ARCH=$UNAME
     ;;
