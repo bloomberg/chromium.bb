@@ -316,6 +316,12 @@ AutomationPredicate.root = function(node) {
     case Role.TOOLBAR:
       return node.root.role == Role.DESKTOP;
     case Role.ROOT_WEB_AREA:
+      if (node.parent && node.parent.role == Role.WEB_VIEW &&
+          !node.parent.state[chrome.automation.StateType.FOCUSED]) {
+        // If parent web view is not focused, we should allow this root web area
+        // to be crossed when performing traversals up the ancestry chain.
+        return false;
+      }
       return !node.parent || node.parent.root.role == Role.DESKTOP;
     default:
       return false;
