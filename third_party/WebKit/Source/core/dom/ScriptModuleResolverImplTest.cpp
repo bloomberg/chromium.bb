@@ -55,7 +55,7 @@ class ScriptModuleResolverImplTestModulator final : public DummyModulator {
                        module_script->CreateError(script_state_->GetIsolate()));
   }
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   int get_fetched_module_script_called_ = 0;
   KURL fetched_url_;
   Member<ModuleScript> module_script_;

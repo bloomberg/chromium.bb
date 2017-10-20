@@ -138,7 +138,7 @@ LayoutObject* FirstLetterPseudoElement::FirstLetterTextLayoutObject(
     } else if (first_letter_text_layout_object->IsText()) {
       // FIXME: If there is leading punctuation in a different LayoutText than
       // the first letter, we'll not apply the correct style to it.
-      RefPtr<StringImpl> str =
+      scoped_refptr<StringImpl> str =
           ToLayoutText(first_letter_text_layout_object)->IsTextFragment()
               ? ToLayoutTextFragment(first_letter_text_layout_object)
                     ->CompleteText()

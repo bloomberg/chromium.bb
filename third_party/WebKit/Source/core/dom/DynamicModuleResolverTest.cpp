@@ -85,7 +85,7 @@ class DynamicModuleResolverTestModulator final : public DummyModulator {
                        record.ErrorCompletion(script_state_.get()));
   }
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   Member<ModuleTreeClient> pending_client_;
 };
 

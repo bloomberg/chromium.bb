@@ -19,14 +19,14 @@ class ScriptState;
 // context should be implemented in this class, not in ModulatorImplBase.
 class WorkletModulatorImpl final : public ModulatorImplBase {
  public:
-  static ModulatorImplBase* Create(RefPtr<ScriptState>);
+  static ModulatorImplBase* Create(scoped_refptr<ScriptState>);
 
   // Implements Modulator.
   SecurityOrigin* GetSecurityOriginForFetch() override;
   ModuleScriptFetcher* CreateModuleScriptFetcher() override;
 
  private:
-  explicit WorkletModulatorImpl(RefPtr<ScriptState>);
+  explicit WorkletModulatorImpl(scoped_refptr<ScriptState>);
 };
 
 }  // namespace blink

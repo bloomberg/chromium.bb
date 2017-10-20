@@ -10,11 +10,12 @@
 namespace blink {
 
 ModulatorImplBase* WorkletModulatorImpl::Create(
-    RefPtr<ScriptState> script_state) {
+    scoped_refptr<ScriptState> script_state) {
   return new WorkletModulatorImpl(std::move(script_state));
 }
 
-WorkletModulatorImpl::WorkletModulatorImpl(RefPtr<ScriptState> script_state)
+WorkletModulatorImpl::WorkletModulatorImpl(
+    scoped_refptr<ScriptState> script_state)
     : ModulatorImplBase(std::move(script_state)) {}
 
 SecurityOrigin* WorkletModulatorImpl::GetSecurityOriginForFetch() {

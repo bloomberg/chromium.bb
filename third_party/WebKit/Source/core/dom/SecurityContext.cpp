@@ -46,7 +46,7 @@ void SecurityContext::Trace(blink::Visitor* visitor) {
 }
 
 void SecurityContext::SetSecurityOrigin(
-    RefPtr<SecurityOrigin> security_origin) {
+    scoped_refptr<SecurityOrigin> security_origin) {
   security_origin_ = std::move(security_origin);
   UpdateFeaturePolicyOrigin();
 }

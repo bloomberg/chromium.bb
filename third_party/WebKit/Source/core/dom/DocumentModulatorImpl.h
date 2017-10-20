@@ -21,7 +21,8 @@ class ScriptState;
 // ModulatorImplBase.
 class DocumentModulatorImpl final : public ModulatorImplBase {
  public:
-  static ModulatorImplBase* Create(RefPtr<ScriptState>, ResourceFetcher*);
+  static ModulatorImplBase* Create(scoped_refptr<ScriptState>,
+                                   ResourceFetcher*);
 
   // Implements Modulator.
   ModuleScriptFetcher* CreateModuleScriptFetcher() override;
@@ -29,7 +30,7 @@ class DocumentModulatorImpl final : public ModulatorImplBase {
   void Trace(blink::Visitor*);
 
  private:
-  DocumentModulatorImpl(RefPtr<ScriptState>, ResourceFetcher*);
+  DocumentModulatorImpl(scoped_refptr<ScriptState>, ResourceFetcher*);
   Member<ResourceFetcher> fetcher_;
 };
 

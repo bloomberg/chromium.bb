@@ -20,7 +20,7 @@ class CORE_EXPORT RemoteSecurityContext
   virtual void Trace(blink::Visitor*);
 
   static RemoteSecurityContext* Create();
-  void SetReplicatedOrigin(RefPtr<SecurityOrigin>);
+  void SetReplicatedOrigin(scoped_refptr<SecurityOrigin>);
   void ResetReplicatedContentSecurityPolicy();
 
   // FIXME: implement

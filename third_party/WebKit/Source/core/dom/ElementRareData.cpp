@@ -68,7 +68,8 @@ InlineStylePropertyMap& ElementRareData::EnsureInlineStylePropertyMap(
   return *cssom_map_wrapper_;
 }
 
-void ElementRareData::SetComputedStyle(RefPtr<ComputedStyle> computed_style) {
+void ElementRareData::SetComputedStyle(
+    scoped_refptr<ComputedStyle> computed_style) {
   computed_style_ = std::move(computed_style);
 }
 
