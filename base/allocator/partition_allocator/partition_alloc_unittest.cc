@@ -303,23 +303,13 @@ class MockPartitionStatsDumper : public PartitionStatsDumper {
 };
 
 // Any number of bytes that can be allocated with no trouble.
-const size_t kEasyAllocSize = (1024 * 1024) & ~(kPageAllocationGranularity - 1);
+constexpr size_t kEasyAllocSize =
+    (1024 * 1024) & ~(kPageAllocationGranularity - 1);
 
-// Generate many random addresses to get a very large fraction of the platform
-// address space. This gives us an allocation size that is very likely to fail
-// on most platforms without triggering bugs in allocation code for very large
-// requests.
-size_t GetHugeMemoryAmount() {
-  static size_t huge_memory = 0;
-  if (!huge_memory) {
-    for (int i = 0; i < 100; i++) {
-      huge_memory |= bit_cast<size_t>(base::GetRandomPageBase());
-    }
-    // Make it larger than the available address space.
-    huge_memory *= 2;
-  }
-  return huge_memory;
-}
+// A huge amount of memory, greater than or equal to the ASLR space.
+constexpr size_t kHugeMemoryAmount =
+    std::max(base::internal::kASLRMask,
+             std::size_t{2} * base::internal::kASLRMask);
 
 }  // anonymous namespace
 
@@ -327,13 +317,16 @@ size_t GetHugeMemoryAmount() {
 // We detect this by making a reservation and ensuring that after failure, we
 // can make a new reservation.
 TEST(PageAllocatorTest, AllocFailure) {
+  // Release any reservation made by another test.
+  base::ReleaseReservation();
+
   // We can make a reservation.
   EXPECT_TRUE(base::ReserveAddressSpace(kEasyAllocSize));
 
   // We can't make another reservation until we trigger an allocation failure.
   EXPECT_FALSE(base::ReserveAddressSpace(kEasyAllocSize));
 
-  size_t size = GetHugeMemoryAmount();
+  size_t size = kHugeMemoryAmount;
   // Skip the test for sanitizers and platforms with ASLR turned off.
   if (size == 0)
     return;
@@ -352,9 +345,18 @@ TEST(PageAllocatorTest, AllocFailure) {
 }
 
 // TODO(crbug.com/765801): Test failed on chromium.win/Win10 Tests x64.
+#if defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
+#define MAYBE_ReserveAddressSpace DISABLED_ReserveAddressSpace
+#else
+#define MAYBE_ReserveAddressSpace ReserveAddressSpace
+#endif  // defined(OS_WIN) && defined(ARCH_CPU_64_BITS)
+
 // Test that reserving address space can fail.
-TEST(PageAllocatorTest, DISABLED_ReserveAddressSpace) {
-  size_t size = GetHugeMemoryAmount();
+TEST(PageAllocatorTest, MAYBE_ReserveAddressSpace) {
+  // Release any reservation made by another test.
+  base::ReleaseReservation();
+
+  size_t size = kHugeMemoryAmount;
   // Skip the test for sanitizers and platforms with ASLR turned off.
   if (size == 0)
     return;
