@@ -381,8 +381,7 @@ AwURLRequestContextGetter::CreateAuthHandlerFactory(
 }
 
 void AwURLRequestContextGetter::UpdateServerWhitelist() {
-  http_auth_preferences_->set_server_whitelist(
-      auth_server_whitelist_.GetValue());
+  http_auth_preferences_->SetServerWhitelist(auth_server_whitelist_.GetValue());
 }
 
 void AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType() {

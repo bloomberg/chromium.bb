@@ -4,6 +4,9 @@
 
 #include "net/http/http_auth_preferences.h"
 
+#include <utility>
+
+#include "base/stl_util.h"
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "net/http/http_auth_filter.h"
@@ -54,7 +57,7 @@ HttpAuthPreferences::HttpAuthPreferences(
 HttpAuthPreferences::~HttpAuthPreferences() {}
 
 bool HttpAuthPreferences::IsSupportedScheme(const std::string& scheme) const {
-  return auth_schemes_.count(scheme) == 1;
+  return base::ContainsKey(auth_schemes_, scheme);
 }
 
 bool HttpAuthPreferences::NegotiateDisableCnameLookup() const {
@@ -94,24 +97,20 @@ bool HttpAuthPreferences::CanDelegate(const GURL& auth_origin) const {
   return security_manager_->CanDelegate(auth_origin);
 }
 
-void HttpAuthPreferences::set_server_whitelist(
+void HttpAuthPreferences::SetServerWhitelist(
     const std::string& server_whitelist) {
-  if (server_whitelist.empty()) {
-    security_manager_->SetDefaultWhitelist(std::unique_ptr<HttpAuthFilter>());
-  } else {
-    security_manager_->SetDefaultWhitelist(std::unique_ptr<HttpAuthFilter>(
-        new net::HttpAuthFilterWhitelist(server_whitelist)));
-  }
+  std::unique_ptr<HttpAuthFilter> whitelist;
+  if (!server_whitelist.empty())
+    whitelist = std::make_unique<HttpAuthFilterWhitelist>(server_whitelist);
+  security_manager_->SetDefaultWhitelist(std::move(whitelist));
 }
 
-void HttpAuthPreferences::set_delegate_whitelist(
+void HttpAuthPreferences::SetDelegateWhitelist(
     const std::string& delegate_whitelist) {
-  if (delegate_whitelist.empty()) {
-    security_manager_->SetDelegateWhitelist(std::unique_ptr<HttpAuthFilter>());
-  } else {
-    security_manager_->SetDelegateWhitelist(std::unique_ptr<HttpAuthFilter>(
-        new net::HttpAuthFilterWhitelist(delegate_whitelist)));
-  }
+  std::unique_ptr<HttpAuthFilter> whitelist;
+  if (!delegate_whitelist.empty())
+    whitelist = std::make_unique<HttpAuthFilterWhitelist>(delegate_whitelist);
+  security_manager_->SetDelegateWhitelist(std::move(whitelist));
 }
 
 }  // namespace net
