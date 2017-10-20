@@ -267,6 +267,8 @@ struct PartitionPage {
   uint16_t page_offset;
   int16_t empty_cache_index;  // -1 if not in the empty cache.
 };
+static_assert(sizeof(PartitionPage) <= kPageMetadataSize,
+              "PartitionPage must be able to fit in a metadata slot");
 
 struct PartitionBucket {
   // Accessed most in hot path => goes first.
@@ -280,7 +282,7 @@ struct PartitionBucket {
 };
 
 // An "extent" is a span of consecutive superpages. We link to the partition's
-// next extent (if there is one) at the very start of a superpage's metadata
+// next extent (if there is one) to the very start of a superpage's metadata
 // area.
 struct PartitionSuperPageExtentEntry {
   PartitionRootBase* root;
@@ -288,6 +290,9 @@ struct PartitionSuperPageExtentEntry {
   char* super_pages_end;
   PartitionSuperPageExtentEntry* next;
 };
+static_assert(
+    sizeof(PartitionSuperPageExtentEntry) <= kPageMetadataSize,
+    "PartitionSuperPageExtentEntry must be able to fit in a metadata slot");
 
 struct PartitionDirectMapExtent {
   PartitionDirectMapExtent* next_extent;
@@ -326,6 +331,9 @@ struct BASE_EXPORT PartitionRootBase {
 struct BASE_EXPORT PartitionRoot : public PartitionRootBase {
   PartitionRoot();
   ~PartitionRoot() override;
+  // This references the buckets OFF the edge of this struct. All uses of
+  // PartitionRoot must have the bucket array come right after.
+  //
   // The PartitionAlloc templated class ensures the following is correct.
   ALWAYS_INLINE PartitionBucket* buckets() {
     return reinterpret_cast<PartitionBucket*>(this + 1);
@@ -587,16 +595,23 @@ ALWAYS_INLINE PartitionPage* PartitionPointerToPageNoAlignmentCheck(void* ptr) {
   return page;
 }
 
+// Resturns start of the slot span for the PartitionPage.
 ALWAYS_INLINE void* PartitionPageToPointer(const PartitionPage* page) {
   uintptr_t pointer_as_uint = reinterpret_cast<uintptr_t>(page);
+
   uintptr_t super_page_offset = (pointer_as_uint & kSuperPageOffsetMask);
+
+  // A valid |page| must be past the first guard System page and within
+  // the following metadata region.
   DCHECK(super_page_offset > kSystemPageSize);
+  // Must be less than total metadata region.
   DCHECK(super_page_offset < kSystemPageSize + (kNumPartitionPagesPerSuperPage *
                                                 kPageMetadataSize));
   uintptr_t partition_page_index =
       (super_page_offset - kSystemPageSize) >> kPageMetadataShift;
-  // Index 0 is invalid because it is the metadata area and the last index is
-  // invalid because it is a guard page.
+  // Index 0 is invalid because it is the superpage extent metadata and the
+  // last index is invalid because the whole PartitionPage is set as guard
+  // pages for the metadata region.
   DCHECK(partition_page_index);
   DCHECK(partition_page_index < kNumPartitionPagesPerSuperPage - 1);
   uintptr_t super_page_base = (pointer_as_uint & kSuperPageBaseMask);
@@ -701,8 +716,10 @@ ALWAYS_INLINE void* PartitionBucketAlloc(PartitionRootBase* root,
   char* char_ret = static_cast<char*>(ret);
   // The value given to the application is actually just after the cookie.
   ret = char_ret + kCookieSize;
-  memset(ret, kUninitializedByte, no_cookie_size);
+
+  // Debug fill region kUninitializedByte and surround it with 2 cookies.
   PartitionCookieWriteValue(char_ret);
+  memset(ret, kUninitializedByte, no_cookie_size);
   PartitionCookieWriteValue(char_ret + kCookieSize + no_cookie_size);
 #endif
   return ret;
