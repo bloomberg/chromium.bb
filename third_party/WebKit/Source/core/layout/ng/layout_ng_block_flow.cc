@@ -6,6 +6,7 @@
 
 #include "core/layout/HitTestLocation.h"
 #include "core/layout/LayoutAnalyzer.h"
+#include "core/layout/ng/inline/ng_inline_fragment_iterator.h"
 #include "core/layout/ng/inline/ng_inline_node_data.h"
 #include "core/layout/ng/ng_constraint_space.h"
 #include "core/layout/ng/ng_fragment_builder.h"
@@ -287,6 +288,27 @@ LayoutUnit LayoutNGBlockFlow::InlineBlockBaseline(
     }
   }
   return LayoutBlockFlow::InlineBlockBaseline(line_direction);
+}
+
+bool LayoutNGBlockFlow::LocalVisualRectFor(const LayoutObject* layout_object,
+                                           NGPhysicalOffsetRect* visual_rect) {
+  DCHECK(layout_object &&
+         (layout_object->IsText() || layout_object->IsLayoutInline()));
+  DCHECK(visual_rect);
+  LayoutNGBlockFlow* ng_block_flow = layout_object->EnclosingNGBlockFlow();
+  if (!ng_block_flow || !ng_block_flow->HasNGInlineNodeData())
+    return false;
+  const NGPhysicalBoxFragment* box_fragment = ng_block_flow->CurrentFragment();
+  // TODO(kojii): CurrentFragment isn't always available after layout clean.
+  // Investigate why.
+  if (!box_fragment)
+    return false;
+  NGInlineFragmentIterator children(*box_fragment, layout_object);
+  for (const auto& child : children) {
+    NGPhysicalOffsetRect child_visual_rect = child.fragment->LocalVisualRect();
+    visual_rect->Unite(child_visual_rect + child.offset_to_container_box);
+  }
+  return true;
 }
 
 scoped_refptr<NGLayoutResult> LayoutNGBlockFlow::CachedLayoutResult(

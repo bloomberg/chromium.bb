@@ -13,6 +13,11 @@ bool NGPhysicalOffsetRect::operator==(const NGPhysicalOffsetRect& other) const {
   return other.offset == offset && other.size == size;
 }
 
+NGPhysicalOffsetRect NGPhysicalOffsetRect::operator+(
+    const NGPhysicalOffset& offset) const {
+  return {this->offset + offset, size};
+}
+
 void NGPhysicalOffsetRect::Unite(const NGPhysicalOffsetRect& other) {
   if (other.IsEmpty())
     return;
