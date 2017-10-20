@@ -41,15 +41,9 @@ struct BASE_EXPORT ShortcutProperties {
     PROPERTIES_APP_ID = 1U << 5,
     PROPERTIES_DUAL_MODE = 1U << 6,
     // Be sure to update the values below when adding a new property.
-    PROPERTIES_BASIC = PROPERTIES_TARGET |
-        PROPERTIES_WORKING_DIR |
-        PROPERTIES_ARGUMENTS |
-        PROPERTIES_DESCRIPTION |
-        PROPERTIES_ICON,
-    // TODO(pmonette): Get rid of PROPERTIES_WIN7 now that Windows 7 is the last
-    // supported Windows version.
-    PROPERTIES_WIN7 = PROPERTIES_APP_ID | PROPERTIES_DUAL_MODE,
-    PROPERTIES_ALL = PROPERTIES_BASIC | PROPERTIES_WIN7
+    PROPERTIES_ALL = PROPERTIES_TARGET | PROPERTIES_WORKING_DIR |
+                     PROPERTIES_ARGUMENTS | PROPERTIES_DESCRIPTION |
+                     PROPERTIES_ICON | PROPERTIES_APP_ID | PROPERTIES_DUAL_MODE
   };
 
   ShortcutProperties();
@@ -111,7 +105,7 @@ struct BASE_EXPORT ShortcutProperties {
   // the resource id).
   FilePath icon;
   int icon_index;
-  // The app model id for the shortcut (Win7+).
+  // The app model id for the shortcut.
   string16 app_id;
   // Whether this is a dual mode shortcut (Win8+).
   bool dual_mode;
