@@ -23,7 +23,7 @@
   `);
 
   function dumpVisibleMessages() {
-    var menuText = Console.ConsoleView.instance()._filter._levelMenuButton.text();
+    var menuText = Console.ConsoleView.instance()._filter._levelMenuButton._text;
     TestRunner.addResult('Level menu: ' + menuText);
 
     var messages = Console.ConsoleView.instance()._visibleViewMessages;
