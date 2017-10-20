@@ -38,11 +38,11 @@
           minDecibels: -50,
           floatRelError: 9.6549e-7,
         },
-        {order: 6, floatRelError: 7.3494e-6},
+        {order: 6, floatRelError: 1.0084e-5},
         {order: 7, floatRelError: 1.5645e-6},
         {order: 8, floatRelError: 8.4828e-7},
         {order: 9, floatRelError: 2.3906e-5},
-        {order: 10, floatRelError: 2.0483e-5},
+        {order: 10, floatRelError: 2.9771e-5},
         {order: 11, floatRelError: 1.3456e-5},
         {order: 12, floatRelError: 4.6116e-7},
         {order: 13, floatRelError: 3.2106e-7},
@@ -68,7 +68,7 @@
       audit.define('no smoothing', (task, should) => {
         // Use 128-point FFT for the test.  The actual order doesn't matter (but
         // the error threshold depends on the order).
-        let options = {order: 7, smoothing: 0, floatRelError: 1.2548e-6};
+        let options = {order: 7, smoothing: 0, floatRelError: 1.5684e-6};
         let graph = createGraph(options);
         let context = graph.context;
         let analyser = graph.analyser;
