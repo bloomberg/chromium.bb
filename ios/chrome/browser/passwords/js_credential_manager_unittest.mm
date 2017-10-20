@@ -88,7 +88,7 @@ TEST_F(JsCredentialManagerTest, ResolveWithFederatedCredential) {
   credential.id = base::ASCIIToUTF16("test@google.com");
   credential.name = base::ASCIIToUTF16("Test User");
   credential.icon = GURL(base::ASCIIToUTF16(kTestIconUrl));
-  credential.federation = url::Origin(GURL(kTestWebOrigin));
+  credential.federation = url::Origin::Create(GURL(kTestWebOrigin));
   ResolveCredentialPromiseWithCredentialInfo(web_state(), 3, credential);
   // Wait for Promise to be resolved before checking the values.
   WaitForCondition(^{

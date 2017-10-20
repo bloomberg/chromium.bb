@@ -826,7 +826,7 @@ void TapEdit() {
   federated.origin = GURL("https://example.com");
   federated.signon_realm = federated.origin.spec();
   federated.federation_origin =
-      url::Origin(GURL("https://famous.provider.net"));
+      url::Origin::Create(GURL("https://famous.provider.net"));
   SaveToPasswordStore(federated);
 
   OpenPasswordSettings();
@@ -975,7 +975,7 @@ void TapEdit() {
   federated.origin = GURL("https://example.com");
   federated.signon_realm = federated.origin.spec();
   federated.federation_origin =
-      url::Origin(GURL("https://famous.provider.net"));
+      url::Origin::Create(GURL("https://famous.provider.net"));
   SaveToPasswordStore(federated);
 
   OpenPasswordSettings();

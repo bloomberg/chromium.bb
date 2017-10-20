@@ -77,7 +77,9 @@ class TestSearchEngineDelegate
  public:
   base::string16 GetDSEName() override { return base::string16(); }
 
-  url::Origin GetDSEOrigin() override { return url::Origin(GURL(kDSETestUrl)); }
+  url::Origin GetDSEOrigin() override {
+    return url::Origin::Create(GURL(kDSETestUrl));
+  }
 
   void SetDSEChangedCallback(const base::Closure& callback) override {}
 

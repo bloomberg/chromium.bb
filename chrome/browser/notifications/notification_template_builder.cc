@@ -95,7 +95,8 @@ base::string16 NotificationTemplateBuilder::GetNotificationTemplate() const {
 std::string NotificationTemplateBuilder::FormatOrigin(
     const GURL& origin) const {
   base::string16 origin_string = url_formatter::FormatOriginForSecurityDisplay(
-      url::Origin(origin), url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+      url::Origin::Create(origin),
+      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
   DCHECK(origin_string.size());
 
   return base::UTF16ToUTF8(origin_string);

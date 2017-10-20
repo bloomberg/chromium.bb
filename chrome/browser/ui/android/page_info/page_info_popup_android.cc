@@ -174,7 +174,7 @@ base::Optional<ContentSetting> PageInfoPopupAndroid::GetSettingToDisplay(
   if (permission.type == CONTENT_SETTINGS_TYPE_GEOLOCATION) {
     if (search_geolocation_service_ &&
         search_geolocation_service_->UseDSEGeolocationSetting(
-            url::Origin(url_))) {
+            url::Origin::Create(url_))) {
       return search_geolocation_service_->GetDSEGeolocationSetting()
                  ? CONTENT_SETTING_ALLOW
                  : CONTENT_SETTING_BLOCK;

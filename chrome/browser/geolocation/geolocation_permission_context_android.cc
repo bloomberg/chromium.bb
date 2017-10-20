@@ -120,9 +120,8 @@ ContentSetting GeolocationPermissionContextAndroid::GetPermissionStatusInternal(
           profile()->GetOriginalProfile());
     }
 
-    if (search_helper &&
-        search_helper->UseDSEGeolocationSetting(
-            url::Origin(embedding_origin))) {
+    if (search_helper && search_helper->UseDSEGeolocationSetting(
+                             url::Origin::Create(embedding_origin))) {
       if (!search_helper->GetDSEGeolocationSetting()) {
         // If the DSE setting is off, always return BLOCK.
         value = CONTENT_SETTING_BLOCK;

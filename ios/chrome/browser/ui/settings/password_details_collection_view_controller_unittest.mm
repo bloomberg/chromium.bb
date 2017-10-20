@@ -207,7 +207,8 @@ TEST_F(PasswordDetailsCollectionViewControllerTest,
   constexpr int kFederatedDeleteButtonItem = 0;
 
   form_.password_value.clear();
-  form_.federation_origin = url::Origin(GURL("https://famous.provider.net"));
+  form_.federation_origin =
+      url::Origin::Create(GURL("https://famous.provider.net"));
   CreateController();
   CheckController();
   EXPECT_EQ(4, NumberOfSections());
