@@ -41,14 +41,10 @@ SearchResourceManager::SearchResourceManager(Profile* profile,
       speech_ui_(speech_ui),
       is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()) {
   speech_ui_->AddObserver(this);
-
-  if (is_fullscreen_app_list_enabled_) {
-    search_box_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME));
-  } else {
-    search_box_->SetAccessibleName(
-        l10n_util::GetStringUTF16(IDS_SEARCH_BOX_HINT));
-  }
+  // Give |SearchBoxModel| tablet and clamshell A11y Announcements.
+  search_box_->SetTabletAndClamshellAccessibleName(
+      l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME_TABLET),
+      l10n_util::GetStringUTF16(IDS_SEARCH_BOX_ACCESSIBILITY_NAME));
   OnSpeechRecognitionStateChanged(speech_ui_->state());
 }
 

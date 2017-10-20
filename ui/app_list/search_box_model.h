@@ -58,8 +58,15 @@ class APP_LIST_EXPORT SearchBoxModel {
   void SetHintText(const base::string16& hint_text);
   const base::string16& hint_text() const { return hint_text_; }
 
-  // Sets/gets the text for screen readers on the search box.
-  void SetAccessibleName(const base::string16& accessible_name);
+  // Sets the text for screen readers on the search box, and updates the
+  // |accessible_name_|.
+  void SetTabletAndClamshellAccessibleName(
+      base::string16 tablet_accessible_name,
+      base::string16 clamshell_accessible_name);
+
+  // Changes the accessible name to clamshell or tablet friendly based on tablet
+  // mode.
+  void UpdateAccessibleName();
   const base::string16& accessible_name() const { return accessible_name_; }
 
   // Sets/gets the selection model for the search box's Textfield.
@@ -67,6 +74,8 @@ class APP_LIST_EXPORT SearchBoxModel {
   const gfx::SelectionModel& selection_model() const {
     return selection_model_;
   }
+
+  void SetTabletMode(bool started);
 
   // Sets/gets the text for the search box's Textfield and the voice search
   // flag.
@@ -80,10 +89,13 @@ class APP_LIST_EXPORT SearchBoxModel {
  private:
   std::unique_ptr<SpeechButtonProperty> speech_button_;
   base::string16 hint_text_;
+  base::string16 tablet_accessible_name_;
+  base::string16 clamshell_accessible_name_;
   base::string16 accessible_name_;
   gfx::SelectionModel selection_model_;
   base::string16 text_;
-  bool is_voice_query_ = false;
+  bool is_voice_query_;
+  bool is_tablet_mode_;
 
   base::ObserverList<SearchBoxModelObserver> observers_;
 

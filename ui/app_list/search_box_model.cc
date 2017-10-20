@@ -22,16 +22,14 @@ SearchBoxModel::SpeechButtonProperty::SpeechButtonProperty(
       on_tooltip(on_tooltip),
       off_icon(off_icon),
       off_tooltip(off_tooltip),
-      accessible_name(accessible_name) {
-}
+      accessible_name(accessible_name) {}
 
-SearchBoxModel::SpeechButtonProperty::~SpeechButtonProperty() {
-}
+SearchBoxModel::SpeechButtonProperty::~SpeechButtonProperty() {}
 
-SearchBoxModel::SearchBoxModel() {}
+SearchBoxModel::SearchBoxModel()
+    : is_voice_query_(false), is_tablet_mode_(false) {}
 
-SearchBoxModel::~SearchBoxModel() {
-}
+SearchBoxModel::~SearchBoxModel() {}
 
 void SearchBoxModel::SetSpeechRecognitionButton(
     std::unique_ptr<SearchBoxModel::SpeechButtonProperty> speech_button) {
@@ -51,11 +49,18 @@ void SearchBoxModel::SetHintText(const base::string16& hint_text) {
     observer.HintTextChanged();
 }
 
-void SearchBoxModel::SetAccessibleName(const base::string16& accessible_name) {
-  if (accessible_name_ == accessible_name)
-    return;
+void SearchBoxModel::SetTabletAndClamshellAccessibleName(
+    base::string16 tablet_accessible_name,
+    base::string16 clamshell_accessible_name) {
+  tablet_accessible_name_ = tablet_accessible_name;
+  clamshell_accessible_name_ = clamshell_accessible_name;
+  UpdateAccessibleName();
+}
 
-  accessible_name_ = accessible_name;
+void SearchBoxModel::UpdateAccessibleName() {
+  accessible_name_ =
+      is_tablet_mode_ ? tablet_accessible_name_ : clamshell_accessible_name_;
+
   for (auto& observer : observers_)
     observer.HintTextChanged();
 }
@@ -67,6 +72,13 @@ void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
   selection_model_ = sel;
   for (auto& observer : observers_)
     observer.SelectionModelChanged();
+}
+
+void SearchBoxModel::SetTabletMode(bool started) {
+  if (started == is_tablet_mode_)
+    return;
+  is_tablet_mode_ = started;
+  UpdateAccessibleName();
 }
 
 void SearchBoxModel::Update(const base::string16& text, bool is_voice_query) {
