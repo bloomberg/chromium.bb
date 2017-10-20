@@ -297,6 +297,10 @@ ManagePasswordsBubbleModel::ManagePasswordsBubbleModel(
     hide_eye_icon_ = delegate_->BubbleIsManualFallbackForSaving()
                          ? pending_password_.form_has_autofilled_value
                          : display_reason == USER_ACTION;
+    enable_editing_ = delegate_->GetCredentialSource() !=
+                      password_manager::metrics_util::CredentialSourceType::
+                          kCredentialManagementAPI;
+
     UpdatePendingStateTitle();
   } else if (state_ == password_manager::ui::CONFIRMATION_STATE) {
     title_ =

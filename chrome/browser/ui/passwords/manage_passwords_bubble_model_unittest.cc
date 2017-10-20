@@ -275,6 +275,8 @@ TEST_F(ManagePasswordsBubbleModelTest, CloseWithoutInteraction) {
 TEST_F(ManagePasswordsBubbleModelTest, ClickSave) {
   PretendPasswordWaiting();
 
+  EXPECT_TRUE(model()->enable_editing());
+
   EXPECT_CALL(*GetStore(), RemoveSiteStatsImpl(GURL(kSiteOrigin).GetOrigin()));
   EXPECT_CALL(*controller(), SavePassword(GetPendingPassword().username_value,
                                           GetPendingPassword().password_value));
@@ -667,4 +669,21 @@ TEST_F(ManagePasswordsBubbleModelTest, EyeIcon) {
       }
     }
   }
+}
+
+TEST_F(ManagePasswordsBubbleModelTest, DisableEditing) {
+  autofill::PasswordForm form = GetPendingPassword();
+  EXPECT_CALL(*controller(), GetPendingPassword()).WillOnce(ReturnRef(form));
+  password_manager::InteractionsStats stats = GetTestStats();
+  EXPECT_CALL(*controller(), GetCurrentInteractionStats())
+      .WillOnce(Return(&stats));
+  EXPECT_CALL(*controller(), BubbleIsManualFallbackForSaving())
+      .WillOnce(Return(false));
+
+  EXPECT_CALL(*controller(), GetCredentialSource())
+      .WillOnce(Return(password_manager::metrics_util::CredentialSourceType::
+                           kCredentialManagementAPI));
+  SetUpWithState(password_manager::ui::PENDING_PASSWORD_STATE,
+                 ManagePasswordsBubbleModel::AUTOMATIC);
+  EXPECT_FALSE(model()->enable_editing());
 }
