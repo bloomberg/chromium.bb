@@ -102,13 +102,9 @@ void MessageCenterDisplayService::Display(
 
   // If there's no delegate, replace it with a PassThroughDelegate so clicks
   // go back to the appropriate handler.
-  message_center::Notification notification_with_delegate(
-      notification.type(), notification.id(), notification.title(),
-      notification.message(), notification.icon(),
-      notification.display_source(), notification.origin_url(),
-      notification.notifier_id(), notification.rich_notification_data(),
-      base::WrapRefCounted(
-          new PassThroughDelegate(profile_, notification, notification_type)));
+  message_center::Notification notification_with_delegate(notification);
+  notification_with_delegate.set_delegate(base::WrapRefCounted(
+      new PassThroughDelegate(profile_, notification, notification_type)));
   ui_manager->Add(notification_with_delegate, profile_);
 }
 

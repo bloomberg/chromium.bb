@@ -43,8 +43,8 @@ declare_args() {
   enable_hotwording = false
 
   # Enables usage of the system-provided notification center.
-  enable_native_notifications =
-      is_android || is_mac || is_win || (is_desktop_linux && use_dbus)
+  enable_native_notifications = is_android || is_mac || is_win ||
+                                (is_desktop_linux && use_dbus) || is_chromeos
 
   # Whether we should draw the minimize, maximize/restore, and close
   # buttons using the system theme.  Only used on Linux with GTK3.

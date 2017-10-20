@@ -13,6 +13,7 @@
 #include "ash/ime/ime_controller.h"
 #include "ash/login/lock_screen_controller.h"
 #include "ash/media_controller.h"
+#include "ash/message_center/message_center_controller.h"
 #include "ash/new_window_controller.h"
 #include "ash/note_taking_controller.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -53,6 +54,11 @@ void BindAppListRequestOnMainThread(
 void BindAshDisplayControllerRequestOnMainThread(
     mojom::AshDisplayControllerRequest request) {
   Shell::Get()->ash_display_controller()->BindRequest(std::move(request));
+}
+
+void BindAshMessageCenterControllerRequestOnMainThread(
+    mojom::AshMessageCenterControllerRequest request) {
+  Shell::Get()->message_center_controller()->BindRequest(std::move(request));
 }
 
 void BindCastConfigOnMainThread(mojom::CastConfigRequest request) {
@@ -146,6 +152,9 @@ void RegisterInterfaces(
                          main_thread_task_runner);
   registry->AddInterface(
       base::Bind(&BindAshDisplayControllerRequestOnMainThread),
+      main_thread_task_runner);
+  registry->AddInterface(
+      base::Bind(&BindAshMessageCenterControllerRequestOnMainThread),
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindCastConfigOnMainThread),
                          main_thread_task_runner);

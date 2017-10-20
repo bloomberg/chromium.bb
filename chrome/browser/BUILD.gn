@@ -2743,6 +2743,13 @@ split_static_library("browser") {
       "//components/metrics/leak_detector:leak_detector",
     ]
     allow_circular_includes_from += [ "//chrome/browser/chromeos" ]
+
+    if (enable_native_notifications) {
+      sources += [
+        "notifications/notification_platform_bridge_chromeos.cc",
+        "notifications/notification_platform_bridge_chromeos.h",
+      ]
+    }
   } else {  # Non-ChromeOS.
     sources += [
       "policy/cloud/user_cloud_policy_manager_factory.cc",

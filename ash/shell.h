@@ -372,7 +372,9 @@ class ASH_EXPORT Shell : public SessionObserver,
     return magnification_controller_.get();
   }
   MediaController* media_controller() { return media_controller_.get(); }
-  UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
+  MessageCenterController* message_center_controller() {
+    return message_center_controller_.get();
+  }
   MouseCursorEventFilter* mouse_cursor_filter() {
     return mouse_cursor_filter_.get();
   }
@@ -448,6 +450,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   TrayBluetoothHelper* tray_bluetooth_helper() {
     return tray_bluetooth_helper_.get();
   }
+  UserMetricsRecorder* metrics() { return user_metrics_recorder_.get(); }
   VideoDetector* video_detector() { return video_detector_.get(); }
   VirtualKeyboardController* virtual_keyboard_controller() {
     return virtual_keyboard_controller_.get();
