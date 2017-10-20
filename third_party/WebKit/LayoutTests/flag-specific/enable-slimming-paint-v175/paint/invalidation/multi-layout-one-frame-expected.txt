@@ -1,0 +1,67 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'PASSED'",
+          "rect": [168, 11, 53, 16],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'PASSED'",
+          "rect": [10, 11, 53, 16],
+          "reason": "appeared"
+        },
+        {
+          "object": "InlineTextBox 'FAILED'",
+          "rect": [168, 11, 46, 16],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox 'FAILED'",
+          "rect": [10, 11, 46, 16],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASSED'",
+      "reason": "full"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "full"
+    },
+    {
+      "object": "InlineTextBox 'PASSED'",
+      "reason": "full"
+    }
+  ]
+}
+

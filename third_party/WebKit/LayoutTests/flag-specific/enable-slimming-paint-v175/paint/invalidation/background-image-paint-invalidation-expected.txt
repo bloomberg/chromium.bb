@@ -1,0 +1,33 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [808, 2016],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 808, 2016],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 800, 2000],
+          "reason": "appeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "style change"
+    }
+  ]
+}
+

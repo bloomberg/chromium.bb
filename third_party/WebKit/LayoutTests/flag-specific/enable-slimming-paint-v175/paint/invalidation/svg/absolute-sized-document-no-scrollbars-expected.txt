@@ -1,0 +1,42 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 800, 600],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [-1, -1, 578, 434],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [-1, -1, 482, 362],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGRect rect",
+      "reason": "style change"
+    }
+  ]
+}
+

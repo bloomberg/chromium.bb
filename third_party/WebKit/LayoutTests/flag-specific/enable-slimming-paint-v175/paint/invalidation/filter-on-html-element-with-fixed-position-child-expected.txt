@@ -1,0 +1,69 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [785, 10016],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 785, 10016],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [8, 8, 200, 10000],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 110, 100, 100],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [100, 100, 100, 100],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [8, 18, 100, 100],
+          "reason": "paint property change"
+        },
+        {
+          "object": "LayoutBlockFlow (positioned) DIV",
+          "rect": [8, 8, 100, 100],
+          "reason": "paint property change"
+        }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -10, 0, 1]
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "invalidate paint rectangle"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV",
+      "reason": "subtree"
+    }
+  ]
+}
+

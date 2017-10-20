@@ -1,0 +1,45 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutTextControl INPUT id='target'",
+          "rect": [7, 7, 66, 24],
+          "reason": "subtree"
+        },
+        {
+          "object": "LayoutBlockFlow DIV id='inner-editor'",
+          "rect": [10, 11, 60, 16],
+          "reason": "paint property change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutTextControl INPUT id='target'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='inner-editor'",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'test test test'",
+      "reason": "subtree"
+    }
+  ]
+}
+

@@ -1,0 +1,61 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow (positioned) UL id='submenu'",
+          "rect": [48, 94, 40, 20],
+          "reason": "disappeared"
+        },
+        {
+          "object": "LayoutListMarker (anonymous)",
+          "rect": [70, 94, 7, 19],
+          "reason": "disappeared"
+        }
+      ]
+    },
+    {
+      "name": "LayoutListItem (floating) LI id='watches'",
+      "position": [30, 44],
+      "bounds": [25, 19]
+    },
+    {
+      "name": "LayoutInline (relative positioned) SPAN id='placeholder'",
+      "position": [48, 44],
+      "drawsContent": false,
+      "backfaceVisibility": "hidden"
+    },
+    {
+      "name": "LayoutListItem (relative positioned) (floating) LI id='menu'",
+      "position": [30, 44],
+      "bounds": [18, 19]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutListMarker (anonymous)",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) UL id='submenu'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutListItem LI",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutListMarker (anonymous)",
+      "reason": "geometry"
+    }
+  ]
+}
+

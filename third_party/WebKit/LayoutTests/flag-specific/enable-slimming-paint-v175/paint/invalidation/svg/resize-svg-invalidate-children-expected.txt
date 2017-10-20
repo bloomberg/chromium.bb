@@ -1,0 +1,37 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [58, 58, 100, 100],
+          "reason": "appeared"
+        },
+        {
+          "object": "LayoutSVGRoot svg",
+          "rect": [33, 33, 50, 50],
+          "reason": "disappeared"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutSVGRoot svg",
+      "reason": "geometry"
+    }
+  ]
+}
+

@@ -1,0 +1,38 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='scroller'",
+      "position": [8, 8],
+      "bounds": [302, 302],
+      "backfaceVisibility": "hidden",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV id='scroller'",
+          "rect": [0, 0, 302, 302],
+          "reason": "full layer"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutBlockFlow DIV id='scroller'",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow DIV id='target'",
+      "reason": "subtree"
+    }
+  ]
+}
+

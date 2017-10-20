@@ -1,0 +1,129 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [600, 250],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 600, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 300, 125],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 250],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 300, 63],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 200, 250],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 400, 350],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [0, 0, 200, 150],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "geometry"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 400, 600],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow DIV",
+          "rect": [200, 0, 200, 150],
+          "reason": "incremental"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow DIV",
+      "reason": "incremental"
+    }
+  ]
+}
+

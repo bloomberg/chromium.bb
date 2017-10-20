@@ -1,0 +1,101 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [1250, 585],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [1250, 0, 250, 585],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [704, 0, 214, 232],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [454, 0, 214, 232],
+          "reason": "geometry"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [0, 0, 214, 232],
+          "reason": "disappeared"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [700, 217, 4, 19],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox '\n'",
+          "rect": [450, 217, 4, 19],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow (positioned) DIV id='shiftMe'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox '\n'",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='imageWrapper'",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    }
+  ]
+}
+

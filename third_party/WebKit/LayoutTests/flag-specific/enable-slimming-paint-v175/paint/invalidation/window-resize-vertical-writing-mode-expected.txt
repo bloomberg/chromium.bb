@@ -1,0 +1,402 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [939, 235],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "full layer"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 600, 500],
+          "reason": "full"
+        }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [-339, 0, 0, 1]
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'AAAA'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'BBBB'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'CCCC'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'DDDD'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'EEEE'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'FFFF'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'GGGG'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'HHHH'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'IIII JJJJ'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'KKKK'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'LLLL'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'MMMM'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "subtree"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [939, 235],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "full layer"
+        }
+      ],
+      "transform": 1
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [-539, 0, 0, 1]
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'AAAA'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'BBBB'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'CCCC'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'DDDD'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'EEEE'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'FFFF'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'GGGG'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'HHHH'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'IIII JJJJ'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'KKKK'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'LLLL'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'MMMM'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "subtree"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 939, 235],
+          "reason": "full"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 0, 400, 600],
+          "reason": "full layer"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "subtree"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "subtree"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'AAAA BBBB CCCC'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'DDDD EEEE FFFF'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'KKKK LLLL MMMM'",
+      "reason": "subtree"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "subtree"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF",
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 400, 600],
+          "reason": "incremental"
+        },
+        {
+          "object": "InlineTextBox 'AAAA BBBB CCCC'",
+          "rect": [439, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'DDDD EEEE FFFF'",
+          "rect": [439, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+          "rect": [439, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'KKKK LLLL MMMM'",
+          "rect": [439, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'NNNN'",
+          "rect": [439, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'AAAA BBBB CCCC'",
+          "rect": [39, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'DDDD EEEE FFFF'",
+          "rect": [39, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+          "rect": [39, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'KKKK LLLL MMMM'",
+          "rect": [39, 7, 352, 563],
+          "reason": "geometry"
+        },
+        {
+          "object": "InlineTextBox 'NNNN'",
+          "rect": [39, 7, 352, 563],
+          "reason": "geometry"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "geometry"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "geometry"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'AAAA BBBB CCCC'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'DDDD EEEE FFFF'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'GGGG HHHH IIII JJJJ'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'KKKK LLLL MMMM'",
+      "reason": "geometry"
+    },
+    {
+      "object": "InlineTextBox 'NNNN'",
+      "reason": "geometry"
+    }
+  ]
+}
+

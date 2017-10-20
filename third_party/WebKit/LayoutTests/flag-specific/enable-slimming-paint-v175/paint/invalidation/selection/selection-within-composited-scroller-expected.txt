@@ -1,0 +1,385 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "backgroundColor": "#FFFFFF"
+    },
+    {
+      "name": "LayoutBlockFlow DIV id='scroller'",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "backgroundColor": "#D3D3D3"
+    },
+    {
+      "name": "Scrolling Layer",
+      "position": [8, 8],
+      "bounds": [185, 185],
+      "drawsContent": false
+    },
+    {
+      "name": "Scrolling Contents Layer",
+      "position": [8, 8],
+      "bounds": [200, 1620],
+      "contentsOpaque": true,
+      "backgroundColor": "#D3D3D3",
+      "paintInvalidations": [
+        {
+          "object": "InlineTextBox 'test'",
+          "rect": [0, 610, 22, 19],
+          "reason": "selection"
+        }
+      ],
+      "underPaintInvalidations": [
+        {
+          "x": 8,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 9,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 10,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 11,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 12,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 13,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 14,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 15,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 16,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 17,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 18,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 19,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 20,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 21,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 22,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 23,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 24,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 25,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 26,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 27,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 28,
+          "y": 168,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 8,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 9,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 10,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 11,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 12,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 13,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 14,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 15,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 16,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 17,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 18,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 19,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 20,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 21,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 22,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 23,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 24,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 25,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 26,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 27,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 28,
+          "y": 169,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 8,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 9,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 10,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 11,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 12,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 13,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 14,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        },
+        {
+          "x": 15,
+          "y": 170,
+          "oldPixel": "#ADD8E6",
+          "newPixel": "#222BFA"
+        }
+      ],
+      "transform": 1
+    },
+    {
+      "name": "Overflow Controls Host Layer",
+      "position": [8, 8],
+      "bounds": [200, 200],
+      "drawsContent": false
+    },
+    {
+      "name": "Horizontal Scrollbar Layer",
+      "position": [8, 193],
+      "bounds": [185, 15],
+      "drawsContent": false
+    },
+    {
+      "name": "Vertical Scrollbar Layer",
+      "position": [193, 8],
+      "bounds": [15, 185],
+      "drawsContent": false
+    },
+    {
+      "name": "Scroll Corner Layer",
+      "position": [193, 193],
+      "bounds": [15, 15]
+    }
+  ],
+  "transforms": [
+    {
+      "id": 1,
+      "transform": [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [0, -450, 0, 1]
+      ],
+      "flattenInheritedTransform": false
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutText #text",
+      "reason": "selection"
+    },
+    {
+      "object": "InlineTextBox 'test'",
+      "reason": "selection"
+    }
+  ]
+}
+
