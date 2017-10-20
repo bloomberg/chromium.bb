@@ -39,6 +39,7 @@ class PolicyToolUITest : public InProcessBrowserTest {
   base::FilePath GetSessionPath(const base::FilePath::StringType& session_name);
 
   void LoadSession(const std::string& session_name);
+  void DeleteSession(const std::string& session_name);
 
   std::unique_ptr<base::DictionaryValue> ExtractPolicyValues(bool need_status);
 
@@ -54,6 +55,7 @@ class PolicyToolUITest : public InProcessBrowserTest {
   // element are shown).
   int GetElementDisabledState(const std::string& element_id,
                               const std::string& error_message_id);
+  std::string ExtractSinglePolicyValue(const std::string& policy_name);
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -98,6 +100,15 @@ void PolicyToolUITest::LoadSession(const std::string& session_name) {
                                  session_name +
                                  "';"
                                  "$('load-session-button').click();";
+  EXPECT_TRUE(content::ExecuteScript(
+      browser()->tab_strip_model()->GetActiveWebContents(), javascript));
+  content::RunAllTasksUntilIdle();
+}
+
+void PolicyToolUITest::DeleteSession(const std::string& session_name) {
+  const std::string javascript = "$('session-list').value = '" + session_name +
+                                 "';"
+                                 "$('delete-session-button').click();";
   EXPECT_TRUE(content::ExecuteScript(
       browser()->tab_strip_model()->GetActiveWebContents(), javascript));
   content::RunAllTasksUntilIdle();
@@ -195,6 +206,20 @@ int PolicyToolUITest::GetElementDisabledState(
   int result = 0;
   EXPECT_TRUE(ExecuteScriptAndExtractInt(contents, javascript, &result));
   return result;
+}
+
+std::string PolicyToolUITest::ExtractSinglePolicyValue(
+    const std::string& session_name) {
+  std::unique_ptr<base::DictionaryValue> page_contents =
+      ExtractPolicyValues(/*need_status=*/false);
+  if (!page_contents)
+    return "";
+
+  base::Value* value =
+      page_contents->FindPath({"chromePolicies", session_name, "value"});
+  EXPECT_TRUE(value);
+  EXPECT_EQ(base::Value::Type::STRING, value->type());
+  return value->GetString();
 }
 
 IN_PROC_BROWSER_TEST_F(PolicyToolUITest, CreatingSessionFiles) {
@@ -384,4 +409,22 @@ IN_PROC_BROWSER_TEST_F(PolicyToolUITest, SessionsList) {
     expected.GetList().push_back(base::Value(base::IntToString(i)));
   }
   EXPECT_EQ(expected, *sessions);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyToolUITest, DeleteSession) {
+  CreateMultipleSessionFiles(3);
+  ui_test_utils::NavigateToURL(browser(), GURL("chrome://policy-tool"));
+  EXPECT_EQ("2", ExtractSinglePolicyValue("SessionId"));
+
+  // Check that a non-current session is deleted correctly.
+  DeleteSession("0");
+  base::ListValue expected;
+  expected.GetList().push_back(base::Value("2"));
+  expected.GetList().push_back(base::Value("1"));
+  EXPECT_EQ(expected, *ExtractSessionsList());
+
+  // Check that a current when the current session is deleted,
+  DeleteSession("2");
+  expected.GetList().erase(expected.GetList().begin());
+  EXPECT_EQ(expected, *ExtractSessionsList());
 }
