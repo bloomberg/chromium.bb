@@ -1,0 +1,37 @@
+This is a testharness.js-based test.
+PASS Constructing a CSSSkew with a keyword throws a TypeError
+PASS Constructing a CSSSkew with a double throws a TypeError
+PASS Constructing a CSSSkew with a unitless zero throws a TypeError
+PASS Constructing a CSSSkew with a string angle throws a TypeError
+FAIL Constructing a CSSSkew with a number CSSUnitValue throws a TypeError assert_throws: function "() => new CSSSkew(value, CSS.deg(0))" did not throw
+FAIL Constructing a CSSSkew with a time dimension CSSUnitValue throws a TypeError assert_throws: function "() => new CSSSkew(value, CSS.deg(0))" did not throw
+PASS Updating CSSSkew.ax with a keyword throws a TypeError
+PASS Updating CSSSkew.ax with a double throws a TypeError
+PASS Updating CSSSkew.ax with a unitless zero throws a TypeError
+PASS Updating CSSSkew.ax with a string angle throws a TypeError
+PASS Updating CSSSkew.ax with a number CSSUnitValue throws a TypeError
+PASS Updating CSSSkew.ax with a time dimension CSSUnitValue throws a TypeError
+PASS Updating CSSSkew.ay with a keyword throws a TypeError
+PASS Updating CSSSkew.ay with a double throws a TypeError
+PASS Updating CSSSkew.ay with a unitless zero throws a TypeError
+PASS Updating CSSSkew.ay with a string angle throws a TypeError
+PASS Updating CSSSkew.ay with a number CSSUnitValue throws a TypeError
+PASS Updating CSSSkew.ay with a time dimension CSSUnitValue throws a TypeError
+PASS CSSSkew can be constructed from a positive degree angle and a positive degree angle
+PASS CSSSkew can be constructed from a positive degree angle and a zero degree angle
+PASS CSSSkew can be constructed from a positive degree angle and a negative radian angle
+PASS CSSSkew can be constructed from a zero degree angle and a positive degree angle
+PASS CSSSkew can be constructed from a zero degree angle and a zero degree angle
+PASS CSSSkew can be constructed from a zero degree angle and a negative radian angle
+PASS CSSSkew can be constructed from a negative radian angle and a positive degree angle
+PASS CSSSkew can be constructed from a negative radian angle and a zero degree angle
+PASS CSSSkew can be constructed from a negative radian angle and a negative radian angle
+PASS CSSSkew.ax can be updated to a positive degree angle
+PASS CSSSkew.ax can be updated to a zero degree angle
+PASS CSSSkew.ax can be updated to a negative radian angle
+PASS CSSSkew.ay can be updated to a positive degree angle
+PASS CSSSkew.ay can be updated to a zero degree angle
+PASS CSSSkew.ay can be updated to a negative radian angle
+PASS Modifying CSSSkew.is2D is a no-op
+Harness: the test ran to completion.
+

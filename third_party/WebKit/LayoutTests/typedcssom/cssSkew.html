@@ -59,34 +59,9 @@ var testParams = [
 
 for (let params of testParams) {
   test(() => {
-    assert_approx_equals(params.input.ax.value, params.ax.value, EPSILON);
-    assert_equals(params.input.ax.unit, params.ax.unit);
-    assert_approx_equals(params.input.ay.value, params.ay.value, EPSILON);
-    assert_equals(params.input.ay.unit, params.ay.unit);
-  }, "(ax, ay) values are correct for " + params.cssText);
-}
-
-for (let params of testParams) {
-  test(() => {
-    assert_true(params.input.is2D);
-  }, "is2D value is correct for " + params.cssText);
-}
-
-for (let params of testParams) {
-  test(() => {
     assert_equals(params.input.toString(), params.cssText);
   }, "toString is correct for " + params.cssText);
 }
-
-test(() => {
-  assert_throws(new TypeError(), () => { new CSSSkew(); });
-  assert_throws(new TypeError(), () => { new CSSSkew(null); });
-  assert_throws(new TypeError(), () => { new CSSSkew(1); });
-  assert_throws(new TypeError(), () => { new CSSSkew('1'); });
-  assert_throws(new TypeError(), () => {
-    new CSSSkew(new CSSUnitValue(1, 'deg'));
-  });
-}, "Invalid arguments to constructor throws an exception.");
 
 for (let params of testParams) {
   test(() => {
@@ -101,43 +76,5 @@ for (let params of testParams) {
     assert_matrix_approx_equals(inputAsMatrix, expectedMatrix, EPSILON);
   }, "asMatrix is constructed correctly for " + params.cssText);
 }
-
-test(() => {
-  var skew = new CSSSkew(
-      new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg'));
-  skew.ax = new CSSUnitValue(3, 'deg');
-  skew.ay = new CSSUnitValue(3, 'rad');
-
-  assert_equals(skew.ax.value, 3);
-  assert_equals(skew.ay.value, 3);
-  assert_equals(skew.ax.unit, 'deg');
-  assert_equals(skew.ay.unit, 'rad');
-}, "Setting ax and ay with valid CSSUnitValues");
-
-for (let a of ['ax', 'ay']) {
-  test(() => {
-    var skew = new CSSSkew(
-        new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg'));
-    assert_throws(new TypeError(), () => {
-      skew[a] = new CSSUnitValue(1, 'px');
-    });
-    assert_throws(new TypeError(), () => {
-      skew[a] = 'bananas';
-    });
-    assert_throws(new TypeError(), () => {
-      skew[a] = null;
-    });
-  }, "Setting " + a + " with invalid values");
-}
-
-test(() => {
-  let skew = new CSSSkew(
-      new CSSUnitValue(1, 'deg'), new CSSUnitValue(2, 'deg'));
-  assert_true(skew.is2D);
-
-  skew.is2D = false;
-
-  assert_true(skew.is2D);
-}, "Setting is2D does nothing");
 
 </script>
