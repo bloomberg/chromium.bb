@@ -11,10 +11,8 @@
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-using policy::off_hours::WeeklyTime;
-using policy::off_hours::OffHoursInterval;
+namespace policy {
+namespace off_hours {
 
 namespace {
 
@@ -182,4 +180,5 @@ INSTANTIATE_TEST_CASE_P(RandomInterval,
                                                         14 * kMinutesInHour,
                                                         false)));
 
-}  // namespace chromeos
+}  // namespace off_hours
+}  // namespace policy
