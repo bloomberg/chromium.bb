@@ -117,52 +117,38 @@ size_t NGOffsetMappingResult::GetTextContentOffset(const Node& node,
   return unit->ConvertDOMOffsetToTextContent(offset);
 }
 
-unsigned NGOffsetMappingResult::StartOfNextNonCollapsedCharacter(
+Optional<unsigned> NGOffsetMappingResult::StartOfNextNonCollapsedCharacter(
     const Node& node,
     unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
-  if (!unit) {
-    // It is possible for a fully collapsed whitespace text node to not have a
-    // LayoutObject, in which case it is not in the offset mapping.
-    if (node.IsTextNode())
-      return ToText(node).length();
-    NOTREACHED() << node << "@" << offset;
-    return offset;
-  }
+  if (!unit)
+    return {};
 
-  unsigned fallback = offset;
   while (unit != units_.end() && unit->GetOwner() == node) {
     if (unit->DOMEnd() > offset &&
         unit->GetType() != NGOffsetMappingUnitType::kCollapsed)
       return std::max(offset, unit->DOMStart());
-    fallback = unit->DOMEnd();
     ++unit;
   }
-  return fallback;
+  return {};
 }
 
-unsigned NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
+Optional<unsigned> NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
     const Node& node,
     unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
-  if (!unit) {
-    // It is possible for a fully collapsed whitespace text node to not have a
-    // LayoutObject, in which case it is not in the offset mapping.
-    DCHECK(node.IsTextNode()) << node << "@" << offset;
-    return 0;
-  }
+  if (!unit)
+    return {};
 
-  unsigned fallback = offset;
   while (unit->GetOwner() == node) {
     if (unit->DOMStart() < offset &&
         unit->GetType() != NGOffsetMappingUnitType::kCollapsed)
       return std::min(offset, unit->DOMEnd());
-    fallback = unit->DOMStart();
     if (unit == units_.begin())
       break;
     --unit;
   }
-  return fallback;
+  return {};
 }
 
 bool NGOffsetMappingResult::IsBeforeNonCollapsedCharacter(

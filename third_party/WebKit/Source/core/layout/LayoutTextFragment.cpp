@@ -182,13 +182,14 @@ int LayoutTextFragment::CaretMinOffset() const {
   if (!node)
     return 0;
 
-  const unsigned candidate =
+  Optional<unsigned> candidate =
       GetNGOffsetMapping().StartOfNextNonCollapsedCharacter(*node, Start());
-  DCHECK_GE(candidate, Start());
+  DCHECK(!candidate || *candidate >= Start());
   // Align with the legacy behavior that 0 is returned if the entire layout
   // object contains only collapsed whitespaces.
-  const unsigned adjusted = candidate - Start();
-  return adjusted == FragmentLength() ? 0 : adjusted;
+  const bool fully_collapsed =
+      !candidate || *candidate >= Start() + FragmentLength();
+  return fully_collapsed ? 0 : *candidate - Start();
 }
 
 int LayoutTextFragment::CaretMaxOffset() const {
@@ -199,12 +200,13 @@ int LayoutTextFragment::CaretMaxOffset() const {
   if (!node)
     return 0;
 
-  const unsigned candidate =
+  Optional<unsigned> candidate =
       GetNGOffsetMapping().EndOfLastNonCollapsedCharacter(
           *node, Start() + FragmentLength());
   // Align with the legacy behavior that FragmentLength() is returned if the
   // entire layout object contains only collapsed whitespaces.
-  return candidate <= Start() ? FragmentLength() : candidate - Start();
+  const bool fully_collapsed = !candidate || *candidate <= Start();
+  return fully_collapsed ? FragmentLength() : *candidate - Start();
 }
 
 unsigned LayoutTextFragment::ResolvedTextLength() const {

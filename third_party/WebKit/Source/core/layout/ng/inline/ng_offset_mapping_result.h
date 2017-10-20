@@ -114,17 +114,17 @@ class CORE_EXPORT NGOffsetMappingResult {
   // TODO(xiaochengh): Use Optional<> return type to indicate inexistent result.
   size_t GetTextContentOffset(const Node&, unsigned) const;
 
-  // Starting from the given DOM offset in the node, finds the first
-  // non-collapsed character and returns its offset; Or returns the last offset
-  // in the node if such a character does not exist.
-  // TODO(xiaochengh): Use Optional<> return type to indicate inexistent result.
-  unsigned StartOfNextNonCollapsedCharacter(const Node&, unsigned offset) const;
+  // Starting from the given DOM offset in the node, finds the first non-
+  // collapsed character and returns the offset before it; Or returns nullopt if
+  // such a character does not exist.
+  Optional<unsigned> StartOfNextNonCollapsedCharacter(const Node&,
+                                                      unsigned offset) const;
 
   // Starting from the given DOM offset in the node, reversely finds the first
-  // non-collapsed character and returns 1 + its offset; Or returns 0 if such a
-  // character does not exist.
-  // TODO(xiaochengh): Use Optional<> return type to indicate inexistent result.
-  unsigned EndOfLastNonCollapsedCharacter(const Node&, unsigned offset) const;
+  // non-collapsed character and returns the offset after it; Or returns nullopt
+  // if such a character does not exist.
+  Optional<unsigned> EndOfLastNonCollapsedCharacter(const Node&,
+                                                    unsigned offset) const;
 
   // Returns true if the offset is right before a non-collapsed character. If
   // the offset is at the end of the node, returns false.
