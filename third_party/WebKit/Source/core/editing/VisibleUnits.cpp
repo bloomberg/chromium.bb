@@ -770,13 +770,15 @@ static LayoutUnit BoundingBoxLogicalHeight(LayoutObject* o,
 // TODO(crbug.com/766448): Change parameter type to |const LayoutObject*|.
 bool HasRenderedNonAnonymousDescendantsWithHeight(LayoutObject* layout_object) {
   LayoutObject* stop = layout_object->NextInPreOrderAfterChildren();
+  // TODO(editing-dev): Avoid single-character parameter names.
   for (LayoutObject* o = layout_object->SlowFirstChild(); o && o != stop;
        o = o->NextInPreOrder()) {
     if (o->NonPseudoNode()) {
-      if ((o->IsText() &&
-           BoundingBoxLogicalHeight(o, ToLayoutText(o)->LinesBoundingBox())) ||
+      if ((o->IsText() && ToLayoutText(o)->HasNonCollapsedText()) ||
           (o->IsBox() && ToLayoutBox(o)->PixelSnappedLogicalHeight()) ||
           (o->IsLayoutInline() && IsEmptyInline(LineLayoutItem(o)) &&
+           // TODO(crbug.com/771398): Find alternative ways to check whether an
+           // empty LayoutInline is rendered, without checking InlineBox.
            BoundingBoxLogicalHeight(o, ToLayoutInline(o)->LinesBoundingBox())))
         return true;
     }
