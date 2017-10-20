@@ -4,6 +4,7 @@ Tests that console sidebar behaves properly.
 Running: beforeFilter
 SIDEBAR:
 > No messages
+> No user messages
 > No errors
 > No warnings
 > No info
@@ -12,6 +13,9 @@ SIDEBAR:
 Running: addLogsFromMultipleUrls
 SIDEBAR:
 > 2 messages
+> > log-source.js
+> > console-filter-sidebar.js
+> 2 user messages
 > > log-source.js
 > > console-filter-sidebar.js
 > No errors
@@ -26,6 +30,9 @@ SIDEBAR:
 > 4 messages
 > > log-source.js
 > > console-filter-sidebar.js
+> 4 user messages
+> > log-source.js
+> > console-filter-sidebar.js
 > 1 error
 > > console-filter-sidebar.js
 > 1 warning
@@ -36,15 +43,22 @@ SIDEBAR:
 > No verbose
 
 Running: selectingGroup
-Selecting item: log-source.js
+Selecting item: 4 user messages
 MESSAGES:
 log-source.js:3 Log from log-source
+console-filter-sidebar.js:14 Log from test
 log-source.js:8 Warning from log-source
 warn2 @ log-source.js:8
 (anonymous) @ console-filter-sidebar.js:48
+console-filter-sidebar.js:19 Error from test
+error1 @ console-filter-sidebar.js:19
+(anonymous) @ console-filter-sidebar.js:52
 
 SIDEBAR:
 > 4 messages
+> > log-source.js
+> > console-filter-sidebar.js
+> 4 user messages
 > > log-source.js
 > > console-filter-sidebar.js
 > 1 error
@@ -59,6 +73,7 @@ SIDEBAR:
 Running: clearConsole
 SIDEBAR:
 > No messages
+> No user messages
 > No errors
 > No warnings
 > No info
