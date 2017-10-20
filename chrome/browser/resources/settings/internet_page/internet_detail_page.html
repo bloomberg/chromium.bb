@@ -158,15 +158,6 @@
           </paper-toggle-button>
         </div>
       </template>
-      <!-- Choose Mobile Network (Cellular only). -->
-      <template is="dom-if"
-          if="[[showCellularChooseNetwork_(networkProperties)]]">
-        <div class="settings-box single-column stretch">
-          <network-choose-mobile networking-private="[[networkingPrivate]]"
-              network-properties="[[networkProperties]]">
-          </network-choose-mobile>
-        </div>
-      </template>
       <!-- Data roaming (Cellular only). -->
       <template is="dom-if" if="[[isCellular_(networkProperties)]]">
         <settings-toggle-button id="allowDataRoaming"
@@ -245,6 +236,15 @@
 
         <iron-collapse opened="[[networkExpanded_]]">
           <div class="settings-box single-column stretch indented">
+            <!-- Choose Mobile Network (Cellular only). -->
+            <template is="dom-if"
+                if="[[showCellularChooseNetwork_(networkProperties)]]">
+              <network-choose-mobile
+                  networking-private="[[networkingPrivate]]"
+                  network-properties="[[networkProperties]]">
+              </network-choose-mobile>
+            </template>
+
             <!-- APN -->
             <template is="dom-if" if="[[isCellular_(networkProperties)]]">
               <network-apnlist editable on-apn-change="onNetworkPropertyChange_"
