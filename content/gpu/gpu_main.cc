@@ -102,7 +102,9 @@ namespace content {
 namespace {
 
 #if defined(OS_LINUX)
-bool StartSandboxLinux(gpu::GpuWatchdogThread*, const gpu::GPUInfo*);
+bool StartSandboxLinux(gpu::GpuWatchdogThread*,
+                       const gpu::GPUInfo*,
+                       const gpu::GpuPreferences&);
 #elif defined(OS_WIN)
 bool StartSandboxWindows(const sandbox::SandboxInterfaceInfo*);
 #endif
@@ -158,9 +160,10 @@ class ContentSandboxHelper : public gpu::GpuSandboxHelper {
   }
 
   bool EnsureSandboxInitialized(gpu::GpuWatchdogThread* watchdog_thread,
-                                const gpu::GPUInfo* gpu_info) override {
+                                const gpu::GPUInfo* gpu_info,
+                                const gpu::GpuPreferences& gpu_prefs) override {
 #if defined(OS_LINUX)
-    return StartSandboxLinux(watchdog_thread, gpu_info);
+    return StartSandboxLinux(watchdog_thread, gpu_info, gpu_prefs);
 #elif defined(OS_WIN)
     return StartSandboxWindows(sandbox_info_);
 #elif defined(OS_MACOSX)
@@ -335,7 +338,8 @@ namespace {
 
 #if defined(OS_LINUX)
 bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
-                       const gpu::GPUInfo* gpu_info) {
+                       const gpu::GPUInfo* gpu_info,
+                       const gpu::GpuPreferences& gpu_prefs) {
   TRACE_EVENT0("gpu,startup", "Initialize sandbox");
 
   if (watchdog_thread) {
@@ -351,6 +355,12 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
       gpu_info && angle::IsAMD(gpu_info->active_gpu().vendor_id);
   sandbox_options.pre_sandbox_hook =
       GetGpuProcessPreSandboxHook(sandbox_options.use_amd_specific_policies);
+  sandbox_options.accelerated_video_decode_enabled =
+      !gpu_prefs.disable_accelerated_video_decode;
+#if defined(OS_CHROMEOS)
+  sandbox_options.vaapi_accelerated_video_encode_enabled =
+      !gpu_prefs.disable_vaapi_accelerated_video_encode;
+#endif
 
   bool res = LinuxSandbox::InitializeSandbox(std::move(sandbox_options));
 

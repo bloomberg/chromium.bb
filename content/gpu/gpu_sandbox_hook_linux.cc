@@ -20,7 +20,6 @@
 #include "content/common/sandbox_linux/bpf_cros_amd_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_cros_arm_gpu_policy_linux.h"
 #include "content/common/sandbox_linux/bpf_gpu_policy_linux.h"
-#include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
 #include "content/public/common/content_switches.h"
 #include "media/gpu/features.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
@@ -83,25 +82,9 @@ inline bool UseLibV4L2() {
 #endif
 }
 
-bool IsAcceleratedVaapiVideoEncodeEnabled() {
-  bool accelerated_encode_enabled = false;
-#if defined(OS_CHROMEOS)
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  accelerated_encode_enabled =
-      !command_line.HasSwitch(switches::kDisableVaapiAcceleratedVideoEncode);
-#endif
-  return accelerated_encode_enabled;
-}
-
-bool IsAcceleratedVideoDecodeEnabled() {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  return !command_line.HasSwitch(switches::kDisableAcceleratedVideoDecode);
-}
-
-void AddV4L2GpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
-  if (IsAcceleratedVideoDecodeEnabled()) {
+void AddV4L2GpuWhitelist(std::vector<BrokerFilePermission>* permissions,
+                         bool accelerated_video_decode_enabled) {
+  if (accelerated_video_decode_enabled) {
     // Device nodes for V4L2 video decode accelerator drivers.
     static const base::FilePath::CharType kDevicePath[] =
         FILE_PATH_LITERAL("/dev/");
@@ -213,7 +196,8 @@ void AddArmGpuWhitelist(std::vector<BrokerFilePermission>* permissions) {
 // the basic ones.
 std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
     std::unique_ptr<Policy> (*broker_sandboxer_allocator)(),
-    const std::vector<BrokerFilePermission>& permissions_extra) {
+    const std::vector<BrokerFilePermission>& permissions_extra,
+    bool accelerated_video_decode_enabled) {
   static const char kDriRcPath[] = "/etc/drirc";
   static const char kDriCardBasePath[] = "/dev/dri/card";
   static const char kNvidiaCtlPath[] = "/dev/nvidiactl";
@@ -242,7 +226,7 @@ std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
     }
     permissions.push_back(BrokerFilePermission::ReadOnly(kNvidiaParamsPath));
   } else if (UseV4L2Codec()) {
-    AddV4L2GpuWhitelist(&permissions);
+    AddV4L2GpuWhitelist(&permissions, accelerated_video_decode_enabled);
     if (UseLibV4L2()) {
       dlopen("/usr/lib/libv4l2.so", RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE);
       // This is a device-specific encoder plugin.
@@ -266,7 +250,8 @@ std::unique_ptr<BrokerProcess> InitGpuBrokerProcess(
   return result;
 }
 
-bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
+bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
+                       SandboxSeccompBPF::Options options) {
   // Warm up resources needed by the policy we're about to enable and
   // eventually start a broker process.
   const bool chromeos_arm_gpu = IsChromeOS() && IsArchitectureArm();
@@ -279,13 +264,14 @@ bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
           []() -> std::unique_ptr<Policy> {
             return std::make_unique<GpuBrokerProcessPolicy>();
           },
-          std::vector<BrokerFilePermission>()));
+          std::vector<BrokerFilePermission>(),
+          options.accelerated_video_decode_enabled));
 
   if (IsArchitectureX86_64() || IsArchitectureI386()) {
     // Accelerated video dlopen()'s some shared objects
     // inside the sandbox, so preload them now.
-    if (IsAcceleratedVaapiVideoEncodeEnabled() ||
-        IsAcceleratedVideoDecodeEnabled()) {
+    if (options.vaapi_accelerated_video_encode_enabled ||
+        options.accelerated_video_decode_enabled) {
       const char* I965DrvVideoPath = NULL;
       const char* I965HybridDrvVideoPath = NULL;
 
@@ -311,7 +297,8 @@ bool GpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
   return true;
 }
 
-bool CrosArmGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
+bool CrosArmGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
+                              SandboxSeccompBPF::Options options) {
   DCHECK(IsChromeOS() && IsArchitectureArm());
 
   // Add ARM-specific files to whitelist in the broker.
@@ -322,7 +309,7 @@ bool CrosArmGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
           []() -> std::unique_ptr<Policy> {
             return std::make_unique<CrosArmGpuBrokerProcessPolicy>();
           },
-          permissions));
+          permissions, options.accelerated_video_decode_enabled));
 
   const int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 
@@ -337,7 +324,8 @@ bool CrosArmGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
   return true;
 }
 
-bool CrosAmdGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
+bool CrosAmdGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy,
+                              SandboxSeccompBPF::Options options) {
   DCHECK(IsChromeOS());
 
   // Add AMD-specific files to whitelist in the broker.
@@ -349,7 +337,7 @@ bool CrosAmdGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
           []() -> std::unique_ptr<Policy> {
             return std::make_unique<CrosAmdGpuBrokerProcessPolicy>();
           },
-          permissions));
+          permissions, options.accelerated_video_decode_enabled));
 
   const int dlopen_flag = RTLD_NOW | RTLD_GLOBAL | RTLD_NODELETE;
 
@@ -369,7 +357,7 @@ bool CrosAmdGpuPreSandboxHook(sandbox::bpf_dsl::Policy* policy) {
 
 }  // namespace
 
-base::OnceCallback<bool(sandbox::bpf_dsl::Policy*)> GetGpuProcessPreSandboxHook(
+SandboxSeccompBPF::PreSandboxHook GetGpuProcessPreSandboxHook(
     bool use_amd_specific_policies) {
   if (IsChromeOS()) {
     if (IsArchitectureArm())

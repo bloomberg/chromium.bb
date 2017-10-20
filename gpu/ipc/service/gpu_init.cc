@@ -129,6 +129,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     gpu::InitializeSwitchableGPUs(
         gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
   }
+  if (kGpuFeatureStatusEnabled !=
+      gpu_feature_info_
+          .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
+    gpu_preferences_.disable_accelerated_video_decode = true;
+  }
 
   // In addition to disabling the watchdog if the command line switch is
   // present, disable the watchdog on valgrind because the code is expected
@@ -179,7 +184,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // TODO(zmo): Need to collect OS version before this.
   if (command_line->HasSwitch(switches::kGpuSandboxStartEarly)) {
     gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
-        watchdog_thread_.get(), &gpu_info_);
+        watchdog_thread_.get(), &gpu_info_, gpu_preferences_);
     attempted_startsandbox = true;
   }
 #endif  // defined(OS_LINUX)
@@ -217,6 +222,11 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (gpu_info_.context_info_state == gpu::kCollectInfoFatalFailure)
     return false;
   gpu_feature_info_ = gpu::ComputeGpuFeatureInfo(gpu_info_, command_line);
+  if (kGpuFeatureStatusEnabled !=
+      gpu_feature_info_
+          .status_values[GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE]) {
+    gpu_preferences_.disable_accelerated_video_decode = true;
+  }
 #endif
 
   if (!gpu_feature_info_.disabled_extensions.empty()) {
@@ -246,7 +256,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 
   if (!gpu_info_.sandboxed && !attempted_startsandbox) {
     gpu_info_.sandboxed = sandbox_helper_->EnsureSandboxInitialized(
-        watchdog_thread_.get(), &gpu_info_);
+        watchdog_thread_.get(), &gpu_info_, gpu_preferences_);
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
                         gpu_info_.sandboxed);

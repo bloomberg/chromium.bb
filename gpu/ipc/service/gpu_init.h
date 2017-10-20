@@ -26,7 +26,8 @@ class GPU_EXPORT GpuSandboxHelper {
   virtual void PreSandboxStartup() = 0;
 
   virtual bool EnsureSandboxInitialized(GpuWatchdogThread* watchdog_thread,
-                                        const GPUInfo* gpu_info) = 0;
+                                        const GPUInfo* gpu_info,
+                                        const GpuPreferences& gpu_prefs) = 0;
 };
 
 class GPU_EXPORT GpuInit {

@@ -22,6 +22,10 @@ namespace content {
 // a public content/ API and uses a supplied policy.
 class SandboxSeccompBPF {
  public:
+  struct Options;
+  using PreSandboxHook =
+      base::OnceCallback<bool(sandbox::bpf_dsl::Policy*, Options)>;
+
   struct Options {
     Options();
     Options(Options&& that);
@@ -33,7 +37,11 @@ class SandboxSeccompBPF {
     // is passed to the BPF compiler and the sandbox is engaged. If
     // pre_sandbox_hook() returns true, the sandbox will be engaged
     // afterwards, otherwise the process is terminated.
-    base::OnceCallback<bool(sandbox::bpf_dsl::Policy*)> pre_sandbox_hook;
+    PreSandboxHook pre_sandbox_hook;
+
+    // Options for GPU pre_sandbox_hook
+    bool accelerated_video_decode_enabled = false;
+    bool vaapi_accelerated_video_encode_enabled = false;
   };
 
   // This is the API to enable a seccomp-bpf sandbox for content/
