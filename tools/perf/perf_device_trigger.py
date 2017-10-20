@@ -52,7 +52,7 @@ def modify_args(all_args, bot_id, temp_file):
 
   return all_args[:dash_ind] + [
       '--dump_json', temp_file, '--dimension', 'id', bot_id] + all_args[
-          dash_ind:] + ['--id', bot_id]
+          dash_ind:] + ['--bot', bot_id]
 
 
 def trigger_tasks(args, remaining):
