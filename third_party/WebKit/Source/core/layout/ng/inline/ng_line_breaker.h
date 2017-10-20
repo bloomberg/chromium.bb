@@ -32,7 +32,7 @@ class CORE_EXPORT NGLineBreaker {
   NGLineBreaker(NGInlineNode,
                 const NGConstraintSpace&,
                 NGFragmentBuilder*,
-                Vector<RefPtr<NGUnpositionedFloat>>*,
+                Vector<scoped_refptr<NGUnpositionedFloat>>*,
                 const NGInlineBreakToken* = nullptr);
   ~NGLineBreaker() {}
 
@@ -43,7 +43,7 @@ class CORE_EXPORT NGLineBreaker {
                 NGLineInfo*);
 
   // Create an NGInlineBreakToken for the last line returned by NextLine().
-  RefPtr<NGInlineBreakToken> CreateBreakToken() const;
+  scoped_refptr<NGInlineBreakToken> CreateBreakToken() const;
 
   NGExclusionSpace* ExclusionSpace() { return line_.exclusion_space.get(); }
 
@@ -142,7 +142,7 @@ class CORE_EXPORT NGLineBreaker {
   NGInlineNode node_;
   const NGConstraintSpace& constraint_space_;
   NGFragmentBuilder* container_builder_;
-  Vector<RefPtr<NGUnpositionedFloat>>* unpositioned_floats_;
+  Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats_;
   unsigned item_index_ = 0;
   unsigned offset_ = 0;
   bool previous_line_had_forced_break_ = false;

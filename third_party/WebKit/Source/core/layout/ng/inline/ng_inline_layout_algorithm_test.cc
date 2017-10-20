@@ -39,13 +39,13 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   NGInlineNode inline_node(block_flow);
   NGLogicalSize size(LayoutUnit(50), LayoutUnit(20));
 
-  RefPtr<NGConstraintSpace> constraint_space =
+  scoped_refptr<NGConstraintSpace> constraint_space =
       NGConstraintSpaceBuilder(
           kHorizontalTopBottom,
           /* icb_size */ size.ConvertToPhysical(kHorizontalTopBottom))
           .SetAvailableSize(size)
           .ToConstraintSpace(kHorizontalTopBottom);
-  RefPtr<NGLayoutResult> layout_result =
+  scoped_refptr<NGLayoutResult> layout_result =
       inline_node.Layout(*constraint_space, nullptr);
   auto* wrapper =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
@@ -59,7 +59,7 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
   // Perform 2nd layout with the break token from the 2nd line.
-  RefPtr<NGLayoutResult> layout_result2 =
+  scoped_refptr<NGLayoutResult> layout_result2 =
       inline_node.Layout(*constraint_space, line2->BreakToken());
   auto* wrapper2 =
       ToNGPhysicalBoxFragment(layout_result2->PhysicalFragment().get());
@@ -95,9 +95,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
   NGBlockNode block_node(block_flow);
-  RefPtr<NGConstraintSpace> space =
+  scoped_refptr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
-  RefPtr<NGLayoutResult> layout_result = block_node.Layout(*space);
+  scoped_refptr<NGLayoutResult> layout_result = block_node.Layout(*space);
 
   auto* block_box =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
@@ -132,9 +132,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("container"));
   NGInlineNode inline_node(block_flow);
-  RefPtr<NGConstraintSpace> space =
+  scoped_refptr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
-  RefPtr<NGLayoutResult> layout_result = inline_node.Layout(*space);
+  scoped_refptr<NGLayoutResult> layout_result = inline_node.Layout(*space);
   auto* wrapper =
       ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
   EXPECT_EQ(1u, wrapper->Children().size());
@@ -176,8 +176,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
     </div>
   )HTML");
   // ** Run LayoutNG algorithm **
-  RefPtr<NGConstraintSpace> space;
-  RefPtr<NGPhysicalBoxFragment> html_fragment;
+  scoped_refptr<NGConstraintSpace> space;
+  scoped_refptr<NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
   auto* body_fragment =
@@ -376,8 +376,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, VisualRect) {
     <div id="container">Hello</div>
   )HTML");
   Element* element = GetElementById("container");
-  RefPtr<NGConstraintSpace> space;
-  RefPtr<NGPhysicalBoxFragment> box_fragment;
+  scoped_refptr<NGConstraintSpace> space;
+  scoped_refptr<NGPhysicalBoxFragment> box_fragment;
   std::tie(box_fragment, space) = RunBlockLayoutAlgorithmForElement(element);
 
   EXPECT_EQ(LayoutUnit(10), box_fragment->Size().height);

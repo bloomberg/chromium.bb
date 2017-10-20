@@ -114,7 +114,7 @@ class CORE_EXPORT LayoutMenuList final : public LayoutFlexibleBox {
 
   int last_active_index_;
 
-  RefPtr<ComputedStyle> option_style_;
+  scoped_refptr<ComputedStyle> option_style_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutMenuList, IsMenuList());

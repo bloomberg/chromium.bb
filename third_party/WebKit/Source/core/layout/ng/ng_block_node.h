@@ -29,8 +29,9 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
  public:
   explicit NGBlockNode(LayoutBox*);
 
-  RefPtr<NGLayoutResult> Layout(const NGConstraintSpace& constraint_space,
-                                NGBreakToken* break_token = nullptr);
+  scoped_refptr<NGLayoutResult> Layout(
+      const NGConstraintSpace& constraint_space,
+      NGBreakToken* break_token = nullptr);
   NGLayoutInputNode NextSibling() const;
 
   // Computes the value of min-content and max-content for this box.
@@ -46,12 +47,12 @@ class CORE_EXPORT NGBlockNode final : public NGLayoutInputNode {
   NGLayoutInputNode FirstChild();
 
   // Layout an atomic inline; e.g., inline block.
-  RefPtr<NGLayoutResult> LayoutAtomicInline(const NGConstraintSpace&,
-                                            bool use_first_line_style);
+  scoped_refptr<NGLayoutResult> LayoutAtomicInline(const NGConstraintSpace&,
+                                                   bool use_first_line_style);
 
   // Runs layout on the underlying LayoutObject and creates a fragment for the
   // resulting geometry.
-  RefPtr<NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
+  scoped_refptr<NGLayoutResult> RunOldLayout(const NGConstraintSpace&);
 
   // Called if this is an out-of-flow block which needs to be
   // positioned with legacy layout.

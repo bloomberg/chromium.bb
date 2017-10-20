@@ -25,7 +25,7 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
                           const NGConstraintSpace& space,
                           NGBreakToken* break_token = nullptr);
 
-  RefPtr<NGLayoutResult> Layout() override;
+  scoped_refptr<NGLayoutResult> Layout() override;
 
   Optional<MinMaxSize> ComputeMinMaxSize() const override;
 
@@ -33,9 +33,9 @@ class CORE_EXPORT NGColumnLayoutAlgorithm
   NGLogicalSize CalculateColumnSize(const NGLogicalSize& content_box_size);
   LayoutUnit CalculateBalancedColumnBlockSize(const NGLogicalSize& column_size,
                                               int column_count);
-  RefPtr<NGConstraintSpace> CreateConstraintSpaceForColumns(
+  scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForColumns(
       const NGLogicalSize& column_size) const;
-  RefPtr<NGConstraintSpace> CreateConstaintSpaceForBalancing(
+  scoped_refptr<NGConstraintSpace> CreateConstaintSpaceForBalancing(
       const NGLogicalSize& column_size) const;
 };
 

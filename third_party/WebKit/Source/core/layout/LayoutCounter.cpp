@@ -44,7 +44,7 @@ namespace blink {
 
 using namespace HTMLNames;
 
-typedef HashMap<AtomicString, RefPtr<CounterNode>> CounterMap;
+typedef HashMap<AtomicString, scoped_refptr<CounterNode>> CounterMap;
 typedef HashMap<const LayoutObject*, std::unique_ptr<CounterMap>> CounterMaps;
 
 static CounterNode* MakeCounterNodeIfNeeded(LayoutObject&,
@@ -225,8 +225,8 @@ static bool PlanCounter(LayoutObject& object,
 static bool FindPlaceForCounter(LayoutObject& counter_owner,
                                 const AtomicString& identifier,
                                 bool is_reset,
-                                RefPtr<CounterNode>& parent,
-                                RefPtr<CounterNode>& previous_sibling) {
+                                scoped_refptr<CounterNode>& parent,
+                                scoped_refptr<CounterNode>& previous_sibling) {
   // We cannot stop searching for counters with the same identifier before we
   // also check this layoutObject, because it may affect the positioning in the
   // tree of our counter.
@@ -239,7 +239,7 @@ static bool FindPlaceForCounter(LayoutObject& counter_owner,
   LayoutObject* current_layout_object =
       PreviousInPreOrderRespectingContainment(counter_owner);
   previous_sibling = nullptr;
-  RefPtr<CounterNode> previous_sibling_protector = nullptr;
+  scoped_refptr<CounterNode> previous_sibling_protector = nullptr;
 
   while (current_layout_object) {
     CounterNode* current_counter =
@@ -385,9 +385,10 @@ static CounterNode* MakeCounterNodeIfNeeded(LayoutObject& object,
       !always_create_counter)
     return nullptr;
 
-  RefPtr<CounterNode> new_parent = nullptr;
-  RefPtr<CounterNode> new_previous_sibling = nullptr;
-  RefPtr<CounterNode> new_node = CounterNode::Create(object, is_reset, value);
+  scoped_refptr<CounterNode> new_parent = nullptr;
+  scoped_refptr<CounterNode> new_previous_sibling = nullptr;
+  scoped_refptr<CounterNode> new_node =
+      CounterNode::Create(object, is_reset, value);
   if (FindPlaceForCounter(object, identifier, is_reset, new_parent,
                           new_previous_sibling))
     new_parent->InsertAfter(new_node.get(), new_previous_sibling.get(),
@@ -453,7 +454,7 @@ void LayoutCounter::WillBeDestroyed() {
   LayoutText::WillBeDestroyed();
 }
 
-RefPtr<StringImpl> LayoutCounter::OriginalText() const {
+scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
   if (!counter_node_) {
     LayoutObject* before_after_container = Parent();
     while (true) {
@@ -509,7 +510,7 @@ void LayoutCounter::Invalidate() {
 static void DestroyCounterNodeWithoutMapRemoval(const AtomicString& identifier,
                                                 CounterNode* node) {
   CounterNode* previous;
-  for (RefPtr<CounterNode> child = node->LastDescendant();
+  for (scoped_refptr<CounterNode> child = node->LastDescendant();
        child && child != node; child = previous) {
     previous = child->PreviousInPreOrder();
     child->Parent()->RemoveChild(child.get());
@@ -594,13 +595,13 @@ static void UpdateCounters(LayoutObject& layout_object) {
   DCHECK(counter_map);
   for (CounterDirectiveMap::const_iterator it = directive_map->begin();
        it != end; ++it) {
-    RefPtr<CounterNode> node = counter_map->at(it->key);
+    scoped_refptr<CounterNode> node = counter_map->at(it->key);
     if (!node) {
       MakeCounterNodeIfNeeded(layout_object, it->key, false);
       continue;
     }
-    RefPtr<CounterNode> new_parent = nullptr;
-    RefPtr<CounterNode> new_previous_sibling = nullptr;
+    scoped_refptr<CounterNode> new_parent = nullptr;
+    scoped_refptr<CounterNode> new_previous_sibling = nullptr;
 
     FindPlaceForCounter(layout_object, it->key, node->HasResetType(),
                         new_parent, new_previous_sibling);

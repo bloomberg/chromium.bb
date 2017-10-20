@@ -183,7 +183,7 @@ void LayoutRubyRun::RemoveChild(LayoutObject* child) {
 LayoutRubyBase* LayoutRubyRun::CreateRubyBase() const {
   LayoutRubyBase* layout_object =
       LayoutRubyBase::CreateAnonymous(&GetDocument());
-  RefPtr<ComputedStyle> new_style =
+  scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
                                                      EDisplay::kBlock);
   new_style->SetTextAlign(ETextAlign::kCenter);  // FIXME: use WEBKIT_CENTER?
@@ -197,7 +197,7 @@ LayoutRubyRun* LayoutRubyRun::StaticCreateRubyRun(
   DCHECK(parent_ruby->IsRuby());
   LayoutRubyRun* rr = new LayoutRubyRun();
   rr->SetDocumentForAnonymous(&parent_ruby->GetDocument());
-  RefPtr<ComputedStyle> new_style =
+  scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent_ruby->StyleRef(),
                                                      EDisplay::kInlineBlock);
   rr->SetStyle(std::move(new_style));

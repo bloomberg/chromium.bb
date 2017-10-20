@@ -103,7 +103,7 @@ LayoutSize LayoutImageResource::ImageSize(float multiplier) const {
   return size;
 }
 
-RefPtr<Image> LayoutImageResource::GetImage(
+scoped_refptr<Image> LayoutImageResource::GetImage(
     const IntSize& container_size) const {
   if (!cached_image_)
     return Image::NullImage();

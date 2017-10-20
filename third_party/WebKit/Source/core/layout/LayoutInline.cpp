@@ -155,7 +155,7 @@ static void UpdateInFlowPositionOfAnonymousBlockContinuations(
         InFlowPositionedInlineAncestor(block_flow->InlineElementContinuation()))
       continue;
 
-    RefPtr<ComputedStyle> new_block_style =
+    scoped_refptr<ComputedStyle> new_block_style =
         ComputedStyle::Clone(block->StyleRef());
     new_block_style->SetPosition(new_style.GetPosition());
     block->SetStyle(new_block_style);
@@ -355,7 +355,7 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
     // block box to hold |newChild|. We then make that block box a continuation
     // of this inline. We take all of the children after |beforeChild| and put
     // them in a clone of this object.
-    RefPtr<ComputedStyle> new_style =
+    scoped_refptr<ComputedStyle> new_style =
         ComputedStyle::CreateAnonymousStyleWithDisplay(StyleRef(),
                                                        EDisplay::kBlock);
     // The anon block we create here doesn't exist in the CSS spec, so

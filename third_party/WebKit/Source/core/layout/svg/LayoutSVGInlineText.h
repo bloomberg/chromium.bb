@@ -31,7 +31,7 @@ namespace blink {
 
 class LayoutSVGInlineText final : public LayoutText {
  public:
-  LayoutSVGInlineText(Node*, RefPtr<StringImpl>);
+  LayoutSVGInlineText(Node*, scoped_refptr<StringImpl>);
 
   bool CharacterStartsNewTextChunk(int position) const;
   SVGCharacterDataMap& CharacterDataMap() { return character_data_map_; }
@@ -56,7 +56,7 @@ class LayoutSVGInlineText final : public LayoutText {
   const char* GetName() const override { return "LayoutSVGInlineText"; }
 
  private:
-  void SetTextInternal(RefPtr<StringImpl>) override;
+  void SetTextInternal(scoped_refptr<StringImpl>) override;
   void StyleDidChange(StyleDifference, const ComputedStyle*) override;
 
   void AddMetricsFromRun(const TextRun&, bool& last_character_was_white_space);

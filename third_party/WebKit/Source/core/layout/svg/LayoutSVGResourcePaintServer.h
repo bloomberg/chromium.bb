@@ -43,8 +43,8 @@ class SVGPaintServer {
 
  public:
   explicit SVGPaintServer(Color);
-  SVGPaintServer(RefPtr<Gradient>, const AffineTransform&);
-  SVGPaintServer(RefPtr<Pattern>, const AffineTransform&);
+  SVGPaintServer(scoped_refptr<Gradient>, const AffineTransform&);
+  SVGPaintServer(scoped_refptr<Pattern>, const AffineTransform&);
 
   static SVGPaintServer RequestForLayoutObject(const LayoutObject&,
                                                const ComputedStyle&,
@@ -64,8 +64,8 @@ class SVGPaintServer {
   void PrependTransform(const AffineTransform&);
 
  private:
-  RefPtr<Gradient> gradient_;
-  RefPtr<Pattern> pattern_;
+  scoped_refptr<Gradient> gradient_;
+  scoped_refptr<Pattern> pattern_;
   AffineTransform transform_;  // Used for gradient/pattern shaders.
   Color color_;
 };

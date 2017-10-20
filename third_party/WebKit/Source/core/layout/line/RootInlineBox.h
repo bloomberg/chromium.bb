@@ -220,7 +220,7 @@ class RootInlineBox : public InlineFlowBox {
   // object are stored so that we can create an InlineIterator beginning just
   // after the end of this line.
   LineLayoutItem line_break_obj_;
-  RefPtr<BidiContext> line_break_context_;
+  scoped_refptr<BidiContext> line_break_context_;
 
   // Floats hanging off the line are pushed into this vector during layout. It
   // is only good for as long as the line has not been marked dirty.

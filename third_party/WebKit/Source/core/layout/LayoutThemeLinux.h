@@ -11,7 +11,7 @@ namespace blink {
 
 class LayoutThemeLinux final : public LayoutThemeDefault {
  public:
-  static RefPtr<LayoutTheme> Create();
+  static scoped_refptr<LayoutTheme> Create();
   String ExtraDefaultStyleSheet() override;
 };
 

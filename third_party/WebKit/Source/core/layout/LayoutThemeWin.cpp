@@ -6,7 +6,7 @@
 
 namespace blink {
 
-RefPtr<LayoutTheme> LayoutThemeWin::Create() {
+scoped_refptr<LayoutTheme> LayoutThemeWin::Create() {
   return WTF::AdoptRef(new LayoutThemeWin());
 }
 

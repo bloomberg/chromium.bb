@@ -40,7 +40,7 @@ namespace blink {
 AbstractInlineTextBox::InlineToAbstractInlineTextBoxHashMap*
     AbstractInlineTextBox::g_abstract_inline_text_box_map_ = nullptr;
 
-RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
+scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
     LineLayoutText line_layout_text,
     InlineTextBox* inline_text_box) {
   if (!inline_text_box)
@@ -55,7 +55,7 @@ RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::GetOrCreate(
   if (it != g_abstract_inline_text_box_map_->end())
     return it->value;
 
-  RefPtr<AbstractInlineTextBox> obj = WTF::AdoptRef(
+  scoped_refptr<AbstractInlineTextBox> obj = WTF::AdoptRef(
       new AbstractInlineTextBox(line_layout_text, inline_text_box));
   g_abstract_inline_text_box_map_->Set(inline_text_box, obj);
   return obj;
@@ -88,7 +88,8 @@ void AbstractInlineTextBox::Detach() {
   inline_text_box_ = nullptr;
 }
 
-RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextInlineTextBox() const {
+scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::NextInlineTextBox()
+    const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)
@@ -199,7 +200,7 @@ bool AbstractInlineTextBox::IsLast() const {
   return !inline_text_box_ || !inline_text_box_->NextTextBox();
 }
 
-RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
+scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)
@@ -213,7 +214,8 @@ RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::NextOnLine() const {
   return nullptr;
 }
 
-RefPtr<AbstractInlineTextBox> AbstractInlineTextBox::PreviousOnLine() const {
+scoped_refptr<AbstractInlineTextBox> AbstractInlineTextBox::PreviousOnLine()
+    const {
   DCHECK(!inline_text_box_ ||
          !inline_text_box_->GetLineLayoutItem().NeedsLayout());
   if (!inline_text_box_)

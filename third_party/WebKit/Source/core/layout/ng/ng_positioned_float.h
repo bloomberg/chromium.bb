@@ -13,10 +13,10 @@ namespace blink {
 
 // Contains the information necessary for copying back data to a FloatingObject.
 struct CORE_EXPORT NGPositionedFloat {
-  NGPositionedFloat(RefPtr<NGLayoutResult> layout_result,
+  NGPositionedFloat(scoped_refptr<NGLayoutResult> layout_result,
                     const NGBfcOffset& bfc_offset);
 
-  RefPtr<NGLayoutResult> layout_result;
+  scoped_refptr<NGLayoutResult> layout_result;
   NGBfcOffset bfc_offset;
 };
 

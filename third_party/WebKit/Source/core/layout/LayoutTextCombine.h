@@ -31,7 +31,7 @@ namespace blink {
 // for the layout, while its inline box is in horizontal flow.
 class LayoutTextCombine final : public LayoutText {
  public:
-  LayoutTextCombine(Node*, RefPtr<StringImpl>);
+  LayoutTextCombine(Node*, scoped_refptr<StringImpl>);
 
   void UpdateFont();
   bool IsCombined() const { return is_combined_; }
@@ -57,7 +57,7 @@ class LayoutTextCombine final : public LayoutText {
               FloatRect* glyph_bounds = nullptr,
               float expansion = 0) const override;
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style) override;
-  void SetTextInternal(RefPtr<StringImpl>) override;
+  void SetTextInternal(scoped_refptr<StringImpl>) override;
   void UpdateIsCombined();
 
   float combined_text_width_;

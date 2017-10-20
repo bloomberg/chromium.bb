@@ -1829,7 +1829,7 @@ bool LayoutTableSection::NodeAtPoint(
 
 LayoutTableSection* LayoutTableSection::CreateAnonymousWithParent(
     const LayoutObject* parent) {
-  RefPtr<ComputedStyle> new_style =
+  scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      EDisplay::kTableRowGroup);
   LayoutTableSection* new_section = new LayoutTableSection(nullptr);

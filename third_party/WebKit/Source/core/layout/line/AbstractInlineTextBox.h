@@ -53,8 +53,8 @@ class CORE_EXPORT AbstractInlineTextBox
       : line_layout_item_(line_layout_item),
         inline_text_box_(inline_text_box) {}
 
-  static RefPtr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
-                                                   InlineTextBox*);
+  static scoped_refptr<AbstractInlineTextBox> GetOrCreate(LineLayoutText,
+                                                          InlineTextBox*);
   static void WillDestroy(InlineTextBox*);
 
   friend class LayoutText;
@@ -75,7 +75,7 @@ class CORE_EXPORT AbstractInlineTextBox
 
   LineLayoutText GetLineLayoutItem() const { return line_layout_item_; }
 
-  RefPtr<AbstractInlineTextBox> NextInlineTextBox() const;
+  scoped_refptr<AbstractInlineTextBox> NextInlineTextBox() const;
   LayoutRect LocalBounds() const;
   unsigned Len() const;
   Direction GetDirection() const;
@@ -85,8 +85,8 @@ class CORE_EXPORT AbstractInlineTextBox
   String GetText() const;
   bool IsFirst() const;
   bool IsLast() const;
-  RefPtr<AbstractInlineTextBox> NextOnLine() const;
-  RefPtr<AbstractInlineTextBox> PreviousOnLine() const;
+  scoped_refptr<AbstractInlineTextBox> NextOnLine() const;
+  scoped_refptr<AbstractInlineTextBox> PreviousOnLine() const;
 
  private:
   void Detach();
@@ -96,7 +96,7 @@ class CORE_EXPORT AbstractInlineTextBox
   LineLayoutText line_layout_item_;
   InlineTextBox* inline_text_box_;
 
-  typedef HashMap<InlineTextBox*, RefPtr<AbstractInlineTextBox>>
+  typedef HashMap<InlineTextBox*, scoped_refptr<AbstractInlineTextBox>>
       InlineToAbstractInlineTextBoxHashMap;
   static InlineToAbstractInlineTextBoxHashMap* g_abstract_inline_text_box_map_;
 };

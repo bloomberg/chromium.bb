@@ -65,9 +65,9 @@ float LayoutSVGResourceRadialGradient::FocalRadius(
       GetElement(), attributes.GradientUnits(), *attributes.Fr());
 }
 
-RefPtr<Gradient> LayoutSVGResourceRadialGradient::BuildGradient() const {
+scoped_refptr<Gradient> LayoutSVGResourceRadialGradient::BuildGradient() const {
   const RadialGradientAttributes& attributes = this->Attributes();
-  RefPtr<Gradient> gradient = Gradient::CreateRadial(
+  scoped_refptr<Gradient> gradient = Gradient::CreateRadial(
       FocalPoint(attributes), FocalRadius(attributes), CenterPoint(attributes),
       Radius(attributes), 1,
       PlatformSpreadMethodFromSVGType(attributes.SpreadMethod()),

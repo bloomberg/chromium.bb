@@ -101,7 +101,7 @@ void LayoutNGListItem::UpdateMarker() {
   }
 
   // Create a marker box if it does not exist yet.
-  RefPtr<ComputedStyle> marker_style;
+  scoped_refptr<ComputedStyle> marker_style;
   if (IsInside()) {
     if (marker_ && !marker_->IsLayoutInline())
       DestroyMarker();

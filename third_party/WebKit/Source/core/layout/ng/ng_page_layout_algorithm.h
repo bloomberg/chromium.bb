@@ -26,12 +26,12 @@ class CORE_EXPORT NGPageLayoutAlgorithm
                         const NGConstraintSpace& space,
                         NGBreakToken* break_token = nullptr);
 
-  RefPtr<NGLayoutResult> Layout() override;
+  scoped_refptr<NGLayoutResult> Layout() override;
 
   Optional<MinMaxSize> ComputeMinMaxSize() const override;
 
  private:
-  RefPtr<NGConstraintSpace> CreateConstraintSpaceForPages(
+  scoped_refptr<NGConstraintSpace> CreateConstraintSpaceForPages(
       const NGLogicalSize& size) const;
 };
 

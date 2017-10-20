@@ -11,7 +11,7 @@ namespace {
 // TODO(fuchsia): Implement this when we enable the UI. (crbug.com/750946)
 class LayoutThemeFuchsia : public LayoutThemeDefault {
  public:
-  static RefPtr<LayoutTheme> Create() {
+  static scoped_refptr<LayoutTheme> Create() {
     return WTF::AdoptRef(new LayoutThemeFuchsia());
   }
 };

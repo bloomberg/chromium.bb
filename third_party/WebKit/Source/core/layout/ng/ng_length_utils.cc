@@ -197,7 +197,8 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   NGConstraintSpaceBuilder builder(
       writing_mode,
       /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite});
-  RefPtr<NGConstraintSpace> space = builder.ToConstraintSpace(writing_mode);
+  scoped_refptr<NGConstraintSpace> space =
+      builder.ToConstraintSpace(writing_mode);
 
   MinMaxSize computed_sizes;
   Length inline_size = style.LogicalWidth();

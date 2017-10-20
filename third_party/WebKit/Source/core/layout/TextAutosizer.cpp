@@ -1123,7 +1123,7 @@ void TextAutosizer::ApplyMultiplier(LayoutObject* layout_object,
     return;
 
   // We need to clone the layoutObject style to avoid breaking style sharing.
-  RefPtr<ComputedStyle> style = ComputedStyle::Clone(current_style);
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Clone(current_style);
   style->SetTextAutosizingMultiplier(multiplier);
   style->SetUnique();
 

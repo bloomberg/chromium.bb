@@ -46,7 +46,7 @@ NGConstraintSpace::NGConstraintSpace(
     const NGBfcOffset& bfc_offset,
     const WTF::Optional<NGBfcOffset>& floats_bfc_offset,
     const NGExclusionSpace& exclusion_space,
-    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
+    Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
     const WTF::Optional<LayoutUnit>& clearance_offset,
     Vector<NGBaselineRequest>& baseline_requests)
     : available_size_(available_size),
@@ -79,7 +79,7 @@ NGConstraintSpace::NGConstraintSpace(
   baseline_requests_.swap(baseline_requests);
 }
 
-RefPtr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
+scoped_refptr<NGConstraintSpace> NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
   auto writing_mode = FromPlatformWritingMode(box.StyleRef().GetWritingMode());
   bool parallel_containing_block = IsParallelWritingMode(

@@ -9,9 +9,9 @@ namespace blink {
 NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     const ComputedStyle& style,
     NGPhysicalSize size,
-    Vector<RefPtr<NGPhysicalFragment>>& children,
+    Vector<scoped_refptr<NGPhysicalFragment>>& children,
     const NGLineHeightMetrics& metrics,
-    RefPtr<NGBreakToken> break_token)
+    scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalContainerFragment(nullptr,
                                   style,
                                   size,

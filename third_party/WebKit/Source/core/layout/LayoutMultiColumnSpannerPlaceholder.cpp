@@ -27,7 +27,7 @@ LayoutMultiColumnSpannerPlaceholder::CreateAnonymous(
       new LayoutMultiColumnSpannerPlaceholder(&layout_object_in_flow_thread);
   Document& document = layout_object_in_flow_thread.GetDocument();
   new_spanner->SetDocumentForAnonymous(&document);
-  RefPtr<ComputedStyle> new_style =
+  scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent_style,
                                                      EDisplay::kBlock);
   CopyMarginProperties(*new_style, layout_object_in_flow_thread.StyleRef());
@@ -64,7 +64,7 @@ void LayoutMultiColumnSpannerPlaceholder::
 }
 
 void LayoutMultiColumnSpannerPlaceholder::UpdateMarginProperties() {
-  RefPtr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
+  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Clone(StyleRef());
   CopyMarginProperties(*new_style, layout_object_in_flow_thread_->StyleRef());
   SetStyle(new_style);
 }

@@ -58,7 +58,7 @@ struct FragmentPosition {
 // Create BidiRuns from a list of NGPhysicalFragment.
 // Produce a FragmentPosition map to place InlineBoxes.
 void CreateBidiRuns(BidiRunList<BidiRun>* bidi_runs,
-                    const Vector<RefPtr<NGPhysicalFragment>>& children,
+                    const Vector<scoped_refptr<NGPhysicalFragment>>& children,
                     const NGConstraintSpace& constraint_space,
                     NGLogicalOffset parent_offset,
                     NGPhysicalSize parent_size,
@@ -495,7 +495,7 @@ void NGInlineNode::ShapeText(const String& text_content,
       continue;
 
     const Font& font = item.Style()->GetFont();
-    RefPtr<ShapeResult> shape_result = shaper.Shape(
+    scoped_refptr<ShapeResult> shape_result = shaper.Shape(
         &font, item.Direction(), item.StartOffset(), item.EndOffset());
 
     if (UNLIKELY(spacing.SetSpacing(font.GetFontDescription())))
@@ -539,12 +539,12 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded() {
   data->first_line_items_ = std::move(first_line_items);
 }
 
-RefPtr<NGLayoutResult> NGInlineNode::Layout(
+scoped_refptr<NGLayoutResult> NGInlineNode::Layout(
     const NGConstraintSpace& constraint_space,
     NGBreakToken* break_token) {
   NGInlineLayoutAlgorithm algorithm(*this, constraint_space,
                                     ToNGInlineBreakToken(break_token));
-  RefPtr<NGLayoutResult> result = algorithm.Layout();
+  scoped_refptr<NGLayoutResult> result = algorithm.Layout();
 
   if (result->Status() == NGLayoutResult::kSuccess &&
       result->UnpositionedFloats().IsEmpty() &&
@@ -560,7 +560,7 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
   const ComputedStyle& style = node.Style();
   NGWritingMode writing_mode = FromPlatformWritingMode(style.GetWritingMode());
 
-  RefPtr<NGConstraintSpace> space =
+  scoped_refptr<NGConstraintSpace> space =
       NGConstraintSpaceBuilder(
           writing_mode,
           /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
@@ -572,9 +572,9 @@ static LayoutUnit ComputeContentSize(NGInlineNode node,
                                       TextDirection::kLtr);
   container_builder.SetBfcOffset(NGBfcOffset{LayoutUnit(), LayoutUnit()});
 
-  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;
+  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
 
-  RefPtr<NGInlineBreakToken> break_token;
+  scoped_refptr<NGInlineBreakToken> break_token;
   NGLineInfo line_info;
   NGExclusionSpace empty_exclusion_space;
   LayoutUnit result;

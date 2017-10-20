@@ -104,8 +104,8 @@ class CORE_EXPORT NGInlineItem {
   unsigned start_offset_;
   unsigned end_offset_;
   UScriptCode script_;
-  RefPtr<const ShapeResult> shape_result_;
-  RefPtr<const ComputedStyle> style_;
+  scoped_refptr<const ShapeResult> shape_result_;
+  scoped_refptr<const ComputedStyle> style_;
   LayoutObject* layout_object_;
 
   unsigned type_ : 4;

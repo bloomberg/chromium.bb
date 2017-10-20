@@ -17,7 +17,7 @@
 namespace blink {
 
 NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
-                                     RefPtr<const ComputedStyle> style,
+                                     scoped_refptr<const ComputedStyle> style,
                                      NGWritingMode writing_mode,
                                      TextDirection direction)
     : NGContainerFragmentBuilder(style, writing_mode, direction),
@@ -27,7 +27,7 @@ NGFragmentBuilder::NGFragmentBuilder(NGLayoutInputNode node,
       did_break_(false) {}
 
 NGFragmentBuilder::NGFragmentBuilder(LayoutObject* layout_object,
-                                     RefPtr<const ComputedStyle> style,
+                                     scoped_refptr<const ComputedStyle> style,
                                      NGWritingMode writing_mode,
                                      TextDirection direction)
     : NGContainerFragmentBuilder(style, writing_mode, direction),
@@ -52,7 +52,7 @@ NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
 // TODO(ikilpatrick): Remove this once line-by-line refactoring is complete.
 // This is temporary code, which is duplicated from NGBlockLayoutAlgorithm.
 NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
-    RefPtr<NGLayoutResult> child,
+    scoped_refptr<NGLayoutResult> child,
     const NGBfcOffset& child_bfc_offset,
     const NGBfcOffset& parent_bfc_offset) {
   NGFragment child_fragment(WritingMode(), *child->PhysicalFragment());
@@ -71,7 +71,7 @@ NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
 }
 
 NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
-    RefPtr<NGPhysicalFragment> child,
+    scoped_refptr<NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
   switch (child->Type()) {
     case NGPhysicalBoxFragment::kFragmentBox:
@@ -103,21 +103,21 @@ NGFragmentBuilder& NGFragmentBuilder::AddBreakBeforeChild(
   // break token. We currently need to pass a Vector here, just to end up in the
   // right NGBlockBreakToken constructor - the one that sets the token as
   // unfinished.
-  Vector<RefPtr<NGBreakToken>> dummy;
+  Vector<scoped_refptr<NGBreakToken>> dummy;
   auto token = NGBlockBreakToken::Create(child, LayoutUnit(), dummy);
   child_break_tokens_.push_back(token);
   return *this;
 }
 
 NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
-    RefPtr<NGLayoutResult> child_layout_result) {
+    scoped_refptr<NGLayoutResult> child_layout_result) {
   if (!did_break_)
     return PropagateBreak(child_layout_result->PhysicalFragment());
   return *this;
 }
 
 NGFragmentBuilder& NGFragmentBuilder::PropagateBreak(
-    RefPtr<NGPhysicalFragment> child_fragment) {
+    scoped_refptr<NGPhysicalFragment> child_fragment) {
   if (!did_break_) {
     const auto* token = child_fragment->BreakToken();
     did_break_ = token && !token->IsFinished();
@@ -239,7 +239,7 @@ void NGFragmentBuilder::AddBaseline(NGBaselineRequest request,
   baselines_.push_back(NGBaseline{request, offset});
 }
 
-RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
+scoped_refptr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGPhysicalSize physical_size = Size().ConvertToPhysical(WritingMode());
@@ -252,7 +252,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
     child->PropagateContentsVisualRect(&contents_visual_rect);
   }
 
-  RefPtr<NGBreakToken> break_token;
+  scoped_refptr<NGBreakToken> break_token;
   if (node_) {
     if (last_inline_break_token_) {
       DCHECK(!last_inline_break_token_->IsFinished());
@@ -266,7 +266,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
     }
   }
 
-  RefPtr<NGPhysicalBoxFragment> fragment =
+  scoped_refptr<NGPhysicalBoxFragment> fragment =
       WTF::AdoptRef(new NGPhysicalBoxFragment(
           layout_object_, Style(), physical_size, contents_visual_rect,
           children_, baselines_, BoxType(),
@@ -280,7 +280,7 @@ RefPtr<NGLayoutResult> NGFragmentBuilder::ToBoxFragment() {
       end_margin_strut_, intrinsic_block_size_, NGLayoutResult::kSuccess));
 }
 
-RefPtr<NGLayoutResult> NGFragmentBuilder::Abort(
+scoped_refptr<NGLayoutResult> NGFragmentBuilder::Abort(
     NGLayoutResult::NGLayoutResultStatus status) {
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants;
   Vector<NGPositionedFloat> positioned_floats;

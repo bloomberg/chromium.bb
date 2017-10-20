@@ -49,7 +49,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
                          int expansion,
                          NGLineOrientation line_orientation,
                          NGTextEndEffect end_effect,
-                         RefPtr<const ShapeResult> shape_result)
+                         scoped_refptr<const ShapeResult> shape_result)
       : NGPhysicalFragment(layout_object, style, size, kFragmentText),
         text_(text),
         item_index_(item_index),
@@ -95,7 +95,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return static_cast<NGTextEndEffect>(end_effect_);
   }
 
-  RefPtr<NGPhysicalFragment> CloneWithoutOffset() const {
+  scoped_refptr<NGPhysicalFragment> CloneWithoutOffset() const {
     return WTF::AdoptRef(new NGPhysicalTextFragment(
         layout_object_, Style(), text_, item_index_, start_offset_, end_offset_,
         size_, expansion_, LineOrientation(), EndEffect(), shape_result_));
@@ -118,7 +118,7 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
   unsigned start_offset_;
   unsigned end_offset_;
 
-  RefPtr<const ShapeResult> shape_result_;
+  scoped_refptr<const ShapeResult> shape_result_;
 
   int expansion_;
 

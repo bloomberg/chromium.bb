@@ -76,7 +76,7 @@ class NGInlineNodeOffsetMappingTest : public RenderingTest {
     return GetOffsetMapping().IsAfterNonCollapsedCharacter(node, offset);
   }
 
-  RefPtr<const ComputedStyle> style_;
+  scoped_refptr<const ComputedStyle> style_;
   LayoutNGBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;

@@ -32,7 +32,7 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
     if (!node.IsPrepareLayoutFinished())
       node.PrepareLayout();
 
-    RefPtr<NGConstraintSpace> space =
+    scoped_refptr<NGConstraintSpace> space =
         NGConstraintSpaceBuilder(
             NGWritingMode::kHorizontalTopBottom,
             /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
@@ -43,9 +43,9 @@ class NGLineBreakerTest : public NGBaseLayoutAlgorithmTest {
         node, &node.Style(), space->WritingMode(), space->Direction());
     container_builder.SetBfcOffset(NGBfcOffset{LayoutUnit(), LayoutUnit()});
 
-    Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats;
+    Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats;
 
-    RefPtr<NGInlineBreakToken> break_token;
+    scoped_refptr<NGInlineBreakToken> break_token;
 
     Vector<NGInlineItemResults> lines;
     NGExclusionSpace exclusion_space;

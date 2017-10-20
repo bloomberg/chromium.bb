@@ -98,8 +98,9 @@ bool NGLayoutInputNode::CreatesNewFormattingContext() const {
   return IsBlock() && box_->AvoidsFloats();
 }
 
-RefPtr<NGLayoutResult> NGLayoutInputNode::Layout(const NGConstraintSpace& space,
-                                                 NGBreakToken* break_token) {
+scoped_refptr<NGLayoutResult> NGLayoutInputNode::Layout(
+    const NGConstraintSpace& space,
+    NGBreakToken* break_token) {
   return IsInline() ? ToNGInlineNode(*this).Layout(space, break_token)
                     : ToNGBlockNode(*this).Layout(space, break_token);
 }

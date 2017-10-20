@@ -47,10 +47,11 @@ void NGTextFragmentBuilder::SetItem(NGInlineItemResult* item_result,
   layout_object_ = item_result->item->GetLayoutObject();
 }
 
-void NGTextFragmentBuilder::SetText(RefPtr<const ComputedStyle> style,
-                                    RefPtr<const ShapeResult> shape_result,
-                                    LayoutUnit inline_size,
-                                    LayoutUnit line_height) {
+void NGTextFragmentBuilder::SetText(
+    scoped_refptr<const ComputedStyle> style,
+    scoped_refptr<const ShapeResult> shape_result,
+    LayoutUnit inline_size,
+    LayoutUnit line_height) {
   DCHECK(style);
 
   SetStyle(style);
@@ -62,9 +63,10 @@ void NGTextFragmentBuilder::SetText(RefPtr<const ComputedStyle> style,
   ;
 }
 
-void NGTextFragmentBuilder::SetAtomicInline(RefPtr<const ComputedStyle> style,
-                                            LayoutUnit inline_size,
-                                            LayoutUnit line_height) {
+void NGTextFragmentBuilder::SetAtomicInline(
+    scoped_refptr<const ComputedStyle> style,
+    LayoutUnit inline_size,
+    LayoutUnit line_height) {
   DCHECK(style);
 
   SetStyle(style);
@@ -75,11 +77,11 @@ void NGTextFragmentBuilder::SetAtomicInline(RefPtr<const ComputedStyle> style,
   layout_object_ = inline_node_.GetLayoutObject();
 }
 
-RefPtr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
+scoped_refptr<NGPhysicalTextFragment> NGTextFragmentBuilder::ToTextFragment(
     unsigned index,
     unsigned start_offset,
     unsigned end_offset) {
-  RefPtr<NGPhysicalTextFragment> fragment =
+  scoped_refptr<NGPhysicalTextFragment> fragment =
       WTF::AdoptRef(new NGPhysicalTextFragment(
           layout_object_, Style(), inline_node_.Text(), index, start_offset,
           end_offset, size_.ConvertToPhysical(WritingMode()), expansion_,

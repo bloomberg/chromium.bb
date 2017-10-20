@@ -47,17 +47,17 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
   // Returns the last layout result for this block flow with the given
   // constraint space and break token, or null if it is not up-to-date or
   // otherwise unavailable.
-  RefPtr<NGLayoutResult> CachedLayoutResult(const NGConstraintSpace&,
-                                            NGBreakToken*) const;
+  scoped_refptr<NGLayoutResult> CachedLayoutResult(const NGConstraintSpace&,
+                                                   NGBreakToken*) const;
 
   void SetCachedLayoutResult(const NGConstraintSpace&,
                              NGBreakToken*,
-                             RefPtr<NGLayoutResult>);
+                             scoped_refptr<NGLayoutResult>);
   // For testing only.
-  RefPtr<NGLayoutResult> CachedLayoutResultForTesting();
+  scoped_refptr<NGLayoutResult> CachedLayoutResultForTesting();
 
   NGPaintFragment* PaintFragment() const { return paint_fragment_.get(); }
-  void SetPaintFragment(RefPtr<const NGPhysicalFragment>);
+  void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>);
 
  protected:
   bool IsOfType(LayoutObjectType) const override;
@@ -75,8 +75,8 @@ class CORE_EXPORT LayoutNGBlockFlow : public LayoutBlockFlow {
 
   std::unique_ptr<NGInlineNodeData> ng_inline_node_data_;
 
-  RefPtr<NGLayoutResult> cached_result_;
-  RefPtr<const NGConstraintSpace> cached_constraint_space_;
+  scoped_refptr<NGLayoutResult> cached_result_;
+  scoped_refptr<const NGConstraintSpace> cached_constraint_space_;
   std::unique_ptr<NGPaintFragment> paint_fragment_;
 
   friend class NGBaseLayoutAlgorithmTest;

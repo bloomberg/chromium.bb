@@ -278,7 +278,7 @@ LayoutTableRow* LayoutTableRow::CreateAnonymousWithParent(
     const LayoutObject* parent) {
   LayoutTableRow* new_row =
       LayoutTableRow::CreateAnonymous(&parent->GetDocument());
-  RefPtr<ComputedStyle> new_style =
+  scoped_refptr<ComputedStyle> new_style =
       ComputedStyle::CreateAnonymousStyleWithDisplay(parent->StyleRef(),
                                                      EDisplay::kTableRow);
   new_row->SetStyle(std::move(new_style));

@@ -63,9 +63,9 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithFinishedChild) {
   NGLayoutInputNode node2 = node1.NextSibling();
   NGLayoutInputNode node3 = node2.NextSibling();
 
-  Vector<RefPtr<NGBreakToken>> child_break_tokens;
+  Vector<scoped_refptr<NGBreakToken>> child_break_tokens;
   child_break_tokens.push_back(NGBlockBreakToken::Create(node1, LayoutUnit()));
-  RefPtr<NGBlockBreakToken> parent_token =
+  scoped_refptr<NGBlockBreakToken> parent_token =
       NGBlockBreakToken::Create(container, LayoutUnit(50), child_break_tokens);
 
   // The iterator should loop through two children.
@@ -102,11 +102,11 @@ TEST_F(NGBlockChildIteratorTest, BreakTokenWithUnFinishedChild) {
   NGLayoutInputNode node2 = node1.NextSibling();
   NGLayoutInputNode node3 = node2.NextSibling();
 
-  Vector<RefPtr<NGBreakToken>> child_break_tokens;
-  RefPtr<NGBreakToken> child_token =
+  Vector<scoped_refptr<NGBreakToken>> child_break_tokens;
+  scoped_refptr<NGBreakToken> child_token =
       NGBlockBreakToken::Create(node1, LayoutUnit(), child_break_tokens);
   child_break_tokens.push_back(child_token);
-  RefPtr<NGBlockBreakToken> parent_token =
+  scoped_refptr<NGBlockBreakToken> parent_token =
       NGBlockBreakToken::Create(container, LayoutUnit(50), child_break_tokens);
 
   // The iterator should loop through three children, one with a break token.

@@ -42,7 +42,7 @@ struct PatternData {
   USING_FAST_MALLOC(PatternData);
 
  public:
-  RefPtr<Pattern> pattern;
+  scoped_refptr<Pattern> pattern;
   AffineTransform transform;
 };
 

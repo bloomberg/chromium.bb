@@ -13,8 +13,9 @@ namespace blink {
 
 namespace {
 
-static RefPtr<ComputedStyle> CreateWhitespaceStyle(EWhiteSpace whitespace) {
-  RefPtr<ComputedStyle> style(ComputedStyle::Create());
+static scoped_refptr<ComputedStyle> CreateWhitespaceStyle(
+    EWhiteSpace whitespace) {
+  scoped_refptr<ComputedStyle> style(ComputedStyle::Create());
   style->SetWhiteSpace(whitespace);
   return style;
 }
@@ -91,7 +92,7 @@ class NGInlineItemsBuilderTest : public ::testing::Test {
   Vector<NGInlineItem> items_;
   String text_;
   String collapsed_;
-  RefPtr<ComputedStyle> style_;
+  scoped_refptr<ComputedStyle> style_;
 };
 
 #define TestWhitespaceValue(expected_text, expected_collapsed, input,         \
@@ -247,7 +248,8 @@ TEST_F(NGInlineItemsBuilderTest, CollapseBeforeAndAfterNewline) {
 TEST_F(NGInlineItemsBuilderTest,
        CollapsibleSpaceAfterNonCollapsibleSpaceAcrossElements) {
   NGInlineItemsBuilderForOffsetMapping builder(&items_);
-  RefPtr<ComputedStyle> pre_wrap(CreateWhitespaceStyle(EWhiteSpace::kPreWrap));
+  scoped_refptr<ComputedStyle> pre_wrap(
+      CreateWhitespaceStyle(EWhiteSpace::kPreWrap));
   builder.Append("text ", pre_wrap.get());
   builder.Append(" text", style_.get());
   EXPECT_EQ("text  text", builder.ToString())
@@ -364,7 +366,7 @@ TEST_F(NGInlineItemsBuilderTest, NewLines) {
 TEST_F(NGInlineItemsBuilderTest, Empty) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilderForOffsetMapping builder(&items);
-  RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
+  scoped_refptr<ComputedStyle> block_style(ComputedStyle::Create());
   builder.EnterBlock(block_style.get());
   builder.ExitBlock();
 
@@ -375,7 +377,7 @@ TEST_F(NGInlineItemsBuilderTest, Empty) {
 TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
   Vector<NGInlineItem> items;
   NGInlineItemsBuilderForOffsetMapping builder(&items);
-  RefPtr<ComputedStyle> block_style(ComputedStyle::Create());
+  scoped_refptr<ComputedStyle> block_style(ComputedStyle::Create());
   block_style->SetUnicodeBidi(UnicodeBidi::kBidiOverride);
   block_style->SetDirection(TextDirection::kRtl);
   builder.EnterBlock(block_style.get());
@@ -393,7 +395,7 @@ TEST_F(NGInlineItemsBuilderTest, BidiBlockOverride) {
 
 static std::unique_ptr<LayoutInline> CreateLayoutInline(
     void (*initialize_style)(ComputedStyle*)) {
-  RefPtr<ComputedStyle> style(ComputedStyle::Create());
+  scoped_refptr<ComputedStyle> style(ComputedStyle::Create());
   initialize_style(style.get());
   std::unique_ptr<LayoutInline> node = WTF::MakeUnique<LayoutInline>(nullptr);
   node->SetStyleInternal(std::move(style));

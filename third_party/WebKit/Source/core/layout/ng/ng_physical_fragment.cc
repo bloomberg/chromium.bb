@@ -155,7 +155,7 @@ NGPhysicalFragment::NGPhysicalFragment(LayoutObject* layout_object,
                                        const ComputedStyle& style,
                                        NGPhysicalSize size,
                                        NGFragmentType type,
-                                       RefPtr<NGBreakToken> break_token)
+                                       scoped_refptr<NGBreakToken> break_token)
     : layout_object_(layout_object),
       style_(&style),
       size_(size),
@@ -236,7 +236,8 @@ void NGPhysicalFragment::PropagateContentsVisualRect(
   parent_visual_rect->Unite(visual_rect);
 }
 
-RefPtr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset() const {
+scoped_refptr<NGPhysicalFragment> NGPhysicalFragment::CloneWithoutOffset()
+    const {
   switch (Type()) {
     case kFragmentBox:
       return static_cast<const NGPhysicalBoxFragment*>(this)

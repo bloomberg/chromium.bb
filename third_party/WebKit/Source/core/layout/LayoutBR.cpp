@@ -28,7 +28,7 @@
 
 namespace blink {
 
-static RefPtr<StringImpl> NewlineString() {
+static scoped_refptr<StringImpl> NewlineString() {
   DEFINE_STATIC_LOCAL(const String, string, ("\n"));
   return string.Impl();
 }

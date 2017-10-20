@@ -35,7 +35,7 @@ struct GradientData {
   USING_FAST_MALLOC(GradientData);
 
  public:
-  RefPtr<Gradient> gradient;
+  scoped_refptr<Gradient> gradient;
   AffineTransform userspace_transform;
 };
 
@@ -55,7 +55,7 @@ class LayoutSVGResourceGradient : public LayoutSVGResourcePaintServer {
   virtual SVGUnitTypes::SVGUnitType GradientUnits() const = 0;
   virtual AffineTransform CalculateGradientTransform() const = 0;
   virtual bool CollectGradientAttributes() = 0;
-  virtual RefPtr<Gradient> BuildGradient() const = 0;
+  virtual scoped_refptr<Gradient> BuildGradient() const = 0;
 
   static GradientSpreadMethod PlatformSpreadMethodFromSVGType(
       SVGSpreadMethodType);

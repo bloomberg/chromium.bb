@@ -512,7 +512,7 @@ IntRect LayoutListMarker::GetRelativeMarkerRect() const {
 }
 
 void LayoutListMarker::ListItemStyleDidChange() {
-  RefPtr<ComputedStyle> new_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> new_style = ComputedStyle::Create();
   // The marker always inherits from the list item, regardless of where it might
   // end up (e.g., in some deeply nested line box). See CSS3 spec.
   new_style->InheritFrom(list_item_->StyleRef());

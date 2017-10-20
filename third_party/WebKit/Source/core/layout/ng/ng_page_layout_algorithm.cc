@@ -20,7 +20,7 @@ NGPageLayoutAlgorithm::NGPageLayoutAlgorithm(NGBlockNode node,
                                              NGBreakToken* break_token)
     : NGLayoutAlgorithm(node, space, ToNGBlockBreakToken(break_token)) {}
 
-RefPtr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
+scoped_refptr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   Optional<MinMaxSize> min_max_size;
   if (NeedMinMaxSize(ConstraintSpace(), Style()))
     min_max_size = ComputeMinMaxSize();
@@ -32,12 +32,12 @@ RefPtr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
       CalculateContentBoxSize(border_box_size, border_scrollbar_padding);
   NGLogicalSize page_size = content_box_size;
 
-  RefPtr<NGConstraintSpace> child_space =
+  scoped_refptr<NGConstraintSpace> child_space =
       CreateConstraintSpaceForPages(page_size);
   container_builder_.SetInlineSize(border_box_size.inline_size);
 
   NGWritingMode writing_mode = ConstraintSpace().WritingMode();
-  RefPtr<NGBlockBreakToken> break_token = BreakToken();
+  scoped_refptr<NGBlockBreakToken> break_token = BreakToken();
   LayoutUnit intrinsic_block_size;
   NGLogicalOffset page_offset(border_scrollbar_padding.StartOffset());
   NGLogicalOffset page_progression;
@@ -52,8 +52,8 @@ RefPtr<NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
     // Lay out one page. Each page will become a fragment.
     NGBlockLayoutAlgorithm child_algorithm(Node(), *child_space.get(),
                                            break_token.get());
-    RefPtr<NGLayoutResult> result = child_algorithm.Layout();
-    RefPtr<NGPhysicalBoxFragment> page(
+    scoped_refptr<NGLayoutResult> result = child_algorithm.Layout();
+    scoped_refptr<NGPhysicalBoxFragment> page(
         ToNGPhysicalBoxFragment(result->PhysicalFragment().get()));
 
     container_builder_.AddChild(page, page_offset);
@@ -85,7 +85,8 @@ Optional<MinMaxSize> NGPageLayoutAlgorithm::ComputeMinMaxSize() const {
   return NGBlockLayoutAlgorithm(Node(), ConstraintSpace()).ComputeMinMaxSize();
 }
 
-RefPtr<NGConstraintSpace> NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
+scoped_refptr<NGConstraintSpace>
+NGPageLayoutAlgorithm::CreateConstraintSpaceForPages(
     const NGLogicalSize& page_size) const {
   NGConstraintSpaceBuilder space_builder(ConstraintSpace());
   space_builder.SetAvailableSize(page_size);

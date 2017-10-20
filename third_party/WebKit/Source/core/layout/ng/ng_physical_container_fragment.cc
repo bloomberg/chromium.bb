@@ -11,8 +11,8 @@ NGPhysicalContainerFragment::NGPhysicalContainerFragment(
     const ComputedStyle& style,
     NGPhysicalSize size,
     NGFragmentType type,
-    Vector<RefPtr<NGPhysicalFragment>>& children,
-    RefPtr<NGBreakToken> break_token)
+    Vector<scoped_refptr<NGPhysicalFragment>>& children,
+    scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalFragment(layout_object,
                          style,
                          size,
