@@ -1653,6 +1653,14 @@ def GeneralTemplates(site_config, ge_build_config):
       useflags=append_useflags(['-%s' % constants.USE_CHROME_INTERNAL]),
   )
 
+  # Tast is an experimental system for running integration tests.
+  site_config.AddTemplate(
+      'tast_vm_canary_tests',
+      tast_vm_tests=[
+          config_lib.TastVMTestConfig('tast_vm_canary',
+                                      ['((bvt || canary) && !arc)'])],
+  )
+
 
 def CreateBoardConfigs(site_config, boards_dict, ge_build_config):
   """Create mixin templates for each board."""
@@ -3439,6 +3447,7 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'lakitu-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
           site_config.templates.lakitu_notification_emails,
+          site_config.templates.tast_vm_canary_tests,
           sign_types=['base'],
       ),
 

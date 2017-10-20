@@ -190,7 +190,11 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
         {'name': 'example.Fail', 'errors': [{'reason': 'Failed!'}]},
     ]
     self._run_command_exit_code = 1
-    self.assertRaises(failures_lib.StepFailure, self.RunStage)
+
+    # TODO(derat): Use something like
+    # "self.assertRaises(failures_lib.StepFailure, self.RunStage)" once
+    # TastVMTestStage no longer derives from ForgivingBuilderStage.
+    self.RunStage()
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
     self.assertEquals(self._mock_run_command.call_count, 1)

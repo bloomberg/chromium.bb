@@ -14455,6 +14455,9 @@
             "base"
         ],
         "sync_chrome": false,
+        "tast_vm_tests": [
+            "{\n    \"suite_name\": \"tast_vm_canary\",\n    \"test_exprs\": [\n        \"((bvt || canary) && !arc)\"\n    ],\n    \"timeout\": 600\n}"
+        ],
         "vm_tests": [
             "{\n    \"test_type\": \"smoke_suite\",\n    \"timeout\": 3600\n}"
         ],

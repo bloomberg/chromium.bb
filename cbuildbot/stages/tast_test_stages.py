@@ -57,13 +57,16 @@ def _CopyResultsDir(src, dest):
   shutil.copytree(src, dest, ignore=GetSymlinks)
 
 
+# TODO(derat): Remove generic_stages.ForgivingBuilderStage after this is no
+# longer experimental.
 class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
-                      generic_stages.ArchivingStageMixin):
+                      generic_stages.ArchivingStageMixin,
+                      generic_stages.ForgivingBuilderStage):
   """Runs Tast integration tests in a virtual machine."""
 
   # Time allotted to cros_run_tast_vm_test to clean up (i.e. shut down the
   # VM) after receiving SIGTERM. After this, SIGKILL is sent.
-  CLEANUP_TIMEOUT_SEC = 10 * 60
+  CLEANUP_TIMEOUT_SEC = 30 * 60
 
   # Path within src/scripts to start/stop VM and run tests.
   SCRIPT_PATH = 'bin/cros_run_tast_vm_test'
@@ -140,7 +143,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     cmd += test_exprs
 
     result = cros_build_lib.RunCommand(
-        cmd, cwd=self._MakeChrootPathAbsolute('src/scripts'),
+        cmd, cwd=os.path.join(self._build_root, 'src/scripts'),
         error_code_ok=True, kill_timeout=TastVMTestStage.CLEANUP_TIMEOUT_SEC)
     if result.returncode:
       raise failures_lib.TestFailure(

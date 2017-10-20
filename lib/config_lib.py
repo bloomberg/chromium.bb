@@ -416,7 +416,7 @@ class TastVMTestConfig(object):
     timeout: Number of seconds to wait before timing out waiting for
              results.
   """
-  DEFAULT_TEST_TIMEOUT = 60 * 60
+  DEFAULT_TEST_TIMEOUT = 10 * 60
 
   def __init__(self, suite_name, test_exprs, timeout=DEFAULT_TEST_TIMEOUT):
     """Constructor -- see members above."""
