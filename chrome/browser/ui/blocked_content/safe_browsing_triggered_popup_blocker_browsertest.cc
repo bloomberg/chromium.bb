@@ -189,6 +189,37 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
+                       NoFeature_NoMessages) {
+  // Disable Abusive enforcement, but keep the notifications coming from the
+  // SubresourceFilter.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitFromCommandLine("SubresourceFilter",
+                                          "AbusiveAdEnforcement");
+  // Open a new tab to ensure it has the right variation params.
+  chrome::NewTab(browser());
+  ASSERT_NO_FATAL_FAILURE(content::WaitForLoadStop(web_contents()));
+
+  const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
+  GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
+  ConfigureAsAbusiveWarn(a_url);
+
+  // Navigate to a_url, should not log any warning messages.
+  ScopedLoggingObserver log_observer;
+  ui_test_utils::NavigateToURL(browser(), a_url);
+  bool opened_window = false;
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
+                                                   &opened_window));
+  EXPECT_TRUE(opened_window);
+  EXPECT_FALSE(TabSpecificContentSettings::FromWebContents(web_contents)
+                   ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
+
+  log_observer.RoundTripAndVerifyLogMessages(
+      web_contents, {}, {kAbusiveWarnMessage, kAbusiveEnforceMessage});
+}
+
+IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
                        NoList_AllowCreatingNewWindows) {
   const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
   GURL a_url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
@@ -302,8 +333,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents(), "openWindow()", &opened_window));
   EXPECT_TRUE(opened_window);
-  // Round trip to the renderer to ensure the message would have gotten sent.
-  EXPECT_TRUE(content::ExecuteScript(web_contents(), "var a = 1;"));
   log_observer.RoundTripAndVerifyLogMessages(
       web_contents(), {}, {kAbusiveEnforceMessage, kAbusiveWarnMessage});
 }

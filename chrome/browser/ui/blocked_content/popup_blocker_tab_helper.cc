@@ -55,7 +55,7 @@ struct PopupBlockerTabHelper::BlockedRequest {
 PopupBlockerTabHelper::PopupBlockerTabHelper(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       safe_browsing_triggered_popup_blocker_(
-          base::MakeUnique<SafeBrowsingTriggeredPopupBlocker>(
+          SafeBrowsingTriggeredPopupBlocker::MaybeCreate(
               web_contents,
               base::MakeUnique<ConsoleLogger>())) {}
 
@@ -151,6 +151,8 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
   if (user_gesture) {
     auto* driver_factory = subresource_filter::
         ContentSubresourceFilterDriverFactory::FromWebContents(web_contents);
+    auto* safe_browsing_blocker =
+        popup_blocker->safe_browsing_triggered_popup_blocker_.get();
 
     // TODO(crbug.com/761385): The subresource_filter popup blocker is
     // deprecated. Remove the subresource_filter code here once the
@@ -158,10 +160,9 @@ bool PopupBlockerTabHelper::MaybeBlockPopup(
     bool allowed_subresource_filter =
         !driver_factory ||
         !driver_factory->ShouldDisallowNewWindow(open_url_params);
-    DCHECK(popup_blocker->safe_browsing_triggered_popup_blocker_);
     bool allowed_safe_browsing =
-        !popup_blocker->safe_browsing_triggered_popup_blocker_
-             ->ShouldApplyStrongPopupBlocker(open_url_params);
+        !safe_browsing_blocker ||
+        !safe_browsing_blocker->ShouldApplyStrongPopupBlocker(open_url_params);
     if (allowed_subresource_filter && allowed_safe_browsing)
       return false;
     ChromeSubresourceFilterClient::LogAction(kActionPopupBlocked);
