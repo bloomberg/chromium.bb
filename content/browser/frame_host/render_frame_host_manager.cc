@@ -450,7 +450,6 @@ void RenderFrameHostManager::CommitPendingIfNecessary(
 
     // We should only hear this from our current renderer.
     DCHECK_EQ(render_frame_host_.get(), render_frame_host);
-    EnsureRenderFrameHostVisibilityConsistent();
 
     // If the current RenderFrameHost has a pending WebUI it must be committed.
     // Note: When one tries to move same-site commit logic into RenderFrameHost
@@ -813,6 +812,7 @@ RenderFrameHostImpl* RenderFrameHostManager::GetFrameHostForNavigation(
     notify_webui_of_rf_creation = true;
 
     if (navigation_rfh == render_frame_host_.get()) {
+      EnsureRenderFrameHostVisibilityConsistent();
       // TODO(nasko): This is a very ugly hack. The Chrome extensions process
       // manager still uses NotificationService and expects to see a
       // RenderViewHost changed notification after WebContents and
