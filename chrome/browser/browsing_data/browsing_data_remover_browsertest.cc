@@ -168,6 +168,21 @@ class BrowsingDataRemoverBrowserTest : public InProcessBrowserTest {
     EXPECT_FALSE(HasDataForType(type));
   }
 
+  // Test that storage systems like filesystem and websql, where just an access
+  // creates an empty store, are counted and deleted correctly.
+  void TestEmptySiteData(const std::string& type) {
+    EXPECT_EQ(0, GetSiteDataCount());
+    GURL url = embedded_test_server()->GetURL("/site_data.html");
+    ui_test_utils::NavigateToURL(browser(), url);
+    RemoveSiteEngagement();
+    EXPECT_EQ(0, GetSiteDataCount());
+    // Opening a store of this type creates a site data entry.
+    EXPECT_FALSE(HasDataForType(type));
+    EXPECT_EQ(1, GetSiteDataCount());
+    RemoveAndWait(ChromeBrowsingDataRemoverDelegate::DATA_TYPE_SITE_DATA);
+    EXPECT_EQ(0, GetSiteDataCount());
+  }
+
   bool HasDataForType(const std::string& type) {
     return RunScriptAndGetBool("has" + type + "()");
   }
@@ -321,7 +336,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   block_state = ExternalProtocolHandler::GetBlockState("tel", profile);
   ASSERT_EQ(ExternalProtocolHandler::UNKNOWN, block_state);
 }
-// Visiting a site creates an site engagement entry. Test that it is counted and
+// Visiting a site creates a site engagement entry. Test that it is counted and
 // deleted properly.
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SiteEngagementDeletion) {
   EXPECT_EQ(0, GetSiteDataCount());
@@ -346,6 +361,40 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest,
   TestSiteData("SessionStorage");
 }
 
+// Test that session storage is not counted until crbug.com/772337 is fixed.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, SessionStorageCounting) {
+  EXPECT_EQ(0, GetSiteDataCount());
+  GURL url = embedded_test_server()->GetURL("/site_data.html");
+  ui_test_utils::NavigateToURL(browser(), url);
+  RemoveSiteEngagement();
+  EXPECT_EQ(0, GetSiteDataCount());
+  SetDataForType("SessionStorage");
+  EXPECT_EQ(0, GetSiteDataCount());
+  EXPECT_TRUE(HasDataForType("SessionStorage"));
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, ServiceWorkerDeletion) {
+  TestSiteData("ServiceWorker");
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, CacheStorageDeletion) {
+  TestSiteData("CacheStorage");
+}
+
 IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, FileSystemDeletion) {
   TestSiteData("FileSystem");
+}
+
+// Test that empty filesystems are deleted correctly.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyFileSystem) {
+  TestEmptySiteData("FileSystem");
+}
+
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, WebSqlDeletion) {
+  TestSiteData("WebSql");
+}
+
+// Test that empty websql dbs are deleted correctly.
+IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, EmptyWebSql) {
+  TestEmptySiteData("WebSql");
 }
