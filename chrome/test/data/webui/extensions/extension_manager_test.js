@@ -115,13 +115,17 @@ cr.define('extension_manager_tests', function() {
     });
 
     test(assert(TestNames.ChangePages), function() {
+      MockInteractions.tap(
+          manager.$$('extensions-toolbar').$$('cr-toolbar').$$('#menuButton'));
+      Polymer.dom.flush();
+
       // We start on the item list.
-      MockInteractions.tap(manager.$.sidebar.$['sections-extensions']);
+      MockInteractions.tap(manager.$$('#sidebar').$['sections-extensions']);
       Polymer.dom.flush();
       isActiveView(Page.LIST);
 
       // Switch: item list -> keyboard shortcuts.
-      MockInteractions.tap(manager.$.sidebar.$['sections-shortcuts']);
+      MockInteractions.tap(manager.$$('#sidebar').$['sections-shortcuts']);
       Polymer.dom.flush();
       isActiveView(Page.SHORTCUTS);
 
@@ -133,12 +137,12 @@ cr.define('extension_manager_tests', function() {
       isActiveView(Page.DETAILS);
 
       // Switch: detail view -> keyboard shortcuts.
-      MockInteractions.tap(manager.$.sidebar.$['sections-shortcuts']);
+      MockInteractions.tap(manager.$$('#sidebar').$['sections-shortcuts']);
       Polymer.dom.flush();
       isActiveView(Page.SHORTCUTS);
 
       // We get back on the item list.
-      MockInteractions.tap(manager.$.sidebar.$['sections-extensions']);
+      MockInteractions.tap(manager.$$('#sidebar').$['sections-extensions']);
       Polymer.dom.flush();
       isActiveView(Page.LIST);
     });

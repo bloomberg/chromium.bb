@@ -65,12 +65,14 @@
 </if>
         >
     </extensions-toolbar>
-    <dialog id="drawer" is="cr-drawer" heading="$i18n{toolbarTitle}"
-        align="$i18n{textdirection}">
-      <div class="drawer-content">
-        <extensions-sidebar id="sidebar"></extensions-sidebar>
-      </div>
-    </dialog>
+    <template is="dom-if" if="[[showDrawer_]]" restamp>
+      <dialog id="drawer" is="cr-drawer" heading="$i18n{toolbarTitle}"
+          align="$i18n{textdirection}" on-close="onDrawerClose_">
+        <div class="drawer-content">
+          <extensions-sidebar id="sidebar"></extensions-sidebar>
+        </div>
+      </dialog>
+    </template>
     <extensions-view-manager id="viewManager" role="main">
       <extensions-item-list id="items-list" is-guest="[[isGuest_]]"
           delegate="[[delegate]]" in-dev-mode="[[inDevMode]]"
@@ -88,12 +90,21 @@
           data="[[errorPageItem_]]" delegate="[[delegate]]" slot="view">
       </extensions-error-page>
     </extensions-view-manager>
-    <extensions-options-dialog id="options-dialog">
-    </extensions-options-dialog>
-    <extensions-pack-dialog id="pack-dialog" delegate="[[delegate]]">
-    </extensions-pack-dialog>
-    <extensions-load-error id="load-error" delegate="[[delegate]]">
-    </extensions-load-error>
+    <template is="dom-if" if="[[showOptionsDialog_]]" restamp>
+      <extensions-options-dialog id="options-dialog"
+          on-close="onOptionsDialogClose_">
+      </extensions-options-dialog>
+    </template>
+    <template is="dom-if" if="[[showPackDialog_]]" restamp>
+      <extensions-pack-dialog id="pack-dialog" delegate="[[delegate]]"
+          on-close="onPackDialogClose_">
+      </extensions-pack-dialog>
+    </template>
+    <template is="dom-if" if="[[showLoadErrorDialog_]]" restamp>
+      <extensions-load-error id="load-error" delegate="[[delegate]]"
+          on-close="onLoadErrorDialogClose_">
+      </extensions-load-error>
+    </template>
 <if expr="chromeos">
     <template is="dom-if" if="[[showKioskDialog_]]" restamp>
       <extensions-kiosk-dialog id="kiosk-dialog"

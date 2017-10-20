@@ -177,8 +177,7 @@ cr.define('extensions', function() {
               throw new Error(chrome.runtime.lastError.message);
             }
             if (loadError) {
-              this.manager_.loadError.loadError = loadError;
-              this.manager_.loadError.show();
+              this.manager_.showLoadError(loadError);
             }
           });
     }

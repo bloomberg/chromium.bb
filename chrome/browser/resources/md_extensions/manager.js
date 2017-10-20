@@ -101,6 +101,18 @@ cr.define('extensions', function() {
         value: false,
       },
 
+      /** @private */
+      showDrawer_: Boolean,
+
+      /** @private */
+      showLoadErrorDialog_: Boolean,
+
+      /** @private */
+      showOptionsDialog_: Boolean,
+
+      /** @private */
+      showPackDialog_: Boolean,
+
       // <if expr="chromeos">
       /** @private */
       kioskEnabled_: {
@@ -124,7 +136,7 @@ cr.define('extensions', function() {
     currentPage_: null,
 
     /**
-     * The ID of the listner on |extensions.navigation|. Stored so that the
+     * The ID of the listener on |extensions.navigation|. Stored so that the
      * listener can be removed when this element is detached (happens in tests).
      * @private {?number}
      */
@@ -169,18 +181,6 @@ cr.define('extensions', function() {
       return this.$['keyboard-shortcuts'];
     },
 
-    get packDialog() {
-      return this.$['pack-dialog'];
-    },
-
-    get loadError() {
-      return this.$['load-error'];
-    },
-
-    get optionsDialog() {
-      return this.$['options-dialog'];
-    },
-
     get errorPage() {
       return this.$['error-page'];
     },
@@ -206,7 +206,10 @@ cr.define('extensions', function() {
 
     /** @private */
     onMenuButtonTap_: function() {
-      this.$.drawer.openDrawer();
+      this.showDrawer_ = true;
+      this.async(() => {
+        this.$$('#drawer').openDrawer();
+      });
     },
 
     /**
@@ -310,6 +313,18 @@ cr.define('extensions', function() {
     },
 
     /**
+     * @param {!chrome.developerPrivate.LoadError} loadError
+     */
+    showLoadError: function(loadError) {
+      this.showLoadErrorDialog_ = true;
+      this.async(() => {
+        const dialog = this.$$('#load-error');
+        dialog.loadError = loadError;
+        dialog.show();
+      });
+    },
+
+    /**
      * @param {Page} page
      * @return {!(extensions.KeyboardShortcuts |
      *            extensions.DetailView |
@@ -336,9 +351,17 @@ cr.define('extensions', function() {
      * @private
      */
     changePage_: function(newPage) {
-      this.$.drawer.closeDrawer();
-      if (this.optionsDialog && this.optionsDialog.open)
-        this.optionsDialog.close();
+      const drawer = this.$$('#drawer');
+      if (drawer && drawer.open) {
+        drawer.closeDrawer();
+        this.showDrawer_ = false;
+      }
+
+      const optionsDialog = this.$$('#options-dialog');
+      if (optionsDialog && optionsDialog.open) {
+        optionsDialog.close();
+        this.showOptionsDialog_ = false;
+      }
 
       const fromPage = this.currentPage_ ? this.currentPage_.page : null;
       const toPage = newPage.page;
@@ -362,15 +385,41 @@ cr.define('extensions', function() {
       if (newPage.subpage) {
         assert(newPage.subpage == Dialog.OPTIONS);
         assert(newPage.extensionId);
-        this.optionsDialog.show(data);
+        this.showOptionsDialog_ = true;
+        this.async(() => {
+          this.$$('#options-dialog').show(data);
+        });
       }
 
       this.currentPage_ = newPage;
     },
 
     /** @private */
+    onDrawerClose_: function() {
+      this.showDrawer_ = false;
+    },
+
+    /** @private */
+    onLoadErrorDialogClose_: function() {
+      this.showLoadErrorDialog_ = false;
+    },
+
+    /** @private */
+    onOptionsDialogClose_: function() {
+      this.showOptionsDialog_ = false;
+    },
+
+    /** @private */
     onPackTap_: function() {
-      this.$['pack-dialog'].show();
+      this.showPackDialog_ = true;
+      this.async(() => {
+        this.$$('#pack-dialog').show();
+      });
+    },
+
+    /** @private */
+    onPackDialogClose_: function() {
+      this.showPackDialog_ = false;
     },
 
     // <if expr="chromeos">
