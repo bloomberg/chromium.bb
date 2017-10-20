@@ -22,7 +22,7 @@ enum class Error;
 // Defines a specialized task for updating a group of CRXs.
 class TaskUpdate : public Task {
  public:
-  using Callback = base::Callback<void(Task* task, Error error)>;
+  using Callback = base::OnceCallback<void(Task* task, Error error)>;
 
   // |update_engine| is injected here to handle the task.
   // |is_foreground| is true when the update task is initiated by the user,
@@ -35,7 +35,7 @@ class TaskUpdate : public Task {
              bool is_foreground,
              const std::vector<std::string>& ids,
              const UpdateClient::CrxDataCallback& crx_data_callback,
-             const Callback& callback);
+             Callback callback);
   ~TaskUpdate() override;
 
   void Run() override;
@@ -56,7 +56,7 @@ class TaskUpdate : public Task {
   const bool is_foreground_;
   const std::vector<std::string> ids_;
   const UpdateClient::CrxDataCallback crx_data_callback_;
-  const Callback callback_;
+  Callback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskUpdate);
 };

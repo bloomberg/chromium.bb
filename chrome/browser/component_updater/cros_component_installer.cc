@@ -163,87 +163,88 @@ bool CrOSComponentInstallerPolicy::IsCompatible(
 // load_callback: call_status - dbus call status, result - component mount
 // point.
 static void LoadResult(
-    const base::Callback<void(const std::string&)>& load_callback,
+    base::OnceCallback<void(const std::string&)> load_callback,
     base::Optional<std::string> result) {
-  PostTask(FROM_HERE,
-           base::BindOnce(load_callback, result.value_or(std::string())));
+  PostTask(FROM_HERE, base::BindOnce(std::move(load_callback),
+                                     result.value_or(std::string())));
 }
 
 // Internal function to load a component.
 static void LoadComponentInternal(
     const std::string& name,
-    const base::Callback<void(const std::string&)>& load_callback) {
+    base::OnceCallback<void(const std::string&)> load_callback) {
   DCHECK(g_browser_process->platform_part()->IsCompatibleCrOSComponent(name));
   chromeos::ImageLoaderClient* loader =
       chromeos::DBusThreadManager::Get()->GetImageLoaderClient();
   if (loader) {
-    loader->LoadComponent(name, base::Bind(&LoadResult, load_callback));
+    loader->LoadComponent(
+        name, base::BindOnce(&LoadResult, std::move(load_callback)));
   } else {
-    base::PostTask(FROM_HERE, base::BindOnce(load_callback, ""));
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback), ""));
   }
 }
 
 // It calls LoadComponentInternal to load the installed component.
 static void InstallResult(
     const std::string& name,
-    const base::Callback<void(const std::string&)>& load_callback,
+    base::OnceCallback<void(const std::string&)> load_callback,
     update_client::Error error) {
-  LoadComponentInternal(name, load_callback);
+  LoadComponentInternal(name, std::move(load_callback));
 }
 
 // It calls OnDemandUpdate to install the component right after being
 // registered.
-void CrOSComponent::RegisterResult(
-    ComponentUpdateService* cus,
-    const std::string& id,
-    const update_client::Callback& install_callback) {
-  cus->GetOnDemandUpdater().OnDemandUpdate(id, install_callback);
+void CrOSComponent::RegisterResult(ComponentUpdateService* cus,
+                                   const std::string& id,
+                                   update_client::Callback install_callback) {
+  cus->GetOnDemandUpdater().OnDemandUpdate(id, std::move(install_callback));
 }
 
 // Register a component with a dedicated ComponentUpdateService instance.
 static void RegisterComponent(ComponentUpdateService* cus,
                               const ComponentConfig& config,
-                              const base::Closure& register_callback) {
+                              base::OnceClosure register_callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   std::unique_ptr<ComponentInstallerPolicy> policy(
       new CrOSComponentInstallerPolicy(config));
   // |cus| will take ownership of |installer| during
   // installer->Register(cus).
   ComponentInstaller* installer = new ComponentInstaller(std::move(policy));
-  installer->Register(cus, register_callback);
+  installer->Register(cus, std::move(register_callback));
 }
 
 // Install a component with a dedicated ComponentUpdateService instance.
 void CrOSComponent::InstallComponent(
     ComponentUpdateService* cus,
     const std::string& name,
-    const base::Callback<void(const std::string&)>& load_callback) {
+    base::OnceCallback<void(const std::string&)> load_callback) {
   const ConfigMap components = CONFIG_MAP_CONTENT;
   const auto it = components.find(name);
   if (name.empty() || it == components.end()) {
-    base::PostTask(FROM_HERE, base::BindOnce(load_callback, ""));
+    base::PostTask(FROM_HERE, base::BindOnce(std::move(load_callback), ""));
     return;
   }
   ComponentConfig config(it->first, it->second.find("env_version")->second,
                          it->second.find("sha2hashstr")->second);
   RegisterComponent(cus, config,
-                    base::Bind(RegisterResult, cus,
-                               crx_file::id_util::GenerateIdFromHex(
-                                   it->second.find("sha2hashstr")->second)
-                                   .substr(0, 32),
-                               base::Bind(InstallResult, name, load_callback)));
+                    base::BindOnce(RegisterResult, cus,
+                                   crx_file::id_util::GenerateIdFromHex(
+                                       it->second.find("sha2hashstr")->second)
+                                       .substr(0, 32),
+                                   base::BindOnce(InstallResult, name,
+                                                  std::move(load_callback))));
 }
 
 void CrOSComponent::LoadComponent(
     const std::string& name,
-    const base::Callback<void(const std::string&)>& load_callback) {
+    base::OnceCallback<void(const std::string&)> load_callback) {
   if (!g_browser_process->platform_part()->IsCompatibleCrOSComponent(name)) {
     // A compatible component is not installed, start installation process.
     auto* const cus = g_browser_process->component_updater();
-    InstallComponent(cus, name, load_callback);
+    InstallComponent(cus, name, std::move(load_callback));
   } else {
     // A compatible component is intalled, load it directly.
-    LoadComponentInternal(name, load_callback);
+    LoadComponentInternal(name, std::move(load_callback));
   }
 }
 
