@@ -139,22 +139,25 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
         hit_test_manager_->GetActiveHitTestRegionList(surface_id);
     if (!hit_test_region_list) {
       // Surface HitTestRegionList not found - it may be late.
-      // Don't include this region so that it doesn't receive events.
-      return parent_index;
-    }
+      // In this case, this child surface doesn't have any children regions,
+      // so it should accept events itself. E.g. when renderer doesn't submit
+      // any hit-test data for its children, itself should still be able to
+      // get events.
+      flags |= mojom::kHitTestMine;
+    } else {
+      // Rather than add a node in the tree for this hit_test_region_list
+      // element we can simplify the tree by merging the flags and transform
+      // into the kHitTestChildSurface element.
+      if (!hit_test_region_list->transform.IsIdentity())
+        transform.PreconcatTransform(hit_test_region_list->transform);
 
-    // Rather than add a node in the tree for this hit_test_region_list element
-    // we can simplify the tree by merging the flags and transform into
-    // the kHitTestChildSurface element.
-    if (!hit_test_region_list->transform.IsIdentity())
-      transform.PreconcatTransform(hit_test_region_list->transform);
+      flags |= hit_test_region_list->flags;
 
-    flags |= hit_test_region_list->flags;
-
-    for (const auto& child_region : hit_test_region_list->regions) {
-      region_index = AppendRegion(region_index, child_region);
-      if (region_index >= write_size_ - 1)
-        break;
+      for (const auto& child_region : hit_test_region_list->regions) {
+        region_index = AppendRegion(region_index, child_region);
+        if (region_index >= write_size_ - 1)
+          break;
+      }
     }
   }
   DCHECK_GE(region_index - parent_index - 1, 0u);
