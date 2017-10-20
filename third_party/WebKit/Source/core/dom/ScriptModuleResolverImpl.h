@@ -43,6 +43,7 @@ class CORE_EXPORT ScriptModuleResolverImpl final
 
   void RegisterModuleScript(ModuleScript*) final;
   void UnregisterModuleScript(ModuleScript*) final;
+  ModuleScript* GetHostDefined(const ScriptModule&) const final;
 
   // Implements "Runtime Semantics: HostResolveImportedModule" per HTML spec.
   // https://html.spec.whatwg.org/#hostresolveimportedmodule(referencingmodule,-specifier)

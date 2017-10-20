@@ -20,6 +20,11 @@ class EmptyScriptModuleResolver final : public ScriptModuleResolver {
   void RegisterModuleScript(ModuleScript*) override {}
   void UnregisterModuleScript(ModuleScript*) override {}
 
+  ModuleScript* GetHostDefined(const ScriptModule&) const override {
+    NOTREACHED();
+    return nullptr;
+  }
+
   ScriptModule Resolve(const String& specifier,
                        const ScriptModule& referrer,
                        ExceptionState&) override {
