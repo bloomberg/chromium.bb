@@ -71,6 +71,7 @@ TestParams params[] = {
          kUnderDevelopmentNotice,
          kCloseButton,
          kExclusiveScreenToast,
+         kVoiceSearchButton,
 
      }},
     {&UiScene::GetVisible2dBrowsingOverlayElements,
