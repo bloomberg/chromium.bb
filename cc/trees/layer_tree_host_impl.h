@@ -902,10 +902,12 @@ class CC_EXPORT LayerTreeHostImpl
   std::unique_ptr<PendingTreeRasterDurationHistogramTimer>
       pending_tree_raster_duration_timer_;
 
-  // The id of the scroll node to which scroll animations must latch.
+  // The element id of the scroll node to which scroll animations must latch.
   // This gets reset at ScrollAnimatedBegin, and updated the first time that a
-  // scroll animation is created in ScrollAnimated.
-  int scroll_animating_latched_node_id_;
+  // scroll animation is created in ScrollAnimated. We need to use element ids
+  // instead of node ids since they are stable across the property tree update
+  // in SetPropertyTrees.
+  ElementId scroll_animating_latched_element_id_;
 
   // These callbacks are stored here to be transfered to the main thread when we
   // begin main frame. These callbacks must only be called on the main thread.

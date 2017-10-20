@@ -243,7 +243,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       requires_high_res_to_draw_(false),
       is_likely_to_require_a_draw_(false),
       has_valid_layer_tree_frame_sink_(false),
-      scroll_animating_latched_node_id_(ScrollTree::kInvalidNodeId),
+      scroll_animating_latched_element_id_(kInvalidElementId),
       has_scrolled_by_wheel_(false),
       has_scrolled_by_touch_(false),
       touchpad_and_wheel_scroll_latching_enabled_(false),
@@ -3087,7 +3087,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimatedBegin(
   // that ScrollBy uses for non-animated wheel scrolls.
   scroll_status = ScrollBegin(scroll_state, WHEEL);
   if (scroll_status.thread == SCROLL_ON_IMPL_THREAD) {
-    scroll_animating_latched_node_id_ = ScrollTree::kInvalidNodeId;
+    scroll_animating_latched_element_id_ = ElementId();
     ScrollStateData scroll_state_end_data;
     scroll_state_end_data.is_ending = true;
     ScrollState scroll_state_end(scroll_state_end_data);
@@ -3216,9 +3216,12 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       if (!scroll_node->scrollable)
         continue;
 
+      // For the rest of the current scroll sequence, latch to the first node
+      // that scrolled while it still exists.
       if (touchpad_and_wheel_scroll_latching_enabled_ &&
-          scroll_animating_latched_node_id_ != ScrollTree::kInvalidNodeId &&
-          scroll_node->id != scroll_animating_latched_node_id_) {
+          scroll_tree.FindNodeFromElementId(
+              scroll_animating_latched_element_id_) &&
+          scroll_node->element_id != scroll_animating_latched_element_id_) {
         continue;
       }
 
@@ -3241,7 +3244,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         // Viewport::ScrollAnimated returns pending_delta as long as it starts
         // an animation.
         if (scrolled == pending_delta) {
-          scroll_animating_latched_node_id_ = scroll_node->id;
+          scroll_animating_latched_element_id_ = scroll_node->element_id;
           return scroll_status;
         }
         break;
@@ -3250,7 +3253,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
       gfx::Vector2dF scroll_delta =
           ComputeScrollDelta(*scroll_node, pending_delta);
       if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by)) {
-        scroll_animating_latched_node_id_ = scroll_node->id;
+        scroll_animating_latched_element_id_ = scroll_node->element_id;
         return scroll_status;
       }
 

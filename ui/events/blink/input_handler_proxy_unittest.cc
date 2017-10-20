@@ -510,6 +510,7 @@ class InputHandlerProxyTest
   void GestureFlingStartedTouchpad();
   void GestureFlingStopsAtContentEdge();
   void GestureFlingTransferResetsTouchpad();
+  void ScrollHandlingSwitchedToMainThread();
 
   const bool synchronous_root_scroll_;
   const bool install_synchronous_handler_;
@@ -1082,7 +1083,7 @@ TEST_P(InputHandlerProxyWithoutWheelScrollLatchingTest,
   GestureFlingStartedTouchpad();
 }
 
-TEST_P(InputHandlerProxyTest, GestureScrollHandlingSwitchedToMainThread) {
+void InputHandlerProxyTest::ScrollHandlingSwitchedToMainThread() {
   // We shouldn't send any events to the widget for this gesture.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE;
   VERIFY_AND_RESET_MOCKS();
@@ -1127,6 +1128,14 @@ TEST_P(InputHandlerProxyTest, GestureScrollHandlingSwitchedToMainThread) {
   EXPECT_EQ(expected_disposition_, input_handler_->HandleInputEvent(gesture_));
 
   VERIFY_AND_RESET_MOCKS();
+}
+TEST_P(InputHandlerProxyTest, WheelScrollHandlingSwitchedToMainThread) {
+  gesture_.source_device = blink::kWebGestureDeviceTouchpad;
+  ScrollHandlingSwitchedToMainThread();
+}
+TEST_P(InputHandlerProxyTest, TouchScrollHandlingSwitchedToMainThread) {
+  gesture_.source_device = blink::kWebGestureDeviceTouchscreen;
+  ScrollHandlingSwitchedToMainThread();
 }
 
 TEST_P(InputHandlerProxyTest, GestureFlingTouchpadScrollLatchingEnabled) {
