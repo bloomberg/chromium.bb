@@ -293,6 +293,38 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_READ(kSuccess, kData, kDataSize)
   END_TEST_CASE
 
+  START_TEST_CASE("WriteExistingFile")
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    // Write big data first
+    WRITE_FILE(kBigData, kBigDataSize)
+    EXPECT_FILE_WRITTEN(kSuccess)
+    CLOSE_FILE
+    CREATE_FILE_IO
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    READ_FILE
+    EXPECT_FILE_READ(kSuccess, kBigData, kBigDataSize)
+    // Now overwrite the file with normal data
+    WRITE_FILE(kData, kDataSize)
+    EXPECT_FILE_WRITTEN(kSuccess)
+    CLOSE_FILE
+    CREATE_FILE_IO
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    READ_FILE
+    EXPECT_FILE_READ(kSuccess, kData, kDataSize)
+    // Now overwrite the file with big data again
+    WRITE_FILE(kBigData, kBigDataSize)
+    EXPECT_FILE_WRITTEN(kSuccess)
+    CLOSE_FILE
+    CREATE_FILE_IO
+    OPEN_FILE
+    EXPECT_FILE_OPENED(kSuccess)
+    READ_FILE
+    EXPECT_FILE_READ(kSuccess, kBigData, kBigDataSize)
+  END_TEST_CASE
+
   START_TEST_CASE("MultipleReadsAndWrites")
     OPEN_FILE
     EXPECT_FILE_OPENED(kSuccess)
@@ -364,8 +396,7 @@ void FileIOTestRunner::AddTests() {
   START_TEST_CASE("CloseDuringPendingWrite")
     OPEN_FILE
     EXPECT_FILE_OPENED(kSuccess)
-    // TODO(xhwang): Reenable this after http:://crbug.com/415401 is fixed.
-    // WRITE_FILE(kData, kDataSize)
+    WRITE_FILE(kData, kDataSize)
     CLOSE_FILE
   END_TEST_CASE
 
@@ -374,8 +405,7 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_OPENED(kSuccess)
     WRITE_FILE(kData, kDataSize)
     EXPECT_FILE_WRITTEN(kSuccess)
-    // TODO(xhwang): Reenable this after http:://crbug.com/415401 is fixed.
-    // WRITE_FILE(kBigData, kBigDataSize)
+    WRITE_FILE(kBigData, kBigDataSize)
     CLOSE_FILE
     // Write() didn't finish and the content of the file is not modified.
     CREATE_FILE_IO
@@ -390,8 +420,7 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_OPENED(kSuccess)
     WRITE_FILE(kBigData, kBigDataSize)
     EXPECT_FILE_WRITTEN(kSuccess)
-    // TODO(xhwang): Reenable this after http:://crbug.com/415401 is fixed.
-    // WRITE_FILE(kData, kDataSize)
+    WRITE_FILE(kData, kDataSize)
     CLOSE_FILE
     // Write() didn't finish and the content of the file is not modified.
     CREATE_FILE_IO
@@ -406,8 +435,7 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_OPENED(kSuccess)
     WRITE_FILE(kData, kDataSize)
     EXPECT_FILE_WRITTEN(kSuccess)
-    // TODO(xhwang): Reenable this after http:://crbug.com/415401 is fixed.
-    // READ_FILE
+    READ_FILE
     CLOSE_FILE
     // Make sure the file is not modified.
     CREATE_FILE_IO
@@ -424,8 +452,7 @@ void FileIOTestRunner::AddTests() {
       EXPECT_FILE_OPENED(kSuccess)
       WRITE_FILE(kData, kDataSize)
       EXPECT_FILE_WRITTEN(kSuccess)
-      // TODO(xhwang): Reenable this after http:://crbug.com/415401 is fixed.
-      // WRITE_FILE(kBigData, kBigDataSize)
+      WRITE_FILE(kBigData, kBigDataSize)
       CLOSE_FILE
       // Make sure the file is not modified.
       CREATE_FILE_IO
