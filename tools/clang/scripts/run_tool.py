@@ -75,6 +75,8 @@ def _PruneGitFiles(git_files, paths):
   Returns:
     Pruned list of files.
   """
+  if not git_files:
+    return []
   pruned_list = []
   git_index = 0
   for path in sorted(paths):
