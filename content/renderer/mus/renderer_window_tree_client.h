@@ -37,6 +37,7 @@ class ContextProvider;
 namespace content {
 
 class MusEmbeddedFrame;
+class MusEmbeddedFrameDelegate;
 class RenderFrameProxy;
 
 // ui.mojom.WindowTreeClient implementation for RenderWidget. This lives and
@@ -77,15 +78,17 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const LayerTreeFrameSinkCallback& callback);
 
+  // Creates a new MusEmbeddedFrame. |token| is an UnguessableToken that was
+  // registered for an embedding with mus (specifically ui::mojom::WindowTree).
+  std::unique_ptr<MusEmbeddedFrame> CreateMusEmbeddedFrame(
+      MusEmbeddedFrameDelegate* mus_embedded_frame_delegate,
+      const base::UnguessableToken& token);
+
  private:
   friend class MusEmbeddedFrame;
 
   explicit RendererWindowTreeClient(int routing_id);
   ~RendererWindowTreeClient() override;
-
-  std::unique_ptr<MusEmbeddedFrame> CreateMusEmbeddedFrame(
-      RenderFrameProxy* render_frame_proxy,
-      const base::UnguessableToken& token);
 
   void RequestLayerTreeFrameSinkInternal(
       scoped_refptr<viz::ContextProvider> context_provider,
@@ -227,59 +230,6 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
   std::map<uint32_t, base::UnguessableToken> pending_frames_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererWindowTreeClient);
-};
-
-// MusEmbeddedFrame represents an embedding of an OOPIF frame. This is done
-// by creating a window and calling Embed().
-class MusEmbeddedFrame {
- public:
-  ~MusEmbeddedFrame();
-
-  // Sets the bounds of the embedded frame.
-  void SetWindowBounds(const viz::LocalSurfaceId& local_surface_id,
-                       const gfx::Rect& bounds);
-
- private:
-  friend class RendererWindowTreeClient;
-
-  // Stores state that needs to pushed to the server once the connection has
-  // been established (OnEmbed() is called).
-  struct PendingState {
-    PendingState();
-    ~PendingState();
-
-    base::UnguessableToken token;
-    viz::LocalSurfaceId local_surface_id;
-    gfx::Rect bounds;
-    // True if SetWindowBounds() was called.
-    bool was_set_window_bounds_called = false;
-  };
-
-  MusEmbeddedFrame(RendererWindowTreeClient* renderer_window_tree_client,
-                   RenderFrameProxy* proxy,
-                   ui::ClientSpecificId window_id,
-                   const base::UnguessableToken& token);
-
-  // Called once the WindowTree has been obtained. This is only called if
-  // the MusEmbeddedFrame is created before the WindowTree has been obtained.
-  void OnTreeAvailable();
-
-  // Does the actual embedding.
-  void CreateChildWindowAndEmbed(const base::UnguessableToken& token);
-
-  uint32_t GetAndAdvanceNextChangeId();
-
-  ui::mojom::WindowTree* window_tree() {
-    return renderer_window_tree_client_->tree_.get();
-  }
-
-  RendererWindowTreeClient* renderer_window_tree_client_;
-  RenderFrameProxy* render_frame_proxy_;
-  const ui::ClientSpecificId window_id_;
-
-  std::unique_ptr<PendingState> pending_state_;
-
-  DISALLOW_COPY_AND_ASSIGN(MusEmbeddedFrame);
 };
 
 }  // namespace content
