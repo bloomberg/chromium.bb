@@ -59,7 +59,7 @@ class PerfDeviceTriggerUnittest(unittest.TestCase):
               '/path/to/swarming.py', 'trigger',
               '--some', '--test',
               '--dimension', 'id', 'build1', '--',
-              'args', '--id', 'build1'])
+              'args', '--bot', 'build1'])
           finally:
             os.close(temp_fd)
             os.remove(json_temp)

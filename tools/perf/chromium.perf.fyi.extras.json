@@ -61,7 +61,6 @@
     "isolated_scripts": [
       {
         "args": [
-          "--bot", "swarm823-c4",
           "--builder", "One Buildbot Step Test Builder",
           "-v",
           "--output-format=histograms",
@@ -78,7 +77,6 @@
           "can_use_on_swarming_builders": true,
           "dimension_sets": [
             {
-              "id": "swarm823-c4",
               "pool": "Chrome-perf-fyi"
             }
           ],
@@ -86,6 +84,14 @@
           "hard_timeout": 10800,
           "ignore_task_failure": false,
           "io_timeout": 3600
+        },
+        "trigger_script": {
+          "script": "//tools/perf/perf_device_trigger.py",
+          "args": [
+            "--bot-id", "swarm823-c4",
+            "--bot-id", "swarm846-c4",
+            "--bot-id", "swarm847-c4"
+          ]
         }
       }
     ]
