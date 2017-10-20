@@ -80,6 +80,10 @@ size_t RegisterCastCrashKeys() {
 
       // Temporary for https://crbug.com/685996.
       {"user-cloud-policy-manager-connect-trace", ::crash_keys::kMediumSize},
+
+      // Accessibility keys. Temporary for http://crbug.com/765490.
+      {"ax_tree_error", ::crash_keys::kSmallSize},
+      {"ax_tree_update", ::crash_keys::kMediumSize},
   };
 
   return base::debug::InitCrashKeys(fixed_keys, arraysize(fixed_keys),
