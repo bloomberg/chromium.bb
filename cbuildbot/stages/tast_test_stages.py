@@ -26,12 +26,35 @@ from chromite.lib import osutils
 from chromite.lib import timeout_util
 
 
+# Error format string used when tast exits with a non-zero exit code.
+FAILURE_EXIT_CODE = '** Tests failed with code %d **'
+
+# Error format string used when one or more tests fail.
+FAILURE_TESTS_FAILED = '** %d test(s) failed **'
+
+# Error format string used when results dir is missing or empty.
+FAILURE_NO_RESULTS = '** No results in %s **'
+
+# Error format string used when results file is unreadable.
+FAILURE_BAD_RESULTS = '** Failed to read results from %s: %s **'
+
 # Prefix for results download link.
 RESULTS_LINK_PREFIX = 'results: '
+
+# Prefix for results link for flaky tests.
+FLAKY_PREFIX = 'flaky: '
 
 # Name of JSON file containing individual tests' results written by the tast
 # command to the results dir.
 RESULTS_FILENAME = 'results.json'
+
+# Names of properties in test objects from results JSON files.
+RESULTS_NAME_KEY = 'name'
+RESULTS_ERRORS_KEY = 'errors'
+RESULTS_ATTR_KEY = 'attr'
+
+# Attribute used to label flaky tests.
+RESULTS_FLAKY_ATTR = 'flaky'
 
 # Directory written within main results dir by tast command containing per-test
 # results.
@@ -84,22 +107,22 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     chroot_results_dir = commands.CreateTestRoot(self._build_root)
 
     try:
-      with cgroups.SimpleContainChildren('TastVMTest'):
-        # Iterate through TastVMTestConfig objects describing suites to run.
-        for test in self._run.config.tast_vm_tests:
-          logging.info('Running Tast VM test suite %s (%s)',
-                       test.suite_name, (' '.join(test.test_exprs)))
-          # We apparently always prefix reasons with spaces because timeout_util
-          # appends them directly to error messages.
-          reason = ' Reached TastVMTestStage test run timeout.'
-          with timeout_util.Timeout(test.timeout, reason_message=reason):
-            self._RunSuite(test.test_exprs,
-                           os.path.join(chroot_results_dir, test.suite_name))
-    except Exception as e:
-      logging.error('Tast VM tests failed: %s', e)
+      got_exception = False
+      try:
+        self._RunAllSuites(self._run.config.tast_vm_tests, chroot_results_dir)
+      except Exception:
+        # sys.exc_info() returns (None, None, None) in the finally block, so we
+        # need to record the fact that we already have an error here.
+        got_exception = True
+        raise
+      finally:
+        self._ProcessAndArchiveResults(
+            self._MakeChrootPathAbsolute(chroot_results_dir),
+            [t.suite_name for t in self._run.config.tast_vm_tests],
+            got_exception)
+    except Exception:
+      logging.exception('Tast VM tests failed')
       raise
-    finally:
-      self._ArchiveResults(self._MakeChrootPathAbsolute(chroot_results_dir))
 
   def _MakeChrootPathAbsolute(self, path):
     """Appends the supplied path to the chroot's path.
@@ -116,19 +139,41 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     return os.path.join(self._build_root, constants.DEFAULT_CHROOT_DIR,
                         path.lstrip('/'))
 
-  def _RunSuite(self, test_exprs, chroot_results_dir):
+  def _RunAllSuites(self, suites, base_chroot_results_dir):
+    """Runs multiple test suites sequentially.
+
+    Args:
+      suites: List of TestVMTestConfig objects describing suites to run.
+      base_chroot_results_dir: Base results directory relative to chroot.
+
+    Raises:
+      failures_lib.TestFailure if an internal error is encountered.
+    """
+    with cgroups.SimpleContainChildren('TastVMTest'):
+      for suite in suites:
+        logging.info('Running Tast VM test suite %s (%s)',
+                     suite.suite_name, (' '.join(suite.test_exprs)))
+        # We apparently always prefix reasons with spaces because timeout_util
+        # appends them directly to error messages.
+        reason = ' Reached TastVMTestStage test run timeout.'
+        with timeout_util.Timeout(suite.timeout, reason_message=reason):
+          self._RunSuite(suite.test_exprs,
+                         os.path.join(base_chroot_results_dir,
+                                      suite.suite_name))
+
+  def _RunSuite(self, test_exprs, suite_chroot_results_dir):
     """Runs a collection of tests.
 
     Args:
       test_exprs: List of string expressions describing which tests to run; this
                   is passed directly to the 'tast run' command. See
                   https://goo.gl/UPNEgT for info about test expressions.
-      chroot_results_dir: String containing path of directory where the tast
-                          command should store test results, relative to chroot.
+      suite_chroot_results_dir: String containing path of directory where the
+                                tast command should store test results,
+                                relative to chroot.
 
     Raises:
-      failures_lib.TestFailure if testing fails (either due to test failures or
-        internal errors).
+      failures_lib.TestFailure if an internal error is encountered.
     """
     image = os.path.join(self.GetImageDirSymlink(), constants.TEST_IMAGE_BIN)
     ssh_key = os.path.join(self.GetImageDirSymlink(),
@@ -138,7 +183,7 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
            '--image_path=' + image,
            '--ssh_private_key=' + ssh_key,
            '--no_graphics',
-           '--results_dir=' + chroot_results_dir,
+           '--results_dir=' + suite_chroot_results_dir,
           ]
     cmd += test_exprs
 
@@ -146,18 +191,25 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
         cmd, cwd=os.path.join(self._build_root, 'src/scripts'),
         error_code_ok=True, kill_timeout=TastVMTestStage.CLEANUP_TIMEOUT_SEC)
     if result.returncode:
-      raise failures_lib.TestFailure(
-          '** Tests failed with code %d **' % result.returncode)
+      raise failures_lib.TestFailure(FAILURE_EXIT_CODE % result.returncode)
 
-  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
-  def _ArchiveResults(self, abs_results_dir):
-    """Archives test results.
+  @failures_lib.SetFailureType(failures_lib.InfrastructureFailure,
+                               exclude_exceptions=[failures_lib.TestFailure])
+  def _ProcessAndArchiveResults(self, abs_results_dir, suite_names,
+                                already_have_error):
+    """Processes and archives test results.
 
     Args:
       abs_results_dir: Absolute path to directory containing test results.
+      suite_names: List of string test suite names.
+      already_have_error: Boolean for whether testing has already failed.
+
+    Raises:
+      failures_lib.TestFailure if one or more tests failed or results were
+        unavailable. Suppressed if already_have_error is True.
     """
     if not os.path.isdir(abs_results_dir) or not os.listdir(abs_results_dir):
-      return
+      raise failures_lib.TestFailure(FAILURE_NO_RESULTS % abs_results_dir)
 
     archive_base = constants.TAST_VM_TEST_RESULTS % {'attempt': self._attempt}
     _CopyResultsDir(abs_results_dir,
@@ -171,18 +223,33 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
     self.UploadArtifact(archive_base, archive=False, strict=False)
     self.PrintDownloadLink(archive_base, RESULTS_LINK_PREFIX)
 
-    self._PrintFailedTests(abs_results_dir, archive_base)
-    osutils.RmDir(abs_results_dir, ignore_missing=True, sudo=True)
+    try:
+      self._ProcessResultsFile(abs_results_dir, archive_base, suite_names)
+    except Exception as e:
+      # Don't raise a new exception if testing already failed.
+      if already_have_error:
+        logging.exception('Got error while archiving or processing results')
+      else:
+        raise e
+    finally:
+      osutils.RmDir(abs_results_dir, ignore_missing=True, sudo=True)
 
-  def _PrintFailedTests(self, abs_results_dir, url_base):
+  def _ProcessResultsFile(self, abs_results_dir, url_base, suite_names):
     """Parses the results file and prints links to failed tests.
 
     Args:
       abs_results_dir: Absolute path to directory containing test results.
       url_base: Relative path within the archive dir where results are stored.
+      suite_names: List of string test suite names.
+
+    Raises:
+      failures_lib.TestFailure if one or more tests failed or results were
+        missing or unreadable.
     """
-    for suite_dir in sorted(os.listdir(abs_results_dir)):
-      results_path = os.path.join(abs_results_dir, suite_dir, RESULTS_FILENAME)
+    num_failed = 0
+
+    for suite_name in sorted(suite_names):
+      results_path = os.path.join(abs_results_dir, suite_name, RESULTS_FILENAME)
 
       # The results file contains an array with objects representing tests.
       # Each object should contain the test name in a 'name' attribute and a
@@ -190,11 +257,22 @@ class TastVMTestStage(generic_stages.BoardSpecificBuilderStage,
       try:
         with open(results_path, 'r') as f:
           for test in json.load(f):
-            if test['errors']:
+            if test[RESULTS_ERRORS_KEY]:
+              flaky = RESULTS_FLAKY_ATTR in test.get(RESULTS_ATTR_KEY, [])
+
+              name = test[RESULTS_NAME_KEY]
               test_url = os.path.join(
-                  url_base, suite_dir, RESULTS_TESTS_DIR, test['name'])
-              self.PrintDownloadLink(test_url, text_to_display=test['name'])
-      except (IOError, OSError) as e:
-        logging.error('Failed to read results: %s' % str(e))
-      except ValueError as e:
-        logging.error('Failed to parse %s: %s' % (results_path, str(e)))
+                  url_base, suite_name, RESULTS_TESTS_DIR, name)
+              desc = FLAKY_PREFIX + name if flaky else name
+              self.PrintDownloadLink(test_url, text_to_display=desc)
+
+              # Ignore the failure if the test was marked flaky.
+              if not flaky:
+                num_failed += 1
+      except Exception as e:
+        raise failures_lib.TestFailure(FAILURE_BAD_RESULTS %
+                                       (results_path, str(e)))
+
+    if num_failed > 0:
+      logging.error('%d test(s) failed', num_failed)
+      raise failures_lib.TestFailure(FAILURE_TESTS_FAILED % num_failed)

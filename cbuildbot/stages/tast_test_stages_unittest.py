@@ -21,6 +21,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
 from chromite.lib import failures_lib
 from chromite.lib import osutils
+from chromite.lib import results_lib
 
 
 class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
@@ -48,7 +49,8 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     self._exp_test_exprs = []
 
     # Array of dicts to be written to tast_test_stages.RESULTS_FILENAME as test
-    # results.
+    # results. Not written if None. If a string is specified, it will be written
+    # directly.
     self._test_results_data = []
 
     # Integer exit code to be returned by _FakeRunCommand.
@@ -124,17 +126,24 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
                      self._exp_test_suite)
     self.assertIn(results_arg, cmd)
 
-    self._WriteResultsFile(self._test_results_data)
+    if self._test_results_data is not None:
+      self._WriteResultsFile(self._test_results_data)
     return cros_build_lib.CommandResult(returncode=self._run_command_exit_code)
 
-  def _WriteResultsFile(self, data):
-    """Writes a file within the suite's results dir."""
+  def _GetResultsFilePath(self):
+    """Returns the path to the results file."""
     results_dir = os.path.join(self._test_root, self._exp_test_suite)
     if not os.path.isdir(results_dir):
       os.makedirs(results_dir)
-    results_path = os.path.join(results_dir, tast_test_stages.RESULTS_FILENAME)
-    with open(results_path, 'w') as f:
-      json.dump(data, f)
+    return os.path.join(results_dir, tast_test_stages.RESULTS_FILENAME)
+
+  def _WriteResultsFile(self, data):
+    """Writes a results file within the suite's results dir."""
+    with open(self._GetResultsFilePath(), 'w') as f:
+      if isinstance(data, str):
+        f.write(data)
+      else:
+        json.dump(data, f)
 
   def _SetSuite(self, suite_name, test_exprs):
     """Configures the test framework to run a given suite."""
@@ -162,47 +171,108 @@ class TastVMTestStageTest(generic_stages_unittest.AbstractStageTestCase,
     num_failed_tests = 0
     with open(archived_results_path, 'r') as f:
       for test in json.load(f):
-        if test['errors']:
+        if test[tast_test_stages.RESULTS_ERRORS_KEY]:
           num_failed_tests += 1
+          flaky = tast_test_stages.RESULTS_FLAKY_ATTR in \
+              test.get(tast_test_stages.RESULTS_ATTR_KEY, [])
+
+          name = test[tast_test_stages.RESULTS_NAME_KEY]
           test_url = os.path.join(archive_dir, self._exp_test_suite,
-                                  tast_test_stages.RESULTS_TESTS_DIR,
-                                  test['name'])
+                                  tast_test_stages.RESULTS_TESTS_DIR, name)
+          desc = tast_test_stages.FLAKY_PREFIX + name if flaky else name
           self._mock_print_download_link.assert_any_call(
-              test_url, text_to_display=test['name'])
+              test_url, text_to_display=desc)
     self.assertEqual(self._mock_print_download_link.call_count,
                      num_failed_tests + 1)
 
-  def testSuccessfulSuite(self):
+  def _VerifyStageResult(self, result, description):
+    """Verifies that the stage reported the expected result."""
+    self.assertEqual(
+        [(r.name, r.result, r.description) for r in results_lib.Results.Get()],
+        [('TastVMTest', result, description)])
+
+  def testSuccess(self):
     """Perform a full test suite run."""
     self._SetSuite('good_test_suite', ['(bvt && chrome)', '(bvt && arc)'])
     self._test_results_data = [{'name': 'example.Pass', 'errors': None}]
     self.RunStage()
+    self._VerifyStageResult(results_lib.Results.SUCCESS, None)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
     self.assertEquals(self._mock_run_command.call_count, 1)
     self._VerifyArtifacts()
 
-  def testFailedSuite(self):
-    """Tests that failures reported by the tast command are caught."""
-    self._SetSuite('bad_test_suite', ['(fails)'])
+  def testNonZeroExitCode(self):
+    """Tests that internal errors from the tast command are reported."""
+    self._SetSuite('non_zero_exit_code_test_suite', [])
     self._test_results_data = [
-        {'name': 'example.Pass', 'errors': None},
         {'name': 'example.Fail', 'errors': [{'reason': 'Failed!'}]},
     ]
     self._run_command_exit_code = 1
 
-    # TODO(derat): Use something like
-    # "self.assertRaises(failures_lib.StepFailure, self.RunStage)" once
-    # TastVMTestStage no longer derives from ForgivingBuilderStage.
     self.RunStage()
+    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+                            tast_test_stages.FAILURE_EXIT_CODE % 1)
 
     self._mock_create_test_root.assert_called_once_with(self.build_root)
     self.assertEquals(self._mock_run_command.call_count, 1)
     self._VerifyArtifacts()
 
+  def testFailedTest(self):
+    """Tests that test failures are reported."""
+    self._SetSuite('failed_test_suite', [])
+    self._test_results_data = [
+        {'name': 'example.Pass', 'errors': None},
+        {'name': 'example.Fail', 'errors': [{'reason': 'Failed!'}]},
+    ]
+
+    self.RunStage()
+    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+                            tast_test_stages.FAILURE_TESTS_FAILED % 1)
+
+    self._mock_create_test_root.assert_called_once_with(self.build_root)
+    self.assertEquals(self._mock_run_command.call_count, 1)
+    self._VerifyArtifacts()
+
+  def testFlakyTest(self):
+    """Tests that errors in flaky tests don't fail the stage."""
+    self._SetSuite('flaky_test_suite', ['(flaky)'])
+    self._test_results_data = [
+        {
+            'name': 'example.Flaky',
+            'attr': ['flaky'],
+            'errors': [{'reason': 'Failed!'}],
+        },
+    ]
+
+    self.RunStage()
+    self._VerifyStageResult(results_lib.Results.SUCCESS, None)
+    self._VerifyArtifacts()
+
+  def testMissingResultsDir(self):
+    """Tests that an error is returned if the results dir is missing."""
+    self._SetSuite('missing_results_test_suite', [])
+    self._test_results_data = None
+
+    self.RunStage()
+    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+                            tast_test_stages.FAILURE_NO_RESULTS %
+                            self._test_root)
+
+  def testBadResultsFile(self):
+    """Tests that an error is returned if the results file is unreadable."""
+    self._SetSuite('bad_results_test_suite', [])
+    self._test_results_data = 'bogus'
+
+    self.RunStage()
+    self._VerifyStageResult(results_lib.Results.FORGIVEN,
+                            tast_test_stages.FAILURE_BAD_RESULTS %
+                            (self._GetResultsFilePath(),
+                             'No JSON object could be decoded'))
+
   def testFailedArchive(self):
     """Tests that archive failures raise InfrastructureFailure."""
-    self._SetSuite('failed_archive_test_suite', ['(fails)'])
+    self._SetSuite('failed_archive_test_suite', [])
     self._artifact_exception = Exception('upload failed')
     self.ConstructStage()
     self.assertRaises(failures_lib.InfrastructureFailure,
