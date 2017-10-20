@@ -22,5 +22,5 @@ Location checks passed. Requesting content
 Running: testSourceMapCouldNotBeLoaded
 Adding compiled.js
 SourceMap Failed to load.
-debugger:///VM
+test://evaluations/3/compiler-script-mapping.js
 

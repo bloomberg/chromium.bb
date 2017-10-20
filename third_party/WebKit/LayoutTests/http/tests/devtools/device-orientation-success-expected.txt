@@ -1,10 +1,12 @@
-CONSOLE MESSAGE: line 23: alpha: 1.1 beta: 2.2 gamma: 3.3
-CONSOLE MESSAGE: line 23: alpha: 20 beta: 30 gamma: 40
-CONSOLE MESSAGE: line 23: alpha: 1.1 beta: 2.2 gamma: 3.3
+Test device orientation
+
 
 Running: setUp
 
 Running: setOverride
 
 Running: clearOverride
+device-orientation-success.js:23 alpha: 1.1 beta: 2.2 gamma: 3.3
+device-orientation-success.js:23 alpha: 20 beta: 30 gamma: 40
+device-orientation-success.js:23 alpha: 1.1 beta: 2.2 gamma: 3.3
 

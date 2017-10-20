@@ -1,7 +1,4 @@
-CONSOLE MESSAGE: line 6: message from page!
-CONSOLE MESSAGE: line 2: message from iframe!
 Tests that console shows messages only from specific context when show target checkbox is checked.
-
 
 
 Running: testInitialState

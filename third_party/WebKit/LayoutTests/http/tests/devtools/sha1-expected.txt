@@ -1,4 +1,5 @@
 Tests SHA-1 hashes.
+
 foobar : 8843d7f92416211de9ebb963ff4ce28125932878
 hello : aaf4c61ddcc5e8a2dabede0f3b482cd9aea9434d
 abcdefghijklmnopqrstuvwxyz : 32d10c7b8cf96570ca04ce37f2a19d84240d3a89

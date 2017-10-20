@@ -1,6 +1,5 @@
 Tests history saving logic in TabbedEditorContainer.
 
-Bug 76912
   history = []
   history = [{"url":"url_1"}]
   history = [{"url":"url_2"},{"url":"url_1"}]
