@@ -1688,6 +1688,9 @@ jumbo_component("base") {
 # https://www.chromium.org/developers/testing/control-flow-integrity
 buildflag_header("cfi_flags") {
   header = "cfi_flags.h"
+
+  # buildflag entries added to this header must also must be manually added to
+  # tools/gn/bootstrap/bootstrap.py
   flags = [
     # TODO(pcc): remove CFI_CAST_CHECK, see https://crbug.com/626794.
     "CFI_CAST_CHECK=$is_cfi && $use_cfi_cast",
@@ -1699,6 +1702,9 @@ buildflag_header("cfi_flags") {
 buildflag_header("debugging_flags") {
   header = "debugging_flags.h"
   header_dir = "base/debug"
+
+  # buildflag entries added to this header must also must be manually added to
+  # tools/gn/bootstrap/bootstrap.py
   flags = [
     "ENABLE_LOCATION_SOURCE=$enable_location_source",
     "ENABLE_PROFILING=$enable_profiling",

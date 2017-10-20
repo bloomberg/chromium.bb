@@ -181,7 +181,15 @@ def build_gn_with_ninja_manually(tempdir, options):
       {
           'ENABLE_LOCATION_SOURCE': 'false',
           'ENABLE_PROFILING': 'false',
-          'CAN_UNWIND_WITH_FRAME_POINTERS': 'false'
+          'CAN_UNWIND_WITH_FRAME_POINTERS': 'false',
+          'UNSAFE_DEVELOPER_BUILD': 'false'
+      })
+
+  write_buildflag_header_manually(root_gen_dir, 'base/cfi_flags.h',
+      {
+          'CFI_CAST_CHECK': 'false',
+          'CFI_ENFORCEMENT_TRAP': 'false',
+          'CFI_ENFORCEMENT_DIAGNOSTIC': 'false'
       })
 
   write_build_date_header(root_gen_dir)
