@@ -1,22 +1,21 @@
 <!DOCTYPE html>
-<!--
-Tests that GainNode is properly scaling the gain.
-We'll render 11 notes, starting at a gain of 1.0, decreasing in gain by 0.1.
-The 11th note will be of gain 0.0, so it should be silent (at the end in the rendered output).
--->
 <html>
   <head>
     <title>
-      gain.html
+      Basic GainNode Functionality 
     </title>
     <script src="../../resources/testharness.js"></script>
     <script src="../../resources/testharnessreport.js"></script>
     <script src="../resources/audit-util.js"></script>
     <script src="../resources/audit.js"></script>
-    <script src="../resources/buffer-loader.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
+      // Tests that GainNode is properly scaling the gain.  We'll render 11
+      // notes, starting at a gain of 1.0, decreasing in gain by 0.1.  The 11th
+      // note will be of gain 0.0, so it should be silent (at the end in the
+      // rendered output).
+
       let audit = Audit.createTaskRunner();
 
       let sampleRate = 44100.0;
@@ -28,8 +27,10 @@ The 11th note will be of gain 0.0, so it should be silent (at the end in the ren
 
       let context = 0;
       let sinWaveBuffer = 0;
-      let reference = 0;
 
+      // Create a stereo AudioBuffer of duration |lengthInSeconds| consisting of
+      // a pure sine wave with the given |frequency|.  Both channels contain the
+      // same data.
       function createSinWaveBuffer(lengthInSeconds, frequency) {
         let audioBuffer =
             context.createBuffer(2, lengthInSeconds * sampleRate, sampleRate);
@@ -46,15 +47,25 @@ The 11th note will be of gain 0.0, so it should be silent (at the end in the ren
         return audioBuffer;
       }
 
-      function playNote(time, gain) {
+      function playNote(time, gain, merger) {
         let source = context.createBufferSource();
         source.buffer = sinWaveBuffer;
 
         let gainNode = context.createGain();
         gainNode.gain.value = gain;
 
-        source.connect(gainNode);
-        gainNode.connect(context.destination);
+        let sourceSplitter = context.createChannelSplitter(2);
+        let gainSplitter = context.createChannelSplitter(2);
+
+        // Split the stereo channels from the source output and the gain output
+        // and merge them into the desired channels of the merger.
+        source.connect(gainNode).connect(gainSplitter);
+        source.connect(sourceSplitter);
+
+        gainSplitter.connect(merger, 0, 0);
+        gainSplitter.connect(merger, 1, 1);
+        sourceSplitter.connect(merger, 0, 2);
+        sourceSplitter.connect(merger, 1, 3);
 
         source.start(time);
       }
@@ -64,28 +75,22 @@ The 11th note will be of gain 0.0, so it should be silent (at the end in the ren
           function(task, should) {
             // Create offline audio context.
             context = new OfflineAudioContext(
-                2, sampleRate * lengthInSeconds, sampleRate);
+                4, sampleRate * lengthInSeconds, sampleRate);
             task.done();
-          });
-
-      audit.define(
-          {label: 'load-ref', description: 'Load reference audio file'},
-          function(task, should) {
-            let bufferLoader =
-                new BufferLoader(context, ['gain-expected.wav'], bufferList => {
-                  reference = bufferList[0].getChannelData(0);
-                  task.done();
-                });
-
-            bufferLoader.load();
           });
 
       audit.define(
           {label: 'test', description: 'GainNode functionality'},
           function(task, should) {
+            let merger = new ChannelMergerNode(
+                context, {numberOfInputs: context.destination.channelCount});
+            merger.connect(context.destination);
 
             // Create a buffer for a short "note".
             sinWaveBuffer = createSinWaveBuffer(bufferDurationSeconds, 880.0);
+
+            let startTimes = [];
+            let gainValues = [];
 
             // Render 11 notes, starting at a gain of 1.0, decreasing in gain by
             // 0.1. The last note will be of gain 0.0, so shouldn't be
@@ -93,20 +98,51 @@ The 11th note will be of gain 0.0, so it should be silent (at the end in the ren
             for (let i = 0; i < numberOfNotes; ++i) {
               let time = i * noteSpacing;
               let gain = 1.0 - i / (numberOfNotes - 1);
-              playNote(time, gain);
+              startTimes.push(time);
+              gainValues.push(gain);
+              playNote(time, gain, merger);
             }
 
             context.startRendering()
                 .then(buffer => {
-                  let actual = buffer.getChannelData(0);
-                  should(actual, 'Output from gain node')
+                  let actual0 = buffer.getChannelData(0);
+                  let actual1 = buffer.getChannelData(1);
+                  let reference0 = buffer.getChannelData(2);
+                  let reference1 = buffer.getChannelData(3);
+
+                  // It's ok to a frame too long since the sine pulses are
+                  // followed by silence.
+                  let bufferDurationFrames =
+                      Math.ceil(bufferDurationSeconds * context.sampleRate);
+
+                  // Apply the gains to the reference signal.
+                  for (let k = 0; k < startTimes.length; ++k) {
+                    // It's ok to be a frame early because the sine pulses are
+                    // preceded by silence.
+                    let startFrame =
+                        Math.floor(startTimes[k] * context.sampleRate);
+                    let gain = gainValues[k];
+                    for (let n = 0; n < bufferDurationFrames; ++n) {
+                      reference0[startFrame + n] *= gain;
+                      reference1[startFrame + n] *= gain;
+                    }
+                  }
+
+                  // Verify the channels are clsoe to the reference.
+                  should(actual0, 'Left output from gain node')
                       .beCloseToArray(
-                          reference, {absoluteThreshold: 3.0503e-5});
-                  let snr = 10 * Math.log10(computeSNR(actual, reference));
-                  should(snr, 'SNR (in dB)').beGreaterThanOrEqualTo(89.088);
-                  let filename = 'gain-actual.wav';
-                  if (downloadAudioBuffer(buffer, filename))
-                    should(true, 'Saved reference file').message(filename, '');
+                          reference0, {relativeThreshold: 1.1908e-7});
+                  should(actual1, 'Right output from gain node')
+                      .beCloseToArray(
+                          reference1, {relativeThreshold: 1.1908e-7});
+
+                  // Test the SNR too for both channels.
+                  let snr0 = 10 * Math.log10(computeSNR(actual0, reference0));
+                  let snr1 = 10 * Math.log10(computeSNR(actual1, reference1));
+                  should(snr0, 'Left SNR (in dB)')
+                      .beGreaterThanOrEqualTo(148.69);
+                  should(snr1, 'Right SNR (in dB)')
+                      .beGreaterThanOrEqualTo(148.69);
                 })
                 .then(() => task.done());
             ;
