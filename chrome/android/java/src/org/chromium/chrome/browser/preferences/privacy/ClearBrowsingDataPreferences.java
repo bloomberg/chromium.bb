@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.historyreport.AppIndexingReporter;
 import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.preferences.ButtonPreference;
 import org.chromium.chrome.browser.preferences.ClearBrowsingDataCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.preferences.SpinnerPreference;
@@ -536,7 +537,8 @@ public class ClearBrowsingDataPreferences extends PreferenceFragment
 
             // It is possible to disable the deletion of browsing history.
             if (options[i] == DialogOption.CLEAR_HISTORY
-                    && !PrefServiceBridge.getInstance().canDeleteBrowsingHistory()) {
+                    && !PrefServiceBridge.getInstance().getBoolean(
+                               Pref.ALLOW_DELETING_BROWSER_HISTORY)) {
                 enabled = false;
                 PrefServiceBridge.getInstance().setBrowsingDataDeletionPreference(
                         DialogOption.CLEAR_HISTORY.getDataType(), ClearBrowsingDataTab.BASIC,

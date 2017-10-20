@@ -24,6 +24,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/android/preferences/prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/net/prediction_options.h"
@@ -129,6 +130,13 @@ browsing_data::ClearBrowsingDataTab ToTabEnum(jint clear_browsing_data_tab) {
 // ----------------------------------------------------------------------------
 // Native JNI methods
 // ----------------------------------------------------------------------------
+
+static jboolean GetBoolean(JNIEnv* env,
+                           const JavaParamRef<jobject>& obj,
+                           const jint j_pref_index) {
+  return GetPrefService()->GetBoolean(
+      PrefServiceBridge::GetPrefNameExposedToJava(j_pref_index));
+}
 
 static jboolean IsContentSettingManaged(JNIEnv* env,
                                         const JavaParamRef<jobject>& obj,
@@ -586,11 +594,6 @@ static void MigrateBrowsingDataPreferences(JNIEnv* env,
   browsing_data::MigratePreferencesToBasic(GetOriginalProfile()->GetPrefs());
 }
 
-static jboolean CanDeleteBrowsingHistory(JNIEnv* env,
-                                         const JavaParamRef<jobject>& obj) {
-  return GetPrefService()->GetBoolean(prefs::kAllowDeletingBrowserHistory);
-}
-
 static void SetAutoplayEnabled(JNIEnv* env,
                                const JavaParamRef<jobject>& obj,
                                jboolean allow) {
@@ -1041,4 +1044,10 @@ static void SetChromeHomePersonalizedOmniboxSuggestionsEnabled(
     jboolean is_enabled) {
   GetPrefService()->SetBoolean(omnibox::kZeroSuggestChromeHomePersonalized,
                                is_enabled);
+}
+
+const char* PrefServiceBridge::GetPrefNameExposedToJava(int pref_index) {
+  DCHECK_GE(pref_index, 0);
+  DCHECK_LT(pref_index, Pref::PREF_NUM_PREFS);
+  return kPrefsExposedToJava[pref_index];
 }

@@ -1689,6 +1689,12 @@ if (is_android) {
     ]
   }
 
+  java_cpp_enum("pref_enum_javagen") {
+    sources = [
+      "browser/android/preferences/prefs.h",
+    ]
+  }
+
   java_cpp_enum("quick_action_category_enum_javagen") {
     sources = [
       "browser/android/contextualsearch/resolved_search_term.h",

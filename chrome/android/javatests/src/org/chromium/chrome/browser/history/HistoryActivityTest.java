@@ -44,6 +44,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -65,7 +68,6 @@ import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -83,10 +85,11 @@ public class HistoryActivityTest {
             new IntentsTestRule<>(HistoryActivity.class, false, false);
 
     private static class TestObserver extends RecyclerView.AdapterDataObserver
-            implements SelectionObserver<HistoryItem>, SignInStateObserver {
+            implements SelectionObserver<HistoryItem>, SignInStateObserver, PrefObserver {
         public final CallbackHelper onChangedCallback = new CallbackHelper();
         public final CallbackHelper onSelectionCallback = new CallbackHelper();
         public final CallbackHelper onSigninStateChangedCallback = new CallbackHelper();
+        public final CallbackHelper onPreferenceChangeCallback = new CallbackHelper();
 
         private Handler mHandler;
 
@@ -98,42 +101,27 @@ public class HistoryActivityTest {
         public void onChanged() {
             // To guarantee that all real Observers have had a chance to react to the event, post
             // the CallbackHelper.notifyCalled() call.
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onChangedCallback.notifyCalled();
-                }
-            });
+            mHandler.post(() -> onChangedCallback.notifyCalled());
         }
 
         @Override
         public void onSelectionStateChange(List<HistoryItem> selectedItems) {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onSelectionCallback.notifyCalled();
-                }
-            });
+            mHandler.post(() -> onSelectionCallback.notifyCalled());
         }
 
         @Override
         public void onSignedIn() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onSigninStateChangedCallback.notifyCalled();
-                }
-            });
+            mHandler.post(() -> onSigninStateChangedCallback.notifyCalled());
         }
 
         @Override
         public void onSignedOut() {
-            mHandler.post(new Runnable() {
-                @Override
-                public void run() {
-                    onSigninStateChangedCallback.notifyCalled();
-                }
-            });
+            mHandler.post(() -> onSigninStateChangedCallback.notifyCalled());
+        }
+
+        @Override
+        public void onPreferenceChange() {
+            mHandler.post(() -> onPreferenceChangeCallback.notifyCalled());
         }
     }
 
@@ -142,6 +130,7 @@ public class HistoryActivityTest {
     private HistoryManager mHistoryManager;
     private RecyclerView mRecyclerView;
     private TestObserver mTestObserver;
+    private PrefChangeRegistrar mPrefChangeRegistrar;
 
     private HistoryItem mItem1;
     private HistoryItem mItem2;
@@ -679,50 +668,49 @@ public class HistoryActivityTest {
     }
 
     private void signInToSupervisedAccount() throws Exception {
-        // Set supervised user.
-        Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(new Callable<Boolean>() {
-            @Override
-            public Boolean call() throws Exception {
-                PrefServiceBridge.getInstance().setSupervisedUserId("ChildAccountSUID");
-                return Profile.getLastUsedProfile().isChild()
-                        && !PrefServiceBridge.getInstance().canDeleteBrowsingHistory()
-                        && !PrefServiceBridge.getInstance().isIncognitoModeEnabled();
-            }
-        }));
-
-        // Sign in to account.
-        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
-        final Account account = SigninTestUtil.addTestAccount();
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                SigninManager.get(mActivityTestRule.getActivity()).onFirstRunCheckDone();
-                SigninManager.get(mActivityTestRule.getActivity())
-                        .addSignInStateObserver(mTestObserver);
-                SigninManager.get(mActivityTestRule.getActivity()).signIn(account, null, null);
-            }
+        // Initialize PrefChangeRegistrar for test.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mPrefChangeRegistrar = new PrefChangeRegistrar(false);
+            mPrefChangeRegistrar.addObserver(Pref.ALLOW_DELETING_BROWSER_HISTORY, mTestObserver);
+            mPrefChangeRegistrar.addObserver(Pref.INCOGNITO_MODE_AVAILABILITY, mTestObserver);
         });
 
-        mTestObserver.onSigninStateChangedCallback.waitForCallback(0, 1,
-                SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS);
+        // Sign in to account. Note that if supervised user is set before sign in, the supervised
+        // user setting will be reset.
+        SigninTestUtil.setUpAuthForTest(InstrumentationRegistry.getInstrumentation());
+        final Account account = SigninTestUtil.addTestAccount();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            SigninManager.get(mActivityTestRule.getActivity()).onFirstRunCheckDone();
+            SigninManager.get(mActivityTestRule.getActivity())
+                    .addSignInStateObserver(mTestObserver);
+            SigninManager.get(mActivityTestRule.getActivity()).signIn(account, null, null);
+        });
+
+        mTestObserver.onSigninStateChangedCallback.waitForCallback(
+                0, 1, SyncTestUtil.TIMEOUT_MS, TimeUnit.MILLISECONDS);
         Assert.assertEquals(account, SigninTestUtil.getCurrentAccount());
 
-        // Preference changes associate with a supervised user being signed in happen
-        // asynchronously after #onSignInStateChange() has been called. Poll until the
-        // preferences are changed, then update the UI.
-        // TODO(twellington): Remove this once HistoryAdapter has been updated to properly listen
-        // for preference changes (crbug.com/767238).
+        // Wait for recycler view changes after sign in.
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !PrefServiceBridge.getInstance().canDeleteBrowsingHistory();
+                return !mRecyclerView.isAnimating();
             }
-        }, CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL, 1000);
-
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            mAdapter.onSignInStateChange();
         });
+
+        // Set supervised user.
+        int onPreferenceChangeCallCount = mTestObserver.onPreferenceChangeCallback.getCallCount();
+        Assert.assertTrue(ThreadUtils.runOnUiThreadBlocking(() -> {
+            PrefServiceBridge.getInstance().setSupervisedUserId("ChildAccountSUID");
+            return Profile.getLastUsedProfile().isChild()
+                    && !PrefServiceBridge.getInstance().getBoolean(
+                               Pref.ALLOW_DELETING_BROWSER_HISTORY)
+                    && !PrefServiceBridge.getInstance().isIncognitoModeEnabled();
+        }));
+
+        // Wait for preference change callbacks. One for ALLOW_DELETING_BROWSER_HISTORY and one for
+        // INCOGNITO_MODE_AVAILABILITY.
+        mTestObserver.onPreferenceChangeCallback.waitForCallback(onPreferenceChangeCallCount, 2);
 
         // Wait until animator finish removing history item delete icon
         // TODO(twellington): Figure out a better way to do this (e.g. listen for RecyclerView
@@ -732,6 +720,12 @@ public class HistoryActivityTest {
             public boolean isSatisfied() {
                 return !mRecyclerView.isAnimating();
             }
+        });
+
+        // Clean up PrefChangeRegistrar for test.
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mPrefChangeRegistrar.destroy();
+            mPrefChangeRegistrar = null;
         });
     }
 

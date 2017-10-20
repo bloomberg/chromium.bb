@@ -29,6 +29,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
+import org.chromium.chrome.browser.preferences.Pref;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
+import org.chromium.chrome.browser.preferences.PrefChangeRegistrar.PrefObserver;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -53,7 +56,7 @@ import java.util.List;
  */
 public class HistoryManager implements OnMenuItemClickListener, SignInStateObserver,
                                        SelectionObserver<HistoryItem>, SearchDelegate,
-                                       SnackbarController {
+                                       SnackbarController, PrefObserver {
     private static final int FAVICON_MAX_CACHE_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
     private static final int MEGABYTES_TO_BYTES =  1024 * 1024;
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
@@ -71,6 +74,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
     private final TextView mEmptyView;
     private final RecyclerView mRecyclerView;
     private final SnackbarManager mSnackbarManager;
+    private final PrefChangeRegistrar mPrefChangeRegistrar;
     private LargeIconBridge mLargeIconBridge;
 
     private boolean mIsSearching;
@@ -164,6 +168,11 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
         // 9. Listen to changes in sign in state.
         SigninManager.get(mActivity).addSignInStateObserver(this);
+
+        // 10. Create PrefChangeRegistrar to receive notifications on preference changes.
+        mPrefChangeRegistrar = new PrefChangeRegistrar(isIncognito);
+        mPrefChangeRegistrar.addObserver(Pref.ALLOW_DELETING_BROWSER_HISTORY, this);
+        mPrefChangeRegistrar.addObserver(Pref.INCOGNITO_MODE_AVAILABILITY, this);
 
         recordUserAction("Show");
     }
@@ -272,6 +281,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         mLargeIconBridge.destroy();
         mLargeIconBridge = null;
         SigninManager.get(mActivity).removeSignInStateObserver(this);
+        mPrefChangeRegistrar.destroy();
     }
 
     /**
@@ -461,6 +471,12 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
 
     @Override
     public void onSignedOut() {
+        mToolbar.onSignInStateChange();
+        mHistoryAdapter.onSignInStateChange();
+    }
+
+    @Override
+    public void onPreferenceChange() {
         mToolbar.onSignInStateChange();
         mHistoryAdapter.onSignInStateChange();
     }

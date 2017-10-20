@@ -25,6 +25,8 @@ class PrefServiceBridge {
   static void GetAndroidPermissionsForContentSetting(
       ContentSettingsType content_type,
       std::vector<std::string>* out);
+
+  static const char* GetPrefNameExposedToJava(int pref_index);
 };
 
 #endif  // CHROME_BROWSER_ANDROID_PREFERENCES_PREF_SERVICE_BRIDGE_H_

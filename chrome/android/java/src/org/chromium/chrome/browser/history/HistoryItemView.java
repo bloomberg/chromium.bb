@@ -17,6 +17,7 @@ import android.view.View;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.favicon.LargeIconBridge.LargeIconCallback;
+import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -142,7 +143,8 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
      */
     public void setRemoveButtonVisible(boolean visible) {
         mRemoveButtonVisible = visible;
-        if (!PrefServiceBridge.getInstance().canDeleteBrowsingHistory()) return;
+        if (!PrefServiceBridge.getInstance().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY))
+            return;
 
         mRemoveButton.setVisibility(visible ? View.VISIBLE : View.INVISIBLE);
     }
@@ -179,8 +181,9 @@ public class HistoryItemView extends SelectableItemView<HistoryItem> implements 
 
     private void updateRemoveButtonVisibility() {
         int removeButtonVisibility =
-                !PrefServiceBridge.getInstance().canDeleteBrowsingHistory() ? View.GONE
-                        : mRemoveButtonVisible ? View.VISIBLE : View.INVISIBLE;
+                !PrefServiceBridge.getInstance().getBoolean(Pref.ALLOW_DELETING_BROWSER_HISTORY)
+                ? View.GONE
+                : mRemoveButtonVisible ? View.VISIBLE : View.INVISIBLE;
         mRemoveButton.setVisibility(removeButtonVisibility);
 
         int endPadding = removeButtonVisibility == View.GONE ? mEndPadding : 0;

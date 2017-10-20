@@ -104,6 +104,14 @@ public final class PrefServiceBridge {
     }
 
     /**
+     * @param preference The name of the preference.
+     * @return Whether the specified preference is enabled.
+     */
+    public boolean getBoolean(@Pref int preference) {
+        return nativeGetBoolean(preference);
+    }
+
+    /**
      * Migrates (synchronously) the preferences to the most recent version.
      */
     public void migratePreferences(Context context) {
@@ -669,13 +677,6 @@ public final class PrefServiceBridge {
         nativeMigrateBrowsingDataPreferences();
     }
 
-    /**
-     * @return Whether browser history can be deleted by the user.
-     */
-    public boolean canDeleteBrowsingHistory() {
-        return nativeCanDeleteBrowsingHistory();
-    }
-
     public void setAllowCookiesEnabled(boolean allow) {
         nativeSetAllowCookiesEnabled(allow);
     }
@@ -968,6 +969,7 @@ public final class PrefServiceBridge {
         nativeSetSupervisedUserId(supervisedUserId);
     }
 
+    private native boolean nativeGetBoolean(int preference);
     private native boolean nativeGetAcceptCookiesEnabled();
     private native boolean nativeGetAcceptCookiesUserModifiable();
     private native boolean nativeGetAcceptCookiesManagedByCustodian();
@@ -1017,7 +1019,6 @@ public final class PrefServiceBridge {
     private native int nativeGetLastClearBrowsingDataTab();
     private native void nativeSetLastClearBrowsingDataTab(int lastTab);
     private native void nativeMigrateBrowsingDataPreferences();
-    private native boolean nativeCanDeleteBrowsingHistory();
     private native void nativeSetAutoplayEnabled(boolean allow);
     private native void nativeSetAllowCookiesEnabled(boolean allow);
     private native void nativeSetBackgroundSyncEnabled(boolean allow);
