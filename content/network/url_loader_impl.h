@@ -11,6 +11,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
+#include "content/network/upload_progress_tracker.h"
 #include "content/public/common/url_loader.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -77,6 +78,8 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   void CompletePendingWrite();
   void SetRawResponseHeaders(scoped_refptr<const net::HttpResponseHeaders>);
   void UpdateBodyReadBeforePaused();
+  void SendUploadProgress(const net::UploadProgress& progress);
+  void OnUploadProgressACK();
 
   NetworkContext* context_;
   int32_t options_;
@@ -101,6 +104,8 @@ class CONTENT_EXPORT URLLoaderImpl : public mojom::URLLoader,
   bool report_raw_headers_;
   net::HttpRawRequestHeaders raw_request_headers_;
   scoped_refptr<const net::HttpResponseHeaders> raw_response_headers_;
+
+  std::unique_ptr<UploadProgressTracker> upload_progress_tracker_;
 
   bool should_pause_reading_body_ = false;
   // The response body stream is open, but transferring data is paused.

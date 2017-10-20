@@ -996,8 +996,6 @@ source_set("browser") {
     "loader/throttling_resource_handler.h",
     "loader/upload_data_stream_builder.cc",
     "loader/upload_data_stream_builder.h",
-    "loader/upload_progress_tracker.cc",
-    "loader/upload_progress_tracker.h",
     "loader/url_loader_factory_impl.cc",
     "loader/url_loader_factory_impl.h",
     "loader/url_loader_request_handler.cc",
