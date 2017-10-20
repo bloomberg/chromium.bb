@@ -24,6 +24,12 @@ class LayoutTextFragmentTest : public RenderingTest {
         "<div id='target' style='font-size: 10px;'>%s</div>", message));
   }
 
+  void SetAhemBody(const char* message, const unsigned width) {
+    SetBodyInnerHTML(String::Format(
+        "<div id='target' style='font: Ahem; width: %uem'>%s</div>", width,
+        message));
+  }
+
   const LayoutTextFragment* GetRemainingText() const {
     return ToLayoutTextFragment(
         GetElementById("target")->firstChild()->GetLayoutObject());
@@ -279,6 +285,114 @@ TEST_P(ParameterizedLayoutTextFragmentTest, ContainsCaretOffsetPreLine) {
   EXPECT_TRUE(GetRemainingText()->ContainsCaretOffset(4));   // "F \n \n|oo"
   EXPECT_TRUE(GetRemainingText()->ContainsCaretOffset(5));   // "F \n \no|o"
   EXPECT_TRUE(GetRemainingText()->ContainsCaretOffset(6));   // "F \n \noo|"
+}
+
+TEST_P(ParameterizedLayoutTextFragmentTest,
+       IsBeforeAfterNonCollapsedCharacterNoLineWrap) {
+  // Basic tests
+  SetBasicBody("foo");
+  EXPECT_TRUE(GetFirstLetter()->IsBeforeNonCollapsedCharacter(0));    // "|foo"
+  EXPECT_TRUE(GetFirstLetter()->IsAfterNonCollapsedCharacter(1));     // "f|oo"
+  EXPECT_TRUE(GetRemainingText()->IsBeforeNonCollapsedCharacter(0));  // "f|oo"
+  EXPECT_TRUE(GetRemainingText()->IsAfterNonCollapsedCharacter(2));   // "foo|"
+
+  // Return false at layout object end/start, respectively
+  EXPECT_FALSE(GetFirstLetter()->IsAfterNonCollapsedCharacter(0));     // "|foo"
+  EXPECT_FALSE(GetFirstLetter()->IsBeforeNonCollapsedCharacter(1));    // "f|oo"
+  EXPECT_FALSE(GetRemainingText()->IsAfterNonCollapsedCharacter(0));   // "f|oo"
+  EXPECT_FALSE(GetRemainingText()->IsBeforeNonCollapsedCharacter(2));  // "foo|"
+
+  // Consecutive spaces between first letter and remaining text
+  SetBasicBody("f   bar");
+  EXPECT_TRUE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(0));  // "f|   bar"
+  EXPECT_FALSE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(1));  // "f |  bar"
+  EXPECT_FALSE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(2));  // "f  | bar"
+  EXPECT_TRUE(
+      GetRemainingText()->IsAfterNonCollapsedCharacter(1));  // "f |  bar"
+  EXPECT_FALSE(
+      GetRemainingText()->IsAfterNonCollapsedCharacter(2));  // "f  | bar"
+  EXPECT_FALSE(
+      GetRemainingText()->IsAfterNonCollapsedCharacter(3));  // "f   |bar"
+
+  // Leading spaces in first letter are collapsed
+  SetBasicBody("  foo");
+  EXPECT_FALSE(GetFirstLetter()->IsBeforeNonCollapsedCharacter(0));  // "|  foo"
+  EXPECT_FALSE(GetFirstLetter()->IsBeforeNonCollapsedCharacter(1));  // " | foo"
+  EXPECT_FALSE(GetFirstLetter()->IsAfterNonCollapsedCharacter(1));   // " | foo"
+  EXPECT_FALSE(GetFirstLetter()->IsAfterNonCollapsedCharacter(2));   // "  |foo"
+
+  // Trailing spaces in remaining text, when at the end of block, are collapsed
+  SetBasicBody("foo  ");
+  EXPECT_FALSE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(2));  // "foo|  "
+  EXPECT_FALSE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(3));  // "foo | "
+  EXPECT_FALSE(
+      GetRemainingText()->IsAfterNonCollapsedCharacter(3));  // "foo | "
+  EXPECT_FALSE(GetRemainingText()->IsAfterNonCollapsedCharacter(4));  // "foo |"
+
+  // Non-collapsed space at remaining text end
+  SetBasicBody("foo <span>bar</span>");
+  EXPECT_TRUE(GetRemainingText()->IsBeforeNonCollapsedCharacter(
+      2));  // "foo| <span>bar</span>"
+  EXPECT_TRUE(GetRemainingText()->IsAfterNonCollapsedCharacter(
+      3));  // "foo |<span>bar</span>"
+
+  // Non-collapsed space as remaining text
+  SetBasicBody("f <span>bar</span>");
+  EXPECT_TRUE(GetRemainingText()->IsBeforeNonCollapsedCharacter(
+      0));  // "f| <span>bar</span>"
+  EXPECT_TRUE(GetRemainingText()->IsAfterNonCollapsedCharacter(
+      1));  // "f |<span>bar</span>"
+
+  // Legacy layout fails in the remaining test case
+  if (!LayoutNGEnabled())
+    return;
+
+  // Collapsed space as remaining text
+  SetBasicBody("f <br>");
+  EXPECT_FALSE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(0));  // "f| <br>"
+  EXPECT_FALSE(
+      GetRemainingText()->IsAfterNonCollapsedCharacter(1));  // "f |<br>"
+}
+
+TEST_P(ParameterizedLayoutTextFragmentTest,
+       IsBeforeAfterNonCollapsedLineWrapSpace) {
+  LoadAhem();
+
+  // Line wrapping in the middle of remaining text
+  SetAhemBody("xx xx", 2);
+  EXPECT_TRUE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(1));         // "xx| xx"
+  EXPECT_TRUE(GetRemainingText()->IsAfterNonCollapsedCharacter(2));  // "xx |xx"
+
+  // Legacy layout fails in the remaining test cases
+  if (!LayoutNGEnabled())
+    return;
+
+  // Line wrapping at remaining text start
+  SetAhemBody("(x xx", 2);
+  EXPECT_TRUE(
+      GetRemainingText()->IsBeforeNonCollapsedCharacter(0));         // "(x| xx"
+  EXPECT_TRUE(GetRemainingText()->IsAfterNonCollapsedCharacter(1));  // "(x |xx"
+
+  // Line wrapping at remaining text end
+  SetAhemBody("xx <span>xx</span>", 2);
+  EXPECT_TRUE(GetRemainingText()->IsBeforeNonCollapsedCharacter(
+      1));  // "xx| <span>xx</span>"
+  EXPECT_TRUE(GetRemainingText()->IsAfterNonCollapsedCharacter(
+      2));  // "xx |<span>xx</span>"
+
+  // Entire remaining text as line wrapping
+  SetAhemBody("(x <span>xx</span>", 2);
+  EXPECT_TRUE(GetRemainingText()->IsBeforeNonCollapsedCharacter(
+      0));  // "(x| <span>xx</span>"
+  EXPECT_TRUE(GetRemainingText()->IsAfterNonCollapsedCharacter(
+      1));  // "(x |<span>xx</span>"
 }
 
 }  // namespace blink

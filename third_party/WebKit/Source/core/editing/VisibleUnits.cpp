@@ -1013,79 +1013,14 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
           current_node, layout_object->CaretMaxOffset() + text_start_offset);
     }
 
-    if (CanBeBackwardCaretPosition(text_layout_object,
-                                   current_pos.OffsetInLeafNode())) {
+    DCHECK_GE(current_pos.OffsetInLeafNode(),
+              static_cast<int>(text_layout_object->TextStartOffset()));
+    if (text_layout_object->IsAfterNonCollapsedCharacter(
+            current_pos.OffsetInLeafNode() -
+            text_layout_object->TextStartOffset()))
       return current_pos.ComputePosition();
-    }
   }
   return last_visible.DeprecatedComputePosition();
-}
-
-// Returns true if |box| at |text_offset| can not continue on next line.
-static bool CanNotContinueOnNextLine(const LayoutText& text_layout_object,
-                                     InlineBox* box,
-                                     unsigned text_offset) {
-  InlineTextBox* const last_text_box = text_layout_object.LastTextBox();
-  if (box == last_text_box)
-    return true;
-  return LineLayoutAPIShim::LayoutObjectFrom(box->GetLineLayoutItem()) ==
-             text_layout_object &&
-         ToInlineTextBox(box)->Start() >= text_offset;
-}
-
-// The text continues on the next line only if the last text box is not on this
-// line and none of the boxes on this line have a larger start offset.
-static bool DoesContinueOnNextLine(const LayoutText& text_layout_object,
-                                   InlineBox* box,
-                                   unsigned text_offset) {
-  InlineTextBox* const last_text_box = text_layout_object.LastTextBox();
-  DCHECK_NE(box, last_text_box);
-  for (InlineBox* runner = box->NextLeafChild(); runner;
-       runner = runner->NextLeafChild()) {
-    if (CanNotContinueOnNextLine(text_layout_object, runner, text_offset))
-      return false;
-  }
-
-  for (InlineBox* runner = box->PrevLeafChild(); runner;
-       runner = runner->PrevLeafChild()) {
-    if (CanNotContinueOnNextLine(text_layout_object, runner, text_offset))
-      return false;
-  }
-
-  return true;
-}
-
-// Returns true when both of the following hold:
-// (i)  |offset_in_node| is not the first offset in |text_layout_object|
-// (ii) |offset_in_node| and |offset_in_node - 1| are different caret positions
-static bool CanBeBackwardCaretPosition(const LayoutText* text_layout_object,
-                                       int offset_in_node) {
-  const unsigned text_start_offset = text_layout_object->TextStartOffset();
-  DCHECK_GE(offset_in_node, static_cast<int>(text_start_offset));
-  const unsigned text_offset = offset_in_node - text_start_offset;
-  InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
-  for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
-    if (text_offset == box->Start())
-      continue;
-    if (text_offset <= box->Start() + box->Len()) {
-      if (text_offset > box->Start())
-        return true;
-      continue;
-    }
-
-    if (box == last_text_box || text_offset != box->Start() + box->Len() + 1)
-      continue;
-
-    // Now that |text_offset == box->Start() + box->Len() + 1|, check if this is
-    // the end offset of a whitespace collapsed due to line wrapping, e.g.
-    // <div style="width: 100px">foooooooooooooooo baaaaaaaaaaaaaaaaaaaar</div>
-    // The whitespace is collapsed away due to line wrapping, while the two
-    // positions next to it are still different caret positions. Hence, when the
-    // offset is at "...oo |baa...", we should return true.
-    if (DoesContinueOnNextLine(*text_layout_object, box, text_offset + 1))
-      return true;
-  }
-  return false;
 }
 
 Position MostBackwardCaretPosition(const Position& position,
@@ -1191,43 +1126,14 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
           current_node, layout_object->CaretMinOffset() + text_start_offset);
     }
 
-    if (CanBeForwardCaretPosition(text_layout_object,
-                                  current_pos.OffsetInLeafNode())) {
+    DCHECK_GE(current_pos.OffsetInLeafNode(),
+              static_cast<int>(text_layout_object->TextStartOffset()));
+    if (text_layout_object->IsBeforeNonCollapsedCharacter(
+            current_pos.OffsetInLeafNode() -
+            text_layout_object->TextStartOffset()))
       return current_pos.ComputePosition();
-    }
   }
   return last_visible.DeprecatedComputePosition();
-}
-
-// Returns true when both of the following hold:
-// (i)  |offset_in_node| is not the last offset in |text_layout_object|
-// (ii) |offset_in_node| and |offset_in_node + 1| are different caret positions
-static bool CanBeForwardCaretPosition(const LayoutText* text_layout_object,
-                                      int offset_in_node) {
-  const unsigned text_start_offset = text_layout_object->TextStartOffset();
-  DCHECK_GE(offset_in_node, static_cast<int>(text_start_offset));
-  const unsigned text_offset = offset_in_node - text_start_offset;
-  InlineTextBox* const last_text_box = text_layout_object->LastTextBox();
-  for (InlineTextBox* box : InlineTextBoxesOf(*text_layout_object)) {
-    if (text_offset <= box->end()) {
-      if (text_offset >= box->Start())
-        return true;
-      continue;
-    }
-
-    if (box == last_text_box || text_offset != box->Start() + box->Len())
-      continue;
-
-    // Now that |text_offset == box->Start() + box->Len()|, check if this is the
-    // start offset of a whitespace collapsed due to line wrapping, e.g.
-    // <div style="width: 100px">foooooooooooooooo baaaaaaaaaaaaaaaaaaaar</div>
-    // The whitespace is collapsed away due to line wrapping, while the two
-    // positions next to it are still different caret positions. Hence, when the
-    // offset is at "...oo| baa...", we should return true.
-    if (DoesContinueOnNextLine(*text_layout_object, box, text_offset))
-      return true;
-  }
-  return false;
 }
 
 Position MostForwardCaretPosition(const Position& position,
