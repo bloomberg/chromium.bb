@@ -124,6 +124,11 @@ bool CreateDummyWindow(Display* display) {
     return false;
   }
   GLXFBConfig config = GetConfigForWindow(display, window);
+  if (!config) {
+    LOG(ERROR) << "Failed to get GLXConfig";
+    XDestroyWindow(display, window);
+    return false;
+  }
   GLXWindow glx_window = glXCreateWindow(display, config, window, nullptr);
   if (!glx_window) {
     LOG(ERROR) << "glXCreateWindow failed";
@@ -239,7 +244,10 @@ class SGIVideoSyncProviderThreadShim {
     }
 
     GLXFBConfig config = GetConfigForWindow(display_, window_);
-    DCHECK(config);
+    if (!config) {
+      LOG(ERROR) << "video_sync: Failed to get GLXConfig";
+      return;
+    }
 
     glx_window_ = glXCreateWindow(display_, config, window_, nullptr);
     if (!glx_window_) {
@@ -557,14 +565,25 @@ bool NativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   window_ = XCreateWindow(g_display, parent_window_, 0, 0, size_.width(),
                           size_.height(), 0, CopyFromParent, InputOutput,
                           CopyFromParent, CWBackPixmap | CWBitGravity, &swa);
+  if (!window_) {
+    LOG(ERROR) << "XCreateWindow failed";
+    return false;
+  }
   XMapWindow(g_display, window_);
 
   RegisterEvents();
   XFlush(g_display);
 
   GetConfig();
-  DCHECK(config_);
+  if (!config_) {
+    LOG(ERROR) << "Failed to get GLXConfig";
+    return false;
+  }
   glx_window_ = glXCreateWindow(g_display, config_, window_, NULL);
+  if (!glx_window_) {
+    LOG(ERROR) << "glXCreateWindow failed";
+    return false;
+  }
 
   if (g_glx_oml_sync_control_supported) {
     vsync_provider_.reset(new OMLSyncControlVSyncProvider(glx_window_));
@@ -696,10 +715,21 @@ bool UnmappedNativeViewGLSurfaceGLX::Initialize(GLSurfaceFormat format) {
   window_ = XCreateWindow(g_display, parent_window, 0, 0, size_.width(),
                           size_.height(), 0, g_depth, InputOutput, g_visual,
                           CWBorderPixel | CWColormap, &attrs);
+  if (!window_) {
+    LOG(ERROR) << "XCreateWindow failed";
+    return false;
+  }
   GetConfig();
-  DCHECK(config_);
+  if (!config_) {
+    LOG(ERROR) << "Failed to get GLXConfig";
+    return false;
+  }
   glx_window_ = glXCreateWindow(g_display, config_, window_, NULL);
-  return window_ != 0;
+  if (!glx_window_) {
+    LOG(ERROR) << "glXCreateWindow failed";
+    return false;
+  }
+  return true;
 }
 
 void UnmappedNativeViewGLSurfaceGLX::Destroy() {
