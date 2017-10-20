@@ -9061,6 +9061,11 @@
         ],
         "chrome_sdk_build_chrome": false,
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp1",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },
@@ -20781,6 +20786,11 @@
             "peppy"
         ],
         "important": true,
+        "useflags": [
+            "-cros-debug",
+            "afdo_chrome_exp2",
+            "chrome_internal"
+        ],
         "vm_tests": [],
         "vm_tests_override": null
     },

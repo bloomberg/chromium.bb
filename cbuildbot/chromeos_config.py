@@ -3489,6 +3489,14 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'vm_tests':[],
       },
 
+      'falco-release': {
+          'useflags': append_useflags(['afdo_chrome_exp1']),
+      },
+
+      'peppy-release': {
+          'useflags': append_useflags(['afdo_chrome_exp2']),
+      },
+
       'lumpy-chrome-pfq': {
           'hw_tests': hw_test_list.SharedPoolPFQ(),
       },
