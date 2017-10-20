@@ -2,17 +2,17 @@ Tests that "Show Generator Location" jumps to the correct location.
 
 
 Running: testIterNotStarted
-Generator location revealed: [14:14]
+Generator location revealed: [22:20]
 
 Running: testIterSuspended1
-Generator location revealed: [16:5]
+Generator location revealed: [24:11]
 
 Running: testIterSuspended2
-Generator location revealed: [17:5]
+Generator location revealed: [25:11]
 
 Running: testIterSuspended3
-Generator location revealed: [18:5]
+Generator location revealed: [26:11]
 
 Running: testIterClosed
-Generator location revealed: [14:14]
+Generator location revealed: [22:20]
 

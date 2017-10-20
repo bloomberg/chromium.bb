@@ -1,8 +1,7 @@
-CONSOLE ERROR: line 1: Uncaught SyntaxError: Unexpected identifier
 Tests that scheduled pause is cleared after processing event with empty handler.
 
 Call stack:
-    0) executeSomeCode (break-on-set-timeout-with-syntax-error.html:15)
-    1)  (:1)
+    0) executeSomeCode (break-on-set-timeout-with-syntax-error.js:18)
+    1)  (break-on-set-timeout-with-syntax-error.js:33)
 
 

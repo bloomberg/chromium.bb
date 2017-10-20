@@ -2,13 +2,13 @@ Tests that "Show Function Definition" jumps to the correct location.
 
 
 Running: testRevealFunctionDefinition
-Function location revealed: [7:18]
+Function location revealed: [15:24]
 
 Running: testDumpFunctionDefinition
 jumpToMe
 ƒ jumpToMe()
-{
-    var result = 12345;
-    return window.foo || result;
-}
+      {
+          var result = 12345;
+          return window.foo || result;
+      }
 

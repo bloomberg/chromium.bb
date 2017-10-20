@@ -4,8 +4,8 @@ Tests that Debugger.getFunctionDetails command returns correct location. Bug 718
 Running: testGetFirstLineFunctionDetails
 firstLineFunction type = function
 Function details: 
-lineNumber: 5
-columnNumber: 36
+lineNumber: 14
+columnNumber: 34
 scriptId is valid: true
 functionName: firstLineFunction
 scopeChain #0: Global; <global object properties omitted>
@@ -13,8 +13,8 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetNonFirstLineFunctionDetails
 notFirstLineFunction type = function
 Function details: 
-lineNumber: 10
-columnNumber: 32
+lineNumber: 19
+columnNumber: 37
 scriptId is valid: true
 functionName: notFirstLineFunction
 scopeChain #0: Global; <global object properties omitted>
@@ -22,8 +22,8 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetDetailsOfFunctionWithInferredName
 obj.m type = function
 Function details: 
-lineNumber: 16
-columnNumber: 15
+lineNumber: 25
+columnNumber: 23
 scriptId is valid: true
 functionName: m
 scopeChain #0: Global; <global object properties omitted>
@@ -31,8 +31,8 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetDetailsOfFunctionWithDisplayName
 functionWithDisplayName type = function
 Function details: 
-lineNumber: 19
-columnNumber: 32
+lineNumber: 28
+columnNumber: 40
 scriptId is valid: true
 functionName: user-friendly name
 scopeChain #0: Global; <global object properties omitted>
@@ -40,8 +40,8 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testGetDetailsOfFunctionWithDisplayNameGetter
 functionWithDisplayNameGetter type = function
 Function details: 
-lineNumber: 22
-columnNumber: 38
+lineNumber: 31
+columnNumber: 46
 scriptId is valid: true
 functionName: functionWithDisplayNameGetter
 scopeChain #0: Global; <global object properties omitted>
@@ -49,8 +49,8 @@ scopeChain #0: Global; <global object properties omitted>
 Running: testSmallClosure
 smallClosure type = function
 Function details: 
-lineNumber: 25
-columnNumber: 49
+lineNumber: 34
+columnNumber: 57
 scriptId is valid: true
 functionName: 
 scopeChain #0: Closure; p: "Capybara"
@@ -59,8 +59,8 @@ scopeChain #1: Global; <global object properties omitted>
 Running: testBigClosure
 bigClosure type = function
 Function details: 
-lineNumber: 38
-columnNumber: 27
+lineNumber: 47
+columnNumber: 35
 scriptId is valid: true
 functionName: 
 scopeChain #0: Catch; ex: <no string representation>
@@ -71,8 +71,8 @@ scopeChain #3: Global; <global object properties omitted>
 Running: testGenFunction
 gen type = function
 Function details: 
-lineNumber: 45
-columnNumber: 13
+lineNumber: 54
+columnNumber: 21
 scriptId is valid: true
 functionName: gen
 isGenerator: true

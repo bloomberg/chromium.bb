@@ -1,10 +1,9 @@
-CONSOLE MESSAGE: line 13: 3
 Tests that inline scope variables are rendering correctly.
 
 Set timer for test function.
-9: length = 123
-10: a = (3) [1, 2, 3]
-11: 
-12: b = 42
+12: length = 123
 13: a = (3) [1, 2, 3]
+14: 
+15: b = 42
+16: a = (3) [1, 2, 3]
 

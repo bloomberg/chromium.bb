@@ -1,6 +1,5 @@
 Tests that execution line is revealed and highlighted when debugger is paused.
 
-Bug 80306
 
 Running: testRevealAndHighlightExecutionLine
 Set timer for test function.
