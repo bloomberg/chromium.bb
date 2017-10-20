@@ -22,14 +22,6 @@ const char kBool[] = "bool";
 const char kString[] = "string";
 const char kNeedsEscape[] = "\"quotes\"";
 
-#if defined(OS_POSIX)
-const char kTaskFileName[] = "../../base/trace_event/trace_log.cc";
-const char kTaskPath[] = "base/trace_event";
-#else
-const char kTaskFileName[] = "..\\..\\base\\memory\\memory_win.cc";
-const char kTaskPath[] = "base\\memory";
-#endif
-
 std::unique_ptr<Value> DumpAndReadBack(
     const TypeNameDeduplicator& deduplicator) {
   std::string json;
@@ -85,11 +77,6 @@ TEST(TypeNameDeduplicatorTest, EscapeTypeName) {
   // Reading json should not fail, because the type name should have been
   // escaped properly and exported value should contain quotes.
   TestInsertTypeAndReadback(kNeedsEscape, kNeedsEscape);
-}
-
-TEST(TypeNameDeduplicatorTest, TestExtractFileName) {
-  // The exported value for passed file name should be the folders in the path.
-  TestInsertTypeAndReadback(kTaskFileName, kTaskPath);
 }
 
 }  // namespace trace_event
