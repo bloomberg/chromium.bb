@@ -185,8 +185,10 @@ DevToolsURLInterceptorRequestJob* DevToolsURLRequestInterceptor::State::
   }
 
   bool matchFound = false;
+  const std::string url =
+      protocol::NetworkHandler::ClearUrlRef(request->url()).spec();
   for (const std::string& pattern : intercepted_page.intercepted_url_patterns) {
-    if (base::MatchPattern(request->url().spec(), pattern)) {
+    if (base::MatchPattern(url, pattern)) {
       matchFound = true;
       break;
     }
