@@ -403,7 +403,7 @@ public class CustomTabTabPersistencePolicyTest {
 
             @Override
             @Nullable
-            public String getStateToBeMergedFileName() {
+            public List<String> getStateToBeMergedFileNames() {
                 return null;
             }
 
