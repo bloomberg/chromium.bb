@@ -32,8 +32,8 @@
 
 ; --enable-sandbox-logging causes the sandbox to log failures to the syslog.
 (if (param-true? disable-sandbox-denial-logging)
-   (deny default (with no-log))
-   (deny default))
+  (deny default (with no-log))
+  (deny default))
 
 (if (param-true? enable-logging) (debug deny))
 
@@ -87,6 +87,13 @@
 
 (allow file-write-data (path "/dev/null"))
 
+; Reads from /etc.
+; This is read by CFPrefs calling getpwuid in a loop. libinfo then fails to
+; contact any of the opendirectoryd mach services, and falls back to
+; the /etc/passwd file for the user info. The access is OK because
+; no actual password hashes are in /etc/passwd anymore.
+(allow file-read-data (path "/private/etc/passwd"))
+
 ; Reads from /usr.
 (allow file-read-data
   (subpath "/usr/lib")
@@ -114,6 +121,7 @@
   (subpath "/System/Library/CoreServices/SystemVersion.bundle")
   (subpath "/System/Library/Fonts")
   (subpath "/System/Library/Frameworks")
+  (subpath "/System/Library/LinguisticData")
   (subpath "/System/Library/PrivateFrameworks"))
 
 ; IOKit
