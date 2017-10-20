@@ -184,6 +184,10 @@ void MemlogConnectionManager::OnConnectionCompleteThunk(
     scoped_refptr<base::SequencedTaskRunner> task_runner,
     base::WeakPtr<MemlogConnectionManager> connection_manager,
     base::ProcessId pid) {
+  // Temporary debugging for https://crbug.com/765836.
+  LOG(ERROR) << "Memlog debugging: "
+                "MemlogConnectionManager::OnConnectionCompleteThunk for pid: "
+             << pid;
   task_runner->PostTask(
       FROM_HERE, base::BindOnce(&MemlogConnectionManager::OnConnectionComplete,
                                 connection_manager, pid));

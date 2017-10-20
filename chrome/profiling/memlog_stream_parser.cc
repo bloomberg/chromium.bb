@@ -72,6 +72,9 @@ bool MemlogStreamParser::OnStreamData(std::unique_ptr<char[]> data, size_t sz) {
         status = ParseBarrier();
         break;
       default:
+        // Temporary debugging for https://crbug.com/765836.
+        LOG(ERROR) << "Memlog debugging: bad packet type: " << msg_type;
+
         // Invalid message type.
         status = READ_ERROR;
         break;
