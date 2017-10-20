@@ -215,21 +215,6 @@ function cancel(e) {
   scheduleWindowClose();
 }
 
-/**
- * Converts a blob data URL to a blob object.
- * @param {string} url The data URL to convert.
- * @return {Blob} Blob object containing the data.
- */
-function dataUrlToBlob(url) {
-  var mimeString = url.split(',')[0].split(':')[1].split(';')[0];
-  var data = atob(url.split(',')[1]);
-  var dataArray = [];
-  for (var i = 0; i < data.length; ++i)
-    dataArray.push(data.charCodeAt(i));
-
-  return new Blob([new Uint8Array(dataArray)], {type: mimeString});
-}
-
 // <if expr="chromeos">
 /**
  * Update the page when performance feedback state is changed.
@@ -347,17 +332,17 @@ function initialize() {
         });
         chrome.app.window.current().show();
 
-        var screenshotDataUrl = screenshotCanvas.toDataURL('image/png');
-
-        // Only set the alt text when the src url is available, otherwise we'd
-        // get a broken image picture instead. crbug.com/773985.
-        $('screenshot-image').src = screenshotDataUrl;
-        $('screenshot-image').alt = 'screenshot';
-        $('screenshot-image')
-            .classList.toggle(
-                'wide-screen',
-                $('screenshot-image').width > MAX_SCREENSHOT_WIDTH);
-        feedbackInfo.screenshot = dataUrlToBlob(screenshotDataUrl);
+        screenshotCanvas.toBlob(function(blob) {
+          $('screenshot-image').src = URL.createObjectURL(blob);
+          // Only set the alt text when the src url is available, otherwise we'd
+          // get a broken image picture instead. crbug.com/773985.
+          $('screenshot-image').alt = 'screenshot';
+          $('screenshot-image')
+              .classList.toggle(
+                  'wide-screen',
+                  $('screenshot-image').width > MAX_SCREENSHOT_WIDTH);
+          feedbackInfo.screenshot = blob;
+        });
       });
 
       chrome.feedbackPrivate.getUserEmail(function(email) {
