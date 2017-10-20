@@ -459,7 +459,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBrowserDisableWebSecurityTest,
       std::string(), net::LOAD_NORMAL, false, false,
       REQUEST_CONTEXT_TYPE_LOCATION,
       blink::WebMixedContentContextType::kBlockable, false,
-      url::Origin(data_url));
+      url::Origin::Create(data_url));
   FrameHostMsg_BeginNavigation msg(rfh->GetRoutingID(), common_params,
                                    begin_params);
 

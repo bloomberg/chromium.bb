@@ -379,7 +379,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_google_.display_name = UTF8ToUTF16("Joe Schmoe");
     form_google_.icon_url = GURL("http://www.google.com/icon");
     form_google_.federation_origin =
-        url::Origin(GURL("http://www.google.com/"));
+        url::Origin::Create(GURL("http://www.google.com/"));
     form_google_.skip_zero_click = true;
     form_google_.generation_upload_status = PasswordForm::POSITIVE_SIGNAL_SENT;
     form_google_.form_data.name = UTF8ToUTF16("form_name");
@@ -397,7 +397,7 @@ class NativeBackendGnomeTest : public testing::Test {
     form_facebook_.display_name = UTF8ToUTF16("Joe Schmoe");
     form_facebook_.icon_url = GURL("http://www.facebook.com/icon");
     form_facebook_.federation_origin =
-        url::Origin(GURL("http://www.facebook.com/"));
+        url::Origin::Create(GURL("http://www.facebook.com/"));
     form_facebook_.skip_zero_click = true;
     form_facebook_.generation_upload_status = PasswordForm::NO_SIGNAL_SENT;
 
@@ -848,7 +848,8 @@ TEST_F(NativeBackendGnomeTest, PSLUpdatingStrictAddLogin) {
 TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnHTTPS) {
   other_auth_.signon_realm = "federation://www.example.com/google.com";
   other_auth_.origin = GURL("https://www.example.com/");
-  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  other_auth_.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
   EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
                                           GURL("https://www.example.com/"),
                                           PasswordForm::SCHEME_HTML, nullptr));
@@ -857,7 +858,8 @@ TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnHTTPS) {
 TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnLocalhost) {
   other_auth_.signon_realm = "federation://localhost/google.com";
   other_auth_.origin = GURL("http://localhost:8080/");
-  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  other_auth_.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
   EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
                                           GURL("http://localhost:8080/"),
                                           PasswordForm::SCHEME_HTML, nullptr));
@@ -866,7 +868,8 @@ TEST_F(NativeBackendGnomeTest, FetchFederatedCredentialOnLocalhost) {
 TEST_F(NativeBackendGnomeTest, DontFetchFederatedCredentialOnHTTP) {
   other_auth_.signon_realm = "federation://www.example.com/google.com";
   other_auth_.origin = GURL("https://www.example.com/");
-  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  other_auth_.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
   EXPECT_FALSE(CheckCredentialAvailability(other_auth_,
                                            GURL("http://www.example.com/"),
                                            PasswordForm::SCHEME_HTML, nullptr));
@@ -875,7 +878,8 @@ TEST_F(NativeBackendGnomeTest, DontFetchFederatedCredentialOnHTTP) {
 TEST_F(NativeBackendGnomeTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
   other_auth_.signon_realm = "federation://www.sub.example.com/google.com";
   other_auth_.origin = GURL("https://www.sub.example.com/");
-  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  other_auth_.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
   EXPECT_TRUE(CheckCredentialAvailability(other_auth_,
                                           GURL("https://www.example.com/"),
                                           PasswordForm::SCHEME_HTML, nullptr));
@@ -884,7 +888,8 @@ TEST_F(NativeBackendGnomeTest, FetchPSLMatchedFederatedCredentialOnHTTPS) {
 TEST_F(NativeBackendGnomeTest, DontFetchPSLMatchedFederatedCredentialOnHTTP) {
   other_auth_.signon_realm = "federation://www.sub.example.com/google.com";
   other_auth_.origin = GURL("https://www.sub.example.com/");
-  other_auth_.federation_origin = url::Origin(GURL("https://google.com/"));
+  other_auth_.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
   EXPECT_FALSE(CheckCredentialAvailability(other_auth_,
                                            GURL("http://www.example.com/"),
                                            PasswordForm::SCHEME_HTML, nullptr));

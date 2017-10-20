@@ -36,7 +36,7 @@ bool ParseOriginListHeader(const std::string& value,
       value, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
 
   for (const std::string& origin_string : origin_vector) {
-    url::Origin origin = url::Origin(GURL(origin_string));
+    url::Origin origin = url::Origin::Create(GURL(origin_string));
     if (origin.unique())
       return false;
 
@@ -58,7 +58,8 @@ BackgroundFetchCrossOriginFilter::BackgroundFetchCrossOriginFilter(
   const auto& response_header_map = request.GetResponseHeaders();
 
   // True iff |source_origin| is the same origin as the original request URL.
-  is_same_origin_ = source_origin.IsSameOriginWith(url::Origin(final_url));
+  is_same_origin_ =
+      source_origin.IsSameOriginWith(url::Origin::Create(final_url));
 
   // Access-Control-Allow-Origin checks. The header's values must be valid for
   // it to not be completely discarded.

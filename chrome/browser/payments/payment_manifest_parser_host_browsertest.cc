@@ -169,7 +169,8 @@ IN_PROC_BROWSER_TEST_F(PaymentManifestParserHostTest, TooManySupportedOrigins) {
 
   InvokeOnPaymentMethodManifestParse(
       std::vector<GURL>(),
-      std::vector<url::Origin>(100001, url::Origin(GURL("https://bobpay.com"))),
+      std::vector<url::Origin>(100001,
+                               url::Origin::Create(GURL("https://bobpay.com"))),
       false);
 
   EXPECT_TRUE(supported_origins().empty());
@@ -182,7 +183,8 @@ IN_PROC_BROWSER_TEST_F(PaymentManifestParserHostTest, InsecureSupportedOrigin) {
 
   InvokeOnPaymentMethodManifestParse(
       std::vector<GURL>(),
-      std::vector<url::Origin>(1, url::Origin(GURL("http://bobpay.com"))),
+      std::vector<url::Origin>(1,
+                               url::Origin::Create(GURL("http://bobpay.com"))),
       false);
 
   EXPECT_TRUE(supported_origins().empty());
@@ -206,8 +208,8 @@ IN_PROC_BROWSER_TEST_F(PaymentManifestParserHostTest, InvalidSupportedOrigin) {
   MockParsePaymentMethodManifest();
 
   InvokeOnPaymentMethodManifestParse(
-      std::vector<GURL>(), std::vector<url::Origin>(1, url::Origin(GURL())),
-      false);
+      std::vector<GURL>(),
+      std::vector<url::Origin>(1, url::Origin::Create(GURL())), false);
 
   EXPECT_TRUE(supported_origins().empty());
 }
@@ -231,7 +233,8 @@ IN_PROC_BROWSER_TEST_F(PaymentManifestParserHostTest,
 
   InvokeOnPaymentMethodManifestParse(
       std::vector<GURL>(),
-      std::vector<url::Origin>(1, url::Origin(GURL("https://bobpay.com"))),
+      std::vector<url::Origin>(1,
+                               url::Origin::Create(GURL("https://bobpay.com"))),
       true);
 
   EXPECT_TRUE(supported_origins().empty());
@@ -263,9 +266,9 @@ IN_PROC_BROWSER_TEST_F(PaymentManifestParserHostTest, UrlsAndOrigins) {
   EXPECT_EQ(
       std::vector<GURL>(1, GURL("https://alicepay.com/web-app-manifest.json")),
       web_app_manifest_urls());
-  EXPECT_EQ(
-      std::vector<url::Origin>(1, url::Origin(GURL("https://bobpay.com"))),
-      supported_origins());
+  EXPECT_EQ(std::vector<url::Origin>(
+                1, url::Origin::Create(GURL("https://bobpay.com"))),
+            supported_origins());
   EXPECT_FALSE(all_origins_supported());
 }
 

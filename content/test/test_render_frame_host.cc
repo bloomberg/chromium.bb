@@ -148,7 +148,7 @@ void TestRenderFrameHost::SimulateNavigationCommit(const GURL& url) {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.url = url;
-  params.origin = url::Origin(url);
+  params.origin = url::Origin::Create(url);
   if (!GetParent())
     params.transition = ui::PAGE_TRANSITION_LINK;
   else if (is_auto_subframe)
@@ -382,7 +382,7 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // In most cases, the origin will match the URL's origin.  Tests that need to
   // check corner cases (like about:blank) should specify the origin param
   // manually.
-  url::Origin origin(url_copy);
+  url::Origin origin = url::Origin::Create(url_copy);
   params.origin = origin;
 
   url::Replacements<char> replacements;

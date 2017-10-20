@@ -45,7 +45,7 @@ using MockAuthorizationCallback = base::MockCallback<
     AudioOutputAuthorizationHandler::AuthorizationCompletedCallback>;
 
 url::Origin SecurityOrigin() {
-  return url::Origin(GURL(kSecurityOriginString));
+  return url::Origin::Create(GURL(kSecurityOriginString));
 }
 
 // TestBrowserContext has a URLRequestContextGetter which uses a NullTaskRunner.
@@ -334,7 +334,7 @@ TEST_F(AudioOutputAuthorizationHandlerTest,
   // Note that other urls may also fail the permissions check, e.g. when a
   // navigation is done during stream creation.
   GURL url("about:blank");
-  url::Origin origin(url);
+  url::Origin origin = url::Origin::Create(url);
   std::string raw_nondefault_id = GetRawNondefaultId();
   std::string hashed_id = MediaStreamManager::GetHMACForMediaDeviceID(
       browser_context()->GetMediaDeviceIDSalt(), origin, raw_nondefault_id);

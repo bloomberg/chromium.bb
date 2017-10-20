@@ -147,7 +147,7 @@ class MediaEngagementContentsObserverTest
         content::NavigationHandle::CreateNavigationHandleForTesting(
             GURL(url), main_rfh(), true /** committed */);
     contents_observer_->DidFinishNavigation(test_handle.get());
-    contents_observer_->committed_origin_ = url::Origin(url);
+    contents_observer_->committed_origin_ = url::Origin::Create(url);
   }
 
   void SimulateAudible() {

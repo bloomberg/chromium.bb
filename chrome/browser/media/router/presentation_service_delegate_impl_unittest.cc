@@ -123,7 +123,7 @@ class PresentationServiceDelegateImplTest
         presentation_url2_(kPresentationUrl2),
         presentation_urls_({presentation_url1_}),
         frame_url_(kFrameUrl),
-        frame_origin_(GURL(frame_url_)),
+        frame_origin_(url::Origin::Create(GURL(frame_url_))),
         source1_(MediaSourceForPresentationUrl(presentation_url1_)),
         source2_(MediaSourceForPresentationUrl(presentation_url2_)),
         listener1_(presentation_url1_),

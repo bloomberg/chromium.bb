@@ -162,7 +162,7 @@ bool ShellContentBrowserClient::DoesSiteRequireDedicatedProcess(
   std::string pattern =
       command_line->GetSwitchValueASCII(switches::kIsolateSitesForTesting);
 
-  url::Origin origin(effective_site_url);
+  url::Origin origin = url::Origin::Create(effective_site_url);
 
   if (!origin.unique()) {
     // Schemes like blob or filesystem, which have an embedded origin, should

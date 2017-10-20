@@ -67,7 +67,8 @@ void GenerateExamplePasswordForm(PasswordForm* form) {
   form->date_synced = base::Time::Now();
   form->display_name = ASCIIToUTF16("Mr. Smith");
   form->icon_url = GURL("https://accounts.google.com/Icon");
-  form->federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form->federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
   form->skip_zero_click = true;
 }
 
@@ -104,7 +105,7 @@ bool AddZeroClickableLogin(LoginDatabase* db,
   form.signon_realm = form.origin.spec();
   form.display_name = ASCIIToUTF16(unique_string);
   form.icon_url = origin;
-  form.federation_origin = url::Origin(origin);
+  form.federation_origin = url::Origin::Create(origin);
   form.date_created = base::Time::Now();
 
   form.skip_zero_click = false;
@@ -405,7 +406,8 @@ TEST_F(LoginDatabaseTest, TestFederatedMatching) {
   form2.signon_realm = "federation://mobile.foo.com/accounts.google.com";
   form2.username_value = ASCIIToUTF16("test1@gmail.com");
   form2.type = PasswordForm::TYPE_API;
-  form2.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form2.federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
 
   // Add it and make sure it is there.
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -436,7 +438,8 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingLocalhost) {
   PasswordForm form;
   form.origin = GURL("http://localhost/");
   form.signon_realm = "federation://localhost/accounts.google.com";
-  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form.federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
   form.username_value = ASCIIToUTF16("test@gmail.com");
   form.type = PasswordForm::TYPE_API;
   form.scheme = PasswordForm::SCHEME_HTML;
@@ -549,7 +552,8 @@ TEST_F(LoginDatabaseTest, TestFederatedMatchingWithoutPSLMatching) {
   form2.signon_realm = "federation://some.other.google.com/accounts.google.com";
   form2.username_value = ASCIIToUTF16("test1@gmail.com");
   form2.type = PasswordForm::TYPE_API;
-  form2.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form2.federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
 
   // Add it and make sure it is there.
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
@@ -581,7 +585,8 @@ TEST_F(LoginDatabaseTest, TestFederatedPSLMatching) {
   form.signon_realm = "federation://psl.example.com/accounts.google.com";
   form.username_value = ASCIIToUTF16("test1@gmail.com");
   form.type = PasswordForm::TYPE_API;
-  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form.federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
   form.scheme = PasswordForm::SCHEME_HTML;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
@@ -950,7 +955,8 @@ static bool AddTimestampedLogin(LoginDatabase* db,
   form.signon_realm = url;
   form.display_name = ASCIIToUTF16(unique_string);
   form.icon_url = GURL("https://accounts.google.com/Icon");
-  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form.federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
 
   if (date_is_creation)
@@ -1119,7 +1125,8 @@ TEST_F(LoginDatabaseTest, BlacklistedLogins) {
   form.date_synced = base::Time::Now();
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.icon_url = GURL("https://accounts.google.com/Icon");
-  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form.federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
   EXPECT_EQ(AddChangeForForm(form), db().AddLogin(form));
 
@@ -1342,7 +1349,8 @@ TEST_F(LoginDatabaseTest, UpdateLogin) {
   form.type = PasswordForm::TYPE_GENERATED;
   form.display_name = ASCIIToUTF16("Mr. Smith");
   form.icon_url = GURL("https://accounts.google.com/Icon");
-  form.federation_origin = url::Origin(GURL("https://accounts.google.com/"));
+  form.federation_origin =
+      url::Origin::Create(GURL("https://accounts.google.com/"));
   form.skip_zero_click = true;
   EXPECT_EQ(UpdateChangeForForm(form), db().UpdateLogin(form));
 

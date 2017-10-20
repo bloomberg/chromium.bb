@@ -239,7 +239,7 @@ class MediaStreamDispatcherHostTest : public testing::Test {
  public:
   MediaStreamDispatcherHostTest()
       : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
-        origin_(GURL("https://test.com")) {
+        origin_(url::Origin::Create(GURL("https://test.com"))) {
     audio_manager_ = std::make_unique<media::MockAudioManager>(
         std::make_unique<media::TestAudioThread>());
     audio_system_ =

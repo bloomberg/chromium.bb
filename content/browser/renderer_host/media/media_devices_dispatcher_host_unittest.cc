@@ -86,7 +86,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   MediaDevicesDispatcherHostTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
-        origin_(GetParam()) {
+        origin_(url::Origin::Create(GetParam())) {
     // Make sure we use fake devices to avoid long delays.
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
         switches::kUseFakeDeviceForMediaStream,

@@ -61,8 +61,8 @@ class ReportingCacheTest : public ReportingTestBase {
   }
 
   const GURL kUrl1_ = GURL("https://origin1/path");
-  const url::Origin kOrigin1_ = url::Origin(GURL("https://origin1/"));
-  const url::Origin kOrigin2_ = url::Origin(GURL("https://origin2/"));
+  const url::Origin kOrigin1_ = url::Origin::Create(GURL("https://origin1/"));
+  const url::Origin kOrigin2_ = url::Origin::Create(GURL("https://origin2/"));
   const GURL kEndpoint1_ = GURL("https://endpoint1/");
   const GURL kEndpoint2_ = GURL("https://endpoint2/");
   const std::string kGroup1_ = "group1";
@@ -315,8 +315,9 @@ TEST_F(ReportingCacheTest, RemoveAllClients) {
 }
 
 TEST_F(ReportingCacheTest, ExcludeSubdomainsDifferentPort) {
-  const url::Origin kOrigin(GURL("https://example/"));
-  const url::Origin kDifferentPortOrigin(GURL("https://example:444/"));
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://example/"));
+  const url::Origin kDifferentPortOrigin =
+      url::Origin::Create(GURL("https://example:444/"));
 
   cache()->SetClient(kDifferentPortOrigin, kEndpoint1_,
                      ReportingClient::Subdomains::EXCLUDE, kGroup1_,
@@ -328,8 +329,9 @@ TEST_F(ReportingCacheTest, ExcludeSubdomainsDifferentPort) {
 }
 
 TEST_F(ReportingCacheTest, ExcludeSubdomainsSuperdomain) {
-  const url::Origin kOrigin(GURL("https://foo.example/"));
-  const url::Origin kSuperOrigin(GURL("https://example/"));
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
+  const url::Origin kSuperOrigin =
+      url::Origin::Create(GURL("https://example/"));
 
   cache()->SetClient(kSuperOrigin, kEndpoint1_,
                      ReportingClient::Subdomains::EXCLUDE, kGroup1_,
@@ -341,8 +343,9 @@ TEST_F(ReportingCacheTest, ExcludeSubdomainsSuperdomain) {
 }
 
 TEST_F(ReportingCacheTest, IncludeSubdomainsDifferentPort) {
-  const url::Origin kOrigin(GURL("https://example/"));
-  const url::Origin kDifferentPortOrigin(GURL("https://example:444/"));
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://example/"));
+  const url::Origin kDifferentPortOrigin =
+      url::Origin::Create(GURL("https://example:444/"));
 
   cache()->SetClient(kDifferentPortOrigin, kEndpoint1_,
                      ReportingClient::Subdomains::INCLUDE, kGroup1_,
@@ -355,8 +358,9 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsDifferentPort) {
 }
 
 TEST_F(ReportingCacheTest, IncludeSubdomainsSuperdomain) {
-  const url::Origin kOrigin(GURL("https://foo.example/"));
-  const url::Origin kSuperOrigin(GURL("https://example/"));
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
+  const url::Origin kSuperOrigin =
+      url::Origin::Create(GURL("https://example/"));
 
   cache()->SetClient(kSuperOrigin, kEndpoint1_,
                      ReportingClient::Subdomains::INCLUDE, kGroup1_,
@@ -369,8 +373,9 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsSuperdomain) {
 }
 
 TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToDifferentPort) {
-  const url::Origin kOrigin(GURL("https://foo.example/"));
-  const url::Origin kDifferentPortOrigin(GURL("https://example:444/"));
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
+  const url::Origin kDifferentPortOrigin =
+      url::Origin::Create(GURL("https://example:444/"));
 
   cache()->SetClient(kOrigin, kEndpoint1_, ReportingClient::Subdomains::INCLUDE,
                      kGroup1_, kExpires1_);
@@ -385,8 +390,9 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToDifferentPort) {
 }
 
 TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToSuperdomain) {
-  const url::Origin kOrigin(GURL("https://foo.example/"));
-  const url::Origin kSuperOrigin(GURL("https://example/"));
+  const url::Origin kOrigin = url::Origin::Create(GURL("https://foo.example/"));
+  const url::Origin kSuperOrigin =
+      url::Origin::Create(GURL("https://example/"));
 
   cache()->SetClient(kOrigin, kEndpoint1_, ReportingClient::Subdomains::INCLUDE,
                      kGroup1_, kExpires1_);
@@ -401,9 +407,12 @@ TEST_F(ReportingCacheTest, IncludeSubdomainsPreferOriginToSuperdomain) {
 }
 
 TEST_F(ReportingCacheTest, IncludeSubdomainsPreferMoreSpecificSuperdomain) {
-  const url::Origin kOrigin(GURL("https://foo.bar.example/"));
-  const url::Origin kSuperOrigin(GURL("https://bar.example/"));
-  const url::Origin kSuperSuperOrigin(GURL("https://example/"));
+  const url::Origin kOrigin =
+      url::Origin::Create(GURL("https://foo.bar.example/"));
+  const url::Origin kSuperOrigin =
+      url::Origin::Create(GURL("https://bar.example/"));
+  const url::Origin kSuperSuperOrigin =
+      url::Origin::Create(GURL("https://example/"));
 
   cache()->SetClient(kSuperOrigin, kEndpoint1_,
                      ReportingClient::Subdomains::INCLUDE, kGroup1_,

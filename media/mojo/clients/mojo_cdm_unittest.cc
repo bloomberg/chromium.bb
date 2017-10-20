@@ -108,7 +108,7 @@ class MojoCdmTest : public ::testing::Test {
       }
     }
 
-    MojoCdm::Create(key_system, url::Origin(GURL(kTestSecurityOrigin)),
+    MojoCdm::Create(key_system, url::Origin::Create(GURL(kTestSecurityOrigin)),
                     CdmConfig(), std::move(remote_cdm),
                     base::Bind(&MockCdmClient::OnSessionMessage,
                                base::Unretained(&cdm_client_)),

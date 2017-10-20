@@ -52,7 +52,7 @@ TEST(OriginTest, UniqueOriginComparison) {
   for (auto* test_url : urls) {
     SCOPED_TRACE(test_url);
     GURL url(test_url);
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
     EXPECT_EQ("", origin.scheme());
     EXPECT_EQ("", origin.host());
     EXPECT_EQ(0, origin.port());
@@ -103,7 +103,8 @@ TEST(OriginTest, ConstructFromTuple) {
 }
 
 TEST(OriginTest, ConstructFromGURL) {
-  url::Origin different_origin(GURL("https://not-in-the-list.test/"));
+  url::Origin different_origin =
+      url::Origin::Create(GURL("https://not-in-the-list.test/"));
 
   struct TestCases {
     const char* const url;
@@ -156,7 +157,7 @@ TEST(OriginTest, ConstructFromGURL) {
     SCOPED_TRACE(test_case.url);
     GURL url(test_case.url);
     EXPECT_TRUE(url.is_valid());
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
     EXPECT_EQ(test_case.expected_scheme, origin.scheme());
     EXPECT_EQ(test_case.expected_host, origin.host());
     EXPECT_EQ(test_case.expected_port, origin.port());
@@ -189,7 +190,7 @@ TEST(OriginTest, Serialization) {
     SCOPED_TRACE(test_case.url);
     GURL url(test_case.url);
     EXPECT_TRUE(url.is_valid());
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
     EXPECT_TRUE(origin.suborigin().empty());
     std::string serialized = origin.Serialize();
     std::string serialized_physical_origin =
@@ -240,7 +241,7 @@ TEST(OriginTest, SuboriginSerialization) {
     SCOPED_TRACE(test_case.url);
     GURL url(test_case.url);
     EXPECT_TRUE(url.is_valid());
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
     std::string serialized = origin.Serialize();
     std::string serialized_physical_origin =
         origin.GetPhysicalOrigin().Serialize();
@@ -266,7 +267,7 @@ TEST(OriginTest, SuboriginSerialization) {
     SCOPED_TRACE(test_case);
     GURL url(test_case);
     EXPECT_TRUE(url.is_valid());
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
     std::string serialized = origin.Serialize();
     std::string serialized_physical_origin =
         origin.GetPhysicalOrigin().Serialize();
@@ -302,8 +303,8 @@ TEST(OriginTest, SuboriginIsSameOriginWith) {
 
   for (const auto& test_case : cases) {
     SCOPED_TRACE(test_case.url1);
-    url::Origin origin1(GURL(test_case.url1));
-    url::Origin origin2(GURL(test_case.url2));
+    url::Origin origin1 = url::Origin::Create(GURL(test_case.url1));
+    url::Origin origin2 = url::Origin::Create(GURL(test_case.url2));
 
     EXPECT_TRUE(origin1.IsSameOriginWith(origin1));
     EXPECT_TRUE(origin2.IsSameOriginWith(origin2));
@@ -335,10 +336,10 @@ TEST(OriginTest, Comparison) {
 
   for (size_t i = 0; i < arraysize(urls); i++) {
     GURL current_url(urls[i]);
-    url::Origin current(current_url);
+    url::Origin current = url::Origin::Create(current_url);
     for (size_t j = i; j < arraysize(urls); j++) {
       GURL compare_url(urls[j]);
-      url::Origin to_compare(compare_url);
+      url::Origin to_compare = url::Origin::Create(compare_url);
       EXPECT_EQ(i < j, current < to_compare) << i << " < " << j;
       EXPECT_EQ(j < i, to_compare < current) << j << " < " << i;
     }
@@ -482,7 +483,7 @@ TEST(OriginTest, DomainIs) {
                                     << ")");
     GURL url(test_case.url);
     ASSERT_TRUE(url.is_valid());
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
 
     EXPECT_EQ(test_case.expected_domain_is,
               origin.DomainIs(test_case.lower_ascii_domain));
@@ -491,7 +492,7 @@ TEST(OriginTest, DomainIs) {
   // If the URL is invalid, DomainIs returns false.
   GURL invalid_url("google.com");
   ASSERT_FALSE(invalid_url.is_valid());
-  EXPECT_FALSE(url::Origin(invalid_url).DomainIs("google.com"));
+  EXPECT_FALSE(url::Origin::Create(invalid_url).DomainIs("google.com"));
 
   // Unique origins.
   EXPECT_FALSE(url::Origin().DomainIs(""));

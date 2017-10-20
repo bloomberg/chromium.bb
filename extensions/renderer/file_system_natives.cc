@@ -43,7 +43,7 @@ void FileSystemNatives::GetIsolatedFileSystem(
       extensions::ScriptContext::GetDocumentLoaderURLForFrame(webframe);
   CHECK(context_url.SchemeIs(extensions::kExtensionScheme));
 
-  const GURL origin(url::Origin(context_url).Serialize());
+  const GURL origin(url::Origin::Create(context_url).Serialize());
   std::string name(storage::GetIsolatedFileSystemName(origin, file_system_id));
 
   // The optional second argument is the subfolder within the isolated file

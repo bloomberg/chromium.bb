@@ -45,7 +45,7 @@ ContentSetting FlashPermissionContext::GetPermissionStatusInternal(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile());
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-      host_content_settings_map, url::Origin(embedding_origin),
+      host_content_settings_map, url::Origin::Create(embedding_origin),
       requesting_origin, nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
       host_content_settings_map, content_settings_type(), flash_setting);

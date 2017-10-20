@@ -388,7 +388,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
                                http_redirect_to_target_url);
 
   // That should not have been allowed.
-  EXPECT_NE(url::Origin(target_url).GetURL(),
+  EXPECT_NE(url::Origin::Create(target_url).GetURL(),
             ChildFrameAt(web_contents->GetMainFrame(), 0)
                 ->GetLastCommittedOrigin()
                 .GetURL());

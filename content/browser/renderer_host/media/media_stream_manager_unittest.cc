@@ -233,7 +233,7 @@ TEST_F(MediaStreamManagerTest, MakeAndCancelMultipleRequests) {
 }
 
 TEST_F(MediaStreamManagerTest, DeviceID) {
-  url::Origin security_origin(GURL("http://localhost"));
+  url::Origin security_origin = url::Origin::Create(GURL("http://localhost"));
   const std::string unique_default_id(
       media::AudioDeviceDescription::kDefaultDeviceId);
   const std::string hashed_default_id =

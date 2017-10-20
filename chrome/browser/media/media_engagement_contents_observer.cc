@@ -140,7 +140,7 @@ void MediaEngagementContentsObserver::DidFinishNavigation(
   playback_timer_->Stop();
   ClearPlayerStates();
 
-  url::Origin new_origin(navigation_handle->GetURL());
+  url::Origin new_origin = url::Origin::Create(navigation_handle->GetURL());
   if (committed_origin_.IsSameOriginWith(new_origin))
     return;
 
@@ -420,7 +420,7 @@ void MediaEngagementContentsObserver::ReadyToCommitNavigation(
   // TODO(beccahughes): Convert MEI API to using origin.
   GURL url = handle->GetWebContents()->GetURL();
   if (service_->HasHighEngagement(url)) {
-    SendEngagementLevelToFrame(url::Origin(handle->GetURL()),
+    SendEngagementLevelToFrame(url::Origin::Create(handle->GetURL()),
                                handle->GetRenderFrameHost());
   }
 }

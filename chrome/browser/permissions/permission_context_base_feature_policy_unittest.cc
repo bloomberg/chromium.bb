@@ -69,7 +69,7 @@ class PermissionContextBaseFeaturePolicyTest
     SimulateNavigation(&current, current->GetLastCommittedURL());
     std::vector<url::Origin> parsed_origins;
     for (const std::string& origin : origins)
-      parsed_origins.push_back(url::Origin(GURL(origin)));
+      parsed_origins.push_back(url::Origin::Create(GURL(origin)));
     content::RenderFrameHostTester::For(current)->SimulateFeaturePolicyHeader(
         feature, parsed_origins);
     *rfh = current;

@@ -183,7 +183,8 @@ IN_PROC_BROWSER_TEST_F(PasswordDialogViewTest,
   GURL icon_url("https://google.com/icon.png");
   form.icon_url = icon_url;
   form.display_name = base::ASCIIToUTF16("Peter Pan");
-  form.federation_origin = url::Origin(GURL("https://google.com/federation"));
+  form.federation_origin =
+      url::Origin::Create(GURL("https://google.com/federation"));
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
 
   // Prepare to capture the network request.
@@ -219,7 +220,8 @@ IN_PROC_BROWSER_TEST_F(
   GURL icon_url("https://google.com/icon.png");
   form.icon_url = icon_url;
   form.display_name = base::ASCIIToUTF16("Peter Pan");
-  form.federation_origin = url::Origin(GURL("https://google.com/federation"));
+  form.federation_origin =
+      url::Origin::Create(GURL("https://google.com/federation"));
   local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
 
   SetupChooseCredentials(std::move(local_credentials), origin);
@@ -454,7 +456,8 @@ void PasswordDialogViewTest::ShowDialog(const std::string& name) {
     local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
     form.icon_url = GURL("https://google.com/icon.png");
     form.display_name = base::ASCIIToUTF16("Peter");
-    form.federation_origin = url::Origin(GURL("https://google.com/federation"));
+    form.federation_origin =
+        url::Origin::Create(GURL("https://google.com/federation"));
     local_credentials.push_back(base::MakeUnique<autofill::PasswordForm>(form));
     SetupChooseCredentials(std::move(local_credentials), origin);
     ASSERT_TRUE(controller()->current_account_chooser());
@@ -466,18 +469,19 @@ void PasswordDialogViewTest::ShowDialog(const std::string& name) {
       form.display_name = base::ASCIIToUTF16("Tinkerbell");
       form.username_value = base::ASCIIToUTF16("tinkerbell@pan.test");
       form.federation_origin =
-          url::Origin(GURL("https://google.com/neverland"));
+          url::Origin::Create(GURL("https://google.com/neverland"));
       local_credentials.push_back(
           base::MakeUnique<autofill::PasswordForm>(form));
       form.display_name = base::ASCIIToUTF16("James Hook");
       form.username_value = base::ASCIIToUTF16("james@pan.test");
       form.federation_origin =
-          url::Origin(GURL("https://google.com/jollyroger"));
+          url::Origin::Create(GURL("https://google.com/jollyroger"));
       local_credentials.push_back(
           base::MakeUnique<autofill::PasswordForm>(form));
       form.display_name = base::ASCIIToUTF16("Wendy Darling");
       form.username_value = base::ASCIIToUTF16("wendy@pan.test");
-      form.federation_origin = url::Origin(GURL("https://google.com/london"));
+      form.federation_origin =
+          url::Origin::Create(GURL("https://google.com/london"));
       local_credentials.push_back(
           base::MakeUnique<autofill::PasswordForm>(form));
     }

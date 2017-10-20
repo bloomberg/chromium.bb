@@ -149,7 +149,7 @@ PasswordForm CreateFederated() {
   PasswordForm form = CreateNonFederated();
   form.signon_realm = kTestFederatedRealm;
   form.password_value.clear();
-  form.federation_origin = url::Origin(GURL(kTestFederationURL));
+  form.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
   return form;
 }
 
@@ -157,7 +157,7 @@ PasswordForm CreateFederated() {
 PasswordForm CreateAndroidFederated() {
   PasswordForm form =
       CreateHTMLForm("android://hash@com.example.android/", "user", "");
-  form.federation_origin = url::Origin(GURL(kTestFederationURL));
+  form.federation_origin = url::Origin::Create(GURL(kTestFederationURL));
   form.is_affiliation_based_match = true;
   return form;
 }

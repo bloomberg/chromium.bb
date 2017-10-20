@@ -57,7 +57,7 @@ const double kNewVolume = 0.618;
 const char kSecurityOrigin[] = "http://localhost";
 
 url::Origin SecurityOrigin() {
-  return url::Origin(GURL(kSecurityOrigin));
+  return url::Origin::Create(GURL(kSecurityOrigin));
 }
 
 AudioInputHostMsg_CreateStream_Config DefaultConfig() {

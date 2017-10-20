@@ -96,7 +96,7 @@ class GeolocationServiceTest : public RenderViewHostImplTestHarness {
       RenderFrameHostTester::For(main_rfh())
           ->SimulateFeaturePolicyHeader(
               blink::WebFeaturePolicyFeature::kGeolocation,
-              std::vector<url::Origin>{url::Origin(kEmbeddedUrl)});
+              std::vector<url::Origin>{url::Origin::Create(kEmbeddedUrl)});
     }
     RenderFrameHost* embedded_rfh =
         RenderFrameHostTester::For(main_rfh())->AppendChild("");

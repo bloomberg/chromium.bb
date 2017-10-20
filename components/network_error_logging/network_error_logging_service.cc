@@ -170,7 +170,7 @@ void NetworkErrorLoggingService::OnNetworkError(const ErrorDetails& details) {
   if (!reporting_service_)
     return;
 
-  url::Origin origin(details.uri);
+  url::Origin origin = url::Origin::Create(details.uri);
 
   // NEL is only available to secure origins, so ignore network errors from
   // insecure origins. (The check in OnHeader prevents insecure origins from

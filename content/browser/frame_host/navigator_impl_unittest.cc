@@ -776,7 +776,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
         REQUEST_CONTEXT_TYPE_SCRIPT,
         blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
-        url::Origin(kUrl0));
+        url::Origin::Create(kUrl0));
     main_test_rfh()->OnMessageReceived(FrameHostMsg_BeginNavigation(
         main_test_rfh()->GetRoutingID(), common_params, begin_params));
   }
@@ -1200,7 +1200,7 @@ void SetWithinSameDocument(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params) {
   params->was_within_same_document = true;
   params->url = url;
-  params->origin = url::Origin(url);
+  params->origin = url::Origin::Create(url);
 }
 }
 

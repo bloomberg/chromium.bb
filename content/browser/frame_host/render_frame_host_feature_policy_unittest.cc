@@ -86,7 +86,7 @@ class RenderFrameHostFeaturePolicyTest
     result[0].feature = feature;
     result[0].matches_all_origins = false;
     for (const std::string& origin : origins)
-      result[0].origins.push_back(url::Origin(GURL(origin)));
+      result[0].origins.push_back(url::Origin::Create(GURL(origin)));
     return result;
   }
 };

@@ -827,7 +827,7 @@ TEST_F(RenderViewImplTest, OriginReplicationForSwapOut) {
   // WebRemoteFrame.
   content::FrameReplicationState replication_state =
       ReconstructReplicationStateForTesting(child_frame);
-  replication_state.origin = url::Origin(GURL("http://foo.com"));
+  replication_state.origin = url::Origin::Create(GURL("http://foo.com"));
   child_frame->SwapOut(kProxyRoutingId, true, replication_state);
 
   // The child frame should now be a WebRemoteFrame.

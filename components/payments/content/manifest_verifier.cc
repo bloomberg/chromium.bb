@@ -36,7 +36,7 @@ void EnableMethodManifestUrlForSupportedApps(
     const std::string app_origin_string = app_origin.Serialize();
     for (auto& app : *apps) {
       if (app_origin.IsSameOriginWith(
-              url::Origin(app.second->scope.GetOrigin()))) {
+              url::Origin::Create(app.second->scope.GetOrigin()))) {
         if (all_origins_supported ||
             std::find(supported_origin_strings.begin(),
                       supported_origin_strings.end(),
@@ -107,8 +107,9 @@ void ManifestVerifier::Verify(content::PaymentAppProvider::PaymentApps apps,
       }
 
       // Same origin payment methods are always allowed.
-      url::Origin app_origin(app.second->scope.GetOrigin());
-      if (url::Origin(method_manifest_url.GetOrigin())
+      url::Origin app_origin =
+          url::Origin::Create(app.second->scope.GetOrigin());
+      if (url::Origin::Create(method_manifest_url.GetOrigin())
               .IsSameOriginWith(app_origin)) {
         verified_method_names.emplace_back(method);
         continue;

@@ -812,7 +812,7 @@ class WebSocketChannelTest : public ::testing::Test {
   struct ConnectData {
     ConnectData()
         : socket_url("ws://ws/"),
-          origin(GURL("http://ws")),
+          origin(url::Origin::Create(GURL("http://ws"))),
           site_for_cookies("http://ws/") {}
 
     // URLRequestContext object.
@@ -1040,7 +1040,7 @@ class WebSocketChannelReceiveUtf8Test : public WebSocketChannelStreamTest {
 // callback is passed to the argument saver.
 TEST_F(WebSocketChannelTest, EverythingIsPassedToTheCreatorFunction) {
   connect_data_.socket_url = GURL("ws://example.com/test");
-  connect_data_.origin = url::Origin(GURL("http://example.com"));
+  connect_data_.origin = url::Origin::Create(GURL("http://example.com"));
   connect_data_.site_for_cookies = GURL("http://example.com/");
   connect_data_.requested_subprotocols.push_back("Sinbad");
 

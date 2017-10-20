@@ -112,7 +112,7 @@ class AudioRendererMixerManagerTest : public testing::Test {
         mock_sink_matched_device_(
             new media::MockAudioRendererSink(kMatchedDeviceId,
                                              media::OUTPUT_DEVICE_STATUS_OK)),
-        kSecurityOrigin2(GURL("http://localhost")) {}
+        kSecurityOrigin2(url::Origin::Create(GURL("http://localhost"))) {}
 
   media::AudioRendererMixer* GetMixer(
       int source_render_frame_id,

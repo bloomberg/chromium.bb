@@ -322,8 +322,8 @@ bool SiteInstance::IsSameWebSite(BrowserContext* browser_context,
   if (dest_url == blank_page)
     return true;
 
-  url::Origin src_origin(src_url);
-  url::Origin dest_origin(dest_url);
+  url::Origin src_origin = url::Origin::Create(src_url);
+  url::Origin dest_origin = url::Origin::Create(dest_url);
 
   // If the schemes differ, they aren't part of the same site.
   if (src_origin.scheme() != dest_origin.scheme())
@@ -362,13 +362,13 @@ GURL SiteInstance::GetSiteForURL(BrowserContext* browser_context,
     return real_url;
 
   GURL url = SiteInstanceImpl::GetEffectiveURL(browser_context, real_url);
-  url::Origin origin(url);
+  url::Origin origin = url::Origin::Create(url);
 
   // Isolated origins should use the full origin as their site URL. A subdomain
   // of an isolated origin should also use that isolated origin's site URL.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   url::Origin isolated_origin;
-  if (policy->GetMatchingIsolatedOrigin(url::Origin(real_url),
+  if (policy->GetMatchingIsolatedOrigin(url::Origin::Create(real_url),
                                         &isolated_origin)) {
     return isolated_origin.GetURL();
   }
@@ -401,7 +401,7 @@ GURL SiteInstanceImpl::GetEffectiveURL(BrowserContext* browser_context,
   // Don't resolve URLs corresponding to isolated origins, as isolated origins
   // take precedence over hosted apps.
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsIsolatedOrigin(url::Origin(url)))
+  if (policy->IsIsolatedOrigin(url::Origin::Create(url)))
     return url;
 
   return GetContentClient()->browser()->
@@ -419,7 +419,7 @@ bool SiteInstanceImpl::DoesSiteRequireDedicatedProcess(
   // Always require a dedicated process for isolated origins.
   GURL site_url = GetSiteForURL(browser_context, url);
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsIsolatedOrigin(url::Origin(site_url)))
+  if (policy->IsIsolatedOrigin(url::Origin::Create(site_url)))
     return true;
 
   // Let the content embedder enable site isolation for specific URLs. Use the

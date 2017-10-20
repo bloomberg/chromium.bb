@@ -1424,7 +1424,8 @@ ServiceWorkerDatabase::Status ServiceWorkerDatabase::ParseRegistrationData(
     out->foreign_fetch_scopes.push_back(sub_scope_url);
   }
   for (int i = 0; i < data.foreign_fetch_origin_size(); ++i) {
-    url::Origin parsed_origin(GURL(data.foreign_fetch_origin(i)));
+    url::Origin parsed_origin =
+        url::Origin::Create(GURL(data.foreign_fetch_origin(i)));
     if (parsed_origin.unique()) {
       DLOG(ERROR) << "Foreign fetch origin '" << data.foreign_fetch_origin(i)
                   << "' is not valid.";

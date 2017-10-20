@@ -769,7 +769,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   data.resources_total_size_bytes = 10 + 11;
   data.foreign_fetch_scopes.push_back(URL(origin, "/foo"));
   data.foreign_fetch_origins.push_back(
-      url::Origin(GURL("https://chromium.org")));
+      url::Origin::Create(GURL("https://chromium.org")));
   data.used_features = {124, 901, 1019};
 
   std::vector<Resource> resources1;
@@ -803,7 +803,7 @@ TEST(ServiceWorkerDatabaseTest, Registration_Overwrite) {
   updated_data.resources_total_size_bytes = 12 + 13;
   updated_data.foreign_fetch_scopes.clear();
   updated_data.foreign_fetch_origins.push_back(
-      url::Origin(GURL("https://example.com")));
+      url::Origin::Create(GURL("https://example.com")));
   updated_data.used_features = {109, 421, 9101};
   std::vector<Resource> resources2;
   resources2.push_back(CreateResource(3, URL(origin, "/resource3"), 12));

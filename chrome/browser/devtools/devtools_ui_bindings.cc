@@ -1280,7 +1280,7 @@ void DevToolsUIBindings::AddDevToolsExtensionsToClient() {
     // documents.
     content::ChildProcessSecurityPolicy::GetInstance()->GrantOrigin(
         web_contents_->GetMainFrame()->GetProcess()->GetID(),
-        url::Origin(extension->url()));
+        url::Origin::Create(extension->url()));
 
     std::unique_ptr<base::DictionaryValue> extension_info(
         new base::DictionaryValue());

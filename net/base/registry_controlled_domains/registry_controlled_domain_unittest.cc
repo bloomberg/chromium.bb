@@ -99,8 +99,8 @@ class RegistryControlledDomainTest : public testing::Test {
     SCOPED_TRACE(url1 + " " + url2);
     GURL g1 = GURL(url1);
     GURL g2 = GURL(url2);
-    url::Origin o1 = url::Origin(g1);
-    url::Origin o2 = url::Origin(g2);
+    url::Origin o1 = url::Origin::Create(g1);
+    url::Origin o2 = url::Origin::Create(g2);
     EXPECT_EQ(SameDomainOrHost(o1, o2, EXCLUDE_PRIVATE_REGISTRIES),
               SameDomainOrHost(g1, g2, EXCLUDE_PRIVATE_REGISTRIES));
     return SameDomainOrHost(g1, g2, EXCLUDE_PRIVATE_REGISTRIES);

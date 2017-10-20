@@ -85,7 +85,7 @@ bool ReadOrigin(base::PickleIterator* iter,
     *origin = url::Origin();
     return false;
   }
-  *origin = url::Origin(GURL(origin_string));
+  *origin = url::Origin::Create(GURL(origin_string));
   return true;
 }
 

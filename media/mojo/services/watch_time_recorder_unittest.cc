@@ -58,7 +58,7 @@ class WatchTimeRecorderTest : public testing::Test {
         mojom::PlaybackProperties::New(kUnknownAudioCodec, kUnknownVideoCodec,
                                        has_audio, has_video, is_mse,
                                        is_encrypted, false, gfx::Size(800, 600),
-                                       url::Origin(GURL(kTestOrigin))),
+                                       url::Origin::Create(GURL(kTestOrigin))),
         mojo::MakeRequest(&wtr_));
   }
 
@@ -246,7 +246,7 @@ TEST_F(WatchTimeRecorderTest, TestRebufferingMetrics) {
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
       kCodecAAC, kCodecH264, true, true, false, false, false,
-      gfx::Size(800, 600), url::Origin(GURL(kTestOrigin)));
+      gfx::Size(800, 600), url::Origin::Create(GURL(kTestOrigin)));
   provider_->AcquireWatchTimeRecorder(properties.Clone(),
                                       mojo::MakeRequest(&wtr_));
 
@@ -287,7 +287,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideo) {
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
       kCodecOpus, kCodecVP9, true, true, true, true, false, gfx::Size(800, 600),
-      url::Origin(GURL(kTestOrigin)));
+      url::Origin::Create(GURL(kTestOrigin)));
   provider_->AcquireWatchTimeRecorder(properties.Clone(),
                                       mojo::MakeRequest(&wtr_));
 
@@ -354,7 +354,7 @@ TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoWithExtras) {
 TEST_F(WatchTimeRecorderTest, BasicUkmAudioVideoBackground) {
   mojom::PlaybackPropertiesPtr properties = mojom::PlaybackProperties::New(
       kCodecAAC, kCodecH264, true, true, false, false, false,
-      gfx::Size(800, 600), url::Origin(GURL(kTestOrigin)));
+      gfx::Size(800, 600), url::Origin::Create(GURL(kTestOrigin)));
   provider_->AcquireWatchTimeRecorder(properties.Clone(),
                                       mojo::MakeRequest(&wtr_));
 

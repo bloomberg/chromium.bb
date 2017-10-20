@@ -78,7 +78,7 @@ void GenericURLRequestJob::SetExtraRequestHeaders(
 
 void GenericURLRequestJob::Start() {
   PrepareCookies(request_->url(), request_->method(),
-                 url::Origin(request_->site_for_cookies()));
+                 url::Origin::Create(request_->site_for_cookies()));
 }
 
 void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
@@ -90,7 +90,7 @@ void GenericURLRequestJob::PrepareCookies(const GURL& rewritten_url,
   options.set_include_httponly();
 
   // See net::URLRequestHttpJob::AddCookieHeaderAndStart().
-  url::Origin requested_origin(rewritten_url);
+  url::Origin requested_origin = url::Origin::Create(rewritten_url);
   if (net::registry_controlled_domains::SameDomainOrHost(
           requested_origin, site_for_cookies,
           net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {

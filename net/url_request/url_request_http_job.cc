@@ -797,7 +797,7 @@ void URLRequestHttpJob::ProcessNetworkErrorLoggingHeader() {
   if (!ssl_info.is_valid() || IsCertStatusError(ssl_info.cert_status))
     return;
 
-  delegate->OnHeader(url::Origin(request_info_.url), value);
+  delegate->OnHeader(url::Origin::Create(request_info_.url), value);
 }
 
 void URLRequestHttpJob::OnStartCompleted(int result) {

@@ -903,7 +903,7 @@ void LocalStorageContextMojo::OnGotMetaData(
     LocalStorageUsageInfo info;
     info.origin = GURL(leveldb::Uint8VectorToStdString(row->key).substr(
         arraysize(kMetaPrefix)));
-    origins.insert(url::Origin(info.origin));
+    origins.insert(url::Origin::Create(info.origin));
     if (!info.origin.is_valid()) {
       // TODO(mek): Deal with database corruption.
       continue;
@@ -941,7 +941,7 @@ void LocalStorageContextMojo::OnGotStorageUsageForDeletePhysicalOrigin(
     const url::Origin& origin,
     std::vector<LocalStorageUsageInfo> usage) {
   for (const auto& info : usage) {
-    url::Origin origin_candidate(info.origin);
+    url::Origin origin_candidate = url::Origin::Create(info.origin);
     if (!origin_candidate.IsSameOriginWith(origin) &&
         origin_candidate.IsSamePhysicalOriginWith(origin))
       DeleteStorage(origin_candidate);
@@ -958,7 +958,7 @@ void LocalStorageContextMojo::OnGotStorageUsageForShutdown(
     if (!special_storage_policy_->IsStorageSessionOnly(info.origin))
       continue;
 
-    AddDeleteOriginOperations(&operations, url::Origin(info.origin));
+    AddDeleteOriginOperations(&operations, url::Origin::Create(info.origin));
   }
 
   if (!operations.empty()) {

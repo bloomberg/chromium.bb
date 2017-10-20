@@ -442,8 +442,8 @@ TEST(BrowsingDataFilterBuilderImplTest,
 TEST(BrowsingDataFilterBuilderImplTest, OriginWhitelist) {
   BrowsingDataFilterBuilderImpl builder(
       BrowsingDataFilterBuilderImpl::WHITELIST);
-  builder.AddOrigin(url::Origin(GURL("https://www.google.com")));
-  builder.AddOrigin(url::Origin(GURL("http://www.example.com")));
+  builder.AddOrigin(url::Origin::Create(GURL("https://www.google.com")));
+  builder.AddOrigin(url::Origin::Create(GURL("http://www.example.com")));
   base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   TestCase test_cases[] = {
@@ -473,8 +473,8 @@ TEST(BrowsingDataFilterBuilderImplTest, OriginWhitelist) {
 TEST(BrowsingDataFilterBuilderImplTest, OriginBlacklist) {
   BrowsingDataFilterBuilderImpl builder(
       BrowsingDataFilterBuilderImpl::BLACKLIST);
-  builder.AddOrigin(url::Origin(GURL("https://www.google.com")));
-  builder.AddOrigin(url::Origin(GURL("http://www.example.com")));
+  builder.AddOrigin(url::Origin::Create(GURL("https://www.google.com")));
+  builder.AddOrigin(url::Origin::Create(GURL("http://www.example.com")));
   base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
   TestCase test_cases[] = {
@@ -505,7 +505,7 @@ TEST(BrowsingDataFilterBuilderImplTest, OriginBlacklist) {
 TEST(BrowsingDataFilterBuilderImplTest, CombinedWhitelist) {
   BrowsingDataFilterBuilderImpl builder(
       BrowsingDataFilterBuilderImpl::WHITELIST);
-  builder.AddOrigin(url::Origin(GURL("https://google.com")));
+  builder.AddOrigin(url::Origin::Create(GURL("https://google.com")));
   builder.AddRegisterableDomain("example.com");
   base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 
@@ -528,7 +528,7 @@ TEST(BrowsingDataFilterBuilderImplTest, CombinedWhitelist) {
 TEST(BrowsingDataFilterBuilderImplTest, CombinedBlacklist) {
   BrowsingDataFilterBuilderImpl builder(
       BrowsingDataFilterBuilderImpl::BLACKLIST);
-  builder.AddOrigin(url::Origin(GURL("https://google.com")));
+  builder.AddOrigin(url::Origin::Create(GURL("https://google.com")));
   builder.AddRegisterableDomain("example.com");
   base::Callback<bool(const GURL&)> filter = builder.BuildGeneralFilter();
 

@@ -47,8 +47,8 @@ class QueryResultManagerTest : public ::testing::Test {
     EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
         .WillOnce(Return(true));
     EXPECT_CALL(mock_observer_, OnResultsUpdated(_)).Times(1);
-    query_result_manager_.SetSourcesForCastMode(cast_mode, {source},
-                                                url::Origin(GURL(kOrigin)));
+    query_result_manager_.SetSourcesForCastMode(
+        cast_mode, {source}, url::Origin::Create(GURL(kOrigin)));
   }
 
   bool IsDefaultSourceForSink(const MediaSource* source,
@@ -119,7 +119,8 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .WillOnce(Return(true));
   query_result_manager_.SetSourcesForCastMode(
-      MediaCastMode::PRESENTATION, {source}, url::Origin(GURL(kOrigin)));
+      MediaCastMode::PRESENTATION, {source},
+      url::Origin::Create(GURL(kOrigin)));
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
@@ -135,9 +136,9 @@ TEST_F(QueryResultManagerTest, StartStopSinksQuery) {
   EXPECT_CALL(mock_router_, UnregisterMediaSinksObserver(_)).Times(1);
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .WillOnce(Return(true));
-  query_result_manager_.SetSourcesForCastMode(MediaCastMode::PRESENTATION,
-                                              {another_source},
-                                              url::Origin(GURL(kOrigin)));
+  query_result_manager_.SetSourcesForCastMode(
+      MediaCastMode::PRESENTATION, {another_source},
+      url::Origin::Create(GURL(kOrigin)));
 
   cast_modes = query_result_manager_.GetSupportedCastModes();
   EXPECT_EQ(1u, cast_modes.size());
@@ -225,8 +226,8 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   ASSERT_TRUE(sinks_observer_it->second.get());
   EXPECT_CALL(mock_observer_,
               OnResultsUpdated(VectorEquals(expected_sinks))).Times(1);
-  sinks_observer_it->second->OnSinksUpdated(sinks_query_result,
-                                            {url::Origin(GURL(kOrigin))});
+  sinks_observer_it->second->OnSinksUpdated(
+      sinks_query_result, {url::Origin::Create(GURL(kOrigin))});
 
   // Action: Update presentation URL
   // Expected result:
@@ -246,9 +247,9 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
       .WillOnce(Return(true));
   EXPECT_CALL(mock_observer_,
               OnResultsUpdated(VectorEquals(expected_sinks))).Times(1);
-  query_result_manager_.SetSourcesForCastMode(MediaCastMode::PRESENTATION,
-                                              {presentation_source2},
-                                              url::Origin(GURL(kOrigin)));
+  query_result_manager_.SetSourcesForCastMode(
+      MediaCastMode::PRESENTATION, {presentation_source2},
+      url::Origin::Create(GURL(kOrigin)));
 
   // Action: PRESENTATION -> [1], origins don't match
   // Expected result: [2 -> {TAB_MIRROR}, 3 -> {TAB_MIRROR}, 4 -> {TAB_MIRROR}]
@@ -261,7 +262,8 @@ TEST_F(QueryResultManagerTest, MultipleQueries) {
   EXPECT_CALL(mock_observer_, OnResultsUpdated(VectorEquals(expected_sinks)))
       .Times(1);
   sinks_observer_it->second->OnSinksUpdated(
-      sinks_query_result, {url::Origin(GURL("https://differentOrigin.com"))});
+      sinks_query_result,
+      {url::Origin::Create(GURL("https://differentOrigin.com"))});
 
   // Action: Remove TAB_MIRROR observer
   // Expected result:
@@ -299,11 +301,12 @@ TEST_F(QueryResultManagerTest, MultipleUrls) {
   EXPECT_CALL(mock_router_, RegisterMediaSinksObserver(_))
       .Times(4)
       .WillRepeatedly(Return(true));
-  query_result_manager_.SetSourcesForCastMode(MediaCastMode::PRESENTATION,
-                                              presentation_sources,
-                                              url::Origin(GURL(kOrigin)));
   query_result_manager_.SetSourcesForCastMode(
-      MediaCastMode::TAB_MIRROR, tab_sources, url::Origin(GURL(kOrigin)));
+      MediaCastMode::PRESENTATION, presentation_sources,
+      url::Origin::Create(GURL(kOrigin)));
+  query_result_manager_.SetSourcesForCastMode(
+      MediaCastMode::TAB_MIRROR, tab_sources,
+      url::Origin::Create(GURL(kOrigin)));
 
   // Scenario (results in this order):
   // Action: URL_B -> [2, 4]
@@ -395,11 +398,12 @@ TEST_F(QueryResultManagerTest, AddInvalidSource) {
       .Times(1)
       .WillRepeatedly(Return(true));
   query_result_manager_.SetSourcesForCastMode(
-      MediaCastMode::PRESENTATION, {source}, url::Origin(GURL(kOrigin)));
+      MediaCastMode::PRESENTATION, {source},
+      url::Origin::Create(GURL(kOrigin)));
   // |source| has already been registered with the PRESENTATION cast mode, so it
   // shouldn't get registered with tab mirroring.
   query_result_manager_.SetSourcesForCastMode(
-      MediaCastMode::TAB_MIRROR, {source}, url::Origin(GURL(kOrigin)));
+      MediaCastMode::TAB_MIRROR, {source}, url::Origin::Create(GURL(kOrigin)));
 
   const auto& cast_mode_sources = query_result_manager_.cast_mode_sources_;
   const auto& presentation_sources =

@@ -337,7 +337,7 @@ void WebDatabaseHostImpl::OnDatabaseSizeChanged(
   }
 
   GetWebDatabase().UpdateSize(
-      url::Origin(storage::GetOriginFromIdentifier(origin_identifier)),
+      url::Origin::Create(storage::GetOriginFromIdentifier(origin_identifier)),
       database_name, database_size);
 }
 
@@ -347,7 +347,7 @@ void WebDatabaseHostImpl::OnDatabaseScheduledForDeletion(
   DCHECK(db_tracker_->task_runner()->RunsTasksInCurrentSequence());
 
   GetWebDatabase().CloseImmediately(
-      url::Origin(storage::GetOriginFromIdentifier(origin_identifier)),
+      url::Origin::Create(storage::GetOriginFromIdentifier(origin_identifier)),
       database_name);
 }
 

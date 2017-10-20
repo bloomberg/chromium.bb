@@ -24,7 +24,7 @@ namespace {
 class ReportingServiceTest : public ::testing::Test {
  protected:
   const GURL kUrl_ = GURL("https://origin/path");
-  const url::Origin kOrigin_ = url::Origin(kUrl_);
+  const url::Origin kOrigin_ = url::Origin::Create(kUrl_);
   const GURL kEndpoint_ = GURL("https://endpoint/");
   const std::string kGroup_ = "group";
   const std::string kType_ = "type";

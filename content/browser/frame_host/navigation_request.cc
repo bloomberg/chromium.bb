@@ -186,7 +186,7 @@ void AddAdditionalRequestHeaders(net::HttpRequestHeaders* headers,
   url::Origin origin;
   if (frame_tree_node->IsMainFrame()) {
     // For main frame, the origin is the url currently loading.
-    origin = url::Origin(url);
+    origin = url::Origin::Create(url);
   } else if ((frame_tree_node->effective_frame_policy().sandbox_flags &
               blink::WebSandboxFlags::kOrigin) ==
              blink::WebSandboxFlags::kNone) {
@@ -1274,8 +1274,8 @@ NavigationRequest::CheckCredentialedSubresource() const {
   FrameTreeNode* parent_ftn = frame_tree_node_->parent();
   DCHECK(parent_ftn);
   const GURL& parent_url = parent_ftn->current_url();
-  if (url::Origin(parent_url)
-          .IsSameOriginWith(url::Origin(common_params_.url)) &&
+  if (url::Origin::Create(parent_url)
+          .IsSameOriginWith(url::Origin::Create(common_params_.url)) &&
       parent_url.username() == common_params_.url.username() &&
       parent_url.password() == common_params_.url.password()) {
     return CredentialedSubresourceCheckResult::ALLOW_REQUEST;

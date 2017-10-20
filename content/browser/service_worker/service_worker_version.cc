@@ -283,7 +283,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
     : version_id_(version_id),
       registration_id_(registration->id()),
       script_url_(script_url),
-      script_origin_(script_url_),
+      script_origin_(url::Origin::Create(script_url_)),
       scope_(registration->pattern()),
       fetch_handler_existence_(FetchHandlerExistence::UNKNOWN),
       site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
@@ -775,8 +775,8 @@ void ServiceWorkerVersion::Doom() {
 
 void ServiceWorkerVersion::SetValidOriginTrialTokens(
     const blink::TrialTokenValidator::FeatureToTokensMap& tokens) {
-  origin_trial_tokens_ =
-      validator_->GetValidTokens(url::Origin(scope()), tokens, clock_->Now());
+  origin_trial_tokens_ = validator_->GetValidTokens(
+      url::Origin::Create(scope()), tokens, clock_->Now());
 }
 
 void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
@@ -828,7 +828,7 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
   //     wasn't set in the entry.
   if (!origin_trial_tokens_) {
     origin_trial_tokens_ = validator_->GetValidTokensFromHeaders(
-        url::Origin(scope()), http_info.headers.get(), clock_->Now());
+        url::Origin::Create(scope()), http_info.headers.get(), clock_->Now());
   }
 
   for (auto& observer : listeners_)

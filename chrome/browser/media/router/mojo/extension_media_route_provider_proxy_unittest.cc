@@ -100,16 +100,17 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
 TEST_F(ExtensionMediaRouteProviderProxyTest, CreateRoute) {
   EXPECT_CALL(
       mock_provider_,
-      CreateRouteInternal(
-          kSource, kSinkId, kPresentationId, url::Origin(GURL(kOrigin)), kTabId,
-          base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito, _))
+      CreateRouteInternal(kSource, kSinkId, kPresentationId,
+                          url::Origin::Create(GURL(kOrigin)), kTabId,
+                          base::TimeDelta::FromMilliseconds(kTimeoutMillis),
+                          kIsIncognito, _))
       .WillOnce(WithArg<7>(Invoke(
           &mock_provider_, &MockMediaRouteProvider::RouteRequestSuccess)));
 
   MockRouteCallback callback;
   provider_proxy_->CreateRoute(
-      kSource, kSinkId, kPresentationId, url::Origin(GURL(kOrigin)), kTabId,
-      base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito,
+      kSource, kSinkId, kPresentationId, url::Origin::Create(GURL(kOrigin)),
+      kTabId, base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito,
       base::BindOnce(&MockRouteCallback::Run, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
 }
@@ -118,14 +119,14 @@ TEST_F(ExtensionMediaRouteProviderProxyTest, JoinRoute) {
   EXPECT_CALL(
       mock_provider_,
       JoinRouteInternal(
-          kSource, kPresentationId, url::Origin(GURL(kOrigin)), kTabId,
+          kSource, kPresentationId, url::Origin::Create(GURL(kOrigin)), kTabId,
           base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito, _))
       .WillOnce(WithArg<6>(Invoke(
           &mock_provider_, &MockMediaRouteProvider::RouteRequestSuccess)));
 
   MockRouteCallback callback;
   provider_proxy_->JoinRoute(
-      kSource, kPresentationId, url::Origin(GURL(kOrigin)), kTabId,
+      kSource, kPresentationId, url::Origin::Create(GURL(kOrigin)), kTabId,
       base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito,
       base::BindOnce(&MockRouteCallback::Run, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
@@ -135,16 +136,16 @@ TEST_F(ExtensionMediaRouteProviderProxyTest, ConnectRouteByRouteId) {
   EXPECT_CALL(
       mock_provider_,
       ConnectRouteByRouteIdInternal(
-          kSource, kRouteId, kPresentationId, url::Origin(GURL(kOrigin)),
-          kTabId, base::TimeDelta::FromMilliseconds(kTimeoutMillis),
-          kIsIncognito, _))
+          kSource, kRouteId, kPresentationId,
+          url::Origin::Create(GURL(kOrigin)), kTabId,
+          base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito, _))
       .WillOnce(WithArg<7>(Invoke(
           &mock_provider_, &MockMediaRouteProvider::RouteRequestSuccess)));
 
   MockRouteCallback callback;
   provider_proxy_->ConnectRouteByRouteId(
-      kSource, kRouteId, kPresentationId, url::Origin(GURL(kOrigin)), kTabId,
-      base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito,
+      kSource, kRouteId, kPresentationId, url::Origin::Create(GURL(kOrigin)),
+      kTabId, base::TimeDelta::FromMilliseconds(kTimeoutMillis), kIsIncognito,
       base::BindOnce(&MockRouteCallback::Run, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
 }

@@ -180,7 +180,8 @@ void SpeechRecognitionManagerImpl::RecognitionAllowedCallback(int session_id,
     SpeechRecognitionSessionContext& context = session->context;
     context.label = media_stream_manager_->MakeMediaAccessRequest(
         context.render_process_id, context.render_frame_id, context.request_id,
-        StreamControls(true, false), url::Origin(GURL(context.context_name)),
+        StreamControls(true, false),
+        url::Origin::Create(GURL(context.context_name)),
         base::BindOnce(
             &SpeechRecognitionManagerImpl::MediaRequestPermissionCallback,
             weak_factory_.GetWeakPtr(), session_id));

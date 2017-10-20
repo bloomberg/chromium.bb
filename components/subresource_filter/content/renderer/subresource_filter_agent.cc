@@ -197,7 +197,7 @@ void SubresourceFilterAgent::DidCommitProvisionalLoad(
       &SubresourceFilterAgent::SignalFirstSubresourceDisallowedForCommittedLoad,
       AsWeakPtr()));
   auto filter = base::MakeUnique<WebDocumentSubresourceFilterImpl>(
-      url::Origin(url), activation_state, std::move(ruleset),
+      url::Origin::Create(url), activation_state, std::move(ruleset),
       std::move(first_disallowed_load_callback));
 
   filter_for_last_committed_load_ = filter->AsWeakPtr();
@@ -238,7 +238,7 @@ void SubresourceFilterAgent::WillCreateWorkerFetchContext(
     return;
   worker_fetch_context->SetSubresourceFilterBuilder(
       base::MakeUnique<WebDocumentSubresourceFilterImpl::BuilderImpl>(
-          url::Origin(GetDocumentURL()),
+          url::Origin::Create(GetDocumentURL()),
           filter_for_last_committed_load_->filter().activation_state(),
           std::move(ruleset_file),
           base::BindOnce(&SubresourceFilterAgent::

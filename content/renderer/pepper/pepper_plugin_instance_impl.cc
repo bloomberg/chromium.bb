@@ -1777,7 +1777,7 @@ void PepperPluginInstanceImpl::SendDidChangeView() {
     }
 
     if (throttler_) {
-      throttler_->Initialize(render_frame_, url::Origin(plugin_url_),
+      throttler_->Initialize(render_frame_, url::Origin::Create(plugin_url_),
                              module()->name(), unobscured_rect_.size());
     }
   }
@@ -2551,24 +2551,24 @@ PP_Var PepperPluginInstanceImpl::ExecuteScript(PP_Instance instance,
 
 uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputSampleRate(
     PP_Instance instance) {
-  return render_frame()
-             ? AudioDeviceFactory::GetOutputDeviceInfo(
-                   render_frame()->GetRoutingID(), 0 /* session_id */,
-                   std::string() /* device_id */, url::Origin(document_url()))
-                   .output_params()
-                   .sample_rate()
-             : 0;
+  return render_frame() ? AudioDeviceFactory::GetOutputDeviceInfo(
+                              render_frame()->GetRoutingID(),
+                              0 /* session_id */, std::string() /* device_id */,
+                              url::Origin::Create(document_url()))
+                              .output_params()
+                              .sample_rate()
+                        : 0;
 }
 
 uint32_t PepperPluginInstanceImpl::GetAudioHardwareOutputBufferSize(
     PP_Instance instance) {
-  return render_frame()
-             ? AudioDeviceFactory::GetOutputDeviceInfo(
-                   render_frame()->GetRoutingID(), 0 /* session_id */,
-                   std::string() /* device_id */, url::Origin(document_url()))
-                   .output_params()
-                   .frames_per_buffer()
-             : 0;
+  return render_frame() ? AudioDeviceFactory::GetOutputDeviceInfo(
+                              render_frame()->GetRoutingID(),
+                              0 /* session_id */, std::string() /* device_id */,
+                              url::Origin::Create(document_url()))
+                              .output_params()
+                              .frames_per_buffer()
+                        : 0;
 }
 
 PP_Var PepperPluginInstanceImpl::GetDefaultCharSet(PP_Instance instance) {

@@ -871,7 +871,7 @@ bool ServiceWorkerURLRequestJob::IsFallbackToRendererNeeded() const {
           request_mode_ == FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
          (!request()->initiator().has_value() ||
           !request()->initiator()->IsSameOriginWith(
-              url::Origin(request()->url())));
+              url::Origin::Create(request()->url())));
 }
 
 void ServiceWorkerURLRequestJob::SetResponseBodyType(ResponseBodyType type) {

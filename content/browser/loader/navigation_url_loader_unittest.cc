@@ -153,7 +153,7 @@ class NavigationURLLoaderTest : public testing::Test {
         REQUEST_CONTEXT_TYPE_LOCATION,
         blink::WebMixedContentContextType::kBlockable,
         false,  // is_form_submission
-        url::Origin(url));
+        url::Origin::Create(url));
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.allow_download = allow_download;

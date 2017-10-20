@@ -120,7 +120,7 @@ TEST(LoginHandlerTest, DialogStringsAndRealm) {
     auth_info->is_proxy = test_case.auth_info.target_type == PROXY;
     auth_info->scheme = test_case.auth_info.scheme;
     auth_info->realm = test_case.auth_info.realm;
-    auth_info->challenger = url::Origin(
+    auth_info->challenger = url::Origin::Create(
         test_case.auth_info.challenger ? GURL(test_case.auth_info.challenger)
                                        : request_url);
 

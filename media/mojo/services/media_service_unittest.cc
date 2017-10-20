@@ -118,7 +118,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     EXPECT_CALL(*this, OnCdmInitializedInternal(expected_result, cdm_id))
         .Times(Exactly(1))
         .WillOnce(InvokeWithoutArgs(run_loop_.get(), &base::RunLoop::Quit));
-    cdm_->Initialize(key_system, url::Origin(GURL(kSecurityOrigin)),
+    cdm_->Initialize(key_system, url::Origin::Create(GURL(kSecurityOrigin)),
                      CdmConfig(),
                      base::Bind(&MediaServiceTest::OnCdmInitialized,
                                 base::Unretained(this)));

@@ -43,7 +43,7 @@ class ReportingDeliveryAgentTest : public ReportingTestBase {
   }
 
   const GURL kUrl_ = GURL("https://origin/path");
-  const url::Origin kOrigin_ = url::Origin(GURL("https://origin/"));
+  const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
   const GURL kEndpoint_ = GURL("https://endpoint/");
   const std::string kGroup_ = "group";
   const std::string kType_ = "type";
@@ -121,7 +121,8 @@ TEST_F(ReportingDeliveryAgentTest, FailedUpload) {
 }
 
 TEST_F(ReportingDeliveryAgentTest, RemoveEndpointUpload) {
-  static const url::Origin kDifferentOrigin(GURL("https://origin2/"));
+  static const url::Origin kDifferentOrigin =
+      url::Origin::Create(GURL("https://origin2/"));
 
   cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
                      kGroup_, tomorrow());
@@ -196,7 +197,8 @@ TEST_F(ReportingDeliveryAgentTest, ConcurrentRemove) {
 TEST_F(ReportingDeliveryAgentTest,
        BatchReportsFromDifferentOriginsToSameEndpoint) {
   static const GURL kDifferentUrl("https://origin2/path");
-  static const url::Origin kDifferentOrigin(kDifferentUrl);
+  static const url::Origin kDifferentOrigin =
+      url::Origin::Create(kDifferentUrl);
 
   cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
                      kGroup_, tomorrow());
@@ -223,7 +225,8 @@ TEST_F(ReportingDeliveryAgentTest,
 // pending.
 TEST_F(ReportingDeliveryAgentTest, SerializeUploadsToEndpoint) {
   static const GURL kDifferentUrl("https://origin2/path");
-  static const url::Origin kDifferentOrigin(kDifferentUrl);
+  static const url::Origin kDifferentOrigin =
+      url::Origin::Create(kDifferentUrl);
 
   cache()->SetClient(kOrigin_, kEndpoint_, ReportingClient::Subdomains::EXCLUDE,
                      kGroup_, tomorrow());

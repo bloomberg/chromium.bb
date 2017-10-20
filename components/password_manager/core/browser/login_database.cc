@@ -1039,7 +1039,7 @@ LoginDatabase::EncryptionResult LoginDatabase::InitPasswordFormFromStatement(
   form->display_name = s.ColumnString16(COLUMN_DISPLAY_NAME);
   form->icon_url = GURL(s.ColumnString(COLUMN_ICON_URL));
   form->federation_origin =
-      url::Origin(GURL(s.ColumnString(COLUMN_FEDERATION_URL)));
+      url::Origin::Create(GURL(s.ColumnString(COLUMN_FEDERATION_URL)));
   form->skip_zero_click = (s.ColumnInt(COLUMN_SKIP_ZERO_CLICK) > 0);
   int generation_upload_status_int =
       s.ColumnInt(COLUMN_GENERATION_UPLOAD_STATUS);

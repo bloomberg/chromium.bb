@@ -123,7 +123,8 @@ CredentialManagerPendingRequestTask::CredentialManagerPendingRequestTask(
       include_passwords_(include_passwords) {
   CHECK(!delegate_->client()->DidLastPageLoadEncounterSSLErrors());
   for (const GURL& federation : request_federations)
-    federations_.insert(url::Origin(federation.GetOrigin()).Serialize());
+    federations_.insert(
+        url::Origin::Create(federation.GetOrigin()).Serialize());
 }
 
 CredentialManagerPendingRequestTask::~CredentialManagerPendingRequestTask() =

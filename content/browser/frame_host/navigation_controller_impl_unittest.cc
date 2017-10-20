@@ -3711,21 +3711,21 @@ TEST_F(NavigationControllerTest, IsSameDocumentNavigation) {
   const GURL blank_url(url::kAboutBlankURL);
   const url::Origin blank_origin;
   main_test_rfh()->NavigateAndCommitRendererInitiated(true, blank_url);
-  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
-                                                     true, main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
+      url, url::Origin::Create(url), true, main_test_rfh()));
 
   // Navigate to URL with no refs.
   NavigationSimulator::NavigateAndCommitFromDocument(url, main_test_rfh());
 
   // Reloading the page is not a same-document navigation.
-  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
-                                                      false, main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
+      url, url::Origin::Create(url), false, main_test_rfh()));
   const GURL other_url("http://www.google.com/add.html");
   EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
-      other_url, url::Origin(other_url), false, main_test_rfh()));
+      other_url, url::Origin::Create(other_url), false, main_test_rfh()));
   const GURL url_with_ref("http://www.google.com/home.html#my_ref");
   EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
-      url_with_ref, url::Origin(url_with_ref), true, main_test_rfh()));
+      url_with_ref, url::Origin::Create(url_with_ref), true, main_test_rfh()));
 
   // Navigate to URL with refs.
   NavigationSimulator::NavigateAndCommitFromDocument(url_with_ref,
@@ -3733,30 +3733,30 @@ TEST_F(NavigationControllerTest, IsSameDocumentNavigation) {
 
   // Reloading the page is not a same-document navigation.
   EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
-      url_with_ref, url::Origin(url_with_ref), false, main_test_rfh()));
-  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
-                                                      false, main_test_rfh()));
+      url_with_ref, url::Origin::Create(url_with_ref), false, main_test_rfh()));
   EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
-      other_url, url::Origin(other_url), false, main_test_rfh()));
+      url, url::Origin::Create(url), false, main_test_rfh()));
+  EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
+      other_url, url::Origin::Create(other_url), false, main_test_rfh()));
   const GURL other_url_with_ref("http://www.google.com/home.html#my_other_ref");
   EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
-      other_url_with_ref, url::Origin(other_url_with_ref), true,
+      other_url_with_ref, url::Origin::Create(other_url_with_ref), true,
       main_test_rfh()));
 
   // Going to the same url again will be considered same-document navigation
   // if the renderer says it is even if the navigation type isn't SAME_DOCUMENT.
   EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
-      url_with_ref, url::Origin(url_with_ref), true, main_test_rfh()));
+      url_with_ref, url::Origin::Create(url_with_ref), true, main_test_rfh()));
 
   // Going back to the non ref url will be considered same-document navigation
   // if the navigation type is SAME_DOCUMENT.
-  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(url, url::Origin(url),
-                                                     true, main_test_rfh()));
+  EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
+      url, url::Origin::Create(url), true, main_test_rfh()));
 
   // If the renderer says this is a same-origin same-document navigation,
   // believe it. This is the pushState/replaceState case.
   EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
-      other_url, url::Origin(other_url), true, main_test_rfh()));
+      other_url, url::Origin::Create(other_url), true, main_test_rfh()));
 
   // Don't believe the renderer if it claims a cross-origin navigation is
   // a same-document navigation.
@@ -3764,7 +3764,7 @@ TEST_F(NavigationControllerTest, IsSameDocumentNavigation) {
   MockRenderProcessHost* rph = main_test_rfh()->GetProcess();
   EXPECT_EQ(0, rph->bad_msg_count());
   EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
-      different_origin_url, url::Origin(different_origin_url), true,
+      different_origin_url, url::Origin::Create(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());
 }
@@ -3787,13 +3787,13 @@ TEST_F(NavigationControllerTest,
   // Allow same-document navigation to be cross-origin if existing URL is file
   // scheme.
   const GURL file_url("file:///foo/index.html");
-  const url::Origin file_origin(file_url);
+  const url::Origin file_origin = url::Origin::Create(file_url);
   main_test_rfh()->NavigateAndCommitRendererInitiated(true, file_url);
   EXPECT_TRUE(
       file_origin.IsSameOriginWith(main_test_rfh()->GetLastCommittedOrigin()));
   EXPECT_EQ(0, rph->bad_msg_count());
   EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
-      different_origin_url, url::Origin(different_origin_url), true,
+      different_origin_url, url::Origin::Create(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());
 
@@ -3820,7 +3820,7 @@ TEST_F(NavigationControllerTest,
   EXPECT_TRUE(
       file_origin.IsSameOriginWith(main_test_rfh()->GetLastCommittedOrigin()));
   EXPECT_TRUE(controller.IsURLSameDocumentNavigation(
-      file_url, url::Origin(file_url), true, main_test_rfh()));
+      file_url, url::Origin::Create(file_url), true, main_test_rfh()));
   EXPECT_EQ(0, rph->bad_msg_count());
 
   // Don't honor allow_universal_access_from_file_urls if actual URL is
@@ -3828,7 +3828,7 @@ TEST_F(NavigationControllerTest,
   const GURL url("http://www.google.com/home.html");
   main_test_rfh()->NavigateAndCommitRendererInitiated(true, url);
   EXPECT_FALSE(controller.IsURLSameDocumentNavigation(
-      different_origin_url, url::Origin(different_origin_url), true,
+      different_origin_url, url::Origin::Create(different_origin_url), true,
       main_test_rfh()));
   EXPECT_EQ(1, rph->bad_msg_count());
 }

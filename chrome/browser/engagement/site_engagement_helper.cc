@@ -62,7 +62,7 @@ void SiteEngagementService::Helper::OnEngagementLevelChanged(
     blink::mojom::EngagementLevel level) {
   web_contents()->ForEachFrame(base::Bind(
       &SiteEngagementService::Helper::SendEngagementLevelToFramesMatchingOrigin,
-      base::Unretained(this), url::Origin(url), level));
+      base::Unretained(this), url::Origin::Create(url), level));
 }
 
 SiteEngagementService::Helper::PeriodicTracker::PeriodicTracker(
@@ -276,7 +276,7 @@ void SiteEngagementService::Helper::ReadyToCommitNavigation(
   if (service_->ShouldRecordEngagement(handle->GetURL())) {
     // Don't bother sending the engagement if we wouldn't have recorded any for
     // the URL. These will have NONE engagement by default.
-    SendEngagementLevelToFrame(url::Origin(handle->GetURL()),
+    SendEngagementLevelToFrame(url::Origin::Create(handle->GetURL()),
                                service_->GetEngagementLevel(handle->GetURL()),
                                handle->GetRenderFrameHost());
   }

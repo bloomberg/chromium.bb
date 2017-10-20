@@ -744,7 +744,7 @@ class SitePerProcessFeaturePolicyBrowserTest
     result[0].matches_all_origins = false;
     DCHECK(!origins.empty());
     for (const GURL& origin : origins)
-      result[0].origins.push_back(url::Origin(origin));
+      result[0].origins.push_back(url::Origin::Create(origin));
     return result;
   }
 

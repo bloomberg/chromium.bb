@@ -266,7 +266,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
            FETCH_REQUEST_MODE_CORS_WITH_FORCED_PREFLIGHT) &&
       (!resource_request_.request_initiator.has_value() ||
        !resource_request_.request_initiator->IsSameOriginWith(
-           url::Origin(resource_request_.url)))) {
+           url::Origin::Create(resource_request_.url)))) {
     response_head_.was_fetched_via_service_worker = true;
     response_head_.was_fallback_required_by_service_worker = true;
     CommitResponseHeaders();

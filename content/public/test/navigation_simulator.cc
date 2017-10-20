@@ -391,7 +391,7 @@ void NavigationSimulator::Commit() {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = handle_->pending_nav_entry_id();
   params.url = navigation_url_;
-  params.origin = url::Origin(navigation_url_);
+  params.origin = url::Origin::Create(navigation_url_);
   params.transition = transition_;
   params.should_update_history = true;
   params.did_create_new_entry = !ui::PageTransitionCoreTypeIs(
@@ -557,7 +557,7 @@ void NavigationSimulator::CommitSameDocument() {
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.url = navigation_url_;
-  params.origin = url::Origin(navigation_url_);
+  params.origin = url::Origin::Create(navigation_url_);
   params.transition = transition_;
   params.should_update_history = true;
   params.did_create_new_entry = false;

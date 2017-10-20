@@ -73,7 +73,7 @@ class MediaRouterDialogControllerTest : public ChromeRenderViewHostTestHarness {
     return dialog_controller_->ShowMediaRouterDialogForPresentation(
         content::PresentationRequest(
             {1, 2}, {GURL("http://example.com"), GURL("http://example2.com")},
-            url::Origin(GURL("http://google.com"))),
+            url::Origin::Create(GURL("http://google.com"))),
         base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
                        base::Unretained(this)),
         base::BindOnce(&MediaRouterDialogControllerTest::RequestError,
@@ -130,7 +130,7 @@ TEST_F(MediaRouterDialogControllerTest, StartPresentationContext) {
   auto context = base::MakeUnique<StartPresentationContext>(
       content::PresentationRequest(
           {1, 2}, {GURL("http://example.com"), GURL("http://example2.com")},
-          url::Origin(GURL("http://google.com"))),
+          url::Origin::Create(GURL("http://google.com"))),
       base::BindOnce(&MediaRouterDialogControllerTest::RequestSuccess,
                      base::Unretained(this)),
       base::BindOnce(&MediaRouterDialogControllerTest::RequestError,

@@ -23,7 +23,7 @@ using testing::_;
 using testing::ElementsAre;
 
 bool matchesOrigin(const url::Origin& origin, const GURL& url) {
-  return origin.IsSameOriginWith(url::Origin(url));
+  return origin.IsSameOriginWith(url::Origin::Create(url));
 }
 
 namespace password_manager {
@@ -71,7 +71,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   MockPasswordStoreObserver observer;
   this->delegate_.store()->AddObserver(&observer);
 
-  const url::Origin origin((GURL(origin_url)));
+  const url::Origin origin = url::Origin::Create((GURL(origin_url)));
   base::Callback<bool(const GURL&)> filter = base::Bind(&matchesOrigin, origin);
   base::RunLoop run_loop;
   EXPECT_CALL(observer, OnLoginsChanged(ElementsAre(PasswordStoreChange(
@@ -99,7 +99,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   MockPasswordStoreObserver observer;
   this->delegate_.store()->AddObserver(&observer);
 
-  const url::Origin fitting_origin((GURL(fitting_url)));
+  const url::Origin fitting_origin = url::Origin::Create((GURL(fitting_url)));
   base::Callback<bool(const GURL&)> filter =
       base::Bind(&matchesOrigin, fitting_origin);
   base::RunLoop run_loop;
@@ -123,7 +123,8 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   MockPasswordStoreObserver observer;
   this->delegate_.store()->AddObserver(&observer);
 
-  const url::Origin other_origin(GURL("http://bar.example.com/"));
+  const url::Origin other_origin =
+      url::Origin::Create(GURL("http://bar.example.com/"));
   base::Callback<bool(const GURL&)> filter =
       base::Bind(&matchesOrigin, other_origin);
   base::RunLoop run_loop;
@@ -146,7 +147,7 @@ TYPED_TEST_P(PasswordStoreOriginTest,
   MockPasswordStoreObserver observer;
   this->delegate_.store()->AddObserver(&observer);
 
-  const url::Origin origin((GURL(origin_url)));
+  const url::Origin origin = url::Origin::Create((GURL(origin_url)));
   base::Callback<bool(const GURL&)> filter = base::Bind(&matchesOrigin, origin);
   base::Time time_after_creation_date =
       form->date_created + base::TimeDelta::FromDays(1);

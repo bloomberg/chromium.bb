@@ -97,7 +97,7 @@ class MediaRouterUITest : public ChromeRenderViewHostTestHarness {
   MediaRouterUITest()
       : presentation_request_({0, 0},
                               {GURL("https://google.com/presentation")},
-                              url::Origin(GURL("http://google.com"))) {
+                              url::Origin::Create(GURL("http://google.com"))) {
     // enable and disable features
     scoped_feature_list_.InitFromCommandLine(
         "EnableCastLocalMedia" /* enabled features */,
@@ -242,7 +242,7 @@ TEST_F(MediaRouterUITest, RouteCreationTimeoutForPresentation) {
   CreateMediaRouterUI(profile());
   content::PresentationRequest presentation_request(
       {0, 0}, {GURL("https://presentationurl.com")},
-      url::Origin(GURL("https://frameurl.fakeurl")));
+      url::Origin::Create(GURL("https://frameurl.fakeurl")));
   media_router_ui_->OnDefaultPresentationChanged(presentation_request);
   std::vector<MediaRouteResponseCallback> callbacks;
   EXPECT_CALL(*mock_router_,

@@ -102,7 +102,7 @@ BookmarkAppNavigationThrottle::CheckNavigation() {
   // Don't redirect same origin navigations. This matches what is done on
   // Android.
   if (source->GetMainFrame()->GetLastCommittedOrigin().IsSameOriginWith(
-          url::Origin(navigation_handle()->GetURL()))) {
+          url::Origin::Create(navigation_handle()->GetURL()))) {
     DVLOG(1) << "Don't intercept: Same origin navigation.";
     return content::NavigationThrottle::PROCEED;
   }

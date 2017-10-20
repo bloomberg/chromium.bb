@@ -94,7 +94,7 @@ std::unique_ptr<PasswordForm> FormFromAttributes(
   form->display_name = UTF8ToUTF16(string_attr_map["display_name"]);
   form->icon_url = GURL(string_attr_map["avatar_url"]);
   form->federation_origin =
-      url::Origin(GURL(string_attr_map["federation_url"]));
+      url::Origin::Create(GURL(string_attr_map["federation_url"]));
   form->skip_zero_click = uint_attr_map.count("should_skip_zero_click")
                               ? uint_attr_map["should_skip_zero_click"]
                               : true;

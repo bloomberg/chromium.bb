@@ -44,8 +44,8 @@ void NavigationMetricsRecorder::DidFinishNavigation(
   // subframes.
   //
   // TODO(alexmos): See if there's a better place for this check.
-  if (url::Origin(navigation_handle->GetURL()) ==
-      url::Origin(GaiaUrls::GetInstance()->gaia_url())) {
+  if (url::Origin::Create(navigation_handle->GetURL()) ==
+      url::Origin::Create(GaiaUrls::GetInstance()->gaia_url())) {
     RegisterSyntheticSigninIsolationTrial();
   }
 

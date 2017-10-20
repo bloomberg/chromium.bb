@@ -12,7 +12,7 @@ namespace subresource_filter {
 TEST(FirstPartyOriginTest, AllSameDomain) {
   const std::string kDomain = "sub.example.co.uk";
 
-  FirstPartyOrigin first_party(url::Origin(GURL("https://" + kDomain)));
+  FirstPartyOrigin first_party(url::Origin::Create(GURL("https://" + kDomain)));
   for (int index = 0; index < 5; ++index) {
     GURL url("https://" + kDomain + "/path?q=" + base::IntToString(index));
     EXPECT_FALSE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));
@@ -23,7 +23,7 @@ TEST(FirstPartyOriginTest, AllSameDomain) {
 TEST(FirstPartyOriginTest, AllFirstParty) {
   const std::string kDomain = "example.co.uk";
 
-  FirstPartyOrigin first_party(url::Origin(GURL("https://" + kDomain)));
+  FirstPartyOrigin first_party(url::Origin::Create(GURL("https://" + kDomain)));
   for (int index = 0; index < 5; ++index) {
     GURL url("https://sub" + base::IntToString(index) + "." + kDomain + "/suf");
     EXPECT_FALSE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));
@@ -34,7 +34,7 @@ TEST(FirstPartyOriginTest, AllFirstParty) {
 TEST(FirstPartyOriginTest, AllThirdParty) {
   const std::string kDomain = "example.co.uk";
 
-  FirstPartyOrigin first_party(url::Origin(GURL("https://" + kDomain)));
+  FirstPartyOrigin first_party(url::Origin::Create(GURL("https://" + kDomain)));
   for (int index = 0; index < 5; ++index) {
     GURL url("https://example" + base::IntToString(index) + ".co.uk/path?k=v");
     EXPECT_TRUE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));
@@ -56,7 +56,8 @@ TEST(FirstPartyOriginTest, MixedFirstAndThirdParties) {
       {"data:text/plain,example.com", true},
   };
 
-  FirstPartyOrigin first_party(url::Origin(GURL("https://example.com")));
+  FirstPartyOrigin first_party(
+      url::Origin::Create(GURL("https://example.com")));
   for (const auto& test_case : kTestCases) {
     GURL url(test_case.url);
     EXPECT_EQ(test_case.is_third_party,
@@ -71,7 +72,8 @@ TEST(FirstPartyOriginTest, EmptyHostUrls) {
       "data:text/plain;base64,ABACABA",
   };
 
-  FirstPartyOrigin first_party(url::Origin(GURL("https://example.com")));
+  FirstPartyOrigin first_party(
+      url::Origin::Create(GURL("https://example.com")));
   for (auto* url_string : kUrls) {
     GURL url(url_string);
     EXPECT_TRUE(FirstPartyOrigin::IsThirdParty(url, first_party.origin()));

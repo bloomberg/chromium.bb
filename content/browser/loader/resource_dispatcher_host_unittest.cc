@@ -167,7 +167,8 @@ static ResourceRequest CreateResourceRequest(const char* method,
   request.method = std::string(method);
   request.url = url;
   request.site_for_cookies = url;  // bypass third-party cookie blocking
-  request.request_initiator = url::Origin(url);  // ensure initiator is set
+  request.request_initiator =
+      url::Origin::Create(url);  // ensure initiator is set
   request.referrer_policy = blink::kWebReferrerPolicyDefault;
   request.load_flags = 0;
   request.origin_pid = 0;
@@ -1076,7 +1077,7 @@ class ResourceDispatcherHostTest : public testing::Test, public IPC::Sender {
           REQUEST_CONTEXT_TYPE_LOCATION,
           blink::WebMixedContentContextType::kBlockable,
           false,  // is_form_submission
-          url::Origin(url));
+          url::Origin::Create(url));
       CommonNavigationParams common_params;
       common_params.url = url;
       std::unique_ptr<NavigationRequestInfo> request_info(

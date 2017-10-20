@@ -121,7 +121,7 @@ TEST(BlinkPlatformTest, CastWebSecurityOrigin) {
     EXPECT_EQ(test.port, url_origin.port());
     EXPECT_EQ(test.suborigin, url_origin.suborigin());
 
-    web_origin = url::Origin(GURL(test.url));
+    web_origin = url::Origin::Create(GURL(test.url));
     EXPECT_EQ(test.scheme, web_origin.Protocol().Utf8());
     EXPECT_EQ(test.host, web_origin.Host().Utf8());
     EXPECT_EQ(test.port, web_origin.EffectivePort());
@@ -140,7 +140,7 @@ TEST(BlinkPlatformTest, CastWebSecurityOrigin) {
     EXPECT_TRUE(url_origin.unique());
     EXPECT_EQ("", url_origin.suborigin());
 
-    web_origin = url::Origin(GURL(""));
+    web_origin = url::Origin::Create(GURL(""));
     EXPECT_TRUE(web_origin.IsUnique());
   }
 }

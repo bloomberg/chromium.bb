@@ -488,8 +488,8 @@ PasswordForm LoginHandler::MakeInputForPasswordManager(
     dialog_form.scheme = PasswordForm::SCHEME_OTHER;
   }
   dialog_form.origin = auth_info.challenger.GetURL();
-  DCHECK(auth_info.is_proxy ||
-         auth_info.challenger.IsSameOriginWith(url::Origin(request_url)));
+  DCHECK(auth_info.is_proxy || auth_info.challenger.IsSameOriginWith(
+                                   url::Origin::Create(request_url)));
   dialog_form.signon_realm = GetSignonRealm(dialog_form.origin, auth_info);
   return dialog_form;
 }

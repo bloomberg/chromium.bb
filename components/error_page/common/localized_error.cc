@@ -657,7 +657,7 @@ void GetSuggestionsSummaryList(int error_code,
   if (IsOnlySuggestion(suggestions, SUGGEST_NAVIGATE_TO_ORIGIN)) {
     DCHECK(suggestions_summary_list->empty());
     DCHECK(!(suggestions & ~SUGGEST_NAVIGATE_TO_ORIGIN));
-    url::Origin failed_origin(failed_url);
+    url::Origin failed_origin = url::Origin::Create(failed_url);
     if (failed_origin.unique())
       return;
 

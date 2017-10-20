@@ -18,7 +18,7 @@ class CredentialManagerTypesTest : public testing::Test {
   CredentialManagerTypesTest()
       : origin_(GURL("https://example.test/")),
         icon_(GURL("https://fast-cdn.test/icon.png")),
-        federation_(url::Origin(GURL("https://federation.test/"))) {}
+        federation_(url::Origin::Create(GURL("https://federation.test/"))) {}
 
  protected:
   GURL origin_;

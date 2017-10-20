@@ -73,7 +73,7 @@ class MockWeakTimer : public base::MockTimer,
 };
 
 static url::Origin LocalhostOrigin() {
-  return url::Origin(GURL("http://localhost/"));
+  return url::Origin::Create(GURL("http://localhost/"));
 }
 
 static GURL LocalhostUrl() {
@@ -81,7 +81,7 @@ static GURL LocalhostUrl() {
 }
 
 static url::Origin GoogleOrigin() {
-  return url::Origin(GURL("http://google.com/"));
+  return url::Origin::Create(GURL("http://google.com/"));
 }
 
 static GURL GoogleUrl() {

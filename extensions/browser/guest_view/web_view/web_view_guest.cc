@@ -373,7 +373,7 @@ void WebViewGuest::CreateWebContents(
   // through webview accessible_resources.
   content::ChildProcessSecurityPolicy::GetInstance()->GrantOrigin(
       new_contents->GetMainFrame()->GetProcess()->GetID(),
-      url::Origin(GetOwnerSiteURL()));
+      url::Origin::Create(GetOwnerSiteURL()));
 
   callback.Run(new_contents);
 }

@@ -47,7 +47,8 @@ TEST(PasswordManagerUtil, TrimUsernameOnlyCredentials) {
   username_only.username_value = base::ASCIIToUTF16(kTestUsername2);
   forms.push_back(std::make_unique<autofill::PasswordForm>(username_only));
 
-  username_only.federation_origin = url::Origin(GURL(kTestFederationURL));
+  username_only.federation_origin =
+      url::Origin::Create(GURL(kTestFederationURL));
   username_only.skip_zero_click = false;
   forms.push_back(std::make_unique<autofill::PasswordForm>(username_only));
   username_only.skip_zero_click = true;
