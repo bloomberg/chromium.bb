@@ -950,8 +950,10 @@ const char* kRequestOrderTestPageUrls[] = {
     "http://foo.com/frame9"};
 }  // namespace
 
-class ResourceSchedulerTest : public HeadlessAsyncDevTooledBrowserTest,
-                              public page::Observer {
+class ResourceSchedulerTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public page::Observer,
+      public TestInMemoryProtocolHandler::RequestDeferrer {
  public:
   void SetUp() override {
     options()->enable_resource_scheduler = GetEnableResourceScheduler();
@@ -976,13 +978,17 @@ class ResourceSchedulerTest : public HeadlessAsyncDevTooledBrowserTest,
   ProtocolHandlerMap GetProtocolHandlers() override {
     ProtocolHandlerMap protocol_handlers;
     std::unique_ptr<TestInMemoryProtocolHandler> http_handler(
-        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(),
-                                        /* simulate_slow_fetch */ true));
+        new TestInMemoryProtocolHandler(browser()->BrowserIOThread(), this));
     http_handler_ = http_handler.get();
     http_handler_->InsertResponse("http://foo.com/index.html",
                                   {kRequestOrderTestPage, "text/html"});
     protocol_handlers[url::kHttpScheme] = std::move(http_handler);
     return protocol_handlers;
+  }
+
+  void OnRequest(const GURL& url, base::Closure complete_request) override {
+    browser()->BrowserIOThread()->PostDelayedTask(
+        FROM_HERE, complete_request, base::TimeDelta::FromMilliseconds(100));
   }
 
   const TestInMemoryProtocolHandler* http_handler() const {
