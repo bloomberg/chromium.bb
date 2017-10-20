@@ -710,7 +710,10 @@ void DesktopWindowTreeHostWin::ResetWindowControls() {
 }
 
 gfx::NativeViewAccessible DesktopWindowTreeHostWin::GetNativeViewAccessible() {
-  return GetWidget()->GetRootView()->GetNativeViewAccessible();
+  // This function may be called during shutdown when the |RootView| is nullptr.
+  return GetWidget()->GetRootView()
+             ? GetWidget()->GetRootView()->GetNativeViewAccessible()
+             : nullptr;
 }
 
 bool DesktopWindowTreeHostWin::ShouldHandleSystemCommands() const {
