@@ -90,6 +90,7 @@ class GestureEventQueueTest : public testing::Test,
   }
 
   void OnGestureEventAck(const GestureEventWithLatencyInfo& event,
+                         InputEventAckSource ack_source,
                          InputEventAckState ack_result) override {
     ++acked_gesture_event_count_;
     last_acked_event_ = event.event;
@@ -147,7 +148,8 @@ class GestureEventQueueTest : public testing::Test,
 
   void SendInputEventACK(WebInputEvent::Type type,
                          InputEventAckState ack) {
-    queue()->ProcessGestureAck(ack, type, ui::LatencyInfo());
+    queue()->ProcessGestureAck(InputEventAckSource::COMPOSITOR_THREAD, ack,
+                               type, ui::LatencyInfo());
   }
 
   void RunUntilIdle() { base::RunLoop().RunUntilIdle(); }

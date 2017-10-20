@@ -92,7 +92,7 @@ void PassthroughTouchEventQueue::QueueEvent(
             ? INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS
             : INPUT_EVENT_ACK_STATE_NOT_CONSUMED;
     TouchEventWithLatencyInfoAndAckState event_with_ack_state = event;
-    event_with_ack_state.set_ack_state(ack_state);
+    event_with_ack_state.set_ack_info(InputEventAckSource::BROWSER, ack_state);
     outstanding_touches_.insert(event_with_ack_state);
     AckCompletedEvents();
     return;
@@ -113,6 +113,7 @@ void PassthroughTouchEventQueue::PrependTouchScrollNotification() {
 }
 
 void PassthroughTouchEventQueue::ProcessTouchAck(
+    InputEventAckSource ack_source,
     InputEventAckState ack_result,
     const LatencyInfo& latency_info,
     const uint32_t unique_touch_event_id) {
@@ -134,7 +135,7 @@ void PassthroughTouchEventQueue::ProcessTouchAck(
   TouchEventWithLatencyInfoAndAckState event = *touch_event_iter;
   touch_event_iter = outstanding_touches_.erase(touch_event_iter);
   event.latency.AddNewLatencyFrom(latency_info);
-  event.set_ack_state(ack_result);
+  event.set_ack_info(ack_source, ack_result);
   outstanding_touches_.insert(touch_event_iter, event);
 
   AckCompletedEvents();
@@ -200,8 +201,9 @@ void PassthroughTouchEventQueue::FlushQueue() {
     TouchEventWithLatencyInfoAndAckState event = *iter;
     outstanding_touches_.erase(iter);
     if (event.ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
-      event.set_ack_state(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
-    AckTouchEventToClient(event, event.ack_state());
+      event.set_ack_info(InputEventAckSource::BROWSER,
+                         INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS);
+    AckTouchEventToClient(event, event.ack_source(), event.ack_state());
   }
 }
 
@@ -217,18 +219,19 @@ void PassthroughTouchEventQueue::AckCompletedEvents() {
       break;
     TouchEventWithLatencyInfoAndAckState event = *iter;
     outstanding_touches_.erase(iter);
-    AckTouchEventToClient(event, event.ack_state());
+    AckTouchEventToClient(event, event.ack_source(), event.ack_state());
   }
 }
 
 void PassthroughTouchEventQueue::AckTouchEventToClient(
     const TouchEventWithLatencyInfo& acked_event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   UpdateTouchConsumerStates(acked_event.event, ack_result);
 
   // Skip ack for TouchScrollStarted since it was synthesized within the queue.
   if (acked_event.event.GetType() != WebInputEvent::kTouchScrollStarted) {
-    client_->OnTouchEventAck(acked_event, ack_result);
+    client_->OnTouchEventAck(acked_event, ack_source, ack_result);
   }
 }
 

@@ -197,6 +197,7 @@ class MouseWheelEventQueueTest
   }
 
   void OnMouseWheelEventAck(const MouseWheelEventWithLatencyInfo& event,
+                            InputEventAckSource ack_source,
                             InputEventAckState ack_result) override {
     ++acked_event_count_;
     last_acked_event_ = event.event;
@@ -236,7 +237,8 @@ class MouseWheelEventQueueTest
   }
 
   void SendMouseWheelEventAck(InputEventAckState ack_result) {
-    queue_->ProcessMouseWheelAck(ack_result, ui::LatencyInfo());
+    queue_->ProcessMouseWheelAck(InputEventAckSource::COMPOSITOR_THREAD,
+                                 ack_result, ui::LatencyInfo());
   }
 
   void SendMouseWheel(float x,

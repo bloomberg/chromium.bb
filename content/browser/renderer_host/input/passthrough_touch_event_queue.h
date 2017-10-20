@@ -33,7 +33,8 @@ class CONTENT_EXPORT PassthroughTouchEventQueue : public TouchEventQueue {
 
   void PrependTouchScrollNotification() override;
 
-  void ProcessTouchAck(InputEventAckState ack_result,
+  void ProcessTouchAck(InputEventAckSource ack_source,
+                       InputEventAckState ack_result,
                        const ui::LatencyInfo& latency_info,
                        const uint32_t unique_touch_event_id) override;
   void OnGestureScrollEvent(
@@ -72,9 +73,14 @@ class CONTENT_EXPORT PassthroughTouchEventQueue : public TouchEventQueue {
     TouchEventWithLatencyInfoAndAckState(const TouchEventWithLatencyInfo&);
     bool operator<(const TouchEventWithLatencyInfoAndAckState&) const;
     InputEventAckState ack_state() const { return ack_state_; }
-    void set_ack_state(InputEventAckState state) { ack_state_ = state; }
+    InputEventAckSource ack_source() const { return ack_source_; }
+    void set_ack_info(InputEventAckSource source, InputEventAckState state) {
+      ack_source_ = source;
+      ack_state_ = state;
+    }
 
    private:
+    InputEventAckSource ack_source_;
     InputEventAckState ack_state_;
   };
 
@@ -88,6 +94,7 @@ class CONTENT_EXPORT PassthroughTouchEventQueue : public TouchEventQueue {
   PreFilterResult FilterBeforeForwarding(const blink::WebTouchEvent& event);
 
   void AckTouchEventToClient(const TouchEventWithLatencyInfo& acked_event,
+                             InputEventAckSource ack_source,
                              InputEventAckState ack_result);
 
   void SendTouchEventImmediately(TouchEventWithLatencyInfo* touch,

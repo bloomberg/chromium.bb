@@ -74,6 +74,7 @@ class PassthroughTouchEventQueueTest : public testing::Test,
   }
 
   void OnTouchEventAck(const TouchEventWithLatencyInfo& event,
+                       InputEventAckSource ack_source,
                        InputEventAckState ack_result) override {
     ++acked_event_count_;
     if (followup_touch_event_) {
@@ -139,21 +140,22 @@ class PassthroughTouchEventQueueTest : public testing::Test,
 
   void SendTouchEventAck(InputEventAckState ack_result) {
     DCHECK(!sent_events_ids_.empty());
-    queue_->ProcessTouchAck(ack_result, ui::LatencyInfo(),
-                            sent_events_ids_.front());
+    queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
+                            ui::LatencyInfo(), sent_events_ids_.front());
     sent_events_ids_.pop_front();
   }
 
   void SendTouchEventAckLast(InputEventAckState ack_result) {
     DCHECK(!sent_events_ids_.empty());
-    queue_->ProcessTouchAck(ack_result, ui::LatencyInfo(),
-                            sent_events_ids_.back());
+    queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
+                            ui::LatencyInfo(), sent_events_ids_.back());
     sent_events_ids_.pop_back();
   }
 
   void SendTouchEventAckWithID(InputEventAckState ack_result,
                                int unique_event_id) {
-    queue_->ProcessTouchAck(ack_result, ui::LatencyInfo(), unique_event_id);
+    queue_->ProcessTouchAck(InputEventAckSource::COMPOSITOR_THREAD, ack_result,
+                            ui::LatencyInfo(), unique_event_id);
     sent_events_ids_.erase(std::remove(sent_events_ids_.begin(),
                                        sent_events_ids_.end(), unique_event_id),
                            sent_events_ids_.end());

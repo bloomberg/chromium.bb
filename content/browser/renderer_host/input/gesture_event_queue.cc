@@ -165,7 +165,8 @@ bool GestureEventQueue::OnScrollBegin(
   return false;
 }
 
-void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
+void GestureEventQueue::ProcessGestureAck(InputEventAckSource ack_source,
+                                          InputEventAckState ack_result,
                                           WebInputEvent::Type type,
                                           const ui::LatencyInfo& latency) {
   TRACE_EVENT0("input", "GestureEventQueue::ProcessGestureAck");
@@ -176,7 +177,7 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
   }
 
   if (!allow_multiple_inflight_events_) {
-    LegacyProcessGestureAck(ack_result, type, latency);
+    LegacyProcessGestureAck(ack_source, ack_result, type, latency);
     return;
   }
 
@@ -187,7 +188,7 @@ void GestureEventQueue::ProcessGestureAck(InputEventAckState ack_result,
       continue;
     if (outstanding_event.event.GetType() == type) {
       outstanding_event.latency.AddNewLatencyFrom(latency);
-      outstanding_event.set_ack_state(ack_result);
+      outstanding_event.set_ack_info(ack_source, ack_result);
       break;
     }
   }
@@ -207,19 +208,20 @@ void GestureEventQueue::AckCompletedEvents() {
       break;
     GestureEventWithLatencyInfoAndAckState event = *iter;
     coalesced_gesture_events_.erase(iter);
-    AckGestureEventToClient(event, event.ack_state());
+    AckGestureEventToClient(event, event.ack_source(), event.ack_state());
   }
 }
 
 void GestureEventQueue::AckGestureEventToClient(
     const GestureEventWithLatencyInfo& event_with_latency,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   DCHECK(allow_multiple_inflight_events_);
 
   // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
-  client_->OnGestureEventAck(event_with_latency, ack_result);
+  client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
 
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (event_with_latency.event.GetType() ==
@@ -230,6 +232,7 @@ void GestureEventQueue::AckGestureEventToClient(
 }
 
 void GestureEventQueue::LegacyProcessGestureAck(
+    InputEventAckSource ack_source,
     InputEventAckState ack_result,
     WebInputEvent::Type type,
     const ui::LatencyInfo& latency) {
@@ -254,7 +257,7 @@ void GestureEventQueue::LegacyProcessGestureAck(
   // Ack'ing an event may enqueue additional gesture events.  By ack'ing the
   // event before the forwarding of queued events below, such additional events
   // can be coalesced with existing queued events prior to dispatch.
-  client_->OnGestureEventAck(event_with_latency, ack_result);
+  client_->OnGestureEventAck(event_with_latency, ack_source, ack_result);
 
   const bool processed = (INPUT_EVENT_ACK_STATE_CONSUMED == ack_result);
   if (type == WebInputEvent::kGestureFlingCancel) {

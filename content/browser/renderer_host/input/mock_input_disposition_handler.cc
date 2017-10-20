@@ -28,6 +28,7 @@ MockInputDispositionHandler::~MockInputDispositionHandler() {}
 
 void MockInputDispositionHandler::OnKeyboardEventAck(
     const NativeWebKeyboardEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_key_event_.reset(new NativeWebKeyboardEvent(event.event));
@@ -36,6 +37,7 @@ void MockInputDispositionHandler::OnKeyboardEventAck(
 
 void MockInputDispositionHandler::OnMouseEventAck(
     const MouseEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_mouse_event_ = event.event;
@@ -44,6 +46,7 @@ void MockInputDispositionHandler::OnMouseEventAck(
 
 void MockInputDispositionHandler::OnWheelEventAck(
     const MouseWheelEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_wheel_event_ = event.event;
@@ -53,6 +56,7 @@ void MockInputDispositionHandler::OnWheelEventAck(
 
 void MockInputDispositionHandler::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_touch_event_ = event;
@@ -65,6 +69,7 @@ void MockInputDispositionHandler::OnTouchEventAck(
 
 void MockInputDispositionHandler::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   VLOG(1) << __FUNCTION__ << " called!";
   acked_gesture_event_ = event.event;

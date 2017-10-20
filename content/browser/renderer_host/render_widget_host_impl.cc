@@ -2325,8 +2325,9 @@ void RenderWidgetHostImpl::DispatchInputEventWithLatencyInfo(
 }
 
 void RenderWidgetHostImpl::OnKeyboardEventAck(
-      const NativeWebKeyboardEventWithLatencyInfo& event,
-      InputEventAckState ack_result) {
+    const NativeWebKeyboardEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
+    InputEventAckState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
   for (auto& input_event_observer : input_event_observers_)
     input_event_observer.OnInputEventAck(event.event);
@@ -2347,6 +2348,7 @@ void RenderWidgetHostImpl::OnKeyboardEventAck(
 
 void RenderWidgetHostImpl::OnMouseEventAck(
     const MouseEventWithLatencyInfo& mouse_event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   latency_tracker_.OnInputEventAck(mouse_event.event, &mouse_event.latency,
                                    ack_result);
@@ -2356,6 +2358,7 @@ void RenderWidgetHostImpl::OnMouseEventAck(
 
 void RenderWidgetHostImpl::OnWheelEventAck(
     const MouseWheelEventWithLatencyInfo& wheel_event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   latency_tracker_.OnInputEventAck(wheel_event.event, &wheel_event.latency,
                                    ack_result);
@@ -2373,6 +2376,7 @@ void RenderWidgetHostImpl::OnWheelEventAck(
 
 void RenderWidgetHostImpl::OnGestureEventAck(
     const GestureEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
   for (auto& input_event_observer : input_event_observers_)
@@ -2384,6 +2388,7 @@ void RenderWidgetHostImpl::OnGestureEventAck(
 
 void RenderWidgetHostImpl::OnTouchEventAck(
     const TouchEventWithLatencyInfo& event,
+    InputEventAckSource ack_source,
     InputEventAckState ack_result) {
   latency_tracker_.OnInputEventAck(event.event, &event.latency, ack_result);
   for (auto& input_event_observer : input_event_observers_)
