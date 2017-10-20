@@ -21,19 +21,21 @@ NGOffsetMappingUnitType GetUnitLengthMappingType(unsigned value) {
   return NGOffsetMappingUnitType::kExpanded;
 }
 
-// Returns the associated node of a possibly null LayoutText.
-const Node* GetAssociatedNode(const LayoutText* layout_text) {
-  if (!layout_text)
+// Returns the associated node of a possibly null LayoutObject.
+const Node* GetAssociatedNode(const LayoutObject* layout_object) {
+  if (!layout_object)
     return nullptr;
-  if (layout_text->IsTextFragment())
-    return ToLayoutTextFragment(layout_text)->AssociatedTextNode();
-  return layout_text->GetNode();
+  if (!layout_object->IsText() ||
+      !ToLayoutText(layout_object)->IsTextFragment())
+    return layout_object->GetNode();
+  const LayoutTextFragment* fragment = ToLayoutTextFragment(layout_object);
+  return fragment->AssociatedTextNode();
 }
 
 // Finds the offset mapping unit starting from index |start|.
 std::pair<NGOffsetMappingUnitType, unsigned> GetMappingUnitTypeAndEnd(
     const Vector<unsigned>& mapping,
-    const Vector<const LayoutText*>& annotation,
+    const Vector<const LayoutObject*>& annotation,
     unsigned start) {
   DCHECK_LT(start + 1, mapping.size());
   NGOffsetMappingUnitType type =
@@ -52,6 +54,14 @@ std::pair<NGOffsetMappingUnitType, unsigned> GetMappingUnitTypeAndEnd(
       break;
   }
   return std::make_pair(type, end);
+}
+
+// If |layout_object| is the remaining text of a text node, returns the start
+// offset; In all other cases, returns 0.
+unsigned GetRemainingTextOffset(const LayoutObject* layout_object) {
+  if (!layout_object || !layout_object->IsText())
+    return 0;
+  return ToLayoutText(layout_object)->TextStartOffset();
 }
 
 }  // namespace
@@ -93,13 +103,13 @@ void NGOffsetMappingBuilder::CollapseTrailingSpace(unsigned skip_length) {
   }
 }
 
-void NGOffsetMappingBuilder::Annotate(const LayoutText* layout_object) {
+void NGOffsetMappingBuilder::Annotate(const LayoutObject* layout_object) {
   std::fill(annotation_.begin(), annotation_.end(), layout_object);
 }
 
 void NGOffsetMappingBuilder::AnnotateRange(unsigned start,
                                            unsigned end,
-                                           const LayoutText* layout_object) {
+                                           const LayoutObject* layout_object) {
   DCHECK_LE(start, end);
   DCHECK_LE(end, annotation_.size());
   std::fill(annotation_.begin() + start, annotation_.begin() + end,
@@ -107,7 +117,7 @@ void NGOffsetMappingBuilder::AnnotateRange(unsigned start,
 }
 
 void NGOffsetMappingBuilder::AnnotateSuffix(unsigned length,
-                                            const LayoutText* layout_object) {
+                                            const LayoutObject* layout_object) {
   DCHECK_LE(length, annotation_.size());
   AnnotateRange(annotation_.size() - length, annotation_.size(), layout_object);
 }
@@ -152,8 +162,10 @@ NGOffsetMappingResult NGOffsetMappingBuilder::Build() const {
       current_node = GetAssociatedNode(annotation_[start]);
       inline_start = start;
       unit_range_start = units.size();
-      remaining_text_offset =
-          annotation_[start] ? annotation_[start]->TextStartOffset() : 0;
+      // We get a non-zero |remaining_text_offset| only when |current_node| is a
+      // text node that has blockified ::first-letter style, and we are at the
+      // remaining text of |current_node|.
+      remaining_text_offset = GetRemainingTextOffset(annotation_[start]);
     }
 
     if (!current_node) {
@@ -186,7 +198,7 @@ Vector<unsigned> NGOffsetMappingBuilder::DumpOffsetMappingForTesting() const {
   return mapping_;
 }
 
-Vector<const LayoutText*> NGOffsetMappingBuilder::DumpAnnotationForTesting()
+Vector<const LayoutObject*> NGOffsetMappingBuilder::DumpAnnotationForTesting()
     const {
   return annotation_;
 }
