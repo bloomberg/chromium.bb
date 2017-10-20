@@ -1881,6 +1881,26 @@ void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+    { daala_fdct16, daala_fdct8 },  // DCT_DCT
+    { daala_fdst16, daala_fdct8 },  // ADST_DCT
+    { daala_fdct16, daala_fdst8 },  // DCT_ADST
+    { daala_fdst16, daala_fdst8 },  // ADST_ADST
+#if CONFIG_EXT_TX
+    { daala_fdst16, daala_fdct8 },  // FLIPADST_DCT
+    { daala_fdct16, daala_fdst8 },  // DCT_FLIPADST
+    { daala_fdst16, daala_fdst8 },  // FLIPADST_FLIPADST
+    { daala_fdst16, daala_fdst8 },  // ADST_FLIPADST
+    { daala_fdst16, daala_fdst8 },  // FLIPADST_ADST
+    { daala_idtx16, daala_idtx8 },  // IDTX
+    { daala_fdct16, daala_idtx8 },  // V_DCT
+    { daala_idtx16, daala_fdct8 },  // H_DCT
+    { daala_fdst16, daala_idtx8 },  // V_ADST
+    { daala_idtx16, daala_fdst8 },  // H_ADST
+    { daala_fdst16, daala_idtx8 },  // V_FLIPADST
+    { daala_idtx16, daala_fdst8 },  // H_FLIPADST
+#endif
+#else
     { fdct16, fdct8 },    // DCT_DCT
     { fadst16, fdct8 },   // ADST_DCT
     { fdct16, fadst8 },   // DCT_ADST
@@ -1899,6 +1919,7 @@ void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
     { fadst16, fidtx8 },  // V_FLIPADST
     { fidtx16, fadst8 },  // H_FLIPADST
 #endif
+#endif
   };
   const transform_2d ht = FHT[tx_type];
   const int n = 8;
@@ -1916,26 +1937,65 @@ void av1_fht8x16_c(const int16_t *input, tran_low_t *output, int stride,
   int use_lgt_row = get_lgt8(txfm_param, 0, lgtmtx_row);
 #endif
 
+  // Multi-way scaling matrix (bits):
+  // LGT/AV1 row, AV1 col  input+2.5, rowTX+1, mid-2, colTX+1.5, out+0 == 3
+  // LGT row, Daala col    input+3,   rowTX+1, mid+0, colTX+0,   out-1 == 3
+  // Daala row, LGT col    N/A (no 16-point LGT)
+  // Daala row, col        input+4,   rowTX+0, mid+0, colTX+0,   out-1 == 3
+
   // Rows
   for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j)
+    // Input scaling
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+#if CONFIG_LGT
+      // Input scaling when LGT might be active (cases 2, 4 above)
+      temp_in[j] = input[i * stride + j] * (use_lgt_row ? 2 : 4) * 4;
+#else
+      // Input scaling when LGT is not possible, Daala only (case 4 above)
+      temp_in[j] = input[i * stride + j] * 16;
+#endif
+#else
+      // Input scaling when Daala is not possible, LGT/AV1 only (case 1 above)
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[i * stride + j] * 4 * Sqrt2);
+#endif
+    }
+
+// Row transform (AV1/LGT scale up 1 bit, Daala does not scale)
 #if CONFIG_LGT
     if (use_lgt_row)
       flgt8(temp_in, temp_out, lgtmtx_row[0]);
     else
 #endif
       ht.rows(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
+
+    // Mid scaling
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+      // mid scaling: only cases 2 and 4 possible
+      out[j * n2 + i] = temp_out[j];
+#else
+      // mid scaling: only case 1 possible
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#endif
+    }
   }
 
   // Columns
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
+    // Column transform (AV1/LGT scale up 1.5 bits, Daala does not scale)
     ht.cols(temp_in, temp_out);
-    for (j = 0; j < n2; ++j) output[i + j * n] = temp_out[j];
+    for (j = 0; j < n2; ++j) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+      // Output scaling (cases 2 and 3 above)
+      output[i + j * n] = (temp_out[j] + (temp_out[j] < 0)) >> 1;
+#else
+      // Output scaling (case 1 above)
+      output[i + j * n] = temp_out[j];
+#endif
+    }
   }
   // Note: overall scale factor of transform is 8 times unitary
 }
@@ -1950,6 +2010,26 @@ void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d FHT[] = {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+    { daala_fdct8, daala_fdct16 },  // DCT_DCT
+    { daala_fdst8, daala_fdct16 },  // ADST_DCT
+    { daala_fdct8, daala_fdst16 },  // DCT_ADST
+    { daala_fdst8, daala_fdst16 },  // ADST_ADST
+#if CONFIG_EXT_TX
+    { daala_fdst8, daala_fdct16 },  // FLIPADST_DCT
+    { daala_fdct8, daala_fdst16 },  // DCT_FLIPADST
+    { daala_fdst8, daala_fdst16 },  // FLIPADST_FLIPADST
+    { daala_fdst8, daala_fdst16 },  // ADST_FLIPADST
+    { daala_fdst8, daala_fdst16 },  // FLIPADST_ADST
+    { daala_idtx8, daala_idtx16 },  // IDTX
+    { daala_fdct8, daala_idtx16 },  // V_DCT
+    { daala_idtx8, daala_fdct16 },  // H_DCT
+    { daala_fdst8, daala_idtx16 },  // V_ADST
+    { daala_idtx8, daala_fdst16 },  // H_ADST
+    { daala_fdst8, daala_idtx16 },  // V_FLIPADST
+    { daala_idtx8, daala_fdst16 },  // H_FLIPADST
+#endif
+#else
     { fdct8, fdct16 },    // DCT_DCT
     { fadst8, fdct16 },   // ADST_DCT
     { fdct8, fadst16 },   // DCT_ADST
@@ -1968,6 +2048,7 @@ void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
     { fadst8, fidtx16 },  // V_FLIPADST
     { fidtx8, fadst16 },  // H_FLIPADST
 #endif
+#endif
   };
   const transform_2d ht = FHT[tx_type];
   const int n = 8;
@@ -1985,26 +2066,65 @@ void av1_fht16x8_c(const int16_t *input, tran_low_t *output, int stride,
   int use_lgt_col = get_lgt8(txfm_param, 1, lgtmtx_col);
 #endif
 
+  // Multi-way scaling matrix (bits):
+  // LGT/AV1 col, AV1 row  input+2.5, colTX+1, mid-2, rowTX+1.5, out+0 == 3
+  // LGT col, Daala row    input+3,   colTX+1, mid+0, rowTX+0,   out-1 == 3
+  // Daala col, LGT row   N/A (no 16-point LGT)
+  // Daala col, row        input+4,   colTX+0, mid+0, rowTX+0,   out-1 == 3
+
   // Columns
   for (i = 0; i < n2; ++i) {
-    for (j = 0; j < n; ++j)
+    // Input scaling
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+#if CONFIG_LGT
+      // Input scaling when LGT might be active (1, 2 above)
+      temp_in[j] = input[j * stride + i] * 4 * (use_lgt_col ? 2 : 4);
+#else
+      // Input scaling when LGT is not possible, Daala only (4 above)
+      temp_in[j] = input[j * stride + i] * 16;
+#endif
+#else
+      // Input scaling when Daala is not possible, AV1/LGT only (1 above)
       temp_in[j] =
           (tran_low_t)fdct_round_shift(input[j * stride + i] * 4 * Sqrt2);
+#endif
+    }
+
+// Column transform (AV1/LGT scale up 1 bit, Daala does not scale)
 #if CONFIG_LGT
     if (use_lgt_col)
       flgt8(temp_in, temp_out, lgtmtx_col[0]);
     else
 #endif
       ht.cols(temp_in, temp_out);
-    for (j = 0; j < n; ++j)
+
+    // Mid scaling
+    for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+      // scaling cases 2 and 4 above
+      out[j * n2 + i] = temp_out[j];
+#else
+      // Scaling case 1 above
       out[j * n2 + i] = ROUND_POWER_OF_TWO_SIGNED(temp_out[j], 2);
+#endif
+    }
   }
 
   // Rows
   for (i = 0; i < n; ++i) {
     for (j = 0; j < n2; ++j) temp_in[j] = out[j + i * n2];
+    // Row transform (AV1 scales up 1.5 bits, Daala does not scale)
     ht.rows(temp_in, temp_out);
-    for (j = 0; j < n2; ++j) output[j + i * n2] = temp_out[j];
+    for (j = 0; j < n2; ++j) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+      // Output scaing cases 2 and 4 above
+      output[j + i * n2] = (temp_out[j] + (temp_out[j] < 0)) >> 1;
+#else
+      // Ouptut scaling case 1 above
+      output[j + i * n2] = temp_out[j];
+#endif
+    }
   }
   // Note: overall scale factor of transform is 8 times unitary
 }

@@ -1275,6 +1275,26 @@ void av1_iht8x16_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d IHT_8x16[] = {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+    { daala_idct16, daala_idct8 },  // DCT_DCT  = 0
+    { daala_idst16, daala_idct8 },  // ADST_DCT = 1
+    { daala_idct16, daala_idst8 },  // DCT_ADST = 2
+    { daala_idst16, daala_idst8 },  // ADST_ADST = 3
+#if CONFIG_EXT_TX
+    { daala_idst16, daala_idct8 },  // FLIPADST_DCT
+    { daala_idct16, daala_idst8 },  // DCT_FLIPADST
+    { daala_idst16, daala_idst8 },  // FLIPADST_FLIPADST
+    { daala_idst16, daala_idst8 },  // ADST_FLIPADST
+    { daala_idst16, daala_idst8 },  // FLIPADST_ADST
+    { daala_idtx16, daala_idtx8 },  // IDTX
+    { daala_idct16, daala_idtx8 },  // V_DCT
+    { daala_idtx16, daala_idct8 },  // H_DCT
+    { daala_idst16, daala_idtx8 },  // V_ADST
+    { daala_idtx16, daala_idst8 },  // H_ADST
+    { daala_idst16, daala_idtx8 },  // V_FLIPADST
+    { daala_idtx16, daala_idst8 },  // H_FLIPADST
+#endif
+#else
     { aom_idct16_c, aom_idct8_c },    // DCT_DCT
     { aom_iadst16_c, aom_idct8_c },   // ADST_DCT
     { aom_idct16_c, aom_iadst8_c },   // DCT_ADST
@@ -1293,6 +1313,7 @@ void av1_iht8x16_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { aom_iadst16_c, iidtx8_c },      // V_FLIPADST
     { iidtx16_c, aom_iadst8_c },      // H_FLIPADST
 #endif
+#endif
   };
 
   const int n = 8;
@@ -1307,20 +1328,56 @@ void av1_iht8x16_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   int use_lgt_row = get_lgt8(txfm_param, 0, lgtmtx_row);
 #endif
 
+  // Multi-way scaling matrix (bits):
+  // LGT/AV1 row, AV1 col  input+0, rowTX+1, mid+.5, colTX+1.5, out-6 == -3
+  // LGT row, Daala col    input+0, rowTX+1, mid+0,  colTX+0,   out-4 == -3
+  // Daala row, LGT col    N/A (no 16-point LGT)
+  // Daala row,col         input+1, rowTX+0, mid+0,  colTX+0,   out-4 == -3
+
   // inverse transform row vectors and transpose
   for (i = 0; i < n2; ++i) {
 #if CONFIG_LGT
-    if (use_lgt_row)
+    if (use_lgt_row) {
+      // Scaling cases 1 and 2 above
+      // No input scaling
+      // Row transform (LGT; scales up 1 bit)
       ilgt8(input, outtmp, lgtmtx_row[0]);
-    else
+      // Transpose and mid scaling
+      for (j = 0; j < n; ++j) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+        // Mid scaling case 2
+        tmp[j][i] = outtmp[j];
+#else
+        // Mid scaling case 1
+        tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
 #endif
-      IHT_8x16[tx_type].rows(input, outtmp);
+      }
+    } else {
+#endif
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+      tran_low_t temp_in[8];
+      // Input scaling case 4
+      for (j = 0; j < n; j++) temp_in[j] = input[j] * 2;
+      // Row transform (Daala does not scale)
+      IHT_8x16[tx_type].rows(temp_in, outtmp);
+      // Transpose (no mid scaling)
+      for (j = 0; j < n; ++j) tmp[j][i] = outtmp[j];
+#else
+    // Case 1; no input scaling
+    // Row transform (AV1 scales up 1 bit)
+    IHT_8x16[tx_type].rows(input, outtmp);
+    // Transpose and mid scaling up .5 bits
     for (j = 0; j < n; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
+#endif
+#if CONFIG_LGT
+    }
+#endif
     input += n;
   }
 
   // inverse transform column vectors
+  // AV1 column TX scales up by 1.5 bit, Daala does not scale
   for (i = 0; i < n; ++i) {
     IHT_8x16[tx_type].cols(tmp[i], out[i]);
   }
@@ -1334,7 +1391,13 @@ void av1_iht8x16_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     for (j = 0; j < n; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+      // Output scaling cases 2 and 4
+      dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 4));
+#else
+      // Output scaling case 1
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
+#endif
     }
   }
 }
@@ -1349,6 +1412,26 @@ void av1_iht16x8_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   assert(tx_type == DCT_DCT);
 #endif
   static const transform_2d IHT_16x8[] = {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+    { daala_idct8, daala_idct16 },  // DCT_DCT  = 0
+    { daala_idst8, daala_idct16 },  // ADST_DCT = 1
+    { daala_idct8, daala_idst16 },  // DCT_ADST = 2
+    { daala_idst8, daala_idst16 },  // ADST_ADST = 3
+#if CONFIG_EXT_TX
+    { daala_idst8, daala_idct16 },  // FLIPADST_DCT
+    { daala_idct8, daala_idst16 },  // DCT_FLIPADST
+    { daala_idst8, daala_idst16 },  // FLIPADST_FLIPADST
+    { daala_idst8, daala_idst16 },  // ADST_FLIPADST
+    { daala_idst8, daala_idst16 },  // FLIPADST_ADST
+    { daala_idtx8, daala_idtx16 },  // IDTX
+    { daala_idct8, daala_idtx16 },  // V_DCT
+    { daala_idtx8, daala_idct16 },  // H_DCT
+    { daala_idst8, daala_idtx16 },  // V_ADST
+    { daala_idtx8, daala_idst16 },  // H_ADST
+    { daala_idst8, daala_idtx16 },  // V_FLIPADST
+    { daala_idtx8, daala_idst16 },  // H_FLIPADST
+#endif
+#else
     { aom_idct8_c, aom_idct16_c },    // DCT_DCT
     { aom_iadst8_c, aom_idct16_c },   // ADST_DCT
     { aom_idct8_c, aom_iadst16_c },   // DCT_ADST
@@ -1367,6 +1450,7 @@ void av1_iht16x8_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     { aom_iadst8_c, iidtx16_c },      // V_FLIPADST
     { iidtx8_c, aom_iadst16_c },      // H_FLIPADST
 #endif
+#endif
   };
 
   const int n = 8;
@@ -1382,15 +1466,43 @@ void av1_iht16x8_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
   int use_lgt_col = get_lgt8(txfm_param, 1, lgtmtx_col);
 #endif
 
+  // Multi-way scaling matrix (bits):
+  // AV1 row, LGT/AV1 col  input+0, rowTX+1.5, mid+.5, colTX+1, out-6 == -3
+  // LGT row, Daala col    N/A (no 16-point LGT)
+  // Daala row, LGT col    input+1, rowTX+0,   mid+1,  colTX+1, out-6 == -3
+  // Daala row, col        input+1, rowTX+0,   mid+0,  colTX+0, out-4 == -3
+
   // inverse transform row vectors and transpose
   for (i = 0; i < n; ++i) {
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+    tran_low_t temp_in[16];
+    // Input scaling cases 3 and 4
+    for (j = 0; j < n2; j++) temp_in[j] = input[j] * 2;
+    // Daala row TX, no scaling
+    IHT_16x8[tx_type].rows(temp_in, outtmp);
+// Transpose and mid scaling
+#if CONFIG_LGT
+    if (use_lgt_col)
+      // Case 3
+      for (j = 0; j < n2; ++j) tmp[j][i] = outtmp[j] * 2;
+    else
+#endif
+      // Case 4
+      for (j = 0; j < n2; ++j) tmp[j][i] = outtmp[j];
+#else
+    // Case 1
+    // No input scaling
+    // Row transform, AV1 scales up by 1.5 bits
     IHT_16x8[tx_type].rows(input, outtmp);
+    // Transpose and mid scaling up .5 bits
     for (j = 0; j < n2; ++j)
       tmp[j][i] = (tran_low_t)dct_const_round_shift(outtmp[j] * Sqrt2);
+#endif
     input += n2;
   }
 
   // inverse transform column vectors
+  // AV!/LGT scales up by 1 bit, Daala does not scale
   for (i = 0; i < n2; ++i) {
 #if CONFIG_LGT
     if (use_lgt_col)
@@ -1409,7 +1521,20 @@ void av1_iht16x8_128_add_c(const tran_low_t *input, uint8_t *dest, int stride,
     for (j = 0; j < n2; ++j) {
       int d = i * stride + j;
       int s = j * outstride + i;
+// Output scaling
+#if CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16
+#if CONFIG_LGT
+      if (use_lgt_col)
+        // case 3
+        dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
+      else
+#endif
+        // case 4
+        dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 4));
+#else
+      // case 1
       dest[d] = clip_pixel_add(dest[d], ROUND_POWER_OF_TWO(outp[s], 6));
+#endif
     }
   }
 }
@@ -2480,7 +2605,7 @@ static void inv_txfm_add_32x8(const tran_low_t *input, uint8_t *dest,
 
 static void inv_txfm_add_8x16(const tran_low_t *input, uint8_t *dest,
                               int stride, const TxfmParam *txfm_param) {
-#if CONFIG_LGT
+#if CONFIG_LGT || (CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16)
   av1_iht8x16_128_add_c(input, dest, stride, txfm_param);
 #else
   av1_iht8x16_128_add(input, dest, stride, txfm_param);
@@ -2489,7 +2614,7 @@ static void inv_txfm_add_8x16(const tran_low_t *input, uint8_t *dest,
 
 static void inv_txfm_add_16x8(const tran_low_t *input, uint8_t *dest,
                               int stride, const TxfmParam *txfm_param) {
-#if CONFIG_LGT
+#if CONFIG_LGT || (CONFIG_DAALA_TX8 && CONFIG_DAALA_TX16)
   av1_iht16x8_128_add_c(input, dest, stride, txfm_param);
 #else
   av1_iht16x8_128_add(input, dest, stride, txfm_param);
