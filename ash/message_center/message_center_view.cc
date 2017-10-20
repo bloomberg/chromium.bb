@@ -18,7 +18,7 @@
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/gfx/animation/multi_animation.h"
+#include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -60,8 +60,7 @@ bool MessageCenterView::disable_animation_for_testing = false;
 
 namespace {
 
-constexpr int kDefaultAnimationDurationMs = 120;
-constexpr int kDefaultFrameRateHz = 60;
+constexpr int kDefaultAnimationDurationMs = 500;
 constexpr int kMinScrollViewHeight = 77;
 constexpr int kEmptyViewHeight = 96;
 constexpr gfx::Insets kEmptyViewPadding(0, 0, 24, 0);
@@ -296,60 +295,28 @@ void MessageCenterView::Layout() {
   if (is_closing_)
     return;
 
-  int button_height = button_bar_->GetHeightForWidth(width()) +
-                      button_bar_->GetInsets().height();
-  // Skip unnecessary re-layout of contents during the resize animation.
-  bool animating = settings_transition_animation_ &&
-                   settings_transition_animation_->is_animating();
-  if (animating && settings_transition_animation_->current_part_index() == 0) {
-    button_bar_->SetBounds(0, height() - button_height, width(), button_height);
-    return;
-  }
+  int button_height = button_bar_->GetHeightForWidth(width());
+  int settings_height =
+      std::min(GetSettingsHeightForWidth(width()), height() - button_height);
 
   // In order to keep the fix for https://crbug.com/767805 working,
   // we have to always call SetBounds of scroller_.
   // TODO(tetsui): Fix the bug above without calling SetBounds, as SetBounds
   // invokes Layout() which is a heavy operation.
   scroller_->SetBounds(0, 0, width(), height() - button_height);
-
-  if (settings_view_->visible())
-    settings_view_->SetBounds(0, 0, width(), height() - button_height);
+  if (settings_view_->visible()) {
+    settings_view_->SetBounds(0, height() - settings_height, width(),
+                              settings_height);
+  }
   if (no_notifications_view_->visible())
     no_notifications_view_->SetBounds(0, 0, width(), kEmptyViewHeight);
-
-  bool is_scrollable = false;
-  if (scroller_->visible())
-    is_scrollable = scroller_->height() < message_list_view_->height();
-  else if (settings_view_->visible())
-    is_scrollable = settings_view_->IsScrollable();
-
-  if (!animating) {
-    if (is_scrollable) {
-      // Draw separator line on the top of the button bar if it is on the bottom
-      // or draw it at the bottom if the bar is on the top.
-      button_bar_->SetBorder(views::CreateSolidSidedBorder(
-          1, 0, 0, 0, SkColorSetRGB(0xcc, 0xcc, 0xcc)));
-    } else {
-      button_bar_->SetBorder(views::CreateEmptyBorder(1, 0, 0, 0));
-    }
-    button_bar_->SchedulePaint();
-  }
-  button_bar_->SetBounds(0, height() - button_height, width(), button_height);
+  button_bar_->SetBounds(0, height() - button_height - settings_height, width(),
+                         button_height);
   if (GetWidget())
     GetWidget()->GetRootView()->SchedulePaint();
 }
 
 gfx::Size MessageCenterView::CalculatePreferredSize() const {
-  if (settings_transition_animation_ &&
-      settings_transition_animation_->is_animating()) {
-    int content_width =
-        std::max(source_view_ ? source_view_->GetPreferredSize().width() : 0,
-                 target_view_ ? target_view_->GetPreferredSize().width() : 0);
-    int width =
-        std::max(content_width, button_bar_->GetPreferredSize().width());
-    return gfx::Size(width, GetHeightForWidth(width));
-  }
-
   int width = 0;
   for (int i = 0; i < child_count(); ++i) {
     const views::View* child = child_at(0);
@@ -360,27 +327,20 @@ gfx::Size MessageCenterView::CalculatePreferredSize() const {
 }
 
 int MessageCenterView::GetHeightForWidth(int width) const {
-  views::Border* button_border = button_bar_->border();
   if (settings_transition_animation_ &&
       settings_transition_animation_->is_animating()) {
-    int content_height = target_height_;
-    if (settings_transition_animation_->current_part_index() == 0) {
-      content_height = settings_transition_animation_->CurrentValueBetween(
-          source_height_, target_height_);
-    }
-    return button_bar_->GetHeightForWidth(width) + content_height +
-           (button_border ? button_border->GetInsets().height() : 0);
+    return button_bar_->GetHeightForWidth(width) +
+           GetContentHeightDuringAnimation(width);
   }
 
   int content_height = 0;
-  if (scroller_->visible())
+  if (mode_ == Mode::NOTIFICATIONS)
     content_height += scroller_->GetHeightForWidth(width);
-  else if (settings_view_->visible())
+  else if (mode_ == Mode::SETTINGS)
     content_height += settings_view_->GetHeightForWidth(width);
   else if (no_notifications_view_->visible())
     content_height += no_notifications_view_->GetHeightForWidth(width);
-  return button_bar_->GetHeightForWidth(width) + content_height +
-         (button_border ? button_border->GetInsets().height() : 0);
+  return button_bar_->GetHeightForWidth(width) + content_height;
 }
 
 bool MessageCenterView::OnMouseWheel(const ui::MouseWheelEvent& event) {
@@ -546,10 +506,6 @@ void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
   }
   if (target_view_)
     target_view_->SetVisible(true);
-  if (source_view_ && source_view_->layer())
-    source_view_->layer()->SetOpacity(1.0);
-  if (target_view_ && target_view_->layer())
-    target_view_->layer()->SetOpacity(1.0);
   settings_transition_animation_.reset();
   PreferredSizeChanged();
   Layout();
@@ -563,19 +519,8 @@ void MessageCenterView::AnimationEnded(const gfx::Animation* animation) {
 void MessageCenterView::AnimationProgressed(const gfx::Animation* animation) {
   DCHECK_EQ(animation, settings_transition_animation_.get());
   PreferredSizeChanged();
-  if (settings_transition_animation_->current_part_index() == 1) {
-    if (source_view_ && source_view_->layer()) {
-      source_view_->layer()->SetOpacity(
-          1.0 - settings_transition_animation_->GetCurrentValue());
-      SchedulePaint();
-    }
-  } else if (settings_transition_animation_->current_part_index() == 2) {
-    if (target_view_ && target_view_->layer()) {
-      target_view_->layer()->SetOpacity(
-          settings_transition_animation_->GetCurrentValue());
-      SchedulePaint();
-    }
-  }
+  Layout();
+  SchedulePaint();
 }
 
 void MessageCenterView::AnimationCanceled(const gfx::Animation* animation) {
@@ -667,37 +612,20 @@ void MessageCenterView::SetVisibilityMode(Mode mode, bool animate) {
   source_height_ = source_view_ ? source_view_->GetHeightForWidth(width()) : 0;
   target_height_ = target_view_ ? target_view_->GetHeightForWidth(width()) : 0;
 
+  if (source_view_)
+    source_view_->SetVisible(true);
+  if (target_view_)
+    target_view_->SetVisible(true);
+
   if (!animate || disable_animation_for_testing) {
     AnimationEnded(nullptr);
     return;
   }
 
-  gfx::MultiAnimation::Parts parts;
-  // First part: slide resize animation.
-  parts.push_back(gfx::MultiAnimation::Part(
-      (source_height_ == target_height_) ? 0 : kDefaultAnimationDurationMs,
-      gfx::Tween::EASE_OUT));
-  // Second part: fade-out the source_view.
-  if (source_view_ && source_view_->layer()) {
-    parts.push_back(gfx::MultiAnimation::Part(kDefaultAnimationDurationMs,
-                                              gfx::Tween::LINEAR));
-  } else {
-    parts.push_back(gfx::MultiAnimation::Part());
-  }
-  // Third part: fade-in the target_view.
-  if (target_view_ && target_view_->layer()) {
-    parts.push_back(gfx::MultiAnimation::Part(kDefaultAnimationDurationMs,
-                                              gfx::Tween::LINEAR));
-    target_view_->layer()->SetOpacity(0);
-    target_view_->SetVisible(true);
-  } else {
-    parts.push_back(gfx::MultiAnimation::Part());
-  }
-  settings_transition_animation_.reset(new gfx::MultiAnimation(
-      parts, base::TimeDelta::FromMicroseconds(1000000 / kDefaultFrameRateHz)));
-  settings_transition_animation_->set_delegate(this);
-  settings_transition_animation_->set_continuous(false);
-  settings_transition_animation_->Start();
+  settings_transition_animation_ = std::make_unique<gfx::SlideAnimation>(this);
+  settings_transition_animation_->SetSlideDuration(kDefaultAnimationDurationMs);
+  settings_transition_animation_->SetTweenType(gfx::Tween::EASE_IN_OUT);
+  settings_transition_animation_->Show();
 }
 
 void MessageCenterView::UpdateButtonBarStatus() {
@@ -758,6 +686,31 @@ void MessageCenterView::UpdateNotification(const std::string& id) {
 
   // Notify accessibility that the contents have changed.
   view->NotifyAccessibilityEvent(ui::AX_EVENT_CHILDREN_CHANGED, false);
+}
+
+int MessageCenterView::GetSettingsHeightForWidth(int width) const {
+  if (settings_transition_animation_ &&
+      settings_transition_animation_->is_animating() &&
+      (source_view_ == settings_view_ || target_view_ == settings_view_)) {
+    return settings_transition_animation_->CurrentValueBetween(
+        target_view_ == settings_view_ ? 0 : source_height_,
+        source_view_ == settings_view_ ? 0 : target_height_);
+  } else {
+    return mode_ == Mode::SETTINGS ? settings_view_->GetHeightForWidth(width)
+                                   : 0;
+  }
+}
+
+int MessageCenterView::GetContentHeightDuringAnimation(int width) const {
+  DCHECK(settings_transition_animation_);
+  int content_height = settings_transition_animation_->CurrentValueBetween(
+      target_view_ == settings_view_ ? 0 : source_height_,
+      source_view_ == settings_view_ ? 0 : target_height_);
+  if (target_view_ == settings_view_)
+    content_height = std::max(source_height_, content_height);
+  if (source_view_ == settings_view_)
+    content_height = std::max(target_height_, content_height);
+  return content_height;
 }
 
 }  // namespace ash
