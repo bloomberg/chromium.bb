@@ -2,20 +2,29 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/css/properties/longhands/CSSPropertyAPIMargin.h"
+#include "core/css/properties/longhands/CSSPropertyAPIMarginRight.h"
 
 #include "core/css/parser/CSSParserContext.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/css/properties/CSSPropertyMarginUtils.h"
+#include "core/layout/LayoutObject.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
-const CSSValue* CSSPropertyAPIMargin::ParseSingleValue(
+const CSSValue* CSSPropertyAPIMarginRight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
   return CSSPropertyMarginUtils::ConsumeMarginOrOffset(
       range, context.Mode(), CSSPropertyParserHelpers::UnitlessQuirk::kAllow);
+}
+
+bool CSSPropertyAPIMarginRight::IsLayoutDependent(
+    const ComputedStyle* style,
+    LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox() &&
+         (!style || !style->MarginRight().IsFixed());
 }
 
 }  // namespace blink

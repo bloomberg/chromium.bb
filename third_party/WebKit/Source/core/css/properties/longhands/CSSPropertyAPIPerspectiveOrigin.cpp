@@ -7,6 +7,7 @@
 #include "core/css/CSSValuePair.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
 #include "core/frame/WebFeature.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -17,6 +18,12 @@ const CSSValue* CSSPropertyAPIPerspectiveOrigin::ParseSingleValue(
   return ConsumePosition(range, context,
                          CSSPropertyParserHelpers::UnitlessQuirk::kForbid,
                          WebFeature::kThreeValuedPositionPerspectiveOrigin);
+}
+
+bool CSSPropertyAPIPerspectiveOrigin::IsLayoutDependent(
+    const ComputedStyle* style,
+    LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 }  // namespace blink

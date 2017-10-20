@@ -510,7 +510,7 @@ static WritingDirection TextDirectionForSelection(
       CSSComputedStyleDeclaration* style =
           CSSComputedStyleDeclaration::Create(&n);
       const CSSValue* unicode_bidi =
-          style->GetPropertyCSSValue(CSSPropertyUnicodeBidi);
+          style->GetPropertyCSSValue(GetCSSPropertyUnicodeBidiAPI());
       if (!unicode_bidi || !unicode_bidi->IsIdentifierValue())
         continue;
 
@@ -546,7 +546,7 @@ static WritingDirection TextDirectionForSelection(
     CSSComputedStyleDeclaration* style =
         CSSComputedStyleDeclaration::Create(element);
     const CSSValue* unicode_bidi =
-        style->GetPropertyCSSValue(CSSPropertyUnicodeBidi);
+        style->GetPropertyCSSValue(GetCSSPropertyUnicodeBidiAPI());
     if (!unicode_bidi || !unicode_bidi->IsIdentifierValue())
       continue;
 
@@ -561,7 +561,7 @@ static WritingDirection TextDirectionForSelection(
     DCHECK(EditingStyleUtilities::IsEmbedOrIsolate(unicode_bidi_value))
         << unicode_bidi_value;
     const CSSValue* direction =
-        style->GetPropertyCSSValue(CSSPropertyDirection);
+        style->GetPropertyCSSValue(GetCSSPropertyDirectionAPI());
     if (!direction || !direction->IsIdentifierValue())
       continue;
 

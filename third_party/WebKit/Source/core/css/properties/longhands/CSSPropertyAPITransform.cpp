@@ -8,6 +8,7 @@
 #include "core/css/parser/CSSParserLocalContext.h"
 #include "core/css/parser/CSSParserTokenRange.h"
 #include "core/css/properties/CSSPropertyTransformUtils.h"
+#include "core/layout/LayoutObject.h"
 
 namespace blink {
 
@@ -17,6 +18,12 @@ const CSSValue* CSSPropertyAPITransform::ParseSingleValue(
     const CSSParserLocalContext& local_context) const {
   return CSSPropertyTransformUtils::ConsumeTransformList(range, context,
                                                          local_context);
+}
+
+bool CSSPropertyAPITransform::IsLayoutDependent(
+    const ComputedStyle* style,
+    LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 }  // namespace blink

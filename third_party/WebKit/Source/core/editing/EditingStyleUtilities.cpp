@@ -198,8 +198,10 @@ const CSSValue* EditingStyleUtilities::BackgroundColorValueInEffect(
   for (Node* ancestor = node; ancestor; ancestor = ancestor->parentNode()) {
     CSSComputedStyleDeclaration* ancestor_style =
         CSSComputedStyleDeclaration::Create(ancestor);
-    if (!HasTransparentBackgroundColor(ancestor_style))
-      return ancestor_style->GetPropertyCSSValue(CSSPropertyBackgroundColor);
+    if (!HasTransparentBackgroundColor(ancestor_style)) {
+      return ancestor_style->GetPropertyCSSValue(
+          GetCSSPropertyBackgroundColorAPI());
+    }
   }
   return nullptr;
 }

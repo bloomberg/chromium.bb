@@ -39,7 +39,7 @@
     api_methods: {
       default: [],
       valid_type: "list",
-      valid_values: ["ParseSingleValue", "ParseShorthand"],
+      valid_values: ["ParseSingleValue", "ParseShorthand", "IsLayoutDependent"],
     },
 
     // - is_descriptor
@@ -1091,7 +1091,7 @@
     {
       name: "bottom",
       api_class: "CSSPropertyAPIOffset",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -1567,7 +1567,7 @@
     {
       name: "grid-template-columns",
       api_class: "CSSPropertyAPIGridTemplateLine",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       field_group: "*",
       field_template: "external",
       include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
@@ -1578,7 +1578,7 @@
     {
       name: "grid-template-rows",
       api_class: "CSSPropertyAPIGridTemplateLine",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       field_group: "*",
       field_template: "external",
       include_paths: ["platform/wtf/Vector.h", "core/style/GridTrackSize.h"],
@@ -1589,7 +1589,7 @@
     {
       name: "height",
       api_class: "CSSPropertyAPIWidthOrHeight",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       is_descriptor: true,
       interpolable: true,
       field_group: "box",
@@ -1677,7 +1677,7 @@
     {
       name: "left",
       api_class: "CSSPropertyAPIOffset",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -1777,8 +1777,8 @@
     },
     {
       name: "margin-bottom",
-      api_class: "CSSPropertyAPIMargin",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -1787,8 +1787,8 @@
     },
     {
       name: "margin-left",
-      api_class: "CSSPropertyAPIMargin",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -1797,8 +1797,8 @@
     },
     {
       name: "margin-right",
-      api_class: "CSSPropertyAPIMargin",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -1807,8 +1807,8 @@
     },
     {
       name: "margin-top",
-      api_class: "CSSPropertyAPIMargin",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -2125,8 +2125,8 @@
     },
     {
       name: "padding-bottom",
-      api_class: "CSSPropertyAPIPadding",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -2135,8 +2135,8 @@
     },
     {
       name: "padding-left",
-      api_class: "CSSPropertyAPIPadding",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -2145,8 +2145,8 @@
     },
     {
       name: "padding-right",
-      api_class: "CSSPropertyAPIPadding",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -2155,8 +2155,8 @@
     },
     {
       name: "padding-top",
-      api_class: "CSSPropertyAPIPadding",
-      api_methods: ["ParseSingleValue"],
+      api_class: true,
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -2185,7 +2185,7 @@
     {
       name: "perspective-origin",
       api_class: true,
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -2240,7 +2240,7 @@
     {
       name: "right",
       api_class: "CSSPropertyAPIOffset",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -2871,7 +2871,7 @@
     {
       name: "top",
       api_class: "CSSPropertyAPIOffset",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "surround",
       field_template: "<length>",
@@ -2895,7 +2895,7 @@
     {
       name: "transform",
       api_class: true,
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -2917,7 +2917,7 @@
     {
       name: "transform-origin",
       api_class: true,
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       field_group: "*",
       field_template: "external",
@@ -2938,7 +2938,7 @@
     {
       name: "translate",
       api_class: true,
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       interpolable: true,
       runtime_flag: "CSSIndependentTransformProperties",
       field_group: "*",
@@ -3638,7 +3638,7 @@
     {
       name: "width",
       api_class: "CSSPropertyAPIWidthOrHeight",
-      api_methods: ["ParseSingleValue"],
+      api_methods: ["ParseSingleValue", "IsLayoutDependent"],
       is_descriptor: true,
       interpolable: true,
       field_group: "box",
@@ -4223,7 +4223,7 @@
         "grid-auto-flow", "grid-auto-rows", "grid-auto-columns"
       ],
       api_class: true,
-      api_methods: ["ParseShorthand"],
+      api_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "place-content",
@@ -4276,7 +4276,7 @@
         "grid-template-rows", "grid-template-columns", "grid-template-areas"
       ],
       api_class: true,
-      api_methods: ["ParseShorthand"],
+      api_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "list-style",
@@ -4288,7 +4288,7 @@
       name: "margin",
       longhands: ["margin-top", "margin-right", "margin-bottom", "margin-left"],
       api_class: true,
-      api_methods: ["ParseShorthand"],
+      api_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "marker",
@@ -4330,7 +4330,7 @@
         "padding-top", "padding-right", "padding-bottom", "padding-left"
       ],
       api_class: true,
-      api_methods: ["ParseShorthand"],
+      api_methods: ["ParseShorthand", "IsLayoutDependent"],
     },
     {
       name: "page-break-after",

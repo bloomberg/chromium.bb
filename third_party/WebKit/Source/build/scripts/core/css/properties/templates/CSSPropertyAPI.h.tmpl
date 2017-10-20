@@ -23,6 +23,8 @@ class CSSValue;
 class StyleResolverState;
 class StylePropertyShorthand;
 class CSSParserTokenRange;
+class LayoutObject;
+class ComputedStyle;
 
 enum PhysicalBoxSide { kTopSide, kRightSide, kBottomSide, kLeftSide };
 
@@ -72,6 +74,7 @@ class CSSPropertyAPI {
     NOTREACHED();
   }
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
+  virtual bool IsLayoutDependent(const ComputedStyle* style, LayoutObject* layout_object) const { return false; }
   virtual CSSPropertyID ResolveDirectionAwareProperty(
       TextDirection,
       WritingMode) const {
