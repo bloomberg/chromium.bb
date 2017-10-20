@@ -36,7 +36,7 @@ const uint64_t kTestBlobStorageMaxFileSizeBytes = 100;
 const char kId[] = "blob-id";
 
 void BindBytesProvider(std::unique_ptr<MockBytesProvider> impl,
-                       mojom::BytesProviderRequest request) {
+                       blink::mojom::BytesProviderRequest request) {
   mojo::MakeStrongBinding(std::move(impl), std::move(request));
 }
 
@@ -76,9 +76,10 @@ class BlobTransportStrategyTest : public testing::Test {
     bad_messages_.push_back(error);
   }
 
-  mojom::BytesProviderPtr CreateBytesProvider(const std::string& bytes,
-                                              base::Optional<base::Time> time) {
-    mojom::BytesProviderPtr result;
+  blink::mojom::BytesProviderPtr CreateBytesProvider(
+      const std::string& bytes,
+      base::Optional<base::Time> time) {
+    blink::mojom::BytesProviderPtr result;
     auto provider = base::MakeUnique<MockBytesProvider>(
         std::vector<uint8_t>(bytes.begin(), bytes.end()), &reply_request_count_,
         &stream_request_count_, &file_request_count_, time);
@@ -150,22 +151,22 @@ TEST_P(BasicTests, WithBytes) {
       limits_);
 
   std::string data = base::RandBytesAsString(7);
-  mojom::DataElementBytes bytes1(data.size(),
-                                 std::vector<uint8_t>(data.begin(), data.end()),
-                                 CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes1(
+      data.size(), std::vector<uint8_t>(data.begin(), data.end()),
+      CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes1);
   expected.AppendData(data);
 
   data = base::RandBytesAsString(3);
-  mojom::DataElementBytes bytes2(data.size(),
-                                 std::vector<uint8_t>(data.begin(), data.end()),
-                                 CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes2(
+      data.size(), std::vector<uint8_t>(data.begin(), data.end()),
+      CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes2);
   expected.AppendData(data);
 
   data = base::RandBytesAsString(10);
-  mojom::DataElementBytes bytes3(data.size(), base::nullopt,
-                                 CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes3(data.size(), base::nullopt,
+                                        CreateBytesProvider(data, mock_time_));
   if (GetParam() != MemoryStrategy::NONE_NEEDED) {
     strategy->AddBytesElement(&bytes3);
     expected.AppendData(data);
@@ -223,7 +224,7 @@ TEST_P(BasicErrorTests, NotEnoughBytesInProvider) {
       limits_);
 
   std::string data = base::RandBytesAsString(7);
-  mojom::DataElementBytes bytes(
+  blink::mojom::DataElementBytes bytes(
       data.size(), base::nullopt,
       CreateBytesProvider(data.substr(0, 4), mock_time_));
   strategy->AddBytesElement(&bytes);
@@ -252,7 +253,7 @@ TEST_P(BasicErrorTests, TooManyBytesInProvider) {
       limits_);
 
   std::string data = base::RandBytesAsString(4);
-  mojom::DataElementBytes bytes(
+  blink::mojom::DataElementBytes bytes(
       data.size(), base::nullopt,
       CreateBytesProvider(data + "foobar", mock_time_));
   strategy->AddBytesElement(&bytes);
@@ -293,8 +294,8 @@ TEST_F(BlobTransportStrategyTest, DataStreamChunksData) {
 
   std::string data =
       base::RandBytesAsString(kTestBlobStorageMaxSharedMemoryBytes * 3 + 13);
-  mojom::DataElementBytes bytes(data.size(), base::nullopt,
-                                CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes(data.size(), base::nullopt,
+                                       CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes);
 
   size_t offset = 0;
@@ -359,8 +360,8 @@ TEST_F(BlobTransportStrategyTest, Files_WriteFailed) {
       limits_);
 
   std::string data = base::RandBytesAsString(kTestBlobStorageMaxFileSizeBytes);
-  mojom::DataElementBytes bytes(data.size(), base::nullopt,
-                                CreateBytesProvider(data, base::nullopt));
+  blink::mojom::DataElementBytes bytes(
+      data.size(), base::nullopt, CreateBytesProvider(data, base::nullopt));
   strategy->AddBytesElement(&bytes);
 
   FileInfoVector files(1);
@@ -401,8 +402,8 @@ TEST_F(BlobTransportStrategyTest, Files_ValidBytesOneElement) {
 
   std::string data =
       base::RandBytesAsString(kTestBlobStorageMaxBlobMemorySize + 42);
-  mojom::DataElementBytes bytes(data.size(), base::nullopt,
-                                CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes(data.size(), base::nullopt,
+                                       CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes);
 
   size_t expected_file_count =
@@ -455,17 +456,17 @@ TEST_F(BlobTransportStrategyTest, Files_ValidBytesMultipleElements) {
   std::string data =
       base::RandBytesAsString(kTestBlobStorageMaxBlobMemorySize / 3);
 
-  mojom::DataElementBytes bytes1(data.size(), base::nullopt,
-                                 CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes1(data.size(), base::nullopt,
+                                        CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes1);
-  mojom::DataElementBytes bytes2(data.size(), base::nullopt,
-                                 CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes2(data.size(), base::nullopt,
+                                        CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes2);
-  mojom::DataElementBytes bytes3(data.size(), base::nullopt,
-                                 CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes3(data.size(), base::nullopt,
+                                        CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes3);
-  mojom::DataElementBytes bytes4(data.size(), base::nullopt,
-                                 CreateBytesProvider(data, mock_time_));
+  blink::mojom::DataElementBytes bytes4(data.size(), base::nullopt,
+                                        CreateBytesProvider(data, mock_time_));
   strategy->AddBytesElement(&bytes4);
 
   size_t expected_file_count =

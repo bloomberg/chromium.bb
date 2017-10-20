@@ -5,7 +5,7 @@
 module content.mojom;
 
 import "mojo/common/time.mojom";
-import "storage/public/interfaces/blobs.mojom";
+import "third_party/WebKit/common/blob/blob.mojom";
 import "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom";
 
 [Native]
@@ -23,7 +23,7 @@ interface ServiceWorkerFetchResponseCallback {
   // TODO(kinuko): This should not be necessary once we properly support
   // transferring blob within |response|. See crbug.com/75523 for more details.
   OnResponseBlob(ServiceWorkerResponse response,
-                 storage.mojom.Blob body_as_blob,
+                 blink.mojom.Blob body_as_blob,
                  mojo.common.mojom.Time dispatch_event_time);
   // Responds to the request with |response|. The body is returned as a stream.
   OnResponseStream(ServiceWorkerResponse response,

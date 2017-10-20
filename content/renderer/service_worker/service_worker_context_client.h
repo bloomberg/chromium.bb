@@ -28,7 +28,7 @@
 #include "content/public/common/service_worker_modes.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "storage/public/interfaces/blobs.mojom.h"
+#include "third_party/WebKit/common/blob/blob_registry.mojom.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_app.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
@@ -407,7 +407,7 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
   // This is valid from the ctor to workerContextDestroyed.
   std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client_;
 
-  storage::mojom::BlobRegistryPtr blob_registry_;
+  blink::mojom::BlobRegistryPtr blob_registry_;
 
   // Initialized on the worker thread in workerContextStarted and
   // destructed on the worker thread in willDestroyWorkerContext.

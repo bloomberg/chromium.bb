@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module storage.mojom;
+module blink.mojom;
 
 // An interface for getting the size of another type (could be a data pipe as
 // one example).

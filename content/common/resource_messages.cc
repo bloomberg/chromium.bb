@@ -173,7 +173,7 @@ void ParamTraits<storage::DataElement>::Write(base::Pickle* m,
       break;
     }
     case storage::DataElement::TYPE_DATA_PIPE: {
-      storage::mojom::SizeGetterPtr size_getter;
+      blink::mojom::SizeGetterPtr size_getter;
       WriteParam(
           m,
           const_cast<param_type&>(p).ReleaseDataPipe(&size_getter).release());
@@ -259,13 +259,13 @@ bool ParamTraits<storage::DataElement>::Read(const base::Pickle* m,
     }
     case storage::DataElement::TYPE_DATA_PIPE: {
       mojo::DataPipeConsumerHandle data_pipe;
-      storage::mojom::SizeGetterPtr size_getter;
+      blink::mojom::SizeGetterPtr size_getter;
       if (!ReadParam(m, iter, &data_pipe))
         return false;
       mojo::MessagePipeHandle message_pipe;
       if (!ReadParam(m, iter, &message_pipe))
         return false;
-      size_getter.Bind(storage::mojom::SizeGetterPtrInfo(
+      size_getter.Bind(blink::mojom::SizeGetterPtrInfo(
           mojo::ScopedMessagePipeHandle(message_pipe), 0u));
       r->SetToDataPipe(mojo::ScopedDataPipeConsumerHandle(data_pipe),
                        std::move(size_getter));

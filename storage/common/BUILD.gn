@@ -44,13 +44,13 @@ component("common") {
   defines = [ "STORAGE_COMMON_IMPLEMENTATION" ]
 
   public_deps = [
-    "//storage/public/interfaces",
+    "//third_party/WebKit/public:blink_headers",
   ]
+
   deps = [
     "//base",
     "//base/third_party/dynamic_annotations",
     "//net",
-    "//third_party/WebKit/public:blink_headers",
     "//url",
   ]
 }

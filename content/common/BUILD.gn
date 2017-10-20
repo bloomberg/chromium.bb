@@ -656,7 +656,6 @@ mojom("mojo_bindings") {
     "//services/video_capture/public/interfaces",
     "//services/viz/public/interfaces",
     "//skia/public/interfaces",
-    "//storage/public/interfaces",
     "//third_party/WebKit/public:mojo_bindings",
     "//ui/base/mojo:mojo_bindings",
     "//ui/gfx/geometry/mojo",
@@ -664,12 +663,6 @@ mojom("mojo_bindings") {
     "//url/mojo:url_mojom_gurl",
     "//url/mojo:url_mojom_origin",
   ]
-
-  # //storage/public/interfaces is configured to be exported
-  # as STORAGE_COMMON, so override the dependencies to make it
-  # depend via //storage/common.
-  overridden_deps = [ "//storage/public/interfaces" ]
-  component_deps = [ "//storage/common" ]
 
   component_output_prefix = "content_common_mojo_bindings"
   export_class_attribute = "CONTENT_EXPORT"

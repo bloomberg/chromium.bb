@@ -19,7 +19,7 @@
 #include "platform/weborigin/Referrer.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/StringHash.h"
-#include "storage/public/interfaces/blobs.mojom-blink.h"  // nogncheck
+#include "third_party/WebKit/common/blob/blob.mojom-blink.h"  // nogncheck
 #endif
 
 namespace blink {
@@ -102,7 +102,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
   const Referrer& GetReferrer() const;
   void SetBlob(const WebString& uuid,
                long long size,
-               storage::mojom::blink::BlobPtrInfo);
+               mojom::blink::BlobPtrInfo);
 #endif
 
  private:

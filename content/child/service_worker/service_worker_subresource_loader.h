@@ -17,7 +17,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
-#include "storage/public/interfaces/blobs.mojom.h"
+#include "third_party/WebKit/common/blob/blob.mojom.h"
+#include "third_party/WebKit/common/blob/blob_registry.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_event_status.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_stream_handle.mojom.h"
 
@@ -49,7 +50,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
       const GURL& controller_origin,
-      scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+      scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
           blob_registry);
 
   ~ServiceWorkerSubresourceLoader() override;
@@ -65,7 +66,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnResponse(const ServiceWorkerResponse& response,
                   base::Time dispatch_event_time) override;
   void OnResponseBlob(const ServiceWorkerResponse& response,
-                      storage::mojom::BlobPtr blob,
+                      blink::mojom::BlobPtr blob,
                       base::Time dispatch_event_time) override;
   void OnResponseStream(
       const ServiceWorkerResponse& response,
@@ -74,7 +75,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnFallback(base::Time dispatch_event_time) override;
 
   void StartResponse(const ServiceWorkerResponse& response,
-                     storage::mojom::BlobPtr blob,
+                     blink::mojom::BlobPtr blob,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream);
 
   // mojom::URLLoader overrides:
@@ -128,11 +129,11 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   net::MutableNetworkTrafficAnnotationTag traffic_annotation_;
 
   // To load a blob.
-  storage::mojom::BlobURLHandlePtr blob_url_handle_;
+  blink::mojom::BlobURLHandlePtr blob_url_handle_;
   GURL controller_origin_;
   mojom::URLLoaderPtr blob_loader_;
   mojo::Binding<mojom::URLLoaderClient> blob_client_binding_;
-  scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+  scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
       blob_registry_;
 
   // For Blob loading and network fallback loading.
@@ -169,7 +170,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
       const GURL& controller_origin,
-      scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+      scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
           blob_registry);
 
   ~ServiceWorkerSubresourceLoaderFactory() override;
@@ -194,7 +195,7 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
 
   GURL controller_origin_;
 
-  scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+  scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
       blob_registry_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderFactory);

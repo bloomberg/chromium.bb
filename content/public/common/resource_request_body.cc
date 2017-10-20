@@ -71,7 +71,7 @@ void ResourceRequestBody::AppendFileSystemFileRange(
 
 void ResourceRequestBody::AppendDataPipe(
     mojo::ScopedDataPipeConsumerHandle handle,
-    storage::mojom::SizeGetterPtr size_getter) {
+    blink::mojom::SizeGetterPtr size_getter) {
   elements_.push_back(Element());
   elements_.back().SetToDataPipe(std::move(handle), std::move(size_getter));
 }

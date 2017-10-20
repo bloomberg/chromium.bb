@@ -7,37 +7,38 @@
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/public/interfaces/blobs.mojom.h"
+#include "third_party/WebKit/common/blob/blob.mojom.h"
 
 namespace storage {
 
 class BlobDataHandle;
 
 // Self destroys when no more bindings exist.
-class STORAGE_EXPORT BlobImpl : public mojom::Blob {
+class STORAGE_EXPORT BlobImpl : public blink::mojom::Blob {
  public:
   static base::WeakPtr<BlobImpl> Create(std::unique_ptr<BlobDataHandle> handle,
-                                        mojom::BlobRequest request);
+                                        blink::mojom::BlobRequest request);
 
-  void Clone(mojom::BlobRequest request) override;
+  void Clone(blink::mojom::BlobRequest request) override;
   void ReadRange(uint64_t offset,
                  uint64_t length,
                  mojo::ScopedDataPipeProducerHandle handle,
-                 mojom::BlobReaderClientPtr client) override;
+                 blink::mojom::BlobReaderClientPtr client) override;
   void ReadAll(mojo::ScopedDataPipeProducerHandle handle,
-               mojom::BlobReaderClientPtr client) override;
+               blink::mojom::BlobReaderClientPtr client) override;
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 
   void FlushForTesting();
 
  private:
-  BlobImpl(std::unique_ptr<BlobDataHandle> handle, mojom::BlobRequest request);
+  BlobImpl(std::unique_ptr<BlobDataHandle> handle,
+           blink::mojom::BlobRequest request);
   ~BlobImpl() override;
   void OnConnectionError();
 
   std::unique_ptr<BlobDataHandle> handle_;
 
-  mojo::BindingSet<mojom::Blob> bindings_;
+  mojo::BindingSet<blink::mojom::Blob> bindings_;
 
   base::WeakPtrFactory<BlobImpl> weak_ptr_factory_;
 

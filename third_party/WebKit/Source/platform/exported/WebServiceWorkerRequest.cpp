@@ -107,14 +107,13 @@ void WebServiceWorkerRequest::SetBlob(const WebString& uuid,
                                       long long size,
                                       mojo::ScopedMessagePipeHandle blob_pipe) {
   SetBlob(uuid, size,
-          storage::mojom::blink::BlobPtrInfo(
-              std::move(blob_pipe), storage::mojom::blink::Blob::Version_));
+          mojom::blink::BlobPtrInfo(std::move(blob_pipe),
+                                    mojom::blink::Blob::Version_));
 }
 
-void WebServiceWorkerRequest::SetBlob(
-    const WebString& uuid,
-    long long size,
-    storage::mojom::blink::BlobPtrInfo blob_info) {
+void WebServiceWorkerRequest::SetBlob(const WebString& uuid,
+                                      long long size,
+                                      mojom::blink::BlobPtrInfo blob_info) {
   private_->blob_data_handle =
       BlobDataHandle::Create(uuid, String(), size, std::move(blob_info));
 }

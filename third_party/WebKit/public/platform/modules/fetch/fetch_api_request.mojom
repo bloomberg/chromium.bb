@@ -5,7 +5,7 @@
 module blink.mojom;
 
 import "third_party/WebKit/public/platform/referrer.mojom";
-import "storage/public/interfaces/blobs.mojom";
+import "third_party/WebKit/common/blob/blob.mojom";
 import "url/mojo/url.mojom";
 
 // The mode associated with a request.
@@ -97,7 +97,7 @@ struct FetchAPIRequest {
   map<string, string> headers;
   string? blob_uuid;
   uint64 blob_size;
-  storage.mojom.Blob? blob;
+  Blob? blob;
   Referrer referrer;
   FetchCredentialsMode credentials_mode;
   FetchRedirectMode redirect_mode;

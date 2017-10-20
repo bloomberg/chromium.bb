@@ -5,14 +5,14 @@
 #ifndef STORAGE_BROWSER_TEST_MOCK_BYTES_PROVIDER_H_
 #define STORAGE_BROWSER_TEST_MOCK_BYTES_PROVIDER_H_
 
-#include "storage/public/interfaces/blobs.mojom.h"
+#include "third_party/WebKit/common/blob/blob_registry.mojom.h"
 
 namespace storage {
 
 // Mock BytesProvider implementation. RequestAsStream blocks, so make sure to
 // bind this implementation to a pipe on a separate sequence from where the
 // bytes are consumed.
-class MockBytesProvider : public mojom::BytesProvider {
+class MockBytesProvider : public blink::mojom::BytesProvider {
  public:
   explicit MockBytesProvider(
       std::vector<uint8_t> data,

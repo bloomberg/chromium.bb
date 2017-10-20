@@ -11,7 +11,7 @@ module indexed_db.mojom;
 import "mojo/common/file_path.mojom";
 import "mojo/common/string16.mojom";
 import "mojo/common/time.mojom";
-import "storage/public/interfaces/blobs.mojom";
+import "third_party/WebKit/common/blob/blob.mojom";
 import "url/mojo/origin.mojom";
 
 enum CursorDirection {
@@ -137,7 +137,7 @@ struct FileInfo {
 };
 
 struct BlobInfo {
-  storage.mojom.Blob? blob;
+  blink.mojom.Blob? blob;
   string uuid;
   mojo.common.mojom.String16 mime_type;
   int64 size;

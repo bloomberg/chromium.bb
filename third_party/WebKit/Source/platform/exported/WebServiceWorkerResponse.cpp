@@ -118,8 +118,8 @@ void WebServiceWorkerResponse::SetBlob(
     mojo::ScopedMessagePipeHandle blob_pipe) {
   private_->blob_data_handle = BlobDataHandle::Create(
       uuid, String(), size,
-      storage::mojom::blink::BlobPtrInfo(
-          std::move(blob_pipe), storage::mojom::blink::Blob::Version_));
+      mojom::blink::BlobPtrInfo(std::move(blob_pipe),
+                                mojom::blink::Blob::Version_));
 }
 
 WebString WebServiceWorkerResponse::BlobUUID() const {

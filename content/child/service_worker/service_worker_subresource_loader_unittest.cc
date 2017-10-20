@@ -281,7 +281,7 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
     ServiceWorkerSubresourceLoaderFactory loader_factory(
         controller_connector_, loader_factory_getter_, request->url.GetOrigin(),
         base::MakeRefCounted<
-            base::RefCountedData<storage::mojom::BlobRegistryPtr>>());
+            base::RefCountedData<blink::mojom::BlobRegistryPtr>>());
     loader_factory.CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), 0, 0, mojom::kURLLoadOptionNone,
         *request, url_loader_client_->CreateInterfacePtr(),

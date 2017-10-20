@@ -9,14 +9,14 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/public/interfaces/blobs.mojom.h"
+#include "third_party/WebKit/common/blob/blob_registry.mojom.h"
 
 namespace storage {
 
 class BlobStorageContext;
 class FileSystemURL;
 
-class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
+class STORAGE_EXPORT BlobRegistryImpl : public blink::mojom::BlobRegistry {
  public:
   // Per binding delegate, used for security checks for requests coming in on
   // specific bindings/from specific processes.
@@ -32,19 +32,19 @@ class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
                    scoped_refptr<FileSystemContext> file_system_context);
   ~BlobRegistryImpl() override;
 
-  void Bind(mojom::BlobRegistryRequest request,
+  void Bind(blink::mojom::BlobRegistryRequest request,
             std::unique_ptr<Delegate> delegate);
 
-  void Register(mojom::BlobRequest blob,
+  void Register(blink::mojom::BlobRequest blob,
                 const std::string& uuid,
                 const std::string& content_type,
                 const std::string& content_disposition,
-                std::vector<mojom::DataElementPtr> elements,
+                std::vector<blink::mojom::DataElementPtr> elements,
                 RegisterCallback callback) override;
-  void GetBlobFromUUID(mojom::BlobRequest blob,
+  void GetBlobFromUUID(blink::mojom::BlobRequest blob,
                        const std::string& uuid) override;
 
-  void RegisterURL(mojom::BlobPtr blob,
+  void RegisterURL(blink::mojom::BlobPtr blob,
                    const GURL& url,
                    RegisterURLCallback callback) override;
 
@@ -54,7 +54,7 @@ class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
 
  private:
   void RegisterURLWithUUID(const GURL& url,
-                           mojom::BlobPtr blob,
+                           blink::mojom::BlobPtr blob,
                            RegisterURLCallback callback,
                            const std::string& uuid);
 
@@ -63,7 +63,8 @@ class STORAGE_EXPORT BlobRegistryImpl : public mojom::BlobRegistry {
   BlobStorageContext* context_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
-  mojo::BindingSet<mojom::BlobRegistry, std::unique_ptr<Delegate>> bindings_;
+  mojo::BindingSet<blink::mojom::BlobRegistry, std::unique_ptr<Delegate>>
+      bindings_;
 
   std::map<std::string, std::unique_ptr<BlobUnderConstruction>>
       blobs_under_construction_;

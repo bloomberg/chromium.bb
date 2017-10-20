@@ -14,7 +14,7 @@ namespace {
 class ReaderDelegate : public MojoBlobReader::Delegate {
  public:
   ReaderDelegate(mojo::ScopedDataPipeProducerHandle handle,
-                 mojom::BlobReaderClientPtr client)
+                 blink::mojom::BlobReaderClientPtr client)
       : handle_(std::move(handle)), client_(std::move(client)) {}
 
   mojo::ScopedDataPipeProducerHandle PassDataPipe() override {
@@ -36,26 +36,26 @@ class ReaderDelegate : public MojoBlobReader::Delegate {
 
  private:
   mojo::ScopedDataPipeProducerHandle handle_;
-  mojom::BlobReaderClientPtr client_;
+  blink::mojom::BlobReaderClientPtr client_;
 };
 
 }  // namespace
 
 // static
 base::WeakPtr<BlobImpl> BlobImpl::Create(std::unique_ptr<BlobDataHandle> handle,
-                                         mojom::BlobRequest request) {
+                                         blink::mojom::BlobRequest request) {
   return (new BlobImpl(std::move(handle), std::move(request)))
       ->weak_ptr_factory_.GetWeakPtr();
 }
 
-void BlobImpl::Clone(mojom::BlobRequest request) {
+void BlobImpl::Clone(blink::mojom::BlobRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void BlobImpl::ReadRange(uint64_t offset,
                          uint64_t length,
                          mojo::ScopedDataPipeProducerHandle handle,
-                         mojom::BlobReaderClientPtr client) {
+                         blink::mojom::BlobReaderClientPtr client) {
   MojoBlobReader::Create(
       nullptr, handle_.get(),
       net::HttpByteRange::Bounded(offset, offset + length - 1),
@@ -63,7 +63,7 @@ void BlobImpl::ReadRange(uint64_t offset,
 }
 
 void BlobImpl::ReadAll(mojo::ScopedDataPipeProducerHandle handle,
-                       mojom::BlobReaderClientPtr client) {
+                       blink::mojom::BlobReaderClientPtr client) {
   MojoBlobReader::Create(
       nullptr, handle_.get(), net::HttpByteRange(),
       base::MakeUnique<ReaderDelegate>(std::move(handle), std::move(client)));
@@ -80,7 +80,7 @@ void BlobImpl::FlushForTesting() {
 }
 
 BlobImpl::BlobImpl(std::unique_ptr<BlobDataHandle> handle,
-                   mojom::BlobRequest request)
+                   blink::mojom::BlobRequest request)
     : handle_(std::move(handle)), weak_ptr_factory_(this) {
   DCHECK(handle_);
   bindings_.AddBinding(this, std::move(request));

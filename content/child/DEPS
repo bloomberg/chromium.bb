@@ -12,7 +12,6 @@ include_rules = [
   "+services/device/public/interfaces",
   "+services/resource_coordinator",
   "+services/service_manager",
-  "+storage/public/interfaces",
   "+third_party/WebKit/common",
   "+v8/include/v8.h"
 ]

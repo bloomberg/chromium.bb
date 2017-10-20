@@ -46,6 +46,7 @@ component("blink_common") {
 
   public_deps = [
     ":mojo_bindings",
+    ":mojo_platform_bindings",
   ]
 
   deps = [
@@ -82,12 +83,47 @@ test("blink_common_unittests") {
   ]
 }
 
-mojom("mojo_bindings") {
-  visibility = [ "//third_party/WebKit/*" ]
+# This target includes all mojom interfaces which can be used from
+# Source/platform. In particular these mojom interfaces can't use types that
+# are typemapped to a type in Source/core.
+mojom("mojo_platform_bindings") {
+  sources = [
+    "blob/blob.mojom",
+    "blob/blob_registry.mojom",
+    "blob/size_getter.mojom",
+  ]
 
+  public_deps = [
+    "//mojo/common:common_custom_types",
+    "//url/mojo:url_mojom_gurl",
+  ]
+
+  export_class_attribute = "BLINK_COMMON_EXPORT"
+  export_define = "BLINK_COMMON_IMPLEMENTATION=1"
+  export_header = "third_party/WebKit/common/common_export.h"
+
+  export_class_attribute_blink = "PLATFORM_EXPORT"
+  export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+  export_header_blink = "third_party/WebKit/Source/platform/PlatformExport.h"
+}
+
+# This target can include mojom interfaces which do use types that are
+# typemapped to a type in Source/core. This also means these interfaces are not
+# available from Source/platform.
+mojom("mojo_bindings") {
   sources = [
     "message_port/message_port.mojom",
   ]
+
+  public_deps = [
+    ":mojo_platform_bindings",
+  ]
+
+  overridden_deps = [ ":mojo_platform_bindings" ]
+  component_deps = []
+
+  overridden_deps_blink = [ ":mojo_platform_bindings" ]
+  component_deps_blink = [ "//third_party/WebKit/Source/platform" ]
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
   export_define = "BLINK_COMMON_IMPLEMENTATION=1"

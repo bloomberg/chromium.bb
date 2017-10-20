@@ -339,8 +339,8 @@ void WebIDBDatabaseImpl::Put(long long transaction_id,
     blob_info->uuid = info.Uuid().Latin1();
     DCHECK(blob_info->uuid.size());
     blob_info->mime_type = info.GetType().Utf16();
-    blob_info->blob.Bind(storage::mojom::BlobPtrInfo(
-        info.CloneBlobHandle(), storage::mojom::Blob::Version_));
+    blob_info->blob.Bind(blink::mojom::BlobPtrInfo(
+        info.CloneBlobHandle(), blink::mojom::Blob::Version_));
     mojo_value->blob_or_file_info.push_back(std::move(blob_info));
   }
 

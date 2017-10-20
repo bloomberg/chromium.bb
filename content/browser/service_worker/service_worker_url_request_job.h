@@ -178,7 +178,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
       ServiceWorkerFetchEventResult fetch_result,
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      storage::mojom::BlobPtr body_as_blob,
+      blink::mojom::BlobPtr body_as_blob,
       const scoped_refptr<ServiceWorkerVersion>& version);
   void SetResponse(const ServiceWorkerResponse& response);
 
