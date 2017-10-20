@@ -167,10 +167,10 @@ class PDFEngine {
       int start_index;
       int length;
     };
-    virtual void SearchString(const base::char16* string,
-                              const base::char16* term,
-                              bool case_sensitive,
-                              std::vector<SearchStringResult>* results) = 0;
+    virtual std::vector<SearchStringResult> SearchString(
+        const base::char16* string,
+        const base::char16* term,
+        bool case_sensitive) = 0;
 
     // Notifies the client that the engine has painted a page from the document.
     virtual void DocumentPaintOccurred() = 0;

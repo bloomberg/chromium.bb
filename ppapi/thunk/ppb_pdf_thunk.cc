@@ -49,7 +49,7 @@ void SearchString(PP_Instance instance,
                   const unsigned short* term,
                   bool case_sensitive,
                   PP_PrivateFindResult** results,
-                  int* count) {
+                  uint32_t* count) {
   EnterInstanceAPI<PPB_PDF_API> enter(instance);
   if (enter.failed())
     return;

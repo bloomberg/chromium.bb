@@ -17,7 +17,7 @@ class PPB_PDF_API {
                             const unsigned short* input_term,
                             bool case_sensitive,
                             PP_PrivateFindResult** results,
-                            int* count) = 0;
+                            uint32_t* count) = 0;
   virtual void DidStartLoading() = 0;
   virtual void DidStopLoading() = 0;
   virtual void SetContentRestriction(int restrictions) = 0;

@@ -37,7 +37,7 @@ class PPAPI_PROXY_EXPORT PDFResource
                     const unsigned short* input_term,
                     bool case_sensitive,
                     PP_PrivateFindResult** results,
-                    int* count) override;
+                    uint32_t* count) override;
   void DidStartLoading() override;
   void DidStopLoading() override;
   void SetContentRestriction(int restrictions) override;

@@ -2325,9 +2325,8 @@ void PDFiumEngine::SearchUsingICU(const base::string16& term,
                                  text_length + 1, data);
   api_string_adapter.Close(written);
 
-  std::vector<PDFEngine::Client::SearchStringResult> results;
-  client_->SearchString(page_text.c_str(), term.c_str(), case_sensitive,
-                        &results);
+  std::vector<PDFEngine::Client::SearchStringResult> results =
+      client_->SearchString(page_text.c_str(), term.c_str(), case_sensitive);
   for (const auto& result : results) {
     // Need to map the indexes from the page text, which may have generated
     // characters like space etc, to character indices from the page.

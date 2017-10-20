@@ -30,8 +30,8 @@ typedef PluginProxyTest PDFResourceTest;
 TEST_F(PDFResourceTest, SearchString) {
   ProxyAutoLock lock;
   // Instantiate a resource explicitly so we can specify the locale.
-  scoped_refptr<PDFResource> pdf_resource(
-      new PDFResource(Connection(&sink(), &sink(), 0), pp_instance()));
+  auto pdf_resource = base::MakeRefCounted<PDFResource>(
+      Connection(&sink(), &sink(), 0), pp_instance());
   pdf_resource->SetLocaleForTest("en-US");
 
   base::string16 input;
@@ -40,7 +40,7 @@ TEST_F(PDFResourceTest, SearchString) {
   base::UTF8ToUTF16("bc", 2, &term);
 
   PP_PrivateFindResult* results;
-  int count = 0;
+  uint32_t count = 0;
   pdf_resource->SearchString(
       reinterpret_cast<const unsigned short*>(input.c_str()),
       reinterpret_cast<const unsigned short*>(term.c_str()),
@@ -48,7 +48,7 @@ TEST_F(PDFResourceTest, SearchString) {
       &results,
       &count);
 
-  ASSERT_EQ(2, count);
+  ASSERT_EQ(2U, count);
   ASSERT_EQ(1, results[0].start_index);
   ASSERT_EQ(2, results[0].length);
   ASSERT_EQ(7, results[1].start_index);

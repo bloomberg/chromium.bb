@@ -116,11 +116,12 @@ void PreviewModeClient::ScheduleTouchTimerCallback(int id,
   NOTREACHED();
 }
 
-void PreviewModeClient::SearchString(const base::char16* string,
-                                     const base::char16* term,
-                                     bool case_sensitive,
-                                     std::vector<SearchStringResult>* results) {
+std::vector<PDFEngine::Client::SearchStringResult>
+PreviewModeClient::SearchString(const base::char16* string,
+                                const base::char16* term,
+                                bool case_sensitive) {
   NOTREACHED();
+  return std::vector<SearchStringResult>();
 }
 
 void PreviewModeClient::DocumentPaintOccurred() {
