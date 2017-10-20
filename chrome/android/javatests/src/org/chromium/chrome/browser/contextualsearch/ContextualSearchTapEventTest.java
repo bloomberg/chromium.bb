@@ -281,7 +281,7 @@ public class ContextualSearchTapEventTest {
     }
 
     /**
-     * Tests that a Tap gesture followed by tapping empty space closes the panel.
+     * Tests that a Long-press gesture followed by tapping empty space closes the panel.
      */
     @Test
     @SmallTest
@@ -355,5 +355,27 @@ public class ContextualSearchTapEventTest {
         generateSelectWordAroundCaretAck();
         Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
         Assert.assertEquals(mPanelManager.getPanelHideCount(), 0);
+    }
+
+    /**
+     * Tests that a Long-press gesture suppresses the panel when Smart Selection is enabled.
+     */
+    @Test
+    @SmallTest
+    @Feature({"ContextualSearch"})
+    @Restriction(Restriction.RESTRICTION_TYPE_NON_LOW_END_DEVICE)
+    public void testLongpressWithSmartSelectionSuppresses() {
+        Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
+
+        // Tell the ContextualSearchManager that Smart Selection is enabled.
+        mContextualSearchManager.suppressContextualSearchForSmartSelection(true);
+
+        // Fake a selection event.
+        mockLongpressText("text");
+        // Generate the surrounding-text-available callback.
+        // Surrounding text is gathered for longpress due to icing integration.
+        generateTextSurroundingSelectionAvailable();
+
+        Assert.assertEquals(mPanelManager.getRequestPanelShowCount(), 0);
     }
 }

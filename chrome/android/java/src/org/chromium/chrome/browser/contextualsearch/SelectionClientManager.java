@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.contextualsearch;
 
 import android.support.annotation.Nullable;
+import android.support.annotation.VisibleForTesting;
 import android.view.textclassifier.TextClassifier;
 
 import org.chromium.content.browser.ContentViewCore;
@@ -47,6 +48,13 @@ public class SelectionClientManager {
             contentViewCore.setSelectionClient(mOptionalSelectionClient);
         }
         mIsSmartSelectionEnabledInChrome = mOptionalSelectionClient != null;
+    }
+
+    @VisibleForTesting
+    /** Test-only constructor. */
+    SelectionClientManager(SelectionClient optionalSelectionClient, boolean enableSmartSelection) {
+        mOptionalSelectionClient = optionalSelectionClient;
+        mIsSmartSelectionEnabledInChrome = enableSmartSelection;
     }
 
     /** @return Whether Smart Text Selection is currently enabled in Chrome. */

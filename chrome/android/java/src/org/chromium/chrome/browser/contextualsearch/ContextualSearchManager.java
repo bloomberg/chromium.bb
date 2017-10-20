@@ -1246,7 +1246,7 @@ public class ContextualSearchManager
     /**
      * Notifies Contextual Search whether the UI should be suppressed for Smart Selection.
      */
-    public void suppressContextualSearchForSmartSelection(boolean isSmartSelectionEnabled) {
+    void suppressContextualSearchForSmartSelection(boolean isSmartSelectionEnabled) {
         mDoSuppressContextualSearchForSmartSelection = isSmartSelectionEnabled;
     }
 
