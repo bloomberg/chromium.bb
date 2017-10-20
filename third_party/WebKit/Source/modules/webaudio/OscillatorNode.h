@@ -48,12 +48,12 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   // These must be defined as in the .idl file.
   enum { SINE = 0, SQUARE = 1, SAWTOOTH = 2, TRIANGLE = 3, CUSTOM = 4 };
 
-  static RefPtr<OscillatorHandler> Create(AudioNode&,
-                                          float sample_rate,
-                                          const String& oscillator_type,
-                                          PeriodicWave* wave_table,
-                                          AudioParamHandler& frequency,
-                                          AudioParamHandler& detune);
+  static scoped_refptr<OscillatorHandler> Create(AudioNode&,
+                                                 float sample_rate,
+                                                 const String& oscillator_type,
+                                                 PeriodicWave* wave_table,
+                                                 AudioParamHandler& frequency,
+                                                 AudioParamHandler& detune);
   ~OscillatorHandler() override;
 
   // AudioHandler
@@ -82,10 +82,10 @@ class OscillatorHandler final : public AudioScheduledSourceHandler {
   unsigned short type_;
 
   // Frequency value in Hertz.
-  RefPtr<AudioParamHandler> frequency_;
+  scoped_refptr<AudioParamHandler> frequency_;
 
   // Detune value (deviating from the frequency) in Cents.
-  RefPtr<AudioParamHandler> detune_;
+  scoped_refptr<AudioParamHandler> detune_;
 
   bool first_render_;
 

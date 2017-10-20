@@ -190,7 +190,7 @@ class AudioListener : public GarbageCollectedFinalized<AudioListener>,
   // unregisters it from m_panners.
   HashSet<PannerHandler*> panners_;
   // HRTF DB loader for panner node.
-  RefPtr<HRTFDatabaseLoader> hrtf_database_loader_;
+  scoped_refptr<HRTFDatabaseLoader> hrtf_database_loader_;
 };
 
 }  // namespace blink

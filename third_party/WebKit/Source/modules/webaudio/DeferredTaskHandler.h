@@ -59,7 +59,7 @@ class AudioSummingJunction;
 class MODULES_EXPORT DeferredTaskHandler final
     : public ThreadSafeRefCounted<DeferredTaskHandler> {
  public:
-  static RefPtr<DeferredTaskHandler> Create();
+  static scoped_refptr<DeferredTaskHandler> Create();
   ~DeferredTaskHandler();
 
   void HandleDeferredTasks();
@@ -99,7 +99,7 @@ class MODULES_EXPORT DeferredTaskHandler final
   void AddDeferredBreakConnection(AudioHandler&);
   void BreakConnections();
 
-  void AddRenderingOrphanHandler(RefPtr<AudioHandler>);
+  void AddRenderingOrphanHandler(scoped_refptr<AudioHandler>);
   void RequestToDeleteHandlersOnMainThread();
   void ClearHandlersToBeDeleted();
 
@@ -194,8 +194,8 @@ class MODULES_EXPORT DeferredTaskHandler final
   // Only accessed in the audio thread.
   Vector<AudioHandler*> deferred_break_connection_list_;
 
-  Vector<RefPtr<AudioHandler>> rendering_orphan_handlers_;
-  Vector<RefPtr<AudioHandler>> deletable_orphan_handlers_;
+  Vector<scoped_refptr<AudioHandler>> rendering_orphan_handlers_;
+  Vector<scoped_refptr<AudioHandler>> deletable_orphan_handlers_;
 
   // Graph locking.
   RecursiveMutex context_graph_mutex_;

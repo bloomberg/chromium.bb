@@ -548,7 +548,7 @@ void AudioNode::Dispose() {
   }
 }
 
-void AudioNode::SetHandler(RefPtr<AudioHandler> handler) {
+void AudioNode::SetHandler(scoped_refptr<AudioHandler> handler) {
   DCHECK(handler);
   handler_ = std::move(handler);
 

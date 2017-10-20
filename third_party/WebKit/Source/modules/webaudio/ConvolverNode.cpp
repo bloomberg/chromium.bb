@@ -58,8 +58,8 @@ ConvolverHandler::ConvolverHandler(AudioNode& node, float sample_rate)
   Initialize();
 }
 
-RefPtr<ConvolverHandler> ConvolverHandler::Create(AudioNode& node,
-                                                  float sample_rate) {
+scoped_refptr<ConvolverHandler> ConvolverHandler::Create(AudioNode& node,
+                                                         float sample_rate) {
   return WTF::AdoptRef(new ConvolverHandler(node, sample_rate));
 }
 
@@ -128,7 +128,7 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   // Wrap the AudioBuffer by an AudioBus. It's an efficient pointer set and not
   // a memcpy().  This memory is simply used in the Reverb constructor and no
   // reference to it is kept for later use in that class.
-  RefPtr<AudioBus> buffer_bus =
+  scoped_refptr<AudioBus> buffer_bus =
       AudioBus::Create(number_of_channels, buffer_length, false);
   for (unsigned i = 0; i < number_of_channels; ++i)
     buffer_bus->SetChannelMemory(i, buffer->getChannelData(i).View()->Data(),

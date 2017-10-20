@@ -51,7 +51,7 @@ class DelayProcessor final : public AudioDSPKernelProcessor {
   double MaxDelayTime() { return max_delay_time_; }
 
  private:
-  RefPtr<AudioParamHandler> delay_time_;
+  scoped_refptr<AudioParamHandler> delay_time_;
   double max_delay_time_;
 };
 

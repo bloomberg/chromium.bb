@@ -256,7 +256,8 @@ void AudioParamHandler::CalculateFinalValues(float* values,
   // Now sum all of the audio-rate connections together (unity-gain summing
   // junction).  Note that connections would normally be mono, but we mix down
   // to mono if necessary.
-  RefPtr<AudioBus> summing_bus = AudioBus::Create(1, number_of_values, false);
+  scoped_refptr<AudioBus> summing_bus =
+      AudioBus::Create(1, number_of_values, false);
   summing_bus->SetChannelMemory(0, values, number_of_values);
 
   for (unsigned i = 0; i < NumberOfRenderingConnections(); ++i) {

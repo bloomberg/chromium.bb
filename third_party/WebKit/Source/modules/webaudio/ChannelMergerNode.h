@@ -39,9 +39,9 @@ class ChannelMergerOptions;
 
 class ChannelMergerHandler final : public AudioHandler {
  public:
-  static RefPtr<ChannelMergerHandler> Create(AudioNode&,
-                                             float sample_rate,
-                                             unsigned number_of_inputs);
+  static scoped_refptr<ChannelMergerHandler> Create(AudioNode&,
+                                                    float sample_rate,
+                                                    unsigned number_of_inputs);
 
   void Process(size_t frames_to_process) override;
   void SetChannelCount(unsigned long, ExceptionState&) final;

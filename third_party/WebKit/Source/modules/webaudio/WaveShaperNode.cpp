@@ -115,7 +115,7 @@ NotShared<DOMFloat32Array> WaveShaperNode::curve() {
     return NotShared<DOMFloat32Array>(nullptr);
 
   unsigned size = curve->size();
-  RefPtr<WTF::Float32Array> new_curve = WTF::Float32Array::Create(size);
+  scoped_refptr<WTF::Float32Array> new_curve = WTF::Float32Array::Create(size);
 
   memcpy(new_curve->Data(), curve->data(), sizeof(float) * size);
 

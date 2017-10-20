@@ -31,7 +31,7 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   static AudioWorkletGlobalScope* Create(
       const KURL&,
       const String& user_agent,
-      RefPtr<SecurityOrigin> document_security_origin,
+      scoped_refptr<SecurityOrigin> document_security_origin,
       v8::Isolate*,
       WorkerThread*,
       WorkerClients*);
@@ -70,12 +70,13 @@ class MODULES_EXPORT AudioWorkletGlobalScope final
   void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
-  AudioWorkletGlobalScope(const KURL&,
-                          const String& user_agent,
-                          RefPtr<SecurityOrigin> document_security_origin,
-                          v8::Isolate*,
-                          WorkerThread*,
-                          WorkerClients*);
+  AudioWorkletGlobalScope(
+      const KURL&,
+      const String& user_agent,
+      scoped_refptr<SecurityOrigin> document_security_origin,
+      v8::Isolate*,
+      WorkerThread*,
+      WorkerClients*);
 
   typedef HeapHashMap<String,
                       TraceWrapperMember<AudioWorkletProcessorDefinition>>

@@ -68,7 +68,7 @@ class AudioSummingJunction {
  protected:
   explicit AudioSummingJunction(DeferredTaskHandler&);
 
-  RefPtr<DeferredTaskHandler> deferred_task_handler_;
+  scoped_refptr<DeferredTaskHandler> deferred_task_handler_;
 
   // m_outputs contains the AudioNodeOutputs representing current connections
   // which are not disabled.  The rendering code should never use this

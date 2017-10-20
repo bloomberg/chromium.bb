@@ -21,9 +21,9 @@ class StereoPannerOptions;
 // specifically designed for equal-power stereo panning.
 class StereoPannerHandler final : public AudioHandler {
  public:
-  static RefPtr<StereoPannerHandler> Create(AudioNode&,
-                                            float sample_rate,
-                                            AudioParamHandler& pan);
+  static scoped_refptr<StereoPannerHandler> Create(AudioNode&,
+                                                   float sample_rate,
+                                                   AudioParamHandler& pan);
   ~StereoPannerHandler() override;
 
   void Process(size_t frames_to_process) override;
@@ -41,7 +41,7 @@ class StereoPannerHandler final : public AudioHandler {
   StereoPannerHandler(AudioNode&, float sample_rate, AudioParamHandler& pan);
 
   std::unique_ptr<StereoPanner> stereo_panner_;
-  RefPtr<AudioParamHandler> pan_;
+  scoped_refptr<AudioParamHandler> pan_;
 
   AudioFloatArray sample_accurate_pan_values_;
 

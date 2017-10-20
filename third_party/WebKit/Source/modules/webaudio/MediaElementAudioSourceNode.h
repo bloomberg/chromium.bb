@@ -41,8 +41,9 @@ class MediaElementAudioSourceOptions;
 
 class MediaElementAudioSourceHandler final : public AudioHandler {
  public:
-  static RefPtr<MediaElementAudioSourceHandler> Create(AudioNode&,
-                                                       HTMLMediaElement&);
+  static scoped_refptr<MediaElementAudioSourceHandler> Create(
+      AudioNode&,
+      HTMLMediaElement&);
   ~MediaElementAudioSourceHandler() override;
 
   HTMLMediaElement* MediaElement() const;

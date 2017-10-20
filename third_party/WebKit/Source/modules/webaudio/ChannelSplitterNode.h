@@ -36,9 +36,8 @@ class ChannelSplitterOptions;
 
 class ChannelSplitterHandler final : public AudioHandler {
  public:
-  static RefPtr<ChannelSplitterHandler> Create(AudioNode&,
-                                               float sample_rate,
-                                               unsigned number_of_outputs);
+  static scoped_refptr<ChannelSplitterHandler>
+  Create(AudioNode&, float sample_rate, unsigned number_of_outputs);
 
   // AudioHandler
   void Process(size_t frames_to_process) override;

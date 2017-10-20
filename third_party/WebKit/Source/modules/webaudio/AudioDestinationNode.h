@@ -108,7 +108,7 @@ class AudioDestinationHandler : public AudioHandler, public AudioIOCallback {
     }
 
    private:
-    RefPtr<AudioBus> source_bus_;
+    scoped_refptr<AudioBus> source_bus_;
   };
 
   // Counts the number of sample-frames processed by the destination.

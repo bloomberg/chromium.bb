@@ -40,13 +40,14 @@ class DynamicsCompressorOptions;
 
 class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
  public:
-  static RefPtr<DynamicsCompressorHandler> Create(AudioNode&,
-                                                  float sample_rate,
-                                                  AudioParamHandler& threshold,
-                                                  AudioParamHandler& knee,
-                                                  AudioParamHandler& ratio,
-                                                  AudioParamHandler& attack,
-                                                  AudioParamHandler& release);
+  static scoped_refptr<DynamicsCompressorHandler> Create(
+      AudioNode&,
+      float sample_rate,
+      AudioParamHandler& threshold,
+      AudioParamHandler& knee,
+      AudioParamHandler& ratio,
+      AudioParamHandler& attack,
+      AudioParamHandler& release);
 
   ~DynamicsCompressorHandler();
 
@@ -73,12 +74,12 @@ class MODULES_EXPORT DynamicsCompressorHandler final : public AudioHandler {
   double LatencyTime() const override;
 
   std::unique_ptr<DynamicsCompressor> dynamics_compressor_;
-  RefPtr<AudioParamHandler> threshold_;
-  RefPtr<AudioParamHandler> knee_;
-  RefPtr<AudioParamHandler> ratio_;
+  scoped_refptr<AudioParamHandler> threshold_;
+  scoped_refptr<AudioParamHandler> knee_;
+  scoped_refptr<AudioParamHandler> ratio_;
   float reduction_;
-  RefPtr<AudioParamHandler> attack_;
-  RefPtr<AudioParamHandler> release_;
+  scoped_refptr<AudioParamHandler> attack_;
+  scoped_refptr<AudioParamHandler> release_;
 
   FRIEND_TEST_ALL_PREFIXES(DynamicsCompressorNodeTest, ProcessorLifetime);
 };

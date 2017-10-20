@@ -109,7 +109,7 @@ class AudioNodeInput final : public AudioSummingJunction {
   AudioBus* InternalSummingBus();
   void SumAllConnections(AudioBus* summing_bus, size_t frames_to_process);
 
-  RefPtr<AudioBus> internal_summing_bus_;
+  scoped_refptr<AudioBus> internal_summing_bus_;
 };
 
 }  // namespace blink

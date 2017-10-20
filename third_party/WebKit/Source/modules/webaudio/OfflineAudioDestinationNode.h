@@ -41,7 +41,7 @@ class OfflineAudioContext;
 
 class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
  public:
-  static RefPtr<OfflineAudioDestinationHandler> Create(
+  static scoped_refptr<OfflineAudioDestinationHandler> Create(
       AudioNode&,
       unsigned number_of_channels,
       size_t frames_to_process,
@@ -132,7 +132,7 @@ class OfflineAudioDestinationHandler final : public AudioDestinationHandler {
   // OfflineAudioDestinationNode. It is accessed by both audio and main thread.
   CrossThreadPersistent<AudioBuffer> render_target_;
   // Temporary AudioBus for each render quantum.
-  RefPtr<AudioBus> render_bus_;
+  scoped_refptr<AudioBus> render_bus_;
 
   // Rendering thread.
   std::unique_ptr<WebThread> render_thread_;

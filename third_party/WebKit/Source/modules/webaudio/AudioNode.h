@@ -352,7 +352,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
  protected:
   explicit AudioNode(BaseAudioContext&);
   // This should be called in a constructor.
-  void SetHandler(RefPtr<AudioHandler>);
+  void SetHandler(scoped_refptr<AudioHandler>);
 
  private:
   void Dispose();
@@ -365,7 +365,7 @@ class MODULES_EXPORT AudioNode : public EventTargetWithInlineData {
   bool DisconnectFromOutputIfConnected(unsigned output_index, AudioParam&);
 
   Member<BaseAudioContext> context_;
-  RefPtr<AudioHandler> handler_;
+  scoped_refptr<AudioHandler> handler_;
   // Represents audio node graph with Oilpan references. N-th HeapHashSet
   // represents a set of AudioNode objects connected to this AudioNode's N-th
   // output.

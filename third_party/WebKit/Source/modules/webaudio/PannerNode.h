@@ -59,14 +59,14 @@ class PannerHandler final : public AudioHandler {
     kDistanceConeGainDirty = 0x2,
   };
 
-  static RefPtr<PannerHandler> Create(AudioNode&,
-                                      float sample_rate,
-                                      AudioParamHandler& position_x,
-                                      AudioParamHandler& position_y,
-                                      AudioParamHandler& position_z,
-                                      AudioParamHandler& orientation_x,
-                                      AudioParamHandler& orientation_y,
-                                      AudioParamHandler& orientation_z);
+  static scoped_refptr<PannerHandler> Create(AudioNode&,
+                                             float sample_rate,
+                                             AudioParamHandler& position_x,
+                                             AudioParamHandler& position_y,
+                                             AudioParamHandler& position_z,
+                                             AudioParamHandler& orientation_x,
+                                             AudioParamHandler& orientation_y,
+                                             AudioParamHandler& orientation_z);
 
   ~PannerHandler() override;
 
@@ -188,13 +188,13 @@ class PannerHandler final : public AudioHandler {
   // True if any of this panner's AudioParams have automations.
   bool HasSampleAccurateValues() const;
 
-  RefPtr<AudioParamHandler> position_x_;
-  RefPtr<AudioParamHandler> position_y_;
-  RefPtr<AudioParamHandler> position_z_;
+  scoped_refptr<AudioParamHandler> position_x_;
+  scoped_refptr<AudioParamHandler> position_y_;
+  scoped_refptr<AudioParamHandler> position_z_;
 
-  RefPtr<AudioParamHandler> orientation_x_;
-  RefPtr<AudioParamHandler> orientation_y_;
-  RefPtr<AudioParamHandler> orientation_z_;
+  scoped_refptr<AudioParamHandler> orientation_x_;
+  scoped_refptr<AudioParamHandler> orientation_y_;
+  scoped_refptr<AudioParamHandler> orientation_z_;
 
   FloatPoint3D last_position_;
   FloatPoint3D last_orientation_;

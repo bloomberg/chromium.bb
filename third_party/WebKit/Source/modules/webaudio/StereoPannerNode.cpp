@@ -34,7 +34,7 @@ StereoPannerHandler::StereoPannerHandler(AudioNode& node,
   Initialize();
 }
 
-RefPtr<StereoPannerHandler> StereoPannerHandler::Create(
+scoped_refptr<StereoPannerHandler> StereoPannerHandler::Create(
     AudioNode& node,
     float sample_rate,
     AudioParamHandler& pan) {
