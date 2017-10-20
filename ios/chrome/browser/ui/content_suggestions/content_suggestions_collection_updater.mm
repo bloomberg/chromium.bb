@@ -204,12 +204,21 @@ NSString* const kContentSuggestionsCollectionUpdaterSnackbarCategory =
 
   if (forceReload && [model hasSectionForSectionIdentifier:sectionIdentifier]) {
     NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
-    NSInteger numberOfItem = [model numberOfItemsInSection:section];
-    for (NSInteger i = 0; i < numberOfItem; i++) {
-      [self.collectionViewController
-          dismissEntryAtIndexPath:[NSIndexPath indexPathForItem:0
-                                                      inSection:section]];
+    NSInteger numberOfItems = [model numberOfItemsInSection:section];
+    NSMutableArray<NSIndexPath*>* indexesToDelete = [NSMutableArray array];
+    for (NSInteger i = 0; i < numberOfItems; i++) {
+      [indexesToDelete
+          addObject:[NSIndexPath indexPathForItem:i inSection:section]];
     }
+
+    UICollectionView* collection = self.collectionViewController.collectionView;
+    // Delete all the items manually to avoid adding an empty item.
+    [collection performBatchUpdates:^{
+      [self.collectionViewController collectionView:collection
+                        willDeleteItemsAtIndexPaths:indexesToDelete];
+      [collection deleteItemsAtIndexPaths:indexesToDelete];
+    }
+                         completion:nil];
   }
 
   if ([model hasSectionForSectionIdentifier:sectionIdentifier]) {
