@@ -230,6 +230,7 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
   std::unique_ptr<SimpleIndex> index_;
   const scoped_refptr<base::SequencedTaskRunner> cache_runner_;
   scoped_refptr<base::TaskRunner> worker_pool_;
+  base::ThreadCheckerImpl io_thread_checker_;
 
   int orig_max_size_;
   const SimpleEntryImpl::OperationsMode entry_operations_mode_;
