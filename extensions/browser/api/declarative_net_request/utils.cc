@@ -72,7 +72,7 @@ const ExtensionResource* GetRulesetResource(const Extension& extension) {
 
 // Helper to retrieve the filename of the JSON ruleset provided by |extension|.
 std::string GetJSONRulesetFilename(const Extension& extension) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return GetRulesetResource(extension)->GetFilePath().BaseName().AsUTF8Unsafe();
 }
 
@@ -82,7 +82,7 @@ ParseInfo IndexAndPersistRulesImpl(const base::ListValue& rules,
                                    const Extension& extension,
                                    std::vector<InstallWarning>* warnings,
                                    int* ruleset_checksum) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   FlatRulesetIndexer indexer;
   bool all_rules_parsed = true;
@@ -146,7 +146,7 @@ bool IndexAndPersistRules(const base::ListValue& rules,
   DCHECK(IsAPIAvailable());
   DCHECK(GetRulesetResource(extension));
   DCHECK(ruleset_checksum);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   const ParseInfo info =
       IndexAndPersistRulesImpl(rules, extension, warnings, ruleset_checksum);

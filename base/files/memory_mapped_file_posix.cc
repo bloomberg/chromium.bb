@@ -28,7 +28,7 @@ MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0) {
 bool MemoryMappedFile::MapFileRegionToMemory(
     const MemoryMappedFile::Region& region,
     Access access) {
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   off_t map_start = 0;
   size_t map_size = 0;
@@ -165,7 +165,7 @@ bool MemoryMappedFile::MapFileRegionToMemory(
 #endif
 
 void MemoryMappedFile::CloseHandles() {
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   if (data_ != NULL)
     munmap(data_, length_);

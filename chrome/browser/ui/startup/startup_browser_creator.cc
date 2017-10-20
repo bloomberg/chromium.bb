@@ -237,7 +237,7 @@ base::LazyInstance<ProfileLaunchObserver>::DestructorAtExit
 // The file is overwritten if it exists. This function should only be called in
 // the blocking pool.
 void DumpBrowserHistograms(const base::FilePath& output_file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::string output_string(base::StatisticsRecorder::ToJSON(std::string()));
   base::WriteFile(output_file, output_string.data(),

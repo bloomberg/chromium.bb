@@ -169,7 +169,7 @@ Process LaunchProcessPosixSpawn(const std::vector<std::string>& argv,
   if (options.wait) {
     // While this isn't strictly disk IO, waiting for another process to
     // finish is the sort of thing ThreadRestrictions is trying to prevent.
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
     pid_t ret = HANDLE_EINTR(waitpid(pid, nullptr, 0));
     DPCHECK(ret > 0);
   }

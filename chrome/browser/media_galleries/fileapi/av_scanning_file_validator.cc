@@ -30,7 +30,7 @@ namespace {
 
 #if defined(OS_WIN)
 base::File::Error ScanFile(const base::FilePath& dest_platform_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   Microsoft::WRL::ComPtr<IAttachmentExecute> attachment_services;
   HRESULT hr = ::CoCreateInstance(CLSID_AttachmentServices, nullptr, CLSCTX_ALL,

@@ -16,7 +16,7 @@ DummyMinidumpGenerator::DummyMinidumpGenerator(
 }
 
 bool DummyMinidumpGenerator::Generate(const std::string& minidump_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Return false if the file does not exist.
   if (!base::PathExists(base::FilePath(existing_minidump_path_))) {

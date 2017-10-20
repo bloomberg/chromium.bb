@@ -78,7 +78,7 @@ const wchar_t kShellExtensionRegistryKey[] =
 
 void EnumerateShellExtensionPaths(
     const base::RepeatingCallback<void(const base::FilePath&)>& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   int nb_shell_extensions = 0;
   ReadShellExtensions(HKEY_LOCAL_MACHINE, callback, &nb_shell_extensions);

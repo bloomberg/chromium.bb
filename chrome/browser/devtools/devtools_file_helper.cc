@@ -122,14 +122,14 @@ class SelectFileDialog : public ui::SelectFileDialog::Listener,
 };
 
 void WriteToFile(const base::FilePath& path, const std::string& content) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!path.empty());
 
   base::WriteFile(path, content.c_str(), content.length());
 }
 
 void AppendToFile(const base::FilePath& path, const std::string& content) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!path.empty());
 
   base::AppendToFile(path, content.c_str(), content.size());
@@ -323,7 +323,7 @@ void DevToolsFileHelper::CheckProjectFileExistsAndAddFileSystem(
     base::WeakPtr<DevToolsFileHelper> self,
     ShowInfoBarCallback show_info_bar_callback,
     base::FilePath path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (base::PathExists(path.Append(FILE_PATH_LITERAL(".devtools")))) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

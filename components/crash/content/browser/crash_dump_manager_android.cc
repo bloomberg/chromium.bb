@@ -39,7 +39,7 @@ CrashDumpManager::~CrashDumpManager() {}
 
 base::ScopedFD CrashDumpManager::CreateMinidumpFileForChild(
     int child_process_id) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath minidump_path;
   if (!base::CreateTemporaryFile(&minidump_path)) {
     LOG(ERROR) << "Failed to create temporary file, crash won't be reported.";
@@ -66,7 +66,7 @@ bool CrashDumpManager::ProcessMinidumpFileFromChild(
     content::ProcessType process_type,
     base::TerminationStatus termination_status,
     base::android::ApplicationState app_state) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   bool increase_crash_count = false;
   base::FilePath minidump_path;
   // If the minidump for a given child process has already been

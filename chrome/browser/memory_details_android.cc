@@ -108,7 +108,7 @@ ProcessData* MemoryDetails::ChromeBrowser() {
 
 void MemoryDetails::CollectProcessData(
     const std::vector<ProcessMemoryInformation>& chrome_processes) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::vector<ProcessMemoryInformation> all_processes(chrome_processes);
   AddNonChildChromeProcesses(&all_processes);

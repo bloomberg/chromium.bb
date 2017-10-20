@@ -24,7 +24,7 @@
 namespace {
 
 base::Optional<base::FilePath> SavePdf(base::File file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath file_path;
   base::CreateTemporaryFile(&file_path);

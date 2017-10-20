@@ -231,7 +231,7 @@ AntiVirusMetricsProvider::ResultCode
 AntiVirusMetricsProvider::FillAntiVirusProductsFromWSC(
     std::vector<AvProduct>* products) {
   std::vector<AvProduct> result_list;
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::win::ScopedCOMInitializer com_initializer;
 
   if (!com_initializer.succeeded())
@@ -332,7 +332,7 @@ AntiVirusMetricsProvider::ResultCode
 AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
     std::vector<AvProduct>* products) {
   std::vector<AvProduct> result_list;
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::win::ScopedCOMInitializer com_initializer;
 
   if (!com_initializer.succeeded())
@@ -469,7 +469,7 @@ AntiVirusMetricsProvider::FillAntiVirusProductsFromWMI(
 
 void AntiVirusMetricsProvider::MaybeAddUnregisteredAntiVirusProducts(
     std::vector<AvProduct>* products) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Trusteer Rapport does not register with WMI or Security Center so do some
   // "best efforts" detection here.

@@ -15,7 +15,7 @@ namespace {
 // Gets the version number to use for variations seed simulation. Must be called
 // on a thread where IO is allowed.
 base::Version GetVersionForSimulation() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return base::Version(version_info::GetVersionNumber());
 }
 

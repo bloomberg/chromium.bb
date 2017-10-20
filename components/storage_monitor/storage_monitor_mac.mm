@@ -52,7 +52,7 @@ StorageInfo::Type GetDeviceType(bool is_removable, bool has_dcim) {
 
 StorageInfo BuildStorageInfo(
     CFDictionaryRef dict, std::string* bsd_name) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   CFStringRef device_bsd_name = base::mac::GetValueFromDictionary<CFStringRef>(
       dict, kDADiskDescriptionMediaBSDNameKey);

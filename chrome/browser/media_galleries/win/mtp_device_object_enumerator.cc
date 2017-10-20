@@ -14,7 +14,7 @@ MTPDeviceObjectEnumerator::MTPDeviceObjectEnumerator(
     : object_entries_(entries),
       index_(0U),
       is_index_ready_(false) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 }
 
 MTPDeviceObjectEnumerator::~MTPDeviceObjectEnumerator() {

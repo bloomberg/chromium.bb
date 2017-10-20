@@ -217,7 +217,7 @@ SerialDeviceEnumeratorMac::~SerialDeviceEnumeratorMac() {}
 
 std::vector<mojom::SerialDeviceInfoPtr>
 SerialDeviceEnumeratorMac::GetDevices() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
   std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();

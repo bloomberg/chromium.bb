@@ -806,7 +806,7 @@ void Bus::AssertOnOriginThread() {
 }
 
 void Bus::AssertOnDBusThread() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (dbus_task_runner_) {
     DCHECK(dbus_task_runner_->RunsTasksInCurrentSequence());

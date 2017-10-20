@@ -102,7 +102,7 @@ UsbServiceLinux::FileThreadHelper::~FileThreadHelper() {
 // static
 void UsbServiceLinux::FileThreadHelper::Start() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   watcher_ = UdevWatcher::StartWatching(this);
   watcher_->EnumerateExistingDevices();

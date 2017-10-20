@@ -47,7 +47,7 @@ const char* const kNetDeviceNamePrefixes[] = {
 typedef std::map<base::FilePath, base::FilePath> DiskEntries;
 
 std::string GetDiskUuid() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   DiskEntries disk_uuids;
   base::FileEnumerator files(base::FilePath(kDiskByUuidDirectoryName),
@@ -151,7 +151,7 @@ class MacAddressProcessor {
 
 std::string GetMacAddress(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   struct ifaddrs* ifaddrs;
   int rv = getifaddrs(&ifaddrs);
@@ -173,7 +173,7 @@ std::string GetMacAddress(
 
 void GetRawDeviceIdImpl(const IsValidMacAddressCallback& is_valid_mac_address,
                         const DeviceId::IdCallback& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::string disk_id = GetDiskUuid();
   std::string mac_address = GetMacAddress(is_valid_mac_address);

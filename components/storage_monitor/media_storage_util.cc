@@ -44,7 +44,7 @@ base::FilePath::StringType FindRemovableStorageLocationById(
 
 void FilterAttachedDevicesOnBackgroundSequence(
     MediaStorageUtil::DeviceIdSet* devices) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   MediaStorageUtil::DeviceIdSet missing_devices;
 
   for (MediaStorageUtil::DeviceIdSet::const_iterator it = devices->begin();
@@ -79,7 +79,7 @@ void FilterAttachedDevicesOnBackgroundSequence(
 
 // static
 bool MediaStorageUtil::HasDcim(const base::FilePath& mount_point) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath::StringType dcim_dir(kDCIMDirectoryName);
   if (!base::DirectoryExists(mount_point.Append(dcim_dir))) {
     // Check for lowercase 'dcim' as well.

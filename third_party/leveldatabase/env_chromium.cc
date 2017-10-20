@@ -114,7 +114,7 @@ static base::File::Error LastFileError() {
 static base::File::Error GetDirectoryEntries(const FilePath& dir_param,
                                              std::vector<FilePath>* result) {
   TRACE_EVENT0("leveldb", "ChromiumEnv::GetDirectoryEntries");
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   result->clear();
 #if defined(OS_WIN)
   FilePath dir_filepath = dir_param.Append(FILE_PATH_LITERAL("*"));

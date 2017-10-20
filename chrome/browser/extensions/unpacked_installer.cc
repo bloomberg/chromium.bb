@@ -308,7 +308,7 @@ int UnpackedInstaller::GetFlags() {
 bool UnpackedInstaller::LoadExtension(Manifest::Location location,
                                       int flags,
                                       std::string* error) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Clean up the kMetadataFolder if necessary. This prevents spurious
   // warnings/errors and ensures we don't treat a user provided file as one by
@@ -334,7 +334,7 @@ bool UnpackedInstaller::LoadExtension(Manifest::Location location,
 
 bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
   DCHECK(extension());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   const ExtensionResource* resource =
       declarative_net_request::DNRManifestData::GetRulesetResource(extension());
@@ -377,7 +377,7 @@ bool UnpackedInstaller::IsLoadingUnpackedAllowed() const {
 }
 
 void UnpackedInstaller::GetAbsolutePath() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   extension_path_ = base::MakeAbsoluteFilePath(extension_path_);
 
@@ -402,7 +402,7 @@ void UnpackedInstaller::CheckExtensionFileAccess() {
 }
 
 void UnpackedInstaller::LoadWithFileAccess(int flags) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::string error;
   if (!LoadExtension(Manifest::UNPACKED, flags, &error)) {

@@ -1213,7 +1213,7 @@ void Connection::Poison() {
 //
 // static
 bool Connection::Delete(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath journal_path(path.value() + FILE_PATH_LITERAL("-journal"));
   base::FilePath wal_path(path.value() + FILE_PATH_LITERAL("-wal"));

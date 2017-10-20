@@ -35,7 +35,7 @@ namespace platform_util {
 namespace {
 
 void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath dir = full_path.DirName().AsEndingWithSeparator();
   // ParseDisplayName will fail if the directory is "C:", it must be "C:\\".
   if (dir.empty())
@@ -78,7 +78,7 @@ void ShowItemInFolderOnWorkerThread(const base::FilePath& full_path) {
 }
 
 void OpenExternalOnWorkerThread(const GURL& url) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Quote the input scheme to be sure that the command does not have
   // parameters unexpected by the external program. This url should already
   // have been escaped.

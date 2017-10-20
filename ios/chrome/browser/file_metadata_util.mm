@@ -16,7 +16,7 @@
 
 void SetSkipSystemBackupAttributeToItem(const base::FilePath& path,
                                         bool skip_system_backup) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   NSURL* file_url =
       [NSURL fileURLWithPath:base::SysUTF8ToNSString(path.value())];
@@ -30,4 +30,3 @@ void SetSkipSystemBackupAttributeToItem(const base::FilePath& path,
     LOG(ERROR) << base::SysNSStringToUTF8([error description]);
   }
 }
-

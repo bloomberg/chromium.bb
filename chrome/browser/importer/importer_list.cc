@@ -33,7 +33,7 @@ namespace {
 
 #if defined(OS_WIN)
 void DetectIEProfiles(std::vector<importer::SourceProfile>* profiles) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // IE always exists and doesn't have multiple profiles.
   importer::SourceProfile ie;
@@ -66,7 +66,7 @@ void DetectBuiltinWindowsProfiles(
 
 #if defined(OS_MACOSX)
 void DetectSafariProfiles(std::vector<importer::SourceProfile>* profiles) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   uint16_t items = importer::NONE;
   if (!SafariImporterCanImport(base::mac::GetUserLibraryPath(), &items))
@@ -85,7 +85,7 @@ void DetectSafariProfiles(std::vector<importer::SourceProfile>* profiles) {
 // details).
 void DetectFirefoxProfiles(const std::string locale,
                            std::vector<importer::SourceProfile>* profiles) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath profile_path = GetFirefoxProfilePath();
   if (profile_path.empty())
@@ -127,7 +127,7 @@ void DetectFirefoxProfiles(const std::string locale,
 std::vector<importer::SourceProfile> DetectSourceProfilesWorker(
     const std::string& locale,
     bool include_interactive_profiles) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::vector<importer::SourceProfile> profiles;
 

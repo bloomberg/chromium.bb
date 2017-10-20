@@ -33,7 +33,7 @@ class ImageWriterUtilityClient::RemovableStorageWriterClientImpl
       extensions::mojom::RemovableStorageWriterClientPtr* interface)
       : binding_(this, mojo::MakeRequest(interface)),
         image_writer_utility_client_(owner) {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     binding_.set_connection_error_handler(
         base::BindOnce(&ImageWriterUtilityClient::UtilityProcessError,

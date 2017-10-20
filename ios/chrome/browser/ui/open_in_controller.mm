@@ -505,7 +505,7 @@ class OpenInControllerBridge
 #pragma mark File management
 
 - (void)removeDocumentAtPath:(NSString*)path {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSError* error = nil;
   if (![fileManager removeItemAtPath:path error:&error]) {
@@ -515,7 +515,7 @@ class OpenInControllerBridge
 }
 
 + (void)removeAllStoredDocumentsAtPath:(NSString*)tempDirPath {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSError* error = nil;
   NSArray* documentFiles =
@@ -536,7 +536,7 @@ class OpenInControllerBridge
 }
 
 + (BOOL)createDestinationDirectoryAndRemoveObsoleteFiles {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   NSString* tempDirPath = [NSTemporaryDirectory()
       stringByAppendingPathComponent:kDocumentsTempPath];
   NSFileManager* fileManager = [NSFileManager defaultManager];

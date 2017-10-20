@@ -51,7 +51,7 @@ ValueStore::StatusCode LevelDbToValueStoreStatusCode(
 }
 
 leveldb::Status DeleteValue(leveldb::DB* db, const std::string& key) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   leveldb::WriteBatch batch;
   batch.Delete(key);
@@ -86,12 +86,12 @@ LazyLevelDb::LazyLevelDb(const std::string& uma_client_name,
 }
 
 LazyLevelDb::~LazyLevelDb() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 }
 
 ValueStore::Status LazyLevelDb::Read(const std::string& key,
                                      std::unique_ptr<base::Value>* value) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(value);
 
   std::string value_as_json;
@@ -117,7 +117,7 @@ ValueStore::Status LazyLevelDb::Read(const std::string& key,
 }
 
 ValueStore::Status LazyLevelDb::Delete(const std::string& key) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   ValueStore::Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -153,7 +153,7 @@ ValueStore::BackingStoreRestoreStatus LazyLevelDb::LogRestoreStatus(
 
 ValueStore::BackingStoreRestoreStatus LazyLevelDb::FixCorruption(
     const std::string* key) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   leveldb::Status s;
   if (key && db_) {
     s = DeleteValue(db_.get(), *key);
@@ -219,7 +219,7 @@ ValueStore::BackingStoreRestoreStatus LazyLevelDb::FixCorruption(
 }
 
 ValueStore::Status LazyLevelDb::EnsureDbIsOpen() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (db_)
     return ValueStore::Status();
@@ -262,7 +262,7 @@ ValueStore::Status LazyLevelDb::ToValueStoreError(
 }
 
 bool LazyLevelDb::DeleteDbFile() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   db_.reset();  // Close the database.
 
   leveldb::Status s =

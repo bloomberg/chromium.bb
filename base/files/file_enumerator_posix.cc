@@ -96,7 +96,7 @@ FileEnumerator::~FileEnumerator() {
 }
 
 FilePath FileEnumerator::Next() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   ++current_directory_entry_;
 

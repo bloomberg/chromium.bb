@@ -311,7 +311,7 @@ namespace {
 std::unique_ptr<AwWebResourceResponse> RunShouldInterceptRequest(
     const AwWebResourceRequest& request,
     JavaObjectWeakGlobalRef ref) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   JNIEnv* env = AttachCurrentThread();
   base::android::ScopedJavaLocalRef<jobject> obj = ref.get(env);

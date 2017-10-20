@@ -53,7 +53,7 @@ void WebRtcLogUtil::DeleteOldWebRtcLogFiles(const base::FilePath& log_dir) {
 void WebRtcLogUtil::DeleteOldAndRecentWebRtcLogFiles(
     const base::FilePath& log_dir,
     const base::Time& delete_begin_time) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (!base::PathExists(log_dir)) {
     // This will happen if no logs have been stored or uploaded.

@@ -215,7 +215,7 @@ UsbDeviceHandleUsbfs::FileThreadHelper::~FileThreadHelper() {
 }
 
 void UsbDeviceHandleUsbfs::FileThreadHelper::Start() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   sequence_checker_.DetachFromSequence();
   DCHECK(sequence_checker_.CalledOnValidSequence());
 

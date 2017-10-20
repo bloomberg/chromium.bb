@@ -350,7 +350,7 @@ void ResolveLanguageListInThreadPool(
         language_switch_result,
     const scoped_refptr<base::TaskRunner> task_runner,
     const UILanguageListResolvedCallback& resolved_callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::string selected_language;
   if (!language_switch_result) {

@@ -240,7 +240,7 @@ void URLDownloader::FetchPDFFile() {
 
 URLDownloader::SuccessState URLDownloader::SavePDFFile(
     const base::FilePath& temporary_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (CreateOfflineURLDirectory(original_url_)) {
     base::FilePath path = reading_list::OfflinePagePath(
         original_url_, reading_list::OFFLINE_TYPE_PDF);
@@ -297,7 +297,7 @@ URLDownloader::SuccessState URLDownloader::SaveDistilledHTML(
     const std::vector<dom_distiller::DistillerViewerInterface::ImageInfo>&
         images,
     const std::string& html) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (CreateOfflineURLDirectory(url)) {
     return SaveHTMLForURL(SaveAndReplaceImagesInHTML(url, html, images), url)
                ? DOWNLOAD_SUCCESS

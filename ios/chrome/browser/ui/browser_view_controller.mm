@@ -3600,7 +3600,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
       {base::MayBlock(), base::TaskPriority::BACKGROUND,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindBlockArc(^{
-        base::ThreadRestrictions::AssertIOAllowed();
+        base::AssertBlockingAllowed();
 
         NSString* fileName = [[[NSProcessInfo processInfo] globallyUniqueString]
             stringByAppendingString:fileExtension];
@@ -3625,7 +3625,7 @@ bubblePresenterForFeature:(const base::Feature&)feature
                   {base::MayBlock(), base::TaskPriority::BACKGROUND,
                    base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
                   base::BindBlockArc(^{
-                    base::ThreadRestrictions::AssertIOAllowed();
+                    base::AssertBlockingAllowed();
                     if (completion)
                       completion(success, error);
 

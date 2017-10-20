@@ -50,7 +50,7 @@ IPC::PlatformFileForTransit CreateEventLogFileForChildProcess(
     const base::FilePath& base_path,
     int render_process_id,
     int connection_id) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath file_path =
       GetWebRtcEventLogPath(base_path, render_process_id, connection_id);
   base::File event_log_file(

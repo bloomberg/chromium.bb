@@ -43,7 +43,7 @@ namespace {
 class PdfConverterImpl;
 
 void CloseFileOnBlockingTaskRunner(base::File temp_file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   temp_file.Close();
 }
 
@@ -78,7 +78,7 @@ class TempFile {
   explicit TempFile(base::File file)
       : file_(std::move(file)),
         blocking_task_runner_(base::SequencedTaskRunnerHandle::Get()) {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
   }
   ~TempFile() {
     blocking_task_runner_->PostTask(

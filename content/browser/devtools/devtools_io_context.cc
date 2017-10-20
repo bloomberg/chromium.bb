@@ -84,7 +84,7 @@ TempFileStream::~TempFileStream() {
 
 bool TempFileStream::InitOnFileSequenceIfNeeded() {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (had_errors_)
     return false;
   if (file_.IsValid())

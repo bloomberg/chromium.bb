@@ -509,7 +509,7 @@ Process LaunchProcess(const std::vector<std::string>& argv,
     if (options.wait) {
       // While this isn't strictly disk IO, waiting for another process to
       // finish is the sort of thing ThreadRestrictions is trying to prevent.
-      base::ThreadRestrictions::AssertIOAllowed();
+      base::AssertBlockingAllowed();
       pid_t ret = HANDLE_EINTR(waitpid(pid, 0, 0));
       DPCHECK(ret > 0);
     }
@@ -541,7 +541,7 @@ static bool GetAppOutputInternal(
     bool do_search_path,
     int* exit_code) {
   // Doing a blocking wait for another command to finish counts as IO.
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // exit_code must be supplied so calling function can determine success.
   DCHECK(exit_code);
   *exit_code = EXIT_FAILURE;

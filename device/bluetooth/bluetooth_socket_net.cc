@@ -137,7 +137,7 @@ void BluetoothSocketNet::PostErrorCompletion(
 
 void BluetoothSocketNet::DoClose() {
   DCHECK(socket_thread_->task_runner()->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (tcp_socket_) {
     tcp_socket_->Close();
@@ -156,7 +156,7 @@ void BluetoothSocketNet::DoClose() {
 
 void BluetoothSocketNet::DoDisconnect(const base::Closure& callback) {
   DCHECK(socket_thread_->task_runner()->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   DoClose();
   callback.Run();
@@ -167,7 +167,7 @@ void BluetoothSocketNet::DoReceive(
     const ReceiveCompletionCallback& success_callback,
     const ReceiveErrorCompletionCallback& error_callback) {
   DCHECK(socket_thread_->task_runner()->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (!tcp_socket_) {
     error_callback.Run(BluetoothSocket::kDisconnected, kSocketNotConnected);
@@ -201,7 +201,7 @@ void BluetoothSocketNet::OnSocketReadComplete(
     const ReceiveErrorCompletionCallback& error_callback,
     int read_result) {
   DCHECK(socket_thread_->task_runner()->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   scoped_refptr<net::IOBufferWithSize> buffer;
   buffer.swap(read_buffer_);
@@ -224,7 +224,7 @@ void BluetoothSocketNet::DoSend(
     const SendCompletionCallback& success_callback,
     const ErrorCompletionCallback& error_callback) {
   DCHECK(socket_thread_->task_runner()->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (!tcp_socket_) {
     error_callback.Run(kSocketNotConnected);
@@ -245,7 +245,7 @@ void BluetoothSocketNet::DoSend(
 
 void BluetoothSocketNet::SendFrontWriteRequest() {
   DCHECK(socket_thread_->task_runner()->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (!tcp_socket_)
     return;
@@ -271,7 +271,7 @@ void BluetoothSocketNet::OnSocketWriteComplete(
     const ErrorCompletionCallback& error_callback,
     int send_result) {
   DCHECK(socket_thread_->task_runner()->RunsTasksInCurrentSequence());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   write_queue_.pop();
 

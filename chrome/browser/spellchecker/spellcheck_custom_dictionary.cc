@@ -63,7 +63,7 @@ enum ChangeSanitationResult {
 // invalid checksum, then returns ChecksumStatus::INVALID and clears |words|.
 ChecksumStatus LoadFile(const base::FilePath& file_path,
                         std::set<std::string>* words) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(words);
   words->clear();
   std::string contents;
@@ -122,7 +122,7 @@ int SanitizeWordsToAdd(const std::set<std::string>& existing,
 // called on the file thread.
 std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult>
 LoadDictionaryFileReliably(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Load the contents and verify the checksum.
   std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult> result(
       new SpellcheckCustomDictionary::LoadFileResult);
@@ -144,7 +144,7 @@ LoadDictionaryFileReliably(const base::FilePath& path) {
 // the custom spellcheck dictionary at |path|.
 void SaveDictionaryFileReliably(const base::FilePath& path,
                                 const std::set<std::string>& custom_words) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   std::stringstream content;
   for (const std::string& word : custom_words)
     content << word << '\n';
@@ -159,7 +159,7 @@ void SavePassedWordsToDictionaryFileReliably(
     const base::FilePath& path,
     std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult>
         load_file_result) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(load_file_result);
   SaveDictionaryFileReliably(path, load_file_result->words);
 }
@@ -391,7 +391,7 @@ SpellcheckCustomDictionary::LoadFileResult::~LoadFileResult() {}
 // static
 std::unique_ptr<SpellcheckCustomDictionary::LoadFileResult>
 SpellcheckCustomDictionary::LoadDictionaryFile(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   std::unique_ptr<LoadFileResult> result = LoadDictionaryFileReliably(path);
   SpellCheckHostMetrics::RecordCustomWordCountStats(result->words.size());
   return result;
@@ -401,7 +401,7 @@ SpellcheckCustomDictionary::LoadDictionaryFile(const base::FilePath& path) {
 void SpellcheckCustomDictionary::UpdateDictionaryFile(
     std::unique_ptr<Change> dictionary_change,
     const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(dictionary_change);
 
   if (dictionary_change->empty())

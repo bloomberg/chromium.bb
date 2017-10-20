@@ -31,7 +31,7 @@ const char kGtkModules[] = "GTK_MODULES";
 // Returns a function pointer to be invoked on the main thread to init
 // the gnome accessibility module if it's enabled (nullptr otherwise).
 GnomeAccessibilityModuleInitFunc GetAccessibilityModuleInitFunc() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Try to load libatk-bridge.so.
   base::FilePath atk_bridge_path(ATK_LIB_DIR);

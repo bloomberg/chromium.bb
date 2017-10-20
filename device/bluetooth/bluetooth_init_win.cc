@@ -28,7 +28,7 @@ bool HasBluetoothStack() {
   } has_bluetooth_stack = HBS_UNKNOWN;
 
   if (has_bluetooth_stack == HBS_UNKNOWN) {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
     HRESULT hr = E_FAIL;
     __try {
       hr = __HrLoadAllImportsForDll("bthprops.cpl");

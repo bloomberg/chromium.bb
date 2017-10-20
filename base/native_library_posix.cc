@@ -23,7 +23,7 @@ NativeLibrary LoadNativeLibraryWithOptions(const FilePath& library_path,
                                            const NativeLibraryOptions& options,
                                            NativeLibraryLoadError* error) {
   // dlopen() opens the file off disk.
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   // We deliberately do not use RTLD_DEEPBIND by default.  For the history why,
   // please refer to the bug tracker.  Some useful bug reports to read include:

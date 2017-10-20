@@ -68,7 +68,7 @@ class ImageClipboardCopyManager : public ImageDecoder::ImageRequest {
   }
 
   void StartDecoding() {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     // Re-check the filesize since the file may be modified after downloaded.
     int64_t filesize;

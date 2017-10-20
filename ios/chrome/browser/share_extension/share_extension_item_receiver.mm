@@ -165,7 +165,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 #pragma mark - Private API
 
 - (void)createReadingListFolder {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   NSFileManager* manager = [NSFileManager defaultManager];
   if (![manager fileExistsAtPath:[[self presentedItemURL] path]]) {
     [manager createDirectoryAtPath:[[self presentedItemURL] path]
@@ -279,7 +279,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)handleFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (![[NSFileManager defaultManager] fileExistsAtPath:[url path]]) {
     // The handler is called on file modification, including deletion. Check
     // that the file exists before continuing.
@@ -287,11 +287,11 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
   }
   __weak ShareExtensionItemReceiver* weakSelf = self;
   ProceduralBlock successCompletion = ^{
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
     [weakSelf deleteFileAtURL:url withCompletion:completion];
   };
   void (^readingAccessor)(NSURL*) = ^(NSURL* newURL) {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
     NSFileManager* manager = [NSFileManager defaultManager];
     NSData* data = [manager contentsAtPath:[newURL path]];
     if (![weakSelf receivedData:data withCompletion:successCompletion]) {
@@ -309,9 +309,9 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)deleteFileAtURL:(NSURL*)url withCompletion:(ProceduralBlock)completion {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   void (^deletingAccessor)(NSURL*) = ^(NSURL* newURL) {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
     NSFileManager* manager = [NSFileManager defaultManager];
     [manager removeItemAtURL:newURL error:nil];
   };
@@ -347,7 +347,7 @@ void LogHistogramReceivedItem(ShareExtensionItemReceived type) {
 }
 
 - (void)processExistingFiles {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   NSMutableArray<NSURL*>* files = [NSMutableArray array];
   NSFileManager* manager = [NSFileManager defaultManager];
   NSArray<NSURL*>* oldFiles = [manager

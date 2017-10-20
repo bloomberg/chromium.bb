@@ -1038,13 +1038,13 @@ bool FilePersistentMemoryAllocator::IsFileAcceptable(
 
 void FilePersistentMemoryAllocator::FlushPartial(size_t length, bool sync) {
   if (sync)
-    ThreadRestrictions::AssertIOAllowed();
+    AssertBlockingAllowed();
   if (IsReadonly())
     return;
 
 #if defined(OS_WIN)
   // Windows doesn't support asynchronous flush.
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
   BOOL success = ::FlushViewOfFile(data(), length);
   DPCHECK(success);
 #elif defined(OS_MACOSX)

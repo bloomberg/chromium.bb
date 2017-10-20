@@ -188,7 +188,7 @@ void BrailleControllerImpl::StartConnecting() {
 }
 
 void BrailleControllerImpl::StartWatchingSocketDirOnTaskThread() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath brlapi_dir(BRLAPI_SOCKETPATH);
   if (!file_path_watcher_.Watch(
           brlapi_dir, false,
@@ -201,7 +201,7 @@ void BrailleControllerImpl::StartWatchingSocketDirOnTaskThread() {
 void BrailleControllerImpl::OnSocketDirChangedOnTaskThread(
     const base::FilePath& path,
     bool error) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (error) {
     LOG(ERROR) << "Error watching brlapi directory: " << path.value();
     return;

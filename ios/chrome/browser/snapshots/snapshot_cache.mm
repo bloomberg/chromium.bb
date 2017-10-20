@@ -157,7 +157,7 @@ UIImage* ReadImageForSessionFromDisk(NSString* session_id,
                                      ImageType image_type,
                                      ImageScale image_scale,
                                      const base::FilePath& cache_directory) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // TODO(crbug.com/295891): consider changing back to -imageWithContentsOfFile
   // instead of -imageWithData if both rdar://15747161 and the bug incorrectly
   // reporting the image as damaged https://stackoverflow.com/q/5081297/5353
@@ -172,7 +172,7 @@ UIImage* ReadImageForSessionFromDisk(NSString* session_id,
 }
 
 void WriteImageToDisk(UIImage* image, const base::FilePath& file_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (!image)
     return;
 
@@ -209,7 +209,7 @@ void ConvertAndSaveGreyImage(NSString* session_id,
                              ImageScale image_scale,
                              UIImage* color_image,
                              const base::FilePath& cache_directory) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (!color_image) {
     color_image = ReadImageForSessionFromDisk(session_id, IMAGE_TYPE_COLOR,
                                               image_scale, cache_directory);

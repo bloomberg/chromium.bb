@@ -273,7 +273,7 @@ void RulesetService::IndexAndStoreAndPublishRulesetIfNeeded(
 IndexedRulesetVersion RulesetService::IndexAndWriteRuleset(
     const base::FilePath& indexed_ruleset_base_dir,
     const UnindexedRulesetInfo& unindexed_ruleset_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::File unindexed_ruleset_file(
       unindexed_ruleset_info.ruleset_path,

@@ -24,7 +24,7 @@ namespace extensions {
 // static
 scoped_refptr<StorageDeviceList>
 RemovableStorageProvider::PopulateDeviceList() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Match only writable whole-disks.
   CFMutableDictionaryRef matching = IOServiceMatching(kIOMediaClass);
   CFDictionaryAddValue(matching, CFSTR(kIOMediaWholeKey), kCFBooleanTrue);

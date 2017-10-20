@@ -27,7 +27,7 @@ bool SetExtendedFileAttribute(const char* path,
                               const char* value,
                               size_t value_size,
                               int flags) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   int result = setxattr(path, name, value, value_size, flags);
   if (result) {
     DPLOG(ERROR) << "Could not set extended attribute " << name << " on file "
@@ -38,7 +38,7 @@ bool SetExtendedFileAttribute(const char* path,
 }
 
 std::string GetExtendedFileAttribute(const char* path, const char* name) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   ssize_t len = getxattr(path, name, nullptr, 0);
   if (len <= 0)
     return std::string();

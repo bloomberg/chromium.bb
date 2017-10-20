@@ -294,7 +294,7 @@ DownloadInterruptReason MapShFileOperationCodes(int code) {
 // Returns a network error, or net::OK for success.
 DownloadInterruptReason BaseFile::MoveFileAndAdjustPermissions(
     const base::FilePath& new_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // The parameters to SHFileOperation must be terminated with 2 NULL chars.
   base::FilePath::StringType source = full_path_.value();

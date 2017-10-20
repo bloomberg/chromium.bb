@@ -166,7 +166,7 @@ void OnPpdStored() {}
 bool FetchFile(const GURL& url, std::string* file_contents) {
   CHECK(url.is_valid());
   CHECK(url.SchemeIs("file"));
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Here we are un-escaping the file path represented by the url. If we don't
   // transform the url into a valid file path then the file may fail to be

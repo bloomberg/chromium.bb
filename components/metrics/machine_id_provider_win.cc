@@ -25,7 +25,7 @@ bool MachineIdProvider::HasId() {
 // is running from.
 // static
 std::string MachineIdProvider::GetMachineId() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Use the program's path to get the drive used for the machine id. This means
   // that whenever the underlying drive changes, it's considered a new machine.

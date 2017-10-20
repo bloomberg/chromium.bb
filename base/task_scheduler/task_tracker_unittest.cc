@@ -476,7 +476,7 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   auto task_with_may_block =
       std::make_unique<Task>(FROM_HERE, Bind([]() {
                                // Shouldn't fail.
-                               ThreadRestrictions::AssertIOAllowed();
+                               AssertBlockingAllowed();
                              }),
                              TaskTraits(MayBlock(), GetParam()), TimeDelta());
   EXPECT_TRUE(tracker_.WillPostTask(task_with_may_block.get()));
@@ -486,9 +486,8 @@ TEST_P(TaskSchedulerTaskTrackerTest, IOAllowed) {
   // task without the MayBlock() trait.
   ThreadRestrictions::SetIOAllowed(true);
   auto task_without_may_block = std::make_unique<Task>(
-      FROM_HERE, Bind([]() {
-        EXPECT_DCHECK_DEATH({ ThreadRestrictions::AssertIOAllowed(); });
-      }),
+      FROM_HERE,
+      Bind([]() { EXPECT_DCHECK_DEATH({ AssertBlockingAllowed(); }); }),
       TaskTraits(GetParam()), TimeDelta());
   EXPECT_TRUE(tracker_.WillPostTask(task_without_may_block.get()));
   DispatchAndRunTaskWithTracker(std::move(task_without_may_block));

@@ -43,7 +43,7 @@ base::LazyInstance<base::FilePath>::Leaky g_debug_dump_info =
 
 void DebugDumpPageTask(const base::string16& doc_name,
                        const PrintedPage* page) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (g_debug_dump_info.Get().empty())
     return;
@@ -65,7 +65,7 @@ void DebugDumpPageTask(const base::string16& doc_name,
 void DebugDumpDataTask(const base::string16& doc_name,
                        const base::FilePath::StringType& extension,
                        const base::RefCountedMemory* data) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath path =
       PrintedDocument::CreateDebugDumpPath(doc_name, extension);

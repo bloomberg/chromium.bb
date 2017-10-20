@@ -123,7 +123,7 @@ size_t CancelableFileOperation(Function operation,
                                WaitableEvent* cancel_event,
                                CancelableSyncSocket* socket,
                                DWORD timeout_in_ms) {
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
   // The buffer must be byte size or the length check won't make much sense.
   static_assert(sizeof(buffer[0]) == sizeof(char), "incorrect buffer type");
   DCHECK_GT(length, 0u);
@@ -245,7 +245,7 @@ bool SyncSocket::Close() {
 }
 
 size_t SyncSocket::Send(const void* buffer, size_t length) {
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
   DCHECK_GT(length, 0u);
   DCHECK_LE(length, kMaxMessageLength);
   DCHECK_NE(handle_, kInvalidHandle);
@@ -270,7 +270,7 @@ size_t SyncSocket::ReceiveWithTimeout(void* buffer,
 }
 
 size_t SyncSocket::Receive(void* buffer, size_t length) {
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
   DCHECK_GT(length, 0u);
   DCHECK_LE(length, kMaxMessageLength);
   DCHECK_NE(handle_, kInvalidHandle);

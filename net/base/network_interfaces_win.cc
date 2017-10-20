@@ -213,7 +213,7 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   std::unique_ptr<char[]> buf;
 
   // GetAdaptersAddresses() may require IO operations.
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   IP_ADAPTER_ADDRESSES* adapters =
       reinterpret_cast<IP_ADAPTER_ADDRESSES*>(&initial_buf);

@@ -35,7 +35,7 @@ namespace {
 void GetFilePaths(const base::FilePath& profile_path,
                   base::string16* exec_path_out,
                   base::string16* profile_path_out) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath executable_path = base::MakeAbsoluteFilePath(
       base::CommandLine::ForCurrentProcess()->GetProgram());

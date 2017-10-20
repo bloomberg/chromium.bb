@@ -163,7 +163,7 @@ namespace {
 bool AddOriginMetadataToFile(const base::FilePath& file,
                              const GURL& source,
                              const GURL& referrer) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // There's no declaration for MDItemSetAttribute in any known public SDK.
   // It exists in the 10.4 and 10.5 runtimes.  To play it safe, do the lookup
   // at runtime instead of declaring it ourselves and linking against what's
@@ -233,7 +233,7 @@ bool AddOriginMetadataToFile(const base::FilePath& file,
 bool AddQuarantineMetadataToFile(const base::FilePath& file,
                                  const GURL& source,
                                  const GURL& referrer) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::scoped_nsobject<NSMutableDictionary> properties;
   bool success = false;
   if (@available(macos 10.10, *)) {
@@ -307,7 +307,7 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
 bool IsFileQuarantined(const base::FilePath& file,
                        const GURL& expected_source_url,
                        const GURL& referrer_url) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (!base::PathExists(file))
     return false;

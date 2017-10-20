@@ -225,7 +225,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // Joining another thread may block the current thread for a long time, since
   // the thread referred to by |thread_handle| may still be running long-lived /
   // blocking tasks.
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
   CHECK_EQ(0, pthread_join(thread_handle.platform_handle(), NULL));
 }
 
