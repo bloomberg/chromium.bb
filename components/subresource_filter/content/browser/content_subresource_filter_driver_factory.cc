@@ -147,10 +147,6 @@ bool ContentSubresourceFilterDriverFactory::ShouldDisallowNewWindow(
   if (should_block) {
     web_contents()->GetMainFrame()->AddMessageToConsole(
         content::CONSOLE_MESSAGE_LEVEL_ERROR, kDisallowNewWindowMessage);
-    if (PageLoadStatistics* statistics =
-            throttle_manager_->page_load_statistics()) {
-      statistics->OnBlockedPopup();
-    }
   }
   return should_block;
 }

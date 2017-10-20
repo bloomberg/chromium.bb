@@ -129,8 +129,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
       browser()->tab_strip_model()->GetIndexOfWebContents(web_contents));
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
-  // TODO(crbug.com/772946)
-  tester.ExpectTotalCount("SubresourceFilter.PageLoad.BlockedPopups", 0);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
@@ -165,7 +163,6 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterPopupBrowserTest,
 
   // Navigate to |b_url|, which should successfully open the popup.
   ui_test_utils::NavigateToURL(browser(), b_url);
-  tester.ExpectUniqueSample("SubresourceFilter.PageLoad.BlockedPopups", 2, 1);
   opened_window = false;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(web_contents, "openWindow()",
                                                    &opened_window));

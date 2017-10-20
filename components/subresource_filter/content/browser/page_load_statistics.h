@@ -25,16 +25,12 @@ class PageLoadStatistics {
   void OnDocumentLoadStatistics(const DocumentLoadStatistics& statistics);
   void OnDidFinishLoad();
 
-  void OnBlockedPopup();
-
  private:
   ActivationState activation_state_;
 
   // Statistics about subresource loads, aggregated across all frames of the
   // current page.
   DocumentLoadStatistics aggregated_document_statistics_;
-
-  int num_popups_blocked_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(PageLoadStatistics);
 };
