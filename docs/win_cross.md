@@ -8,7 +8,6 @@ What does *not* work:
 
 * goma. Sorry. ([internal bug](b/64390790))
 * targets depending on crashpad ([bug](https://crbug.com/762167))
-* targets using .rc files ([bug](https://crbug.com/774193))
 * linking on Mac ([bug](https://crbug.com/774209)), should change soon
 
 This disqualifies most interesting targets for now, but a few smaller ones
