@@ -924,7 +924,7 @@ TEST_F(HitTestAggregatorTest, MissingChildFrame) {
   aggregator->Aggregate(e_surface_id);
   aggregator->SwapHandles();
 
-  EXPECT_EQ(aggregator->GetRegionCount(), 2);
+  EXPECT_EQ(aggregator->GetRegionCount(), 3);
 
   EXPECT_EQ(host_buffer_frame_sink_id(), kDisplayFrameSink);
   AggregatedHitTestRegion* regions = host_regions();
@@ -935,11 +935,17 @@ TEST_F(HitTestAggregatorTest, MissingChildFrame) {
   EXPECT_EQ(region->flags, mojom::kHitTestMine);
   EXPECT_EQ(region->frame_sink_id, e_surface_id.frame_sink_id());
   EXPECT_EQ(region->rect, gfx::Rect(0, 0, 1024, 768));
-  EXPECT_EQ(region->child_count, 1);
+  EXPECT_EQ(region->child_count, 2);
 
-  // Child would exist here but it was not included in the Display Frame.
-
+  // |c_hit_test_region_list| was not submitted on time, but
+  // |e_hit_test_region_c| itself should still be present and can get events.
   region = &regions[1];
+  EXPECT_EQ(region->flags, mojom::kHitTestChildSurface | mojom::kHitTestMine);
+  EXPECT_EQ(region->frame_sink_id, c_surface_id.frame_sink_id());
+  EXPECT_EQ(region->rect, gfx::Rect(100, 100, 200, 500));
+  EXPECT_EQ(region->child_count, 0);
+
+  region = &regions[2];
   EXPECT_EQ(region->flags, mojom::kHitTestMine);
   EXPECT_EQ(region->frame_sink_id, e_surface_id.frame_sink_id());
   EXPECT_EQ(region->rect, gfx::Rect(200, 200, 300, 200));
