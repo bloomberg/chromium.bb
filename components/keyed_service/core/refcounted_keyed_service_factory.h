@@ -32,8 +32,9 @@ class KEYED_SERVICE_EXPORT RefcountedKeyedServiceFactory
   // A function that supplies the instance of a KeyedService for a given
   // |context|. This is used primarily for testing, where we want to feed
   // a specific mock into the KeyedServiceFactory system.
-  typedef scoped_refptr<RefcountedKeyedService>(*TestingFactoryFunction)(
-      base::SupportsUserData* context);
+  typedef std::function<scoped_refptr<RefcountedKeyedService>(
+      base::SupportsUserData* context)>
+      TestingFactoryFunction;
 
   // Associates |factory| with |context| so that |factory| is used to create
   // the KeyedService when requested.  |factory| can be NULL to signal that

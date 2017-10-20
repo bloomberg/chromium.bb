@@ -12,20 +12,26 @@
 void RefcountedBrowserContextKeyedServiceFactory::SetTestingFactory(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
-  RefcountedKeyedServiceFactory::SetTestingFactory(
-      context,
-      reinterpret_cast<RefcountedKeyedServiceFactory::TestingFactoryFunction>(
-          testing_factory));
+  RefcountedKeyedServiceFactory::TestingFactoryFunction func;
+  if (testing_factory) {
+    func = [=](base::SupportsUserData* context) {
+      return testing_factory(static_cast<content::BrowserContext*>(context));
+    };
+  }
+  RefcountedKeyedServiceFactory::SetTestingFactory(context, func);
 }
 
 scoped_refptr<RefcountedKeyedService>
 RefcountedBrowserContextKeyedServiceFactory::SetTestingFactoryAndUse(
     content::BrowserContext* context,
     TestingFactoryFunction testing_factory) {
-  return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(
-      context,
-      reinterpret_cast<RefcountedKeyedServiceFactory::TestingFactoryFunction>(
-          testing_factory));
+  RefcountedKeyedServiceFactory::TestingFactoryFunction func;
+  if (testing_factory) {
+    func = [=](base::SupportsUserData* context) {
+      return testing_factory(static_cast<content::BrowserContext*>(context));
+    };
+  }
+  return RefcountedKeyedServiceFactory::SetTestingFactoryAndUse(context, func);
 }
 
 RefcountedBrowserContextKeyedServiceFactory::

@@ -12,17 +12,25 @@
 void BrowserStateKeyedServiceFactory::SetTestingFactory(
     web::BrowserState* context,
     TestingFactoryFunction testing_factory) {
-  KeyedServiceFactory::SetTestingFactory(
-      context, reinterpret_cast<KeyedServiceFactory::TestingFactoryFunction>(
-                   testing_factory));
+  KeyedServiceFactory::TestingFactoryFunction func;
+  if (testing_factory) {
+    func = [=](base::SupportsUserData* context) {
+      return testing_factory(static_cast<web::BrowserState*>(context));
+    };
+  }
+  KeyedServiceFactory::SetTestingFactory(context, func);
 }
 
 KeyedService* BrowserStateKeyedServiceFactory::SetTestingFactoryAndUse(
     web::BrowserState* context,
     TestingFactoryFunction testing_factory) {
-  return KeyedServiceFactory::SetTestingFactoryAndUse(
-      context, reinterpret_cast<KeyedServiceFactory::TestingFactoryFunction>(
-                   testing_factory));
+  KeyedServiceFactory::TestingFactoryFunction func;
+  if (testing_factory) {
+    func = [=](base::SupportsUserData* context) {
+      return testing_factory(static_cast<web::BrowserState*>(context));
+    };
+  }
+  return KeyedServiceFactory::SetTestingFactoryAndUse(context, func);
 }
 
 BrowserStateKeyedServiceFactory::BrowserStateKeyedServiceFactory(
