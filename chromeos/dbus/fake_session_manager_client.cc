@@ -269,7 +269,7 @@ void FakeSessionManagerClient::StartArcInstance(
     bool disable_boot_completed_broadcast,
     bool enable_vendor_privileged,
     bool native_bridge_experiment,
-    const StartArcInstanceCallback& callback) {
+    StartArcInstanceCallback callback) {
   StartArcInstanceResult result;
   std::string container_instance_id;
   if (arc_available_) {
@@ -279,8 +279,8 @@ void FakeSessionManagerClient::StartArcInstance(
     result = StartArcInstanceResult::UNKNOWN_ERROR;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, result, container_instance_id,
-                            base::Passed(base::ScopedFD())));
+      FROM_HERE, base::BindOnce(std::move(callback), result,
+                                container_instance_id, base::ScopedFD()));
 }
 
 void FakeSessionManagerClient::StopArcInstance(

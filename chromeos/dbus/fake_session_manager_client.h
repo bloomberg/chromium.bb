@@ -81,7 +81,7 @@ class FakeSessionManagerClient : public SessionManagerClient {
                         bool disable_boot_completed_broadcast,
                         bool enable_vendor_privileged,
                         bool native_bridge_experiment,
-                        const StartArcInstanceCallback& callback) override;
+                        StartArcInstanceCallback callback) override;
   void StopArcInstance(VoidDBusMethodCallback callback) override;
   void SetArcCpuRestriction(
       login_manager::ContainerCpuRestrictionState restriction_state,

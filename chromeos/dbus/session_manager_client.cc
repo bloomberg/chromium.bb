@@ -431,7 +431,9 @@ class SessionManagerClientImpl : public SessionManagerClient {
                         bool skip_boot_completed_broadcast,
                         bool scan_vendor_priv_app,
                         bool native_bridge_experiment,
-                        const StartArcInstanceCallback& callback) override {
+                        StartArcInstanceCallback callback) override {
+    DCHECK(!callback.is_null());
+
     dbus::MethodCall method_call(
         login_manager::kSessionManagerInterface,
         login_manager::kSessionManagerStartArcInstance);
@@ -452,12 +454,10 @@ class SessionManagerClientImpl : public SessionManagerClient {
     }
     writer.AppendProtoAsArrayOfBytes(request);
 
-    session_manager_proxy_->CallMethodWithErrorCallback(
+    session_manager_proxy_->CallMethodWithErrorResponse(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&SessionManagerClientImpl::OnStartArcInstanceSucceeded,
-                       weak_ptr_factory_.GetWeakPtr(), callback),
-        base::BindOnce(&SessionManagerClientImpl::OnStartArcInstanceFailed,
-                       weak_ptr_factory_.GetWeakPtr(), callback));
+        base::BindOnce(&SessionManagerClientImpl::OnStartArcInstance,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void StopArcInstance(VoidDBusMethodCallback callback) override {
@@ -833,40 +833,34 @@ class SessionManagerClientImpl : public SessionManagerClient {
     std::move(callback).Run(base::TimeTicks::FromInternalValue(ticks));
   }
 
-  void OnStartArcInstanceSucceeded(const StartArcInstanceCallback& callback,
-                                   dbus::Response* response) {
-    DCHECK(response);
-    dbus::MessageReader reader(response);
-    std::string container_instance_id;
-    base::ScopedFD server_socket;
-
-    if (!reader.PopString(&container_instance_id) ||
-        !reader.PopFileDescriptor(&server_socket)) {
-      LOG(ERROR) << "Invalid response: " << response->ToString();
-      if (!callback.is_null()) {
-        callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string(),
-                     base::ScopedFD());
-      }
+  void OnStartArcInstance(StartArcInstanceCallback callback,
+                          dbus::Response* response,
+                          dbus::ErrorResponse* error) {
+    if (!response) {
+      LOG(ERROR) << "Failed to call StartArcInstance: "
+                 << (error ? error->ToString() : "(null)");
+      std::move(callback).Run(
+          error && error->GetErrorName() ==
+                       login_manager::dbus_error::kLowFreeDisk
+              ? StartArcInstanceResult::LOW_FREE_DISK_SPACE
+              : StartArcInstanceResult::UNKNOWN_ERROR,
+          std::string(), base::ScopedFD());
       return;
     }
 
-    if (!callback.is_null()) {
-      callback.Run(StartArcInstanceResult::SUCCESS, container_instance_id,
-                   std::move(server_socket));
+    dbus::MessageReader reader(response);
+    std::string container_instance_id;
+    base::ScopedFD server_socket;
+    if (!reader.PopString(&container_instance_id) ||
+        !reader.PopFileDescriptor(&server_socket)) {
+      LOG(ERROR) << "Invalid response: " << response->ToString();
+      std::move(callback).Run(StartArcInstanceResult::UNKNOWN_ERROR,
+                              std::string(), base::ScopedFD());
+      return;
     }
-  }
 
-  void OnStartArcInstanceFailed(const StartArcInstanceCallback& callback,
-                                dbus::ErrorResponse* response) {
-    LOG(ERROR) << "Failed to call StartArcInstance: "
-               << (response ? response->ToString() : "(null)");
-    if (!callback.is_null()) {
-      callback.Run(response && response->GetErrorName() ==
-                                   login_manager::dbus_error::kLowFreeDisk
-                       ? StartArcInstanceResult::LOW_FREE_DISK_SPACE
-                       : StartArcInstanceResult::UNKNOWN_ERROR,
-                   std::string(), base::ScopedFD());
-    }
+    std::move(callback).Run(StartArcInstanceResult::SUCCESS,
+                            container_instance_id, std::move(server_socket));
   }
 
   dbus::ObjectProxy* session_manager_proxy_ = nullptr;
@@ -1079,9 +1073,9 @@ class SessionManagerClientStubImpl : public SessionManagerClient {
                         bool disable_boot_completed_broadcast,
                         bool enable_vendor_privileged,
                         bool native_bridge_experiment,
-                        const StartArcInstanceCallback& callback) override {
-    callback.Run(StartArcInstanceResult::UNKNOWN_ERROR, std::string(),
-                 base::ScopedFD());
+                        StartArcInstanceCallback callback) override {
+    std::move(callback).Run(StartArcInstanceResult::UNKNOWN_ERROR,
+                            std::string(), base::ScopedFD());
   }
 
   void SetArcCpuRestriction(
