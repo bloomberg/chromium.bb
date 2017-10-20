@@ -39,6 +39,8 @@
 #include "chrome/common/features.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/profiling.h"
+#include "chrome/common/profiling/memlog_allocator_shim.h"
+#include "chrome/common/profiling/memlog_stream.h"
 #include "chrome/common/switch_utils.h"
 #include "chrome/common/trace_event_args_whitelist.h"
 #include "chrome/common/url_constants.h"
@@ -682,6 +684,14 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
 #endif
 
   content::SetContentClient(&chrome_content_client_);
+
+  // The TLS slot used by the memlog allocator shim needs to be initialized
+  // early to ensure that it gets assigned a low slot number. If it gets
+  // initialized too late, the glibc TLS system will require a malloc call in
+  // order to allocate storage for a higher slot number. Since malloc is hooked,
+  // this causes re-entrancy into the allocator shim, while the TLS object is
+  // partially-initialized, which the TLS object is supposed to protect again.
+  profiling::InitTLSSlot();
 
 #if defined (OS_CHROMEOS)
   // The TLS slot used by metrics::LeakDetector needs to be initialized early to
