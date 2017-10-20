@@ -254,9 +254,6 @@ class GPU_EXPORT GpuControlList {
   // Return the largest entry id.  This is used for histogramming.
   uint32_t max_entry_id() const;
 
-  // Returns the version of the control list.
-  std::string version() const;
-
   // Check if we need more gpu info to make the decisions.
   // This is computed from the last MakeDecision() call.
   // If yes, we should create a gl context and do a full gpu info collection.
@@ -281,7 +278,6 @@ class GPU_EXPORT GpuControlList {
   // Gets the current OS type.
   static OsType GetOsType();
 
-  std::string version_;
   size_t entry_count_;
   const Entry* entries_;
   // This records all the entries that are appliable to the current user
@@ -301,16 +297,14 @@ class GPU_EXPORT GpuControlList {
 };
 
 struct GPU_EXPORT GpuControlListData {
-  const char* version;
   size_t entry_count;
   const GpuControlList::Entry* entries;
 
-  GpuControlListData() : version(nullptr), entry_count(0u), entries(nullptr) {}
+  GpuControlListData() : entry_count(0u), entries(nullptr) {}
 
-  GpuControlListData(const char* a_version,
-                     size_t a_entry_count,
+  GpuControlListData(size_t a_entry_count,
                      const GpuControlList::Entry* a_entries)
-      : version(a_version), entry_count(a_entry_count), entries(a_entries) {}
+      : entry_count(a_entry_count), entries(a_entries) {}
 };
 
 }  // namespace gpu

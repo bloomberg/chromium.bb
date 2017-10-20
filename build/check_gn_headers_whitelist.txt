@@ -163,6 +163,7 @@ gpu/command_buffer/service/gl_stream_texture_image.h
 gpu/command_buffer/service/gles2_cmd_decoder_unittest_extensions_autogen.h
 gpu/command_buffer/service/memory_tracking.h
 gpu/command_buffer/service/progress_reporter.h
+gpu/config/gpu_lists_version.h
 gpu/gles2_conform_support/gtf/gtf_stubs.h
 gpu/gpu_export.h
 headless/lib/headless_macros.h

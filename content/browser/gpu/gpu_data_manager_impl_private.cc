@@ -648,8 +648,7 @@ void GpuDataManagerImplPrivate::Initialize() {
   if (!force_software_gl &&
       !command_line->HasSwitch(switches::kIgnoreGpuBlacklist) &&
       !command_line->HasSwitch(switches::kUseGpuInTests)) {
-    gpu_blacklist_data = {gpu::kSoftwareRenderingListVersion,
-                          gpu::kSoftwareRenderingListEntryCount,
+    gpu_blacklist_data = {gpu::kSoftwareRenderingListEntryCount,
                           gpu::kSoftwareRenderingListEntries};
   }
   InitializeImpl(gpu_blacklist_data, gpu_info);
@@ -872,22 +871,6 @@ void GpuDataManagerImplPrivate::SetGpuInfo(const gpu::GPUInfo& gpu_info) {
   DCHECK(!is_initialized_);
   gpu_info_ = gpu_info;
   DCHECK(IsCompleteGpuInfoAvailable());
-}
-
-std::string GpuDataManagerImplPrivate::GetBlacklistVersion() const {
-  if (gpu_blacklist_)
-    return gpu_blacklist_->version();
-  return "0";
-}
-
-std::string GpuDataManagerImplPrivate::GetDriverBugListVersion() const {
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuDriverBugWorkarounds)) {
-    std::unique_ptr<gpu::GpuDriverBugList> bug_list(
-        gpu::GpuDriverBugList::Create());
-    return bug_list->version();
-  }
-  return "0";
 }
 
 void GpuDataManagerImplPrivate::GetBlacklistReasons(

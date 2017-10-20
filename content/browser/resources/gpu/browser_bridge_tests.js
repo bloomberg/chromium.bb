@@ -255,7 +255,6 @@ var glValueArray = ['GL_ARB_compatibility',
          }
        },
        clientInfo: {
-         blacklist_version: '1.10',
          command_line: commandLineStr,
          version: 'Chrome/12.0.729.0',
        },

@@ -14,8 +14,9 @@ import subprocess
 import sys
 
 class VersionInfo(object):
-  def __init__(self, revision):
-    self.revision = revision
+  def __init__(self, revision_id, full_revision_string):
+    self.revision_id = revision_id
+    self.revision = full_revision_string
 
 
 def RunGitCommand(directory, command):
@@ -47,7 +48,7 @@ def RunGitCommand(directory, command):
 
 def FetchGitRevision(directory):
   """
-  Fetch the Git hash for a given directory.
+  Fetch the Git hash (and Cr-Commit-Position if any) for a given directory.
 
   Errors are swallowed.
 
@@ -72,17 +73,17 @@ def FetchGitRevision(directory):
         if line.startswith('Cr-Commit-Position:'):
           pos = line.rsplit()[-1].strip()
           break
-  return VersionInfo('%s-%s' % (hsh, pos))
+  return VersionInfo(hsh, '%s-%s' % (hsh, pos))
 
 
 def FetchVersionInfo(directory=None):
   """
-  Returns the last change (in the form of a branch, revision tuple),
+  Returns the last change (as a VersionInfo object)
   from some appropriate revision control system.
   """
   version_info = FetchGitRevision(directory)
   if not version_info:
-    version_info = VersionInfo(None)
+    version_info = VersionInfo('0', '0')
   return version_info
 
 
@@ -153,10 +154,14 @@ def main(argv=None):
                     help="Write last change to FILE. " +
                     "Can be combined with --header to write both files.")
   parser.add_option("", "--header", metavar="FILE",
-                    help="Write last change to FILE as a C/C++ header. " +
+                    help="Write last change go FILE as a C/C++ header. " +
                     "Can be combined with --output to write both files.")
-  parser.add_option("--revision-only", action='store_true',
-                    help="Just print the GIT hash. Overrides any " +
+  parser.add_option("--revision-id-only", action='store_true',
+                    help="Output the revision as a VCS revision ID only (in " +
+                    "Git, a 40-character commit hash, excluding the " +
+                    "Cr-Commit-Position).")
+  parser.add_option("--print-only", action='store_true',
+                    help="Just print the revision string. Overrides any " +
                     "file-output-related options.")
   parser.add_option("-s", "--source-dir", metavar="DIR",
                     help="Use repository in the given directory.")
@@ -179,14 +184,14 @@ def main(argv=None):
     src_dir = os.path.dirname(os.path.abspath(__file__))
 
   version_info = FetchVersionInfo(directory=src_dir)
+  revision_string = version_info.revision
+  if opts.revision_id_only:
+    revision_string = version_info.revision_id
 
-  if version_info.revision == None:
-    version_info.revision = '0'
-
-  if opts.revision_only:
-    print version_info.revision
+  if opts.print_only:
+    print revision_string
   else:
-    contents = "LASTCHANGE=%s\n" % version_info.revision
+    contents = "LASTCHANGE=%s\n" % revision_string
     if not out_file and not opts.header:
       sys.stdout.write(contents)
     else:
@@ -195,7 +200,7 @@ def main(argv=None):
       if header:
         WriteIfChanged(header,
                        GetHeaderContents(header, opts.version_macro,
-                                         version_info.revision))
+                                         revision_string))
 
   return 0
 

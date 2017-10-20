@@ -15,8 +15,6 @@
 
 namespace gpu {
 
-const char kGpuControlListTestingVersion[] = "1.0";
-
 const GpuControlList::Entry kGpuControlListTestingEntries[] = {
     {
         1,  // id

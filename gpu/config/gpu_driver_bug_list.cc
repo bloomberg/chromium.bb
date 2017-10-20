@@ -35,7 +35,7 @@ GpuDriverBugList::~GpuDriverBugList() {
 
 // static
 std::unique_ptr<GpuDriverBugList> GpuDriverBugList::Create() {
-  GpuControlListData data(kGpuDriverBugListVersion, kGpuDriverBugListEntryCount,
+  GpuControlListData data(kGpuDriverBugListEntryCount,
                           kGpuDriverBugListEntries);
   return Create(data);
 }
