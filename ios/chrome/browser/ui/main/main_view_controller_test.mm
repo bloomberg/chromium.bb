@@ -21,6 +21,7 @@
 
 @implementation TestTabSwitcherViewController
 
+@synthesize animationDelegate = _animationDelegate;
 @synthesize delegate = _delegate;
 @synthesize dispatcher = _dispatcher;
 
