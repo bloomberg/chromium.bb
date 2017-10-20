@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/user_action_tester.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -60,6 +61,7 @@ void ExpectUkmValueCount(ukm::TestUkmRecorder* test_ukm_recorder,
 // Test the metrics recorded around password generation and the user's
 // interaction with the offer to generate passwords.
 TEST(PasswordFormMetricsRecorder, Generation) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   static constexpr struct {
     bool generation_available;
     bool has_generated_password;
@@ -186,6 +188,7 @@ TEST(PasswordFormMetricsRecorder, Generation) {
 // Test the recording of metrics around manager_action, user_action, and
 // submit_result.
 TEST(PasswordFormMetricsRecorder, Actions) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   static constexpr struct {
     // Stimuli:
     bool is_main_frame_secure;
@@ -310,6 +313,7 @@ TEST(PasswordFormMetricsRecorder, Actions) {
 // Test that in the case of a sequence of user actions, only the last one is
 // recorded in ActionsV3 but all are recorded as UMA user actions.
 TEST(PasswordFormMetricsRecorder, ActionSequence) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   base::HistogramTester histogram_tester;
   base::UserActionTester user_action_tester;
@@ -336,6 +340,7 @@ TEST(PasswordFormMetricsRecorder, ActionSequence) {
 }
 
 TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   static constexpr struct {
     // Stimuli:
     bool is_main_frame_secure;
@@ -394,6 +399,7 @@ TEST(PasswordFormMetricsRecorder, SubmittedFormType) {
 }
 
 TEST(PasswordFormMetricsRecorder, RecordPasswordBubbleShown) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   using Trigger = PasswordFormMetricsRecorder::BubbleTrigger;
   static constexpr struct {
     // Stimuli:
@@ -485,6 +491,7 @@ TEST(PasswordFormMetricsRecorder, RecordPasswordBubbleShown) {
 }
 
 TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   static constexpr struct {
     // Stimuli:
     metrics_util::UIDisplayDisposition display_disposition;
@@ -533,6 +540,7 @@ TEST(PasswordFormMetricsRecorder, RecordUIDismissalReason) {
 // Verify that it is ok to open and close the password bubble more than once
 // and still get accurate metrics.
 TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   using BubbleDismissalReason =
       PasswordFormMetricsRecorder::BubbleDismissalReason;
   using BubbleTrigger = PasswordFormMetricsRecorder::BubbleTrigger;
@@ -575,6 +583,7 @@ TEST(PasswordFormMetricsRecorder, SequencesOfBubbles) {
 // Verify that one-time actions are only recorded once per life-cycle of a
 // PasswordFormMetricsRecorder.
 TEST(PasswordFormMetricsRecorder, RecordDetailedUserAction) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   using DetailedUserAction = PasswordFormMetricsRecorder::DetailedUserAction;
   const DetailedUserAction kOneTimeAction =
       DetailedUserAction::kEditedUsernameInBubble;

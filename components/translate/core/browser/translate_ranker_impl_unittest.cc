@@ -74,10 +74,10 @@ class TranslateRankerImplTest : public ::testing::Test {
       CreateTranslateEvent("es", "de", "de", 4, 5, 6);
 
  private:
-  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
-
   // Sets up the task scheduling/task-runner environment for each test.
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+
+  ukm::TestAutoSetUkmRecorder test_ukm_recorder_;
 
   // Manages the enabling/disabling of features within the scope of a test.
   base::test::ScopedFeatureList scoped_feature_list_;

@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/offline_pages/core/offline_pages_ukm_reporter.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -18,6 +19,7 @@ class OfflinePagesUkmReporterTest : public testing::Test {
   ukm::TestUkmRecorder* test_recorder() { return &test_recorder_; }
 
  private:
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_recorder_;
 };
 

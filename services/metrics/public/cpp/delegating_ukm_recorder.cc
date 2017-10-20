@@ -23,34 +23,65 @@ DelegatingUkmRecorder* DelegatingUkmRecorder::Get() {
   return &g_ukm_recorder.Get();
 }
 
-void DelegatingUkmRecorder::AddDelegate(UkmRecorder* delegate) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  delegates_.insert(delegate);
+void DelegatingUkmRecorder::AddDelegate(base::WeakPtr<UkmRecorder> delegate) {
+  base::AutoLock auto_lock(lock_);
+  delegates_.insert(
+      {delegate.get(),
+       Delegate(base::SequencedTaskRunnerHandle::Get(), delegate)});
 }
 
 void DelegatingUkmRecorder::RemoveDelegate(UkmRecorder* delegate) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::AutoLock auto_lock(lock_);
   delegates_.erase(delegate);
 }
 
 void DelegatingUkmRecorder::UpdateSourceURL(SourceId source_id,
                                             const GURL& url) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (UkmRecorder* delegate : delegates_) {
-    delegate->UpdateSourceURL(source_id, url);
-  }
+  base::AutoLock auto_lock(lock_);
+  for (auto& iterator : delegates_)
+    iterator.second.UpdateSourceURL(source_id, url);
 }
 
 void DelegatingUkmRecorder::AddEntry(mojom::UkmEntryPtr entry) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::AutoLock auto_lock(lock_);
   // If there is exactly one delegate, just forward the call.
   if (delegates_.size() == 1) {
-    (*delegates_.begin())->AddEntry(std::move(entry));
+    delegates_.begin()->second.AddEntry(std::move(entry));
     return;
   }
   // Otherwise, make a copy for each delegate.
-  for (UkmRecorder* delegate : delegates_)
-    delegate->AddEntry(entry->Clone());
+  for (auto& iterator : delegates_)
+    iterator.second.AddEntry(entry->Clone());
+}
+
+DelegatingUkmRecorder::Delegate::Delegate(
+    scoped_refptr<base::SequencedTaskRunner> task_runner,
+    base::WeakPtr<UkmRecorder> ptr)
+    : task_runner_(task_runner), ptr_(ptr) {}
+
+DelegatingUkmRecorder::Delegate::Delegate(const Delegate& other)
+    : task_runner_(other.task_runner_), ptr_(other.ptr_) {}
+
+DelegatingUkmRecorder::Delegate::~Delegate() = default;
+
+void DelegatingUkmRecorder::Delegate::UpdateSourceURL(ukm::SourceId source_id,
+                                                      const GURL& url) {
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    ptr_->UpdateSourceURL(source_id, url);
+    return;
+  }
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&UkmRecorder::UpdateSourceURL, ptr_, source_id, url));
+}
+
+void DelegatingUkmRecorder::Delegate::AddEntry(mojom::UkmEntryPtr entry) {
+  if (task_runner_->RunsTasksInCurrentSequence()) {
+    ptr_->AddEntry(std::move(entry));
+    return;
+  }
+  task_runner_->PostTask(FROM_HERE, base::BindOnce(&UkmRecorder::AddEntry, ptr_,
+                                                   std::move(entry)));
 }
 
 }  // namespace ukm

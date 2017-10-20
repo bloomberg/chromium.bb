@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/metrics/metrics_hashes.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
@@ -32,6 +33,7 @@ PasswordManagerMetricsRecorder CreateMetricsRecorder(
 }  // namespace
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(
@@ -45,6 +47,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordField) {
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(
@@ -60,6 +63,7 @@ TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldMultipleTimes) {
 }
 
 TEST(PasswordManagerMetricsRecorder, UserModifiedPasswordFieldNotCalled) {
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
   ukm::TestAutoSetUkmRecorder test_ukm_recorder;
   {
     PasswordManagerMetricsRecorder recorder(
