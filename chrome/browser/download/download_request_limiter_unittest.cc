@@ -460,7 +460,7 @@ TEST_F(DownloadRequestLimiterTest, ResetOnReload) {
   ASSERT_EQ(DownloadRequestLimiter::PROMPT_BEFORE_DOWNLOAD,
             download_request_limiter_->GetDownloadStatus(web_contents()));
 
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   LoadCompleted();
   base::RunLoop().RunUntilIdle();
   ExpectAndResetCounts(0, 1, 0, __LINE__);
@@ -478,7 +478,7 @@ TEST_F(DownloadRequestLimiterTest, ResetOnReload) {
             download_request_limiter_->GetDownloadStatus(web_contents()));
   ExpectAndResetCounts(0, 1, 1, __LINE__);
 
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   LoadCompleted();
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(DownloadRequestLimiter::DOWNLOADS_NOT_ALLOWED,

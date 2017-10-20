@@ -60,12 +60,12 @@ TEST_F(FlashTemporaryPermissionTrackerTest, GrantSurvivesReloads) {
   EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 
   // Refresh the page.
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   // Flash should still be enabled after a single refresh.
   EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 
   // Refresh again.
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   // Flash should still be enabled.
   EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 }
@@ -74,7 +74,7 @@ TEST_F(FlashTemporaryPermissionTrackerTest, GrantSurvivesNavigations) {
   content::RenderFrameHost* rfh = GetMainRFH(kOrigin1);
 
   tracker()->FlashEnabledForWebContents(web_contents());
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 
   // Navigate to another origin. Flash should still be enabled.
@@ -89,7 +89,7 @@ TEST_F(FlashTemporaryPermissionTrackerTest,
   content::RenderFrameHost* child = AddChildRFH(rfh, kOrigin2);
 
   tracker()->FlashEnabledForWebContents(web_contents());
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   EXPECT_TRUE(tracker()->IsFlashEnabled(GURL(kOrigin1)));
 
   // Navigate the child frame. Flash should still be enabled after this.

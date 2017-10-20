@@ -11,6 +11,7 @@
 #include "base/optional.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_throttle.h"
+#include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/referrer.h"
 #include "net/base/host_port_pair.h"
@@ -40,6 +41,10 @@ class NavigationSimulator : public WebContentsObserver {
       WebContents* web_contents,
       const GURL& url);
 
+  // Simulates the page reloading. Returns the RenderFrameHost that committed
+  // the navigation.
+  static RenderFrameHost* Reload(WebContents* web_contents);
+
   // Simulates a renderer-initiated navigation to |url| started in
   // |render_frame_host| from start to commit. Returns the RenderFramehost that
   // committed the navigation.
@@ -54,6 +59,12 @@ class NavigationSimulator : public WebContentsObserver {
   static RenderFrameHost* NavigateAndFailFromBrowser(WebContents* web_contents,
                                                      const GURL& url,
                                                      int net_error_code);
+
+  // Simulates the page reloading and failing. Returns the RenderFrameHost that
+  // committed the error page for the navigation, or nullptr if the navigation
+  // error did not result in an error page.
+  static RenderFrameHost* ReloadAndFail(WebContents* web_contents,
+                                        int net_error_code);
 
   // Simulates a failed renderer-initiated navigation to |url| started in
   // |render_frame_host| from start to commit. Returns the RenderFramehost that
@@ -164,6 +175,9 @@ class NavigationSimulator : public WebContentsObserver {
   // specified before calling |Start|.
   virtual void SetTransition(ui::PageTransition transition);
   virtual void SetHasUserGesture(bool has_user_gesture);
+  // Note: ReloadType should only be specified for browser-initiated
+  // navigations.
+  void SetReloadType(ReloadType reload_type);
 
   // The following parameters can change during redirects. They should be
   // specified before calling |Start| if they need to apply to the navigation to
@@ -282,6 +296,7 @@ class NavigationSimulator : public WebContentsObserver {
   bool same_document_ = false;
   Referrer referrer_;
   ui::PageTransition transition_;
+  ReloadType reload_type_ = ReloadType::NONE;
   bool has_user_gesture_ = true;
 
   // These are used to sanity check the content/public/ API calls emitted as

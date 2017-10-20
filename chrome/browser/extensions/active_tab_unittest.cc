@@ -25,6 +25,7 @@
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_browser_thread.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -239,7 +240,7 @@ TEST_F(ActiveTabTest, GrantToSinglePage) {
   EXPECT_TRUE(IsBlocked(extension_without_active_tab, mail_google));
 
   // Reloading the page should clear the active permissions.
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
 
   EXPECT_TRUE(IsBlocked(extension, google));
   EXPECT_TRUE(IsBlocked(another_extension, google));
@@ -392,7 +393,7 @@ TEST_F(ActiveTabTest, NavigateInPage) {
   EXPECT_TRUE(IsAllowed(extension, chromium));
   EXPECT_TRUE(IsAllowed(extension, chromium_h1));
 
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
 
   EXPECT_FALSE(IsAllowed(extension, google));
   EXPECT_FALSE(IsAllowed(extension, google_h1));

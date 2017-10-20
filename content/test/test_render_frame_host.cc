@@ -286,14 +286,6 @@ void TestRenderFrameHost::SendNavigate(int nav_entry_id,
                              ModificationCallback());
 }
 
-void TestRenderFrameHost::SendFailedNavigate(int nav_entry_id,
-                                             bool did_create_new_entry,
-                                             const GURL& url) {
-  SendNavigateWithParameters(nav_entry_id, did_create_new_entry, false,
-                             url, ui::PAGE_TRANSITION_RELOAD, 500,
-                             ModificationCallback());
-}
-
 void TestRenderFrameHost::SendNavigateWithTransition(
     int nav_entry_id,
     bool did_create_new_entry,
