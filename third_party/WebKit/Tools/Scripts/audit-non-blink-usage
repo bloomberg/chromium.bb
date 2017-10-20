@@ -1,0 +1,236 @@
+#!/usr/bin/env vpython
+# Copyright 2017 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+"""Utilities for checking for disallowed usage of non-Blink declarations.
+
+The scanner assumes that usage of non-Blink code is always namespace qualified.
+Identifiers in the global namespace are always ignored. For convenience, the
+script can be run in standalone mode to check for existing violations.
+
+Example command:
+
+$ git ls-files third_party/WebKit \
+    | python third_party/WebKit/Tools/Scripts/audit-non-blink-usage
+"""
+
+import os
+import re
+import sys
+
+_CONFIG = [
+    {
+        'paths': ['third_party/WebKit/Source/'],
+        'allowed': [
+            # TODO(dcheng): Should these be in a more specific config?
+            'gfx::ColorSpace',
+            'gfx::CubicBezier',
+            'gfx::ICCProfile',
+            'gfx::ScrollOffset',
+
+            # //base constructs that are allowed everywhere
+            # TODO(dcheng): Check that the Oilpan plugin warns if storing GC
+            # types inside base::Optional.
+            'base::Optional',
+            'base::UnguessableToken',
+            'base::make_optional',
+            'base::make_span',
+            'base::nullopt',
+            'base::span',
+            'logging::GetVlogLevel',
+
+            # Standalone utility libraries that only depend on //base
+            'skia::.+',
+            'url::.+',
+
+            # Nested namespace under the blink namespace for CSSValue classes.
+            'cssvalue::.+',
+
+            # Scheduler code lives in the scheduler namespace for historical
+            # reasons.
+            'scheduler::.+',
+
+            # Third-party libraries that don't depend on non-Blink Chrome code
+            # are OK.
+            'icu::.+',
+            'testing::.+',  # googlemock / googletest
+            'v8::.+',
+            'v8_inspector::.+',
+
+            # Inspector instrumentation and protocol
+            'probe::.+',
+            'protocol::.+',
+
+            # Blink code shouldn't need to be qualified with the Blink namespace,
+            # but there are exceptions.
+            'blink::.+',
+            # Assume that identifiers where the first qualifier is internal are
+            # nested in the blink namespace.
+            'internal::.+',
+
+            # Blink uses Mojo, so it needs mojo::Binding, mojo::InterfacePtr, et
+            # cetera, as well as generated Mojo bindings.
+            'mojo::.+',
+            '(?:.+::)?mojom::.+',
+            # TODO(dcheng): Remove this once Connector isn't needed in Blink
+            # anymore.
+            'service_manager::Connector',
+            'service_manager::InterfaceProvider',
+
+            # STL containers such as std::string and std::vector are discouraged
+            # but still needed for interop with WebKit/common. Note that other
+            # STL types such as std::unique_ptr are encouraged.
+            'std::.+',
+        ],
+        'disallowed': ['.+'],
+    },
+    {
+        'paths': ['third_party/WebKit/Source/bindings/'],
+        'allowed': ['gin::.+'],
+    },
+    {
+        'paths': ['third_party/WebKit/Source/core/css'],
+        'allowed': [
+            # Internal implementation details for CSS.
+            'detail::.+',
+        ],
+    },
+    {
+        'paths': [
+            'third_party/WebKit/Source/modules/device_orientation/',
+            'third_party/WebKit/Source/modules/gamepad/',
+            'third_party/WebKit/Source/modules/sensor/',
+        ],
+        'allowed': ['device::.+'],
+    },
+    {
+        'paths': [
+            'third_party/WebKit/Source/core/html/media/',
+            'third_party/WebKit/Source/modules/vr/',
+            'third_party/WebKit/Source/modules/webgl/',
+        ],
+        'allowed': ['gpu::gles2::GLES2Interface'],
+    },
+    # Suppress checks on platform since code in this directory is meant to be a
+    # bridge between Blink and non-Blink code.
+    {
+        'paths': [
+            'third_party/WebKit/Source/platform/',
+        ],
+        'allowed': ['.+'],
+    },
+]
+
+
+def _precompile_config():
+    """Turns the raw config into a config of compiled regex."""
+    match_nothing_re = re.compile('.^')
+
+    def compile_regexp(match_list):
+        """Turns a match list into a compiled regexp.
+
+        If match_list is None, a regexp that matches nothing is returned.
+        """
+        if match_list:
+            return re.compile('(?:%s)$' % '|'.join(match_list))
+        return match_nothing_re
+
+    compiled_config = []
+    for raw_entry in _CONFIG:
+        compiled_config.append({
+            'paths': raw_entry['paths'],
+            'allowed': compile_regexp(raw_entry.get('allowed')),
+            'disallowed': compile_regexp(raw_entry.get('disallowed')),
+        })
+    return compiled_config
+
+
+_COMPILED_CONFIG = _precompile_config()
+
+# Attempt to match identifiers qualified with a namespace. Since parsing C++ in
+# Python is hard, this regex assumes that namespace names only contain lowercase
+# letters, numbers, and underscores, matching the Google C++ style guide. This
+# is intended to minimize the number of matches where :: is used to qualify a
+# name with a class or enum name.
+_IDENTIFIER_WITH_NAMESPACE_RE = re.compile(
+    r'\b(?:[a-z_][a-z0-9_]*::)+[A-Za-z_][A-Za-z0-9_]*\b')
+
+
+def _find_matching_entries(path):
+    """Finds entries that should be used for path.
+
+    Returns:
+        A list of entries, sorted in order of relevance. Each entry is a
+        dictionary with two keys:
+            allowed: A regexp for identifiers that should be allowed.
+            disallowed: A regexp for identifiers that should not be allowed.
+    """
+    entries = []
+    for entry in _COMPILED_CONFIG:
+        for path in entry['paths']:
+            if path.startswith(path):
+                entries.append({'sortkey': len(path), 'entry': entry})
+    # The path length is used as the sort key: a longer path implies more
+    # relevant, since that config is a more exact match.
+    entries.sort(key=lambda x: x['sortkey'], reverse=True)
+    return [entry['entry'] for entry in entries]
+
+
+def _check_entries_for_identifier(entries, identifier):
+    for entry in entries:
+        if entry['allowed'].match(identifier):
+            return True
+        if entry['disallowed'].match(identifier):
+            return False
+    # Disallow by default.
+    return False
+
+
+def check(path, contents):
+    """Checks for disallowed usage of non-Blink classes, functions, et cetera.
+
+    Args:
+        path: The path of the file to check.
+        contents: The contents of the file to check.
+
+    Returns:
+        A list of disallowed identifiers.
+    """
+    results = []
+    entries = _find_matching_entries(path)
+    if not entries:
+        return
+    for line in contents.splitlines():
+        idx = line.find('//')
+        if idx >= 0:
+            line = line[:idx]
+        match = _IDENTIFIER_WITH_NAMESPACE_RE.search(line)
+        if match:
+            if not _check_entries_for_identifier(entries, match.group(0)):
+                results.append(match.group(0))
+    return results
+
+
+def main():
+    for path in sys.stdin.read().splitlines():
+        basename, ext = os.path.splitext(path)
+        if ext not in ('.cc', '.cpp', '.h', '.mm'):
+            continue
+        # Ignore test files.
+        if basename.endswith('Test'):
+            continue
+        try:
+            with open(path, 'r') as f:
+                contents = f.read()
+                disallowed_identifiers = check(path, contents)
+                if disallowed_identifiers:
+                    print '%s uses disallowed identifiers:' % path
+                    for i in disallowed_identifiers:
+                        print i
+        except IOError as e:
+            print 'could not open %s: %s' % (path, e)
+
+
+if __name__ == '__main__':
+    sys.exit(main())
