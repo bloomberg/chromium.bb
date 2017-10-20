@@ -208,6 +208,10 @@ class DataReductionProxyConfig
   // Updates the Data Reduction Proxy configurator with the current config.
   void UpdateConfigForTesting(bool enabled, bool restricted);
 
+  // Returns true if the default bypass rules should be added. Virtualized for
+  // testing.
+  virtual bool ShouldAddDefaultProxyBypassRules() const;
+
  private:
   friend class MockDataReductionProxyConfig;
   friend class TestDataReductionProxyConfig;

@@ -49,8 +49,8 @@ TestDataReductionProxyConfig::TestDataReductionProxyConfig(
                                configurator,
                                event_creator),
       tick_clock_(nullptr),
-      is_captive_portal_(false) {
-}
+      is_captive_portal_(false),
+      add_default_proxy_bypass_rules_(true) {}
 
 TestDataReductionProxyConfig::~TestDataReductionProxyConfig() {
 }
@@ -111,6 +111,15 @@ void TestDataReductionProxyConfig::SetIsCaptivePortal(bool is_captive_portal) {
 
 bool TestDataReductionProxyConfig::GetIsCaptivePortal() const {
   return is_captive_portal_;
+}
+
+bool TestDataReductionProxyConfig::ShouldAddDefaultProxyBypassRules() const {
+  return add_default_proxy_bypass_rules_;
+}
+
+void TestDataReductionProxyConfig::SetShouldAddDefaultProxyBypassRules(
+    bool add_default_proxy_bypass_rules) {
+  add_default_proxy_bypass_rules_ = add_default_proxy_bypass_rules;
 }
 
 MockDataReductionProxyConfig::MockDataReductionProxyConfig(

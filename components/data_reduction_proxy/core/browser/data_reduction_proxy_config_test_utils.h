@@ -99,6 +99,10 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
     connection_type_ = connection_type;
   }
 
+  bool ShouldAddDefaultProxyBypassRules() const override;
+
+  void SetShouldAddDefaultProxyBypassRules(bool add_default_proxy_bypass_rules);
+
   using DataReductionProxyConfig::UpdateConfigForTesting;
 
  private:
@@ -112,6 +116,10 @@ class TestDataReductionProxyConfig : public DataReductionProxyConfig {
   // Set to true if the captive portal probe for the current network has been
   // blocked.
   bool is_captive_portal_;
+
+  // True if the default bypass rules should be added. Should be set to false
+  // when fetching resources from an embedded test server running on localhost.
+  bool add_default_proxy_bypass_rules_;
 
   DISALLOW_COPY_AND_ASSIGN(TestDataReductionProxyConfig);
 };
