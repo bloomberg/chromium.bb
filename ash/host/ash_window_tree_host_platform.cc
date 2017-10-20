@@ -134,9 +134,4 @@ void AshWindowTreeHostPlatform::SetTapToClickPaused(bool state) {
   input_device_controller_client->SetTapToClickPaused(state);
 }
 
-void AshWindowTreeHostPlatform::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  aura::WindowTreeHostPlatform::OnBoundsChanged(new_bounds);
-  ConfineCursorToRootWindow();
-}
-
 }  // namespace ash

@@ -44,12 +44,24 @@ X11WindowBase::X11WindowBase(PlatformWindowDelegate* delegate,
       xroot_window_(DefaultRootWindow(xdisplay_)),
       bounds_(bounds) {
   DCHECK(delegate_);
-  pointer_barriers_.fill(None);
 }
 
 X11WindowBase::~X11WindowBase() {
-  UnConfineCursor();
   Destroy();
+}
+
+void X11WindowBase::Destroy() {
+  if (xwindow_ == None)
+    return;
+
+  // Stop processing events.
+  XID xwindow = xwindow_;
+  XDisplay* xdisplay = xdisplay_;
+  xwindow_ = None;
+  delegate_->OnClosed();
+  // |this| might be deleted because of the above call.
+
+  XDestroyWindow(xdisplay, xwindow);
 }
 
 void X11WindowBase::Create() {
@@ -231,41 +243,7 @@ void X11WindowBase::MoveCursorTo(const gfx::Point& location) {
                bounds_.x() + location.x(), bounds_.y() + location.y());
 }
 
-void X11WindowBase::ConfineCursorToBounds(const gfx::Rect& bounds) {
-  // Shrink the barrier so the user can escape from the corners.
-  constexpr int kBarrierShrinkSize = 2;
-
-  UnConfineCursor();
-
-  if (bounds.IsEmpty())
-    return;
-
-  gfx::Rect barrier(bounds);
-  barrier.Offset(bounds_.x(), bounds_.y());
-
-  // Top horizontal barrier.
-  pointer_barriers_[0] = XFixesCreatePointerBarrier(
-      xdisplay_, xroot_window_, barrier.x() + kBarrierShrinkSize, barrier.y(),
-      barrier.right() - kBarrierShrinkSize, barrier.y(), BarrierPositiveY, 0,
-      XIAllDevices);
-  // Bottom horizontal barrier.
-  pointer_barriers_[1] = XFixesCreatePointerBarrier(
-      xdisplay_, xroot_window_, barrier.x() + kBarrierShrinkSize,
-      barrier.bottom(), barrier.right() - kBarrierShrinkSize, barrier.bottom(),
-      BarrierNegativeY, 0, XIAllDevices);
-  // Left vertical barrier.
-  pointer_barriers_[2] = XFixesCreatePointerBarrier(
-      xdisplay_, xroot_window_, barrier.x(), barrier.y() + kBarrierShrinkSize,
-      barrier.x(), barrier.bottom() - kBarrierShrinkSize, BarrierPositiveX, 0,
-      XIAllDevices);
-  // Right vertical barrier.
-  pointer_barriers_[3] = XFixesCreatePointerBarrier(
-      xdisplay_, xroot_window_, barrier.right(),
-      barrier.y() + kBarrierShrinkSize, barrier.right(),
-      barrier.bottom() - kBarrierShrinkSize, BarrierNegativeX, 0, XIAllDevices);
-
-  has_pointer_barriers_ = true;
-}
+void X11WindowBase::ConfineCursorToBounds(const gfx::Rect& bounds) {}
 
 PlatformImeController* X11WindowBase::GetPlatformImeController() {
   return nullptr;
@@ -328,31 +306,6 @@ void X11WindowBase::ProcessXWindowEvent(XEvent* xev) {
       break;
     }
   }
-}
-
-void X11WindowBase::Destroy() {
-  if (xwindow_ == None)
-    return;
-
-  // Stop processing events.
-  XID xwindow = xwindow_;
-  XDisplay* xdisplay = xdisplay_;
-  xwindow_ = None;
-  delegate_->OnClosed();
-  // |this| might be deleted because of the above call.
-
-  XDestroyWindow(xdisplay, xwindow);
-}
-
-void X11WindowBase::UnConfineCursor() {
-  if (!has_pointer_barriers_)
-    return;
-
-  for (XID pointer_barrier : pointer_barriers_)
-    XFixesDestroyPointerBarrier(xdisplay_, pointer_barrier);
-  pointer_barriers_.fill(None);
-
-  has_pointer_barriers_ = false;
 }
 
 }  // namespace ui

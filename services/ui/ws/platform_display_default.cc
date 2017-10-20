@@ -161,7 +161,6 @@ void PlatformDisplayDefault::SetCursorSize(const ui::CursorSize& cursor_size) {
 
 void PlatformDisplayDefault::ConfineCursorToBounds(
     const gfx::Rect& pixel_bounds) {
-  confine_cursor_bounds_ = pixel_bounds;
   platform_window_->ConfineCursorToBounds(pixel_bounds);
 }
 
@@ -218,9 +217,12 @@ void PlatformDisplayDefault::SetCursorConfig(
 }
 
 void PlatformDisplayDefault::OnBoundsChanged(const gfx::Rect& new_bounds) {
-  // Redo cursor confinement for new bounds, in case the window origin moved.
-  if (!confine_cursor_bounds_.IsEmpty())
-    platform_window_->ConfineCursorToBounds(confine_cursor_bounds_);
+  // We only care if the window size has changed.
+  if (new_bounds.size() == metrics_.bounds_in_pixels.size())
+    return;
+
+  // TODO(tonikitoo): Handle the bounds changing in external window mode. The
+  // window should be resized by the WS and it shouldn't involve ScreenManager.
 }
 
 void PlatformDisplayDefault::OnDamageRect(const gfx::Rect& damaged_region) {

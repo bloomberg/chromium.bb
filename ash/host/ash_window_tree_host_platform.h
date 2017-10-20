@@ -49,9 +49,6 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   // Temporarily disable the tap-to-click feature. Used on CrOS.
   void SetTapToClickPaused(bool state);
 
-  // ui::PlatformWindowDelegate:
-  void OnBoundsChanged(const gfx::Rect& new_bounds) override;
-
   TransformerHelper transformer_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(AshWindowTreeHostPlatform);

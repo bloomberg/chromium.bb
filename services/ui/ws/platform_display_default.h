@@ -79,8 +79,6 @@ class PlatformDisplayDefault : public PlatformDisplay,
   std::unique_ptr<FrameGenerator> frame_generator_;
 
   display::ViewportMetrics metrics_;
-  gfx::Rect confine_cursor_bounds_;
-
   std::unique_ptr<ui::PlatformWindow> platform_window_;
   gfx::AcceleratedWidget widget_;
 
