@@ -26,7 +26,7 @@ class NGBlockFlowPainter {
  public:
   NGBlockFlowPainter(const LayoutNGBlockFlow& layout_ng_block_flow)
       : block_(layout_ng_block_flow) {}
-  void PaintContents(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint&);
 
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
