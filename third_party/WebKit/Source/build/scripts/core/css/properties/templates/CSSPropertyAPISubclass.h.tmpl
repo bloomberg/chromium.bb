@@ -85,7 +85,7 @@ class {{api_classname}} : public CSSPropertyAPI {
   {% endif %}
 
   {% if property.should_declare_application_functions %}
-    {% if not property.custom_initial %}
+    {% if not property.api_custom_apply_functions_initial %}
   void ApplyInitial(StyleResolverState& state) const override {
       {% if property.svg %}
     {{set_value(property)}}(SVGComputedStyle::{{property.initial}}());
@@ -101,7 +101,7 @@ class {{api_classname}} : public CSSPropertyAPI {
     {% endif %}
     {# TODO(meade): else emit function declaration only #}
 
-    {% if not property.custom_inherit %}
+    {% if not property.api_custom_apply_functions_inherit %}
   void ApplyInherit(StyleResolverState& state) const override {
       {% if property.svg %}
     {{set_value(property)}}(state.ParentStyle()->SvgStyle().{{property.getter}}());
@@ -117,7 +117,7 @@ class {{api_classname}} : public CSSPropertyAPI {
     {% endif %}
     {# TODO(meade): else emit function declaration only #}
 
-    {% if not property.custom_value %}
+    {% if not property.api_custom_apply_functions_value %}
   void ApplyValue(StyleResolverState& state, const CSSValue& value) const override {
     {{convert_and_set_value(property)}}
       {% if property.independent %}

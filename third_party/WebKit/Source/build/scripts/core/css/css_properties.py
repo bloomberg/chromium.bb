@@ -157,10 +157,10 @@ class CSSProperties(json5_generator.Writer):
             property_['is_inherited_setter'] = 'Set' + name + 'IsInherited'
 
         # Expand whether there are custom StyleBuilder methods.
-        if property_['custom_all']:
-            property_['custom_initial'] = True
-            property_['custom_inherit'] = True
-            property_['custom_value'] = True
+        if property_['api_custom_apply_functions_all']:
+            property_['api_custom_apply_functions_inherit'] = True
+            property_['api_custom_apply_functions_initial'] = True
+            property_['api_custom_apply_functions_value'] = True
 
         # Expand StyleBuilderConverter params where ncessary.
         if property_['type_name'] in PRIMITIVE_TYPES:
