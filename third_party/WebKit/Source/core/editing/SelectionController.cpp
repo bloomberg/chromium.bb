@@ -600,10 +600,10 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
     if (str.IsEmpty() || str.SimplifyWhiteSpace().ContainsOnlyWhitespace())
       return false;
 
-    if (new_selection.RootEditableElement() &&
-        pos.DeepEquivalent() == VisiblePositionInFlatTree::LastPositionInNode(
-                                    *new_selection.RootEditableElement())
-                                    .DeepEquivalent())
+    Element* const editable = new_selection.RootEditableElement();
+    if (editable && pos.DeepEquivalent() ==
+                        VisiblePositionInFlatTree::LastPositionInNode(*editable)
+                            .DeepEquivalent())
       return false;
 
     visibility = HandleVisibility::kVisible;
