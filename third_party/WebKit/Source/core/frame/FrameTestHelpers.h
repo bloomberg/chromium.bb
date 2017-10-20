@@ -173,7 +173,6 @@ class UseMockScrollbarSettings {
             RuntimeEnabledFeatures::OverlayScrollbarsEnabled()) {
     Settings::SetMockScrollbarsEnabled(true);
     RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
-    EXPECT_TRUE(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
   }
 
   UseMockScrollbarSettings(bool use_mock, bool use_overlay)

@@ -878,6 +878,8 @@ class CORE_EXPORT LocalFrameView final
     return paint_artifact_compositor_.get();
   }
 
+  ScrollbarTheme& GetPageScrollbarTheme() const override;
+
  protected:
   // Scroll the content via the compositor.
   bool ScrollContentsFastPath(const IntSize& scroll_delta);

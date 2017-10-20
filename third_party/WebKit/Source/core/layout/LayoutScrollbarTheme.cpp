@@ -170,7 +170,8 @@ void LayoutScrollbarTheme::PaintThumb(GraphicsContext& context,
 void LayoutScrollbarTheme::PaintTickmarks(GraphicsContext& context,
                                           const Scrollbar& scrollbar,
                                           const IntRect& rect) {
-  ScrollbarTheme::GetTheme().PaintTickmarks(context, scrollbar, rect);
+  ScrollbarTheme::DeprecatedStaticGetTheme().PaintTickmarks(context, scrollbar,
+                                                            rect);
 }
 
 }  // namespace blink

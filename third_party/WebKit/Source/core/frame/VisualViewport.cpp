@@ -878,6 +878,10 @@ void VisualViewport::NotifyRootFrameViewport() const {
   root_frame_viewport->DidUpdateVisualViewport();
 }
 
+ScrollbarTheme& VisualViewport::GetPageScrollbarTheme() const {
+  return GetPage().GetScrollbarTheme();
+}
+
 String VisualViewport::DebugName(const GraphicsLayer* graphics_layer) const {
   String name;
   if (graphics_layer == inner_viewport_container_layer_.get()) {

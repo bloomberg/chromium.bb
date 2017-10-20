@@ -7,7 +7,12 @@
 
 #include "platform/scheduler/child/web_scheduler.h"
 #include "platform/scroll/ScrollableArea.h"
+#include "platform/scroll/ScrollbarThemeMock.h"
 #include "public/platform/Platform.h"
+
+namespace {
+blink::ScrollbarThemeMock scrollbar_theme_;
+}
 
 namespace blink {
 
@@ -52,6 +57,10 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
 
   RefPtr<WebTaskRunner> GetTimerTaskRunner() const final {
     return Platform::Current()->CurrentThread()->Scheduler()->TimerTaskRunner();
+  }
+
+  ScrollbarTheme& GetPageScrollbarTheme() const override {
+    return scrollbar_theme_;
   }
 
   virtual void Trace(blink::Visitor* visitor) {

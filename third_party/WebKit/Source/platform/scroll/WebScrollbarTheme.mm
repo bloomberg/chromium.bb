@@ -50,7 +50,7 @@ void WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
     ScrollerStyle preferred_scroller_style,
     bool redraw,
     WebScrollbarButtonsPlacement button_placement) {
-  ScrollbarTheme& theme = ScrollbarTheme::GetTheme();
+  ScrollbarTheme& theme = ScrollbarTheme::DeprecatedStaticGetTheme();
   if (theme.IsMockTheme())
     return;
 

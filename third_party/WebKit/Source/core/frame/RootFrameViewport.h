@@ -109,6 +109,7 @@ class CORE_EXPORT RootFrameViewport final
                                       const LayoutObject*,
                                       unsigned = 0) const final;
   scoped_refptr<WebTaskRunner> GetTimerTaskRunner() const final;
+  ScrollbarTheme& GetPageScrollbarTheme() const override;
 
  private:
   RootFrameViewport(ScrollableArea& visual_viewport,

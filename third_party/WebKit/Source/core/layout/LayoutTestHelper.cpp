@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/html/HTMLIFrameElement.h"
+#include "core/page/Page.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "platform/loader/fetch/MemoryCache.h"
 #include "platform/scroll/ScrollbarTheme.h"
@@ -47,7 +48,8 @@ void RenderingTest::SetUp() {
   SetupPageWithClients(&page_clients, local_frame_client_, SettingOverrider());
   Settings::SetMockScrollbarsEnabled(true);
   RuntimeEnabledFeatures::SetOverlayScrollbarsEnabled(true);
-  EXPECT_TRUE(ScrollbarTheme::GetTheme().UsesOverlayScrollbars());
+  EXPECT_TRUE(
+      GetDocument().GetPage()->GetScrollbarTheme().UsesOverlayScrollbars());
 
   // This ensures that the minimal DOM tree gets attached
   // correctly for tests that don't call setBodyInnerHTML.

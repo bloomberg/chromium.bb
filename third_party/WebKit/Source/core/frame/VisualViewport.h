@@ -243,6 +243,8 @@ class CORE_EXPORT VisualViewport final
   // for viewing websites that are not optimized for mobile devices.
   bool ShouldDisableDesktopWorkarounds() const;
 
+  ScrollbarTheme& GetPageScrollbarTheme() const override;
+
  private:
   explicit VisualViewport(Page&);
 

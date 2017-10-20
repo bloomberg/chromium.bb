@@ -68,6 +68,7 @@ class PluginsChangedObserver;
 class PointerLockController;
 class ScopedPagePauser;
 class ScrollingCoordinator;
+class ScrollbarTheme;
 class SmoothScrollSequencer;
 class Settings;
 class ConsoleMessageStorage;
@@ -301,6 +302,8 @@ class CORE_EXPORT Page final : public GarbageCollectedFinalized<Page>,
   void WillBeDestroyed();
 
   void RegisterPluginsChangedObserver(PluginsChangedObserver*);
+
+  ScrollbarTheme& GetScrollbarTheme() const;
 
  private:
   friend class ScopedPagePauser;
