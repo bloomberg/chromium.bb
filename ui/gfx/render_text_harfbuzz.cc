@@ -37,6 +37,10 @@
 #include "ui/gfx/text_utils.h"
 #include "ui/gfx/utf16_indexing.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 #include <hb.h>
 
 namespace gfx {
@@ -1640,8 +1644,19 @@ bool RenderTextHarfBuzz::ShapeRunWithFont(const base::string16& text,
     DCHECK_LE(infos[i].codepoint, std::numeric_limits<uint16_t>::max());
     run->glyphs[i] = static_cast<uint16_t>(infos[i].codepoint);
     run->glyph_to_char[i] = infos[i].cluster;
+
+#if defined(OS_MACOSX)
+    // Mac 10.9 and 10.10 give a quirky offset for whitespace glyphs in RTL,
+    // which requires tests relying on the behavior of |glyph_width_for_test_|
+    // to also be given a zero x_offset, otherwise expectations get thrown off.
+    const bool force_zero_offset =
+        glyph_width_for_test_ > 0 && base::mac::IsAtMostOS10_10();
+#else
+    constexpr bool force_zero_offset = false;
+#endif
     const SkScalar x_offset =
-        HarfBuzzUnitsToSkiaScalar(hb_positions[i].x_offset);
+        force_zero_offset ? 0
+                          : HarfBuzzUnitsToSkiaScalar(hb_positions[i].x_offset);
     const SkScalar y_offset =
         HarfBuzzUnitsToSkiaScalar(hb_positions[i].y_offset);
     run->positions[i].set(run->width + x_offset, -y_offset);
