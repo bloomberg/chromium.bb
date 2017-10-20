@@ -36,6 +36,10 @@
 #include "ui/keyboard/keyboard_util.h"
 #include "ui/wm/core/default_activation_client.h"
 
+#if defined(USE_OZONE)
+#include "ui/ozone/public/ozone_platform.h"
+#endif
+
 namespace keyboard {
 namespace {
 
@@ -272,6 +276,15 @@ class KeyboardControllerTest : public testing::Test,
 
   void ResetController() { controller_.reset(); }
 
+  void RunLoop(base::RunLoop* run_loop) {
+#if defined(USE_OZONE)
+    // TODO(crbug/776357): Figure out why the initializer randomly doesn't run
+    // for some tests. In the mean time, prevent flaky Ozone crash.
+    ui::OzonePlatform::InitializeForGPU(ui::OzonePlatform::InitParams());
+#endif
+    run_loop->Run();
+  }
+
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<aura::test::AuraTestHelper> aura_test_helper_;
   std::unique_ptr<TestFocusController> focus_controller_;
@@ -432,7 +445,8 @@ TEST_F(KeyboardControllerTest, VisibilityChangeWithTextInputTypeChange) {
   EXPECT_TRUE(keyboard_container->IsVisible());
   EXPECT_TRUE(WillHideKeyboard());
   // Wait for hide keyboard to finish.
-  run_loop.Run();
+
+  RunLoop(&run_loop);
   EXPECT_FALSE(keyboard_container->IsVisible());
 
   SetFocus(&input_client_1);
@@ -508,7 +522,7 @@ TEST_F(KeyboardControllerTest, AlwaysVisibleWhenLocked) {
   EXPECT_TRUE(WillHideKeyboard());
 
   // Wait for hide keyboard to finish.
-  run_loop.Run();
+  RunLoop(&run_loop);
   EXPECT_FALSE(keyboard_container->IsVisible());
 }
 
