@@ -798,13 +798,26 @@ int amdgpu_bo_list_update(amdgpu_bo_list_handle handle,
  * context will always be executed in order (first come, first serve).
  *
  *
- * \param   dev	    - \c [in] Device handle. See #amdgpu_device_initialize()
- * \param   context - \c [out] GPU Context handle
+ * \param   dev      - \c [in] Device handle. See #amdgpu_device_initialize()
+ * \param   priority - \c [in] Context creation flags. See AMDGPU_CTX_PRIORITY_*
+ * \param   context  - \c [out] GPU Context handle
  *
  * \return   0 on success\n
  *          <0 - Negative POSIX Error code
  *
  * \sa amdgpu_cs_ctx_free()
+ *
+*/
+int amdgpu_cs_ctx_create2(amdgpu_device_handle dev,
+			 uint32_t priority,
+			 amdgpu_context_handle *context);
+/**
+ * Create GPU execution Context
+ *
+ * Refer to amdgpu_cs_ctx_create2 for full documentation. This call
+ * is missing the priority parameter.
+ *
+ * \sa amdgpu_cs_ctx_create2()
  *
 */
 int amdgpu_cs_ctx_create(amdgpu_device_handle dev,

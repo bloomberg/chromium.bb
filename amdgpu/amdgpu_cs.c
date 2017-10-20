@@ -46,13 +46,14 @@ static int amdgpu_cs_reset_sem(amdgpu_semaphore_handle sem);
 /**
  * Create command submission context
  *
- * \param   dev - \c [in] amdgpu device handle
- * \param   context - \c [out] amdgpu context handle
+ * \param   dev      - \c [in] Device handle. See #amdgpu_device_initialize()
+ * \param   priority - \c [in] Context creation flags. See AMDGPU_CTX_PRIORITY_*
+ * \param   context  - \c [out] GPU Context handle
  *
  * \return  0 on success otherwise POSIX Error code
 */
-int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
-			 amdgpu_context_handle *context)
+int amdgpu_cs_ctx_create2(amdgpu_device_handle dev, uint32_t priority,
+							amdgpu_context_handle *context)
 {
 	struct amdgpu_context *gpu_context;
 	union drm_amdgpu_ctx args;
@@ -75,6 +76,8 @@ int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
 	/* Create the context */
 	memset(&args, 0, sizeof(args));
 	args.in.op = AMDGPU_CTX_OP_ALLOC_CTX;
+	args.in.priority = priority;
+
 	r = drmCommandWriteRead(dev->fd, DRM_AMDGPU_CTX, &args, sizeof(args));
 	if (r)
 		goto error;
@@ -92,6 +95,12 @@ error:
 	pthread_mutex_destroy(&gpu_context->sequence_mutex);
 	free(gpu_context);
 	return r;
+}
+
+int amdgpu_cs_ctx_create(amdgpu_device_handle dev,
+			 amdgpu_context_handle *context)
+{
+	return amdgpu_cs_ctx_create2(dev, AMDGPU_CTX_PRIORITY_NORMAL, context);
 }
 
 /**
