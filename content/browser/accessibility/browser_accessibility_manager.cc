@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/debug/crash_logging.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
@@ -173,15 +174,14 @@ BrowserAccessibilityManager::~BrowserAccessibilityManager() {
 void BrowserAccessibilityManager::Initialize(
     const ui::AXTreeUpdate& initial_tree) {
   if (!tree_->Unserialize(initial_tree)) {
-    // Make this a non-fatal error temporarily.  http://crbug.com/765490
-    // TODO(dmazzoni): Add some crash keys so we can figure out the
-    // underlying cause.
+    // Temporarily log some additional crash keys so we can try to
+    // figure out why we're getting bad accessibility trees here.
+    // http://crbug.com/765490
     // Be sure to re-enable BrowserAccessibilityManagerTest.TestFatalError
     // when done (or delete it if no longer needed).
-    LOG(ERROR) << tree_->error();
-    tree_->SetDelegate(nullptr);
-    tree_.reset(new ui::AXSerializableTree());
-    tree_->SetDelegate(this);
+    base::debug::SetCrashKeyValue("ax_tree_error", tree_->error());
+    base::debug::SetCrashKeyValue("ax_tree_update", initial_tree.ToString());
+    LOG(FATAL) << tree_->error();
   }
 }
 
