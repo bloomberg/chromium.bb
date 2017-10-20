@@ -210,19 +210,6 @@ NGPixelSnappedPhysicalBoxStrut NGPhysicalFragment::BorderWidths() const {
   return box_strut.SnapToDevicePixels();
 }
 
-NGPhysicalOffsetRect NGPhysicalFragment::LocalVisualRect() const {
-  switch (Type()) {
-    case NGPhysicalFragment::kFragmentBox:
-      return ToNGPhysicalBoxFragment(*this).LocalVisualRect();
-    case NGPhysicalFragment::kFragmentText:
-      return ToNGPhysicalTextFragment(*this).LocalVisualRect();
-    case NGPhysicalFragment::kFragmentLineBox:
-      return {{}, Size()};
-  }
-  NOTREACHED();
-  return {{}, Size()};
-}
-
 void NGPhysicalFragment::PropagateContentsVisualRect(
     NGPhysicalOffsetRect* parent_visual_rect) const {
   NGPhysicalOffsetRect visual_rect;
