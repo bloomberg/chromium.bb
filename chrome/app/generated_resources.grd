@@ -5491,20 +5491,26 @@ the Bookmarks menu.">
       </if>
 
       <!-- Importer Lock Dialog -->
-      <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
-        Close Firefox before importing
-      </message>
-      <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button on dialog">
-        Continue
-      </message>
       <if expr="use_titlecase">
-        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on dialog">
-          Skip Import
+        <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
+          Close Firefox
+        </message>
+        <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button (to try importing again) on importer lock dialog">
+          Try Again
+        </message>
+        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on importer lock dialog">
+          Cancel
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on dialog">
-          Skip import
+        <message name="IDS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
+          Close Firefox
+        </message>
+        <message name="IDS_IMPORTER_LOCK_OK" desc="Text for OK button (to try importing again) on importer lock dialog">
+          Try again
+        </message>
+        <message name="IDS_IMPORTER_LOCK_CANCEL" desc="Text for Cancel button on importer lock dialog">
+          Cancel
         </message>
       </if>
 
