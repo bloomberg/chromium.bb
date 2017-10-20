@@ -192,6 +192,7 @@ class DevToolsUIBindings : public DevToolsEmbedderMessageDispatcher::Delegate,
   void FileSystemAdded(
       const DevToolsFileHelper::FileSystem& file_system) override;
   void FileSystemRemoved(const std::string& file_system_path) override;
+  void FailedToAddFileSystem() override;
   void FilePathsChanged(const std::vector<std::string>& changed_paths,
                         const std::vector<std::string>& added_paths,
                         const std::vector<std::string>& removed_paths) override;
