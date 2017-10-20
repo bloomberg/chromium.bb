@@ -18,8 +18,10 @@ bool StructTraits<blink::mojom::CloneableMessage::DataView,
                   blink::CloneableMessage>::
     Read(blink::mojom::CloneableMessage::DataView data,
          blink::CloneableMessage* out) {
-  if (!data.ReadEncodedMessage(&out->owned_encoded_message))
+  if (!data.ReadEncodedMessage(&out->owned_encoded_message) ||
+      !data.ReadBlobs(&out->blobs)) {
     return false;
+  }
 
   out->encoded_message = out->owned_encoded_message;
   return true;

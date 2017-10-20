@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+import "third_party/WebKit/common/blob/blob.mojom";
+
 // A MessagePort is represented as a raw mojo message pipe, as such no interface
 // definition exists for it here. Messages on this pipe are serialized versions
 // of the TransferableMessage struct defined below.
@@ -14,6 +16,8 @@ module blink.mojom;
 // postMessage style APIs. In particular this is used for BroadcastChannel.
 struct CloneableMessage {
   array<uint8> encoded_message;
+  // Blob handles for any blobs being sent in this message.
+  array<SerializedBlob> blobs;
 };
 
 // This struct combines the cloneable part of a message with the parts of the
@@ -24,4 +28,15 @@ struct TransferableMessage {
   CloneableMessage message;
   // Any ports being transfered as part of this message.
   array<handle<message_pipe>> ports;
+};
+
+// Struct wrapping a Blob interface pointer.
+// TODO(mek): Once https://crbug.com/696107 is implemented all usage of this
+// struct can be replaced with a simple Blob interface pointer with handle
+// properties for the other attributes.
+struct SerializedBlob {
+  string uuid;
+  string content_type;
+  uint64 size;
+  Blob blob;
 };
