@@ -1345,6 +1345,7 @@ test("content_unittests") {
     "../browser/renderer_host/input/web_input_event_builders_android_unittest.cc",
     "../browser/renderer_host/input/web_input_event_builders_mac_unittest.mm",
     "../browser/renderer_host/input/web_input_event_util_unittest.cc",
+    "../browser/renderer_host/media/audio_input_delegate_impl_unittest.cc",
     "../browser/renderer_host/media/audio_input_device_manager_unittest.cc",
     "../browser/renderer_host/media/audio_input_renderer_host_unittest.cc",
     "../browser/renderer_host/media/audio_input_sync_writer_unittest.cc",

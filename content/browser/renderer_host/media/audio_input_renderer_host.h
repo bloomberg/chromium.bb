@@ -34,7 +34,7 @@
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/common/media/audio_messages.h"
 #include "content/public/browser/browser_message_filter.h"
-#include "media/audio/audio_input_controller.h"
+#include "media/audio/audio_input_delegate.h"
 
 namespace media {
 class AudioManager;
@@ -48,15 +48,18 @@ class MediaStreamManager;
 
 class CONTENT_EXPORT AudioInputRendererHost
     : public BrowserMessageFilter,
-      public media::AudioInputController::EventHandler {
+      public media::AudioInputDelegate::EventHandler {
  public:
   // Error codes to make native logging more clear. These error codes are added
   // to generic error strings to provide a higher degree of details.
   // Changing these values can lead to problems when matching native debug
   // logs with the actual cause of error.
   enum ErrorCode {
-    // An unspecified error occured.
-    UNKNOWN_ERROR = 0,
+    // Note: usage of many of these codes have been replaced with textual log
+    // messages.
+
+    // An unspecified error occured. Not used.
+    // UNKNOWN_ERROR = 0,
 
     // Failed to look up audio intry for the provided stream id.
     INVALID_AUDIO_ENTRY = 1,
@@ -68,14 +71,16 @@ class CONTENT_EXPORT AudioInputRendererHost
     PERMISSION_DENIED = 3,
 
     // Failed to create shared memory.
-    // Obsolete, merged with SYNC_WRITER_INIT_FAILED.
+    // Obsolete.
     // SHARED_MEMORY_CREATE_FAILED = 4
 
     // Failed to initialize the AudioInputSyncWriter instance.
-    SYNC_WRITER_INIT_FAILED = 5,
+    // Obsolete.
+    // SYNC_WRITER_INIT_FAILED = 5,
 
     // Failed to create native audio input stream.
-    STREAM_CREATE_ERROR = 6,
+    // Obsolete.
+    // STREAM_CREATE_ERROR = 6,
 
     // Failed to map and share the shared memory.
     MEMORY_SHARING_FAILED = 7,
@@ -88,7 +93,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   };
 
   // Called from UI thread from the owner of this object.
-  // |user_input_monitor| is used for typing detection and can be NULL.
+  // |user_input_monitor| is used for typing detection and can be null.
   AudioInputRendererHost(int render_process_id,
                          media::AudioManager* audio_manager,
                          MediaStreamManager* media_stream_manager,
@@ -100,14 +105,13 @@ class CONTENT_EXPORT AudioInputRendererHost
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  // AudioInputController::EventHandler implementation.
-  void OnCreated(media::AudioInputController* controller,
-                 bool initially_muted) override;
-  void OnError(media::AudioInputController* controller,
-               media::AudioInputController::ErrorCode error_code) override;
-  void OnLog(media::AudioInputController* controller,
-             const std::string& message) override;
-  void OnMuted(media::AudioInputController* controller, bool is_muted) override;
+  // AudioInputDelegate::EventHandler implementation.
+  void OnStreamCreated(int stream_id,
+                       const base::SharedMemory* shared_memory,
+                       std::unique_ptr<base::CancelableSyncSocket> socket,
+                       bool initially_muted) override;
+  void OnStreamError(int stream_id) override;
+  void OnMuted(int stream_id, bool is_muted) override;
 
  protected:
   ~AudioInputRendererHost() override;
@@ -116,8 +120,9 @@ class CONTENT_EXPORT AudioInputRendererHost
   friend class BrowserThread;
   friend class base::DeleteHelper<AudioInputRendererHost>;
 
-  struct AudioEntry;
-  typedef std::map<int, AudioEntry*> AudioEntryMap;
+  // Holds the stream_id -> delegate mapping.
+  using AudioInputDelegateMap =
+      base::flat_map<int, std::unique_ptr<media::AudioInputDelegate>>;
 
   // Methods called on IO thread ----------------------------------------------
 
@@ -159,53 +164,29 @@ class CONTENT_EXPORT AudioInputRendererHost
   // Complete the process of creating an audio input stream. This will set up
   // the shared memory or shared socket in low latency mode and send the
   // NotifyStreamCreated message to the peer.
-  void DoCompleteCreation(media::AudioInputController* controller,
-                          bool initially_muted);
-
-  // Send a state change message to the renderer.
-  void DoSendRecordingMessage(media::AudioInputController* controller);
+  void DoCompleteCreation(int stream_id, bool initially_muted);
 
   // Handle error coming from audio stream.
-  void DoHandleError(media::AudioInputController* controller,
-      media::AudioInputController::ErrorCode error_code);
+  void DoHandleError(int stream_id);
 
   // Log audio level of captured audio stream.
-  void DoLog(media::AudioInputController* controller,
-             const std::string& message);
+  void DoLog(int stream_id, const std::string& message);
 
   // Notify renderer of a change to a stream's muted state.
-  void DoNotifyMutedState(media::AudioInputController* controller,
-                          bool is_muted);
+  void DoNotifyMutedState(int stream_id, bool is_muted);
 
   // Send an error message to the renderer.
   void SendErrorMessage(int stream_id, ErrorCode error_code);
 
-  // Delete all audio entries and all audio streams.
-  void DeleteEntries();
+  void DeleteDelegateOnError(int stream_id, ErrorCode error_code);
 
-  // Closes the stream. The stream is then deleted in DeleteEntry() after it
-  // is closed.
-  void CloseAndDeleteStream(AudioEntry* entry);
-
-  // Delete an audio entry and close the related audio stream.
-  void DeleteEntry(AudioEntry* entry);
-
-  // Delete audio entry and close the related audio input stream.
-  void DeleteEntryOnError(AudioEntry* entry, ErrorCode error_code);
-
-  // A helper method to look up a AudioEntry identified by |stream_id|.
-  // Returns NULL if not found.
-  AudioEntry* LookupById(int stream_id);
-
-  // Search for a AudioEntry having the reference to |controller|.
-  // This method is used to look up an AudioEntry after a controller
-  // event is received.
-  AudioEntry* LookupByController(media::AudioInputController* controller);
+  // A helper method to look up a AudioInputDelegate identified by |stream_id|.
+  // Returns null if not found.
+  media::AudioInputDelegate* LookupById(int stream_id);
 
   // ID of the RenderProcessHost that owns this instance.
   const int render_process_id_;
 
-  // Used to create an AudioInputController.
   media::AudioManager* audio_manager_;
 
   // Used to access to AudioInputDeviceManager.
@@ -214,7 +195,7 @@ class CONTENT_EXPORT AudioInputRendererHost
   AudioMirroringManager* audio_mirroring_manager_;
 
   // A map of stream IDs to audio sources.
-  AudioEntryMap audio_entries_;
+  AudioInputDelegateMap delegates_;
 
   // Raw pointer of the UserInputMonitor.
   media::UserInputMonitor* const user_input_monitor_;

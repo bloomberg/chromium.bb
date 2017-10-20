@@ -178,7 +178,7 @@ AudioOutputDelegateImpl::~AudioOutputDelegateImpl() {
       base::Passed(&reader_), controller_));
 }
 
-int AudioOutputDelegateImpl::GetStreamId() const {
+int AudioOutputDelegateImpl::GetStreamId() {
   return stream_id_;
 }
 
