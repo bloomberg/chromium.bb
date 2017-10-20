@@ -39,6 +39,7 @@
 #include "chrome/browser/vr/ui_scene.h"
 #include "chrome/browser/vr/ui_scene_constants.h"
 #include "chrome/browser/vr/vr_gl_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -101,6 +102,7 @@ UiSceneManager::UiSceneManager(UiBrowserInterface* browser,
   CreateToasts();
   CreateSplashScreen();
   CreateUnderDevelopmentNotice();
+  CreateVoiceSearchButton();
 
   ConfigureScene();
 }
@@ -389,6 +391,21 @@ void UiSceneManager::CreateViewportAwareRoot() {
   element->SetVisible(true);
   element->set_hit_testable(false);
   scene_->AddUiElement(k2dBrowsingRoot, std::move(element));
+}
+
+void UiSceneManager::CreateVoiceSearchButton() {
+  // TODO(bshe): Use a proper microphone button and update size and translation
+  // according to UX.
+  auto element = base::MakeUnique<Button>(
+      base::Bind(&UiSceneManager::OnVoiceSearchButtonClicked,
+                 base::Unretained(this)),
+      base::MakeUnique<CloseButtonTexture>());
+  element->set_name(kVoiceSearchButton);
+  element->set_draw_phase(kPhaseForeground);
+  element->SetTranslate(0.f, 0.f, -kCloseButtonDistance);
+  element->SetSize(kCloseButtonWidth, kCloseButtonHeight);
+  voice_search_button_ = element.get();
+  scene_->AddUiElement(k2dBrowsingForeground, std::move(element));
 }
 
 void UiSceneManager::CreateUrlBar(Model* model) {
@@ -682,6 +699,9 @@ void UiSceneManager::ConfigureScene() {
   // Close button is a special control element that needs to be hidden when in
   // WebVR, but it needs to be visible when in cct or fullscreen.
   close_button_->SetVisible(browsing_mode && (fullscreen_ || in_cct_));
+  voice_search_button_->SetVisible(
+      browsing_mode &&
+      base::FeatureList::IsEnabled(features::kExperimentalVRFeatures));
 
   // Content elements.
   for (UiElement* element : content_elements_) {
@@ -912,6 +932,11 @@ void UiSceneManager::OnCloseButtonClicked() {
   if (in_cct_) {
     browser_->ExitCct();
   }
+}
+
+void UiSceneManager::OnVoiceSearchButtonClicked() {
+  recognizing_speech_ = !recognizing_speech_;
+  browser_->SetVoiceSearchActivate(recognizing_speech_);
 }
 
 void UiSceneManager::OnUnsupportedMode(UiUnsupportedMode mode) {

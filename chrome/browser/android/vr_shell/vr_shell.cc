@@ -27,14 +27,19 @@
 #include "chrome/browser/android/vr_shell/vr_shell_gl.h"
 #include "chrome/browser/android/vr_shell/vr_usage_monitor.h"
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/vr/toolbar_helper.h"
 #include "chrome/browser/vr/ui_interface.h"
 #include "chrome/browser/vr/ui_scene_manager.h"
 #include "chrome/browser/vr/vr_tab_helper.h"
 #include "chrome/browser/vr/web_contents_event_forwarder.h"
 #include "chrome/common/url_constants.h"
+#include "components/search_engines/template_url_service.h"
+#include "components/search_engines/util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -716,6 +721,23 @@ void VrShell::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
                                      window_size.height(), dpr);
 }
 
+void VrShell::SetVoiceSearchActivate(bool activate) {
+  if (!activate && !speech_recognizer_)
+    return;
+
+  if (!speech_recognizer_) {
+    Profile* profile = ProfileManager::GetActiveUserProfile();
+    std::string profile_locale = g_browser_process->GetApplicationLocale();
+    speech_recognizer_.reset(new vr::SpeechRecognizer(
+        this, profile->GetRequestContext(), profile_locale));
+  }
+  if (activate) {
+    speech_recognizer_->Start();
+  } else {
+    speech_recognizer_->Stop();
+  }
+}
+
 void VrShell::PollMediaAccessFlag() {
   poll_capturing_media_task_.Cancel();
 
@@ -855,6 +877,17 @@ bool VrShell::ShouldDisplayURL() const {
     return true;
   }
   return ChromeToolbarModelDelegate::ShouldDisplayURL();
+}
+
+void VrShell::OnVoiceResults(const base::string16& result) {
+  TemplateURLService* template_url_service =
+      TemplateURLServiceFactory::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  GURL url(GetDefaultSearchURLForSearchTerms(template_url_service, result));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_loadUrl(
+      env, j_vr_shell_,
+      base::android::ConvertUTF8ToJavaString(env, url.spec()));
 }
 
 // ----------------------------------------------------------------------------
