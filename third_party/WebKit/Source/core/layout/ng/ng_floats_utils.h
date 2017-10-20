@@ -38,7 +38,7 @@ PositionFloat(LayoutUnit origin_block_offset,
 CORE_EXPORT const Vector<NGPositionedFloat> PositionFloats(
     LayoutUnit origin_block_offset,
     LayoutUnit container_block_offset,
-    const Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
+    const Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
     const NGConstraintSpace& space,
     NGExclusionSpace* exclusion_space);
 

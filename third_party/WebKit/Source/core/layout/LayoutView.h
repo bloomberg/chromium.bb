@@ -299,7 +299,7 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   std::unique_ptr<ViewFragmentationContext> fragmentation_context_;
   std::unique_ptr<PaintLayerCompositor> compositor_;
-  RefPtr<IntervalArena> interval_arena_;
+  scoped_refptr<IntervalArena> interval_arena_;
 
   LayoutQuote* layout_quote_head_;
   unsigned layout_counter_count_;

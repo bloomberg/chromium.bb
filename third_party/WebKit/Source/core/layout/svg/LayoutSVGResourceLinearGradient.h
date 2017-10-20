@@ -48,7 +48,7 @@ class LayoutSVGResourceLinearGradient final : public LayoutSVGResourceGradient {
     return Attributes().GradientTransform();
   }
   bool CollectGradientAttributes() override;
-  RefPtr<Gradient> BuildGradient() const override;
+  scoped_refptr<Gradient> BuildGradient() const override;
 
   FloatPoint StartPoint(const LinearGradientAttributes&) const;
   FloatPoint EndPoint(const LinearGradientAttributes&) const;

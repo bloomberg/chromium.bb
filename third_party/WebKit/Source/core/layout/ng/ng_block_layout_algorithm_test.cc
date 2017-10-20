@@ -37,10 +37,10 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     style_ = ComputedStyle::Create();
   }
 
-  RefPtr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
+  scoped_refptr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
       const NGConstraintSpace& space,
       NGBlockNode node) {
-    RefPtr<NGLayoutResult> result =
+    scoped_refptr<NGLayoutResult> result =
         NGBlockLayoutAlgorithm(node, space).Layout();
 
     return ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
@@ -49,9 +49,10 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   MinMaxSize RunComputeMinAndMax(NGBlockNode node) {
     // The constraint space is not used for min/max computation, but we need
     // it to create the algorithm.
-    RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-        kHorizontalTopBottom, TextDirection::kLtr,
-        NGLogicalSize(LayoutUnit(), LayoutUnit()));
+    scoped_refptr<NGConstraintSpace> space =
+        ConstructBlockLayoutTestConstraintSpace(
+            kHorizontalTopBottom, TextDirection::kLtr,
+            NGLogicalSize(LayoutUnit(), LayoutUnit()));
 
     NGBlockLayoutAlgorithm algorithm(node, *space);
     EXPECT_TRUE(algorithm.ComputeMinMaxSize().has_value());
@@ -67,7 +68,7 @@ class NGBlockLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
     return fragment->DumpFragmentTree(flags);
   }
 
-  RefPtr<ComputedStyle> style_;
+  scoped_refptr<ComputedStyle> style_;
 };
 
 TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
@@ -75,13 +76,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, FixedSize) {
     <div id="box" style="width:30px; height:40px"></div>
   )HTML");
 
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
 
   NGBlockNode box(ToLayoutBox(GetLayoutObjectByElementId("box")));
 
-  RefPtr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(*space, box);
+  scoped_refptr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(*space, box);
 
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(30), LayoutUnit(40)), frag->Size());
 }
@@ -93,15 +95,16 @@ TEST_F(NGBlockLayoutAlgorithmTest, Caching) {
     <div id="box" style="width:30px; height:40px"></div>
   )HTML");
 
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
 
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(GetLayoutObjectByElementId("box"));
   NGBlockNode node(block_flow);
 
-  RefPtr<NGLayoutResult> result(node.Layout(*space, nullptr));
+  scoped_refptr<NGLayoutResult> result(node.Layout(*space, nullptr));
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(30), LayoutUnit(40)),
             result->PhysicalFragment()->Size());
 
@@ -145,11 +148,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildren) {
   const int kMarginTop = 5;
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
 
-  RefPtr<NGPhysicalBoxFragment> frag =
+  scoped_refptr<NGPhysicalBoxFragment> frag =
       RunBlockLayoutAlgorithm(*space, container);
 
   EXPECT_EQ(LayoutUnit(kWidth), frag->Size().width);
@@ -189,10 +193,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, LayoutBlockChildrenWithWritingMode) {
   const int kMarginLeft = 100;
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
-  RefPtr<NGPhysicalBoxFragment> frag =
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
+  scoped_refptr<NGPhysicalBoxFragment> frag =
       RunBlockLayoutAlgorithm(*space, container);
 
   const NGPhysicalFragment* child = frag->Children()[0].get();
@@ -244,8 +249,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1WithFloats) {
     )HTML");
 
   // ** Run LayoutNG algorithm **
-  RefPtr<NGConstraintSpace> space;
-  RefPtr<NGPhysicalBoxFragment> fragment;
+  scoped_refptr<NGConstraintSpace> space;
+  scoped_refptr<NGPhysicalBoxFragment> fragment;
   std::tie(fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
   ASSERT_EQ(fragment->Children().size(), 1UL);
@@ -320,8 +325,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase2WithFloats) {
     )HTML");
 
   // ** Run LayoutNG algorithm **
-  RefPtr<NGConstraintSpace> space;
-  RefPtr<NGPhysicalBoxFragment> fragment;
+  scoped_refptr<NGConstraintSpace> space;
+  scoped_refptr<NGPhysicalBoxFragment> fragment;
   std::tie(fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
 
@@ -376,7 +381,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase3) {
   const NGPhysicalBoxFragment* body_fragment;
   const NGPhysicalBoxFragment* container_fragment;
   const NGPhysicalBoxFragment* child_fragment;
-  RefPtr<const NGPhysicalBoxFragment> fragment;
+  scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& container_height) {
     Element* container = GetDocument().getElementById("container");
     container->MutableComputedStyle()->SetHeight(container_height);
@@ -428,7 +433,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase4) {
   const NGPhysicalBoxFragment* body_fragment;
   const NGPhysicalBoxFragment* container_fragment;
   const NGPhysicalBoxFragment* child_fragment;
-  RefPtr<const NGPhysicalBoxFragment> fragment;
+  scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& container_padding_top) {
     Element* container = GetDocument().getElementById("container");
     container->MutableComputedStyle()->SetPaddingTop(container_padding_top);
@@ -493,7 +498,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase5) {
         <div id='horizontal'></div>
       </div>
     )HTML");
-  RefPtr<NGPhysicalBoxFragment> fragment;
+  scoped_refptr<NGPhysicalBoxFragment> fragment;
   std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
 
@@ -550,7 +555,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsWithText) {
       </style>
       <p>Some text</p>
     )HTML");
-  RefPtr<NGPhysicalBoxFragment> html_fragment;
+  scoped_refptr<NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
 
@@ -593,10 +598,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase6) {
   const int kMarginTop = 40;
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
-  RefPtr<NGPhysicalBoxFragment> frag =
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(500), LayoutUnit(500)));
+  scoped_refptr<NGPhysicalBoxFragment> frag =
       RunBlockLayoutAlgorithm(*space, container);
 
   ASSERT_EQ(frag->Children().size(), 2UL);
@@ -643,7 +649,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase7) {
     <div id="inflow"></div>
   )HTML");
 
-  RefPtr<NGPhysicalBoxFragment> fragment;
+  scoped_refptr<NGPhysicalBoxFragment> fragment;
   std::tie(fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
 
@@ -712,7 +718,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsEmptyBlockWithClearance) {
   const LayoutNGBlockFlow* zero;
   const LayoutNGBlockFlow* abs;
   const LayoutNGBlockFlow* inflow;
-  RefPtr<const NGPhysicalBoxFragment> fragment;
+  scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& zero_top_margin_bottom,
                       const Length& zero_inner_margin_top,
                       const Length& zero_inner_margin_bottom,
@@ -847,7 +853,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFormattingContextAutoMargins) {
       </div>
     )HTML");
 
-  RefPtr<const NGPhysicalBoxFragment> fragment;
+  scoped_refptr<const NGPhysicalBoxFragment> fragment;
   std::tie(fragment, std::ignore) =
       RunBlockLayoutAlgorithmForElement(GetElementById("container"));
 
@@ -893,11 +899,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, BorderAndPadding) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
 
-  RefPtr<NGPhysicalBoxFragment> frag =
+  scoped_refptr<NGPhysicalBoxFragment> frag =
       RunBlockLayoutAlgorithm(*space, container);
 
   ASSERT_EQ(frag->Children().size(), 1UL);
@@ -930,10 +937,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, PercentageResolutionSize) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  RefPtr<NGPhysicalBoxFragment> frag =
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  scoped_refptr<NGPhysicalBoxFragment> frag =
       RunBlockLayoutAlgorithm(*space, container);
 
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Size().width);
@@ -962,10 +970,11 @@ TEST_F(NGBlockLayoutAlgorithmTest, AutoMargin) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
-  RefPtr<NGPhysicalBoxFragment> frag =
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(100), NGSizeIndefinite));
+  scoped_refptr<NGPhysicalBoxFragment> frag =
       RunBlockLayoutAlgorithm(*space, container);
 
   EXPECT_EQ(LayoutUnit(kWidth + kPaddingLeft), frag->Size().width);
@@ -1023,8 +1032,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatInsideEmptyBlocks) {
     )HTML");
 
   // ** Run LayoutNG algorithm **
-  RefPtr<NGConstraintSpace> space;
-  RefPtr<NGPhysicalBoxFragment> fragment;
+  scoped_refptr<NGConstraintSpace> space;
+  scoped_refptr<NGPhysicalBoxFragment> fragment;
   std::tie(fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
 
@@ -1152,8 +1161,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFloatFragments) {
       )HTML");
 
   // ** Run LayoutNG algorithm **
-  RefPtr<NGConstraintSpace> space;
-  RefPtr<NGPhysicalBoxFragment> fragment;
+  scoped_refptr<NGConstraintSpace> space;
+  scoped_refptr<NGPhysicalBoxFragment> fragment;
   std::tie(fragment, space) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
 
@@ -1275,7 +1284,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionFragmentsWithClear) {
   const NGPhysicalBoxFragment* container_fragment;
   const NGPhysicalBoxFragment* block_fragment;
   const NGPhysicalBoxFragment* adjoining_clearance_fragment;
-  RefPtr<const NGPhysicalBoxFragment> fragment;
+  scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_with_clearance = [&](EClear clear_value) {
     Element* el_with_clear = GetDocument().getElementById("clearance");
     el_with_clear->MutableComputedStyle()->SetClear(clear_value);
@@ -1379,10 +1388,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, ShrinkToFit) {
 
   NGBlockNode container(ToLayoutBox(GetLayoutObjectByElementId("container")));
 
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(100), NGSizeIndefinite), true);
-  RefPtr<NGPhysicalFragment> frag = RunBlockLayoutAlgorithm(*space, container);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(100), NGSizeIndefinite), true);
+  scoped_refptr<NGPhysicalFragment> frag =
+      RunBlockLayoutAlgorithm(*space, container);
 
   EXPECT_EQ(LayoutUnit(kWidthChild2), frag->Size().width);
 }
@@ -1427,7 +1438,7 @@ TEST_F(NGBlockLayoutAlgorithmTest, PositionEmptyBlocksInNewBfc) {
   EXPECT_THAT(floating_object->X(), LayoutUnit(15));
   EXPECT_THAT(floating_object->Y(), LayoutUnit(15));
 
-  RefPtr<const NGPhysicalBoxFragment> html_fragment;
+  scoped_refptr<const NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
   auto* body_fragment =
@@ -1497,7 +1508,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   )HTML");
 
   // Run LayoutNG algorithm.
-  RefPtr<NGPhysicalBoxFragment> html_fragment;
+  scoped_refptr<NGPhysicalBoxFragment> html_fragment;
   std::tie(html_fragment, std::ignore) = RunBlockLayoutAlgorithmForElement(
       GetDocument().getElementsByTagName("html")->item(0));
   auto* body_fragment =
@@ -1541,13 +1552,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, NoFragmentation) {
   LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
   // We should only have one 150x200 fragment with no fragmentation.
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(200)), fragment->Size());
   ASSERT_TRUE(fragment->BreakToken()->IsFinished());
@@ -1569,12 +1581,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, SimpleFragmentation) {
   LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(200)), fragment->Size());
   ASSERT_FALSE(fragment->BreakToken()->IsFinished());
@@ -1615,12 +1628,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentation) {
   LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(200)), fragment->Size());
   ASSERT_FALSE(fragment->BreakToken()->IsFinished());
@@ -1682,12 +1696,13 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(200)), fragment->Size());
   ASSERT_FALSE(fragment->BreakToken()->IsFinished());
@@ -1747,12 +1762,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, InnerChildrenFragmentationSmallHeight) {
   LayoutUnit kFragmentainerSpaceAvailable(200);
 
   NGBlockNode node(ToLayoutBox(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(70)), fragment->Size());
   ASSERT_FALSE(fragment->BreakToken()->IsFinished());
@@ -1813,12 +1829,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationParallelFlows) {
   LayoutUnit kFragmentainerSpaceAvailable(150);
 
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(50)), fragment->Size());
   ASSERT_FALSE(fragment->BreakToken()->IsFinished());
@@ -1891,12 +1908,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
   LayoutUnit kFragmentainerSpaceAvailable(150);
 
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(60)), fragment->Size());
   ASSERT_TRUE(fragment->BreakToken()->IsFinished());
@@ -1936,12 +1954,13 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationZeroHeight) {
   LayoutUnit kFragmentainerSpaceAvailable(150);
 
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
-      kFragmentainerSpaceAvailable);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
+          kFragmentainerSpaceAvailable);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(50)), fragment->Size());
   ASSERT_FALSE(fragment->BreakToken()->IsFinished());
@@ -2006,7 +2025,7 @@ TEST_F(NGBlockLayoutAlgorithmTest,
   const NGPhysicalBoxFragment* body_fragment;
   const NGPhysicalBoxFragment* container_fragment;
   const NGPhysicalBoxFragment* new_fc_fragment;
-  RefPtr<const NGPhysicalBoxFragment> fragment;
+  scoped_refptr<const NGPhysicalBoxFragment> fragment;
   auto run_test = [&](const Length& block_width) {
     Element* new_fc_block = GetDocument().getElementById("new-fc");
     new_fc_block->MutableComputedStyle()->SetWidth(block_width);
@@ -2063,11 +2082,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFcAvoidsFloats) {
   )HTML");
 
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite));
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(150)), fragment->Size());
 
@@ -2097,11 +2117,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, ZeroBlockSizeAboveEdge) {
   )HTML");
 
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(10)), fragment->Size());
 
@@ -2133,11 +2154,12 @@ TEST_F(NGBlockLayoutAlgorithmTest, NewFcFirstChildIsZeroBlockSize) {
   )HTML");
 
   NGBlockNode node(ToLayoutBlockFlow(GetLayoutObjectByElementId("container")));
-  RefPtr<NGConstraintSpace> space = ConstructBlockLayoutTestConstraintSpace(
-      kHorizontalTopBottom, TextDirection::kLtr,
-      NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);
+  scoped_refptr<NGConstraintSpace> space =
+      ConstructBlockLayoutTestConstraintSpace(
+          kHorizontalTopBottom, TextDirection::kLtr,
+          NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true);
 
-  RefPtr<const NGPhysicalFragment> fragment =
+  scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(200), LayoutUnit(10)), fragment->Size());
 

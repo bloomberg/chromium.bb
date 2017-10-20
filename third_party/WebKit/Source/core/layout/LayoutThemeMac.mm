@@ -1054,7 +1054,7 @@ LayoutTheme& LayoutTheme::NativeTheme() {
   return *layout_theme;
 }
 
-RefPtr<LayoutTheme> LayoutThemeMac::Create() {
+scoped_refptr<LayoutTheme> LayoutThemeMac::Create() {
   return WTF::AdoptRef(new LayoutThemeMac);
 }
 

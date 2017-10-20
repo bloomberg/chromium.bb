@@ -138,7 +138,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUseFirstLineStyle(
 }
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetUnpositionedFloats(
-    Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats) {
+    Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats) {
   unpositioned_floats_ = unpositioned_floats;
   return *this;
 }
@@ -159,7 +159,7 @@ NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::AddBaselineRequest(
   return *this;
 }
 
-RefPtr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
+scoped_refptr<NGConstraintSpace> NGConstraintSpaceBuilder::ToConstraintSpace(
     NGWritingMode out_writing_mode) {
   // Whether the child and the containing block are parallel to each other.
   // Example: vertical-rl and vertical-lr

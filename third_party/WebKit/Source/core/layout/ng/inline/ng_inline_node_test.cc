@@ -95,14 +95,15 @@ class NGInlineNodeTest : public RenderingTest {
     return node;
   }
 
-  void CreateLine(NGInlineNode node,
-                  Vector<RefPtr<const NGPhysicalTextFragment>>* fragments_out) {
+  void CreateLine(
+      NGInlineNode node,
+      Vector<scoped_refptr<const NGPhysicalTextFragment>>* fragments_out) {
     NGPhysicalSize icb_size(LayoutUnit(200), LayoutUnit(200));
 
-    RefPtr<NGConstraintSpace> constraint_space =
+    scoped_refptr<NGConstraintSpace> constraint_space =
         NGConstraintSpaceBuilder(kHorizontalTopBottom, icb_size)
             .ToConstraintSpace(kHorizontalTopBottom);
-    RefPtr<NGLayoutResult> result =
+    scoped_refptr<NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, *constraint_space).Layout();
 
     const NGPhysicalBoxFragment* container =
@@ -115,7 +116,7 @@ class NGInlineNodeTest : public RenderingTest {
     }
   }
 
-  RefPtr<const ComputedStyle> style_;
+  scoped_refptr<const ComputedStyle> style_;
   LayoutNGBlockFlow* layout_block_flow_ = nullptr;
   LayoutObject* layout_object_ = nullptr;
   FontCachePurgePreventer purge_preventer_;
@@ -310,13 +311,13 @@ TEST_F(NGInlineNodeTest, SegmentBidiIsolate) {
 
 TEST_F(NGInlineNodeTest, CreateLineBidiIsolate) {
   UseLayoutObjectAndAhem();
-  RefPtr<ComputedStyle> style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   style->SetLineHeight(Length(1, kFixed));
   style->GetFont().Update(nullptr);
   NGInlineNodeForTest node = CreateInlineNode();
   node = CreateBidiIsolateNode(node, style.get(), layout_object_);
   node.ShapeText();
-  Vector<RefPtr<const NGPhysicalTextFragment>> fragments;
+  Vector<scoped_refptr<const NGPhysicalTextFragment>> fragments;
   CreateLine(node, &fragments);
   ASSERT_EQ(5u, fragments.size());
   TEST_TEXT_FRAGMENT(fragments[0], 0u, 0u, 6u, TextDirection::kLtr);

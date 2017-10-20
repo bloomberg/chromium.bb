@@ -36,7 +36,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromHorizontalICB) {
 
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
-  RefPtr<NGConstraintSpace> space =
+  scoped_refptr<NGConstraintSpace> space =
       vertical_builder.ToConstraintSpace(kVerticalLeftRight);
 
   EXPECT_EQ(space->AvailableSize().inline_size, icb_size.height);
@@ -60,7 +60,7 @@ TEST(NGConstraintSpaceBuilderTest, AvailableSizeFromVerticalICB) {
 
   vertical_builder.SetAvailableSize(indefinite_size);
   vertical_builder.SetPercentageResolutionSize(indefinite_size);
-  RefPtr<NGConstraintSpace> space =
+  scoped_refptr<NGConstraintSpace> space =
       vertical_builder.ToConstraintSpace(kHorizontalTopBottom);
 
   EXPECT_EQ(space->AvailableSize().inline_size, icb_size.width);

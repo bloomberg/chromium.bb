@@ -40,7 +40,8 @@ class CORE_EXPORT NGConstraintSpace final
   // a root NGConstraintSpace.
   // override_logical_width/height are only used if
   // LayoutObject::OverideLogicalContentWidth/Height is undefined.
-  static RefPtr<NGConstraintSpace> CreateFromLayoutObject(const LayoutBox&);
+  static scoped_refptr<NGConstraintSpace> CreateFromLayoutObject(
+      const LayoutBox&);
 
   const NGExclusionSpace& ExclusionSpace() const { return *exclusion_space_; }
 
@@ -177,7 +178,7 @@ class CORE_EXPORT NGConstraintSpace final
     return floats_bfc_offset_;
   }
 
-  const Vector<RefPtr<NGUnpositionedFloat>>& UnpositionedFloats() const {
+  const Vector<scoped_refptr<NGUnpositionedFloat>>& UnpositionedFloats() const {
     return unpositioned_floats_;
   }
 
@@ -220,7 +221,7 @@ class CORE_EXPORT NGConstraintSpace final
       const NGBfcOffset& bfc_offset,
       const WTF::Optional<NGBfcOffset>& floats_bfc_offset,
       const NGExclusionSpace& exclusion_space,
-      Vector<RefPtr<NGUnpositionedFloat>>& unpositioned_floats,
+      Vector<scoped_refptr<NGUnpositionedFloat>>& unpositioned_floats,
       const WTF::Optional<LayoutUnit>& clearance_offset,
       Vector<NGBaselineRequest>& baseline_requests);
 
@@ -259,7 +260,7 @@ class CORE_EXPORT NGConstraintSpace final
 
   const std::unique_ptr<const NGExclusionSpace> exclusion_space_;
   WTF::Optional<LayoutUnit> clearance_offset_;
-  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
+  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 
   Vector<NGBaselineRequest> baseline_requests_;
 };

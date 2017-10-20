@@ -21,7 +21,7 @@ namespace blink {
 
 class NGInlineLayoutTest : public SimTest {
  public:
-  RefPtr<NGConstraintSpace> ConstraintSpaceForElement(
+  scoped_refptr<NGConstraintSpace> ConstraintSpaceForElement(
       LayoutNGBlockFlow* block_flow) {
     return NGConstraintSpaceBuilder(
                FromPlatformWritingMode(block_flow->Style()->GetWritingMode()),
@@ -48,11 +48,11 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   Element* target = GetDocument().getElementById("target");
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(target->GetLayoutObject());
-  RefPtr<NGConstraintSpace> constraint_space =
+  scoped_refptr<NGConstraintSpace> constraint_space =
       ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
 
-  RefPtr<NGLayoutResult> result =
+  scoped_refptr<NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, *constraint_space).Layout();
   EXPECT_TRUE(result);
 
@@ -73,11 +73,11 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   Element* target = GetDocument().getElementById("target");
   LayoutNGBlockFlow* block_flow =
       ToLayoutNGBlockFlow(target->GetLayoutObject());
-  RefPtr<NGConstraintSpace> constraint_space =
+  scoped_refptr<NGConstraintSpace> constraint_space =
       ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
 
-  RefPtr<NGLayoutResult> result =
+  scoped_refptr<NGLayoutResult> result =
       NGBlockLayoutAlgorithm(node, *constraint_space).Layout();
   EXPECT_TRUE(result);
 

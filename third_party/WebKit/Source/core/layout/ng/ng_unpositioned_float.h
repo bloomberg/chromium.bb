@@ -19,20 +19,21 @@ namespace blink {
 struct CORE_EXPORT NGUnpositionedFloat
     : public RefCounted<NGUnpositionedFloat> {
  public:
-  static RefPtr<NGUnpositionedFloat> Create(NGLogicalSize available_size,
-                                            NGLogicalSize percentage_size,
-                                            LayoutUnit origin_bfc_line_offset,
-                                            LayoutUnit bfc_line_offset,
-                                            NGBoxStrut margins,
-                                            NGBlockNode node,
-                                            NGBlockBreakToken* token) {
+  static scoped_refptr<NGUnpositionedFloat> Create(
+      NGLogicalSize available_size,
+      NGLogicalSize percentage_size,
+      LayoutUnit origin_bfc_line_offset,
+      LayoutUnit bfc_line_offset,
+      NGBoxStrut margins,
+      NGBlockNode node,
+      NGBlockBreakToken* token) {
     return WTF::AdoptRef(new NGUnpositionedFloat(
         margins, available_size, percentage_size, origin_bfc_line_offset,
         bfc_line_offset, node, token));
   }
 
   NGBlockNode node;
-  RefPtr<NGBlockBreakToken> token;
+  scoped_refptr<NGBlockBreakToken> token;
 
   // Available size of the constraint space that will be used by
   // NGLayoutOpportunityIterator to position this floating object.
@@ -54,7 +55,7 @@ struct CORE_EXPORT NGUnpositionedFloat
 
   // The layout result for this unpositioned float. This is only present if
   // it's in a different writing mode than the BFC.
-  RefPtr<NGLayoutResult> layout_result;
+  scoped_refptr<NGLayoutResult> layout_result;
 
   bool IsLeft() const;
   bool IsRight() const;

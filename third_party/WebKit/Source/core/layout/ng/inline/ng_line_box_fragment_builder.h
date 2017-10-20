@@ -24,7 +24,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
  public:
   NGLineBoxFragmentBuilder(NGInlineNode,
-                           RefPtr<const ComputedStyle>,
+                           scoped_refptr<const ComputedStyle>,
                            NGWritingMode);
 
   NGLogicalSize Size() const final;
@@ -32,7 +32,9 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   void MoveChildrenInBlockDirection(LayoutUnit);
   void MoveChildrenInBlockDirection(LayoutUnit, unsigned start, unsigned end);
 
-  Vector<RefPtr<NGPhysicalFragment>>& MutableChildren() { return children_; }
+  Vector<scoped_refptr<NGPhysicalFragment>>& MutableChildren() {
+    return children_;
+  }
   const Vector<NGLogicalOffset>& Offsets() const { return offsets_; }
   Vector<NGLogicalOffset>& MutableOffsets() { return offsets_; }
 
@@ -43,10 +45,10 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
   // Set the break token for the fragment to build.
   // A finished break token will be attached if not set.
-  void SetBreakToken(RefPtr<NGInlineBreakToken>);
+  void SetBreakToken(scoped_refptr<NGInlineBreakToken>);
 
   // Creates the fragment. Can only be called once.
-  RefPtr<NGLayoutResult> ToLineBoxFragment();
+  scoped_refptr<NGLayoutResult> ToLineBoxFragment();
 
  private:
   NGInlineNode node_;
@@ -54,7 +56,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   NGLineHeightMetrics metrics_;
   Vector<NGPositionedFloat> positioned_floats_;
 
-  RefPtr<NGInlineBreakToken> break_token_;
+  scoped_refptr<NGInlineBreakToken> break_token_;
 };
 
 }  // namespace blink

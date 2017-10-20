@@ -878,7 +878,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   ComputedStyle* GetCachedPseudoStyle(
       PseudoId,
       const ComputedStyle* parent_style = nullptr) const;
-  RefPtr<ComputedStyle> GetUncachedPseudoStyle(
+  scoped_refptr<ComputedStyle> GetUncachedPseudoStyle(
       const PseudoStyleRequest&,
       const ComputedStyle* parent_style = nullptr) const;
 
@@ -1159,20 +1159,21 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
       MarkingBehavior marking_behaviour = kMarkContainerChain);
 
   // Set the style of the object and update the state of the object accordingly.
-  void SetStyle(RefPtr<ComputedStyle>);
+  void SetStyle(scoped_refptr<ComputedStyle>);
 
   // Set the style of the object if it's generated content.
-  void SetPseudoStyle(RefPtr<ComputedStyle>);
+  void SetPseudoStyle(scoped_refptr<ComputedStyle>);
 
   // Updates only the local style ptr of the object.  Does not update the state
   // of the object, and so only should be called when the style is known not to
   // have changed (or from setStyle).
-  void SetStyleInternal(RefPtr<ComputedStyle> style) {
+  void SetStyleInternal(scoped_refptr<ComputedStyle> style) {
     style_ = std::move(style);
   }
 
-  void SetStyleWithWritingModeOf(RefPtr<ComputedStyle>, LayoutObject* parent);
-  void SetStyleWithWritingModeOfParent(RefPtr<ComputedStyle>);
+  void SetStyleWithWritingModeOf(scoped_refptr<ComputedStyle>,
+                                 LayoutObject* parent);
+  void SetStyleWithWritingModeOfParent(scoped_refptr<ComputedStyle>);
   void AddChildWithWritingModeOfParent(LayoutObject* new_child,
                                        LayoutObject* before_child);
 
@@ -2103,7 +2104,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
  private:
   // Used only by applyFirstLineChanges to get a first line style based off of a
   // given new style, without accessing the cache.
-  RefPtr<ComputedStyle> UncachedFirstLineStyle() const;
+  scoped_refptr<ComputedStyle> UncachedFirstLineStyle() const;
 
   // Adjusts a visual rect in the space of |visual_rect_| to be in the space of
   // the |paint_invalidation_container|, if needed. They can be different only
@@ -2176,7 +2177,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void ApplyPseudoStyleChanges(const ComputedStyle& old_style);
   void ApplyFirstLineChanges(const ComputedStyle& old_style);
 
-  RefPtr<ComputedStyle> style_;
+  scoped_refptr<ComputedStyle> style_;
 
   // Oilpan: This untraced pointer to the owning Node is considered safe.
   UntracedMember<Node> node_;

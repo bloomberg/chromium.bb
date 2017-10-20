@@ -13,7 +13,7 @@
 namespace blink {
 
 NGContainerFragmentBuilder::NGContainerFragmentBuilder(
-    RefPtr<const ComputedStyle> style,
+    scoped_refptr<const ComputedStyle> style,
     NGWritingMode writing_mode,
     TextDirection direction)
     : NGBaseFragmentBuilder(std::move(style), writing_mode, direction) {}
@@ -45,13 +45,13 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::SetExclusionSpace(
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::SwapUnpositionedFloats(
-    Vector<RefPtr<NGUnpositionedFloat>>* unpositioned_floats) {
+    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats) {
   unpositioned_floats_.swap(*unpositioned_floats);
   return *this;
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    RefPtr<NGLayoutResult> child,
+    scoped_refptr<NGLayoutResult> child,
     const NGLogicalOffset& child_offset) {
   // Collect the child's out of flow descendants.
   for (const NGOutOfFlowPositionedDescendant& descendant :
@@ -64,7 +64,7 @@ NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
 }
 
 NGContainerFragmentBuilder& NGContainerFragmentBuilder::AddChild(
-    RefPtr<NGPhysicalFragment> child,
+    scoped_refptr<NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {
   children_.push_back(std::move(child));
   offsets_.push_back(child_offset);

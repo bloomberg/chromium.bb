@@ -353,7 +353,7 @@ class CORE_EXPORT TextAutosizer final
   // Clusters are created and destroyed during layout
   ClusterStack cluster_stack_;
   FingerprintMapper fingerprint_mapper_;
-  Vector<RefPtr<ComputedStyle>> styles_retained_during_layout_;
+  Vector<scoped_refptr<ComputedStyle>> styles_retained_during_layout_;
   // FIXME: All frames should share the same m_pageInfo instance.
   PageInfo page_info_;
   bool update_page_info_deferred_;

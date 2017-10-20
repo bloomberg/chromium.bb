@@ -24,7 +24,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   STACK_ALLOCATED();
  public:
   NGLayoutAlgorithm(NGInputNodeType node,
-                    RefPtr<const ComputedStyle> style,
+                    scoped_refptr<const ComputedStyle> style,
                     const NGConstraintSpace& space,
                     TextDirection direction,
                     NGBreakTokenType* break_token)
@@ -48,7 +48,7 @@ class CORE_EXPORT NGLayoutAlgorithm {
   // constraints given by the NGConstraintSpace. Returns a layout result with
   // the resulting layout information.
   // TODO(layout-dev): attempt to make this function const.
-  virtual RefPtr<NGLayoutResult> Layout() = 0;
+  virtual scoped_refptr<NGLayoutResult> Layout() = 0;
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width, max-width or width properties into

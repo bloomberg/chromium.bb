@@ -298,9 +298,10 @@ LayoutUnit LayoutTextControlSingleLine::ComputeControlLogicalHeight(
   return line_height + non_content_height;
 }
 
-RefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
+scoped_refptr<ComputedStyle>
+LayoutTextControlSingleLine::CreateInnerEditorStyle(
     const ComputedStyle& start_style) const {
-  RefPtr<ComputedStyle> text_block_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> text_block_style = ComputedStyle::Create();
   text_block_style->InheritFrom(start_style);
   AdjustInnerEditorStyle(*text_block_style);
 
@@ -339,7 +340,7 @@ RefPtr<ComputedStyle> LayoutTextControlSingleLine::CreateInnerEditorStyle(
   text_block_style->SetOverflowX(EOverflow::kScroll);
   // overflow-y:visible doesn't work because overflow-x:scroll makes a layer.
   text_block_style->SetOverflowY(EOverflow::kScroll);
-  RefPtr<ComputedStyle> no_scrollbar_style = ComputedStyle::Create();
+  scoped_refptr<ComputedStyle> no_scrollbar_style = ComputedStyle::Create();
   no_scrollbar_style->SetStyleType(kPseudoIdScrollbar);
   no_scrollbar_style->SetDisplay(EDisplay::kNone);
   text_block_style->AddCachedPseudoStyle(no_scrollbar_style);

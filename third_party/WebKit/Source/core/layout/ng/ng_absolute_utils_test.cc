@@ -88,12 +88,12 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
     style_->SetWritingMode(writing_mode);
   }
 
-  RefPtr<ComputedStyle> style_;
+  scoped_refptr<ComputedStyle> style_;
   NGLogicalSize container_size_;
-  RefPtr<NGConstraintSpace> ltr_space_;
-  RefPtr<NGConstraintSpace> rtl_space_;
-  RefPtr<NGConstraintSpace> vertical_lr_space_;
-  RefPtr<NGConstraintSpace> vertical_rl_space_;
+  scoped_refptr<NGConstraintSpace> ltr_space_;
+  scoped_refptr<NGConstraintSpace> rtl_space_;
+  scoped_refptr<NGConstraintSpace> vertical_lr_space_;
+  scoped_refptr<NGConstraintSpace> vertical_rl_space_;
 };
 
 TEST_F(NGAbsoluteUtilsTest, Horizontal) {

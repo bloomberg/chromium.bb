@@ -37,7 +37,7 @@ namespace blink {
 
 class LayoutThemeMac final : public LayoutTheme {
  public:
-  static RefPtr<LayoutTheme> Create();
+  static scoped_refptr<LayoutTheme> Create();
 
   void AddVisualOverflow(const Node*,
                          const ComputedStyle&,

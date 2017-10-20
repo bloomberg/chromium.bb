@@ -42,10 +42,10 @@ struct CORE_EXPORT NGInlineItemResult {
 
   // ShapeResult for text items. Maybe different from NGInlineItem if re-shape
   // is needed in the line breaker.
-  RefPtr<const ShapeResult> shape_result;
+  scoped_refptr<const ShapeResult> shape_result;
 
   // NGLayoutResult for atomic inline items.
-  RefPtr<NGLayoutResult> layout_result;
+  scoped_refptr<NGLayoutResult> layout_result;
 
   // Margins for atomic inline items and open/close tags.
   NGBoxStrut margins;
@@ -146,15 +146,18 @@ class CORE_EXPORT NGLineInfo {
   }
 
   // ShapeResult to append to the line end. Used by 'text-overflow: ellipsis'.
-  RefPtr<ShapeResult>& LineEndShapeResult() { return line_end_shape_result_; }
-  RefPtr<const ComputedStyle>& LineEndStyle() { return line_end_style_; }
-  void SetLineEndShapeResult(RefPtr<ShapeResult>, RefPtr<const ComputedStyle>);
+  scoped_refptr<ShapeResult>& LineEndShapeResult() {
+    return line_end_shape_result_;
+  }
+  scoped_refptr<const ComputedStyle>& LineEndStyle() { return line_end_style_; }
+  void SetLineEndShapeResult(scoped_refptr<ShapeResult>,
+                             scoped_refptr<const ComputedStyle>);
 
  private:
   const ComputedStyle* line_style_ = nullptr;
   NGInlineItemResults results_;
-  RefPtr<ShapeResult> line_end_shape_result_;
-  RefPtr<const ComputedStyle> line_end_style_;
+  scoped_refptr<ShapeResult> line_end_shape_result_;
+  scoped_refptr<const ComputedStyle> line_end_style_;
 
   NGLogicalOffset line_offset_;
   LayoutUnit available_width_;

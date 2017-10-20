@@ -46,17 +46,18 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
       std::unique_ptr<const NGExclusionSpace> exclusion_space);
 
   NGContainerFragmentBuilder& SwapUnpositionedFloats(
-      Vector<RefPtr<NGUnpositionedFloat>>*);
+      Vector<scoped_refptr<NGUnpositionedFloat>>*);
 
-  virtual NGContainerFragmentBuilder& AddChild(RefPtr<NGLayoutResult>,
+  virtual NGContainerFragmentBuilder& AddChild(scoped_refptr<NGLayoutResult>,
                                                const NGLogicalOffset&);
-  virtual NGContainerFragmentBuilder& AddChild(RefPtr<NGPhysicalFragment>,
-                                               const NGLogicalOffset&);
+  virtual NGContainerFragmentBuilder& AddChild(
+      scoped_refptr<NGPhysicalFragment>,
+      const NGLogicalOffset&);
   // TODO(layout-dev): Explain why we have this.
   virtual NGContainerFragmentBuilder& AddChild(std::nullptr_t,
                                                const NGLogicalOffset&);
 
-  const Vector<RefPtr<NGPhysicalFragment>>& Children() const {
+  const Vector<scoped_refptr<NGPhysicalFragment>>& Children() const {
     return children_;
   }
 
@@ -84,7 +85,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
     NGLogicalOffset child_offset;
   };
 
-  NGContainerFragmentBuilder(RefPtr<const ComputedStyle>,
+  NGContainerFragmentBuilder(scoped_refptr<const ComputedStyle>,
                              NGWritingMode,
                              TextDirection);
 
@@ -95,12 +96,12 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
 
   // Floats that need to be positioned by the next in-flow fragment that can
   // determine its block position in space.
-  Vector<RefPtr<NGUnpositionedFloat>> unpositioned_floats_;
+  Vector<scoped_refptr<NGUnpositionedFloat>> unpositioned_floats_;
 
   Vector<NGOutOfFlowPositionedCandidate> oof_positioned_candidates_;
   Vector<NGOutOfFlowPositionedDescendant> oof_positioned_descendants_;
 
-  Vector<RefPtr<NGPhysicalFragment>> children_;
+  Vector<scoped_refptr<NGPhysicalFragment>> children_;
   Vector<NGLogicalOffset> offsets_;
 };
 

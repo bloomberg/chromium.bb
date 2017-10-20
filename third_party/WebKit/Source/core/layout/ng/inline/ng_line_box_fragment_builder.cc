@@ -16,7 +16,7 @@ namespace blink {
 
 NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
     NGInlineNode node,
-    RefPtr<const ComputedStyle> style,
+    scoped_refptr<const ComputedStyle> style,
     NGWritingMode writing_mode)
     : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
       node_(node) {}
@@ -47,11 +47,11 @@ void NGLineBoxFragmentBuilder::AddPositionedFloat(
 }
 
 void NGLineBoxFragmentBuilder::SetBreakToken(
-    RefPtr<NGInlineBreakToken> break_token) {
+    scoped_refptr<NGInlineBreakToken> break_token) {
   break_token_ = std::move(break_token);
 }
 
-RefPtr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
+scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGWritingMode writing_mode(
@@ -66,7 +66,7 @@ RefPtr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
         writing_mode, Direction(), physical_size, child->Size()));
   }
 
-  RefPtr<NGPhysicalLineBoxFragment> fragment =
+  scoped_refptr<NGPhysicalLineBoxFragment> fragment =
       WTF::AdoptRef(new NGPhysicalLineBoxFragment(
           Style(), physical_size, children_, metrics_,
           break_token_ ? std::move(break_token_)

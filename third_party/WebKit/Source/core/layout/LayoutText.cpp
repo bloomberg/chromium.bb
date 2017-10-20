@@ -152,7 +152,7 @@ static void MakeCapitalized(String* string, UChar previous) {
   *string = result.ToString();
 }
 
-LayoutText::LayoutText(Node* node, RefPtr<StringImpl> str)
+LayoutText::LayoutText(Node* node, scoped_refptr<StringImpl> str)
     : LayoutObject(node),
       has_tab_(false),
       lines_dirty_(false),
@@ -300,7 +300,7 @@ void LayoutText::DeleteTextBoxes() {
   }
 }
 
-RefPtr<StringImpl> LayoutText::OriginalText() const {
+scoped_refptr<StringImpl> LayoutText::OriginalText() const {
   Node* e = GetNode();
   return (e && e->IsTextNode()) ? ToText(e)->DataImpl() : nullptr;
 }
@@ -1434,7 +1434,7 @@ void LayoutText::SetSelectionState(SelectionState state) {
     containing_block->SetSelectionState(state);
 }
 
-void LayoutText::SetTextWithOffset(RefPtr<StringImpl> text,
+void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
                                    unsigned offset,
                                    unsigned len,
                                    bool force) {
@@ -1518,7 +1518,7 @@ void LayoutText::SetTextWithOffset(RefPtr<StringImpl> text,
 }
 
 void LayoutText::TransformText() {
-  if (RefPtr<StringImpl> text_to_transform = OriginalText())
+  if (scoped_refptr<StringImpl> text_to_transform = OriginalText())
     SetText(std::move(text_to_transform), true);
 }
 
@@ -1577,7 +1577,7 @@ void ApplyTextTransform(const ComputedStyle* style,
   }
 }
 
-void LayoutText::SetTextInternal(RefPtr<StringImpl> text) {
+void LayoutText::SetTextInternal(scoped_refptr<StringImpl> text) {
   DCHECK(text);
   text_ = String(std::move(text));
 
@@ -1629,7 +1629,7 @@ void LayoutText::SecureText(UChar mask) {
   }
 }
 
-void LayoutText::SetText(RefPtr<StringImpl> text, bool force) {
+void LayoutText::SetText(scoped_refptr<StringImpl> text, bool force) {
   DCHECK(text);
 
   if (!force && Equal(text_.Impl(), text.get()))
@@ -2028,7 +2028,7 @@ void LayoutText::MomentarilyRevealLastTypedCharacter(
   secure_text_timer->RestartWithNewText(last_typed_character_offset);
 }
 
-RefPtr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
+scoped_refptr<AbstractInlineTextBox> LayoutText::FirstAbstractInlineTextBox() {
   return AbstractInlineTextBox::GetOrCreate(LineLayoutText(this),
                                             first_text_box_);
 }

@@ -73,7 +73,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   // FIXME: If the node argument is not a Text node or the string argument is
   // not the content of the Text node, updating text-transform property
   // doesn't re-transform the string.
-  LayoutText(Node*, RefPtr<StringImpl>);
+  LayoutText(Node*, scoped_refptr<StringImpl>);
 #if DCHECK_IS_ON()
   ~LayoutText() override;
 #endif
@@ -85,7 +85,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   virtual bool IsTextFragment() const;
   virtual bool IsWordBreak() const;
 
-  virtual RefPtr<StringImpl> OriginalText() const;
+  virtual scoped_refptr<StringImpl> OriginalText() const;
 
   void ExtractTextBox(InlineTextBox*);
   void AttachTextBox(InlineTextBox*);
@@ -175,15 +175,15 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   float FirstRunX() const;
   float FirstRunY() const;
 
-  virtual void SetText(RefPtr<StringImpl>, bool force = false);
-  void SetTextWithOffset(RefPtr<StringImpl>,
+  virtual void SetText(scoped_refptr<StringImpl>, bool force = false);
+  void SetTextWithOffset(scoped_refptr<StringImpl>,
                          unsigned offset,
                          unsigned len,
                          bool force = false);
 
   // TODO(kojii): setTextInternal() is temporarily public for NGInlineNode.
   // This will be back to protected when NGInlineNode can paint directly.
-  virtual void SetTextInternal(RefPtr<StringImpl>);
+  virtual void SetTextInternal(scoped_refptr<StringImpl>);
 
   virtual void TransformText();
 
@@ -227,7 +227,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   void RemoveAndDestroyTextBoxes();
 
-  RefPtr<AbstractInlineTextBox> FirstAbstractInlineTextBox();
+  scoped_refptr<AbstractInlineTextBox> FirstAbstractInlineTextBox();
 
   float HyphenWidth(const Font&, TextDirection);
 

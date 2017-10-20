@@ -53,8 +53,9 @@ void NGLineInfo::SetLineOffset(NGLogicalOffset line_offset,
   available_width_ = available_width;
 }
 
-void NGLineInfo::SetLineEndShapeResult(RefPtr<ShapeResult> result,
-                                       RefPtr<const ComputedStyle> style) {
+void NGLineInfo::SetLineEndShapeResult(
+    scoped_refptr<ShapeResult> result,
+    scoped_refptr<const ComputedStyle> style) {
   line_end_shape_result_ = std::move(result);
   line_end_style_ = std::move(style);
 }

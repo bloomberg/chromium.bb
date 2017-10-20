@@ -41,8 +41,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   }
   NGLayoutInputNode NextSibling();
 
-  RefPtr<NGLayoutResult> Layout(const NGConstraintSpace&,
-                                NGBreakToken* = nullptr);
+  scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
+                                       NGBreakToken* = nullptr);
 
   // Computes the value of min-content and max-content for this anonymous block
   // box. min-content is the inline size when lines wrap at every break
