@@ -233,7 +233,7 @@ class XMLHttpRequest::BlobLoader final
       public FileReaderLoaderClient {
  public:
   static BlobLoader* Create(XMLHttpRequest* xhr,
-                            RefPtr<BlobDataHandle> handle) {
+                            scoped_refptr<BlobDataHandle> handle) {
     return new BlobLoader(xhr, std::move(handle));
   }
 
@@ -253,7 +253,7 @@ class XMLHttpRequest::BlobLoader final
   void Trace(blink::Visitor* visitor) { visitor->Trace(xhr_); }
 
  private:
-  BlobLoader(XMLHttpRequest* xhr, RefPtr<BlobDataHandle> handle)
+  BlobLoader(XMLHttpRequest* xhr, scoped_refptr<BlobDataHandle> handle)
       : xhr_(xhr),
         loader_(
             FileReaderLoader::Create(FileReaderLoader::kReadByClient, this)) {
@@ -292,7 +292,7 @@ XMLHttpRequest::XMLHttpRequest(
     ExecutionContext* context,
     v8::Isolate* isolate,
     bool is_isolated_world,
-    RefPtr<SecurityOrigin> isolated_world_security_origin)
+    scoped_refptr<SecurityOrigin> isolated_world_security_origin)
     : SuspendableObject(context),
       timeout_milliseconds_(0),
       state_(kUnsent),
@@ -845,7 +845,7 @@ void XMLHttpRequest::send(Document* document, ExceptionState& exception_state) {
   if (!InitSend(exception_state))
     return;
 
-  RefPtr<EncodedFormData> http_body;
+  scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
     // FIXME: Per https://xhr.spec.whatwg.org/#dom-xmlhttprequest-send the
@@ -870,7 +870,7 @@ void XMLHttpRequest::send(const String& body, ExceptionState& exception_state) {
   if (!InitSend(exception_state))
     return;
 
-  RefPtr<EncodedFormData> http_body;
+  scoped_refptr<EncodedFormData> http_body;
 
   if (!body.IsNull() && AreMethodAndURLValidForSend()) {
     http_body = EncodedFormData::Create(
@@ -887,7 +887,7 @@ void XMLHttpRequest::send(Blob* body, ExceptionState& exception_state) {
   if (!InitSend(exception_state))
     return;
 
-  RefPtr<EncodedFormData> http_body;
+  scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
     if (!HasContentTypeRequestHeader()) {
@@ -922,7 +922,7 @@ void XMLHttpRequest::send(FormData* body, ExceptionState& exception_state) {
   if (!InitSend(exception_state))
     return;
 
-  RefPtr<EncodedFormData> http_body;
+  scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
     http_body = body->EncodeMultiPartFormData();
@@ -947,7 +947,7 @@ void XMLHttpRequest::send(URLSearchParams* body,
   if (!InitSend(exception_state))
     return;
 
-  RefPtr<EncodedFormData> http_body;
+  scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
     http_body = body->ToEncodedFormData();
@@ -978,7 +978,7 @@ void XMLHttpRequest::SendBytesData(const void* data,
   if (!InitSend(exception_state))
     return;
 
-  RefPtr<EncodedFormData> http_body;
+  scoped_refptr<EncodedFormData> http_body;
 
   if (AreMethodAndURLValidForSend()) {
     http_body = EncodedFormData::Create(data, length);
@@ -988,7 +988,7 @@ void XMLHttpRequest::SendBytesData(const void* data,
 }
 
 void XMLHttpRequest::SendForInspectorXHRReplay(
-    RefPtr<EncodedFormData> form_data,
+    scoped_refptr<EncodedFormData> form_data,
     ExceptionState& exception_state) {
   CreateRequest(form_data ? form_data->DeepCopy() : nullptr, exception_state);
   exception_code_ = exception_state.Code();
@@ -1014,7 +1014,7 @@ void XMLHttpRequest::ThrowForLoadFailureIfNeeded(
   exception_state.ThrowDOMException(exception_code_, message);
 }
 
-void XMLHttpRequest::CreateRequest(RefPtr<EncodedFormData> http_body,
+void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
                                    ExceptionState& exception_state) {
   // Only GET request is supported for blob URL.
   if (url_.ProtocolIs("blob") && method_ != HTTPNames::GET) {
@@ -1688,7 +1688,8 @@ void XMLHttpRequest::DidFailLoadingFromBlob() {
   HandleNetworkError();
 }
 
-RefPtr<BlobDataHandle> XMLHttpRequest::CreateBlobDataHandleFromResponse() {
+scoped_refptr<BlobDataHandle>
+XMLHttpRequest::CreateBlobDataHandleFromResponse() {
   DCHECK(downloading_to_file_);
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   String file_path = response_.DownloadedFilePath();

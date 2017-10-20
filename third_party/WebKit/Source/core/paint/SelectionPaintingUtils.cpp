@@ -26,7 +26,7 @@ bool NodeIsSelectable(const ComputedStyle& style, Node* node) {
                                style.UserModify() == EUserModify::kReadOnly);
 }
 
-RefPtr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
+scoped_refptr<ComputedStyle> GetUncachedSelectionStyle(Node* node) {
   if (!node)
     return nullptr;
 
@@ -66,7 +66,8 @@ Color SelectionColor(const Document& document,
       (global_paint_flags & kGlobalPaintSelectionOnly))
     return style.VisitedDependentColor(color_property);
 
-  if (RefPtr<ComputedStyle> pseudo_style = GetUncachedSelectionStyle(node))
+  if (scoped_refptr<ComputedStyle> pseudo_style =
+          GetUncachedSelectionStyle(node))
     return pseudo_style->VisitedDependentColor(color_property);
   if (!LayoutTheme::GetTheme().SupportsSelectionForegroundColors())
     return style.VisitedDependentColor(color_property);
@@ -92,7 +93,8 @@ Color SelectionPaintingUtils::SelectionBackgroundColor(
   if (node && !NodeIsSelectable(style, node))
     return Color::kTransparent;
 
-  if (RefPtr<ComputedStyle> pseudo_style = GetUncachedSelectionStyle(node)) {
+  if (scoped_refptr<ComputedStyle> pseudo_style =
+          GetUncachedSelectionStyle(node)) {
     return pseudo_style->VisitedDependentColor(CSSPropertyBackgroundColor)
         .BlendWithWhite();
   }

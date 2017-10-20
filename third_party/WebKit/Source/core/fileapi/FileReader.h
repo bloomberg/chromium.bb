@@ -126,7 +126,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   bool still_firing_events_;
 
   String blob_type_;
-  RefPtr<BlobDataHandle> blob_data_handle_;
+  scoped_refptr<BlobDataHandle> blob_data_handle_;
   FileReaderLoader::ReadType read_type_;
   String encoding_;
 

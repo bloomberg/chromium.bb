@@ -84,7 +84,7 @@ class CORE_EXPORT PerformanceNavigationTiming final
   AtomicString AlpnNegotiatedProtocol() const override;
   AtomicString ConnectionInfo() const override;
 
-  RefPtr<ResourceTimingInfo> resource_timing_info_;
+  scoped_refptr<ResourceTimingInfo> resource_timing_info_;
 };
 }  // namespace blink
 

@@ -69,8 +69,8 @@ class CORE_EXPORT ImageBitmap final
   static ImageBitmap* Create(ImageBitmap*,
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
-  static ImageBitmap* Create(RefPtr<StaticBitmapImage>);
-  static ImageBitmap* Create(RefPtr<StaticBitmapImage>,
+  static ImageBitmap* Create(scoped_refptr<StaticBitmapImage>);
+  static ImageBitmap* Create(scoped_refptr<StaticBitmapImage>,
                              Optional<IntRect>,
                              const ImageBitmapOptions& = ImageBitmapOptions());
   // This function is called by structured-cloning an ImageBitmap.
@@ -96,10 +96,10 @@ class CORE_EXPORT ImageBitmap final
   using WebType = sk_sp<SkImage>;
   static ImageBitmap* Take(ScriptPromiseResolver*, sk_sp<SkImage>);
 
-  RefPtr<StaticBitmapImage> BitmapImage() const { return image_; }
-  RefPtr<Uint8Array> CopyBitmapData();
-  RefPtr<Uint8Array> CopyBitmapData(AlphaDisposition,
-                                    DataColorFormat = kRGBAColorType);
+  scoped_refptr<StaticBitmapImage> BitmapImage() const { return image_; }
+  scoped_refptr<Uint8Array> CopyBitmapData();
+  scoped_refptr<Uint8Array> CopyBitmapData(AlphaDisposition,
+                                           DataColorFormat = kRGBAColorType);
   unsigned long width() const;
   unsigned long height() const;
   IntSize Size() const;
@@ -107,7 +107,7 @@ class CORE_EXPORT ImageBitmap final
   bool IsNeutered() const { return is_neutered_; }
   bool OriginClean() const { return image_->OriginClean(); }
   bool IsPremultiplied() const { return image_->IsPremultiplied(); }
-  RefPtr<StaticBitmapImage> Transfer();
+  scoped_refptr<StaticBitmapImage> Transfer();
   void close();
 
   ~ImageBitmap() override;
@@ -115,10 +115,10 @@ class CORE_EXPORT ImageBitmap final
   CanvasColorParams GetCanvasColorParams();
 
   // CanvasImageSource implementation
-  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                        AccelerationHint,
-                                        SnapshotReason,
-                                        const FloatSize&) override;
+  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                               AccelerationHint,
+                                               SnapshotReason,
+                                               const FloatSize&) override;
   bool WouldTaintOrigin(SecurityOrigin*) const override {
     return !image_->OriginClean();
   }
@@ -160,8 +160,8 @@ class CORE_EXPORT ImageBitmap final
   ImageBitmap(OffscreenCanvas*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageData*, Optional<IntRect>, const ImageBitmapOptions&);
   ImageBitmap(ImageBitmap*, Optional<IntRect>, const ImageBitmapOptions&);
-  ImageBitmap(RefPtr<StaticBitmapImage>);
-  ImageBitmap(RefPtr<StaticBitmapImage>,
+  ImageBitmap(scoped_refptr<StaticBitmapImage>);
+  ImageBitmap(scoped_refptr<StaticBitmapImage>,
               Optional<IntRect>,
               const ImageBitmapOptions&);
   ImageBitmap(const void* pixel_data,
@@ -179,7 +179,7 @@ class CORE_EXPORT ImageBitmap final
                                                const IntRect&,
                                                bool origin_clean,
                                                std::unique_ptr<ParsedOptions>);
-  RefPtr<StaticBitmapImage> image_;
+  scoped_refptr<StaticBitmapImage> image_;
   bool is_neutered_ = false;
 };
 

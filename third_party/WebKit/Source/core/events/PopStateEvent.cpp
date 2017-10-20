@@ -44,8 +44,9 @@ PopStateEvent::PopStateEvent(ScriptState* script_state,
   }
 }
 
-PopStateEvent::PopStateEvent(RefPtr<SerializedScriptValue> serialized_state,
-                             History* history)
+PopStateEvent::PopStateEvent(
+    scoped_refptr<SerializedScriptValue> serialized_state,
+    History* history)
     : Event(EventTypeNames::popstate, false, true),
       serialized_state_(std::move(serialized_state)),
       state_(this),
@@ -60,7 +61,7 @@ ScriptValue PopStateEvent::state(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (world_->GetWorldId() != script_state->World().GetWorldId()) {
     v8::Local<v8::Value> value = state_.NewLocal(isolate);
-    RefPtr<SerializedScriptValue> serialized =
+    scoped_refptr<SerializedScriptValue> serialized =
         SerializedScriptValue::SerializeAndSwallowExceptions(isolate, value);
     return ScriptValue(script_state, serialized->Deserialize(isolate));
   }
@@ -72,7 +73,7 @@ PopStateEvent* PopStateEvent::Create() {
 }
 
 PopStateEvent* PopStateEvent::Create(
-    RefPtr<SerializedScriptValue> serialized_state,
+    scoped_refptr<SerializedScriptValue> serialized_state,
     History* history) {
   return new PopStateEvent(std::move(serialized_state), history);
 }

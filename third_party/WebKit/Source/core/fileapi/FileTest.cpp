@@ -17,7 +17,8 @@ TEST(FileTest, nativeFile) {
 }
 
 TEST(FileTest, blobBackingFile) {
-  const RefPtr<BlobDataHandle> blob_data_handle = BlobDataHandle::Create();
+  const scoped_refptr<BlobDataHandle> blob_data_handle =
+      BlobDataHandle::Create();
   File* const file = File::Create("name", 0.0, blob_data_handle);
   EXPECT_FALSE(file->HasBackingFile());
   EXPECT_TRUE(file->GetPath().IsEmpty());
@@ -60,8 +61,8 @@ TEST(FileTest, hsaSameSource) {
   File* const native_file_a2 = File::Create("/native/pathA");
   File* const native_file_b = File::Create("/native/pathB");
 
-  const RefPtr<BlobDataHandle> blob_data_a = BlobDataHandle::Create();
-  const RefPtr<BlobDataHandle> blob_data_b = BlobDataHandle::Create();
+  const scoped_refptr<BlobDataHandle> blob_data_a = BlobDataHandle::Create();
+  const scoped_refptr<BlobDataHandle> blob_data_b = BlobDataHandle::Create();
   File* const blob_file_a1 = File::Create("name", 0.0, blob_data_a);
   File* const blob_file_a2 = File::Create("name", 0.0, blob_data_a);
   File* const blob_file_b = File::Create("name", 0.0, blob_data_b);

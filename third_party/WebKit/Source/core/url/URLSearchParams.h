@@ -55,7 +55,7 @@ class CORE_EXPORT URLSearchParams final
   void SetInput(const String&);
 
   // Internal helpers
-  RefPtr<EncodedFormData> ToEncodedFormData() const;
+  scoped_refptr<EncodedFormData> ToEncodedFormData() const;
   const Vector<std::pair<String, String>>& Params() const { return params_; }
 
 #if DCHECK_IS_ON()

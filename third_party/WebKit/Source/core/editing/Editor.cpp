@@ -563,7 +563,7 @@ void Editor::WriteSelectionToPasteboard() {
                                              CanSmartCopyOrDelete());
 }
 
-static RefPtr<Image> ImageFromNode(const Node& node) {
+static scoped_refptr<Image> ImageFromNode(const Node& node) {
   DCHECK(!node.GetDocument().NeedsLayoutTreeUpdate());
   DocumentLifecycle::DisallowTransitionScope disallow_transition(
       node.GetDocument().Lifecycle());
@@ -598,7 +598,7 @@ static void WriteImageNodeToPasteboard(Pasteboard* pasteboard,
   DCHECK(pasteboard);
   DCHECK(node);
 
-  RefPtr<Image> image = ImageFromNode(*node);
+  scoped_refptr<Image> image = ImageFromNode(*node);
   if (!image.get())
     return;
 

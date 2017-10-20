@@ -630,12 +630,12 @@ class CORE_EXPORT WebViewImpl final
   bool ime_accept_events_;
 
   // The popup associated with an input/select element.
-  RefPtr<WebPagePopupImpl> page_popup_;
+  scoped_refptr<WebPagePopupImpl> page_popup_;
 
   // This stores the last hidden page popup. If a GestureTap attempts to open
   // the popup that is closed by its previous GestureTapDown, the popup remains
   // closed.
-  RefPtr<WebPagePopupImpl> last_hidden_page_popup_;
+  scoped_refptr<WebPagePopupImpl> last_hidden_page_popup_;
 
   Persistent<DevToolsEmulator> dev_tools_emulator_;
   std::unique_ptr<PageOverlay> page_color_overlay_;
@@ -645,7 +645,7 @@ class CORE_EXPORT WebViewImpl final
 
   // If set, the (plugin) node which has mouse capture.
   Persistent<Node> mouse_capture_node_;
-  RefPtr<UserGestureToken> mouse_capture_gesture_token_;
+  scoped_refptr<UserGestureToken> mouse_capture_gesture_token_;
 
   WebLayerTreeView* layer_tree_view_;
   std::unique_ptr<CompositorAnimationHost> animation_host_;

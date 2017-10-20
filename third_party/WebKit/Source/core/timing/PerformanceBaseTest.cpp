@@ -152,7 +152,7 @@ TEST_F(PerformanceBaseTest, AllowsTimingRedirect) {
   redirect_response2.SetURL(url);
   redirect_chain.push_back(redirect_response1);
   redirect_chain.push_back(redirect_response2);
-  RefPtr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
+  scoped_refptr<SecurityOrigin> security_origin = SecurityOrigin::Create(url);
   // When finalResponse is an empty object.
   EXPECT_FALSE(AllowsTimingRedirect(redirect_chain, final_response,
                                     *security_origin.get(),

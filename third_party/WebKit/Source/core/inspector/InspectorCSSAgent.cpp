@@ -1008,7 +1008,7 @@ InspectorCSSAgent::AnimationsForNode(Element* element) {
   Document* owner_document = element->ownerDocument();
 
   StyleResolver& style_resolver = owner_document->EnsureStyleResolver();
-  RefPtr<ComputedStyle> style = style_resolver.StyleForElement(element);
+  scoped_refptr<ComputedStyle> style = style_resolver.StyleForElement(element);
   if (!style)
     return css_keyframes_rules;
   const CSSAnimationData* animation_data = style->Animations();
@@ -1112,8 +1112,8 @@ Response InspectorCSSAgent::getComputedStyleForNode(
             .build());
   }
 
-  std::unique_ptr<HashMap<AtomicString, RefPtr<CSSVariableData>>> variables =
-      computed_style_info->GetVariables();
+  std::unique_ptr<HashMap<AtomicString, scoped_refptr<CSSVariableData>>>
+      variables = computed_style_info->GetVariables();
 
   if (variables && !variables->IsEmpty()) {
     for (const auto& it : *variables) {

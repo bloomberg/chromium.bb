@@ -175,7 +175,7 @@ std::unique_ptr<TracedValue> SelectorPart(Element&,
                                           const String&);
 std::unique_ptr<TracedValue> InvalidationList(
     ContainerNode&,
-    const Vector<RefPtr<InvalidationSet>>&);
+    const Vector<scoped_refptr<InvalidationSet>>&);
 }  // namespace InspectorStyleInvalidatorInvalidateEvent
 
 #define TRACE_STYLE_INVALIDATOR_INVALIDATION(element, reason)              \

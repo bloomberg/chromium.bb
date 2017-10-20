@@ -38,7 +38,7 @@
 
 namespace blink {
 
-SharedBufferReader::SharedBufferReader(RefPtr<const SharedBuffer> buffer)
+SharedBufferReader::SharedBufferReader(scoped_refptr<const SharedBuffer> buffer)
     : buffer_(std::move(buffer)), current_offset_(0) {}
 
 SharedBufferReader::~SharedBufferReader() {}

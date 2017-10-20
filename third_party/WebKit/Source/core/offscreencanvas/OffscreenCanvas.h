@@ -96,7 +96,7 @@ class CORE_EXPORT OffscreenCanvas final
   uint32_t ClientId() const { return client_id_; }
   uint32_t SinkId() const { return sink_id_; }
 
-  ScriptPromise Commit(RefPtr<StaticBitmapImage>,
+  ScriptPromise Commit(scoped_refptr<StaticBitmapImage>,
                        const SkIRect& damage_rect,
                        bool is_web_gl_software_rendering,
                        ScriptState*,
@@ -132,10 +132,10 @@ class CORE_EXPORT OffscreenCanvas final
                                   const ImageBitmapOptions&) final;
 
   // CanvasImageSource implementation
-  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                        AccelerationHint,
-                                        SnapshotReason,
-                                        const FloatSize&) final;
+  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                               AccelerationHint,
+                                               SnapshotReason,
+                                               const FloatSize&) final;
   bool WouldTaintOrigin(SecurityOrigin*) const final { return !origin_clean_; }
   FloatSize ElementSize(const FloatSize& default_object_size) const final {
     return FloatSize(width(), height());
@@ -181,7 +181,7 @@ class CORE_EXPORT OffscreenCanvas final
   std::unique_ptr<OffscreenCanvasFrameDispatcher> frame_dispatcher_;
 
   Member<ScriptPromiseResolver> commit_promise_resolver_;
-  RefPtr<StaticBitmapImage> current_frame_;
+  scoped_refptr<StaticBitmapImage> current_frame_;
   bool current_frame_is_web_gl_software_rendering_ = false;
   SkIRect current_frame_damage_rect_;
 

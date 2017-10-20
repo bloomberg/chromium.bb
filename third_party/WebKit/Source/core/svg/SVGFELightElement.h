@@ -34,7 +34,7 @@ class Filter;
 
 class SVGFELightElement : public SVGElement {
  public:
-  virtual RefPtr<LightSource> GetLightSource(Filter*) const = 0;
+  virtual scoped_refptr<LightSource> GetLightSource(Filter*) const = 0;
   static SVGFELightElement* FindLightElement(const SVGElement&);
 
   FloatPoint3D GetPosition() const;

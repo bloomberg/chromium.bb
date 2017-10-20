@@ -69,7 +69,7 @@ String TestScriptPath() {
 
 v8::Local<v8::Value> ExecuteScript(const String& script_path,
                                    LocalFrame& frame) {
-  RefPtr<SharedBuffer> script_src = testing::ReadFromFile(script_path);
+  scoped_refptr<SharedBuffer> script_src = testing::ReadFromFile(script_path);
   return frame.GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode(String(script_src->Data(), script_src->size())));
 }

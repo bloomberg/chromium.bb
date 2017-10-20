@@ -146,7 +146,7 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
                 ->PaintImageForCurrentFrame()
                 .GetSkImage());
 
-  RefPtr<StaticBitmapImage> empty_image =
+  scoped_refptr<StaticBitmapImage> empty_image =
       image_bitmap_outside_crop->BitmapImage();
   ASSERT_NE(empty_image->PaintImageForCurrentFrame().GetSkImage(),
             image_element->CachedImage()

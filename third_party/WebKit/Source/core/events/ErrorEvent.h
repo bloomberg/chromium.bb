@@ -109,7 +109,7 @@ class ErrorEvent final : public Event {
   std::unique_ptr<SourceLocation> location_;
   TraceWrapperV8Reference<v8::Value> error_;
 
-  RefPtr<DOMWrapperWorld> world_;
+  scoped_refptr<DOMWrapperWorld> world_;
 };
 
 }  // namespace blink

@@ -265,7 +265,8 @@ WebSearchableFormData::WebSearchableFormData(
   String action(form_element->Action());
   KURL url(
       form_element->GetDocument().CompleteURL(action.IsNull() ? "" : action));
-  RefPtr<EncodedFormData> form_data = EncodedFormData::Create(encoded_string);
+  scoped_refptr<EncodedFormData> form_data =
+      EncodedFormData::Create(encoded_string);
   url.SetQuery(form_data->FlattenToString());
   url_ = url;
   encoding_ = String(encoding.GetName());

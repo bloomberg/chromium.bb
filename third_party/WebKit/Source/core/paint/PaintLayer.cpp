@@ -1945,14 +1945,14 @@ static double ComputeZOffset(const HitTestingTransformState& transform_state) {
   return backmapped_point.Z();
 }
 
-RefPtr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
+scoped_refptr<HitTestingTransformState> PaintLayer::CreateLocalTransformState(
     PaintLayer* root_layer,
     PaintLayer* container_layer,
     const LayoutRect& hit_test_rect,
     const HitTestLocation& hit_test_location,
     const HitTestingTransformState* container_transform_state,
     const LayoutPoint& translation_offset) const {
-  RefPtr<HitTestingTransformState> transform_state;
+  scoped_refptr<HitTestingTransformState> transform_state;
   LayoutPoint offset;
   if (container_transform_state) {
     // If we're already computing transform state, then it's relative to the
@@ -2078,7 +2078,7 @@ PaintLayer* PaintLayer::HitTestLayer(
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.
-  RefPtr<HitTestingTransformState> local_transform_state;
+  scoped_refptr<HitTestingTransformState> local_transform_state;
   if (applied_transform) {
     // We computed the correct state in the caller (above code), so just
     // reference it.
@@ -2106,7 +2106,7 @@ PaintLayer* PaintLayer::HitTestLayer(
       return nullptr;
   }
 
-  RefPtr<HitTestingTransformState> unflattened_transform_state =
+  scoped_refptr<HitTestingTransformState> unflattened_transform_state =
       local_transform_state;
   if (local_transform_state && !Preserves3D()) {
     // Keep a copy of the pre-flattening state, for computing z-offsets for the
@@ -2345,7 +2345,7 @@ PaintLayer* PaintLayer::HitTestLayerByApplyingTransform(
     double* z_offset,
     const LayoutPoint& translation_offset) {
   // Create a transform state to accumulate this transform.
-  RefPtr<HitTestingTransformState> new_transform_state =
+  scoped_refptr<HitTestingTransformState> new_transform_state =
       CreateLocalTransformState(root_layer, container_layer, hit_test_rect,
                                 hit_test_location, transform_state,
                                 translation_offset);

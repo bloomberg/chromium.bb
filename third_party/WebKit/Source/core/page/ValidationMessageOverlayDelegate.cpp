@@ -147,7 +147,7 @@ void ValidationMessageOverlayDelegate::EnsurePage(const PageOverlay& overlay,
   frame->View()->SetBaseBackgroundColor(Color::kTransparent);
   page_->GetVisualViewport().SetSize(view_size);
 
-  RefPtr<SharedBuffer> data = SharedBuffer::Create();
+  scoped_refptr<SharedBuffer> data = SharedBuffer::Create();
   WriteDocument(data.get());
   float zoom_factor = anchor_->GetDocument().GetFrame()->PageZoomFactor();
   frame->SetPageZoomFactor(zoom_factor);

@@ -389,7 +389,7 @@ bool ThemePainterMac::PaintSliderTrack(const LayoutObject& o,
                                      shadow_blur, shadow_spread);
   paint_info.context.Restore();
 
-  RefPtr<Gradient> border_gradient =
+  scoped_refptr<Gradient> border_gradient =
       Gradient::CreateLinear(fill_bounds.MinXMinYCorner(),
                              is_vertical_slider ? fill_bounds.MaxXMinYCorner()
                                                 : fill_bounds.MinXMaxYCorner());
@@ -473,7 +473,7 @@ bool ThemePainterMac::PaintSliderThumb(const Node* node,
   paint_info.context.SetDrawLooper(nullptr);
 
   IntRect fill_bounds = EnclosedIntRect(unzoomed_rect);
-  RefPtr<Gradient> fill_gradient = Gradient::CreateLinear(
+  scoped_refptr<Gradient> fill_gradient = Gradient::CreateLinear(
       fill_bounds.MinXMinYCorner(), fill_bounds.MinXMaxYCorner());
   fill_gradient->AddColorStop(0.0, fill_gradient_top_color);
   fill_gradient->AddColorStop(0.52, fill_gradient_upper_middle_color);
@@ -483,7 +483,7 @@ bool ThemePainterMac::PaintSliderThumb(const Node* node,
   fill_gradient->ApplyToFlags(fill_flags, SkMatrix::I());
   paint_info.context.DrawOval(border_bounds, fill_flags);
 
-  RefPtr<Gradient> border_gradient = Gradient::CreateLinear(
+  scoped_refptr<Gradient> border_gradient = Gradient::CreateLinear(
       fill_bounds.MinXMinYCorner(), fill_bounds.MinXMaxYCorner());
   border_gradient->AddColorStop(0.0, border_gradient_top_color);
   border_gradient->AddColorStop(1.0, border_gradient_bottom_color);

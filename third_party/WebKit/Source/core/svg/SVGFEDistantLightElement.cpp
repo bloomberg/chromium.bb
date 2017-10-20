@@ -29,7 +29,7 @@ inline SVGFEDistantLightElement::SVGFEDistantLightElement(Document& document)
 
 DEFINE_NODE_FACTORY(SVGFEDistantLightElement)
 
-RefPtr<LightSource> SVGFEDistantLightElement::GetLightSource(
+scoped_refptr<LightSource> SVGFEDistantLightElement::GetLightSource(
     Filter* filter) const {
   return DistantLightSource::Create(azimuth()->CurrentValue()->Value(),
                                     elevation()->CurrentValue()->Value());

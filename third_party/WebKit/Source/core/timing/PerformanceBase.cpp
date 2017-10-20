@@ -80,7 +80,7 @@ static const size_t kDefaultResourceTimingBufferSize = 150;
 static const size_t kDefaultFrameTimingBufferSize = 150;
 
 PerformanceBase::PerformanceBase(double time_origin,
-                                 RefPtr<WebTaskRunner> task_runner)
+                                 scoped_refptr<WebTaskRunner> task_runner)
     : frame_timing_buffer_size_(kDefaultFrameTimingBufferSize),
       resource_timing_buffer_size_(kDefaultResourceTimingBufferSize),
       user_timing_(nullptr),
@@ -251,7 +251,7 @@ bool PerformanceBase::PassesTimingAllowCheck(
     const SecurityOrigin& initiator_security_origin,
     const AtomicString& original_timing_allow_origin,
     ExecutionContext* context) {
-  RefPtr<SecurityOrigin> resource_origin =
+  scoped_refptr<SecurityOrigin> resource_origin =
       SecurityOrigin::Create(response.Url());
   if (resource_origin->IsSameSchemeHostPort(&initiator_security_origin))
     return true;

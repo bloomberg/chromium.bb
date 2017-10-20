@@ -48,7 +48,7 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   ~PromiseRejectionEvent() override;
   void Dispose();
 
-  RefPtr<DOMWrapperWorld> world_;
+  scoped_refptr<DOMWrapperWorld> world_;
   TraceWrapperV8Reference<v8::Value> promise_;
   TraceWrapperV8Reference<v8::Value> reason_;
 };

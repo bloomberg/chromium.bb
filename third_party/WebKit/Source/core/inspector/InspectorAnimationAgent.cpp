@@ -105,7 +105,7 @@ BuildObjectForAnimationEffect(KeyframeEffectReadOnly* effect,
     DCHECK(effect->Model()->IsKeyframeEffectModel());
     const KeyframeEffectModelBase* model =
         ToKeyframeEffectModelBase(effect->Model());
-    Vector<RefPtr<Keyframe>> keyframes =
+    Vector<scoped_refptr<Keyframe>> keyframes =
         KeyframeEffectModelBase::NormalizedKeyframesForInspector(
             model->GetFrames());
     if (keyframes.size() == 3) {
@@ -153,7 +153,7 @@ BuildObjectForAnimationKeyframes(const KeyframeEffectReadOnly* effect) {
     return nullptr;
   const KeyframeEffectModelBase* model =
       ToKeyframeEffectModelBase(effect->Model());
-  Vector<RefPtr<Keyframe>> normalized_keyframes =
+  Vector<scoped_refptr<Keyframe>> normalized_keyframes =
       KeyframeEffectModelBase::NormalizedKeyframesForInspector(
           model->GetFrames());
   std::unique_ptr<protocol::Array<protocol::Animation::KeyframeStyle>>

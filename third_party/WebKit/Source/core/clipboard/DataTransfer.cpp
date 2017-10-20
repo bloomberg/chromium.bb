@@ -405,7 +405,8 @@ std::unique_ptr<DragImage> DataTransfer::CreateDragImageForFrame(
   skia_paint_canvas.concat(AffineTransformToSkMatrix(transform));
   builder.EndRecording(skia_paint_canvas, property_tree_state);
 
-  RefPtr<Image> image = StaticBitmapImage::Create(surface->makeImageSnapshot());
+  scoped_refptr<Image> image =
+      StaticBitmapImage::Create(surface->makeImageSnapshot());
   float screen_device_scale_factor =
       frame.GetPage()->GetChromeClient().GetScreenInfo().device_scale_factor;
 
@@ -458,7 +459,7 @@ static void WriteImageToDataObject(DataObject* data_object,
   if (!cached_image || !cached_image->GetImage() || !cached_image->IsLoaded())
     return;
 
-  RefPtr<SharedBuffer> image_buffer = cached_image->GetImage()->Data();
+  scoped_refptr<SharedBuffer> image_buffer = cached_image->GetImage()->Data();
   if (!image_buffer || !image_buffer->size())
     return;
 

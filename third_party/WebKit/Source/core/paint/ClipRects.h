@@ -35,8 +35,10 @@ class ClipRects : public RefCounted<ClipRects> {
   USING_FAST_MALLOC(ClipRects);
 
  public:
-  static RefPtr<ClipRects> Create() { return WTF::AdoptRef(new ClipRects); }
-  static RefPtr<ClipRects> Create(const ClipRects& other) {
+  static scoped_refptr<ClipRects> Create() {
+    return WTF::AdoptRef(new ClipRects);
+  }
+  static scoped_refptr<ClipRects> Create(const ClipRects& other) {
     return WTF::AdoptRef(new ClipRects(other));
   }
 

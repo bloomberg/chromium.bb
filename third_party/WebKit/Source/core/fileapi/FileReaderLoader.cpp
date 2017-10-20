@@ -68,7 +68,7 @@ FileReaderLoader::~FileReaderLoader() {
 }
 
 void FileReaderLoader::Start(ExecutionContext* execution_context,
-                             RefPtr<BlobDataHandle> blob_data) {
+                             scoped_refptr<BlobDataHandle> blob_data) {
   DCHECK(execution_context);
   // The blob is read by routing through the request handling layer given a
   // temporary public url.

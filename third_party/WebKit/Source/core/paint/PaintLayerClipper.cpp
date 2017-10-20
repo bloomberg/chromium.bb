@@ -187,7 +187,7 @@ ClipRects& PaintLayerClipper::GetClipRects(
     parent_clip_rects =
         &PaintLayerClipper(*layer_.Parent(), false).GetClipRects(context);
   }
-  RefPtr<ClipRects> clip_rects = ClipRects::Create();
+  scoped_refptr<ClipRects> clip_rects = ClipRects::Create();
   CalculateClipRects(context, *clip_rects);
   return StoreClipRectsInCache(context, parent_clip_rects, *clip_rects);
 }
@@ -566,7 +566,7 @@ void PaintLayerClipper::CalculateBackgroundClipRect(
   LayoutView* layout_view = layer_.GetLayoutObject().View();
   DCHECK(layout_view);
 
-  RefPtr<ClipRects> parent_clip_rects = ClipRects::Create();
+  scoped_refptr<ClipRects> parent_clip_rects = ClipRects::Create();
   if (&layer_ == context.root_layer) {
     parent_clip_rects->Reset(LayoutRect(LayoutRect::InfiniteIntRect()));
   } else {

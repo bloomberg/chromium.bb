@@ -57,7 +57,7 @@ void PageTestBase::LoadAhem() {
 
 void PageTestBase::LoadAhem(LocalFrame& frame) {
   Document& document = *frame.DomWindow()->document();
-  RefPtr<SharedBuffer> shared_buffer =
+  scoped_refptr<SharedBuffer> shared_buffer =
       testing::ReadFromFile(testing::CoreTestDataPath("Ahem.ttf"));
   StringOrArrayBufferOrArrayBufferView buffer =
       StringOrArrayBufferOrArrayBufferView::FromArrayBuffer(

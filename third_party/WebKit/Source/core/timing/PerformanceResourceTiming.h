@@ -137,7 +137,7 @@ class CORE_EXPORT PerformanceResourceTiming : public PerformanceEntry {
   AtomicString alpn_negotiated_protocol_;
   AtomicString connection_info_;
   double time_origin_;
-  RefPtr<ResourceLoadTiming> timing_;
+  scoped_refptr<ResourceLoadTiming> timing_;
   double last_redirect_end_time_;
   double finish_time_;
   unsigned long long transfer_size_;

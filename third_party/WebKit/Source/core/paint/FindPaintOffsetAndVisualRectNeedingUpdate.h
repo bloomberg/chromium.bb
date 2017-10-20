@@ -58,7 +58,7 @@ class FindPaintOffsetNeedingUpdateScope {
   const LayoutObject& object_;
   const bool& is_actually_needed_;
   LayoutPoint old_paint_offset_;
-  RefPtr<const TransformPaintPropertyNode> old_paint_offset_translation_;
+  scoped_refptr<const TransformPaintPropertyNode> old_paint_offset_translation_;
 };
 
 class FindVisualRectNeedingUpdateScopeBase {

@@ -151,7 +151,7 @@ void SVGFEImageElement::ImageNotifyFinished(ImageResourceContent*) {
 FilterEffect* SVGFEImageElement::Build(SVGFilterBuilder*, Filter* filter) {
   if (cached_image_) {
     // Don't use the broken image icon on image loading errors.
-    RefPtr<Image> image =
+    scoped_refptr<Image> image =
         cached_image_->ErrorOccurred() ? nullptr : cached_image_->GetImage();
     return FEImage::CreateWithImage(filter, image,
                                     preserve_aspect_ratio_->CurrentValue());

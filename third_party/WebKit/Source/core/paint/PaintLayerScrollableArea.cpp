@@ -1004,7 +1004,8 @@ FloatQuad PaintLayerScrollableArea::LocalToVisibleContentQuad(
   return local_object->LocalToAncestorQuad(quad, box, flags);
 }
 
-RefPtr<WebTaskRunner> PaintLayerScrollableArea::GetTimerTaskRunner() const {
+scoped_refptr<WebTaskRunner> PaintLayerScrollableArea::GetTimerTaskRunner()
+    const {
   return TaskRunnerHelper::Get(TaskType::kUnspecedTimer, Box().GetFrame());
 }
 
@@ -1512,12 +1513,12 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
     return;
 
   const LayoutObject& style_source = ScrollbarStyleSource(Box());
-  RefPtr<ComputedStyle> corner =
+  scoped_refptr<ComputedStyle> corner =
       Box().HasOverflowClip()
           ? style_source.GetUncachedPseudoStyle(
                 PseudoStyleRequest(kPseudoIdScrollbarCorner),
                 style_source.Style())
-          : RefPtr<ComputedStyle>(nullptr);
+          : scoped_refptr<ComputedStyle>(nullptr);
   if (corner) {
     if (!scroll_corner_) {
       scroll_corner_ =
@@ -1669,11 +1670,11 @@ void PaintLayerScrollableArea::UpdateResizerStyle() {
     return;
 
   const LayoutObject& style_source = ScrollbarStyleSource(Box());
-  RefPtr<ComputedStyle> resizer =
+  scoped_refptr<ComputedStyle> resizer =
       Box().HasOverflowClip()
           ? style_source.GetUncachedPseudoStyle(
                 PseudoStyleRequest(kPseudoIdResizer), style_source.Style())
-          : RefPtr<ComputedStyle>(nullptr);
+          : scoped_refptr<ComputedStyle>(nullptr);
   if (resizer) {
     if (!resizer_) {
       resizer_ =

@@ -696,7 +696,7 @@ void SVGImage::LoadCompleted() {
                             ToLocalFrame(page_->MainFrame()))
           ->PostTask(BLINK_FROM_HERE,
                      WTF::Bind(&SVGImage::NotifyAsyncLoadCompleted,
-                               RefPtr<SVGImage>(this)));
+                               scoped_refptr<SVGImage>(this)));
       break;
 
     case kDataChangedNotStarted:

@@ -38,11 +38,12 @@ bool WebUserGestureToken::HasGestures() const {
   return !token_.IsNull() && token_->HasGestures();
 }
 
-WebUserGestureToken::WebUserGestureToken(RefPtr<UserGestureToken> token) {
+WebUserGestureToken::WebUserGestureToken(
+    scoped_refptr<UserGestureToken> token) {
   token_ = std::move(token);
 }
 
-WebUserGestureToken::operator RefPtr<UserGestureToken>() const {
+WebUserGestureToken::operator scoped_refptr<UserGestureToken>() const {
   return token_.Get();
 }
 

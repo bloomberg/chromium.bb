@@ -2809,7 +2809,7 @@ bool Internals::fakeMouseMovePending() const {
 }
 
 DOMArrayBuffer* Internals::serializeObject(
-    RefPtr<SerializedScriptValue> value) const {
+    scoped_refptr<SerializedScriptValue> value) const {
   StringView view = value->GetWireData();
   DCHECK(view.Is8Bit());
   DOMArrayBuffer* buffer =
@@ -2819,7 +2819,7 @@ DOMArrayBuffer* Internals::serializeObject(
   return buffer;
 }
 
-RefPtr<SerializedScriptValue> Internals::deserializeBuffer(
+scoped_refptr<SerializedScriptValue> Internals::deserializeBuffer(
     DOMArrayBuffer* buffer) const {
   String value(static_cast<const UChar*>(buffer->Data()),
                buffer->ByteLength() / sizeof(UChar));
@@ -2833,7 +2833,7 @@ DOMArrayBuffer* Internals::serializeWithInlineWasm(ScriptValue value) const {
   v8::Local<v8::Value> v8_value = value.V8Value();
   SerializedScriptValue::SerializeOptions options;
   options.wasm_policy = SerializedScriptValue::SerializeOptions::kSerialize;
-  RefPtr<SerializedScriptValue> obj = SerializedScriptValue::Serialize(
+  scoped_refptr<SerializedScriptValue> obj = SerializedScriptValue::Serialize(
       isolate, v8_value, options, exception_state);
   if (exception_state.HadException())
     return nullptr;

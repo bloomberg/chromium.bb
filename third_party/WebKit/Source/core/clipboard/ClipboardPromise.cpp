@@ -56,7 +56,7 @@ ClipboardPromise::ClipboardPromise(ScriptState* script_state)
       script_promise_resolver_(ScriptPromiseResolver::Create(script_state)),
       buffer_(WebClipboard::kBufferStandard) {}
 
-RefPtr<WebTaskRunner> ClipboardPromise::GetTaskRunner() {
+scoped_refptr<WebTaskRunner> ClipboardPromise::GetTaskRunner() {
   // TODO(garykac): Replace MiscPlatformAPI with TaskType specific to clipboard.
   return TaskRunnerHelper::Get(TaskType::kMiscPlatformAPI,
                                GetExecutionContext());

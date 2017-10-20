@@ -53,11 +53,10 @@ class Text;
 
 class XMLParserContext : public RefCounted<XMLParserContext> {
  public:
-  static RefPtr<XMLParserContext> CreateMemoryParser(xmlSAXHandlerPtr,
-                                                     void* user_data,
-                                                     const CString& chunk);
-  static RefPtr<XMLParserContext> CreateStringParser(xmlSAXHandlerPtr,
-                                                     void* user_data);
+  static scoped_refptr<XMLParserContext>
+  CreateMemoryParser(xmlSAXHandlerPtr, void* user_data, const CString& chunk);
+  static scoped_refptr<XMLParserContext> CreateStringParser(xmlSAXHandlerPtr,
+                                                            void* user_data);
   ~XMLParserContext();
   xmlParserCtxtPtr Context() const { return context_; }
 
@@ -185,7 +184,7 @@ class XMLDocumentParser final : public ScriptableDocumentParser,
   xmlParserCtxtPtr Context() const {
     return context_ ? context_->Context() : 0;
   }
-  RefPtr<XMLParserContext> context_;
+  scoped_refptr<XMLParserContext> context_;
   Deque<std::unique_ptr<PendingCallback>> pending_callbacks_;
   Vector<xmlChar> buffered_text_;
 
