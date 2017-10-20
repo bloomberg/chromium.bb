@@ -5,6 +5,8 @@
 #include "chromeos/components/tether/ble_scanner_impl.h"
 
 #include "base/callback_forward.h"
+#include "base/test/scoped_task_environment.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/tether/ble_constants.h"
 #include "chromeos/components/tether/fake_ble_synchronizer.h"
 #include "components/cryptauth/mock_foreground_eid_generator.h"
@@ -58,6 +60,32 @@ class TestBleScannerObserver final : public BleScanner::Observer {
   std::vector<std::string> device_addresses_;
   std::vector<cryptauth::RemoteDevice> remote_devices_;
   std::vector<bool> discovery_session_state_changes_;
+};
+
+// Deletes the BleScanner when notified.
+class DeletingObserver final : public BleScanner::Observer {
+ public:
+  DeletingObserver(std::unique_ptr<BleScannerImpl>& ble_scanner)
+      : ble_scanner_(ble_scanner) {
+    ble_scanner_->AddObserver(this);
+  }
+
+  // BleScanner::Observer:
+  void OnDiscoverySessionStateChanged(bool discovery_session_active) override {
+    // Only delete if the discovery session is no longer active.
+    if (discovery_session_active)
+      return;
+
+    ble_scanner_->RemoveObserver(this);
+    ble_scanner_.reset();
+  }
+
+  void OnReceivedAdvertisementFromDevice(
+      const cryptauth::RemoteDevice& remote_device,
+      device::BluetoothDevice* bluetooth_device) override {}
+
+ private:
+  std::unique_ptr<BleScannerImpl>& ble_scanner_;
 };
 
 class MockBluetoothDeviceWithServiceData : public device::MockBluetoothDevice {
@@ -160,14 +188,6 @@ class BleScannerImplTest : public testing::Test {
     // successfully).
     should_discovery_session_be_active_ = true;
 
-    test_service_data_provider_ = new TestServiceDataProvider();
-
-    std::unique_ptr<cryptauth::MockForegroundEidGenerator> eid_generator =
-        base::MakeUnique<cryptauth::MockForegroundEidGenerator>();
-    mock_eid_generator_ = eid_generator.get();
-    mock_eid_generator_->set_background_scan_filter(
-        CreateFakeBackgroundScanFilter());
-
     mock_local_device_data_provider_ =
         base::MakeUnique<cryptauth::MockLocalDeviceDataProvider>();
     mock_local_device_data_provider_->SetPublicKey(
@@ -187,8 +207,15 @@ class BleScannerImplTest : public testing::Test {
     ble_scanner_ = base::MakeUnique<BleScannerImpl>(
         mock_adapter_, mock_local_device_data_provider_.get(),
         fake_ble_synchronizer_.get());
+
+    mock_eid_generator_ = new cryptauth::MockForegroundEidGenerator();
+    mock_eid_generator_->set_background_scan_filter(
+        CreateFakeBackgroundScanFilter());
+    test_service_data_provider_ = new TestServiceDataProvider();
+    test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
     ble_scanner_->SetTestDoubles(base::WrapUnique(test_service_data_provider_),
-                                 std::move(eid_generator));
+                                 base::WrapUnique(mock_eid_generator_),
+                                 test_task_runner_);
 
     test_observer_ = base::MakeUnique<TestBleScannerObserver>();
     ble_scanner_->AddObserver(test_observer_.get());
@@ -212,6 +239,7 @@ class BleScannerImplTest : public testing::Test {
 
       fake_ble_synchronizer_->GetStartDiscoveryCallback(command_index)
           .Run(base::WrapUnique(mock_discovery_session_));
+      test_task_runner_->RunUntilIdle();
       VerifyDiscoveryStatusChange(true /* discovery_session_active */);
       return;
     }
@@ -234,6 +262,7 @@ class BleScannerImplTest : public testing::Test {
   void InvokeStopDiscoveryCallback(bool success, size_t command_index) {
     if (success) {
       fake_ble_synchronizer_->GetStopDiscoveryCallback(command_index).Run();
+      test_task_runner_->RunUntilIdle();
       VerifyDiscoveryStatusChange(false /* discovery_session_active */);
       return;
     }
@@ -241,19 +270,22 @@ class BleScannerImplTest : public testing::Test {
     fake_ble_synchronizer_->GetStopDiscoveryErrorCallback(command_index).Run();
   }
 
+  const base::test::ScopedTaskEnvironment scoped_task_environment_;
   const std::vector<cryptauth::RemoteDevice> test_devices_;
   const std::vector<cryptauth::BeaconSeed> test_beacon_seeds_;
 
-  std::unique_ptr<TestBleScannerObserver> test_observer_;
-
-  TestServiceDataProvider* test_service_data_provider_;
-  cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
   std::unique_ptr<cryptauth::MockLocalDeviceDataProvider>
       mock_local_device_data_provider_;
   std::unique_ptr<FakeBleSynchronizer> fake_ble_synchronizer_;
 
   scoped_refptr<NiceMock<device::MockBluetoothAdapter>> mock_adapter_;
   device::MockBluetoothDiscoverySession* mock_discovery_session_;
+
+  TestServiceDataProvider* test_service_data_provider_;
+  cryptauth::MockForegroundEidGenerator* mock_eid_generator_;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
+
+  std::unique_ptr<TestBleScannerObserver> test_observer_;
 
   bool should_discovery_session_be_active_;
 
@@ -640,6 +672,7 @@ TEST_F(BleScannerImplTest,
 
   // Start discovery session.
   InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
+  test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(ble_scanner_->IsDiscoverySessionActive());
 
   // Unregister device to attempt a stop.
@@ -655,11 +688,29 @@ TEST_F(BleScannerImplTest,
   // false. In this case, the discovery session should no longer be active.
   InvokeStopDiscoveryCallback(false /* success */, 1u /* command_index */);
   EXPECT_FALSE(ble_scanner_->IsDiscoverySessionActive());
+  test_task_runner_->RunUntilIdle();
   VerifyDiscoveryStatusChange(false /* discovery_session_active */);
 
   // Since the discovery session was not active, there should not have been an
   // additional call to Stop().
   EXPECT_EQ(2u, fake_ble_synchronizer_->GetNumCommands());
+}
+
+// Regression test for crbug.com/776241. This bug could cause a crash if, when
+// BleScannerImpl notifies observers that all the discovery session has stopped,
+// an observer deletes BleScannerImpl. The fix for this issue is simply
+// notifying observers in a new task so that no further action will be taken if
+// the object is deleted. Without the fix for crbug.com/776241, this test would
+// crash.
+TEST_F(BleScannerImplTest, ObserverDeletesObjectWhenNotified) {
+  DeletingObserver deleting_observer(ble_scanner_);
+
+  ble_scanner_->RegisterScanFilterForDevice(test_devices_[0]);
+  InvokeDiscoveryStartedCallback(true /* success */, 0u /* command_index */);
+  test_task_runner_->RunUntilIdle();
+  ble_scanner_->UnregisterScanFilterForDevice(test_devices_[0]);
+  InvokeStopDiscoveryCallback(true /* success */, 1u /* command_index */);
+  test_task_runner_->RunUntilIdle();
 }
 
 }  // namespace tether
