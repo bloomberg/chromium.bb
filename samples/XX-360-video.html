@@ -109,6 +109,18 @@ found in the LICENSE file.
       webglCanvas.addEventListener( 'webglcontextlost', onContextLost, false );
       webglCanvas.addEventListener( 'webglcontextrestored', onContextRestored, false );
 
+      function getDefaultVideo() {
+        const video = document.createElement( "video" );
+        if(video.canPlayType('video/mp4; codecs="mp4v.20.8"')) {
+          return "media/textures/vr_bench_man.mp4";
+        } else if (video.canPlayType('video/webm; codecs="vp8, vorbis"')) {
+          return "media/textures/vr_bench_man.webm";
+        } else {
+          VRSamplesUtil.addError("Error: No supported video available", 3000);
+          return null;
+        }
+      }
+
       function init (preserveDrawingBuffer) {
         var glAttribs = {
           alpha: false,
@@ -128,7 +140,7 @@ found in the LICENSE file.
 
         panorama = new VRPanorama(gl);
 
-        var defaultVideo = "media/textures/pano.webm";
+        var defaultVideo = getDefaultVideo();
         var videoUrl = WGLUUrl.getString(
             'videoUrl', defaultVideo);
         panorama.setVideo(videoUrl).catch(

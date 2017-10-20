@@ -168,13 +168,26 @@ window.VRPanorama = (function () {
       // As the video is never visible on the page, we must explicitly
       // call play to start the video instead of being able to use
       // autoplay attributes.
-      video.play();
+      playVideo(video);
     });
   };
 
+  // Start the video. If the video fails to start, alert the user.
   Panorama.prototype.play = function() {
     if (this.videoElement)
-      this.videoElement.play();
+      playVideo(this.videoElement);
+  };
+
+  function playVideo(video) {
+    let promise = video.play();
+    if(promise) {
+      promise.catch((err) => {
+        console.error(err);
+        VRSamplesUtil.addError("Error: Video has failed to start", 3000)
+      });
+    } else {
+      console.error("videoElement.play does not support promise api");
+    }
   };
 
   Panorama.prototype.pause = function() {
