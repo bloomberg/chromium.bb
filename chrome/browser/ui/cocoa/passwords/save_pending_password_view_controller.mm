@@ -224,8 +224,11 @@ NSButton* EyeIcon(id target, SEL action) {
   NSTextField* usernameText =
       Label(l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL));
   [container addSubview:usernameText];
-  passwordText_.reset([Label(
-      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL)) retain]);
+  base::string16 passwordLabel =
+      form.federation_origin.unique()
+          ? l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_PASSWORD_LABEL)
+          : base::string16();
+  passwordText_.reset([Label(passwordLabel) retain]);
   [container addSubview:passwordText_];
 
   // Layout the elements.
