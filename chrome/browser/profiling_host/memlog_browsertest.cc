@@ -46,30 +46,6 @@ constexpr int kPartitionAllocSize = 8 * 23;
 constexpr int kPartitionAllocCount = 107;
 static const char* kPartitionAllocTypeName = "kPartitionAllocTypeName";
 
-bool HasProcessWithName(base::Value* dump_json, std::string name) {
-  base::Value* events = dump_json->FindKey("traceEvents");
-  for (base::Value& event : events->GetList()) {
-    const base::Value* found_name =
-        event.FindKeyOfType("name", base::Value::Type::STRING);
-    if (!found_name)
-      continue;
-    if (found_name->GetString() != "process_name")
-      continue;
-    const base::Value* found_args =
-        event.FindKeyOfType("args", base::Value::Type::DICTIONARY);
-    if (!found_args)
-      continue;
-    const base::Value* found_process_name =
-        found_args->FindKeyOfType("name", base::Value::Type::STRING);
-    if (!found_process_name)
-      continue;
-    if (found_process_name->GetString() != name)
-      continue;
-    return true;
-  }
-  return false;
-}
-
 base::Value* FindHeapsV2(base::ProcessId pid, base::Value* dump_json) {
   base::Value* events = dump_json->FindKey("traceEvents");
   base::Value* dumps = nullptr;
@@ -221,7 +197,6 @@ class MemlogBrowserTest : public InProcessBrowserTest,
     ASSERT_NO_FATAL_FAILURE(ValidateDump(
         heaps_v2, kPartitionAllocSize * kPartitionAllocCount,
         kPartitionAllocCount, "partition_alloc", kPartitionAllocTypeName));
-    EXPECT_TRUE(HasProcessWithName(dump_json, "Browser"));
   }
 
   void ValidateRendererAllocations(base::Value* dump_json) {
@@ -245,7 +220,6 @@ class MemlogBrowserTest : public InProcessBrowserTest,
       ASSERT_FALSE(heaps_v2)
           << "There should be no heap dump for the renderer.";
     }
-    EXPECT_TRUE(HasProcessWithName(dump_json, "Renderer"));
   }
 
  private:
@@ -338,7 +312,6 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
         ReadDumpFile(browser_dumpfile_path);
     ASSERT_TRUE(dump_json);
     ValidateBrowserAllocations(dump_json.get());
-    EXPECT_FALSE(HasProcessWithName(dump_json.get(), "Renderer"));
   }
 
   {
@@ -356,7 +329,6 @@ IN_PROC_BROWSER_TEST_P(MemlogBrowserTest, EndToEnd) {
     if (GetParam() == switches::kMemlogModeAll) {
       ASSERT_TRUE(dump_json);
       ValidateRendererAllocations(dump_json.get());
-      EXPECT_FALSE(HasProcessWithName(dump_json.get(), "Browser"));
     } else {
       ASSERT_FALSE(dump_json)
           << "Renderer should not be dumpable unless kMemlogModeAll!";
