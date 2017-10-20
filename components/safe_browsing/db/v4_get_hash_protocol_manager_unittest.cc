@@ -810,8 +810,9 @@ TEST_F(V4GetHashProtocolManagerTest, TestGetFullHashesWithApisMergesMetadata) {
   expected_md.api_permissions.insert("AUDIO_CAPTURE");
   std::unique_ptr<V4GetHashProtocolManager> pm(CreateProtocolManager());
   pm->GetFullHashesWithApis(
-      url, base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4ApiResults,
-                      base::Unretained(this), expected_md));
+      url, {} /* list_client_states */,
+      base::Bind(&V4GetHashProtocolManagerTest::ValidateGetV4ApiResults,
+                 base::Unretained(this), expected_md));
 
   // The following two random looking strings value are two of the full hashes
   // produced by UrlToFullHashes in v4_protocol_manager_util.h for the URL:

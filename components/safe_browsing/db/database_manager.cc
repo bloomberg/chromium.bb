@@ -4,6 +4,9 @@
 
 #include "components/safe_browsing/db/database_manager.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/metrics/histogram_macros.h"
 #include "components/safe_browsing/db/v4_get_hash_protocol_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -53,9 +56,15 @@ bool SafeBrowsingDatabaseManager::CheckApiBlacklistUrl(const GURL& url,
   std::unique_ptr<SafeBrowsingApiCheck> check(
       new SafeBrowsingApiCheck(url, client));
   api_checks_.insert(check.get());
+
+  std::vector<std::string> list_client_states;
+  V4ProtocolManagerUtil::GetListClientStatesFromStoreStateMap(
+      GetStoreStateMap(), &list_client_states);
+
   v4_get_hash_protocol_manager_->GetFullHashesWithApis(
-      url, base::Bind(&SafeBrowsingDatabaseManager::OnThreatMetadataResponse,
-                      base::Unretained(this), base::Passed(std::move(check))));
+      url, list_client_states,
+      base::Bind(&SafeBrowsingDatabaseManager::OnThreatMetadataResponse,
+                 base::Unretained(this), base::Passed(std::move(check))));
 
   return false;
 }
@@ -72,8 +81,20 @@ SafeBrowsingDatabaseManager::FindClientApiCheck(Client* client) {
   return api_checks_.end();
 }
 
+// Keep the list returned here in sync with GetStoreStateMap()
 StoresToCheck SafeBrowsingDatabaseManager::GetStoresForFullHashRequests() {
   return StoresToCheck({GetChromeUrlApiId()});
+}
+
+// Keep the list returned here in sync with GetStoresForFullHashRequests()
+std::unique_ptr<StoreStateMap> SafeBrowsingDatabaseManager::GetStoreStateMap() {
+  // This implementation is currently used only for RemoteDatabaseManager which
+  // only requests full hashes for GetChromeUrlApiId() list that has no local
+  // storage so the client state is always empty.
+
+  auto store_state_map = std::make_unique<StoreStateMap>();
+  (*store_state_map)[GetChromeUrlApiId()] = "";
+  return store_state_map;
 }
 
 void SafeBrowsingDatabaseManager::OnThreatMetadataResponse(

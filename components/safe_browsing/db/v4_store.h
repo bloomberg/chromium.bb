@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// Design doc: go/design-doc-v4store
+
 #ifndef COMPONENTS_SAFE_BROWSING_DB_V4_STORE_H_
 #define COMPONENTS_SAFE_BROWSING_DB_V4_STORE_H_
 
