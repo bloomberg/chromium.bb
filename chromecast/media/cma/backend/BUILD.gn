@@ -90,6 +90,20 @@ buildflag_header("audio_features") {
   ]
 }
 
+# Implementation of video decoder that discards decoder buffers.
+# Used on audio platforms for media streams containing video.
+source_set("null") {
+  sources = [
+    "video_decoder_null.cc",
+    "video_decoder_null.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/public/media",
+  ]
+}
+
 source_set("audio") {
   sources = [
     "audio_decoder_for_mixer.cc",
@@ -115,8 +129,6 @@ source_set("audio") {
     "stream_mixer_input_impl.cc",
     "stream_mixer_input_impl.h",
     "system_volume_control.h",
-    "video_decoder_null.cc",
-    "video_decoder_null.h",
     "volume_control.cc",
     "volume_map.cc",
     "volume_map.h",
@@ -124,6 +136,7 @@ source_set("audio") {
 
   deps = [
     ":audio_features",
+    ":null",
     "//base",
     "//chromecast/base",
     "//chromecast/media/base",
