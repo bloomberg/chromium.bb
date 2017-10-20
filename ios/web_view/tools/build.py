@@ -168,7 +168,7 @@ def package_all_frameworks(out_dir, output_name, extra_gn_options,
       return 1
 
   # Copy common files from last built package to out_dir.
-  build_dir = os.path.join("out", target_dir_name('Release', 'os'))
+  build_dir = os.path.join('out', target_dir_name('Release', 'os'))
   package_dir = os.path.join(build_dir, 'ios_web_view')
   shutil.copy2(os.path.join(package_dir, 'AUTHORS'), out_dir)
   shutil.copy2(os.path.join(package_dir, 'LICENSE'), out_dir)
@@ -179,7 +179,7 @@ def package_all_frameworks(out_dir, output_name, extra_gn_options,
   return 0
 
 def main():
-  description = "Build and package //ios/web_view."
+  description = 'Build and package //ios/web_view.'
   parser = argparse.ArgumentParser(description=description)
 
   parser.add_argument('out_dir', nargs='?', default='out/IOSWebViewBuild',
@@ -206,15 +206,19 @@ def main():
     print >>sys.stderr, 'The output directory already exists: ' + out_dir
     return 1
 
-  output_name = "ChromeWebView"
+  output_name = 'ChromeWebView'
   extra_gn_options = ''
   if not options.no_goma:
     extra_gn_options += 'use_goma=true '
   if options.include_cronet:
     extra_gn_options += 'ios_web_view_include_cronet=true '
-    output_name = "CronetChromeWebView"
+    output_name = 'CronetChromeWebView'
+  else:
+    extra_gn_options += 'ios_web_view_include_cronet=false '
   if options.enable_sync:
     extra_gn_options += 'ios_web_view_enable_sync=true '
+  else:
+    extra_gn_options += 'ios_web_view_enable_sync=false '
   extra_gn_options += 'ios_web_view_output_name="%s" ' % output_name
 
   return package_all_frameworks(out_dir, output_name, extra_gn_options,
