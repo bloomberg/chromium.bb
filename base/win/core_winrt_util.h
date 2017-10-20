@@ -12,6 +12,7 @@
 
 #include "base/base_export.h"
 #include "base/strings/string16.h"
+#include "base/win/scoped_hstring.h"
 
 namespace base {
 namespace win {
