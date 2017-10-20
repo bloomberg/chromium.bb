@@ -437,6 +437,18 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
 
+  // Perform common checks that need to run before ContainerHost methods that
+  // come from a child process are handled.
+  // |scope| is checked if it is allowed to run a service worker.
+  // Returns true if all checks have passed.
+  // If anything looks wrong |callback| will run with an error
+  // message prefixed by |error_prefix| and |args|, and false is returned.
+  template <typename CallbackType, typename... Args>
+  bool CanServeContainerHostMethods(CallbackType* callback,
+                                    const GURL& scope,
+                                    const char* error_prefix,
+                                    Args... args);
+
   const std::string client_uuid_;
   const base::TimeTicks create_time_;
   int render_process_id_;
