@@ -186,6 +186,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/downloads:unit_tests",
     "//ios/chrome/browser/ui/elements:unit_tests",
     "//ios/chrome/browser/ui/external_app:unit_tests",
+    "//ios/chrome/browser/ui/external_search:unit_tests",
     "//ios/chrome/browser/ui/fancy_ui:unit_tests",
     "//ios/chrome/browser/ui/first_run:unit_tests",
     "//ios/chrome/browser/ui/history:unit_tests",

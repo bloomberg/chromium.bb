@@ -29,6 +29,12 @@ const char kContextualSearch[] = "Contextual Search";
 const char kContextualSearchDescription[] =
     "Whether or not Contextual Search is enabled.";
 
+const char kDragAndDropName[] = "Drag and Drop";
+const char kDragAndDropDescription[] = "Enable support for drag and drop.";
+
+const char kExternalSearchName[] = "External Search";
+const char kExternalSearchDescription[] = "Enable support for External Search.";
+
 const char kInProductHelpDemoModeName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeDescription[] =
     "When enabled, in-product help promotions occur exactly once per cold "
@@ -93,8 +99,5 @@ const char kWebPaymentsNativeAppsDescription[] =
     "Request.";
 
 // Please insert your name/description above in alphabetical order.
-
-const char kDragAndDropName[] = "Drag and Drop";
-const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
 }  // namespace flag_descriptions

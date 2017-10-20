@@ -33,6 +33,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   OmahaServiceProvider* GetOmahaServiceProvider() const override;
   UserFeedbackProvider* GetUserFeedbackProvider() const override;
   SpotlightProvider* GetSpotlightProvider() const override;
+  ExternalSearchProvider* GetExternalSearchProvider() const override;
   void CheckForFirstPartyApps() const override;
   BrandedImageProvider* GetBrandedImageProvider() const override;
 
@@ -45,6 +46,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
   std::unique_ptr<UserFeedbackProvider> user_feedback_provider_;
   std::unique_ptr<SpotlightProvider> spotlight_provider_;
+  std::unique_ptr<ExternalSearchProvider> external_search_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserProvider);
 };
