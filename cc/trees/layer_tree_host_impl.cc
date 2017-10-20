@@ -1428,10 +1428,11 @@ void LayerTreeHostImpl::RequestImplSideInvalidationForCheckerImagedTiles() {
 
 size_t LayerTreeHostImpl::GetFrameIndexForImage(const PaintImage& paint_image,
                                                 WhichTree tree) const {
-  if (!paint_image.ShouldAnimate() || !image_animation_controller_.has_value())
+  DCHECK(image_animation_controller_.has_value());
+  if (!paint_image.ShouldAnimate())
     return paint_image.frame_index();
 
-  return image_animation_controller_.value().GetFrameIndexForImage(
+  return image_animation_controller_->GetFrameIndexForImage(
       paint_image.stable_id(), tree);
 }
 
