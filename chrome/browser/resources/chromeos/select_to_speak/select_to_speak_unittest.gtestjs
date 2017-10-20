@@ -105,3 +105,19 @@ TEST_F('SelectToSpeakUnitTest', 'GetNodeVisibilityStateWithRootWebArea',
   assertEquals(getNodeState(iframeContainer), NodeState.NODE_STATE_NORMAL);
   assertEquals(getNodeState(iframeNode), NodeState.NODE_STATE_NORMAL);
 });
+
+TEST_F('SelectToSpeakUnitTest', 'getNextWordStart', function() {
+  assertEquals(0, getNextWordStart('kitty cat', 0));
+  assertEquals(1, getNextWordStart(' kitty cat', 0));
+  assertEquals(6, getNextWordStart('kitty cat', 5));
+  assertEquals(6, getNextWordStart('kitty cat', 6));
+  assertEquals(7, getNextWordStart('kitty "cat"', 5));
+});
+
+TEST_F('SelectToSpeakUnitTest', 'getNextWordEnd', function() {
+  assertEquals(5, getNextWordEnd('kitty cat', 0));
+  assertEquals(6, getNextWordEnd(' kitty cat', 0));
+  assertEquals(8, getNextWordEnd('kitty cat', 6));
+  assertEquals(8, getNextWordEnd('kitty cat', 7));
+  assertEquals(10, getNextWordEnd('kitty "cat"', 5));
+});

@@ -153,6 +153,12 @@
       <message desc="Label for the fastest synthesized speech rate in the Select-to-speak options dialog." name="IDS_SELECT_TO_SPEAK_OPTIONS_RATE_FASTEST">
         Fastest
       </message>
+      <message desc="Group of options controlling highlighting." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT">
+        Highlighting
+      </message>
+      <message desc="Label for option to highlight spoken words rather than spoken nodes." name="IDS_SELECT_TO_SPEAK_OPTIONS_HIGHLIGHT_DESCRIPTION">
+        Highlight each word as it is spoken
+      </message>
     </messages>
   </release>
 </grit>

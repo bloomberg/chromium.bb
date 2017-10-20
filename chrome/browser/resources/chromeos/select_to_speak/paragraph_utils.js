@@ -82,7 +82,7 @@ function isWhitespace(name) {
 function buildNodeGroup(nodes, index) {
   let node = nodes[index];
   let next = nodes[index + 1];
-  let result = new NodeGroup(node, index);
+  let result = new NodeGroup(index);
   // TODO: Don't skip nodes. Instead, go through every node in
   // this paragraph from the first to the last in the nodes list.
   // This will catch nodes at the edges of the user's selection like
@@ -90,25 +90,17 @@ function buildNodeGroup(nodes, index) {
   //
   // While next node is in the same paragraph as this node AND is
   // a text type node, continue building the paragraph.
-  while (inSameParagraph(node, next)) {
+  while (index < nodes.length) {
+    if (node.name !== undefined && !isWhitespace(node.name)) {
+      result.nodes.push(new NodeGroupItem(node, result.text.length));
+      result.text += node.name + ' ';
+    }
+    if (!inSameParagraph(node, next)) {
+      break;
+    }
     index += 1;
     node = next;
     next = nodes[index + 1];
-    if (node.name === undefined || isWhitespace(node.name)) {
-      // Don't bother with unnamed or empty nodes.
-      continue;
-    }
-    // Update the resulting paragraph with the next node's information.
-    result.nodes.push(new NodeGroupItem(node, result.text.length + 1));
-    let name = node.name;
-    // Remove extra whitespace
-    if (name[0] == ' ') {
-      name = name.substr(1, name.length);
-    }
-    if (name[name.length - 1] == ' ') {
-      name = name.substr(0, name.length - 1);
-    }
-    result.text += ' ' + name;
   }
   result.endIndex = index;
   return result;
@@ -118,22 +110,21 @@ function buildNodeGroup(nodes, index) {
  * Class representing a node group, which may be a single node or a
  * full paragraph of nodes.
  *
- * @param { AutomationNode } start The first node in the paragraph.
  * @param { number } startIndex The index of the first node within
  * @constructor
  */
-function NodeGroup(start, startIndex) {
+function NodeGroup(startIndex) {
   /**
    * Full text of this paragraph.
    * @type { string|undefined }
    */
-  this.text = start.name;
+  this.text = '';
 
   /**
    * List of nodes in this paragraph in order.
    * @type { Array<NodeGroupItem> }
    */
-  this.nodes = [new NodeGroupItem(start, 0)];
+  this.nodes = [];
 
   /**
    * The index of the first node in this paragraph from the list of

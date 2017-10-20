@@ -86,7 +86,7 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupStopsAtNewParagraph',
   let text3 = {role: 'staticText', parent: paragraph2, name: 'text3',
       root: root};
   let result = buildNodeGroup([text1, text2, text3], 0);
-  assertEquals('text1 text2', result.text);
+  assertEquals('text1 text2 ', result.text);
   assertEquals(1, result.endIndex);
   assertEquals(2, result.nodes.length);
   assertEquals(0, result.nodes[0].startChar);
@@ -109,7 +109,7 @@ TEST_F('SelectToSpeakParagraphUnitTest', 'BuildNodeGroupIncludesLinks',
   let linkText = {role: 'staticText', parent: link, name: 'linkText',
       root: root};
   let result = buildNodeGroup([text1, text2, linkText], 0);
-  assertEquals('text1 linkText', result.text);
+  assertEquals('text1 linkText ', result.text);
   assertEquals(2, result.endIndex);
   assertEquals(2, result.nodes.length);
   assertEquals(0, result.nodes[0].startChar);
