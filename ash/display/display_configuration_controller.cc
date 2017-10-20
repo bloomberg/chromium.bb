@@ -163,6 +163,13 @@ void DisplayConfigurationController::ResetAnimatorForTest() {
   display_animator_.reset();
 }
 
+void DisplayConfigurationController::SetScreenRotationAnimatorForTest(
+    int64_t display_id,
+    std::unique_ptr<ScreenRotationAnimator> animator) {
+  aura::Window* root_window = Shell::GetRootWindowForDisplayId(display_id);
+  root_window->SetProperty(kScreenRotationAnimatorKey, animator.release());
+}
+
 // Private
 
 void DisplayConfigurationController::SetThrottleTimeout(int64_t throttle_ms) {
