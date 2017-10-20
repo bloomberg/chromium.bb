@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/resource_coordinator/memory_instrumentation/process_map.h"
+#include "services/resource_coordinator/memory_instrumentation/queued_request.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/coordinator.h"
 #include "services/resource_coordinator/public/cpp/memory_instrumentation/tracing_observer.h"
 #include "services/resource_coordinator/public/interfaces/memory_instrumentation/memory_instrumentation.mojom.h"
@@ -75,69 +76,6 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
   friend std::default_delete<CoordinatorImpl>;  // For testing
   friend class CoordinatorImplTest;             // For testing
 
-  // Holds data for pending requests enqueued via RequestGlobalMemoryDump().
-  struct QueuedMemoryDumpRequest {
-    QueuedMemoryDumpRequest(
-        const base::trace_event::MemoryDumpRequestArgs& args,
-        const RequestGlobalMemoryDumpInternalCallback& callback,
-        bool add_to_trace);
-    ~QueuedMemoryDumpRequest();
-    const base::trace_event::MemoryDumpRequestArgs args;
-    const RequestGlobalMemoryDumpInternalCallback callback;
-    const bool add_to_trace;
-
-    bool wants_mmaps() const {
-      return args.level_of_detail ==
-             base::trace_event::MemoryDumpLevelOfDetail::DETAILED;
-    }
-
-    // We always want to return chrome dumps, with exception of the special
-    // case below for the heap profiler, which cares only about mmaps.
-    bool wants_chrome_dumps() const {
-      return args.dump_type !=
-             base::trace_event::MemoryDumpType::VM_REGIONS_ONLY;
-    }
-
-    bool should_return_summaries() const {
-      return args.dump_type == base::trace_event::MemoryDumpType::SUMMARY_ONLY;
-    }
-
-    struct PendingResponse {
-      enum Type {
-        kChromeDump,
-        kOSDump,
-      };
-      PendingResponse(const mojom::ClientProcess* client, const Type type);
-
-      bool operator<(const PendingResponse& other) const;
-
-      const mojom::ClientProcess* client;
-      const Type type;
-    };
-
-    struct Response {
-      Response();
-      ~Response();
-
-      base::ProcessId process_id;
-      mojom::ProcessType process_type;
-      std::unique_ptr<base::trace_event::ProcessMemoryDump> chrome_dump;
-      OSMemDumpMap os_dumps;
-    };
-
-    // When a dump, requested via RequestGlobalMemoryDump(), is in progress this
-    // set contains a |PendingResponse| for each |RequestChromeMemoryDump| and
-    // |RequestOSMemoryDump| call that has not yet replied or been canceled (due
-    // to the client disconnecting).
-    std::set<QueuedMemoryDumpRequest::PendingResponse> pending_responses;
-    std::map<mojom::ClientProcess*, Response> responses;
-    int failed_memory_dump_count = 0;
-    bool dump_in_progress = false;
-    // The time we started handling the request (does not including queuing
-    // time).
-    base::Time start_time;
-  };
-
   // Holds the identity and remote reference of registered clients.
   struct ClientInfo {
     ClientInfo(const service_manager::Identity&,
@@ -168,17 +106,17 @@ class CoordinatorImpl : public Coordinator, public mojom::Coordinator {
                               OSMemDumpMap);
 
   void RemovePendingResponse(mojom::ClientProcess*,
-                             QueuedMemoryDumpRequest::PendingResponse::Type);
+                             QueuedRequest::PendingResponse::Type);
 
   void PerformNextQueuedGlobalMemoryDump();
   void FinalizeGlobalMemoryDumpIfAllManagersReplied();
-  QueuedMemoryDumpRequest* GetCurrentRequest();
+  QueuedRequest* GetCurrentRequest();
 
   // Map of registered client processes.
   std::map<mojom::ClientProcess*, std::unique_ptr<ClientInfo>> clients_;
 
   // Outstanding dump requests, enqueued via RequestGlobalMemoryDump().
-  std::list<QueuedMemoryDumpRequest> queued_memory_dump_requests_;
+  std::list<QueuedRequest> queued_memory_dump_requests_;
 
   // There may be extant callbacks in |queued_memory_dump_requests_|. The
   // bindings_ must be closed before destroying the un-run callbacks.
