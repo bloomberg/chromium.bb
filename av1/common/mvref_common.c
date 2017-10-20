@@ -1602,7 +1602,8 @@ static uint32_t mv_sign_reverse(int_mv ref) {
 }
 
 static void motion_field_projection(AV1_COMMON *cm,
-                                    MV_REFERENCE_FRAME ref_frame) {
+                                    MV_REFERENCE_FRAME ref_frame,
+                                    int ref_stamp) {
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
 
   int cur_frame_index = cm->cur_frame->cur_frame_offset;
@@ -1678,7 +1679,6 @@ static void motion_field_projection(AV1_COMMON *cm,
   int cur_to_lst3 = cur_frame_index - lst3_frame_index;
   int cur_to_bwd = bwd_frame_index - cur_frame_index;
   int cur_to_alt2 = alt2_frame_index - cur_frame_index;
-  const int ref_stamp = FWD_RF_OFFSET(ref_frame);
   // clang-format off
     const int ref_frame_offset_buffer[TOTAL_REFS_PER_FRAME] = {
         0, lst_offset, lst2_offset, lst3_offset, gld_offset,
@@ -1934,12 +1934,10 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     }
   }
 
-  motion_field_projection(cm, ALTREF_FRAME);
-
+  motion_field_projection(cm, BWDREF_FRAME, 1);
   if (alt2_frame_index > cur_frame_index)
-    motion_field_projection(cm, ALTREF2_FRAME);
-
-  motion_field_projection(cm, BWDREF_FRAME);
+    motion_field_projection(cm, ALTREF2_FRAME, 2);
+  motion_field_projection(cm, ALTREF_FRAME, 3);
 }
 #endif  // CONFIG_MFMV
 
