@@ -36,7 +36,6 @@
 #include "chromecast/browser/cast_memory_pressure_monitor.h"
 #include "chromecast/browser/cast_net_log.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
-#include "chromecast/browser/geolocation/cast_access_token_store.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_metrics_prefs.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
@@ -60,8 +59,6 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_switches.h"
-#include "device/geolocation/geolocation_delegate.h"
-#include "device/geolocation/geolocation_provider.h"
 #include "gpu/command_buffer/service/gpu_switches.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
@@ -195,22 +192,6 @@ namespace chromecast {
 namespace shell {
 
 namespace {
-
-// A provider of services for Geolocation.
-class CastGeolocationDelegate : public device::GeolocationDelegate {
- public:
-  explicit CastGeolocationDelegate(CastBrowserContext* context)
-      : context_(context) {}
-
-  scoped_refptr<device::AccessTokenStore> CreateAccessTokenStore() override {
-    return new CastAccessTokenStore(context_);
-  }
-
- private:
-  CastBrowserContext* context_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastGeolocationDelegate);
-};
 
 struct DefaultCommandLineSwitch {
   const char* const switch_name;
@@ -534,9 +515,6 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif
   ::media::InitializeMediaLibrary();
   media_caps_->Initialize();
-
-  device::GeolocationProvider::SetGeolocationDelegate(
-      new CastGeolocationDelegate(cast_browser_process_->browser_context()));
 
   // Initializing metrics service and network delegates must happen after cast
   // service is intialized because CastMetricsServiceClient and

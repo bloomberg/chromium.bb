@@ -20,7 +20,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "device/geolocation/access_token_store.h"
 #include "device/geolocation/fake_location_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

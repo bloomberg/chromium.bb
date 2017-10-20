@@ -61,8 +61,6 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_loader_throttle.h"
 #include "content/public/common/web_preferences.h"
-#include "device/geolocation/access_token_store.h"
-#include "device/geolocation/geolocation_delegate.h"
 #include "net/android/network_library.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/ssl/ssl_info.h"
