@@ -411,8 +411,8 @@
     <message name="IDS_CHOOSE_PAYMENT_METHOD" desc="The title for the button that lets the user select the method of payment. Title-Cased.">
       Choose Payment Method
     </message>
-    <message name="IDS_ADD_PAYMENT_METHOD" desc="The title for the button that lets the user add a method of payment. Title-Cased.">
-      Add Payment Method
+    <message name="IDS_ADD_PAYMENT_METHOD" desc="The title for the button that lets the user add a payment card. Title-Cased.">
+      Add Card
     </message>
     <message name="IDS_PAYMENT_REQUEST_CHOOSE_CONTACT_INFO" desc="The name of the Choose Contact Info button in the Payment Sheet of the Payment Request dialog. Title-Cased.">
       Choose Contact Info

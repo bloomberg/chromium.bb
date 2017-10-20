@@ -226,8 +226,6 @@ using ::payment_request_util::GetShippingSectionTitle;
   }
 
   PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
-  item.text =
-      l10n_util::GetNSString(IDS_PAYMENT_REQUEST_PAYMENT_METHOD_SECTION_NAME);
   if (self.paymentRequest->payment_methods().empty()) {
     item.text = l10n_util::GetNSString(IDS_ADD_PAYMENT_METHOD);
     item.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
@@ -235,7 +233,6 @@ using ::payment_request_util::GetShippingSectionTitle;
     item.textColor = [[MDCPalette cr_bluePalette] tint500];
   } else {
     item.text = l10n_util::GetNSString(IDS_CHOOSE_PAYMENT_METHOD);
-    item.text = @"Choose Payment Method";
     item.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
     item.textColor = [[MDCPalette cr_bluePalette] tint500];
   }
@@ -246,7 +243,8 @@ using ::payment_request_util::GetShippingSectionTitle;
   if (!self.paymentRequest->selected_contact_profile())
     return nil;
   PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
-  item.text = l10n_util::GetNSString(IDS_PAYMENTS_CONTACT_DETAILS_LABEL);
+  item.text =
+      l10n_util::GetNSString(IDS_PAYMENT_REQUEST_CONTACT_INFO_SECTION_NAME);
   return item;
 }
 
@@ -270,7 +268,6 @@ using ::payment_request_util::GetShippingSectionTitle;
   }
 
   PaymentsTextItem* item = [[PaymentsTextItem alloc] init];
-  item.text = l10n_util::GetNSString(IDS_PAYMENTS_CONTACT_DETAILS_LABEL);
   if (self.paymentRequest->contact_profiles().empty()) {
     item.text = l10n_util::GetNSString(IDS_PAYMENT_REQUEST_ADD_CONTACT_INFO);
     item.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
