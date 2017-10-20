@@ -1472,6 +1472,7 @@ test("browser_tests") {
       "../browser/ui/autofill/card_unmask_prompt_view_tester.h",
       "../browser/ui/autofill/password_generation_popup_view_browsertest.cc",
       "../browser/ui/autofill/password_generation_popup_view_tester.h",
+      "../browser/ui/autofill/save_card_bubble_controller_impl_browsertest.cc",
       "../browser/ui/bookmarks/bookmark_browsertest.cc",
       "../browser/ui/browser_browsertest.cc",
       "../browser/ui/browser_command_controller_browsertest.cc",
