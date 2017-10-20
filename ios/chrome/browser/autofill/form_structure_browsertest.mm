@@ -60,11 +60,7 @@ base::FilePath GetIOSOutputDirectory(
 // Returns the list of tests that fail to run properly on iOS.
 // TODO(crbug.com/762970): Reduce the amount of failing tests.
 const std::set<std::string>& FailingTestData() {
-  static std::set<std::string> failing_tests = {
-      "115_checkout_walgreens.com.html",
-      "116_cc_checkout_walgreens.com.html",
-      "137_bug_555010.html",
-  };
+  static std::set<std::string> failing_tests = {};
   return failing_tests;
 }
 
