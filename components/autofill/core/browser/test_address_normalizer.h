@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/autofill_profile.h"
 
@@ -16,17 +17,18 @@ namespace autofill {
 // to normalize instantaneously or to wait for a call.
 class TestAddressNormalizer : public AddressNormalizer {
  public:
-  TestAddressNormalizer() {}
+  TestAddressNormalizer();
+  ~TestAddressNormalizer() override;
 
   void LoadRulesForRegion(const std::string& region_code) override {}
 
   bool AreRulesLoadedForRegion(const std::string& region_code) override;
 
-  void StartAddressNormalization(
+  void NormalizeAddress(
       const AutofillProfile& profile,
       const std::string& region_code,
       int timeout_seconds,
-      AddressNormalizer::Delegate* requester) override;
+      AddressNormalizer::NormalizationCallback callback) override;
 
   void OnAddressValidationRulesLoaded(const std::string& region_code,
                                       bool success) override {}
@@ -37,7 +39,7 @@ class TestAddressNormalizer : public AddressNormalizer {
 
  private:
   AutofillProfile profile_;
-  AddressNormalizer::Delegate* requester_;
+  AddressNormalizer::NormalizationCallback callback_;
 
   bool instantaneous_normalization_ = true;
 };

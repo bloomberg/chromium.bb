@@ -167,20 +167,6 @@ void PaymentRequestState::OnPaymentResponseReady(
   delegate_->OnPaymentResponseAvailable(std::move(payment_response));
 }
 
-void PaymentRequestState::OnAddressNormalized(
-    const autofill::AutofillProfile& normalized_profile) {
-  delegate_->OnShippingAddressSelected(
-      PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
-          normalized_profile, app_locale_));
-}
-
-void PaymentRequestState::OnCouldNotNormalize(
-    const autofill::AutofillProfile& profile) {
-  // Since the phone number is formatted in either case, this profile should be
-  // used.
-  OnAddressNormalized(profile);
-}
-
 void PaymentRequestState::OnSpecUpdated() {
   if (spec_->selected_shipping_option_error().empty()) {
     selected_shipping_option_error_profile_ = nullptr;
@@ -346,8 +332,10 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // from the |app_locale_|.
   std::string country_code = autofill::data_util::GetCountryCodeWithFallback(
       *selected_shipping_profile_, app_locale_);
-  payment_request_delegate_->GetAddressNormalizer()->StartAddressNormalization(
-      *selected_shipping_profile_, country_code, /*timeout_seconds=*/2, this);
+  payment_request_delegate_->GetAddressNormalizer()->NormalizeAddress(
+      *selected_shipping_profile_, country_code, /*timeout_seconds=*/2,
+      base::BindOnce(&PaymentRequestState::OnAddressNormalized,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PaymentRequestState::SetSelectedContactProfile(
@@ -507,6 +495,14 @@ bool PaymentRequestState::ArePaymentOptionsSatisfied() {
     return false;
 
   return profile_comparator()->IsContactInfoComplete(selected_contact_profile_);
+}
+
+void PaymentRequestState::OnAddressNormalized(
+    bool success,
+    const autofill::AutofillProfile& normalized_profile) {
+  delegate_->OnShippingAddressSelected(
+      PaymentResponseHelper::GetMojomPaymentAddressFromAutofillProfile(
+          normalized_profile, app_locale_));
 }
 
 }  // namespace payments
