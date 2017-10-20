@@ -20,6 +20,7 @@ blink_modules_sources("compositorworker") {
     "Animator.h",
     "AnimatorDefinition.cpp",
     "AnimatorDefinition.h",
+    "EffectProxy.h",
     "WindowAnimationWorklet.cpp",
     "WindowAnimationWorklet.h",
     "WorkletAnimation.cpp",

@@ -20,8 +20,12 @@ class PLATFORM_EXPORT CompositorMutatorClient
   explicit CompositorMutatorClient(CompositorMutator*);
   virtual ~CompositorMutatorClient();
 
+  void SetMutationUpdate(std::unique_ptr<cc::MutatorOutputState>);
+
   // cc::LayerTreeMutator
-  void Mutate(base::TimeTicks monotonic_time) override;
+  void SetClient(cc::LayerTreeMutatorClient*);
+  void Mutate(base::TimeTicks monotonic_time,
+              std::unique_ptr<cc::MutatorInputState>) override;
   // TODO(majidvp): Remove this when CC knows about timeline input.
   bool HasAnimators() override;
 
@@ -30,6 +34,7 @@ class PLATFORM_EXPORT CompositorMutatorClient
  private:
   // Accessed by main and compositor threads.
   CrossThreadPersistent<CompositorMutator> mutator_;
+  cc::LayerTreeMutatorClient* client_;
 };
 
 }  // namespace blink

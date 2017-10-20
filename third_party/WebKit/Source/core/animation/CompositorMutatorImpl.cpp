@@ -54,10 +54,12 @@ CompositorMutatorImpl* CompositorMutatorImpl::Create() {
   return new CompositorMutatorImpl();
 }
 
-void CompositorMutatorImpl::Mutate(double monotonic_time_now) {
+void CompositorMutatorImpl::Mutate(
+    double monotonic_time_now,
+    std::unique_ptr<CompositorMutatorInputState> state) {
   TRACE_EVENT0("cc", "CompositorMutatorImpl::mutate");
   for (CompositorAnimator* animator : animators_) {
-    animator->Mutate(monotonic_time_now);
+    animator->Mutate(monotonic_time_now, *state);
   }
 }
 
@@ -77,6 +79,13 @@ void CompositorMutatorImpl::UnregisterCompositorAnimator(
     CompositorAnimator* animator) {
   DCHECK(animators_.Contains(animator));
   animators_.erase(animator);
+}
+
+void CompositorMutatorImpl::SetMutationUpdate(
+    std::unique_ptr<CompositorMutatorOutputState> state) {
+  DCHECK(!IsMainThread());
+  TRACE_EVENT0("compositor-worker", "CompositorMutatorImpl::SetMutationUpdate");
+  client_->SetMutationUpdate(std::move(state));
 }
 
 }  // namespace blink

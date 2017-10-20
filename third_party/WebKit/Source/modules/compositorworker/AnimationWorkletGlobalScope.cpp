@@ -18,6 +18,42 @@
 
 namespace blink {
 
+namespace {
+
+// Once this goes our of scope it clears any animators that has not been
+// animated.
+class ScopedAnimatorsSweeper {
+  STACK_ALLOCATED();
+
+ public:
+  using AnimatorMap = HeapHashMap<int, TraceWrapperMember<Animator>>;
+  explicit ScopedAnimatorsSweeper(AnimatorMap& animators)
+      : animators_(animators) {
+    for (const auto& entry : animators_) {
+      Animator* animator = entry.value;
+      animator->clear_did_animate();
+    }
+  }
+  ~ScopedAnimatorsSweeper() {
+    // Clear any animator that has not been animated.
+    // TODO(majidvp): Reconsider this once we add specific entry to mutator
+    // input that explicitly inform us that an animator is deleted.
+    Vector<int> to_be_removed;
+    for (const auto& entry : animators_) {
+      int id = entry.key;
+      Animator* animator = entry.value;
+      if (!animator->did_animate())
+        to_be_removed.push_back(id);
+    }
+    animators_.RemoveAll(to_be_removed);
+  }
+
+ private:
+  AnimatorMap& animators_;
+};
+
+}  // namespace
+
 AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
     const KURL& url,
     const String& user_agent,
@@ -59,7 +95,7 @@ void AnimationWorkletGlobalScope::Trace(blink::Visitor* visitor) {
 void AnimationWorkletGlobalScope::TraceWrappers(
     const ScriptWrappableVisitor* visitor) const {
   for (auto animator : animators_)
-    visitor->TraceWrappers(animator);
+    visitor->TraceWrappers(animator.value);
 
   for (auto definition : animator_definitions_)
     visitor->TraceWrappers(definition.value);
@@ -75,15 +111,56 @@ void AnimationWorkletGlobalScope::Dispose() {
   ThreadedWorkletGlobalScope::Dispose();
 }
 
-void AnimationWorkletGlobalScope::Mutate() {
+Animator* AnimationWorkletGlobalScope::GetAnimatorFor(int player_id,
+                                                      const String& name) {
+  Animator* animator = animators_.at(player_id);
+  if (!animator) {
+    // This is a new player so we should create an animator for it.
+    animator = CreateInstance(name);
+    if (!animator)
+      return nullptr;
+
+    animators_.Set(player_id, animator);
+  }
+
+  return animator;
+}
+
+std::unique_ptr<CompositorMutatorOutputState>
+AnimationWorkletGlobalScope::Mutate(
+    const CompositorMutatorInputState& mutator_input) {
   DCHECK(IsContextThread());
+
+  // Clean any animator that is not updated
+  ScopedAnimatorsSweeper sweeper(animators_);
 
   ScriptState* script_state = ScriptController()->GetScriptState();
   ScriptState::Scope scope(script_state);
 
-  for (Animator* animator : animators_) {
-    animator->Animate(script_state);
+  std::unique_ptr<CompositorMutatorOutputState> result =
+      WTF::MakeUnique<CompositorMutatorOutputState>();
+
+  for (const CompositorMutatorInputState::AnimationState& animation_input :
+       mutator_input.animations) {
+    int id = animation_input.animation_player_id;
+    const String name = String::FromUTF8(animation_input.name.data(),
+                                         animation_input.name.size());
+
+    Animator* animator = GetAnimatorFor(id, name);
+    // TODO(majidvp): This means there is an animatorName for which
+    // definition was not registered. We should handle this case gracefully.
+    // http://crbug.com/776017
+    if (!animator)
+      continue;
+
+    CompositorMutatorOutputState::AnimationState animation_output;
+    if (animator->Animate(script_state, animation_input, &animation_output)) {
+      animation_output.animation_player_id = id;
+      result->animations.push_back(std::move(animation_output));
+    }
   }
+
+  return result;
 }
 
 void AnimationWorkletGlobalScope::registerAnimator(
@@ -152,11 +229,6 @@ void AnimationWorkletGlobalScope::registerAnimator(
       new AnimatorDefinition(isolate, constructor, animate);
 
   animator_definitions_.Set(name, definition);
-
-  // Immediately instantiate an animator for the registered definition.
-  // TODO(majidvp): Remove this once you add alternative way to instantiate
-  if (Animator* animator = CreateInstance(name))
-    animators_.push_back(animator);
 }
 
 Animator* AnimationWorkletGlobalScope::CreateInstance(const String& name) {

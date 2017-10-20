@@ -84,6 +84,7 @@ modules_idl_files =
                     "canvas2d/CanvasRenderingContext2D.idl",
                     "canvas2d/Path2D.idl",
                     "compositorworker/AnimationWorkletGlobalScope.idl",
+                    "compositorworker/EffectProxy.idl",
                     "compositorworker/WorkletAnimation.idl",
                     "cookie_store/CookieStore.idl",
                     "credentialmanager/AuthenticatorAssertionResponse.idl",

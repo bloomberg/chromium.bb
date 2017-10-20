@@ -43,7 +43,8 @@ enum class ThreadInstance { MAIN, IMPL };
 // (PushPropertiesTo).
 // An AnimationHost talks to its correspondent LayerTreeHost via
 // MutatorHostClient interface.
-class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost {
+class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost,
+                                          public LayerTreeMutatorClient {
  public:
   using ElementToAnimationsMap =
       std::unordered_map<ElementId,
@@ -173,6 +174,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost {
   const PlayersList& ticking_players_for_testing() const;
   const ElementToAnimationsMap& element_animations_for_testing() const;
 
+  // LayerTreeMutatorClient.
+  void SetMutationUpdate(
+      std::unique_ptr<MutatorOutputState> output_state) override;
+
  private:
   explicit AnimationHost(ThreadInstance thread_instance);
 
@@ -184,6 +189,10 @@ class CC_ANIMATION_EXPORT AnimationHost : public MutatorHost {
 
   bool NeedsTickAnimationPlayers() const;
   bool NeedsTickMutator() const;
+
+  // Return the animator state representing all ticking worklet animations.
+  std::unique_ptr<MutatorInputState> CollectAnimatorsState(
+      base::TimeTicks timeline_time);
 
   ElementToAnimationsMap element_to_animations_map_;
   PlayersList ticking_players_;

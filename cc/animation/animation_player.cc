@@ -139,7 +139,7 @@ void AnimationPlayer::PushPropertiesTo(AnimationPlayer* player_impl) {
 
 void AnimationPlayer::Tick(base::TimeTicks monotonic_time) {
   DCHECK(!monotonic_time.is_null());
-  animation_ticker_->Tick(monotonic_time);
+  animation_ticker_->Tick(monotonic_time, nullptr);
 }
 
 void AnimationPlayer::UpdateState(bool start_ready_animations,
@@ -225,6 +225,10 @@ std::string AnimationPlayer::ToString() const {
       "AnimationPlayer{id=%d, element_id=%s, animations=[%s]}", id_,
       animation_ticker_->element_id().ToString().c_str(),
       animation_ticker_->AnimationsToString().c_str());
+}
+
+bool AnimationPlayer::IsWorkletAnimationPlayer() const {
+  return false;
 }
 
 }  // namespace cc

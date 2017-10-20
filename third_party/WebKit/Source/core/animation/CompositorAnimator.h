@@ -6,6 +6,7 @@
 #define CompositorAnimator_h
 
 #include "core/CoreExport.h"
+#include "platform/graphics/CompositorAnimatorsState.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -13,7 +14,8 @@ namespace blink {
 class CORE_EXPORT CompositorAnimator : public GarbageCollectedMixin {
  public:
   // Runs the animation frame callback for the frame starting at the given time.
-  virtual void Mutate(double monotonic_time_now) = 0;
+  virtual void Mutate(double monotonic_time_now,
+                      const CompositorMutatorInputState&) = 0;
   virtual void Trace(blink::Visitor* visitor) {}
 };
 
