@@ -109,7 +109,7 @@ PairwiseInterpolationValue ListInterpolationFunctions::MaybeMergeSingles(
       InterpolableList::Create(final_length);
   std::unique_ptr<InterpolableList> result_end_interpolable_list =
       InterpolableList::Create(final_length);
-  Vector<RefPtr<NonInterpolableValue>> result_non_interpolable_values(
+  Vector<scoped_refptr<NonInterpolableValue>> result_non_interpolable_values(
       final_length);
 
   InterpolableList& start_interpolable_list =
@@ -179,7 +179,8 @@ static void RepeatToLength(InterpolationValue& value, size_t length) {
   DCHECK_LT(current_length, length);
   std::unique_ptr<InterpolableList> new_interpolable_list =
       InterpolableList::Create(length);
-  Vector<RefPtr<NonInterpolableValue>> new_non_interpolable_values(length);
+  Vector<scoped_refptr<NonInterpolableValue>> new_non_interpolable_values(
+      length);
   for (size_t i = length; i-- > 0;) {
     new_interpolable_list->Set(
         i, i < current_length
@@ -210,7 +211,7 @@ static void PadToSameLength(InterpolationValue& value,
   DCHECK_LT(current_length, target_length);
   std::unique_ptr<InterpolableList> new_interpolable_list =
       InterpolableList::Create(target_length);
-  Vector<RefPtr<NonInterpolableValue>> new_non_interpolable_values(
+  Vector<scoped_refptr<NonInterpolableValue>> new_non_interpolable_values(
       target_length);
   size_t index = 0;
   for (; index < current_length; index++) {

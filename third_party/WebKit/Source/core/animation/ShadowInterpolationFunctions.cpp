@@ -30,7 +30,8 @@ class ShadowNonInterpolableValue : public NonInterpolableValue {
  public:
   ~ShadowNonInterpolableValue() final {}
 
-  static RefPtr<ShadowNonInterpolableValue> Create(ShadowStyle shadow_style) {
+  static scoped_refptr<ShadowNonInterpolableValue> Create(
+      ShadowStyle shadow_style) {
     return WTF::AdoptRef(new ShadowNonInterpolableValue(shadow_style));
   }
 
@@ -150,7 +151,7 @@ ShadowInterpolationFunctions::CreateNeutralInterpolableValue() {
 
 void ShadowInterpolationFunctions::Composite(
     std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    RefPtr<NonInterpolableValue>& underlying_non_interpolable_value,
+    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
     double underlying_fraction,
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {

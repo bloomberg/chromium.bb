@@ -67,14 +67,14 @@ class InheritedShadowListChecker
  public:
   static std::unique_ptr<InheritedShadowListChecker> Create(
       CSSPropertyID property,
-      RefPtr<ShadowList> shadow_list) {
+      scoped_refptr<ShadowList> shadow_list) {
     return WTF::WrapUnique(
         new InheritedShadowListChecker(property, std::move(shadow_list)));
   }
 
  private:
   InheritedShadowListChecker(CSSPropertyID property,
-                             RefPtr<ShadowList> shadow_list)
+                             scoped_refptr<ShadowList> shadow_list)
       : property_(property), shadow_list_(std::move(shadow_list)) {}
 
   bool IsValid(const StyleResolverState& state,
@@ -89,7 +89,7 @@ class InheritedShadowListChecker
   }
 
   const CSSPropertyID property_;
-  RefPtr<ShadowList> shadow_list_;
+  scoped_refptr<ShadowList> shadow_list_;
 };
 
 InterpolationValue CSSShadowListInterpolationType::MaybeConvertInherit(
@@ -153,7 +153,7 @@ void CSSShadowListInterpolationType::Composite(
       ShadowInterpolationFunctions::Composite);
 }
 
-static RefPtr<ShadowList> CreateShadowList(
+static scoped_refptr<ShadowList> CreateShadowList(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     const StyleResolverState& state) {
@@ -175,7 +175,7 @@ void CSSShadowListInterpolationType::ApplyStandardPropertyValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     StyleResolverState& state) const {
-  RefPtr<ShadowList> shadow_list =
+  scoped_refptr<ShadowList> shadow_list =
       CreateShadowList(interpolable_value, non_interpolable_value, state);
   switch (CssProperty()) {
     case CSSPropertyBoxShadow:

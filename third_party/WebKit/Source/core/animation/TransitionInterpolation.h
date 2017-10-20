@@ -39,13 +39,13 @@ class InterpolationType;
 // function.
 class CORE_EXPORT TransitionInterpolation : public Interpolation {
  public:
-  static RefPtr<TransitionInterpolation> Create(
+  static scoped_refptr<TransitionInterpolation> Create(
       const PropertyHandle& property,
       const InterpolationType& type,
       InterpolationValue&& start,
       InterpolationValue&& end,
-      const RefPtr<AnimatableValue> compositor_start,
-      const RefPtr<AnimatableValue> compositor_end) {
+      const scoped_refptr<AnimatableValue> compositor_start,
+      const scoped_refptr<AnimatableValue> compositor_end) {
     return WTF::AdoptRef(new TransitionInterpolation(
         property, type, std::move(start), std::move(end),
         std::move(compositor_start), std::move(compositor_end)));
@@ -59,7 +59,7 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
 
   std::unique_ptr<TypedInterpolationValue> GetInterpolatedValue() const;
 
-  RefPtr<AnimatableValue> GetInterpolatedCompositorValue() const;
+  scoped_refptr<AnimatableValue> GetInterpolatedCompositorValue() const;
 
   void Interpolate(int iteration, double fraction) final;
 
@@ -68,8 +68,8 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
                           const InterpolationType& type,
                           InterpolationValue&& start,
                           InterpolationValue&& end,
-                          const RefPtr<AnimatableValue> compositor_start,
-                          const RefPtr<AnimatableValue> compositor_end)
+                          const scoped_refptr<AnimatableValue> compositor_start,
+                          const scoped_refptr<AnimatableValue> compositor_end)
       : property_(property),
         type_(type),
         start_(std::move(start)),
@@ -93,8 +93,8 @@ class CORE_EXPORT TransitionInterpolation : public Interpolation {
   const InterpolationValue start_;
   const InterpolationValue end_;
   const PairwiseInterpolationValue merge_;
-  const RefPtr<AnimatableValue> compositor_start_;
-  const RefPtr<AnimatableValue> compositor_end_;
+  const scoped_refptr<AnimatableValue> compositor_start_;
+  const scoped_refptr<AnimatableValue> compositor_end_;
 
   mutable double cached_fraction_ = 0;
   mutable int cached_iteration_ = 0;

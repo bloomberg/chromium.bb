@@ -18,7 +18,7 @@ TEST(CSSTransitionData, TransitionsMatchForStyleRecalc_Initial) {
 TEST(CSSTransitionData, TransitionsMatchForStyleRecalc_CubicBezierSameObject) {
   std::unique_ptr<CSSTransitionData> transition1 = CSSTransitionData::Create();
   std::unique_ptr<CSSTransitionData> transition2 = CSSTransitionData::Create();
-  RefPtr<TimingFunction> func =
+  scoped_refptr<TimingFunction> func =
       CubicBezierTimingFunction::Create(0.2f, 0.2f, 0.9f, 0.7f);
   transition1->TimingFunctionList().push_back(func);
   transition2->TimingFunctionList().push_back(func);
@@ -29,9 +29,9 @@ TEST(CSSTransitionData,
      TransitionsMatchForStyleRecalc_CubicBezierDifferentObjects) {
   std::unique_ptr<CSSTransitionData> transition1 = CSSTransitionData::Create();
   std::unique_ptr<CSSTransitionData> transition2 = CSSTransitionData::Create();
-  RefPtr<TimingFunction> func1 =
+  scoped_refptr<TimingFunction> func1 =
       CubicBezierTimingFunction::Create(0.2f, 0.2f, 0.9f, 0.7f);
-  RefPtr<TimingFunction> func2 =
+  scoped_refptr<TimingFunction> func2 =
       CubicBezierTimingFunction::Create(0.2f, 0.2f, 0.9f, 0.7f);
   transition1->TimingFunctionList().push_back(func1);
   transition2->TimingFunctionList().push_back(func2);
@@ -42,9 +42,9 @@ TEST(CSSTransitionData,
      TransitionsMatchForStyleRecalc_CubicBezierDifferentValues) {
   std::unique_ptr<CSSTransitionData> transition1 = CSSTransitionData::Create();
   std::unique_ptr<CSSTransitionData> transition2 = CSSTransitionData::Create();
-  RefPtr<TimingFunction> func1 =
+  scoped_refptr<TimingFunction> func1 =
       CubicBezierTimingFunction::Create(0.1f, 0.25f, 0.9f, 0.57f);
-  RefPtr<TimingFunction> func2 =
+  scoped_refptr<TimingFunction> func2 =
       CubicBezierTimingFunction::Create(0.2f, 0.2f, 0.9f, 0.7f);
   transition1->TimingFunctionList().push_back(func1);
   transition2->TimingFunctionList().push_back(func2);

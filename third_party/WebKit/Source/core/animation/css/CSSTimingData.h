@@ -22,19 +22,19 @@ class CSSTimingData {
 
   const Vector<double>& DelayList() const { return delay_list_; }
   const Vector<double>& DurationList() const { return duration_list_; }
-  const Vector<RefPtr<TimingFunction>>& TimingFunctionList() const {
+  const Vector<scoped_refptr<TimingFunction>>& TimingFunctionList() const {
     return timing_function_list_;
   }
 
   Vector<double>& DelayList() { return delay_list_; }
   Vector<double>& DurationList() { return duration_list_; }
-  Vector<RefPtr<TimingFunction>>& TimingFunctionList() {
+  Vector<scoped_refptr<TimingFunction>>& TimingFunctionList() {
     return timing_function_list_;
   }
 
   static double InitialDelay() { return 0; }
   static double InitialDuration() { return 0; }
-  static RefPtr<TimingFunction> InitialTimingFunction() {
+  static scoped_refptr<TimingFunction> InitialTimingFunction() {
     return CubicBezierTimingFunction::Preset(
         CubicBezierTimingFunction::EaseType::EASE);
   }
@@ -54,7 +54,7 @@ class CSSTimingData {
  private:
   Vector<double> delay_list_;
   Vector<double> duration_list_;
-  Vector<RefPtr<TimingFunction>> timing_function_list_;
+  Vector<scoped_refptr<TimingFunction>> timing_function_list_;
 };
 
 }  // namespace blink

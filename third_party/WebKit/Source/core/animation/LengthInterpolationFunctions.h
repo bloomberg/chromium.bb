@@ -30,7 +30,7 @@ class LengthInterpolationFunctions {
   static bool NonInterpolableValuesAreCompatible(const NonInterpolableValue*,
                                                  const NonInterpolableValue*);
   static void Composite(std::unique_ptr<InterpolableValue>&,
-                        RefPtr<NonInterpolableValue>&,
+                        scoped_refptr<NonInterpolableValue>&,
                         double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);

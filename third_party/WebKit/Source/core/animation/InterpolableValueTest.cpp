@@ -24,7 +24,7 @@ class AnimationInterpolableValueTest : public ::testing::Test {
     CSSNumberInterpolationType interpolation_type(property_handle);
     InterpolationValue start(InterpolableNumber::Create(a));
     InterpolationValue end(InterpolableNumber::Create(b));
-    RefPtr<TransitionInterpolation> i = TransitionInterpolation::Create(
+    scoped_refptr<TransitionInterpolation> i = TransitionInterpolation::Create(
         property_handle, interpolation_type, std::move(start), std::move(end),
         nullptr, nullptr);
 
@@ -53,7 +53,7 @@ class AnimationInterpolableValueTest : public ::testing::Test {
     CSSLengthInterpolationType interpolation_type(property_handle);
     InterpolationValue start(std::move(list_a));
     InterpolationValue end(std::move(list_b));
-    RefPtr<TransitionInterpolation> i = TransitionInterpolation::Create(
+    scoped_refptr<TransitionInterpolation> i = TransitionInterpolation::Create(
         property_handle, interpolation_type, std::move(start), std::move(end),
         nullptr, nullptr);
     i->Interpolate(0, progress);

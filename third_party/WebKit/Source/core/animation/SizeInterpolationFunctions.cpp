@@ -14,12 +14,12 @@ namespace blink {
 
 class CSSSizeNonInterpolableValue : public NonInterpolableValue {
  public:
-  static RefPtr<CSSSizeNonInterpolableValue> Create(CSSValueID keyword) {
+  static scoped_refptr<CSSSizeNonInterpolableValue> Create(CSSValueID keyword) {
     return WTF::AdoptRef(new CSSSizeNonInterpolableValue(keyword));
   }
 
-  static RefPtr<CSSSizeNonInterpolableValue> Create(
-      RefPtr<NonInterpolableValue> length_non_interpolable_value) {
+  static scoped_refptr<CSSSizeNonInterpolableValue> Create(
+      scoped_refptr<NonInterpolableValue> length_non_interpolable_value) {
     return WTF::AdoptRef(new CSSSizeNonInterpolableValue(
         std::move(length_non_interpolable_value)));
   }
@@ -34,7 +34,7 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
     DCHECK(!IsKeyword());
     return length_non_interpolable_value_.get();
   }
-  RefPtr<NonInterpolableValue>& LengthNonInterpolableValue() {
+  scoped_refptr<NonInterpolableValue>& LengthNonInterpolableValue() {
     DCHECK(!IsKeyword());
     return length_non_interpolable_value_;
   }
@@ -48,13 +48,13 @@ class CSSSizeNonInterpolableValue : public NonInterpolableValue {
   }
 
   CSSSizeNonInterpolableValue(
-      RefPtr<NonInterpolableValue> length_non_interpolable_value)
+      scoped_refptr<NonInterpolableValue> length_non_interpolable_value)
       : keyword_(CSSValueInvalid),
         length_non_interpolable_value_(
             std::move(length_non_interpolable_value)) {}
 
   CSSValueID keyword_;
-  RefPtr<NonInterpolableValue> length_non_interpolable_value_;
+  scoped_refptr<NonInterpolableValue> length_non_interpolable_value_;
 };
 
 DEFINE_NON_INTERPOLABLE_VALUE_TYPE(CSSSizeNonInterpolableValue);
@@ -157,7 +157,7 @@ bool SizeInterpolationFunctions::NonInterpolableValuesAreCompatible(
 
 void SizeInterpolationFunctions::Composite(
     std::unique_ptr<InterpolableValue>& underlying_interpolable_value,
-    RefPtr<NonInterpolableValue>& underlying_non_interpolable_value,
+    scoped_refptr<NonInterpolableValue>& underlying_non_interpolable_value,
     double underlying_fraction,
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value) {

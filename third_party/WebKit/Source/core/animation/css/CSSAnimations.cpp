@@ -98,7 +98,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
   PropertySet specified_properties_for_use_counter;
   for (size_t i = 0; i < style_keyframes.size(); ++i) {
     const StyleRuleKeyframe* style_keyframe = style_keyframes[i].Get();
-    RefPtr<StringKeyframe> keyframe = StringKeyframe::Create();
+    scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
     const Vector<double>& offsets = style_keyframe->Keys();
     DCHECK(!offsets.IsEmpty());
     keyframe->SetOffset(offsets[0]);
@@ -109,7 +109,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
       specified_properties_for_use_counter.insert(property);
       if (property == CSSPropertyAnimationTimingFunction) {
         const CSSValue& value = properties.PropertyAt(j).Value();
-        RefPtr<TimingFunction> timing_function;
+        scoped_refptr<TimingFunction> timing_function;
         if (value.IsInheritedValue() && parent_style->Animations()) {
           timing_function = parent_style->Animations()->TimingFunctionList()[0];
         } else if (value.IsValueList()) {
@@ -162,7 +162,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     keyframes.Shrink(target_index + 1);
 
   // Add 0% and 100% keyframes if absent.
-  RefPtr<StringKeyframe> start_keyframe =
+  scoped_refptr<StringKeyframe> start_keyframe =
       keyframes.IsEmpty() ? nullptr : keyframes[0];
   if (!start_keyframe || keyframes[0]->Offset() != 0) {
     start_keyframe = StringKeyframe::Create();
@@ -170,7 +170,7 @@ StringKeyframeEffectModel* CreateKeyframeEffectModel(
     start_keyframe->SetEasing(default_timing_function);
     keyframes.push_front(start_keyframe);
   }
-  RefPtr<StringKeyframe> end_keyframe = keyframes[keyframes.size() - 1];
+  scoped_refptr<StringKeyframe> end_keyframe = keyframes[keyframes.size() - 1];
   if (end_keyframe->Offset() != 1) {
     end_keyframe = StringKeyframe::Create();
     end_keyframe->SetOffset(1);
@@ -335,7 +335,8 @@ void CSSAnimations::CalculateAnimationUpdate(CSSAnimationUpdate& update,
 
       Timing timing = animation_data->ConvertToTiming(i);
       Timing specified_timing = timing;
-      RefPtr<TimingFunction> keyframe_timing_function = timing.timing_function;
+      scoped_refptr<TimingFunction> keyframe_timing_function =
+          timing.timing_function;
       timing.timing_function = Timing::Defaults().timing_function;
 
       StyleRuleKeyframes* keyframes_rule =
@@ -591,7 +592,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
       InertEffect* inert_animation_for_sampling = InertEffect::Create(
           old_animation->Model(), old_animation->SpecifiedTiming(), false,
           inherited_time);
-      Vector<RefPtr<Interpolation>> sample;
+      Vector<scoped_refptr<Interpolation>> sample;
       inert_animation_for_sampling->Sample(sample);
       if (sample.size() == 1) {
         const TransitionInterpolation& interpolation =
@@ -773,7 +774,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
     timing.start_delay = 0;
   }
 
-  RefPtr<TransitionKeyframe> delay_keyframe =
+  scoped_refptr<TransitionKeyframe> delay_keyframe =
       TransitionKeyframe::Create(property);
   delay_keyframe->SetValue(TypedInterpolationValue::Create(
       *transition_type, start.interpolable_value->Clone(),
@@ -781,7 +782,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   delay_keyframe->SetOffset(0);
   keyframes.push_back(delay_keyframe);
 
-  RefPtr<TransitionKeyframe> start_keyframe =
+  scoped_refptr<TransitionKeyframe> start_keyframe =
       TransitionKeyframe::Create(property);
   start_keyframe->SetValue(TypedInterpolationValue::Create(
       *transition_type, start.interpolable_value->Clone(),
@@ -791,7 +792,7 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   timing.timing_function = LinearTimingFunction::Shared();
   keyframes.push_back(start_keyframe);
 
-  RefPtr<TransitionKeyframe> end_keyframe =
+  scoped_refptr<TransitionKeyframe> end_keyframe =
       TransitionKeyframe::Create(property);
   end_keyframe->SetValue(TypedInterpolationValue::Create(
       *transition_type, end.interpolable_value->Clone(),
@@ -800,9 +801,9 @@ void CSSAnimations::CalculateTransitionUpdateForProperty(
   keyframes.push_back(end_keyframe);
 
   if (CompositorAnimations::IsCompositableProperty(property.CssProperty())) {
-    RefPtr<AnimatableValue> from = CSSAnimatableValueFactory::Create(
+    scoped_refptr<AnimatableValue> from = CSSAnimatableValueFactory::Create(
         property.CssProperty(), state.old_style);
-    RefPtr<AnimatableValue> to =
+    scoped_refptr<AnimatableValue> to =
         CSSAnimatableValueFactory::Create(property.CssProperty(), state.style);
     delay_keyframe->SetCompositorValue(from);
     start_keyframe->SetCompositorValue(from);

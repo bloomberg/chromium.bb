@@ -15,7 +15,7 @@ namespace {
 
 const double kInterpolationTestDuration = 1.0;
 
-double GetInterpolableNumber(RefPtr<Interpolation> value) {
+double GetInterpolableNumber(scoped_refptr<Interpolation> value) {
   TransitionInterpolation& interpolation =
       ToTransitionInterpolation(*value.get());
   std::unique_ptr<TypedInterpolationValue> interpolated_value =
@@ -24,7 +24,7 @@ double GetInterpolableNumber(RefPtr<Interpolation> value) {
       .Value();
 }
 
-RefPtr<Interpolation> CreateInterpolation(int from, int to) {
+scoped_refptr<Interpolation> CreateInterpolation(int from, int to) {
   // We require a property that maps to CSSNumberInterpolationType. 'z-index'
   // suffices for this, and also means we can ignore the AnimatableValues for
   // the compositor (as z-index isn't compositor-compatible).
@@ -41,10 +41,10 @@ RefPtr<Interpolation> CreateInterpolation(int from, int to) {
 
 TEST(AnimationInterpolationEffectTest, SingleInterpolation) {
   InterpolationEffect interpolation_effect;
-  interpolation_effect.AddInterpolation(CreateInterpolation(0, 10),
-                                        RefPtr<TimingFunction>(), 0, 1, -1, 2);
+  interpolation_effect.AddInterpolation(
+      CreateInterpolation(0, 10), scoped_refptr<TimingFunction>(), 0, 1, -1, 2);
 
-  Vector<RefPtr<Interpolation>> active_interpolations;
+  Vector<scoped_refptr<Interpolation>> active_interpolations;
   interpolation_effect.GetActiveInterpolations(-2, kInterpolationTestDuration,
                                                active_interpolations);
   EXPECT_EQ(0ul, active_interpolations.size());
@@ -71,8 +71,8 @@ TEST(AnimationInterpolationEffectTest, SingleInterpolation) {
 
 TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
   InterpolationEffect interpolation_effect;
-  interpolation_effect.AddInterpolation(CreateInterpolation(10, 15),
-                                        RefPtr<TimingFunction>(), 1, 2, 1, 3);
+  interpolation_effect.AddInterpolation(
+      CreateInterpolation(10, 15), scoped_refptr<TimingFunction>(), 1, 2, 1, 3);
   interpolation_effect.AddInterpolation(
       CreateInterpolation(0, 1), LinearTimingFunction::Shared(), 0, 1, 0, 1);
   interpolation_effect.AddInterpolation(
@@ -81,7 +81,7 @@ TEST(AnimationInterpolationEffectTest, MultipleInterpolations) {
           CubicBezierTimingFunction::EaseType::EASE),
       0.5, 1.5, 0.5, 1.5);
 
-  Vector<RefPtr<Interpolation>> active_interpolations;
+  Vector<scoped_refptr<Interpolation>> active_interpolations;
   interpolation_effect.GetActiveInterpolations(-0.5, kInterpolationTestDuration,
                                                active_interpolations);
   EXPECT_EQ(0ul, active_interpolations.size());

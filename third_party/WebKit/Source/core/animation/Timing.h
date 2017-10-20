@@ -102,7 +102,7 @@ struct Timing {
   // TODO(crbug.com/630915) Remove playbackRate
   double playback_rate;
   PlaybackDirection direction;
-  RefPtr<TimingFunction> timing_function;
+  scoped_refptr<TimingFunction> timing_function;
 };
 
 }  // namespace blink

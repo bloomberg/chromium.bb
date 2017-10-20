@@ -36,7 +36,7 @@ StylePath* GetPath(CSSPropertyID property, const ComputedStyle& style) {
 // Set the property to the given path() value.
 void SetPath(CSSPropertyID property,
              ComputedStyle& style,
-             RefPtr<blink::StylePath> path) {
+             scoped_refptr<blink::StylePath> path) {
   switch (property) {
     case CSSPropertyD:
       style.SetD(std::move(path));
@@ -93,13 +93,14 @@ class InheritedPathChecker : public CSSInterpolationType::CSSConversionChecker {
  public:
   static std::unique_ptr<InheritedPathChecker> Create(
       CSSPropertyID property,
-      RefPtr<StylePath> style_path) {
+      scoped_refptr<StylePath> style_path) {
     return WTF::WrapUnique(
         new InheritedPathChecker(property, std::move(style_path)));
   }
 
  private:
-  InheritedPathChecker(CSSPropertyID property, RefPtr<StylePath> style_path)
+  InheritedPathChecker(CSSPropertyID property,
+                       scoped_refptr<StylePath> style_path)
       : property_(property), style_path_(std::move(style_path)) {}
 
   bool IsValid(const StyleResolverState& state,
@@ -108,7 +109,7 @@ class InheritedPathChecker : public CSSInterpolationType::CSSConversionChecker {
   }
 
   const CSSPropertyID property_;
-  const RefPtr<StylePath> style_path_;
+  const scoped_refptr<StylePath> style_path_;
 };
 
 InterpolationValue CSSPathInterpolationType::MaybeConvertInherit(

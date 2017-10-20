@@ -94,11 +94,11 @@ PropertyHandleSet StringKeyframe::Properties() const {
   return properties;
 }
 
-RefPtr<Keyframe> StringKeyframe::Clone() const {
+scoped_refptr<Keyframe> StringKeyframe::Clone() const {
   return WTF::AdoptRef(new StringKeyframe(*this));
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+scoped_refptr<Keyframe::PropertySpecificKeyframe>
 StringKeyframe::CreatePropertySpecificKeyframe(
     const PropertyHandle& property) const {
   if (property.IsCSSProperty())
@@ -127,31 +127,31 @@ bool StringKeyframe::CSSPropertySpecificKeyframe::PopulateAnimatableValue(
   return true;
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+scoped_refptr<Keyframe::PropertySpecificKeyframe>
 StringKeyframe::CSSPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
-    RefPtr<TimingFunction> easing) const {
+    scoped_refptr<TimingFunction> easing) const {
   return Create(offset, std::move(easing), nullptr, EffectModel::kCompositeAdd);
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+scoped_refptr<Keyframe::PropertySpecificKeyframe>
 StringKeyframe::CSSPropertySpecificKeyframe::CloneWithOffset(
     double offset) const {
-  RefPtr<CSSPropertySpecificKeyframe> clone =
+  scoped_refptr<CSSPropertySpecificKeyframe> clone =
       Create(offset, easing_, value_.Get(), composite_);
   clone->animatable_value_cache_ = animatable_value_cache_;
   return clone;
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+scoped_refptr<Keyframe::PropertySpecificKeyframe>
 SVGPropertySpecificKeyframe::CloneWithOffset(double offset) const {
   return Create(offset, easing_, value_, composite_);
 }
 
-RefPtr<Keyframe::PropertySpecificKeyframe>
+scoped_refptr<Keyframe::PropertySpecificKeyframe>
 SVGPropertySpecificKeyframe::NeutralKeyframe(
     double offset,
-    RefPtr<TimingFunction> easing) const {
+    scoped_refptr<TimingFunction> easing) const {
   return Create(offset, std::move(easing), String(),
                 EffectModel::kCompositeAdd);
 }

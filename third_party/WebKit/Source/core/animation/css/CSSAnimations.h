@@ -143,9 +143,9 @@ class CSSAnimations final {
     void Trace(blink::Visitor* visitor) { visitor->Trace(animation); }
 
     Member<Animation> animation;
-    RefPtr<const ComputedStyle> from;
-    RefPtr<const ComputedStyle> to;
-    RefPtr<const ComputedStyle> reversing_adjusted_start_value;
+    scoped_refptr<const ComputedStyle> from;
+    scoped_refptr<const ComputedStyle> to;
+    scoped_refptr<const ComputedStyle> reversing_adjusted_start_value;
     double reversing_shortening_factor;
   };
 
@@ -166,7 +166,7 @@ class CSSAnimations final {
     Member<const Element> animating_element;
     const ComputedStyle& old_style;
     const ComputedStyle& style;
-    RefPtr<const ComputedStyle> cloned_style;
+    scoped_refptr<const ComputedStyle> cloned_style;
     const TransitionMap* active_transitions;
     HashSet<PropertyHandle>& listed_properties;
     const CSSTransitionData& transition_data;

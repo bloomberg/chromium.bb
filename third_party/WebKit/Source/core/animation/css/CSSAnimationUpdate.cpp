@@ -50,9 +50,9 @@ void CSSAnimationUpdate::Clear() {
 
 void CSSAnimationUpdate::StartTransition(
     const PropertyHandle& property,
-    RefPtr<const ComputedStyle> from,
-    RefPtr<const ComputedStyle> to,
-    RefPtr<const ComputedStyle> reversing_adjusted_start_value,
+    scoped_refptr<const ComputedStyle> from,
+    scoped_refptr<const ComputedStyle> to,
+    scoped_refptr<const ComputedStyle> reversing_adjusted_start_value,
     double reversing_shortening_factor,
     const InertEffect& effect) {
   NewTransition new_transition;

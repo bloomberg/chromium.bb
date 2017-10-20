@@ -26,7 +26,7 @@ class ShadowInterpolationFunctions {
       InterpolationValue&& start,
       InterpolationValue&& end);
   static void Composite(std::unique_ptr<InterpolableValue>&,
-                        RefPtr<NonInterpolableValue>&,
+                        scoped_refptr<NonInterpolableValue>&,
                         double underlying_fraction,
                         const InterpolableValue&,
                         const NonInterpolableValue*);

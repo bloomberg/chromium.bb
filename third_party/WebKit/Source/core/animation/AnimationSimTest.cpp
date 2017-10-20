@@ -64,7 +64,7 @@ TEST_F(AnimationSimTest, CustomPropertyBaseComputedStyle) {
   EXPECT_FALSE(exception_state.HadException());
 
   // target.animate({'--x': '100%'}, 1000);
-  RefPtr<StringKeyframe> keyframe = StringKeyframe::Create();
+  scoped_refptr<StringKeyframe> keyframe = StringKeyframe::Create();
   keyframe->SetCSSPropertyValue("--x", GetDocument().GetPropertyRegistry(),
                                 "100%",
                                 GetDocument().ElementSheet().Contents());

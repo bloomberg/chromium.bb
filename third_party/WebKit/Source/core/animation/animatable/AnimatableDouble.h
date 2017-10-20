@@ -40,15 +40,15 @@ class CORE_EXPORT AnimatableDouble final : public AnimatableValue {
  public:
   ~AnimatableDouble() override {}
 
-  static RefPtr<AnimatableDouble> Create(double number) {
+  static scoped_refptr<AnimatableDouble> Create(double number) {
     return WTF::AdoptRef(new AnimatableDouble(number));
   }
 
   double ToDouble() const { return number_; }
 
  protected:
-  RefPtr<AnimatableValue> InterpolateTo(const AnimatableValue*,
-                                        double fraction) const override;
+  scoped_refptr<AnimatableValue> InterpolateTo(const AnimatableValue*,
+                                               double fraction) const override;
 
  private:
   AnimatableDouble(double number) : number_(number) {}

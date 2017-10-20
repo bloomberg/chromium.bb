@@ -44,7 +44,7 @@ class UnderlyingSizeListChecker
     return true;
   }
 
-  RefPtr<const NonInterpolableList> underlying_list_;
+  scoped_refptr<const NonInterpolableList> underlying_list_;
 };
 
 class InheritedSizeListChecker
