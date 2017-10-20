@@ -111,7 +111,6 @@ class ASH_EXPORT LoginAuthUserView : public NonAccessibleView {
   bool HasAuthMethod(AuthMethods auth_method) const;
 
   AuthMethods auth_methods_ = AUTH_NONE;
-  views::View* non_pin_root_ = nullptr;
   LoginUserView* user_view_ = nullptr;
   LoginPasswordView* password_view_ = nullptr;
   LoginPinView* pin_view_ = nullptr;

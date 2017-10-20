@@ -23,22 +23,8 @@ PinKeyboardAnimation::PinKeyboardAnimation(bool grow,
   if (!grow)
     std::swap(start_opacity_, end_opacity_);
 
-  gfx::Transform to_center;
-  to_center.Translate(0, height / 2.f);
-  auto move_to_center =
-      std::make_unique<ui::InterpolatedConstantTransform>(to_center);
-
-  auto scale = std::make_unique<ui::InterpolatedScale>(
+  transform_ = std::make_unique<ui::InterpolatedScale>(
       gfx::Point3F(1, start_opacity_, 1), gfx::Point3F(1, end_opacity_, 1));
-
-  gfx::Transform from_center;
-  from_center.Translate(0, -height / 2.f);
-  auto move_from_center =
-      std::make_unique<ui::InterpolatedConstantTransform>(from_center);
-
-  scale->SetChild(std::move(move_to_center));
-  move_from_center->SetChild(std::move(scale));
-  transform_ = std::move(move_from_center);
 }
 
 PinKeyboardAnimation::~PinKeyboardAnimation() {}
