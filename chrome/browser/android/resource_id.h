@@ -50,7 +50,8 @@ DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SAVE_PASSWORD,
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_SUBRESOURCE_FILTERING,
                     R.drawable.infobar_chrome)
 DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_WARNING, R.drawable.infobar_warning)
-DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_FRAMEBUST, R.drawable.infobar_chrome)
+DECLARE_RESOURCE_ID(IDR_ANDROID_INFOBAR_FRAMEBUST,
+                    R.drawable.infobar_redirect_blocked)
 
 // PageInfoUI images, used in ConnectionInfoPopup
 // Good:
