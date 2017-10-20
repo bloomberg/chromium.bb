@@ -39,7 +39,7 @@
       }
     </style>
 
-    <div class="settings-box first">
+    <div class="settings-box first" actionable on-tap="onEnableTap_">
       <div id="onOff" class="start" on$="[[bluetoothToggleState]]">
         [[getOnOffString_(bluetoothToggleState,
           '$i18nPolymer{deviceOn}', '$i18nPolymer{deviceOff}')]]
@@ -47,7 +47,8 @@
       <paper-toggle-button id="enableBluetooth"
           checked="{{bluetoothToggleState}}"
           disabled$="[[bluetoothToggleDisabled]]"
-          aria-label="$i18n{bluetoothToggleA11yLabel}">
+          aria-label="$i18n{bluetoothToggleA11yLabel}"
+          on-tap="stopTap_">
       </paper-toggle-button>
     </div>
 
