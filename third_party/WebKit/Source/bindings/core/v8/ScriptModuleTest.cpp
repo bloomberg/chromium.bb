@@ -36,6 +36,10 @@ class TestScriptModuleResolver final : public ScriptModuleResolver {
 
   void RegisterModuleScript(ModuleScript*) override { NOTREACHED(); }
   void UnregisterModuleScript(ModuleScript*) override { NOTREACHED(); }
+  ModuleScript* GetHostDefined(const ScriptModule&) const override {
+    NOTREACHED();
+    return nullptr;
+  }
 
   ScriptModule Resolve(const String& specifier,
                        const ScriptModule&,
