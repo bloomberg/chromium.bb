@@ -163,7 +163,7 @@ typedef enum ATTRIBUTE_PACKED {
   BLOCK_LARGEST = (BLOCK_SIZES - 1)
 } BLOCK_SIZE;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   PARTITION_NONE,
   PARTITION_HORZ,
   PARTITION_VERT,
@@ -261,7 +261,7 @@ typedef enum ATTRIBUTE_PACKED {
   NO_OVERLAP = MAX_NCOBMC_MODES + 1
 } NCOBMC_MODE;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   ADAPT_OVERLAP_BLOCK_8X8,
   ADAPT_OVERLAP_BLOCK_16X16,
   ADAPT_OVERLAP_BLOCK_32X32,
@@ -272,7 +272,7 @@ typedef enum {
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
 
 // frame transform mode
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   ONLY_4X4,     // only 4x4 transform used
   ALLOW_8X8,    // allow block transform size up to 8x8
   ALLOW_16X16,  // allow block transform size up to 16x16
@@ -285,7 +285,7 @@ typedef enum {
 } TX_MODE;
 
 // 1D tx types
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   DCT_1D,
   ADST_1D,
   FLIPADST_1D,
@@ -321,7 +321,7 @@ typedef enum {
 } TX_TYPE;
 
 #if CONFIG_EXT_TX
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   // DCT only
   EXT_TX_SET_DCTONLY,
   // DCT + Identity only
@@ -348,7 +348,7 @@ typedef enum {
 #define IS_2D_TRANSFORM(tx_type) 1
 #endif
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   TILE_LEFT_BOUNDARY = 1,
   TILE_RIGHT_BOUNDARY = 2,
   TILE_ABOVE_BOUNDARY = 4,
@@ -372,7 +372,7 @@ typedef enum {
 #define EXT_TX_SIZES 3  // number of sizes that use extended transforms
 #endif                  // CONFIG_EXT_TX
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   AOM_LAST_FLAG = 1 << 0,
   AOM_LAST2_FLAG = 1 << 1,
   AOM_LAST3_FLAG = 1 << 2,
@@ -386,7 +386,7 @@ typedef enum {
 #if CONFIG_EXT_COMP_REFS
 #define USE_UNI_COMP_REFS 1
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   UNIDIR_COMP_REFERENCE,
   BIDIR_COMP_REFERENCE,
   COMP_REFERENCE_TYPES,
@@ -395,7 +395,11 @@ typedef enum {
 #define USE_UNI_COMP_REFS 0
 #endif  // CONFIG_EXT_COMP_REFS
 
-typedef enum { PLANE_TYPE_Y, PLANE_TYPE_UV, PLANE_TYPES } PLANE_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+  PLANE_TYPE_Y,
+  PLANE_TYPE_UV,
+  PLANE_TYPES
+} PLANE_TYPE;
 
 #if CONFIG_CFL
 #define CFL_ALPHABET_SIZE_LOG2 4
@@ -404,9 +408,13 @@ typedef enum { PLANE_TYPE_Y, PLANE_TYPE_UV, PLANE_TYPES } PLANE_TYPE;
 #define CFL_IDX_U(idx) (idx >> CFL_ALPHABET_SIZE_LOG2)
 #define CFL_IDX_V(idx) (idx & (CFL_ALPHABET_SIZE - 1))
 
-typedef enum { CFL_PRED_U, CFL_PRED_V, CFL_PRED_PLANES } CFL_PRED_TYPE;
+typedef enum ATTRIBUTE_PACKED {
+  CFL_PRED_U,
+  CFL_PRED_V,
+  CFL_PRED_PLANES
+} CFL_PRED_TYPE;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   CFL_SIGN_ZERO,
   CFL_SIGN_NEG,
   CFL_SIGN_POS,
@@ -429,7 +437,7 @@ typedef enum {
   (CFL_SIGN_V(js) * CFL_SIGNS + CFL_SIGN_U(js) - CFL_SIGNS)
 #endif
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   PALETTE_MAP,
 #if CONFIG_MRC_TX
   MRC_MAP,
@@ -437,7 +445,7 @@ typedef enum {
   COLOR_MAP_TYPES,
 } COLOR_MAP_TYPE;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   TWO_COLORS,
   THREE_COLORS,
   FOUR_COLORS,
@@ -448,7 +456,7 @@ typedef enum {
   PALETTE_SIZES
 } PALETTE_SIZE;
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   PALETTE_COLOR_ONE,
   PALETTE_COLOR_TWO,
   PALETTE_COLOR_THREE,
@@ -534,7 +542,7 @@ typedef enum ATTRIBUTE_PACKED {
 #define UV_MODE_INVALID (INTRA_INVALID)
 #endif  // CONFIG_CFL
 
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   SIMPLE_TRANSLATION,
 #if CONFIG_MOTION_VAR
   OBMC_CAUSAL,  // 2-sided OBMC
@@ -553,7 +561,7 @@ typedef enum {
 } MOTION_MODE;
 
 #if CONFIG_INTERINTRA
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   II_DC_PRED,
   II_V_PRED,
   II_H_PRED,
@@ -575,7 +583,7 @@ typedef enum {
 
 // TODO(huisu): Consider adding FILTER_SMOOTH_PRED to "FILTER_INTRA_MODE".
 #if CONFIG_FILTER_INTRA
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   FILTER_DC_PRED,
   FILTER_V_PRED,
   FILTER_H_PRED,
@@ -683,7 +691,7 @@ typedef uint8_t TXFM_CONTEXT;
 
 #define SINGLE_REFS (FWD_REFS + BWD_REFS)
 #if CONFIG_EXT_COMP_REFS
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   LAST_LAST2_FRAMES,     // { LAST_FRAME, LAST2_FRAME }
   LAST_LAST3_FRAMES,     // { LAST_FRAME, LAST3_FRAME }
   LAST_GOLDEN_FRAMES,    // { LAST_FRAME, GOLDEN_FRAME }
@@ -698,7 +706,7 @@ typedef enum {
 #define MODE_CTX_REF_FRAMES (TOTAL_REFS_PER_FRAME + COMP_REFS)
 
 #if CONFIG_LOOP_RESTORATION
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   RESTORE_NONE,
   RESTORE_WIENER,
   RESTORE_SGRPROJ,
@@ -728,7 +736,7 @@ typedef enum {
 
 #if CONFIG_OBU
 // R19
-typedef enum {
+typedef enum ATTRIBUTE_PACKED {
   OBU_SEQUENCE_HEADER = 1,
   OBU_TD = 2,
   OBU_FRAME_HEADER = 3,
