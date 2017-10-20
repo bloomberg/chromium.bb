@@ -143,8 +143,8 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
   int tab_id = SessionTabHelper::IdForTab(web_contents);
 
   // Wait for 30 seconds to make sure the route is stable.
-  CreateMediaRoute(MediaSourceForTab(tab_id), url::Origin(GURL(kOrigin)),
-                   web_contents);
+  CreateMediaRoute(MediaSourceForTab(tab_id),
+                   url::Origin::Create(GURL(kOrigin)), web_contents);
   Wait(base::TimeDelta::FromSeconds(30));
 
   // Wait for 10 seconds to make sure route has been stopped.
@@ -155,7 +155,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_TabMirroring) {
 IN_PROC_BROWSER_TEST_F(MediaRouterE2EBrowserTest, MANUAL_CastApp) {
   // Wait for 30 seconds to make sure the route is stable.
   CreateMediaRoute(MediaSourceForPresentationUrl(GURL(kCastAppPresentationUrl)),
-                   url::Origin(GURL(kOrigin)), nullptr);
+                   url::Origin::Create(GURL(kOrigin)), nullptr);
   Wait(base::TimeDelta::FromSeconds(30));
 
   // Wait for 10 seconds to make sure route has been stopped.

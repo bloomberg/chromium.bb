@@ -167,8 +167,8 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
         base::ASCIIToUTF16("1"), base::ASCIIToUTF16("Fake Flash"));
 
     PluginUtils::GetPluginContentSetting(
-        host_content_settings_map_, plugin_info, url::Origin(url), url, plugin,
-        &setting, &is_default, &is_managed);
+        host_content_settings_map_, plugin_info, url::Origin::Create(url), url,
+        plugin, &setting, &is_default, &is_managed);
     EXPECT_EQ(expected_setting, setting);
     EXPECT_EQ(expected_is_default, is_default);
     EXPECT_EQ(expected_is_managed, is_managed);
@@ -244,7 +244,8 @@ TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
 
   // Make a real HTTP origin, as all Flash content from non-HTTP and non-FILE
   // origins are blocked.
-  url::Origin main_frame_origin(GURL("http://example.com"));
+  url::Origin main_frame_origin =
+      url::Origin::Create(GURL("http://example.com"));
 
   ChromeViewHostMsg_GetPluginInfo_Status status;
   content::WebPluginInfo plugin;
@@ -279,7 +280,8 @@ TEST_F(PluginInfoMessageFilterTest, RunAllFlashInAllowMode) {
 
   // Make a real HTTP origin, as all Flash content from non-HTTP and non-FILE
   // origins are blocked.
-  url::Origin main_frame_origin(GURL("http://example.com"));
+  url::Origin main_frame_origin =
+      url::Origin::Create(GURL("http://example.com"));
 
   ChromeViewHostMsg_GetPluginInfo_Status status;
   content::WebPluginInfo plugin;

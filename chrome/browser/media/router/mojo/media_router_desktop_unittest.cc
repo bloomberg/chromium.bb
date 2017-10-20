@@ -112,7 +112,7 @@ TEST_F(MediaRouterDesktopTest, SyncStateToMediaRouteProvider) {
   EXPECT_CALL(mock_media_route_provider_,
               StartObservingMediaSinks(media_source.id()));
   sinks_observer = base::MakeUnique<MockMediaSinksObserver>(
-      router(), media_source, url::Origin(GURL(kOrigin)));
+      router(), media_source, url::Origin::Create(GURL(kOrigin)));
   EXPECT_TRUE(sinks_observer->Init());
 
   EXPECT_CALL(mock_media_route_provider_,

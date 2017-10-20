@@ -139,7 +139,7 @@ bool ParseSupportedOrigins(base::DictionaryValue* dict,
       return false;
     }
 
-    supported_origins->push_back(url::Origin(url));
+    supported_origins->push_back(url::Origin::Create(url));
   }
 
   return true;

@@ -41,8 +41,9 @@ std::string GetSyncUsernameIfSyncingPasswords(
 bool IsSyncAccountCredential(const autofill::PasswordForm& form,
                              const syncer::SyncService* sync_service,
                              const SigninManagerBase* signin_manager) {
-  const Origin gaia_origin(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
-  if (!Origin(GURL(form.signon_realm)).IsSameOriginWith(gaia_origin) &&
+  const Origin gaia_origin =
+      Origin::Create(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
+  if (!Origin::Create(GURL(form.signon_realm)).IsSameOriginWith(gaia_origin) &&
       form.signon_realm != kGoogleChangePasswordSignonRealm) {
     return false;
   }

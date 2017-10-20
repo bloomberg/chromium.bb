@@ -132,8 +132,8 @@ std::unique_ptr<PasswordForm> FormOutOfAttributes(GHashTable* attrs) {
   form->display_name =
       UTF8ToUTF16(GetStringFromAttributes(attrs, "display_name"));
   form->icon_url = GURL(GetStringFromAttributes(attrs, "avatar_url"));
-  form->federation_origin =
-      url::Origin(GURL(GetStringFromAttributes(attrs, "federation_url")));
+  form->federation_origin = url::Origin::Create(
+      GURL(GetStringFromAttributes(attrs, "federation_url")));
   form->skip_zero_click =
       g_hash_table_lookup(attrs, "should_skip_zero_click")
           ? GetUintFromAttributes(attrs, "should_skip_zero_click")

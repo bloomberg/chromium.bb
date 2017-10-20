@@ -1223,7 +1223,8 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
   if (!frame_tree_node_->IsMainFrame() && !new_instance_impl->HasProcess() &&
       new_instance_impl->HasSite() &&
-      policy->IsIsolatedOrigin(url::Origin(new_instance_impl->GetSiteURL()))) {
+      policy->IsIsolatedOrigin(
+          url::Origin::Create(new_instance_impl->GetSiteURL()))) {
     new_instance_impl->set_process_reuse_policy(
         SiteInstanceImpl::ProcessReusePolicy::REUSE_PENDING_OR_COMMITTED_SITE);
   }
@@ -2699,7 +2700,7 @@ bool RenderFrameHostManager::CanSubframeSwapProcess(
   // If dest_url is a unique origin like about:blank, then the need for a swap
   // is determined by the source_instance or dest_instance.
   GURL resolved_url = dest_url;
-  if (url::Origin(resolved_url).unique()) {
+  if (url::Origin::Create(resolved_url).unique()) {
     if (source_instance) {
       resolved_url = source_instance->GetSiteURL();
     } else if (dest_instance) {

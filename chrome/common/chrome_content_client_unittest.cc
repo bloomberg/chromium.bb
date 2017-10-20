@@ -176,7 +176,7 @@ TEST(ChromeContentClientTest, AdditionalSchemes) {
 
   GURL extension_url(
       "chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef/foo.html");
-  url::Origin origin(extension_url);
+  url::Origin origin = url::Origin::Create(extension_url);
   EXPECT_EQ("chrome-extension://abcdefghijklmnopqrstuvwxyzabcdef",
             origin.Serialize());
 

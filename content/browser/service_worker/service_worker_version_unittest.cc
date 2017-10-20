@@ -181,7 +181,7 @@ class ServiceWorkerVersionTest : public testing::Test {
         GURL("https://www.example.com/test/service_worker.js"),
         helper_->context()->storage()->NewVersionId(),
         helper_->context()->AsWeakPtr());
-    EXPECT_EQ(url::Origin(pattern_), version_->script_origin());
+    EXPECT_EQ(url::Origin::Create(pattern_), version_->script_origin());
     std::vector<ServiceWorkerDatabase::ResourceRecord> records;
     records.push_back(WriteToDiskCacheSync(
         helper_->context()->storage(), version_->script_url(), 10,
@@ -1283,7 +1283,7 @@ TEST_F(ServiceWorkerVersionTest, RegisterForeignFetchScopes) {
   valid_scopes.push_back(valid_scope_2);
 
   std::vector<url::Origin> all_origins;
-  url::Origin valid_origin(GURL("https://chromium.org/"));
+  url::Origin valid_origin = url::Origin::Create(GURL("https://chromium.org/"));
   std::vector<url::Origin> valid_origin_list(1, valid_origin);
 
   // Invalid subscope, should kill worker (but in tests will only increase bad

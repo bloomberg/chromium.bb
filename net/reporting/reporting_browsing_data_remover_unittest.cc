@@ -57,8 +57,8 @@ class ReportingBrowsingDataRemoverTest : public ReportingTestBase {
 
   const GURL kUrl1_ = GURL("https://origin1/path");
   const GURL kUrl2_ = GURL("https://origin2/path");
-  const url::Origin kOrigin1_ = url::Origin(kUrl1_);
-  const url::Origin kOrigin2_ = url::Origin(kUrl2_);
+  const url::Origin kOrigin1_ = url::Origin::Create(kUrl1_);
+  const url::Origin kOrigin2_ = url::Origin::Create(kUrl2_);
   const GURL kEndpoint_ = GURL("https://endpoint/");
   const std::string kGroup_ = "group";
   const std::string kType_ = "default";

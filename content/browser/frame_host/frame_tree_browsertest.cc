@@ -463,10 +463,10 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, ChildFrameWithSrcdoc) {
       child, "domAutomationController.send(document.origin);", &frame_origin));
   EXPECT_TRUE(
       child->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
-          url::Origin(GURL(frame_origin))));
+          url::Origin::Create(GURL(frame_origin))));
   EXPECT_FALSE(
       root->current_frame_host()->GetLastCommittedOrigin().IsSameOriginWith(
-          url::Origin(GURL(frame_origin))));
+          url::Origin::Create(GURL(frame_origin))));
 
   // Create a new iframe with srcdoc and add it to the main frame. It should
   // be created in the same SiteInstance as the parent.

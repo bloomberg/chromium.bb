@@ -700,7 +700,8 @@ TEST_F(ServiceWorkerStorageTest, StoreFindUpdateDeleteRegistration) {
   const int64_t kRegistrationId = 0;
   const int64_t kVersionId = 0;
   const GURL kForeignFetchScope("http://www.test.not/scope/ff/");
-  const url::Origin kForeignFetchOrigin(GURL("https://example.com/"));
+  const url::Origin kForeignFetchOrigin =
+      url::Origin::Create(GURL("https://example.com/"));
   const base::Time kToday = base::Time::Now();
   const base::Time kYesterday = kToday - base::TimeDelta::FromDays(1);
   std::set<uint32_t> used_features = {124, 901, 1019};

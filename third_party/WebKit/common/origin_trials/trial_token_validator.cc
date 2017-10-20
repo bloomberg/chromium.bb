@@ -67,7 +67,7 @@ bool TrialTokenValidator::RequestEnablesFeature(
   if (!IsTrialPossibleOnOrigin(request_url))
     return false;
 
-  url::Origin origin(request_url);
+  url::Origin origin = url::Origin::Create(request_url);
   size_t iter = 0;
   std::string token;
   while (response_headers->EnumerateHeader(&iter, "Origin-Trial", &token)) {

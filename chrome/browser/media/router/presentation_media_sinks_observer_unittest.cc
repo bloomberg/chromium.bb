@@ -33,9 +33,10 @@ class PresentationMediaSinksObserverTest : public ::testing::Test {
   void SetUp() override {
     EXPECT_CALL(router_, RegisterMediaSinksObserver(_)).WillOnce(Return(true));
     observer_.reset(new PresentationMediaSinksObserver(
-        &router_, &listener_, MediaSourceForPresentationUrl(
-                                  GURL("http://example.com/presentation.html")),
-        url::Origin(GURL(kOrigin))));
+        &router_, &listener_,
+        MediaSourceForPresentationUrl(
+            GURL("http://example.com/presentation.html")),
+        url::Origin::Create(GURL(kOrigin))));
     EXPECT_TRUE(observer_->Init());
   }
 

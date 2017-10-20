@@ -45,8 +45,8 @@ std::unique_ptr<EventListener> EventListener::ForURL(
   // for the same process. See crbug.com/536858 for details. // TODO(devlin): If
   // we dispatched events to processes more intelligently this could be avoided.
   return base::WrapUnique(new EventListener(
-      event_name, ExtensionId(), url::Origin(listener_url).GetURL(), process,
-      false, kMainThreadId, std::move(filter)));
+      event_name, ExtensionId(), url::Origin::Create(listener_url).GetURL(),
+      process, false, kMainThreadId, std::move(filter)));
 }
 
 std::unique_ptr<EventListener> EventListener::ForExtensionServiceWorker(

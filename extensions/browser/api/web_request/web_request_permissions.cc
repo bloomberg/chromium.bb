@@ -54,7 +54,7 @@ bool IsSensitiveURL(const GURL& url,
   bool sensitive_chrome_url = false;
   const char kGoogleCom[] = "google.com";
   const char kClient[] = "clients";
-  url::Origin origin(url);
+  url::Origin origin = url::Origin::Create(url);
   if (origin.DomainIs(kGoogleCom)) {
     base::StringPiece host = url.host_piece();
     while (host.ends_with("."))

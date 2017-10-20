@@ -51,7 +51,7 @@ bool MatchesURL(
                                         : url.host()) !=
        registerable_domains.end());
 
-  bool found_origin = (origins.find(url::Origin(url)) != origins.end());
+  bool found_origin = (origins.find(url::Origin::Create(url)) != origins.end());
 
   return ((found_domain || found_origin) ==
           (mode == BrowsingDataFilterBuilder::WHITELIST));

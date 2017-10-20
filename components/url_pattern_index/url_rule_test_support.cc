@@ -41,7 +41,7 @@ void AddDomains(const std::vector<std::string>& domains, proto::UrlRule* rule) {
 }
 
 url::Origin GetOrigin(base::StringPiece origin_string) {
-  return !origin_string.empty() ? url::Origin(GURL(origin_string))
+  return !origin_string.empty() ? url::Origin::Create(GURL(origin_string))
                                 : url::Origin();
 }
 

@@ -570,7 +570,7 @@ bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
 
   // Using url::Origin is important to properly handle blob: and filesystem:
   // URLs.
-  url::Origin to_origin(to_url);
+  url::Origin to_origin = url::Origin::Create(to_url);
   if (to_origin.scheme() != kExtensionScheme) {
     // We're not responsible for protecting this resource.  Note that hosted
     // apps fall into this category.

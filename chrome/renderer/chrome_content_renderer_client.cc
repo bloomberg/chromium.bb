@@ -1697,6 +1697,6 @@ bool ChromeContentRendererClient::OverrideLegacySymantecCertConsoleMessage(
       " will be distrusted %s. Once distrusted, users will be prevented from "
       "loading these resources. See https://g.co/chrome/symantecpkicerts for "
       "more information.",
-      url::Origin(url).Serialize().c_str(), in_future_string);
+      url::Origin::Create(url).Serialize().c_str(), in_future_string);
   return true;
 }

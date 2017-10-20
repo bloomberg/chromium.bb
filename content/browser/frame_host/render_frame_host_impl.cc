@@ -1093,9 +1093,11 @@ void RenderFrameHostImpl::SanitizeDataForUseInCspViolation(
 
   // There is no need to sanitize data when it is same-origin with the current
   // url of the renderer.
-  if (url::Origin(*blocked_url).IsSameOriginWith(last_committed_origin_))
+  if (url::Origin::Create(*blocked_url)
+          .IsSameOriginWith(last_committed_origin_))
     sanitize_blocked_url = false;
-  if (url::Origin(source_location_url).IsSameOriginWith(last_committed_origin_))
+  if (url::Origin::Create(source_location_url)
+          .IsSameOriginWith(last_committed_origin_))
     sanitize_source_location = false;
 
   // When a renderer tries to do a form submission, it already knows the url of
@@ -3121,7 +3123,8 @@ bool RenderFrameHostImpl::CanCommitOrigin(
     return true;
 
   // Standard URLs must match the reported origin.
-  if (url.IsStandard() && !origin.IsSamePhysicalOriginWith(url::Origin(url)))
+  if (url.IsStandard() &&
+      !origin.IsSamePhysicalOriginWith(url::Origin::Create(url)))
     return false;
 
   // A non-unique origin must be a valid URL, which allows us to safely do a

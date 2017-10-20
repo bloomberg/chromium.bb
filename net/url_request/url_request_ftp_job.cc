@@ -304,7 +304,7 @@ void URLRequestFtpJob::GetAuthChallengeInfo(
 
   scoped_refptr<AuthChallengeInfo> auth_info(new AuthChallengeInfo);
   auth_info->is_proxy = false;
-  auth_info->challenger = url::Origin(request_->url());
+  auth_info->challenger = url::Origin::Create(request_->url());
   // scheme and realm are kept empty.
   DCHECK(auth_info->scheme.empty());
   DCHECK(auth_info->realm.empty());

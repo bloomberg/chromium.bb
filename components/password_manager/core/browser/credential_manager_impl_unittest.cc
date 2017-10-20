@@ -393,7 +393,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerOnStoreFederated) {
   EXPECT_CALL(*client_, NotifyStorePasswordCalled());
 
   bool called = false;
-  form_.federation_origin = url::Origin(GURL("https://google.com/"));
+  form_.federation_origin = url::Origin::Create(GURL("https://google.com/"));
   form_.password_value = base::string16();
   form_.signon_realm = "federation://example.com/google.com";
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_FEDERATED);
@@ -428,7 +428,8 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
   federated.password_value.clear();
   federated.type = autofill::PasswordForm::TYPE_API;
   federated.preferred = true;
-  federated.federation_origin = url::Origin(GURL("https://google.com/"));
+  federated.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
   federated.signon_realm = "federation://example.com/google.com";
   CredentialInfo info(federated, CredentialType::CREDENTIAL_TYPE_FEDERATED);
   EXPECT_CALL(*client_, PromptUserToSavePasswordPtr(_));
@@ -593,7 +594,7 @@ TEST_F(CredentialManagerImplTest, CredentialManagerStoreOverwriteZeroClick) {
 
 TEST_F(CredentialManagerImplTest,
        CredentialManagerFederatedStoreOverwriteZeroClick) {
-  form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
   form_.password_value = base::string16();
   form_.skip_zero_click = true;
   form_.signon_realm = "federation://example.com/example.com";
@@ -855,7 +856,8 @@ TEST_F(CredentialManagerImplTest,
   store_->AddLogin(duplicate);
   autofill::PasswordForm federated = origin_path_form_;
   federated.password_value.clear();
-  federated.federation_origin = url::Origin(GURL("https://google.com/"));
+  federated.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
   federated.signon_realm =
       "federation://" + federated.origin.host() + "/google.com";
   store_->AddLogin(federated);
@@ -955,7 +957,7 @@ TEST_F(CredentialManagerImplTest,
 
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialFederatedMatch) {
-  form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
   form_.password_value = base::string16();
   store_->AddLogin(form_);
   client_->set_first_run_seen(true);
@@ -972,7 +974,7 @@ TEST_F(CredentialManagerImplTest,
 
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialFederatedNoMatch) {
-  form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
   form_.password_value = base::string16();
   store_->AddLogin(form_);
   client_->set_first_run_seen(true);
@@ -1030,7 +1032,7 @@ TEST_F(CredentialManagerImplTest,
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialAffiliatedFederatedMatch) {
   affiliated_form1_.federation_origin =
-      url::Origin(GURL("https://example.com/"));
+      url::Origin::Create(GURL("https://example.com/"));
   affiliated_form1_.password_value = base::string16();
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
@@ -1054,7 +1056,7 @@ TEST_F(CredentialManagerImplTest,
 TEST_F(CredentialManagerImplTest,
        CredentialManagerOnRequestCredentialAffiliatedFederatedNoMatch) {
   affiliated_form1_.federation_origin =
-      url::Origin(GURL("https://example.com/"));
+      url::Origin::Create(GURL("https://example.com/"));
   affiliated_form1_.password_value = base::string16();
   store_->AddLogin(affiliated_form1_);
   client_->set_first_run_seen(true);
@@ -1422,7 +1424,7 @@ TEST_F(CredentialManagerImplTest, ZeroClickWithPSLCredential) {
 
 TEST_F(CredentialManagerImplTest, ZeroClickWithPSLAndNormalCredentials) {
   form_.password_value.clear();
-  form_.federation_origin = url::Origin(GURL("https://google.com/"));
+  form_.federation_origin = url::Origin::Create(GURL("https://google.com/"));
   form_.signon_realm = "federation://" + form_.origin.host() + "/google.com";
   form_.skip_zero_click = false;
   store_->AddLogin(form_);
@@ -1514,7 +1516,7 @@ TEST_F(CredentialManagerImplTest, BlacklistPasswordCredential) {
 }
 
 TEST_F(CredentialManagerImplTest, BlacklistFederatedCredential) {
-  form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
   form_.password_value = base::string16();
   form_.signon_realm = "federation://example.com/example.com";
 
@@ -1569,7 +1571,7 @@ TEST_F(CredentialManagerImplTest, RespectBlacklistingFederatedCredential) {
   blacklisted.signon_realm = blacklisted.origin.spec();
   store_->AddLogin(blacklisted);
 
-  form_.federation_origin = url::Origin(GURL("https://example.com/"));
+  form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
   form_.password_value = base::string16();
   form_.signon_realm = "federation://example.com/example.com";
   CredentialInfo info(form_, CredentialType::CREDENTIAL_TYPE_FEDERATED);

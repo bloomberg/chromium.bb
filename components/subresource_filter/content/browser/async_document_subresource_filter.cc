@@ -188,7 +188,7 @@ ActivationState AsyncDocumentSubresourceFilter::Core::Initialize(
       params.parent_activation_state, verified_ruleset->Get());
 
   DCHECK_NE(ActivationLevel::DISABLED, activation_state.activation_level);
-  filter_.emplace(url::Origin(params.document_url), activation_state,
+  filter_.emplace(url::Origin::Create(params.document_url), activation_state,
                   verified_ruleset->Get());
 
   return activation_state;

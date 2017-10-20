@@ -96,7 +96,7 @@ void CreateTestPasswordForm(PasswordForm* form) {
       PasswordForm::GenerationUploadStatus::POSITIVE_SIGNAL_SENT;
   form->display_name = base::ASCIIToUTF16("test display name");
   form->icon_url = GURL("https://foo.com/icon.png");
-  form->federation_origin = url::Origin(GURL("http://wwww.google.com"));
+  form->federation_origin = url::Origin::Create(GURL("http://wwww.google.com"));
   form->skip_zero_click = false;
   form->layout = PasswordForm::Layout::LAYOUT_LOGIN_AND_SIGNUP;
   form->was_parsed_using_autofill_predictions = false;

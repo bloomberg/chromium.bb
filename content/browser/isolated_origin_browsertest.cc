@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   // main frame's SiteInstance.
   GURL bar_url(embedded_test_server()->GetURL("bar.com", "/title1.html"));
   auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
-  EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin(bar_url)));
+  EXPECT_FALSE(policy->IsIsolatedOrigin(url::Origin::Create(bar_url)));
   NavigateIframeToURL(web_contents(), "test_iframe", bar_url);
   EXPECT_EQ(web_contents()->GetSiteInstance(),
             child->current_frame_host()->GetSiteInstance());
@@ -646,7 +646,8 @@ class StoragePartitonInterceptor
   // security checks can be tested.
   void OpenLocalStorage(const url::Origin& origin,
                         mojom::LevelDBWrapperRequest request) override {
-    url::Origin mismatched_origin(GURL("http://abc.foo.com"));
+    url::Origin mismatched_origin =
+        url::Origin::Create(GURL("http://abc.foo.com"));
     GetForwardingInterface()->OpenLocalStorage(mismatched_origin,
                                                std::move(request));
   }

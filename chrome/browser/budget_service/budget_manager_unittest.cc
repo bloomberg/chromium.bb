@@ -29,7 +29,7 @@ const double kTestSES = 48.0;
 
 class BudgetManagerTest : public testing::Test {
  public:
-  BudgetManagerTest() : origin_(url::Origin(GURL(kTestOrigin))) {}
+  BudgetManagerTest() : origin_(url::Origin::Create(GURL(kTestOrigin))) {}
   ~BudgetManagerTest() override {}
 
   BudgetManager* GetManager(Profile* profile) {
@@ -182,7 +182,7 @@ TEST_F(BudgetManagerTest, TestInsecureOrigin) {
 
   const blink::mojom::BudgetOperationType type =
       blink::mojom::BudgetOperationType::SILENT_PUSH;
-  SetOrigin(url::Origin(GURL("http://example.com")));
+  SetOrigin(url::Origin::Create(GURL("http://example.com")));
   SetSiteEngagementScore(&profile, kTestSES);
 
   // Methods on the BudgetManager should only be allowed for secure origins.
@@ -196,7 +196,7 @@ TEST_F(BudgetManagerTest, TestUniqueOrigin) {
 
   const blink::mojom::BudgetOperationType type =
       blink::mojom::BudgetOperationType::SILENT_PUSH;
-  SetOrigin(url::Origin(GURL("file://example.com:443/etc/passwd")));
+  SetOrigin(url::Origin::Create(GURL("file://example.com:443/etc/passwd")));
 
   // Methods on the BudgetManager should not be allowed for unique origins.
   ASSERT_FALSE(ReserveBudget(&profile, type));

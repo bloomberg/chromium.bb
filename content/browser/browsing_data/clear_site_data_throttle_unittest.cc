@@ -240,8 +240,9 @@ TEST_F(ClearSiteDataThrottleTest, ParseHeaderAndExecuteClearingTask) {
     throttle.SetResponseHeaders(std::string(kClearSiteDataHeaderPrefix) +
                                 test_case.header);
 
-    EXPECT_CALL(throttle, ClearSiteData(url::Origin(url), test_case.cookies,
-                                        test_case.storage, test_case.cache));
+    EXPECT_CALL(throttle,
+                ClearSiteData(url::Origin::Create(url), test_case.cookies,
+                              test_case.storage, test_case.cache));
     bool defer;
     throttle.WillProcessResponse(&defer);
     EXPECT_TRUE(defer);
@@ -487,7 +488,8 @@ TEST_F(ClearSiteDataThrottleTest, DeferAndResume) {
       if (expected_defer) {
         testing::Expectation expectation = EXPECT_CALL(
             throttle,
-            ClearSiteData(url::Origin(GURL(test_origin.origin)), _, _, _));
+            ClearSiteData(url::Origin::Create(GURL(test_origin.origin)), _, _,
+                          _));
         EXPECT_CALL(delegate, Resume()).After(expectation);
       } else {
         EXPECT_CALL(throttle, ClearSiteData(_, _, _, _)).Times(0);

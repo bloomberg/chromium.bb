@@ -106,11 +106,12 @@ HeaderEndpointOutcome ProcessEndpoint(ReportingDelegate* delegate,
   }
 
   if (ttl_sec == 0) {
-    cache->RemoveClientForOriginAndEndpoint(url::Origin(url), endpoint_url);
+    cache->RemoveClientForOriginAndEndpoint(url::Origin::Create(url),
+                                            endpoint_url);
     return HeaderEndpointOutcome::REMOVED;
   }
 
-  url::Origin origin(url);
+  url::Origin origin = url::Origin::Create(url);
   if (!delegate->CanSetClient(origin, endpoint_url))
     return HeaderEndpointOutcome::SET_REJECTED_BY_DELEGATE;
 

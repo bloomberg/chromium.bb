@@ -477,7 +477,7 @@ void PageInfo::OpenSiteSettingsView() {
   // By default, this opens the general Content Settings pane. If the
   // |kSiteSettings| and/or |kSiteDetails| flags are enabled this opens a
   // settings page specific to the current origin of the page. crbug.com/655876
-  url::Origin site_origin = url::Origin(site_url());
+  url::Origin site_origin = url::Origin::Create(site_url());
   std::string link_destination(chrome::kChromeUIContentSettingsURL);
   // TODO(https://crbug.com/444047): Site Details should work with file:// urls
   // when this bug is fixed, so add it to the whitelist when that happens.

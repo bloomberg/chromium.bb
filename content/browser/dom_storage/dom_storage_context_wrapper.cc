@@ -212,7 +212,8 @@ void DOMStorageContextWrapper::DeleteLocalStorageForPhysicalOrigin(
     mojo_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&LocalStorageContextMojo::DeleteStorageForPhysicalOrigin,
-                       base::Unretained(mojo_state_), url::Origin(origin)));
+                       base::Unretained(mojo_state_),
+                       url::Origin::Create(origin)));
   }
 }
 
@@ -228,9 +229,9 @@ void DOMStorageContextWrapper::DeleteLocalStorage(const GURL& origin) {
     // as soon as that task is posted, mojo_state_ is set to null, preventing
     // further tasks from being queued.
     mojo_task_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&LocalStorageContextMojo::DeleteStorage,
-                       base::Unretained(mojo_state_), url::Origin(origin)));
+        FROM_HERE, base::BindOnce(&LocalStorageContextMojo::DeleteStorage,
+                                  base::Unretained(mojo_state_),
+                                  url::Origin::Create(origin)));
   }
 }
 

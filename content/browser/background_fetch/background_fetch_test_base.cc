@@ -67,7 +67,7 @@ BackgroundFetchTestBase::BackgroundFetchTestBase()
     // at time of writing EmbeddedWorkerTestHelper didn't seem to support that.
     : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
       delegate_(browser_context_.GetBackgroundFetchDelegate()),
-      origin_(GURL(kTestOrigin)) {}
+      origin_(url::Origin::Create(GURL(kTestOrigin))) {}
 
 BackgroundFetchTestBase::~BackgroundFetchTestBase() {
   DCHECK(set_up_called_);

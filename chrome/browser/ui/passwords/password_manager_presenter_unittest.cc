@@ -141,7 +141,7 @@ void PasswordManagerPresenterTest::SortAndCheckPositions(
       form->username_value = base::ASCIIToUTF16(entry.username);
       form->password_value = base::ASCIIToUTF16(entry.password);
       if (entry.federation != nullptr)
-        form->federation_origin = url::Origin(GURL(entry.federation));
+        form->federation_origin = url::Origin::Create(GURL(entry.federation));
     }
     if (entry.app_display_name)
       form->app_display_name = entry.app_display_name;
@@ -169,7 +169,7 @@ void PasswordManagerPresenterTest::SortAndCheckPositions(
         EXPECT_EQ(base::ASCIIToUTF16(entry.password),
                   list[entry.expected_position]->password_value);
         if (entry.federation != nullptr)
-          EXPECT_EQ(url::Origin(GURL(entry.federation)),
+          EXPECT_EQ(url::Origin::Create(GURL(entry.federation)),
                     list[entry.expected_position]->federation_origin);
       }
     }

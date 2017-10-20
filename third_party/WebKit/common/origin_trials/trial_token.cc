@@ -156,7 +156,7 @@ std::unique_ptr<TrialToken> TrialToken::Parse(
   datadict->GetInteger("expiry", &expiry_timestamp);
 
   // Ensure that the origin is a valid (non-unique) origin URL.
-  url::Origin origin = url::Origin(GURL(origin_string));
+  url::Origin origin = url::Origin::Create(GURL(origin_string));
   if (origin.unique()) {
     return nullptr;
   }

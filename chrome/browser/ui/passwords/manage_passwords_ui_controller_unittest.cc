@@ -229,7 +229,7 @@ void ManagePasswordsUIControllerTest::SetUp() {
   test_federated_form_.origin = GURL("http://example.com/login");
   test_federated_form_.username_value = base::ASCIIToUTF16("username");
   test_federated_form_.federation_origin =
-      url::Origin(GURL("https://federation.test/"));
+      url::Origin::Create(GURL("https://federation.test/"));
 
   // We need to be on a "webby" URL for most tests.
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());

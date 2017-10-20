@@ -66,7 +66,8 @@ void FlashDownloadInterception::InterceptFlashDownloadNavigation(
   HostContentSettingsMap* host_content_settings_map =
       HostContentSettingsMapFactory::GetForProfile(profile);
   ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-      host_content_settings_map, url::Origin(source_url), source_url, nullptr);
+      host_content_settings_map, url::Origin::Create(source_url), source_url,
+      nullptr);
   flash_setting = PluginsFieldTrial::EffectiveContentSetting(
       host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS, flash_setting);
 
@@ -116,7 +117,7 @@ bool FlashDownloadInterception::ShouldStopFlashDownloadAction(
       (RE2::FullMatch(target_url_str, kGetFlashURLSecondaryDownloadRegex) &&
        target_url.query() == kGetFlashURLSecondaryDownloadQuery)) {
     ContentSetting flash_setting = PluginUtils::GetFlashPluginContentSetting(
-        host_content_settings_map, url::Origin(source_url), source_url,
+        host_content_settings_map, url::Origin::Create(source_url), source_url,
         nullptr);
     flash_setting = PluginsFieldTrial::EffectiveContentSetting(
         host_content_settings_map, CONTENT_SETTINGS_TYPE_PLUGINS,

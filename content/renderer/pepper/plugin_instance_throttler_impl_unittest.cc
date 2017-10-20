@@ -43,7 +43,8 @@ class PluginInstanceThrottlerImplTest
   void SetUp() override {
     throttler_.reset(
         new PluginInstanceThrottlerImpl(RenderFrame::DONT_RECORD_DECISION));
-    throttler_->Initialize(nullptr, url::Origin(GURL("http://example.com")),
+    throttler_->Initialize(nullptr,
+                           url::Origin::Create(GURL("http://example.com")),
                            "Shockwave Flash", gfx::Size(100, 100));
     throttler_->AddObserver(this);
   }

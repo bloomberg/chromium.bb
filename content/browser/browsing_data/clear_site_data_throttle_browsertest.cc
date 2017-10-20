@@ -437,7 +437,8 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
         AddQuery(&urls[i], "header", kClearCookiesHeader);
 
       if (mask & (1 << i))
-        delegate()->ExpectClearSiteDataCookiesCall(url::Origin(urls[i]));
+        delegate()->ExpectClearSiteDataCookiesCall(
+            url::Origin::Create(urls[i]));
     }
 
     // Set up redirects between urls 0 --> 1 --> 2.
@@ -484,7 +485,8 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
         AddQuery(&urls[i], "header", kClearCookiesHeader);
 
       if (mask & (1 << i))
-        delegate()->ExpectClearSiteDataCookiesCall(url::Origin(urls[i]));
+        delegate()->ExpectClearSiteDataCookiesCall(
+            url::Origin::Create(urls[i]));
     }
 
     // Set up redirects between urls 0 --> 1 --> 2.
@@ -572,13 +574,13 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
   AddQuery(&secure_page, "html", content_with_secure_image);
 
   // Secure resource on an insecure page does execute Clear-Site-Data.
-  delegate()->ExpectClearSiteDataCookiesCall(url::Origin(secure_image));
+  delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(secure_image));
 
   NavigateToURL(shell(), secure_page);
   delegate()->VerifyAndClearExpectations();
 
   // Secure resource on a secure page does execute Clear-Site-Data.
-  delegate()->ExpectClearSiteDataCookiesCall(url::Origin(secure_image));
+  delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(secure_image));
 
   NavigateToURL(shell(), secure_page);
   delegate()->VerifyAndClearExpectations();
@@ -620,10 +622,10 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, ServiceWorker) {
   // but not by the "/resource_from_sw" fetch. |origin3| and |origin4| prove
   // that the number of calls is dependent on the number of network responses,
   // i.e. that it isn't always 1 as in the case of |origin1| and |origin2|.
-  delegate()->ExpectClearSiteDataCookiesCall(url::Origin(origin1));
-  delegate()->ExpectClearSiteDataCookiesCall(url::Origin(origin4));
-  delegate()->ExpectClearSiteDataCookiesCall(url::Origin(origin2));
-  delegate()->ExpectClearSiteDataCookiesCall(url::Origin(origin4));
+  delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(origin1));
+  delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(origin4));
+  delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(origin2));
+  delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(origin4));
 
   url = https_server()->GetURL("origin1.com", "/anything-in-workers-scope");
   AddQuery(&url, "origin1", origin1.spec());
@@ -693,7 +695,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, MAYBE_Credentials) {
     AddQuery(&page, "html", content);
 
     if (test_case.should_run)
-      delegate()->ExpectClearSiteDataCookiesCall(url::Origin(resource));
+      delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(resource));
 
     NavigateToURL(shell(), page);
     WaitForTitle(shell(), "done");
@@ -734,7 +736,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest,
       "</script></body></html>",
       urls[0].spec().c_str());
 
-  delegate()->ExpectClearSiteDataCookiesCall(url::Origin(urls[0]));
+  delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(urls[0]));
 
   GURL page = https_server()->GetURL("origin1.com", "/");
   AddQuery(&page, "html", content);
@@ -772,8 +774,8 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataThrottleBrowserTest, Types) {
     AddQuery(&url, "header", test_case.value);
 
     delegate()->ExpectClearSiteDataCall(
-        url::Origin(url), test_case.remove_cookies, test_case.remove_storage,
-        test_case.remove_cache);
+        url::Origin::Create(url), test_case.remove_cookies,
+        test_case.remove_storage, test_case.remove_cache);
 
     NavigateToURL(shell(), url);
 

@@ -1444,7 +1444,8 @@ ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
   std::vector<url::Origin> isolated_origin_list;
 
   if (base::FeatureList::IsEnabled(features::kSignInProcessIsolation))
-    isolated_origin_list.emplace_back(GaiaUrls::GetInstance()->gaia_url());
+    isolated_origin_list.emplace_back(
+        url::Origin::Create(GaiaUrls::GetInstance()->gaia_url()));
 
   return isolated_origin_list;
 }

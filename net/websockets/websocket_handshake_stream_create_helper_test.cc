@@ -104,7 +104,7 @@ class WebSocketHandshakeStreamCreateHelperTest : public ::testing::Test {
     std::unique_ptr<ClientSocketHandle> socket_handle =
         socket_handle_factory_.CreateClientSocketHandle(
             WebSocketStandardRequest("/", "localhost",
-                                     url::Origin(GURL(kOrigin)), "",
+                                     url::Origin::Create(GURL(kOrigin)), "",
                                      extra_request_headers),
             WebSocketStandardResponse(extra_response_headers));
 

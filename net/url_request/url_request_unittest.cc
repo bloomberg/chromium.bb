@@ -2980,7 +2980,7 @@ TEST_F(URLRequestTest, SameSiteCookies) {
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(test_server.GetURL(kHost, "/"));
-    req->set_initiator(url::Origin(test_server.GetURL(kHost, "/")));
+    req->set_initiator(url::Origin::Create(test_server.GetURL(kHost, "/")));
     req->Start();
     base::RunLoop().Run();
 
@@ -3016,7 +3016,7 @@ TEST_F(URLRequestTest, SameSiteCookies) {
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(test_server.GetURL(kSubHost, "/"));
-    req->set_initiator(url::Origin(test_server.GetURL(kSubHost, "/")));
+    req->set_initiator(url::Origin::Create(test_server.GetURL(kSubHost, "/")));
     req->Start();
     base::RunLoop().Run();
 
@@ -3034,7 +3034,8 @@ TEST_F(URLRequestTest, SameSiteCookies) {
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(test_server.GetURL(kCrossHost, "/"));
-    req->set_initiator(url::Origin(test_server.GetURL(kCrossHost, "/")));
+    req->set_initiator(
+        url::Origin::Create(test_server.GetURL(kCrossHost, "/")));
     req->Start();
     base::RunLoop().Run();
 
@@ -3053,7 +3054,8 @@ TEST_F(URLRequestTest, SameSiteCookies) {
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(test_server.GetURL(kHost, "/"));
-    req->set_initiator(url::Origin(test_server.GetURL(kCrossHost, "/")));
+    req->set_initiator(
+        url::Origin::Create(test_server.GetURL(kCrossHost, "/")));
     req->set_method("GET");
     req->Start();
     base::RunLoop().Run();
@@ -3073,7 +3075,8 @@ TEST_F(URLRequestTest, SameSiteCookies) {
         test_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(test_server.GetURL(kHost, "/"));
-    req->set_initiator(url::Origin(test_server.GetURL(kCrossHost, "/")));
+    req->set_initiator(
+        url::Origin::Create(test_server.GetURL(kCrossHost, "/")));
     req->set_method("POST");
     req->Start();
     base::RunLoop().Run();
@@ -3337,7 +3340,7 @@ TEST_F(URLRequestTest, CookieAgeMetrics) {
         http_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(http_server.GetURL(kHost, "/"));
-    req->set_initiator(url::Origin(http_server.GetURL(kHost, "/")));
+    req->set_initiator(url::Origin::Create(http_server.GetURL(kHost, "/")));
     req->Start();
     base::RunLoop().Run();
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 0);
@@ -3351,7 +3354,8 @@ TEST_F(URLRequestTest, CookieAgeMetrics) {
         http_server.GetURL(kHost, "/echoheader?Cookie"), DEFAULT_PRIORITY, &d,
         TRAFFIC_ANNOTATION_FOR_TESTS));
     req->set_site_for_cookies(http_server.GetURL(kCrossHost, "/"));
-    req->set_initiator(url::Origin(http_server.GetURL(kCrossHost, "/")));
+    req->set_initiator(
+        url::Origin::Create(http_server.GetURL(kCrossHost, "/")));
     req->Start();
     base::RunLoop().Run();
     histograms.ExpectTotalCount("Cookie.AgeForNonSecureCrossSiteRequest", 1);
@@ -7256,7 +7260,7 @@ TEST_F(URLRequestTestHTTP, ProcessNelHeaderHttps) {
   base::RunLoop().Run();
 
   ASSERT_EQ(1u, nel_delegate.headers().size());
-  EXPECT_EQ(url::Origin(request_url), nel_delegate.headers()[0].origin);
+  EXPECT_EQ(url::Origin::Create(request_url), nel_delegate.headers()[0].origin);
   EXPECT_EQ("foo", nel_delegate.headers()[0].value);
 }
 

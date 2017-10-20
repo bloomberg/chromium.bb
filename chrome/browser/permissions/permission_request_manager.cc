@@ -155,8 +155,9 @@ void PermissionRequestManager::AddRequest(PermissionRequest* request) {
   // correct behavior on interstitials -- we probably want to basically queue
   // any request for which GetVisibleURL != GetLastCommittedURL.
   const GURL& request_url_ = web_contents()->GetLastCommittedURL();
-  bool is_main_frame = url::Origin(request_url_)
-                           .IsSameOriginWith(url::Origin(request->GetOrigin()));
+  bool is_main_frame =
+      url::Origin::Create(request_url_)
+          .IsSameOriginWith(url::Origin::Create(request->GetOrigin()));
 
   // Don't re-add an existing request or one with a duplicate text request.
   PermissionRequest* existing_request = GetExistingRequest(request);

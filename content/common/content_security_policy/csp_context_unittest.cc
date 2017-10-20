@@ -85,7 +85,7 @@ TEST(CSPContextTest, SchemeShouldBypassCSP) {
 
 TEST(CSPContextTest, MultiplePolicies) {
   CSPContextTest context;
-  context.SetSelf(url::Origin(GURL("http://example.com")));
+  context.SetSelf(url::Origin::Create(GURL("http://example.com")));
 
   CSPSource source_a("", "a.com", false, url::PORT_UNSPECIFIED, false, "");
   CSPSource source_b("", "b.com", false, url::PORT_UNSPECIFIED, false, "");
@@ -112,7 +112,7 @@ TEST(CSPContextTest, MultiplePolicies) {
 
 TEST(CSPContextTest, SanitizeDataForUseInCspViolation) {
   CSPContextTest context;
-  context.SetSelf(url::Origin(GURL("http://a.com")));
+  context.SetSelf(url::Origin::Create(GURL("http://a.com")));
 
   // Content-Security-Policy: frame-src "a.com/iframe"
   context.AddContentSecurityPolicy(
@@ -162,7 +162,7 @@ TEST(CSPContextTest, SanitizeDataForUseInCspViolation) {
 // When several policies are infringed, all of them must be reported.
 TEST(CSPContextTest, MultipleInfringement) {
   CSPContextTest context;
-  context.SetSelf(url::Origin(GURL("http://example.com")));
+  context.SetSelf(url::Origin::Create(GURL("http://example.com")));
 
   CSPSource source_a("", "a.com", false, url::PORT_UNSPECIFIED, false, "");
   CSPSource source_b("", "b.com", false, url::PORT_UNSPECIFIED, false, "");

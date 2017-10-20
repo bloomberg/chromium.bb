@@ -113,7 +113,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
         headers, net::LOAD_NORMAL, false /* has_user_gesture */,
         false /* skip_service_worker */, REQUEST_CONTEXT_TYPE_LOCATION,
         blink::WebMixedContentContextType::kBlockable,
-        false /* is_form_submission */, url::Origin(url));
+        false /* is_form_submission */, url::Origin::Create(url));
 
     CommonNavigationParams common_params;
     common_params.url = url;

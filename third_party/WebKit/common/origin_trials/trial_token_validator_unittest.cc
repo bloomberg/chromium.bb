@@ -156,9 +156,9 @@ class TestOriginTrialPolicy : public TrialPolicy {
 class TrialTokenValidatorTest : public testing::Test {
  public:
   TrialTokenValidatorTest()
-      : appropriate_origin_(GURL(kAppropriateOrigin)),
-        inappropriate_origin_(GURL(kInappropriateOrigin)),
-        insecure_origin_(GURL(kInsecureOrigin)),
+      : appropriate_origin_(url::Origin::Create(GURL(kAppropriateOrigin))),
+        inappropriate_origin_(url::Origin::Create(GURL(kInappropriateOrigin))),
+        insecure_origin_(url::Origin::Create(GURL(kInsecureOrigin))),
         valid_token_signature_(
             std::string(reinterpret_cast<const char*>(kSampleTokenSignature),
                         arraysize(kSampleTokenSignature))),

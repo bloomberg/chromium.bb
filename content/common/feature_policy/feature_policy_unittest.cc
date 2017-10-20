@@ -52,9 +52,9 @@ class FeaturePolicyTest : public ::testing::Test {
     return FeaturePolicy::CreateFromParentPolicy(parent, frame_policy, origin,
                                                  feature_list_);
   }
-  url::Origin origin_a_ = url::Origin(GURL("https://example.com/"));
-  url::Origin origin_b_ = url::Origin(GURL("https://example.net/"));
-  url::Origin origin_c_ = url::Origin(GURL("https://example.org/"));
+  url::Origin origin_a_ = url::Origin::Create(GURL("https://example.com/"));
+  url::Origin origin_b_ = url::Origin::Create(GURL("https://example.net/"));
+  url::Origin origin_c_ = url::Origin::Create(GURL("https://example.org/"));
 
  private:
   // Contains the list of controlled features, so that we are guaranteed to

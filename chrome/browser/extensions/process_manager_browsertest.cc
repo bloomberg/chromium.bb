@@ -817,9 +817,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Create valid blob and filesystem URLs in the extension's origin.
   url::Origin extension_origin(extension_frame->GetLastCommittedOrigin());
   GURL blob_url(CreateBlobURL(extension_frame, "foo"));
-  EXPECT_EQ(extension_origin, url::Origin(blob_url));
+  EXPECT_EQ(extension_origin, url::Origin::Create(blob_url));
   GURL filesystem_url(CreateFileSystemURL(extension_frame, "foo"));
-  EXPECT_EQ(extension_origin, url::Origin(filesystem_url));
+  EXPECT_EQ(extension_origin, url::Origin::Create(filesystem_url));
 
   // Navigate the popup to each nested URL with extension origin.
   GURL nested_urls[] = {blob_url, filesystem_url};
@@ -883,9 +883,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Create blob and filesystem URLs in the extension's origin.
   url::Origin extension_origin(main_frame->GetLastCommittedOrigin());
   GURL blob_url(CreateBlobURL(main_frame, "foo"));
-  EXPECT_EQ(extension_origin, url::Origin(blob_url));
+  EXPECT_EQ(extension_origin, url::Origin::Create(blob_url));
   GURL filesystem_url(CreateFileSystemURL(main_frame, "foo"));
-  EXPECT_EQ(extension_origin, url::Origin(filesystem_url));
+  EXPECT_EQ(extension_origin, url::Origin::Create(filesystem_url));
 
   // From the main frame, navigate its subframe to each nested URL.  This
   // should be allowed and should stay in the extension process.
@@ -965,7 +965,7 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   content::WebContents* app_tab = (*app_windows.begin())->web_contents();
   content::RenderFrameHost* app_rfh = app_tab->GetMainFrame();
   url::Origin app_origin(app_rfh->GetLastCommittedOrigin());
-  EXPECT_EQ(url::Origin(app->url()), app_rfh->GetLastCommittedOrigin());
+  EXPECT_EQ(url::Origin::Create(app->url()), app_rfh->GetLastCommittedOrigin());
 
   // Wait for the app's guest WebContents to load.
   guest_view::TestGuestViewManager* guest_manager =
@@ -983,9 +983,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
 
   // Create valid blob and filesystem URLs in the app's origin.
   GURL blob_url(CreateBlobURL(app_rfh, "foo"));
-  EXPECT_EQ(app_origin, url::Origin(blob_url));
+  EXPECT_EQ(app_origin, url::Origin::Create(blob_url));
   GURL filesystem_url(CreateFileSystemURL(app_rfh, "foo"));
-  EXPECT_EQ(app_origin, url::Origin(filesystem_url));
+  EXPECT_EQ(app_origin, url::Origin::Create(filesystem_url));
 
   // Create a new tab, unrelated to the app, and navigate it to a web URL.
   chrome::NewTab(browser());
@@ -1067,9 +1067,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   // Create valid blob and filesystem URLs in the extension's origin.
   url::Origin extension_origin(extension_frame->GetLastCommittedOrigin());
   GURL blob_url(CreateBlobURL(extension_frame, "foo"));
-  EXPECT_EQ(extension_origin, url::Origin(blob_url));
+  EXPECT_EQ(extension_origin, url::Origin::Create(blob_url));
   GURL filesystem_url(CreateFileSystemURL(extension_frame, "foo"));
-  EXPECT_EQ(extension_origin, url::Origin(filesystem_url));
+  EXPECT_EQ(extension_origin, url::Origin::Create(filesystem_url));
 
   // Have the web page navigate the popup to each nested URL with extension
   // origin via the window reference it obtained earlier from window.open.

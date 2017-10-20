@@ -87,6 +87,8 @@ class URL_EXPORT Origin {
   // 2. 'filesystem' URLs behave as 'blob' URLs (that is, the origin is parsed
   //    out of everything in the URL which follows the scheme).
   // 3. 'file' URLs all parse as ("file", "", 0).
+  static Origin Create(const GURL& url);
+  // TODO(dcheng): Deprecated. Please use the factory helper above.
   explicit Origin(const GURL& url);
 
   // Copyable and movable.

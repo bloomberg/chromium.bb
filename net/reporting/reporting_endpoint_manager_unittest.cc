@@ -22,7 +22,7 @@ namespace {
 
 class ReportingEndpointManagerTest : public ReportingTestBase {
  protected:
-  const url::Origin kOrigin_ = url::Origin(GURL("https://origin/"));
+  const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
   const GURL kEndpoint_ = GURL("https://endpoint/");
   const std::string kGroup_ = "group";
 };

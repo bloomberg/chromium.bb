@@ -172,7 +172,7 @@ void RegisterForeignFetchScopes(
   valid_scopes.push_back(valid_scope_2);
 
   std::vector<url::Origin> all_origins;
-  url::Origin valid_origin(GURL("https://chromium.org/"));
+  url::Origin valid_origin = url::Origin::Create(GURL("https://chromium.org/"));
   std::vector<url::Origin> valid_origin_list(1, valid_origin);
 
   mojom::ServiceWorkerInstallEventMethodsAssociatedPtr install_event_methods;
@@ -388,7 +388,7 @@ TEST_F(ServiceWorkerJobTest, Register) {
 
   GURL valid_scope_1("http://www.example.com/test/subscope");
   GURL valid_scope_2("http://www.example.com/test/othersubscope");
-  url::Origin valid_origin(GURL("https://chromium.org/"));
+  url::Origin valid_origin = url::Origin::Create(GURL("https://chromium.org/"));
 
   ServiceWorkerVersion* version_ = registration->active_version();
   EXPECT_EQ(2u, version_->foreign_fetch_scopes_.size());

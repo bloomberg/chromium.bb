@@ -211,21 +211,21 @@ class RemoveLocalStorageTester {
     base::Time now = base::Time::Now();
     data.set_last_modified(now.ToInternalValue());
     data.set_size_bytes(16);
-    mock_data_[CreateMetaDataKey(url::Origin(kOrigin1))] =
+    mock_data_[CreateMetaDataKey(url::Origin::Create(kOrigin1))] =
         leveldb::StdStringToUint8Vector(data.SerializeAsString());
-    mock_data_[CreateDataKey(url::Origin(kOrigin1))] = {};
+    mock_data_[CreateDataKey(url::Origin::Create(kOrigin1))] = {};
 
     base::Time one_day_ago = now - base::TimeDelta::FromDays(1);
     data.set_last_modified(one_day_ago.ToInternalValue());
-    mock_data_[CreateMetaDataKey(url::Origin(kOrigin2))] =
+    mock_data_[CreateMetaDataKey(url::Origin::Create(kOrigin2))] =
         leveldb::StdStringToUint8Vector(data.SerializeAsString());
-    mock_data_[CreateDataKey(url::Origin(kOrigin2))] = {};
+    mock_data_[CreateDataKey(url::Origin::Create(kOrigin2))] = {};
 
     base::Time sixty_days_ago = now - base::TimeDelta::FromDays(60);
     data.set_last_modified(sixty_days_ago.ToInternalValue());
-    mock_data_[CreateMetaDataKey(url::Origin(kOrigin3))] =
+    mock_data_[CreateMetaDataKey(url::Origin::Create(kOrigin3))] =
         leveldb::StdStringToUint8Vector(data.SerializeAsString());
-    mock_data_[CreateDataKey(url::Origin(kOrigin3))] = {};
+    mock_data_[CreateDataKey(url::Origin::Create(kOrigin3))] = {};
   }
 
  private:

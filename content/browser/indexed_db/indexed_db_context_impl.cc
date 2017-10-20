@@ -74,7 +74,8 @@ void GetAllOriginsAndPaths(const base::FilePath& indexeddb_path,
         file_path.RemoveExtension().Extension() == kIndexedDBExtension) {
       std::string origin_id = file_path.BaseName().RemoveExtension()
           .RemoveExtension().MaybeAsASCII();
-      origins->push_back(Origin(storage::GetOriginFromIdentifier(origin_id)));
+      origins->push_back(
+          Origin::Create(storage::GetOriginFromIdentifier(origin_id)));
       if (file_paths)
         file_paths->push_back(file_path);
     }
@@ -290,7 +291,7 @@ int IndexedDBContextImpl::GetOriginBlobFileCount(const Origin& origin) {
 
 // TODO(jsbell): Update callers to use url::Origin overload and remove.
 int64_t IndexedDBContextImpl::GetOriginDiskUsage(const GURL& origin_url) {
-  return GetOriginDiskUsage(Origin(origin_url));
+  return GetOriginDiskUsage(Origin::Create(origin_url));
 }
 
 int64_t IndexedDBContextImpl::GetOriginDiskUsage(const Origin& origin) {
@@ -314,7 +315,7 @@ base::Time IndexedDBContextImpl::GetOriginLastModified(const Origin& origin) {
 
 // TODO(jsbell): Update callers to use url::Origin overload and remove.
 void IndexedDBContextImpl::DeleteForOrigin(const GURL& origin_url) {
-  DeleteForOrigin(Origin(origin_url));
+  DeleteForOrigin(Origin::Create(origin_url));
 }
 
 void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
@@ -347,7 +348,7 @@ void IndexedDBContextImpl::DeleteForOrigin(const Origin& origin) {
 // TODO(jsbell): Update callers to use url::Origin overload and remove.
 void IndexedDBContextImpl::CopyOriginData(const GURL& origin_url,
                                           IndexedDBContext* dest_context) {
-  CopyOriginData(Origin(origin_url), dest_context);
+  CopyOriginData(Origin::Create(origin_url), dest_context);
 }
 
 void IndexedDBContextImpl::CopyOriginData(const Origin& origin,
@@ -418,7 +419,7 @@ std::vector<base::FilePath> IndexedDBContextImpl::GetStoragePaths(
 // TODO(jsbell): Update callers to use url::Origin overload and remove.
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(
     const GURL& origin_url) const {
-  return GetFilePathForTesting(Origin(origin_url));
+  return GetFilePathForTesting(Origin::Create(origin_url));
 }
 
 base::FilePath IndexedDBContextImpl::GetFilePathForTesting(

@@ -2805,7 +2805,7 @@ TEST_F(RenderFrameHostManagerTest, CanCommitOrigin) {
 
   for (const auto& test_case : cases) {
     params.url = GURL(test_case.url);
-    params.origin = url::Origin(GURL(test_case.origin));
+    params.origin = url::Origin::Create(GURL(test_case.origin));
 
     int expected_bad_msg_count = process()->bad_msg_count();
     if (test_case.mismatch)

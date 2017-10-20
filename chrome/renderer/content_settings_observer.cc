@@ -453,7 +453,7 @@ void ContentSettingsObserver::PersistClientHints(
     return;
 
   const GURL primary_url(url);
-  const url::Origin primary_origin(primary_url);
+  const url::Origin primary_origin = url::Origin::Create(primary_url);
   if (!content::IsOriginSecure(primary_url))
     return;
 

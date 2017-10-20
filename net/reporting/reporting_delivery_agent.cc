@@ -116,10 +116,10 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     std::map<OriginGroup, std::vector<const ReportingReport*>>
         origin_group_reports;
     for (const ReportingReport* report : reports) {
-      url::Origin origin(report->url);
+      url::Origin origin = url::Origin::Create(report->url);
       if (!delegate()->CanSendReport(origin))
         continue;
-      OriginGroup origin_group(url::Origin(report->url), report->group);
+      OriginGroup origin_group(url::Origin::Create(report->url), report->group);
       origin_group_reports[origin_group].push_back(report);
     }
 
@@ -182,7 +182,7 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
     for (const ReportingReport* report : delivery->reports) {
       pending_origin_groups_.erase(
-          OriginGroup(url::Origin(report->url), report->group));
+          OriginGroup(url::Origin::Create(report->url), report->group));
     }
 
     endpoint_manager()->ClearEndpointPending(delivery->endpoint);

@@ -245,9 +245,10 @@ void ChromePasswordProtectionService::ShowModalWarning(
                               prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
   // Since base::Value doesn't support int64_t type, we convert the navigation
   // ID to string format and store it in the preference dictionary.
-  update->SetKey(Origin(web_contents->GetLastCommittedURL()).Serialize(),
-                 base::Value(base::Int64ToString(
-                     GetLastCommittedNavigationID(web_contents))));
+  update->SetKey(
+      Origin::Create(web_contents->GetLastCommittedURL()).Serialize(),
+      base::Value(
+          base::Int64ToString(GetLastCommittedNavigationID(web_contents))));
 
   // Starts preparing post-warning report.
   MaybeStartThreatDetailsCollection(web_contents, verdict_token);
@@ -673,7 +674,7 @@ GURL ChromePasswordProtectionService::GetChangePasswordURL() {
 void ChromePasswordProtectionService::HandleUserActionOnModalWarning(
     content::WebContents* web_contents,
     PasswordProtectionService::WarningAction action) {
-  const Origin origin(web_contents->GetLastCommittedURL());
+  const Origin origin = Origin::Create(web_contents->GetLastCommittedURL());
   int64_t navigation_id =
       GetNavigationIDFromPrefsByOrigin(profile_->GetPrefs(), origin);
   if (action == PasswordProtectionService::CHANGE_PASSWORD) {
@@ -703,7 +704,7 @@ void ChromePasswordProtectionService::HandleUserActionOnPageInfo(
     content::WebContents* web_contents,
     PasswordProtectionService::WarningAction action) {
   GURL url = web_contents->GetLastCommittedURL();
-  const Origin origin(url);
+  const Origin origin = Origin::Create(url);
 
   if (action == PasswordProtectionService::CHANGE_PASSWORD) {
     LogPasswordReuseDialogInteraction(

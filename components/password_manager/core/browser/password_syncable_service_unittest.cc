@@ -287,7 +287,7 @@ TEST_F(PasswordSyncableServiceTest, AdditionOnlyInPasswordStore) {
   form.type = kArbitraryType;
   form.display_name = base::ASCIIToUTF16(kDisplayName);
   form.icon_url = GURL(kIconUrl);
-  form.federation_origin = url::Origin(GURL(kFederationUrl));
+  form.federation_origin = url::Origin::Create(GURL(kFederationUrl));
   form.username_value = base::ASCIIToUTF16(kUsername);
   form.password_value = base::ASCIIToUTF16(kPassword);
   EXPECT_CALL(*password_store(), FillAutofillableLogins(_))
@@ -421,7 +421,7 @@ TEST_F(PasswordSyncableServiceTest, GetAllSyncData) {
   form1.type = kArbitraryType;
   form1.display_name = base::ASCIIToUTF16(kDisplayName);
   form1.icon_url = GURL(kIconUrl);
-  form1.federation_origin = url::Origin(GURL(kFederationUrl));
+  form1.federation_origin = url::Origin::Create(GURL(kFederationUrl));
   form1.username_value = base::ASCIIToUTF16(kUsername);
   form1.password_value = base::ASCIIToUTF16(kPassword);
   autofill::PasswordForm form2;
@@ -639,7 +639,7 @@ TEST_F(PasswordSyncableServiceTest, SerializeNonEmptyPasswordForm) {
   form.times_used = 11;
   form.display_name = base::ASCIIToUTF16("Great Peter");
   form.icon_url = GURL("https://google.com/icon");
-  form.federation_origin = url::Origin(GURL("https://google.com/"));
+  form.federation_origin = url::Origin::Create(GURL("https://google.com/"));
 
   syncer::SyncData data = SyncDataFromPassword(form);
   const sync_pb::PasswordSpecificsData& specifics = GetPasswordSpecifics(data);

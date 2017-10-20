@@ -30,13 +30,13 @@ TEST(CrossSiteDocumentClassifierTest, IsSameSite) {
   GURL a_com_url0("https://mock1.a.com:8080/page1.html");
   GURL a_com_url1("https://mock2.a.com:9090/page2.html");
   GURL a_com_url2("https://a.com/page3.html");
-  url::Origin a_com_origin0(a_com_url0);
+  url::Origin a_com_origin0 = url::Origin::Create(a_com_url0);
   EXPECT_TRUE(
       CrossSiteDocumentClassifier::IsSameSite(a_com_origin0, a_com_url1));
-  EXPECT_TRUE(CrossSiteDocumentClassifier::IsSameSite(url::Origin(a_com_url1),
-                                                      a_com_url2));
-  EXPECT_TRUE(CrossSiteDocumentClassifier::IsSameSite(url::Origin(a_com_url2),
-                                                      a_com_url0));
+  EXPECT_TRUE(CrossSiteDocumentClassifier::IsSameSite(
+      url::Origin::Create(a_com_url1), a_com_url2));
+  EXPECT_TRUE(CrossSiteDocumentClassifier::IsSameSite(
+      url::Origin::Create(a_com_url2), a_com_url0));
 
   GURL b_com_url0("https://mock1.b.com/index.html");
   EXPECT_FALSE(
@@ -56,7 +56,7 @@ TEST(CrossSiteDocumentClassifierTest, IsSameSite) {
 }
 
 TEST(CrossSiteDocumentClassifierTest, IsValidCorsHeaderSet) {
-  url::Origin frame_origin(GURL("http://www.google.com"));
+  url::Origin frame_origin = url::Origin::Create(GURL("http://www.google.com"));
   GURL site_origin_url("http://www.yahoo.com");
 
   EXPECT_TRUE(CrossSiteDocumentClassifier::IsValidCorsHeaderSet(

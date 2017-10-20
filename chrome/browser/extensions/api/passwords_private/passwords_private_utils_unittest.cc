@@ -27,7 +27,8 @@ TEST(CreateUrlCollectionFromFormTest, UrlsFromFederatedForm) {
   autofill::PasswordForm federated_form;
   federated_form.signon_realm = "federation://example.com/google.com";
   federated_form.origin = GURL("https://example.com/");
-  federated_form.federation_origin = url::Origin(GURL("https://google.com/"));
+  federated_form.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
 
   api::passwords_private::UrlCollection federated_urls =
       CreateUrlCollectionFromForm(federated_form);

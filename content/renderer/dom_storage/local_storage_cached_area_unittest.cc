@@ -21,7 +21,7 @@ namespace content {
 class LocalStorageCachedAreaTest : public testing::Test {
  public:
   LocalStorageCachedAreaTest()
-      : kOrigin(GURL("http://dom_storage/")),
+      : kOrigin(url::Origin::Create(GURL("http://dom_storage/"))),
         kKey(base::ASCIIToUTF16("key")),
         kValue(base::ASCIIToUTF16("value")),
         kPageUrl("http://dom_storage/page"),

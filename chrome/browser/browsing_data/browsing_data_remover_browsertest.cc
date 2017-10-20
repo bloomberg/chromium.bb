@@ -285,7 +285,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   // of |url1|, but not for |kExampleHost|, which is the origin of |url2|.
   std::unique_ptr<BrowsingDataFilterBuilder> filter_builder =
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
-  filter_builder->AddOrigin(url::Origin(url1));
+  filter_builder->AddOrigin(url::Origin::Create(url1));
   RemoveWithFilterAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter_builder));
 
@@ -296,7 +296,7 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataRemoverBrowserTest, Cache) {
   // Another partial deletion with the same filter should have no effect.
   filter_builder =
       BrowsingDataFilterBuilder::Create(BrowsingDataFilterBuilder::WHITELIST);
-  filter_builder->AddOrigin(url::Origin(url1));
+  filter_builder->AddOrigin(url::Origin::Create(url1));
   RemoveWithFilterAndWait(content::BrowsingDataRemover::DATA_TYPE_CACHE,
                           std::move(filter_builder));
   EXPECT_EQ(new_size, GetCacheSize());

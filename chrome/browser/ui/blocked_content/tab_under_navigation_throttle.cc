@@ -87,8 +87,8 @@ bool TabUnderNavigationThrottle::IsSuspiciousClientRedirect(
     return false;
 
   // Only cross origin navigations are considered tab-unders.
-  if (url::Origin(previous_main_frame_url)
-          .IsSameOriginWith(url::Origin(navigation_handle->GetURL()))) {
+  if (url::Origin::Create(previous_main_frame_url)
+          .IsSameOriginWith(url::Origin::Create(navigation_handle->GetURL()))) {
     return false;
   }
 

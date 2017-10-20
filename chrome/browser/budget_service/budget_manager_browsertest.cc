@@ -104,7 +104,7 @@ class BudgetManagerBrowserTest : public InProcessBrowserTest {
   void ConsumeReservation() {
     base::RunLoop run_loop;
     budget_manager()->Consume(
-        url::Origin(https_server_->GetURL(kTestURL)),
+        url::Origin::Create(https_server_->GetURL(kTestURL)),
         blink::mojom::BudgetOperationType::SILENT_PUSH,
         base::BindOnce(&BudgetManagerBrowserTest::DidConsume,
                        base::Unretained(this), run_loop.QuitClosure()));

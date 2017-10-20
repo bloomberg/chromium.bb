@@ -134,9 +134,10 @@ class NetworkErrorLoggingServiceTest : public ::testing::Test {
   const GURL kUrlDifferentPort_ = GURL("https://example.com:4433/path");
   const GURL kUrlSubdomain_ = GURL("https://subdomain.example.com/path");
 
-  const url::Origin kOrigin_ = url::Origin(kUrl_);
-  const url::Origin kOriginDifferentPort_ = url::Origin(kUrlDifferentPort_);
-  const url::Origin kOriginSubdomain_ = url::Origin(kUrlSubdomain_);
+  const url::Origin kOrigin_ = url::Origin::Create(kUrl_);
+  const url::Origin kOriginDifferentPort_ =
+      url::Origin::Create(kUrlDifferentPort_);
+  const url::Origin kOriginSubdomain_ = url::Origin::Create(kUrlSubdomain_);
 
   const std::string kHeader_ = "{\"report-to\":\"group\",\"max-age\":86400}";
   const std::string kHeaderIncludeSubdomains_ =
@@ -181,7 +182,7 @@ TEST_F(NetworkErrorLoggingServiceTest, NoReportingService) {
 
 TEST_F(NetworkErrorLoggingServiceTest, OriginInsecure) {
   const GURL kInsecureUrl("http://insecure.com/");
-  const url::Origin kInsecureOrigin(kInsecureUrl);
+  const url::Origin kInsecureOrigin = url::Origin::Create(kInsecureUrl);
 
   service()->OnHeader(kInsecureOrigin, kHeader_);
 

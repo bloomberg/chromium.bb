@@ -206,7 +206,7 @@ void DOMStorageContextImpl::GetSessionStorageUsage(
 void DOMStorageContextImpl::DeleteLocalStorageForPhysicalOrigin(
     const GURL& origin_url) {
   DCHECK(!is_shutdown_);
-  url::Origin origin(origin_url);
+  url::Origin origin = url::Origin::Create(origin_url);
   DOMStorageNamespace* local = GetStorageNamespace(kLocalStorageNamespaceId);
   std::vector<GURL> origins;
   local->GetOriginsWithAreas(&origins);
@@ -214,7 +214,7 @@ void DOMStorageContextImpl::DeleteLocalStorageForPhysicalOrigin(
   // deleted as well.
   // https://w3c.github.io/webappsec-suborigins/
   for (const auto& origin_candidate_url : origins) {
-    url::Origin origin_candidate(origin_candidate_url);
+    url::Origin origin_candidate = url::Origin::Create(origin_candidate_url);
     // |origin| is guaranteed to be deleted below, so don't delete it until
     // then. That is, only suborigins at the same physical origin as |origin|
     // should be deleted at this point.

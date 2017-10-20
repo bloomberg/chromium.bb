@@ -216,8 +216,8 @@ TEST(PaymentManifestParserTest,
       "[\"https://charliepay.com\", \"https://evepay.com\"]}",
       {GURL("https://bobpay.com/app.json"),
        GURL("https://alicepay.com/app.json")},
-      {url::Origin(GURL("https://charliepay.com")),
-       url::Origin(GURL("https://evepay.com"))},
+      {url::Origin::Create(GURL("https://charliepay.com")),
+       url::Origin::Create(GURL("https://evepay.com"))},
       false);
 }
 
@@ -227,8 +227,8 @@ TEST(PaymentManifestParserTest,
       "{\"supported_origins\": [\"https://charliepay.com\", "
       "\"https://evepay.com\"]}",
       std::vector<GURL>(),
-      {url::Origin(GURL("https://charliepay.com")),
-       url::Origin(GURL("https://evepay.com"))},
+      {url::Origin::Create(GURL("https://charliepay.com")),
+       url::Origin::Create(GURL("https://evepay.com"))},
       false);
 }
 

@@ -251,7 +251,8 @@ class IndexedDBBackingStoreTest : public testing::Test {
     idb_context_->TaskRunner()->PostTask(
         FROM_HERE, base::BindOnce(
                        [](IndexedDBBackingStoreTest* test) {
-                         const Origin origin(GURL("http://localhost:81"));
+                         const Origin origin =
+                             Origin::Create(GURL("http://localhost:81"));
                          test->idb_factory_ =
                              base::MakeRefCounted<TestIDBFactory>(
                                  test->idb_context_.get());
@@ -1334,7 +1335,7 @@ TEST_F(IndexedDBBackingStoreTest, ReadCorruptionInfo) {
   message.clear();
 
   const base::FilePath path_base = temp_dir_.GetPath();
-  const Origin origin(GURL("http://www.google.com/"));
+  const Origin origin = Origin::Create(GURL("http://www.google.com/"));
   ASSERT_FALSE(path_base.empty());
   ASSERT_TRUE(PathIsWritable(path_base));
 

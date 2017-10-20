@@ -94,7 +94,7 @@ std::string CanonicalizeHost(const GURL& url) {
 
   // Pass through url::Origin to get the real host, which has the effect of
   // stripping the suborigin from the URL.
-  std::string host = url::Origin(url).host();
+  std::string host = url::Origin::Create(url).host();
   std::string retval =
       net::registry_controlled_domains::GetDomainAndRegistry(
           host,
@@ -663,8 +663,9 @@ CookieTreeNode::DetailedInfo CookieTreeRootNode::GetDetailedInfo() const {
 base::string16 CookieTreeHostNode::TitleForUrl(const GURL& url) {
   const std::string file_origin_node_name(
       std::string(url::kFileScheme) + url::kStandardSchemeSeparator);
-  return base::UTF8ToUTF16(url.SchemeIsFile() ? file_origin_node_name
-                                              : url::Origin(url).host());
+  return base::UTF8ToUTF16(url.SchemeIsFile()
+                               ? file_origin_node_name
+                               : url::Origin::Create(url).host());
 }
 
 CookieTreeHostNode::CookieTreeHostNode(const GURL& url)

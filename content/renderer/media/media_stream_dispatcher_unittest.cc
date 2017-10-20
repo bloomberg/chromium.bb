@@ -94,7 +94,7 @@ class MediaStreamDispatcherTest : public ::testing::Test {
       : dispatcher_(base::MakeUnique<MediaStreamDispatcher>(nullptr)),
         handler_(base::MakeUnique<MockMediaStreamDispatcherEventHandler>()),
         controls_(true, true),
-        security_origin_(GURL("http://test.com")) {
+        security_origin_(url::Origin::Create(GURL("http://test.com"))) {
     mojom::MediaStreamDispatcherHostPtr dispatcher_host =
         mock_dispatcher_host_.CreateInterfacePtrAndBind();
     dispatcher_->dispatcher_host_ = std::move(dispatcher_host);

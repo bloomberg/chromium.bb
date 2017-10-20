@@ -157,7 +157,7 @@ class ForeignFetchRequestHandlerTest : public testing::Test {
         GURL(url), net::DEFAULT_PRIORITY, &url_request_delegate_,
         TRAFFIC_ANNOTATION_FOR_TESTS);
     if (initiator)
-      request_->set_initiator(url::Origin(GURL(initiator)));
+      request_->set_initiator(url::Origin::Create(GURL(initiator)));
     ForeignFetchRequestHandler::InitializeHandler(
         request_.get(), context_wrapper(), &blob_storage_context_,
         helper_->mock_render_process_id(), provider_host()->provider_id(),

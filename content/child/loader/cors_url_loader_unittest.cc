@@ -80,7 +80,7 @@ class CORSURLLoaderTest : public testing::Test {
     request.fetch_request_context_type = REQUEST_CONTEXT_TYPE_IMAGE;
     request.method = net::HttpRequestHeaders::kGetMethod;
     request.url = url;
-    request.request_initiator = url::Origin(origin);
+    request.request_initiator = url::Origin::Create(origin);
 
     loader_factory_ptr->CreateLoaderAndStart(
         mojo::MakeRequest(&url_loader_), 0 /* routing_id */, 0 /* request_id */,

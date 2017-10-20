@@ -210,7 +210,7 @@ TEST_F(IndexedDBDispatcherHostTest, CloseConnectionBeforeUpgrade) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
 
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
@@ -240,7 +240,7 @@ TEST_F(IndexedDBDispatcherHostTest, CloseAfterUpgrade) {
   const char kObjectStoreName[] = "os";
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
 
@@ -297,7 +297,7 @@ TEST_F(IndexedDBDispatcherHostTest, OpenNewConnectionWhileUpgrading) {
   const char kObjectStoreName[] = "os";
 
   // Open connection 1, and expect the upgrade needed.
-  TestDatabaseConnection connection1(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection1(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion, kTransactionId);
   DatabaseAssociatedPtrInfo database_info1;
@@ -322,7 +322,7 @@ TEST_F(IndexedDBDispatcherHostTest, OpenNewConnectionWhileUpgrading) {
   // Open connection 2, but expect that we won't be called back.
   DatabaseAssociatedPtrInfo database_info2;
   IndexedDBDatabaseMetadata metadata2;
-  TestDatabaseConnection connection2(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection2(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion, 0);
   connection2.Open(idb_mojo_factory_.get());
@@ -369,7 +369,7 @@ TEST_F(IndexedDBDispatcherHostTest, PutWithInvalidBlob) {
   const char kObjectStoreName[] = "os";
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
 
@@ -445,7 +445,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
   const int64_t kTransactionId = 1;
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
@@ -478,7 +478,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWithConnection) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(3, loop.QuitClosure());
-    const url::Origin origin = url::Origin(GURL(kOrigin));
+    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(*connection.connection_callbacks, Complete(kTransactionId))
         .Times(1)
@@ -506,7 +506,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
   const char kObjectStoreName[] = "os";
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
@@ -539,7 +539,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileDoingTransaction) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin(GURL(kOrigin));
+    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -572,7 +572,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
   const int64_t kTransactionId = 1;
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
@@ -605,7 +605,7 @@ TEST_F(IndexedDBDispatcherHostTest, CompactDatabaseWhileUpgrading) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin(GURL(kOrigin));
+    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -636,7 +636,7 @@ TEST_F(IndexedDBDispatcherHostTest,
   const int64_t kTransactionId = 1;
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
@@ -669,7 +669,7 @@ TEST_F(IndexedDBDispatcherHostTest,
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin(GURL(kOrigin));
+    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(*connection.connection_callbacks, Complete(kTransactionId))
         .Times(1)
@@ -700,7 +700,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
   const char kObjectStoreName[] = "os";
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
@@ -733,7 +733,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileDoingTransaction) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin(GURL(kOrigin));
+    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -766,7 +766,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
   const int64_t kTransactionId = 1;
 
   // Open connection.
-  TestDatabaseConnection connection(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection(url::Origin::Create(GURL(kOrigin)),
                                     base::UTF8ToUTF16(kDatabaseName),
                                     kDBVersion, kTransactionId);
   IndexedDBDatabaseMetadata metadata;
@@ -799,7 +799,7 @@ TEST_F(IndexedDBDispatcherHostTest, AbortTransactionsWhileUpgrading) {
     ::testing::InSequence dummy;
     base::RunLoop loop;
     base::Closure quit_closure = base::BarrierClosure(4, loop.QuitClosure());
-    const url::Origin origin = url::Origin(GURL(kOrigin));
+    const url::Origin origin = url::Origin::Create(GURL(kOrigin));
 
     EXPECT_CALL(
         *connection.connection_callbacks,
@@ -841,7 +841,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   context_impl_->AddObserver(&observer);
 
   // Open connection 1.
-  TestDatabaseConnection connection1(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection1(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion1, kTransactionId1);
   IndexedDBDatabaseMetadata metadata1;
@@ -897,7 +897,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   connection1.database->Close();
 
   // Open connection 2.
-  TestDatabaseConnection connection2(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection2(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion2, kTransactionId2);
   IndexedDBDatabaseMetadata metadata2;
@@ -947,7 +947,7 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_NotifyIndexedDBListChanged) {
   connection2.database->Close();
 
   // Open connection 3.
-  TestDatabaseConnection connection3(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection3(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion3, kTransactionId3);
   IndexedDBDatabaseMetadata metadata3;
@@ -1009,7 +1009,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
   context_impl_->AddObserver(&observer);
 
   // Open connection 1.
-  TestDatabaseConnection connection1(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection1(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion1, kTransactionId1);
   IndexedDBDatabaseMetadata metadata1;
@@ -1077,7 +1077,7 @@ TEST_F(IndexedDBDispatcherHostTest, NotifyIndexedDBContentChanged) {
   connection1.database->Close();
 
   // Open connection 2.
-  TestDatabaseConnection connection2(url::Origin(GURL(kOrigin)),
+  TestDatabaseConnection connection2(url::Origin::Create(GURL(kOrigin)),
                                      base::UTF8ToUTF16(kDatabaseName),
                                      kDBVersion2, kTransactionId2);
   IndexedDBDatabaseMetadata metadata2;

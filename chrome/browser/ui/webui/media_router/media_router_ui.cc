@@ -351,7 +351,8 @@ void MediaRouterUI::InitCommon(content::WebContents* initiator) {
   query_result_manager_->AddObserver(this);
 
   // Use a placeholder URL as origin for mirroring.
-  url::Origin origin{GURL(chrome::kChromeUIMediaRouterURL)};
+  url::Origin origin =
+      url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL));
 
   // Desktop mirror mode is always available.
   query_result_manager_->SetSourcesForCastMode(
@@ -557,7 +558,7 @@ bool MediaRouterUI::SetRouteParameters(
   current_route_request_id_ = ++route_request_counter_;
   *origin = for_presentation_source
                 ? presentation_request_->frame_origin
-                : url::Origin(GURL(chrome::kChromeUIMediaRouterURL));
+                : url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL));
   DVLOG(1) << "DoCreateRoute: origin: " << *origin;
 
   // There are 3 cases. In cases (1) and (3) the MediaRouterUI will need to be
@@ -614,7 +615,7 @@ bool MediaRouterUI::SetLocalFileRouteParameters(
     bool* incognito) {
   // Use a placeholder URL as origin for local file casting, which is
   // essentially mirroring.
-  *origin = url::Origin(GURL(chrome::kChromeUIMediaRouterURL));
+  *origin = url::Origin::Create(GURL(chrome::kChromeUIMediaRouterURL));
 
   route_response_callbacks->push_back(base::BindOnce(
       &MediaRouterUI::OnRouteResponseReceived, weak_factory_.GetWeakPtr(),
@@ -958,9 +959,9 @@ void MediaRouterUI::UpdateMediaRouteStatus(const MediaStatus& status) {
 }
 
 std::string MediaRouterUI::GetSerializedInitiatorOrigin() const {
-  url::Origin origin = initiator_
-                           ? url::Origin(initiator_->GetLastCommittedURL())
-                           : url::Origin();
+  url::Origin origin =
+      initiator_ ? url::Origin::Create(initiator_->GetLastCommittedURL())
+                 : url::Origin();
   return origin.Serialize();
 }
 

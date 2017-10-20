@@ -109,8 +109,8 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLifetime) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin1(GURL("http://localhost:81"));
-            const Origin origin2(GURL("http://localhost:82"));
+            const Origin origin1 = Origin::Create(GURL("http://localhost:81"));
+            const Origin origin2 = Origin::Create(GURL("http://localhost:82"));
 
             scoped_refptr<IndexedDBBackingStore> disk_store1 =
                 factory->TestOpenBackingStore(origin1, context->data_path());
@@ -146,7 +146,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLazyClose) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin(GURL("http://localhost:81"));
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
 
             scoped_refptr<IndexedDBBackingStore> store =
                 factory->TestOpenBackingStore(origin, context->data_path());
@@ -184,8 +184,8 @@ TEST_F(IndexedDBFactoryTest, MemoryBackingStoreLifetime) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin1(GURL("http://localhost:81"));
-            const Origin origin2(GURL("http://localhost:82"));
+            const Origin origin1 = Origin::Create(GURL("http://localhost:81"));
+            const Origin origin2 = Origin::Create(GURL("http://localhost:82"));
 
             scoped_refptr<IndexedDBBackingStore> mem_store1 =
                 factory->TestOpenBackingStore(origin1, base::FilePath());
@@ -230,13 +230,15 @@ TEST_F(IndexedDBFactoryTest, RejectLongOrigins) {
                 base::MakeRefCounted<MockIDBFactory>(context);
 
             std::string origin(limit + 1, 'x');
-            Origin too_long_origin(GURL("http://" + origin + ":81/"));
+            Origin too_long_origin =
+                Origin::Create(GURL("http://" + origin + ":81/"));
             scoped_refptr<IndexedDBBackingStore> diskStore1 =
                 factory->TestOpenBackingStore(too_long_origin,
                                               context->data_path());
             EXPECT_FALSE(diskStore1.get());
 
-            Origin ok_origin(GURL("http://someorigin.com:82/"));
+            Origin ok_origin =
+                Origin::Create(GURL("http://someorigin.com:82/"));
             scoped_refptr<IndexedDBBackingStore> diskStore2 =
                 factory->TestOpenBackingStore(ok_origin, context->data_path());
             EXPECT_TRUE(diskStore2.get());
@@ -306,7 +308,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
              scoped_refptr<IndexedDBDatabaseCallbacks>
                  dummy_database_callbacks) {
 
-            const Origin origin(GURL("http://localhost:81"));
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
             scoped_refptr<DiskFullFactory> factory =
                 base::MakeRefCounted<DiskFullFactory>(context);
             const base::string16 name(ASCIIToUTF16("name"));
@@ -336,7 +338,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleasedOnForcedClose) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin(GURL("http://localhost:81"));
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
             const int64_t transaction_id = 1;
             std::unique_ptr<IndexedDBPendingConnection> connection(
                 base::MakeUnique<IndexedDBPendingConnection>(
@@ -374,7 +376,7 @@ TEST_F(IndexedDBFactoryTest, BackingStoreReleaseDelayedOnClose) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin(GURL("http://localhost:81"));
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
             const int64_t transaction_id = 1;
             std::unique_ptr<IndexedDBPendingConnection> connection(
                 base::MakeUnique<IndexedDBPendingConnection>(
@@ -422,7 +424,7 @@ TEST_F(IndexedDBFactoryTest, DeleteDatabaseClosesBackingStore) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin(GURL("http://localhost:81"));
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
             EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
 
             factory->DeleteDatabase(
@@ -454,7 +456,7 @@ TEST_F(IndexedDBFactoryTest, GetDatabaseNamesClosesBackingStore) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin(GURL("http://localhost:81"));
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
             EXPECT_FALSE(factory->IsBackingStoreOpen(origin));
 
             factory->GetDatabaseNames(callbacks, origin, context->data_path(),
@@ -486,7 +488,7 @@ TEST_F(IndexedDBFactoryTest, ForceCloseReleasesBackingStore) {
             scoped_refptr<MockIDBFactory> factory =
                 base::MakeRefCounted<MockIDBFactory>(context);
 
-            const Origin origin(GURL("http://localhost:81"));
+            const Origin origin = Origin::Create(GURL("http://localhost:81"));
             const int64_t transaction_id = 1;
             std::unique_ptr<IndexedDBPendingConnection> connection(
                 base::MakeUnique<IndexedDBPendingConnection>(
@@ -562,7 +564,7 @@ class ErrorCallbacks : public MockIndexedDBCallbacks {
 };
 
 TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
-  const Origin origin(GURL("http://localhost:81"));
+  const Origin origin = Origin::Create(GURL("http://localhost:81"));
   const base::string16 db_name(ASCIIToUTF16("db"));
   const int64_t transaction_id = 1;
 
@@ -757,7 +759,7 @@ TEST_F(IndexedDBFactoryTest, DataFormatVersion) {
   };
   for (const auto& test : kTestCases) {
     SCOPED_TRACE(test.origin);
-    const Origin origin(GURL(test.origin));
+    const Origin origin = Origin::Create(GURL(test.origin));
     ASSERT_EQ(kWebIDBDataLossNone, try_open(origin, test.open_version_1));
     EXPECT_EQ(test.expected_data_loss, try_open(origin, test.open_version_2));
   }

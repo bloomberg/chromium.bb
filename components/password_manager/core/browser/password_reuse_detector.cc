@@ -92,8 +92,9 @@ size_t PasswordReuseDetector::CheckSyncPasswordReuse(
   if (!sync_password_data_.has_value())
     return 0;
 
-  const Origin gaia_origin(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
-  if (Origin(GURL(domain)).IsSameOriginWith(gaia_origin))
+  const Origin gaia_origin =
+      Origin::Create(GaiaUrls::GetInstance()->gaia_url().GetOrigin());
+  if (Origin::Create(GURL(domain)).IsSameOriginWith(gaia_origin))
     return 0;
 
   if (input.size() < sync_password_data_->length)

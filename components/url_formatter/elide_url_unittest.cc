@@ -652,13 +652,13 @@ TEST(TextEliderTest, FormatUrlForSecurityDisplay) {
 TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
   for (size_t i = 0; i < arraysize(common_tests); ++i) {
     base::string16 formatted = url_formatter::FormatOriginForSecurityDisplay(
-        url::Origin(GURL(common_tests[i].input)));
+        url::Origin::Create(GURL(common_tests[i].input)));
     EXPECT_EQ(base::WideToUTF16(common_tests[i].output), formatted)
         << common_tests[i].description;
 
     base::string16 formatted_omit_web_scheme =
         url_formatter::FormatOriginForSecurityDisplay(
-            url::Origin(GURL(common_tests[i].input)),
+            url::Origin::Create(GURL(common_tests[i].input)),
             url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
     EXPECT_EQ(base::WideToUTF16(common_tests[i].output_omit_web_scheme),
               formatted_omit_web_scheme)
@@ -666,7 +666,7 @@ TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
 
     base::string16 formatted_omit_cryptographic_scheme =
         url_formatter::FormatOriginForSecurityDisplay(
-            url::Origin(GURL(common_tests[i].input)),
+            url::Origin::Create(GURL(common_tests[i].input)),
             url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
     EXPECT_EQ(
         base::WideToUTF16(common_tests[i].output_omit_cryptographic_scheme),
@@ -702,13 +702,13 @@ TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
 
   for (size_t i = 0; i < arraysize(tests); ++i) {
     base::string16 formatted = url_formatter::FormatOriginForSecurityDisplay(
-        url::Origin(GURL(tests[i].input)));
+        url::Origin::Create(GURL(tests[i].input)));
     EXPECT_EQ(base::WideToUTF16(tests[i].output), formatted)
         << tests[i].description;
 
     base::string16 formatted_omit_web_scheme =
         url_formatter::FormatOriginForSecurityDisplay(
-            url::Origin(GURL(tests[i].input)),
+            url::Origin::Create(GURL(tests[i].input)),
             url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
     EXPECT_EQ(base::WideToUTF16(tests[i].output_omit_web_scheme),
               formatted_omit_web_scheme)
@@ -716,27 +716,28 @@ TEST(TextEliderTest, FormatOriginForSecurityDisplay) {
 
     base::string16 formatted_omit_cryptographic_scheme =
         url_formatter::FormatOriginForSecurityDisplay(
-            url::Origin(GURL(tests[i].input)),
+            url::Origin::Create(GURL(tests[i].input)),
             url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
     EXPECT_EQ(base::WideToUTF16(tests[i].output_omit_cryptographic_scheme),
               formatted_omit_cryptographic_scheme)
         << tests[i].description;
   }
 
-  base::string16 formatted =
-      url_formatter::FormatOriginForSecurityDisplay(url::Origin(GURL()));
+  base::string16 formatted = url_formatter::FormatOriginForSecurityDisplay(
+      url::Origin::Create(GURL()));
   EXPECT_EQ(base::string16(), formatted)
       << "Explicitly test the url::Origin which takes an empty, invalid URL";
 
   base::string16 formatted_omit_scheme =
       url_formatter::FormatOriginForSecurityDisplay(
-          url::Origin(GURL()),
+          url::Origin::Create(GURL()),
           url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
   EXPECT_EQ(base::string16(), formatted_omit_scheme)
       << "Explicitly test the url::Origin which takes an empty, invalid URL";
 
   formatted_omit_scheme = url_formatter::FormatOriginForSecurityDisplay(
-      url::Origin(GURL()), url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+      url::Origin::Create(GURL()),
+      url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
   EXPECT_EQ(base::string16(), formatted_omit_scheme)
       << "Explicitly test the url::Origin which takes an empty, invalid URL";
 }

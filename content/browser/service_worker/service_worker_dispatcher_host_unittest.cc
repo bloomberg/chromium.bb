@@ -487,8 +487,9 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent) {
   called = false;
   status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
-      version_, base::string16(), url::Origin(version_->scope().GetOrigin()),
-      ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
+      version_, base::string16(),
+      url::Origin::Create(version_->scope().GetOrigin()), ports, provider_host_,
+      base::Bind(&SaveStatusCallback, &called, &status));
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
@@ -515,8 +516,9 @@ TEST_F(ServiceWorkerDispatcherHostTest, DispatchExtendableMessageEvent_Fail) {
   bool called = false;
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
-      version_, base::string16(), url::Origin(version_->scope().GetOrigin()),
-      ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
+      version_, base::string16(),
+      url::Origin::Create(version_->scope().GetOrigin()), ports, provider_host_,
+      base::Bind(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);

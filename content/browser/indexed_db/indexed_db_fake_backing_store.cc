@@ -11,7 +11,7 @@ namespace content {
 
 IndexedDBFakeBackingStore::IndexedDBFakeBackingStore()
     : IndexedDBBackingStore(NULL /* indexed_db_factory */,
-                            url::Origin(GURL("http://localhost:81")),
+                            url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             scoped_refptr<net::URLRequestContextGetter>(),
                             std::unique_ptr<LevelDBDatabase>(),
@@ -21,7 +21,7 @@ IndexedDBFakeBackingStore::IndexedDBFakeBackingStore(
     IndexedDBFactory* factory,
     base::SequencedTaskRunner* task_runner)
     : IndexedDBBackingStore(factory,
-                            url::Origin(GURL("http://localhost:81")),
+                            url::Origin::Create(GURL("http://localhost:81")),
                             base::FilePath(),
                             NULL /* request_context */,
                             std::unique_ptr<LevelDBDatabase>(),

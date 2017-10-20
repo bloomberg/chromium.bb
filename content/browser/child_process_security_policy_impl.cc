@@ -84,7 +84,7 @@ bool IsMalformedBlobUrl(const GURL& url) {
 
   // If the part after blob: survives a roundtrip through url::Origin, then
   // it's a normal blob URL.
-  std::string canonical_origin = url::Origin(url).Serialize();
+  std::string canonical_origin = url::Origin::Create(url).Serialize();
   canonical_origin.append(1, '/');
   if (base::StartsWith(url.GetContent(), canonical_origin,
                        base::CompareCase::INSENSITIVE_ASCII))
@@ -216,7 +216,7 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
       return true;
 
     // Otherwise, check for permission for specific origin.
-    if (CanCommitOrigin(url::Origin(url)))
+    if (CanCommitOrigin(url::Origin::Create(url)))
       return true;
 
     // file:// URLs are more granular.  The child may have been given
@@ -657,7 +657,7 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     if (IsMalformedBlobUrl(url))
       return false;
 
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
     return origin.unique() || IsWebSafeScheme(origin.scheme()) ||
            CanCommitURL(child_id, GURL(origin.Serialize()));
   }
@@ -720,7 +720,7 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     if (IsMalformedBlobUrl(url))
       return false;
 
-    url::Origin origin(url);
+    url::Origin origin = url::Origin::Create(url);
     return origin.unique() || CanCommitURL(child_id, GURL(origin.Serialize()));
   }
 
@@ -1162,7 +1162,7 @@ void ChildProcessSecurityPolicyImpl::AddIsolatedOriginsFromCommandLine(
   for (const base::StringPiece& origin_piece :
        base::SplitStringPiece(origin_list, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_NONEMPTY)) {
-    url::Origin origin((GURL(origin_piece)));
+    url::Origin origin = url::Origin::Create((GURL(origin_piece)));
     if (!origin.unique())
       AddIsolatedOrigin(origin);
   }

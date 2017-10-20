@@ -14,8 +14,10 @@ using device::BluetoothUUID;
 
 namespace content {
 namespace {
-const url::Origin kTestOrigin1(GURL("https://www.example1.com"));
-const url::Origin kTestOrigin2(GURL("https://www.example2.com"));
+const url::Origin kTestOrigin1 =
+    url::Origin::Create(GURL("https://www.example1.com"));
+const url::Origin kTestOrigin2 =
+    url::Origin::Create(GURL("https://www.example2.com"));
 
 const std::string kDeviceAddress1 = "00:00:00";
 const std::string kDeviceAddress2 = "11:11:11";

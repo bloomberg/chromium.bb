@@ -57,8 +57,8 @@ void RedirectUtil::UpdateHttpRequest(const GURL& original_url,
   //
   // TODO(jww): This is a layering violation and should be refactored somewhere
   // up into //net's embedder. https://crbug.com/471397
-  if (!url::Origin(redirect_info.new_url)
-           .IsSameOriginWith(url::Origin(original_url)) &&
+  if (!url::Origin::Create(redirect_info.new_url)
+           .IsSameOriginWith(url::Origin::Create(original_url)) &&
       request_headers->HasHeader(HttpRequestHeaders::kOrigin)) {
     request_headers->SetHeader(HttpRequestHeaders::kOrigin,
                                url::Origin().Serialize());

@@ -41,7 +41,7 @@ class BudgetDatabaseTest : public ::testing::Test {
       : success_(false),
         db_(&profile_,
             profile_.GetPath().Append(FILE_PATH_LITERAL("BudgetDatabase"))),
-        origin_(url::Origin(GURL(kTestOrigin))) {}
+        origin_(url::Origin::Create(GURL(kTestOrigin))) {}
 
   void WriteBudgetComplete(base::Closure run_loop_closure,
                            blink::mojom::BudgetServiceErrorType error,

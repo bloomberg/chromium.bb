@@ -16,7 +16,9 @@ SharedWorkerContentSettingsProxyImpl::SharedWorkerContentSettingsProxyImpl(
     const GURL& script_url,
     SharedWorkerHost* owner,
     blink::mojom::WorkerContentSettingsProxyRequest request)
-    : origin_(script_url), owner_(owner), binding_(this, std::move(request)) {}
+    : origin_(url::Origin::Create(script_url)),
+      owner_(owner),
+      binding_(this, std::move(request)) {}
 
 SharedWorkerContentSettingsProxyImpl::~SharedWorkerContentSettingsProxyImpl() =
     default;

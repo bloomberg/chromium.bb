@@ -56,7 +56,7 @@ std::unique_ptr<PasswordForm> FillPasswordFormWithData(
   if (use_federated_login) {
     form->password_value.clear();
     form->federation_origin =
-        url::Origin(GURL("https://accounts.google.com/login"));
+        url::Origin::Create(GURL("https://accounts.google.com/login"));
   }
   return form;
 }

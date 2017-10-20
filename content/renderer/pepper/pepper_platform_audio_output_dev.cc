@@ -242,7 +242,7 @@ PepperPlatformAudioOutputDev::PepperPlatformAudioOutputDev(
       play_on_start_(false),
       session_id_(0),
       device_id_(device_id),
-      security_origin_(document_url),
+      security_origin_(url::Origin::Create(document_url)),
       did_receive_auth_(base::WaitableEvent::ResetPolicy::MANUAL,
                         base::WaitableEvent::InitialState::NOT_SIGNALED),
       device_status_(media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL),

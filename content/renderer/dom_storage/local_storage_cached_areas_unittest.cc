@@ -13,9 +13,11 @@ namespace content {
 
 TEST(LocalStorageCachedAreasTest, CacheLimit) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
-  const url::Origin kOrigin(GURL("http://dom_storage1/"));
-  const url::Origin kOrigin2(GURL("http://dom_storage2/"));
-  const url::Origin kOrigin3(GURL("http://dom_storage3/"));
+  const url::Origin kOrigin = url::Origin::Create(GURL("http://dom_storage1/"));
+  const url::Origin kOrigin2 =
+      url::Origin::Create(GURL("http://dom_storage2/"));
+  const url::Origin kOrigin3 =
+      url::Origin::Create(GURL("http://dom_storage3/"));
   const base::string16 kKey = base::ASCIIToUTF16("key");
   const base::string16 kValue = base::ASCIIToUTF16("value");
   const GURL kPageUrl("http://dom_storage/page");

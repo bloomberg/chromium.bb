@@ -346,7 +346,7 @@ Response StorageHandler::TrackCacheStorageForOrigin(const std::string& origin) {
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&CacheStorageObserver::TrackOriginOnIOThread,
                      base::Unretained(GetCacheStorageObserver()),
-                     url::Origin(origin_url)));
+                     url::Origin::Create(origin_url)));
   return Response::OK();
 }
 
@@ -363,7 +363,7 @@ Response StorageHandler::UntrackCacheStorageForOrigin(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&CacheStorageObserver::UntrackOriginOnIOThread,
                      base::Unretained(GetCacheStorageObserver()),
-                     url::Origin(origin_url)));
+                     url::Origin::Create(origin_url)));
   return Response::OK();
 }
 
@@ -378,7 +378,7 @@ Response StorageHandler::TrackIndexedDBForOrigin(const std::string& origin) {
   GetIndexedDBObserver()->TaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&IndexedDBObserver::TrackOriginOnIDBThread,
                                 base::Unretained(GetIndexedDBObserver()),
-                                url::Origin(origin_url)));
+                                url::Origin::Create(origin_url)));
   return Response::OK();
 }
 
@@ -393,7 +393,7 @@ Response StorageHandler::UntrackIndexedDBForOrigin(const std::string& origin) {
   GetIndexedDBObserver()->TaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&IndexedDBObserver::UntrackOriginOnIDBThread,
                                 base::Unretained(GetIndexedDBObserver()),
-                                url::Origin(origin_url)));
+                                url::Origin::Create(origin_url)));
   return Response::OK();
 }
 

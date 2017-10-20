@@ -151,7 +151,7 @@ bool IndexedDBInternalsUI::GetOriginData(
   if (!args->GetString(1, &url_string))
     return false;
 
-  *origin = Origin(GURL(url_string));
+  *origin = Origin::Create(GURL(url_string));
 
   return GetOriginContext(*partition_path, *origin, context);
 }

@@ -685,9 +685,10 @@ bool ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
   request.method = original_request->method();
   request.url = original_request->url();
   // TODO(horo): Set site_for_cookies to support Same-site Cookies.
-  request.request_initiator = original_request->initiator().has_value()
-                                  ? original_request->initiator()
-                                  : url::Origin(original_request->url());
+  request.request_initiator =
+      original_request->initiator().has_value()
+          ? original_request->initiator()
+          : url::Origin::Create(original_request->url());
   request.referrer = GURL(original_request->referrer());
   request.referrer_policy = original_info->GetReferrerPolicy();
   request.visibility_state = original_info->GetVisibilityState();

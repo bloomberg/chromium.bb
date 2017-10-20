@@ -164,7 +164,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
     PostTaskAndReplyWithResult(
         GetContext()->TaskRunner(), FROM_HERE,
         base::BindOnce(&IndexedDBContextImpl::GetOriginBlobFileCount,
-                       GetContext(), Origin(GURL("file:///"))),
+                       GetContext(), Origin::Create(GURL("file:///"))),
         base::BindOnce(&IndexedDBBrowserTest::DidGetBlobFileCount,
                        base::Unretained(this)));
     scoped_refptr<base::ThreadTestHelper> helper(
@@ -711,7 +711,7 @@ static std::unique_ptr<net::test_server::HttpResponse> CorruptDBRequestHandler(
 IN_PROC_BROWSER_TEST_P(IndexedDBBrowserTest, OperationOnCorruptedOpenDatabase) {
   ASSERT_TRUE(embedded_test_server()->Started() ||
               embedded_test_server()->InitializeAndListen());
-  const Origin origin(embedded_test_server()->base_url());
+  const Origin origin = Origin::Create(embedded_test_server()->base_url());
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&CorruptDBRequestHandler, base::Unretained(GetContext()),
                  origin, s_corrupt_db_test_prefix, this));

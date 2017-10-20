@@ -37,8 +37,8 @@ class IndexedDBTest : public testing::Test {
   const Origin kSessionOnlyOrigin;
 
   IndexedDBTest()
-      : kNormalOrigin(GURL("http://normal/")),
-        kSessionOnlyOrigin(GURL("http://session-only/")),
+      : kNormalOrigin(url::Origin::Create(GURL("http://normal/"))),
+        kSessionOnlyOrigin(url::Origin::Create(GURL("http://session-only/"))),
         special_storage_policy_(
             base::MakeRefCounted<MockSpecialStoragePolicy>()),
         quota_manager_proxy_(
@@ -159,7 +159,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
                                                  special_storage_policy_.get(),
                                                  quota_manager_proxy_.get());
 
-  const Origin kTestOrigin(GURL("http://test/"));
+  const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
   idb_context->TaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -213,7 +213,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnDelete) {
 TEST_F(IndexedDBTest, DeleteFailsIfDirectoryLocked) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
-  const Origin kTestOrigin(GURL("http://test/"));
+  const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
   scoped_refptr<IndexedDBContextImpl> idb_context =
       base::MakeRefCounted<IndexedDBContextImpl>(temp_dir.GetPath(),
@@ -252,7 +252,7 @@ TEST_F(IndexedDBTest, ForceCloseOpenDatabasesOnCommitFailure) {
           [](IndexedDBContextImpl* idb_context, const base::FilePath temp_path,
              scoped_refptr<MockIndexedDBCallbacks> callbacks,
              scoped_refptr<MockIndexedDBDatabaseCallbacks> db_callbacks) {
-            const Origin kTestOrigin(GURL("http://test/"));
+            const Origin kTestOrigin = Origin::Create(GURL("http://test/"));
 
             scoped_refptr<IndexedDBFactoryImpl> factory =
                 static_cast<IndexedDBFactoryImpl*>(

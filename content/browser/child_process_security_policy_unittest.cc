@@ -941,7 +941,7 @@ TEST_F(ChildProcessSecurityPolicyTest, OriginGranting) {
   EXPECT_FALSE(p->CanSetAsOriginHeader(kRendererID, url_foo2));
   EXPECT_FALSE(p->CanSetAsOriginHeader(kRendererID, url_bar));
 
-  p->GrantOrigin(kRendererID, url::Origin(url_foo1));
+  p->GrantOrigin(kRendererID, url::Origin::Create(url_foo1));
 
   EXPECT_TRUE(p->CanRequestURL(kRendererID, url_foo1));
   EXPECT_TRUE(p->CanRequestURL(kRendererID, url_foo2));
@@ -985,18 +985,20 @@ TEST_F(ChildProcessSecurityPolicyTest, IsolateOriginsFromCommandLine) {
 
   policy->AddIsolatedOriginsFromCommandLine("http://isolated.foo.com");
   EXPECT_EQ(1U, policy->isolated_origins_.size());
-  EXPECT_TRUE(
-      policy->IsIsolatedOrigin(url::Origin(GURL("http://isolated.foo.com"))));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(
+      url::Origin::Create(GURL("http://isolated.foo.com"))));
 
   policy->AddIsolatedOriginsFromCommandLine(
       "http://a.com,https://b.com,,https://c.com:8000");
   EXPECT_EQ(4U, policy->isolated_origins_.size());
+  EXPECT_TRUE(policy->IsIsolatedOrigin(
+      url::Origin::Create(GURL("http://isolated.foo.com"))));
   EXPECT_TRUE(
-      policy->IsIsolatedOrigin(url::Origin(GURL("http://isolated.foo.com"))));
-  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin(GURL("http://a.com"))));
-  EXPECT_TRUE(policy->IsIsolatedOrigin(url::Origin(GURL("https://b.com"))));
+      policy->IsIsolatedOrigin(url::Origin::Create(GURL("http://a.com"))));
   EXPECT_TRUE(
-      policy->IsIsolatedOrigin(url::Origin(GURL("https://c.com:8000"))));
+      policy->IsIsolatedOrigin(url::Origin::Create(GURL("https://b.com"))));
+  EXPECT_TRUE(policy->IsIsolatedOrigin(
+      url::Origin::Create(GURL("https://c.com:8000"))));
 }
 
 }  // namespace content

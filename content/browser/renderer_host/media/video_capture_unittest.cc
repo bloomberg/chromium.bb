@@ -157,7 +157,8 @@ class VideoCaptureTest : public testing::Test,
     const int render_process_id = 1;
     const int render_frame_id = 1;
     const int page_request_id = 1;
-    const url::Origin security_origin(GURL("http://test.com"));
+    const url::Origin security_origin =
+        url::Origin::Create(GURL("http://test.com"));
 
     ASSERT_TRUE(opened_device_label_.empty());
 

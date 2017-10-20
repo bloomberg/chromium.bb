@@ -65,7 +65,7 @@ class ManagePasswordsStateTest : public testing::Test {
 
     test_local_federated_form_ = test_local_form_;
     test_local_federated_form_.federation_origin =
-        url::Origin(GURL("https://idp.com"));
+        url::Origin::Create(GURL("https://idp.com"));
     test_local_federated_form_.password_value.clear();
     test_local_federated_form_.signon_realm =
         "federation://example.com/accounts.com";

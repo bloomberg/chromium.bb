@@ -428,7 +428,7 @@ WebURLRequest CreateURLRequestForNavigation(
     request.SetHTTPReferrer(web_referrer, common_params.referrer.policy);
     if (!web_referrer.IsEmpty()) {
       request.AddHTTPOriginIfNeeded(
-          WebSecurityOrigin(url::Origin(common_params.referrer.url)));
+          WebSecurityOrigin(url::Origin::Create(common_params.referrer.url)));
     }
   }
 
@@ -5133,7 +5133,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
     if (params->origin.scheme() != url::kFileScheme ||
         !render_view_->GetWebkitPreferences()
              .allow_universal_access_from_file_urls) {
-      CHECK(params->origin.IsSamePhysicalOriginWith(url::Origin(params->url)))
+      CHECK(params->origin.IsSamePhysicalOriginWith(
+          url::Origin::Create(params->url)))
           << " url:" << params->url << " origin:" << params->origin;
     }
   }

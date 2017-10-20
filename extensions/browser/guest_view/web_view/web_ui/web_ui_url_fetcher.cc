@@ -53,7 +53,8 @@ void WebUIURLFetcher::Start() {
   fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES);
 
   content::AssociateURLFetcherWithRenderFrame(
-      fetcher_.get(), url::Origin(url_), render_process_id_, render_frame_id_);
+      fetcher_.get(), url::Origin::Create(url_), render_process_id_,
+      render_frame_id_);
   fetcher_->Start();
 }
 

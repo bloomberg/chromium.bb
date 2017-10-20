@@ -158,7 +158,8 @@ TEST_F(AsyncDocumentSubresourceFilterTest, ActivationStateIsComputedCorrectly) {
 
   AsyncDocumentSubresourceFilter::InitializationParams params(
       GURL("http://whitelisted.subframe.com"), ActivationLevel::ENABLED, false);
-  params.parent_document_origin = url::Origin(GURL("http://example.com"));
+  params.parent_document_origin =
+      url::Origin::Create(GURL("http://example.com"));
 
   testing::TestActivationStateCallbackReceiver activation_state;
   auto filter = base::MakeUnique<AsyncDocumentSubresourceFilter>(
@@ -350,7 +351,8 @@ TEST_F(SubresourceFilterComputeActivationStateTest,
     const auto& test_case = kTestCases[i];
 
     GURL document_url(test_case.document_url);
-    url::Origin parent_document_origin(GURL(test_case.parent_document_origin));
+    url::Origin parent_document_origin =
+        url::Origin::Create(GURL(test_case.parent_document_origin));
     ActivationState activation_state =
         ComputeActivationState(document_url, parent_document_origin,
                                test_case.parent_activation, ruleset());

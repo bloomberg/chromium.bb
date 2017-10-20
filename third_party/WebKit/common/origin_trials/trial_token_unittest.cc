@@ -202,15 +202,17 @@ const char* kInvalidTokens[] = {
 class TrialTokenTest : public testing::TestWithParam<const char*> {
  public:
   TrialTokenTest()
-      : expected_origin_(GURL(kExpectedOrigin)),
-        expected_subdomain_origin_(GURL(kExpectedSubdomainOrigin)),
+      : expected_origin_(url::Origin::Create(GURL(kExpectedOrigin))),
+        expected_subdomain_origin_(
+            url::Origin::Create(GURL(kExpectedSubdomainOrigin))),
         expected_multiple_subdomain_origin_(
-            GURL(kExpectedMultipleSubdomainOrigin)),
-        invalid_origin_(GURL(kInvalidOrigin)),
-        insecure_origin_(GURL(kInsecureOrigin)),
-        incorrect_port_origin_(GURL(kIncorrectPortOrigin)),
-        incorrect_domain_origin_(GURL(kIncorrectDomainOrigin)),
-        invalid_tld_origin_(GURL(kInvalidTLDOrigin)),
+            url::Origin::Create(GURL(kExpectedMultipleSubdomainOrigin))),
+        invalid_origin_(url::Origin::Create(GURL(kInvalidOrigin))),
+        insecure_origin_(url::Origin::Create(GURL(kInsecureOrigin))),
+        incorrect_port_origin_(url::Origin::Create(GURL(kIncorrectPortOrigin))),
+        incorrect_domain_origin_(
+            url::Origin::Create(GURL(kIncorrectDomainOrigin))),
+        invalid_tld_origin_(url::Origin::Create(GURL(kInvalidTLDOrigin))),
         expected_expiry_(base::Time::FromDoubleT(kExpectedExpiry)),
         valid_timestamp_(base::Time::FromDoubleT(kValidTimestamp)),
         invalid_timestamp_(base::Time::FromDoubleT(kInvalidTimestamp)),

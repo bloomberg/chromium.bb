@@ -885,7 +885,7 @@ class RequestDataResourceDispatcherHostBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
   GURL top_url(embedded_test_server()->GetURL("/page_with_subresources.html"));
-  url::Origin top_origin(top_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -917,7 +917,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest, Basic) {
 IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        LinkRelPrefetch) {
   GURL top_url(embedded_test_server()->GetURL("/link_rel_prefetch.html"));
-  url::Origin top_origin(top_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -932,7 +932,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        LinkRelPrefetchReferrerPolicy) {
   GURL top_url(embedded_test_server()->GetURL(
       "/link_rel_prefetch_referrer_policy.html"));
-  url::Origin top_origin(top_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -950,8 +950,8 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
       "a.com", "/nested_page_with_subresources.html"));
   GURL nested_url(embedded_test_server()->GetURL(
       "not-a.com", "/page_with_subresources.html"));
-  url::Origin top_origin(top_url);
-  url::Origin nested_origin(nested_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
+  url::Origin nested_origin = url::Origin::Create(nested_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -989,7 +989,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   GURL top_url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   GURL image_url(embedded_test_server()->GetURL("/image.jpg"));
   GURL nested_url(embedded_test_server()->GetURL("/title1.html"));
-  url::Origin top_origin(top_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -1024,7 +1024,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        SameOriginAuxiliary) {
   GURL top_url(embedded_test_server()->GetURL("/simple_links.html"));
   GURL auxiliary_url(embedded_test_server()->GetURL("/title2.html"));
-  url::Origin top_origin(top_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -1063,7 +1063,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
                        CrossOriginAuxiliary) {
   GURL top_url(embedded_test_server()->GetURL("/simple_links.html"));
   GURL auxiliary_url(embedded_test_server()->GetURL("foo.com", "/title2.html"));
-  url::Origin top_origin(top_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -1111,7 +1111,7 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
   // Navigating to this URL will fail, as we haven't taught the host resolver
   // about 'a.com'.
   GURL top_url(embedded_test_server()->GetURL("a.com", "/simple_page.html"));
-  url::Origin top_origin(top_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 
@@ -1140,8 +1140,8 @@ IN_PROC_BROWSER_TEST_F(RequestDataResourceDispatcherHostBrowserTest,
       "b.com", "/cross_site_iframe_factory.html?b()"));
   GURL nested_js_url(
       embedded_test_server()->GetURL("b.com", "/tree_parser_util.js"));
-  url::Origin top_origin(top_url);
-  url::Origin nested_origin(nested_url);
+  url::Origin top_origin = url::Origin::Create(top_url);
+  url::Origin nested_origin = url::Origin::Create(nested_url);
 
   NavigateToURLBlockUntilNavigationsComplete(shell(), top_url, 1);
 

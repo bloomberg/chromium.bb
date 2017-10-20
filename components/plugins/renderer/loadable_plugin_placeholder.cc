@@ -43,7 +43,7 @@ void LoadablePluginPlaceholder::BlockForPowerSaverPoster() {
 
   DCHECK(render_frame());
   render_frame()->RegisterPeripheralPlugin(
-      url::Origin(GURL(GetPluginParams().url)),
+      url::Origin::Create(GURL(GetPluginParams().url)),
       base::Bind(&LoadablePluginPlaceholder::MarkPluginEssential,
                  weak_factory_.GetWeakPtr(),
                  PluginInstanceThrottler::UNTHROTTLE_METHOD_BY_WHITELIST));
@@ -208,7 +208,7 @@ void LoadablePluginPlaceholder::OnUnobscuredRectUpdate(
   // On a size update check if we now qualify as a essential plugin.
   url::Origin main_frame_origin =
       render_frame()->GetWebFrame()->Top()->GetSecurityOrigin();
-  url::Origin content_origin = url::Origin(GetPluginParams().url);
+  url::Origin content_origin = url::Origin::Create(GetPluginParams().url);
   RenderFrame::PeripheralContentStatus status =
       render_frame()->GetPeripheralContentStatus(
           main_frame_origin, content_origin, gfx::Size(width, height),
