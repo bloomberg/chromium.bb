@@ -32,7 +32,7 @@ void SignInPromoViewControllerTest::TearDown() {
 }
 
 void SignInPromoViewControllerTest::SetUpSignInPromoState() {
-  SetUpSavePendingState(false);
+  SetUpSavePendingState();
   GetModelAndCreateIfNull()->OnSaveClicked();
 
   ASSERT_TRUE(GetModelAndCreateIfNull()->ReplaceToShowPromotionIfNeeded());
