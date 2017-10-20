@@ -186,6 +186,10 @@ const base::Feature kModuleScripts{"ModuleScripts",
 const base::Feature kModuleScriptsDynamicImport{
     "ModuleScriptsDynamicImport", base::FEATURE_ENABLED_BY_DEFAULT};
 
+// ES6 Modules import.meta.url.
+const base::Feature kModuleScriptsImportMetaUrl{
+    "ModuleScriptsImportMetaUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Resource fetch optimizations for workers. See crbug.com/443374
 const base::Feature kOffMainThreadFetch{"OffMainThreadFetch",
                                         base::FEATURE_ENABLED_BY_DEFAULT};

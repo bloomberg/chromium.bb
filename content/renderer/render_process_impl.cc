@@ -150,6 +150,8 @@ RenderProcessImpl::RenderProcessImpl(
   SetV8FlagIfHasSwitch(switches::kJavaScriptHarmony, "--harmony");
   SetV8FlagIfFeature(features::kModuleScriptsDynamicImport,
                      "--harmony-dynamic-import");
+  SetV8FlagIfFeature(features::kModuleScriptsImportMetaUrl,
+                     "--harmony-import-meta");
   SetV8FlagIfFeature(features::kAsmJsToWebAssembly, "--validate-asm");
   SetV8FlagIfNotFeature(features::kAsmJsToWebAssembly, "--no-validate-asm");
   SetV8FlagIfNotFeature(features::kWebAssembly,

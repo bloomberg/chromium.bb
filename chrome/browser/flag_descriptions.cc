@@ -814,6 +814,12 @@ const char kModuleScriptsDynamicImportDescription[] =
     "Enables ECMAScript 6 modules dynamic \"import\" syntax support in V8 and "
     "Blink.";
 
+const char kModuleScriptsImportMetaUrlName[] =
+    "Enable ECMAScript 6 modules import.meta.url";
+const char kModuleScriptsImportMetaUrlDescription[] =
+    "Enables ECMAScript 6 modules import.meta.url syntax support in V8 and "
+    "Blink.";
+
 const char kNewAudioRenderingMixingStrategyName[] =
     "New audio rendering mixing strategy";
 const char kNewAudioRenderingMixingStrategyDescription[] =

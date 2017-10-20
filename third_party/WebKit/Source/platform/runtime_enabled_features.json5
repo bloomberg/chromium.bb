@@ -643,6 +643,9 @@
       name: "ModuleScriptsDynamicImport",
     },
     {
+      name: "ModuleScriptsImportMetaUrl",
+    },
+    {
       name: "MojoBlobs",
     },
     {

@@ -200,6 +200,10 @@ void WebRuntimeFeatures::EnableModuleScriptsDynamicImport(bool enable) {
   RuntimeEnabledFeatures::SetModuleScriptsDynamicImportEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableModuleScriptsImportMetaUrl(bool enable) {
+  RuntimeEnabledFeatures::SetModuleScriptsImportMetaUrlEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableMojoBlobs(bool enable) {
   RuntimeEnabledFeatures::SetMojoBlobsEnabled(enable);
 }

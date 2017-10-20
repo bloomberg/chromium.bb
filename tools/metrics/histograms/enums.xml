@@ -24547,6 +24547,7 @@ from previous Chrome versions.
   <int value="341152650" label="SoundContentSetting:enabled"/>
   <int value="346711293" label="enable-save-password-bubble"/>
   <int value="348854923" label="v8-cache-strategies-for-cache-storage"/>
+  <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
   <int value="352191859" label="disabled-new-style-notification"/>
   <int value="352937987" label="OverflowIconsForMediaControls:disabled"/>
   <int value="358399482" label="enable-high-dpi-fixed-position-compositing"/>
@@ -24768,6 +24769,7 @@ from previous Chrome versions.
   <int value="983311394" label="tab-management-experiment-type"/>
   <int value="986796748" label="AccountConsistency:enabled"/>
   <int value="988981463" label="ImageCaptureAPI:enabled"/>
+  <int value="989062160" label="ModuleScriptsImportMetaUrl:enabled"/>
   <int value="996797157" label="V8ContextSnapshot:enabled"/>
   <int value="1000706989" label="AutomaticTabDiscarding:disabled"/>
   <int value="1002585107" label="emphasize-titles-in-omnibox-dropdown"/>

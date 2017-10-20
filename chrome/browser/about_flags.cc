@@ -3552,6 +3552,11 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kNtlmV2Enabled)},
 #endif  // defined(OS_POSIX)
 
+    {"enable-module-scripts-import-meta-url",
+     flag_descriptions::kModuleScriptsImportMetaUrlName,
+     flag_descriptions::kModuleScriptsImportMetaUrlDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kModuleScriptsImportMetaUrl)},
+
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag
     // Histograms" in tools/metrics/histograms/README.md (run the
