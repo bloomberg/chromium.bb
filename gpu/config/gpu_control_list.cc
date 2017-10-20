@@ -489,8 +489,7 @@ void GpuControlList::Entry::GetFeatureNames(
 }
 
 GpuControlList::GpuControlList(const GpuControlListData& data)
-    : version_(data.version),
-      entry_count_(data.entry_count),
+    : entry_count_(data.entry_count),
       entries_(data.entries),
       max_entry_id_(0),
       needs_more_info_(false),
@@ -628,10 +627,6 @@ size_t GpuControlList::num_entries() const {
 
 uint32_t GpuControlList::max_entry_id() const {
   return max_entry_id_;
-}
-
-std::string GpuControlList::version() const {
-  return version_;
 }
 
 // static

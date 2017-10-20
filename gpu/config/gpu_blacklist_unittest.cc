@@ -47,7 +47,7 @@ class GpuBlacklistTest : public testing::Test {
         0,        // exceptions count
         nullptr,  // exceptions
     }};
-    GpuControlListData data("1.0", 1, kTestEntries);
+    GpuControlListData data(1, kTestEntries);
     std::unique_ptr<GpuBlacklist> blacklist = GpuBlacklist::Create(data);
     std::set<int> type =
         blacklist->MakeDecision(GpuBlacklist::kOsMacosx, "10.12.3", gpu_info());

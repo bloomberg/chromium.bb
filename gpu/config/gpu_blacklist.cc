@@ -17,8 +17,7 @@ GpuBlacklist::~GpuBlacklist() {
 
 // static
 std::unique_ptr<GpuBlacklist> GpuBlacklist::Create() {
-  GpuControlListData data(kSoftwareRenderingListVersion,
-                          kSoftwareRenderingListEntryCount,
+  GpuControlListData data(kSoftwareRenderingListEntryCount,
                           kSoftwareRenderingListEntries);
   return Create(data);
 }

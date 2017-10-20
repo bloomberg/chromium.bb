@@ -766,6 +766,15 @@ hooks = [
                '-o', 'src/build/util/LASTCHANGE'],
   },
   {
+    # Update GPU lists version string (for gpu/config).
+    'name': 'gpu_lists_version',
+    'pattern': '.',
+    'action': ['python', 'src/build/util/lastchange.py',
+               '-m', 'GPU_LISTS_VERSION',
+               '--revision-id-only',
+               '--header', 'src/gpu/config/gpu_lists_version.h'],
+  },
+  {
     # Update skia_commit_hash.h.
     'name': 'lastchange_skia',
     'pattern': '.',

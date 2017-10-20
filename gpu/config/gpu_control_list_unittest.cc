@@ -37,7 +37,7 @@ class GpuControlListTest : public testing::Test {
 
   std::unique_ptr<GpuControlList> Create(size_t entry_count,
                                          const Entry* entries) {
-    GpuControlListData data("0.1", entry_count, entries);
+    GpuControlListData data(entry_count, entries);
     std::unique_ptr<GpuControlList> rt(new GpuControlList(data));
     rt->AddSupportedFeature("test_feature_0", TEST_FEATURE_0);
     rt->AddSupportedFeature("test_feature_1", TEST_FEATURE_1);

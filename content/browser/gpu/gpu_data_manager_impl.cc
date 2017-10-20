@@ -51,7 +51,7 @@ void GpuDataManagerImpl::BlacklistWebGLForTesting() {
       0,        // exceptions count
       nullptr,  // exceptions
   };
-  static const gpu::GpuControlListData kData("1.0", 1, &kEntry);
+  static const gpu::GpuControlListData kData(1, &kEntry);
 
   gpu::GPUInfo gpu_info;
 
@@ -224,16 +224,6 @@ void GpuDataManagerImpl::UpdateGpuPreferences(
     gpu::GpuPreferences* gpu_preferences) const {
   base::AutoLock auto_lock(lock_);
   private_->UpdateGpuPreferences(gpu_preferences);
-}
-
-std::string GpuDataManagerImpl::GetBlacklistVersion() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetBlacklistVersion();
-}
-
-std::string GpuDataManagerImpl::GetDriverBugListVersion() const {
-  base::AutoLock auto_lock(lock_);
-  return private_->GetDriverBugListVersion();
 }
 
 void GpuDataManagerImpl::GetBlacklistReasons(base::ListValue* reasons) const {

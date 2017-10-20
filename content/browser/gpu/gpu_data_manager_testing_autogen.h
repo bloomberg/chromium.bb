@@ -14,7 +14,6 @@
 #include "gpu/config/gpu_control_list.h"
 
 namespace gpu {
-extern const char kGpuDataManagerTestingVersion[];
 extern const size_t kGpuDataManagerTestingEntryCount;
 extern const GpuControlList::Entry kGpuDataManagerTestingEntries[];
 }  // namespace gpu

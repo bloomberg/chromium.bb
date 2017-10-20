@@ -34,6 +34,11 @@ cr.define('gpu', function() {
     * Updates the view based on its currently known data
     */
     refresh: function(data) {
+      function createSourcePermalink(revisionIdentifier, filepath) {
+        return 'https://chromium.googlesource.com/chromium/src/+/' +
+          revisionIdentifier + '/' + filepath;
+      }
+
       // Client info
       if (browserBridge.clientInfo) {
         var clientInfo = browserBridge.clientInfo;
@@ -52,12 +57,14 @@ cr.define('gpu', function() {
             value: clientInfo.operating_system
           },
           {
-            description: 'Software rendering list version',
-            value: clientInfo.blacklist_version
+            description: 'Software rendering list URL',
+            value: createSourcePermalink(clientInfo.revision_identifier,
+              'gpu/config/software_rendering_list.json')
           },
           {
-            description: 'Driver bug list version',
-            value: clientInfo.driver_bug_list_version
+            description: 'Driver bug list URL',
+            value: createSourcePermalink(clientInfo.revision_identifier,
+              'gpu/config/gpu_driver_bug_list.json')
           },
           {
             description: 'ANGLE commit id',
