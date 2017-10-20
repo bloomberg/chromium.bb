@@ -21,7 +21,6 @@
 #include "chrome/browser/engagement/important_sites_util.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/first_run/first_run.h"
-#include "chrome/browser/geolocation/geolocation_prefs.h"
 #include "chrome/browser/gpu/gpu_mode_manager.h"
 #include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/intranet_redirect_detector.h"
@@ -333,7 +332,6 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   component_updater::RegisterPrefs(registry);
   ExternalProtocolHandler::RegisterPrefs(registry);
   flags_ui::PrefServiceFlagsStorage::RegisterPrefs(registry);
-  geolocation::RegisterPrefs(registry);
   GpuModeManager::RegisterPrefs(registry);
   GpuProfileCache::RegisterPrefs(registry);
   IntranetRedirectDetector::RegisterPrefs(registry);

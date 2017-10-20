@@ -1250,7 +1250,6 @@ test("browser_tests") {
       "../browser/first_run/first_run_browsertest.cc",
       "../browser/gcm/fake_gcm_profile_service.cc",
       "../browser/gcm/fake_gcm_profile_service.h",
-      "../browser/geolocation/access_token_store_browsertest.cc",
       "../browser/geolocation/geolocation_browsertest.cc",
       "../browser/global_keyboard_shortcuts_mac_browsertest.mm",
       "../browser/history/history_browsertest.cc",

@@ -48,8 +48,6 @@ source_set("browser") {
     "devtools/cast_devtools_manager_delegate.h",
     "devtools/remote_debugging_server.cc",
     "devtools/remote_debugging_server.h",
-    "geolocation/cast_access_token_store.cc",
-    "geolocation/cast_access_token_store.h",
     "media/media_caps_impl.cc",
     "media/media_caps_impl.h",
     "media/supported_codec_finder.cc",

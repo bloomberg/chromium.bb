@@ -13,7 +13,6 @@ component("geolocation") {
   defines = [ "DEVICE_GEOLOCATION_IMPLEMENTATION" ]
 
   sources = [
-    "access_token_store.h",
     "empty_wifi_data_provider.cc",
     "empty_wifi_data_provider.h",
     "geolocation_config.cc",
@@ -155,8 +154,6 @@ source_set("test_support") {
   testonly = true
 
   sources = [
-    "fake_access_token_store.cc",
-    "fake_access_token_store.h",
     "fake_location_provider.cc",
     "fake_location_provider.h",
   ]
