@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/time/clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/policy/off_hours/off_hours_interval.h"
@@ -76,11 +75,6 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
   // chromeos::SystemClockClient::Observer:
   void SystemClockUpdated() override;
 
-  // |timer_clock| is not owned and its lifetime should cover lifetime of
-  // DeviceOffHoursContoller.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock,
-                          base::TickClock* timer_clock);
-
  private:
   // Run OnOffHoursEndTimeChanged() for observers.
   void NotifyOffHoursEndTimeChanged() const;
@@ -125,11 +119,7 @@ class DeviceOffHoursController : public chromeos::SystemClockClient::Observer,
 
   // Timer for updating device settings at the begin of next “OffHours” interval
   // or at the end of current "OffHours" interval.
-  std::unique_ptr<base::OneShotTimer> timer_;
-
-  // Used for testing purposes, otherwise it's an instance of
-  // base::DefaultClock.
-  std::unique_ptr<base::Clock> clock_;
+  base::OneShotTimer timer_;
 
   // Value is false until the system time is synchronized with network time.
   bool network_synchronized_ = false;

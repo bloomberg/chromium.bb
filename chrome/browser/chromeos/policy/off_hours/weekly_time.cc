@@ -57,9 +57,9 @@ WeeklyTime WeeklyTime::AddMilliseconds(int milliseconds) const {
 }
 
 // static
-WeeklyTime WeeklyTime::GetCurrentWeeklyTime(base::Clock* clock) {
+WeeklyTime WeeklyTime::GetCurrentWeeklyTime() {
   base::Time::Exploded exploded;
-  clock->Now().UTCExplode(&exploded);
+  base::Time::Now().UTCExplode(&exploded);
   int day_of_week = exploded.day_of_week;
   // Exploded contains 0-based day of week (0 = Sunday, etc.)
   if (day_of_week == 0)
