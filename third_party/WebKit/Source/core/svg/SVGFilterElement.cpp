@@ -109,12 +109,16 @@ void SVGFilterElement::PrimitiveAttributeChanged(
   if (LayoutObject* layout_object = GetLayoutObject()) {
     ToLayoutSVGResourceFilter(layout_object)
         ->PrimitiveAttributeChanged(primitive, attribute);
+  } else if (SVGElementProxySet* proxy_set = ElementProxySet()) {
+    proxy_set->NotifyContentChanged(GetTreeScope());
   }
 }
 
 void SVGFilterElement::InvalidateFilterChain() {
   if (LayoutObject* layout_object = GetLayoutObject())
     ToLayoutSVGResourceFilter(layout_object)->RemoveAllClientsFromCache();
+  else if (SVGElementProxySet* proxy_set = ElementProxySet())
+    proxy_set->NotifyContentChanged(GetTreeScope());
 }
 
 void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {
@@ -126,6 +130,7 @@ void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {
   if (LayoutObject* object = GetLayoutObject())
     object->SetNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::kChildChanged);
+  InvalidateFilterChain();
 }
 
 LayoutObject* SVGFilterElement::CreateLayoutObject(const ComputedStyle&) {
