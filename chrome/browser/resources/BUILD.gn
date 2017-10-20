@@ -27,16 +27,6 @@ grit("net_internals_resources") {
   output_dir = "$root_gen_dir/chrome"
 }
 
-grit("password_manager_internals_resources") {
-  source = "password_manager_internals_resources.grd"
-  defines = chrome_grit_defines
-  outputs = [
-    "grit/password_manager_internals_resources.h",
-    "password_manager_internals_resources.pak",
-  ]
-  output_dir = "$root_gen_dir/chrome"
-}
-
 grit("quota_internals_resources") {
   source = "quota_internals_resources.grd"
   defines = chrome_grit_defines
