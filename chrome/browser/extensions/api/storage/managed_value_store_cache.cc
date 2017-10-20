@@ -187,7 +187,7 @@ bool ManagedValueStoreCache::ExtensionTracker::UsesManagedStorage(
 void ManagedValueStoreCache::ExtensionTracker::LoadSchemasOnFileTaskRunner(
     std::unique_ptr<ExtensionSet> extensions,
     base::WeakPtr<ExtensionTracker> self) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   std::unique_ptr<policy::ComponentMap> components(new policy::ComponentMap);
 
   for (ExtensionSet::const_iterator it = extensions->begin();

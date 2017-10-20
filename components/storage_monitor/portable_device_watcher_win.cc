@@ -316,7 +316,7 @@ base::string16 GetDeviceNameOnBlockingThread(
     IPortableDeviceManager* portable_device_manager,
     const base::string16& pnp_device_id) {
   DCHECK(portable_device_manager);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::string16 name;
   GetFriendlyName(pnp_device_id, portable_device_manager, &name) ||
       GetDeviceDescription(pnp_device_id, portable_device_manager, &name) ||
@@ -330,7 +330,7 @@ bool GetDeviceStorageObjectsOnBlockingThread(
     const base::string16& pnp_device_id,
     PortableDeviceWatcherWin::StorageObjects* storage_objects) {
   DCHECK(storage_objects);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   Microsoft::WRL::ComPtr<IPortableDevice> device;
   if (!SetUp(pnp_device_id, &device))
     return false;
@@ -370,7 +370,7 @@ bool GetDeviceInfoOnBlockingThread(
   DCHECK(portable_device_manager);
   DCHECK(device_details);
   DCHECK(!pnp_device_id.empty());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   device_details->name = GetDeviceNameOnBlockingThread(portable_device_manager,
                                                        pnp_device_id);
   if (IsMassStoragePortableDevice(pnp_device_id, device_details->name))
@@ -386,7 +386,7 @@ bool GetDeviceInfoOnBlockingThread(
 // returns true and fills in |portable_device_mgr|. On failure, returns false.
 bool GetPortableDeviceManager(
     Microsoft::WRL::ComPtr<IPortableDeviceManager>* portable_device_mgr) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   HRESULT hr = ::CoCreateInstance(
       __uuidof(PortableDeviceManager), NULL, CLSCTX_INPROC_SERVER,
       IID_PPV_ARGS(portable_device_mgr->GetAddressOf()));
@@ -405,7 +405,7 @@ bool GetPortableDeviceManager(
 bool EnumerateAttachedDevicesOnBlockingThread(
     PortableDeviceWatcherWin::Devices* devices) {
   DCHECK(devices);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   Microsoft::WRL::ComPtr<IPortableDeviceManager> portable_device_mgr;
   if (!GetPortableDeviceManager(&portable_device_mgr))
     return false;
@@ -440,7 +440,7 @@ bool HandleDeviceAttachedEventOnBlockingThread(
     const base::string16& pnp_device_id,
     PortableDeviceWatcherWin::DeviceDetails* device_details) {
   DCHECK(device_details);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   Microsoft::WRL::ComPtr<IPortableDeviceManager> portable_device_mgr;
   if (!GetPortableDeviceManager(&portable_device_mgr))
     return false;

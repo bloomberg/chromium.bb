@@ -39,7 +39,7 @@ MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
                                    const UpdateMtabCallback& callback)
     : mtab_path_(mtab_path), callback_(callback), weak_ptr_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   bool ret = file_watcher_.Watch(
       mtab_path_, false,
       base::Bind(&MtabWatcherLinux::OnFilePathChanged,
@@ -54,12 +54,12 @@ MtabWatcherLinux::MtabWatcherLinux(const base::FilePath& mtab_path,
 
 MtabWatcherLinux::~MtabWatcherLinux() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 }
 
 void MtabWatcherLinux::ReadMtab() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   FILE* fp = setmntent(mtab_path_.value().c_str(), "r");
   if (!fp)
@@ -89,7 +89,7 @@ void MtabWatcherLinux::ReadMtab() const {
 void MtabWatcherLinux::OnFilePathChanged(
     const base::FilePath& path, bool error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (path != mtab_path_) {
     // This cannot happen unless FilePathWatcher is buggy. Just ignore this

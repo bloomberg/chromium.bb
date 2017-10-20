@@ -151,7 +151,7 @@ void CheckWallpaperCacheExists(const base::FilePath& path, bool* exists) {
 }
 
 std::string ReadFileInBackground(const base::FilePath& file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::string manifest;
   if (!base::ReadFileToString(file, &manifest)) {

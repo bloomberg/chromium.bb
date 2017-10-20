@@ -1286,7 +1286,7 @@ base::FilePath SavePackage::GetSuggestedNameForSaveAs(
 
 // static
 base::FilePath SavePackage::EnsureHtmlExtension(const base::FilePath& name) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath::StringType ext = name.Extension();
   if (!ext.empty())
@@ -1303,7 +1303,7 @@ base::FilePath SavePackage::EnsureHtmlExtension(const base::FilePath& name) {
 // static
 base::FilePath SavePackage::EnsureMimeExtension(const base::FilePath& name,
     const std::string& contents_mime_type) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Start extension at 1 to skip over period if non-empty.
   base::FilePath::StringType ext = name.Extension();

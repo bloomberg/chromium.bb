@@ -63,7 +63,7 @@ const char kLocalCarrierConfigPath[] =
 chromeos::MobileConfig::Config ReadConfigInBackground(
     const base::FilePath& global_config_file,
     const base::FilePath& local_config_file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   chromeos::MobileConfig::Config config;
   if (!base::ReadFileToString(global_config_file, &config.global_config)) {

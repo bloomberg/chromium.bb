@@ -80,7 +80,7 @@ const CFTimeInterval kSecondsPerDay = 60 * 60 * 24;
 
 + (void)removeFilesExcluding:(NSSet*)filesToKeep
                    olderThan:(NSInteger)ageInDays {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   NSFileManager* fileManager = [NSFileManager defaultManager];
   NSString* inboxDirectory = [ExternalFileController inboxDirectoryPath];
   NSArray* externalFiles =

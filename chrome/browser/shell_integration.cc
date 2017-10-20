@@ -88,7 +88,7 @@ base::CommandLine CommandLineArgsForLauncher(
     const GURL& url,
     const std::string& extension_app_id,
     const base::FilePath& profile_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::CommandLine new_cmd_line(base::CommandLine::NO_PROGRAM);
 
   AppendProfileArgs(
@@ -186,7 +186,7 @@ void DefaultWebClientWorker::OnCheckIsDefaultComplete(
 // DefaultWebClientWorker, private:
 
 void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   DefaultWebClientState state = CheckIsDefaultImpl();
   BrowserThread::PostTask(
@@ -196,7 +196,7 @@ void DefaultWebClientWorker::CheckIsDefault(bool is_following_set_as_default) {
 }
 
 void DefaultWebClientWorker::SetAsDefault() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // SetAsDefaultImpl will make sure the callback is executed exactly once.
   SetAsDefaultImpl(

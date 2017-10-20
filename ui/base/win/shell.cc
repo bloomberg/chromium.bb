@@ -50,7 +50,7 @@ DWORD InvokeShellExecute(const base::string16 path,
                          const base::string16 args,
                          const base::string16 verb,
                          DWORD mask) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   SHELLEXECUTEINFO sei = {sizeof(sei)};
   sei.fMask = mask;
   sei.nShow = SW_SHOWNORMAL;

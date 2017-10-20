@@ -126,11 +126,6 @@ bool ThreadRestrictions::SetIOAllowed(bool allowed) {
 }
 
 // static
-void ThreadRestrictions::AssertIOAllowed() {
-  AssertBlockingAllowed();
-}
-
-// static
 bool ThreadRestrictions::SetSingletonAllowed(bool allowed) {
   bool previous_disallowed = g_singleton_disallowed.Get().Get();
   g_singleton_disallowed.Get().Set(!allowed);

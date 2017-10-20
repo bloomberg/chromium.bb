@@ -167,7 +167,7 @@ SerialDeviceEnumeratorWin::~SerialDeviceEnumeratorWin() {}
 
 std::vector<mojom::SerialDeviceInfoPtr>
 SerialDeviceEnumeratorWin::GetDevices() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::vector<mojom::SerialDeviceInfoPtr> devices = GetDevicesNew();
   std::vector<mojom::SerialDeviceInfoPtr> old_devices = GetDevicesOld();

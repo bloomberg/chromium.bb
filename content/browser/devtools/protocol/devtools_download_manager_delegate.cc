@@ -156,7 +156,7 @@ void DevToolsDownloadManagerDelegate::GenerateFilename(
     const std::string& mime_type,
     const base::FilePath& suggested_directory,
     const FilenameDeterminedCallback& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath generated_name =
       net::GenerateFileName(url, content_disposition, std::string(),
                             suggested_filename, mime_type, "download");

@@ -91,7 +91,7 @@ class MacAddressProcessor {
 
 std::string GetMacAddressFromGetAdaptersAddresses(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // MS recommends a default size of 15k.
   ULONG bufferSize = 15 * 1024;
@@ -127,7 +127,7 @@ std::string GetMacAddressFromGetAdaptersAddresses(
 
 std::string GetMacAddressFromGetIfTable2(
     const IsValidMacAddressCallback& is_valid_mac_address) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // This is available on Vista+ only.
   base::ScopedNativeLibrary library(base::FilePath(L"Iphlpapi.dll"));
@@ -165,7 +165,7 @@ std::string GetMacAddressFromGetIfTable2(
 
 void GetMacAddress(const IsValidMacAddressCallback& is_valid_mac_address,
                    const DeviceId::IdCallback& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::string mac_address =
       GetMacAddressFromGetAdaptersAddresses(is_valid_mac_address);

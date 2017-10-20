@@ -56,7 +56,7 @@ base::LazyInstance<SupportedAudioVideoExtensions>::DestructorAtExit
     g_audio_video_extensions = LAZY_INSTANCE_INITIALIZER;
 
 base::File OpenBlocking(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
 }
 

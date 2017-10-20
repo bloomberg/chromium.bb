@@ -218,7 +218,7 @@ bool HasSameUserDataDir(const base::FilePath& bundle_path) {
 
 void LaunchShimOnFileThread(bool launched_after_rebuild,
                             const web_app::ShortcutInfo& shortcut_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath shim_path = web_app::GetAppInstallPath(shortcut_info);
 
   if (shim_path.empty() ||
@@ -255,7 +255,7 @@ void UpdatePlatformShortcutsInternal(
     const base::FilePath& app_data_path,
     const base::string16& old_app_title,
     const web_app::ShortcutInfo& shortcut_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (AppShimsDisabledForTest() &&
       !g_app_shims_allow_update_and_launch_in_tests) {
     return;
@@ -268,7 +268,7 @@ void UpdatePlatformShortcutsInternal(
 
 void UpdateAndLaunchShimOnFileThread(
     const web_app::ShortcutInfo& shortcut_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FilePath shortcut_data_dir = web_app::GetWebAppDataDirectory(
       shortcut_info.profile_path, shortcut_info.extension_id, GURL());
   UpdatePlatformShortcutsInternal(shortcut_data_dir, base::string16(),
@@ -411,7 +411,7 @@ void GetImageResourcesOnUIThread(
 
 void SetWorkspaceIconOnWorkerThread(const base::FilePath& apps_directory,
                                     std::unique_ptr<ResourceIDToImage> images) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::scoped_nsobject<NSImage> folder_icon_image([[NSImage alloc] init]);
   // Use complete assets for the small icon sizes. -[NSWorkspace setIcon:] has a
@@ -1075,7 +1075,7 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutLocations& creation_locations,
                              ShortcutCreationReason creation_reason,
                              const ShortcutInfo& shortcut_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (AppShimsDisabledForTest())
     return true;
 
@@ -1085,7 +1085,7 @@ bool CreatePlatformShortcuts(const base::FilePath& app_data_path,
 
 void DeletePlatformShortcuts(const base::FilePath& app_data_path,
                              const ShortcutInfo& shortcut_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   WebAppShortcutCreator shortcut_creator(app_data_path, &shortcut_info);
   shortcut_creator.DeleteShortcuts();
 }
@@ -1097,7 +1097,7 @@ void UpdatePlatformShortcuts(const base::FilePath& app_data_path,
 }
 
 void DeleteAllShortcutsForProfile(const base::FilePath& profile_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   const std::string profile_base_name = profile_path.BaseName().value();
   std::vector<base::FilePath> bundles = GetAllAppBundlesInPath(
       profile_path.Append(chrome::kWebAppDirname), profile_base_name);

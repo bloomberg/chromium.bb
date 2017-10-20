@@ -26,7 +26,7 @@ const char kExtensionHandlerFileUnzipError[] =
 
 base::Optional<base::FilePath> PrepareAndGetUnzipDir(
     const base::FilePath& zip_file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath dir_temp;
   base::PathService::Get(base::DIR_TEMP, &dir_temp);

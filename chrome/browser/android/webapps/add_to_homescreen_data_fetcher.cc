@@ -66,7 +66,7 @@ InstallableParams ParamsToPerformInstallableCheck(
 // - whether |icon| was used in generating the launcher icon
 std::pair<SkBitmap, bool> CreateLauncherIconInBackground(const GURL& start_url,
                                                          const SkBitmap& icon) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   bool is_generated = false;
   SkBitmap primary_icon = ShortcutHelper::FinalizeLauncherIconInBackground(
@@ -83,7 +83,7 @@ std::pair<SkBitmap, bool> CreateLauncherIconInBackground(const GURL& start_url,
 std::pair<SkBitmap, bool> CreateLauncherIconFromFaviconInBackground(
     const GURL& start_url,
     const favicon_base::FaviconRawBitmapResult& bitmap_result) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   SkBitmap decoded;
   if (bitmap_result.is_valid()) {

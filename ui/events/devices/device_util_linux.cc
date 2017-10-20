@@ -21,7 +21,7 @@ base::FilePath GetInputPathInSys(const base::FilePath& path) {
 }
 
 InputDeviceType GetInputDeviceTypeFromPath(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   std::string event_node = path.BaseName().value();
   if (event_node.empty() ||
       !base::StartsWith(event_node, "event",

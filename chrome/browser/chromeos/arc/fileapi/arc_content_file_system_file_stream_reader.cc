@@ -29,7 +29,7 @@ int ReadFile(base::File* file,
 
 // Seeks the file, returns 0 on success, or errno on an error.
 int SeekFile(base::File* file, size_t offset) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // lseek() instead of |file|'s method for errno.
   off_t result = lseek(file->GetPlatformFile(), offset, SEEK_SET);
   return result < 0 ? errno : 0;

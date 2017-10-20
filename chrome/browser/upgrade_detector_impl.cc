@@ -104,7 +104,7 @@ bool IsUnstableChannel() {
 // Gets the currently installed version. On Windows, if |critical_update| is not
 // NULL, also retrieves the critical update version info if available.
 base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::Version installed_version;
 #if defined(OS_WIN)

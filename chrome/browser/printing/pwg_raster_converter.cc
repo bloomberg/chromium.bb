@@ -48,7 +48,7 @@ class FileHandlers {
  public:
   FileHandlers() {}
 
-  ~FileHandlers() { base::ThreadRestrictions::AssertIOAllowed(); }
+  ~FileHandlers() { base::AssertBlockingAllowed(); }
 
   void Init(base::RefCountedMemory* data);
   bool IsValid();
@@ -80,7 +80,7 @@ class FileHandlers {
 };
 
 void FileHandlers::Init(base::RefCountedMemory* data) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (!temp_dir_.CreateUniqueTempDir())
     return;

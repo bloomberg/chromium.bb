@@ -85,7 +85,7 @@ void CopyScreenshotToClipboard(scoped_refptr<base::RefCountedString> png_data) {
 }
 
 void ReadFileAndCopyToClipboardLocal(const base::FilePath& screenshot_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   scoped_refptr<base::RefCountedString> png_data(new base::RefCountedString());
   if (!base::ReadFileToString(screenshot_path, &(png_data->data()))) {
     LOG(ERROR) << "Failed to read the screenshot file: "

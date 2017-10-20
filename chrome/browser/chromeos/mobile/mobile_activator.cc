@@ -104,7 +104,7 @@ std::string CellularConfigDocument::GetErrorMessage(const std::string& code) {
 }
 
 void CellularConfigDocument::LoadCellularConfigFile() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Load partner customization startup manifest if it is available.
   base::FilePath config_path(kCellularConfigPath);

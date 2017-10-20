@@ -68,7 +68,7 @@ FileVersionInfo* FileVersionInfo::CreateFileVersionInfoForModule(
 // static
 FileVersionInfo* FileVersionInfo::CreateFileVersionInfo(
     const FilePath& file_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   DWORD dummy;
   const wchar_t* path = file_path.value().c_str();

@@ -16,7 +16,7 @@ namespace {
 
 base::File::Error RenameFile(const base::FilePath& downloaded_filename,
                              const base::FilePath& desired_filename) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   bool success = base::ReplaceFile(downloaded_filename, desired_filename, NULL);
   return success ? base::File::FILE_OK : base::File::FILE_ERROR_NOT_FOUND;
 }

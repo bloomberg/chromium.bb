@@ -29,7 +29,7 @@ base::FilePath GetFilePathFromCommandLine() {
 std::unique_ptr<VideoCaptureDevice> FileVideoCaptureDeviceFactory::CreateDevice(
     const VideoCaptureDeviceDescriptor& device_descriptor) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 #if defined(OS_WIN)
   return std::unique_ptr<VideoCaptureDevice>(new FileVideoCaptureDevice(
       base::FilePath(base::SysUTF8ToWide(device_descriptor.display_name))));
@@ -67,7 +67,7 @@ void FileVideoCaptureDeviceFactory::GetSupportedFormats(
     const VideoCaptureDeviceDescriptor& device_descriptor,
     VideoCaptureFormats* supported_formats) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   VideoCaptureFormat capture_format;
   if (!FileVideoCaptureDevice::GetVideoCaptureFormat(

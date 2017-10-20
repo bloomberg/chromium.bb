@@ -250,7 +250,7 @@ class CupsWrapper {
   void QueryCups(const std::vector<std::string>& printer_ids,
                  QueryResult* result) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     result->success = cups_connection_.GetJobs(printer_ids, &result->queues);
   }
@@ -258,7 +258,7 @@ class CupsWrapper {
   // Cancel the print job on the blocking thread.
   void CancelJobImpl(const std::string& printer_id, const int job_id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     std::unique_ptr<::printing::CupsPrinter> printer =
         cups_connection_.GetPrinter(printer_id);

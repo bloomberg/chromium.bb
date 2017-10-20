@@ -33,7 +33,7 @@ constexpr char kIconFileExtension[] = ".png";
 // Save |raw_icon| for given |app_id|.
 void SaveIconToLocalOnBlockingPool(const base::FilePath& icon_path,
                                    std::vector<unsigned char> image_data) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   const base::FilePath dir = icon_path.DirName();
   if (!base::PathExists(dir) && !base::CreateDirectory(dir)) {
     LOG(ERROR) << "Failed to create directory to store kiosk icons";

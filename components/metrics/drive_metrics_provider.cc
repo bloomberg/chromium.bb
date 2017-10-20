@@ -50,7 +50,7 @@ DriveMetricsProvider::SeekPenaltyResponse::SeekPenaltyResponse()
 DriveMetricsProvider::DriveMetrics
 DriveMetricsProvider::GetDriveMetricsOnBackgroundThread(
     int local_state_path_key) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   DriveMetricsProvider::DriveMetrics metrics;
   QuerySeekPenalty(base::FILE_EXE, &metrics.app_drive);

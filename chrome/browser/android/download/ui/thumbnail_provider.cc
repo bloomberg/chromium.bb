@@ -29,7 +29,7 @@ namespace {
 const int64_t kMaxImageSize = 10 * 1024 * 1024;  // 10 MB
 
 std::string LoadImageData(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Confirm that the file's size is within our threshold.
   int64_t file_size;

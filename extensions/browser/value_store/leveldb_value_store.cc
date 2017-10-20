@@ -45,7 +45,7 @@ LeveldbValueStore::LeveldbValueStore(const std::string& uma_client_name,
 }
 
 LeveldbValueStore::~LeveldbValueStore() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
 }
@@ -75,7 +75,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(const std::string& key) {
 
 ValueStore::ReadResult LeveldbValueStore::Get(
     const std::vector<std::string>& keys) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -96,7 +96,7 @@ ValueStore::ReadResult LeveldbValueStore::Get(
 }
 
 ValueStore::ReadResult LeveldbValueStore::Get() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -130,7 +130,7 @@ ValueStore::ReadResult LeveldbValueStore::Get() {
 ValueStore::WriteResult LeveldbValueStore::Set(WriteOptions options,
                                                const std::string& key,
                                                const base::Value& value) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -150,7 +150,7 @@ ValueStore::WriteResult LeveldbValueStore::Set(WriteOptions options,
 ValueStore::WriteResult LeveldbValueStore::Set(
     WriteOptions options,
     const base::DictionaryValue& settings) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -173,13 +173,13 @@ ValueStore::WriteResult LeveldbValueStore::Set(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(const std::string& key) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return Remove(std::vector<std::string>(1, key));
 }
 
 ValueStore::WriteResult LeveldbValueStore::Remove(
     const std::vector<std::string>& keys) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -209,7 +209,7 @@ ValueStore::WriteResult LeveldbValueStore::Remove(
 }
 
 ValueStore::WriteResult LeveldbValueStore::Clear() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::unique_ptr<ValueStoreChangeList> changes(new ValueStoreChangeList());
 
@@ -240,7 +240,7 @@ bool LeveldbValueStore::WriteToDbForTest(leveldb::WriteBatch* batch) {
 bool LeveldbValueStore::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Return true so that the provider is not disabled.
   if (!db())

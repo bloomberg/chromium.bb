@@ -50,7 +50,7 @@ namespace {
 // an empty dictionary if a dictionary could not be generated.
 std::unique_ptr<base::DictionaryValue>
 GetPrinterCapabilitiesOnBlockingPoolThread(const std::string& device_name) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!device_name.empty());
 
   scoped_refptr<PrintBackend> print_backend(
@@ -187,7 +187,7 @@ std::pair<std::string, std::string> GetPrinterNameAndDescription(
 std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
     const std::string& device_name,
     const PrinterBasicInfo& basic_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   const auto printer_name_description =
       GetPrinterNameAndDescription(basic_info);

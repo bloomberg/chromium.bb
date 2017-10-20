@@ -47,7 +47,7 @@ void DeleteFiles(const base::FilePath& path,
 }
 
 void DeleteDirectoryContent(const base::FilePath& path, int max_file_deleted) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (path.empty() || path.value().length() >= MAX_PATH)
     return;
@@ -75,7 +75,7 @@ void DeleteDirectoryContent(const base::FilePath& path, int max_file_deleted) {
 }
 
 void DeleteDirectory(const base::FilePath& path, int max_file_deleted) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Delete at most |max_file_deleted| files in |path|.
   DeleteDirectoryContent(path, max_file_deleted);

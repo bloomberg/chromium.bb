@@ -28,7 +28,7 @@ namespace {
 
 std::unique_ptr<FontLoader::ResultInternal> LoadFontOnFileThread(
     const FontDescriptor& font) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   NSFont* font_to_encode = font.ToNSFont();
 

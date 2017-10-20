@@ -51,7 +51,7 @@ ValueStore::Status LeveldbScopedDatabase::Read(
     const std::string& scope,
     const std::string& key,
     std::unique_ptr<base::Value>* value) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   ValueStore::Status status = EnsureDbIsOpen();
   if (!status.ok())
@@ -65,7 +65,7 @@ ValueStore::Status LeveldbScopedDatabase::Read(
 
 ValueStore::Status LeveldbScopedDatabase::Read(const std::string& scope,
                                                base::DictionaryValue* values) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   ValueStore::Status status = EnsureDbIsOpen();
   if (!status.ok())

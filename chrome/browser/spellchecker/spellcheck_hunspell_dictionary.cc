@@ -43,7 +43,7 @@ namespace {
 
 // Close the file.
 void CloseDictionary(base::File file) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   file.Close();
 }
 
@@ -51,7 +51,7 @@ void CloseDictionary(base::File file) {
 // returns false.
 bool SaveDictionaryData(std::unique_ptr<std::string> data,
                         const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   size_t bytes_written =
       base::WriteFile(path, data->data(), data->length());
@@ -298,7 +298,7 @@ void SpellcheckHunspellDictionary::DownloadDictionary(GURL url) {
 // static
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DictionaryFile dictionary;
 
 #if defined(OS_WIN)
@@ -347,7 +347,7 @@ SpellcheckHunspellDictionary::OpenDictionaryFile(const base::FilePath& path) {
 SpellcheckHunspellDictionary::DictionaryFile
 SpellcheckHunspellDictionary::InitializeDictionaryLocation(
     const std::string& language) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Initialize the BDICT path. Initialization should be on the blocking
   // sequence because it checks if there is a "Dictionaries" directory and

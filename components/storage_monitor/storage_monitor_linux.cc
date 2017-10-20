@@ -115,7 +115,7 @@ uint64_t GetDeviceStorageSize(const base::FilePath& device_path,
 // Gets the device information using udev library.
 std::unique_ptr<StorageInfo> GetDeviceInfo(const base::FilePath& device_path,
                                            const base::FilePath& mount_point) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!device_path.empty());
 
   std::unique_ptr<StorageInfo> storage_info;
@@ -196,7 +196,7 @@ MtabWatcherLinux* CreateMtabWatcherLinuxOnMtabWatcherTaskRunner(
     const base::FilePath& mtab_path,
     scoped_refptr<base::SequencedTaskRunner> storage_monitor_task_runner,
     const MtabWatcherLinux::UpdateMtabCallback& callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Owned by caller.
   return new MtabWatcherLinux(
       mtab_path, base::Bind(&BounceMtabUpdateToStorageMonitorTaskRunner,
@@ -206,7 +206,7 @@ MtabWatcherLinux* CreateMtabWatcherLinuxOnMtabWatcherTaskRunner(
 StorageMonitor::EjectStatus EjectPathOnBlockingTaskRunner(
     const base::FilePath& path,
     const base::FilePath& device) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Note: Linux LSB says umount should exist in /bin.
   static const char kUmountBinary[] = "/bin/umount";

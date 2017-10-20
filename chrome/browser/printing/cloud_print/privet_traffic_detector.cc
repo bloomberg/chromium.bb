@@ -31,7 +31,7 @@ const char kPrivetDeviceTypeDnsString[] = "\x07_privet";
 
 void GetNetworkListInBackground(
     const base::Callback<void(const net::NetworkInterfaceList&)> callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   net::NetworkInterfaceList networks;
   if (!GetNetworkList(&networks, net::INCLUDE_HOST_SCOPE_VIRTUAL_INTERFACES))
     return;

@@ -32,7 +32,7 @@ void SetCreatedLoginItemPrefOnUIThread() {
 }
 
 void DisableLaunchOnStartupOnWorkerThread() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // If the LoginItem is not hidden, it means it's user created, so don't
   // delete it.
   bool is_hidden = false;
@@ -41,7 +41,7 @@ void DisableLaunchOnStartupOnWorkerThread() {
 }
 
 void CheckForUserRemovedLoginItemOnWorkerThread() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (!base::mac::CheckLoginItemStatus(NULL)) {
     // There's no LoginItem, so set the kUserRemovedLoginItem pref.
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
@@ -50,7 +50,7 @@ void CheckForUserRemovedLoginItemOnWorkerThread() {
 }
 
 void EnableLaunchOnStartupOnWorkerThread(bool need_migration) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (need_migration) {
     // This is the first time running Chrome since the kChromeCreatedLoginItem
     // pref was added. Initialize the status of this pref based on whether

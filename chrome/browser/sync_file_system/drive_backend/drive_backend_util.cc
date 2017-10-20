@@ -155,7 +155,7 @@ bool RemovePrefix(const std::string& str, const std::string& prefix,
 }
 
 std::unique_ptr<ServiceMetadata> InitializeServiceMetadata(LevelDBWrapper* db) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(db);
 
   std::unique_ptr<ServiceMetadata> service_metadata;

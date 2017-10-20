@@ -46,7 +46,7 @@ const int kNumberOfFailsBeforeStop = 7;
 // Must be called on File thread.
 void CleanUpFiles(base::FilePath root,
                   const std::set<std::string>& processed_directories) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::FileEnumerator file_enumerator(root, false,
                                        base::FileEnumerator::DIRECTORIES);
   for (base::FilePath sub_directory = file_enumerator.Next();

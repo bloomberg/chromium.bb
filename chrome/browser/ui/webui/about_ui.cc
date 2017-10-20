@@ -144,7 +144,7 @@ class ChromeOSTermsHandler
   }
 
   void LoadOemEulaFileAsync() {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     const chromeos::StartupCustomizationDocument* customization =
         chromeos::StartupCustomizationDocument::GetInstance();
@@ -161,7 +161,7 @@ class ChromeOSTermsHandler
   }
 
   void LoadEulaFileAsync() {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     std::string file_path =
         base::StringPrintf(chrome::kEULAPathFormat, locale_.c_str());

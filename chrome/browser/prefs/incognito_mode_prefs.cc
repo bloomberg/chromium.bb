@@ -74,7 +74,7 @@ class PlatformParentalControlsValue {
   // called on a COM Initialized thread and is potentially blocking.
   static bool IsParentalControlActivityLoggingOn() {
     // Since we can potentially block, make sure the thread is okay with this.
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     ThreadType thread_type = ThreadType::BLOCKING;
     if (BrowserThread::IsThreadInitialized(BrowserThread::UI) &&

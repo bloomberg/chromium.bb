@@ -64,7 +64,7 @@ void CollectProcessData(ClientIncidentReport_EnvironmentData_Process* process) {
 }  // namespace
 
 void CollectEnvironmentData(ClientIncidentReport_EnvironmentData* data) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // OS
   {

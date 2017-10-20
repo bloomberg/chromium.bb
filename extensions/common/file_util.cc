@@ -404,7 +404,7 @@ base::FilePath GetInstallTempDir(const base::FilePath& extensions_dir) {
   // Temp directory has never been used before, or in a rare error case.
   // Developers are not likely to see these situations often, so do an
   // explicit thread check.
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Create the temp directory as a sub-directory of the Extensions directory.
   // This guarantees it is on the same file system as the extension's eventual

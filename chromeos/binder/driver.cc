@@ -27,7 +27,7 @@ const char kDriverPath[] = "/dev/binder";
 Driver::Driver() : mmap_address_(MAP_FAILED) {}
 
 Driver::~Driver() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (mmap_address_ != MAP_FAILED) {
     if (munmap(mmap_address_, GetBinderMmapSize()) == -1) {
       PLOG(ERROR) << "Failed to munmap";
@@ -37,7 +37,7 @@ Driver::~Driver() {
 }
 
 bool Driver::Initialize() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Open binder driver.
   fd_.reset(HANDLE_EINTR(open(kDriverPath, O_RDWR | O_CLOEXEC | O_NONBLOCK)));
   if (!fd_.is_valid()) {
@@ -71,7 +71,7 @@ int Driver::GetFD() {
 }
 
 bool Driver::SetMaxThreads(int max_threads) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return HANDLE_EINTR(ioctl(fd_.get(), BINDER_SET_MAX_THREADS, &max_threads)) !=
          -1;
 }
@@ -82,7 +82,7 @@ bool Driver::WriteRead(const char* write_buf,
                        size_t read_buf_size,
                        size_t* written_bytes,
                        size_t* read_bytes) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   binder_write_read params = {};
   params.write_buffer = reinterpret_cast<const uintptr_t>(write_buf);
   params.write_size = write_buf_size;
@@ -109,7 +109,7 @@ bool Driver::Poll() {
 }
 
 bool Driver::NotifyCurrentThreadExiting() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return HANDLE_EINTR(ioctl(fd_.get(), BINDER_THREAD_EXIT, 0)) != -1;
 }
 

@@ -41,7 +41,7 @@ SerialDeviceEnumeratorLinux::~SerialDeviceEnumeratorLinux() {}
 
 std::vector<mojom::SerialDeviceInfoPtr>
 SerialDeviceEnumeratorLinux::GetDevices() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::vector<mojom::SerialDeviceInfoPtr> devices;
   ScopedUdevEnumeratePtr enumerate(udev_enumerate_new(udev_.get()));

@@ -30,7 +30,7 @@ namespace {
 uint32_t WriteDataChunkIntoSnapshotFileOnFileThread(
     const base::FilePath& snapshot_file_path,
     const std::string& data) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return base::AppendToFile(snapshot_file_path, data.c_str(), data.size())
              ? base::checked_cast<uint32_t>(data.size())
              : 0;

@@ -225,7 +225,7 @@ class ImageWriterUtilityClientTest : public InProcessBrowserTest {
   }
 
   bool IsRunningInCorrectSequence() const {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
     return task_runner_->RunsTasksInCurrentSequence();
   }
 

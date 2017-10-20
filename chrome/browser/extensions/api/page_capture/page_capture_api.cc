@@ -157,7 +157,7 @@ void PageCaptureSaveAsMHTMLFunction::ResolvePermissionRequest(
 #endif
 
 void PageCaptureSaveAsMHTMLFunction::CreateTemporaryFile() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   bool success = base::CreateTemporaryFile(&mhtml_path_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,

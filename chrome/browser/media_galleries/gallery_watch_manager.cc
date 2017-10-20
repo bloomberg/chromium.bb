@@ -116,7 +116,7 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
     const base::FilePath& path,
     const base::Callback<void(bool)>& callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // This can occur if the GalleryWatchManager attempts to watch the same path
   // again before recieving the callback. It's benign.
@@ -142,7 +142,7 @@ void GalleryWatchManager::FileWatchManager::AddFileWatch(
 void GalleryWatchManager::FileWatchManager::RemoveFileWatch(
     const base::FilePath& path) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   size_t erased = watchers_.erase(path);
   DCHECK_EQ(erased, 1u);
@@ -157,7 +157,7 @@ void GalleryWatchManager::FileWatchManager::OnFilePathChanged(
     const base::FilePath& path,
     bool error) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (error)
     RemoveFileWatch(path);

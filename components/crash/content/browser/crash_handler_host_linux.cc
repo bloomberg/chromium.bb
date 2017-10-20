@@ -403,7 +403,7 @@ void CrashHandlerHostLinux::FindCrashingThreadAndDump(
 void CrashHandlerHostLinux::WriteDumpFile(BreakpadInfo* info,
                                           std::unique_ptr<char[]> crash_context,
                                           pid_t crashing_pid) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Set |info->distro| here because base::GetLinuxDistro() needs to run on a
   // blocking sequence.

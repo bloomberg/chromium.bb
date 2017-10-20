@@ -49,7 +49,7 @@ SystemHotkeyHelperMac::~SystemHotkeyHelperMac() {
 }
 
 void SystemHotkeyHelperMac::LoadSystemHotkeys() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::string library_path(base::mac::GetUserLibraryPath().value());
   NSString* expanded_file_path =

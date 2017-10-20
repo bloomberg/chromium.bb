@@ -208,7 +208,7 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
                             leveldb::Env* env_override,
                             std::unique_ptr<LevelDBWrapper>* db_out,
                             bool* created) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(db_out);
   DCHECK(created);
   DCHECK(path.IsAbsolute());
@@ -237,7 +237,7 @@ SyncStatusCode OpenDatabase(const base::FilePath& path,
 
 SyncStatusCode MigrateDatabaseIfNeeded(LevelDBWrapper* db) {
   // See metadata_database_index.cc for the database schema.
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(db);
   std::string value;
   leveldb::Status status = db->Get(kDatabaseVersionKey, &value);

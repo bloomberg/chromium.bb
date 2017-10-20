@@ -28,7 +28,7 @@ base::LazyInstance<DeviceMonitorLinux>::Leaky g_device_monitor_linux =
 }  // namespace
 
 DeviceMonitorLinux::DeviceMonitorLinux() : monitor_fd_(-1) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   udev_.reset(udev_new());
   if (!udev_) {

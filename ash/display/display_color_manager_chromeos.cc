@@ -34,7 +34,7 @@ std::unique_ptr<DisplayColorManager::ColorCalibrationData> ParseDisplayProfile(
   VLOG(1) << "Trying ICC file " << path.value()
           << " has_color_correction_matrix: "
           << (has_color_correction_matrix ? "true" : "false");
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Reads from a file.
   qcms_profile* display_profile = qcms_profile_from_path(path.value().c_str());
   if (!display_profile) {

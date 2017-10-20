@@ -148,7 +148,7 @@ base::string16 GetExpectedAppId(const base::CommandLine& command_line,
 }
 
 void MigrateTaskbarPinsCallback() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // Get full path of chrome.
   base::FilePath chrome_exe;
@@ -328,7 +328,7 @@ class OpenSystemSettingsHelper {
   // watched. The array must contain at least one element.
   static void Begin(const wchar_t* const protocols[],
                     const base::Closure& on_finished_callback) {
-    base::ThreadRestrictions::AssertIOAllowed();
+    base::AssertBlockingAllowed();
 
     delete instance_;
     instance_ = new OpenSystemSettingsHelper(protocols, on_finished_callback);
@@ -524,7 +524,7 @@ void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
 }  // namespace
 
 bool SetAsDefaultBrowser() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -545,7 +545,7 @@ bool SetAsDefaultBrowser() {
 }
 
 bool SetAsDefaultProtocolClient(const std::string& protocol) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (protocol.empty())
     return false;
@@ -628,7 +628,7 @@ DefaultWebClientState IsDefaultProtocolClient(const std::string& protocol) {
 namespace win {
 
 bool SetAsDefaultBrowserUsingIntentPicker() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -648,7 +648,7 @@ bool SetAsDefaultBrowserUsingIntentPicker() {
 
 void SetAsDefaultBrowserUsingSystemSettings(
     const base::Closure& on_finished_callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -675,7 +675,7 @@ void SetAsDefaultBrowserUsingSystemSettings(
 }
 
 bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -698,7 +698,7 @@ bool SetAsDefaultProtocolClientUsingIntentPicker(const std::string& protocol) {
 void SetAsDefaultProtocolClientUsingSystemSettings(
     const std::string& protocol,
     const base::Closure& on_finished_callback) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {

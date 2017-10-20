@@ -117,7 +117,7 @@ void ExternalMetrics::RecordSparseHistogram(
 
 int ExternalMetrics::CollectEvents() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::vector<std::unique_ptr<::metrics::MetricSample>> samples;
   ::metrics::SerializationUtils::ReadAndTruncateMetricsFromFile(

@@ -76,7 +76,7 @@ void ExternalRegistryLoader::StartLoading() {
 
 std::unique_ptr<base::DictionaryValue>
 ExternalRegistryLoader::LoadPrefsOnBlockingThread() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   auto prefs = base::MakeUnique<base::DictionaryValue>();
 
   // A map of IDs, to weed out duplicates between HKCU and HKLM.

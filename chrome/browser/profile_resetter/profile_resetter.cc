@@ -53,7 +53,7 @@
 namespace {
 
 void ResetShortcutsOnBlockingThread() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Get full path of chrome.
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))
@@ -352,7 +352,7 @@ void ProfileResetter::OnBrowsingDataRemoverDone() {
 #if defined(OS_WIN)
 std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
     const scoped_refptr<SharedCancellationFlag>& cancel) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // Get full path of chrome.
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe))

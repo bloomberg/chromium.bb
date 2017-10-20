@@ -57,7 +57,7 @@ ShortcutProperties::~ShortcutProperties() {
 bool CreateOrUpdateShortcutLink(const FilePath& shortcut_path,
                                 const ShortcutProperties& properties,
                                 ShortcutOperation operation) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   // A target is required unless |operation| is SHORTCUT_UPDATE_EXISTING.
   if (operation != SHORTCUT_UPDATE_EXISTING &&
@@ -190,7 +190,7 @@ bool ResolveShortcutProperties(const FilePath& shortcut_path,
                                uint32_t options,
                                ShortcutProperties* properties) {
   DCHECK(options && properties);
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   if (options & ~ShortcutProperties::PROPERTIES_ALL)
     NOTREACHED() << "Unhandled property is used.";
@@ -322,7 +322,7 @@ bool CanPinShortcutToTaskbar() {
 }
 
 bool PinShortcutToTaskbar(const FilePath& shortcut) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
   DCHECK(CanPinShortcutToTaskbar());
 
   intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
@@ -331,7 +331,7 @@ bool PinShortcutToTaskbar(const FilePath& shortcut) {
 }
 
 bool UnpinShortcutFromTaskbar(const FilePath& shortcut) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   intptr_t result = reinterpret_cast<intptr_t>(ShellExecute(
       NULL, L"taskbarunpin", shortcut.value().c_str(), NULL, NULL, 0));

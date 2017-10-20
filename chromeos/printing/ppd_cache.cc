@@ -47,7 +47,7 @@ void MaybeCreateCache(const base::FilePath& base_dir) {
 // allows I/O.
 PpdCache::FindResult FindImpl(const base::FilePath& cache_dir,
                               const std::string& key) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   PpdCache::FindResult result;
   result.success = false;
@@ -91,7 +91,7 @@ PpdCache::FindResult FindImpl(const base::FilePath& cache_dir,
 void StoreImpl(const base::FilePath& cache_dir,
                const std::string& key,
                const std::string& contents) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   MaybeCreateCache(cache_dir);
   if (contents.size() > kMaxPpdSizeBytes) {

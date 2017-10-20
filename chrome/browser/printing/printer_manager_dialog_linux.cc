@@ -45,7 +45,7 @@ bool OpenPrinterConfigDialog(const char* const* command) {
 // Detect the command based on the deskop environment and open the printer
 // manager dialog.
 void DetectAndOpenPrinterConfigDialog() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 
   bool opened = false;

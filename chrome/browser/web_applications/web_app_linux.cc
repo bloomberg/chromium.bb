@@ -26,7 +26,7 @@ bool CreatePlatformShortcuts(const base::FilePath& web_app_path,
                              ShortcutCreationReason /*creation_reason*/,
                              const ShortcutInfo& shortcut_info) {
 #if !defined(OS_CHROMEOS)
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return shell_integration_linux::CreateDesktopShortcut(shortcut_info,
                                                         creation_locations);
 #else
@@ -45,7 +45,7 @@ void DeletePlatformShortcuts(const base::FilePath& web_app_path,
 void UpdatePlatformShortcuts(const base::FilePath& web_app_path,
                              const base::string16& /*old_app_title*/,
                              const ShortcutInfo& shortcut_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   std::unique_ptr<base::Environment> env(base::Environment::Create());
 

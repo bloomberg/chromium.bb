@@ -68,7 +68,7 @@ void StorageInfoProvider::InitializeProvider(
 }
 
 bool StorageInfoProvider::QueryInfo() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   // No info to query since we get all available storage devices' info in
   // |PrepareQueryOnUIThread()|.
   return true;

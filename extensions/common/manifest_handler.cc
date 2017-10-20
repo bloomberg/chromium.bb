@@ -91,7 +91,7 @@ bool ManifestHandler::ParseExtension(Extension* extension,
 bool ManifestHandler::ValidateExtension(const Extension* extension,
                                         std::string* error,
                                         std::vector<InstallWarning>* warnings) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   return GetRegistry()->ValidateExtension(extension, error, warnings);
 }
 

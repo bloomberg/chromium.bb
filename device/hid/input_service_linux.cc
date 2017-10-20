@@ -101,7 +101,7 @@ class InputServiceLinuxImpl : public InputServiceLinux,
 };
 
 InputServiceLinuxImpl::InputServiceLinuxImpl() : observer_(this) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   DeviceMonitorLinux* monitor = DeviceMonitorLinux::GetInstance();
   observer_.Add(monitor);

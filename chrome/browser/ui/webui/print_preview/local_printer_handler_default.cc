@@ -19,7 +19,7 @@
 namespace {
 
 printing::PrinterList EnumeratePrintersAsync() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
 
@@ -30,7 +30,7 @@ printing::PrinterList EnumeratePrintersAsync() {
 
 std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
     const std::string& device_name) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
 
@@ -50,7 +50,7 @@ std::unique_ptr<base::DictionaryValue> FetchCapabilitiesAsync(
 }
 
 std::string GetDefaultPrinterAsync() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   scoped_refptr<printing::PrintBackend> print_backend(
       printing::PrintBackend::CreateInstance(nullptr));
 

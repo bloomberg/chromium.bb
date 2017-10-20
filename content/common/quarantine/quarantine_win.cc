@@ -300,7 +300,7 @@ QuarantineFileResult QuarantineFile(const base::FilePath& file,
                                     const GURL& source_url,
                                     const GURL& referrer_url,
                                     const std::string& client_guid) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   int64_t file_size = 0;
   if (!base::PathExists(file) || !base::GetFileSize(file, &file_size))

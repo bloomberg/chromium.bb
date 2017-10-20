@@ -72,7 +72,7 @@ base::LazyInstance<std::set<AccountId>>::DestructorAtExit
 // Returns whether ARC can run on the filesystem mounted at |path|.
 // This function should run only on threads where IO operations are allowed.
 bool IsArcCompatibleFilesystem(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   // If it can be verified it is not on ecryptfs, then it is ok.
   struct statfs statfs_buf;

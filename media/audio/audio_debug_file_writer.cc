@@ -278,7 +278,7 @@ void AudioDebugFileWriter::AudioFileWriter::WriteHeader() {
 void AudioDebugFileWriter::AudioFileWriter::CreateRecordingFile(
     const base::FilePath& file_name) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!file_.IsValid());
 
   file_ = base::File(file_name,

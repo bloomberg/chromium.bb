@@ -21,7 +21,7 @@ MemoryMappedFile::MemoryMappedFile() : data_(NULL), length_(0) {
 bool MemoryMappedFile::MapFileRegionToMemory(
     const MemoryMappedFile::Region& region,
     Access access) {
-  ThreadRestrictions::AssertIOAllowed();
+  AssertBlockingAllowed();
 
   if (!file_.IsValid())
     return false;

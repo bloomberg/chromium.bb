@@ -62,7 +62,7 @@ const char kStatsBookmarksKeyDeprecated[] = "stats_bookmarks";
 const char kStatsSettingsKeyDeprecated[] = "stats_settings";
 
 void DeleteBitmap(const base::FilePath& image_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   base::DeleteFile(image_path, false);
 }
 

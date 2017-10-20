@@ -105,7 +105,7 @@ void UsbDeviceImpl::OpenOnBlockingThread(
     OpenCallback callback,
     scoped_refptr<base::TaskRunner> task_runner,
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   PlatformUsbDeviceHandle handle;
   const int rv = libusb_open(platform_device_, &handle);
   if (LIBUSB_SUCCESS == rv) {

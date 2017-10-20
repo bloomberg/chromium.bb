@@ -29,7 +29,7 @@ namespace {
 const int kMaxImageFileSize = 50*1014*1024;
 
 std::unique_ptr<std::string> ReadOnFileThread(const base::FilePath& path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   std::unique_ptr<std::string> result;
 
   base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);

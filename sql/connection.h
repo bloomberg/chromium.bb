@@ -549,7 +549,7 @@ class SQL_EXPORT Connection {
   // official build.
   void AssertIOAllowed() const {
     if (!in_memory_)
-      base::ThreadRestrictions::AssertIOAllowed();
+      base::AssertBlockingAllowed();
   }
 
   // Internal helper for Does*Exist() functions.

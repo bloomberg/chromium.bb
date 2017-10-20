@@ -175,7 +175,7 @@ base::FilePath CreateOrUpdateShortcutIconForProfile(
     const base::FilePath& profile_path,
     const SkBitmap& avatar_bitmap_1x,
     const SkBitmap& avatar_bitmap_2x) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (!base::PathExists(profile_path))
     return base::FilePath();
@@ -279,7 +279,7 @@ base::FilePath ConvertToLongPath(const base::FilePath& path) {
 bool IsChromeShortcut(const base::FilePath& path,
                       const base::FilePath& chrome_exe,
                       base::string16* command_line) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   if (path.Extension() != installer::kLnkExt)
     return false;
@@ -374,7 +374,7 @@ void RenameChromeDesktopShortcutForProfile(
     std::set<base::FilePath>* desktop_contents) {
   DCHECK(profile_shortcuts);
   DCHECK(desktop_contents);
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath user_shortcuts_directory;
   base::FilePath system_shortcuts_directory;
@@ -479,7 +479,7 @@ struct CreateOrUpdateShortcutsParams {
 // must be allowed on the calling thread.
 void CreateOrUpdateDesktopShortcutsAndIconForProfile(
     const CreateOrUpdateShortcutsParams& params) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   const base::FilePath shortcut_icon =
       CreateOrUpdateShortcutIconForProfile(params.profile_path,
@@ -583,7 +583,7 @@ bool ChromeDesktopShortcutsExist(const base::FilePath& chrome_exe) {
 // shortcut(s). File and COM operations must be allowed on the calling thread.
 void DeleteDesktopShortcuts(const base::FilePath& profile_path,
                             bool ensure_shortcuts_remain) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {
@@ -630,7 +630,7 @@ void DeleteDesktopShortcuts(const base::FilePath& profile_path,
 // consider non-profile shortcuts. File and COM operations must be allowed on
 // the calling thread.
 bool HasAnyProfileShortcuts(const base::FilePath& profile_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
 
   base::FilePath chrome_exe;
   if (!PathService::Get(base::FILE_EXE, &chrome_exe)) {

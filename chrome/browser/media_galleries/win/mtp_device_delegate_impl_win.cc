@@ -67,7 +67,7 @@ bool GetStorageInfoOnUIThread(const base::string16& storage_path,
 base::string16 GetFileObjectIdFromPathOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& file_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!file_path.empty());
   IPortableDevice* device =
       PortableDeviceMapService::GetInstance()->GetPortableDevice(
@@ -105,7 +105,7 @@ std::unique_ptr<MTPDeviceObjectEnumerator>
 CreateFileEnumeratorOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& root) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!device_info.registered_device_path.empty());
   DCHECK(!root.empty());
   IPortableDevice* device =
@@ -136,7 +136,7 @@ CreateFileEnumeratorOnBlockingPoolThread(
 bool OpenDeviceOnBlockingPoolThread(
     const base::string16& pnp_device_id,
     const base::string16& registered_device_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!pnp_device_id.empty());
   DCHECK(!registered_device_path.empty());
   Microsoft::WRL::ComPtr<IPortableDevice> device =
@@ -157,7 +157,7 @@ base::File::Error GetFileInfoOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& file_path,
     base::File::Info* file_info) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!device_info.registered_device_path.empty());
   DCHECK(!file_path.empty());
   DCHECK(file_info);
@@ -183,7 +183,7 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     const base::FilePath& root,
     storage::AsyncFileUtil::EntryList* entries) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(!root.empty());
   DCHECK(entries);
   base::File::Info file_info;
@@ -218,7 +218,7 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
 base::File::Error GetFileStreamOnBlockingPoolThread(
     const MTPDeviceDelegateImplWin::StorageDeviceInfo& device_info,
     SnapshotFileDetails* file_details) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   DCHECK(file_details);
   DCHECK(!file_details->request_info().device_file_path.empty());
   DCHECK(!file_details->request_info().snapshot_file_path.empty());
@@ -275,7 +275,7 @@ base::File::Error GetFileStreamOnBlockingPoolThread(
 // files, or 0 on failure. For empty files, just return 0.
 DWORD WriteDataChunkIntoSnapshotFileOnBlockingPoolThread(
     const SnapshotFileDetails& file_details) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   if (file_details.file_info().size == 0)
     return 0;
   return media_transfer_protocol::CopyDataChunkToLocalFile(
@@ -286,7 +286,7 @@ DWORD WriteDataChunkIntoSnapshotFileOnBlockingPoolThread(
 
 void DeletePortableDeviceOnBlockingPoolThread(
     const base::string16& registered_device_path) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   PortableDeviceMapService::GetInstance()->RemovePortableDevice(
       registered_device_path);
 }

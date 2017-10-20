@@ -34,7 +34,7 @@ namespace syncer {
 namespace {
 
 std::string GetSessionNameSynchronously() {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   std::string session_name;
 #if defined(OS_CHROMEOS)
   switch (chromeos::GetDeviceType()) {

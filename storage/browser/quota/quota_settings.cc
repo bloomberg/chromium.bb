@@ -30,7 +30,7 @@ int64_t RandomizeByPercent(int64_t value, int percent) {
 base::Optional<storage::QuotaSettings> CalculateNominalDynamicSettings(
     const base::FilePath& partition_path,
     bool is_incognito) {
-  base::ThreadRestrictions::AssertIOAllowed();
+  base::AssertBlockingAllowed();
   const int64_t kMBytes = 1024 * 1024;
   const int kRandomizedPercentage = 10;
 
