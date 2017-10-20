@@ -412,7 +412,7 @@ scoped_refptr<gpu::Buffer> CommandBufferProxyImpl::CreateTransferBuffer(
     return NULL;
   }
 
-  if (!disconnected_) {
+  if (last_state_.error == gpu::error::kNoError) {
     // This handle is owned by the GPU process and must be passed to it or it
     // will leak. In otherwords, do not early out on error between here and the
     // sending of the RegisterTransferBuffer IPC below.

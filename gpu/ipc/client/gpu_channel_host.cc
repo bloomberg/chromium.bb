@@ -298,7 +298,6 @@ bool GpuChannelHost::MessageFilter::OnMessageReceived(
 }
 
 void GpuChannelHost::MessageFilter::OnChannelError() {
-  LOG(ERROR) << "OnChannelError";
   channel_ = nullptr;
   // Set the lost state before signalling the proxies. That way, if they
   // themselves post a task to recreate the context, they will not try to re-use
