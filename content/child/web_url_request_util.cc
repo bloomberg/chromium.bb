@@ -21,8 +21,9 @@
 #include "net/http/http_util.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "storage/public/interfaces/blobs.mojom.h"
-#include "storage/public/interfaces/size_getter.mojom.h"
+#include "third_party/WebKit/common/blob/blob.mojom.h"
+#include "third_party/WebKit/common/blob/blob_registry.mojom.h"
+#include "third_party/WebKit/common/blob/size_getter.mojom.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/Platform.h"
 #include "third_party/WebKit/public/platform/WebCachePolicy.h"
@@ -106,12 +107,12 @@ class HeaderFlattener : public blink::WebHTTPHeaderVisitor {
 // A helper class which allows a holder of a data pipe for a blob to know how
 // big the blob is. It will stay alive until either the caller gets the length
 // or the size getter pipe is torn down.
-class BlobSizeGetter : public storage::mojom::BlobReaderClient,
-                       public storage::mojom::SizeGetter {
+class BlobSizeGetter : public blink::mojom::BlobReaderClient,
+                       public blink::mojom::SizeGetter {
  public:
   BlobSizeGetter(
-      storage::mojom::BlobReaderClientRequest blob_reader_client_request,
-      storage::mojom::SizeGetterRequest size_getter_request)
+      blink::mojom::BlobReaderClientRequest blob_reader_client_request,
+      blink::mojom::SizeGetterRequest size_getter_request)
       : blob_reader_client_binding_(this), size_getter_binding_(this) {
     // If a sync XHR is doing the upload, then the main thread will be blocked.
     // So we must bind these interfaces on a background thread, otherwise the
@@ -131,15 +132,15 @@ class BlobSizeGetter : public storage::mojom::BlobReaderClient,
   ~BlobSizeGetter() override {}
 
   void BindInternal(
-      storage::mojom::BlobReaderClientRequest blob_reader_client_request,
-      storage::mojom::SizeGetterRequest size_getter_request) {
+      blink::mojom::BlobReaderClientRequest blob_reader_client_request,
+      blink::mojom::SizeGetterRequest size_getter_request) {
     blob_reader_client_binding_.Bind(std::move(blob_reader_client_request));
     size_getter_binding_.Bind(std::move(size_getter_request));
     size_getter_binding_.set_connection_error_handler(base::BindOnce(
         &BlobSizeGetter::OnSizeGetterConnectionError, base::Unretained(this)));
   }
 
-  // storage::mojom::BlobReaderClient implementation:
+  // blink::mojom::BlobReaderClient implementation:
   void OnCalculatedSize(uint64_t total_size,
                         uint64_t expected_content_size) override {
     size_ = total_size;
@@ -154,7 +155,7 @@ class BlobSizeGetter : public storage::mojom::BlobReaderClient,
 
   void OnComplete(int32_t status, uint64_t data_length) override {}
 
-  // storage::mojom::SizeGetter implementation:
+  // blink::mojom::SizeGetter implementation:
   void GetSize(GetSizeCallback callback) override {
     if (calculated_size_) {
       std::move(callback).Run(size_);
@@ -171,8 +172,8 @@ class BlobSizeGetter : public storage::mojom::BlobReaderClient,
 
   bool calculated_size_ = false;
   uint64_t size_ = 0;
-  mojo::Binding<storage::mojom::BlobReaderClient> blob_reader_client_binding_;
-  mojo::Binding<storage::mojom::SizeGetter> size_getter_binding_;
+  mojo::Binding<blink::mojom::BlobReaderClient> blob_reader_client_binding_;
+  mojo::Binding<blink::mojom::SizeGetter> size_getter_binding_;
   GetSizeCallback callback_;
 };
 
@@ -409,7 +410,7 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebURLRequest(
   return GetRequestBodyForWebHTTPBody(request.HttpBody());
 }
 
-void GetBlobRegistry(storage::mojom::BlobRegistryRequest request) {
+void GetBlobRegistry(blink::mojom::BlobRegistryRequest request) {
   ChildThreadImpl::current()->GetConnector()->BindInterface(
       mojom::kBrowserServiceName, std::move(request));
 }
@@ -420,7 +421,7 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
   size_t i = 0;
   WebHTTPBody::Element element;
   // TODO(jam): cache this somewhere so we don't request it each time?
-  storage::mojom::BlobRegistryPtr blob_registry;
+  blink::mojom::BlobRegistryPtr blob_registry;
   while (httpBody.ElementAt(i++, element)) {
     switch (element.type) {
       case WebHTTPBody::Element::kTypeData:
@@ -470,12 +471,12 @@ scoped_refptr<ResourceRequestBody> GetRequestBodyForWebHTTPBody(
                                             MakeRequest(&blob_registry)));
             }
           }
-          storage::mojom::BlobPtr blob_ptr;
+          blink::mojom::BlobPtr blob_ptr;
           blob_registry->GetBlobFromUUID(MakeRequest(&blob_ptr),
                                          element.blob_uuid.Utf8());
 
-          storage::mojom::BlobReaderClientPtr blob_reader_client_ptr;
-          storage::mojom::SizeGetterPtr size_getter_ptr;
+          blink::mojom::BlobReaderClientPtr blob_reader_client_ptr;
+          blink::mojom::SizeGetterPtr size_getter_ptr;
           // Object deletes itself.
           new BlobSizeGetter(MakeRequest(&blob_reader_client_ptr),
                              MakeRequest(&size_getter_ptr));

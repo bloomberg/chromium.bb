@@ -129,7 +129,7 @@ class FileElementReader : public net::UploadFileElementReader {
 class DataPipeElementReader : public net::UploadElementReader {
  public:
   DataPipeElementReader(mojo::ScopedDataPipeConsumerHandle data_pipe,
-                        storage::mojom::SizeGetterPtr size_getter)
+                        blink::mojom::SizeGetterPtr size_getter)
       : data_pipe_(std::move(data_pipe)),
         handle_watcher_(FROM_HERE, mojo::SimpleWatcher::ArmingPolicy::MANUAL),
         size_getter_(std::move(size_getter)),
@@ -205,7 +205,7 @@ class DataPipeElementReader : public net::UploadElementReader {
   mojo::SimpleWatcher handle_watcher_;
   scoped_refptr<net::IOBuffer> buf_;
   int buf_length_ = 0;
-  storage::mojom::SizeGetterPtr size_getter_;
+  blink::mojom::SizeGetterPtr size_getter_;
   bool calculated_size_ = false;
   uint64_t size_ = 0;
   uint64_t bytes_read_ = 0;
@@ -240,7 +240,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
         break;
       }
       case ResourceRequestBody::Element::TYPE_DATA_PIPE: {
-        storage::mojom::SizeGetterPtr size_getter;
+        blink::mojom::SizeGetterPtr size_getter;
         mojo::ScopedDataPipeConsumerHandle data_pipe =
             const_cast<storage::DataElement*>(&element)->ReleaseDataPipe(
                 &size_getter);

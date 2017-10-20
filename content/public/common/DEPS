@@ -4,7 +4,7 @@ specific_include_rules = {
     "+third_party/WebKit/common",
   ],
   "resource_request_body.h": [
-    "+storage/public/interfaces/size_getter.mojom.h",
+    "+third_party/WebKit/common/blob/size_getter.mojom.h",
   ],
   "simple_url_loader\.cc": [
     "-content/",

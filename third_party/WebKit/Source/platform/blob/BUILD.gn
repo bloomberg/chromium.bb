@@ -12,7 +12,7 @@ import("//build/config/jumbo.gni")
 # another.
 jumbo_source_set("generator") {
   public_deps = [
-    "//storage/public/interfaces:interfaces_blink__generator",
+    "//third_party/WebKit/common:mojo_platform_bindings_blink__generator",
     "//url/mojo:url_mojom_gurl_blink__generator",
     "//url/mojo:url_mojom_gurl_shared__generator",
   ]
@@ -39,7 +39,7 @@ jumbo_source_set("blob") {
   ]
 
   public_deps = [
-    "//storage/public/interfaces:interfaces_blink",
+    "//third_party/WebKit/common:mojo_platform_bindings_blink",
   ]
 }
 

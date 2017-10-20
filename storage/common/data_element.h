@@ -19,7 +19,7 @@
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "storage/common/storage_common_export.h"
-#include "storage/public/interfaces/size_getter.mojom.h"
+#include "third_party/WebKit/common/blob/size_getter.mojom.h"
 #include "url/gurl.h"
 
 namespace storage {
@@ -153,10 +153,10 @@ class STORAGE_COMMON_EXPORT DataElement {
 
   // Sets TYPE_DATA_PIPE data.
   void SetToDataPipe(mojo::ScopedDataPipeConsumerHandle handle,
-                     mojom::SizeGetterPtr size_getter);
+                     blink::mojom::SizeGetterPtr size_getter);
 
   mojo::ScopedDataPipeConsumerHandle ReleaseDataPipe(
-      mojom::SizeGetterPtr* size_getter);
+      blink::mojom::SizeGetterPtr* size_getter);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobAsyncTransportStrategyTest, TestInvalidParams);
@@ -169,7 +169,7 @@ class STORAGE_COMMON_EXPORT DataElement {
   GURL filesystem_url_;  // For TYPE_FILE_FILESYSTEM.
   std::string blob_uuid_;
   mojo::ScopedDataPipeConsumerHandle data_pipe_;
-  mojom::SizeGetterPtr data_pipe_size_getter_;
+  blink::mojom::SizeGetterPtr data_pipe_size_getter_;
   uint64_t offset_;
   uint64_t length_;
   base::Time expected_modification_time_;

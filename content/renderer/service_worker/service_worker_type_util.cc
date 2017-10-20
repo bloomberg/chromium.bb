@@ -86,9 +86,9 @@ ServiceWorkerResponse GetServiceWorkerResponseFromWebResponse(
   scoped_refptr<storage::BlobHandle> blob;
   auto blob_pipe = web_response.CloneBlobPtr();
   if (blob_pipe.is_valid()) {
-    storage::mojom::BlobPtr blob_ptr;
-    blob_ptr.Bind(storage::mojom::BlobPtrInfo(std::move(blob_pipe),
-                                              storage::mojom::Blob::Version_));
+    blink::mojom::BlobPtr blob_ptr;
+    blob_ptr.Bind(blink::mojom::BlobPtrInfo(std::move(blob_pipe),
+                                            blink::mojom::Blob::Version_));
     blob = base::MakeRefCounted<storage::BlobHandle>(std::move(blob_ptr));
   }
 

@@ -148,7 +148,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
     const GURL& controller_origin,
-    scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+    scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
         blob_registry)
     : redirect_limit_(kMaxRedirects),
       url_loader_client_(std::move(client)),
@@ -239,7 +239,7 @@ void ServiceWorkerSubresourceLoader::OnResponse(
 
 void ServiceWorkerSubresourceLoader::OnResponseBlob(
     const ServiceWorkerResponse& response,
-    storage::mojom::BlobPtr body_as_blob,
+    blink::mojom::BlobPtr body_as_blob,
     base::Time dispatch_event_time) {
   StartResponse(response, std::move(body_as_blob),
                 nullptr /* body_as_stream */);
@@ -292,7 +292,7 @@ void ServiceWorkerSubresourceLoader::OnFallback(
 
 void ServiceWorkerSubresourceLoader::StartResponse(
     const ServiceWorkerResponse& response,
-    storage::mojom::BlobPtr body_as_blob,
+    blink::mojom::BlobPtr body_as_blob,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
   // A response with status code 0 is Blink telling us to respond with network
   // error.
@@ -489,7 +489,7 @@ ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<ChildURLLoaderFactoryGetter> default_loader_factory_getter,
     const GURL& controller_origin,
-    scoped_refptr<base::RefCountedData<storage::mojom::BlobRegistryPtr>>
+    scoped_refptr<base::RefCountedData<blink::mojom::BlobRegistryPtr>>
         blob_registry)
     : controller_connector_(std::move(controller_connector)),
       default_loader_factory_getter_(std::move(default_loader_factory_getter)),

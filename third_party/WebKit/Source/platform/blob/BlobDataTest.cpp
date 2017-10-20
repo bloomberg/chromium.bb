@@ -18,20 +18,21 @@
 #include "public/platform/InterfaceProvider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using storage::mojom::blink::Blob;
-using storage::mojom::blink::BlobPtr;
-using storage::mojom::blink::BlobRegistry;
-using storage::mojom::blink::BlobRegistryRequest;
-using storage::mojom::blink::BlobRequest;
-using storage::mojom::blink::DataElement;
-using storage::mojom::blink::DataElementBlob;
-using storage::mojom::blink::DataElementBytes;
-using storage::mojom::blink::DataElementFile;
-using storage::mojom::blink::DataElementFilesystemURL;
-using storage::mojom::blink::DataElementPtr;
+#include "third_party/WebKit/common/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
+
+using mojom::blink::Blob;
+using mojom::blink::BlobPtr;
+using mojom::blink::BlobRegistry;
+using mojom::blink::BlobRegistryRequest;
+using mojom::blink::BlobRequest;
+using mojom::blink::DataElement;
+using mojom::blink::DataElementBlob;
+using mojom::blink::DataElementBytes;
+using mojom::blink::DataElementFile;
+using mojom::blink::DataElementFilesystemURL;
+using mojom::blink::DataElementPtr;
 
 namespace {
 const size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
@@ -73,12 +74,12 @@ class MockBlob : public Blob {
   void ReadRange(uint64_t offset,
                  uint64_t length,
                  mojo::ScopedDataPipeProducerHandle,
-                 storage::mojom::blink::BlobReaderClientPtr) override {
+                 mojom::blink::BlobReaderClientPtr) override {
     NOTREACHED();
   }
 
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
-               storage::mojom::blink::BlobReaderClientPtr) override {
+               mojom::blink::BlobReaderClientPtr) override {
     NOTREACHED();
   }
 

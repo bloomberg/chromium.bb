@@ -6,12 +6,12 @@
 
 namespace storage {
 
-BlobHandle::BlobHandle(mojom::BlobPtr blob) : blob_(std::move(blob)) {
+BlobHandle::BlobHandle(blink::mojom::BlobPtr blob) : blob_(std::move(blob)) {
   DCHECK(blob_);
 }
 
-mojom::BlobPtr BlobHandle::Clone() const {
-  mojom::BlobPtr clone;
+blink::mojom::BlobPtr BlobHandle::Clone() const {
+  blink::mojom::BlobPtr clone;
   blob_->Clone(MakeRequest(&clone));
   return clone;
 }

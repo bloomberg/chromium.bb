@@ -23,7 +23,6 @@ include_rules = [
   "+mojo",
   "+services",
   "-storage/browser",
-  "+storage/public/interfaces",
   "+third_party/hyphen/hyphen.h",
   "+third_party/webrtc_overrides",
   "+third_party/WebKit/common/origin_trials",

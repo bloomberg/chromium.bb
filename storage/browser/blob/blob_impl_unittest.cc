@@ -34,7 +34,7 @@ class DataPipeReader : public mojo::common::DataPipeDrainer::Client {
   base::OnceClosure done_callback_;
 };
 
-class MockBlobReaderClient : public mojom::BlobReaderClient {
+class MockBlobReaderClient : public blink::mojom::BlobReaderClient {
  public:
   void OnCalculatedSize(uint64_t total_size,
                         uint64_t expected_content_size) override {
@@ -72,7 +72,7 @@ class BlobImplTest : public testing::Test {
     return context_->AddFinishedBlob(builder);
   }
 
-  std::string UUIDFromBlob(mojom::Blob* blob) {
+  std::string UUIDFromBlob(blink::mojom::Blob* blob) {
     base::RunLoop loop;
     std::string received_uuid;
     blob->GetInternalUUID(base::Bind(
@@ -104,7 +104,7 @@ TEST_F(BlobImplTest, GetInternalUUID) {
   const std::string kId = "id";
   auto handle = CreateBlobFromString(kId, "hello world");
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   auto blob = BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
   EXPECT_EQ(kId, UUIDFromBlob(blob.get()));
   EXPECT_EQ(kId, UUIDFromBlob(ptr.get()));
@@ -114,7 +114,7 @@ TEST_F(BlobImplTest, CloneAndLifetime) {
   const std::string kId = "id";
   auto handle = CreateBlobFromString(kId, "hello world");
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   auto blob = BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
   EXPECT_EQ(kId, UUIDFromBlob(ptr.get()));
 
@@ -122,7 +122,7 @@ TEST_F(BlobImplTest, CloneAndLifetime) {
   EXPECT_TRUE(context_->registry().HasEntry(kId));
   EXPECT_TRUE(blob);
 
-  mojom::BlobPtr clone;
+  blink::mojom::BlobPtr clone;
   blob->Clone(MakeRequest(&clone));
   EXPECT_EQ(kId, UUIDFromBlob(clone.get()));
   clone.FlushForTesting();
@@ -143,12 +143,12 @@ TEST_F(BlobImplTest, ReadAll) {
   const std::string kContents = "hello world";
   auto handle = CreateBlobFromString(kId, kContents);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   MockBlobReaderClient client;
-  mojom::BlobReaderClientPtr client_ptr;
-  mojo::Binding<mojom::BlobReaderClient> client_binding(
+  blink::mojom::BlobReaderClientPtr client_ptr;
+  mojo::Binding<blink::mojom::BlobReaderClient> client_binding(
       &client, MakeRequest(&client_ptr));
 
   mojo::DataPipe pipe;
@@ -171,7 +171,7 @@ TEST_F(BlobImplTest, ReadAll_WithoutClient) {
   const std::string kContents = "hello world";
   auto handle = CreateBlobFromString(kId, kContents);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   mojo::DataPipe pipe;
@@ -185,12 +185,12 @@ TEST_F(BlobImplTest, ReadAll_BrokenBlob) {
   auto handle = context_->AddBrokenBlob(
       kId, "", "", BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   MockBlobReaderClient client;
-  mojom::BlobReaderClientPtr client_ptr;
-  mojo::Binding<mojom::BlobReaderClient> client_binding(
+  blink::mojom::BlobReaderClientPtr client_ptr;
+  mojo::Binding<blink::mojom::BlobReaderClient> client_binding(
       &client, MakeRequest(&client_ptr));
 
   mojo::DataPipe pipe;
@@ -211,12 +211,12 @@ TEST_F(BlobImplTest, ReadRange) {
   const std::string kContents = "hello world";
   auto handle = CreateBlobFromString(kId, kContents);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   MockBlobReaderClient client;
-  mojom::BlobReaderClientPtr client_ptr;
-  mojo::Binding<mojom::BlobReaderClient> client_binding(
+  blink::mojom::BlobReaderClientPtr client_ptr;
+  mojo::Binding<blink::mojom::BlobReaderClient> client_binding(
       &client, MakeRequest(&client_ptr));
 
   mojo::DataPipe pipe;
@@ -240,7 +240,7 @@ TEST_F(BlobImplTest, ReadRange_WithoutClient) {
   const std::string kContents = "hello world";
   auto handle = CreateBlobFromString(kId, kContents);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   mojo::DataPipe pipe;
@@ -255,12 +255,12 @@ TEST_F(BlobImplTest, ReadRange_TooLargeLength) {
   const std::string kContents = "hello world";
   auto handle = CreateBlobFromString(kId, kContents);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   MockBlobReaderClient client;
-  mojom::BlobReaderClientPtr client_ptr;
-  mojo::Binding<mojom::BlobReaderClient> client_binding(
+  blink::mojom::BlobReaderClientPtr client_ptr;
+  mojo::Binding<blink::mojom::BlobReaderClient> client_binding(
       &client, MakeRequest(&client_ptr));
 
   mojo::DataPipe pipe;
@@ -284,12 +284,12 @@ TEST_F(BlobImplTest, ReadRange_BrokenBlob) {
   auto handle = context_->AddBrokenBlob(
       kId, "", "", BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   MockBlobReaderClient client;
-  mojom::BlobReaderClientPtr client_ptr;
-  mojo::Binding<mojom::BlobReaderClient> client_binding(
+  blink::mojom::BlobReaderClientPtr client_ptr;
+  mojo::Binding<blink::mojom::BlobReaderClient> client_binding(
       &client, MakeRequest(&client_ptr));
 
   mojo::DataPipe pipe;
@@ -310,12 +310,12 @@ TEST_F(BlobImplTest, ReadRange_InvalidRange) {
   const std::string kContents = "hello world";
   auto handle = CreateBlobFromString(kId, kContents);
 
-  mojom::BlobPtr ptr;
+  blink::mojom::BlobPtr ptr;
   BlobImpl::Create(std::move(handle), MakeRequest(&ptr));
 
   MockBlobReaderClient client;
-  mojom::BlobReaderClientPtr client_ptr;
-  mojo::Binding<mojom::BlobReaderClient> client_binding(
+  blink::mojom::BlobReaderClientPtr client_ptr;
+  mojo::Binding<blink::mojom::BlobReaderClient> client_binding(
       &client, MakeRequest(&client_ptr));
 
   base::RunLoop loop;

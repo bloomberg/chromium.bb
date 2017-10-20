@@ -58,9 +58,8 @@ BlobRegistryWrapper::BlobRegistryWrapper() {
   DCHECK(features::IsMojoBlobsEnabled());
 }
 
-void BlobRegistryWrapper::Bind(
-    int process_id,
-    storage::mojom::BlobRegistryRequest request) {
+void BlobRegistryWrapper::Bind(int process_id,
+                               blink::mojom::BlobRegistryRequest request) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   blob_registry_->Bind(std::move(request),
                        base::MakeUnique<BindingDelegate>(process_id));

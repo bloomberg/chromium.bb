@@ -37,7 +37,6 @@ include_rules = [
   "+ui/aura_extra",
   "+components/vector_icons",
   "+ui/webui",
-  "+storage/public/interfaces",
 
   # In general, //content shouldn't depend on //device.
   # This is the an exception.

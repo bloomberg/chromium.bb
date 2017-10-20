@@ -890,7 +890,7 @@ class ServiceWorkerVersionBrowserTest : public ServiceWorkerBrowserTest {
       ServiceWorkerFetchEventResult actual_result,
       const ServiceWorkerResponse& actual_response,
       blink::mojom::ServiceWorkerStreamHandlePtr /* stream */,
-      storage::mojom::BlobPtr /* blob */,
+      blink::mojom::BlobPtr /* blob */,
       const scoped_refptr<ServiceWorkerVersion>& worker) {
     ASSERT_TRUE(BrowserThread::CurrentlyOn(BrowserThread::IO));
     ASSERT_TRUE(fetch_dispatcher_);

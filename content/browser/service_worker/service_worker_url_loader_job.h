@@ -101,7 +101,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
       ServiceWorkerFetchEventResult fetch_result,
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-      storage::mojom::BlobPtr body_as_blob,
+      blink::mojom::BlobPtr body_as_blob,
       const scoped_refptr<ServiceWorkerVersion>& version);
 
   // Used as the StartLoaderCallback passed to |loader_callback_| when the
@@ -111,7 +111,7 @@ class CONTENT_EXPORT ServiceWorkerURLLoaderJob : public mojom::URLLoader,
   void StartResponse(const ServiceWorkerResponse& response,
                      scoped_refptr<ServiceWorkerVersion> version,
                      blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
-                     storage::mojom::BlobPtr body_as_blob,
+                     blink::mojom::BlobPtr body_as_blob,
                      mojom::URLLoaderRequest request,
                      mojom::URLLoaderClientPtr client);
 

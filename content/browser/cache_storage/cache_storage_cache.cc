@@ -1785,7 +1785,7 @@ CacheStorageCache::PopulateResponseBody(disk_cache::ScopedEntryPtr entry,
   auto result = blob_storage_context_->AddFinishedBlob(&blob_data);
 
   if (features::IsMojoBlobsEnabled()) {
-    storage::mojom::BlobPtr blob_ptr;
+    blink::mojom::BlobPtr blob_ptr;
     storage::BlobImpl::Create(
         base::MakeUnique<storage::BlobDataHandle>(*result),
         MakeRequest(&blob_ptr));

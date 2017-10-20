@@ -47,20 +47,22 @@
 #include "public/platform/FilePathConversion.h"
 #include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
-
-using storage::mojom::blink::BlobPtr;
-using storage::mojom::blink::BlobRegistryPtr;
-using storage::mojom::blink::BytesProviderPtr;
-using storage::mojom::blink::BytesProviderRequest;
-using storage::mojom::blink::DataElement;
-using storage::mojom::blink::DataElementBlob;
-using storage::mojom::blink::DataElementPtr;
-using storage::mojom::blink::DataElementBytes;
-using storage::mojom::blink::DataElementBytesPtr;
-using storage::mojom::blink::DataElementFile;
-using storage::mojom::blink::DataElementFilesystemURL;
+#include "third_party/WebKit/common/blob/blob_registry.mojom-blink.h"
 
 namespace blink {
+
+using mojom::blink::BlobPtr;
+using mojom::blink::BlobPtrInfo;
+using mojom::blink::BlobRegistryPtr;
+using mojom::blink::BytesProviderPtr;
+using mojom::blink::BytesProviderRequest;
+using mojom::blink::DataElement;
+using mojom::blink::DataElementBlob;
+using mojom::blink::DataElementPtr;
+using mojom::blink::DataElementBytes;
+using mojom::blink::DataElementBytesPtr;
+using mojom::blink::DataElementFile;
+using mojom::blink::DataElementFilesystemURL;
 
 namespace {
 
@@ -399,7 +401,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
-    storage::mojom::blink::BlobRegistryPtr registry;
+    BlobRegistryPtr registry;
     Platform::Current()->GetInterfaceProvider()->GetInterface(
         MakeRequest(&registry));
     registry->GetBlobFromUUID(MakeRequest(&blob_info_), uuid_);
@@ -411,7 +413,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
 BlobDataHandle::BlobDataHandle(const String& uuid,
                                const String& type,
                                long long size,
-                               storage::mojom::blink::BlobPtrInfo blob_info)
+                               BlobPtrInfo blob_info)
     : uuid_(uuid.IsolatedCopy()),
       type_(IsValidBlobType(type) ? type.IsolatedCopy() : ""),
       size_(size),

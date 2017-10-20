@@ -1464,6 +1464,7 @@ jumbo_component("platform") {
     "//third_party:jpeg",
     "//third_party/WebKit/Source/platform/wtf",
     "//third_party/WebKit/common:blink_common",
+    "//third_party/WebKit/common:mojo_platform_bindings_blink",
     "//third_party/WebKit/public:mojo_bindings_blink",
     "//third_party/iccjpeg",
     "//third_party/libpng",

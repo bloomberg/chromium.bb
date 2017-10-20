@@ -768,7 +768,7 @@ bool IndexedDBCallbacks::IOThreadHelper::CreateAllBlobs(
   for (size_t i = 0; i < blob_info.size(); ++i) {
     std::string uuid = CreateBlobData(blob_info[i]);
     if (features::IsMojoBlobsEnabled()) {
-      storage::mojom::BlobPtr blob_ptr;
+      blink::mojom::BlobPtr blob_ptr;
       storage::BlobImpl::Create(blob_context->GetBlobDataFromUUID(uuid),
                                 MakeRequest(&blob_ptr));
       (*blob_or_file_info)[i]->blob = std::move(blob_ptr);

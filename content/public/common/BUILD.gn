@@ -274,7 +274,6 @@ source_set("common_sources") {
     "//services/service_manager/embedder",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/interfaces",
-    "//storage/public/interfaces:interfaces__generator",
     "//third_party/WebKit/public:blink_headers",
     "//ui/accessibility",
     "//ui/surface",

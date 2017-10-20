@@ -99,7 +99,7 @@ struct StructTraits<::blink::mojom::FetchAPIRequestDataView,
 
   static uint64_t blob_size(const ::blink::WebServiceWorkerRequest&);
 
-  static storage::mojom::blink::BlobPtr blob(
+  static blink::mojom::blink::BlobPtr blob(
       const ::blink::WebServiceWorkerRequest&);
 
   static const ::blink::Referrer& referrer(
