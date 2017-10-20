@@ -967,7 +967,7 @@ FloatSize LocalDOMWindow::GetViewportSize(
       page->GetSettings().GetViewportEnabled() && GetFrame()->IsMainFrame();
   bool affectedByScrollbars =
       scrollbar_inclusion == kExcludeScrollbars &&
-      !ScrollbarTheme::GetTheme().UsesOverlayScrollbars();
+      !page->GetScrollbarTheme().UsesOverlayScrollbars();
 
   if (affectedByScale || affectedByScrollbars)
     document()->UpdateStyleAndLayoutIgnorePendingStylesheets();

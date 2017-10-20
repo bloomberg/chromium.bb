@@ -62,6 +62,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/plugins/PluginData.h"
+#include "platform/scroll/ScrollbarTheme.h"
 #include "platform/scroll/SmoothScrollSequencer.h"
 #include "public/platform/Platform.h"
 #include "public/web/WebKit.h"
@@ -706,6 +707,10 @@ void Page::WillBeDestroyed() {
 
 void Page::RegisterPluginsChangedObserver(PluginsChangedObserver* observer) {
   plugins_changed_observers_.insert(observer);
+}
+
+ScrollbarTheme& Page::GetScrollbarTheme() const {
+  return ScrollbarTheme::DeprecatedStaticGetTheme();
 }
 
 Page::PageClients::PageClients()

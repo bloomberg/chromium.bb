@@ -620,7 +620,7 @@ static unsigned VerticalScrollDistance(LocalFrame& frame) {
                              frame.View()->VisibleHeight());
   return static_cast<unsigned>(
       max(max<int>(height * ScrollableArea::MinFractionToStepWhenPaging(),
-                   height - ScrollableArea::MaxOverlapBetweenPages()),
+                   height - frame.View()->MaxOverlapBetweenPages()),
           1));
 }
 

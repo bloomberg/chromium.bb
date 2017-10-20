@@ -105,6 +105,10 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
 
   void SetIsPopup() { chrome_client_->SetIsPopup(true); }
 
+  ScrollbarTheme& GetPageScrollbarTheme() const override {
+    return ScrollbarTheme::DeprecatedStaticGetTheme();
+  }
+
   using ScrollableArea::ShowOverlayScrollbars;
   using ScrollableArea::HorizontalScrollbarNeedsPaintInvalidation;
   using ScrollableArea::VerticalScrollbarNeedsPaintInvalidation;

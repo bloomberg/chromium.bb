@@ -37,11 +37,12 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
   ~LayoutScrollbarTheme() override {}
 
   int ScrollbarThickness(ScrollbarControlSize control_size) override {
-    return ScrollbarTheme::GetTheme().ScrollbarThickness(control_size);
+    return ScrollbarTheme::DeprecatedStaticGetTheme().ScrollbarThickness(
+        control_size);
   }
 
   WebScrollbarButtonsPlacement ButtonsPlacement() const override {
-    return ScrollbarTheme::GetTheme().ButtonsPlacement();
+    return ScrollbarTheme::DeprecatedStaticGetTheme().ButtonsPlacement();
   }
 
   void PaintScrollCorner(GraphicsContext&,
@@ -50,26 +51,30 @@ class LayoutScrollbarTheme final : public ScrollbarTheme {
 
   bool ShouldCenterOnThumb(const ScrollbarThemeClient& scrollbar,
                            const WebMouseEvent& event) override {
-    return ScrollbarTheme::GetTheme().ShouldCenterOnThumb(scrollbar, event);
+    return ScrollbarTheme::DeprecatedStaticGetTheme().ShouldCenterOnThumb(
+        scrollbar, event);
   }
   bool ShouldSnapBackToDragOrigin(const ScrollbarThemeClient& scrollbar,
                                   const WebMouseEvent& event) override {
-    return ScrollbarTheme::GetTheme().ShouldSnapBackToDragOrigin(scrollbar,
-                                                                 event);
+    return ScrollbarTheme::DeprecatedStaticGetTheme()
+        .ShouldSnapBackToDragOrigin(scrollbar, event);
   }
 
   double InitialAutoscrollTimerDelay() override {
-    return ScrollbarTheme::GetTheme().InitialAutoscrollTimerDelay();
+    return ScrollbarTheme::DeprecatedStaticGetTheme()
+        .InitialAutoscrollTimerDelay();
   }
   double AutoscrollTimerDelay() override {
-    return ScrollbarTheme::GetTheme().AutoscrollTimerDelay();
+    return ScrollbarTheme::DeprecatedStaticGetTheme().AutoscrollTimerDelay();
   }
 
   void RegisterScrollbar(ScrollbarThemeClient& scrollbar) override {
-    return ScrollbarTheme::GetTheme().RegisterScrollbar(scrollbar);
+    return ScrollbarTheme::DeprecatedStaticGetTheme().RegisterScrollbar(
+        scrollbar);
   }
   void UnregisterScrollbar(ScrollbarThemeClient& scrollbar) override {
-    return ScrollbarTheme::GetTheme().UnregisterScrollbar(scrollbar);
+    return ScrollbarTheme::DeprecatedStaticGetTheme().UnregisterScrollbar(
+        scrollbar);
   }
 
   int MinimumThumbLength(const ScrollbarThemeClient&) override;

@@ -55,10 +55,8 @@ float ScrollableArea::MinFractionToStepWhenPaging() {
   return kMinFractionToStepWhenPaging;
 }
 
-int ScrollableArea::MaxOverlapBetweenPages() {
-  static int max_overlap_between_pages =
-      ScrollbarTheme::GetTheme().MaxOverlapBetweenPages();
-  return max_overlap_between_pages;
+int ScrollableArea::MaxOverlapBetweenPages() const {
+  return GetPageScrollbarTheme().MaxOverlapBetweenPages();
 }
 
 ScrollableArea::ScrollableArea()
@@ -436,12 +434,12 @@ void ScrollableArea::SetScrollbarOverlayColorTheme(
   scrollbar_overlay_color_theme_ = overlay_theme;
 
   if (Scrollbar* scrollbar = HorizontalScrollbar()) {
-    ScrollbarTheme::GetTheme().UpdateScrollbarOverlayColorTheme(*scrollbar);
+    GetPageScrollbarTheme().UpdateScrollbarOverlayColorTheme(*scrollbar);
     scrollbar->SetNeedsPaintInvalidation(kAllParts);
   }
 
   if (Scrollbar* scrollbar = VerticalScrollbar()) {
-    ScrollbarTheme::GetTheme().UpdateScrollbarOverlayColorTheme(*scrollbar);
+    GetPageScrollbarTheme().UpdateScrollbarOverlayColorTheme(*scrollbar);
     scrollbar->SetNeedsPaintInvalidation(kAllParts);
   }
 }
@@ -583,15 +581,15 @@ void ScrollableArea::FadeOverlayScrollbarsTimerFired(TimerBase*) {
 }
 
 void ScrollableArea::ShowOverlayScrollbars() {
-  if (!ScrollbarTheme::GetTheme().UsesOverlayScrollbars())
+  if (!GetPageScrollbarTheme().UsesOverlayScrollbars())
     return;
 
   SetScrollbarsHidden(false);
   needs_show_scrollbar_layers_ = true;
 
   const double time_until_disable =
-      ScrollbarTheme::GetTheme().OverlayScrollbarFadeOutDelaySeconds() +
-      ScrollbarTheme::GetTheme().OverlayScrollbarFadeOutDurationSeconds();
+      GetPageScrollbarTheme().OverlayScrollbarFadeOutDelaySeconds() +
+      GetPageScrollbarTheme().OverlayScrollbarFadeOutDurationSeconds();
 
   // If the overlay scrollbars don't fade out, don't do anything. This is the
   // case for the mock overlays used in tests and on Mac, where the fade-out is
