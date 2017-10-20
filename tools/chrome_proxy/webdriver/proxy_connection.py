@@ -31,6 +31,8 @@ class ProxyConnection(IntegrationTest):
       self.assertEqual(2, len(responses))
       for response in responses:
         self.assertNotHasChromeProxyViaHeader(response)
+      self.assertTrue(t.SleepUntilHistogramHasEntry('DataReductionProxy.'
+        'InvalidResponseHeadersReceived.NetError'))
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()
