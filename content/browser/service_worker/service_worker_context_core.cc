@@ -312,6 +312,12 @@ ServiceWorkerDispatcherHost* ServiceWorkerContextCore::GetDispatcherHost(
 void ServiceWorkerContextCore::RemoveDispatcherHost(int process_id) {
   // Temporary CHECK for debugging https://crbug.com/750267.
   CHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
+  // TODO(falken) Try to remove this call. It should be unnecessary because
+  // provider hosts remove themselves when their Mojo connection to the renderer
+  // is destroyed. But if we don't remove the hosts immediately here, collisions
+  // of <process_id, provider_id> can occur if a new dispatcher host is
+  // created for a reused RenderProcessHost. https://crbug.com/736203
+  RemoveAllProviderHostsForProcess(process_id);
   dispatcher_hosts_.erase(process_id);
 }
 
