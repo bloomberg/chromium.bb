@@ -61,6 +61,8 @@ class TetherConnectorImpl : public TetherConnector,
   bool CancelConnectionAttempt(const std::string& tether_network_guid) override;
 
   // ConnectTetheringOperation::Observer:
+  void OnConnectTetheringRequestSent(
+      const cryptauth::RemoteDevice& remote_device) override;
   void OnSuccessfulConnectTetheringResponse(
       const cryptauth::RemoteDevice& remote_device,
       const std::string& ssid,

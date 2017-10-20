@@ -144,6 +144,26 @@ bool TetherConnectorImpl::CancelConnectionAttempt(
   return true;
 }
 
+void TetherConnectorImpl::OnConnectTetheringRequestSent(
+    const cryptauth::RemoteDevice& remote_device) {
+  // If setup is required for the phone, display a notification so that the
+  // user knows to follow instructions on the phone. Note that the notification
+  // is displayed only after a request has been sent successfully. If the
+  // notification is displayed before a the request has been sent, it could be
+  // misleading since the connection could fail. See crbug.com/767756.
+  const std::string tether_network_guid =
+      device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
+          remote_device.GetDeviceId());
+  if (!host_scan_cache_->DoesHostRequireSetup(tether_network_guid))
+    return;
+
+  const NetworkState* tether_network_state =
+      network_state_handler_->GetNetworkStateFromGuid(tether_network_guid);
+  DCHECK(tether_network_state);
+  notification_presenter_->NotifySetupRequired(
+      tether_network_state->name(), tether_network_state->signal_strength());
+}
+
 void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
     const cryptauth::RemoteDevice& remote_device,
     const std::string& ssid,
@@ -162,23 +182,6 @@ void TetherConnectorImpl::OnSuccessfulConnectTetheringResponse(
   PA_LOG(INFO) << "Received successful ConnectTetheringResponse from device "
                << "with ID " << remote_device.GetTruncatedDeviceIdForLogs()
                << ". SSID: \"" << ssid << "\".";
-
-  // If setup is required for the phone, display a notification so that the
-  // user knows to follow instructions on the phone. Note that the notification
-  // is displayed only after a successful response has been received. If the
-  // notification is displayed before a successful response has been received,
-  // it could be misleading since the connection could fail. See
-  // crbug.com/767756.
-  const std::string tether_network_guid =
-      device_id_tether_network_guid_map_->GetTetherNetworkGuidForDeviceId(
-          remote_device.GetDeviceId());
-  if (host_scan_cache_->DoesHostRequireSetup(tether_network_guid)) {
-    const NetworkState* tether_network_state =
-        network_state_handler_->GetNetworkStateFromGuid(tether_network_guid);
-    DCHECK(tether_network_state);
-    notification_presenter_->NotifySetupRequired(
-        tether_network_state->name(), tether_network_state->signal_strength());
-  }
 
   // Make a copy of the device ID, SSID, and password to pass below before
   // destroying |connect_tethering_operation_|.

@@ -37,31 +37,46 @@ constexpr base::TimeDelta kConnectTetheringResponseTime =
 
 class TestObserver final : public ConnectTetheringOperation::Observer {
  public:
-  TestObserver() : has_received_failure(false) {}
+  TestObserver() {}
+  ~TestObserver() {}
+
+  const cryptauth::RemoteDevice& remote_device() { return remote_device_; }
+  const std::string& ssid() { return ssid_; }
+  const std::string& password() { return password_; }
+  bool has_received_failure() { return has_received_failure_; }
+  bool has_sent_request() { return has_sent_request_; }
+  ConnectTetheringResponse_ResponseCode error_code() { return error_code_; }
+
+  // ConnectTetheringOperation::Observer:
+  void OnConnectTetheringRequestSent(
+      const cryptauth::RemoteDevice& remote_device) override {
+    has_sent_request_ = true;
+  }
 
   void OnSuccessfulConnectTetheringResponse(
       const cryptauth::RemoteDevice& remote_device,
       const std::string& ssid,
       const std::string& password) override {
-    this->remote_device = remote_device;
-    this->ssid = ssid;
-    this->password = password;
+    remote_device_ = remote_device;
+    ssid_ = ssid;
+    password_ = password;
   }
 
   void OnConnectTetheringFailure(
       const cryptauth::RemoteDevice& remote_device,
       ConnectTetheringResponse_ResponseCode error_code) override {
-    has_received_failure = true;
-    this->remote_device = remote_device;
-    this->error_code = error_code;
+    has_received_failure_ = true;
+    remote_device_ = remote_device;
+    error_code_ = error_code;
   }
 
-  cryptauth::RemoteDevice remote_device;
-  std::string ssid;
-  std::string password;
-
-  bool has_received_failure;
-  ConnectTetheringResponse_ResponseCode error_code;
+ private:
+  cryptauth::RemoteDevice remote_device_;
+  std::string ssid_;
+  std::string password_;
+  bool has_received_failure_ = false;
+  bool has_sent_request_ = false;
+  ConnectTetheringResponse_ResponseCode error_code_;
 };
 
 std::string CreateConnectTetheringRequestString() {
@@ -131,6 +146,14 @@ class ConnectTetheringOperationTest : public testing::Test {
     ASSERT_EQ(1u, sent_messages.size());
     EXPECT_EQ(test_device_, sent_messages[0].remote_device);
     EXPECT_EQ(connect_tethering_request_string_, sent_messages[0].message);
+
+    // Simulate BleConnectionManager notifying ConnectTetheringOperation that
+    // the message was delivered.
+    int last_sequence_number =
+        fake_ble_connection_manager_->last_sequence_number();
+    EXPECT_NE(last_sequence_number, -1);
+    fake_ble_connection_manager_->SetMessageSent(last_sequence_number);
+    EXPECT_TRUE(test_observer_->has_sent_request());
   }
 
   void SimulateResponseReceivedAndVerifyObserverCallbackInvoked(
@@ -159,12 +182,12 @@ class ConnectTetheringOperationTest : public testing::Test {
     if (expected_response_code ==
         ConnectTetheringResponse_ResponseCode::
             ConnectTetheringResponse_ResponseCode_SUCCESS) {
-      EXPECT_EQ(test_device_, test_observer_->remote_device);
-      EXPECT_EQ(std::string(kTestSsid), test_observer_->ssid);
-      EXPECT_EQ(std::string(kTestPassword), test_observer_->password);
+      EXPECT_EQ(test_device_, test_observer_->remote_device());
+      EXPECT_EQ(std::string(kTestSsid), test_observer_->ssid());
+      EXPECT_EQ(std::string(kTestPassword), test_observer_->password());
     } else {
-      EXPECT_TRUE(test_observer_->has_received_failure);
-      EXPECT_EQ(expected_response_code, test_observer_->error_code);
+      EXPECT_TRUE(test_observer_->has_received_failure());
+      EXPECT_EQ(expected_response_code, test_observer_->error_code());
     }
 
     histogram_tester_.ExpectTimeBucketCount(
@@ -265,10 +288,10 @@ TEST_F(ConnectTetheringOperationTest, TestCannotConnect) {
       test_device_, cryptauth::SecureChannel::Status::DISCONNECTED);
 
   // The maximum number of connection failures has occurred.
-  EXPECT_TRUE(test_observer_->has_received_failure);
+  EXPECT_TRUE(test_observer_->has_received_failure());
   EXPECT_EQ(ConnectTetheringResponse_ResponseCode::
                 ConnectTetheringResponse_ResponseCode_UNKNOWN_ERROR,
-            test_observer_->error_code);
+            test_observer_->error_code());
 
   histogram_tester_.ExpectTotalCount(
       "InstantTethering.Performance.ConnectTetheringResponseDuration", 0);

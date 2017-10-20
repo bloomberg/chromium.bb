@@ -70,6 +70,10 @@ class FakeConnectTetheringOperation : public ConnectTetheringOperation {
 
   ~FakeConnectTetheringOperation() override {}
 
+  void NotifyConnectTetheringRequestSent() {
+    ConnectTetheringOperation::NotifyConnectTetheringRequestSent();
+  }
+
   void SendSuccessfulResponse(const std::string& ssid,
                               const std::string& password) {
     NotifyObserversOfSuccessfulResponse(ssid, password);
@@ -282,6 +286,8 @@ class TetherConnectorImplTest : public NetworkStateTest {
     // Simulate a failed connection attempt (either the host cannot provide
     // tethering at this time or a timeout occurs).
     EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
+    fake_operation_factory_->created_operations()[0]
+        ->NotifyConnectTetheringRequestSent();
     fake_operation_factory_->created_operations()[0]->SendFailedResponse(
         response_code);
 
@@ -480,6 +486,8 @@ TEST_F(TetherConnectorImplTest, TestConnectingToWifiFails) {
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
   EXPECT_FALSE(
       fake_operation_factory_->created_operations()[0]->setup_required());
+  fake_operation_factory_->created_operations()[0]
+      ->NotifyConnectTetheringRequestSent();
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
@@ -524,6 +532,8 @@ TEST_F(TetherConnectorImplTest, TestCancelWhileConnectingToWifi) {
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
   EXPECT_FALSE(
       fake_operation_factory_->created_operations()[0]->setup_required());
+  fake_operation_factory_->created_operations()[0]
+      ->NotifyConnectTetheringRequestSent();
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
@@ -573,6 +583,8 @@ TEST_F(TetherConnectorImplTest, TestSuccessfulConnection) {
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
   EXPECT_FALSE(
       fake_operation_factory_->created_operations()[0]->setup_required());
+  fake_operation_factory_->created_operations()[0]
+      ->NotifyConnectTetheringRequestSent();
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
@@ -622,9 +634,13 @@ TEST_F(TetherConnectorImplTest, TestSuccessfulConnection_SetupRequired) {
   EXPECT_TRUE(
       fake_operation_factory_->created_operations()[0]->setup_required());
 
+  fake_operation_factory_->created_operations()[0]
+      ->NotifyConnectTetheringRequestSent();
+  EXPECT_TRUE(
+      fake_notification_presenter_->is_setup_required_notification_shown());
+
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
-
   EXPECT_TRUE(
       fake_notification_presenter_->is_setup_required_notification_shown());
 
@@ -719,6 +735,8 @@ TEST_F(TetherConnectorImplTest,
 
   // The second operation replies successfully, and this response should
   // result in a Wi-Fi connection attempt.
+  fake_operation_factory_->created_operations()[1]
+      ->NotifyConnectTetheringRequestSent();
   fake_operation_factory_->created_operations()[1]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(kSsid, fake_wifi_hotspot_connector_->most_recent_ssid());
@@ -744,6 +762,8 @@ TEST_F(TetherConnectorImplTest,
   fake_tether_host_fetcher_->InvokePendingCallbacks();
 
   EXPECT_EQ(1u, fake_operation_factory_->created_operations().size());
+  fake_operation_factory_->created_operations()[0]
+      ->NotifyConnectTetheringRequestSent();
   fake_operation_factory_->created_operations()[0]->SendSuccessfulResponse(
       kSsid, kPassword);
   EXPECT_EQ(ActiveHost::ActiveHostStatus::CONNECTING,
