@@ -81926,6 +81926,12 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="SubresourceFilter.PageLoad.BlockedPopups" units="popups">
+  <obsolete>
+    Metric is broken and will be replaced by
+    ContentSettings.Popups.StringBlocked.NumBlocked. This only logged values for
+    sites which are also activated for subresource filtering, when most sites
+    will probably only be marked for popup blocking.
+  </obsolete>
   <owner>csharrison@chromium.org</owner>
   <summary>
     Records the number of popups blocked per page load due to subresource filter
