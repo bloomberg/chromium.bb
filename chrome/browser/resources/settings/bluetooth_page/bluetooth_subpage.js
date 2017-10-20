@@ -331,6 +331,23 @@ Polymer({
   },
 
   /**
+   * @param {!Event} event
+   * @private
+   */
+  stopTap_: function(event) {
+    event.stopPropagation();
+  },
+
+  /**
+   * @param {!Event} event
+   * @private
+   */
+  onEnableTap_: function(event) {
+    this.bluetoothToggleState = !this.bluetoothToggleState;
+    event.stopPropagation();
+  },
+
+  /**
    * @param {boolean} enabled
    * @param {string} onstr
    * @param {string} offstr
