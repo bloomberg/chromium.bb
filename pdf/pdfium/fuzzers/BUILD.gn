@@ -179,6 +179,14 @@ if (pdf_enable_xfa) {
     dict = "dicts/pdf_fm2js.dict"
   }
 
+  fuzzer_test("pdf_formcalc_fuzzer") {
+    sources = []
+    deps = [
+      "//third_party/pdfium/testing/libfuzzer:pdf_formcalc_fuzzer",
+    ]
+    dict = "dicts/pdf_formcalc.dict"
+  }
+
   fuzzer_test("pdf_lzw_fuzzer") {
     sources = []
     deps = [
