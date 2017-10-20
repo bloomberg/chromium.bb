@@ -1,0 +1,101 @@
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<style>
+    #pusher {
+        width: 1000px;
+        height: 1000px;
+        outline: 1px solid black;
+    }
+</style>
+<div id="console"></div>
+<div id="testArea">
+    <div id="pusher">This box is here to create scrollbars.</div>
+</div>
+<script>
+    const floatPrecision = 0.00001;
+
+    function sendMouseDownAt(x, y) {
+        if (window.chrome && chrome.gpuBenchmarking) {
+          var pointerActions =
+              [{source: "pen",
+                actions: [
+                  { name: "pointerDown", x: x, y: y },
+                  { name: "pointerUp" }
+              ]}];
+          chrome.gpuBenchmarking.pointerActionSequence(pointerActions);
+        }
+    }
+
+    var t1 = async_test('Default');
+    var t2 = async_test('Zoomed');
+    var t3 = async_test('Scrolled');
+    var t4 = async_test('Zoomed and scrolled');
+
+    // Default.
+    window.addEventListener("pointerdown", base, false);
+    sendMouseDownAt(100, 100);
+
+    function base(event) {
+        t1.step(function() {
+            assert_equals(event.clientX, 100);
+            assert_equals(event.clientY, 100);
+            assert_equals(event.pageX, 100);
+            assert_equals(event.pageY, 100);
+            t1.done();
+        });
+        window.removeEventListener("pointerdown", base, false);
+
+        // Just zoomed.
+        window.addEventListener("pointerdown", justZoomed, false);
+        eventSender.setPageZoomFactor(1.2);
+        sendMouseDownAt(100, 100);
+    }
+
+    function justZoomed(event) {
+        t2.step(function() {
+            assert_approx_equals(event.clientX, 83.33333, floatPrecision);
+            assert_approx_equals(event.clientY, 83.33333, floatPrecision);
+            assert_approx_equals(event.pageX, 83.33333, floatPrecision);
+            assert_approx_equals(event.pageY, 83.33333, floatPrecision);
+            t2.done();
+        });
+        eventSender.setPageZoomFactor(1.0)
+        window.removeEventListener("pointerdown", justZoomed, false);
+
+        // Just scrolled.
+        window.addEventListener("pointerdown", justScrolled, false);
+        window.scrollTo(50, 50);
+        sendMouseDownAt(100, 100);
+    }
+
+    function justScrolled(event) {
+        t3.step(function() {
+            assert_equals(event.clientX, 100);
+            assert_equals(event.clientY, 100);
+            assert_equals(event.pageX, 150);
+            assert_equals(event.pageY, 150);
+            t3.done();
+        });
+        window.removeEventListener("pointerdown", justScrolled, false);
+        window.scrollTo(0, 0);
+
+        // Zoomed and scrolled.
+        window.addEventListener("pointerdown", zoomedAndScrolled, false);
+        eventSender.setPageZoomFactor(1.2);
+        window.scrollTo(50, 50);
+        sendMouseDownAt(100, 100);
+    }
+
+    function zoomedAndScrolled(event) {
+        t4.step(function() {
+            assert_approx_equals(event.clientX, 83.33333, floatPrecision);
+            assert_approx_equals(event.clientY, 83.33333, floatPrecision);
+            assert_approx_equals(event.pageX, 133.33333, floatPrecision);
+            assert_approx_equals(event.pageY, 133.33333, floatPrecision);
+            t4.done();
+        });
+        eventSender.setPageZoomFactor(1.0);
+        window.scrollTo(0, 0);
+        window.removeEventListener("pointerdown", zoomedAndScrolled, false);
+    }
+</script>
