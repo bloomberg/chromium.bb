@@ -482,14 +482,14 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   scoped_refptr<ServiceWorkerVersion> running_hosted_version_;
   base::WeakPtr<ServiceWorkerContextCore> context_;
 
-  // |dispatcher_host_| can be null in several cases:
+  // |dispatcher_host_| is expected to outlive |this| because it destroys
+  // |this| upon destruction. However, it may be null in several cases:
   // 1) In some tests.
   // 2) PlzNavigate and service worker startup pre-create a
   // ServiceWorkerProviderHost instance before there is a renderer assigned to
   // it. The dispatcher host is set once the instance starts hosting a
   // renderer.
   // 3) During cross-site transfer.
-  // 4) The dispatcher host can be destructed/removed before the provider host.
   base::WeakPtr<ServiceWorkerDispatcherHost> dispatcher_host_;
 
   bool allow_association_;

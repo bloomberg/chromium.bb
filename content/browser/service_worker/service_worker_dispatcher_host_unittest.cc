@@ -379,17 +379,13 @@ TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
             base::Callback<WebContents*(void)>()));
   }
 
-  // Deletion of the dispatcher_host should cause provider hosts for
-  // that process to have a null dispatcher host.
+  // Deletion of the dispatcher_host should cause providers for that
+  // process to get deleted as well.
   dispatcher_host_->OnProviderCreated(std::move(host_info_3));
-  ServiceWorkerProviderHost* host =
-      context()->GetProviderHost(process_id, kProviderId);
-  EXPECT_TRUE(host->dispatcher_host());
+  EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
   EXPECT_TRUE(dispatcher_host_->HasOneRef());
   dispatcher_host_ = nullptr;
-  host = context()->GetProviderHost(process_id, kProviderId);
-  ASSERT_TRUE(host);
-  EXPECT_FALSE(host->dispatcher_host());
+  EXPECT_FALSE(context()->GetProviderHost(process_id, kProviderId));
 }
 
 TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
@@ -417,13 +413,8 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
   // Simulate the render process crashing.
   dispatcher_host_->OnFilterRemoved();
 
-  // The provider host still exists, since it will clean itself up when its Mojo
-  // connection to the renderer breaks. But it should no longer be using the
-  // dispatcher host.
-  ServiceWorkerProviderHost* host =
-      context()->GetProviderHost(process_id, provider_id);
-  ASSERT_TRUE(host);
-  EXPECT_FALSE(host->dispatcher_host());
+  // The dispatcher host should have removed the provider host.
+  EXPECT_FALSE(context()->GetProviderHost(process_id, provider_id));
 
   // The EmbeddedWorkerInstance should still think it is running, since it will
   // clean itself up when its Mojo connection to the renderer breaks.
@@ -437,8 +428,10 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
                                              helper_.get()));
   new_dispatcher_host->Init(context_wrapper());
 
-  // To show the new dispatcher can operate, simulate provider creation.
-  ServiceWorkerProviderHostInfo host_info(provider_id + 1, MSG_ROUTING_NONE,
+  // To show the new dispatcher can operate, simulate provider creation. Since
+  // the old dispatcher cleaned up the old provider host, the new one won't
+  // complain.
+  ServiceWorkerProviderHostInfo host_info(provider_id, MSG_ROUTING_NONE,
                                           SERVICE_WORKER_PROVIDER_FOR_WINDOW,
                                           true /* is_parent_frame_secure */);
   ServiceWorkerRemoteProviderEndpoint remote_endpoint;
