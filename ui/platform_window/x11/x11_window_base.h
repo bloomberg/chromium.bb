@@ -7,8 +7,6 @@
 
 #include <stdint.h>
 
-#include <array>
-
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
@@ -50,7 +48,6 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
 
  protected:
   void Destroy();
-  void UnConfineCursor();
 
   PlatformWindowDelegate* delegate() { return delegate_; }
   XDisplay* xdisplay() { return xdisplay_; }
@@ -74,10 +71,6 @@ class X11_WINDOW_EXPORT X11WindowBase : public PlatformWindow {
 
   // The bounds of |xwindow_|.
   gfx::Rect bounds_;
-
-  // Keep track of barriers to confine cursor.
-  bool has_pointer_barriers_ = false;
-  std::array<XID, 4> pointer_barriers_;
 
   bool window_mapped_ = false;
 
