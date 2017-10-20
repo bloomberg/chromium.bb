@@ -244,24 +244,6 @@ void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
   static_cast<TestWebContents*>(web_contents())->NavigateAndCommit(url);
 }
 
-void RenderViewHostTestHarness::Reload() {
-  NavigationEntry* entry = controller().GetLastCommittedEntry();
-  DCHECK(entry);
-  controller().Reload(ReloadType::NORMAL, false);
-  RenderFrameHostTester::For(main_rfh())
-      ->SendNavigateWithTransition(entry->GetUniqueID(),
-                                   false, entry->GetURL(),
-                                   ui::PAGE_TRANSITION_RELOAD);
-}
-
-void RenderViewHostTestHarness::FailedReload() {
-  NavigationEntry* entry = controller().GetLastCommittedEntry();
-  DCHECK(entry);
-  controller().Reload(ReloadType::NORMAL, false);
-  RenderFrameHostTester::For(main_rfh())
-      ->SendFailedNavigate(entry->GetUniqueID(), false, entry->GetURL());
-}
-
 void RenderViewHostTestHarness::SetUp() {
   // ContentTestSuiteBase might have already initialized
   // MaterialDesignController in unit_tests suite.

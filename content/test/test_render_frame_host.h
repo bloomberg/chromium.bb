@@ -58,9 +58,6 @@ class TestRenderFrameHost : public RenderFrameHostImpl,
   TestRenderFrameHost* AppendChild(const std::string& frame_name) override;
   void Detach() override;
   void SimulateNavigationStop() override;
-  void SendFailedNavigate(int nav_entry_id,
-                          bool did_create_new_entry,
-                          const GURL& url) override;
   void SendNavigateWithTransition(int nav_entry_id,
                                   bool did_create_new_entry,
                                   const GURL& url,

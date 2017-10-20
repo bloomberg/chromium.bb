@@ -438,7 +438,7 @@ TEST_F(GeolocationPermissionContextTests, GeolocationEnabledDisabled) {
   EXPECT_TRUE(HasActivePrompt());
   histograms.ExpectTotalCount("Permissions.Action.Geolocation", 0);
 
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   histograms.ExpectUniqueSample("Permissions.Action.Geolocation",
                                 static_cast<int>(PermissionAction::IGNORED), 1);
   MockLocationSettings::SetLocationStatus(false /* android */,

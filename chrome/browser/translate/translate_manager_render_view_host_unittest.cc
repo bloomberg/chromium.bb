@@ -55,6 +55,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
@@ -285,10 +286,12 @@ class TranslateManagerRenderViewHostTest
   void SimulateNavigation(const GURL& url,
                           const std::string& lang,
                           bool page_translatable) {
-    if (main_rfh()->GetLastCommittedURL() == url)
-      Reload();
-    else
-      NavigateAndCommit(url);
+    if (main_rfh()->GetLastCommittedURL() == url) {
+      content::NavigationSimulator::Reload(web_contents());
+    } else {
+      content::NavigationSimulator::NavigateAndCommitFromBrowser(web_contents(),
+                                                                 url);
+    }
     SimulateOnTranslateLanguageDetermined(lang, page_translatable);
   }
 
@@ -403,10 +406,12 @@ class TranslateManagerRenderViewHostTest
 
   void ReloadAndWait(bool successful_reload) {
     NavEntryCommittedObserver nav_observer(web_contents());
-    if (successful_reload)
-      Reload();
-    else
-      FailedReload();
+    if (successful_reload) {
+      content::NavigationSimulator::Reload(web_contents());
+    } else {
+      content::NavigationSimulator::ReloadAndFail(web_contents(),
+                                                  net::ERR_TIMED_OUT);
+    }
 
     // Ensures it is really handled a reload.
     const content::LoadCommittedDetails& nav_details =

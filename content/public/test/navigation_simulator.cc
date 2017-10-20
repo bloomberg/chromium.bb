@@ -86,6 +86,19 @@ RenderFrameHost* NavigationSimulator::NavigateAndCommitFromBrowser(
 }
 
 // static
+RenderFrameHost* NavigationSimulator::Reload(WebContents* web_contents) {
+  NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  CHECK(entry);
+  NavigationSimulator simulator(entry->GetURL(), true /* browser_initiated */,
+                                static_cast<WebContentsImpl*>(web_contents),
+                                nullptr);
+  simulator.SetReloadType(ReloadType::NORMAL);
+  simulator.Commit();
+  return simulator.GetFinalRenderFrameHost();
+}
+
+// static
 RenderFrameHost* NavigationSimulator::NavigateAndCommitFromDocument(
     const GURL& original_url,
     RenderFrameHost* render_frame_host) {
@@ -106,6 +119,23 @@ RenderFrameHost* NavigationSimulator::NavigateAndFailFromBrowser(
   NavigationSimulator simulator(url, true /* browser_initiated */,
                                 static_cast<WebContentsImpl*>(web_contents),
                                 nullptr);
+  simulator.Fail(net_error_code);
+  if (net_error_code == net::ERR_ABORTED)
+    return nullptr;
+  simulator.CommitErrorPage();
+  return simulator.GetFinalRenderFrameHost();
+}
+
+// static
+RenderFrameHost* NavigationSimulator::ReloadAndFail(WebContents* web_contents,
+                                                    int net_error_code) {
+  NavigationEntry* entry =
+      web_contents->GetController().GetLastCommittedEntry();
+  CHECK(entry);
+  NavigationSimulator simulator(entry->GetURL(), true /* browser_initiated */,
+                                static_cast<WebContentsImpl*>(web_contents),
+                                nullptr);
+  simulator.SetReloadType(ReloadType::NORMAL);
   simulator.Fail(net_error_code);
   if (net_error_code == net::ERR_ABORTED)
     return nullptr;
@@ -394,8 +424,10 @@ void NavigationSimulator::Commit() {
   params.origin = url::Origin::Create(navigation_url_);
   params.transition = transition_;
   params.should_update_history = true;
-  params.did_create_new_entry = !ui::PageTransitionCoreTypeIs(
-      transition_, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  params.did_create_new_entry =
+      !ui::PageTransitionCoreTypeIs(transition_,
+                                    ui::PAGE_TRANSITION_AUTO_SUBFRAME) &&
+      reload_type_ == ReloadType::NONE;
   params.gesture =
       has_user_gesture_ ? NavigationGestureUser : NavigationGestureAuto;
   params.contents_mime_type = "text/html";
@@ -511,8 +543,10 @@ void NavigationSimulator::CommitErrorPage() {
       base::TimeTicks::Now()));
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = handle_->pending_nav_entry_id();
-  params.did_create_new_entry = !ui::PageTransitionCoreTypeIs(
-      transition_, ui::PAGE_TRANSITION_AUTO_SUBFRAME);
+  params.did_create_new_entry =
+      !ui::PageTransitionCoreTypeIs(transition_,
+                                    ui::PAGE_TRANSITION_AUTO_SUBFRAME) &&
+      reload_type_ == ReloadType::NONE;
   params.url = navigation_url_;
   params.transition = transition_;
   params.was_within_same_document = false;
@@ -587,6 +621,8 @@ void NavigationSimulator::CommitSameDocument() {
 void NavigationSimulator::SetTransition(ui::PageTransition transition) {
   CHECK_EQ(INITIALIZATION, state_)
       << "The transition cannot be set after the navigation has started";
+  CHECK_EQ(ReloadType::NONE, reload_type_)
+      << "The transition cannot be specified for reloads";
   transition_ = transition;
 }
 
@@ -594,6 +630,16 @@ void NavigationSimulator::SetHasUserGesture(bool has_user_gesture) {
   CHECK_EQ(INITIALIZATION, state_) << "The has_user_gesture parameter cannot "
                                       "be set after the navigation has started";
   has_user_gesture_ = has_user_gesture;
+}
+
+void NavigationSimulator::SetReloadType(ReloadType reload_type) {
+  CHECK_EQ(INITIALIZATION, state_) << "The reload_type parameter cannot "
+                                      "be set after the navigation has started";
+  CHECK(browser_initiated_) << "The reload_type parameter can only be set for "
+                               "browser-intiated navigations";
+  reload_type_ = reload_type;
+  if (reload_type_ != ReloadType::NONE)
+    transition_ = ui::PAGE_TRANSITION_RELOAD;
 }
 
 void NavigationSimulator::SetReferrer(const Referrer& referrer) {
@@ -720,8 +766,13 @@ void NavigationSimulator::OnWillProcessResponse() {
 }
 
 bool NavigationSimulator::SimulateBrowserInitiatedStart() {
-  web_contents_->GetController().LoadURL(navigation_url_, referrer_,
-                                         transition_, std::string());
+  if (reload_type_ != ReloadType::NONE) {
+    web_contents_->GetController().Reload(reload_type_,
+                                          false /*check_for_repost */);
+  } else {
+    web_contents_->GetController().LoadURL(navigation_url_, referrer_,
+                                           transition_, std::string());
+  }
 
   // The navigation url might have been rewritten by the NavigationController.
   // Update it.

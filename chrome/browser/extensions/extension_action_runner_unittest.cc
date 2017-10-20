@@ -21,6 +21,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/navigation_simulator.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
@@ -220,7 +221,7 @@ TEST_F(ExtensionActionRunnerUnitTest, RequestPermissionAndExecute) {
 
   // Reloading and same-origin navigations shouldn't clear those permissions,
   // and we shouldn't require user constent again.
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   EXPECT_FALSE(RequiresUserConsent(extension));
   NavigateAndCommit(GURL("https://www.google.com/foo"));
   EXPECT_FALSE(RequiresUserConsent(extension));
@@ -259,7 +260,7 @@ TEST_F(ExtensionActionRunnerUnitTest, PendingInjectionsRemovedAtNavigation) {
 
   // Reload. This should remove the pending injection, and we should not
   // execute anything.
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   EXPECT_FALSE(runner()->WantsToRun(extension));
   EXPECT_EQ(0u, GetExecutionCountForExtension(extension->id()));
 
@@ -314,7 +315,7 @@ TEST_F(ExtensionActionRunnerUnitTest, ActiveScriptsUseActiveTabPermissions) {
 
   // Reloading and other same-origin navigations maintain the permission to
   // execute.
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   EXPECT_FALSE(RequiresUserConsent(extension));
   NavigateAndCommit(GURL("https://www.google.com/foo"));
   EXPECT_FALSE(RequiresUserConsent(extension));
@@ -409,7 +410,7 @@ TEST_F(ExtensionActionRunnerUnitTest, TestAlwaysRun) {
 
   // Reloading the extension should not clear any granted host permissions.
   extension = ReloadExtension();
-  Reload();
+  content::NavigationSimulator::Reload(web_contents());
   EXPECT_FALSE(RequiresUserConsent(extension));
 
   // Different host...
