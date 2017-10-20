@@ -1355,10 +1355,8 @@ RenderFrameHostManager::DetermineSiteInstanceForURL(
     // renderers created for particular chrome urls (e.g. the chrome-native://
     // scheme) can be reused for subsequent navigations in the same WebContents.
     // See http://crbug.com/386542.
-    if (dest_is_restore &&
-        GetContentClient()->browser()->ShouldAssignSiteForURL(dest_url)) {
+    if (dest_is_restore && SiteInstanceImpl::ShouldAssignSiteForURL(dest_url))
       current_instance_impl->SetSite(dest_url);
-    }
 
     return SiteInstanceDescriptor(current_instance_impl);
   }
