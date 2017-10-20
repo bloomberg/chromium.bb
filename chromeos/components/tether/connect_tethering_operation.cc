@@ -86,8 +86,9 @@ void ConnectTetheringOperation::OnDeviceAuthenticated(
     const cryptauth::RemoteDevice& remote_device) {
   DCHECK(remote_devices().size() == 1u && remote_devices()[0] == remote_device);
   connect_tethering_request_start_time_ = clock_->Now();
-  SendMessageToDevice(remote_device, base::MakeUnique<MessageWrapper>(
-                                         ConnectTetheringRequest()));
+  connect_message_sequence_number_ = SendMessageToDevice(
+      remote_device,
+      base::MakeUnique<MessageWrapper>(ConnectTetheringRequest()));
 }
 
 void ConnectTetheringOperation::OnMessageReceived(
@@ -166,6 +167,18 @@ MessageType ConnectTetheringOperation::GetMessageTypeForConnection() {
   return MessageType::CONNECT_TETHERING_REQUEST;
 }
 
+void ConnectTetheringOperation::OnMessageSent(int sequence_number) {
+  if (sequence_number != connect_message_sequence_number_)
+    return;
+
+  NotifyConnectTetheringRequestSent();
+}
+
+void ConnectTetheringOperation::NotifyConnectTetheringRequestSent() {
+  for (auto& observer : observer_list_)
+    observer.OnConnectTetheringRequestSent(remote_device_);
+}
+
 void ConnectTetheringOperation::NotifyObserversOfSuccessfulResponse(
     const std::string& ssid,
     const std::string& password) {
@@ -177,9 +190,8 @@ void ConnectTetheringOperation::NotifyObserversOfSuccessfulResponse(
 
 void ConnectTetheringOperation::NotifyObserversOfConnectionFailure(
     ConnectTetheringResponse_ResponseCode error_code) {
-  for (auto& observer : observer_list_) {
+  for (auto& observer : observer_list_)
     observer.OnConnectTetheringFailure(remote_device_, error_code);
-  }
 }
 
 uint32_t ConnectTetheringOperation::GetTimeoutSeconds() {

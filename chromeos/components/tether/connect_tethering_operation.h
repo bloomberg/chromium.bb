@@ -50,6 +50,8 @@ class ConnectTetheringOperation : public MessageTransferOperation {
 
   class Observer {
    public:
+    virtual void OnConnectTetheringRequestSent(
+        const cryptauth::RemoteDevice& remote_device) = 0;
     virtual void OnSuccessfulConnectTetheringResponse(
         const cryptauth::RemoteDevice& remote_device,
         const std::string& ssid,
@@ -77,12 +79,14 @@ class ConnectTetheringOperation : public MessageTransferOperation {
                          const cryptauth::RemoteDevice& remote_device) override;
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
+  void OnMessageSent(int sequence_number) override;
+  uint32_t GetTimeoutSeconds() override;
+
+  void NotifyConnectTetheringRequestSent();
   void NotifyObserversOfSuccessfulResponse(const std::string& ssid,
                                            const std::string& password);
   void NotifyObserversOfConnectionFailure(
       ConnectTetheringResponse_ResponseCode error_code);
-
-  uint32_t GetTimeoutSeconds() override;
 
  private:
   friend class ConnectTetheringOperationTest;
@@ -96,6 +100,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   cryptauth::RemoteDevice remote_device_;
   TetherHostResponseRecorder* tether_host_response_recorder_;
   std::unique_ptr<base::Clock> clock_;
+  int connect_message_sequence_number_ = -1;
   bool setup_required_;
 
   // These values are saved in OnMessageReceived() and returned in
