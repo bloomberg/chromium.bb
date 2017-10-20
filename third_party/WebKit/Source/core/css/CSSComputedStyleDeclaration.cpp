@@ -35,7 +35,6 @@
 #include "core/css/ComputedStyleCSSValueMapping.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/css/properties/CSSPropertyAPI.h"
 #include "core/css/zoomAdjustedPixelValue.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -191,74 +190,6 @@ void LogUnimplementedPropertyID(CSSPropertyID property_id) {
               << getPropertyName(property_id) << "'.";
 }
 
-bool IsLayoutDependent(CSSPropertyID property_id,
-                       const ComputedStyle* style,
-                       LayoutObject* layout_object) {
-  if (!layout_object)
-    return false;
-
-  // Some properties only depend on layout in certain conditions which
-  // are specified in the main switch statement below. So we can avoid
-  // forcing layout in those conditions. The conditions in this switch
-  // statement must remain in sync with the conditions in the main switch.
-  // FIXME: Some of these cases could be narrowed down or optimized better.
-  switch (property_id) {
-    case CSSPropertyBottom:
-    case CSSPropertyHeight:
-    case CSSPropertyLeft:
-    case CSSPropertyRight:
-    case CSSPropertyTop:
-    case CSSPropertyPerspectiveOrigin:
-    case CSSPropertyTransform:
-    case CSSPropertyTranslate:
-    case CSSPropertyTransformOrigin:
-    case CSSPropertyWidth:
-      return layout_object->IsBox();
-    case CSSPropertyMargin:
-      return layout_object->IsBox() &&
-             (!style || !style->MarginBottom().IsFixed() ||
-              !style->MarginTop().IsFixed() || !style->MarginLeft().IsFixed() ||
-              !style->MarginRight().IsFixed());
-    case CSSPropertyMarginLeft:
-      return layout_object->IsBox() &&
-             (!style || !style->MarginLeft().IsFixed());
-    case CSSPropertyMarginRight:
-      return layout_object->IsBox() &&
-             (!style || !style->MarginRight().IsFixed());
-    case CSSPropertyMarginTop:
-      return layout_object->IsBox() &&
-             (!style || !style->MarginTop().IsFixed());
-    case CSSPropertyMarginBottom:
-      return layout_object->IsBox() &&
-             (!style || !style->MarginBottom().IsFixed());
-    case CSSPropertyPadding:
-      return layout_object->IsBox() &&
-             (!style || !style->PaddingBottom().IsFixed() ||
-              !style->PaddingTop().IsFixed() ||
-              !style->PaddingLeft().IsFixed() ||
-              !style->PaddingRight().IsFixed());
-    case CSSPropertyPaddingBottom:
-      return layout_object->IsBox() &&
-             (!style || !style->PaddingBottom().IsFixed());
-    case CSSPropertyPaddingLeft:
-      return layout_object->IsBox() &&
-             (!style || !style->PaddingLeft().IsFixed());
-    case CSSPropertyPaddingRight:
-      return layout_object->IsBox() &&
-             (!style || !style->PaddingRight().IsFixed());
-    case CSSPropertyPaddingTop:
-      return layout_object->IsBox() &&
-             (!style || !style->PaddingTop().IsFixed());
-    case CSSPropertyGridTemplateColumns:
-    case CSSPropertyGridTemplateRows:
-    case CSSPropertyGridTemplate:
-    case CSSPropertyGrid:
-      return layout_object->IsLayoutGrid();
-    default:
-      return false;
-  }
-}
-
 }  // namespace
 
 const Vector<CSSPropertyID>&
@@ -395,7 +326,7 @@ CSSComputedStyleDeclaration::GetVariables() const {
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
-    CSSPropertyID property_id) const {
+    const CSSPropertyAPI& property_api) const {
   Node* styled_node = StyledNode();
   if (!styled_node)
     return nullptr;
@@ -411,7 +342,7 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
   const ComputedStyle* style = ComputeComputedStyle();
 
   bool force_full_layout =
-      IsLayoutDependent(property_id, style, layout_object) ||
+      property_api.IsLayoutDependent(style, layout_object) ||
       styled_node->IsInShadowTree() ||
       (document.LocalOwner() &&
        document.GetStyleEngine().HasViewportDependentMediaQueries());
@@ -427,17 +358,18 @@ const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValue(
     return nullptr;
 
   const CSSValue* value = ComputedStyleCSSValueMapping::Get(
-      property_id, *style, layout_object, styled_node, allow_visited_style_);
+      property_api.PropertyID(), *style, layout_object, styled_node,
+      allow_visited_style_);
   if (value)
     return value;
 
-  LogUnimplementedPropertyID(property_id);
+  LogUnimplementedPropertyID(property_api.PropertyID());
   return nullptr;
 }
 
 String CSSComputedStyleDeclaration::GetPropertyValue(
     CSSPropertyID property_id) const {
-  const CSSValue* value = GetPropertyCSSValue(property_id);
+  const CSSValue* value = GetPropertyCSSValue(CSSPropertyAPI::Get(property_id));
   if (value)
     return value->CssText();
   return "";
@@ -474,7 +406,7 @@ bool CSSComputedStyleDeclaration::CssPropertyMatches(
         return true;
     }
   }
-  const CSSValue* value = GetPropertyCSSValue(property_id);
+  const CSSValue* value = GetPropertyCSSValue(CSSPropertyAPI::Get(property_id));
   return DataEquivalent(value, property_value);
 }
 
@@ -487,7 +419,8 @@ MutableStylePropertySet* CSSComputedStyleDeclaration::CopyPropertiesInSet(
   HeapVector<CSSProperty, 256> list;
   list.ReserveInitialCapacity(properties.size());
   for (unsigned i = 0; i < properties.size(); ++i) {
-    const CSSValue* value = GetPropertyCSSValue(properties[i]);
+    const CSSValue* value =
+        GetPropertyCSSValue(CSSPropertyAPI::Get(properties[i]));
     if (value)
       list.push_back(CSSProperty(properties[i], *value, false));
   }
@@ -550,7 +483,7 @@ String CSSComputedStyleDeclaration::removeProperty(
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(
     CSSPropertyID property_id) {
-  return GetPropertyCSSValue(property_id);
+  return GetPropertyCSSValue(CSSPropertyAPI::Get(property_id));
 }
 
 const CSSValue* CSSComputedStyleDeclaration::GetPropertyCSSValueInternal(

@@ -489,7 +489,7 @@ void EditingStyle::Init(Node* node, PropertiesToInclude properties_to_include) {
             EditingStyleUtilities::BackgroundColorValueInEffect(node))
       mutable_style_->SetProperty(CSSPropertyBackgroundColor, value->CssText());
     if (const CSSValue* value = computed_style_at_position->GetPropertyCSSValue(
-            CSSPropertyWebkitTextDecorationsInEffect))
+            GetCSSPropertyWebkitTextDecorationsInEffectAPI()))
       mutable_style_->SetProperty(CSSPropertyTextDecoration, value->CssText());
   }
 
@@ -1368,7 +1368,8 @@ void EditingStyle::MergeStyleFromRulesForSerialization(Element* element) {
         continue;
       if (ToCSSPrimitiveValue(value).IsPercentage()) {
         if (const CSSValue* computed_property_value =
-                computed_style_for_element->GetPropertyCSSValue(property.Id()))
+                computed_style_for_element->GetPropertyCSSValue(
+                    CSSPropertyAPI::Get(property.Id())))
           from_computed_style->AddRespectingCascade(
               CSSProperty(property.Id(), *computed_property_value));
       }

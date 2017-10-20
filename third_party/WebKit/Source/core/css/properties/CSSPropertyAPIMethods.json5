@@ -29,5 +29,10 @@
       return_type: "bool",
       parameters: "(bool, CSSParserTokenRange&, const CSSParserContext&, const CSSParserLocalContext&, HeapVector<CSSProperty, 256>&)",
     },
+    {
+      name: "IsLayoutDependent",
+      return_type: "bool",
+      parameters: "(const ComputedStyle*, LayoutObject*)",
+    },
   ]
 }

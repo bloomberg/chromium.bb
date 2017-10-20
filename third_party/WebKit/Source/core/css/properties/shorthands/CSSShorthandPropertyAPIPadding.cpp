@@ -6,6 +6,8 @@
 
 #include "core/StylePropertyShorthand.h"
 #include "core/css/parser/CSSPropertyParserHelpers.h"
+#include "core/layout/LayoutObject.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
@@ -17,6 +19,15 @@ bool CSSShorthandPropertyAPIPadding::ParseShorthand(
     HeapVector<CSSProperty, 256>& properties) const {
   return CSSPropertyParserHelpers::ConsumeShorthandVia4LonghandAPIs(
       paddingShorthand(), important, context, range, properties);
+}
+
+bool CSSShorthandPropertyAPIPadding::IsLayoutDependent(
+    const ComputedStyle* style,
+    LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox() &&
+         (!style || !style->PaddingBottom().IsFixed() ||
+          !style->PaddingTop().IsFixed() || !style->PaddingLeft().IsFixed() ||
+          !style->PaddingRight().IsFixed());
 }
 
 }  // namespace blink
