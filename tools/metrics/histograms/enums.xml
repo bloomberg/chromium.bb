@@ -24560,6 +24560,7 @@ from previous Chrome versions.
   <int value="370486304" label="enable-origin-chip-on-srp"/>
   <int value="371268743" label="OmniboxUIExperimentVerticalMargin:disabled"/>
   <int value="372460068" label="QuickUnlockFingerprint:disabled"/>
+  <int value="375785554" label="UserActivationV2:disabled"/>
   <int value="377093001" label="WebRtcHWH264Encoding:disabled"/>
   <int value="379326303" label="enable-add-to-shelf"/>
   <int value="379428799" label="security-chip-animation"/>
@@ -24720,6 +24721,7 @@ from previous Chrome versions.
   <int value="841276069" label="ChromeHomeDoodle:disabled"/>
   <int value="841343322" label="disable-new-korean-ime"/>
   <int value="842432903" label="CaptureThumbnailOnNavigatingAway:enabled"/>
+  <int value="843896452" label="UserActivationV2:enabled"/>
   <int value="846951416" label="CopylessPaste:enabled"/>
   <int value="848324390" label="enable-lock-screen-apps"/>
   <int value="851085848" label="enable-settings-window"/>

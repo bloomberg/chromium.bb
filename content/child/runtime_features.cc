@@ -227,6 +227,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
       base::FeatureList::IsEnabled(features::kScrollAnchoring) ||
       enableExperimentalWebPlatformFeatures);
 
+  WebRuntimeFeatures::EnableUserActivationV2(
+      base::FeatureList::IsEnabled(features::kUserActivationV2));
+
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV175))
     WebRuntimeFeatures::EnableFeatureFromString("SlimmingPaintV175", true);
   if (command_line.HasSwitch(switches::kEnableSlimmingPaintV2))

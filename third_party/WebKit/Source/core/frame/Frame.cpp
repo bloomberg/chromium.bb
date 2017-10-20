@@ -181,7 +181,7 @@ void Frame::DidChangeVisibilityState() {
 }
 
 void Frame::UpdateUserActivationInFrameTree() {
-  has_received_user_gesture_ = true;
+  user_activation_state_.Activate();
   if (Frame* parent = Tree().Parent())
     parent->UpdateUserActivationInFrameTree();
 }

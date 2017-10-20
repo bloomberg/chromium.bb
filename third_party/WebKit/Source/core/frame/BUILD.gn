@@ -132,6 +132,8 @@ blink_core_sources("frame") {
     "SuspendableTimer.h",
     "UseCounter.cpp",
     "UseCounter.h",
+    "UserActivationState.cpp",
+    "UserActivationState.h",
     "VisualViewport.cpp",
     "VisualViewport.h",
     "WebFeature.h",
