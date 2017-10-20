@@ -21,7 +21,8 @@
 
 @interface SavePendingPasswordViewController (Testing)
 @property(readonly) NSTextField* usernameField;
-@property(readonly) NSTextField* passwordField;
+@property(readonly) NSTextField* passwordStaticField;
+@property(readonly) NSPopUpButton* passwordSelectionField;
 @property(readonly) NSButton* saveButton;
 @property(readonly) NSButton* neverButton;
 @property(readonly) NSButton* eyeButton;

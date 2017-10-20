@@ -54,14 +54,20 @@ ManagePasswordsControllerTest::GetModelAndCreateIfNull() {
   return model_.get();
 }
 
-void ManagePasswordsControllerTest::SetUpSavePendingState(bool empty_username) {
+void ManagePasswordsControllerTest::SetUpSavePendingState() {
+  SetUpSavePendingState("username", "12345", {});
+}
+
+void ManagePasswordsControllerTest::SetUpSavePendingState(
+    base::StringPiece username,
+    base::StringPiece password,
+    const std::vector<base::StringPiece>& other_passwords) {
   autofill::PasswordForm form;
-  if (!empty_username) {
-    form.username_value = base::ASCIIToUTF16("username");
-  }
-  form.all_possible_passwords = {base::ASCIIToUTF16("000"),
-                                 base::ASCIIToUTF16("111")};
-  form.password_value = base::ASCIIToUTF16("000");
+  form.username_value = base::ASCIIToUTF16(username);
+  form.password_value = base::ASCIIToUTF16(password);
+  form.all_possible_passwords.push_back(form.password_value);
+  for (auto other_password : other_passwords)
+    form.all_possible_passwords.push_back(base::ASCIIToUTF16(other_password));
   EXPECT_CALL(*ui_controller_, GetPendingPassword()).WillOnce(ReturnRef(form));
   GURL origin(kSiteOrigin);
   EXPECT_CALL(*ui_controller_, GetOrigin()).WillOnce(ReturnRef(origin));

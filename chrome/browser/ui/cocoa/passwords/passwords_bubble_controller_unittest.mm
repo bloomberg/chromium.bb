@@ -50,13 +50,13 @@ class ManagePasswordsBubbleControllerTest
 };
 
 TEST_F(ManagePasswordsBubbleControllerTest, PendingStateShouldHavePendingView) {
-  SetUpSavePendingState(false);
+  SetUpSavePendingState();
   EXPECT_EQ([SavePendingPasswordViewController class],
             [[controller() currentController] class]);
 }
 
 TEST_F(ManagePasswordsBubbleControllerTest, DismissingShouldCloseWindow) {
-  SetUpSavePendingState(false);
+  SetUpSavePendingState();
   [controller() showWindow:nil];
 
   // Turn off animations so that closing happens immediately.
@@ -90,7 +90,7 @@ TEST_F(ManagePasswordsBubbleControllerTest, ClearModelOnClose) {
 }
 
 TEST_F(ManagePasswordsBubbleControllerTest, TransitionToSignInPromo) {
-  SetUpSavePendingState(false);
+  SetUpSavePendingState();
   [controller() showWindow:nil];
   SavePendingPasswordViewController* saveController =
       base::mac::ObjCCastStrict<SavePendingPasswordViewController>(
@@ -102,14 +102,14 @@ TEST_F(ManagePasswordsBubbleControllerTest, TransitionToSignInPromo) {
   EXPECT_TRUE([[controller() window] isVisible]);
 }
 
-// Test that crash doesn't occur after editing the password because the combobox
-// talks to the destroyed controller. https://crbug.com/774033
+// Test that crash doesn't occur after editing the password.
+// https://crbug.com/774033
 TEST_F(ManagePasswordsBubbleControllerTest,
        TransitionToSignInPromoAfterEditingPassword) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(
       password_manager::features::kEnablePasswordSelection);
-  SetUpSavePendingState(false);
+  SetUpSavePendingState();
   GetModelAndCreateIfNull()->set_hide_eye_icon(false);
   [controller() showWindow:nil];
   SavePendingPasswordViewController* saveController =
@@ -118,10 +118,8 @@ TEST_F(ManagePasswordsBubbleControllerTest,
   // Edit the password.
   ASSERT_TRUE(saveController.eyeButton);
   [saveController.eyeButton performClick:nil];
-  NSComboBox* passwordSelection =
-      base::mac::ObjCCastStrict<NSComboBox>(saveController.passwordField);
-  EXPECT_TRUE(passwordSelection.editable);
-  [[passwordSelection currentEditor] insertText:@"password123"];
+  NSPopUpButton* passwordSelection = saveController.passwordSelectionField;
+  [passwordSelection selectItemAtIndex:1];
 
   // Save and move to the promo state.
   [saveController.saveButton performClick:nil];

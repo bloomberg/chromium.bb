@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
+#include "base/strings/string_piece_forward.h"
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
@@ -41,7 +42,11 @@ class ManagePasswordsControllerTest : public CocoaProfileTest {
   ManagePasswordsBubbleModel* GetModelAndCreateIfNull();
 
   // Sets the appropriate state for ManagePasswordsBubbleModel.
-  void SetUpSavePendingState(bool empty_username);
+  void SetUpSavePendingState();
+  void SetUpSavePendingState(
+      base::StringPiece username,
+      base::StringPiece password,
+      const std::vector<base::StringPiece>& other_passwords);
   void SetUpUpdatePendingState(bool multiple_forms);
   void SetUpConfirmationState();
   void SetUpManageState(const VectorConstFormPtr& forms);
