@@ -1716,8 +1716,8 @@ void RenderWidgetHostViewAura::ScheduleEmbed(
     ui::mojom::WindowTreeClientPtr client,
     base::OnceCallback<void(const base::UnguessableToken&)> callback) {
   DCHECK(IsMus());
-  aura::WindowPortMus::Get(window_)->ScheduleEmbed(std::move(client),
-                                                   std::move(callback));
+  aura::Env::GetInstance()->ScheduleEmbed(std::move(client),
+                                          std::move(callback));
 }
 
 void RenderWidgetHostViewAura::OnScrollEvent(ui::ScrollEvent* event) {

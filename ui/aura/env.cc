@@ -8,6 +8,7 @@
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
+#include "services/ui/public/interfaces/window_tree.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env_input_state_controller.h"
 #include "ui/aura/env_observer.h"
@@ -142,6 +143,14 @@ void Env::SetWindowTreeClient(WindowTreeClient* window_tree_client) {
   // the value after the fact, to do that use EnvTestHelper.
   DCHECK(!window_tree_client_);
   window_tree_client_ = window_tree_client;
+}
+
+void Env::ScheduleEmbed(
+    ui::mojom::WindowTreeClientPtr client,
+    base::OnceCallback<void(const base::UnguessableToken&)> callback) {
+  DCHECK_EQ(Mode::MUS, mode_);
+  DCHECK(window_tree_client_);
+  window_tree_client_->ScheduleEmbed(std::move(client), std::move(callback));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
