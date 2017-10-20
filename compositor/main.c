@@ -1612,6 +1612,9 @@ load_wayland_backend(struct weston_compositor *c,
 	int count = 1;
 	int ret = 0;
 	int i;
+	int32_t use_pixman_ = 0;
+	int32_t sprawl_ = 0;
+	int32_t fullscreen_ = 0;
 
 	struct wet_output_config *parsed_options = wet_init_parsed_options(c);
 	if (!parsed_options)
@@ -1620,22 +1623,22 @@ load_wayland_backend(struct weston_compositor *c,
 	config.cursor_size = 32;
 	config.cursor_theme = NULL;
 	config.display_name = NULL;
-	config.fullscreen = false;
-	config.sprawl = false;
-	config.use_pixman = false;
 
 	const struct weston_option wayland_options[] = {
 		{ WESTON_OPTION_INTEGER, "width", 0, &parsed_options->width },
 		{ WESTON_OPTION_INTEGER, "height", 0, &parsed_options->height },
 		{ WESTON_OPTION_INTEGER, "scale", 0, &parsed_options->scale },
 		{ WESTON_OPTION_STRING, "display", 0, &config.display_name },
-		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &config.use_pixman },
+		{ WESTON_OPTION_BOOLEAN, "use-pixman", 0, &use_pixman_ },
 		{ WESTON_OPTION_INTEGER, "output-count", 0, &count },
-		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &config.fullscreen },
-		{ WESTON_OPTION_BOOLEAN, "sprawl", 0, &config.sprawl },
+		{ WESTON_OPTION_BOOLEAN, "fullscreen", 0, &fullscreen_ },
+		{ WESTON_OPTION_BOOLEAN, "sprawl", 0, &sprawl_ },
 	};
 
 	parse_options(wayland_options, ARRAY_LENGTH(wayland_options), argc, argv);
+	config.sprawl = sprawl_;
+	config.use_pixman = use_pixman_;
+	config.fullscreen = fullscreen_;
 
 	section = weston_config_get_section(wc, "shell", NULL, NULL);
 	weston_config_section_get_string(section, "cursor-theme",
