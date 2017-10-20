@@ -178,7 +178,7 @@ void AwRenderFrameExt::DidCommitProvisionalLoad(
   // renderer code to say "this navigation would have switched processes" would
   // be disruptive, so this clearing of the cache is the compromise.
   if (!frame->Parent()) {
-    url::Origin new_origin(frame->GetDocument().Url());
+    url::Origin new_origin = url::Origin::Create(frame->GetDocument().Url());
     if (!new_origin.IsSameOriginWith(last_origin_)) {
       last_origin_ = new_origin;
       blink::WebImageCache::Clear();

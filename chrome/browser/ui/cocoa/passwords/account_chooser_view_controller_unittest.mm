@@ -150,7 +150,7 @@ TEST_F(AccountChooserViewControllerTest, ConfiguresFederatedCredential) {
 
   PasswordDialogController::FormsVector local_forms;
   local_forms.push_back(Credential(username));
-  local_forms.back()->federation_origin = url::Origin(GURL(federation));
+  local_forms.back()->federation_origin = url::Origin::Create(GURL(federation));
   local_forms.back()->display_name = base::ASCIIToUTF16(name);
   SetUpAccountChooser(&local_forms);
 

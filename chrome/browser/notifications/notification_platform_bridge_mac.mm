@@ -162,7 +162,7 @@ base::string16 CreateNotificationContext(
                               : kMaxDomainLenghtBanner;
 
   base::string16 origin = url_formatter::FormatOriginForSecurityDisplay(
-      url::Origin(notification.origin_url()),
+      url::Origin::Create(notification.origin_url()),
       url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
 
   if (origin.size() <= max_characters)

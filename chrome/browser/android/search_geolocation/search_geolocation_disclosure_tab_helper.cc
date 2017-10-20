@@ -190,7 +190,7 @@ bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForAPIAccess(
   if (gIgnoreUrlChecksForTesting)
     return true;
 
-  return service->UseDSEGeolocationSetting(url::Origin(gurl));
+  return service->UseDSEGeolocationSetting(url::Origin::Create(gurl));
 }
 
 bool SearchGeolocationDisclosureTabHelper::ShouldShowDisclosureForNavigation(

@@ -187,7 +187,7 @@ bool ParseCredentialDictionary(const base::DictionaryValue& json,
       }
       return false;
     }
-    credential->federation = url::Origin(GURL(federation));
+    credential->federation = url::Origin::Create(GURL(federation));
   }
   return true;
 }

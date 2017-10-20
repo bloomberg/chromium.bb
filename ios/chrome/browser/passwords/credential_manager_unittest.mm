@@ -234,7 +234,7 @@ class CredentialManagerTest : public CredentialManagerBaseTest {
     federated_credential_form_.icon_url =
         GURL("https://federation.com/icon.png");
     federated_credential_form_.federation_origin =
-        Origin(GURL("https://federation.com"));
+        Origin::Create(GURL("https://federation.com"));
     federated_credential_form_.origin = GURL(kHttpsWebOrigin);
     federated_credential_form_.signon_realm =
         "federation://www.example.com/www.federation.com";
@@ -345,7 +345,8 @@ TEST_F(CredentialManagerTest, StoreFederatedCredential) {
   autofill::PasswordForm form = passwords[federated_origin][0];
   EXPECT_EQ(base::ASCIIToUTF16("id"), form.username_value);
   EXPECT_EQ(base::ASCIIToUTF16("name"), form.display_name);
-  EXPECT_EQ(Origin(GURL("https://www.federation.com")), form.federation_origin);
+  EXPECT_EQ(Origin::Create(GURL("https://www.federation.com")),
+            form.federation_origin);
   EXPECT_EQ(GURL("https://federation.com/icon.png"), form.icon_url);
   EXPECT_EQ(GURL("https://www.example.com"), form.origin);
   EXPECT_EQ(federated_origin, form.signon_realm);

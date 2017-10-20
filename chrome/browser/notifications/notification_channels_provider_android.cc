@@ -276,7 +276,7 @@ bool NotificationChannelsProviderAndroid::SetWebsiteSetting(
 
   InitCachedChannels();
 
-  url::Origin origin = url::Origin(GURL(primary_pattern.ToString()));
+  url::Origin origin = url::Origin::Create(GURL(primary_pattern.ToString()));
   DCHECK(!origin.unique());
   const std::string origin_string = origin.Serialize();
 
@@ -335,7 +335,7 @@ base::Time NotificationChannelsProviderAndroid::GetWebsiteSettingLastModified(
       !platform_supports_channels_) {
     return base::Time();
   }
-  url::Origin origin = url::Origin(GURL(primary_pattern.ToString()));
+  url::Origin origin = url::Origin::Create(GURL(primary_pattern.ToString()));
   if (origin.unique())
     return base::Time();
   const std::string origin_string = origin.Serialize();
@@ -377,7 +377,8 @@ void NotificationChannelsProviderAndroid::CreateChannelIfRequired(
 // InitCachedChannels() must be called prior to calling this method.
 void NotificationChannelsProviderAndroid::CreateChannelForRule(
     const content_settings::Rule& rule) {
-  url::Origin origin = url::Origin(GURL(rule.primary_pattern.ToString()));
+  url::Origin origin =
+      url::Origin::Create(GURL(rule.primary_pattern.ToString()));
   DCHECK(!origin.unique());
   const std::string origin_string = origin.Serialize();
   ContentSetting content_setting =

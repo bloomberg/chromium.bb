@@ -68,7 +68,7 @@ class SearchEngineDelegateImpl
       if (template_url) {
         GURL search_url = template_url->GenerateSearchURL(
             template_url_service_->search_terms_data());
-        return url::Origin(search_url);
+        return url::Origin::Create(search_url);
       }
     }
 

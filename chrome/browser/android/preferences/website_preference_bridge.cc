@@ -787,7 +787,7 @@ static jboolean ShouldUseDSEGeolocationSetting(
           GetActiveUserProfile(is_incognito));
   return search_helper &&
          search_helper->UseDSEGeolocationSetting(
-             url::Origin(GURL(ConvertJavaStringToUTF8(env, jorigin))));
+             url::Origin::Create(GURL(ConvertJavaStringToUTF8(env, jorigin))));
 }
 
 static jboolean GetDSEGeolocationSetting(JNIEnv* env,

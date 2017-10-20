@@ -35,7 +35,7 @@ const char kIsGoogleSearchEngineKey[] = "is_google_search_engine";
 const char kDSESettingKey[] = "dse_setting";
 
 url::Origin ToOrigin(const char* url) {
-  return url::Origin(GURL(url));
+  return url::Origin::Create(GURL(url));
 }
 
 // The test delegate is used to mock out search-engine related functionality.
@@ -56,7 +56,7 @@ class TestSearchEngineDelegate
   }
 
   void SetDSEOrigin(const std::string& dse_origin) {
-    dse_origin_ = url::Origin(GURL(dse_origin));
+    dse_origin_ = url::Origin::Create(GURL(dse_origin));
     dse_changed_callback_.Run();
   }
 

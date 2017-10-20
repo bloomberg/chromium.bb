@@ -68,7 +68,7 @@ class PasswordsListViewControllerTest : public ManagePasswordsControllerTest {
     autofill::PasswordForm form;
     form.username_value = base::SysNSStringToUTF16(kItemTestUsername);
     form.federation_origin =
-        url::Origin(GURL(base::SysNSStringToUTF16(kFederation)));
+        url::Origin::Create(GURL(base::SysNSStringToUTF16(kFederation)));
     return form;
   }
 
