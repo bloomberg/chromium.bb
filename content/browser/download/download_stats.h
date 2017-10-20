@@ -209,7 +209,8 @@ void RecordDownloadSource(DownloadSource source);
 
 // Record COMPLETED_COUNT and how long the download took.
 void RecordDownloadCompleted(const base::TimeTicks& start,
-                             int64_t download_len);
+                             int64_t download_len,
+                             bool is_parallelizable);
 
 // Record INTERRUPTED_COUNT, |reason|, |received| and |total| bytes.
 void RecordDownloadInterrupted(DownloadInterruptReason reason,
