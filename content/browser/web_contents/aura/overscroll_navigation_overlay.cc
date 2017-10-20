@@ -47,8 +47,9 @@ bool DoesEntryMatchURL(NavigationEntry* entry, const GURL& url) {
   return false;
 }
 
-// Records UMA historgram and also user action for the cancelled overscroll.
-void RecordCancelled(NavigationDirection direction, OverscrollSource source) {
+// Records UMA histogram and also user action for the cancelled overscroll.
+void RecordNavigationOverscrollCancelled(NavigationDirection direction,
+                                         OverscrollSource source) {
   UMA_HISTOGRAM_ENUMERATION("Overscroll.Cancelled3",
                             GetUmaNavigationType(direction, source),
                             NAVIGATION_TYPE_COUNT);
@@ -233,7 +234,7 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
   DCHECK_NE(direction_, NavigationDirection::NONE);
   aura::Window* main_window = GetMainWindow();
   if (!main_window) {
-    RecordCancelled(direction_, owa_->overscroll_source());
+    RecordNavigationOverscrollCancelled(direction_, owa_->overscroll_source());
     return;
   }
 
@@ -260,7 +261,7 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
   } else {
     // We need to dismiss the overlay without navigating as soon as the
     // overscroll finishes.
-    RecordCancelled(direction_, owa_->overscroll_source());
+    RecordNavigationOverscrollCancelled(direction_, owa_->overscroll_source());
     loading_complete_ = true;
   }
 
@@ -281,7 +282,7 @@ void OverscrollNavigationOverlay::OnOverscrollCompleted(
 }
 
 void OverscrollNavigationOverlay::OnOverscrollCancelled() {
-  RecordCancelled(direction_, owa_->overscroll_source());
+  RecordNavigationOverscrollCancelled(direction_, owa_->overscroll_source());
   aura::Window* main_window = GetMainWindow();
   if (!main_window)
     return;

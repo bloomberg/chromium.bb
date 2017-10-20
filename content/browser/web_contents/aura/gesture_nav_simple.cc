@@ -110,8 +110,9 @@ NavigationDirection GetDirectionFromMode(OverscrollMode mode) {
   return NavigationDirection::NONE;
 }
 
-// Records UMA historgram and also user action for the cancelled overscroll.
-void RecordCancelled(NavigationDirection direction, OverscrollSource source) {
+// Records UMA histogram and also user action for the cancelled overscroll.
+void RecordGestureOverscrollCancelled(NavigationDirection direction,
+                                      OverscrollSource source) {
   DCHECK_NE(direction, NavigationDirection::NONE);
   DCHECK_NE(source, OverscrollSource::NONE);
   UMA_HISTOGRAM_ENUMERATION("Overscroll.Cancelled3",
@@ -592,7 +593,8 @@ void GestureNavSimple::OnOverscrollComplete(OverscrollMode overscroll_mode) {
     else
       RecordAction(base::UserMetricsAction("Overscroll_Navigated.Reload"));
   } else {
-    RecordCancelled(GetDirectionFromMode(overscroll_mode), overscroll_source);
+    RecordGestureOverscrollCancelled(GetDirectionFromMode(overscroll_mode),
+                                     overscroll_source);
   }
 }
 
@@ -610,7 +612,7 @@ void GestureNavSimple::OnOverscrollModeChange(OverscrollMode old_mode,
       !ShouldReload(controller, mode_)) {
     // If there is an overscroll in progress - record its cancellation.
     if (affordance_ && !affordance_->IsFinishing()) {
-      RecordCancelled(GetDirectionFromMode(old_mode), source_);
+      RecordGestureOverscrollCancelled(GetDirectionFromMode(old_mode), source_);
       affordance_->Abort();
     }
     source_ = OverscrollSource::NONE;
