@@ -112,40 +112,7 @@ RefPtr<WebTaskRunner> TaskRunnerHelper::Get(
 
 RefPtr<WebTaskRunner> TaskRunnerHelper::Get(TaskType type,
                                             WorkerThread* worker_thread) {
-  switch (type) {
-    case TaskType::kDOMManipulation:
-    case TaskType::kUserInteraction:
-    case TaskType::kNetworking:
-    case TaskType::kNetworkingControl:
-    case TaskType::kHistoryTraversal:
-    case TaskType::kEmbed:
-    case TaskType::kMediaElementEvent:
-    case TaskType::kCanvasBlobSerialization:
-    case TaskType::kMicrotask:
-    case TaskType::kJavascriptTimer:
-    case TaskType::kRemoteEvent:
-    case TaskType::kWebSocket:
-    case TaskType::kPostedMessage:
-    case TaskType::kUnshippedPortMessage:
-    case TaskType::kFileReading:
-    case TaskType::kDatabaseAccess:
-    case TaskType::kPresentation:
-    case TaskType::kSensor:
-    case TaskType::kPerformanceTimeline:
-    case TaskType::kWebGL:
-    case TaskType::kIdleTask:
-    case TaskType::kMiscPlatformAPI:
-    case TaskType::kUnspecedTimer:
-    case TaskType::kUnspecedLoading:
-    case TaskType::kUnthrottled:
-      // UnthrottledTaskRunner is generally discouraged in future.
-      // TODO(nhiroki): Identify which tasks can be throttled / suspendable and
-      // move them into other task runners. See also comments in
-      // Get(LocalFrame). (https://crbug.com/670534)
-      return worker_thread->GetGlobalScopeScheduler()->UnthrottledTaskRunner();
-  }
-  NOTREACHED();
-  return nullptr;
+  return worker_thread->GetGlobalScopeScheduler()->GetTaskRunner(type);
 }
 
 }  // namespace blink
