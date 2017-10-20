@@ -246,6 +246,7 @@ class GridTrackSizingAlgorithmStrategy {
       double& flex_fraction,
       Vector<LayoutUnit>& increments,
       LayoutUnit& total_growth) const = 0;
+  virtual LayoutUnit FreeSpaceForStretchAutoTracksStep() const = 0;
 
  protected:
   GridTrackSizingAlgorithmStrategy(GridTrackSizingAlgorithm& algorithm)
