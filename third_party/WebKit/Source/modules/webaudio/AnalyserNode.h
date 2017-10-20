@@ -39,7 +39,7 @@ class ExceptionState;
 
 class AnalyserHandler final : public AudioBasicInspectorHandler {
  public:
-  static RefPtr<AnalyserHandler> Create(AudioNode&, float sample_rate);
+  static scoped_refptr<AnalyserHandler> Create(AudioNode&, float sample_rate);
   ~AnalyserHandler() override;
 
   // AudioHandler

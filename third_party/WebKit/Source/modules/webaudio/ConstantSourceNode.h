@@ -21,9 +21,9 @@ class ExceptionState;
 
 class ConstantSourceHandler final : public AudioScheduledSourceHandler {
  public:
-  static RefPtr<ConstantSourceHandler> Create(AudioNode&,
-                                              float sample_rate,
-                                              AudioParamHandler& offset);
+  static scoped_refptr<ConstantSourceHandler> Create(AudioNode&,
+                                                     float sample_rate,
+                                                     AudioParamHandler& offset);
   ~ConstantSourceHandler() override;
 
   // AudioHandler
@@ -37,7 +37,7 @@ class ConstantSourceHandler final : public AudioScheduledSourceHandler {
   // If we are no longer playing, propogate silence ahead to downstream nodes.
   bool PropagatesSilence() const override;
 
-  RefPtr<AudioParamHandler> offset_;
+  scoped_refptr<AudioParamHandler> offset_;
   AudioFloatArray sample_accurate_values_;
 };
 

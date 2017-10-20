@@ -40,7 +40,7 @@ class AudioProcessor;
 // where the input and output have the same number of channels.
 class MODULES_EXPORT AudioBasicProcessorHandler : public AudioHandler {
  public:
-  static RefPtr<AudioBasicProcessorHandler> Create(
+  static scoped_refptr<AudioBasicProcessorHandler> Create(
       NodeType,
       AudioNode&,
       float sample_rate,

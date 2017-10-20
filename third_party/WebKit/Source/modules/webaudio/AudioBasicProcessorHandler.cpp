@@ -43,7 +43,7 @@ AudioBasicProcessorHandler::AudioBasicProcessorHandler(
   AddOutput(1);
 }
 
-RefPtr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::Create(
+scoped_refptr<AudioBasicProcessorHandler> AudioBasicProcessorHandler::Create(
     NodeType node_type,
     AudioNode& node,
     float sample_rate,

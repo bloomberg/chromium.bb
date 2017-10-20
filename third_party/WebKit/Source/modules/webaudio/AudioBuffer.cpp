@@ -130,7 +130,7 @@ AudioBuffer* AudioBuffer::CreateFromAudioFileData(const void* data,
                                                   size_t data_size,
                                                   bool mix_to_mono,
                                                   float sample_rate) {
-  RefPtr<AudioBus> bus =
+  scoped_refptr<AudioBus> bus =
       CreateBusFromInMemoryAudioFile(data, data_size, mix_to_mono, sample_rate);
   if (bus) {
     AudioBuffer* buffer = new AudioBuffer(bus.get());
@@ -158,7 +158,7 @@ bool AudioBuffer::CreatedSuccessfully(
 DOMFloat32Array* AudioBuffer::CreateFloat32ArrayOrNull(
     size_t length,
     InitializationPolicy policy) {
-  RefPtr<WTF::Float32Array> buffer;
+  scoped_refptr<WTF::Float32Array> buffer;
 
   switch (policy) {
     case kZeroInitialize:

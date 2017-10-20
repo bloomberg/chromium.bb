@@ -80,7 +80,7 @@ class RealtimeAnalyser final {
   unsigned write_index_;
 
   // Input audio is downmixed to this bus before copying to m_inputBuffer.
-  RefPtr<AudioBus> down_mix_bus_;
+  scoped_refptr<AudioBus> down_mix_bus_;
 
   size_t fft_size_;
   std::unique_ptr<FFTFrame> analysis_frame_;

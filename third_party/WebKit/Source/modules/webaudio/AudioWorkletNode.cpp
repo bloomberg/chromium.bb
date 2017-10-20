@@ -24,7 +24,7 @@ AudioWorkletHandler::AudioWorkletHandler(
     AudioNode& node,
     float sample_rate,
     String name,
-    HashMap<String, RefPtr<AudioParamHandler>> param_handler_map,
+    HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
     const AudioWorkletNodeOptions& options)
     : AudioHandler(kNodeTypeAudioWorklet, node, sample_rate),
       name_(name),
@@ -57,11 +57,11 @@ AudioWorkletHandler::~AudioWorkletHandler() {
   Uninitialize();
 }
 
-RefPtr<AudioWorkletHandler> AudioWorkletHandler::Create(
+scoped_refptr<AudioWorkletHandler> AudioWorkletHandler::Create(
     AudioNode& node,
     float sample_rate,
     String name,
-    HashMap<String, RefPtr<AudioParamHandler>> param_handler_map,
+    HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
     const AudioWorkletNodeOptions& options) {
   return WTF::AdoptRef(new AudioWorkletHandler(
       node, sample_rate, name, param_handler_map, options));
@@ -139,7 +139,7 @@ AudioWorkletNode::AudioWorkletNode(
     const Vector<CrossThreadAudioParamInfo> param_info_list)
     : AudioNode(context) {
   HeapHashMap<String, Member<AudioParam>> audio_param_map;
-  HashMap<String, RefPtr<AudioParamHandler>> param_handler_map;
+  HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map;
   for (const auto& param_info : param_info_list) {
     String param_name = param_info.Name().IsolatedCopy();
     AudioParam* audio_param = AudioParam::Create(context,

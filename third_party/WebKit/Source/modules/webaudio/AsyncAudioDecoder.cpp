@@ -69,7 +69,7 @@ void AsyncAudioDecoder::DecodeOnBackgroundThread(
     ScriptPromiseResolver* resolver,
     BaseAudioContext* context) {
   DCHECK(!IsMainThread());
-  RefPtr<AudioBus> bus = CreateBusFromInMemoryAudioFile(
+  scoped_refptr<AudioBus> bus = CreateBusFromInMemoryAudioFile(
       audio_data->Data(), audio_data->ByteLength(), false, sample_rate);
 
   // Decoding is finished, but we need to do the callbacks on the main thread.

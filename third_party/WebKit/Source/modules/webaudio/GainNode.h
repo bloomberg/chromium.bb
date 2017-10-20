@@ -42,9 +42,9 @@ class GainOptions;
 
 class GainHandler final : public AudioHandler {
  public:
-  static RefPtr<GainHandler> Create(AudioNode&,
-                                    float sample_rate,
-                                    AudioParamHandler& gain);
+  static scoped_refptr<GainHandler> Create(AudioNode&,
+                                           float sample_rate,
+                                           AudioParamHandler& gain);
 
   // AudioHandler
   void Process(size_t frames_to_process) override;
@@ -62,7 +62,7 @@ class GainHandler final : public AudioHandler {
   GainHandler(AudioNode&, float sample_rate, AudioParamHandler& gain);
 
   float last_gain_;  // for de-zippering
-  RefPtr<AudioParamHandler> gain_;
+  scoped_refptr<AudioParamHandler> gain_;
 
   AudioFloatArray sample_accurate_gain_values_;
 };

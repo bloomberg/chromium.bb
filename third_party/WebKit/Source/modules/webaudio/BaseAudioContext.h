@@ -476,7 +476,7 @@ class MODULES_EXPORT BaseAudioContext
   unsigned connection_count_;
 
   // Graph locking.
-  RefPtr<DeferredTaskHandler> deferred_task_handler_;
+  scoped_refptr<DeferredTaskHandler> deferred_task_handler_;
 
   // The state of the BaseAudioContext.
   AudioContextState context_state_;

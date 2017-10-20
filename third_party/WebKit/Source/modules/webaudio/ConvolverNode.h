@@ -42,7 +42,7 @@ class Reverb;
 
 class MODULES_EXPORT ConvolverHandler final : public AudioHandler {
  public:
-  static RefPtr<ConvolverHandler> Create(AudioNode&, float sample_rate);
+  static scoped_refptr<ConvolverHandler> Create(AudioNode&, float sample_rate);
   ~ConvolverHandler() override;
 
   // AudioHandler

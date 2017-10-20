@@ -38,7 +38,7 @@ class BaseAudioContext;
 class MediaStreamAudioDestinationHandler final
     : public AudioBasicInspectorHandler {
  public:
-  static RefPtr<MediaStreamAudioDestinationHandler> Create(
+  static scoped_refptr<MediaStreamAudioDestinationHandler> Create(
       AudioNode&,
       size_t number_of_channels);
   ~MediaStreamAudioDestinationHandler() override;
@@ -69,7 +69,7 @@ class MediaStreamAudioDestinationHandler final
 
   // This internal mix bus is for up/down mixing the input to the actual
   // number of channels in the destination.
-  RefPtr<AudioBus> mix_bus_;
+  scoped_refptr<AudioBus> mix_bus_;
 };
 
 class MediaStreamAudioDestinationNode final : public AudioBasicInspectorNode {

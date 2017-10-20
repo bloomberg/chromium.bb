@@ -70,7 +70,7 @@ ScriptProcessorHandler::ScriptProcessorHandler(
   Initialize();
 }
 
-RefPtr<ScriptProcessorHandler> ScriptProcessorHandler::Create(
+scoped_refptr<ScriptProcessorHandler> ScriptProcessorHandler::Create(
     AudioNode& node,
     float sample_rate,
     size_t buffer_size,

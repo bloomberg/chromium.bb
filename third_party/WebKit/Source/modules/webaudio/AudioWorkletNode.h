@@ -29,11 +29,11 @@ class ExceptionState;
 
 class AudioWorkletHandler final : public AudioHandler {
  public:
-  static RefPtr<AudioWorkletHandler> Create(
+  static scoped_refptr<AudioWorkletHandler> Create(
       AudioNode&,
       float sample_rate,
       String name,
-      HashMap<String, RefPtr<AudioParamHandler>> param_handler_map,
+      HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
       const AudioWorkletNodeOptions&);
 
   ~AudioWorkletHandler() override;
@@ -58,7 +58,7 @@ class AudioWorkletHandler final : public AudioHandler {
       AudioNode&,
       float sample_rate,
       String name,
-      HashMap<String, RefPtr<AudioParamHandler>> param_handler_map,
+      HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map,
       const AudioWorkletNodeOptions&);
 
   String name_;
@@ -68,7 +68,7 @@ class AudioWorkletHandler final : public AudioHandler {
   // MUST be set/used by render thread.
   CrossThreadPersistent<AudioWorkletProcessor> processor_;
 
-  HashMap<String, RefPtr<AudioParamHandler>> param_handler_map_;
+  HashMap<String, scoped_refptr<AudioParamHandler>> param_handler_map_;
   HashMap<String, std::unique_ptr<AudioFloatArray>> param_value_map_;
 };
 

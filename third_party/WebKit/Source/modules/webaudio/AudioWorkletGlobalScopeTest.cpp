@@ -267,8 +267,10 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     Vector<AudioBus*> input_buses;
     Vector<AudioBus*> output_buses;
     HashMap<String, std::unique_ptr<AudioFloatArray>> param_data_map;
-    RefPtr<AudioBus> input_bus = AudioBus::Create(1, kRenderQuantumFrames);
-    RefPtr<AudioBus> output_bus = AudioBus::Create(1, kRenderQuantumFrames);
+    scoped_refptr<AudioBus> input_bus =
+        AudioBus::Create(1, kRenderQuantumFrames);
+    scoped_refptr<AudioBus> output_bus =
+        AudioBus::Create(1, kRenderQuantumFrames);
     AudioChannel* input_channel = input_bus->Channel(0);
     AudioChannel* output_channel = output_bus->Channel(0);
 
@@ -337,7 +339,7 @@ class AudioWorkletGlobalScopeTest : public ::testing::Test {
     wait_event->Signal();
   }
 
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 

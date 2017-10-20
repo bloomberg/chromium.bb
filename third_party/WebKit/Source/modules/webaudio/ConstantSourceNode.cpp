@@ -28,7 +28,7 @@ ConstantSourceHandler::ConstantSourceHandler(AudioNode& node,
   Initialize();
 }
 
-RefPtr<ConstantSourceHandler> ConstantSourceHandler::Create(
+scoped_refptr<ConstantSourceHandler> ConstantSourceHandler::Create(
     AudioNode& node,
     float sample_rate,
     AudioParamHandler& offset) {

@@ -102,11 +102,11 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
   static const double kDefaultSmoothingConstant;
   static const double kSnapThreshold;
 
-  static RefPtr<AudioParamHandler> Create(BaseAudioContext& context,
-                                          AudioParamType param_type,
-                                          double default_value,
-                                          float min_value,
-                                          float max_value) {
+  static scoped_refptr<AudioParamHandler> Create(BaseAudioContext& context,
+                                                 AudioParamType param_type,
+                                                 double default_value,
+                                                 float min_value,
+                                                 float max_value) {
     return WTF::AdoptRef(new AudioParamHandler(
         context, param_type, default_value, min_value, max_value));
   }
@@ -195,7 +195,7 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 
   // The destination node used to get necessary information like the smaple rate
   // and context time.
-  RefPtr<AudioDestinationHandler> destination_handler_;
+  scoped_refptr<AudioDestinationHandler> destination_handler_;
 };
 
 // AudioParam class represents web-exposed AudioParam interface.
@@ -264,7 +264,7 @@ class AudioParam final : public GarbageCollectedFinalized<AudioParam>,
 
   void WarnIfOutsideRange(const String& param_methd, float value);
 
-  RefPtr<AudioParamHandler> handler_;
+  scoped_refptr<AudioParamHandler> handler_;
   Member<BaseAudioContext> context_;
 };
 
