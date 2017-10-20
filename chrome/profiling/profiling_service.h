@@ -44,7 +44,8 @@ class ProfilingService : public service_manager::Service,
   void AddProfilingClient(base::ProcessId pid,
                           mojom::ProfilingClientPtr client,
                           mojo::ScopedHandle memlog_pipe_sender,
-                          mojo::ScopedHandle memlog_pipe_receiver) override;
+                          mojo::ScopedHandle memlog_pipe_receiver,
+                          mojom::ProcessType process_type) override;
   void DumpProcess(base::ProcessId pid,
                    mojo::ScopedHandle output_file,
                    std::unique_ptr<base::DictionaryValue> metadata,

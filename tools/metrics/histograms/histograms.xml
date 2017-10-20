@@ -54189,6 +54189,25 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="OutOfProcessHeapProfiling.ProfiledProcess.Type"
+    enum="OutOfProcessHeapProfilingProcessType">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    One metric is emitted every 24-hours after Chrome is launched for every
+    process that is being profiled. The timer is reset if Chrome exits.
+  </summary>
+</histogram>
+
+<histogram name="OutOfProcessHeapProfiling.ProfilingMode"
+    enum="OutOfProcessHeapProfilingMode">
+  <owner>erikchen@chromium.org</owner>
+  <summary>
+    One metric is emitted every 24-hours after Chrome is launched for every
+    Chrome instance that is using out of process heap profiling. The timer is
+    reset if Chrome exits.
+  </summary>
+</histogram>
+
 <histogram name="Overscroll.Cancelled" enum="NavigationDirection">
   <obsolete>
     Deprecated as of Chrome 59 in favour of Overscroll.Cancelled3.
