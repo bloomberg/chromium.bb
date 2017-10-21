@@ -41288,6 +41288,30 @@ Called by update_traffic_annotation_histograms.py.-->
   <int value="4" label="Failed"/>
 </enum>
 
+<enum name="WebApkInstallGooglePlayErrorCode">
+  <int value="192" label="STATUS_RUNNING"/>
+  <int value="194" label="STATUS_WAITING_TO_RETRY"/>
+  <int value="198" label="STATUS_INSUFFICIENT_SPACE_ERROR"/>
+  <int value="400" label="STATUS_BAD_REQUEST"/>
+  <int value="406" label="STATUS_NOT_ACCEPTABLE"/>
+  <int value="489" label="STATUS_CANNOT_RESUME"/>
+  <int value="490" label="STATUS_CANCELED"/>
+  <int value="491" label="STATUS_UNKNOWN_ERROR"/>
+  <int value="492" label="STATUS_FILE_ERROR"/>
+  <int value="495" label="STATUS_HTTP_DATA_ERROR"/>
+  <int value="907" label="ERROR_DOWNLOAD_INTERNAL_CONDITION_5"/>
+  <int value="908" label="ERROR_DOWNLOAD_INTERNAL_FREE_SPACE"/>
+  <int value="910" label="ERROR_INSTALL_INCOMPLETE"/>
+  <int value="919" label="ERROR_INSTALL_APK_VERIFICATION_SIZE"/>
+  <int value="920" label="ERROR_VOLLEY_AUTH_FAILURE"/>
+  <int value="922" label="ERROR_VOLLEY_DFE_SERVER"/>
+  <int value="923" label="ERROR_VOLLEY_NETWORK"/>
+  <int value="924" label="ERROR_VOLLEY_NO_CONNECTION"/>
+  <int value="927" label="ERROR_VOLLEY_TIMEOUT"/>
+  <int value="961" label="ERROR_INSTALL_APK_VERIFICATION_OTHER"/>
+  <int value="963" label="ERROR_INSTALL_APK_COPY_FAILURE"/>
+</enum>
+
 <enum name="WebApkInstallInfoBarShown">
   <obsolete>
     Deprecated as of 8/2017

@@ -90806,12 +90806,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="WebApk.Install.GooglePlayErrorCode" units="code">
+<histogram name="WebApk.Install.GooglePlayErrorCode"
+    enum="WebApkInstallGooglePlayErrorCode">
   <owner>hanxi@chromium.org</owner>
   <owner>pkotwicz@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
-    Records the error code when installing a WebAPK from Google Play fails.
+    Records the error code when installing a WebAPK from Google Play fails. See
+    go/webapk-install-googleplayerrorcode.
   </summary>
 </histogram>
 
