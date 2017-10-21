@@ -50,7 +50,7 @@ class PlatformSensorProviderBase {
 
   // Implementations might override this method to free resources when there
   // are no sensors left.
-  virtual void AllSensorsRemoved() {}
+  virtual void FreeResources() {}
 
   void NotifySensorCreated(mojom::SensorType type,
                            scoped_refptr<PlatformSensor> sensor);
@@ -66,6 +66,7 @@ class PlatformSensorProviderBase {
   friend class PlatformSensor;  // To call RemoveSensor();
 
   bool CreateSharedBufferIfNeeded();
+  void FreeResourcesIfNeeded();
   void RemoveSensor(mojom::SensorType type, PlatformSensor* sensor);
 
  private:

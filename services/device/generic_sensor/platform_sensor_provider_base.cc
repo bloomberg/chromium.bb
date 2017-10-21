@@ -74,6 +74,14 @@ bool PlatformSensorProviderBase::CreateSharedBufferIfNeeded() {
   return shared_buffer_handle_.is_valid();
 }
 
+void PlatformSensorProviderBase::FreeResourcesIfNeeded() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (sensor_map_.empty() && requests_map_.empty()) {
+    FreeResources();
+    shared_buffer_handle_.reset();
+  }
+}
+
 void PlatformSensorProviderBase::RemoveSensor(mojom::SensorType type,
                                               PlatformSensor* sensor) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -93,11 +101,7 @@ void PlatformSensorProviderBase::RemoveSensor(mojom::SensorType type,
   }
 
   sensor_map_.erase(type);
-
-  if (sensor_map_.empty()) {
-    AllSensorsRemoved();
-    shared_buffer_handle_.reset();
-  }
+  FreeResourcesIfNeeded();
 }
 
 mojo::ScopedSharedBufferHandle
@@ -123,13 +127,16 @@ void PlatformSensorProviderBase::NotifySensorCreated(
   if (sensor)
     sensor_map_[type] = sensor.get();
 
+  auto it = requests_map_.find(type);
+  CallbackQueue callback_queue = it->second;
+  requests_map_.erase(type);
+
+  FreeResourcesIfNeeded();
+
   // Inform subscribers about the sensor.
   // |sensor| can be nullptr here.
-  auto it = requests_map_.find(type);
-  for (auto& callback : it->second)
+  for (auto& callback : callback_queue)
     callback.Run(sensor);
-
-  requests_map_.erase(type);
 }
 
 std::vector<mojom::SensorType>

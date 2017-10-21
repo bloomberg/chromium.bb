@@ -15,6 +15,7 @@
 #include "device/base/synchronization/one_writer_seqlock.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/device_service_test_base.h"
+#include "services/device/generic_sensor/fake_platform_sensor_and_provider.h"
 #include "services/device/generic_sensor/platform_sensor.h"
 #include "services/device/generic_sensor/platform_sensor_provider.h"
 #include "services/device/generic_sensor/sensor_provider_impl.h"
@@ -40,69 +41,6 @@ void CheckSuccess(base::OnceClosure quit_closure,
   std::move(quit_closure).Run();
 }
 
-class FakePlatformSensor : public PlatformSensor {
- public:
-  FakePlatformSensor(SensorType type,
-                     mojo::ScopedSharedBufferMapping mapping,
-                     PlatformSensorProvider* provider)
-      : PlatformSensor(type, std::move(mapping), provider) {}
-
-  bool StartSensor(const PlatformSensorConfiguration& configuration) override {
-    SensorReading reading;
-    // Only mocking the shared memory update for AMBIENT_LIGHT type is enough.
-    if (GetType() == SensorType::AMBIENT_LIGHT) {
-      // Set the shared buffer value as frequency for testing purpose.
-      reading.als.value = configuration.frequency();
-      UpdateSensorReading(reading);
-    }
-    return true;
-  }
-
-  void StopSensor() override {}
-
-  bool CheckSensorConfiguration(
-      const PlatformSensorConfiguration& configuration) override {
-    return configuration.frequency() <= GetMaximumSupportedFrequency() &&
-           configuration.frequency() >= GetMinimumSupportedFrequency();
-  }
-
-  PlatformSensorConfiguration GetDefaultConfiguration() override {
-    PlatformSensorConfiguration default_configuration;
-    default_configuration.set_frequency(30.0);
-    return default_configuration;
-  }
-
-  mojom::ReportingMode GetReportingMode() override {
-    // Set the ReportingMode as ON_CHANGE, so we can test the
-    // SensorReadingChanged() mojo interface.
-    return mojom::ReportingMode::ON_CHANGE;
-  }
-
-  double GetMaximumSupportedFrequency() override { return 50.0; }
-  double GetMinimumSupportedFrequency() override { return 1.0; }
-
- protected:
-  ~FakePlatformSensor() override = default;
-
-  DISALLOW_COPY_AND_ASSIGN(FakePlatformSensor);
-};
-
-class FakePlatformSensorProvider : public PlatformSensorProvider {
- public:
-  FakePlatformSensorProvider() = default;
-  ~FakePlatformSensorProvider() override = default;
-
-  void CreateSensorInternal(SensorType type,
-                            mojo::ScopedSharedBufferMapping mapping,
-                            const CreateSensorCallback& callback) override {
-    DCHECK(type >= SensorType::FIRST && type <= SensorType::LAST);
-    auto sensor = base::MakeRefCounted<FakePlatformSensor>(
-        type, std::move(mapping), this);
-    callback.Run(sensor);
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(FakePlatformSensorProvider);
-};
 
 class TestSensorClient : public mojom::SensorClient {
  public:

@@ -40,7 +40,7 @@ class PlatformSensorProviderLinux : public PlatformSensorProvider,
                             mojo::ScopedSharedBufferMapping mapping,
                             const CreateSensorCallback& callback) override;
 
-  void AllSensorsRemoved() override;
+  void FreeResources() override;
 
   void SetFileTaskRunner(
       scoped_refptr<base::SingleThreadTaskRunner> file_task_runner) override;
