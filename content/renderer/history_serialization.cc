@@ -8,10 +8,10 @@
 #include <algorithm>
 
 #include "base/strings/nullable_string16.h"
-#include "content/child/web_url_request_util.h"
 #include "content/common/page_state_serialization.h"
 #include "content/public/common/page_state.h"
 #include "content/renderer/history_entry.h"
+#include "content/renderer/loader/web_url_request_util.h"
 #include "third_party/WebKit/public/platform/WebData.h"
 #include "third_party/WebKit/public/platform/WebFloatPoint.h"
 #include "third_party/WebKit/public/platform/WebHTTPBody.h"

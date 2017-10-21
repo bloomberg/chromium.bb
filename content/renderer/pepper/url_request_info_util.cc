@@ -9,8 +9,8 @@
 
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "content/child/request_extra_data.h"
 #include "content/common/fileapi/file_system_messages.h"
+#include "content/renderer/loader/request_extra_data.h"
 #include "content/renderer/pepper/host_globals.h"
 #include "content/renderer/pepper/pepper_file_ref_renderer_host.h"
 #include "content/renderer/pepper/pepper_plugin_instance_impl.h"

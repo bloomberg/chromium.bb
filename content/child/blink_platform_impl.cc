@@ -40,9 +40,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/feature_policy/feature_policy_platform.h"
-#include "content/child/web_data_consumer_handle_impl.h"
-#include "content/child/web_url_loader_impl.h"
-#include "content/child/web_url_request_util.h"
 #include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
@@ -67,7 +64,6 @@ using blink::WebString;
 using blink::WebThemeEngine;
 using blink::WebURL;
 using blink::WebURLError;
-using blink::WebURLLoader;
 
 namespace content {
 
@@ -345,12 +341,6 @@ void BlinkPlatformImpl::UpdateWebThreadTLS(blink::WebThread* thread,
 }
 
 BlinkPlatformImpl::~BlinkPlatformImpl() {
-}
-
-std::unique_ptr<blink::WebDataConsumerHandle>
-BlinkPlatformImpl::CreateDataConsumerHandle(
-    mojo::ScopedDataPipeConsumerHandle handle) {
-  return base::MakeUnique<WebDataConsumerHandleImpl>(std::move(handle));
 }
 
 WebString BlinkPlatformImpl::UserAgent() {

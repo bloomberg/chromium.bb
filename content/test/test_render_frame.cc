@@ -6,13 +6,13 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/child/web_url_loader_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/public/common/associated_interface_provider.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/common/resource_response.h"
 #include "content/public/test/mock_render_thread.h"
+#include "content/renderer/loader/web_url_loader_impl.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace content {

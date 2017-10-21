@@ -11,9 +11,9 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
 #include "content/public/common/resource_type.h"
+#include "content/public/renderer/request_peer.h"
 
 // The SecurityFilterPeer is a proxy to a
 // content::RequestPeer instance.  It is used to pre-process

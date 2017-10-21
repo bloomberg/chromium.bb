@@ -5,10 +5,10 @@
 #include "content/renderer/service_worker/service_worker_fetch_context_impl.h"
 
 #include "base/feature_list.h"
-#include "content/child/request_extra_data.h"
-#include "content/child/resource_dispatcher.h"
-#include "content/child/web_url_loader_impl.h"
 #include "content/public/common/content_features.h"
+#include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/loader/resource_dispatcher.h"
+#include "content/renderer/loader/web_url_loader_impl.h"
 
 namespace content {
 
