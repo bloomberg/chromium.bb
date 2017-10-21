@@ -12,6 +12,7 @@
       background-color: blue;
       animation-duration: 2s;
       animation-timing-function: linear;
+      animation-iteration-count: infinite;
       animation-name: anim;
     }
     @keyframes anim {
@@ -21,15 +22,13 @@
   </style>
   <script src="resources/animation-test-helpers.js" type="text/javascript" charset="utf-8"></script>
   <script type="text/javascript" charset="utf-8">
-    
     const expectedValues = [
       // [time, element-id, property, expected-value, tolerance]
-      [0.5, "box", "transform", [0,1.25,-1.7,0,0,0], 0.2],
-      [1.0, "box", "transform", [-1.5,0,0,-2.5,0,0], 0.2],
+      [0.5, "box", "transform", [0,1.25,-1.75,0,0,0], 0.001],
+      [1.0, "box", "transform", [-1.5,0,0,-2.5,0,0], 0.001],
     ];
-    
+
     runAnimationTest(expectedValues);
-    
   </script>
 </head>
 <body>
