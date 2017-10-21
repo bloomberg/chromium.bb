@@ -699,9 +699,14 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
       // TODO(iclelland): Transfer correct container policy from opener as well.
       // https://crbug.com/774620
       new_root->SetPendingFramePolicy({opener_flags, {}});
-      new_root->CommitPendingFramePolicy();
     }
   }
+
+  // Apply starting sandbox flags.
+  FramePolicy frame_policy(new_root->pending_frame_policy());
+  frame_policy.sandbox_flags |= params.starting_sandbox_flags;
+  new_root->SetPendingFramePolicy(frame_policy);
+  new_root->CommitPendingFramePolicy();
 
   // This may be true even when opener is null, such as when opening blocked
   // popups.
@@ -716,6 +721,7 @@ WebContentsImpl* WebContentsImpl::CreateWithOpener(
     // bit to true.
     new_contents->is_subframe_ = true;
   }
+
   new_contents->Init(params);
   return new_contents;
 }

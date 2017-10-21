@@ -567,6 +567,7 @@ source_set("blink_headers") {
     "web/WebPopupMenuInfo.h",
     "web/WebPopupType.h",
     "web/WebPrerendererClient.h",
+    "web/WebPresentationReceiverFlags.h",
     "web/WebPrintParams.h",
     "web/WebPrintPresetOptions.h",
     "web/WebPrintScalingOption.h",

@@ -24,6 +24,7 @@
 #include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_host.h"
 #include "extensions/browser/process_manager.h"
+#include "third_party/WebKit/public/web/WebPresentationReceiverFlags.h"
 
 using content::WebContents;
 
@@ -151,8 +152,11 @@ void OffscreenTab::Start(const GURL& start_url,
            << initial_size.ToString() << " for start_url=" << start_url_.spec();
 
   // Create the WebContents to contain the off-screen tab's page.
-  offscreen_tab_web_contents_.reset(
-      WebContents::Create(WebContents::CreateParams(profile_.get())));
+  WebContents::CreateParams params(profile_.get());
+  if (!optional_presentation_id.empty())
+    params.starting_sandbox_flags = blink::kPresentationReceiverSandboxFlags;
+
+  offscreen_tab_web_contents_.reset(WebContents::Create(params));
   offscreen_tab_web_contents_->SetDelegate(this);
   WebContentsObserver::Observe(offscreen_tab_web_contents_.get());
 
