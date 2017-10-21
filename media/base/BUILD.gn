@@ -311,7 +311,7 @@ source_set("base") {
     deps += [ "//third_party/libvpx" ]
   }
 
-  if (is_linux && use_x11) {
+  if (use_x11) {
     configs += [
       "//build/config/linux:x11",
       "//build/config/linux:xext",
