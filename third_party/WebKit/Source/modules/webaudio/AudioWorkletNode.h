@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class AudioNodeInput;
 class AudioWorkletProcessor;
 class BaseAudioContext;
 class CrossThreadAudioParamInfo;
@@ -40,6 +41,8 @@ class AudioWorkletHandler final : public AudioHandler {
 
   // Called from render thread.
   void Process(size_t frames_to_process) override;
+
+  void CheckNumberOfChannelsForInput(AudioNodeInput*) override;
 
   double TailTime() const override;
   double LatencyTime() const override { return 0; }
