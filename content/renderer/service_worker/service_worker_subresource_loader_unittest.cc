@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/service_worker/service_worker_subresource_loader.h"
+#include "content/renderer/service_worker/service_worker_subresource_loader.h"
 
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/child/child_url_loader_factory_getter_impl.h"
-#include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_url_loader_client.h"
+#include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/common/data_pipe_utils.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"

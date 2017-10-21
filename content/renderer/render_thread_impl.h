@@ -129,10 +129,12 @@ class AudioRendererMixerManager;
 class BlobMessageFilter;
 class BrowserPluginManager;
 class CacheStorageDispatcher;
+class CategorizedWorkerPool;
 class CompositorForwardingMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
 class FrameSwapMessageQueue;
+class GpuVideoAcceleratorFactoriesImpl;
 class IndexedDBDispatcher;
 class InputHandlerManager;
 class MidiMessageFilter;
@@ -140,11 +142,10 @@ class NotificationDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
-class CategorizedWorkerPool;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
-class GpuVideoAcceleratorFactoriesImpl;
 class ResourceDispatchThrottler;
+class ServiceWorkerMessageFilter;
 class VideoCaptureImplManager;
 
 #if defined(OS_ANDROID)
@@ -624,6 +625,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<AudioInputMessageFilter> audio_input_message_filter_;
   scoped_refptr<MidiMessageFilter> midi_message_filter_;
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
+  scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 

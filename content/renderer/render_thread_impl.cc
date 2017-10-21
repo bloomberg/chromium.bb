@@ -133,6 +133,7 @@
 #include "content/renderer/service_worker/embedded_worker_instance_client_impl.h"
 #include "content/renderer/service_worker/service_worker_context_client.h"
 #include "content/renderer/service_worker/service_worker_context_message_filter.h"
+#include "content/renderer/service_worker/service_worker_message_filter.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "content/renderer/shared_worker/shared_worker_factory_impl.h"
 #include "device/gamepad/public/cpp/gamepads.h"
@@ -1277,6 +1278,10 @@ void RenderThreadImpl::InitializeWebKit(
     // the isolate is in background. This reduces memory usage.
     isolate->IsolateInBackgroundNotification();
   }
+
+  service_worker_message_filter_ =
+      new ServiceWorkerMessageFilter(thread_safe_sender());
+  AddFilter(service_worker_message_filter_->GetFilter());
 
   renderer_scheduler_->SetStoppingWhenBackgroundedEnabled(
       GetContentClient()->renderer()->AllowStoppingWhenProcessBackgrounded());

@@ -2,18 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_SUBRESOURCE_LOADER_H_
-#define CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_SUBRESOURCE_LOADER_H_
+#ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_SUBRESOURCE_LOADER_H_
+#define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_SUBRESOURCE_LOADER_H_
 
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/time/time.h"
-#include "content/child/service_worker/controller_service_worker_connector.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_fetch_response_callback.mojom.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/common/url_loader_factory.mojom.h"
+#include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
@@ -203,4 +203,4 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_SERVICE_WORKER_SERVICE_WORKER_SUBRESOURCE_LOADER_H_
+#endif  // CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_SUBRESOURCE_LOADER_H_

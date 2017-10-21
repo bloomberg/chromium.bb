@@ -2,14 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/service_worker/service_worker_network_provider.h"
+#include "content/renderer/service_worker/service_worker_network_provider.h"
 
 #include "base/atomic_sequence_num.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/request_extra_data.h"
-#include "content/child/service_worker/service_worker_dispatcher.h"
-#include "content/child/service_worker/service_worker_handle_reference.h"
-#include "content/child/service_worker/service_worker_provider_context.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
@@ -17,6 +14,9 @@
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/service_worker/service_worker_handle_reference.h"
+#include "content/renderer/service_worker/service_worker_provider_context.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/service_worker/service_worker_handle_reference.h"
+#include "content/renderer/service_worker/service_worker_handle_reference.h"
 
 #include "base/memory/ptr_util.h"
 #include "content/child/thread_safe_sender.h"

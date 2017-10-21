@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/service_worker/controller_service_worker_connector.h"
+#include "content/renderer/service_worker/controller_service_worker_connector.h"
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
