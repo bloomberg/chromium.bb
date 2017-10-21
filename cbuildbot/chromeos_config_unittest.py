@@ -566,7 +566,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
   def testHWTestsArchivingHWTestArtifacts(self):
     """Make sure all configs upload artifacts that need them for hw testing."""
     for build_name, config in self.site_config.iteritems():
-      if config.hw_tests:
+      if config.hw_tests or config.hw_tests_override:
         self.assertTrue(
             config.upload_hw_test_artifacts,
             "%s is trying to run hw tests without uploading payloads." %
@@ -636,6 +636,9 @@ class CBuildBotTest(ChromeosConfigTestBase):
 
     found_types = set()
     for _, config in self.site_config.iteritems():
+      if config.display_label in config_lib.TRYJOB_DISPLAY_LABEL:
+        continue
+
       if config.master:
         self.assertTrue(config.build_type in BUILD_TYPE_WHITELIST,
                         'Config %s has build_type %s, which is not an allowed '
@@ -734,8 +737,11 @@ class CBuildBotTest(ChromeosConfigTestBase):
     """
     for build_name, config in self.site_config.iteritems():
       # These group builders are whitelisted, for now.
-      if not (build_name in ('test-ap-group', 'mixed-wificell-pre-cq') or
-              build_name.endswith('release-afdo')):
+      if not (build_name in ('test-ap-group',
+                             'test-ap-group-tryjob',
+                             'mixed-wificell-pre-cq') or
+              build_name.endswith('release-afdo') or
+              build_name.endswith('release-afdo-tryjob')):
         self.assertFalse(
             config.child_configs,
             'Unexpected group builder found: %s' % build_name)
@@ -1009,15 +1015,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
           self.assertFalse(child_config.important,
                            msg % (child_config.name, build_name, build_name))
 
-  def testFullCQBuilderDoNotRunHWTest(self):
-    """Full CQ configs should not run HWTest."""
-    msg = ('%s should not be a full builder and run HWTest for '
-           'performance reasons')
-    for build_name, config in self.site_config.iteritems():
-      if config.build_type == constants.PALADIN_TYPE:
-        self.assertFalse(config.chrome_binhost_only and config.hw_tests,
-                         msg % build_name)
-
   def testExternalConfigsDoNotUseInternalFeatures(self):
     """External configs should not use chrome_internal, or official.xml."""
     msg = ('%s is not internal, so should not use chrome_internal, or an '
@@ -1199,6 +1196,10 @@ class TemplateTest(ChromeosConfigTestBase):
   def testConfigNamesMatchTemplate(self):
     """Test that all configs have names that match their templates."""
     for name, config in self.site_config.iteritems():
+      # Tryjob configs should be tested based on what they are mirrored from.
+      if name.endswith('-tryjob'):
+        name = name[:-len('-tryjob')]
+
       template = config._template
       if template:
         # We mix '-' and '_' in various name spaces.
