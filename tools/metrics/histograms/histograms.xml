@@ -21834,6 +21834,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Extensions.DeclarativeNetRequest.CreateVerifiedMatcherTime"
+    units="ms">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Measures the time taken to load the indexed ruleset in the browser process
+    for an extension. This includes memory mapping the ruleset file and
+    verifying it. Emitted when an extension using the Declarative Net Request
+    API is loaded.
+  </summary>
+</histogram>
+
 <histogram name="Extensions.DeclarativeNetRequest.IndexAndPersistRulesTime"
     units="ms">
   <owner>karandeepb@chromium.org</owner>
@@ -21869,6 +21880,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     json ruleset is indexed. This may happen when a packed extension is
     installed, an unpacked extension is loaded, an extension's ruleset is re-
     indexed, due to corruption, etc.
+  </summary>
+</histogram>
+
+<histogram
+    name="Extensions.DeclarativeNetRequest.ShouldBlockRequestTime.SingleExtension"
+    units="ms">
+  <owner>karandeepb@chromium.org</owner>
+  <summary>
+    Time taken to evaluate whether a network request should be blocked for a
+    single extension ruleset. Emitted for each network request that is visible
+    to the extension.
   </summary>
 </histogram>
 

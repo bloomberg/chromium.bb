@@ -4048,6 +4048,7 @@ test("unit_tests") {
       "../browser/extensions/api/declarative_content/declarative_content_is_bookmarked_condition_tracker_unittest.cc",
       "../browser/extensions/api/declarative_content/declarative_content_page_url_condition_tracker_unittest.cc",
       "../browser/extensions/api/declarative_net_request/rule_indexing_unittest.cc",
+      "../browser/extensions/api/declarative_net_request/ruleset_matcher_unittest.cc",
       "../browser/extensions/api/declarative_webrequest/webrequest_action_unittest.cc",
       "../browser/extensions/api/declarative_webrequest/webrequest_rules_registry_unittest.cc",
       "../browser/extensions/api/developer_private/developer_private_api_unittest.cc",
