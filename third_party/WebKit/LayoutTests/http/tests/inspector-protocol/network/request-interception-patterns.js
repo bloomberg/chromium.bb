@@ -80,52 +80,36 @@
     testRunner.log('');
   }
 
-  /**
-   * @param {boolean} enabled
-   * @param {!Array<string>} patterns
-   * @return {!Promise}
-   */
-  function setPatterns(enabled, patterns) {
-    var params = {enabled};
-    if (patterns)
-      params.patterns = patterns;
-    testRunner.log('setRequestInterceptionEnabled(' + enabled + ', ' + JSON.stringify(patterns) + ')');
-    return session.protocol.Network.setRequestInterceptionEnabled(params);
+  function setPatterns(patterns) {
+    testRunner.log('setRequestInterception(' + JSON.stringify(patterns) + ')');
+    return session.protocol.Network.setRequestInterception({patterns});
   }
 
   testRunner.log('');
   await session.protocol.Network.enable();
   await session.protocol.Network.setCacheDisabled({cacheDisabled: true});
 
-  await setPatterns(true);
+  await setPatterns([{urlPattern: '*'}]);
   await testUrls();
-  await setPatterns(true, []);
+  await setPatterns([]);
   await testUrls();
-  await setPatterns(false, []);
+  await setPatterns([{urlPattern: '*small-test-1.txt'}]);
   await testUrls();
-  await setPatterns(false, ['*']);
+  await setPatterns([{urlPattern: '*small-test-?.txt'}]);
   await testUrls();
-  await setPatterns(false);
+  await setPatterns([{urlPattern: '*small-test-*.txt'}]);
   await testUrls();
-  await setPatterns(true, ['*']);
+  await setPatterns([{urlPattern: '*small-test-\\*.txt'}]);
   await testUrls();
-  await setPatterns(true, ['*small-test-1.txt']);
+  await setPatterns([{urlPattern: '*small-test*'}]);
   await testUrls();
-  await setPatterns(true, ['*small-test-?.txt']);
+  await setPatterns([{urlPattern: '*small-test-1.txt'}, {urlPattern: '*small-test-2.txt'}]);
   await testUrls();
-  await setPatterns(true, ['*small-test-*.txt']);
+  await setPatterns([{urlPattern: '*small-test-1.txt'}, {urlPattern: '*small-*'}]);
   await testUrls();
-  await setPatterns(true, ['*small-test-\\*.txt']);
+  await setPatterns([{urlPattern: '*small-test-1.txt'}, {urlPattern: '*-*'}]);
   await testUrls();
-  await setPatterns(true, ['*small-test*']);
-  await testUrls();
-  await setPatterns(true, ['*small-test-1.txt', '*small-test-2.txt']);
-  await testUrls();
-  await setPatterns(true, ['*small-test-1.txt', '*small-*']);
-  await testUrls();
-  await setPatterns(true, ['*small-test-1.txt', '*-*']);
-  await testUrls();
-  await setPatterns(true, ['*-*', '*small-test-1.txt']);
+  await setPatterns([{urlPattern: '*-*'}, {urlPattern: '*small-test-1.txt'}]);
   await testUrls();
 
   testRunner.completeTest();

@@ -133,7 +133,7 @@
     await this._session.protocol.Network.setCacheDisabled({cacheDisabled: true});
     this._session.protocol.Network.enable();
     this._testRunner.log('Network agent enabled');
-    await this._session.protocol.Network.setRequestInterceptionEnabled({enabled: true});
+    await this._session.protocol.Network.setRequestInterception({patterns: [{urlPattern: "*"}]});
     this._testRunner.log('Request interception enabled');
     await this._session.protocol.Page.enable();
     this._testRunner.log('Page agent enabled');
@@ -187,7 +187,7 @@
   disableRequestInterception(event) {
     var id = this._canonicalId(event.params.interceptionId);
     this._log(id, '----- disableRequestInterception -----');
-    this._session.protocol.Network.setRequestInterceptionEnabled({enabled: false});
+    this._session.protocol.Network.setRequestInterception({patterns: []});
   }
 
   cancelAuth(event) {

@@ -14,7 +14,7 @@
     testRunner.completeTest();
   });
 
-  await session.protocol.Network.setRequestInterceptionEnabled({"enabled": true, patterns: ["*/image.png"]});
+  await session.protocol.Network.setRequestInterception({patterns: [{urlPattern: "*/image.png"}]});
   session.evaluate(`
     var img = new Image();
     img.src = 'image.png#SOME_HASH';

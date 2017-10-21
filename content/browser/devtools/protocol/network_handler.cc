@@ -691,8 +691,8 @@ Response NetworkHandler::Enable(Maybe<int> max_total_size,
 Response NetworkHandler::Disable() {
   enabled_ = false;
   user_agent_ = std::string();
-  SetRequestInterceptionEnabled(false, Maybe<protocol::Array<String>>(),
-                                Maybe<protocol::Array<String>>());
+  SetRequestInterception(
+      protocol::Array<protocol::Network::RequestPattern>::create());
   SetNetworkConditions(nullptr);
   extra_headers_.clear();
   return Response::FallThrough();
@@ -1049,10 +1049,9 @@ void NetworkHandler::NavigationFailed(
       Page::ResourceTypeEnum::Document, error_string, cancelled);
 }
 
-DispatchResponse NetworkHandler::SetRequestInterceptionEnabled(
-    bool enabled,
-    Maybe<protocol::Array<std::string>> patterns,
-    Maybe<protocol::Array<std::string>> resource_types) {
+DispatchResponse NetworkHandler::SetRequestInterception(
+    std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
+        patterns) {
   WebContents* web_contents = WebContents::FromRenderFrameHost(host_);
   if (!web_contents)
     return Response::InternalError();
@@ -1063,37 +1062,32 @@ DispatchResponse NetworkHandler::SetRequestInterceptionEnabled(
   if (!devtools_url_request_interceptor)
     return Response::Error("Interception not supported");
 
-  std::vector<std::string> new_patterns;
-  if (enabled) {
-    if (patterns.isJust()) {
-      for (size_t i = 0; i < patterns.fromJust()->length(); i++)
-        new_patterns.push_back(patterns.fromJust()->get(i));
-    } else {
-      new_patterns.push_back("*");
+  if (patterns->length()) {
+    std::vector<DevToolsURLRequestInterceptor::Pattern> interceptor_patterns;
+    for (size_t i = 0; i < patterns->length(); ++i) {
+      base::flat_set<ResourceType> resource_types;
+      std::string resource_type = patterns->get(i)->GetResourceType("");
+      if (!resource_type.empty()) {
+        if (!AddInterceptedResourceType(resource_type, &resource_types)) {
+          return Response::InvalidParams(
+              base::StringPrintf("Cannot intercept resources of type '%s'",
+                                 resource_type.c_str()));
+        }
+      }
+      interceptor_patterns.push_back(DevToolsURLRequestInterceptor::Pattern(
+          patterns->get(i)->GetUrlPattern("*"), std::move(resource_types)));
     }
-  }
-  interception_enabled_ = new_patterns.size();
 
-  base::flat_set<ResourceType> intercepted_resource_types;
-  if (resource_types.isJust()) {
-    for (size_t i = 0; i < resource_types.fromJust()->length(); i++) {
-      if (!AddInterceptedResourceType(resource_types.fromJust()->get(i),
-                                      &intercepted_resource_types))
-        return Response::Error(
-            base::StringPrintf("Cannot intercept resources of type '%s'",
-                               resource_types.fromJust()->get(i).c_str()));
-    }
-  }
-
-  if (interception_enabled_) {
     devtools_url_request_interceptor->state()->StartInterceptingRequests(
-        web_contents, weak_factory_.GetWeakPtr(), std::move(new_patterns),
-        std::move(intercepted_resource_types));
+        web_contents, weak_factory_.GetWeakPtr(),
+        std::move(interceptor_patterns));
+    interception_enabled_ = true;
   } else {
     devtools_url_request_interceptor->state()->StopInterceptingRequests(
         web_contents);
     navigation_requests_.clear();
     canceled_navigation_requests_.clear();
+    interception_enabled_ = false;
   }
   return Response::OK();
 }

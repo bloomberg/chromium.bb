@@ -80,12 +80,16 @@ class FrameIdTest : public HeadlessAsyncDevTooledBrowserTest,
     devtools_client_->GetNetwork()->Enable();
 
     if (EnableInterception()) {
-      devtools_client_->GetNetwork()
-          ->GetExperimental()
-          ->SetRequestInterceptionEnabled(
-              network::SetRequestInterceptionEnabledParams::Builder()
-                  .SetEnabled(true)
-                  .Build());
+      std::unique_ptr<headless::network::RequestPattern> match_all =
+          headless::network::RequestPattern::Builder()
+              .SetUrlPattern("*")
+              .Build();
+      std::vector<std::unique_ptr<headless::network::RequestPattern>> patterns;
+      patterns.push_back(std::move(match_all));
+      devtools_client_->GetNetwork()->GetExperimental()->SetRequestInterception(
+          network::SetRequestInterceptionParams::Builder()
+              .SetPatterns(std::move(patterns))
+              .Build());
     }
 
     devtools_client_->GetPage()->AddObserver(this);

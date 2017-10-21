@@ -85,6 +85,17 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
     bool mark_as_canceled;
   };
 
+  struct Pattern {
+   public:
+    Pattern();
+    ~Pattern();
+    Pattern(const Pattern& other);
+    Pattern(const std::string& url_pattern,
+            base::flat_set<ResourceType> resource_types);
+    const std::string url_pattern;
+    const base::flat_set<ResourceType> resource_types;
+  };
+
   // The State needs to be accessed on both UI and IO threads.
   class State : public base::RefCountedThreadSafe<State> {
    public:
@@ -111,8 +122,7 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
     void StartInterceptingRequests(
         WebContents* web_contents,
         base::WeakPtr<protocol::NetworkHandler> network_handler,
-        std::vector<std::string> patterns,
-        base::flat_set<ResourceType> intercepted_resource_types);
+        std::vector<Pattern> intercepted_patterns);
 
     // Must be called on the UI thread.
     void StopInterceptingRequests(WebContents* web_contents);
@@ -143,14 +153,11 @@ class DevToolsURLRequestInterceptor : public net::URLRequestInterceptor {
 
     struct InterceptedPage {
       InterceptedPage(base::WeakPtr<protocol::NetworkHandler> network_handler,
-                      std::vector<std::string> patterns,
-                      base::flat_set<ResourceType> intercepted_resource_types);
+                      std::vector<Pattern> intercepted_patterns);
       ~InterceptedPage();
 
       const base::WeakPtr<protocol::NetworkHandler> network_handler;
-      const std::vector<std::string> intercepted_url_patterns;
-      // If not empty, only resource types from this set will be intercepted.
-      const base::flat_set<ResourceType> intercepted_resource_types;
+      const std::vector<Pattern> intercepted_patterns;
     };
 
     void ContinueInterceptedRequestOnIO(

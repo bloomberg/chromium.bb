@@ -41,9 +41,9 @@
             },
             {
                 "domain": "Network",
-                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "setUserAgentOverride", "setExtraHTTPHeaders", "canEmulateNetworkConditions", "emulateNetworkConditions", "setRequestInterceptionEnabled", "continueInterceptedRequest"],
+                "include": ["enable", "disable", "clearBrowserCache", "clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "setUserAgentOverride", "setExtraHTTPHeaders", "canEmulateNetworkConditions", "emulateNetworkConditions", "setRequestInterception", "continueInterceptedRequest"],
                 "include_types": ["CookieSameSite", "Cookie", "CookieParam", "Response", "Headers", "Request", "ResourceTiming", "SecurityDetails", "SignedCertificateTimestamp", "Initiator", "ResourcePriority", "RequestWillBeSentNotification", "ResponseReceivedNotification", "LoadingFinishedNotification", "LoadingFailedNotification", "RequestWillBeSentNotification",
-                                  "ErrorReason", "RequestInterceptedNotification", "AuthChallenge", "AuthChallengeResponse", "ConnectionType"],
+                                  "ErrorReason", "RequestInterceptedNotification", "AuthChallenge", "AuthChallengeResponse", "ConnectionType", "RequestPattern"],
                 "include_events": ["requestWillBeSent", "responseReceived", "loadingFinished", "loadingFailed", "requestIntercepted"],
                 "async": ["clearBrowserCookies", "getCookies", "getAllCookies", "deleteCookies", "setCookie", "setCookies", "continueInterceptedRequest"]
             },

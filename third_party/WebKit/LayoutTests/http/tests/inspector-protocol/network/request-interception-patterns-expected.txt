@@ -1,6 +1,6 @@
 Tests interception pattern only matches requests based on pattern.
 
-setRequestInterceptionEnabled(true, undefined)
+setRequestInterception([{"urlPattern":"*"}])
 Request Will Be Sent: small-test-1.txt
 Request Intercepted: small-test-1.txt
 Response Received for: small-test-1.txt
@@ -17,7 +17,7 @@ Response Received for: test-page.html
 Response Content: I own test page!
 
 
-setRequestInterceptionEnabled(true, [])
+setRequestInterception([])
 Request Will Be Sent: small-test-1.txt
 Response Received for: small-test-1.txt
 Response Content: This was served from server.
@@ -31,7 +31,54 @@ Response Received for: test-page.html
 Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
 
 
-setRequestInterceptionEnabled(false, [])
+setRequestInterception([{"urlPattern":"*small-test-1.txt"}])
+Request Will Be Sent: small-test-1.txt
+Request Intercepted: small-test-1.txt
+Response Received for: small-test-1.txt
+Response Content: I was intercepted.
+
+Request Will Be Sent: small-test-2.txt
+Response Received for: small-test-2.txt
+Response Content: This was also served from server.
+
+Request Will Be Sent: test-page.html
+Response Received for: test-page.html
+Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
+
+
+setRequestInterception([{"urlPattern":"*small-test-?.txt"}])
+Request Will Be Sent: small-test-1.txt
+Request Intercepted: small-test-1.txt
+Response Received for: small-test-1.txt
+Response Content: I was intercepted.
+
+Request Will Be Sent: small-test-2.txt
+Request Intercepted: small-test-2.txt
+Response Received for: small-test-2.txt
+Response Content: I was also intercepted.
+
+Request Will Be Sent: test-page.html
+Response Received for: test-page.html
+Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
+
+
+setRequestInterception([{"urlPattern":"*small-test-*.txt"}])
+Request Will Be Sent: small-test-1.txt
+Request Intercepted: small-test-1.txt
+Response Received for: small-test-1.txt
+Response Content: I was intercepted.
+
+Request Will Be Sent: small-test-2.txt
+Request Intercepted: small-test-2.txt
+Response Received for: small-test-2.txt
+Response Content: I was also intercepted.
+
+Request Will Be Sent: test-page.html
+Response Received for: test-page.html
+Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
+
+
+setRequestInterception([{"urlPattern":"*small-test-\\*.txt"}])
 Request Will Be Sent: small-test-1.txt
 Response Received for: small-test-1.txt
 Response Content: This was served from server.
@@ -45,35 +92,55 @@ Response Received for: test-page.html
 Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
 
 
-setRequestInterceptionEnabled(false, ["*"])
+setRequestInterception([{"urlPattern":"*small-test*"}])
 Request Will Be Sent: small-test-1.txt
+Request Intercepted: small-test-1.txt
 Response Received for: small-test-1.txt
-Response Content: This was served from server.
+Response Content: I was intercepted.
 
 Request Will Be Sent: small-test-2.txt
+Request Intercepted: small-test-2.txt
 Response Received for: small-test-2.txt
-Response Content: This was also served from server.
+Response Content: I was also intercepted.
 
 Request Will Be Sent: test-page.html
 Response Received for: test-page.html
 Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
 
 
-setRequestInterceptionEnabled(false, undefined)
+setRequestInterception([{"urlPattern":"*small-test-1.txt"},{"urlPattern":"*small-test-2.txt"}])
 Request Will Be Sent: small-test-1.txt
+Request Intercepted: small-test-1.txt
 Response Received for: small-test-1.txt
-Response Content: This was served from server.
+Response Content: I was intercepted.
 
 Request Will Be Sent: small-test-2.txt
+Request Intercepted: small-test-2.txt
 Response Received for: small-test-2.txt
-Response Content: This was also served from server.
+Response Content: I was also intercepted.
 
 Request Will Be Sent: test-page.html
 Response Received for: test-page.html
 Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
 
 
-setRequestInterceptionEnabled(true, ["*"])
+setRequestInterception([{"urlPattern":"*small-test-1.txt"},{"urlPattern":"*small-*"}])
+Request Will Be Sent: small-test-1.txt
+Request Intercepted: small-test-1.txt
+Response Received for: small-test-1.txt
+Response Content: I was intercepted.
+
+Request Will Be Sent: small-test-2.txt
+Request Intercepted: small-test-2.txt
+Response Received for: small-test-2.txt
+Response Content: I was also intercepted.
+
+Request Will Be Sent: test-page.html
+Response Received for: test-page.html
+Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
+
+
+setRequestInterception([{"urlPattern":"*small-test-1.txt"},{"urlPattern":"*-*"}])
 Request Will Be Sent: small-test-1.txt
 Request Intercepted: small-test-1.txt
 Response Received for: small-test-1.txt
@@ -90,133 +157,7 @@ Response Received for: test-page.html
 Response Content: I own test page!
 
 
-setRequestInterceptionEnabled(true, ["*small-test-1.txt"])
-Request Will Be Sent: small-test-1.txt
-Request Intercepted: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: I was intercepted.
-
-Request Will Be Sent: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: This was also served from server.
-
-Request Will Be Sent: test-page.html
-Response Received for: test-page.html
-Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
-
-
-setRequestInterceptionEnabled(true, ["*small-test-?.txt"])
-Request Will Be Sent: small-test-1.txt
-Request Intercepted: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: I was intercepted.
-
-Request Will Be Sent: small-test-2.txt
-Request Intercepted: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: I was also intercepted.
-
-Request Will Be Sent: test-page.html
-Response Received for: test-page.html
-Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
-
-
-setRequestInterceptionEnabled(true, ["*small-test-*.txt"])
-Request Will Be Sent: small-test-1.txt
-Request Intercepted: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: I was intercepted.
-
-Request Will Be Sent: small-test-2.txt
-Request Intercepted: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: I was also intercepted.
-
-Request Will Be Sent: test-page.html
-Response Received for: test-page.html
-Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
-
-
-setRequestInterceptionEnabled(true, ["*small-test-\\*.txt"])
-Request Will Be Sent: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: This was served from server.
-
-Request Will Be Sent: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: This was also served from server.
-
-Request Will Be Sent: test-page.html
-Response Received for: test-page.html
-Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
-
-
-setRequestInterceptionEnabled(true, ["*small-test*"])
-Request Will Be Sent: small-test-1.txt
-Request Intercepted: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: I was intercepted.
-
-Request Will Be Sent: small-test-2.txt
-Request Intercepted: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: I was also intercepted.
-
-Request Will Be Sent: test-page.html
-Response Received for: test-page.html
-Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
-
-
-setRequestInterceptionEnabled(true, ["*small-test-1.txt","*small-test-2.txt"])
-Request Will Be Sent: small-test-1.txt
-Request Intercepted: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: I was intercepted.
-
-Request Will Be Sent: small-test-2.txt
-Request Intercepted: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: I was also intercepted.
-
-Request Will Be Sent: test-page.html
-Response Received for: test-page.html
-Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
-
-
-setRequestInterceptionEnabled(true, ["*small-test-1.txt","*small-*"])
-Request Will Be Sent: small-test-1.txt
-Request Intercepted: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: I was intercepted.
-
-Request Will Be Sent: small-test-2.txt
-Request Intercepted: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: I was also intercepted.
-
-Request Will Be Sent: test-page.html
-Response Received for: test-page.html
-Response Content: <html>\n<body>\n<div id="rootDiv">Root div text</div>\n</body>\n</html>\n
-
-
-setRequestInterceptionEnabled(true, ["*small-test-1.txt","*-*"])
-Request Will Be Sent: small-test-1.txt
-Request Intercepted: small-test-1.txt
-Response Received for: small-test-1.txt
-Response Content: I was intercepted.
-
-Request Will Be Sent: small-test-2.txt
-Request Intercepted: small-test-2.txt
-Response Received for: small-test-2.txt
-Response Content: I was also intercepted.
-
-Request Will Be Sent: test-page.html
-Request Intercepted: test-page.html
-Response Received for: test-page.html
-Response Content: I own test page!
-
-
-setRequestInterceptionEnabled(true, ["*-*","*small-test-1.txt"])
+setRequestInterception([{"urlPattern":"*-*"},{"urlPattern":"*small-test-1.txt"}])
 Request Will Be Sent: small-test-1.txt
 Request Intercepted: small-test-1.txt
 Response Received for: small-test-1.txt
