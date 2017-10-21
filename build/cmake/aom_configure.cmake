@@ -56,10 +56,9 @@ if (NOT ENABLE_ADOPTED_EXPERIMENTS)
     unset(var_helpstring)
     get_property(var_helpstring CACHE ${var} PROPERTY HELPSTRING)
     if ("${var_helpstring}" STREQUAL "AV1 experiment flag.")
-      if ("${var}" MATCHES "CONFIG_CB4X4\|CONFIG_TXMG")
-       # CB4X4 is required and can not be disabled.
+      if ("${var}" MATCHES "CONFIG_TXMG")
        # TXMG is required for configure compatibility.
-     else ()
+      else ()
        set(${var} 0)
      endif ()
     endif ()

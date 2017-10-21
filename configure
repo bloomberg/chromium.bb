@@ -292,7 +292,6 @@ EXPERIMENT_LIST="
     daala_tx16
     daala_tx32
     daala_tx64
-    cb4x4
     chroma_sub8x8
     frame_size
     ext_delta_q
@@ -502,8 +501,6 @@ post_process_cmdline() {
         enabled ${c} && enable_feature ${c##*_}s
     done
 
-    enable_feature cb4x4
-
     # Enable adopted experiments by default
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
@@ -560,7 +557,6 @@ post_process_cmdline() {
     enabled ctx1d && soft_enable ext_tx
     enabled compound_round && soft_enable convolve_round
     enabled intra_edge && enable_feature ext_intra
-    enabled chroma_sub8x8 && enable_feature cb4x4
     enabled ncobmc_adapt_weight && enable_feature motion_var
     enabled bgsprite && enable_feature global_motion
     enabled ext_comp_refs && enable_feature one_sided_compound
