@@ -3914,20 +3914,6 @@ static void write_global_motion_params(const WarpedMotionParams *params,
   }
 
   switch (type) {
-    case HOMOGRAPHY:
-    case HORTRAPEZOID:
-    case VERTRAPEZOID:
-      if (type != HORTRAPEZOID)
-        aom_wb_write_signed_primitive_refsubexpfin(
-            wb, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF),
-            (params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF));
-      if (type != VERTRAPEZOID)
-        aom_wb_write_signed_primitive_refsubexpfin(
-            wb, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF),
-            (params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF));
-    // fallthrough intended
     case AFFINE:
     case ROTZOOM:
       aom_wb_write_signed_primitive_refsubexpfin(
@@ -3935,17 +3921,15 @@ static void write_global_motion_params(const WarpedMotionParams *params,
           (ref_params->wmmat[2] >> GM_ALPHA_PREC_DIFF) -
               (1 << GM_ALPHA_PREC_BITS),
           (params->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
-      if (type != VERTRAPEZOID)
+      aom_wb_write_signed_primitive_refsubexpfin(
+          wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+          (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
+          (params->wmmat[3] >> GM_ALPHA_PREC_DIFF));
+      if (type >= AFFINE) {
         aom_wb_write_signed_primitive_refsubexpfin(
             wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-            (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF),
-            (params->wmmat[3] >> GM_ALPHA_PREC_DIFF));
-      if (type >= AFFINE) {
-        if (type != HORTRAPEZOID)
-          aom_wb_write_signed_primitive_refsubexpfin(
-              wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-              (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF),
-              (params->wmmat[4] >> GM_ALPHA_PREC_DIFF));
+            (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF),
+            (params->wmmat[4] >> GM_ALPHA_PREC_DIFF));
         aom_wb_write_signed_primitive_refsubexpfin(
             wb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
             (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -

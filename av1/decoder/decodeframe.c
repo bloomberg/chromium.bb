@@ -2829,21 +2829,6 @@ static int read_global_motion_params(WarpedMotionParams *params,
   *params = default_warp_params;
   params->wmtype = type;
   switch (type) {
-    case HOMOGRAPHY:
-    case HORTRAPEZOID:
-    case VERTRAPEZOID:
-      if (type != HORTRAPEZOID)
-        params->wmmat[6] =
-            aom_rb_read_signed_primitive_refsubexpfin(
-                rb, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-                (ref_params->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF)) *
-            GM_ROW3HOMO_DECODE_FACTOR;
-      if (type != VERTRAPEZOID)
-        params->wmmat[7] =
-            aom_rb_read_signed_primitive_refsubexpfin(
-                rb, GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-                (ref_params->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF)) *
-            GM_ROW3HOMO_DECODE_FACTOR;
     case AFFINE:
     case ROTZOOM:
       params->wmmat[2] = aom_rb_read_signed_primitive_refsubexpfin(
@@ -2852,17 +2837,15 @@ static int read_global_motion_params(WarpedMotionParams *params,
                                  (1 << GM_ALPHA_PREC_BITS)) *
                              GM_ALPHA_DECODE_FACTOR +
                          (1 << WARPEDMODEL_PREC_BITS);
-      if (type != VERTRAPEZOID)
-        params->wmmat[3] = aom_rb_read_signed_primitive_refsubexpfin(
-                               rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                               (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF)) *
-                           GM_ALPHA_DECODE_FACTOR;
+      params->wmmat[3] = aom_rb_read_signed_primitive_refsubexpfin(
+                             rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                             (ref_params->wmmat[3] >> GM_ALPHA_PREC_DIFF)) *
+                         GM_ALPHA_DECODE_FACTOR;
       if (type >= AFFINE) {
-        if (type != HORTRAPEZOID)
-          params->wmmat[4] = aom_rb_read_signed_primitive_refsubexpfin(
-                                 rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-                                 (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF)) *
-                             GM_ALPHA_DECODE_FACTOR;
+        params->wmmat[4] = aom_rb_read_signed_primitive_refsubexpfin(
+                               rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+                               (ref_params->wmmat[4] >> GM_ALPHA_PREC_DIFF)) *
+                           GM_ALPHA_DECODE_FACTOR;
         params->wmmat[5] = aom_rb_read_signed_primitive_refsubexpfin(
                                rb, GM_ALPHA_MAX + 1, SUBEXPFIN_K,
                                (ref_params->wmmat[5] >> GM_ALPHA_PREC_DIFF) -

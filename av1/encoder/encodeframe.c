@@ -3654,37 +3654,21 @@ static int gm_get_params_cost(const WarpedMotionParams *gm,
   int params_cost = 0;
   int trans_bits, trans_prec_diff;
   switch (gm->wmtype) {
-    case HOMOGRAPHY:
-    case HORTRAPEZOID:
-    case VERTRAPEZOID:
-      if (gm->wmtype != HORTRAPEZOID)
-        params_cost += aom_count_signed_primitive_refsubexpfin(
-            GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-            (ref_gm->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF),
-            (gm->wmmat[6] >> GM_ROW3HOMO_PREC_DIFF));
-      if (gm->wmtype != VERTRAPEZOID)
-        params_cost += aom_count_signed_primitive_refsubexpfin(
-            GM_ROW3HOMO_MAX + 1, SUBEXPFIN_K,
-            (ref_gm->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF),
-            (gm->wmmat[7] >> GM_ROW3HOMO_PREC_DIFF));
-    // Fallthrough intended
     case AFFINE:
     case ROTZOOM:
       params_cost += aom_count_signed_primitive_refsubexpfin(
           GM_ALPHA_MAX + 1, SUBEXPFIN_K,
           (ref_gm->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS),
           (gm->wmmat[2] >> GM_ALPHA_PREC_DIFF) - (1 << GM_ALPHA_PREC_BITS));
-      if (gm->wmtype != VERTRAPEZOID)
+      params_cost += aom_count_signed_primitive_refsubexpfin(
+          GM_ALPHA_MAX + 1, SUBEXPFIN_K,
+          (ref_gm->wmmat[3] >> GM_ALPHA_PREC_DIFF),
+          (gm->wmmat[3] >> GM_ALPHA_PREC_DIFF));
+      if (gm->wmtype >= AFFINE) {
         params_cost += aom_count_signed_primitive_refsubexpfin(
             GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-            (ref_gm->wmmat[3] >> GM_ALPHA_PREC_DIFF),
-            (gm->wmmat[3] >> GM_ALPHA_PREC_DIFF));
-      if (gm->wmtype >= AFFINE) {
-        if (gm->wmtype != HORTRAPEZOID)
-          params_cost += aom_count_signed_primitive_refsubexpfin(
-              GM_ALPHA_MAX + 1, SUBEXPFIN_K,
-              (ref_gm->wmmat[4] >> GM_ALPHA_PREC_DIFF),
-              (gm->wmmat[4] >> GM_ALPHA_PREC_DIFF));
+            (ref_gm->wmmat[4] >> GM_ALPHA_PREC_DIFF),
+            (gm->wmmat[4] >> GM_ALPHA_PREC_DIFF));
         params_cost += aom_count_signed_primitive_refsubexpfin(
             GM_ALPHA_MAX + 1, SUBEXPFIN_K,
             (ref_gm->wmmat[5] >> GM_ALPHA_PREC_DIFF) -

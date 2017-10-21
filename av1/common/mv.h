@@ -71,10 +71,7 @@ typedef enum {
   TRANSLATION = 1,   // translational motion 2-parameter
   ROTZOOM = 2,       // simplified affine with rotation + zoom only, 4-parameter
   AFFINE = 3,        // affine, 6-parameter
-  HORTRAPEZOID = 4,  // constrained homography, hor trapezoid, 6-parameter
-  VERTRAPEZOID = 5,  // constrained homography, ver trapezoid, 6-parameter
-  HOMOGRAPHY = 6,    // homography, 8-parameter
-  TRANS_TYPES = 7,
+  TRANS_TYPES,
 } TransformationType;
 /* clang-format on */
 
@@ -103,7 +100,7 @@ typedef struct {
 } WarpTypesAllowed;
 
 // number of parameters used by each transformation in TransformationTypes
-static const int trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6, 6, 6, 8 };
+static const int trans_model_params[TRANS_TYPES] = { 0, 2, 4, 6 };
 
 // The order of values in the wmmat matrix below is best described
 // by the homography:
@@ -308,11 +305,6 @@ static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
 }
 
 static INLINE TransformationType get_gmtype(const WarpedMotionParams *gm) {
-  if (gm->wmmat[6] != 0 || gm->wmmat[7] != 0) {
-    if (!gm->wmmat[6] && !gm->wmmat[4]) return HORTRAPEZOID;
-    if (!gm->wmmat[7] && !gm->wmmat[3]) return VERTRAPEZOID;
-    return HOMOGRAPHY;
-  }
   if (gm->wmmat[5] == (1 << WARPEDMODEL_PREC_BITS) && !gm->wmmat[4] &&
       gm->wmmat[2] == (1 << WARPEDMODEL_PREC_BITS) && !gm->wmmat[3]) {
     return ((!gm->wmmat[1] && !gm->wmmat[0]) ? IDENTITY : TRANSLATION);
