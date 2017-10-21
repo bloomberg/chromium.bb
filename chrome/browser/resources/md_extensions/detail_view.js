@@ -65,14 +65,6 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
-    hasPermissions_: function() {
-      return this.data.permissions.length > 0;
-    },
-
-    /**
-     * @return {boolean}
-     * @private
-     */
     hasWarnings_: function() {
       return this.data.disableReasons.corruptInstall ||
           this.data.disableReasons.suspiciousInstall ||

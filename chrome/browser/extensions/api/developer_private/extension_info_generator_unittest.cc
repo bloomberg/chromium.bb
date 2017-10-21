@@ -225,8 +225,14 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
           .Set("version", kVersion)
           .Set("manifest_version", 2)
           .Set("description", "an extension")
-          .Set("permissions",
-               ListBuilder().Append("file://*/*").Append("tabs").Build())
+          .Set("permissions", ListBuilder()
+                                  .Append("file://*/*")
+                                  .Append("tabs")
+                                  .Append("*://*.google.com/*")
+                                  .Append("*://*.example.com/*")
+                                  .Append("*://*.foo.bar/*")
+                                  .Append("*://*.chromium.org/*")
+                                  .Build())
           .Build();
   std::unique_ptr<base::DictionaryValue> manifest_copy(manifest->DeepCopy());
   scoped_refptr<const Extension> extension =
@@ -277,7 +283,15 @@ TEST_F(ExtensionInfoGeneratorUnitTest, BasicInfoTest) {
   ASSERT_EQ(messages.size(), info->permissions.size());
   size_t i = 0;
   for (const PermissionMessage& message : messages) {
-    EXPECT_EQ(message.message(), base::UTF8ToUTF16(info->permissions[i]));
+    const api::developer_private::Permission& info_permission =
+        info->permissions[i];
+    EXPECT_EQ(message.message(), base::UTF8ToUTF16(info_permission.message));
+    const std::vector<base::string16>& submessages = message.submessages();
+    ASSERT_EQ(submessages.size(), info_permission.submessages.size());
+    for (size_t j = 0; j < submessages.size(); ++j) {
+      EXPECT_EQ(submessages[j],
+                base::UTF8ToUTF16(info_permission.submessages[j]));
+    }
     ++i;
   }
   ASSERT_EQ(2u, info->runtime_errors.size());

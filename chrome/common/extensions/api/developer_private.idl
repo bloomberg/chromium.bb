@@ -185,6 +185,11 @@ namespace developerPrivate {
     DOMString name;
   };
 
+  dictionary Permission {
+    DOMString message;
+    DOMString[] submessages;
+  };
+
   dictionary ExtensionInfo {
     DOMString? blacklistText;
     Command[] commands;
@@ -208,7 +213,7 @@ namespace developerPrivate {
     boolean offlineEnabled;
     OptionsPage? optionsPage;
     DOMString? path;
-    DOMString[] permissions;
+    Permission[] permissions;
     DOMString? prettifiedPath;
     AccessModifier runOnAllUrls;
     RuntimeError[] runtimeErrors;
