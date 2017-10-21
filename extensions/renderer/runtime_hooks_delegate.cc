@@ -196,7 +196,9 @@ void GetExtensionId(v8::Local<v8::Name> property_name,
 constexpr char kGetManifest[] = "runtime.getManifest";
 constexpr char kGetURL[] = "runtime.getURL";
 constexpr char kConnect[] = "runtime.connect";
+constexpr char kConnectNative[] = "runtime.connectNative";
 constexpr char kSendMessage[] = "runtime.sendMessage";
+constexpr char kSendNativeMessage[] = "runtime.sendNativeMessage";
 
 constexpr char kSendMessageChannel[] = "chrome.runtime.sendMessage";
 
@@ -223,6 +225,8 @@ RequestResult RuntimeHooksDelegate::HandleRequest(
       {&RuntimeHooksDelegate::HandleConnect, kConnect},
       {&RuntimeHooksDelegate::HandleGetURL, kGetURL},
       {&RuntimeHooksDelegate::HandleGetManifest, kGetManifest},
+      {&RuntimeHooksDelegate::HandleConnectNative, kConnectNative},
+      {&RuntimeHooksDelegate::HandleSendNativeMessage, kSendNativeMessage},
   };
 
   ScriptContext* script_context =
@@ -327,7 +331,6 @@ RequestResult RuntimeHooksDelegate::HandleSendMessage(
   }
 
   v8::Local<v8::Value> v8_message = arguments[1];
-  DCHECK(!v8_message.IsEmpty());
   std::unique_ptr<Message> message =
       messaging_util::MessageFromV8(v8_context, v8_message);
   if (!message) {
@@ -344,6 +347,35 @@ RequestResult RuntimeHooksDelegate::HandleSendMessage(
       script_context, MessageTarget::ForExtension(target_id),
       kSendMessageChannel, options.include_tls_channel_id, *message,
       response_callback);
+
+  return RequestResult(RequestResult::HANDLED);
+}
+
+RequestResult RuntimeHooksDelegate::HandleSendNativeMessage(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  DCHECK_EQ(3u, arguments.size());
+
+  std::string application_name = gin::V8ToString(arguments[0]);
+
+  v8::Local<v8::Value> v8_message = arguments[1];
+  DCHECK(!v8_message.IsEmpty());
+  std::unique_ptr<Message> message =
+      messaging_util::MessageFromV8(script_context->v8_context(), v8_message);
+  if (!message) {
+    RequestResult result(RequestResult::INVALID_INVOCATION);
+    result.error =
+        "Illegal argument to runtime.sendNativeMessage for 'message'.";
+    return result;
+  }
+
+  v8::Local<v8::Function> response_callback;
+  if (!arguments[2]->IsNull())
+    response_callback = arguments[2].As<v8::Function>();
+
+  messaging_service_->SendOneTimeMessage(
+      script_context, MessageTarget::ForNativeApp(application_name),
+      std::string(), false, *message, response_callback);
 
   return RequestResult(RequestResult::HANDLED);
 }
@@ -384,6 +416,22 @@ RequestResult RuntimeHooksDelegate::HandleConnect(
       script_context, MessageTarget::ForExtension(target_id),
       options.channel_name, options.include_tls_channel_id);
   DCHECK(!port.IsEmpty());
+
+  RequestResult result(RequestResult::HANDLED);
+  result.return_value = port.ToV8();
+  return result;
+}
+
+RequestResult RuntimeHooksDelegate::HandleConnectNative(
+    ScriptContext* script_context,
+    const std::vector<v8::Local<v8::Value>>& arguments) {
+  DCHECK_EQ(1u, arguments.size());
+  DCHECK(arguments[0]->IsString());
+
+  std::string application_name = gin::V8ToString(arguments[0]);
+  gin::Handle<GinPort> port = messaging_service_->Connect(
+      script_context, MessageTarget::ForNativeApp(application_name),
+      std::string(), false);
 
   RequestResult result(RequestResult::HANDLED);
   result.return_value = port.ToV8();
