@@ -24,8 +24,8 @@ void UpdateLaunchOptionsForSandbox(service_manager::SandboxType type,
   if (type != service_manager::SANDBOX_TYPE_NO_SANDBOX) {
     options->clone_flags = LP_CLONE_FDIO_STDIO;
   } else {
-    options->clone_flags = LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB |
-                           LP_CLONE_FDIO_CWD | LP_CLONE_FDIO_STDIO;
+    options->clone_flags =
+        LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB | LP_CLONE_FDIO_STDIO;
   }
 }
 

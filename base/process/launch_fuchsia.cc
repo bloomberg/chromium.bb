@@ -11,6 +11,7 @@
 #include <zircon/processargs.h>
 
 #include "base/command_line.h"
+#include "base/files/file_util.h"
 #include "base/fuchsia/default_job.h"
 #include "base/logging.h"
 
@@ -96,9 +97,10 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   EnvironmentMap environ_modifications = options.environ;
   if (!options.current_directory.empty()) {
     environ_modifications["PWD"] = options.current_directory.value();
-
-    // Don't clone the parent's CWD if we are overriding the child's PWD.
-    to_clone = to_clone & ~LP_CLONE_FDIO_CWD;
+  } else {
+    FilePath cwd;
+    base::GetCurrentDirectory(&cwd);
+    environ_modifications["PWD"] = cwd.value();
   }
 
   if (to_clone & LP_CLONE_DEFAULT_JOB) {
