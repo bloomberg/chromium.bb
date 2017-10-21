@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<style></style>
+<script>
+'use strict';
+
+test(() => {
+    const CSSFilterFunctionNegativeBrightness = 2193; // From web_feature.mojom
+    var style = document.querySelector('style');
+    style.textContent = "* { filter: brightness(1); }";
+    assert_false(internals.isUseCounted(document, CSSFilterFunctionNegativeBrightness));
+    style.textContent = "* { filter: brightness(0); }";
+    assert_false(internals.isUseCounted(document, CSSFilterFunctionNegativeBrightness));
+    style.textContent = "* { filter: brightness(-1); }";
+    assert_true(internals.isUseCounted(document, CSSFilterFunctionNegativeBrightness));
+}, "'filter' with negative brightness is use counted.");
+</script>
