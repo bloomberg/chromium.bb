@@ -440,7 +440,10 @@ CdmAdapter::CdmAdapter(
   DCHECK(helper_);
 }
 
-CdmAdapter::~CdmAdapter() {}
+CdmAdapter::~CdmAdapter() {
+  // Reject any outstanding promises and close all the existing sessions.
+  cdm_promise_adapter_.Clear();
+}
 
 CdmWrapper* CdmAdapter::CreateCdmInstance(const std::string& key_system) {
   DCHECK(task_runner_->BelongsToCurrentThread());
