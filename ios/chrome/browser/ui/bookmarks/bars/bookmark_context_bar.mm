@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/bookmarks/bars/bookmark_context_bar.h"
 #include "base/logging.h"
-#include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Palettes/src/MaterialPalettes.h"
@@ -28,10 +27,13 @@ const CGFloat kToolbarHeight = 48.0f;
 
 // Button at the leading position.
 @property(nonatomic, strong) UIButton* leadingButton;
+@property(nonatomic, strong) UIView* leadingButtonContainer;
 // Button at the center position.
 @property(nonatomic, strong) UIButton* centerButton;
+@property(nonatomic, strong) UIView* centerButtonContainer;
 // Button at the trailing position.
 @property(nonatomic, strong) UIButton* trailingButton;
+@property(nonatomic, strong) UIView* trailingButtonContainer;
 // Stack view for arranging the buttons.
 @property(nonatomic, strong) UIStackView* stackView;
 
@@ -40,8 +42,11 @@ const CGFloat kToolbarHeight = 48.0f;
 @implementation BookmarkContextBar
 @synthesize delegate = _delegate;
 @synthesize leadingButton = _leadingButton;
+@synthesize leadingButtonContainer = _leadingButtonContainer;
 @synthesize centerButton = _centerButton;
+@synthesize centerButtonContainer = _centerButtonContainer;
 @synthesize trailingButton = _trailingButton;
+@synthesize trailingButtonContainer = _trailingButtonContainer;
 @synthesize stackView = _stackView;
 
 #pragma mark - Private Methods
@@ -84,7 +89,6 @@ const CGFloat kToolbarHeight = 48.0f;
       setFont:[[MDCTypography fontLoader] regularFontOfSize:14]];
   [self setButtonStyle:ContextBarButtonStyleDefault forUIButton:button];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
-  button.hidden = YES;
 }
 
 #pragma mark - Public Methods
@@ -92,38 +96,69 @@ const CGFloat kToolbarHeight = 48.0f;
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
+    NSDictionary* views = nil;
+    NSArray* constraints = nil;
+
     self.accessibilityIdentifier = @"context_bar";
     _leadingButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self configureStyleForButton:_leadingButton];
-    _leadingButton.contentHorizontalAlignment =
-        UseRTLLayout() ? UIControlContentHorizontalAlignmentRight
-                       : UIControlContentHorizontalAlignmentLeft;
     [_leadingButton addTarget:self
                        action:@selector(leadingButtonClicked:)
              forControlEvents:UIControlEventTouchUpInside];
     _leadingButton.accessibilityIdentifier = @"context_bar_leading_button";
+    _leadingButtonContainer = [[UIView alloc] init];
+    _leadingButtonContainer.hidden = YES;
+    [_leadingButtonContainer addSubview:_leadingButton];
+    views = @{@"button" : _leadingButton};
+    constraints = @[ @"V:|[button]|", @"H:|[button]" ];
+    ApplyVisualConstraints(constraints, views);
+    [_leadingButton.trailingAnchor
+        constraintLessThanOrEqualToAnchor:_leadingButtonContainer
+                                              .trailingAnchor]
+        .active = YES;
 
     _centerButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self configureStyleForButton:_centerButton];
-    _centerButton.contentHorizontalAlignment =
-        UIControlContentHorizontalAlignmentCenter;
     [_centerButton addTarget:self
                       action:@selector(centerButtonClicked:)
             forControlEvents:UIControlEventTouchUpInside];
     _centerButton.accessibilityIdentifier = @"context_bar_center_button";
+    _centerButtonContainer = [[UIView alloc] init];
+    _leadingButtonContainer.hidden = YES;
+    [_centerButtonContainer addSubview:_centerButton];
+    views = @{@"button" : _centerButton};
+    constraints = @[ @"V:|[button]|" ];
+    ApplyVisualConstraints(constraints, views);
+    [_centerButton.centerXAnchor
+        constraintEqualToAnchor:_centerButtonContainer.centerXAnchor]
+        .active = YES;
+    [_centerButton.trailingAnchor
+        constraintLessThanOrEqualToAnchor:_centerButtonContainer.trailingAnchor]
+        .active = YES;
+    [_centerButton.leadingAnchor
+        constraintGreaterThanOrEqualToAnchor:_centerButtonContainer
+                                                 .leadingAnchor]
+        .active = YES;
 
     _trailingButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [self configureStyleForButton:_trailingButton];
-    _trailingButton.contentHorizontalAlignment =
-        UseRTLLayout() ? UIControlContentHorizontalAlignmentLeft
-                       : UIControlContentHorizontalAlignmentRight;
     [_trailingButton addTarget:self
                         action:@selector(trailingButtonClicked:)
               forControlEvents:UIControlEventTouchUpInside];
     _trailingButton.accessibilityIdentifier = @"context_bar_trailing_button";
+    _trailingButtonContainer = [[UIView alloc] init];
+    _leadingButtonContainer.hidden = YES;
+    [_trailingButtonContainer addSubview:_trailingButton];
+    views = @{@"button" : _trailingButton};
+    constraints = @[ @"V:|[button]|", @"H:[button]|" ];
+    ApplyVisualConstraints(constraints, views);
+    [_trailingButton.leadingAnchor
+        constraintGreaterThanOrEqualToAnchor:_trailingButtonContainer
+                                                 .leadingAnchor]
+        .active = YES;
 
     _stackView = [[UIStackView alloc] initWithArrangedSubviews:@[
-      _leadingButton, _centerButton, _trailingButton
+      _leadingButtonContainer, _centerButtonContainer, _trailingButtonContainer
     ]];
     _stackView.alignment = UIStackViewAlignmentFill;
     _stackView.distribution = UIStackViewDistributionFillEqually;
@@ -156,7 +191,8 @@ const CGFloat kToolbarHeight = 48.0f;
 }
 
 - (void)setButtonVisibility:(BOOL)visible forButton:(ContextBarButton)button {
-  [self getButton:button].hidden = !visible;
+  // Set the visiblity of the button container.
+  [self getButton:button].superview.hidden = !visible;
 }
 
 - (void)setButtonEnabled:(BOOL)enabled forButton:(ContextBarButton)button {
