@@ -411,12 +411,6 @@ void av1_find_best_ref_mvs(int allow_hp, int_mv *mvlist, int_mv *nearest_mv,
                            int_mv *near_mv);
 #endif
 
-void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
-                                   int block, int ref, int mi_row, int mi_col,
-                                   CANDIDATE_MV *ref_mv_stack,
-                                   uint8_t *ref_mv_count, int_mv *mv_list,
-                                   int_mv *nearest_mv, int_mv *near_mv);
-
 // This function keeps a mode count for a given MB/SB
 void av1_update_mv_context(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                            MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
