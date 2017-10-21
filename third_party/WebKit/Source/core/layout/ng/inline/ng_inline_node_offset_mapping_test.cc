@@ -260,6 +260,9 @@ TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 2));
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 3));
+
+  // TODO(xiaochengh): Add test cases for BR@BeforeNode and BR@AfterNode
+
   EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 0));
   EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 1));
   EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 2));
@@ -269,6 +272,9 @@ TEST_F(NGInlineNodeOffsetMappingTest, BRBetweenTextNodes) {
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
   EXPECT_EQ(2u, GetTextContentOffset(*foo_node, 2));
   EXPECT_EQ(3u, GetTextContentOffset(*foo_node, 3));
+
+  // TODO(xiaochengh): Add test cases for BR@BeforeNode and BR@AfterNode
+
   EXPECT_EQ(4u, GetTextContentOffset(*bar_node, 0));
   EXPECT_EQ(5u, GetTextContentOffset(*bar_node, 1));
   EXPECT_EQ(6u, GetTextContentOffset(*bar_node, 2));
@@ -403,37 +409,54 @@ TEST_F(NGInlineNodeOffsetMappingTest, FullyCollapsedWhiteSpaceNode) {
 TEST_F(NGInlineNodeOffsetMappingTest, ReplacedElement) {
   SetupHtml("t", "<div id=t>foo <img> bar</div>");
   const LayoutText* foo = ToLayoutText(layout_object_);
-  const LayoutText* bar = ToLayoutText(foo->NextSibling()->NextSibling());
+  const LayoutObject* img = foo->NextSibling();
+  const LayoutText* bar = ToLayoutText(img->NextSibling());
   const Node* foo_node = foo->GetNode();
+  const Node* img_node = img->GetNode();
   const Node* bar_node = bar->GetNode();
   const NGOffsetMappingResult& result = GetOffsetMapping();
 
-  ASSERT_EQ(2u, result.GetUnits().size());
+  ASSERT_EQ(3u, result.GetUnits().size());
   TEST_UNIT(result.GetUnits()[0], NGOffsetMappingUnitType::kIdentity, foo_node,
             0u, 4u, 0u, 4u);
-  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, bar_node,
+  TEST_UNIT(result.GetUnits()[1], NGOffsetMappingUnitType::kIdentity, img_node,
+            0u, 1u, 4u, 5u);
+  TEST_UNIT(result.GetUnits()[2], NGOffsetMappingUnitType::kIdentity, bar_node,
             0u, 4u, 5u, 9u);
 
-  ASSERT_EQ(2u, result.GetRanges().size());
+  ASSERT_EQ(3u, result.GetRanges().size());
   TEST_RANGE(result.GetRanges(), foo_node, 0u, 1u);
-  TEST_RANGE(result.GetRanges(), bar_node, 1u, 2u);
+  TEST_RANGE(result.GetRanges(), img_node, 1u, 2u);
+  TEST_RANGE(result.GetRanges(), bar_node, 2u, 3u);
 
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 0));
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 1));
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 2));
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 3));
   EXPECT_EQ(&result.GetUnits()[0], GetUnitForDOMOffset(*foo_node, 4));
-  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 0));
-  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 1));
-  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 2));
-  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 3));
-  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*bar_node, 4));
+
+  // TODO(xiaochengh): Pass positions IMG@BeforeNode and IMG@AfterNode instead
+  // of (node, offset) pairs.
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*img_node, 0));
+  EXPECT_EQ(&result.GetUnits()[1], GetUnitForDOMOffset(*img_node, 1));
+
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 0));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 1));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 2));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 3));
+  EXPECT_EQ(&result.GetUnits()[2], GetUnitForDOMOffset(*bar_node, 4));
 
   EXPECT_EQ(0u, GetTextContentOffset(*foo_node, 0));
   EXPECT_EQ(1u, GetTextContentOffset(*foo_node, 1));
   EXPECT_EQ(2u, GetTextContentOffset(*foo_node, 2));
   EXPECT_EQ(3u, GetTextContentOffset(*foo_node, 3));
   EXPECT_EQ(4u, GetTextContentOffset(*foo_node, 4));
+
+  // TODO(xiaochengh): Pass positions IMG@BeforeNode and IMG@AfterNode instead
+  // of (node, offset) pairs.
+  EXPECT_EQ(4u, GetTextContentOffset(*img_node, 0));
+  EXPECT_EQ(5u, GetTextContentOffset(*img_node, 1));
+
   EXPECT_EQ(5u, GetTextContentOffset(*bar_node, 0));
   EXPECT_EQ(6u, GetTextContentOffset(*bar_node, 1));
   EXPECT_EQ(7u, GetTextContentOffset(*bar_node, 2));

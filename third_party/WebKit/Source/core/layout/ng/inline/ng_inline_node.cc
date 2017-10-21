@@ -310,8 +310,7 @@ LayoutBox* CollectInlinesInternal(
         // For atomic inlines add a unicode "object replacement character" to
         // signal the presence of a non-text object to the unicode bidi
         // algorithm.
-        builder->Append(NGInlineItem::kAtomicInline,
-                        kObjectReplacementCharacter, node->Style(), node);
+        builder->AppendAtomicInline(node->Style(), node);
       }
 
     } else if (!node->IsInline()) {

@@ -325,7 +325,7 @@ TEST_F(NGInlineItemsBuilderTest, OpaqueToSpaceCollapsing) {
 TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
   NGInlineItemsBuilderForOffsetMapping builder(&items_);
   builder.Append("Hello ", style_.get());
-  builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
+  builder.AppendAtomicInline();
   builder.Append(" World", style_.get());
   EXPECT_EQ(String(u"Hello \uFFFC World"), builder.ToString());
   EXPECT_EQ("{}", GetCollapsed(builder.GetOffsetMappingBuilder()));
@@ -333,9 +333,9 @@ TEST_F(NGInlineItemsBuilderTest, CollapseAroundReplacedElement) {
 
 TEST_F(NGInlineItemsBuilderTest, CollapseNewlineAfterObject) {
   NGInlineItemsBuilderForOffsetMapping builder(&items_);
-  builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
+  builder.AppendAtomicInline();
   builder.Append("\n", style_.get());
-  builder.Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter);
+  builder.AppendAtomicInline();
   EXPECT_EQ(String(u"\uFFFC \uFFFC"), builder.ToString());
   EXPECT_EQ(3u, items_.size());
   EXPECT_EQ(nullptr, items_[0].Style());
