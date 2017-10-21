@@ -207,9 +207,9 @@
       'CrWinClangGoma': 'clang_official_optimize_release_bot_minimal_symbols_x86',
 
       'EarlGreyiOS': 'ios',
-      'Fuchsia': 'release_bot_fuchsia',
       'Fuchsia (dbg)': 'debug_bot_fuchsia',
       'Fuchsia ARM64': 'release_bot_fuchsia_arm64',
+      'Fuchsia x64': 'release_bot_fuchsia',
       'GomaCanaryiOS': 'ios',
       'ios-simulator': 'ios',
       'Headless Linux (dbg)': 'headless_linux_debug_bot',
@@ -588,9 +588,8 @@
       'chromeos_daisy_chromium_compile_only_ng': 'cros_chrome_sdk',
       'chromium_presubmit': 'presubmit',
       'closure_compilation': 'closure_compilation',
-      'fuchsia': 'release_trybot_fuchsia',
+      'fuchsia_x64': 'release_trybot_fuchsia',
       'fuchsia_arm64': 'release_trybot_fuchsia_arm64',
-      'fuchsia_compile': 'release_trybot_fuchsia',
       # TODO(kjellander): Remove linux_arm after tryserver restart.
       'linux_arm': 'release_trybot_arm',
       'linux_arm_dbg': 'debug_trybot_arm',
