@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/protobuf/proto_library.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 # android targets
 # TODO(timvolodine): move the android targets to /android, crbug.com/668515
@@ -550,5 +551,15 @@ source_set("whitelist_checker_client_unittest") {
     "//content/test:test_support",
     "//testing/gmock:gmock",
     "//testing/gtest:gtest",
+  ]
+}
+
+fuzzer_test("v4_get_hash_protocol_manager_fuzzer") {
+  sources = [
+    "v4_get_hash_protocol_manager_fuzzer.cc",
+  ]
+  deps = [
+    ":safebrowsing_proto",
+    ":v4_get_hash_protocol_manager",
   ]
 }

@@ -41,6 +41,8 @@ class URLRequestContextGetter;
 
 namespace safe_browsing {
 
+class V4GetHashProtocolManagerFuzzer;
+
 // The matching hash prefixes and corresponding stores, for each full hash
 // generated for a given URL.
 typedef std::unordered_map<FullHash, StoreAndHashPrefixes>
@@ -221,6 +223,7 @@ class V4GetHashProtocolManager : public net::URLFetcherDelegate {
   FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest, GetCachedResults);
   FRIEND_TEST_ALL_PREFIXES(V4GetHashProtocolManagerTest, TestUpdatesAreMerged);
   friend class V4GetHashProtocolManagerTest;
+  friend class V4GetHashProtocolManagerFuzzer;
   friend class V4GetHashProtocolManagerFactoryImpl;
 
   FullHashCache* full_hash_cache_for_tests() { return &full_hash_cache_; }
