@@ -1013,8 +1013,9 @@ Polymer({
    * @private
    */
   showCellularSim_: function(networkProperties) {
-    return networkProperties.Type == CrOnc.Type.CELLULAR && !!this.Cellular &&
-        this.Cellular.Family != 'CDMA';
+    return networkProperties.Type == CrOnc.Type.CELLULAR &&
+        !!networkProperties.Cellular &&
+        networkProperties.Cellular.Family != 'CDMA';
   },
 
   /**
