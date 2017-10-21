@@ -125,6 +125,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   void InitializeRenderer();
   // Returns true if successfully resized.
   bool ResizeForWebVR(int16_t frame_index);
+  void UpdateSamples();
   void UpdateEyeInfos(const gfx::Transform& head_pose,
                       int viewport_offset,
                       const gfx::Size& render_size,
@@ -240,7 +241,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
 
   std::unique_ptr<vr::Ui> ui_;
 
-  bool web_vr_mode_;
+  bool web_vr_mode_ = false;
   bool ready_to_draw_ = false;
   bool paused_ = true;
   const bool surfaceless_rendering_;
@@ -287,6 +288,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider,
   base::CancelableCallback<
       void(int16_t, const gfx::Transform&, std::unique_ptr<gl::GLFenceEGL>)>
       webvr_delayed_frame_submit_;
+
+  std::vector<gvr::BufferSpec> specs_;
 
   base::WeakPtrFactory<VrShellGl> weak_ptr_factory_;
 
