@@ -173,6 +173,7 @@ class CupsPrintersManagerImpl : public CupsPrintersManager,
   // Public API function.
   void PrinterInstalled(const Printer& printer) override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_);
+    MaybeRecordInstallation(printer);
     synced_printers_manager_->PrinterInstalled(printer);
   }
 
