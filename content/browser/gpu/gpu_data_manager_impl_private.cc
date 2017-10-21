@@ -654,7 +654,6 @@ void GpuDataManagerImplPrivate::Initialize() {
   InitializeImpl(gpu_blacklist_data, gpu_info);
 
   if (in_process_gpu_) {
-    command_line->AppendSwitch(switches::kDisableGpuWatchdog);
     AppendGpuCommandLine(command_line);
   }
 }
@@ -837,14 +836,8 @@ void GpuDataManagerImplPrivate::UpdateGpuPreferences(
     gpu::GpuPreferences* gpu_preferences) const {
   DCHECK(gpu_preferences);
 
-  const base::CommandLine* command_line =
-      base::CommandLine::ForCurrentProcess();
-
   if (base::FeatureList::IsEnabled(features::kGpuScheduler))
     gpu_preferences->enable_gpu_scheduler = true;
-
-  if (ShouldDisableAcceleratedVideoDecode(command_line))
-    gpu_preferences->disable_accelerated_video_decode = true;
 
   gpu_preferences->gpu_program_cache_size =
       gpu::ShaderDiskCache::CacheSizeBytes();
