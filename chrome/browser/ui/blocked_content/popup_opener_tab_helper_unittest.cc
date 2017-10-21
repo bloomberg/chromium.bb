@@ -36,6 +36,7 @@ class InfoBarAndroid;
 constexpr char kTabUnderVisibleTime[] = "Tab.TabUnder.VisibleTime";
 constexpr char kTabUnderVisibleTimeBefore[] = "Tab.TabUnder.VisibleTimeBefore";
 constexpr char kPopupToTabUnder[] = "Tab.TabUnder.PopupToTabUnderTime";
+constexpr char kTabUnderAction[] = "Tab.TabUnderAction";
 
 class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -498,8 +499,6 @@ TEST_F(BlockTabUnderTest, MultipleRedirectAttempts_AreBlocked) {
 
 TEST_F(BlockTabUnderTest,
        MultipleRedirectAttempts_AreBlockedAndLogsActionMetrics) {
-  const char kTabUnderAction[] = "Tab.TabUnderAction";
-
   EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
   histogram_tester()->ExpectUniqueSample(
       kTabUnderAction,
@@ -521,4 +520,27 @@ TEST_F(BlockTabUnderTest,
       kTabUnderAction,
       static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 3);
   histogram_tester()->ExpectTotalCount(kTabUnderAction, 10);
+}
+
+// kDidTabUnder is not reported multiple times for redirects.
+TEST_F(BlockTabUnderTest, DisableFeature_LogsDidTabUnder) {
+  DisableFeature();
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(GURL("https://first.test/")));
+  SimulatePopup();
+
+  const GURL a_url("https://a.com/");
+  const GURL b_url("https://b.com/");
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(a_url, main_rfh());
+  simulator->SetHasUserGesture(false);
+  simulator->Redirect(b_url);
+  simulator->Redirect(a_url);
+  simulator->Commit();
+  histogram_tester()->ExpectBucketCount(
+      kTabUnderAction,
+      static_cast<int>(TabUnderNavigationThrottle::Action::kStarted), 2);
+  histogram_tester()->ExpectBucketCount(
+      kTabUnderAction,
+      static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 1);
+  histogram_tester()->ExpectTotalCount(kTabUnderAction, 3);
 }

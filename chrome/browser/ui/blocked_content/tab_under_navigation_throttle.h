@@ -84,6 +84,9 @@ class TabUnderNavigationThrottle : public content::NavigationThrottle {
   // to block tab-unders.
   bool block_ = false;
 
+  // True if the throttle has seen a tab under.
+  bool seen_tab_under_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(TabUnderNavigationThrottle);
 };
 
