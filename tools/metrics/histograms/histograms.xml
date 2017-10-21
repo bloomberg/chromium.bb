@@ -32446,6 +32446,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Media.EME.EncryptedEvent" enum="BooleanEncryptedEvent">
+  <owner>xhwang@chromium.org</owner>
+  <summary>
+    Whether EME encrypted event has been fired. Every time a WebMediaPlayerImpl
+    object is created a &quot;false&quot; value is reported to provide a
+    baseline. Every time an encrypted event is fired, a &quot;true&quot; value
+    will be reported. Note that it is possible to have multiple encrypted events
+    during the lifetime of a WebMediaPlayerImpl object.
+  </summary>
+</histogram>
+
 <histogram name="Media.EME.EncryptedMediaEnabled" enum="BooleanEnabled">
   <owner>xhwang@chromium.org</owner>
   <summary>
@@ -32478,6 +32489,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Media.EME.NeedKey">
+  <obsolete>
+    Renamed to Media.EME.EncryptedEvent in 10/2017.
+  </obsolete>
   <owner>xhwang@chromium.org</owner>
   <summary>EME NeedKey event count.</summary>
 </histogram>
