@@ -19,10 +19,14 @@ declare_args() {
   #
   # Recommendations:
   # Higher numbers than 100 does not reduce wall clock compile times
-  # even for 4 cores or less so no reason to go (much) higher than 100.
-  # 100 uses 8% less total CPU than 50 when compiling content and 10%
-  # less wall clock when compiling with 4 cores.
-  jumbo_file_merge_limit = 100
+  # even for 4 cores or less so no reason to go higher than 100.
+  # Going from 50 to 100 with a 4 core CPU saves about 3% CPU time and
+  # 3% wall clock time in a tree with blink, v8 and content
+  # jumbofied. At the same time it increases the compile time for the
+  # largest jumbo chunks by 10-20% and reduces the chance to use all
+  # available CPU cores. So set the default to 50 to balance between
+  # high and low-core build performance.
+  jumbo_file_merge_limit = 50
 }
 
 # Use one of the targets jumbo_source_set, jumbo_static_library,
