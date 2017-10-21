@@ -315,7 +315,9 @@ static constexpr char const* kGradientQuadFragmentShader = SHADER(
     vec4 color = u_CenterColor * center_color_weight + u_EdgeColor *
         edge_color_weight;
     float mask = 1.0 - step(1.0, length(v_CornerPosition));
-    gl_FragColor = color * u_Opacity * mask;
+    // Add some noise to prevent banding artifacts in the gradient.
+    float n = (fract(dot(v_Position.xy, vec2(12345.67, 456.7))) - 0.5) / 255.0;
+    gl_FragColor = (color + n) * u_Opacity * mask;
   }
 );
 
@@ -361,7 +363,10 @@ static constexpr char const* kGradientGridFragmentShader = SHADER(
           grid_color.xyz + bg_color.xyz * (1.0 - opacity),
           opacity + bg_color.w * (1.0 - opacity));
     } else {
-      gl_FragColor = bg_color;
+      // Add some noise to prevent banding artifacts in the gradient.
+      float n =
+          (fract(dot(v_GridPosition.xy, vec2(12345.67, 456.7))) - 0.5) / 255.0;
+      gl_FragColor = bg_color + n;
     }
   }
 );
