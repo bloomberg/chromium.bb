@@ -70,16 +70,10 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   // Append a break opportunity; e.g., <wbr> element.
   void AppendBreakOpportunity(const ComputedStyle*, LayoutObject*);
 
-  // Append a character.
-  // Currently this function is for adding control characters such as
-  // objectReplacementCharacter, and does not support all space collapsing logic
-  // as its String version does.
-  // See the String version for using nullptr for ComputedStyle and
-  // LayoutObject.
-  void Append(NGInlineItem::NGInlineItemType,
-              UChar,
-              const ComputedStyle* = nullptr,
-              LayoutObject* = nullptr);
+  // Append a unicode "object replacement character" for an atomic inline,
+  // signaling the presence of a non-text object to the unicode bidi algorithm.
+  void AppendAtomicInline(const ComputedStyle* = nullptr,
+                          LayoutObject* = nullptr);
 
   // Append a character.
   // The character is opaque to space collapsing; i.e., spaces before this
@@ -126,6 +120,17 @@ class CORE_TEMPLATE_CLASS_EXPORT NGInlineItemsBuilderTemplate {
   bool is_svgtext_ = false;
   bool has_bidi_controls_ = false;
   bool is_empty_inline_ = true;
+
+  // Append a character.
+  // Currently this function is for adding control characters such as
+  // objectReplacementCharacter, and does not support all space collapsing logic
+  // as its String version does.
+  // See the String version for using nullptr for ComputedStyle and
+  // LayoutObject.
+  void Append(NGInlineItem::NGInlineItemType,
+              UChar,
+              const ComputedStyle*,
+              LayoutObject*);
 
   void AppendWithWhiteSpaceCollapsing(const String&,
                                       unsigned start,

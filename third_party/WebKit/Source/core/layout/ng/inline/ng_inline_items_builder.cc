@@ -344,6 +344,15 @@ void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::Append(
 }
 
 template <typename OffsetMappingBuilder>
+void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendAtomicInline(
+    const ComputedStyle* style,
+    LayoutObject* layout_object) {
+  Append(NGInlineItem::kAtomicInline, kObjectReplacementCharacter, style,
+         layout_object);
+  mapping_builder_.AnnotateSuffix(1, layout_object);
+}
+
+template <typename OffsetMappingBuilder>
 void NGInlineItemsBuilderTemplate<OffsetMappingBuilder>::AppendOpaque(
     NGInlineItem::NGInlineItemType type,
     UChar character,

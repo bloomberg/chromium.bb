@@ -99,6 +99,9 @@ class CORE_EXPORT NGOffsetMappingResult {
   const RangeMap& GetRanges() const { return ranges_; }
   const String& GetText() const { return text_; }
 
+  // TODO(xiaochengh): Change the functions to take Positions instead of (node,
+  // offset) pairs.
+
   // Returns the NGOffsetMappingUnit that contains the given offset in the DOM
   // node. If there are multiple qualifying units, returns the last one.
   const NGOffsetMappingUnit* GetMappingUnitForDOMOffset(const Node&,
