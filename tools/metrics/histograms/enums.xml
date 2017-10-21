@@ -3325,6 +3325,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="User did change scale"/>
 </enum>
 
+<enum name="BooleanDispatched">
+  <int value="0" label="Not dispatched"/>
+  <int value="1" label="Dispatched"/>
+</enum>
+
 <enum name="BooleanDuplicate">
   <int value="0" label="Not Duplicate"/>
   <int value="1" label="Duplicate"/>

@@ -44,6 +44,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.metrics.CachedMetrics.BooleanHistogramSample;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -224,6 +225,14 @@ public class ChromeTabbedActivity
     // Name of the ChromeTabbedActivity alias that handles MAIN intents.
     public static final String MAIN_LAUNCHER_ACTIVITY_NAME = "com.google.android.apps.chrome.Main";
 
+    // Boolean histograms used with maybeDispatchExplicitMainViewIntent().
+    private static final BooleanHistogramSample sExplicitMainViewIntentDispatchedOnCreate =
+            new BooleanHistogramSample(
+                    "Android.MainActivity.ExplicitMainViewIntentDispatched.OnCreate");
+    private static final BooleanHistogramSample sExplicitMainViewIntentDispatchedOnNewIntent =
+            new BooleanHistogramSample(
+                    "Android.MainActivity.ExplicitMainViewIntentDispatched.OnNewIntent");
+
     private final ActivityStopMetrics mActivityStopMetrics;
     private final MainIntentBehaviorMetrics mMainIntentMetrics;
 
@@ -396,7 +405,38 @@ public class ChromeTabbedActivity
             // 'Move to other window' command from CTA2).
             return LaunchIntentDispatcher.dispatchToTabbedActivity(this, intent);
         }
+        @LaunchIntentDispatcher.Action
+        int action = maybeDispatchExplicitMainViewIntent(
+                intent, sExplicitMainViewIntentDispatchedOnCreate);
+        if (action != LaunchIntentDispatcher.Action.CONTINUE) {
+            return action;
+        }
         return super.maybeDispatchLaunchIntent(intent);
+    }
+
+    // We know of at least one app that explicitly specifies .Main activity in custom tab
+    // intents. The app shouldn't be doing that, but until it's updated, we need to support
+    // such use case.
+    //
+    // This method attempts to treat VIEW intents explicitly sent to .Main as custom tab
+    // intents, and dispatch them accordingly. If the intent was not dispatched, the method
+    // returns Action.CONTINUE.
+    //
+    // The method also updates the supplied binary histogram with the dispatching result,
+    // but only if the intent is a VIEW intent sent explicitly to .Main activity.
+    private @LaunchIntentDispatcher.Action int maybeDispatchExplicitMainViewIntent(
+            Intent intent, BooleanHistogramSample dispatchedHistogram) {
+        // The first check ensures that this is .Main activity alias (we can't check exactly, but
+        // this gets us sufficiently close).
+        if (getClass().equals(ChromeTabbedActivity.class)
+                && Intent.ACTION_VIEW.equals(intent.getAction()) && intent.getComponent() != null
+                && MAIN_LAUNCHER_ACTIVITY_NAME.equals(intent.getComponent().getClassName())) {
+            @LaunchIntentDispatcher.Action
+            int action = LaunchIntentDispatcher.dispatchToCustomTabActivity(this, intent);
+            dispatchedHistogram.record(action != LaunchIntentDispatcher.Action.CONTINUE);
+            return action;
+        }
+        return LaunchIntentDispatcher.Action.CONTINUE;
     }
 
     @Override
@@ -466,6 +506,18 @@ public class ChromeTabbedActivity
 
     @Override
     public void onNewIntent(Intent intent) {
+        @LaunchIntentDispatcher.Action
+        int action = maybeDispatchExplicitMainViewIntent(
+                intent, sExplicitMainViewIntentDispatchedOnNewIntent);
+        if (action != LaunchIntentDispatcher.Action.CONTINUE) {
+            // Change our position in the activity stack to make sure back button sends user
+            // to the activity that started the custom tab.
+            if ((intent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0) {
+                moveTaskToBack(true);
+            }
+            // Intent was dispatched to CustomTabActivity, consume it.
+            return;
+        }
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
         super.onNewIntent(intent);
     }
