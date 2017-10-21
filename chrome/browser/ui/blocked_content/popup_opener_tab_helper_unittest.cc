@@ -34,6 +34,7 @@
 class InfoBarAndroid;
 
 constexpr char kTabUnderVisibleTime[] = "Tab.TabUnder.VisibleTime";
+constexpr char kTabUnderVisibleTimeBefore[] = "Tab.TabUnder.VisibleTimeBefore";
 constexpr char kPopupToTabUnder[] = "Tab.TabUnder.PopupToTabUnderTime";
 
 class PopupOpenerTabHelperTest : public ChromeRenderViewHostTestHarness {
@@ -121,6 +122,9 @@ TEST_F(PopupOpenerTabHelperTest, LogVisibleTime) {
 TEST_F(PopupOpenerTabHelperTest, SimpleTabUnder_LogsMetrics) {
   NavigateAndCommitWithoutGesture(GURL("https://first.test/"));
 
+  // Spend 1s on the page before doing anything.
+  raw_clock()->Advance(base::TimeDelta::FromSeconds(1));
+
   // Popup and then navigate 50ms after.
   SimulatePopup();
   raw_clock()->Advance(base::TimeDelta::FromMilliseconds(50));
@@ -132,6 +136,7 @@ TEST_F(PopupOpenerTabHelperTest, SimpleTabUnder_LogsMetrics) {
   raw_clock()->Advance(base::TimeDelta::FromMilliseconds(100));
   DeleteContents();
 
+  histogram_tester()->ExpectUniqueSample(kTabUnderVisibleTimeBefore, 1050, 1);
   histogram_tester()->ExpectUniqueSample(kTabUnderVisibleTime, 100, 1);
   histogram_tester()->ExpectUniqueSample(kPopupToTabUnder, 50, 1);
 }

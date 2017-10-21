@@ -84746,7 +84746,19 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
     Measures the total time a tab is visible after it navigates itself
     cross-origin in the background, without a user gesture. The tab must have
     opened a popup since the last user gesture in the tab. Measured at
-    WebContents destruction.
+    WebContents destruction. The total visible time for the tab is the sum of
+    this metric and Tab.TabUnder.VisibleTimeBefore.
+  </summary>
+</histogram>
+
+<histogram name="Tab.TabUnder.VisibleTimeBefore" units="ms">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    Measures the total time a tab is visible before it navigates itself
+    cross-origin in the background, without a user gesture. The tab must have
+    opened a popup since the last user gesture in the tab. Measured at
+    WebContents destruction. The total visible time for the tab is the sum of
+    this metric and Tab.TabUnder.VisibleTime.
   </summary>
 </histogram>
 

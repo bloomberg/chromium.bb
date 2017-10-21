@@ -30,14 +30,17 @@ void PopupOpenerTabHelper::CreateForWebContents(
 }
 
 PopupOpenerTabHelper::~PopupOpenerTabHelper() {
-  if (visibility_tracker_after_tab_under_) {
+  DCHECK(visibility_tracker_);
+  base::TimeDelta total_visible_time =
+      visibility_tracker_->GetForegroundDuration();
+  if (did_tab_under()) {
     UMA_HISTOGRAM_LONG_TIMES(
         "Tab.TabUnder.VisibleTime",
-        visibility_tracker_after_tab_under_->GetForegroundDuration());
+        total_visible_time - visible_time_before_tab_under_.value());
+    UMA_HISTOGRAM_LONG_TIMES("Tab.TabUnder.VisibleTimeBefore",
+                             visible_time_before_tab_under_.value());
   }
-  DCHECK(visibility_tracker_);
-  UMA_HISTOGRAM_LONG_TIMES("Tab.VisibleTime",
-                           visibility_tracker_->GetForegroundDuration());
+  UMA_HISTOGRAM_LONG_TIMES("Tab.VisibleTime", total_visible_time);
 }
 
 void PopupOpenerTabHelper::OnOpenedPopup(PopupTracker* popup_tracker) {
@@ -47,7 +50,7 @@ void PopupOpenerTabHelper::OnOpenedPopup(PopupTracker* popup_tracker) {
 
 void PopupOpenerTabHelper::OnDidTabUnder() {
   // The tab already did a tab-under.
-  if (visibility_tracker_after_tab_under_)
+  if (did_tab_under())
     return;
 
   // Tab-under requires a popup, so this better not be null.
@@ -55,13 +58,7 @@ void PopupOpenerTabHelper::OnDidTabUnder() {
   UMA_HISTOGRAM_LONG_TIMES("Tab.TabUnder.PopupToTabUnderTime",
                            tick_clock_->NowTicks() - last_popup_open_time_);
 
-  // Careful, the tab can be in the foreground at this time! Current tab-under
-  // heuristics use whether the navigation *started* in the background. We could
-  // be getting this signal at redirect time, once we've realized that the
-  // navigation is moving cross-origin.
-  visibility_tracker_after_tab_under_ =
-      base::MakeUnique<ScopedVisibilityTracker>(tick_clock_.get(),
-                                                web_contents()->IsVisible());
+  visible_time_before_tab_under_ = visibility_tracker_->GetForegroundDuration();
 }
 
 PopupOpenerTabHelper::PopupOpenerTabHelper(
@@ -74,14 +71,10 @@ PopupOpenerTabHelper::PopupOpenerTabHelper(
 }
 
 void PopupOpenerTabHelper::WasShown() {
-  if (visibility_tracker_after_tab_under_)
-    visibility_tracker_after_tab_under_->OnShown();
   visibility_tracker_->OnShown();
 }
 
 void PopupOpenerTabHelper::WasHidden() {
-  if (visibility_tracker_after_tab_under_)
-    visibility_tracker_after_tab_under_->OnHidden();
   visibility_tracker_->OnHidden();
 }
 
