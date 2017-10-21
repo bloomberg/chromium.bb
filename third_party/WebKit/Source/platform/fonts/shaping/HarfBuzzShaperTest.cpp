@@ -411,6 +411,46 @@ TEST_F(HarfBuzzShaperTest, NegativeLetterSpacing) {
   EXPECT_EQ(5 * 4 - 1, bounds.Width() - result->Bounds().Width());
 }
 
+TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingTo0) {
+  String string(u"00000");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  float char_width = result->Width() / string.length();
+
+  ShapeResultSpacing<String> spacing(string);
+  FontDescription font_description;
+  font_description.SetLetterSpacing(-char_width);
+  spacing.SetSpacing(font_description);
+  result->ApplySpacing(spacing);
+
+  // EXPECT_EQ(0.0f, result->Width());
+  EXPECT_NEAR(0.0f, result->Bounds().X(), 1);
+  // Because all characters are at 0, the glyph bounds must be the char_width.
+  // Allow being larger because accurate width requires re-measuring each glyph.
+  EXPECT_GE(result->Bounds().MaxX(), char_width);
+  EXPECT_LE(result->Bounds().MaxX(), char_width * 1.1);
+}
+
+TEST_F(HarfBuzzShaperTest, NegativeLetterSpacingToNegative) {
+  String string(u"00000");
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  RefPtr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+  float char_width = result->Width() / string.length();
+
+  ShapeResultSpacing<String> spacing(string);
+  FontDescription font_description;
+  font_description.SetLetterSpacing(-2 * char_width);
+  spacing.SetSpacing(font_description);
+  result->ApplySpacing(spacing);
+
+  // CSS does not allow negative width, it should be clampled to 0.
+  // EXPECT_EQ(0.0f, result->Width());
+  // Glyph bounding box should overflow to the left.
+  EXPECT_EQ(-char_width * string.length(), result->Bounds().X());
+  // MaxX() should be char_width. Allow being larger.
+  EXPECT_GE(result->Bounds().MaxX(), char_width);
+}
+
 TEST_F(HarfBuzzShaperTest, PositionForOffsetLatin) {
   String string = To16Bit("Hello World!", 12);
   TextDirection direction = TextDirection::kLtr;
