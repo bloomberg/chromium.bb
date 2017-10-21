@@ -136,6 +136,7 @@ class PrintPreviewHandler
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, InitialSettings);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinters);
   FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, GetPrinterCapabilities);
+  FRIEND_TEST_ALL_PREFIXES(PrintPreviewHandlerTest, Print);
   class AccessTokenService;
 
   content::WebContents* preview_web_contents() const;
