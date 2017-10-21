@@ -46,8 +46,6 @@ class WebThreadBase;
 
 namespace content {
 
-class NotificationDispatcher;
-class ThreadSafeSender;
 class WebCryptoImpl;
 
 class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
@@ -110,7 +108,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebURL& script_url) override;
   blink::WebCrypto* Crypto() override;
   const char* GetBrowserServiceName() const override;
-  blink::WebNotificationManager* GetNotificationManager() override;
   blink::WebMediaCapabilitiesClient* MediaCapabilitiesClient() override;
 
   blink::WebString DomCodeStringFromEnum(int dom_code) override;
@@ -134,7 +131,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebSecurityOrigin& new_origin) override;
 
  private:
-  void InternalInit();
   void WaitUntilWebThreadTLSUpdate(blink::scheduler::WebThreadBase* thread);
   void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
 
@@ -146,9 +142,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
   media::WebMediaCapabilitiesClientImpl media_capabilities_client_;
-
-  scoped_refptr<ThreadSafeSender> thread_safe_sender_;
-  scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   blink::scheduler::WebThreadBase* compositor_thread_;
 };

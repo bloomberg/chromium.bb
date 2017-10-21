@@ -1,6 +1,6 @@
 # This OWNERS file also covers:
 #
-# //content/child/notifications/
+# //content/renderer/notifications/
 # //content/test/mock_platform_notification_service.*
 
 mkwst@chromium.org

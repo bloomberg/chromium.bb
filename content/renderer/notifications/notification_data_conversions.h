@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_DATA_CONVERSIONS_H_
-#define CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_DATA_CONVERSIONS_H_
+#ifndef CONTENT_RENDERER_NOTIFICATIONS_NOTIFICATION_DATA_CONVERSIONS_H_
+#define CONTENT_RENDERER_NOTIFICATIONS_NOTIFICATION_DATA_CONVERSIONS_H_
 
 #include "content/common/content_export.h"
 #include "content/public/common/platform_notification_data.h"
@@ -21,4 +21,4 @@ CONTENT_EXPORT blink::WebNotificationData ToWebNotificationData(
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_DATA_CONVERSIONS_H_
+#endif  // CONTENT_RENDERER_NOTIFICATIONS_NOTIFICATION_DATA_CONVERSIONS_H_
