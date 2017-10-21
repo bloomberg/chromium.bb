@@ -143,7 +143,7 @@ void BlobData::SetContentType(const String& content_type) {
     content_type_ = "";
 }
 
-void BlobData::AppendData(RefPtr<RawData> data,
+void BlobData::AppendData(scoped_refptr<RawData> data,
                           long long offset,
                           long long length) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
@@ -166,7 +166,7 @@ void BlobData::AppendFile(const String& path,
       BlobDataItem(path, offset, length, expected_modification_time));
 }
 
-void BlobData::AppendBlob(RefPtr<BlobDataHandle> data_handle,
+void BlobData::AppendBlob(scoped_refptr<BlobDataHandle> data_handle,
                           long long offset,
                           long long length) {
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
@@ -192,7 +192,7 @@ void BlobData::AppendText(const String& text,
       << "Blobs with a unknown-size file cannot have other items.";
   CString utf8_text =
       UTF8Encoding().Encode(text, WTF::kEntitiesForUnencodables);
-  RefPtr<RawData> data = nullptr;
+  scoped_refptr<RawData> data = nullptr;
   Vector<char>* buffer;
   if (CanConsolidateData(text.length())) {
     buffer = items_.back().data->MutableData();
@@ -219,7 +219,7 @@ void BlobData::AppendBytes(const void* bytes, size_t length) {
                                               length);
     return;
   }
-  RefPtr<RawData> data = RawData::Create();
+  scoped_refptr<RawData> data = RawData::Create();
   Vector<char>* buffer = data->MutableData();
   buffer->Append(static_cast<const char*>(bytes), length);
   items_.push_back(BlobDataItem(std::move(data)));
@@ -295,7 +295,8 @@ BlobDataHandle::BlobDataHandle(std::unique_ptr<BlobData> data, long long size)
     Vector<DataElementPtr> elements;
     const DataElementPtr null_element = nullptr;
     BlobBytesProvider* last_bytes_provider = nullptr;
-    RefPtr<WebTaskRunner> file_runner = Platform::Current()->FileTaskRunner();
+    scoped_refptr<WebTaskRunner> file_runner =
+        Platform::Current()->FileTaskRunner();
 
     // TODO(mek): When the mojo code path is the default BlobData should
     // directly create mojom::DataElements rather than BlobDataItems,

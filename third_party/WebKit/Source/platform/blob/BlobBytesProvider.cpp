@@ -18,7 +18,7 @@ namespace {
 // written, or when the data pipe is disconnected.
 class BlobBytesStreamer {
  public:
-  BlobBytesStreamer(Vector<RefPtr<RawData>> data,
+  BlobBytesStreamer(Vector<scoped_refptr<RawData>> data,
                     mojo::ScopedDataPipeProducerHandle pipe)
       : data_(std::move(data)),
         pipe_(std::move(pipe)),
@@ -71,7 +71,7 @@ class BlobBytesStreamer {
   // data pipe.
   size_t current_item_offset_ = 0;
   // The data being written.
-  Vector<RefPtr<RawData>> data_;
+  Vector<scoped_refptr<RawData>> data_;
 
   mojo::ScopedDataPipeProducerHandle pipe_;
   mojo::SimpleWatcher watcher_;
@@ -79,7 +79,7 @@ class BlobBytesStreamer {
 
 }  // namespace
 
-BlobBytesProvider::BlobBytesProvider(RefPtr<RawData> data) {
+BlobBytesProvider::BlobBytesProvider(scoped_refptr<RawData> data) {
   // TODO(mek): This is probably not enough to keep the renderer alive while
   // data is being transferred. The IPC based blob code additionally calls
   // ChildProcess::current()->AddRefProcess/ReleaseProcess.
@@ -91,7 +91,7 @@ BlobBytesProvider::~BlobBytesProvider() {
   Platform::Current()->SuddenTerminationChanged(true);
 }
 
-void BlobBytesProvider::AppendData(RefPtr<RawData> data) {
+void BlobBytesProvider::AppendData(scoped_refptr<RawData> data) {
   data_.push_back(std::move(data));
 }
 
@@ -137,7 +137,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
   // Offset of the current data chunk in the overall stream provided by this
   // provider.
   uint64_t offset = 0;
-  for (const RefPtr<RawData>& data : data_) {
+  for (const scoped_refptr<RawData>& data : data_) {
     // Skip any chunks that are entirely before the data we need to write.
     if (offset + data->length() <= source_offset) {
       offset += data->length();

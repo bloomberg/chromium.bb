@@ -62,7 +62,7 @@ static WebBlobRegistry* GetBlobRegistry() {
   return Platform::Current()->GetBlobRegistry();
 }
 
-typedef HashMap<String, RefPtr<SecurityOrigin>> BlobURLOriginMap;
+typedef HashMap<String, scoped_refptr<SecurityOrigin>> BlobURLOriginMap;
 static ThreadSpecific<BlobURLOriginMap>& OriginMap() {
   // We want to create the BlobOriginMap exactly once because it is shared by
   // all the threads.
@@ -103,7 +103,7 @@ void BlobRegistry::RemoveBlobDataRef(const String& uuid) {
 
 void BlobRegistry::RegisterPublicBlobURL(SecurityOrigin* origin,
                                          const KURL& url,
-                                         RefPtr<BlobDataHandle> handle) {
+                                         scoped_refptr<BlobDataHandle> handle) {
   SaveToOriginMap(origin, url);
   GetBlobRegistry()->RegisterPublicBlobURL(url, handle->Uuid());
 }

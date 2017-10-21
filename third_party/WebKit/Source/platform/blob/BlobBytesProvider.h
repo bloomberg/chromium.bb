@@ -19,10 +19,10 @@ namespace blink {
 // thread that is allowed to do File IO.
 class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
  public:
-  explicit BlobBytesProvider(RefPtr<RawData>);
+  explicit BlobBytesProvider(scoped_refptr<RawData>);
   ~BlobBytesProvider() override;
 
-  void AppendData(RefPtr<RawData>);
+  void AppendData(scoped_refptr<RawData>);
 
   // BytesProvider implementation:
   void RequestAsReply(RequestAsReplyCallback) override;
@@ -34,7 +34,7 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
                      RequestAsFileCallback) override;
 
  private:
-  Vector<RefPtr<RawData>> data_;
+  Vector<scoped_refptr<RawData>> data_;
 };
 
 }  // namespace blink

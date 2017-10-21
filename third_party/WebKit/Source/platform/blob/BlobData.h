@@ -47,7 +47,9 @@ class BlobDataHandle;
 
 class PLATFORM_EXPORT RawData : public ThreadSafeRefCounted<RawData> {
  public:
-  static RefPtr<RawData> Create() { return WTF::AdoptRef(new RawData()); }
+  static scoped_refptr<RawData> Create() {
+    return WTF::AdoptRef(new RawData());
+  }
 
   const char* data() const { return data_.data(); }
   size_t length() const { return data_.size(); }
@@ -71,7 +73,7 @@ struct PLATFORM_EXPORT BlobDataItem {
         expected_modification_time(InvalidFileTime()) {}
 
   // Constructor for String type (complete string).
-  explicit BlobDataItem(RefPtr<RawData> data)
+  explicit BlobDataItem(scoped_refptr<RawData> data)
       : type(kData),
         data(std::move(data)),
         offset(0),
@@ -98,7 +100,7 @@ struct PLATFORM_EXPORT BlobDataItem {
         expected_modification_time(expected_modification_time) {}
 
   // Constructor for Blob type.
-  BlobDataItem(RefPtr<BlobDataHandle> blob_data_handle,
+  BlobDataItem(scoped_refptr<BlobDataHandle> blob_data_handle,
                long long offset,
                long long length)
       : type(kBlob),
@@ -123,10 +125,10 @@ struct PLATFORM_EXPORT BlobDataItem {
 
   const enum { kData, kFile, kBlob, kFileSystemURL } type;
 
-  RefPtr<RawData> data;                   // For Data type.
+  scoped_refptr<RawData> data;            // For Data type.
   String path;                            // For File type.
   KURL file_system_url;                   // For FileSystemURL type.
-  RefPtr<BlobDataHandle> blob_data_handle;  // For Blob type.
+  scoped_refptr<BlobDataHandle> blob_data_handle;  // For Blob type.
 
   long long offset;
   long long length;
@@ -136,7 +138,7 @@ struct PLATFORM_EXPORT BlobDataItem {
   friend class BlobData;
 
   // Constructor for String type (partial string).
-  BlobDataItem(RefPtr<RawData> data, long long offset, long long length)
+  BlobDataItem(scoped_refptr<RawData> data, long long offset, long long length)
       : type(kData),
         data(std::move(data)),
         offset(offset),
@@ -174,7 +176,7 @@ class PLATFORM_EXPORT BlobData {
   const BlobDataItemList& Items() const { return items_; }
 
   void AppendBytes(const void*, size_t length);
-  void AppendData(RefPtr<RawData>, long long offset, long long length);
+  void AppendData(scoped_refptr<RawData>, long long offset, long long length);
   void AppendFile(const String& path,
                   long long offset,
                   long long length,
@@ -182,7 +184,9 @@ class PLATFORM_EXPORT BlobData {
 
   // The given blob must not be a file with unknown size. Please use the
   // File::appendTo instead.
-  void AppendBlob(RefPtr<BlobDataHandle>, long long offset, long long length);
+  void AppendBlob(scoped_refptr<BlobDataHandle>,
+                  long long offset,
+                  long long length);
   void AppendFileSystemURL(const KURL&,
                            long long offset,
                            long long length,
@@ -220,24 +224,24 @@ class PLATFORM_EXPORT BlobDataHandle
     : public ThreadSafeRefCounted<BlobDataHandle> {
  public:
   // For empty blob construction.
-  static RefPtr<BlobDataHandle> Create() {
+  static scoped_refptr<BlobDataHandle> Create() {
     return WTF::AdoptRef(new BlobDataHandle());
   }
 
   // For initial creation.
-  static RefPtr<BlobDataHandle> Create(std::unique_ptr<BlobData> data,
-                                       long long size) {
+  static scoped_refptr<BlobDataHandle> Create(std::unique_ptr<BlobData> data,
+                                              long long size) {
     return WTF::AdoptRef(new BlobDataHandle(std::move(data), size));
   }
 
   // For deserialization of script values and ipc messages.
-  static RefPtr<BlobDataHandle> Create(const String& uuid,
-                                       const String& type,
-                                       long long size) {
+  static scoped_refptr<BlobDataHandle> Create(const String& uuid,
+                                              const String& type,
+                                              long long size) {
     return WTF::AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
-  static RefPtr<BlobDataHandle> Create(const String& uuid,
+  static scoped_refptr<BlobDataHandle> Create(const String& uuid,
                                        const String& type,
                                        long long size,
                                        mojom::blink::BlobPtrInfo blob_info) {
