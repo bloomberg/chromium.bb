@@ -26,22 +26,6 @@
 
 namespace media {
 
-namespace {
-
-bool IsExperimentalCdmInterfaceSupported() {
-#if defined(USE_PPAPI_CDM_ADAPTER)
-#if defined(SUPPORT_EXPERIMENTAL_CDM_INTERFACE)
-  return true;
-#else
-  return false;
-#endif  // defined(SUPPORT_EXPERIMENTAL_CDM_INTERFACE)
-#else
-  return base::FeatureList::IsEnabled(media::kSupportExperimentalCdmInterface);
-#endif  // defined(USE_PPAPI_CDM_ADAPTER)
-}
-
-}  // namespace
-
 // Returns a pointer to the requested CDM upon success.
 // Returns NULL if an error occurs or the requested |cdm_interface_version| or
 // |key_system| is not supported or another error occurs.
@@ -334,11 +318,9 @@ CdmWrapper* CdmWrapper::Create(CreateCdmFunc create_cdm_func,
   // at compile time. For mojo, it is done using a media feature setting.
   CdmWrapper* cdm_wrapper = nullptr;
 
-  if (IsExperimentalCdmInterfaceSupported()) {
-    cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_9>::Create(
-        create_cdm_func, key_system, key_system_size, get_cdm_host_func,
-        user_data);
-  }
+  cdm_wrapper = CdmWrapperImpl<cdm::ContentDecryptionModule_9>::Create(
+      create_cdm_func, key_system, key_system_size, get_cdm_host_func,
+      user_data);
 
   // If |cdm_wrapper| is NULL, try to create the CDM using older supported
   // versions of the CDM interface here.

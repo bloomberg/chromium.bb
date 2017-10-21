@@ -90,10 +90,8 @@ class CdmAdapterTest : public testing::Test {
 
   CdmAdapterTest() {
     // Enable use of External Clear Key CDM.
-    scoped_feature_list_.InitWithFeatures(
-        {media::kExternalClearKeyForTesting,
-         media::kSupportExperimentalCdmInterface},
-        {});
+    scoped_feature_list_.InitWithFeatures({media::kExternalClearKeyForTesting},
+                                          {});
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
     CdmModule::GetInstance()->Initialize(helper_.LibraryPath(), {});

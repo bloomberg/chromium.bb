@@ -314,9 +314,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       if (cdm_host_type == CdmHostType::kMojo) {
         RegisterExternalClearKey(command_line);
         scoped_feature_list_.InitWithFeatures(
-            {media::kExternalClearKeyForTesting, media::kMojoCdm,
-             media::kSupportExperimentalCdmInterface},
-            {});
+            {media::kExternalClearKeyForTesting, media::kMojoCdm}, {});
       } else {
         // Pepper CDMs are conditionally compiled with or without support for
         // experimental CDMs, so media::kSupportExperimentalCdmInterface is
@@ -326,8 +324,7 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
       }
     } else {
       if (cdm_host_type == CdmHostType::kMojo) {
-        scoped_feature_list_.InitWithFeatures(
-            {media::kMojoCdm, media::kSupportExperimentalCdmInterface}, {});
+        scoped_feature_list_.InitWithFeatures({media::kMojoCdm}, {});
       }
     }
 #endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
