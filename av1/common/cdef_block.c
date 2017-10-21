@@ -423,6 +423,7 @@ void cdef_filter_fb(uint8_t *dst8, uint16_t *dst16, int dstride, uint16_t *in,
 #if CONFIG_CDEF_SINGLEPASS
   int pri_strength = (level >> 1) << coeff_shift;
   int filter_skip = level & 1;
+  sec_strength <<= coeff_shift;
   if (!pri_strength && !sec_strength && filter_skip) {
     pri_strength = 19 << coeff_shift;
     sec_strength = 7 << coeff_shift;
