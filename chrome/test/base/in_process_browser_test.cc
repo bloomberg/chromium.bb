@@ -226,7 +226,7 @@ void InProcessBrowserTest::SetUp() {
     command_line->AppendSwitchASCII(switches::kHostWindowBounds,
                                     "0+0-1280x800");
   }
-#elif defined(OS_LINUX) && defined(USE_X11)
+#elif defined(USE_X11)
   DCHECK(!display::Screen::GetScreen());
   display::Screen::SetScreenInstance(
       views::test::TestDesktopScreenX11::GetInstance());

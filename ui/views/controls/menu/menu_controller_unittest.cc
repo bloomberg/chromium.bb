@@ -581,7 +581,7 @@ class MenuControllerTest : public ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(MenuControllerTest);
 };
 
-#if defined(OS_LINUX) && defined(USE_X11)
+#if defined(USE_X11)
 // Tests that an event targeter which blocks events will be honored by the menu
 // event dispatcher.
 TEST_F(MenuControllerTest, EventTargeter) {
@@ -600,7 +600,7 @@ TEST_F(MenuControllerTest, EventTargeter) {
   EXPECT_EQ(MenuController::EXIT_ALL, menu_exit_type());
 }
 
-#endif  // defined(OS_LINUX) && defined(USE_X11)
+#endif  // defined(USE_X11)
 
 #if defined(USE_X11)
 // Tests that touch event ids are released correctly. See crbug.com/439051 for
