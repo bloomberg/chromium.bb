@@ -79,8 +79,10 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     private static final CachedMetrics.SparseHistogramSample sIntentFlagsHistogram =
             new CachedMetrics.SparseHistogramSample("Launch.IntentFlags");
 
-    private Activity mActivity;
-    private Intent mIntent;
+    private final Activity mActivity;
+    private final Intent mIntent;
+    private final boolean mIsCustomTabIntent;
+    private final boolean mIsHerbIntent;
 
     @IntDef({Action.CONTINUE, Action.FINISH_ACTIVITY, Action.FINISH_ACTIVITY_REMOVE_TASK})
     @Retention(RetentionPolicy.SOURCE)
@@ -116,18 +118,23 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         return new LaunchIntentDispatcher(currentActivity, intent).dispatchToTabbedActivity();
     }
 
-    private LaunchIntentDispatcher(Activity activity, Intent intent) {
-        mActivity = activity;
-        mIntent = intent;
+    /**
+     * Dispatches the intent to proper tabbed activity.
+     * This method is similar to {@link #dispatch()}, but only handles intents that result in
+     * starting a custom tab activity.
+     */
+    public static @Action int dispatchToCustomTabActivity(Activity currentActivity, Intent intent) {
+        LaunchIntentDispatcher dispatcher = new LaunchIntentDispatcher(currentActivity, intent);
+        if (!dispatcher.mIsCustomTabIntent) {
+            return Action.CONTINUE;
+        }
+        dispatcher.launchCustomTabActivity();
+        return Action.FINISH_ACTIVITY;
     }
 
-    /**
-     * Figure out how to route the Intent.  Because this is on the critical path to startup, please
-     * avoid making the pathway any more complicated than it already is.  Make sure that anything
-     * you add _absolutely has_ to be here.
-     */
-    private @Action int dispatch() {
-        mIntent = IntentUtils.sanitizeIntent(mIntent);
+    private LaunchIntentDispatcher(Activity activity, Intent intent) {
+        mActivity = activity;
+        mIntent = IntentUtils.sanitizeIntent(intent);
 
         // Needs to be called as early as possible, to accurately capture the
         // time at which the intent was received.
@@ -137,20 +144,29 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         recordIntentMetrics();
 
-        // Read partner browser customizations information asynchronously.
-        // We want to initialize early because when there are no tabs to restore, we should possibly
-        // show homepage, which might require reading PartnerBrowserCustomizations provider.
-        PartnerBrowserCustomizations.initializeAsync(
-                mActivity.getApplicationContext(), PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
-
         boolean isCustomTabIntent = isCustomTabIntent(mIntent);
         boolean isHerbIntent = false;
         // If the intent was created by Reader Mode, ignore herb and custom tab information.
         if (!isCustomTabIntent && !ReaderModeManager.isReaderModeCreatedIntent(mIntent)
                 && !VrIntentUtils.isVrIntent(mIntent)) {
-            isHerbIntent = isHerbIntent();
+            isHerbIntent = isHerbIntent(mIntent);
             isCustomTabIntent = isHerbIntent;
         }
+        mIsCustomTabIntent = isCustomTabIntent;
+        mIsHerbIntent = isHerbIntent;
+    }
+
+    /**
+     * Figure out how to route the Intent.  Because this is on the critical path to startup, please
+     * avoid making the pathway any more complicated than it already is.  Make sure that anything
+     * you add _absolutely has_ to be here.
+     */
+    private @Action int dispatch() {
+        // Read partner browser customizations information asynchronously.
+        // We want to initialize early because when there are no tabs to restore, we should possibly
+        // show homepage, which might require reading PartnerBrowserCustomizations provider.
+        PartnerBrowserCustomizations.initializeAsync(
+                mActivity.getApplicationContext(), PARTNER_BROWSER_CUSTOMIZATIONS_TIMEOUT_MS);
 
         int tabId = IntentUtils.safeGetIntExtra(
                 mIntent, IntentHandler.TabOpenType.BRING_TAB_TO_FRONT.name(), Tab.INVALID_TAB_ID);
@@ -183,7 +199,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         // Check if we should launch an Instant App to handle the intent.
         if (InstantAppsHandler.getInstance().handleIncomingIntent(
-                    mActivity, mIntent, isCustomTabIntent && !isHerbIntent, false)) {
+                    mActivity, mIntent, mIsCustomTabIntent && !mIsHerbIntent, false)) {
             return Action.FINISH_ACTIVITY;
         }
 
@@ -194,13 +210,13 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
         }
 
         // Check if we should launch the ChromeTabbedActivity.
-        if (!isCustomTabIntent && !FeatureUtilities.isDocumentMode(mActivity)) {
+        if (!mIsCustomTabIntent && !FeatureUtilities.isDocumentMode(mActivity)) {
             return dispatchToTabbedActivity();
         }
 
         // Check if we should launch a Custom Tab.
-        if (isCustomTabIntent) {
-            launchCustomTabActivity(isHerbIntent);
+        if (mIsCustomTabIntent) {
+            launchCustomTabActivity();
             return Action.FINISH_ACTIVITY;
         }
 
@@ -293,8 +309,8 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
     /**
      * @return Whether or not a Custom Tab will be forcefully used for the incoming Intent.
      */
-    private boolean isHerbIntent() {
-        if (!canBeHijackedByHerb(mIntent)) return false;
+    private static boolean isHerbIntent(Intent intent) {
+        if (!canBeHijackedByHerb(intent)) return false;
 
         // Different Herb flavors handle incoming intents differently.
         String flavor = FeatureUtilities.getHerbFlavor();
@@ -303,7 +319,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             return false;
         } else if (TextUtils.equals(flavor, ChromeSwitches.HERB_FLAVOR_ELDERBERRY)) {
             return IntentUtils.safeGetBooleanExtra(
-                    mIntent, EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, true);
+                    intent, EXTRA_IS_ALLOWED_TO_RETURN_TO_PARENT, true);
         } else {
             // Legacy Herb Flavors might hit this path before the caching logic corrects it, so
             // treat this as disabled.
@@ -390,7 +406,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
      * Handles launching a {@link CustomTabActivity}, which will sit on top of a client's activity
      * in the same task.
      */
-    private void launchCustomTabActivity(boolean isHerbIntent) {
+    private void launchCustomTabActivity() {
         boolean handled = BrowserSessionContentUtils.handleInActiveContentIfNeeded(mIntent);
         if (handled) return;
 
@@ -406,9 +422,9 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
             options = VrIntentUtils.getVrIntentOptions(mActivity);
         }
         mActivity.startActivity(createCustomTabActivityIntent(mActivity, mIntent,
-                                        !isCustomTabIntent(mIntent) && isHerbIntent),
+                                        !isCustomTabIntent(mIntent) && mIsHerbIntent),
                 options);
-        if (isHerbIntent) {
+        if (mIsHerbIntent) {
             mActivity.overridePendingTransition(R.anim.activity_open_enter, R.anim.no_anim);
         }
     }

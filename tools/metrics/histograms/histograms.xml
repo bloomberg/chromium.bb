@@ -1076,6 +1076,26 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram
+    name="Android.MainActivity.ExplicitMainViewIntentDispatched.OnCreate"
+    enum="BooleanDispatched">
+  <owner>dskiba@chromium.org</owner>
+  <summary>
+    Whether VIEW intent sent explicitly to .Main activity was dispatched by
+    onCreate().
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.MainActivity.ExplicitMainViewIntentDispatched.OnNewIntent"
+    enum="BooleanDispatched">
+  <owner>dskiba@chromium.org</owner>
+  <summary>
+    Whether VIEW intent sent explicitly to .Main activity was dispatched by
+    onNewIntent().
+  </summary>
+</histogram>
+
 <histogram name="Android.ManageSpace.ActionTaken"
     enum="AndroidManageSpaceButton">
   <owner>dmurph@chromium.org</owner>
