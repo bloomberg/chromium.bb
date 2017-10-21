@@ -7,8 +7,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chromeos/printing/printer_configuration.h"
-#include "components/metrics/proto/printer_event.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/printer_event.pb.h"
 
 namespace chromeos {
 namespace {

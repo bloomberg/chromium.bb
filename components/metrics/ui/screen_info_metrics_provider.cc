@@ -5,7 +5,7 @@
 #include "components/metrics/ui/screen_info_metrics_provider.h"
 
 #include "build/build_config.h"
-#include "components/metrics/proto/system_profile.pb.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 

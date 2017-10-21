@@ -11,8 +11,8 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class AutocompleteController;
 struct AutocompleteMatch;

@@ -23,8 +23,8 @@ static_library("common") {
 
   deps = [
     "//base",
-    "//components/metrics/proto",
     "//components/sync/protocol",
+    "//third_party/metrics_proto",
     "//url",
   ]
 }
@@ -40,9 +40,9 @@ source_set("unit_tests") {
   deps = [
     ":common",
     "//base",
-    "//components/metrics/proto",
     "//components/sync/protocol",
     "//testing/gtest",
+    "//third_party/metrics_proto",
     "//url",
   ]
 }

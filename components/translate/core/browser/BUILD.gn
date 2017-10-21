@@ -52,7 +52,6 @@ static_library("browser") {
     "//components/machine_intelligence",
     "//components/machine_intelligence/proto",
     "//components/metrics",
-    "//components/metrics/proto",
     "//components/pref_registry",
     "//components/prefs",
     "//components/resources:components_resources",
@@ -64,6 +63,7 @@ static_library("browser") {
     "//services/metrics/public/cpp:metrics_cpp",
     "//services/metrics/public/cpp:ukm_builders",
     "//third_party/icu",
+    "//third_party/metrics_proto",
     "//ui/base",
     "//url",
   ]
@@ -111,7 +111,6 @@ source_set("unit_tests") {
     "//components/language/core/browser",
     "//components/machine_intelligence",
     "//components/machine_intelligence/proto",
-    "//components/metrics/proto",
     "//components/pref_registry:pref_registry",
     "//components/prefs",
     "//components/prefs:test_support",
@@ -122,5 +121,6 @@ source_set("unit_tests") {
     "//components/variations",
     "//net:test_support",
     "//testing/gtest",
+    "//third_party/metrics_proto",
   ]
 }

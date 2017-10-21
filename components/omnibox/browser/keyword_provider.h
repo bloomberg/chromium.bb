@@ -18,10 +18,10 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/omnibox/browser/keyword_extensions_delegate.h"
+#include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
 class AutocompleteProviderClient;
 class AutocompleteProviderListener;

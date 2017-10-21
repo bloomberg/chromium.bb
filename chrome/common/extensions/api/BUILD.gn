@@ -217,9 +217,9 @@ json_schema_api("api_registration") {
     # include generated headers from these targets.
     # TODO(brettw) this should be made unnecessary if possible.
     ":api",
-    "//components/metrics/proto",
     "//components/sync",
     "//skia",
+    "//third_party/metrics_proto",
     "//ui/accessibility:ax_gen",
   ]
   if (is_chromeos) {

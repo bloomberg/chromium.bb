@@ -35,9 +35,9 @@
 #include "base/win/scoped_variant.h"
 #include "base/win/windows_version.h"
 #include "chrome/common/channel_info.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/variations/metrics_util.h"
 #include "components/version_info/version_info.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace {
 

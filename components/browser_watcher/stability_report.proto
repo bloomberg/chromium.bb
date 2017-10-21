@@ -211,7 +211,7 @@ message ProcessState {
 
 // Description of a field trial or experiment that the user is currently
 // enrolled in. This message is an analogue of the UMA proto in
-// components/metrics/proto/system_profile.proto. For details about generating
+// third_party/metrics_proto/system_profile.proto. For details about generating
 // the identifiers from the field trial and group names, see
 // variations::MakeActiveGroupId().
 // Next id: 3

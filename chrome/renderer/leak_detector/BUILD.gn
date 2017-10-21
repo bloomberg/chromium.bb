@@ -11,8 +11,8 @@ if (is_chromeos) {
     deps = [
       "//components/metrics/leak_detector:interfaces",
       "//components/metrics/leak_detector:leak_detector",
-      "//components/metrics/proto:proto",
       "//services/service_manager/public/cpp",
+      "//third_party/metrics_proto",
     ]
   }
 }

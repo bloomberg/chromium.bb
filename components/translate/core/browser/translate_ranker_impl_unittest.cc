@@ -17,13 +17,13 @@
 #include "components/machine_intelligence/proto/ranker_model.pb.h"
 #include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
 #include "components/machine_intelligence/ranker_model.h"
-#include "components/metrics/proto/translate_event.pb.h"
-#include "components/metrics/proto/ukm/source.pb.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/translate_event.pb.h"
+#include "third_party/metrics_proto/ukm/source.pb.h"
 #include "url/gurl.h"
 
 namespace {

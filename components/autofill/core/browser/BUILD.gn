@@ -402,7 +402,6 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//components/autofill/core/common",
-    "//components/metrics/proto",
     "//components/os_crypt",
     "//components/os_crypt:test_support",
     "//components/prefs:test_support",

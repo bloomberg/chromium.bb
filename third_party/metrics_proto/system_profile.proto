@@ -316,7 +316,8 @@ message SystemProfileProto {
     // The connection type according to NetworkChangeNotifier.
     optional ConnectionType connection_type = 2;
 
-    // Set to true if wifi_phy_layer_protocol changed during the lifetime of the log.
+    // Set to true if wifi_phy_layer_protocol changed during the lifetime of the
+    // log.
     optional bool wifi_phy_layer_protocol_is_ambiguous = 3;
 
     // See net::WifiPHYLayerProtocol.

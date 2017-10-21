@@ -14,7 +14,7 @@
 #include "chrome/browser/metrics/leak_detector/leak_detector_remote_controller.h"
 #include "chrome/browser/metrics/metrics_memory_details.h"
 #include "components/metrics/leak_detector/leak_detector.h"
-#include "components/metrics/proto/memory_leak_report.pb.h"
+#include "third_party/metrics_proto/memory_leak_report.pb.h"
 
 namespace metrics {
 

@@ -95,7 +95,6 @@ source_set("chromeos") {
     "//components/login",
     "//components/metrics:serialization",
     "//components/metrics/leak_detector",
-    "//components/metrics/proto",
     "//components/onc",
     "//components/ownership",
     "//components/pairing",
@@ -121,6 +120,7 @@ source_set("chromeos") {
     "//components/tracing:startup_tracing",
     "//components/user_manager",
     "//third_party/fontconfig",
+    "//third_party/metrics_proto",
 
     # This depends directly on the variations target, rather than just
     # transitively via the common target because the proto sources need to

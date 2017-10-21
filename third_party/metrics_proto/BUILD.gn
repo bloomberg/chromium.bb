@@ -4,7 +4,7 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-proto_library("proto") {
+proto_library("metrics_proto") {
   sources = [
     "call_stack_profile.proto",
     "cast_logs.proto",
