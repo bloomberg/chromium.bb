@@ -29,8 +29,8 @@ WebContents::CreateParams::CreateParams(BrowserContext* context,
       guest_delegate(nullptr),
       context(nullptr),
       renderer_initiated_creation(false),
-      initialize_renderer(false) {
-}
+      initialize_renderer(false),
+      starting_sandbox_flags(blink::WebSandboxFlags::kNone) {}
 
 WebContents::CreateParams::CreateParams(const CreateParams& other) = default;
 
