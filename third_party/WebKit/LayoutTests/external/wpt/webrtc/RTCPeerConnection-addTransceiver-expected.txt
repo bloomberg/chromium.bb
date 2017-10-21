@@ -10,9 +10,28 @@ FAIL addTransceiver(track) multiple times should create multiple transceivers as
 FAIL addTransceiver() with rid containing invalid non-alphanumeric characters should throw TypeError assert_idl_attribute: property "addTransceiver" not found in prototype chain
 FAIL addTransceiver() with rid longer than 16 characters should throw TypeError assert_idl_attribute: property "addTransceiver" not found in prototype chain
 FAIL addTransceiver() with valid rid value should succeed pc.addTransceiver is not a function
-FAIL addTransceiver() with readonly ssrc set should throw InvalidAccessError assert_throws: function "() =>\n      pc.addTransceiver('audio', {\n        sendEncodings: [{\n          ssrc: 2\n        }]\n      })" threw object "TypeError: pc.addTransceiver is not a function" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
-FAIL addTransceiver() with readonly rtx set should throw InvalidAccessError assert_throws: function "() =>\n      pc.addTransceiver('audio', {\n        sendEncodings: [{\n          rtx: {\n            ssrc: 2\n          }\n        }]\n      })" threw object "TypeError: pc.addTransceiver is not a function" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
-FAIL addTransceiver() with readonly fec set should throw InvalidAccessError assert_throws: function "() =>\n      pc.addTransceiver('audio', {\n        sendEncodings: [{\n          fec: {\n            ssrc: 2\n          }\n        }]\n      })" threw object "TypeError: pc.addTransceiver is not a function" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+FAIL addTransceiver() with readonly ssrc set should throw InvalidAccessError assert_throws: function "() =>
+      pc.addTransceiver('audio', {
+        sendEncodings: [{
+          ssrc: 2
+        }]
+      })" threw object "TypeError: pc.addTransceiver is not a function" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+FAIL addTransceiver() with readonly rtx set should throw InvalidAccessError assert_throws: function "() =>
+      pc.addTransceiver('audio', {
+        sendEncodings: [{
+          rtx: {
+            ssrc: 2
+          }
+        }]
+      })" threw object "TypeError: pc.addTransceiver is not a function" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
+FAIL addTransceiver() with readonly fec set should throw InvalidAccessError assert_throws: function "() =>
+      pc.addTransceiver('audio', {
+        sendEncodings: [{
+          fec: {
+            ssrc: 2
+          }
+        }]
+      })" threw object "TypeError: pc.addTransceiver is not a function" that is not a DOMException InvalidAccessError: property "code" is equal to undefined, expected 15
 FAIL addTransceiver() with valid sendEncodings should succeed pc.addTransceiver is not a function
 Harness: the test ran to completion.
 

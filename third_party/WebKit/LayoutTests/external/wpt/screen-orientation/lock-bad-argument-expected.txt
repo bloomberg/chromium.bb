@@ -1,4 +1,6 @@
 This is a testharness.js-based test.
-FAIL Test that screen.orientation.lock() throws when the input isn't valid. assert_throws: function "function () {\n        screen.orientation.lock('invalid-orientation');\n    }" did not throw
+FAIL Test that screen.orientation.lock() throws when the input isn't valid. assert_throws: function "function () {
+        screen.orientation.lock('invalid-orientation');
+    }" did not throw
 Harness: the test ran to completion.
 

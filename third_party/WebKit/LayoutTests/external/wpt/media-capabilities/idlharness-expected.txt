@@ -15,7 +15,11 @@ PASS MediaCapabilities interface object length
 PASS MediaCapabilities interface object name
 PASS MediaCapabilities interface: existence and properties of interface prototype object
 PASS MediaCapabilities interface: existence and properties of interface prototype object's "constructor" property
-FAIL MediaCapabilities interface: operation decodingInfo(MediaDecodingConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {\n            fn.apply(obj, args);\n        }" did not throw
-FAIL MediaCapabilities interface: operation encodingInfo(MediaEncodingConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {\n            fn.apply(obj, args);\n        }" did not throw
+FAIL MediaCapabilities interface: operation decodingInfo(MediaDecodingConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
+FAIL MediaCapabilities interface: operation encodingInfo(MediaEncodingConfiguration) assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
 Harness: the test ran to completion.
 

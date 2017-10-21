@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
 PASS window.DragEvent should be exposed
-FAIL createEvent should not be able to create a DragEvent assert_throws: function "function () {\n    var evt = document.createEvent('DragEvent');\n  }" did not throw
+FAIL createEvent should not be able to create a DragEvent assert_throws: function "function () {
+    var evt = document.createEvent('DragEvent');
+  }" did not throw
 PASS DragEvent should have all of the inherited init*Event methods
 PASS initMouseEvent should not throw
 PASS initUIEvent should not throw

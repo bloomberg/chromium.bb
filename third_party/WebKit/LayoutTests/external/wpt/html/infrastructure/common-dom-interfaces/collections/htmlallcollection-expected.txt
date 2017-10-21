@@ -28,7 +28,9 @@ FAIL legacy caller with invalid "array index property name" assert_equals: expec
 FAIL legacy caller with undefined assert_equals: expected null but got Element node <div id="undefined"></div>
 PASS legacy caller with null
 FAIL legacy caller with no argument assert_equals: expected (object) null but got (undefined) undefined
-FAIL legacy caller is not a constructor assert_throws: New should not work on document.all() function "function () {\n    new document.all("picture");\n  }" did not throw
+FAIL legacy caller is not a constructor assert_throws: New should not work on document.all() function "function () {
+    new document.all("picture");
+  }" did not throw
 PASS legacy caller with arbitrary this value
 PASS item method
 FAIL item method with invalid name assert_equals: expected (object) null but got (undefined) undefined

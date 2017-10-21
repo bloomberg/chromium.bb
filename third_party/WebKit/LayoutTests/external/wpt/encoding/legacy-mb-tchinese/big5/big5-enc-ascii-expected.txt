@@ -10,7 +10,8 @@ PASS big5 encoder: test for ASCII codepoint 0x6 
 PASS big5 encoder: test for ASCII codepoint 0x7 
 PASS big5 encoder: test for ASCII codepoint 0x8 
 FAIL big5 encoder: test for ASCII codepoint 0x9 	 assert_true: expected true got false
-FAIL big5 encoder: test for ASCII codepoint 0xa \n assert_true: expected true got false
+FAIL big5 encoder: test for ASCII codepoint 0xa 
+ assert_true: expected true got false
 PASS big5 encoder: test for ASCII codepoint 0xb 
 PASS big5 encoder: test for ASCII codepoint 0xc 
 FAIL big5 encoder: test for ASCII codepoint 0xd \r assert_true: expected true got false
