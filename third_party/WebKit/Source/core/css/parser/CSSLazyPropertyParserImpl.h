@@ -21,7 +21,6 @@ class CSSLazyPropertyParserImpl : public CSSLazyPropertyParser {
 
   // CSSLazyPropertyParser:
   StylePropertySet* ParseProperties() override;
-  void SetHasBeforeOrAfter() override { has_before_or_after_ = true; }
 
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(lazy_state_);
@@ -31,7 +30,6 @@ class CSSLazyPropertyParserImpl : public CSSLazyPropertyParser {
  private:
   size_t offset_;
   Member<CSSLazyParsingState> lazy_state_;
-  bool has_before_or_after_ = false;
 };
 
 }  // namespace blink

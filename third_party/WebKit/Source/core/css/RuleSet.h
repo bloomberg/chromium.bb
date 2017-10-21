@@ -168,11 +168,6 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
 
   const RuleFeatureSet& Features() const { return features_; }
 
-  void UpdateInvalidationSetsForContentAttribute(
-      const StylePropertySet* property_set) {
-    features_.UpdateInvalidationSetsForContentAttribute(property_set);
-  }
-
   const HeapTerminatedArray<RuleData>* IdRules(const AtomicString& key) const {
     DCHECK(!pending_rules_);
     return id_rules_.at(key);

@@ -26,7 +26,6 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
 #include "core/css/MediaQueryEvaluator.h"
-#include "core/css/StylePropertySet.h"
 #include "core/css/invalidation/InvalidationSet.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
@@ -53,8 +52,7 @@ class CORE_EXPORT RuleFeatureSet {
 
   enum SelectorPreMatch { kSelectorNeverMatches, kSelectorMayMatch };
 
-  SelectorPreMatch CollectFeaturesFromRuleData(RuleData&);
-  void UpdateInvalidationSetsForContentAttribute(const StylePropertySet*);
+  SelectorPreMatch CollectFeaturesFromRuleData(const RuleData&);
 
   bool UsesFirstLineRules() const { return metadata_.uses_first_line_rules; }
   bool UsesWindowInactiveSelector() const {
@@ -185,7 +183,8 @@ class CORE_EXPORT RuleFeatureSet {
   DescendantInvalidationSet& EnsureNthInvalidationSet();
   DescendantInvalidationSet& EnsureTypeRuleInvalidationSet();
 
-  void UpdateInvalidationSets(RuleData&);
+  void UpdateInvalidationSets(const RuleData&);
+  void UpdateInvalidationSetsForContentAttribute(const RuleData&);
 
   struct InvalidationSetFeatures {
     DISALLOW_NEW();

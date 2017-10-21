@@ -169,8 +169,6 @@ class CSSLazyPropertyParser
   CSSLazyPropertyParser() {}
   virtual ~CSSLazyPropertyParser() {}
   virtual StylePropertySet* ParseProperties() = 0;
-  virtual void SetHasBeforeOrAfter() = 0;
-
   virtual void Trace(blink::Visitor*);
 };
 

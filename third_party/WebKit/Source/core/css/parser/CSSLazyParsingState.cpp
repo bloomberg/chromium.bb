@@ -50,15 +50,6 @@ const CSSParserContext* CSSLazyParsingState::Context() {
   return context_;
 }
 
-StyleEngine& CSSLazyParsingState::GetStyleEngine() {
-  DCHECK(owning_contents_);
-  // Try as best as possible to grab a valid Document if the old Document has
-  // gone away so we can still use UseCounter.
-  if (!document_)
-    document_ = owning_contents_->AnyOwnerDocument();
-  return document_->GetStyleEngine();
-}
-
 void CSSLazyParsingState::CountRuleParsed() {
   ++parsed_style_rules_;
   while (parsed_style_rules_ > style_rules_needed_for_next_milestone_) {
@@ -66,6 +57,26 @@ void CSSLazyParsingState::CountRuleParsed() {
     ++usage_;
     RecordUsageMetrics();
   }
+}
+
+bool CSSLazyParsingState::ShouldLazilyParseProperties(
+    const CSSSelectorList& selectors) const {
+  //  Disallow lazy parsing for blocks which have before/after in their selector
+  //  list. This ensures we don't cause a collectFeatures() when we trigger
+  //  parsing for attr() functions which would trigger expensive invalidation
+  //  propagation.
+  for (const auto* s = selectors.First(); s; s = CSSSelectorList::Next(*s)) {
+    for (const CSSSelector* current = s; current;
+         current = current->TagHistory()) {
+      const CSSSelector::PseudoType type(current->GetPseudoType());
+      if (type == CSSSelector::kPseudoBefore ||
+          type == CSSSelector::kPseudoAfter)
+        return false;
+      if (current->Relation() != CSSSelector::kSubSelector)
+        break;
+    }
+  }
+  return true;
 }
 
 void CSSLazyParsingState::RecordUsageMetrics() {
