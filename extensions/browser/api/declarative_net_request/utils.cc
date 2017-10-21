@@ -16,6 +16,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
+#include "extensions/browser/api/declarative_net_request/flat/extension_ruleset_generated.h"
 #include "extensions/browser/api/declarative_net_request/flat_ruleset_indexer.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
@@ -25,6 +26,7 @@
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
+#include "third_party/flatbuffers/src/include/flatbuffers/flatbuffers.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -158,8 +160,13 @@ bool IndexAndPersistRules(const base::ListValue& rules,
   return false;
 }
 
-int GetRulesetChecksumForTesting(const uint8_t* data, size_t size) {
-  return GetChecksum(FlatRulesetIndexer::SerializedData(data, size));
+bool IsValidRulesetData(const uint8_t* data,
+                        size_t size,
+                        int expected_checksum) {
+  flatbuffers::Verifier verifier(data, size);
+  FlatRulesetIndexer::SerializedData serialized_data(data, size);
+  return expected_checksum == GetChecksum(serialized_data) &&
+         flat::VerifyExtensionIndexedRulesetBuffer(verifier);
 }
 
 }  // namespace declarative_net_request

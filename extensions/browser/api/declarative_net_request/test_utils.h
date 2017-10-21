@@ -15,6 +15,12 @@ class Extension;
 
 namespace declarative_net_request {
 
+// Enum specifying the extension load type. Used for parameterized tests.
+enum class ExtensionLoadType {
+  PACKED,
+  UNPACKED,
+};
+
 // Returns true if the given extension has a valid indexed ruleset. Should be
 // called on a sequence where file IO is allowed.
 bool HasValidIndexedRuleset(const Extension& extension,

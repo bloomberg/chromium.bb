@@ -131,7 +131,6 @@ class UrlPatternIndexMatcher {
                                  bool is_third_party,
                                  bool disable_generic_rules) const;
 
- private:
   // Helper function to work with flat::*Type(s). If the index contains one or
   // more UrlRules that match the request, returns one of them (it is undefined
   // which one). Otherwise, returns nullptr.
@@ -142,6 +141,7 @@ class UrlPatternIndexMatcher {
                                  bool is_third_party,
                                  bool disable_generic_rules) const;
 
+ private:
   // Must outlive this instance.
   const flat::UrlPatternIndex* flat_index_;
 

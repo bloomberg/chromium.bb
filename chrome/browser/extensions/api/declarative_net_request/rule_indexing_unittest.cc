@@ -33,11 +33,6 @@ namespace extensions {
 namespace declarative_net_request {
 namespace {
 
-enum class ExtensionLoadType {
-  PACKED,
-  UNPACKED,
-};
-
 constexpr char kJSONRulesFilename[] = "rules_file.json";
 const base::FilePath::CharType kJSONRulesetFilepath[] =
     FILE_PATH_LITERAL("rules_file.json");
