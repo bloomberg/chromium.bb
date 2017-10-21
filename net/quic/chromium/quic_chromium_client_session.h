@@ -302,6 +302,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       std::unique_ptr<QuicServerInfo> server_info,
       const QuicServerId& server_id,
       bool require_confirmation,
+      bool migrate_sesion_early,
+      bool migrate_session_on_network_change,
       int yield_after_packets,
       QuicTime::Delta yield_after_duration,
       int cert_verify_flags,
@@ -435,6 +437,28 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // otherwise a PING packet is written.
   void WriteToNewSocket();
 
+  // Method that initiates migration to |new_network|. If |new_network| is a
+  // valid network, and this session does not have non-migratable stream
+  // while have active streams, |this| will migrate to |new_network| if not on
+  // it yet.
+  //
+  // If |this| has no active stream, it will be closed. Otherwise, it will be
+  // closed when migration encounters failure and |close_if_cannot_migrate| is
+  // true.
+  //
+  // If |new_network| is NetworkChange::kInvalidNetworkHandle, there is no new
+  // network to migrate onto, |this| will wait for new network to be connected.
+  void MaybeMigrateOrCloseSession(
+      NetworkChangeNotifier::NetworkHandle new_network,
+      bool close_if_cannot_migrate,
+      const NetLogWithSource& migration_net_log);
+
+  // Migrates session over to use alternate network if such is available.
+  // If the migrate fails and |close_session_on_error| is true, session will
+  // be closed.
+  MigrationResult MigrateToAlternateNetwork(bool close_session_on_error,
+                                            const NetLogWithSource& net_log);
+
   // Migrates session over to use |peer_address| and |network|.
   // If |network| is kInvalidNetworkHandle, default network is used. If the
   // migration fails and |close_session_on_error| is true, session will be
@@ -547,6 +571,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   QuicServerId server_id_;
   bool require_confirmation_;
+  bool migrate_session_early_;
+  bool migrate_session_on_network_change_;
   QuicClock* clock_;  // Unowned.
   int yield_after_packets_;
   QuicTime::Delta yield_after_duration_;

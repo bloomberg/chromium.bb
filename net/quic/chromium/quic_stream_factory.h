@@ -316,14 +316,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   MigrationResult MaybeMigrateSingleSessionOnPathDegrading(
       QuicChromiumClientSession* session);
 
-  // Migrates |session| over to using |network|. If |network| is
-  // kInvalidNetworkHandle, default network is used.
-  MigrationResult MigrateSessionToNewNetwork(
-      QuicChromiumClientSession* session,
-      NetworkChangeNotifier::NetworkHandle network,
-      bool close_session_on_error,
-      const NetLogWithSource& net_log);
-
   // Migrates |session| over to using |peer_address|. Causes a PING frame
   // to be sent to the new peer address.
   void MigrateSessionToNewPeerAddress(QuicChromiumClientSession* session,
@@ -423,13 +415,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                     QuicChromiumClientSession** session);
   void ActivateSession(const QuicSessionKey& key,
                        QuicChromiumClientSession* session);
-
-  // Method that initiates migration of |session| if |session| is
-  // active and if there is an alternate network than the one to which
-  // |session| is currently bound.
-  MigrationResult MaybeMigrateSingleSession(QuicChromiumClientSession* session,
-                                            bool close_session_on_error,
-                                            const NetLogWithSource& net_log);
 
   void ConfigureInitialRttEstimate(const QuicServerId& server_id,
                                    QuicConfig* config);
