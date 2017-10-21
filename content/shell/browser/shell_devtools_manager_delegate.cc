@@ -170,11 +170,6 @@ void ShellDevToolsManagerDelegate::StartHttpHandler(
   DevToolsAgentHost::StartRemoteDebuggingServer(
       CreateSocketFactory(), frontend_url, browser_context->GetPath(),
       base::FilePath());
-
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kRemoteDebuggingPipe))
-    DevToolsAgentHost::StartRemoteDebuggingPipeHandler();
 }
 
 // static

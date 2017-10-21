@@ -16,7 +16,6 @@
 namespace content {
 
 class DevToolsHttpHandler;
-class DevToolsPipeHandler;
 
 // This class is a singleton that manage global DevTools state for the whole
 // browser.
@@ -34,14 +33,11 @@ class CONTENT_EXPORT DevToolsManager {
 
   void SetHttpHandler(std::unique_ptr<DevToolsHttpHandler> http_handler);
 
-  void SetPipeHandler(std::unique_ptr<DevToolsPipeHandler> pipe_handler);
-
  private:
   friend struct base::DefaultSingletonTraits<DevToolsManager>;
 
   std::unique_ptr<DevToolsManagerDelegate> delegate_;
   std::unique_ptr<DevToolsHttpHandler> http_handler_;
-  std::unique_ptr<DevToolsPipeHandler> pipe_handler_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsManager);
 };

@@ -548,8 +548,6 @@ source_set("browser") {
     "devtools/devtools_manager.cc",
     "devtools/devtools_manager.h",
     "devtools/devtools_network_transaction_factory.cc",
-    "devtools/devtools_pipe_handler.cc",
-    "devtools/devtools_pipe_handler.h",
     "devtools/devtools_session.cc",
     "devtools/devtools_session.h",
     "devtools/devtools_url_interceptor_request_job.cc",
