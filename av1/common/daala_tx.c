@@ -3118,33 +3118,79 @@
   } while (0)
 #endif
 
+/* 4-point orthonormal Type-II fDCT. */
 void od_bin_fdct4(od_coeff y[4], const od_coeff *x, int xstride) {
+  /* 4 "muls", 8 adds, 2 shifts */
   int q0;
   int q1;
   int q2;
   int q3;
+  int u1;
+  int t0;
+  int t1;
+  int t2;
+  int t3;
   q0 = x[0*xstride];
-  q2 = x[1*xstride];
-  q1 = x[2*xstride];
+  q1 = x[1*xstride];
+  q2 = x[2*xstride];
   q3 = x[3*xstride];
-  OD_FDCT_4(q0, q2, q1, q3);
-  y[0] = (od_coeff)q0;
-  y[1] = (od_coeff)q1;
-  y[2] = (od_coeff)q2;
-  y[3] = (od_coeff)q3;
+  q3 = q0 - q3;
+  q0 -= OD_DCT_RSHIFT(q3, 1);
+  u1 = q1 + q2;
+  q2 = q1 - q2;
+  /* Cos[3*Pi/8]/Sqrt[2] = 0.27059805007309849219986160268319 */
+  t0 = (q3*8867 + 16384) >> 15;
+  /* Cos[Pi/8]/Sqrt[2] = 0.65328148243818826392832158671359 */
+  t1 = (q2*21407 + 16384) >> 15;
+  /* Cos[Pi/8]/Sqrt[2] = 0.65328148243818826392832158671359 */
+  t2 = (q3*21407 + 16384) >> 15;
+  /* Cos[3*Pi/8]/Sqrt[2] = 0.27059805007309849219986160268319 */
+  t3 = (q2*8867 + 16384) >> 15;
+  q0 += OD_DCT_RSHIFT(u1, 1);
+  q1 = q0 - u1;
+  q2 = t3 + t2;
+  q3 = t0 - t1;
+  y[0] = q0;
+  y[1] = q2;
+  y[2] = q1;
+  y[3] = q3;
 }
 
+/* 4-point orthonormal Type-II iDCT. */
 void od_bin_idct4(od_coeff *x, int xstride, const od_coeff y[4]) {
+  /* 4 "muls", 8 adds, 1 shift */
   int q0;
   int q1;
   int q2;
   int q3;
+  int q1h;
+  int u0;
+  int t0;
+  int t1;
+  int t2;
+  int t3;
   q0 = y[0];
   q2 = y[1];
   q1 = y[2];
   q3 = y[3];
-  OD_IDCT_4(q0, q2, q1, q3);
-  x[0*xstride] = q0;
+  /* Cos[3*Pi/8]/Sqrt[2] = 0.27059805007309849219986160268319 */
+  t0 = (q3*8867 + 16384) >> 15;
+  /* Cos[Pi/8]/Sqrt[2] = 0.65328148243818826392832158671359 */
+  t1 = (q2*21407 + 16384) >> 15;
+  /* Cos[Pi/8]/Sqrt[2] = 0.65328148243818826392832158671359 */
+  t2 = (q3*21407 + 16384) >> 15;
+  /* Cos[3*Pi/8]/Sqrt[2] = 0.27059805007309849219986160268319 */
+  t3 = (q2*8867 + 16384) >> 15;
+  q3 = t0 + t1;
+  q2 = t3 - t2;
+  q1 = q0 - q1;
+  q1h = OD_DCT_RSHIFT(q1, 1);
+  q0 -= q1h;
+  u0 = q0 + q3;
+  q3 = q0 - q3;
+  q2 = q1h - q2;
+  q1 -= q2;
+  x[0*xstride] = u0;
   x[1*xstride] = q1;
   x[2*xstride] = q2;
   x[3*xstride] = q3;
