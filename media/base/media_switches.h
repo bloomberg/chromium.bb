@@ -159,6 +159,12 @@ MEDIA_EXPORT extern const base::Feature kSerializeCoreAudioPauseResume;
 MEDIA_EXPORT std::string GetEffectiveAutoplayPolicy(
     const base::CommandLine& command_line);
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+// Based on the command line of the current process, determine if
+// audio focus duck flash should be enabled.
+MEDIA_EXPORT bool IsAudioFocusDuckFlashEnabled();
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_MEDIA_SWITCHES_H_

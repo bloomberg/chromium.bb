@@ -359,6 +359,14 @@ std::string GetEffectiveAutoplayPolicy(const base::CommandLine& command_line) {
 #endif
 }
 
+#if BUILDFLAG(ENABLE_PLUGINS)
+MEDIA_EXPORT bool IsAudioFocusDuckFlashEnabled() {
+  return base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+             switches::kEnableAudioFocus) ==
+         switches::kEnableAudioFocusDuckFlash;
+}
+#endif  // BUILDFLAG(ENABLE_PLUGINS)
+
 // Adds icons to the overflow menu on the native media controls.
 // For experiment: crbug.com/763301
 const base::Feature kOverflowIconsForMediaControls{
