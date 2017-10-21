@@ -173,7 +173,6 @@ crbug.com/73609 virtual/mojo-loading/http/tests/media/video-play-stall.html [ Sl
 crbug.com/330389 [ Debug ] css-parser/color3_hsl.html [ Slow ]
 
 # Many of the virtual animations tests are slow.
-crbug.com/248938 [ Linux Win ] virtual/threaded/animations/combo-transform-rotate+scale.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/3d/change-transform-in-end-event.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/3d/state-at-end-event-transform.html [ Slow ]
 crbug.com/248938 virtual/threaded/animations/direction-and-fill/animation-direction-reverse-fill-mode-hardware.html [ Slow ]
