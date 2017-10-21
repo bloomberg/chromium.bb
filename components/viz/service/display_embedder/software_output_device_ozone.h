@@ -2,34 +2,34 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
-#define CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "components/viz/service/display/software_output_device.h"
-#include "content/common/content_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace ui {
 class SurfaceOzoneCanvas;
 }
 
-namespace content {
+namespace viz {
 
 // Ozone implementation which relies on software rendering. Ozone will present
 // an accelerated widget as a SkCanvas. SoftwareOutputDevice will then use the
 // Ozone provided canvas to draw.
-class CONTENT_EXPORT SoftwareOutputDeviceOzone
-    : public viz::SoftwareOutputDevice {
+class VIZ_SERVICE_EXPORT SoftwareOutputDeviceOzone
+    : public SoftwareOutputDevice {
  public:
   static std::unique_ptr<SoftwareOutputDeviceOzone> Create(
       gfx::AcceleratedWidget widget);
   ~SoftwareOutputDeviceOzone() override;
 
   void Resize(const gfx::Size& viewport_pixel_size,
-                      float scale_factor) override;
+              float scale_factor) override;
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
   void EndPaint() override;
 
@@ -41,6 +41,6 @@ class CONTENT_EXPORT SoftwareOutputDeviceOzone
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzone);
 };
 
-}  // namespace content
+}  // namespace viz
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_OZONE_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_OZONE_H_

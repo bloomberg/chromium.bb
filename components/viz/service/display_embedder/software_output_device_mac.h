@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_MAC_H_
-#define CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_MAC_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_MAC_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_MAC_H_
 
 #include <IOSurface/IOSurface.h>
 #include <list>
@@ -11,7 +11,7 @@
 #include "base/mac/scoped_cftyperef.h"
 #include "base/macros.h"
 #include "components/viz/service/display/software_output_device.h"
-#include "content/common/content_export.h"
+#include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/gfx/native_widget_types.h"
@@ -19,15 +19,15 @@
 
 class SkCanvas;
 
-namespace content {
+namespace viz {
 
-class CONTENT_EXPORT SoftwareOutputDeviceMac : public viz::SoftwareOutputDevice,
-                                               public gfx::VSyncProvider {
+class VIZ_SERVICE_EXPORT SoftwareOutputDeviceMac : public SoftwareOutputDevice,
+                                                   public gfx::VSyncProvider {
  public:
   explicit SoftwareOutputDeviceMac(gfx::AcceleratedWidget widget);
   ~SoftwareOutputDeviceMac() override;
 
-  // viz::SoftwareOutputDevice implementation.
+  // SoftwareOutputDevice implementation.
   void Resize(const gfx::Size& pixel_size, float scale_factor) override;
   SkCanvas* BeginPaint(const gfx::Rect& damage_rect) override;
   void EndPaint() override;
@@ -86,6 +86,6 @@ class CONTENT_EXPORT SoftwareOutputDeviceMac : public viz::SoftwareOutputDevice,
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceMac);
 };
 
-}  // namespace content
+}  // namespace viz
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_MAC_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_MAC_H_

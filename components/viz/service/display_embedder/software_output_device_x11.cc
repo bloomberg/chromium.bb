@@ -2,20 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/software_output_device_x11.h"
+#include "components/viz/service/display_embedder/software_output_device_x11.h"
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
 
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "ui/base/x/x11_util.h"
 #include "ui/base/x/x11_util_internal.h"
 #include "ui/gfx/x/x11_types.h"
 
-namespace content {
+namespace viz {
 
 SoftwareOutputDeviceX11::SoftwareOutputDeviceX11(gfx::AcceleratedWidget widget)
     : widget_(widget), display_(gfx::GetXDisplay()), gc_(NULL) {
@@ -73,18 +73,11 @@ void SoftwareOutputDeviceX11::EndPaint() {
     image.red_mask = 0xff;
     image.green_mask = 0xff00;
     image.blue_mask = 0xff0000;
-    image.data = const_cast<char*>(static_cast<const char*>(
-        skia_pixmap.addr()));
+    image.data =
+        const_cast<char*>(static_cast<const char*>(skia_pixmap.addr()));
 
-    XPutImage(display_,
-              pixmap,
-              gc,
-              &image,
-              rect.x(),
-              rect.y() /* source x, y */,
-              0,
-              0 /* dest x, y */,
-              rect.width(),
+    XPutImage(display_, pixmap, gc, &image, rect.x(),
+              rect.y() /* source x, y */, 0, 0 /* dest x, y */, rect.width(),
               rect.height());
     XFreeGC(display_, gc);
     Picture picture = XRenderCreatePicture(
@@ -122,4 +115,4 @@ void SoftwareOutputDeviceX11::EndPaint() {
                     rect.height());
 }
 
-}  // namespace content
+}  // namespace viz

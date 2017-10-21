@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/software_output_device_win.h"
+#include "components/viz/service/display_embedder/software_output_device_win.h"
 
 #include "base/debug/alias.h"
 #include "base/memory/shared_memory.h"
@@ -13,14 +13,13 @@
 #include "ui/gfx/gdi_util.h"
 #include "ui/gfx/skia_util.h"
 
-namespace content {
+namespace viz {
 
 // If a window is larger than this in bytes, don't even try to create a
 // backing bitmap for it.
 static const size_t kMaxBitmapSizeBytes = 4 * (16384 * 8192);
 
-OutputDeviceBacking::OutputDeviceBacking() : created_byte_size_(0) {
-}
+OutputDeviceBacking::OutputDeviceBacking() : created_byte_size_(0) {}
 
 OutputDeviceBacking::~OutputDeviceBacking() {
   DCHECK(devices_.empty());
@@ -56,7 +55,7 @@ base::SharedMemory* OutputDeviceBacking::GetSharedMemory(
     return backing_.get();
   size_t expected_byte_size = GetMaxByteSize();
   size_t required_size;
-  if (!viz::SharedBitmap::SizeInBytes(size, &required_size))
+  if (!SharedBitmap::SizeInBytes(size, &required_size))
     return nullptr;
   if (required_size > expected_byte_size)
     return nullptr;
@@ -74,8 +73,8 @@ size_t OutputDeviceBacking::GetMaxByteSize() {
   size_t max_size = 1;
   for (const SoftwareOutputDeviceWin* device : devices_) {
     size_t current_size;
-    if (!viz::SharedBitmap::SizeInBytes(device->viewport_pixel_size(),
-                                        &current_size))
+    if (!SharedBitmap::SizeInBytes(device->viewport_pixel_size(),
+                                   &current_size))
       continue;
     if (current_size > kMaxBitmapSizeBytes)
       continue;
@@ -182,12 +181,8 @@ void SoftwareOutputDeviceWin::EndPaint() {
   } else {
     HDC hdc = ::GetDC(hwnd_);
     RECT src_rect = rect.ToRECT();
-    skia::CopyHDC(dib_dc,
-                  hdc,
-                  rect.x(),
-                  rect.y(),
-                  contents_.get()->imageInfo().isOpaque(),
-                  src_rect,
+    skia::CopyHDC(dib_dc, hdc, rect.x(), rect.y(),
+                  contents_.get()->imageInfo().isOpaque(), src_rect,
                   contents_.get()->getTotalMatrix());
 
     ::ReleaseDC(hwnd_, hdc);
@@ -199,4 +194,4 @@ void SoftwareOutputDeviceWin::ReleaseContents() {
   contents_.reset();
 }
 
-}  // namespace content
+}  // namespace viz

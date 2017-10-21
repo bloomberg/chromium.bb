@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_WIN_H_
-#define CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_WIN_H_
+#ifndef COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_WIN_H_
+#define COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_WIN_H_
 
 #include <stddef.h>
 #include <windows.h>
@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "components/viz/service/display/software_output_device.h"
+#include "components/viz/service/viz_service_export.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/native_widget_types.h"
@@ -22,10 +23,10 @@ namespace base {
 class SharedMemory;
 }
 
-namespace content {
+namespace viz {
 class SoftwareOutputDeviceWin;
 
-class OutputDeviceBacking {
+class VIZ_SERVICE_EXPORT OutputDeviceBacking {
  public:
   OutputDeviceBacking();
   ~OutputDeviceBacking();
@@ -45,7 +46,7 @@ class OutputDeviceBacking {
   DISALLOW_COPY_AND_ASSIGN(OutputDeviceBacking);
 };
 
-class SoftwareOutputDeviceWin : public viz::SoftwareOutputDevice {
+class VIZ_SERVICE_EXPORT SoftwareOutputDeviceWin : public SoftwareOutputDevice {
  public:
   SoftwareOutputDeviceWin(OutputDeviceBacking* backing,
                           gfx::AcceleratedWidget widget);
@@ -70,6 +71,6 @@ class SoftwareOutputDeviceWin : public viz::SoftwareOutputDevice {
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceWin);
 };
 
-}  // namespace content
+}  // namespace viz
 
-#endif  // CONTENT_BROWSER_COMPOSITOR_SOFTWARE_OUTPUT_DEVICE_WIN_H_
+#endif  // COMPONENTS_VIZ_SERVICE_DISPLAY_EMBEDDER_SOFTWARE_OUTPUT_DEVICE_WIN_H_

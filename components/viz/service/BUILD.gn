@@ -168,11 +168,25 @@ viz_component("service") {
     "//ui/latency",
   ]
 
+  if (use_x11) {
+    sources += [
+      "display_embedder/software_output_device_x11.cc",
+      "display_embedder/software_output_device_x11.h",
+    ]
+    configs += [ "//build/config/linux:x11" ]
+    deps += [ "//ui/gfx/x" ]
+  }
+
   if (is_mac) {
     sources += [
       "display_embedder/compositor_overlay_candidate_validator_mac.h",
       "display_embedder/compositor_overlay_candidate_validator_mac.mm",
+      "display_embedder/software_output_device_mac.h",
+      "display_embedder/software_output_device_mac.mm",
     ]
+
+    deps += [ "//ui/accelerated_widget_mac" ]
+    libs = [ "IOSurface.framework" ]
   }
 
   if (is_android) {
@@ -188,6 +202,8 @@ viz_component("service") {
       "display_embedder/compositor_overlay_candidate_validator_ozone.h",
       "display_embedder/display_output_surface_ozone.cc",
       "display_embedder/display_output_surface_ozone.h",
+      "display_embedder/software_output_device_ozone.cc",
+      "display_embedder/software_output_device_ozone.h",
     ]
 
     public_deps += [ "//ui/ozone" ]
@@ -197,6 +213,8 @@ viz_component("service") {
     sources += [
       "display_embedder/compositor_overlay_candidate_validator_win.cc",
       "display_embedder/compositor_overlay_candidate_validator_win.h",
+      "display_embedder/software_output_device_win.cc",
+      "display_embedder/software_output_device_win.h",
     ]
   }
 
@@ -273,6 +291,19 @@ viz_source_set("unit_tests") {
     "//ui/display/types",
     "//ui/gfx:test_support",
   ]
+
+  if (use_ozone) {
+    sources += [ "display_embedder/software_output_device_ozone_unittest.cc" ]
+    deps += [
+      "//ui/compositor:test_support",
+      "//ui/ozone",
+    ]
+  }
+
+  if (is_mac) {
+    sources += [ "display_embedder/software_output_device_mac_unittest.mm" ]
+    libs = [ "IOSurface.framework" ]
+  }
 }
 
 viz_source_set("perf_tests") {

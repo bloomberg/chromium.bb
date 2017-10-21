@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/software_output_device_ozone.h"
+#include "components/viz/service/display_embedder/software_output_device_ozone.h"
 
 #include <memory>
 
@@ -43,9 +43,7 @@ class TestPlatformWindowDelegate : public ui::PlatformWindowDelegate {
                                     float device_pixel_ratio) override {
     widget_ = widget;
   }
-  void OnAcceleratedWidgetDestroyed() override {
-    NOTREACHED();
-  }
+  void OnAcceleratedWidgetDestroyed() override { NOTREACHED(); }
   void OnActivationChanged(bool active) override {}
 
  private:
@@ -65,24 +63,18 @@ class SoftwareOutputDeviceOzoneTest : public testing::Test {
   void TearDown() override;
 
  protected:
-  std::unique_ptr<content::SoftwareOutputDeviceOzone> output_device_;
+  std::unique_ptr<viz::SoftwareOutputDeviceOzone> output_device_;
   bool enable_pixel_output_ = false;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
   std::unique_ptr<ui::Compositor> compositor_;
   TestPlatformWindowDelegate window_delegate_;
-  std::unique_ptr<ui::PlatformWindow> window_;
 
   DISALLOW_COPY_AND_ASSIGN(SoftwareOutputDeviceOzoneTest);
 };
 
-SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
-
-SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {
-}
+SoftwareOutputDeviceOzoneTest::SoftwareOutputDeviceOzoneTest() {}
+SoftwareOutputDeviceOzoneTest::~SoftwareOutputDeviceOzoneTest() {}
 
 void SoftwareOutputDeviceOzoneTest::SetUp() {
   ui::ContextFactory* context_factory = nullptr;
@@ -91,8 +83,6 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
                                        &context_factory_private);
 
   const gfx::Size size(500, 400);
-  window_ = ui::OzonePlatform::GetInstance()->CreatePlatformWindow(
-      &window_delegate_, gfx::Rect(size));
   compositor_.reset(
       new ui::Compositor(viz::FrameSinkId(1, 1), context_factory, nullptr,
                          base::ThreadTaskRunnerHandle::Get(),
@@ -102,7 +92,7 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
   compositor_->SetScaleAndSize(1.0f, size);
 
   output_device_ =
-      content::SoftwareOutputDeviceOzone::Create(compositor_->widget());
+      viz::SoftwareOutputDeviceOzone::Create(compositor_->widget());
   if (output_device_)
     output_device_->Resize(size, 1.f);
 }
@@ -110,7 +100,6 @@ void SoftwareOutputDeviceOzoneTest::SetUp() {
 void SoftwareOutputDeviceOzoneTest::TearDown() {
   output_device_.reset();
   compositor_.reset();
-  window_.reset();
   ui::TerminateContextFactoryForTests();
 }
 
@@ -148,6 +137,4 @@ TEST_F(SoftwareOutputDeviceOzoneTest, CheckCorrectResizeBehavior) {
   canvas_size.SetSize(canvas->getBaseLayerSize().width(),
                       canvas->getBaseLayerSize().height());
   EXPECT_EQ(size.ToString(), canvas_size.ToString());
-
 }
-

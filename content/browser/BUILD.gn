@@ -2190,14 +2190,6 @@ source_set("browser") {
       "compositor/reflector_texture.h",
       "compositor/software_browser_compositor_output_surface.cc",
       "compositor/software_browser_compositor_output_surface.h",
-      "compositor/software_output_device_mac.h",
-      "compositor/software_output_device_mac.mm",
-      "compositor/software_output_device_ozone.cc",
-      "compositor/software_output_device_ozone.h",
-      "compositor/software_output_device_win.cc",
-      "compositor/software_output_device_win.h",
-      "compositor/software_output_device_x11.cc",
-      "compositor/software_output_device_x11.h",
       "compositor/viz_process_transport_factory.cc",
       "compositor/viz_process_transport_factory.h",
       "context_factory.cc",
@@ -2212,19 +2204,6 @@ source_set("browser") {
       sources += [
         "compositor/vulkan_browser_compositor_output_surface.cc",
         "compositor/vulkan_browser_compositor_output_surface.h",
-      ]
-    }
-    if (!use_x11) {
-      sources -= [
-        "compositor/software_output_device_x11.cc",
-        "compositor/software_output_device_x11.h",
-      ]
-    }
-
-    if (!use_ozone) {
-      sources -= [
-        "compositor/software_output_device_ozone.cc",
-        "compositor/software_output_device_ozone.h",
       ]
     }
     deps += [
