@@ -213,13 +213,12 @@ EmeSessionTypeSupport GetPersistentLicenseSupport(bool supported_by_the_cdm) {
   // to support persistent license. Update this logic when the new CDM requires
   // storage ID.
   return EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER;
-#else
-  // TODO(jrummell): Update this to reflect what's implemented.
-  bool cdm_storage_id_supported = false;
-
+#elif defined(ENABLE_CDM_STORAGE_ID)
   // On other platforms, we require storage ID to support persistent license.
-  return cdm_storage_id_supported ? EmeSessionTypeSupport::SUPPORTED
-                                  : EmeSessionTypeSupport::NOT_SUPPORTED;
+  return EmeSessionTypeSupport::SUPPORTED;
+#else
+  // Storage ID not implemented, so no support for persistent license.
+  return EmeSessionTypeSupport::NOT_SUPPORTED;
 #endif  // defined(OS_CHROMEOS)
 }
 

@@ -14,6 +14,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/cdm_callback_promise.h"
@@ -24,6 +25,7 @@
 #include "media/cdm/json_web_key.h"
 #include "media/cdm/ppapi/cdm_file_io_test.h"
 #include "media/cdm/ppapi/external_clear_key/cdm_video_decoder.h"
+#include "media/media_features.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FAKE_AUDIO_DECODER)
 const int64_t kNoTimestamp = INT64_MIN;
@@ -834,15 +836,19 @@ void ClearKeyCdm::OnStorageId(uint32_t version,
   }
 
   is_running_storage_id_test_ = false;
+  DVLOG(1) << __func__ << ": storage_id (hex encoded) = "
+           << (storage_id_size ? base::HexEncode(storage_id, storage_id_size)
+                               : "<empty>");
 
-  // TODO(jrummell): Needs to be updated when Storage ID is actually returned.
-  // See http://crbug.com/478960
-  if (storage_id_size != 0) {
-    OnUnitTestComplete(false);
-    return;
-  }
-
-  OnUnitTestComplete(true);
+#if BUILDFLAG(ENABLE_CDM_STORAGE_ID)
+  // Storage Id is enabled, so something should be returned. It should be the
+  // length of a SHA-256 hash (256 bits).
+  constexpr uint32_t kExpectedStorageIdSizeInBytes = 256 / 8;
+  OnUnitTestComplete(storage_id_size == kExpectedStorageIdSizeInBytes);
+#else
+  // Storage Id not available, so an empty vector should be returned.
+  OnUnitTestComplete(storage_id_size == 0);
+#endif
 }
 
 void ClearKeyCdm::OnSessionMessage(const std::string& session_id,

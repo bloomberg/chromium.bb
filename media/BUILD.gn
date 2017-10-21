@@ -26,6 +26,7 @@ buildflag_header("media_features") {
     "ENABLE_LIBRARY_CDMS=$enable_library_cdms",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "ENABLE_RUNTIME_MEDIA_RENDERER_SELECTION=$enable_runtime_media_renderer_selection",
+    "ENABLE_CDM_STORAGE_ID=$enable_cdm_storage_id",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
     "ENABLE_MEDIA_REMOTING_RPC=$enable_media_remoting_rpc",
     "ENABLE_WEBRTC=$enable_webrtc",
