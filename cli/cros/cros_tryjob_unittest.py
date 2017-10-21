@@ -10,6 +10,7 @@ from __future__ import print_function
 import mock
 
 from chromite.cli import command_unittest
+from chromite.lib import config_lib
 from chromite.lib import cros_build_lib
 from chromite.cli.cros import cros_tryjob
 from chromite.lib import cros_test_lib
@@ -32,6 +33,8 @@ class TryjobTest(cros_test_lib.MockTestCase):
     """Sets up the `cros tryjob` command mock."""
     self.cmd_mock = MockTryjobCommand(cmd_args)
     self.StartPatcher(self.cmd_mock)
+
+    return self.cmd_mock.inst.options
 
 
 class TryjobTestParsing(TryjobTest):
@@ -151,12 +154,15 @@ class TryjobTestParsing(TryjobTest):
 class TryjobTestVerifyOptions(TryjobTest):
   """Test cros_tryjob.VerifyOptions."""
 
+  def setUp(self):
+    self.site_config = config_lib.GetConfig()
+
   def testEmpty(self):
     """Test option verification with no options."""
     self.SetupCommandMock([])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      self.cmd_mock.inst.VerifyOptions()
+      self.cmd_mock.inst.VerifyOptions(self.site_config)
     self.assertEqual(cm.exception.code, 1)
 
   def testMinimal(self):
@@ -165,6 +171,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '-g', '123',
         'amd64-generic-paladin',
     ])
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
 
   def testComplexLocal(self):
     """Test option verification with complex mix of options."""
@@ -180,7 +187,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'lumpy-paladin', 'lumpy-release',
     ])
-    self.cmd_mock.inst.VerifyOptions()
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
 
   def testComplexRemote(self):
     """Test option verification with complex mix of options."""
@@ -197,7 +204,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--pass-through=--cbuild-arg', '--pass-through=bar',
         'lumpy-paladin', 'lumpy-release',
     ])
-    self.cmd_mock.inst.VerifyOptions()
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
 
   def testList(self):
     """Test option verification with config list behavior."""
@@ -206,7 +213,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      self.cmd_mock.inst.VerifyOptions()
+      self.cmd_mock.inst.VerifyOptions(self.site_config)
     self.assertEqual(cm.exception.code, 0)
 
   def testProduction(self):
@@ -215,7 +222,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--production',
         'lumpy-paladin', 'lumpy-release'
     ])
-    self.cmd_mock.inst.VerifyOptions()
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
 
   def testProductionPatches(self):
     """Test option verification with production/patches."""
@@ -226,7 +233,7 @@ class TryjobTestVerifyOptions(TryjobTest):
     ])
 
     with self.assertRaises(cros_build_lib.DieSystemExit) as cm:
-      self.cmd_mock.inst.VerifyOptions()
+      self.cmd_mock.inst.VerifyOptions(self.site_config)
     self.assertEqual(cm.exception.code, 1)
 
   def testUnknownBuildYes(self):
@@ -236,7 +243,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '-g', '123',
         'unknown-config'
     ])
-    self.cmd_mock.inst.VerifyOptions()
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
 
   def testNoPatchesYes(self):
     """Test option using yes to force an unknown config, no patches."""
@@ -244,7 +251,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         '--yes',
         'unknown-config'
     ])
-    self.cmd_mock.inst.VerifyOptions()
+    self.cmd_mock.inst.VerifyOptions(self.site_config)
 
   def testLocalSwarmingError(self):
     """Test option using yes to force an unknown config, no patches."""
@@ -254,7 +261,7 @@ class TryjobTestVerifyOptions(TryjobTest):
         'amd64-generic-paladin',
     ])
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      self.cmd_mock.inst.VerifyOptions()
+      self.cmd_mock.inst.VerifyOptions(self.site_config)
 
 
 class TryjobTestCbuildbotArgs(TryjobTest):
@@ -367,3 +374,43 @@ class TryjobTestCbuildbotArgs(TryjobTest):
     self.assertEqual(result, [
         '--buildroot', mock.ANY, '--no-buildbot-tags', '-b', 'master',
     ])
+
+class TryjobTestDisplayLabel(TryjobTest):
+  """Test the helper function DisplayLabel."""
+
+  def FindLabel(self, args):
+    site_config = config_lib.GetConfig()
+    options = self.SetupCommandMock(args)
+    config_name = options.build_configs[-1]
+    return cros_tryjob.DisplayLabel(site_config, options, config_name)
+
+  def testMasterTryjob(self):
+    # TODO: Update to lumpy-paladin-tryjob, when it exists.
+    label = self.FindLabel(['lumpy-paladin'])
+    self.assertEqual(label, 'tryjob')
+
+  def testMasterPreCQ(self):
+    label = self.FindLabel(['lumpy-pre-cq'])
+    self.assertEqual(label, 'pre_cq')
+
+  def testMasterUnknown(self):
+    label = self.FindLabel(['bogus-config'])
+    self.assertEqual(label, 'tryjob')
+
+  def testMasterKnownProduction(self):
+    # TODO: Expect 'cq' when display_labels are fully populated.
+    label = self.FindLabel(['--production', 'lumpy-paladin'])
+    self.assertEqual(label, 'production_tryjob')
+
+  def testMasterUnknownProduction(self):
+    label = self.FindLabel(['--production', 'bogus-config'])
+    self.assertEqual(label, 'production_tryjob')
+
+  def testBranchTryjob(self):
+    label = self.FindLabel(['--branch=test-branch', 'lumpy-pre-cq'])
+    self.assertEqual(label, 'tryjob')
+
+  def testBranchProduction(self):
+    label = self.FindLabel(['--production', '--branch=test-branch',
+                            'lumpy-pre-cq'])
+    self.assertEqual(label, 'production_tryjob')

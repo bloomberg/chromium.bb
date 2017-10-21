@@ -108,20 +108,39 @@ def RunLocal(options):
   return result.returncode
 
 
-def RunRemote(options, patch_pool):
+def DisplayLabel(site_config, options, build_config_name):
+  """Decide which display_label to use.
+
+  Args:
+    site_config: config_lib.SiteConfig containing all config info.
+    options: Parsed command line options for cros tryjob.
+    build_config_name: Name of the build config we are scheduling.
+
+  Returns:
+    String to use as the cbb_build_label value.
+  """
+  # Our site_config is only valid for the current branch. If the build
+  # config is known and has an explicit display_label, use it.
+  # to be 'master'.
+  if (options.branch == 'master' and
+      build_config_name in site_config and
+      site_config[build_config_name].display_label):
+    return site_config[build_config_name].display_label
+
+  # Fall back to defaults.
+  if options.production:
+    return config_lib.DISPLAY_LABEL_UNKNOWN_PRODUCTION
+
+  return config_lib.DISPLAY_LABEL_TRYJOB
+
+
+def RunRemote(site_config, options, patch_pool):
   """Schedule remote tryjobs."""
   logging.info('Scheduling remote tryjob(s): %s',
                ', '.join(options.build_configs))
 
   # Figure out the cbuildbot command line to pass in.
   args = CbuildbotArgs(options)
-
-  # TODO: Support build config "build_group" here, when it exists, but
-  #       continue to use these values for branches.
-  if options.production:
-    build_group = 'production_tryjob'
-  else:
-    build_group = 'Tryjob'
 
   # Figure out the tryjob description.
   description = options.remote_description
@@ -131,22 +150,26 @@ def RunRemote(options, patch_pool):
         options.gerrit_patches+options.local_patches)
 
   print('Submitting tryjob...')
-  tryjob = remote_try.RemoteTryJob(
-      build_configs=options.build_configs,
-      build_group=build_group,
-      remote_description=description,
-      branch=options.branch,
-      pass_through_args=args,
-      local_patches=patch_pool.local_patches,
-      committer_email=options.committer_email,
-      swarming=options.swarming,
-      master_buildbucket_id='',  # TODO: Add new option to populate.
-  )
+  links = []
+  for build_config in options.build_configs:
+    tryjob = remote_try.RemoteTryJob(
+        build_configs=[build_config],
+        display_label=DisplayLabel(site_config, options, build_config),
+        remote_description=description,
+        branch=options.branch,
+        pass_through_args=args,
+        local_patches=patch_pool.local_patches,
+        committer_email=options.committer_email,
+        swarming=options.swarming,
+        master_buildbucket_id='',  # TODO: Add new option to populate.
+    )
 
-  tryjob.Submit(dryrun=False)
+    tryjob.Submit(dryrun=False)
+    links.extend(tryjob.GetTrybotWaterfallLinks())
+
   print('Tryjob submitted!')
   print('To view your tryjobs, visit:')
-  for link in tryjob.GetTrybotWaterfallLinks():
+  for link in links:
     print('  %s' % link)
 
 
@@ -330,10 +353,8 @@ Production Examples (danger, can break production if misused):
         '-a', '--all', action='store_true', dest='list_all', default=False,
         help='List all of the buildbot configs available w/--list')
 
-  def VerifyOptions(self):
+  def VerifyOptions(self, site_config):
     """Verify that our command line options make sense."""
-    site_config = config_lib.GetConfig()
-
     # Handle --list before checking that everything else is valid.
     if self.options.list:
       PrintKnownConfigs(site_config, self.options.list_all)
@@ -372,8 +393,10 @@ Production Examples (danger, can break production if misused):
 
   def Run(self):
     """Runs `cros chroot`."""
+    site_config = config_lib.GetConfig()
+
     self.options.Freeze()
-    self.VerifyOptions()
+    self.VerifyOptions(site_config)
 
     # Verify gerrit patches are valid.
     print('Verifying patches...')
@@ -384,6 +407,6 @@ Production Examples (danger, can break production if misused):
         remote_patches=[])
 
     if self.options.remote:
-      return RunRemote(self.options, patch_pool)
+      return RunRemote(site_config, self.options, patch_pool)
     else:
       return RunLocal(self.options)

@@ -92,7 +92,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
         'parameters_json': mock.ANY,
         'bucket': 'master.chromiumos.tryserver',
         'tags': [
-            'cbb_build_group:display',
+            'cbb_display_label:display',
             'cbb_branch:master',
             'cbb_config:amd64-generic-paladin',
             'cbb_master_build_id:',
@@ -125,7 +125,7 @@ class RemoteTryHelperTestsMock(RemoteTryHelperTestsBase):
         'parameters_json': mock.ANY,
         'bucket': 'luci.chromeos.general',
         'tags': [
-            'cbb_build_group:display',
+            'cbb_display_label:display',
             'cbb_branch:test-branch',
             'cbb_config:amd64-generic-paladin',
             'cbb_master_build_id:master_bb_id',
@@ -207,7 +207,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:master',
-            'cbb_build_group:display',
+            'cbb_display_label:display',
             'cbb_config:amd64-generic-paladin',
             'cbb_email:default_email',
             'cbb_master_build_id:',
@@ -232,7 +232,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:master',
-            'cbb_build_group:display',
+            'cbb_display_label:display',
             'cbb_config:arm-generic-paladin',
             'cbb_email:default_email',
             'cbb_master_build_id:',
@@ -273,7 +273,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:test-branch',
-            'cbb_build_group:display',
+            'cbb_display_label:display',
             'cbb_config:amd64-generic-paladin',
             'cbb_email:explicit_email',
             'cbb_master_build_id:master_bb_id',
@@ -298,7 +298,7 @@ class RemoteTryHelperTestsNetork(RemoteTryHelperTestsBase):
         [
             'builder:Generic',
             'cbb_branch:test-branch',
-            'cbb_build_group:display',
+            'cbb_display_label:display',
             'cbb_config:arm-generic-paladin',
             'cbb_email:explicit_email',
             'cbb_master_build_id:master_bb_id',

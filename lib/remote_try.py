@@ -89,7 +89,7 @@ class RemoteTryJob(object):
 
   def __init__(self,
                build_configs,
-               build_group,
+               display_label,
                remote_description,
                branch='master',
                pass_through_args=(),
@@ -101,7 +101,7 @@ class RemoteTryJob(object):
 
     Args:
       build_configs: A list of configs to run tryjobs for.
-      build_group: String describing how build group on waterfall.
+      display_label: String describing how build group on waterfall.
       remote_description: Requested tryjob description.
       branch: Name of branch to build for.
       pass_through_args: Command line arguments to pass to cbuildbot in job.
@@ -120,7 +120,7 @@ class RemoteTryJob(object):
 
     # Name of the job that appears on the waterfall.
     self.build_configs = build_configs[:]
-    self.build_group = build_group
+    self.display_label = display_label
     self.extra_args = pass_through_args
     self.name = remote_description
     self.branch = branch
@@ -233,7 +233,7 @@ class RemoteTryJob(object):
         }),
         # These tags are indexed and searchable in buildbucket.
         'tags': [
-            'cbb_build_group:%s' % self.build_group,
+            'cbb_display_label:%s' % self.display_label,
             'cbb_branch:%s' % self.branch,
             'cbb_config:%s' % bot,
             'cbb_master_build_id:%s' % self.master_buildbucket_id,
