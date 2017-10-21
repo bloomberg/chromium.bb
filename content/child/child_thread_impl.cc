@@ -38,12 +38,10 @@
 #include "components/tracing/child/child_trace_message_filter.h"
 #include "content/child/child_histogram_fetcher_impl.h"
 #include "content/child/child_process.h"
-#include "content/child/child_resource_message_filter.h"
 #include "content/child/fileapi/file_system_dispatcher.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
-#include "content/child/resource_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/field_trial_recorder.mojom.h"
@@ -476,12 +474,7 @@ void ChildThreadImpl::Init(const Options& options) {
   thread_safe_sender_ = new ThreadSafeSender(
       message_loop_->task_runner(), sync_message_filter_.get());
 
-  resource_dispatcher_.reset(new ResourceDispatcher(
-      this, message_loop()->task_runner()));
   file_system_dispatcher_.reset(new FileSystemDispatcher());
-
-  resource_message_filter_ =
-      new ChildResourceMessageFilter(resource_dispatcher());
 
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
@@ -494,7 +487,6 @@ void ChildThreadImpl::Init(const Options& options) {
   quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender_.get(),
                                               quota_message_filter_.get()));
 
-  channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
 
   InitTracing();
@@ -739,9 +731,6 @@ void ChildThreadImpl::SetThreadPriority(base::PlatformThreadId id,
 #endif
 
 bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
-  // Resource responses are sent to the resource dispatcher.
-  if (resource_dispatcher_->OnMessageReceived(msg))
-    return true;
   if (file_system_dispatcher_->OnMessageReceived(msg))
     return true;
 

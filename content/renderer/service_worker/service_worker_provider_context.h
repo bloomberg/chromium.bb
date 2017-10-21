@@ -14,8 +14,8 @@
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 

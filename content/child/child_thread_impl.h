@@ -49,12 +49,10 @@ class ScopedIPCSupport;
 }  // namespace mojo
 
 namespace content {
-class ChildResourceMessageFilter;
 class FileSystemDispatcher;
 class InProcessChildThreadParams;
 class QuotaDispatcher;
 class QuotaMessageFilter;
-class ResourceDispatcher;
 class ThreadSafeSender;
 
 // The main thread of a child process derives from this class.
@@ -118,10 +116,6 @@ class CONTENT_EXPORT ChildThreadImpl
                          base::ThreadPriority priority);
 #endif
 
-  ResourceDispatcher* resource_dispatcher() const {
-    return resource_dispatcher_.get();
-  }
-
   FileSystemDispatcher* file_system_dispatcher() const {
     return file_system_dispatcher_.get();
   }
@@ -143,10 +137,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   QuotaMessageFilter* quota_message_filter() const {
     return quota_message_filter_.get();
-  }
-
-  ChildResourceMessageFilter* child_resource_message_filter() const {
-    return resource_message_filter_.get();
   }
 
   base::MessageLoop* message_loop() const { return message_loop_; }
@@ -247,9 +237,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // ChildThreadImpl.
   ChildThreadMessageRouter router_;
 
-  // Handles resource loads for this process.
-  std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
-
   // The OnChannelError() callback was invoked - the channel is dead, don't
   // attempt to communicate.
   bool on_channel_error_called_;
@@ -259,8 +246,6 @@ class CONTENT_EXPORT ChildThreadImpl
   std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
   std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
-
-  scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
 
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 

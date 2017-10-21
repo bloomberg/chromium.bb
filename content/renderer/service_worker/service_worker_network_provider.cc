@@ -5,15 +5,15 @@
 #include "content/renderer/service_worker/service_worker_network_provider.h"
 
 #include "base/atomic_sequence_num.h"
-#include "content/child/child_thread_impl.h"
-#include "content/child/request_extra_data.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/navigation_params.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_provider_host_info.h"
 #include "content/common/service_worker/service_worker_utils.h"
-#include "content/public/child/child_url_loader_factory_getter.h"
 #include "content/public/common/browser_side_navigation_policy.h"
+#include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/render_thread_impl.h"
 #include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/renderer/service_worker/service_worker_handle_reference.h"
 #include "content/renderer/service_worker/service_worker_provider_context.h"
@@ -98,8 +98,8 @@ class WebServiceWorkerNetworkProviderForFrame
   std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
       const blink::WebURLRequest& request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override {
-    // ChildThreadImpl is nullptr in some tests.
-    if (!ChildThreadImpl::current())
+    // RenderThreadImpl is nullptr in some tests.
+    if (!RenderThreadImpl::current())
       return nullptr;
 
     // S13nServiceWorker:
@@ -132,7 +132,7 @@ class WebServiceWorkerNetworkProviderForFrame
     // Create our own SubresourceLoader to route the request
     // to the controller ServiceWorker.
     return base::MakeUnique<WebURLLoaderImpl>(
-        ChildThreadImpl::current()->resource_dispatcher(),
+        RenderThreadImpl::current()->resource_dispatcher(),
         std::move(task_runner),
         provider_->context()->subresource_loader_factory());
   }

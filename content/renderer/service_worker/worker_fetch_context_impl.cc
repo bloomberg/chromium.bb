@@ -6,12 +6,12 @@
 
 #include "base/feature_list.h"
 #include "content/child/child_thread_impl.h"
-#include "content/child/request_extra_data.h"
-#include "content/child/resource_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/web_url_loader_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_features.h"
+#include "content/renderer/loader/request_extra_data.h"
+#include "content/renderer/loader/resource_dispatcher.h"
+#include "content/renderer/loader/web_url_loader_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 

@@ -30,13 +30,8 @@ source_set("child_sources") {
   sources = [
     "child_process_sandbox_support_linux.h",
     "child_thread.h",
-    "child_url_loader_factory_getter.h",
     "dwrite_font_proxy_init_win.h",
-    "fixed_received_data.cc",
-    "fixed_received_data.h",
     "image_decoder_utils.h",
-    "request_peer.h",
-    "resource_dispatcher_delegate.h",
     "v8_value_converter.h",
     "worker_thread.h",
   ]

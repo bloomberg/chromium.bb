@@ -11,8 +11,8 @@
 #include <string>
 
 #include "base/macros.h"
-#include "content/public/child/request_peer.h"
 #include "content/public/common/resource_response_info.h"
+#include "content/public/renderer/request_peer.h"
 
 namespace IPC {
 class Sender;

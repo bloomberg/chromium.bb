@@ -28,17 +28,14 @@
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "content/child/blob_storage/webblobregistry_impl.h"
-#include "content/child/child_url_loader_factory_getter_impl.h"
 #include "content/child/file_info_util.h"
 #include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/indexed_db/webidbfactory_impl.h"
-#include "content/child/loader/cors_url_loader_factory.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/storage_util.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_database_observer_impl.h"
-#include "content/child/web_url_loader_impl.h"
 #include "content/child/webfileutilities_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
@@ -58,6 +55,10 @@
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
+#include "content/renderer/loader/child_url_loader_factory_getter_impl.h"
+#include "content/renderer/loader/cors_url_loader_factory.h"
+#include "content/renderer/loader/web_data_consumer_handle_impl.h"
+#include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/audio_device_factory.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
@@ -335,9 +336,9 @@ void RendererBlinkPlatformImpl::Shutdown() {
 std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
     const blink::WebURLRequest& request,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  ChildThreadImpl* child_thread = ChildThreadImpl::current();
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
 
-  if (!url_loader_factory_getter_ && child_thread)
+  if (!url_loader_factory_getter_ && render_thread)
     url_loader_factory_getter_ = CreateDefaultURLLoaderFactoryGetter();
 
   mojom::URLLoaderFactory* factory =
@@ -345,11 +346,17 @@ std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
           ? url_loader_factory_getter_->GetFactoryForURL(request.Url())
           : nullptr;
 
-  // There may be no child thread in RenderViewTests.  These tests can still use
+  // There may be no render thread in RenderViewTests.  These tests can still use
   // data URLs to bypass the ResourceDispatcher.
   return base::MakeUnique<WebURLLoaderImpl>(
-      child_thread ? child_thread->resource_dispatcher() : nullptr,
+      render_thread ? render_thread->resource_dispatcher() : nullptr,
       std::move(task_runner), factory);
+}
+
+std::unique_ptr<blink::WebDataConsumerHandle>
+RendererBlinkPlatformImpl::CreateDataConsumerHandle(
+    mojo::ScopedDataPipeConsumerHandle handle) {
+  return base::MakeUnique<WebDataConsumerHandleImpl>(std::move(handle));
 }
 
 scoped_refptr<ChildURLLoaderFactoryGetter>
