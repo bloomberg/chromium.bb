@@ -91,15 +91,6 @@ static const int error_measure_lut[512] = {
 };
 /* clang-format on */
 
-static ProjectPointsFunc get_project_points_type(TransformationType type) {
-  switch (type) {
-    case AFFINE: return project_points_affine;
-    case ROTZOOM: return project_points_rotzoom;
-    case TRANSLATION: return project_points_translation;
-    default: assert(0); return NULL;
-  }
-}
-
 void project_points_translation(const int32_t *mat, int *points, int *proj,
                                 const int n, const int stride_points,
                                 const int stride_proj, const int subsampling_x,
@@ -278,202 +269,6 @@ void project_points_homography(const int32_t *mat, int *points, int *proj,
 
     points += stride_points - 2;
     proj += stride_proj - 2;
-  }
-}
-
-static const int16_t
-    filter_ntap[WARPEDPIXEL_PREC_SHIFTS][WARPEDPIXEL_FILTER_TAPS] = {
-#if WARPEDPIXEL_PREC_BITS == 6
-      { 0, 0, 128, 0, 0, 0 },      { 0, -1, 128, 2, -1, 0 },
-      { 1, -3, 127, 4, -1, 0 },    { 1, -4, 126, 6, -2, 1 },
-      { 1, -5, 126, 8, -3, 1 },    { 1, -6, 125, 11, -4, 1 },
-      { 1, -7, 124, 13, -4, 1 },   { 2, -8, 123, 15, -5, 1 },
-      { 2, -9, 122, 18, -6, 1 },   { 2, -10, 121, 20, -6, 1 },
-      { 2, -11, 120, 22, -7, 2 },  { 2, -12, 119, 25, -8, 2 },
-      { 3, -13, 117, 27, -8, 2 },  { 3, -13, 116, 29, -9, 2 },
-      { 3, -14, 114, 32, -10, 3 }, { 3, -15, 113, 35, -10, 2 },
-      { 3, -15, 111, 37, -11, 3 }, { 3, -16, 109, 40, -11, 3 },
-      { 3, -16, 108, 42, -12, 3 }, { 4, -17, 106, 45, -13, 3 },
-      { 4, -17, 104, 47, -13, 3 }, { 4, -17, 102, 50, -14, 3 },
-      { 4, -17, 100, 52, -14, 3 }, { 4, -18, 98, 55, -15, 4 },
-      { 4, -18, 96, 58, -15, 3 },  { 4, -18, 94, 60, -16, 4 },
-      { 4, -18, 91, 63, -16, 4 },  { 4, -18, 89, 65, -16, 4 },
-      { 4, -18, 87, 68, -17, 4 },  { 4, -18, 85, 70, -17, 4 },
-      { 4, -18, 82, 73, -17, 4 },  { 4, -18, 80, 75, -17, 4 },
-      { 4, -18, 78, 78, -18, 4 },  { 4, -17, 75, 80, -18, 4 },
-      { 4, -17, 73, 82, -18, 4 },  { 4, -17, 70, 85, -18, 4 },
-      { 4, -17, 68, 87, -18, 4 },  { 4, -16, 65, 89, -18, 4 },
-      { 4, -16, 63, 91, -18, 4 },  { 4, -16, 60, 94, -18, 4 },
-      { 3, -15, 58, 96, -18, 4 },  { 4, -15, 55, 98, -18, 4 },
-      { 3, -14, 52, 100, -17, 4 }, { 3, -14, 50, 102, -17, 4 },
-      { 3, -13, 47, 104, -17, 4 }, { 3, -13, 45, 106, -17, 4 },
-      { 3, -12, 42, 108, -16, 3 }, { 3, -11, 40, 109, -16, 3 },
-      { 3, -11, 37, 111, -15, 3 }, { 2, -10, 35, 113, -15, 3 },
-      { 3, -10, 32, 114, -14, 3 }, { 2, -9, 29, 116, -13, 3 },
-      { 2, -8, 27, 117, -13, 3 },  { 2, -8, 25, 119, -12, 2 },
-      { 2, -7, 22, 120, -11, 2 },  { 1, -6, 20, 121, -10, 2 },
-      { 1, -6, 18, 122, -9, 2 },   { 1, -5, 15, 123, -8, 2 },
-      { 1, -4, 13, 124, -7, 1 },   { 1, -4, 11, 125, -6, 1 },
-      { 1, -3, 8, 126, -5, 1 },    { 1, -2, 6, 126, -4, 1 },
-      { 0, -1, 4, 127, -3, 1 },    { 0, -1, 2, 128, -1, 0 },
-#elif WARPEDPIXEL_PREC_BITS == 5
-      { 0, 0, 128, 0, 0, 0 },      { 1, -3, 127, 4, -1, 0 },
-      { 1, -5, 126, 8, -3, 1 },    { 1, -7, 124, 13, -4, 1 },
-      { 2, -9, 122, 18, -6, 1 },   { 2, -11, 120, 22, -7, 2 },
-      { 3, -13, 117, 27, -8, 2 },  { 3, -14, 114, 32, -10, 3 },
-      { 3, -15, 111, 37, -11, 3 }, { 3, -16, 108, 42, -12, 3 },
-      { 4, -17, 104, 47, -13, 3 }, { 4, -17, 100, 52, -14, 3 },
-      { 4, -18, 96, 58, -15, 3 },  { 4, -18, 91, 63, -16, 4 },
-      { 4, -18, 87, 68, -17, 4 },  { 4, -18, 82, 73, -17, 4 },
-      { 4, -18, 78, 78, -18, 4 },  { 4, -17, 73, 82, -18, 4 },
-      { 4, -17, 68, 87, -18, 4 },  { 4, -16, 63, 91, -18, 4 },
-      { 3, -15, 58, 96, -18, 4 },  { 3, -14, 52, 100, -17, 4 },
-      { 3, -13, 47, 104, -17, 4 }, { 3, -12, 42, 108, -16, 3 },
-      { 3, -11, 37, 111, -15, 3 }, { 3, -10, 32, 114, -14, 3 },
-      { 2, -8, 27, 117, -13, 3 },  { 2, -7, 22, 120, -11, 2 },
-      { 1, -6, 18, 122, -9, 2 },   { 1, -4, 13, 124, -7, 1 },
-      { 1, -3, 8, 126, -5, 1 },    { 0, -1, 4, 127, -3, 1 },
-#endif  // WARPEDPIXEL_PREC_BITS == 6
-    };
-
-static int32_t do_ntap_filter(const int32_t *const p, int x) {
-  int i;
-  int32_t sum = 0;
-  for (i = 0; i < WARPEDPIXEL_FILTER_TAPS; ++i) {
-    sum += p[i - WARPEDPIXEL_FILTER_TAPS / 2 + 1] * filter_ntap[x][i];
-  }
-  return sum;
-}
-
-static int32_t do_cubic_filter(const int32_t *const p, int x) {
-  if (x == 0) {
-    return p[0] * (1 << WARPEDPIXEL_FILTER_BITS);
-  } else if (x == (1 << WARPEDPIXEL_PREC_BITS)) {
-    return p[1] * (1 << WARPEDPIXEL_FILTER_BITS);
-  } else {
-    const int64_t v1 = (int64_t)x * x * x * (3 * (p[0] - p[1]) + p[2] - p[-1]);
-    const int64_t v2 =
-        (int64_t)x * x * (2 * p[-1] - 5 * p[0] + 4 * p[1] - p[2]);
-    const int64_t v3 = x * (p[1] - p[-1]);
-    const int64_t v4 = 2 * p[0];
-    return (int32_t)ROUND_POWER_OF_TWO_SIGNED(
-        (v4 * (1 << (3 * WARPEDPIXEL_PREC_BITS))) +
-            (v3 * (1 << (2 * WARPEDPIXEL_PREC_BITS))) +
-            (v2 * (1 << WARPEDPIXEL_PREC_BITS)) + v1,
-        3 * WARPEDPIXEL_PREC_BITS + 1 - WARPEDPIXEL_FILTER_BITS);
-  }
-}
-
-static INLINE void get_subcolumn(int taps, const uint8_t *const ref,
-                                 int32_t *col, int stride, int x, int y_start) {
-  int i;
-  for (i = 0; i < taps; ++i) {
-    col[i] = ref[(i + y_start) * stride + x];
-  }
-}
-
-static uint8_t bi_ntap_filter(const uint8_t *const ref, int x, int y,
-                              int stride) {
-  int32_t val, arr[WARPEDPIXEL_FILTER_TAPS];
-  int k;
-  const int i = (int)x >> WARPEDPIXEL_PREC_BITS;
-  const int j = (int)y >> WARPEDPIXEL_PREC_BITS;
-  for (k = 0; k < WARPEDPIXEL_FILTER_TAPS; ++k) {
-    int32_t arr_temp[WARPEDPIXEL_FILTER_TAPS];
-    get_subcolumn(WARPEDPIXEL_FILTER_TAPS, ref, arr_temp, stride,
-                  i + k + 1 - WARPEDPIXEL_FILTER_TAPS / 2,
-                  j + 1 - WARPEDPIXEL_FILTER_TAPS / 2);
-    arr[k] = do_ntap_filter(arr_temp + WARPEDPIXEL_FILTER_TAPS / 2 - 1,
-                            y - (j * (1 << WARPEDPIXEL_PREC_BITS)));
-  }
-  val = do_ntap_filter(arr + WARPEDPIXEL_FILTER_TAPS / 2 - 1,
-                       x - (i * (1 << WARPEDPIXEL_PREC_BITS)));
-  val = ROUND_POWER_OF_TWO_SIGNED(val, WARPEDPIXEL_FILTER_BITS * 2);
-  return (uint8_t)clip_pixel(val);
-}
-
-static uint8_t bi_cubic_filter(const uint8_t *const ref, int x, int y,
-                               int stride) {
-  int32_t val, arr[4];
-  int k;
-  const int i = (int)x >> WARPEDPIXEL_PREC_BITS;
-  const int j = (int)y >> WARPEDPIXEL_PREC_BITS;
-  for (k = 0; k < 4; ++k) {
-    int32_t arr_temp[4];
-    get_subcolumn(4, ref, arr_temp, stride, i + k - 1, j - 1);
-    arr[k] =
-        do_cubic_filter(arr_temp + 1, y - (j * (1 << WARPEDPIXEL_PREC_BITS)));
-  }
-  val = do_cubic_filter(arr + 1, x - (i * (1 << WARPEDPIXEL_PREC_BITS)));
-  val = ROUND_POWER_OF_TWO_SIGNED(val, WARPEDPIXEL_FILTER_BITS * 2);
-  return (uint8_t)clip_pixel(val);
-}
-
-static uint8_t bi_linear_filter(const uint8_t *const ref, int x, int y,
-                                int stride) {
-  const int ix = x >> WARPEDPIXEL_PREC_BITS;
-  const int iy = y >> WARPEDPIXEL_PREC_BITS;
-  const int sx = x - (ix * (1 << WARPEDPIXEL_PREC_BITS));
-  const int sy = y - (iy * (1 << WARPEDPIXEL_PREC_BITS));
-  int32_t val;
-  val = ROUND_POWER_OF_TWO_SIGNED(
-      ref[iy * stride + ix] * (WARPEDPIXEL_PREC_SHIFTS - sy) *
-              (WARPEDPIXEL_PREC_SHIFTS - sx) +
-          ref[iy * stride + ix + 1] * (WARPEDPIXEL_PREC_SHIFTS - sy) * sx +
-          ref[(iy + 1) * stride + ix] * sy * (WARPEDPIXEL_PREC_SHIFTS - sx) +
-          ref[(iy + 1) * stride + ix + 1] * sy * sx,
-      WARPEDPIXEL_PREC_BITS * 2);
-  return (uint8_t)clip_pixel(val);
-}
-
-static uint8_t warp_interpolate(const uint8_t *const ref, int x, int y,
-                                int width, int height, int stride) {
-  const int ix = x >> WARPEDPIXEL_PREC_BITS;
-  const int iy = y >> WARPEDPIXEL_PREC_BITS;
-  const int sx = x - (ix * (1 << WARPEDPIXEL_PREC_BITS));
-  const int sy = y - (iy * (1 << WARPEDPIXEL_PREC_BITS));
-  int32_t v;
-
-  if (ix < 0 && iy < 0)
-    return ref[0];
-  else if (ix < 0 && iy >= height - 1)
-    return ref[(height - 1) * stride];
-  else if (ix >= width - 1 && iy < 0)
-    return ref[width - 1];
-  else if (ix >= width - 1 && iy >= height - 1)
-    return ref[(height - 1) * stride + (width - 1)];
-  else if (ix < 0) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[iy * stride] * (WARPEDPIXEL_PREC_SHIFTS - sy) +
-            ref[(iy + 1) * stride] * sy,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel(v);
-  } else if (iy < 0) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[ix] * (WARPEDPIXEL_PREC_SHIFTS - sx) + ref[ix + 1] * sx,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel(v);
-  } else if (ix >= width - 1) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[iy * stride + width - 1] * (WARPEDPIXEL_PREC_SHIFTS - sy) +
-            ref[(iy + 1) * stride + width - 1] * sy,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel(v);
-  } else if (iy >= height - 1) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[(height - 1) * stride + ix] * (WARPEDPIXEL_PREC_SHIFTS - sx) +
-            ref[(height - 1) * stride + ix + 1] * sx,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel(v);
-  } else if (ix >= WARPEDPIXEL_FILTER_TAPS / 2 - 1 &&
-             iy >= WARPEDPIXEL_FILTER_TAPS / 2 - 1 &&
-             ix < width - WARPEDPIXEL_FILTER_TAPS / 2 &&
-             iy < height - WARPEDPIXEL_FILTER_TAPS / 2) {
-    return bi_ntap_filter(ref, x, y, stride);
-  } else if (ix >= 1 && iy >= 1 && ix < width - 2 && iy < height - 2) {
-    return bi_cubic_filter(ref, x, y, stride);
-  } else {
-    return bi_linear_filter(ref, x, y, stride);
   }
 }
 
@@ -763,121 +558,6 @@ int get_shear_params(WarpedMotionParams *wm) {
 }
 
 #if CONFIG_HIGHBITDEPTH
-static INLINE void highbd_get_subcolumn(int taps, const uint16_t *const ref,
-                                        int32_t *col, int stride, int x,
-                                        int y_start) {
-  int i;
-  for (i = 0; i < taps; ++i) {
-    col[i] = ref[(i + y_start) * stride + x];
-  }
-}
-
-static uint16_t highbd_bi_ntap_filter(const uint16_t *const ref, int x, int y,
-                                      int stride, int bd) {
-  int32_t val, arr[WARPEDPIXEL_FILTER_TAPS];
-  int k;
-  const int i = (int)x >> WARPEDPIXEL_PREC_BITS;
-  const int j = (int)y >> WARPEDPIXEL_PREC_BITS;
-  for (k = 0; k < WARPEDPIXEL_FILTER_TAPS; ++k) {
-    int32_t arr_temp[WARPEDPIXEL_FILTER_TAPS];
-    highbd_get_subcolumn(WARPEDPIXEL_FILTER_TAPS, ref, arr_temp, stride,
-                         i + k + 1 - WARPEDPIXEL_FILTER_TAPS / 2,
-                         j + 1 - WARPEDPIXEL_FILTER_TAPS / 2);
-    arr[k] = do_ntap_filter(arr_temp + WARPEDPIXEL_FILTER_TAPS / 2 - 1,
-                            y - (j * (1 << WARPEDPIXEL_PREC_BITS)));
-  }
-  val = do_ntap_filter(arr + WARPEDPIXEL_FILTER_TAPS / 2 - 1,
-                       x - (i * (1 << WARPEDPIXEL_PREC_BITS)));
-  val = ROUND_POWER_OF_TWO_SIGNED(val, WARPEDPIXEL_FILTER_BITS * 2);
-  return (uint16_t)clip_pixel_highbd(val, bd);
-}
-
-static uint16_t highbd_bi_cubic_filter(const uint16_t *const ref, int x, int y,
-                                       int stride, int bd) {
-  int32_t val, arr[4];
-  int k;
-  const int i = (int)x >> WARPEDPIXEL_PREC_BITS;
-  const int j = (int)y >> WARPEDPIXEL_PREC_BITS;
-  for (k = 0; k < 4; ++k) {
-    int32_t arr_temp[4];
-    highbd_get_subcolumn(4, ref, arr_temp, stride, i + k - 1, j - 1);
-    arr[k] =
-        do_cubic_filter(arr_temp + 1, y - (j * (1 << WARPEDPIXEL_PREC_BITS)));
-  }
-  val = do_cubic_filter(arr + 1, x - (i * (1 << WARPEDPIXEL_PREC_BITS)));
-  val = ROUND_POWER_OF_TWO_SIGNED(val, WARPEDPIXEL_FILTER_BITS * 2);
-  return (uint16_t)clip_pixel_highbd(val, bd);
-}
-
-static uint16_t highbd_bi_linear_filter(const uint16_t *const ref, int x, int y,
-                                        int stride, int bd) {
-  const int ix = x >> WARPEDPIXEL_PREC_BITS;
-  const int iy = y >> WARPEDPIXEL_PREC_BITS;
-  const int sx = x - (ix * (1 << WARPEDPIXEL_PREC_BITS));
-  const int sy = y - (iy * (1 << WARPEDPIXEL_PREC_BITS));
-  int32_t val;
-  val = ROUND_POWER_OF_TWO_SIGNED(
-      ref[iy * stride + ix] * (WARPEDPIXEL_PREC_SHIFTS - sy) *
-              (WARPEDPIXEL_PREC_SHIFTS - sx) +
-          ref[iy * stride + ix + 1] * (WARPEDPIXEL_PREC_SHIFTS - sy) * sx +
-          ref[(iy + 1) * stride + ix] * sy * (WARPEDPIXEL_PREC_SHIFTS - sx) +
-          ref[(iy + 1) * stride + ix + 1] * sy * sx,
-      WARPEDPIXEL_PREC_BITS * 2);
-  return (uint16_t)clip_pixel_highbd(val, bd);
-}
-
-static uint16_t highbd_warp_interpolate(const uint16_t *const ref, int x, int y,
-                                        int width, int height, int stride,
-                                        int bd) {
-  const int ix = x >> WARPEDPIXEL_PREC_BITS;
-  const int iy = y >> WARPEDPIXEL_PREC_BITS;
-  const int sx = x - (ix * (1 << WARPEDPIXEL_PREC_BITS));
-  const int sy = y - (iy * (1 << WARPEDPIXEL_PREC_BITS));
-  int32_t v;
-
-  if (ix < 0 && iy < 0)
-    return ref[0];
-  else if (ix < 0 && iy > height - 1)
-    return ref[(height - 1) * stride];
-  else if (ix > width - 1 && iy < 0)
-    return ref[width - 1];
-  else if (ix > width - 1 && iy > height - 1)
-    return ref[(height - 1) * stride + (width - 1)];
-  else if (ix < 0) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[iy * stride] * (WARPEDPIXEL_PREC_SHIFTS - sy) +
-            ref[(iy + 1) * stride] * sy,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel_highbd(v, bd);
-  } else if (iy < 0) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[ix] * (WARPEDPIXEL_PREC_SHIFTS - sx) + ref[ix + 1] * sx,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel_highbd(v, bd);
-  } else if (ix > width - 1) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[iy * stride + width - 1] * (WARPEDPIXEL_PREC_SHIFTS - sy) +
-            ref[(iy + 1) * stride + width - 1] * sy,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel_highbd(v, bd);
-  } else if (iy > height - 1) {
-    v = ROUND_POWER_OF_TWO_SIGNED(
-        ref[(height - 1) * stride + ix] * (WARPEDPIXEL_PREC_SHIFTS - sx) +
-            ref[(height - 1) * stride + ix + 1] * sx,
-        WARPEDPIXEL_PREC_BITS);
-    return clip_pixel_highbd(v, bd);
-  } else if (ix >= WARPEDPIXEL_FILTER_TAPS / 2 - 1 &&
-             iy >= WARPEDPIXEL_FILTER_TAPS / 2 - 1 &&
-             ix < width - WARPEDPIXEL_FILTER_TAPS / 2 &&
-             iy < height - WARPEDPIXEL_FILTER_TAPS / 2) {
-    return highbd_bi_ntap_filter(ref, x, y, stride, bd);
-  } else if (ix >= 1 && iy >= 1 && ix < width - 2 && iy < height - 2) {
-    return highbd_bi_cubic_filter(ref, x, y, stride, bd);
-  } else {
-    return highbd_bi_linear_filter(ref, x, y, stride, bd);
-  }
-}
-
 static INLINE int highbd_error_measure(int err, int bd) {
   const int b = bd - 8;
   const int bmask = (1 << b) - 1;
@@ -888,40 +568,6 @@ static INLINE int highbd_error_measure(int err, int bd) {
   e2 = err & bmask;
   return error_measure_lut[255 + e1] * (v - e2) +
          error_measure_lut[256 + e1] * e2;
-}
-
-static void highbd_warp_plane_old(const WarpedMotionParams *const wm,
-                                  const uint8_t *const ref8, int width,
-                                  int height, int stride,
-                                  const uint8_t *const pred8, int p_col,
-                                  int p_row, int p_width, int p_height,
-                                  int p_stride, int subsampling_x,
-                                  int subsampling_y, int x_scale, int y_scale,
-                                  int bd, ConvolveParams *conv_params) {
-  int i, j;
-  ProjectPointsFunc projectpoints = get_project_points_type(wm->wmtype);
-  uint16_t *pred = CONVERT_TO_SHORTPTR(pred8);
-  const uint16_t *const ref = CONVERT_TO_SHORTPTR(ref8);
-  if (projectpoints == NULL) return;
-  for (i = p_row; i < p_row + p_height; ++i) {
-    for (j = p_col; j < p_col + p_width; ++j) {
-      int in[2], out[2];
-      in[0] = j;
-      in[1] = i;
-      projectpoints(wm->wmmat, in, out, 1, 2, 2, subsampling_x, subsampling_y);
-      out[0] = ROUND_POWER_OF_TWO_SIGNED(out[0] * x_scale, SCALE_SUBPEL_BITS);
-      out[1] = ROUND_POWER_OF_TWO_SIGNED(out[1] * y_scale, SCALE_SUBPEL_BITS);
-      if (conv_params->do_average)
-        pred[(j - p_col) + (i - p_row) * p_stride] = ROUND_POWER_OF_TWO(
-            pred[(j - p_col) + (i - p_row) * p_stride] +
-                highbd_warp_interpolate(ref, out[0], out[1], width, height,
-                                        stride, bd),
-            1);
-      else
-        pred[(j - p_col) + (i - p_row) * p_stride] = highbd_warp_interpolate(
-            ref, out[0], out[1], width, height, stride, bd);
-    }
-  }
 }
 
 /* Note: For an explanation of the warp algorithm, and some notes on bit widths
@@ -1076,12 +722,12 @@ static void highbd_warp_plane(WarpedMotionParams *wm, const uint8_t *const ref8,
                               int subsampling_x, int subsampling_y, int x_scale,
                               int y_scale, int bd,
                               ConvolveParams *conv_params) {
+  assert(wm->wmtype <= AFFINE);
   if (wm->wmtype == ROTZOOM) {
     wm->wmmat[5] = wm->wmmat[2];
     wm->wmmat[4] = -wm->wmmat[3];
   }
-  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) &&
-      x_scale == SCALE_SUBPEL_SHIFTS && y_scale == SCALE_SUBPEL_SHIFTS) {
+  if (x_scale == SCALE_SUBPEL_SHIFTS && y_scale == SCALE_SUBPEL_SHIFTS) {
     const int32_t *const mat = wm->wmmat;
     const int16_t alpha = wm->alpha;
     const int16_t beta = wm->beta;
@@ -1095,9 +741,7 @@ static void highbd_warp_plane(WarpedMotionParams *wm, const uint8_t *const ref8,
                            subsampling_y, bd, conv_params, alpha, beta, gamma,
                            delta);
   } else {
-    highbd_warp_plane_old(wm, ref8, width, height, stride, pred8, p_col, p_row,
-                          p_width, p_height, p_stride, subsampling_x,
-                          subsampling_y, x_scale, y_scale, bd, conv_params);
+    assert(0);
   }
 }
 
@@ -1149,35 +793,6 @@ static int64_t highbd_warp_error(
 
 static INLINE int error_measure(int err) {
   return error_measure_lut[255 + err];
-}
-
-static void warp_plane_old(const WarpedMotionParams *const wm,
-                           const uint8_t *const ref, int width, int height,
-                           int stride, uint8_t *pred, int p_col, int p_row,
-                           int p_width, int p_height, int p_stride,
-                           int subsampling_x, int subsampling_y, int x_scale,
-                           int y_scale, ConvolveParams *conv_params) {
-  int i, j;
-  ProjectPointsFunc projectpoints = get_project_points_type(wm->wmtype);
-  if (projectpoints == NULL) return;
-  for (i = p_row; i < p_row + p_height; ++i) {
-    for (j = p_col; j < p_col + p_width; ++j) {
-      int in[2], out[2];
-      in[0] = j;
-      in[1] = i;
-      projectpoints(wm->wmmat, in, out, 1, 2, 2, subsampling_x, subsampling_y);
-      out[0] = ROUND_POWER_OF_TWO_SIGNED(out[0] * x_scale, SCALE_SUBPEL_BITS);
-      out[1] = ROUND_POWER_OF_TWO_SIGNED(out[1] * y_scale, SCALE_SUBPEL_BITS);
-      if (conv_params->do_average)
-        pred[(j - p_col) + (i - p_row) * p_stride] = ROUND_POWER_OF_TWO(
-            pred[(j - p_col) + (i - p_row) * p_stride] +
-                warp_interpolate(ref, out[0], out[1], width, height, stride),
-            1);
-      else
-        pred[(j - p_col) + (i - p_row) * p_stride] =
-            warp_interpolate(ref, out[0], out[1], width, height, stride);
-    }
-  }
 }
 
 /* The warp filter for ROTZOOM and AFFINE models works as follows:
@@ -1417,12 +1032,12 @@ static void warp_plane(WarpedMotionParams *wm, const uint8_t *const ref,
                        int p_col, int p_row, int p_width, int p_height,
                        int p_stride, int subsampling_x, int subsampling_y,
                        int x_scale, int y_scale, ConvolveParams *conv_params) {
+  assert(wm->wmtype <= AFFINE);
   if (wm->wmtype == ROTZOOM) {
     wm->wmmat[5] = wm->wmmat[2];
     wm->wmmat[4] = -wm->wmmat[3];
   }
-  if ((wm->wmtype == ROTZOOM || wm->wmtype == AFFINE) &&
-      x_scale == SCALE_SUBPEL_SHIFTS && y_scale == SCALE_SUBPEL_SHIFTS) {
+  if (x_scale == SCALE_SUBPEL_SHIFTS && y_scale == SCALE_SUBPEL_SHIFTS) {
     const int32_t *const mat = wm->wmmat;
     const int16_t alpha = wm->alpha;
     const int16_t beta = wm->beta;
@@ -1433,9 +1048,7 @@ static void warp_plane(WarpedMotionParams *wm, const uint8_t *const ref,
                     p_width, p_height, p_stride, subsampling_x, subsampling_y,
                     conv_params, alpha, beta, gamma, delta);
   } else {
-    warp_plane_old(wm, ref, width, height, stride, pred, p_col, p_row, p_width,
-                   p_height, p_stride, subsampling_x, subsampling_y, x_scale,
-                   y_scale, conv_params);
+    assert(0);
   }
 }
 
