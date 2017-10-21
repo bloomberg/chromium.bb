@@ -1153,7 +1153,6 @@
         'chrome/browser/notifications/|'\
         'chrome/test/data/notifications/|'\
         'content/browser/notifications/|'\
-        'content/child/notifications/|'\
         'content/common/platform_notification|'\
         'content/public/browser/platform_notification|'\
         'content/public/common/platform_notification|'\

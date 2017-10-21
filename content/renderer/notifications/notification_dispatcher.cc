@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/notifications/notification_dispatcher.h"
+#include "content/renderer/notifications/notification_dispatcher.h"
 
 #include <limits>
 
-#include "content/child/notifications/notification_manager.h"
+#include "content/renderer/notifications/notification_manager.h"
 
 namespace content {
 

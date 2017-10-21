@@ -136,6 +136,7 @@ class FrameSwapMessageQueue;
 class IndexedDBDispatcher;
 class InputHandlerManager;
 class MidiMessageFilter;
+class NotificationDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
@@ -367,6 +368,10 @@ class CONTENT_EXPORT RenderThreadImpl
   viz::ClientSharedBitmapManager* shared_bitmap_manager() const {
     DCHECK(shared_bitmap_manager_);
     return shared_bitmap_manager_.get();
+  }
+
+  NotificationDispatcher* notification_dispatcher() const {
+    return notification_dispatcher_.get();
   }
 
   mojom::RenderFrameMessageFilter* render_frame_message_filter();
@@ -648,6 +653,8 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
 
   std::unique_ptr<viz::ClientSharedBitmapManager> shared_bitmap_manager_;
+
+  scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   // The time Blink was initialized. Used for UMA.
   base::TimeTicks blink_initialized_time_;

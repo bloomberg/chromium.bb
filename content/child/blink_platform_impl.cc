@@ -40,9 +40,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/feature_policy/feature_policy_platform.h"
-#include "content/child/notifications/notification_dispatcher.h"
-#include "content/child/notifications/notification_manager.h"
-#include "content/child/thread_safe_sender.h"
 #include "content/child/web_data_consumer_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
 #include "content/child/web_url_request_util.h"
@@ -326,16 +323,6 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : main_thread_task_runner_(main_thread_task_runner),
       compositor_thread_(nullptr) {
-  InternalInit();
-}
-
-void BlinkPlatformImpl::InternalInit() {
-  // ChildThread may not exist in some tests.
-  if (ChildThreadImpl::current()) {
-    thread_safe_sender_ = ChildThreadImpl::current()->thread_safe_sender();
-    notification_dispatcher_ =
-        ChildThreadImpl::current()->notification_dispatcher();
-  }
 }
 
 void BlinkPlatformImpl::WaitUntilWebThreadTLSUpdate(
@@ -655,15 +642,6 @@ blink::WebCrypto* BlinkPlatformImpl::Crypto() {
 
 const char* BlinkPlatformImpl::GetBrowserServiceName() const {
   return mojom::kBrowserServiceName;
-}
-
-blink::WebNotificationManager* BlinkPlatformImpl::GetNotificationManager() {
-  if (!thread_safe_sender_.get() || !notification_dispatcher_.get())
-    return nullptr;
-
-  return NotificationManager::ThreadSpecificInstance(
-      thread_safe_sender_.get(),
-      notification_dispatcher_.get());
 }
 
 blink::WebMediaCapabilitiesClient*

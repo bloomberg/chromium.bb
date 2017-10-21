@@ -62,6 +62,7 @@ namespace content {
 class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryGetter;
 class LocalStorageCachedAreas;
+class NotificationDispatcher;
 class PlatformEventObserverBase;
 class QuotaMessageFilter;
 class RendererClipboardDelegate;
@@ -214,6 +215,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   blink::WebPushProvider* PushProvider() override;
   std::unique_ptr<blink::WebTrialTokenValidator> TrialTokenValidator() override;
   std::unique_ptr<blink::TrialPolicy> OriginTrialPolicy() override;
+  blink::WebNotificationManager* GetNotificationManager() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
 
   // Set the PlatformEventObserverBase in |platform_event_observers_| associated
@@ -337,6 +339,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<mojom::ThreadSafeWebDatabaseHostPtr> web_database_host_;
 
   mojom::FileUtilitiesHostPtrInfo file_utilities_host_info_;
+
+  scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RendererBlinkPlatformImpl);
 };

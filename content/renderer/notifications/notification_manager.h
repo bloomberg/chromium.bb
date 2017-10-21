@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
-#define CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
+#ifndef CONTENT_RENDERER_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
+#define CONTENT_RENDERER_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,9 +16,9 @@
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/child/notifications/notification_dispatcher.h"
 #include "content/common/platform_notification_messages.h"
 #include "content/public/child/worker_thread.h"
+#include "content/renderer/notifications/notification_dispatcher.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 #include "url/gurl.h"
 
@@ -110,4 +110,4 @@ class NotificationManager : public blink::WebNotificationManager,
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
+#endif  // CONTENT_RENDERER_NOTIFICATIONS_NOTIFICATION_MANAGER_H_
