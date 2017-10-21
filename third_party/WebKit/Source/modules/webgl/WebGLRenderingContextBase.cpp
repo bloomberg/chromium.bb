@@ -609,7 +609,7 @@ CreateContextProviderOnWorkerThread(
   creation_info.context_attributes = context_attributes;
   creation_info.gl_info = gl_info;
   creation_info.url = url.Copy();
-  RefPtr<WebTaskRunner> task_runner =
+  scoped_refptr<WebTaskRunner> task_runner =
       Platform::Current()->MainThread()->GetWebTaskRunner();
   task_runner->PostTask(
       BLINK_FROM_HERE, CrossThreadBind(&CreateContextProviderOnMainThread,
@@ -733,7 +733,7 @@ ScriptPromise WebGLRenderingContextBase::commit(
                           exception_state);
   }
 
-  RefPtr<StaticBitmapImage> image = GetStaticBitmapImage();
+  scoped_refptr<StaticBitmapImage> image = GetStaticBitmapImage();
 
   return Host()->Commit(
       std::move(image), SkIRect::MakeWH(width, height),
@@ -741,7 +741,8 @@ ScriptPromise WebGLRenderingContextBase::commit(
       script_state, exception_state);
 }
 
-RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetStaticBitmapImage() {
+scoped_refptr<StaticBitmapImage>
+WebGLRenderingContextBase::GetStaticBitmapImage() {
   if (!GetDrawingBuffer())
     return nullptr;
 
@@ -755,7 +756,7 @@ RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetStaticBitmapImage() {
   return GetDrawingBuffer()->TransferToStaticBitmapImage();
 }
 
-RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
+scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
     AccelerationHint hint,
     SnapshotReason reason) const {
   if (!GetDrawingBuffer())
@@ -779,7 +780,7 @@ RefPtr<StaticBitmapImage> WebGLRenderingContextBase::GetImage(
   return buffer->NewImageSnapshot(hint, reason);
 }
 
-RefPtr<StaticBitmapImage> WebGLRenderingContextBase::MakeImageSnapshot(
+scoped_refptr<StaticBitmapImage> WebGLRenderingContextBase::MakeImageSnapshot(
     SkImageInfo& image_info) {
   GetDrawingBuffer()->ResolveAndBindForReadAndDraw();
   WeakPtr<WebGraphicsContext3DProviderWrapper> shared_context_wrapper =
@@ -824,7 +825,7 @@ ImageData* WebGLRenderingContextBase::ToImageData(SnapshotReason reason) {
         SkImageInfo::Make(width, height, kRGBA_8888_SkColorType,
                           CreationAttributes().alpha() ? kPremul_SkAlphaType
                                                        : kOpaque_SkAlphaType);
-    RefPtr<StaticBitmapImage> snapshot = MakeImageSnapshot(image_info);
+    scoped_refptr<StaticBitmapImage> snapshot = MakeImageSnapshot(image_info);
     if (snapshot) {
       image_data = ImageData::Create(GetDrawingBuffer()->Size());
       snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
@@ -990,7 +991,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
 
 WebGLRenderingContextBase::WebGLRenderingContextBase(
     CanvasRenderingContextHost* host,
-    RefPtr<WebTaskRunner> task_runner,
+    scoped_refptr<WebTaskRunner> task_runner,
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider,
     const CanvasContextCreationAttributes& requested_attributes,
     unsigned version)
@@ -1028,7 +1029,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
   context_provider->ContextGL()->GetIntegerv(GL_MAX_VIEWPORT_DIMS,
                                              max_viewport_dims_);
 
-  RefPtr<DrawingBuffer> buffer;
+  scoped_refptr<DrawingBuffer> buffer;
   buffer = CreateDrawingBuffer(std::move(context_provider));
   if (!buffer) {
     context_lost_mode_ = kSyntheticLostContext;
@@ -1055,7 +1056,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
   ADD_VALUES_TO_SET(supported_tex_image_source_types_, kSupportedTypesES2);
 }
 
-RefPtr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
+scoped_refptr<DrawingBuffer> WebGLRenderingContextBase::CreateDrawingBuffer(
     std::unique_ptr<WebGraphicsContext3DProvider> context_provider) {
   bool premultiplied_alpha = CreationAttributes().premultipliedAlpha();
   bool want_alpha_channel = CreationAttributes().alpha();
@@ -2608,7 +2609,7 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveAttrib(
     return nullptr;
   }
   LChar* name_ptr;
-  RefPtr<StringImpl> name_impl =
+  scoped_refptr<StringImpl> name_impl =
       StringImpl::CreateUninitialized(max_name_length, name_ptr);
   GLsizei length = 0;
   GLint size = -1;
@@ -2638,7 +2639,7 @@ WebGLActiveInfo* WebGLRenderingContextBase::getActiveUniform(
     return nullptr;
   }
   LChar* name_ptr;
-  RefPtr<StringImpl> name_impl =
+  scoped_refptr<StringImpl> name_impl =
       StringImpl::CreateUninitialized(max_name_length, name_ptr);
   GLsizei length = 0;
   GLint size = -1;
@@ -3440,7 +3441,7 @@ ScriptValue WebGLRenderingContextBase::getUniform(
   ContextGL()->GetProgramiv(program_id, GL_ACTIVE_UNIFORMS, &active_uniforms);
   for (GLint i = 0; i < active_uniforms; i++) {
     LChar* name_ptr;
-    RefPtr<StringImpl> name_impl =
+    scoped_refptr<StringImpl> name_impl =
         StringImpl::CreateUninitialized(max_name_length, name_ptr);
     GLsizei length = 0;
     GLint size = -1;
@@ -4525,12 +4526,12 @@ bool WebGLRenderingContextBase::ValidateValueFitNonNegInt32(
 
 // TODO(fmalita): figure why WebGLImageConversion::ImageExtractor can't handle
 // SVG-backed images, and get rid of this intermediate step.
-RefPtr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
-    RefPtr<Image> pass_image,
+scoped_refptr<Image> WebGLRenderingContextBase::DrawImageIntoBuffer(
+    scoped_refptr<Image> pass_image,
     int width,
     int height,
     const char* function_name) {
-  RefPtr<Image> image(std::move(pass_image));
+  scoped_refptr<Image> image(std::move(pass_image));
   DCHECK(image);
 
   IntSize size(width, height);
@@ -4837,7 +4838,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLImageElement(
   if (!ValidateTexImageBinding(func_name, function_id, target))
     return;
 
-  RefPtr<Image> image_for_render = image->CachedImage()->GetImage();
+  scoped_refptr<Image> image_for_render = image->CachedImage()->GetImage();
   if (image_for_render && image_for_render->IsSVGImage()) {
     if (canvas()) {
       UseCounter::Count(canvas()->GetDocument(), WebFeature::kSVGInWebGL);
@@ -5161,7 +5162,7 @@ void WebGLRenderingContextBase::texImage2D(ExecutionContext* execution_context,
       GetTextureSourceSize(canvas), 1, 0, exception_state);
 }
 
-RefPtr<Image> WebGLRenderingContextBase::VideoFrameToImage(
+scoped_refptr<Image> WebGLRenderingContextBase::VideoFrameToImage(
     HTMLVideoElement* video,
     int already_uploaded_id,
     WebMediaPlayer::VideoFrameUploadMetadata* out_metadata) {
@@ -5315,7 +5316,7 @@ void WebGLRenderingContextBase::TexImageHelperHTMLVideoElement(
     }
   }
 
-  RefPtr<Image> image =
+  scoped_refptr<Image> image =
       VideoFrameToImage(video, already_uploaded_id, frame_metadata_ptr);
   if (!image)
     return;
@@ -5419,7 +5420,7 @@ void WebGLRenderingContextBase::TexImageHelperImageBitmap(
       bitmap->BitmapImage()->PaintImageForCurrentFrame().GetSkImage();
   SkPixmap pixmap;
   uint8_t* pixel_data_ptr = nullptr;
-  RefPtr<Uint8Array> pixel_data;
+  scoped_refptr<Uint8Array> pixel_data;
   // In the case where an ImageBitmap is not texture backed, peekPixels() always
   // succeed.  However, when it is texture backed and !canUseTexImageByGPU, we
   // do a GPU read back.
@@ -7508,7 +7509,7 @@ void WebGLRenderingContextBase::MaybeRestoreContext(TimerBase*) {
     context_provider =
         CreateContextProviderOnWorkerThread(attributes, &gl_info, url);
   }
-  RefPtr<DrawingBuffer> buffer;
+  scoped_refptr<DrawingBuffer> buffer;
   if (context_provider && context_provider->BindToCurrentThread()) {
     // Construct a new drawing buffer with the new GL context.
     buffer = CreateDrawingBuffer(std::move(context_provider));

@@ -58,7 +58,7 @@ const HeapVector<Member<SpeechSynthesisVoice>>& SpeechSynthesis::getVoices() {
 
   // If the voiceList is empty, that's the cue to get the voices from the
   // platform again.
-  const Vector<RefPtr<PlatformSpeechSynthesisVoice>>& platform_voices =
+  const Vector<scoped_refptr<PlatformSpeechSynthesisVoice>>& platform_voices =
       platform_speech_synthesizer_->VoiceList();
   size_t voice_count = platform_voices.size();
   for (size_t k = 0; k < voice_count; k++)

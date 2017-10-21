@@ -68,7 +68,7 @@ class MODULES_EXPORT CanvasGradient final
                  const FloatPoint& p1,
                  float r1);
 
-  RefPtr<Gradient> gradient_;
+  scoped_refptr<Gradient> gradient_;
   const bool is_zero_size_;
 };
 

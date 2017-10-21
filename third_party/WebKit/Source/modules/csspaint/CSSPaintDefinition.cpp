@@ -68,7 +68,7 @@ CSSPaintDefinition::CSSPaintDefinition(
 
 CSSPaintDefinition::~CSSPaintDefinition() {}
 
-RefPtr<Image> CSSPaintDefinition::Paint(
+scoped_refptr<Image> CSSPaintDefinition::Paint(
     const ImageResourceObserver& client,
     const IntSize& container_size,
     const CSSStyleValueVector* paint_arguments,

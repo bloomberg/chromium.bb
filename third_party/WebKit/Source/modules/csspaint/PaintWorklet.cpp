@@ -56,11 +56,11 @@ size_t PaintWorklet::SelectGlobalScope() const {
   return (current_paint_frame_count / kFrameCountToSwitch) % kNumGlobalScopes;
 }
 
-RefPtr<Image> PaintWorklet::Paint(const String& name,
-                                  const ImageResourceObserver& observer,
-                                  const IntSize& container_size,
-                                  const CSSStyleValueVector* data,
-                                  const LayoutSize* logical_size) {
+scoped_refptr<Image> PaintWorklet::Paint(const String& name,
+                                         const ImageResourceObserver& observer,
+                                         const IntSize& container_size,
+                                         const CSSStyleValueVector* data,
+                                         const LayoutSize* logical_size) {
   if (!document_definition_map_.Contains(name))
     return nullptr;
 

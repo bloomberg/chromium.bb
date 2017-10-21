@@ -38,12 +38,13 @@ namespace blink {
 
 using namespace HTMLNames;
 
-AXInlineTextBox::AXInlineTextBox(RefPtr<AbstractInlineTextBox> inline_text_box,
-                                 AXObjectCacheImpl& ax_object_cache)
+AXInlineTextBox::AXInlineTextBox(
+    scoped_refptr<AbstractInlineTextBox> inline_text_box,
+    AXObjectCacheImpl& ax_object_cache)
     : AXObject(ax_object_cache), inline_text_box_(std::move(inline_text_box)) {}
 
 AXInlineTextBox* AXInlineTextBox::Create(
-    RefPtr<AbstractInlineTextBox> inline_text_box,
+    scoped_refptr<AbstractInlineTextBox> inline_text_box,
     AXObjectCacheImpl& ax_object_cache) {
   return new AXInlineTextBox(std::move(inline_text_box), ax_object_cache);
 }
@@ -169,7 +170,8 @@ Node* AXInlineTextBox::GetNode() const {
 }
 
 AXObject* AXInlineTextBox::NextOnLine() const {
-  RefPtr<AbstractInlineTextBox> next_on_line = inline_text_box_->NextOnLine();
+  scoped_refptr<AbstractInlineTextBox> next_on_line =
+      inline_text_box_->NextOnLine();
   if (next_on_line)
     return ax_object_cache_->GetOrCreate(next_on_line.get());
 
@@ -180,7 +182,7 @@ AXObject* AXInlineTextBox::NextOnLine() const {
 }
 
 AXObject* AXInlineTextBox::PreviousOnLine() const {
-  RefPtr<AbstractInlineTextBox> previous_on_line =
+  scoped_refptr<AbstractInlineTextBox> previous_on_line =
       inline_text_box_->PreviousOnLine();
   if (previous_on_line)
     return ax_object_cache_->GetOrCreate(previous_on_line.get());

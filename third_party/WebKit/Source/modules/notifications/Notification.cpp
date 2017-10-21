@@ -319,7 +319,7 @@ bool Notification::requireInteraction() const {
 
 ScriptValue Notification::data(ScriptState* script_state) {
   const WebVector<char>& serialized_data = data_.data;
-  RefPtr<SerializedScriptValue> serialized_value =
+  scoped_refptr<SerializedScriptValue> serialized_value =
       SerializedScriptValue::Create(serialized_data.Data(),
                                     serialized_data.size());
 

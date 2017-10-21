@@ -53,7 +53,7 @@ Pattern::RepeatMode CanvasPattern::ParseRepetitionType(
   return Pattern::kRepeatModeNone;
 }
 
-CanvasPattern::CanvasPattern(RefPtr<Image> image,
+CanvasPattern::CanvasPattern(scoped_refptr<Image> image,
                              Pattern::RepeatMode repeat,
                              bool origin_clean)
     : pattern_(Pattern::CreateImagePattern(std::move(image), repeat)),

@@ -685,7 +685,7 @@ void VRDisplay::submitFrame() {
   }
 
   TRACE_EVENT_BEGIN0("gpu", "VRDisplay::GetStaticBitmapImage");
-  RefPtr<Image> image_ref = rendering_context_->GetStaticBitmapImage();
+  scoped_refptr<Image> image_ref = rendering_context_->GetStaticBitmapImage();
   TRACE_EVENT_END0("gpu", "VRDisplay::GetStaticBitmapImage");
 
   // Hardware-accelerated rendering should always be texture backed,

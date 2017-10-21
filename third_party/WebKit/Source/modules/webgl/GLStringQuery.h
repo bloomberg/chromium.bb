@@ -71,7 +71,7 @@ class GLStringQuery {
     if (!length)
       return WTF::g_empty_string;
     LChar* log_ptr;
-    RefPtr<WTF::StringImpl> name_impl =
+    scoped_refptr<WTF::StringImpl> name_impl =
         WTF::StringImpl::CreateUninitialized(length, log_ptr);
     GLsizei returned_length = 0;
     Traits::LogFunction(gl_, id, length, &returned_length, log_ptr);

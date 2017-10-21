@@ -79,7 +79,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   class Resolver;
   class ResultCancel : public CryptoResultCancel {
    public:
-    static RefPtr<ResultCancel> Create() {
+    static scoped_refptr<ResultCancel> Create() {
       return WTF::AdoptRef(new ResultCancel);
     }
 
@@ -109,7 +109,7 @@ class MODULES_EXPORT CryptoResultImpl final : public CryptoResult {
   // check cancellation status via this result object. So, keep a separate
   // cancellation status object for the purpose, which will outlive the
   // result object and can be safely accessed by multiple threads.
-  RefPtr<ResultCancel> cancel_;
+  scoped_refptr<ResultCancel> cancel_;
 };
 
 }  // namespace blink

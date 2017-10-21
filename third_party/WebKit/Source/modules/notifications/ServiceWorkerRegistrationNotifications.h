@@ -62,7 +62,7 @@ class ServiceWorkerRegistrationNotifications final
 
   void PrepareShow(const WebNotificationData&,
                    std::unique_ptr<WebNotificationShowCallbacks>);
-  void DidLoadResources(RefPtr<SecurityOrigin>,
+  void DidLoadResources(scoped_refptr<SecurityOrigin>,
                         const WebNotificationData&,
                         std::unique_ptr<WebNotificationShowCallbacks>,
                         NotificationResourcesLoader*);

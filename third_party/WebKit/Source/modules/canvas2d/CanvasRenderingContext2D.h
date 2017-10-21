@@ -190,8 +190,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   void ValidateStateStack() const final;
 
-  RefPtr<StaticBitmapImage> GetImage(AccelerationHint,
-                                     SnapshotReason) const final;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
+                                            SnapshotReason) const final;
 
   void FinalizeFrame() override { usage_counters_.num_frames_since_reset++; }
 

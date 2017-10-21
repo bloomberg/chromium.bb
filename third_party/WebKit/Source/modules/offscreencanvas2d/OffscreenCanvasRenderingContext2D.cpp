@@ -107,11 +107,11 @@ ImageBuffer* OffscreenCanvasRenderingContext2D::GetImageBuffer() const {
       ->GetOrCreateImageBuffer();
 }
 
-RefPtr<StaticBitmapImage>
+scoped_refptr<StaticBitmapImage>
 OffscreenCanvasRenderingContext2D::TransferToStaticBitmapImage() {
   if (!GetImageBuffer())
     return nullptr;
-  RefPtr<StaticBitmapImage> image = GetImageBuffer()->NewImageSnapshot(
+  scoped_refptr<StaticBitmapImage> image = GetImageBuffer()->NewImageSnapshot(
       kPreferAcceleration, kSnapshotReasonTransferToImageBitmap);
 
   image->SetOriginClean(this->OriginClean());
@@ -122,7 +122,7 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
     ScriptState* script_state) {
   WebFeature feature = WebFeature::kOffscreenCanvasTransferToImageBitmap2D;
   UseCounter::Count(ExecutionContext::From(script_state), feature);
-  RefPtr<StaticBitmapImage> image = TransferToStaticBitmapImage();
+  scoped_refptr<StaticBitmapImage> image = TransferToStaticBitmapImage();
   if (!image)
     return nullptr;
   if (image->IsTextureBacked()) {
@@ -135,12 +135,12 @@ ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(
   return ImageBitmap::Create(std::move(image));
 }
 
-RefPtr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
+scoped_refptr<StaticBitmapImage> OffscreenCanvasRenderingContext2D::GetImage(
     AccelerationHint hint,
     SnapshotReason reason) const {
   if (!GetImageBuffer())
     return nullptr;
-  RefPtr<StaticBitmapImage> image =
+  scoped_refptr<StaticBitmapImage> image =
       GetImageBuffer()->NewImageSnapshot(hint, reason);
   return image;
 }
@@ -149,7 +149,7 @@ ImageData* OffscreenCanvasRenderingContext2D::ToImageData(
     SnapshotReason reason) {
   if (!GetImageBuffer())
     return nullptr;
-  RefPtr<StaticBitmapImage> snapshot =
+  scoped_refptr<StaticBitmapImage> snapshot =
       GetImageBuffer()->NewImageSnapshot(kPreferNoAcceleration, reason);
   ImageData* image_data = nullptr;
   if (snapshot) {
