@@ -450,8 +450,28 @@ void ShapeResult::ApplySpacingImpl(
       total_space += 1;
   }
 
-  // Glyph bounding box is in logical space.
-  glyph_bounding_box_.SetWidth(glyph_bounding_box_.Width() + total_space);
+  // Set the width because glyph bounding box is in logical space.
+  float glyph_bounding_box_width = glyph_bounding_box_.Width() + total_space;
+  if (width_ >= 0 && glyph_bounding_box_width >= 0) {
+    glyph_bounding_box_.SetWidth(glyph_bounding_box_width);
+    return;
+  }
+
+  // Negative word-spacing and/or letter-spacing may cause some glyphs to
+  // overflow the left boundary and result negative measured width. Adjust glyph
+  // bounds accordingly to cover the overflow.
+  // The negative width should be clamped to 0 in CSS box model, but it's up to
+  // caller's responsibility.
+  float left = std::min(width_, glyph_bounding_box_width);
+  if (left < glyph_bounding_box_.X()) {
+    // The right edge should be the width of the first character in most cases,
+    // but computing it requires re-measuring bounding box of each glyph. Leave
+    // it unchanged, which gives an excessive right edge but assures it covers
+    // all glyphs.
+    glyph_bounding_box_.ShiftXEdgeTo(left);
+  } else {
+    glyph_bounding_box_.SetWidth(glyph_bounding_box_width);
+  }
 }
 
 void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing,
