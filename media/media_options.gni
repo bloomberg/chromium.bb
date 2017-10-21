@@ -162,6 +162,11 @@ declare_args() {
   # Windows and Mac.
   enable_cdm_host_verification =
       enable_library_cdms && (is_mac || is_win) && is_chrome_branded
+
+  # Enable Storage ID which is used by CDMs. This is only available with chrome
+  # branding, but may be overridden by other embedders.
+  enable_cdm_storage_id = enable_library_cdms && is_chrome_branded &&
+                          (is_win || is_mac || is_chromeos)
 }
 
 # This feature can only be enabled when using Mojo media. Furthermore, the

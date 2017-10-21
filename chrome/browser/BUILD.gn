@@ -3482,13 +3482,6 @@ split_static_library("browser") {
     defines += [ "ENABLE_HOTWORDING" ]
   }
 
-  if (enable_library_cdms) {
-    sources += [
-      "component_updater/widevine_cdm_component_installer.cc",
-      "component_updater/widevine_cdm_component_installer.h",
-    ]
-  }
-
   if (enable_mdns) {
     sources += [
       "local_discovery/service_discovery_client_impl.cc",
@@ -3502,9 +3495,17 @@ split_static_library("browser") {
 
   if (enable_library_cdms) {
     sources += [
+      "component_updater/widevine_cdm_component_installer.cc",
+      "component_updater/widevine_cdm_component_installer.h",
       "media/output_protection_impl.cc",
       "media/output_protection_impl.h",
     ]
+    if (enable_cdm_storage_id) {
+      sources += [
+        "media/cdm_storage_id_key.cc",
+        "media/cdm_storage_id_key.h",
+      ]
+    }
     deps += [ "//media/mojo/interfaces" ]
     if (mojo_media_host == "browser") {
       deps += [
