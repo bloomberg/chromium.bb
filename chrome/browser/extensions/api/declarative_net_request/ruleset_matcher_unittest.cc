@@ -9,15 +9,13 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
-#include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/url_pattern_index/flat/url_pattern_index_generated.h"
-#include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -31,33 +29,9 @@ constexpr char kJSONRulesFilename[] = "rules_file.json";
 const base::FilePath::CharType kJSONRulesetFilepath[] =
     FILE_PATH_LITERAL("rules_file.json");
 
-class RulesetMatcherTest
-    : public ExtensionServiceTestBase,
-      public ::testing::WithParamInterface<ExtensionLoadType> {
+class RulesetMatcherTest : public DNRTestBase {
  public:
-  // Use channel UNKNOWN to ensure that the declarativeNetRequest API is
-  // available, irrespective of its actual availability.
-  RulesetMatcherTest() : channel_(::version_info::Channel::UNKNOWN) {}
-
-  void SetUp() override {
-    ExtensionServiceTestBase::SetUp();
-    InitializeEmptyExtensionService();
-
-    loader_ = std::make_unique<ChromeTestExtensionLoader>(browser_context());
-    switch (GetParam()) {
-      case ExtensionLoadType::PACKED:
-        loader_->set_pack_extension(true);
-
-        // CrxInstaller reloads the extension after moving it, which causes an
-        // install warning for packed extensions due to the presence of
-        // kMetadata folder. However, this isn't actually surfaced to the user.
-        loader_->set_ignore_manifest_warnings(true);
-        break;
-      case ExtensionLoadType::UNPACKED:
-        loader_->set_pack_extension(false);
-        break;
-    }
-  }
+  RulesetMatcherTest() {}
 
  protected:
   const Extension* extension() const { return extension_.get(); }
@@ -71,13 +45,11 @@ class RulesetMatcherTest
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
                             kJSONRulesFilename, rules);
 
-    extension_ = loader_->LoadExtension(extension_dir);
+    extension_ = CreateExtensionLoader()->LoadExtension(extension_dir);
     ASSERT_TRUE(extension_);
   }
 
  private:
-  ScopedCurrentChannel channel_;
-  std::unique_ptr<ChromeTestExtensionLoader> loader_;
   scoped_refptr<const Extension> extension_;
 
   DISALLOW_COPY_AND_ASSIGN(RulesetMatcherTest);
