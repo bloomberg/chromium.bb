@@ -50,6 +50,16 @@ struct GPU_EXPORT GpuPreferences {
   // Disables hardware acceleration of video decode, where available.
   bool disable_accelerated_video_decode = false;
 
+  // Causes the GPU process to display a dialog on launch.
+  bool gpu_startup_dialog = false;
+
+  // Disable the thread that crashes the GPU process if it stops responding to
+  // messages.
+  bool disable_gpu_watchdog = false;
+
+  // Starts the GPU sandbox before creating a GL context.
+  bool gpu_sandbox_start_early = false;
+
 #if defined(OS_CHROMEOS)
   // Disables VA-API accelerated video encode.
   bool disable_vaapi_accelerated_video_encode = false;

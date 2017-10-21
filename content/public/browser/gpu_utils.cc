@@ -126,6 +126,13 @@ const gpu::GpuPreferences GetGpuPreferencesFromCommandLine() {
       command_line->HasSwitch(switches::kEnableGPUServiceTracing);
   gpu_preferences.use_passthrough_cmd_decoder =
       gpu::gles2::UsePassthroughCommandDecoder(command_line);
+  gpu_preferences.gpu_startup_dialog =
+      command_line->HasSwitch(switches::kGpuStartupDialog);
+  gpu_preferences.disable_gpu_watchdog =
+      command_line->HasSwitch(switches::kDisableGpuWatchdog) ||
+      (gpu_preferences.single_process || gpu_preferences.in_process_gpu);
+  gpu_preferences.gpu_sandbox_start_early =
+      command_line->HasSwitch(switches::kGpuSandboxStartEarly);
   // Some of these preferences are set or adjusted in
   // GpuDataManagerImplPrivate::AppendGpuCommandLine.
   return gpu_preferences;

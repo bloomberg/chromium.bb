@@ -190,7 +190,16 @@ int GpuMain(const MainFunctionParams& parameters) {
       kTraceEventGpuProcessSortIndex);
 
   const base::CommandLine& command_line = parameters.command_line;
-  if (command_line.HasSwitch(switches::kGpuStartupDialog))
+
+  gpu::GpuPreferences gpu_preferences;
+  if (command_line.HasSwitch(switches::kGpuPreferences)) {
+    std::string value =
+        command_line.GetSwitchValueASCII(switches::kGpuPreferences);
+    bool success = gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
+    CHECK(success);
+  }
+
+  if (gpu_preferences.gpu_startup_dialog)
     WaitForDebugger("Gpu");
 
   base::Time start_time = base::Time::Now();
@@ -273,13 +282,6 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   gpu_init->set_sandbox_helper(&sandbox_helper);
 
-  gpu::GpuPreferences gpu_preferences;
-  if (command_line.HasSwitch(switches::kGpuPreferences)) {
-    std::string value =
-        command_line.GetSwitchValueASCII(switches::kGpuPreferences);
-    bool success = gpu::SwitchValueToGpuPreferences(value, &gpu_preferences);
-    CHECK(success);
-  }
   // Gpu initialization may fail for various reasons, in which case we will need
   // to tear down this process. However, we can not do so safely until the IPC
   // channel is set up, because the detection of early return of a child process
