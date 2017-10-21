@@ -214,16 +214,8 @@ bool InstallVerifier::NeedsVerification(const Extension& extension) {
 
 // static
 bool InstallVerifier::IsFromStore(const Extension& extension) {
-  if (extension.from_webstore() || ManifestURL::UpdatesFromGallery(&extension))
-    return true;
-
-  // If an extension has no update url, our autoupdate code will ask the
-  // webstore about it (to aid in migrating to the webstore from self-hosting
-  // or sideloading based installs). So we want to do verification checks on
-  // such extensions too so that we don't accidentally disable old installs of
-  // extensions that did migrate to the webstore.
-  return (ManifestURL::GetUpdateURL(&extension).is_empty() &&
-          Manifest::IsAutoUpdateableLocation(extension.location()));
+  return extension.from_webstore() ||
+         ManifestURL::UpdatesFromGallery(&extension);
 }
 
 void InstallVerifier::Init() {
