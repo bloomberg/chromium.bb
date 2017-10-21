@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import common
+from common import ParseFlags
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionBeforeM
@@ -10,6 +11,8 @@ from decorators import ChromeVersionEqualOrAfterM
 
 import time
 
+# These are integration tests for server provided previews and the
+# protocol that supports them.
 class LitePage(IntegrationTest):
 
   # Verifies that a Lite Page is served for slow connection if any copyright
@@ -357,6 +360,39 @@ class LitePage(IntegrationTest):
             page_policies_responses = page_policies_responses + 1
 
       self.assertTrue(lite_page_responses == 1 or page_policies_responses == 1)
+
+  # Checks the default of whether server previews are enabled or not
+  # based on whether running on Android (enabled) or not (disabled).
+  # This is a regression test that the DataReductionProxyDecidesTransform
+  # Feature is not enabled by default for non-Android platforms.
+  @ChromeVersionEqualOrAfterM(64)
+  def testDataReductionProxyDecidesTransformDefault(self):
+    with TestDriver() as test_driver:
+      test_driver.AddChromeArg('--enable-spdy-proxy-auth')
+      test_driver.AddChromeArg('--force-fieldtrial-params='
+                               'NetworkQualityEstimator.Enabled:'
+                               'force_effective_connection_type/2G')
+      test_driver.AddChromeArg(
+          '--force-fieldtrials='
+          'NetworkQualityEstimator/Enabled/'
+          'DataReductionProxyPreviewsBlackListTransition/Enabled/')
+
+      test_driver.LoadURL('http://check.googlezip.net/test.html')
+
+      for response in test_driver.GetHTTPResponses():
+        self.assertEqual('2G', response.request_headers['chrome-proxy-ect'])
+        if response.url.endswith('html'):
+          if ParseFlags().android:
+            # CPAT provided on Android
+            self.assertIn('chrome-proxy-accept-transform',
+              response.request_headers)
+          else:
+            # CPAT NOT provided on Desktop
+            self.assertNotIn('chrome-proxy-accept-transform',
+              response.request_headers)
+            self.assertNotIn('chrome-proxy-content-transform',
+              response.response_headers)
+          continue
 
 if __name__ == '__main__':
   IntegrationTest.RunAllTests()

@@ -918,6 +918,10 @@ TEST_F(DataReductionProxyNetworkDelegateTest, AuthenticationTest) {
 
 TEST_F(DataReductionProxyNetworkDelegateTest, LoFiTransitions) {
   Init(USE_INSECURE_PROXY, false);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kDataReductionProxyDecidesTransform);
+
   // Enable Lo-Fi.
   const struct {
     bool lofi_switch_enabled;
