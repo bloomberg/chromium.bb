@@ -44,7 +44,6 @@
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/resource_dispatcher.h"
-#include "content/child/service_worker/service_worker_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/field_trial_recorder.mojom.h"
@@ -490,9 +489,6 @@ void ChildThreadImpl::Init(const Options& options) {
   GetServiceManagerConnection()->AddConnectionFilter(
       base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
 
-  service_worker_message_filter_ =
-      new ServiceWorkerMessageFilter(thread_safe_sender_.get());
-
   quota_message_filter_ =
       new QuotaMessageFilter(thread_safe_sender_.get());
   quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender_.get(),
@@ -500,7 +496,6 @@ void ChildThreadImpl::Init(const Options& options) {
 
   channel_->AddFilter(resource_message_filter_.get());
   channel_->AddFilter(quota_message_filter_->GetFilter());
-  channel_->AddFilter(service_worker_message_filter_->GetFilter());
 
   InitTracing();
 

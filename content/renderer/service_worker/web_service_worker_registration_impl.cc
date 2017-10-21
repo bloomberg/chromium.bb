@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/service_worker/web_service_worker_registration_impl.h"
+#include "content/renderer/service_worker/web_service_worker_registration_impl.h"
 
 #include <utility>
 
@@ -10,10 +10,10 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
-#include "content/child/service_worker/service_worker_dispatcher.h"
-#include "content/child/service_worker/web_service_worker_impl.h"
-#include "content/child/service_worker/web_service_worker_provider_impl.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/service_worker/web_service_worker_impl.h"
+#include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebNavigationPreloadState.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerRegistrationProxy.h"

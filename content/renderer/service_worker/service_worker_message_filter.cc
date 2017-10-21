@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/service_worker/service_worker_message_filter.h"
+#include "content/renderer/service_worker/service_worker_message_filter.h"
 
 #include <stddef.h>
 
-#include "content/child/service_worker/service_worker_dispatcher.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/service_worker/service_worker_messages.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "ipc/ipc_message_macros.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 
