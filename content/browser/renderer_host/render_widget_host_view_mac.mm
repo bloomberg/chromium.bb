@@ -1830,6 +1830,14 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
   [[self window] makeFirstResponder:nil];
   [NSApp updateWindows];
 
+  // Debug key to check if the current input context still holds onto the view.
+  NSTextInputContext* currentContext = [NSTextInputContext currentInputContext];
+  base::debug::ScopedCrashKey textInputContextCrashKey(
+      "text-input-context-client",
+      currentContext && [currentContext client] == self
+          ? "text input still held on"
+          : "text input no longer held on");
+
   [super dealloc];
 }
 

@@ -170,6 +170,7 @@ size_t RegisterChromeCrashKeys() {
     {"channel_error_bt", kMediumSize},
     {"remove_route_bt", kMediumSize},
     {"rwhvm_window", kMediumSize},
+    {"text-input-context-client", kMediumSize},
 // media/:
 #endif
     {kBug464926CrashKey, kSmallSize},
