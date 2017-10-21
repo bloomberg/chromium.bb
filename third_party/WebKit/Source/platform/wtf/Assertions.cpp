@@ -96,30 +96,6 @@ void vprintf_stderr_common(const char* format, va_list args) {
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 
-static void vprintf_stderr_with_trailing_newline(const char* format,
-                                                 va_list args) {
-  size_t formatLength = strlen(format);
-  if (formatLength && format[formatLength - 1] == '\n') {
-    vprintf_stderr_common(format, args);
-    return;
-  }
-
-  std::unique_ptr<char[]> formatWithNewline =
-      WrapArrayUnique(new char[formatLength + 2]);
-  memcpy(formatWithNewline.get(), format, formatLength);
-  formatWithNewline[formatLength] = '\n';
-  formatWithNewline[formatLength + 1] = 0;
-
-  vprintf_stderr_common(formatWithNewline.get(), args);
-}
-
 #if defined(COMPILER_GCC)
 #pragma GCC diagnostic pop
 #endif
-
-void WTFLogAlways(const char* format, ...) {
-  va_list args;
-  va_start(args, format);
-  vprintf_stderr_with_trailing_newline(format, args);
-  va_end(args);
-}
