@@ -29,6 +29,7 @@
 #include "platform/weborigin/SecurityOrigin.h"
 
 #include <memory>
+#include "net/base/url_util.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/weborigin/KnownPorts.h"
@@ -398,28 +399,10 @@ bool SecurityOrigin::IsLocal() const {
 }
 
 bool SecurityOrigin::IsLocalhost() const {
-  // Note: net::isLocalhost has looser checks which allow uppercase hosts, as
-  // well as hosts like "a.localhost". The net code is also less optimized and
-  // slower (mainly string and vector allocations).
-  if (host_ == "localhost")
-    return true;
-
-  if (host_ == "[::1]")
-    return true;
-
-  // Test if m_host matches 127.0.0.1/8
-  DCHECK(host_.ContainsOnlyASCII());
-  StringUTF8Adaptor utf8(host_);
-  Vector<uint8_t, 4> ip_number;
-  ip_number.resize(4);
-
-  int num_components;
-  url::Component host_component(0, utf8.length());
-  url::CanonHostInfo::Family family = url::IPv4AddressToNumber(
-      utf8.Data(), host_component, &(ip_number)[0], &num_components);
-  if (family != url::CanonHostInfo::IPV4)
-    return false;
-  return ip_number[0] == 127;
+  // We special-case "[::1]" here because `net::IsLocalhost` expects a
+  // canonicalization that excludes the braces; a simple string comparison is
+  // simpler than trying to adjust Blink's canonicalization.
+  return host_ == "[::1]" || net::IsLocalhost(host_.Ascii().data());
 }
 
 String SecurityOrigin::ToString() const {

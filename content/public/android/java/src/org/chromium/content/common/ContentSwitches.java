@@ -68,6 +68,9 @@ public abstract class ContentSwitches {
     public static final String USE_FAKE_DEVICE_FOR_MEDIA_STREAM =
             "use-fake-device-for-media-stream";
 
+    // Native switch kHostResolverRules
+    public static final String HOST_RESOLVER_RULES = "host-resolver-rules";
+
     // Prevent instantiation.
     private ContentSwitches() {}
 

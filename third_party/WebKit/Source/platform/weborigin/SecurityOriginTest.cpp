@@ -111,6 +111,7 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
       {true, "http://localhost"},
       {true, "http://LOCALHOST"},
       {true, "http://localhost:100"},
+      {true, "http://a.localhost"},
       {true, "http://127.0.0.1"},
       {true, "http://127.0.0.2"},
       {true, "http://127.1.0.2"},
@@ -133,7 +134,6 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
       {false, "http://a.127.0.0.1"},
       {false, "http://127.0.0.1.b"},
       {false, "http://localhost.a"},
-      {false, "http://a.localhost"},
 
       // Access is granted to all secure transports.
       {true, "https://foobar.com"},
@@ -164,7 +164,7 @@ TEST_F(SecurityOriginTest, IsPotentiallyTrustworthy) {
   };
 
   for (size_t i = 0; i < WTF_ARRAY_LENGTH(inputs); ++i) {
-    SCOPED_TRACE(i);
+    SCOPED_TRACE(inputs[i].url);
     RefPtr<SecurityOrigin> origin =
         SecurityOrigin::CreateFromString(inputs[i].url);
     String error_message;
