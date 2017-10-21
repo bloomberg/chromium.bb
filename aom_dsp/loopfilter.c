@@ -170,7 +170,7 @@ void aom_lpf_horizontal_4_c(uint8_t *s, int p /* pitch */,
                             const uint8_t *blimit, const uint8_t *limit,
                             const uint8_t *thresh) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -205,7 +205,7 @@ void aom_lpf_horizontal_4_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
 void aom_lpf_vertical_4_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -280,7 +280,7 @@ static INLINE void filter8(int8_t mask, uint8_t thresh, int8_t flat,
 void aom_lpf_horizontal_6_c(uint8_t *s, int p, const uint8_t *blimit,
                             const uint8_t *limit, const uint8_t *thresh) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -305,7 +305,7 @@ void aom_lpf_horizontal_6_c(uint8_t *s, int p, const uint8_t *blimit,
 void aom_lpf_horizontal_8_c(uint8_t *s, int p, const uint8_t *blimit,
                             const uint8_t *limit, const uint8_t *thresh) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -338,7 +338,7 @@ void aom_lpf_horizontal_8_dual_c(uint8_t *s, int p, const uint8_t *blimit0,
 void aom_lpf_vertical_6_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -359,7 +359,7 @@ void aom_lpf_vertical_6_c(uint8_t *s, int pitch, const uint8_t *blimit,
 void aom_lpf_vertical_8_c(uint8_t *s, int pitch, const uint8_t *blimit,
                           const uint8_t *limit, const uint8_t *thresh) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -548,7 +548,7 @@ static void mb_lpf_horizontal_edge_w(uint8_t *s, int p, const uint8_t *blimit,
                                      const uint8_t *limit,
                                      const uint8_t *thresh, int count) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int step = 4;
 #else
   int step = 8;
@@ -608,7 +608,7 @@ void aom_lpf_horizontal_edge_8_c(uint8_t *s, int p, const uint8_t *blimit,
 
 void aom_lpf_horizontal_edge_16_c(uint8_t *s, int p, const uint8_t *blimit,
                                   const uint8_t *limit, const uint8_t *thresh) {
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 1);
 #else
   mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 2);
@@ -661,7 +661,7 @@ static void mb_lpf_vertical_edge_w(uint8_t *s, int p, const uint8_t *blimit,
 
 void aom_lpf_vertical_16_c(uint8_t *s, int p, const uint8_t *blimit,
                            const uint8_t *limit, const uint8_t *thresh) {
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 4);
 #else
   mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 8);
@@ -798,7 +798,7 @@ void aom_highbd_lpf_horizontal_4_c(uint16_t *s, int p /* pitch */,
                                    const uint8_t *blimit, const uint8_t *limit,
                                    const uint8_t *thresh, int bd) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -843,7 +843,7 @@ void aom_highbd_lpf_vertical_4_c(uint16_t *s, int pitch, const uint8_t *blimit,
                                  const uint8_t *limit, const uint8_t *thresh,
                                  int bd) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -921,7 +921,7 @@ void aom_highbd_lpf_horizontal_8_c(uint16_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
                                    int bd) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -948,7 +948,7 @@ void aom_highbd_lpf_horizontal_6_c(uint16_t *s, int p, const uint8_t *blimit,
                                    const uint8_t *limit, const uint8_t *thresh,
                                    int bd) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -983,7 +983,7 @@ void aom_highbd_lpf_vertical_6_c(uint16_t *s, int pitch, const uint8_t *blimit,
                                  const uint8_t *limit, const uint8_t *thresh,
                                  int bd) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -1006,7 +1006,7 @@ void aom_highbd_lpf_vertical_8_c(uint16_t *s, int pitch, const uint8_t *blimit,
                                  const uint8_t *limit, const uint8_t *thresh,
                                  int bd) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int count = 4;
 #else
   int count = 8;
@@ -1168,7 +1168,7 @@ static void highbd_mb_lpf_horizontal_edge_w(uint16_t *s, int p,
                                             const uint8_t *thresh, int count,
                                             int bd) {
   int i;
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   int step = 4;
 #else
   int step = 8;
@@ -1223,7 +1223,7 @@ void aom_highbd_lpf_horizontal_edge_16_c(uint16_t *s, int p,
                                          const uint8_t *blimit,
                                          const uint8_t *limit,
                                          const uint8_t *thresh, int bd) {
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   highbd_mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 1, bd);
 #else
   highbd_mb_lpf_horizontal_edge_w(s, p, blimit, limit, thresh, 2, bd);
@@ -1272,7 +1272,7 @@ static void highbd_mb_lpf_vertical_edge_w(uint16_t *s, int p,
 void aom_highbd_lpf_vertical_16_c(uint16_t *s, int p, const uint8_t *blimit,
                                   const uint8_t *limit, const uint8_t *thresh,
                                   int bd) {
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   highbd_mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 4, bd);
 #else
   highbd_mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 8, bd);
@@ -1283,7 +1283,7 @@ void aom_highbd_lpf_vertical_16_dual_c(uint16_t *s, int p,
                                        const uint8_t *blimit,
                                        const uint8_t *limit,
                                        const uint8_t *thresh, int bd) {
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
   highbd_mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 8, bd);
 #else
   highbd_mb_lpf_vertical_edge_w(s, p, blimit, limit, thresh, 16, bd);

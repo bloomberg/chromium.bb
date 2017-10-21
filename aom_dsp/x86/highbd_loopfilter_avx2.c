@@ -16,7 +16,7 @@
 #include "aom_dsp/x86/lpf_common_sse2.h"
 #include "aom/aom_integer.h"
 
-#if !CONFIG_PARALLEL_DEBLOCKING || !CONFIG_CB4X4
+#if !CONFIG_PARALLEL_DEBLOCKING
 static INLINE void get_limit(const uint8_t *bl, const uint8_t *l,
                              const uint8_t *t, int bd, __m256i *blt,
                              __m256i *lt, __m256i *thr) {
@@ -201,9 +201,9 @@ static INLINE void highbd_filter4(__m256i *p, __m256i *q, const __m256i *mask,
   qs[1] = _mm256_adds_epi16(qs1, t80);
   ps[1] = _mm256_adds_epi16(ps1, t80);
 }
-#endif  // #if !CONFIG_PARALLEL_DEBLOCKING || !CONFIG_CB4X4
+#endif  // #if !CONFIG_PARALLEL_DEBLOCKING
 
-#if CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#if CONFIG_PARALLEL_DEBLOCKING
 void aom_highbd_lpf_horizontal_edge_16_avx2(uint16_t *s, int p,
                                             const uint8_t *blt,
                                             const uint8_t *lt,
@@ -870,4 +870,4 @@ void aom_highbd_lpf_vertical_8_dual_avx2(
   // Transpose back
   highbd_transpose(src, 16, dst, p, 2);
 }
-#endif  // CONFIG_PARALLEL_DEBLOCKING && CONFIG_CB4X4
+#endif  // CONFIG_PARALLEL_DEBLOCKING
