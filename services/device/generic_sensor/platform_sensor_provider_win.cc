@@ -96,7 +96,7 @@ void PlatformSensorProviderWin::CreateSensorInternal(
   }
 }
 
-void PlatformSensorProviderWin::AllSensorsRemoved() {
+void PlatformSensorProviderWin::FreeResources() {
   StopSensorThread();
 }
 
@@ -125,8 +125,6 @@ void PlatformSensorProviderWin::SensorReaderCreated(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!sensor_reader) {
     callback.Run(nullptr);
-    if (!HasSensors())
-      StopSensorThread();
     return;
   }
 

@@ -37,7 +37,7 @@ class PlatformSensorProviderWin final : public PlatformSensorProvider {
   ~PlatformSensorProviderWin() override;
 
   // PlatformSensorProvider interface implementation.
-  void AllSensorsRemoved() override;
+  void FreeResources() override;
   void CreateSensorInternal(mojom::SensorType type,
                             mojo::ScopedSharedBufferMapping mapping,
                             const CreateSensorCallback& callback) override;
