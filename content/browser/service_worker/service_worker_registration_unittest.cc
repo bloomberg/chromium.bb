@@ -591,6 +591,36 @@ class ServiceWorkerRegistrationHandleTest
     return error;
   }
 
+  blink::mojom::ServiceWorkerErrorType CallUnregister(
+      blink::mojom::ServiceWorkerRegistrationObjectHost* registration_host) {
+    blink::mojom::ServiceWorkerErrorType error =
+        blink::mojom::ServiceWorkerErrorType::kUnknown;
+    registration_host->Unregister(base::BindOnce(
+        [](blink::mojom::ServiceWorkerErrorType* out_error,
+           blink::mojom::ServiceWorkerErrorType error,
+           const base::Optional<std::string>& error_msg) {
+          *out_error = error;
+        },
+        &error));
+    base::RunLoop().RunUntilIdle();
+    return error;
+  }
+
+  ServiceWorkerStatusCode FindRegistrationInStorage(int64_t registration_id,
+                                                    const GURL& scope) {
+    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    storage()->FindRegistrationForId(
+        registration_id, scope,
+        base::AdaptCallbackForRepeating(base::BindOnce(
+            [](ServiceWorkerStatusCode* out_status,
+               ServiceWorkerStatusCode status,
+               scoped_refptr<ServiceWorkerRegistration> registration) {
+              *out_status = status;
+            },
+            &status)));
+    return status;
+  }
+
   int64_t SetUpRegistration(const GURL& scope, const GURL& script_url) {
     storage()->LazyInitializeForTest(base::BindOnce(&base::DoNothing));
     base::RunLoop().RunUntilIdle();
@@ -724,7 +754,7 @@ TEST_F(ServiceWorkerRegistrationHandleTest, Update_CrossOriginShouldFail) {
   ASSERT_TRUE(bad_messages_.empty());
   context()
       ->GetProviderHost(helper_->mock_render_process_id(), kProviderId)
-      ->SetDocumentUrl(GURL("https://www.example.not/"));
+      ->SetDocumentUrl(GURL("https://does.not.exist/"));
   CallUpdate(registration_host_ptr.get());
   EXPECT_EQ(1u, bad_messages_.size());
 }
@@ -746,6 +776,67 @@ TEST_F(ServiceWorkerRegistrationHandleTest,
       SetBrowserClientForTesting(&test_browser_client);
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
             CallUpdate(registration_host_ptr.get()));
+  SetBrowserClientForTesting(old_browser_client);
+}
+
+TEST_F(ServiceWorkerRegistrationHandleTest, Unregister_Success) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  int64_t registration_id = SetUpRegistration(kScope, kScriptUrl);
+  const int64_t kProviderId = 99;  // Dummy value
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint =
+      PrepareProviderHost(kProviderId, kScope);
+  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedPtr
+      registration_host_ptr =
+          GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), kScope);
+
+  EXPECT_EQ(SERVICE_WORKER_OK,
+            FindRegistrationInStorage(registration_id, kScope));
+  EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
+            CallUnregister(registration_host_ptr.get()));
+
+  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+            FindRegistrationInStorage(registration_id, kScope));
+  EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNotFound,
+            CallUnregister(registration_host_ptr.get()));
+}
+
+TEST_F(ServiceWorkerRegistrationHandleTest, Unregister_CrossOriginShouldFail) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  SetUpRegistration(kScope, kScriptUrl);
+  const int64_t kProviderId = 99;  // Dummy value
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint =
+      PrepareProviderHost(kProviderId, kScope);
+  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedPtr
+      registration_host_ptr =
+          GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), kScope);
+
+  ASSERT_TRUE(bad_messages_.empty());
+  context()
+      ->GetProviderHost(helper_->mock_render_process_id(), kProviderId)
+      ->SetDocumentUrl(GURL("https://does.not.exist/"));
+  CallUnregister(registration_host_ptr.get());
+  EXPECT_EQ(1u, bad_messages_.size());
+}
+
+TEST_F(ServiceWorkerRegistrationHandleTest,
+       Unregister_ContentSettingsDisallowsServiceWorker) {
+  const GURL kScope("https://www.example.com/");
+  const GURL kScriptUrl("https://www.example.com/sw.js");
+  SetUpRegistration(kScope, kScriptUrl);
+  const int64_t kProviderId = 99;  // Dummy value
+  ServiceWorkerRemoteProviderEndpoint remote_endpoint =
+      PrepareProviderHost(kProviderId, kScope);
+  blink::mojom::ServiceWorkerRegistrationObjectHostAssociatedPtr
+      registration_host_ptr =
+          GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), kScope);
+
+  ServiceWorkerTestContentBrowserClient test_browser_client;
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&test_browser_client);
+  EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
+            CallUnregister(registration_host_ptr.get()));
   SetBrowserClientForTesting(old_browser_client);
 }
 

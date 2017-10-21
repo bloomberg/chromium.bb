@@ -222,14 +222,9 @@ void WebServiceWorkerRegistrationImpl::Update(
 void WebServiceWorkerRegistrationImpl::Unregister(
     blink::WebServiceWorkerProvider* provider,
     std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks) {
-  DCHECK(GetRegistrationObjectHost());
-  WebServiceWorkerProviderImpl* provider_impl =
-      static_cast<WebServiceWorkerProviderImpl*>(provider);
-  ServiceWorkerDispatcher* dispatcher =
-      ServiceWorkerDispatcher::GetThreadSpecificInstance();
-  DCHECK(dispatcher);
-  dispatcher->UnregisterServiceWorker(provider_impl->provider_id(),
-                                      RegistrationId(), std::move(callbacks));
+  GetRegistrationObjectHost()->Unregister(
+      base::BindOnce(&WebServiceWorkerRegistrationImpl::OnUnregistered,
+                     base::Unretained(this), std::move(callbacks)));
 }
 
 void WebServiceWorkerRegistrationImpl::EnableNavigationPreload(
@@ -292,6 +287,21 @@ void WebServiceWorkerRegistrationImpl::OnUpdated(
 
   DCHECK(!error_msg);
   callbacks->OnSuccess();
+}
+
+void WebServiceWorkerRegistrationImpl::OnUnregistered(
+    std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks,
+    blink::mojom::ServiceWorkerErrorType error,
+    const base::Optional<std::string>& error_msg) {
+  if (error != blink::mojom::ServiceWorkerErrorType::kNone &&
+      error != blink::mojom::ServiceWorkerErrorType::kNotFound) {
+    DCHECK(error_msg);
+    callbacks->OnError(blink::WebServiceWorkerError(
+        error, blink::WebString::FromUTF8(*error_msg)));
+    return;
+  }
+
+  callbacks->OnSuccess(error == blink::mojom::ServiceWorkerErrorType::kNone);
 }
 
 // static

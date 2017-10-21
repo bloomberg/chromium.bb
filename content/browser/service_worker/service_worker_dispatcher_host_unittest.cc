@@ -32,7 +32,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
-#include "content/test/test_content_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
@@ -95,18 +94,6 @@ std::unique_ptr<ServiceWorkerNavigationHandleCore> CreateNavigationHandleCore(
   base::RunLoop().RunUntilIdle();
   return navigation_handle_core;
 }
-
-class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
- public:
-  ServiceWorkerTestContentBrowserClient() {}
-  bool AllowServiceWorker(
-      const GURL& scope,
-      const GURL& first_party,
-      content::ResourceContext* context,
-      const base::Callback<WebContents*(void)>& wc_getter) override {
-    return false;
-  }
-};
 
 }  // namespace
 
@@ -244,22 +231,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     context()->AddProviderHost(std::move(host));
   }
 
-  void SendUnregister(int64_t provider_id, int64_t registration_id) {
-    dispatcher_host_->OnMessageReceived(
-        ServiceWorkerHostMsg_UnregisterServiceWorker(-1, -1, provider_id,
-                                                     registration_id));
-    base::RunLoop().RunUntilIdle();
-  }
-
-  void Unregister(int64_t provider_id,
-                  int64_t registration_id,
-                  uint32_t expected_message) {
-    SendUnregister(provider_id, registration_id);
-    EXPECT_TRUE(dispatcher_host_->ipc_sink()->GetUniqueMessageMatching(
-        expected_message));
-    dispatcher_host_->ipc_sink()->ClearMessages();
-  }
-
   void DispatchExtendableMessageEvent(
       scoped_refptr<ServiceWorkerVersion> worker,
       const base::string16& message,
@@ -295,31 +266,6 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
   ServiceWorkerProviderHost* provider_host_;
   ServiceWorkerRemoteProviderEndpoint remote_endpoint_;
 };
-
-TEST_F(ServiceWorkerDispatcherHostTest,
-       Register_ContentSettingsDisallowsServiceWorker) {
-  ServiceWorkerTestContentBrowserClient test_browser_client;
-  ContentBrowserClient* old_browser_client =
-      SetBrowserClientForTesting(&test_browser_client);
-
-  const int64_t kProviderId = 99;  // Dummy value
-  ServiceWorkerRemoteProviderEndpoint remote_endpoint =
-      PrepareServiceWorkerProviderHost(kProviderId,
-                                       GURL("https://www.example.com/foo"));
-
-  // Add a registration into a live registration map so that Unregister() can
-  // find it.
-  const int64_t kRegistrationId = 999;  // Dummy value
-  scoped_refptr<ServiceWorkerRegistration> registration(
-      new ServiceWorkerRegistration(
-          blink::mojom::ServiceWorkerRegistrationOptions(
-              GURL("https://www.example.com/")),
-          kRegistrationId, context()->AsWeakPtr()));
-  Unregister(kProviderId, kRegistrationId,
-             ServiceWorkerMsg_ServiceWorkerUnregistrationError::ID);
-
-  SetBrowserClientForTesting(old_browser_client);
-}
 
 TEST_F(ServiceWorkerDispatcherHostTest, ProviderCreatedAndDestroyed) {
   // |kProviderId| must be -2 when PlzNavigate is enabled to match the
