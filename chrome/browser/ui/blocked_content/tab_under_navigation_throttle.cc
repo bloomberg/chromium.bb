@@ -100,9 +100,10 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
   content::WebContents* contents = navigation_handle()->GetWebContents();
   auto* popup_opener = PopupOpenerTabHelper::FromWebContents(contents);
 
-  if (popup_opener &&
+  if (!seen_tab_under_ && popup_opener &&
       popup_opener->has_opened_popup_since_last_user_gesture() &&
       IsSuspiciousClientRedirect(navigation_handle(), started_in_background_)) {
+    seen_tab_under_ = true;
     popup_opener->OnDidTabUnder();
     LogAction(Action::kDidTabUnder);
 
