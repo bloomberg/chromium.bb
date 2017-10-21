@@ -211,7 +211,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   void RecordRappor(const char* metric,
                     const blink::WebString& sample) override;
   void RecordRapporURL(const char* metric, const blink::WebURL& url) override;
-
+  blink::WebPushProvider* PushProvider() override;
   std::unique_ptr<blink::WebTrialTokenValidator> TrialTokenValidator() override;
   std::unique_ptr<blink::TrialPolicy> OriginTrialPolicy() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
