@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
-PASS document.getElementsByTagName and foreign parser-inserted\nelements
+PASS document.getElementsByTagName and foreign parser-inserted
+elements
 FAIL Testing altGlyph assert_equals: expected 2 but got 0
 FAIL Testing altGlyphDef assert_equals: expected 2 but got 0
 FAIL Testing altGlyphItem assert_equals: expected 2 but got 0

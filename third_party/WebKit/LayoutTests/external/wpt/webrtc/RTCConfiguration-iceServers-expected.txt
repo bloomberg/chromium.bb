@@ -47,24 +47,88 @@ PASS new RTCPeerConnection(config) - with relative url should throw SyntaxError
 PASS setConfiguration(config) - with relative url should throw SyntaxError
 PASS new RTCPeerConnection(config) - with http url should throw SyntaxError
 PASS setConfiguration(config) - with http url should throw SyntaxError
-FAIL new RTCPeerConnection(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turn://example.org/foo?x=y'\n      }] })" threw object "InvalidAccessError: Failed to construct 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
-FAIL setConfiguration(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turn://example.org/foo?x=y'\n      }] })" threw object "InvalidAccessError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
-FAIL new RTCPeerConnection(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'stun://example.org/foo?x=y'\n      }] })" threw object "NotSupportedError: Failed to construct 'RTCPeerConnection': Failed to initialize native PeerConnection." that is not a DOMException SyntaxError: property "code" is equal to 9, expected 12
-FAIL setConfiguration(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'stun://example.org/foo?x=y'\n      }] })" threw object "OperationError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration." that is not a DOMException SyntaxError: property "code" is equal to 0, expected 12
+FAIL new RTCPeerConnection(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'turn://example.org/foo?x=y'
+      }] })" threw object "InvalidAccessError: Failed to construct 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
+FAIL setConfiguration(config) - with invalid turn url should throw SyntaxError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'turn://example.org/foo?x=y'
+      }] })" threw object "InvalidAccessError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Both username and credential are required when the URL scheme is "turn" or "turns"." that is not a DOMException SyntaxError: property "code" is equal to 15, expected 12
+FAIL new RTCPeerConnection(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'stun://example.org/foo?x=y'
+      }] })" threw object "NotSupportedError: Failed to construct 'RTCPeerConnection': Failed to initialize native PeerConnection." that is not a DOMException SyntaxError: property "code" is equal to 9, expected 12
+FAIL setConfiguration(config) - with invalid stun url should throw SyntaxError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'stun://example.org/foo?x=y'
+      }] })" threw object "OperationError: Failed to execute 'setConfiguration' on 'RTCPeerConnection': Could not update the PeerConnection with the given configuration." that is not a DOMException SyntaxError: property "code" is equal to 0, expected 12
 FAIL new RTCPeerConnection(config) - with empty urls and credentialType password should succeed pc.getConfiguration is not a function
 FAIL setConfiguration(config) - with empty urls and credentialType password should succeed pc.getConfiguration is not a function
 FAIL new RTCPeerConnection(config) - with empty urls and credentialType oauth should succeed pc.getConfiguration is not a function
 FAIL setConfiguration(config) - with empty urls and credentialType oauth should succeed pc.getConfiguration is not a function
-FAIL new RTCPeerConnection(config) - with invalid credentialType should throw TypeError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: [],\n        credentialType: 'invalid'\n      }] })" did not throw
-FAIL setConfiguration(config) - with invalid credentialType should throw TypeError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: [],\n        credentialType: 'invalid'\n      }] })" did not throw
-FAIL new RTCPeerConnection(config) - with credentialType token should throw TypeError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: [],\n        credentialType: 'token'\n      }] })" did not throw
-FAIL setConfiguration(config) - with credentialType token should throw TypeError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: [],\n        credentialType: 'token'\n      }] })" did not throw
-FAIL new RTCPeerConnection(config) - with url field should throw TypeError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        url: 'stun:stun1.example.net'\n      }] })" did not throw
-FAIL setConfiguration(config) - with url field should throw TypeError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        url: 'stun:stun1.example.net'\n      }] })" did not throw
-FAIL new RTCPeerConnection(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turns:turn.example.org',\n        credentialType: 'password',\n        username: 'user',\n        credential: {\n          macKey: '',\n          accessToken: ''\n        }\n      }] })" did not throw
-FAIL setConfiguration(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turns:turn.example.org',\n        credentialType: 'password',\n        username: 'user',\n        credential: {\n          macKey: '',\n          accessToken: ''\n        }\n      }] })" did not throw
-FAIL new RTCPeerConnection(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turns:turn.example.org',\n        credentialType: 'oauth',\n        username: 'user',\n        credential: 'cred'\n      }] })" did not throw
-FAIL setConfiguration(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws: function "() =>\n      makePc({ iceServers: [{\n        urls: 'turns:turn.example.org',\n        credentialType: 'oauth',\n        username: 'user',\n        credential: 'cred'\n      }] })" did not throw
+FAIL new RTCPeerConnection(config) - with invalid credentialType should throw TypeError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: [],
+        credentialType: 'invalid'
+      }] })" did not throw
+FAIL setConfiguration(config) - with invalid credentialType should throw TypeError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: [],
+        credentialType: 'invalid'
+      }] })" did not throw
+FAIL new RTCPeerConnection(config) - with credentialType token should throw TypeError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: [],
+        credentialType: 'token'
+      }] })" did not throw
+FAIL setConfiguration(config) - with credentialType token should throw TypeError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: [],
+        credentialType: 'token'
+      }] })" did not throw
+FAIL new RTCPeerConnection(config) - with url field should throw TypeError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        url: 'stun:stun1.example.net'
+      }] })" did not throw
+FAIL setConfiguration(config) - with url field should throw TypeError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        url: 'stun:stun1.example.net'
+      }] })" did not throw
+FAIL new RTCPeerConnection(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'turns:turn.example.org',
+        credentialType: 'password',
+        username: 'user',
+        credential: {
+          macKey: '',
+          accessToken: ''
+        }
+      }] })" did not throw
+FAIL setConfiguration(config) - with turns server, credentialType password, and RTCOauthCredential credential should throw InvalidAccessError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'turns:turn.example.org',
+        credentialType: 'password',
+        username: 'user',
+        credential: {
+          macKey: '',
+          accessToken: ''
+        }
+      }] })" did not throw
+FAIL new RTCPeerConnection(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'turns:turn.example.org',
+        credentialType: 'oauth',
+        username: 'user',
+        credential: 'cred'
+      }] })" did not throw
+FAIL setConfiguration(config) - with turns server, credentialType oauth, and string credential should throw InvalidAccessError assert_throws: function "() =>
+      makePc({ iceServers: [{
+        urls: 'turns:turn.example.org',
+        credentialType: 'oauth',
+        username: 'user',
+        credential: 'cred'
+      }] })" did not throw
 FAIL new RTCPeerConnection(config) - with turns server, credentialType oauth and RTCOAuthCredential credential should succeed pc.getConfiguration is not a function
 FAIL setConfiguration(config) - with turns server, credentialType oauth and RTCOAuthCredential credential should succeed pc.getConfiguration is not a function
 FAIL new RTCPeerConnection(config) - with both turns and stun server, credentialType oauth and RTCOAuthCredential credential should succeed pc.getConfiguration is not a function

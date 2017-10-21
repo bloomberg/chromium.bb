@@ -28,8 +28,10 @@ FAIL HTML (standards) IMG usemap="#" assert_equals: expected Element node <img s
 PASS HTML (standards) OBJECT usemap="#"
 PASS HTML (standards) IMG usemap="# "
 FAIL HTML (standards) OBJECT usemap="# " assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-sp... but got Element node <object data="/images/threecolors.png" usemap="# "></object>
-FAIL HTML (standards) IMG usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <img src="/images/threecolors.png" usemap="#\n"></img>
-FAIL HTML (standards) OBJECT usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <object data="/images/threecolors.png" usemap="#\n"></object>
+FAIL HTML (standards) IMG usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <img src="/images/threecolors.png" usemap="#
+"></img>
+FAIL HTML (standards) OBJECT usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <object data="/images/threecolors.png" usemap="#
+"></object>
 PASS HTML (standards) IMG usemap="#percent-escape-name-%41"
 PASS HTML (standards) OBJECT usemap="#percent-escape-name-%41"
 PASS HTML (standards) IMG usemap="#percent-escape-id-%41"
@@ -84,8 +86,10 @@ FAIL HTML (quirks) IMG usemap="#" assert_equals: expected Element node <img src=
 PASS HTML (quirks) OBJECT usemap="#"
 PASS HTML (quirks) IMG usemap="# "
 FAIL HTML (quirks) OBJECT usemap="# " assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-sp... but got Element node <object data="/images/threecolors.png" usemap="# "></object>
-FAIL HTML (quirks) IMG usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <img src="/images/threecolors.png" usemap="#\n"></img>
-FAIL HTML (quirks) OBJECT usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <object data="/images/threecolors.png" usemap="#\n"></object>
+FAIL HTML (quirks) IMG usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <img src="/images/threecolors.png" usemap="#
+"></img>
+FAIL HTML (quirks) OBJECT usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <object data="/images/threecolors.png" usemap="#
+"></object>
 PASS HTML (quirks) IMG usemap="#percent-escape-name-%41"
 PASS HTML (quirks) OBJECT usemap="#percent-escape-name-%41"
 PASS HTML (quirks) IMG usemap="#percent-escape-id-%41"
@@ -141,7 +145,8 @@ PASS XHTML object usemap="#"
 PASS XHTML img usemap="# "
 FAIL XHTML object usemap="# " assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-sp... but got Element node <object data="/images/threecolors.png" usemap="# "></object>
 PASS XHTML img usemap="#\n"
-FAIL XHTML object usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <object data="/images/threecolors.png" usemap="#\n"></object>
+FAIL XHTML object usemap="#\n" assert_equals: expected Element node <area shape="rect" coords="0,0,99,50" href="#area-hash-LF... but got Element node <object data="/images/threecolors.png" usemap="#
+"></object>
 PASS XHTML img usemap="#percent-escape-name-%41"
 PASS XHTML object usemap="#percent-escape-name-%41"
 PASS XHTML img usemap="#percent-escape-id-%41"

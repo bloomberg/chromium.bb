@@ -4329,7 +4329,9 @@ PASS OffscreenCanvasRenderingContext2D interface object length
 PASS OffscreenCanvasRenderingContext2D interface object name
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object
 PASS OffscreenCanvasRenderingContext2D interface: existence and properties of interface prototype object's "constructor" property
-FAIL OffscreenCanvasRenderingContext2D interface: operation commit() assert_throws: calling operation with this = null didn't throw TypeError function "function () {\n            fn.apply(obj, args);\n        }" did not throw
+FAIL OffscreenCanvasRenderingContext2D interface: operation commit() assert_throws: calling operation with this = null didn't throw TypeError function "function () {
+            fn.apply(obj, args);
+        }" did not throw
 PASS OffscreenCanvasRenderingContext2D interface: attribute canvas
 PASS OffscreenCanvasRenderingContext2D interface: operation save()
 PASS OffscreenCanvasRenderingContext2D interface: operation restore()
@@ -4992,7 +4994,9 @@ PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inher
 FAIL MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "source" with the proper type Unrecognized type WindowProxy
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "ports" with the proper type
 PASS MessageEvent interface: new MessageEvent("message", { data: 5 }) must inherit property "initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object])" with the proper type
-FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {\n            fn.apply(obj, args);\n        }" did not throw
+FAIL MessageEvent interface: calling initMessageEvent(DOMString, boolean, boolean, any, USVString, DOMString, MessageEventSource, [object Object]) on new MessageEvent("message", { data: 5 }) with too few arguments must throw TypeError assert_throws: Called with 0 arguments function "function () {
+            fn.apply(obj, args);
+        }" did not throw
 PASS EventSource interface: existence and properties of interface object
 PASS EventSource interface object length
 PASS EventSource interface object name

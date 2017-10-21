@@ -53,8 +53,11 @@ PASS syntax:'big | bigger | BIGGER', initialValue:'bigger' is valid
 PASS syntax:'foo+|bar', initialValue:'foo foo foo' is valid
 PASS syntax:'default', initialValue:'default' is valid
 PASS syntax:'banana	', initialValue:'banana' is valid
-PASS syntax:'\nbanana\r\n', initialValue:'banana' is valid
-PASS syntax:'ba\n|	na\r|nya', initialValue:'nya' is valid
+PASS syntax:'
+banana\r
+', initialValue:'banana' is valid
+PASS syntax:'ba
+|	na\r|nya', initialValue:'nya' is valid
 PASS syntax:'null', initialValue:'null' is valid
 PASS syntax:'undefined', initialValue:'undefined' is valid
 PASS syntax:'array', initialValue:'array' is valid
@@ -87,7 +90,8 @@ PASS syntax:'<custom-ident>+', initialValue:'foo inherit bar' is invalid
 PASS syntax:'*', initialValue:')' is invalid
 PASS syntax:'*', initialValue:'([)]' is invalid
 PASS syntax:'*', initialValue:'whee!' is invalid
-PASS syntax:'*', initialValue:'"\n' is invalid
+PASS syntax:'*', initialValue:'"
+' is invalid
 PASS syntax:'*', initialValue:'url(moo '')' is invalid
 PASS syntax:'*', initialValue:'semi;colon' is invalid
 PASS syntax:'*', initialValue:'var(invalid var ref)' is invalid

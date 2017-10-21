@@ -457,9 +457,12 @@ PASS RTCDataChannelEvent interface object name
 FAIL RTCDataChannelEvent interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
 PASS RTCDataChannelEvent interface: existence and properties of interface prototype object's "constructor" property
 PASS RTCDataChannelEvent interface: attribute channel
-PASS RTCDataChannelEvent must be primary interface of new RTCDataChannelEvent('channel',\n        { channel: new RTCPeerConnection().createDataChannel('') })
-FAIL Stringification of new RTCDataChannelEvent('channel',\n        { channel: new RTCPeerConnection().createDataChannel('') }) Cannot read property 'has_stringifier' of undefined
-PASS RTCDataChannelEvent interface: new RTCDataChannelEvent('channel',\n        { channel: new RTCPeerConnection().createDataChannel('') }) must inherit property "channel" with the proper type
+PASS RTCDataChannelEvent must be primary interface of new RTCDataChannelEvent('channel',
+        { channel: new RTCPeerConnection().createDataChannel('') })
+FAIL Stringification of new RTCDataChannelEvent('channel',
+        { channel: new RTCPeerConnection().createDataChannel('') }) Cannot read property 'has_stringifier' of undefined
+PASS RTCDataChannelEvent interface: new RTCDataChannelEvent('channel',
+        { channel: new RTCPeerConnection().createDataChannel('') }) must inherit property "channel" with the proper type
 FAIL RTCDTMFSender interface: existence and properties of interface object assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
 FAIL RTCDTMFSender interface object length assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing
 FAIL RTCDTMFSender interface object name assert_own_property: self does not have own property "RTCDTMFSender" expected property "RTCDTMFSender" missing

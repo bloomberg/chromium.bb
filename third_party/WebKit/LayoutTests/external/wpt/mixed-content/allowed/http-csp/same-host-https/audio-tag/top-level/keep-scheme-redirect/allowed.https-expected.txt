@@ -1,4 +1,10 @@
 This is a testharness.js-based test.
-FAIL opt_in_method: http-csp\n                                 origin: same-host-https\n                                 source_scheme: https\n                                 context_nesting: top-level\n                                 redirection: keep-scheme-redirect\n                                 subresource: audio-tag\n                                 expectation: allowed assert_equals: The triggered event should match 'allowed'. expected "allowed" but got "blocked"
+FAIL opt_in_method: http-csp
+                                 origin: same-host-https
+                                 source_scheme: https
+                                 context_nesting: top-level
+                                 redirection: keep-scheme-redirect
+                                 subresource: audio-tag
+                                 expectation: allowed assert_equals: The triggered event should match 'allowed'. expected "allowed" but got "blocked"
 Harness: the test ran to completion.
 

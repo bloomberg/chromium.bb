@@ -1,14 +1,16 @@
 This is a testharness.js-based test.
 Found 296 tests; 221 PASS, 75 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Loading data…
-PASS Origin parsing: <http://example	.\norg> against <http://example.org/foo/bar>
+PASS Origin parsing: <http://example	.
+org> against <http://example.org/foo/bar>
 PASS Origin parsing: <http://user:pass@foo:21/bar;par?b#c> against <http://example.org/foo/bar>
 PASS Origin parsing: <https://test:@test> against <about:blank>
 PASS Origin parsing: <https://:@test> against <about:blank>
 FAIL Origin parsing: <non-special://test:@test/x> against <about:blank> assert_equals: origin expected "null" but got "non-special://"
 FAIL Origin parsing: <non-special://:@test/x> against <about:blank> assert_equals: origin expected "null" but got "non-special://"
 PASS Origin parsing: <http:foo.com> against <http://example.org/foo/bar>
-PASS Origin parsing: <	   :foo.com   \n> against <http://example.org/foo/bar>
+PASS Origin parsing: <	   :foo.com   
+> against <http://example.org/foo/bar>
 PASS Origin parsing: < foo.com  > against <http://example.org/foo/bar>
 FAIL Origin parsing: <a:	 foo.com> against <http://example.org/foo/bar> assert_equals: origin expected "null" but got "file://"
 PASS Origin parsing: <http://f:21/ b ? d # e > against <http://example.org/foo/bar>
@@ -16,7 +18,8 @@ PASS Origin parsing: <http://f:/c> against <http://example.org/foo/bar>
 FAIL Origin parsing: <http://f:0/c> against <http://example.org/foo/bar> assert_equals: origin expected "http://f:0" but got "http://f"
 FAIL Origin parsing: <http://f:00000000000000/c> against <http://example.org/foo/bar> assert_equals: origin expected "http://f:0" but got "http://f"
 PASS Origin parsing: <http://f:00000000000000000000080/c> against <http://example.org/foo/bar>
-PASS Origin parsing: <http://f:\n/c> against <http://example.org/foo/bar>
+PASS Origin parsing: <http://f:
+/c> against <http://example.org/foo/bar>
 PASS Origin parsing: <> against <http://example.org/foo/bar>
 PASS Origin parsing: <  	> against <http://example.org/foo/bar>
 PASS Origin parsing: <:foo.com/> against <http://example.org/foo/bar>
@@ -261,7 +264,13 @@ PASS Origin parsing: <https://%e2%98%83> against <about:blank>
 PASS Origin parsing: <http://127.0.0.1:10100/relative_import.html> against <about:blank>
 PASS Origin parsing: <http://facebook.com/?foo=%7B%22abc%22> against <about:blank>
 PASS Origin parsing: <https://localhost:3000/jqueryui@1.2.3> against <about:blank>
-PASS Origin parsing: <h	t\nt\rp://h	o\ns\rt:9	0\n0\r0/p	a\nt\rh?q	u\ne\rry#f	r\na\rg> against <about:blank>
+PASS Origin parsing: <h	t
+t\rp://h	o
+s\rt:9	0
+0\r0/p	a
+t\rh?q	u
+e\rry#f	r
+a\rg> against <about:blank>
 PASS Origin parsing: <?a=b&c=d> against <http://example.org/foo/bar>
 PASS Origin parsing: <??a=b&c=d> against <http://example.org/foo/bar>
 PASS Origin parsing: <http:> against <http://example.org/foo/bar>

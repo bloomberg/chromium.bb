@@ -5,6 +5,8 @@ PASS careOf in PaymentAddress
 PASS totalAmount in PaymentResponse
 PASS paymentRequestId in PaymentRequest
 PASS paymentRequestId in PaymentResponse
-FAIL supportedMethods must not support sequence<DOMString> assert_throws: function "() => {\n    new PaymentRequest([{supportedMethods: methods}], {total: {label: 'bar', amount: {currency: 'BAZ', value: '0'}}});\n  }" threw object "[object Object]" ("sequence<DOMString> conversion is not allowed") expected object "[object Object]" ("toString should be called")
+FAIL supportedMethods must not support sequence<DOMString> assert_throws: function "() => {
+    new PaymentRequest([{supportedMethods: methods}], {total: {label: 'bar', amount: {currency: 'BAZ', value: '0'}}});
+  }" threw object "[object Object]" ("sequence<DOMString> conversion is not allowed") expected object "[object Object]" ("toString should be called")
 Harness: the test ran to completion.
 

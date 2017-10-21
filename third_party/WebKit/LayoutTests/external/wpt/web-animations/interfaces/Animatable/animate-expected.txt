@@ -53,7 +53,9 @@ PASS Element.animate() does not accept keyframes with an out-of-bounded negative
 PASS Element.animate() does not accept keyframes not loosely sorted by offset
 PASS Element.animate() does not accept property-indexed keyframes with an invalid easing value
 PASS Element.animate() does not accept a keyframe sequence with an invalid easing value
-FAIL Element.animate() does not accept keyframes with an invalid composite value assert_throws: function "function () {\n      div.animate(subtest.input, 2000);\n    }" did not throw
+FAIL Element.animate() does not accept keyframes with an invalid composite value assert_throws: function "function () {
+      div.animate(subtest.input, 2000);
+    }" did not throw
 PASS Element.animate() does not accept invalid easing: ''
 PASS Element.animate() does not accept invalid easing: '7'
 PASS Element.animate() does not accept invalid easing: 'test'

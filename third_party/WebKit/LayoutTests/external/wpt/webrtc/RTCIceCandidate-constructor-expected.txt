@@ -1,11 +1,25 @@
 This is a testharness.js-based test.
 PASS new RTCIceCandidate()
 FAIL new RTCIceCandidate({}) assert_throws: function "() => new RTCIceCandidate({})" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
-FAIL new RTCIceCandidate({ ... }) with manually filled default values assert_throws: function "() => new RTCIceCandidate({\n        candidate: '',\n        sdpMid: null,\n        sdpMLineIndex: null,\n        ufrag: undefined\n      })" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
-FAIL new RTCIceCandidate({ sdpMid: null, sdpMLineIndex: null }) assert_throws: function "() => new RTCIceCandidate({\n        sdpMid: null,\n        sdpMLineIndex: null\n      })" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
-FAIL new RTCIceCandidate({ candidate: '' }) assert_throws: function "() => new RTCIceCandidate({\n        candidate: ''\n      })" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
-FAIL new RTCIceCandidate({ candidate: null }) assert_throws: function "() => new RTCIceCandidate({\n        candidate: null\n      })" did not throw
-FAIL new RTCIceCandidate({ ... }) with valid candidate string only assert_throws: function "() => new RTCIceCandidate({\n        candidate: candidateString\n      })" did not throw
+FAIL new RTCIceCandidate({ ... }) with manually filled default values assert_throws: function "() => new RTCIceCandidate({
+        candidate: '',
+        sdpMid: null,
+        sdpMLineIndex: null,
+        ufrag: undefined
+      })" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
+FAIL new RTCIceCandidate({ sdpMid: null, sdpMLineIndex: null }) assert_throws: function "() => new RTCIceCandidate({
+        sdpMid: null,
+        sdpMLineIndex: null
+      })" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
+FAIL new RTCIceCandidate({ candidate: '' }) assert_throws: function "() => new RTCIceCandidate({
+        candidate: ''
+      })" threw object "TypeMismatchError: Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty." ("TypeMismatchError") expected object "TypeError" ("TypeError")
+FAIL new RTCIceCandidate({ candidate: null }) assert_throws: function "() => new RTCIceCandidate({
+        candidate: null
+      })" did not throw
+FAIL new RTCIceCandidate({ ... }) with valid candidate string only assert_throws: function "() => new RTCIceCandidate({
+        candidate: candidateString
+      })" did not throw
 FAIL new RTCIceCandidate({ sdpMid: 'audio' }) Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
 FAIL new RTCIceCandidate({ sdpMLineIndex: 0 }) Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.
 FAIL new RTCIceCandidate({ sdpMid: 'audio', sdpMLineIndex: 0 }) Failed to construct 'RTCIceCandidate': The 'candidate' property is not a string, or is empty.

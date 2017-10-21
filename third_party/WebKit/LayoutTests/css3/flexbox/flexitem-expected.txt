@@ -10,7 +10,12 @@ PASS .flexbox 8
 PASS .flexbox 9
 PASS .flexbox 10
 PASS .flexbox 11
-FAIL .flexbox 12 assert_equals: \n<div class="flexbox">\n  <!-- FIXME: This table should flex. -->\n  <div data-expected-display="table" data-expected-width="600" style="display: inline-table"></div>\n</div>\nwidth expected 600 but got 0
+FAIL .flexbox 12 assert_equals: 
+<div class="flexbox">
+  <!-- FIXME: This table should flex. -->
+  <div data-expected-display="table" data-expected-width="600" style="display: inline-table"></div>
+</div>
+width expected 600 but got 0
 PASS .flexbox 13
 PASS .flexbox 14
 PASS .flexbox 15

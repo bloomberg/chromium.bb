@@ -1,4 +1,12 @@
 This is a testharness.js-based test.
-FAIL #theTable 1 assert_equals: \n<table id="theTable">\n  <tbody><tr>\n    <td data-expected-width="180"></td>\n    <td data-expected-width="90"></td>\n    <td data-expected-width="30"></td>\n  </tr>\n</tbody></table>\nwidth expected 180 but got 100
+FAIL #theTable 1 assert_equals: 
+<table id="theTable">
+  <tbody><tr>
+    <td data-expected-width="180"></td>
+    <td data-expected-width="90"></td>
+    <td data-expected-width="30"></td>
+  </tr>
+</tbody></table>
+width expected 180 but got 100
 Harness: the test ran to completion.
 
