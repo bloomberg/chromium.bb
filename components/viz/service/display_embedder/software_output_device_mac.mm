@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/software_output_device_mac.h"
+#include "components/viz/service/display_embedder/software_output_device_mac.h"
 
 #include "base/mac/foundation_util.h"
 #include "base/trace_event/trace_event.h"
@@ -11,7 +11,7 @@
 #include "ui/gfx/mac/io_surface.h"
 #include "ui/gfx/skia_util.h"
 
-namespace content {
+namespace viz {
 
 SoftwareOutputDeviceMac::Buffer::Buffer() = default;
 SoftwareOutputDeviceMac::Buffer::~Buffer() = default;
@@ -19,8 +19,7 @@ SoftwareOutputDeviceMac::Buffer::~Buffer() = default;
 SoftwareOutputDeviceMac::SoftwareOutputDeviceMac(gfx::AcceleratedWidget widget)
     : widget_(widget) {}
 
-SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {
-}
+SoftwareOutputDeviceMac::~SoftwareOutputDeviceMac() {}
 
 void SoftwareOutputDeviceMac::Resize(const gfx::Size& pixel_size,
                                      float scale_factor) {
@@ -210,4 +209,4 @@ void SoftwareOutputDeviceMac::GetVSyncParameters(
   update_vsync_callback_ = callback;
 }
 
-}  // namespace content
+}  // namespace viz

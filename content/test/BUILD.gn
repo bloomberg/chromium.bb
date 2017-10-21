@@ -1187,8 +1187,6 @@ test("content_unittests") {
     "../browser/compositor/gpu_vsync_begin_frame_source_unittest.cc",
     "../browser/compositor/reflector_impl_unittest.cc",
     "../browser/compositor/software_browser_compositor_output_surface_unittest.cc",
-    "../browser/compositor/software_output_device_mac_unittest.mm",
-    "../browser/compositor/software_output_device_ozone_unittest.cc",
     "../browser/devtools/devtools_http_handler_unittest.cc",
     "../browser/devtools/devtools_manager_unittest.cc",
     "../browser/devtools/protocol/tracing_handler_unittest.cc",
@@ -1974,9 +1972,6 @@ test("content_unittests") {
 
   if (use_ozone) {
     deps += [ "//ui/ozone" ]
-  } else {
-    sources -=
-        [ "../browser/compositor/software_output_device_ozone_unittest.cc" ]
   }
 
   if (is_mac) {

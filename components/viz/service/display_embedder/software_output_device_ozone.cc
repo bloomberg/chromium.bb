@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/software_output_device_ozone.h"
+#include "components/viz/service/display_embedder/software_output_device_ozone.h"
 
 #include <memory>
 
@@ -12,7 +12,7 @@
 #include "ui/ozone/public/surface_factory_ozone.h"
 #include "ui/ozone/public/surface_ozone_canvas.h"
 
-namespace content {
+namespace viz {
 
 // static
 std::unique_ptr<SoftwareOutputDeviceOzone> SoftwareOutputDeviceOzone::Create(
@@ -39,8 +39,7 @@ SoftwareOutputDeviceOzone::SoftwareOutputDeviceOzone(
   vsync_provider_ = surface_ozone_->CreateVSyncProvider();
 }
 
-SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {
-}
+SoftwareOutputDeviceOzone::~SoftwareOutputDeviceOzone() {}
 
 void SoftwareOutputDeviceOzone::Resize(const gfx::Size& viewport_pixel_size,
                                        float scale_factor) {
@@ -67,4 +66,4 @@ void SoftwareOutputDeviceOzone::EndPaint() {
   surface_ozone_->PresentCanvas(damage_rect_);
 }
 
-}  // namespace content
+}  // namespace viz

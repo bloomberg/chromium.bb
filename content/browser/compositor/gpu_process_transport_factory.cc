@@ -77,21 +77,21 @@
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_win.h"
-#include "content/browser/compositor/software_output_device_win.h"
+#include "components/viz/service/display_embedder/software_output_device_win.h"
 #include "ui/gfx/win/rendering_window_manager.h"
 #elif defined(USE_OZONE)
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_ozone.h"
-#include "content/browser/compositor/software_output_device_ozone.h"
+#include "components/viz/service/display_embedder/software_output_device_ozone.h"
 #include "ui/ozone/public/overlay_candidates_ozone.h"
 #include "ui/ozone/public/overlay_manager_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/ozone/public/ozone_switches.h"
 #elif defined(USE_X11)
-#include "content/browser/compositor/software_output_device_x11.h"
+#include "components/viz/service/display_embedder/software_output_device_x11.h"
 #elif defined(OS_MACOSX)
 #include "components/viz/service/display_embedder/compositor_overlay_candidate_validator_mac.h"
+#include "components/viz/service/display_embedder/software_output_device_mac.h"
 #include "content/browser/compositor/gpu_output_surface_mac.h"
-#include "content/browser/compositor/software_output_device_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/base/ui_base_switches.h"
 #elif defined(OS_ANDROID)
@@ -260,7 +260,7 @@ GpuProcessTransportFactory::GpuProcessTransportFactory(
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());
 #if defined(OS_WIN)
-  software_backing_.reset(new OutputDeviceBacking);
+  software_backing_ = std::make_unique<viz::OutputDeviceBacking>();
 #endif
 }
 
@@ -289,14 +289,14 @@ GpuProcessTransportFactory::CreateSoftwareOutputDevice(
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 #if defined(OS_WIN)
-  return std::make_unique<SoftwareOutputDeviceWin>(software_backing_.get(),
-                                                   widget);
+  return std::make_unique<viz::SoftwareOutputDeviceWin>(software_backing_.get(),
+                                                        widget);
 #elif defined(USE_OZONE)
-  return SoftwareOutputDeviceOzone::Create(widget);
+  return viz::SoftwareOutputDeviceOzone::Create(widget);
 #elif defined(USE_X11)
-  return std::make_unique<SoftwareOutputDeviceX11>(widget);
+  return std::make_unique<viz::SoftwareOutputDeviceX11>(widget);
 #elif defined(OS_MACOSX)
-  return std::make_unique<SoftwareOutputDeviceMac>(widget);
+  return std::make_unique<viz::SoftwareOutputDeviceMac>(widget);
 #else
   NOTREACHED();
   return std::unique_ptr<viz::SoftwareOutputDevice>();

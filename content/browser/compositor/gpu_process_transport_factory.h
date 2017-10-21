@@ -42,12 +42,12 @@ class ContextProviderCommandBuffer;
 }
 
 namespace viz {
+class OutputDeviceBacking;
 class SoftwareOutputDevice;
 class VulkanInProcessContextProvider;
 }
 
 namespace content {
-class OutputDeviceBacking;
 
 class GpuProcessTransportFactory : public ui::ContextFactory,
                                    public ui::ContextFactoryPrivate,
@@ -124,7 +124,7 @@ class GpuProcessTransportFactory : public ui::ContextFactory,
 
 #if defined(OS_WIN)
   // Used by output surface, stored in PerCompositorData.
-  std::unique_ptr<OutputDeviceBacking> software_backing_;
+  std::unique_ptr<viz::OutputDeviceBacking> software_backing_;
 #endif
 
   // Depends on SurfaceManager.

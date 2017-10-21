@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/compositor/software_output_device_mac.h"
+#include "components/viz/service/display_embedder/software_output_device_mac.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/skia_util.h"
 
-namespace content {
+namespace viz {
 
 namespace {
 
@@ -117,4 +117,4 @@ TEST(SoftwareOutputDeviceMacTest, Basics) {
 
 }  // namespace
 
-}  // namespace content
+}  // namespace viz

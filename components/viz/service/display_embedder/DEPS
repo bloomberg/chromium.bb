@@ -14,7 +14,9 @@ include_rules = [
   "+gpu/ipc/service",
   "+mojo/public/cpp/bindings",
   "+mojo/public/cpp/system",
+  "+skia",
   "+third_party/skia",
+  "+ui/accelerated_widget_mac",
   "+ui/display",
   "+ui/gl",
   "+ui/latency",
@@ -25,5 +27,10 @@ specific_include_rules = {
   ".*_unittest\.cc": [
     "+cc/test",
     "+third_party/khronos/GLES2",
+  ],
+  "software_output_device_ozone_unittest.cc": [
+    "+ui/compositor",
+    "+ui/gl",
+    "+ui/platform_window",
   ],
 }
