@@ -55,7 +55,7 @@ class PLATFORM_EXPORT BlobRegistry {
   static void RemoveBlobDataRef(const String& uuid);
   static void RegisterPublicBlobURL(SecurityOrigin*,
                                     const KURL&,
-                                    RefPtr<BlobDataHandle>);
+                                    scoped_refptr<BlobDataHandle>);
   static void RevokePublicBlobURL(const KURL&);
 };
 

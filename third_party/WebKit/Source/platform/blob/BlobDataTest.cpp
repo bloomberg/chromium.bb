@@ -255,7 +255,7 @@ class BlobDataHandleTest : public ::testing::Test {
     String type = data->ContentType();
     bool is_single_unknown_size_file = data->IsSingleUnknownSizeFile();
 
-    RefPtr<BlobDataHandle> handle =
+    scoped_refptr<BlobDataHandle> handle =
         BlobDataHandle::Create(std::move(data), blob_size);
     EXPECT_EQ(blob_size, handle->size());
     EXPECT_EQ(type, handle->GetType());
@@ -344,14 +344,14 @@ class BlobDataHandleTest : public ::testing::Test {
   Vector<uint8_t> medium_test_data_;
   // Larger than max_data_population.
   Vector<uint8_t> large_test_data_;
-  RefPtr<BlobDataHandle> empty_blob_;
+  scoped_refptr<BlobDataHandle> empty_blob_;
   String empty_blob_uuid_;
-  RefPtr<BlobDataHandle> test_blob_;
+  scoped_refptr<BlobDataHandle> test_blob_;
   String test_blob_uuid_;
 };
 
 TEST_F(BlobDataHandleTest, CreateEmpty) {
-  RefPtr<BlobDataHandle> handle = BlobDataHandle::Create();
+  scoped_refptr<BlobDataHandle> handle = BlobDataHandle::Create();
   EXPECT_TRUE(handle->GetType().IsNull());
   EXPECT_EQ(0u, handle->size());
   EXPECT_FALSE(handle->IsSingleUnknownSizeFile());
@@ -380,7 +380,8 @@ TEST_F(BlobDataHandleTest, CreateFromUUID) {
   String kType = "content/type";
   uint64_t kSize = 1234;
 
-  RefPtr<BlobDataHandle> handle = BlobDataHandle::Create(kUuid, kType, kSize);
+  scoped_refptr<BlobDataHandle> handle =
+      BlobDataHandle::Create(kUuid, kType, kSize);
   EXPECT_EQ(kUuid, handle->Uuid());
   EXPECT_EQ(kType, handle->GetType());
   EXPECT_EQ(kSize, handle->size());

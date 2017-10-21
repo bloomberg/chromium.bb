@@ -40,11 +40,11 @@ class BlobBytesProviderTest : public ::testing::Test {
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
-  RefPtr<RawData> test_data1_;
+  scoped_refptr<RawData> test_data1_;
   Vector<uint8_t> test_bytes1_;
-  RefPtr<RawData> test_data2_;
+  scoped_refptr<RawData> test_data2_;
   Vector<uint8_t> test_bytes2_;
-  RefPtr<RawData> test_data3_;
+  scoped_refptr<RawData> test_data3_;
   Vector<uint8_t> test_bytes3_;
   Vector<uint8_t> combined_bytes_;
 };
