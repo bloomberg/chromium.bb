@@ -1233,7 +1233,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
     }
   }
 
-  RefPtr<Image> image;
+  scoped_refptr<Image> image;
   FloatSize default_object_size(Width(), Height());
   SourceImageStatus source_image_status = kInvalidSourceImageStatus;
   if (!image_source->IsVideoElement()) {
@@ -1430,9 +1430,10 @@ CanvasPattern* BaseRenderingContext2D::createPattern(
   SourceImageStatus status;
 
   FloatSize default_object_size(Width(), Height());
-  RefPtr<Image> image_for_rendering = image_source->GetSourceImageForCanvas(
-      &status, kPreferNoAcceleration, kSnapshotReasonCreatePattern,
-      default_object_size);
+  scoped_refptr<Image> image_for_rendering =
+      image_source->GetSourceImageForCanvas(&status, kPreferNoAcceleration,
+                                            kSnapshotReasonCreatePattern,
+                                            default_object_size);
 
   switch (status) {
     case kNormalSourceImageStatus:

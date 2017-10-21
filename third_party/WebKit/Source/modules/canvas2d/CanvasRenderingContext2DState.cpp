@@ -327,7 +327,7 @@ sk_sp<SkImageFilter> CanvasRenderingContext2DState::GetFilter(
     if (filter_value_->MayContainUrl())
       filter_value_->ReResolveUrl(style_resolution_host->GetDocument());
 
-    RefPtr<ComputedStyle> filter_style = ComputedStyle::Create();
+    scoped_refptr<ComputedStyle> filter_style = ComputedStyle::Create();
     // Must set font in case the filter uses any font-relative units (em, ex)
     filter_style->SetFont(font_for_filter_);
 

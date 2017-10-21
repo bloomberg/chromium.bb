@@ -52,7 +52,7 @@ class WebGLTimerQueryEXT : public WebGLContextObject {
   bool query_result_available_;
   GLuint64 query_result_;
 
-  RefPtr<WebTaskRunner> task_runner_;
+  scoped_refptr<WebTaskRunner> task_runner_;
   TaskHandle task_handle_;
 };
 

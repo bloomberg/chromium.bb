@@ -35,11 +35,11 @@ class MODULES_EXPORT PaintWorklet final : public Worklet,
   void AddPendingGenerator(const String& name, CSSPaintImageGeneratorImpl*);
   // The |container_size| is the container size with subpixel snapping, where
   // the |logical_size| is without it. Both size include zoom.
-  RefPtr<Image> Paint(const String& name,
-                      const ImageResourceObserver&,
-                      const IntSize& container_size,
-                      const CSSStyleValueVector*,
-                      const LayoutSize* logical_size);
+  scoped_refptr<Image> Paint(const String& name,
+                             const ImageResourceObserver&,
+                             const IntSize& container_size,
+                             const CSSStyleValueVector*,
+                             const LayoutSize* logical_size);
 
   typedef HeapHashMap<String, TraceWrapperMember<DocumentPaintDefinition>>
       DocumentDefinitionMap;

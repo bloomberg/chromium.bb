@@ -41,10 +41,10 @@ class AXInlineTextBox final : public AXObject {
   WTF_MAKE_NONCOPYABLE(AXInlineTextBox);
 
  private:
-  AXInlineTextBox(RefPtr<AbstractInlineTextBox>, AXObjectCacheImpl&);
+  AXInlineTextBox(scoped_refptr<AbstractInlineTextBox>, AXObjectCacheImpl&);
 
  public:
-  static AXInlineTextBox* Create(RefPtr<AbstractInlineTextBox>,
+  static AXInlineTextBox* Create(scoped_refptr<AbstractInlineTextBox>,
                                  AXObjectCacheImpl&);
 
  protected:
@@ -69,7 +69,7 @@ class AXInlineTextBox final : public AXObject {
   AXObject* PreviousOnLine() const override;
 
  private:
-  RefPtr<AbstractInlineTextBox> inline_text_box_;
+  scoped_refptr<AbstractInlineTextBox> inline_text_box_;
 
   bool ComputeAccessibilityIsIgnored(IgnoredReasons* = nullptr) const override;
 };

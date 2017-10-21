@@ -584,8 +584,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     // object.
   };
 
-  RefPtr<StaticBitmapImage> GetImage(AccelerationHint,
-                                     SnapshotReason) const override;
+  scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint,
+                                            SnapshotReason) const override;
   ImageData* ToImageData(SnapshotReason) override;
   void SetFilterQuality(SkFilterQuality) override;
   bool IsWebGL2OrHigher() { return Version() >= 2; }
@@ -600,7 +600,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
   // For use by WebVR, commits the current canvas content similar
   // to the "commit" JS API.
-  RefPtr<StaticBitmapImage> GetStaticBitmapImage();
+  scoped_refptr<StaticBitmapImage> GetStaticBitmapImage();
 
  protected:
   friend class EXTDisjointTimerQuery;
@@ -629,7 +629,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             const CanvasContextCreationAttributes&,
                             unsigned);
-  RefPtr<DrawingBuffer> CreateDrawingBuffer(
+  scoped_refptr<DrawingBuffer> CreateDrawingBuffer(
       std::unique_ptr<WebGraphicsContext3DProvider>);
   void SetupFlags();
 
@@ -676,19 +676,19 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // Restore the client unpack parameters.
   virtual void RestoreUnpackParameters();
 
-  RefPtr<Image> DrawImageIntoBuffer(RefPtr<Image>,
-                                    int width,
-                                    int height,
-                                    const char* function_name);
+  scoped_refptr<Image> DrawImageIntoBuffer(scoped_refptr<Image>,
+                                           int width,
+                                           int height,
+                                           const char* function_name);
 
-  RefPtr<Image> VideoFrameToImage(
+  scoped_refptr<Image> VideoFrameToImage(
       HTMLVideoElement*,
       int already_uploaded_id,
       WebMediaPlayer::VideoFrameUploadMetadata* out_metadata);
 
   // Structure for rendering to a DrawingBuffer, instead of directly
   // to the back-buffer of m_context.
-  RefPtr<DrawingBuffer> drawing_buffer_;
+  scoped_refptr<DrawingBuffer> drawing_buffer_;
   DrawingBuffer* GetDrawingBuffer() const;
 
   TraceWrapperMember<WebGLContextGroup> context_group_;
@@ -1656,7 +1656,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
 
  private:
   WebGLRenderingContextBase(CanvasRenderingContextHost*,
-                            RefPtr<WebTaskRunner>,
+                            scoped_refptr<WebTaskRunner>,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
                             const CanvasContextCreationAttributes&,
                             unsigned);
@@ -1680,7 +1680,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
                            GLint,
                            const IntRect&);
 
-  RefPtr<StaticBitmapImage> MakeImageSnapshot(SkImageInfo&);
+  scoped_refptr<StaticBitmapImage> MakeImageSnapshot(SkImageInfo&);
   const unsigned version_;
 
   bool IsPaintable() const final { return GetDrawingBuffer(); }

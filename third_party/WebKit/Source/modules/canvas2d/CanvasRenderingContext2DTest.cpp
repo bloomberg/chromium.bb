@@ -51,10 +51,10 @@ class FakeImageSource : public CanvasImageSource {
  public:
   FakeImageSource(IntSize, BitmapOpacity);
 
-  RefPtr<Image> GetSourceImageForCanvas(SourceImageStatus*,
-                                        AccelerationHint,
-                                        SnapshotReason,
-                                        const FloatSize&) override;
+  scoped_refptr<Image> GetSourceImageForCanvas(SourceImageStatus*,
+                                               AccelerationHint,
+                                               SnapshotReason,
+                                               const FloatSize&) override;
 
   bool WouldTaintOrigin(
       SecurityOrigin* destination_security_origin) const override {
@@ -70,7 +70,7 @@ class FakeImageSource : public CanvasImageSource {
 
  private:
   IntSize size_;
-  RefPtr<Image> image_;
+  scoped_refptr<Image> image_;
   bool is_opaque_;
 };
 
@@ -83,7 +83,7 @@ FakeImageSource::FakeImageSource(IntSize size, BitmapOpacity opacity)
   image_ = StaticBitmapImage::Create(surface->makeImageSnapshot());
 }
 
-RefPtr<Image> FakeImageSource::GetSourceImageForCanvas(
+scoped_refptr<Image> FakeImageSource::GetSourceImageForCanvas(
     SourceImageStatus* status,
     AccelerationHint,
     SnapshotReason,
@@ -1006,7 +1006,7 @@ TEST_F(CanvasRenderingContext2DTest, TextureUploadHeuristics) {
     EXPECT_EQ(8 * dst_size * dst_size, GetGlobalGPUMemoryUsage());
     sk_sp<SkSurface> sk_surface =
         SkSurface::MakeRasterN32Premul(src_size, src_size);
-    RefPtr<StaticBitmapImage> big_bitmap =
+    scoped_refptr<StaticBitmapImage> big_bitmap =
         StaticBitmapImage::Create(sk_surface->makeImageSnapshot());
     ImageBitmap* big_image = ImageBitmap::Create(std::move(big_bitmap));
     NonThrowableExceptionState exception_state;

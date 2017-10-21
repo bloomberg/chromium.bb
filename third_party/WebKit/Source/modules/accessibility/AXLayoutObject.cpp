@@ -961,7 +961,7 @@ String AXLayoutObject::ImageDataUrl(const IntSize& max_size) const {
   if (!image_bitmap)
     return String();
 
-  RefPtr<StaticBitmapImage> bitmap_image = image_bitmap->BitmapImage();
+  scoped_refptr<StaticBitmapImage> bitmap_image = image_bitmap->BitmapImage();
   if (!bitmap_image)
     return String();
 
@@ -2237,7 +2237,7 @@ void AXLayoutObject::AddInlineTextBoxChildren(bool force) {
   }
 
   LayoutText* layout_text = ToLayoutText(GetLayoutObject());
-  for (RefPtr<AbstractInlineTextBox> box =
+  for (scoped_refptr<AbstractInlineTextBox> box =
            layout_text->FirstAbstractInlineTextBox();
        box.get(); box = box->NextInlineTextBox()) {
     AXObject* ax_object = AxObjectCache().GetOrCreate(box.get());

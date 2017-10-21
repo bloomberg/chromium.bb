@@ -24,7 +24,7 @@ class MessageCallback : public GarbageCollectedFinalized<MessageCallback> {
   ScriptState* GetScriptState() const { return script_state_.get(); }
 
  private:
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
 };
 
 }  // namespace blink

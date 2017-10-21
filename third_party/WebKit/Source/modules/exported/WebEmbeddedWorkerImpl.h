@@ -120,7 +120,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final
   std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_client_;
 
   // Kept around only while main script loading is ongoing.
-  RefPtr<WorkerScriptLoader> main_script_loader_;
+  scoped_refptr<WorkerScriptLoader> main_script_loader_;
 
   std::unique_ptr<WorkerThread> worker_thread_;
   Persistent<WorkerInspectorProxy> worker_inspector_proxy_;

@@ -40,7 +40,8 @@ class SpeechSynthesisVoice final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SpeechSynthesisVoice* Create(RefPtr<PlatformSpeechSynthesisVoice>);
+  static SpeechSynthesisVoice* Create(
+      scoped_refptr<PlatformSpeechSynthesisVoice>);
   ~SpeechSynthesisVoice();
 
   const String& voiceURI() const { return platform_voice_->VoiceURI(); }
@@ -56,9 +57,9 @@ class SpeechSynthesisVoice final
   void Trace(blink::Visitor* visitor) {}
 
  private:
-  explicit SpeechSynthesisVoice(RefPtr<PlatformSpeechSynthesisVoice>);
+  explicit SpeechSynthesisVoice(scoped_refptr<PlatformSpeechSynthesisVoice>);
 
-  RefPtr<PlatformSpeechSynthesisVoice> platform_voice_;
+  scoped_refptr<PlatformSpeechSynthesisVoice> platform_voice_;
 };
 
 }  // namespace blink

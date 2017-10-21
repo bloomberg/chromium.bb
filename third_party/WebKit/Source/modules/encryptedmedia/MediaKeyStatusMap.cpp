@@ -61,7 +61,7 @@ class MediaKeyStatusMap::MapEntry final
 
  private:
   MapEntry(WebData key_id, const String& status)
-      : key_id_(DOMArrayBuffer::Create(RefPtr<SharedBuffer>(key_id))),
+      : key_id_(DOMArrayBuffer::Create(scoped_refptr<SharedBuffer>(key_id))),
         status_(status) {}
 
   const Member<DOMArrayBuffer> key_id_;

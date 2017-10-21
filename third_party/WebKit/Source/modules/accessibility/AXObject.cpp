@@ -1193,7 +1193,7 @@ bool AXObject::IsHiddenForTextAlternativeCalculation() const {
     return false;
   if (Node* node = GetNode()) {
     if (node->isConnected() && node->IsElementNode()) {
-      RefPtr<ComputedStyle> style =
+      scoped_refptr<ComputedStyle> style =
           document->EnsureStyleResolver().StyleForElement(ToElement(node));
       return style->Display() == EDisplay::kNone ||
              style->Visibility() != EVisibility::kVisible;

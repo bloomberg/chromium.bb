@@ -49,10 +49,10 @@ class CSSPaintDefinition final
   //
   // The |container_size| is the container size with subpixel snapping, where
   // the |logical_size| is without it. Both sizes include zoom.
-  RefPtr<Image> Paint(const ImageResourceObserver&,
-                      const IntSize& container_size,
-                      const CSSStyleValueVector*,
-                      const LayoutSize* logical_size);
+  scoped_refptr<Image> Paint(const ImageResourceObserver&,
+                             const IntSize& container_size,
+                             const CSSStyleValueVector*,
+                             const LayoutSize* logical_size);
   const Vector<CSSPropertyID>& NativeInvalidationProperties() const {
     return native_invalidation_properties_;
   }
@@ -88,7 +88,7 @@ class CSSPaintDefinition final
 
   void MaybeCreatePaintInstance();
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
 
   // This object keeps the class instance object, constructor function and
   // paint function alive. It participates in wrapper tracing as it holds onto

@@ -106,7 +106,7 @@ class PresentationConnection::Message final
   Message(DOMArrayBuffer* array_buffer)
       : type(kMessageTypeArrayBuffer), array_buffer(array_buffer) {}
 
-  Message(RefPtr<BlobDataHandle> blob_data_handle)
+  Message(scoped_refptr<BlobDataHandle> blob_data_handle)
       : type(kMessageTypeBlob), blob_data_handle(std::move(blob_data_handle)) {}
 
   void Trace(blink::Visitor* visitor) { visitor->Trace(array_buffer); }
@@ -114,14 +114,14 @@ class PresentationConnection::Message final
   MessageType type;
   String text;
   Member<DOMArrayBuffer> array_buffer;
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
 };
 
 class PresentationConnection::BlobLoader final
     : public GarbageCollectedFinalized<PresentationConnection::BlobLoader>,
       public FileReaderLoaderClient {
  public:
-  BlobLoader(RefPtr<BlobDataHandle> blob_data_handle,
+  BlobLoader(scoped_refptr<BlobDataHandle> blob_data_handle,
              PresentationConnection* presentation_connection)
       : presentation_connection_(presentation_connection),
         loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,

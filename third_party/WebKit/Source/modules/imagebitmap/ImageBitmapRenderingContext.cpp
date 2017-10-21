@@ -58,7 +58,7 @@ void ImageBitmapRenderingContext::Stop() {
   image_layer_bridge_->Dispose();
 }
 
-RefPtr<StaticBitmapImage> ImageBitmapRenderingContext::GetImage(
+scoped_refptr<StaticBitmapImage> ImageBitmapRenderingContext::GetImage(
     AccelerationHint,
     SnapshotReason) const {
   return image_layer_bridge_->GetImage();

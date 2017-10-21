@@ -44,7 +44,7 @@ class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>,
   static Pattern::RepeatMode ParseRepetitionType(const String&,
                                                  ExceptionState&);
 
-  static CanvasPattern* Create(RefPtr<Image> image,
+  static CanvasPattern* Create(scoped_refptr<Image> image,
                                Pattern::RepeatMode repeat,
                                bool origin_clean) {
     return new CanvasPattern(std::move(image), repeat, origin_clean);
@@ -60,9 +60,9 @@ class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>,
   void setTransform(SVGMatrixTearOff*);
 
  private:
-  CanvasPattern(RefPtr<Image>, Pattern::RepeatMode, bool origin_clean);
+  CanvasPattern(scoped_refptr<Image>, Pattern::RepeatMode, bool origin_clean);
 
-  RefPtr<Pattern> pattern_;
+  scoped_refptr<Pattern> pattern_;
   AffineTransform pattern_transform_;
   bool origin_clean_;
 };

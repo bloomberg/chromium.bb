@@ -198,7 +198,7 @@ class VRDisplay final : public EventTargetWithInlineData,
 
   // Used to keep the image alive until the next frame if using
   // waitForPreviousTransferToFinish.
-  RefPtr<Image> previous_image_;
+  scoped_refptr<Image> previous_image_;
 
   TraceWrapperMember<ScriptedAnimationController>
       scripted_animation_controller_;
