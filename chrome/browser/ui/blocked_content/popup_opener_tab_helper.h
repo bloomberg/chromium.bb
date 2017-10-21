@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -41,6 +42,10 @@ class PopupOpenerTabHelper
     return has_opened_popup_since_last_user_gesture_;
   }
 
+  bool did_tab_under() const {
+    return visible_time_before_tab_under_.has_value();
+  }
+
  private:
   friend class content::WebContentsUserData<PopupOpenerTabHelper>;
 
@@ -52,13 +57,13 @@ class PopupOpenerTabHelper
   void WasHidden() override;
   void DidGetUserInteraction(const blink::WebInputEvent::Type type) override;
 
+  // Visible time for this tab until a tab-under is detected. At which point it
+  // gets the visible time from the |visibility_tracker_|. Will be unset until a
+  // tab-under is detected.
+  base::Optional<base::TimeDelta> visible_time_before_tab_under_;
+
   // The clock which is used by the visibility trackers.
   std::unique_ptr<base::TickClock> tick_clock_;
-
-  // The |visibility_tracker_after_tab_under_| tracks the time this WebContents
-  // is in the foreground, after the tab does a cross site redirect in the
-  // background. Will be nullptr until that point in time.
-  std::unique_ptr<ScopedVisibilityTracker> visibility_tracker_after_tab_under_;
 
   // Keeps track of the total foreground time for this tab.
   std::unique_ptr<ScopedVisibilityTracker> visibility_tracker_;
