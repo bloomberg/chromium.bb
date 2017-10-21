@@ -141,6 +141,10 @@ gfx::Size GetRotatedVideoSize(VideoRotation rotation, gfx::Size natural_size) {
   return natural_size;
 }
 
+void RecordEncryptedEvent(bool encrypted_event_fired) {
+  UMA_HISTOGRAM_BOOLEAN("Media.EME.EncryptedEvent", encrypted_event_fired);
+}
+
 // How much time must have elapsed since loading last progressed before we
 // assume that the decoder will have had time to complete preroll.
 constexpr base::TimeDelta kPrerollAttemptTimeout =
@@ -298,6 +302,9 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 
   if (params->initial_cdm())
     SetCdm(params->initial_cdm());
+
+  // Report a false "EncrytpedEvent" here as a baseline.
+  RecordEncryptedEvent(false);
 
   // TODO(xhwang): When we use an external Renderer, many methods won't work,
   // e.g. GetCurrentFrameFromCompositor(). See http://crbug.com/434861
@@ -1187,8 +1194,7 @@ void WebMediaPlayerImpl::OnEncryptedMediaInitData(
     const std::vector<uint8_t>& init_data) {
   DCHECK(init_data_type != EmeInitDataType::UNKNOWN);
 
-  // TODO(xhwang): Update this UMA name. https://crbug.com/589251
-  UMA_HISTOGRAM_COUNTS("Media.EME.NeedKey", 1);
+  RecordEncryptedEvent(true);
 
   // Recreate the watch time reporter if necessary.
   const bool was_encrypted = is_encrypted_;

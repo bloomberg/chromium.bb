@@ -3345,6 +3345,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Enabled"/>
 </enum>
 
+<enum name="BooleanEncryptedEvent">
+  <int value="0" label="Media player instance"/>
+  <int value="1" label="Encrypted event fired"/>
+</enum>
+
 <enum name="BooleanEqual">
   <int value="0" label="Not Equal"/>
   <int value="1" label="Equal"/>
