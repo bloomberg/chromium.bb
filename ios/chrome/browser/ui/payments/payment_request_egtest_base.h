@@ -32,6 +32,9 @@ class WebState;
 // within a timeout, a GREYAssert is induced.
 - (void)addCreditCard:(const autofill::CreditCard&)card;
 
+// Adds |card| as a server card to the PersonalDataManager.
+- (void)addServerCreditCard:(const autofill::CreditCard&)card;
+
 // Returns the payments::PaymentRequest instances for |webState|.
 - (payments::PaymentRequestCache::PaymentRequestSet&)paymentRequestsForWebState:
     (web::WebState*)webState;

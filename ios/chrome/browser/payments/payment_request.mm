@@ -306,8 +306,10 @@ autofill::AutofillProfile* PaymentRequest::AddAutofillProfile(
 
 const PaymentDetailsModifier* PaymentRequest::GetApplicableModifier(
     PaymentInstrument* selected_instrument) const {
-  if (!selected_instrument)
+  if (!selected_instrument ||
+      !base::FeatureList::IsEnabled(features::kWebPaymentsModifiers)) {
     return nullptr;
+  }
 
   for (const auto& modifier : web_payment_request_.details.modifiers) {
     std::vector<std::string> supported_networks;
