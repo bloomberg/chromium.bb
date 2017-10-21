@@ -12,18 +12,15 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
+#include "chrome/browser/extensions/api/declarative_net_request/dnr_test_base.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
 #include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/extension_service_test_base.h"
-#include "chrome/browser/profiles/profile.h"
-#include "components/version_info/version_info.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/parse_info.h"
 #include "extensions/browser/api/declarative_net_request/test_utils.h"
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
-#include "extensions/common/features/feature_channel.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/install_warning.h"
 #include "extensions/common/manifest_constants.h"
@@ -40,32 +37,14 @@ const base::FilePath::CharType kJSONRulesetFilepath[] =
 // Fixure testing that declarative rules corresponding to the Declarative Net
 // Request API are correctly indexed, for both packed and unpacked
 // extensions.
-class RuleIndexingTest
-    : public ExtensionServiceTestBase,
-      public ::testing::WithParamInterface<ExtensionLoadType> {
+class RuleIndexingTest : public DNRTestBase {
  public:
-  // Use channel UNKNOWN to ensure that the declarativeNetRequest API is
-  // available, irrespective of its actual availability.
-  RuleIndexingTest() : channel_(::version_info::Channel::UNKNOWN) {}
+  RuleIndexingTest() {}
 
+  // DNRTestBase override.
   void SetUp() override {
-    ExtensionServiceTestBase::SetUp();
-    InitializeEmptyExtensionService();
-
-    loader_ = std::make_unique<ChromeTestExtensionLoader>(browser_context());
-    switch (GetParam()) {
-      case ExtensionLoadType::PACKED:
-        loader_->set_pack_extension(true);
-
-        // CrxInstaller reloads the extension after moving it, which causes an
-        // install warning for packed extensions due to the presence of
-        // kMetadata folder. However, this isn't actually surfaced to the user.
-        loader_->set_ignore_manifest_warnings(true);
-        break;
-      case ExtensionLoadType::UNPACKED:
-        loader_->set_pack_extension(false);
-        break;
-    }
+    DNRTestBase::SetUp();
+    loader_ = CreateExtensionLoader();
   }
 
  protected:
@@ -90,7 +69,7 @@ class RuleIndexingTest
     extension_ = loader_->LoadExtension(extension_dir_);
     ASSERT_TRUE(extension_.get());
 
-    EXPECT_TRUE(HasValidIndexedRuleset(*extension_, profile()));
+    EXPECT_TRUE(HasValidIndexedRuleset(*extension_, browser_context()));
 
     // Ensure no load errors were reported.
     EXPECT_TRUE(error_reporter()->GetErrors()->empty());
@@ -174,7 +153,6 @@ class RuleIndexingTest
     return ExtensionErrorReporter::GetInstance();
   }
 
-  ScopedCurrentChannel channel_;
   std::vector<TestRule> rules_list_;
   std::unique_ptr<base::Value> rules_value_;
   base::FilePath extension_dir_;
