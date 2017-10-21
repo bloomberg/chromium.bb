@@ -97,6 +97,16 @@ public class TestWebServer {
     private final Map<String, Integer> mResponseCountMap = new HashMap<String, Integer>();
     private final Map<String, List<String>> mLastRequestMap = new HashMap<String, List<String>>();
 
+    public void setServerHost(String hostname) {
+        StringBuilder builder = new StringBuilder();
+        builder.append(mSsl ? "https" : "http");
+        builder.append("://");
+        builder.append(hostname);
+        builder.append(":");
+        builder.append(mServerThread.mSocket.getLocalPort());
+        mServerUri = builder.toString();
+    }
+
     /**
      * Create and start a local HTTP server instance.
      * @param port Port number the server must use, or 0 to automatically choose a free port.
@@ -105,22 +115,21 @@ public class TestWebServer {
      */
     private TestWebServer(int port, boolean ssl) throws Exception {
         mPort = port;
-
         mSsl = ssl;
+
         if (mSsl) {
-            mServerUri = "https:";
             if (sSecureInstance != null) {
                 sSecureInstance.shutdown();
             }
         } else {
-            mServerUri = "http:";
             if (sInstance != null) {
                 sInstance.shutdown();
             }
         }
 
         mServerThread = new ServerThread(this, mPort, mSsl);
-        mServerUri += "//localhost:" + mServerThread.mSocket.getLocalPort();
+
+        setServerHost("localhost");
     }
 
     public static TestWebServer start(int port) throws Exception {

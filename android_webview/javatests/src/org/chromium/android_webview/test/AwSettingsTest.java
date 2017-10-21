@@ -39,6 +39,7 @@ import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.Callback;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
@@ -46,6 +47,7 @@ import org.chromium.base.test.util.TestFileUtil;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.HistoryUtils;
+import org.chromium.content.common.ContentSwitches;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
@@ -63,6 +65,7 @@ import java.util.regex.Pattern;
  * application
  */
 @RunWith(AwJUnit4ClassRunner.class)
+@CommandLineFlags.Add(ContentSwitches.HOST_RESOLVER_RULES + "=MAP * 127.0.0.1")
 public class AwSettingsTest {
     @Rule
     public AwActivityTestRule mActivityTestRule =
@@ -2883,6 +2886,7 @@ public class AwSettingsTest {
         try {
             httpsServer = TestWebServer.startSsl();
             httpServer = TestWebServer.start();
+            httpServer.setServerHost("example.com");
 
             final String jsUrl = "/insecure.js";
             final String imageUrl = "/insecure.png";

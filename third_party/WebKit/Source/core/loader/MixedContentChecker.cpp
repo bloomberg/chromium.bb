@@ -188,11 +188,6 @@ bool MixedContentChecker::IsMixedContent(SecurityOrigin* security_origin,
   bool is_allowed = url.ProtocolIs("blob") || url.ProtocolIs("filesystem") ||
                     SecurityOrigin::IsSecure(url) ||
                     SecurityOrigin::Create(url)->IsPotentiallyTrustworthy();
-  // TODO(mkwst): Remove this once 'localhost' is no longer considered
-  // potentially trustworthy.
-  if (is_allowed && url.ProtocolIs("http") &&
-      NetworkUtils::IsLocalHostname(url.Host(), nullptr))
-    is_allowed = false;
   return !is_allowed;
 }
 
