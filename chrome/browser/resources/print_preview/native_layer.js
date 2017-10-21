@@ -316,6 +316,9 @@ cr.define('print_preview', function() {
           !opt_showSystemDialog || (cr.isWindows && destination.isLocal),
           'Implemented for Windows only');
 
+      // Note: update
+      // chrome/browser/ui/webui/print_preview/print_preview_handler_unittest.cc
+      // with any changes to ticket creation.
       var ticket = {
         'mediaSize': printTicketStore.mediaSize.getValue(),
         'pageCount': printTicketStore.pageRange.getPageNumberSet().size,

@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 
+#include "base/base64.h"
 #include "base/containers/flat_set.h"
+#include "base/json/json_writer.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -20,6 +23,15 @@
 namespace printing {
 
 namespace {
+
+const char kDummyPrinterName[] = "DefaultPrinter";
+const char kDummyInitiatorName[] = "TestInitiator";
+const char kTestData[] = "abc";
+
+// Array of all printing::PrinterType values.
+const printing::PrinterType kAllTypes[] = {
+    printing::kPrivetPrinter, printing::kExtensionPrinter,
+    printing::kPdfPrinter, printing::kLocalPrinter};
 
 struct PrinterInfo {
   std::string id;
@@ -57,6 +69,67 @@ PrinterInfo GetEmptyPrinterInfo() {
   empty_printer.capabilities.SetKey("printer",
                                     empty_printer.basic_info.Clone());
   return empty_printer;
+}
+
+// Creates a print ticket with some default values. Based on ticket creation in
+// chrome/browser/resources/print_preview/native_layer.js.
+base::Value GetPrintTicket(printing::PrinterType type, bool cloud) {
+  bool is_privet_printer = !cloud && type == printing::kPrivetPrinter;
+  bool is_extension_printer = !cloud && type == printing::kExtensionPrinter;
+  base::Value::DictStorage ticket;
+
+  // Letter
+  base::Value::DictStorage media_size;
+  media_size["is_default"] = std::make_unique<base::Value>(true);
+  media_size["width_microns"] = std::make_unique<base::Value>(215900);
+  media_size["height_microns"] = std::make_unique<base::Value>(279400);
+  ticket["mediaSize"] = std::make_unique<base::Value>(media_size);
+
+  ticket["pageCount"] = std::make_unique<base::Value>(1);
+  ticket["landscape"] = std::make_unique<base::Value>(false);
+  ticket["color"] = std::make_unique<base::Value>(2);  // color printing
+  ticket["headerFooterEnabled"] = std::make_unique<base::Value>(false);
+  ticket["marginsType"] = std::make_unique<base::Value>(0);  // default margins
+  ticket["duplex"] = std::make_unique<base::Value>(1);       // LONG_EDGE
+  ticket["copies"] = std::make_unique<base::Value>(1);
+  ticket["collate"] = std::make_unique<base::Value>(false);
+  ticket["shouldPrintBackgrounds"] = std::make_unique<base::Value>(false);
+  ticket["shouldPrintSelectionOnly"] = std::make_unique<base::Value>(false);
+  ticket["previewModifiable"] = std::make_unique<base::Value>(false);
+  ticket["printToPDF"] =
+      std::make_unique<base::Value>(!cloud && type == printing::kPdfPrinter);
+  ticket["printWithCloudPrint"] = std::make_unique<base::Value>(cloud);
+  ticket["printWithPrivet"] = std::make_unique<base::Value>(is_privet_printer);
+  ticket["printWithExtension"] =
+      std::make_unique<base::Value>(is_extension_printer);
+  ticket["rasterizePDF"] = std::make_unique<base::Value>(false);
+  ticket["scaleFactor"] = std::make_unique<base::Value>(100);
+  ticket["dpiHorizontal"] = std::make_unique<base::Value>(600);
+  ticket["dpiVertical"] = std::make_unique<base::Value>(600);
+  ticket["deviceName"] = std::make_unique<base::Value>(kDummyPrinterName);
+  ticket["fitToPageEnabled"] = std::make_unique<base::Value>(true);
+  ticket["pageWidth"] = std::make_unique<base::Value>(215900);
+  ticket["pageHeight"] = std::make_unique<base::Value>(279400);
+  ticket["showSystemDialog"] = std::make_unique<base::Value>(false);
+
+  if (cloud)
+    ticket["cloudPrintID"] = std::make_unique<base::Value>(kDummyPrinterName);
+
+  if (is_privet_printer || is_extension_printer) {
+    base::Value::DictStorage capabilities;
+    capabilities["duplex"] = std::make_unique<base::Value>(true);  // non-empty
+    std::string caps_string;
+    base::JSONWriter::Write(base::Value(capabilities), &caps_string);
+    ticket["capabilities"] = std::make_unique<base::Value>(caps_string);
+    base::Value::DictStorage print_ticket;
+    print_ticket["version"] = std::make_unique<base::Value>("1.0");
+    print_ticket["print"] = std::make_unique<base::Value>();
+    std::string ticket_string;
+    base::JSONWriter::Write(base::Value(print_ticket), &ticket_string);
+    ticket["ticket"] = std::make_unique<base::Value>(ticket_string);
+  }
+
+  return base::Value(ticket);
 }
 
 class TestPrinterHandler : public PrinterHandler {
@@ -131,7 +204,11 @@ class FakePrintPreviewUI : public PrintPreviewUI {
 
   void GetPrintPreviewDataForIndex(
       int index,
-      scoped_refptr<base::RefCountedBytes>* data) const override {}
+      scoped_refptr<base::RefCountedBytes>* data) const override {
+    *data = base::MakeRefCounted<base::RefCountedBytes>(
+        reinterpret_cast<const unsigned char*>(kTestData),
+        sizeof(kTestData) - 1);
+  }
 
   int GetAvailableDraftPageCount() const override { return 1; }
 
@@ -163,6 +240,8 @@ class TestPrintPreviewHandler : public PrintPreviewHandler {
             *called_for_type_.begin() == printer_type);
   }
 
+  bool NotCalled() { return called_for_type_.empty(); }
+
   void reset_calls() { called_for_type_.clear(); }
 
  private:
@@ -171,9 +250,6 @@ class TestPrintPreviewHandler : public PrintPreviewHandler {
 
   DISALLOW_COPY_AND_ASSIGN(TestPrintPreviewHandler);
 };
-
-const char kDummyPrinterName[] = "DefaultPrinter";
-const char kDummyInitiatorName[] = "TestInitiator";
 
 }  // namespace
 
@@ -207,12 +283,36 @@ class PrintPreviewHandlerTest : public testing::Test {
     web_ui()->SetController(preview_ui.release());
   }
 
+  void Initialize() {
+    // Sending this message will enable javascript, so it must always be called
+    // before any other messages are sent.
+    base::ListValue list_args;
+    list_args.AppendString("test-callback-id-0");
+    handler()->HandleGetInitialSettings(&list_args);
+
+    // In response to get initial settings, the initial settings are sent back
+    // and a use-cloud-print event is dispatched.
+    ASSERT_EQ(2u, web_ui()->call_data().size());
+  }
+
   void AssertWebUIEventFired(const content::TestWebUI::CallData& data,
                              const std::string& event_id) {
     EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
     std::string event_fired;
     ASSERT_TRUE(data.arg1()->GetAsString(&event_fired));
     EXPECT_EQ(event_id, event_fired);
+  }
+
+  void CheckWebUIResponse(const content::TestWebUI::CallData& data,
+                          const std::string& callback_id_in,
+                          bool expect_success) {
+    EXPECT_EQ("cr.webUIResponse", data.function_name());
+    std::string callback_id;
+    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
+    EXPECT_EQ(callback_id_in, callback_id);
+    bool success = false;
+    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
+    EXPECT_EQ(expect_success, success);
   }
 
   // Validates the initial settings structure in the response matches the
@@ -224,14 +324,7 @@ class PrintPreviewHandlerTest : public testing::Test {
   void ValidateInitialSettings(const content::TestWebUI::CallData& data,
                                const std::string& default_printer_name,
                                const std::string& initiator_title) {
-    EXPECT_EQ("cr.webUIResponse", data.function_name());
-    std::string callback_id;
-    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-    EXPECT_EQ("test-callback-id-0", callback_id);
-    bool success = false;
-    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
-    EXPECT_TRUE(success);
-
+    CheckWebUIResponse(data, "test-callback-id-0", true);
     const base::Value* settings = data.arg3();
     ASSERT_TRUE(settings->FindPathOfType({"isInKioskAutoPrintMode"},
                                          base::Value::Type::BOOLEAN));
@@ -278,13 +371,7 @@ class PrintPreviewHandlerTest : public testing::Test {
 };
 
 TEST_F(PrintPreviewHandlerTest, InitialSettings) {
-  base::ListValue list_args;
-  list_args.AppendString("test-callback-id-0");
-  handler()->HandleGetInitialSettings(&list_args);
-
-  // In response to get initial settings, the initial settings are sent back
-  // and a use-cloud-print event is dispatched.
-  ASSERT_EQ(2u, web_ui()->call_data().size());
+  Initialize();
 
   // Verify initial settings were sent.
   ValidateInitialSettings(*web_ui()->call_data().back(),
@@ -296,19 +383,7 @@ TEST_F(PrintPreviewHandlerTest, InitialSettings) {
 }
 
 TEST_F(PrintPreviewHandlerTest, GetPrinters) {
-  // Initial settings first to enable javascript.
-  base::ListValue list_args;
-  list_args.AppendString("test-callback-id-0");
-  handler()->HandleGetInitialSettings(&list_args);
-
-  // In response to get initial settings, the initial settings are sent back
-  // and a use-cloud-print event is dispatched.
-  ASSERT_EQ(2u, web_ui()->call_data().size());
-
-  // Verify initial settings were sent.
-  ValidateInitialSettings(*web_ui()->call_data().back(),
-                          printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName);
+  Initialize();
 
   // Check all three printer types that implement
   // PrinterHandler::StartGetPrinters().
@@ -343,15 +418,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinters) {
     EXPECT_TRUE(printer_list[0].FindPathOfType({"printer_name"},
                                                base::Value::Type::STRING));
 
-    // Verify printers done webui response
+    // Verify getPrinters promise was resolved successfully.
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-    EXPECT_EQ("cr.webUIResponse", data.function_name());
-    std::string callback_id;
-    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-    EXPECT_EQ(callback_id_in, callback_id);
-    bool success = false;
-    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
-    EXPECT_TRUE(success);
+    CheckWebUIResponse(data, callback_id_in, true);
   }
 }
 
@@ -361,25 +430,12 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
   printer_handler()->SetPrinters(printers());
 
   // Initial settings first to enable javascript.
-  base::ListValue list_args;
-  list_args.AppendString("test-callback-id-0");
-  handler()->HandleGetInitialSettings(&list_args);
-  // In response to get initial settings, the initial settings are sent back
-  // and a use-cloud-print event is dispatched.
-  ASSERT_EQ(2u, web_ui()->call_data().size());
-
-  // Verify initial settings were sent.
-  ValidateInitialSettings(*web_ui()->call_data().back(),
-                          printing::kDummyPrinterName,
-                          printing::kDummyInitiatorName);
+  Initialize();
 
   // Check all four printer types that implement
   // PrinterHandler::StartGetCapability().
-  const printing::PrinterType types[] = {
-      printing::kPrivetPrinter, printing::kExtensionPrinter,
-      printing::kPdfPrinter, printing::kLocalPrinter};
-  for (size_t i = 0; i < arraysize(types); i++) {
-    printing::PrinterType type = types[i];
+  for (size_t i = 0; i < arraysize(printing::kAllTypes); i++) {
+    printing::PrinterType type = printing::kAllTypes[i];
     handler()->reset_calls();
     base::ListValue args;
     std::string callback_id_in =
@@ -394,15 +450,9 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
     // iteration.
     ASSERT_EQ(2u + (i + 1), web_ui()->call_data().size());
 
-    // Verify printers done webui response
+    // Verify that the printer capabilities promise was resolved correctly.
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-    EXPECT_EQ("cr.webUIResponse", data.function_name());
-    std::string callback_id;
-    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-    EXPECT_EQ(callback_id_in, callback_id);
-    bool success = false;
-    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
-    EXPECT_TRUE(success);
+    CheckWebUIResponse(data, callback_id_in, true);
     const base::Value* settings = data.arg3();
     ASSERT_TRUE(settings);
     EXPECT_TRUE(settings->FindPathOfType({printing::kSettingCapabilities},
@@ -411,30 +461,70 @@ TEST_F(PrintPreviewHandlerTest, GetPrinterCapabilities) {
 
   // Run through the loop again, this time with a printer that has no
   // capabilities.
-  for (size_t i = 0; i < arraysize(types); i++) {
-    printing::PrinterType type = types[i];
+  for (size_t i = 0; i < arraysize(printing::kAllTypes); i++) {
+    printing::PrinterType type = printing::kAllTypes[i];
     handler()->reset_calls();
     base::ListValue args;
     std::string callback_id_in =
-        "test-callback-id-" + base::UintToString(i + arraysize(types) + 1);
+        "test-callback-id-" +
+        base::UintToString(i + arraysize(printing::kAllTypes) + 1);
     args.AppendString(callback_id_in);
     args.AppendString("EmptyPrinter");
     args.AppendInteger(type);
     handler()->HandleGetPrinterCapabilities(&args);
     EXPECT_TRUE(handler()->CalledOnlyForType(type));
 
-    // Start with 2 calls from initial settings plus arraysize(types) from
-    // first loop, then add 1 more for each loop iteration.
-    ASSERT_EQ(2u + arraysize(types) + (i + 1), web_ui()->call_data().size());
+    // Start with 2 calls from initial settings plus
+    // arraysize(printing::kAllTypes) from first loop, then add 1 more for each
+    // loop iteration.
+    ASSERT_EQ(2u + arraysize(printing::kAllTypes) + (i + 1),
+              web_ui()->call_data().size());
 
-    // Verify printers done webui response
+    // Verify printer capabilities promise was rejected.
     const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
-    EXPECT_EQ("cr.webUIResponse", data.function_name());
-    std::string callback_id;
-    ASSERT_TRUE(data.arg1()->GetAsString(&callback_id));
-    EXPECT_EQ(callback_id_in, callback_id);
-    bool success = true;
-    ASSERT_TRUE(data.arg2()->GetAsBoolean(&success));
-    EXPECT_FALSE(success);
+    CheckWebUIResponse(data, callback_id_in, false);
+  }
+}
+
+TEST_F(PrintPreviewHandlerTest, Print) {
+  Initialize();
+
+  // All four printer types can print, as well as cloud printers.
+  for (size_t i = 0; i <= arraysize(printing::kAllTypes); i++) {
+    // Also check cloud print. Use dummy type value of Privet (will be ignored).
+    bool cloud = i == arraysize(printing::kAllTypes);
+    printing::PrinterType type =
+        cloud ? printing::kPrivetPrinter : printing::kAllTypes[i];
+    handler()->reset_calls();
+    base::ListValue args;
+    std::string callback_id_in =
+        "test-callback-id-" + base::UintToString(i + 1);
+    args.AppendString(callback_id_in);
+    base::Value print_ticket = printing::GetPrintTicket(type, cloud);
+    std::string json;
+    base::JSONWriter::Write(print_ticket, &json);
+    args.AppendString(json);
+    handler()->HandlePrint(&args);
+
+    // Verify correct PrinterHandler was called or that no handler was requested
+    // for local and cloud printers.
+    if (cloud || type == printing::kLocalPrinter) {
+      EXPECT_TRUE(handler()->NotCalled());
+    } else {
+      EXPECT_TRUE(handler()->CalledOnlyForType(type));
+    }
+
+    // Verify print promise was resolved successfully.
+    const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
+    CheckWebUIResponse(data, callback_id_in, true);
+
+    // For cloud print, should also get the encoded data back as a string.
+    if (cloud) {
+      std::string print_data;
+      ASSERT_TRUE(data.arg3()->GetAsString(&print_data));
+      std::string expected_data;
+      base::Base64Encode(printing::kTestData, &expected_data);
+      EXPECT_EQ(print_data, expected_data);
+    }
   }
 }
