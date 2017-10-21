@@ -65,10 +65,7 @@ ppapi_cdm_adapter("clearkeycdmadapter") {
   output_dir = "$root_out_dir/$clearkey_cdm_path"
 
   # Check whether the plugin's origin URL is valid.
-  defines = [
-    "CHECK_DOCUMENT_URL",
-    "SUPPORT_EXPERIMENTAL_CDM_INTERFACE",
-  ]
+  defines = [ "CHECK_DOCUMENT_URL" ]
   deps = [
     ":clearkeycdm",
     ":clearkeycdmadapter_resources",

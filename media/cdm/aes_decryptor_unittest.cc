@@ -274,9 +274,7 @@ class AesDecryptorTest : public testing::TestWithParam<TestType> {
 
       // Enable use of External Clear Key CDM.
       scoped_feature_list_.InitWithFeatures(
-          {media::kExternalClearKeyForTesting,
-           media::kSupportExperimentalCdmInterface},
-          {});
+          {media::kExternalClearKeyForTesting}, {});
 
       helper_.reset(new ExternalClearKeyTestHelper());
 

@@ -283,6 +283,10 @@ const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
 const base::Feature kExternalClearKeyForTesting{
     "ExternalClearKeyForTesting", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables support of experimental CDM interface version(s). This is usually
+// used to enable new CDM interface support for testing while it's still in
+// development. This switch may not be used anywhere if there's no experimental
+// CDM interface being developed.
 const base::Feature kSupportExperimentalCdmInterface{
     "SupportExperimentalCdmInterface", base::FEATURE_DISABLED_BY_DEFAULT};
 
