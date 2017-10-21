@@ -111,7 +111,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   blink::WebCrypto* Crypto() override;
   const char* GetBrowserServiceName() const override;
   blink::WebNotificationManager* GetNotificationManager() override;
-  blink::WebPushProvider* PushProvider() override;
   blink::WebMediaCapabilitiesClient* MediaCapabilitiesClient() override;
 
   blink::WebString DomCodeStringFromEnum(int dom_code) override;

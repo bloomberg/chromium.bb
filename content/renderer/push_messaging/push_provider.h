@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_PUSH_MESSAGING_PUSH_PROVIDER_H_
-#define CONTENT_CHILD_PUSH_MESSAGING_PUSH_PROVIDER_H_
+#ifndef CONTENT_RENDERER_PUSH_MESSAGING_PUSH_PROVIDER_H_
+#define CONTENT_RENDERER_PUSH_MESSAGING_PUSH_PROVIDER_H_
 
 #include <stdint.h>
 
@@ -106,4 +106,4 @@ class PushProvider : public blink::WebPushProvider,
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_PUSH_MESSAGING_PUSH_PROVIDER_H_
+#endif  // CONTENT_RENDERER_PUSH_MESSAGING_PUSH_PROVIDER_H_

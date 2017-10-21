@@ -125,8 +125,6 @@ target(link_target_type, "child") {
     "notifications/notification_dispatcher.h",
     "notifications/notification_manager.cc",
     "notifications/notification_manager.h",
-    "push_messaging/push_provider.cc",
-    "push_messaging/push_provider.h",
     "quota_dispatcher.cc",
     "quota_dispatcher.h",
     "quota_message_filter.cc",

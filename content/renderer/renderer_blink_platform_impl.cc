@@ -67,6 +67,7 @@
 #include "content/renderer/media_capture_from_element/html_video_element_capturer_source.h"
 #include "content/renderer/media_recorder/media_recorder_handler.h"
 #include "content/renderer/mojo/blink_interface_provider_impl.h"
+#include "content/renderer/push_messaging/push_provider.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
 #include "content/renderer/webclipboard_impl.h"
@@ -1321,6 +1322,12 @@ void RendererBlinkPlatformImpl::QueryStorageUsageAndQuota(
           storage_partition,
           static_cast<storage::StorageType>(type),
           QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));
+}
+
+//------------------------------------------------------------------------------
+
+blink::WebPushProvider* RendererBlinkPlatformImpl::PushProvider() {
+  return PushProvider::ThreadSpecificInstance(default_task_runner_);
 }
 
 //------------------------------------------------------------------------------

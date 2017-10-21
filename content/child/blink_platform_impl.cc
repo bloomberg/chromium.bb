@@ -42,7 +42,6 @@
 #include "content/child/feature_policy/feature_policy_platform.h"
 #include "content/child/notifications/notification_dispatcher.h"
 #include "content/child/notifications/notification_manager.h"
-#include "content/child/push_messaging/push_provider.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/child/web_data_consumer_handle_impl.h"
 #include "content/child/web_url_loader_impl.h"
@@ -665,10 +664,6 @@ blink::WebNotificationManager* BlinkPlatformImpl::GetNotificationManager() {
   return NotificationManager::ThreadSpecificInstance(
       thread_safe_sender_.get(),
       notification_dispatcher_.get());
-}
-
-blink::WebPushProvider* BlinkPlatformImpl::PushProvider() {
-  return PushProvider::ThreadSpecificInstance(main_thread_task_runner_);
 }
 
 blink::WebMediaCapabilitiesClient*
