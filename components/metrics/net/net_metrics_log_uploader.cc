@@ -8,10 +8,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/metrics/metrics_log_uploader.h"
-#include "components/metrics/proto/reporting_info.pb.h"
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
+#include "third_party/metrics_proto/reporting_info.pb.h"
 #include "url/gurl.h"
 
 namespace {

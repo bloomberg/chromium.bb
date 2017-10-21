@@ -6,7 +6,7 @@
 #define COMPONENTS_METRICS_LEAK_DETECTOR_PROTOBUF_TO_MOJO_CONVERTER_H_
 
 #include "components/metrics/leak_detector/leak_detector.mojom.h"
-#include "components/metrics/proto/memory_leak_report.pb.h"
+#include "third_party/metrics_proto/memory_leak_report.pb.h"
 
 namespace metrics {
 namespace leak_detector {

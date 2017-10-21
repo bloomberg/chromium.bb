@@ -15,10 +15,10 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/features/features.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 #if defined(OS_WIN)
 #include <windows.h>  // Needed for STATUS_* codes

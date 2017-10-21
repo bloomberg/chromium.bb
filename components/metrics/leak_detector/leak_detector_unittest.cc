@@ -10,9 +10,9 @@
 #include "base/allocator/allocator_extension.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/metrics/proto/memory_leak_report.pb.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/memory_leak_report.pb.h"
 
 namespace metrics {
 

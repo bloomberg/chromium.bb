@@ -12,7 +12,7 @@ if (is_android) {
 
 declare_args() {
   # Denotes the type of Cast product. This is #defined as CAST_PRODUCT_TYPE in
-  # version.h. See //components/metrics/proto/cast_logs.proto for valid values.
+  # version.h. See //third_party/metrics_proto/cast_logs.proto for valid values.
   if (is_android_arc) {
     cast_product_type = 7  # CAST_PRODUCT_TYPE_CHROME_OS
   } else if (is_android) {

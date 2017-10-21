@@ -14,9 +14,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match_type.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 
 class PrefService;
 

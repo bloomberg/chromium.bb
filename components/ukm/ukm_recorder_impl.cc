@@ -9,10 +9,10 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/strings/string_split.h"
-#include "components/metrics/proto/ukm/entry.pb.h"
-#include "components/metrics/proto/ukm/report.pb.h"
-#include "components/metrics/proto/ukm/source.pb.h"
 #include "components/ukm/ukm_source.h"
+#include "third_party/metrics_proto/ukm/entry.pb.h"
+#include "third_party/metrics_proto/ukm/report.pb.h"
+#include "third_party/metrics_proto/ukm/source.pb.h"
 
 namespace ukm {
 

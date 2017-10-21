@@ -13,8 +13,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/metrics/proto/ukm/report.pb.h"
-#include "components/metrics/proto/ukm/source.pb.h"
 #include "components/metrics/test_metrics_provider.h"
 #include "components/metrics/test_metrics_service_client.h"
 #include "components/prefs/testing_pref_service.h"
@@ -25,6 +23,8 @@
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/ukm/report.pb.h"
+#include "third_party/metrics_proto/ukm/source.pb.h"
 #include "third_party/zlib/google/compression_utils.h"
 
 namespace ukm {

@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -33,6 +32,7 @@
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/prefs/pref_service.h"
 #include "components/url_formatter/url_fixer.h"
+#include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/third_party/mozilla/url_parse.h"
 
 namespace {

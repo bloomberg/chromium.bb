@@ -5,9 +5,9 @@
 #include <stddef.h>
 
 #include "base/macros.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "net/url_request/url_request.h"
+#include "third_party/metrics_proto/omnibox_input_type.pb.h"
 #include "url/url_constants.h"
 
 TestSchemeClassifier::TestSchemeClassifier() {}

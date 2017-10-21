@@ -72,7 +72,7 @@ message ChromeUserMetricsExtension {
   repeated PrinterEventProto printer_event = 16;
 
   // Deprecated: use |sampled_profile| instead.
-  repeated PerfDataProto perf_data = 8 [deprecated=true];
+  repeated PerfDataProto perf_data = 8 [deprecated = true];
 
   // A list of all collected sample-based profiles since the last UMA upload.
   repeated SampledProfile sampled_profile = 11;

@@ -8,7 +8,7 @@
 #include <string>
 #include "base/strings/string_number_conversions.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/metrics/proto/system_profile.pb.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace metrics {
 

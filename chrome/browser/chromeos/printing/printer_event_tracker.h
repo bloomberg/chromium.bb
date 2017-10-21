@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/printing/printer_detector.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/metrics/proto/printer_event.pb.h"
+#include "third_party/metrics_proto/printer_event.pb.h"
 
 namespace chromeos {
 

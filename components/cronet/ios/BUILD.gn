@@ -55,7 +55,7 @@ _cronet_deps = [
   "//base:base",
   "//components/grpc_support",
   "//components/metrics:metrics",
-  "//components/metrics/proto:proto",
+  "//third_party/metrics_proto",
   "//components/prefs:prefs",
   "//ios/net:net",
   "//ios/web/public:user_agent",

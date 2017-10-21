@@ -9,10 +9,10 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "net/base/network_change_notifier.h"
 #include "net/nqe/network_quality_estimator_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/dbus_thread_manager.h"

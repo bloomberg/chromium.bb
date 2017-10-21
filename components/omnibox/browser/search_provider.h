@@ -20,12 +20,12 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/answers_cache.h"
 #include "components/omnibox/browser/base_search_provider.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "net/url_request/url_fetcher_delegate.h"
+#include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
 class AutocompleteProviderClient;
 class AutocompleteProviderListener;

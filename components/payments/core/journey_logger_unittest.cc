@@ -8,7 +8,6 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/metrics/proto/ukm/entry.pb.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "services/metrics/public/cpp/ukm_builders.h"

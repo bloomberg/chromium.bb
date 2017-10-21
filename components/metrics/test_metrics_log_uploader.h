@@ -6,7 +6,7 @@
 #define COMPONENTS_METRICS_TEST_METRICS_LOG_UPLOADER_H_
 
 #include "components/metrics/metrics_log_uploader.h"
-#include "components/metrics/proto/reporting_info.pb.h"
+#include "third_party/metrics_proto/reporting_info.pb.h"
 
 namespace metrics {
 

@@ -7,8 +7,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
 #include "components/component_updater/mock_component_updater_service.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace metrics {
 

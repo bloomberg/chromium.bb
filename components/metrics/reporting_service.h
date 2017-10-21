@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "components/metrics/data_use_tracker.h"
 #include "components/metrics/metrics_log_uploader.h"
-#include "components/metrics/proto/reporting_info.pb.h"
+#include "third_party/metrics_proto/reporting_info.pb.h"
 
 class PrefService;
 class PrefRegistrySimple;

@@ -16,7 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/sys_info.h"
 #include "base/time/time.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/omnibox_switches.h"
 #include "components/omnibox/browser/url_index_private_data.h"
 #include "components/prefs/pref_service.h"
@@ -24,6 +23,7 @@
 #include "components/variations/active_field_trials.h"
 #include "components/variations/metrics_util.h"
 #include "components/variations/variations_associated_data.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 
 #if defined(OS_ANDROID)
 #include "components/omnibox/browser/omnibox_pref_names.h"

@@ -26,13 +26,13 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_database.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/autocomplete_classifier.h"
 #include "components/omnibox/browser/autocomplete_controller.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/search_engines/template_url.h"
 #include "content/public/browser/web_ui.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
 
 using bookmarks::BookmarkModel;
 

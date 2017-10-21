@@ -13,7 +13,6 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/metrics/cast_metrics_service_client.h"
 #include "components/metrics/metrics_service.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/child_process_data.h"
@@ -21,6 +20,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_process_host.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace chromecast {
 namespace metrics {

@@ -7,9 +7,9 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/macros.h"
-#include "components/metrics/proto/reporting_info.pb.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/reporting_info.pb.h"
 
 namespace metrics {
 

@@ -7,9 +7,9 @@
 #include <string>
 
 #include "base/logging.h"
-#include "components/metrics/proto/translate_event.pb.h"
 #include "components/sync/protocol/user_event_specifics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/translate_event.pb.h"
 
 using metrics::TranslateEventProto;
 using Translation = sync_pb::UserEventSpecifics::Translation;

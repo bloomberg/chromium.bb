@@ -9,8 +9,8 @@
 #include "chrome/browser/chromeos/printing/printer_event_tracker_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
-#include "components/metrics/proto/printer_event.pb.h"
+#include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
+#include "third_party/metrics_proto/printer_event.pb.h"
 
 namespace chromeos {
 

@@ -17,7 +17,7 @@
 #include "base/threading/thread_local.h"
 #include "components/metrics/leak_detector/custom_allocator.h"
 #include "components/metrics/leak_detector/leak_detector_impl.h"
-#include "components/metrics/proto/memory_leak_report.pb.h"
+#include "third_party/metrics_proto/memory_leak_report.pb.h"
 
 #if defined(OS_CHROMEOS)
 #include <link.h>  // for dl_iterate_phdr

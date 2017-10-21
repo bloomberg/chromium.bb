@@ -101,7 +101,7 @@ static_library("metrics") {
   ]
 
   public_deps = [
-    "//components/metrics/proto",
+    "//third_party/metrics_proto",
   ]
 
   deps = [
@@ -149,7 +149,7 @@ static_library("component_metrics") {
   ]
 
   public_deps = [
-    "//components/metrics/proto",
+    "//third_party/metrics_proto",
   ]
 
   deps = [

@@ -9,10 +9,10 @@
 
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "components/metrics/proto/omnibox_event.pb.h"
-#include "components/metrics/proto/omnibox_input_type.pb.h"
 #include "components/omnibox/browser/autocomplete_provider.h"
 #include "components/sessions/core/session_id.h"
+#include "third_party/metrics_proto/omnibox_event.pb.h"
+#include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
 class AutocompleteResult;
 

@@ -8,7 +8,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/metrics/proto/system_profile.pb.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 typedef metrics::SystemProfileProto::GoogleUpdate::ProductInfo ProductInfo;
 

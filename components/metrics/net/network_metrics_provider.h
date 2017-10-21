@@ -14,10 +14,10 @@
 #include "base/threading/thread_checker.h"
 #include "components/metrics/metrics_provider.h"
 #include "components/metrics/net/wifi_access_point_info_provider.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
 #include "net/nqe/effective_connection_type.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace net {
 class NetworkQualityEstimator;

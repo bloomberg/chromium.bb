@@ -20,7 +20,7 @@
 #include "chrome/browser/sessions/session_restore.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/login/login_state.h"
-#include "components/metrics/proto/sampled_profile.pb.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
 

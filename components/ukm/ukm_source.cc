@@ -6,7 +6,7 @@
 
 #include "base/atomicops.h"
 #include "base/hash.h"
-#include "components/metrics/proto/ukm/source.pb.h"
+#include "third_party/metrics_proto/ukm/source.pb.h"
 
 namespace ukm {
 

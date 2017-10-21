@@ -19,7 +19,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
-#include "components/metrics/proto/system_profile.pb.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 // AntiVirusMetricsProvider is responsible for adding antivirus information to
 // the UMA system profile proto.

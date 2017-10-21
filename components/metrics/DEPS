@@ -13,6 +13,7 @@ include_rules = [
   "+extensions/features",
   "+mojo/public/cpp",
   "+services/service_manager/public/cpp",
+  "+third_party/metrics_proto",
   "+third_party/zlib/google",
   "-net",
 ]

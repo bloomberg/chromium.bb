@@ -21,12 +21,12 @@
 #include "components/machine_intelligence/proto/ranker_model.pb.h"
 #include "components/machine_intelligence/proto/translate_ranker_model.pb.h"
 #include "components/machine_intelligence/ranker_model.h"
-#include "components/metrics/proto/translate_event.pb.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/metrics_proto/translate_event.pb.h"
 #include "url/gurl.h"
 
 namespace translate {

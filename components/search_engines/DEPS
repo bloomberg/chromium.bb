@@ -3,7 +3,6 @@ include_rules = [
   "+components/history/core",
   "+components/infobars/core",
   "+components/keyed_service/core",
-  "+components/metrics/proto",
   # TODO(mpearson): for experiment; remove after crbug.com/488901 is launched.
   "+components/omnibox/browser/omnibox_field_trial.h",
   "+components/policy",
@@ -21,4 +20,5 @@ include_rules = [
   "+sql",
   "+ui/base",
   "+ui/gfx",
+  "+third_party/metrics_proto",
 ]

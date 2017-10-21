@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_provider.h"
-#include "components/metrics/proto/extension_install.pb.h"
+#include "third_party/metrics_proto/extension_install.pb.h"
 
 class Profile;
 

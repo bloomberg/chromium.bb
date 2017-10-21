@@ -8,9 +8,9 @@
 #include "base/sha1.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/metrics/metrics_pref_names.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace metrics {
 

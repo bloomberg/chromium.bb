@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/common/pref_names.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
@@ -22,6 +21,7 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace {
 

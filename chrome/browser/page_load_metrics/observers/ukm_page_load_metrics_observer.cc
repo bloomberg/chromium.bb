@@ -9,11 +9,11 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/metrics/net/network_metrics_provider.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "content/public/browser/web_contents.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_entry_builder.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace internal {
 

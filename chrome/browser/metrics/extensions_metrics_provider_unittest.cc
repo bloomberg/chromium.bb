@@ -20,8 +20,6 @@
 #include "components/metrics/client_info.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
-#include "components/metrics/proto/extension_install.pb.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/metrics/test_enabled_state_provider.h"
 #include "components/prefs/testing_pref_service.h"
 #include "extensions/browser/extension_prefs.h"
@@ -31,6 +29,8 @@
 #include "extensions/common/extension_set.h"
 #include "extensions/common/value_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/extension_install.pb.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 using metrics::ExtensionInstallProto;
 using extensions::Extension;

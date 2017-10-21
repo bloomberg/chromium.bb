@@ -7,12 +7,12 @@
 #include "base/macros.h"
 #include "base/test/histogram_tester.h"
 #include "build/build_config.h"
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "extensions/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace metrics {
 

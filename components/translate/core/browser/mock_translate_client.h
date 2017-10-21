@@ -10,12 +10,12 @@
 
 #include "base/memory/ptr_util.h"
 #include "components/infobars/core/infobar.h"
-#include "components/metrics/proto/translate_event.pb.h"
 #include "components/translate/core/browser/translate_client.h"
 #include "components/translate/core/browser/translate_driver.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "components/translate/core/common/language_detection_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/metrics_proto/translate_event.pb.h"
 
 namespace translate {
 

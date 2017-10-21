@@ -216,34 +216,34 @@ message OmniboxEventProto {
       CONTACT = 12;               // One of the user's contacts
       BOOKMARK_TITLE = 13;        // A bookmark with a title/url that contains
                                   // the input.
-      SEARCH_SUGGEST_ENTITY = 14; // A suggested search for an entity.
-      SEARCH_SUGGEST_TAIL = 15;   // A suggested search to complete the tail of
-                                  // the query.
-      SEARCH_SUGGEST_PERSONALIZED = 16; // A personalized suggested search.
-      SEARCH_SUGGEST_PROFILE = 17;  // A personalized suggested search for a
-                                    // Google+ profile.
-      APP_RESULT = 18;              // Result from an installed app
-                                    // (eg: a gmail email).
-                                    // Used by Android GSA for on-device
-                                    // suggestion logging.
-      APP = 19;                     // An app result (eg: the gmail app).
-                                    // Used by Android GSA for on-device
-                                    // suggestion logging.
-      LEGACY_ON_DEVICE = 20;        // An on-device result from a legacy
-                                    // provider. That is, this result is not
-                                    // from the on-device suggestion provider
-                                    // (go/icing). This field is
-                                    // used by Android GSA for on-device
-                                    // suggestion logging.
-      NAVSUGGEST_PERSONALIZED = 21; // A personalized url.
-      SEARCH_SUGGEST_ANSWER = 22;   // DEPRECATED. Answers no longer have their
-                                    // own type but instead can be attached to
-                                    // suggestions of any type.
-      CALCULATOR              = 23; // A calculator answer.
-      CLIPBOARD = 24;               // An URL based on the clipboard.
-      PHYSICAL_WEB            = 25; // A Physical Web nearby URL.
-      PHYSICAL_WEB_OVERFLOW   = 26; // An item representing multiple Physical
-                                    // Web nearby URLs.
+      SEARCH_SUGGEST_ENTITY = 14;  // A suggested search for an entity.
+      SEARCH_SUGGEST_TAIL = 15;    // A suggested search to complete the tail of
+                                   // the query.
+      SEARCH_SUGGEST_PERSONALIZED = 16;  // A personalized suggested search.
+      SEARCH_SUGGEST_PROFILE = 17;   // A personalized suggested search for a
+                                     // Google+ profile.
+      APP_RESULT = 18;               // Result from an installed app
+                                     // (eg: a gmail email).
+                                     // Used by Android GSA for on-device
+                                     // suggestion logging.
+      APP = 19;                      // An app result (eg: the gmail app).
+                                     // Used by Android GSA for on-device
+                                     // suggestion logging.
+      LEGACY_ON_DEVICE = 20;         // An on-device result from a legacy
+                                     // provider. That is, this result is not
+                                     // from the on-device suggestion provider
+                                     // (go/icing). This field is
+                                     // used by Android GSA for on-device
+                                     // suggestion logging.
+      NAVSUGGEST_PERSONALIZED = 21;  // A personalized url.
+      SEARCH_SUGGEST_ANSWER = 22;    // DEPRECATED. Answers no longer have their
+                                     // own type but instead can be attached to
+                                     // suggestions of any type.
+      CALCULATOR = 23;               // A calculator answer.
+      CLIPBOARD = 24;                // An URL based on the clipboard.
+      PHYSICAL_WEB = 25;             // A Physical Web nearby URL.
+      PHYSICAL_WEB_OVERFLOW = 26;    // An item representing multiple Physical
+                                     // Web nearby URLs.
     }
     optional ResultType result_type = 2;
 
@@ -257,7 +257,7 @@ message OmniboxEventProto {
     optional int32 typed_count = 5;
 
     // Whether this item is starred (bookmarked) or not.
-    optional bool is_starred = 4 [deprecated=true];
+    optional bool is_starred = 4 [deprecated = true];
 
     // Whether this item is disabled in the UI (not clickable).
     optional bool is_disabled = 6;

@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/metrics/metrics_service_client.h"
-#include "components/metrics/proto/chrome_user_metrics_extension.pb.h"
+#include "third_party/metrics_proto/chrome_user_metrics_extension.pb.h"
 
 class PrefService;
 

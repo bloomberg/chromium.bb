@@ -4,10 +4,10 @@
 
 #include "components/metrics/field_trials_provider.h"
 
-#include "components/metrics/proto/system_profile.pb.h"
 #include "components/variations/active_field_trials.h"
 #include "components/variations/synthetic_trial_registry.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/system_profile.pb.h"
 
 namespace variations {
 
