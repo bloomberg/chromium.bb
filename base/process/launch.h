@@ -206,8 +206,8 @@ struct BASE_EXPORT LaunchOptions {
   // no capabilities.
   // By default the child will inherit the same capabilities, job, and CWD
   // from the parent process.
-  uint32_t clone_flags = LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB |
-                         LP_CLONE_FDIO_CWD | LP_CLONE_FDIO_STDIO;
+  uint32_t clone_flags =
+      LP_CLONE_FDIO_NAMESPACE | LP_CLONE_DEFAULT_JOB | LP_CLONE_FDIO_STDIO;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX)
