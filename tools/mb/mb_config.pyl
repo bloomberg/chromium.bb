@@ -100,6 +100,12 @@
       'Linux ChromiumOS Builder': 'chromeos_with_codecs_release_bot',
       'Linux ChromiumOS Builder (dbg)': 'chromeos_with_codecs_debug_bot',
       'Linux ChromiumOS Full': 'chromeos_with_codecs_release_bot',
+
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
+      'chromeos-betty-rel': 'cros_chrome_sdk',
+      'chromeos-daisy-rel': 'cros_chrome_sdk',
+      'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
+      'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
 
     'chromium.clang': {
@@ -564,6 +570,15 @@
       'win_angle_x64_dbg_ng': 'gpu_fyi_tests_debug_trybot',
       'win_angle_x64_deqp_rel_ng': 'deqp_release_no_clang_trybot',
       'win_angle_x64_rel_ng': 'gpu_fyi_tests_release_trybot',
+    },
+
+    'tryserver.chromium.chromiumos': {
+      'chromeos-amd64-generic-rel': 'cros_chrome_sdk',
+      'chromeos-betty-rel': 'cros_chrome_sdk',
+      'chromeos-daisy-rel': 'cros_chrome_sdk',
+      'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
+      'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
+      'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
 
     'tryserver.chromium.linux': {
