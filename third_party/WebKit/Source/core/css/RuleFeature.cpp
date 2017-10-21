@@ -36,9 +36,9 @@
 #include "core/css/CSSSelectorList.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/RuleSet.h"
+#include "core/css/StylePropertySet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/invalidation/InvalidationSet.h"
-#include "core/css/parser/CSSLazyParsingState.h"
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/inspector/InspectorTraceEvents.h"
@@ -483,7 +483,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
   return nullptr;
 }
 
-void RuleFeatureSet::UpdateInvalidationSets(RuleData& rule_data) {
+void RuleFeatureSet::UpdateInvalidationSets(const RuleData& rule_data) {
   // Given a rule, update the descendant invalidation sets for the features
   // found in its selector. The first step is to extract the features from the
   // rightmost compound selector (extractInvalidationSetFeaturesFromCompound).
@@ -506,12 +506,8 @@ void RuleFeatureSet::UpdateInvalidationSets(RuleData& rule_data) {
     features.force_subtree = true;
   if (features.has_nth_pseudo)
     AddFeaturesToInvalidationSet(EnsureNthInvalidationSet(), features);
-  if (features.has_before_or_after) {
-    if (rule_data.Rule()->LazyParser())
-      rule_data.Rule()->LazyParser()->SetHasBeforeOrAfter();
-    UpdateInvalidationSetsForContentAttribute(
-        rule_data.Rule()->ParsedProperties());
-  }
+  if (features.has_before_or_after)
+    UpdateInvalidationSetsForContentAttribute(rule_data);
 
   const CSSSelector* next_compound =
       last_in_compound ? last_in_compound->TagHistory() : &rule_data.Selector();
@@ -549,20 +545,20 @@ void RuleFeatureSet::UpdateRuleSetInvalidation(
 }
 
 void RuleFeatureSet::UpdateInvalidationSetsForContentAttribute(
-    const StylePropertySet* property_set) {
+    const RuleData& rule_data) {
   // If any ::before and ::after rules specify 'content: attr(...)', we
   // need to create invalidation sets for those attributes to have content
   // changes applied through style recalc.
-  if (!property_set)
-    return;
 
-  int property_index = property_set->FindPropertyIndex(CSSPropertyContent);
+  const StylePropertySet& property_set = rule_data.Rule()->Properties();
+
+  int property_index = property_set.FindPropertyIndex(CSSPropertyContent);
 
   if (property_index == -1)
     return;
 
   StylePropertySet::PropertyReference content_property =
-      property_set->PropertyAt(property_index);
+      property_set.PropertyAt(property_index);
   const CSSValue& content_value = content_property.Value();
 
   if (!content_value.IsValueList())
@@ -836,7 +832,7 @@ void RuleFeatureSet::AddFeaturesToInvalidationSets(
 }
 
 RuleFeatureSet::SelectorPreMatch RuleFeatureSet::CollectFeaturesFromRuleData(
-    RuleData& rule_data) {
+    const RuleData& rule_data) {
   CHECK(is_alive_);
   FeatureMetadata metadata;
   if (CollectFeaturesFromSelector(rule_data.Selector(), metadata) ==

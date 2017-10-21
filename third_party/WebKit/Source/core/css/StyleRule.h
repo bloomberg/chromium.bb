@@ -108,9 +108,7 @@ class CORE_EXPORT StyleRule : public StyleRuleBase {
 
   const CSSSelectorList& SelectorList() const { return selector_list_; }
   const StylePropertySet& Properties() const;
-  const StylePropertySet* ParsedProperties() const { return properties_; }
   MutableStylePropertySet& MutableProperties();
-  CSSLazyPropertyParser* LazyParser() { return lazy_property_parser_.Get(); }
 
   void WrapperAdoptSelectorList(CSSSelectorList selectors) {
     selector_list_ = std::move(selectors);

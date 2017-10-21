@@ -930,8 +930,8 @@ StyleRule* CSSParserImpl::ConsumeStyleRule(CSSParserTokenStream& stream) {
     return nullptr;  // Parse error, invalid selector list
 
   // TODO(csharrison): How should we lazily parse css that needs the observer?
-  if (!observer_wrapper_ && lazy_state_) {
-    // TODO(shend): Don't lazily parse empty blocks.
+  if (!observer_wrapper_ && lazy_state_ &&
+      lazy_state_->ShouldLazilyParseProperties(selector_list)) {
     DCHECK(style_sheet_);
     return StyleRule::CreateLazy(
         std::move(selector_list),
