@@ -89,10 +89,9 @@ class NetworkHandler : public DevToolsDomainHandler,
       double upload_throughput,
       Maybe<protocol::Network::ConnectionType> connection_type) override;
 
-  DispatchResponse SetRequestInterceptionEnabled(
-      bool enabled,
-      Maybe<protocol::Array<std::string>> patterns,
-      Maybe<protocol::Array<std::string>> resource_types) override;
+  DispatchResponse SetRequestInterception(
+      std::unique_ptr<protocol::Array<protocol::Network::RequestPattern>>
+          patterns) override;
   void ContinueInterceptedRequest(
       const std::string& request_id,
       Maybe<std::string> error_reason,

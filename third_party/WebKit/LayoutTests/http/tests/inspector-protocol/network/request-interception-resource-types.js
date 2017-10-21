@@ -14,7 +14,7 @@
   });
 
   testRunner.log('Intercept scripts only');
-  await session.protocol.Network.setRequestInterceptionEnabled({"enabled": true, resourceTypes: ["Script"]});
+  await session.protocol.Network.setRequestInterception({patterns: [{resourceType: "Script"}]});
   session.evaluate(`
     var iframe = document.createElement('iframe');
     iframe.src = '${testRunner.url('./resources/resource-iframe.html')}';
@@ -26,7 +26,7 @@
   });
 
   testRunner.log('Intercept stylesheets only');
-  await session.protocol.Network.setRequestInterceptionEnabled({"enabled": true, resourceTypes: ["Stylesheet"]});
+  await session.protocol.Network.setRequestInterception({patterns: [{resourceType: "Stylesheet"}]});
   session.evaluate(`
     var iframe = document.createElement('iframe');
     iframe.src = '${testRunner.url('./resources/resource-iframe.html')}';

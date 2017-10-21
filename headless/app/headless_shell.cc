@@ -249,12 +249,14 @@ void HeadlessShell::DevToolsTargetReady() {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDeterministicFetch)) {
     devtools_client_->GetNetwork()->GetExperimental()->AddObserver(this);
-    devtools_client_->GetNetwork()
-        ->GetExperimental()
-        ->SetRequestInterceptionEnabled(
-            network::SetRequestInterceptionEnabledParams::Builder()
-                .SetEnabled(true)
-                .Build());
+    std::unique_ptr<headless::network::RequestPattern> match_all =
+        headless::network::RequestPattern::Builder().SetUrlPattern("*").Build();
+    std::vector<std::unique_ptr<headless::network::RequestPattern>> patterns;
+    patterns.push_back(std::move(match_all));
+    devtools_client_->GetNetwork()->GetExperimental()->SetRequestInterception(
+        network::SetRequestInterceptionParams::Builder()
+            .SetPatterns(std::move(patterns))
+            .Build());
   }
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDefaultBackgroundColor)) {
