@@ -278,7 +278,15 @@ chrome.developerPrivate.DependentExtension;
 
 /**
  * @typedef {{
- *   actionButtonHidden: boolean,
+ *   message: string,
+ *   submessages: !Array<string>
+ * }}
+ * @see https://developer.chrome.com/extensions/developerPrivate#type-Permission
+ */
+chrome.developerPrivate.Permission;
+
+/**
+ * @typedef {{
  *   blacklistText: (string|undefined),
  *   commands: !Array<!chrome.developerPrivate.Command>,
  *   controlledInfo: (!chrome.developerPrivate.ControlledInfo|undefined),
@@ -301,7 +309,7 @@ chrome.developerPrivate.DependentExtension;
  *   offlineEnabled: boolean,
  *   optionsPage: (!chrome.developerPrivate.OptionsPage|undefined),
  *   path: (string|undefined),
- *   permissions: !Array<string>,
+ *   permissions: !Array<!chrome.developerPrivate.Permission>,
  *   prettifiedPath: (string|undefined),
  *   runOnAllUrls: !chrome.developerPrivate.AccessModifier,
  *   runtimeErrors: !Array<!chrome.developerPrivate.RuntimeError>,
