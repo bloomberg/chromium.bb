@@ -44,7 +44,13 @@ class RuntimeHooksDelegate : public APIBindingHooksDelegate {
   APIBindingHooks::RequestResult HandleSendMessage(
       ScriptContext* script_context,
       const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleSendNativeMessage(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
   APIBindingHooks::RequestResult HandleConnect(
+      ScriptContext* script_context,
+      const std::vector<v8::Local<v8::Value>>& arguments);
+  APIBindingHooks::RequestResult HandleConnectNative(
       ScriptContext* script_context,
       const std::vector<v8::Local<v8::Value>>& arguments);
 

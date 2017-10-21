@@ -133,8 +133,12 @@ class MainThreadIPCMessageSender : public IPCMessageSender {
         break;
       }
       case MessageTarget::TAB:
-      case MessageTarget::NATIVE_APP:
         NOTIMPLEMENTED();
+        break;
+      case MessageTarget::NATIVE_APP:
+        render_frame->Send(new ExtensionHostMsg_OpenChannelToNativeApp(
+            routing_id, *target.native_application_name, port_id));
+        break;
     }
   }
 

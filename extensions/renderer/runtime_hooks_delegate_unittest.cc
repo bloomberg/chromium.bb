@@ -21,6 +21,29 @@
 #include "extensions/renderer/script_context_set.h"
 
 namespace extensions {
+namespace {
+
+void CallAPIAndExpectError(v8::Local<v8::Context> context,
+                           base::StringPiece method_name,
+                           base::StringPiece args) {
+  SCOPED_TRACE(base::StringPrintf("Args: `%s`", args.data()));
+  constexpr char kTemplate[] = "(function() { chrome.runtime.%s(%s); })";
+
+  v8::Isolate* isolate = context->GetIsolate();
+
+  // Just verify some error was thrown. Expecting the exact error message
+  // tends to rely too much on our argument spec code, which is tested
+  // separately.
+  v8::Local<v8::Function> function = FunctionFromString(
+      context, base::StringPrintf(kTemplate, method_name.data(), args.data()));
+  v8::TryCatch try_catch(isolate);
+  v8::MaybeLocal<v8::Value> result =
+      function->Call(context, v8::Undefined(isolate), 0, nullptr);
+  EXPECT_TRUE(result.IsEmpty());
+  EXPECT_TRUE(try_catch.HasCaught());
+}
+
+}  // namespace
 
 class RuntimeHooksDelegateTest : public NativeExtensionBindingsSystemUnittest {
  public:
@@ -36,8 +59,7 @@ class RuntimeHooksDelegateTest : public NativeExtensionBindingsSystemUnittest {
     bindings_system()->api_system()->GetHooksForAPI("runtime")->SetDelegate(
         std::make_unique<RuntimeHooksDelegate>(messaging_service_.get()));
 
-    scoped_refptr<Extension> mutable_extension =
-        ExtensionBuilder("foo").Build();
+    scoped_refptr<Extension> mutable_extension = BuildExtension();
     RegisterExtension(mutable_extension);
     extension_ = mutable_extension;
 
@@ -56,6 +78,10 @@ class RuntimeHooksDelegateTest : public NativeExtensionBindingsSystemUnittest {
     NativeExtensionBindingsSystemUnittest::TearDown();
   }
   bool UseStrictIPCMessageSender() override { return true; }
+
+  virtual scoped_refptr<Extension> BuildExtension() {
+    return ExtensionBuilder("foo").Build();
+  }
 
   NativeRendererMessagingService* messaging_service() {
     return messaging_service_.get();
@@ -153,6 +179,14 @@ TEST_F(RuntimeHooksDelegateTest, Connect) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
+  {
+    // Sanity check: connectNative is unavailable (missing permission).
+    v8::Local<v8::Value> connect_native =
+        V8ValueFromScriptSource(context, "chrome.runtime.connectNative");
+    ASSERT_FALSE(connect_native.IsEmpty());
+    EXPECT_TRUE(connect_native->IsUndefined());
+  }
+
   int next_context_port_id = 0;
   auto run_connect = [this, context, &next_context_port_id](
                          const std::string& args,
@@ -206,6 +240,14 @@ TEST_F(RuntimeHooksDelegateTest, SendMessage) {
     CLOSED,
     OPEN,
   };
+
+  {
+    // Sanity check: sendNativeMessage is unavailable (missing permission).
+    v8::Local<v8::Value> send_native_message =
+        V8ValueFromScriptSource(context, "chrome.runtime.sendNativeMessage");
+    ASSERT_FALSE(send_native_message.IsEmpty());
+    EXPECT_TRUE(send_native_message->IsUndefined());
+  }
 
   int next_context_port_id = 0;
   auto send_message = [this, context, &next_context_port_id](
@@ -290,26 +332,127 @@ TEST_F(RuntimeHooksDelegateTest, SendMessageErrors) {
   v8::HandleScope handle_scope(isolate());
   v8::Local<v8::Context> context = MainContext();
 
-  auto send_message = [this, context](const std::string& args) {
-    SCOPED_TRACE(base::StringPrintf("Args: `%s`", args.c_str()));
-    constexpr char kSendMessageTemplate[] =
-        "(function() { chrome.runtime.sendMessage(%s); })";
-
-    // Just verify some error was thrown. Expecting the exact error message
-    // tends to rely too much on our argument spec code, which is tested
-    // separately.
-    v8::Local<v8::Function> send_message = FunctionFromString(
-        context, base::StringPrintf(kSendMessageTemplate, args.c_str()));
-    v8::TryCatch try_catch(isolate());
-    v8::MaybeLocal<v8::Value> result =
-        send_message->Call(context, v8::Undefined(isolate()), 0, nullptr);
-    EXPECT_TRUE(result.IsEmpty());
-    EXPECT_TRUE(try_catch.HasCaught());
+  auto send_message = [context](base::StringPiece args) {
+    CallAPIAndExpectError(context, "sendMessage", args);
   };
 
   send_message("{data: 'hi'}, {unknownProp: true}");
   send_message("'some id', 'some message', 'some other string'");
   send_message("'some id', 'some message', {}, {}");
+}
+
+class RuntimeHooksDelegateNativeMessagingTest
+    : public RuntimeHooksDelegateTest {
+ public:
+  RuntimeHooksDelegateNativeMessagingTest() {}
+  ~RuntimeHooksDelegateNativeMessagingTest() override {}
+
+  scoped_refptr<Extension> BuildExtension() override {
+    return ExtensionBuilder("foo").AddPermission("nativeMessaging").Build();
+  }
+};
+
+TEST_F(RuntimeHooksDelegateNativeMessagingTest, ConnectNative) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  int next_context_port_id = 0;
+  auto run_connect_native = [this, context, &next_context_port_id](
+                                const std::string& args,
+                                const std::string& expected_app_name) {
+    // connectNative() doesn't name channels or ever include the TLS channel ID.
+    const std::string kEmptyExpectedChannel;
+    const bool kExpectedIncludeTlsChannelId = false;
+
+    SCOPED_TRACE(base::StringPrintf("Args: '%s'", args.c_str()));
+    constexpr char kAddPortTemplate[] =
+        "(function() { return chrome.runtime.connectNative(%s); })";
+    PortId expected_port_id(script_context()->context_id(),
+                            next_context_port_id++, true);
+    MessageTarget expected_target(
+        MessageTarget::ForNativeApp(expected_app_name));
+    EXPECT_CALL(*ipc_message_sender(),
+                SendOpenMessageChannel(script_context(), expected_port_id,
+                                       expected_target, kEmptyExpectedChannel,
+                                       kExpectedIncludeTlsChannelId));
+
+    v8::Local<v8::Function> add_port = FunctionFromString(
+        context, base::StringPrintf(kAddPortTemplate, args.c_str()));
+    v8::Local<v8::Value> port = RunFunction(add_port, context, 0, nullptr);
+    ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+    ASSERT_FALSE(port.IsEmpty());
+    ASSERT_TRUE(port->IsObject());
+  };
+
+  run_connect_native("'native_app'", "native_app");
+  run_connect_native("'some_other_native_app'", "some_other_native_app");
+
+  auto connect_native_error = [context](base::StringPiece args) {
+    CallAPIAndExpectError(context, "connectNative", args);
+  };
+  connect_native_error("'native_app', {name: 'name'}");
+}
+
+TEST_F(RuntimeHooksDelegateNativeMessagingTest, SendNativeMessage) {
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  // Whether we expect the port to be open or closed at the end of the call.
+  enum PortStatus {
+    CLOSED,
+    OPEN,
+  };
+
+  int next_context_port_id = 0;
+  auto send_native_message = [this, context, &next_context_port_id](
+                                 const char* args,
+                                 const std::string& expected_message,
+                                 const std::string& expected_application_name,
+                                 PortStatus expected_port_status) {
+    // sendNativeMessage() doesn't name channels or ever include the TLS channel
+    // ID.
+    const std::string kEmptyExpectedChannel;
+    const bool kExpectedIncludeTlsChannelId = false;
+
+    SCOPED_TRACE(base::StringPrintf("Args: '%s'", args));
+    constexpr char kSendMessageTemplate[] =
+        "(function() { chrome.runtime.sendNativeMessage(%s); })";
+
+    PortId expected_port_id(script_context()->context_id(),
+                            next_context_port_id++, true);
+    MessageTarget expected_target(
+        MessageTarget::ForNativeApp(expected_application_name));
+    EXPECT_CALL(*ipc_message_sender(),
+                SendOpenMessageChannel(script_context(), expected_port_id,
+                                       expected_target, kEmptyExpectedChannel,
+                                       kExpectedIncludeTlsChannelId));
+    Message message(expected_message, false);
+    EXPECT_CALL(
+        *ipc_message_sender(),
+        SendPostMessageToPort(MSG_ROUTING_NONE, expected_port_id, message));
+    if (expected_port_status == CLOSED) {
+      EXPECT_CALL(
+          *ipc_message_sender(),
+          SendCloseMessagePort(MSG_ROUTING_NONE, expected_port_id, true));
+    }
+    v8::Local<v8::Function> send_message = FunctionFromString(
+        context, base::StringPrintf(kSendMessageTemplate, args));
+    RunFunction(send_message, context, 0, nullptr);
+    ::testing::Mock::VerifyAndClearExpectations(ipc_message_sender());
+  };
+
+  send_native_message("'native_app', {hi:'bye'}", R"({"hi":"bye"})",
+                      "native_app", CLOSED);
+  send_native_message("'another_native_app', {alpha: 2}, function() {}",
+                      R"({"alpha":2})", "another_native_app", OPEN);
+
+  auto send_native_message_error = [context](base::StringPiece args) {
+    CallAPIAndExpectError(context, "sendNativeMessage", args);
+  };
+
+  send_native_message_error("{data: 'hi'}, function() {}");
+  send_native_message_error(
+      "'native_app', 'some message', {includeTlsChannelId: true}");
 }
 
 }  // namespace extensions
