@@ -26,11 +26,7 @@
 #include "av1/common/scale.h"
 #include "av1/common/seg_common.h"
 #include "av1/common/tile_common.h"
-#if CONFIG_PVQ
-#include "av1/common/pvq.h"
-#include "av1/common/pvq_state.h"
-#include "av1/decoder/decint.h"
-#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -86,32 +82,6 @@ static INLINE int is_comp_ref_allowed(BLOCK_SIZE bsize) {
 static INLINE int is_inter_mode(PREDICTION_MODE mode) {
   return mode >= NEARESTMV && mode <= NEW_NEWMV;
 }
-
-#if CONFIG_PVQ
-typedef struct PVQ_INFO {
-  int theta[PVQ_MAX_PARTITIONS];
-  int qg[PVQ_MAX_PARTITIONS];
-  int k[PVQ_MAX_PARTITIONS];
-  od_coeff y[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
-  int nb_bands;
-  int off[PVQ_MAX_PARTITIONS];
-  int size[PVQ_MAX_PARTITIONS];
-  int skip_rest;
-  int skip_dir;
-  int bs;  // log of the block size minus two,
-           // i.e. equivalent to aom's TX_SIZE
-  // Block skip info, indicating whether DC/AC, is coded.
-  PVQ_SKIP_TYPE ac_dc_coded;  // bit0: DC coded, bit1 : AC coded (1 means coded)
-  tran_low_t dq_dc_residue;
-} PVQ_INFO;
-
-typedef struct PVQ_QUEUE {
-  PVQ_INFO *buf;  // buffer for pvq info, stored in encoding order
-  int curr_pos;   // curr position to write PVQ_INFO
-  int buf_len;    // allocated buffer length
-  int last_pos;   // last written position of PVQ_INFO in a tile
-} PVQ_QUEUE;
-#endif
 
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 typedef struct superblock_mi_boundaries {
@@ -613,12 +583,8 @@ typedef struct macroblockd_plane {
   const dequant_val_type_nuq *dequant_val_nuq[QUANT_PROFILES];
 #endif  // CONFIG_NEW_QUANT
 
-#if CONFIG_PVQ || CONFIG_DIST_8X8
+#if CONFIG_DIST_8X8
   DECLARE_ALIGNED(16, int16_t, pred[MAX_SB_SQUARE]);
-#endif
-#if CONFIG_PVQ
-  // PVQ: forward transformed predicted image, a reference for PVQ.
-  tran_low_t *pvq_ref_coeff;
 #endif
 } MACROBLOCKD_PLANE;
 
@@ -761,9 +727,6 @@ typedef struct macroblockd {
   CANDIDATE_MV ref_mv_stack[MODE_CTX_REF_FRAMES][MAX_REF_MV_STACK_SIZE];
   uint8_t is_sec_rect;
 
-#if CONFIG_PVQ
-  daala_dec_ctx daala_dec;
-#endif
   FRAME_CONTEXT *tile_ctx;
   /* Bit depth: 8, 10, 12 */
   int bd;

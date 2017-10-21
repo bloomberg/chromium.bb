@@ -65,10 +65,7 @@
 #if CONFIG_EXT_TX
 #include "av1/encoder/tx_prune_model_weights.h"
 #endif  // CONFIG_EXT_TX
-#if CONFIG_PVQ
-#include "av1/encoder/pvq_encoder.h"
-#include "av1/common/pvq.h"
-#endif  // CONFIG_PVQ
+
 #if CONFIG_DUAL_FILTER
 #define DUAL_FILTER_SET_SIZE (SWITCHABLE_FILTERS * SWITCHABLE_FILTERS)
 #if USE_EXTRA_FILTER
@@ -687,11 +684,9 @@ static double od_compute_dist_common(int activity_masking, uint16_t *x,
 static double od_compute_dist(uint16_t *x, uint16_t *y, int bsize_w,
                               int bsize_h, int qindex) {
   assert(bsize_w >= 8 && bsize_h >= 8);
-#if CONFIG_PVQ
-  int activity_masking = 1;
-#else
+
   int activity_masking = 0;
-#endif
+
   int i, j;
   DECLARE_ALIGNED(16, od_coeff, e[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
@@ -718,11 +713,9 @@ static double od_compute_dist(uint16_t *x, uint16_t *y, int bsize_w,
 static double od_compute_dist_diff(uint16_t *x, int16_t *e, int bsize_w,
                                    int bsize_h, int qindex) {
   assert(bsize_w >= 8 && bsize_h >= 8);
-#if CONFIG_PVQ
-  int activity_masking = 1;
-#else
+
   int activity_masking = 0;
-#endif
+
   DECLARE_ALIGNED(16, uint16_t, y[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, od_coeff, tmp[MAX_TX_SQUARE]);
   DECLARE_ALIGNED(16, od_coeff, e_lp[MAX_TX_SQUARE]);
@@ -1596,59 +1589,6 @@ int64_t av1_highbd_block_error_c(const tran_low_t *coeff,
 }
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if CONFIG_PVQ
-// Without PVQ, av1_block_error_c() return two kind of errors,
-// 1) reconstruction (i.e. decoded) error and
-// 2) Squared sum of transformed residue (i.e. 'coeff')
-// However, if PVQ is enabled, coeff does not keep the transformed residue
-// but instead a transformed original is kept.
-// Hence, new parameter ref vector (i.e. transformed predicted signal)
-// is required to derive the residue signal,
-// i.e. coeff - ref = residue (all transformed).
-
-#if CONFIG_HIGHBITDEPTH
-static int64_t av1_highbd_block_error2_c(const tran_low_t *coeff,
-                                         const tran_low_t *dqcoeff,
-                                         const tran_low_t *ref,
-                                         intptr_t block_size, int64_t *ssz,
-                                         int bd) {
-  int64_t error;
-  int64_t sqcoeff;
-  int shift = 2 * (bd - 8);
-  int rounding = shift > 0 ? 1 << (shift - 1) : 0;
-  // Use the existing sse codes for calculating distortion of decoded signal:
-  // i.e. (orig - decoded)^2
-  // For high bit depth, throw away ssz until a 32-bit version of
-  // av1_block_error_fp is written.
-  int64_t ssz_trash;
-  error = av1_block_error(coeff, dqcoeff, block_size, &ssz_trash);
-  // prediction residue^2 = (orig - ref)^2
-  sqcoeff = av1_block_error(coeff, ref, block_size, &ssz_trash);
-  error = (error + rounding) >> shift;
-  sqcoeff = (sqcoeff + rounding) >> shift;
-  *ssz = sqcoeff;
-  return error;
-}
-#else
-// TODO(yushin) : Since 4x4 case does not need ssz, better to refactor into
-// a separate function that does not do the extra computations for ssz.
-static int64_t av1_block_error2_c(const tran_low_t *coeff,
-                                  const tran_low_t *dqcoeff,
-                                  const tran_low_t *ref, intptr_t block_size,
-                                  int64_t *ssz) {
-  int64_t error;
-  int64_t ssz_trash;
-  // Use the existing sse codes for calculating distortion of decoded signal:
-  // i.e. (orig - decoded)^2
-  error = av1_block_error(coeff, dqcoeff, block_size, &ssz_trash);
-  // prediction residue^2 = (orig - ref)^2
-  *ssz = av1_block_error(coeff, ref, block_size, &ssz_trash);
-  return error;
-}
-#endif  // CONFIG_HIGHBITDEPTH
-#endif  // CONFIG_PVQ
-
-#if !CONFIG_PVQ || CONFIG_VAR_TX
 #if !CONFIG_LV_MAP
 static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
                        int block, TX_SIZE tx_size, const SCAN_ORDER *scan_order,
@@ -1811,7 +1751,6 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                              &txb_ctx);
 #endif  // !CONFIG_LV_MAP
 }
-#endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
 // Get transform block visible dimensions cropped to the MI units.
 static void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
@@ -1964,18 +1903,7 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     int shift = (MAX_TX_SCALE - av1_get_tx_scale(tx_size)) * 2;
     tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
     tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
-#if CONFIG_PVQ
-    tran_low_t *ref_coeff = BLOCK_OFFSET(pd->pvq_ref_coeff, block);
 
-#if CONFIG_HIGHBITDEPTH
-    const int bd = (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) ? xd->bd : 8;
-    *out_dist = av1_highbd_block_error2_c(coeff, dqcoeff, ref_coeff,
-                                          buffer_length, &this_sse, bd);
-#else
-    *out_dist =
-        av1_block_error2_c(coeff, dqcoeff, ref_coeff, buffer_length, &this_sse);
-#endif  // CONFIG_HIGHBITDEPTH
-#else   // !CONFIG_PVQ
 #if CONFIG_HIGHBITDEPTH
     if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
       *out_dist = av1_highbd_block_error(coeff, dqcoeff, buffer_length,
@@ -1983,15 +1911,13 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     else
 #endif
       *out_dist = av1_block_error(coeff, dqcoeff, buffer_length, &this_sse);
-#endif  // CONFIG_PVQ
+
     *out_dist = RIGHT_SIGNED_SHIFT(*out_dist, shift);
     *out_sse = RIGHT_SIGNED_SHIFT(this_sse, shift);
   } else {
     const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
-#if !CONFIG_PVQ || CONFIG_DIST_8X8
     const int bsw = block_size_wide[tx_bsize];
     const int bsh = block_size_high[tx_bsize];
-#endif
     const int src_stride = x->plane[plane].src.stride;
     const int dst_stride = xd->plane[plane].dst.stride;
     // Scale the transform block index to pixel unit.
@@ -2038,7 +1964,6 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
         DECLARE_ALIGNED(16, uint8_t, recon[MAX_TX_SQUARE]);
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if !CONFIG_PVQ
 #if CONFIG_HIGHBITDEPTH
         if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
           aom_highbd_convolve_copy(dst, dst_stride, recon, MAX_TX_SIZE, NULL, 0,
@@ -2050,9 +1975,6 @@ void av1_dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #if CONFIG_HIGHBITDEPTH
         }
 #endif  // CONFIG_HIGHBITDEPTH
-#else
-        (void)dst;
-#endif  // !CONFIG_PVQ
 
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
         uint8_t *mrc_mask = BLOCK_OFFSET(xd->mrc_mask, block);
@@ -2221,7 +2143,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
     args->exit_early = 1;
     return;
   }
-#if !CONFIG_PVQ
+
   const PLANE_TYPE plane_type = get_plane_type(plane);
   const TX_TYPE tx_type =
       av1_get_tx_type(plane_type, xd, blk_row, blk_col, block, tx_size);
@@ -2229,22 +2151,17 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   this_rd_stats.rate =
       av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
                       scan_order, a, l, args->use_fast_coef_costing);
-#else   // !CONFIG_PVQ
-  this_rd_stats.rate = x->rate;
-#endif  // !CONFIG_PVQ
 #else   // !CONFIG_TXK_SEL
   av1_search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, a, l, args->use_fast_coef_costing,
                       &this_rd_stats);
 #endif  // !CONFIG_TXK_SEL
 
-#if !CONFIG_PVQ
 #if CONFIG_RD_DEBUG
   av1_update_txb_coeff_cost(&this_rd_stats, plane, tx_size, blk_row, blk_col,
                             this_rd_stats.rate);
 #endif  // CONFIG_RD_DEBUG
   av1_set_txb_context(x, plane, block, tx_size, a, l);
-#endif  // !CONFIG_PVQ
 
   rd1 = RDCOST(x->rdmult, this_rd_stats.rate, this_rd_stats.dist);
   rd2 = RDCOST(x->rdmult, 0, this_rd_stats.sse);
@@ -2252,11 +2169,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   // TODO(jingning): temporarily enabled only for luma component
   rd = AOMMIN(rd1, rd2);
 
-#if !CONFIG_PVQ
   this_rd_stats.skip &= !x->plane[plane].eobs[block];
-#else
-  this_rd_stats.skip &= x->pvq_skip[plane];
-#endif  // !CONFIG_PVQ
+
   av1_merge_rd_stats(&args->rd_stats, &this_rd_stats);
 
   args->this_rd += rd;
@@ -2502,9 +2416,6 @@ static int64_t txfm_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   const int r_tx_size = tx_size_cost(cm, x, bs, tx_size);
 
-#if CONFIG_PVQ
-  assert(tx_size >= TX_4X4);
-#endif  // CONFIG_PVQ
 #if CONFIG_EXT_TX && CONFIG_RECT_TX
   assert(IMPLIES(is_rect_tx(tx_size), is_rect_tx_allowed_bsize(bs)));
 #endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
@@ -2662,13 +2573,6 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   if (get_ext_tx_types(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used) >
           1 &&
       !xd->lossless[mbmi->segment_id]) {
-#if CONFIG_PVQ
-    od_rollback_buffer pre_buf, post_buf;
-
-    od_encode_checkpoint(&x->daala_enc, &pre_buf);
-    od_encode_checkpoint(&x->daala_enc, &post_buf);
-#endif  // CONFIG_PVQ
-
     for (tx_type = DCT_DCT; tx_type < TX_TYPES; ++tx_type) {
       if (!av1_ext_tx_used[tx_set_type][tx_type]) continue;
       RD_STATS this_rd_stats;
@@ -2694,9 +2598,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
 
       txfm_rd_in_plane(x, cpi, &this_rd_stats, ref_best_rd, 0, bs,
                        mbmi->tx_size, cpi->sf.use_fast_coef_costing);
-#if CONFIG_PVQ
-      od_encode_rollback(&x->daala_enc, &pre_buf);
-#endif  // CONFIG_PVQ
+
       if (this_rd_stats.rate == INT_MAX) continue;
       av1_tx_type_cost(cm, x, xd, bs, plane, mbmi->tx_size, tx_type);
 
@@ -2713,14 +2615,9 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
         best_rd = this_rd;
         best_tx_type = mbmi->tx_type;
         *rd_stats = this_rd_stats;
-#if CONFIG_PVQ
-        od_encode_checkpoint(&x->daala_enc, &post_buf);
-#endif  // CONFIG_PVQ
       }
     }
-#if CONFIG_PVQ
-    od_encode_rollback(&x->daala_enc, &post_buf);
-#endif  // CONFIG_PVQ
+
 #if CONFIG_LGT_FROM_PRED
     // search LGT
     if (search_lgt && is_lgt_allowed(mbmi->mode, mbmi->tx_size) &&
@@ -2847,10 +2744,6 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #endif  // CONFIG_TXK_SEL
   const int tx_select = cm->tx_mode == TX_MODE_SELECT;
   const int is_inter = is_inter_block(mbmi);
-#if CONFIG_PVQ
-  od_rollback_buffer buf;
-  od_encode_checkpoint(&x->daala_enc, &buf);
-#endif  // CONFIG_PVQ
 
   av1_invalid_rd_stats(rd_stats);
 
@@ -3020,9 +2913,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
       RD_STATS this_rd_stats;
       if (skip_txfm_search(cpi, x, bs, tx_type, n, prune)) continue;
       rd = txfm_yrd(cpi, x, &this_rd_stats, ref_best_rd, bs, tx_type, n);
-#if CONFIG_PVQ
-      od_encode_rollback(&x->daala_enc, &buf);
-#endif  // CONFIG_PVQ
+
       // Early termination in transform size search.
       if (cpi->sf.tx_size_search_breakout &&
           (rd == INT64_MAX ||
@@ -3086,11 +2977,6 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
 #if !CONFIG_EXT_TX
   if (mbmi->tx_size >= TX_32X32) assert(mbmi->tx_type == DCT_DCT);
 #endif  // !CONFIG_EXT_TX
-#if CONFIG_PVQ
-  if (best_rd != INT64_MAX) {
-    txfm_yrd(cpi, x, rd_stats, ref_best_rd, bs, best_tx_type, best_tx_size);
-  }
-#endif  // CONFIG_PVQ
 }
 
 static void super_block_yrd(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -3780,12 +3666,6 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   const PREDICTION_MODE A = av1_above_block_mode(mic, above_mi, 0);
   const PREDICTION_MODE L = av1_left_block_mode(mic, left_mi, 0);
   const PREDICTION_MODE FINAL_MODE_SEARCH = PAETH_PRED + 1;
-#if CONFIG_PVQ
-  od_rollback_buffer pre_buf, post_buf;
-
-  od_encode_checkpoint(&x->daala_enc, &pre_buf);
-  od_encode_checkpoint(&x->daala_enc, &post_buf);
-#endif  // CONFIG_PVQ
 
 #if CONFIG_KF_CTX
   const int above_ctx = intra_mode_context[A];
@@ -3839,9 +3719,7 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       assert(mode_idx < INTRA_MODES);
       mbmi->mode = intra_rd_search_mode_order[mode_idx];
     }
-#if CONFIG_PVQ
-    od_encode_rollback(&x->daala_enc, &pre_buf);
-#endif  // CONFIG_PVQ
+
 #if CONFIG_EXT_INTRA
     mbmi->angle_delta[0] = 0;
 #endif  // CONFIG_EXT_INTRA
@@ -3917,15 +3795,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       *rate_tokenonly = this_rate_tokenonly;
       *distortion = this_distortion;
       *skippable = s;
-#if CONFIG_PVQ
-      od_encode_checkpoint(&x->daala_enc, &post_buf);
-#endif  // CONFIG_PVQ
     }
   }
-
-#if CONFIG_PVQ
-  od_encode_rollback(&x->daala_enc, &post_buf);
-#endif  // CONFIG_PVQ
 
   if (try_palette) {
     rd_pick_palette_intra_sby(cpi, x, bsize, palette_y_mode_ctx,
@@ -3968,12 +3839,10 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   bsize = scale_chroma_bsize(bsize, xd->plane[1].subsampling_x,
                              xd->plane[1].subsampling_y);
 
-#if !CONFIG_PVQ
   if (is_inter_block(mbmi) && is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane)
       av1_subtract_plane(x, bsize, plane);
   }
-#endif  // !CONFIG_PVQ
 
   if (is_cost_valid) {
     for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
@@ -4366,9 +4235,8 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
 
       if (rd_stats->rate == INT_MAX) return;
 
-#if !CONFIG_PVQ
       av1_set_txb_context(x, plane, 0, quarter_txsize, pta, ptl);
-#endif  // !CONFIG_PVQ
+
       coeff_ctx = get_entropy_context(quarter_txsize, pta + blk_col_offset,
                                       ptl + blk_row_offset);
       zero_blk_rate =
@@ -4593,14 +4461,12 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     }
 #endif
 
-#if !CONFIG_PVQ
     av1_set_txb_context(x, plane, block, tx_size_selected, pta, ptl);
 #if CONFIG_RECT_TX_EXT
     if (is_qttx_picked)
       av1_set_txb_context(x, plane, block_offset_qttx, tx_size_selected,
                           pta + blk_col_offset, ptl + blk_row_offset);
 #endif  // CONFIG_RECT_TX_EXT
-#endif  // !CONFIG_PVQ
 
     txfm_partition_update(tx_above + blk_col, tx_left + blk_row, tx_size,
                           tx_size);
@@ -5149,9 +5015,7 @@ static void tx_block_rd(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     ENTROPY_CONTEXT *tl = left_ctx + blk_row;
     av1_tx_block_rd_b(cpi, x, tx_size, blk_row, blk_col, plane, block,
                       plane_bsize, ta, tl, rd_stats);
-#if !CONFIG_PVQ
     av1_set_txb_context(x, plane, block, tx_size, ta, tl);
-#endif  // !CONFIG_PVQ
   } else {
     const TX_SIZE sub_txs = sub_tx_size_map[tx_size];
     const int bsl = tx_size_wide_unit[sub_txs];
@@ -5780,10 +5644,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   assert(!is_inter_block(mbmi));
   MB_MODE_INFO best_mbmi = *mbmi;
   int64_t best_rd = INT64_MAX, this_rd;
-#if CONFIG_PVQ
-  od_rollback_buffer buf;
-  od_encode_checkpoint(&x->daala_enc, &buf);
-#endif  // CONFIG_PVQ
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const int try_palette =
       av1_allow_palette(cpi->common.allow_screen_content_tools, mbmi->sb_type);
@@ -5820,9 +5680,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     } else {
 #endif  // CONFIG_EXT_INTRA
       if (!super_block_uvrd(cpi, x, &tokenonly_rd_stats, bsize, best_rd)) {
-#if CONFIG_PVQ
-        od_encode_rollback(&x->daala_enc, &buf);
-#endif  // CONFIG_PVQ
         continue;
       }
 #if CONFIG_EXT_INTRA
@@ -5849,9 +5706,6 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     if (try_palette && mode == UV_DC_PRED)
       this_rate += x->palette_uv_mode_cost[pmi->palette_size[0] > 0][0];
 
-#if CONFIG_PVQ
-    od_encode_rollback(&x->daala_enc, &buf);
-#endif  // CONFIG_PVQ
     this_rd = RDCOST(x->rdmult, this_rate, tokenonly_rd_stats.dist);
 
     if (this_rd < best_rd) {
@@ -9857,9 +9711,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int64_t mode_threshold[MAX_MODES];
   int *mode_map = tile_data->mode_map[bsize];
   const int mode_search_skip_flags = sf->mode_search_skip_flags;
-#if CONFIG_PVQ
-  od_rollback_buffer pre_buf;
-#endif  // CONFIG_PVQ
 
   HandleInterModeArgs args = {
 #if CONFIG_MOTION_VAR
@@ -10149,9 +10000,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     x->use_default_inter_tx_type = 1;
   else
     x->use_default_inter_tx_type = 0;
-#if CONFIG_PVQ
-  od_encode_checkpoint(&x->daala_enc, &pre_buf);
-#endif  // CONFIG_PVQ
+
   for (i = 0; i < MB_MODE_COUNT; ++i)
     for (ref_frame = 0; ref_frame < TOTAL_REFS_PER_FRAME; ++ref_frame)
       modelled_rd[i][ref_frame] = INT64_MAX;
@@ -10168,9 +10017,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     int this_skip2 = 0;
     int64_t total_sse = INT64_MAX;
     uint8_t ref_frame_type;
-#if CONFIG_PVQ
-    od_encode_rollback(&x->daala_enc, &pre_buf);
-#endif  // CONFIG_PVQ
+
     mode_index = mode_map[midx];
     this_mode = av1_mode_order[mode_index].mode;
     ref_frame = av1_mode_order[mode_index].ref_frame[0];

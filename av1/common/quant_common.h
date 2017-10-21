@@ -97,11 +97,6 @@ static INLINE int get_dq_profile_from_ctx(int qindex, int q_ctx, int is_inter,
 }
 #endif  // CONFIG_NEW_QUANT
 
-#if CONFIG_PVQ
-extern const int OD_QM8_Q4_FLAT[];
-extern const int OD_QM8_Q4_HVS[];
-#endif
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif

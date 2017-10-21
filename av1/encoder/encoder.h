@@ -316,9 +316,6 @@ typedef struct TileDataEnc {
   int mode_map[BLOCK_SIZES_ALL][MAX_MODES];
   int m_search_count;
   int ex_search_count;
-#if CONFIG_PVQ
-  PVQ_QUEUE pvq_q;
-#endif
 #if CONFIG_CFL
   CFL_CTX cfl;
 #endif

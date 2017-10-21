@@ -527,10 +527,6 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   BufferPool *const pool = cm->buffer_pool;
   const int qindex = find_fp_qindex(cm->bit_depth);
   const int mb_scale = mi_size_wide[BLOCK_16X16];
-#if CONFIG_PVQ
-  PVQ_QUEUE pvq_q;
-  od_adapt_ctx pvq_context;
-#endif
 
   int *raw_motion_err_list;
   int raw_motion_err_counts = 0;
@@ -578,43 +574,10 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
 #endif  // CONFIG_CFL
   av1_frame_init_quantizer(cpi);
 
-#if CONFIG_PVQ
-  // For pass 1 of 2-pass encoding, init here for PVQ for now.
-  {
-    pvq_q.buf_len = 5000;
-    CHECK_MEM_ERROR(cm, pvq_q.buf,
-                    aom_malloc(pvq_q.buf_len * sizeof(PVQ_INFO)));
-    pvq_q.curr_pos = 0;
-    x->pvq_coded = 0;
-
-    x->pvq_q = &pvq_q;
-
-    // TODO(yushin): Since this init step is also called in 2nd pass,
-    // or 1-pass encoding, consider factoring out it as a function.
-    // TODO(yushin)
-    // If activity masking is enabled, change below to OD_HVS_QM
-    x->daala_enc.qm = OD_FLAT_QM;  // Hard coded. Enc/dec required to sync.
-    x->daala_enc.pvq_norm_lambda = OD_PVQ_LAMBDA;
-    x->daala_enc.pvq_norm_lambda_dc = OD_PVQ_LAMBDA;
-
-    od_init_qm(x->daala_enc.state.qm, x->daala_enc.state.qm_inv,
-               x->daala_enc.qm == OD_HVS_QM ? OD_QM8_Q4_HVS : OD_QM8_Q4_FLAT);
-#if !CONFIG_ANS
-    od_ec_enc_init(&x->daala_enc.w.ec, 65025);
-    od_ec_enc_reset(&x->daala_enc.w.ec);
-#else
-#error "CONFIG_PVQ currently requires !CONFIG_ANS."
-#endif
-  }
-#endif
-
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     p[i].coeff = ctx->coeff[i];
     p[i].qcoeff = ctx->qcoeff[i];
     pd[i].dqcoeff = ctx->dqcoeff[i];
-#if CONFIG_PVQ
-    pd[i].pvq_ref_coeff = ctx->pvq_ref_coeff[i];
-#endif
     p[i].eobs = ctx->eobs[i];
 #if CONFIG_LV_MAP
     p[i].txb_entropy_ctx = ctx->txb_entropy_ctx[i];
@@ -630,10 +593,6 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   av1_deliver_eob_threshold(cm, xd);
 #endif
   av1_convolve_init(cm);
-#if CONFIG_PVQ
-  od_adapt_ctx_reset(&pvq_context, 0);
-  x->daala_enc.state.adapt = &pvq_context;
-#endif  // CONFIG_PVQ
   av1_initialize_rd_consts(cpi);
 
   // Tiling is ignored in the first pass.
@@ -1025,20 +984,6 @@ void av1_first_pass(AV1_COMP *cpi, const struct lookahead_entry *source) {
   const double raw_err_stdev =
       raw_motion_error_stdev(raw_motion_err_list, raw_motion_err_counts);
   aom_free(raw_motion_err_list);
-
-#if CONFIG_PVQ
-#if !CONFIG_ANS
-  od_ec_enc_clear(&x->daala_enc.w.ec);
-#else
-#error "CONFIG_PVQ currently requires !CONFIG_ANS."
-#endif
-
-  x->pvq_q->last_pos = x->pvq_q->curr_pos;
-  x->pvq_q->curr_pos = 0;
-  x->pvq_q = NULL;
-
-  aom_free(pvq_q.buf);
-#endif
 
   // Clamp the image start to rows/2. This number of rows is discarded top
   // and bottom as dead data so rows / 2 means the frame is blank.

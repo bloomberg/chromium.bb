@@ -18,12 +18,6 @@
 #include "av1/common/seg_common.h"
 #include "aom_dsp/aom_filter.h"
 
-#if CONFIG_PVQ
-#include "av1/common/pvq.h"
-#include "av1/common/pvq_state.h"
-#include "av1/common/generic_code.h"
-#endif  // CONFIG_PVQ
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -375,11 +369,6 @@ typedef struct frame_contexts {
 #endif  // CONFIG_LOOPFILTER_LEVEL
   aom_prob delta_lf_prob[DELTA_LF_PROBS];
 #endif
-#if CONFIG_PVQ
-  // TODO(any): If PVQ is enabled, most of coefficient related cdf,
-  // such as coef_cdfs[], coef_tail_cdfs[], and coef_heaf_cdfs[] can be removed.
-  od_adapt_ctx pvq_context;
-#endif  // CONFIG_PVQ
 #if CONFIG_CFL
   aom_cdf_prob cfl_sign_cdf[CDF_SIZE(CFL_JOINT_SIGNS)];
   aom_cdf_prob cfl_alpha_cdf[CFL_ALPHA_CONTEXTS][CDF_SIZE(CFL_ALPHABET_SIZE)];

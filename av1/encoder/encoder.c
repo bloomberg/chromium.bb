@@ -503,20 +503,6 @@ static void dealloc_compressor_data(AV1_COMP *cpi) {
 
   dealloc_context_buffers_ext(cpi);
 
-#if CONFIG_PVQ
-  if (cpi->oxcf.pass != 1) {
-    const int tile_cols = cm->tile_cols;
-    const int tile_rows = cm->tile_rows;
-    int tile_col, tile_row;
-
-    for (tile_row = 0; tile_row < tile_rows; ++tile_row)
-      for (tile_col = 0; tile_col < tile_cols; ++tile_col) {
-        TileDataEnc *tile_data =
-            &cpi->tile_data[tile_row * tile_cols + tile_col];
-        aom_free(tile_data->pvq_q.buf);
-      }
-  }
-#endif
   aom_free(cpi->tile_data);
   cpi->tile_data = NULL;
 
@@ -1072,9 +1058,6 @@ static void update_frame_size(AV1_COMP *cpi) {
   av1_set_mb_mi(cm, cm->width, cm->height);
   av1_init_context_buffers(cm);
   av1_init_macroblockd(cm, xd,
-#if CONFIG_PVQ
-                       NULL,
-#endif
 #if CONFIG_CFL
                        &NULL_CFL,
 #endif
@@ -5609,9 +5592,6 @@ static void encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size,
                                 num_bwd_ctxs);
     av1_average_tile_loopfilter_cdfs(cpi->common.fc, tile_ctxs, cdf_ptrs,
                                      num_bwd_ctxs);
-#if CONFIG_PVQ
-    av1_average_tile_pvq_cdfs(cpi->common.fc, tile_ctxs, num_bwd_ctxs);
-#endif  // CONFIG_PVQ
 #if CONFIG_ADAPT_SCAN
     av1_adapt_scan_order(cm);
 #endif  // CONFIG_ADAPT_SCAN

@@ -128,28 +128,6 @@ ifeq ($(CONFIG_MOTION_VAR),yes)
 AV1_COMMON_SRCS-yes += common/obmc.h
 endif
 
-ifeq ($(CONFIG_PVQ),yes)
-# PVQ from daala
-AV1_COMMON_SRCS-yes += common/pvq.c
-AV1_COMMON_SRCS-yes += common/partition.c
-AV1_COMMON_SRCS-yes += common/partition.h
-AV1_COMMON_SRCS-yes += common/zigzag4.c
-AV1_COMMON_SRCS-yes += common/zigzag8.c
-AV1_COMMON_SRCS-yes += common/zigzag16.c
-AV1_COMMON_SRCS-yes += common/zigzag32.c
-AV1_COMMON_SRCS-yes += common/zigzag.h
-AV1_COMMON_SRCS-yes += common/generic_code.c
-AV1_COMMON_SRCS-yes += common/pvq_state.c
-AV1_COMMON_SRCS-yes += common/laplace_tables.c
-AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/pvq_sse4.c
-AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/pvq_sse4.h
-endif
-ifneq ($(findstring yes,$(CONFIG_PVQ)$(CONFIG_DAALA_DIST)$(CONFIG_XIPHRC)),)
-AV1_COMMON_SRCS-yes += common/pvq.h
-AV1_COMMON_SRCS-yes += common/pvq_state.h
-AV1_COMMON_SRCS-yes += common/generic_code.h
-endif
-
 # common (msa)
 AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct4x4_msa.c
 AV1_COMMON_SRCS-$(HAVE_MSA) += common/mips/msa/av1_idct8x8_msa.c

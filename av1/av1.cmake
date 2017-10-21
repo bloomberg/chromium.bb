@@ -420,65 +420,6 @@ if (CONFIG_NCOBMC_ADAPT_WEIGHT)
       "${AOM_ROOT}/av1/common/ncobmc_kernels.h")
 endif ()
 
-if (CONFIG_PVQ)
-  set(AOM_AV1_COMMON_SOURCES
-      ${AOM_AV1_COMMON_SOURCES}
-      "${AOM_ROOT}/av1/common/laplace_tables.c"
-      "${AOM_ROOT}/av1/common/pvq.c"
-      "${AOM_ROOT}/av1/common/pvq.h"
-      "${AOM_ROOT}/av1/common/pvq_state.c"
-      "${AOM_ROOT}/av1/common/pvq_state.h"
-      "${AOM_ROOT}/av1/common/partition.c"
-      "${AOM_ROOT}/av1/common/partition.h"
-      "${AOM_ROOT}/av1/common/generic_code.c"
-      "${AOM_ROOT}/av1/common/generic_code.h"
-      "${AOM_ROOT}/av1/common/zigzag4.c"
-      "${AOM_ROOT}/av1/common/zigzag8.c"
-      "${AOM_ROOT}/av1/common/zigzag16.c"
-      "${AOM_ROOT}/av1/common/zigzag32.c")
-
-    set(AOM_AV1_DECODER_SOURCES
-        ${AOM_AV1_DECODER_SOURCES}
-        "${AOM_ROOT}/av1/decoder/decint.h"
-        "${AOM_ROOT}/av1/decoder/pvq_decoder.c"
-        "${AOM_ROOT}/av1/decoder/pvq_decoder.h"
-        "${AOM_ROOT}/av1/decoder/generic_decoder.c"
-        "${AOM_ROOT}/av1/decoder/laplace_decoder.c")
-
-    set(AOM_AV1_ENCODER_SOURCES
-        ${AOM_AV1_ENCODER_SOURCES}
-        "${AOM_ROOT}/av1/encoder/daala_compat_enc.c"
-        "${AOM_ROOT}/av1/encoder/encint.h"
-        "${AOM_ROOT}/av1/encoder/pvq_encoder.c"
-        "${AOM_ROOT}/av1/encoder/pvq_encoder.h"
-        "${AOM_ROOT}/av1/encoder/generic_encoder.c"
-        "${AOM_ROOT}/av1/encoder/laplace_encoder.c")
-
-    set(AOM_AV1_COMMON_INTRIN_SSE4_1
-        ${AOM_AV1_COMMON_INTRIN_SSE4_1}
-        "${AOM_ROOT}/av1/common/x86/pvq_sse4.c"
-        "${AOM_ROOT}/av1/common/x86/pvq_sse4.h")
-
-    if (NOT CONFIG_AV1_ENCODER)
-      # TODO(tomfinegan): These should probably be in av1/common, and in a
-      # common source list. For now this mirrors the original build system.
-      set(AOM_AV1_DECODER_SOURCES
-          ${AOM_AV1_DECODER_SOURCES}
-          "${AOM_ROOT}/av1/encoder/dct.c"
-          "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.c"
-          "${AOM_ROOT}/av1/encoder/hybrid_fwd_txfm.h")
-
-      set(AOM_AV1_DECODER_ASM_SSE2
-          ${AOM_AV1_DECODER_ASM_SSE2}
-          "${AOM_ROOT}/av1/encoder/x86/dct_sse2.asm")
-
-      set(AOM_AV1_DECODER_INTRIN_SSE2
-          ${AOM_AV1_DECODER_INTRIN_SSE2}
-          "${AOM_ROOT}/av1/encoder/x86/dct_intrin_sse2.c")
-
-    endif ()
-endif ()
-
 if (CONFIG_WARPED_MOTION OR CONFIG_GLOBAL_MOTION)
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}

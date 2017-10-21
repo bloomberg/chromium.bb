@@ -219,7 +219,7 @@ DSP_SRCS-$(HAVE_SSSE3)  += x86/obmc_intrinsic_ssse3.h
 DSP_SRCS-$(HAVE_MSA)    += mips/txfm_macros_msa.h
 
 # forward transform
-ifneq ($(findstring yes,$(CONFIG_AV1)$(CONFIG_PVQ)),)
+ifneq ($(findstring yes,$(CONFIG_AV1)),)
 DSP_SRCS-$(HAVE_AVX2)   += x86/txfm_common_avx2.h
 ifeq ($(CONFIG_AV1_ENCODER),yes)
 DSP_SRCS-yes            += fwd_txfm.c

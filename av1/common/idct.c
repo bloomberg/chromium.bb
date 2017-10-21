@@ -3237,19 +3237,7 @@ void av1_inverse_transform_block(const MACROBLOCKD *xd,
                                  TX_TYPE tx_type, TX_SIZE tx_size, uint8_t *dst,
                                  int stride, int eob) {
   if (!eob) return;
-#if CONFIG_PVQ
-  const BLOCK_SIZE tx_bsize = txsize_to_bsize[tx_size];
-  const int txb_width = block_size_wide[tx_bsize];
-  const int txb_height = block_size_high[tx_bsize];
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    for (int r = 0; r < txb_height; r++)
-      for (int c = 0; c < txb_width; c++)
-        CONVERT_TO_SHORTPTR(dst)[r * stride + c] = 0;
-  } else {
-    for (int r = 0; r < txb_height; r++)
-      for (int c = 0; c < txb_width; c++) dst[r * stride + c] = 0;
-  }
-#endif  // CONFIG_PVQ
+
   TxfmParam txfm_param;
   init_txfm_param(xd, tx_size, tx_type, eob, &txfm_param);
 #if CONFIG_LGT || CONFIG_MRC_TX

@@ -187,7 +187,6 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
 }
 #endif
 
-#if !CONFIG_PVQ || CONFIG_VAR_TX
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
                       int plane, TX_SIZE tx_size, int has_eob, int aoff,
                       int loff) {
@@ -225,8 +224,6 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
     memset(l, has_eob, sizeof(ENTROPY_CONTEXT) * txs_high);
   }
 }
-#endif
-
 void av1_reset_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col,
                             BLOCK_SIZE bsize) {
   int i;

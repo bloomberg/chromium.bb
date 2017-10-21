@@ -36,9 +36,7 @@
 #if CONFIG_NCOBMC_ADAPT_WEIGHT
 #include "av1/common/ncobmc_kernels.h"
 #endif  // CONFIG_NCOBMC_ADAPT_WEIGHT
-#if !CONFIG_PVQ
 #include "av1/decoder/detokenize.h"
-#endif
 
 static void initialize_dec(void) {
   static volatile int init_done = 0;

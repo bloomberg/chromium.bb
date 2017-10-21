@@ -264,7 +264,6 @@ const av1_extra_bit av1_extra_bits[ENTROPY_TOKENS] = {
 };
 #endif
 
-#if !CONFIG_PVQ || CONFIG_VAR_TX
 static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
                           BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
   struct tokenize_b_args *const args = arg;
@@ -327,7 +326,6 @@ static INLINE void add_token(TOKENEXTRA **t,
       update_cdf(*tail_cdf, token - TWO_TOKEN, TAIL_TOKENS);
   }
 }
-#endif  // !CONFIG_PVQ || CONFIG_VAR_TX
 
 static int cost_and_tokenize_map(Av1ColorMapParam *param, TOKENEXTRA **t,
                                  int calc_rate) {
@@ -448,50 +446,8 @@ void av1_tokenize_color_map(const MACROBLOCK *const x, int plane, int block,
   cost_and_tokenize_map(&color_map_params, t, 0);
 }
 
-#if CONFIG_PVQ
-static void add_pvq_block(AV1_COMMON *const cm, MACROBLOCK *const x,
-                          PVQ_INFO *pvq) {
-  PVQ_QUEUE *q = x->pvq_q;
-  if (q->curr_pos >= q->buf_len) {
-    int new_buf_len = 2 * q->buf_len + 1;
-    PVQ_INFO *new_buf;
-    CHECK_MEM_ERROR(cm, new_buf, aom_malloc(new_buf_len * sizeof(PVQ_INFO)));
-    memcpy(new_buf, q->buf, q->buf_len * sizeof(PVQ_INFO));
-    aom_free(q->buf);
-    q->buf = new_buf;
-    q->buf_len = new_buf_len;
-  }
-  OD_COPY(q->buf + q->curr_pos, pvq, 1);
-  ++q->curr_pos;
-}
-
-// NOTE: This does not actually generate tokens, instead we store the encoding
-// decisions made for PVQ in a queue that we will read from when
-// actually writing the bitstream in write_modes_b
-static void tokenize_pvq(int plane, int block, int blk_row, int blk_col,
-                         BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
-  struct tokenize_b_args *const args = arg;
-  const AV1_COMP *cpi = args->cpi;
-  const AV1_COMMON *const cm = &cpi->common;
-  ThreadData *const td = args->td;
-  MACROBLOCK *const x = &td->mb;
-  PVQ_INFO *pvq_info;
-
-  (void)block;
-  (void)blk_row;
-  (void)blk_col;
-  (void)plane_bsize;
-  (void)tx_size;
-
-  assert(block < MAX_PVQ_BLOCKS_IN_SB);
-  pvq_info = &x->pvq[block][plane];
-  add_pvq_block((AV1_COMMON * const) cm, x, pvq_info);
-}
-#endif  // CONFIG_PVQ
-
 static void tokenize_b(int plane, int block, int blk_row, int blk_col,
                        BLOCK_SIZE plane_bsize, TX_SIZE tx_size, void *arg) {
-#if !CONFIG_PVQ
   struct tokenize_b_args *const args = arg;
   const AV1_COMP *cpi = args->cpi;
   const AV1_COMMON *const cm = &cpi->common;
@@ -581,9 +537,6 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
 #endif
 
   av1_set_contexts(xd, pd, plane, tx_size, c > 0, blk_col, blk_row);
-#else   // !CONFIG_PVQ
-  tokenize_pvq(plane, block, blk_row, blk_col, plane_bsize, tx_size, arg);
-#endif  // !CONFIG_PVQ
 }
 
 struct is_skippable_args {
@@ -725,7 +678,7 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
     if (!is_chroma_reference(mi_row, mi_col, bsize,
                              xd->plane[plane].subsampling_x,
                              xd->plane[plane].subsampling_y)) {
-#if !CONFIG_PVQ && !CONFIG_LV_MAP
+#if !CONFIG_LV_MAP
       if (!dry_run) {
         (*t)->token = EOSB_TOKEN;
         (*t)++;
@@ -807,23 +760,18 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
       if (!is_chroma_reference(mi_row, mi_col, bsize,
                                xd->plane[plane].subsampling_x,
                                xd->plane[plane].subsampling_y)) {
-#if !CONFIG_PVQ
         (*t)->token = EOSB_TOKEN;
         (*t)++;
-#endif
+
         continue;
       }
       av1_foreach_transformed_block_in_plane(xd, bsize, plane, tokenize_b,
                                              &arg);
-#if !CONFIG_PVQ
       (*t)->token = EOSB_TOKEN;
       (*t)++;
-#endif  // !CONFIG_PVQ
     }
 #endif
-  }
-#if !CONFIG_PVQ
-  else if (dry_run == DRY_RUN_NORMAL) {
+  } else if (dry_run == DRY_RUN_NORMAL) {
     int plane;
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       if (!is_chroma_reference(mi_row, mi_col, bsize,
@@ -844,7 +792,6 @@ void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
                                              &arg);
     }
   }
-#endif  // !CONFIG_PVQ
 
   if (rate) *rate += arg.this_rate;
 }

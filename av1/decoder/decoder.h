@@ -29,12 +29,6 @@
 #include "av1/decoder/inspection.h"
 #endif
 
-#if CONFIG_PVQ
-#include "aom_dsp/entdec.h"
-#include "av1/decoder/decint.h"
-#include "av1/encoder/encodemb.h"
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -46,10 +40,6 @@ typedef struct TileData {
   DECLARE_ALIGNED(16, MACROBLOCKD, xd);
   /* dqcoeff are shared by all the planes. So planes must be decoded serially */
   DECLARE_ALIGNED(16, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
-#if CONFIG_PVQ
-  /* forward transformed predicted image, a reference for PVQ */
-  DECLARE_ALIGNED(16, tran_low_t, pvq_ref_coeff[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
-#endif
 #if CONFIG_CFL
   CFL_CTX cfl;
 #endif
@@ -67,10 +57,6 @@ typedef struct TileWorkerData {
   DECLARE_ALIGNED(16, MACROBLOCKD, xd);
   /* dqcoeff are shared by all the planes. So planes must be decoded serially */
   DECLARE_ALIGNED(16, tran_low_t, dqcoeff[MAX_TX_SQUARE]);
-#if CONFIG_PVQ
-  /* forward transformed predicted image, a reference for PVQ */
-  DECLARE_ALIGNED(16, tran_low_t, pvq_ref_coeff[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
-#endif
 #if CONFIG_CFL
   CFL_CTX cfl;
 #endif

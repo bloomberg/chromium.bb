@@ -118,17 +118,6 @@ endif
 ifeq ($(CONFIG_CDEF),yes)
 AV1_CX_SRCS-yes += encoder/pickcdef.c
 endif
-ifeq ($(CONFIG_PVQ),yes)
-# PVQ from daala
-AV1_CX_SRCS-yes += encoder/daala_compat_enc.c
-AV1_CX_SRCS-yes += encoder/pvq_encoder.c
-AV1_CX_SRCS-yes += encoder/pvq_encoder.h
-AV1_CX_SRCS-yes += encoder/generic_encoder.c
-AV1_CX_SRCS-yes += encoder/laplace_encoder.c
-endif
-ifneq ($(findstring yes,$(CONFIG_XIPHRC)$(CONFIG_PVQ)),)
-AV1_CX_SRCS-yes += encoder/encint.h
-endif
 
 AV1_CX_SRCS-$(HAVE_SSE2) += encoder/x86/av1_quantize_sse2.c
 AV1_CX_SRCS-$(HAVE_AVX2) += encoder/x86/av1_quantize_avx2.c

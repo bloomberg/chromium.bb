@@ -53,9 +53,6 @@
 #include "av1/encoder/segmentation.h"
 #include "av1/encoder/subexp.h"
 #include "av1/encoder/tokenize.h"
-#if CONFIG_PVQ
-#include "av1/encoder/pvq_encoder.h"
-#endif
 
 #define ENC_MISMATCH_DEBUG 0
 
@@ -64,8 +61,6 @@ static struct av1_token
     inter_singleref_comp_mode_encodings[INTER_SINGLEREF_COMP_MODES];
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
-// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
-#if !CONFIG_PVQ || CONFIG_EXT_INTRA
 static INLINE void write_uniform(aom_writer *w, int n, int v) {
   const int l = get_unsigned_bits(n);
   const int m = (1 << l) - n;
@@ -77,7 +72,6 @@ static INLINE void write_uniform(aom_writer *w, int n, int v) {
     aom_write_literal(w, (v - m) & 1, 1);
   }
 }
-#endif  // !CONFIG_PVQ || CONFIG_EXT_INTRA
 
 #if CONFIG_INTERINTRA
 static struct av1_token interintra_mode_encodings[INTERINTRA_MODES];
@@ -553,8 +547,6 @@ static void update_skip_probs(AV1_COMMON *cm, aom_writer *w,
 }
 #endif
 
-// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
-#if !CONFIG_PVQ
 static void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
                             int num) {
   const TOKENEXTRA *p = *tp;
@@ -567,9 +559,6 @@ static void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
   }
   *tp = p;
 }
-#endif  // !CONFIG_PVQ
-
-#if !CONFIG_PVQ
 
 #if !CONFIG_LV_MAP
 #if CONFIG_NEW_MULTISYMBOL
@@ -682,95 +671,6 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   *tp = p;
 }
 #endif  // !CONFIG_LV_MAP
-#else   // !CONFIG_PVQ
-static PVQ_INFO *get_pvq_block(PVQ_QUEUE *pvq_q) {
-  PVQ_INFO *pvq;
-
-  assert(pvq_q->curr_pos <= pvq_q->last_pos);
-  assert(pvq_q->curr_pos < pvq_q->buf_len);
-
-  pvq = pvq_q->buf + pvq_q->curr_pos;
-  ++pvq_q->curr_pos;
-
-  return pvq;
-}
-
-static void pack_pvq_tokens(aom_writer *w, MACROBLOCK *const x,
-                            MACROBLOCKD *const xd, int plane, BLOCK_SIZE bsize,
-                            const TX_SIZE tx_size) {
-  PVQ_INFO *pvq;
-  int idx, idy;
-  const struct macroblockd_plane *const pd = &xd->plane[plane];
-  od_adapt_ctx *adapt;
-  int max_blocks_wide;
-  int max_blocks_high;
-  int step = (1 << tx_size);
-
-#if CONFIG_CHROMA_SUB8X8
-  const BLOCK_SIZE plane_bsize =
-      AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#else
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
-
-  adapt = x->daala_enc.state.adapt;
-
-  max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
-  max_blocks_high = max_block_high(xd, plane_bsize, plane);
-
-  for (idy = 0; idy < max_blocks_high; idy += step) {
-    for (idx = 0; idx < max_blocks_wide; idx += step) {
-      const int is_keyframe = 0;
-      const int encode_flip = 0;
-      const int flip = 0;
-      int i;
-      const int has_dc_skip = 1;
-      int *exg = &adapt->pvq.pvq_exg[plane][tx_size][0];
-      int *ext = adapt->pvq.pvq_ext + tx_size * PVQ_MAX_PARTITIONS;
-      generic_encoder *model = adapt->pvq.pvq_param_model;
-
-      pvq = get_pvq_block(x->pvq_q);
-
-      // encode block skip info
-      aom_write_symbol(w, pvq->ac_dc_coded,
-                       adapt->skip_cdf[2 * tx_size + (plane != 0)], 4);
-
-      // AC coeffs coded?
-      if (pvq->ac_dc_coded & AC_CODED) {
-        assert(pvq->bs == tx_size);
-        for (i = 0; i < pvq->nb_bands; i++) {
-          if (i == 0 ||
-              (!pvq->skip_rest && !(pvq->skip_dir & (1 << ((i - 1) % 3))))) {
-            pvq_encode_partition(
-                w, pvq->qg[i], pvq->theta[i], pvq->y + pvq->off[i],
-                pvq->size[i], pvq->k[i], model, adapt, exg + i, ext + i,
-                (plane != 0) * OD_TXSIZES * PVQ_MAX_PARTITIONS +
-                    pvq->bs * PVQ_MAX_PARTITIONS + i,
-                is_keyframe, i == 0 && (i < pvq->nb_bands - 1), pvq->skip_rest,
-                encode_flip, flip);
-          }
-          if (i == 0 && !pvq->skip_rest && pvq->bs > 0) {
-            aom_write_symbol(
-                w, pvq->skip_dir,
-                &adapt->pvq
-                     .pvq_skip_dir_cdf[(plane != 0) + 2 * (pvq->bs - 1)][0],
-                7);
-          }
-        }
-      }
-      // Encode residue of DC coeff, if exist.
-      if (!has_dc_skip || (pvq->ac_dc_coded & DC_CODED)) {
-        generic_encode(w, &adapt->model_dc[plane],
-                       abs(pvq->dq_dc_residue) - has_dc_skip,
-                       &adapt->ex_dc[plane][pvq->bs][0], 2);
-      }
-      if ((pvq->ac_dc_coded & DC_CODED)) {
-        aom_write_bit(w, pvq->dq_dc_residue < 0);
-      }
-    }
-  }  // for (idy = 0;
-}
-#endif  // !CONFIG_PVG
 
 #if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
 #if CONFIG_LV_MAP
@@ -780,7 +680,7 @@ static void pack_txb_tokens(aom_writer *w,
 #endif  // CONFIG_LV_MAP
                             const TOKENEXTRA **tp,
                             const TOKENEXTRA *const tok_end,
-#if CONFIG_PVQ || CONFIG_LV_MAP
+#if CONFIG_LV_MAP
                             MACROBLOCK *const x,
 #endif
                             MACROBLOCKD *xd, MB_MODE_INFO *mbmi, int plane,
@@ -805,16 +705,12 @@ static void pack_txb_tokens(aom_writer *w,
     TOKEN_STATS tmp_token_stats;
     init_token_stats(&tmp_token_stats);
 
-#if !CONFIG_PVQ
     tran_low_t *tcoeff = BLOCK_OFFSET(x->mbmi_ext->tcoeff[plane], block);
     uint16_t eob = x->mbmi_ext->eobs[plane][block];
     TXB_CTX txb_ctx = { x->mbmi_ext->txb_skip_ctx[plane][block],
                         x->mbmi_ext->dc_sign_ctx[plane][block] };
     av1_write_coeffs_txb(cm, xd, w, blk_row, blk_col, block, plane, tx_size,
                          tcoeff, eob, &txb_ctx);
-#else
-    pack_pvq_tokens(w, x, xd, plane, bsize, tx_size);
-#endif
 #if CONFIG_RD_DEBUG
     token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
     token_stats->cost += tmp_token_stats.cost;
@@ -838,7 +734,7 @@ static void pack_txb_tokens(aom_writer *w,
                       cm,
 #endif
                       tp, tok_end,
-#if CONFIG_PVQ || CONFIG_LV_MAP
+#if CONFIG_LV_MAP
                       x,
 #endif
                       xd, mbmi, plane, plane_bsize, bit_depth, block, offsetr,
@@ -849,11 +745,8 @@ static void pack_txb_tokens(aom_writer *w,
 }
 #else  // CONFIG_LV_MAP
 static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
-                            const TOKENEXTRA *const tok_end,
-#if CONFIG_PVQ
-                            MACROBLOCK *const x,
-#endif
-                            MACROBLOCKD *xd, MB_MODE_INFO *mbmi, int plane,
+                            const TOKENEXTRA *const tok_end, MACROBLOCKD *xd,
+                            MB_MODE_INFO *mbmi, int plane,
                             BLOCK_SIZE plane_bsize, aom_bit_depth_t bit_depth,
                             int block, int blk_row, int blk_col,
                             TX_SIZE tx_size, TOKEN_STATS *token_stats) {
@@ -878,15 +771,11 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   if (tx_size == plane_tx_size) {
     TOKEN_STATS tmp_token_stats;
     init_token_stats(&tmp_token_stats);
-#if !CONFIG_PVQ
     pack_mb_tokens(w, tp, tok_end, bit_depth, tx_size,
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                    tx_type, is_inter_block(mbmi),
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                    &tmp_token_stats);
-#else
-    pack_pvq_tokens(w, x, xd, plane, bsize, tx_size);
-#endif
 #if CONFIG_RD_DEBUG
     token_stats->txb_coeff_cost_map[blk_row][blk_col] = tmp_token_stats.cost;
     token_stats->cost += tmp_token_stats.cost;
@@ -920,12 +809,8 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 
       if (offsetr >= max_blocks_high || offsetc >= max_blocks_wide) continue;
 
-      pack_txb_tokens(w, tp, tok_end,
-#if CONFIG_PVQ
-                      x,
-#endif
-                      xd, mbmi, plane, plane_bsize, bit_depth, block, offsetr,
-                      offsetc, sub_txs, token_stats);
+      pack_txb_tokens(w, tp, tok_end, xd, mbmi, plane, plane_bsize, bit_depth,
+                      block, offsetr, offsetc, sub_txs, token_stats);
       block += step;
     }
   }
@@ -2265,7 +2150,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   MB_MODE_INFO *const mbmi = &m->mbmi;
   int plane;
   int bh, bw;
-#if CONFIG_PVQ || CONFIG_LV_MAP
+#if CONFIG_LV_MAP
   MACROBLOCK *const x = &cpi->td.mb;
   (void)tok;
   (void)tok_end;
@@ -2285,8 +2170,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_DEPENDENT_HORZTILES
                  cm->mi_rows, cm->mi_cols);
 
-// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
-#if !CONFIG_PVQ
   for (plane = 0; plane <= 1; ++plane) {
     const uint8_t palette_size_plane =
         mbmi->palette_mode_info.palette_size[plane];
@@ -2305,7 +2188,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // !CONFIG_LV_MAP
     }
   }
-#endif  // !CONFIG_PVQ
 
 #if CONFIG_COEF_INTERLEAVE
   if (!mbmi->skip) {
@@ -2384,7 +2266,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
   }
 #else  // CONFIG_COEF_INTERLEAVE
   if (!mbmi->skip) {
-#if !CONFIG_PVQ && !CONFIG_LV_MAP
+#if !CONFIG_LV_MAP
     assert(*tok < tok_end);
 #endif
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
@@ -2445,7 +2327,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                                 cm,
 #endif
                                 tok, tok_end,
-#if CONFIG_PVQ || CONFIG_LV_MAP
+#if CONFIG_LV_MAP
                                 x,
 #endif
                                 xd, mbmi, plane, plane_bsize, cm->bit_depth,
@@ -2479,7 +2361,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 
             for (blk_row = row; blk_row < unit_height; blk_row += bkh) {
               for (blk_col = col; blk_col < unit_width; blk_col += bkw) {
-#if !CONFIG_PVQ
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                 TX_TYPE tx_type =
                     av1_get_tx_type(plane ? PLANE_TYPE_UV : PLANE_TYPE_Y, xd,
@@ -2490,9 +2371,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                                tx_type, is_inter_block(mbmi),
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                                &token_stats);
-#else
-                pack_pvq_tokens(w, x, xd, plane, bsize, tx);
-#endif
               }
             }
           }
@@ -2502,7 +2380,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #else
       const TX_SIZE tx = av1_get_tx_size(plane, xd);
       TOKEN_STATS token_stats;
-#if !CONFIG_PVQ
+
       init_token_stats(&token_stats);
 #if CONFIG_LV_MAP
       (void)tx;
@@ -2519,10 +2397,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
                      &token_stats);
 #endif  // CONFIG_LV_MAP
 
-#else
-      (void)token_stats;
-      pack_pvq_tokens(w, x, xd, plane, mbmi->sb_type, tx);
-#endif
 #if CONFIG_RD_DEBUG
       if (is_inter_block(mbmi) && mbmi->sb_type >= BLOCK_8X8 &&
           rd_token_stats_mismatch(&mbmi->rd_stats, &token_stats, plane)) {
@@ -2532,7 +2406,7 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // CONFIG_RD_DEBUG
 #endif  // CONFIG_VAR_TX
 
-#if !CONFIG_PVQ && !CONFIG_LV_MAP
+#if !CONFIG_LV_MAP
       assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
       (*tok)++;
 #endif
@@ -2901,9 +2775,6 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #else
   av1_zero_above_context(cm, mi_col_start, mi_col_end);
 #endif
-#if CONFIG_PVQ
-  assert(cpi->td.mb.pvq_q->curr_pos == 0);
-#endif
   if (cpi->common.delta_q_present_flag) {
     xd->prev_qindex = cpi->common.base_qindex;
 #if CONFIG_EXT_DELTA_Q
@@ -2927,13 +2798,6 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 #endif
     }
   }
-#if CONFIG_PVQ
-  // Check that the number of PVQ blocks encoded and written to the bitstream
-  // are the same
-  assert(cpi->td.mb.pvq_q->curr_pos == cpi->td.mb.pvq_q->last_pos);
-  // Reset curr_pos in case we repack the bitstream
-  cpi->td.mb.pvq_q->curr_pos = 0;
-#endif
 }
 
 #if CONFIG_LOOP_RESTORATION
@@ -3615,10 +3479,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = &this_tile->pvq_q;
-        cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
-#endif  // CONFIG_PVQ
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif
@@ -3627,9 +3487,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         assert(tok == tok_end);
         aom_stop_encode(&mode_bc);
         tile_size = mode_bc.pos;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = NULL;
-#endif
         buf->size = tile_size;
 
 #if CONFIG_SIMPLE_BWD_ADAPT
@@ -3796,10 +3653,6 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = &this_tile->pvq_q;
-        cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
-#endif  // CONFIG_PVQ
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif  // CONFIG_ANS
@@ -3813,16 +3666,10 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
         aom_start_encode(&mode_bc, dst + total_size);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
 #if !CONFIG_LV_MAP
-#if !CONFIG_PVQ
         assert(tok == tok_end);
-#endif  // !CONFIG_PVQ
 #endif  // !CONFIG_LV_MAP
         aom_stop_encode(&mode_bc);
         tile_size = mode_bc.pos;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = NULL;
-#endif
-
         assert(tile_size > 0);
 
         curr_tg_data_size += tile_size + 4;
@@ -5218,10 +5065,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = &this_tile->pvq_q;
-        cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
-#endif  // CONFIG_PVQ
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif
@@ -5230,9 +5073,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         assert(tok == tok_end);
         aom_stop_encode(&mode_bc);
         tile_size = mode_bc.pos;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = NULL;
-#endif
         buf->size = tile_size;
 
         // Record the maximum tile size we see, so we can compact headers later.
@@ -5340,25 +5180,16 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         // Initialise tile context from the frame context
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = &this_tile->pvq_q;
-        cpi->td.mb.daala_enc.state.adapt = &this_tile->tctx.pvq_context;
-#endif  // CONFIG_PVQ
 #if CONFIG_ANS
         mode_bc.size = 1 << cpi->common.ans_window_size_log2;
 #endif  // CONFIG_ANS
         aom_start_encode(&mode_bc, dst + total_size);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
 #if !CONFIG_LV_MAP
-#if !CONFIG_PVQ
         assert(tok == tok_end);
-#endif  // !CONFIG_PVQ
 #endif  // !CONFIG_LV_MAP
         aom_stop_encode(&mode_bc);
         tile_size = mode_bc.pos;
-#if CONFIG_PVQ
-        cpi->td.mb.pvq_q = NULL;
-#endif
         assert(tile_size > 0);
 
         curr_tg_data_size += (tile_size + (is_last_tile_in_tg ? 0 : 4));

@@ -283,7 +283,6 @@ EXPERIMENT_LIST="
     palette_delta_encoding
     rawbits
     kf_ctx
-    pvq
     cfl
     xiphrc
     dct_only
@@ -552,15 +551,8 @@ post_process_cmdline() {
     soft_enable txmg
 
     # Fix up experiment dependencies
-    enabled pvq && disable_feature rect_tx
-    enabled pvq && disable_feature ext_tx
-    enabled pvq && disable_feature var_tx
-    enabled pvq && disable_feature highbitdepth
-    enabled pvq && disable_feature lgt
-    enabled pvq && disable_feature mrc_tx
     enabled lv_map && disable_feature mrc_tx
     enabled coef_interleave && disable_feature mrc_tx
-    enabled pvq && disable_feature palette_throughput
     enabled mrc_tx && enable_feature ext_tx
     enabled mrc_tx && enable_feature var_tx
     enabled txk_sel && soft_enable lv_map

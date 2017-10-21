@@ -38,9 +38,6 @@ typedef struct {
   tran_low_t *coeff[MAX_MB_PLANE];
   tran_low_t *qcoeff[MAX_MB_PLANE];
   tran_low_t *dqcoeff[MAX_MB_PLANE];
-#if CONFIG_PVQ
-  tran_low_t *pvq_ref_coeff[MAX_MB_PLANE];
-#endif
   uint16_t *eobs[MAX_MB_PLANE];
 #if CONFIG_LV_MAP
   uint8_t *txb_entropy_ctx[MAX_MB_PLANE];

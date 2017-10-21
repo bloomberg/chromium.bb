@@ -10,25 +10,18 @@
  */
 
 #include "./aom_config.h"
-#if !CONFIG_PVQ
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
-#endif  // !CONFIG_PVQ
-
 #include "av1/common/blockd.h"
 #include "av1/decoder/detokenize.h"
 
 #define ACCT_STR __func__
 
-#if !CONFIG_PVQ || CONFIG_VAR_TX
 #include "av1/common/common.h"
 #include "av1/common/entropy.h"
 #include "av1/common/idct.h"
-#endif
-
 #include "av1/decoder/symbolrate.h"
 
-#if !CONFIG_PVQ || CONFIG_VAR_TX
 #define EOB_CONTEXT_NODE 0
 #define ZERO_CONTEXT_NODE 1
 #define ONE_CONTEXT_NODE 2
@@ -247,7 +240,6 @@ static int decode_coefs(MACROBLOCKD *xd, PLANE_TYPE type, tran_low_t *dqcoeff,
 
   return c;
 }
-#endif  // !CONFIG_PVQ
 
 static void decode_color_map_tokens(Av1ColorMapParam *param, aom_reader *r) {
   uint8_t color_order[PALETTE_MAX_SIZE];
@@ -359,7 +351,6 @@ static void decode_mrc_tokens(MACROBLOCKD *const xd, TX_TYPE tx_size,
 }
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
 
-#if !CONFIG_PVQ || CONFIG_VAR_TX
 int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
                             const SCAN_ORDER *sc, int x, int y, TX_SIZE tx_size,
                             TX_TYPE tx_type, int16_t *max_scan_line,
@@ -398,4 +389,3 @@ int av1_decode_block_tokens(AV1_COMMON *cm, MACROBLOCKD *const xd, int plane,
 #endif
   return eob;
 }
-#endif  // !CONFIG_PVQ

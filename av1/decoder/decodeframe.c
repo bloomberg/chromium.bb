@@ -73,16 +73,6 @@
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
 
-#if CONFIG_PVQ
-#include "av1/common/partition.h"
-#include "av1/common/pvq.h"
-#include "av1/common/scan.h"
-#include "av1/decoder/decint.h"
-#include "av1/decoder/pvq_decoder.h"
-#include "av1/encoder/encodemb.h"
-#include "av1/encoder/hybrid_fwd_txfm.h"
-#endif
-
 #if CONFIG_CFL
 #include "av1/common/cfl.h"
 #endif
@@ -279,189 +269,14 @@ static int get_block_idx(const MACROBLOCKD *xd, int plane, int row, int col) {
   return row * max_blocks_wide + col * txh_unit;
 }
 
-#if CONFIG_PVQ
-static int av1_pvq_decode_helper(MACROBLOCKD *xd, tran_low_t *ref_coeff,
-                                 tran_low_t *dqcoeff, int16_t *quant, int pli,
-                                 int bs, TX_TYPE tx_type, int xdec,
-                                 PVQ_SKIP_TYPE ac_dc_coded) {
-  unsigned int flags;  // used for daala's stream analyzer.
-  int off;
-  const int is_keyframe = 0;
-  const int has_dc_skip = 1;
-  int coeff_shift = 3 - av1_get_tx_scale(bs);
-  int hbd_downshift = 0;
-  int rounding_mask;
-  // DC quantizer for PVQ
-  int pvq_dc_quant;
-  int lossless = (quant[0] == 0);
-  const int blk_size = tx_size_wide[bs];
-  int eob = 0;
-  int i;
-  od_dec_ctx *dec = &xd->daala_dec;
-  int use_activity_masking = dec->use_activity_masking;
-  DECLARE_ALIGNED(16, tran_low_t, dqcoeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
-  DECLARE_ALIGNED(16, tran_low_t, ref_coeff_pvq[OD_TXSIZE_MAX * OD_TXSIZE_MAX]);
-
-  od_coeff ref_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
-  od_coeff out_int32[OD_TXSIZE_MAX * OD_TXSIZE_MAX];
-
-  hbd_downshift = xd->bd - 8;
-
-  od_raster_to_coding_order(ref_coeff_pvq, blk_size, tx_type, ref_coeff,
-                            blk_size);
-
-  assert(OD_COEFF_SHIFT >= 4);
-  if (lossless)
-    pvq_dc_quant = 1;
-  else {
-    if (use_activity_masking)
-      pvq_dc_quant =
-          OD_MAXI(1,
-                  (quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift) *
-                          dec->state.pvq_qm_q4[pli][od_qm_get_index(bs, 0)] >>
-                      4);
-    else
-      pvq_dc_quant =
-          OD_MAXI(1, quant[0] << (OD_COEFF_SHIFT - 3) >> hbd_downshift);
-  }
-
-  off = od_qm_offset(bs, xdec);
-
-  // copy int16 inputs to int32
-  for (i = 0; i < blk_size * blk_size; i++) {
-    ref_int32[i] =
-        AOM_SIGNED_SHL(ref_coeff_pvq[i], OD_COEFF_SHIFT - coeff_shift) >>
-        hbd_downshift;
-  }
-
-  od_pvq_decode(dec, ref_int32, out_int32,
-                OD_MAXI(1, quant[1] << (OD_COEFF_SHIFT - 3) >> hbd_downshift),
-                pli, bs, OD_PVQ_BETA[use_activity_masking][pli][bs],
-                is_keyframe, &flags, ac_dc_coded, dec->state.qm + off,
-                dec->state.qm_inv + off);
-
-  if (!has_dc_skip || out_int32[0]) {
-    out_int32[0] =
-        has_dc_skip + generic_decode(dec->r, &dec->state.adapt->model_dc[pli],
-                                     &dec->state.adapt->ex_dc[pli][bs][0], 2,
-                                     "dc:mag");
-    if (out_int32[0]) out_int32[0] *= aom_read_bit(dec->r, "dc:sign") ? -1 : 1;
-  }
-  out_int32[0] = out_int32[0] * pvq_dc_quant + ref_int32[0];
-
-  // copy int32 result back to int16
-  assert(OD_COEFF_SHIFT > coeff_shift);
-  rounding_mask = (1 << (OD_COEFF_SHIFT - coeff_shift - 1)) - 1;
-  for (i = 0; i < blk_size * blk_size; i++) {
-    out_int32[i] = AOM_SIGNED_SHL(out_int32[i], hbd_downshift);
-    dqcoeff_pvq[i] = (out_int32[i] + (out_int32[i] < 0) + rounding_mask) >>
-                     (OD_COEFF_SHIFT - coeff_shift);
-  }
-
-  od_coding_order_to_raster(dqcoeff, blk_size, tx_type, dqcoeff_pvq, blk_size);
-
-  eob = blk_size * blk_size;
-
-  return eob;
-}
-
-static PVQ_SKIP_TYPE read_pvq_skip(AV1_COMMON *cm, MACROBLOCKD *const xd,
-                                   int plane, TX_SIZE tx_size) {
-  // decode ac/dc coded flag. bit0: DC coded, bit1 : AC coded
-  // NOTE : we don't use 5 symbols for luma here in aom codebase,
-  // since block partition is taken care of by aom.
-  // So, only AC/DC skip info is coded
-  const int ac_dc_coded = aom_read_symbol(
-      xd->daala_dec.r,
-      xd->daala_dec.state.adapt->skip_cdf[2 * tx_size + (plane != 0)], 4,
-      "skip");
-  if (ac_dc_coded < 0 || ac_dc_coded > 3) {
-    aom_internal_error(&cm->error, AOM_CODEC_INVALID_PARAM,
-                       "Invalid PVQ Skip Type");
-  }
-  return ac_dc_coded;
-}
-
-static int av1_pvq_decode_helper2(AV1_COMMON *cm, MACROBLOCKD *const xd,
-                                  MB_MODE_INFO *const mbmi, int plane, int row,
-                                  int col, TX_SIZE tx_size, TX_TYPE tx_type) {
-  struct macroblockd_plane *const pd = &xd->plane[plane];
-  // transform block size in pixels
-  int tx_blk_size = tx_size_wide[tx_size];
-  int i, j;
-  tran_low_t *pvq_ref_coeff = pd->pvq_ref_coeff;
-  const int diff_stride = tx_blk_size;
-  int16_t *pred = pd->pred;
-  tran_low_t *const dqcoeff = pd->dqcoeff;
-  uint8_t *dst;
-  int eob;
-  const PVQ_SKIP_TYPE ac_dc_coded = read_pvq_skip(cm, xd, plane, tx_size);
-
-  eob = 0;
-  dst = &pd->dst.buf[4 * row * pd->dst.stride + 4 * col];
-
-  if (ac_dc_coded) {
-    int xdec = pd->subsampling_x;
-    int seg_id = mbmi->segment_id;
-    int16_t *quant;
-    TxfmParam txfm_param;
-    // ToDo(yaowu): correct this with optimal number from decoding process.
-    const int max_scan_line = tx_size_2d[tx_size];
-#if CONFIG_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      for (j = 0; j < tx_blk_size; j++)
-        for (i = 0; i < tx_blk_size; i++)
-          pred[diff_stride * j + i] =
-              CONVERT_TO_SHORTPTR(dst)[pd->dst.stride * j + i];
-    } else {
-#endif
-      for (j = 0; j < tx_blk_size; j++)
-        for (i = 0; i < tx_blk_size; i++)
-          pred[diff_stride * j + i] = dst[pd->dst.stride * j + i];
-#if CONFIG_HIGHBITDEPTH
-    }
-#endif
-
-    txfm_param.tx_type = tx_type;
-    txfm_param.tx_size = tx_size;
-    txfm_param.lossless = xd->lossless[seg_id];
-
-#if CONFIG_HIGHBITDEPTH
-    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-      txfm_param.bd = xd->bd;
-      av1_highbd_fwd_txfm(pred, pvq_ref_coeff, diff_stride, &txfm_param);
-    } else {
-#endif  // CONFIG_HIGHBITDEPTH
-      av1_fwd_txfm(pred, pvq_ref_coeff, diff_stride, &txfm_param);
-#if CONFIG_HIGHBITDEPTH
-    }
-#endif  // CONFIG_HIGHBITDEPTH
-
-    quant = &pd->seg_dequant[seg_id][0];  // aom's quantizer
-
-    eob = av1_pvq_decode_helper(xd, pvq_ref_coeff, dqcoeff, quant, plane,
-                                tx_size, tx_type, xdec, ac_dc_coded);
-
-    inverse_transform_block(xd, plane, tx_type, tx_size, dst, pd->dst.stride,
-                            max_scan_line, eob);
-  }
-
-  return eob;
-}
-#endif
-
 static void predict_and_reconstruct_intra_block(
     AV1_COMMON *cm, MACROBLOCKD *const xd, aom_reader *const r,
     MB_MODE_INFO *const mbmi, int plane, int row, int col, TX_SIZE tx_size) {
   PLANE_TYPE plane_type = get_plane_type(plane);
   const int block_idx = get_block_idx(xd, plane, row, col);
-#if CONFIG_PVQ
-  (void)r;
-#endif
   av1_predict_intra_block_facade(cm, xd, plane, block_idx, col, row, tx_size);
 
   if (!mbmi->skip) {
-#if !CONFIG_PVQ
     struct macroblockd_plane *const pd = &xd->plane[plane];
 #if CONFIG_LV_MAP
     int16_t max_scan_line = 0;
@@ -490,11 +305,6 @@ static void predict_and_reconstruct_intra_block(
                               tx_type, tx_size, dst, pd->dst.stride,
                               max_scan_line, eob);
     }
-#else   // !CONFIG_PVQ
-    const TX_TYPE tx_type =
-        av1_get_tx_type(plane_type, xd, row, col, block_idx, tx_size);
-    av1_pvq_decode_helper2(cm, xd, mbmi, plane, row, col, tx_size, tx_type);
-#endif  // !CONFIG_PVQ
   }
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
@@ -598,15 +408,8 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                    TX_SIZE tx_size) {
   PLANE_TYPE plane_type = get_plane_type(plane);
   int block_idx = get_block_idx(xd, plane, row, col);
-#if CONFIG_PVQ
-  int eob;
-  (void)r;
-  (void)segment_id;
-#else
   struct macroblockd_plane *const pd = &xd->plane[plane];
-#endif
 
-#if !CONFIG_PVQ
 #if CONFIG_LV_MAP
   (void)segment_id;
   int16_t max_scan_line = 0;
@@ -635,12 +438,7 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 #endif
                             tx_type, tx_size, dst, pd->dst.stride,
                             max_scan_line, eob);
-#else
-  const TX_TYPE tx_type =
-      av1_get_tx_type(plane_type, xd, row, col, block_idx, tx_size);
-  eob = av1_pvq_decode_helper2(cm, xd, &xd->mi[0]->mbmi, plane, row, col,
-                               tx_size, tx_type);
-#endif
+
   return eob;
 }
 #endif  // !CONFIG_VAR_TX || CONFIG_SUPER_TX
@@ -878,13 +676,10 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       int row_y, col_y, row_c, col_c;
       int plane;
 
-// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
-#if !CONFIG_PVQ
       for (plane = 0; plane <= 1; ++plane) {
         if (mbmi->palette_mode_info.palette_size[plane])
           av1_decode_palette_tokens(xd, plane, r);
       }
-#endif  // !CONFIG_PVQ
 
       for (row_y = 0; row_y < tu_num_h_y; row_y++) {
         for (col_y = 0; col_y < tu_num_w_y; col_y++) {
@@ -965,13 +760,10 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   if (!is_inter_block(mbmi)) {
     int plane;
 
-// TODO(anybody) : remove this flag when PVQ supports pallete coding tool
-#if !CONFIG_PVQ
     for (plane = 0; plane <= 1; ++plane) {
       if (mbmi->palette_mode_info.palette_size[plane])
         av1_decode_palette_tokens(xd, plane, r);
     }
-#endif  // #if !CONFIG_PVQ
 
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -1335,11 +1127,6 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
                        "Block size %dx%d invalid with this subsampling mode",
                        block_size_wide[subsize], block_size_high[subsize]);
   }
-
-#if CONFIG_PVQ
-  assert(partition < PARTITION_TYPES);
-  assert(subsize < BLOCK_SIZES_ALL);
-#endif
 
 #define DEC_BLOCK_STX_ARG
 #if CONFIG_EXT_PARTITION_TYPES
@@ -2580,52 +2367,6 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   }
 }
 
-#if CONFIG_PVQ
-static void daala_dec_init(AV1_COMMON *const cm, daala_dec_ctx *daala_dec,
-                           aom_reader *r) {
-  daala_dec->r = r;
-
-  // TODO(yushin) : activity masking info needs be signaled by a bitstream
-  daala_dec->use_activity_masking = AV1_PVQ_ENABLE_ACTIVITY_MASKING;
-
-  if (daala_dec->use_activity_masking)
-    daala_dec->qm = OD_HVS_QM;
-  else
-    daala_dec->qm = OD_FLAT_QM;
-
-  od_init_qm(daala_dec->state.qm, daala_dec->state.qm_inv,
-             daala_dec->qm == OD_HVS_QM ? OD_QM8_Q4_HVS : OD_QM8_Q4_FLAT);
-
-  if (daala_dec->use_activity_masking) {
-    int pli;
-    int use_masking = daala_dec->use_activity_masking;
-    int segment_id = 0;
-    int qindex = av1_get_qindex(&cm->seg, segment_id, cm->base_qindex);
-
-    for (pli = 0; pli < MAX_MB_PLANE; pli++) {
-      int i;
-      int q;
-
-      q = qindex;
-      if (q <= OD_DEFAULT_QMS[use_masking][0][pli].interp_q << OD_COEFF_SHIFT) {
-        od_interp_qm(&daala_dec->state.pvq_qm_q4[pli][0], q,
-                     &OD_DEFAULT_QMS[use_masking][0][pli], NULL);
-      } else {
-        i = 0;
-        while (OD_DEFAULT_QMS[use_masking][i + 1][pli].qm_q4 != NULL &&
-               q > OD_DEFAULT_QMS[use_masking][i + 1][pli].interp_q
-                       << OD_COEFF_SHIFT) {
-          i++;
-        }
-        od_interp_qm(&daala_dec->state.pvq_qm_q4[pli][0], q,
-                     &OD_DEFAULT_QMS[use_masking][i][pli],
-                     &OD_DEFAULT_QMS[use_masking][i + 1][pli]);
-      }
-    }
-  }
-}
-#endif  // #if CONFIG_PVQ
-
 #if CONFIG_LOOPFILTERING_ACROSS_TILES
 static void dec_setup_across_tile_boundary_info(
     const AV1_COMMON *const cm, const TileInfo *const tile_info) {
@@ -2744,9 +2485,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
               ? &cm->counts
               : NULL;
       av1_zero(td->dqcoeff);
-#if CONFIG_PVQ
-      av1_zero(td->pvq_ref_coeff);
-#endif
       av1_tile_init(&td->xd.tile, td->cm, tile_row, tile_col);
       setup_bool_decoder(buf->data, data_end, buf->size, &cm->error,
                          &td->bit_reader,
@@ -2762,9 +2500,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       }
 #endif
       av1_init_macroblockd(cm, &td->xd,
-#if CONFIG_PVQ
-                           td->pvq_ref_coeff,
-#endif
 #if CONFIG_CFL
                            &td->cfl,
 #endif
@@ -2773,12 +2508,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       // Initialise the tile context from the frame context
       td->tctx = *cm->fc;
       td->xd.tile_ctx = &td->tctx;
-
-#if CONFIG_PVQ
-      daala_dec_init(cm, &td->xd.daala_dec, &td->bit_reader);
-      td->xd.daala_dec.state.adapt = &td->tctx.pvq_context;
-#endif
-
       td->xd.plane[0].color_index_map = td->color_index_map[0];
       td->xd.plane[1].color_index_map = td->color_index_map[1];
 #if CONFIG_MRC_TX
@@ -4293,9 +4022,6 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
                                   num_bwd_ctxs);
       av1_average_tile_loopfilter_cdfs(pbi->common.fc, tile_ctxs, cdf_ptrs,
                                        num_bwd_ctxs);
-#if CONFIG_PVQ
-      av1_average_tile_pvq_cdfs(pbi->common.fc, tile_ctxs, num_bwd_ctxs);
-#endif  // CONFIG_PVQ
 #if CONFIG_ADAPT_SCAN
       av1_adapt_scan_order(cm);
 #endif  // CONFIG_ADAPT_SCAN

@@ -503,38 +503,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes") {
 }
 # end encoder functions
 
-# If PVQ is enabled, fwd transforms are required by decoder
-if (aom_config("CONFIG_PVQ") eq "yes") {
-  # fdct functions
-
-  if (aom_config("CONFIG_HIGHBITDEPTH") eq "yes") {
-    add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    specialize qw/av1_fht4x4 sse2/;
-
-    add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    specialize qw/av1_fht8x8 sse2/;
-
-    add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    specialize qw/av1_fht16x16 sse2/;
-
-    add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/av1_fwht4x4 sse2/;
-  } else {
-    add_proto qw/void av1_fht4x4/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    specialize qw/av1_fht4x4 sse2 msa/;
-
-    add_proto qw/void av1_fht8x8/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    specialize qw/av1_fht8x8 sse2 msa/;
-
-    add_proto qw/void av1_fht16x16/, "const int16_t *input, tran_low_t *output, int stride, struct txfm_param *param";
-    specialize qw/av1_fht16x16 sse2 msa/;
-
-    add_proto qw/void av1_fwht4x4/, "const int16_t *input, tran_low_t *output, int stride";
-    specialize qw/av1_fwht4x4 msa sse2/;
-  }
-
-}
-
 # Deringing Functions
 
 if (aom_config("CONFIG_CDEF") eq "yes") {
@@ -584,13 +552,6 @@ if (aom_config("CONFIG_CDEF") eq "yes") {
       specialize qw/copy_rect8_16bit_to_16bit sse2 ssse3 sse4_1 neon/;
     }
   }
-}
-
-# PVQ Functions
-
-if (aom_config("CONFIG_PVQ") eq "yes") {
-  add_proto qw/double pvq_search_rdo_double/, "const od_val16 *xcoeff, int n, int k, int *ypulse, double g2, double pvq_norm_lambda, int prev_k";
-  specialize qw/pvq_search_rdo_double sse4_1/;
 }
 
 # WARPED_MOTION / GLOBAL_MOTION functions

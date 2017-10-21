@@ -32,9 +32,6 @@
 #endif  // CONFIG_LOOP_RESTORATION
 #include "av1/common/tile_common.h"
 #include "av1/common/odintrin.h"
-#if CONFIG_PVQ
-#include "av1/common/pvq.h"
-#endif
 #if CONFIG_CFL
 #include "av1/common/cfl.h"
 #endif
@@ -688,18 +685,12 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
 #endif  // CONFIG_CFL
 
 static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
-#if CONFIG_PVQ
-                                        tran_low_t *pvq_ref_coeff,
-#endif
 #if CONFIG_CFL
                                         CFL_CTX *cfl,
 #endif
                                         tran_low_t *dqcoeff) {
   for (int i = 0; i < MAX_MB_PLANE; ++i) {
     xd->plane[i].dqcoeff = dqcoeff;
-#if CONFIG_PVQ
-    xd->plane[i].pvq_ref_coeff = pvq_ref_coeff;
-#endif
     xd->above_context[i] = cm->above_context[i];
     if (xd->plane[i].plane_type == PLANE_TYPE_Y) {
       memcpy(xd->plane[i].seg_dequant, cm->y_dequant, sizeof(cm->y_dequant));

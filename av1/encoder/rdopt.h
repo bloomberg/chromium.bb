@@ -77,12 +77,11 @@ int64_t av1_dist_8x8(const AV1_COMP *const cpi, const MACROBLOCK *x,
                      int bsh, int visible_w, int visible_h, int qindex);
 #endif
 
-#if !CONFIG_PVQ || CONFIG_VAR_TX
 int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
                     int blk_row, int blk_col, int block, TX_SIZE tx_size,
                     const SCAN_ORDER *scan_order, const ENTROPY_CONTEXT *a,
                     const ENTROPY_CONTEXT *l, int use_fast_coef_costing);
-#endif
+
 void av1_rd_pick_intra_mode_sb(const struct AV1_COMP *cpi, struct macroblock *x,
                                struct RD_STATS *rd_cost, BLOCK_SIZE bsize,
                                PICK_MODE_CONTEXT *ctx, int64_t best_rd);
