@@ -11,6 +11,7 @@ Has category: Mobile
 Has category: Network
 Has category: Panel
 Has category: Performance
+Has category: Persistence
 Has category: Rendering
 Has category: Settings
 Has category: Sources
