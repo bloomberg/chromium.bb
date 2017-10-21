@@ -33,7 +33,7 @@
 #define LAYOUT_GEOMETRY_MAP_LOGGING 0
 
 #if LAYOUT_GEOMETRY_MAP_LOGGING
-#define LAYOUT_GEOMETRY_MAP_LOG(...) WTFLogAlways(__VA_ARGS__)
+#define LAYOUT_GEOMETRY_MAP_LOG(...) DVLOG(__VA_ARGS__)
 #else
 #define LAYOUT_GEOMETRY_MAP_LOG(...) ((void)0)
 #endif

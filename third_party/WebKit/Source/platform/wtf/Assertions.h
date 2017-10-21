@@ -36,10 +36,6 @@
 // New code shouldn't use this function. This function will be deprecated.
 void vprintf_stderr_common(const char* format, va_list args);
 
-// WTFLogAlways() is deprecated. crbug.com/638849
-WTF_EXPORT PRINTF_FORMAT(1, 2)  // NOLINT
-    void WTFLogAlways(const char* format, ...);
-
 #define DCHECK_AT(assertion, file, line)                            \
   LAZY_STREAM(logging::LogMessage(file, line, #assertion).stream(), \
               DCHECK_IS_ON() ? !(assertion) : false)
