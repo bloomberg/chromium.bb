@@ -93,11 +93,6 @@ std::vector<autofill::CreditCard> _cards;
 }
 
 - (void)addCreditCard:(const autofill::CreditCard&)card {
-  if (card.record_type() != autofill::CreditCard::LOCAL_CARD) {
-    [self personalDataManager]->AddServerCreditCardForTest(
-        base::MakeUnique<autofill::CreditCard>(card));
-    return;
-  }
   _cards.push_back(card);
   size_t card_count = [self personalDataManager]->GetCreditCards().size();
   [self personalDataManager]->AddCreditCard(card);
@@ -108,6 +103,12 @@ std::vector<autofill::CreditCard> _cards;
                           [self personalDataManager]->GetCreditCards().size();
                  }),
              @"Failed to add credit card.");
+}
+
+- (void)addServerCreditCard:(const autofill::CreditCard&)card {
+  DCHECK(card.record_type() != autofill::CreditCard::LOCAL_CARD);
+  [self personalDataManager]->AddServerCreditCardForTest(
+      base::MakeUnique<autofill::CreditCard>(card));
 }
 
 - (payments::PaymentRequestCache::PaymentRequestSet&)paymentRequestsForWebState:
