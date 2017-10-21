@@ -901,5 +901,30 @@
         "test": "wm_unittests"
       }
     ]
+  },
+  "chromeos-amd64-generic-rel": {
+    "additional_compile_targets": [
+      "base_unittests"
+    ]
+  },
+  "chromeos-betty-rel": {
+    "additional_compile_targets": [
+      "base_unittests"
+    ]
+  },
+  "chromeos-daisy-rel": {
+    "additional_compile_targets": [
+      "base_unittests"
+    ]
+  },
+  "linux-chromeos-dbg": {
+    "additional_compile_targets": [
+      "base_unittests"
+    ]
+  },
+  "linux-chromeos-rel": {
+    "additional_compile_targets": [
+      "base_unittests"
+    ]
   }
 }
