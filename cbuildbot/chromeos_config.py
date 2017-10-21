@@ -3857,6 +3857,61 @@ def EnsureVmTestsOnBaremetal(site_config, _gs_build_config):
       c['buildslave_type'] = constants.BAREMETAL_BUILD_SLAVE_TYPE
 
 
+def TryjobMirrors(site_config):
+  """Create tryjob specialized variants of every build config.
+
+  This creates a new 'tryjob' config for every existing config, unless the
+  existing config has a display_label that is already in TRYJOB_DISPLAY_LABEL.
+
+  Args:
+    site_config: config_lib.SiteConfig to be modified by adding templates
+                 and configs.
+  """
+  tryjob_configs = {}
+
+  for build_name, config in site_config.iteritems():
+    tryjob_name = build_name + '-tryjob'
+
+    # Don't mirror builds that are already tryjob safe, and don't override
+    # mirrored versions that were explicitly created earlier.
+    if (config.display_label in config_lib.TRYJOB_DISPLAY_LABEL or
+        tryjob_name in site_config):
+      continue
+
+    tryjob_config = copy.deepcopy(config)
+    tryjob_config.apply(
+        name=tryjob_name,
+        display_label=config_lib.DISPLAY_LABEL_TRYJOB,
+        # Generally make tryjobs safer.
+        chroot_replace=True,
+        debug=True,
+        paygen=False,
+        push_image=False,
+        push_overlays=None,
+        # Force uprev. This is so patched in changes are always built.
+        uprev=True,
+        active_waterfall=waterfall.WATERFALL_TRYBOT,
+    )
+
+    # Force uprev. This is so patched in changes are always built.
+    if tryjob_config.internal:
+      tryjob_config.apply(overlays=constants.BOTH_OVERLAYS)
+
+    # In trybots, we want to always run VM tests and all unit tests, so that
+    # developers will get better testing for their changes.
+    if tryjob_config.hw_tests_override is not None:
+      tryjob_config.apply(hw_tests=tryjob_config.hw_tests_override)
+
+    if tryjob_config.vm_tests_override is not None:
+      tryjob_config.apply(vm_tests=tryjob_config.vm_tests_override)
+
+    # Save off the new config so we can insert into site_config.
+    tryjob_configs[tryjob_name] = tryjob_config
+
+  for tryjob_name, tryjob_config in tryjob_configs.iteritems():
+    site_config[tryjob_name] = tryjob_config
+
+
 @factory.CachedFunctionCall
 def GetConfig():
   """Create the Site configuration for all ChromeOS builds.
@@ -3916,5 +3971,7 @@ def GetConfig():
   EnsureVmTestsOnVmTestBoards(site_config, boards_dict, ge_build_config)
 
   EnsureVmTestsOnBaremetal(site_config, ge_build_config)
+
+  TryjobMirrors(site_config)
 
   return site_config

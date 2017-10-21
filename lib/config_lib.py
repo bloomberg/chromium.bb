@@ -68,6 +68,7 @@ CONFIG_TYPE_DUMP_ORDER = (
     'cbuildbot',
     'unittest-stress',
     'infra-go',
+    'tryjob',
 )
 
 DISPLAY_LABEL_PRECQ = 'pre_cq'
