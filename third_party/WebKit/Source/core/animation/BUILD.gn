@@ -69,6 +69,8 @@ blink_core_sources("animation") {
     "CSSPositionAxisListInterpolationType.cpp",
     "CSSPositionAxisListInterpolationType.h",
     "CSSPositionInterpolationType.h",
+    "CSSRayInterpolationType.cpp",
+    "CSSRayInterpolationType.h",
     "CSSResolutionInterpolationType.cpp",
     "CSSResolutionInterpolationType.h",
     "CSSRotateInterpolationType.cpp",

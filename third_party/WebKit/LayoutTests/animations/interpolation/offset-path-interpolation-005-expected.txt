@@ -1,0 +1,296 @@
+This is a testharness.js-based test.
+PASS This test uses interpolation-test.js.
+PASS CSS Transitions: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (-0.3) is [ray(0deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0) is [ray(0deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.3) is [ray(0deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.5) is [ray(0deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.6) is [ray(0deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1) is [ray(0deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1.5) is [ray(0deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [ray(0deg closest-corner)] to [none] at (-0.3) is [none]
+PASS CSS Transitions: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0) is [none]
+PASS CSS Transitions: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.3) is [none]
+PASS CSS Transitions: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.5) is [none]
+PASS CSS Transitions: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.6) is [none]
+PASS CSS Transitions: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1) is [none]
+PASS CSS Transitions: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1.5) is [none]
+PASS CSS Transitions: property <offset-path> from neutral to [ray(20deg closest-side)] at (-0.3) is [ray(7deg closest-side)]
+PASS CSS Transitions: property <offset-path> from neutral to [ray(20deg closest-side)] at (0) is [ray(10deg closest-side)]
+PASS CSS Transitions: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.3) is [ray(13deg closest-side)]
+PASS CSS Transitions: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.6) is [ray(16deg closest-side)]
+PASS CSS Transitions: property <offset-path> from neutral to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Transitions: property <offset-path> from neutral to [ray(20deg closest-side)] at (1.5) is [ray(25deg closest-side)]
+FAIL CSS Transitions: property <offset-path> from [initial] to [ray(20deg closest-side)] at (-0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.6) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+PASS CSS Transitions: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (-0.3) is [ray(33deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0) is [ray(30deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.3) is [ray(27deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.6) is [ray(24deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Transitions: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1.5) is [ray(15deg closest-side)]
+FAIL CSS Transitions: property <offset-path> from [unset] to [ray(20deg closest-side)] at (-0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.6) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+PASS CSS Transitions: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (-0.3) is [ray(-2deg sides contain)]
+PASS CSS Transitions: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0) is [ray(10deg sides contain)]
+PASS CSS Transitions: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.3) is [ray(22deg sides contain)]
+PASS CSS Transitions: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.6) is [ray(34deg sides contain)]
+PASS CSS Transitions: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1) is [ray(50deg sides contain)]
+PASS CSS Transitions: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1.5) is [ray(70deg sides contain)]
+PASS CSS Transitions: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (-0.3) is [ray(2deg farthest-corner)]
+PASS CSS Transitions: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0) is [ray(-10deg farthest-corner)]
+PASS CSS Transitions: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.3) is [ray(-22deg farthest-corner)]
+PASS CSS Transitions: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.6) is [ray(-34deg farthest-corner)]
+PASS CSS Transitions: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1) is [ray(-50deg farthest-corner)]
+PASS CSS Transitions: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1.5) is [ray(-70deg farthest-corner)]
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (-0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.6) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (-0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.6) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (-0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.6) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+PASS CSS Transitions with transition: all: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (-0.3) is [ray(0deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0) is [ray(0deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.3) is [ray(0deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.5) is [ray(0deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.6) is [ray(0deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1) is [ray(0deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1.5) is [ray(0deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(0deg closest-corner)] to [none] at (-0.3) is [none]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0) is [none]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.3) is [none]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.5) is [none]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.6) is [none]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1) is [none]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1.5) is [none]
+PASS CSS Transitions with transition: all: property <offset-path> from neutral to [ray(20deg closest-side)] at (-0.3) is [ray(7deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from neutral to [ray(20deg closest-side)] at (0) is [ray(10deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.3) is [ray(13deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.6) is [ray(16deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from neutral to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from neutral to [ray(20deg closest-side)] at (1.5) is [ray(25deg closest-side)]
+FAIL CSS Transitions with transition: all: property <offset-path> from [initial] to [ray(20deg closest-side)] at (-0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.6) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+PASS CSS Transitions with transition: all: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (-0.3) is [ray(33deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0) is [ray(30deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.3) is [ray(27deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.6) is [ray(24deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Transitions with transition: all: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1.5) is [ray(15deg closest-side)]
+FAIL CSS Transitions with transition: all: property <offset-path> from [unset] to [ray(20deg closest-side)] at (-0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.3) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.6) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1.5) is [none] assert_equals: expected "ray ( 20deg closest - side ) " but got "none "
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (-0.3) is [ray(-2deg sides contain)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0) is [ray(10deg sides contain)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.3) is [ray(22deg sides contain)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.6) is [ray(34deg sides contain)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1) is [ray(50deg sides contain)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1.5) is [ray(70deg sides contain)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (-0.3) is [ray(2deg farthest-corner)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0) is [ray(-10deg farthest-corner)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.3) is [ray(-22deg farthest-corner)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.6) is [ray(-34deg farthest-corner)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1) is [ray(-50deg farthest-corner)]
+PASS CSS Transitions with transition: all: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1.5) is [ray(-70deg farthest-corner)]
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (-0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.6) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (-0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.6) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (-0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.3) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.6) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+FAIL CSS Transitions with transition: all: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1.5) is [none] assert_equals: expected "ray ( 300deg sides ) " but got "none "
+PASS CSS Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (-0.3) is [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')]
+PASS CSS Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0) is [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')]
+PASS CSS Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.3) is [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')]
+PASS CSS Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.5) is [ray(0deg closest-side)]
+PASS CSS Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.6) is [ray(0deg closest-side)]
+PASS CSS Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1) is [ray(0deg closest-side)]
+PASS CSS Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1.5) is [ray(0deg closest-side)]
+PASS CSS Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (-0.3) is [ray(0deg closest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0) is [ray(0deg closest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.3) is [ray(0deg closest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.5) is [none]
+PASS CSS Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.6) is [none]
+PASS CSS Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1) is [none]
+PASS CSS Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1.5) is [none]
+PASS CSS Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (-0.3) is [ray(7deg closest-side)]
+PASS CSS Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (0) is [ray(10deg closest-side)]
+PASS CSS Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.3) is [ray(13deg closest-side)]
+PASS CSS Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.6) is [ray(16deg closest-side)]
+PASS CSS Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (1.5) is [ray(25deg closest-side)]
+PASS CSS Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (-0.3) is [none]
+PASS CSS Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0) is [none]
+PASS CSS Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.3) is [none]
+PASS CSS Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.5) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.6) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1.5) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (-0.3) is [ray(33deg closest-side)]
+PASS CSS Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0) is [ray(30deg closest-side)]
+PASS CSS Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.3) is [ray(27deg closest-side)]
+PASS CSS Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.6) is [ray(24deg closest-side)]
+PASS CSS Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1.5) is [ray(15deg closest-side)]
+PASS CSS Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (-0.3) is [none]
+PASS CSS Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0) is [none]
+PASS CSS Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.3) is [none]
+PASS CSS Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.5) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.6) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1.5) is [ray(20deg closest-side)]
+PASS CSS Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (-0.3) is [ray(-2deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0) is [ray(10deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.3) is [ray(22deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.6) is [ray(34deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1) is [ray(50deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1.5) is [ray(70deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (-0.3) is [ray(2deg farthest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0) is [ray(-10deg farthest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.3) is [ray(-22deg farthest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.6) is [ray(-34deg farthest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1) is [ray(-50deg farthest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1.5) is [ray(-70deg farthest-corner)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (-0.3) is [ray(200deg farthest-side)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0) is [ray(200deg farthest-side)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.3) is [ray(200deg farthest-side)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.5) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.6) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1.5) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (-0.3) is [ray(200deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0) is [ray(200deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.3) is [ray(200deg sides contain)]
+PASS CSS Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.5) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.6) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1.5) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (-0.3) is [ray(200deg farthest-side contain)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0) is [ray(200deg farthest-side contain)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.3) is [ray(200deg farthest-side contain)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.5) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.6) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1) is [ray(300deg sides)]
+PASS CSS Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1.5) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (-0.3) is [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')]
+PASS Web Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0) is [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')]
+PASS Web Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.3) is [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')]
+PASS Web Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.5) is [ray(0deg closest-side)]
+PASS Web Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (0.6) is [ray(0deg closest-side)]
+PASS Web Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1) is [ray(0deg closest-side)]
+PASS Web Animations: property <offset-path> from [path('M 0 0 L 100 100 M 100 200 L 200 200 Z L 200 100 Z')] to [ray(0deg closest-side)] at (1.5) is [ray(0deg closest-side)]
+PASS Web Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (-0.3) is [ray(0deg closest-corner)]
+PASS Web Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0) is [ray(0deg closest-corner)]
+PASS Web Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.3) is [ray(0deg closest-corner)]
+PASS Web Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.5) is [none]
+PASS Web Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (0.6) is [none]
+PASS Web Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1) is [none]
+PASS Web Animations: property <offset-path> from [ray(0deg closest-corner)] to [none] at (1.5) is [none]
+PASS Web Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (-0.3) is [ray(7deg closest-side)]
+PASS Web Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (0) is [ray(10deg closest-side)]
+PASS Web Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.3) is [ray(13deg closest-side)]
+PASS Web Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (0.6) is [ray(16deg closest-side)]
+PASS Web Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from neutral to [ray(20deg closest-side)] at (1.5) is [ray(25deg closest-side)]
+PASS Web Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (-0.3) is [none]
+PASS Web Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0) is [none]
+PASS Web Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.3) is [none]
+PASS Web Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.5) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (0.6) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [initial] to [ray(20deg closest-side)] at (1.5) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (-0.3) is [ray(33deg closest-side)]
+PASS Web Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0) is [ray(30deg closest-side)]
+PASS Web Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.3) is [ray(27deg closest-side)]
+PASS Web Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (0.6) is [ray(24deg closest-side)]
+PASS Web Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [inherit] to [ray(20deg closest-side)] at (1.5) is [ray(15deg closest-side)]
+PASS Web Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (-0.3) is [none]
+PASS Web Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0) is [none]
+PASS Web Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.3) is [none]
+PASS Web Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.5) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (0.6) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [unset] to [ray(20deg closest-side)] at (1.5) is [ray(20deg closest-side)]
+PASS Web Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (-0.3) is [ray(-2deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0) is [ray(10deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.3) is [ray(22deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (0.6) is [ray(34deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1) is [ray(50deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(10deg sides contain)] to [ray(50deg sides contain)] at (1.5) is [ray(70deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (-0.3) is [ray(2deg farthest-corner)]
+PASS Web Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0) is [ray(-10deg farthest-corner)]
+PASS Web Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.3) is [ray(-22deg farthest-corner)]
+PASS Web Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (0.6) is [ray(-34deg farthest-corner)]
+PASS Web Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1) is [ray(-50deg farthest-corner)]
+PASS Web Animations: property <offset-path> from [ray(-10deg farthest-corner)] to [ray(-50deg farthest-corner)] at (1.5) is [ray(-70deg farthest-corner)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (-0.3) is [ray(200deg farthest-side)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0) is [ray(200deg farthest-side)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.3) is [ray(200deg farthest-side)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.5) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (0.6) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side)] to [ray(300deg sides)] at (1.5) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (-0.3) is [ray(200deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0) is [ray(200deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.3) is [ray(200deg sides contain)]
+PASS Web Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.5) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (0.6) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg sides contain)] to [ray(300deg sides)] at (1.5) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (-0.3) is [ray(200deg farthest-side contain)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0) is [ray(200deg farthest-side contain)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.3) is [ray(200deg farthest-side contain)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.5) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (0.6) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1) is [ray(300deg sides)]
+PASS Web Animations: property <offset-path> from [ray(200deg farthest-side contain)] to [ray(300deg sides)] at (1.5) is [ray(300deg sides)]
+Harness: the test ran to completion.
+
