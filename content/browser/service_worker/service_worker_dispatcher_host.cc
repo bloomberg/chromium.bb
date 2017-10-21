@@ -160,8 +160,6 @@ bool ServiceWorkerDispatcherHost::OnMessageReceived(
     const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcherHost, message)
-    IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_UnregisterServiceWorker,
-                        OnUnregisterServiceWorker)
     IPC_MESSAGE_HANDLER(ServiceWorkerHostMsg_PostMessageToWorker,
                         OnPostMessageToWorker)
     IPC_MESSAGE_HANDLER(EmbeddedWorkerHostMsg_CountFeature, OnCountFeature)
@@ -254,75 +252,6 @@ ServiceWorkerDispatcherHost::CreateRegistrationObjectInfo(
 base::WeakPtr<ServiceWorkerDispatcherHost>
 ServiceWorkerDispatcherHost::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
-}
-
-void ServiceWorkerDispatcherHost::OnUnregisterServiceWorker(
-    int thread_id,
-    int request_id,
-    int provider_id,
-    int64_t registration_id) {
-  TRACE_EVENT0("ServiceWorker",
-               "ServiceWorkerDispatcherHost::OnUnregisterServiceWorker");
-  ProviderStatus provider_status;
-  ServiceWorkerProviderHost* provider_host =
-      GetProviderHostForRequest(&provider_status, provider_id);
-  switch (provider_status) {
-    case ProviderStatus::NO_CONTEXT:  // fallthrough
-    case ProviderStatus::DEAD_HOST:
-      Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-          thread_id, request_id, blink::mojom::ServiceWorkerErrorType::kAbort,
-          base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) +
-              base::ASCIIToUTF16(kShutdownErrorMessage)));
-      return;
-    case ProviderStatus::NO_HOST:
-      bad_message::ReceivedBadMessage(this,
-                                      bad_message::SWDH_UNREGISTER_NO_HOST);
-      return;
-    case ProviderStatus::NO_URL:
-      Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-          thread_id, request_id,
-          blink::mojom::ServiceWorkerErrorType::kSecurity,
-          base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) +
-              base::ASCIIToUTF16(kNoDocumentURLErrorMessage)));
-      return;
-    case ProviderStatus::OK:
-      break;
-  }
-
-  ServiceWorkerRegistration* registration =
-      GetContext()->GetLiveRegistration(registration_id);
-  if (!registration) {
-    // |registration| must be alive because a renderer retains a registration
-    // reference at this point.
-    bad_message::ReceivedBadMessage(
-        this, bad_message::SWDH_UNREGISTER_BAD_REGISTRATION_ID);
-    return;
-  }
-
-  std::vector<GURL> urls = {provider_host->document_url(),
-                            registration->pattern()};
-  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    bad_message::ReceivedBadMessage(this, bad_message::SWDH_UNREGISTER_CANNOT);
-    return;
-  }
-
-  if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration->pattern(), provider_host->topmost_frame_url(),
-          resource_context_, base::Bind(&GetWebContents, render_process_id_,
-                                        provider_host->frame_id()))) {
-    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id, request_id, blink::mojom::ServiceWorkerErrorType::kDisabled,
-        base::ASCIIToUTF16(kUserDeniedPermissionMessage)));
-    return;
-  }
-
-  TRACE_EVENT_ASYNC_BEGIN1(
-      "ServiceWorker", "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
-      request_id, "Scope", registration->pattern().spec());
-  GetContext()->UnregisterServiceWorker(
-      registration->pattern(),
-      base::Bind(&ServiceWorkerDispatcherHost::UnregistrationComplete, this,
-                 thread_id, request_id));
 }
 
 void ServiceWorkerDispatcherHost::OnEnableNavigationPreload(
@@ -853,30 +782,6 @@ void ServiceWorkerDispatcherHost::OnDecrementServiceWorkerRefCount(
   handle->DecrementRefCount();
   if (handle->HasNoRefCount())
     handles_.Remove(handle_id);
-}
-
-void ServiceWorkerDispatcherHost::UnregistrationComplete(
-    int thread_id,
-    int request_id,
-    ServiceWorkerStatusCode status) {
-  TRACE_EVENT_ASYNC_END1("ServiceWorker",
-                         "ServiceWorkerDispatcherHost::UnregisterServiceWorker",
-                         request_id, "Status", status);
-  if (status != SERVICE_WORKER_OK && status != SERVICE_WORKER_ERROR_NOT_FOUND) {
-    base::string16 error_message;
-    blink::mojom::ServiceWorkerErrorType error_type;
-    GetServiceWorkerRegistrationStatusResponse(status, std::string(),
-                                               &error_type, &error_message);
-    Send(new ServiceWorkerMsg_ServiceWorkerUnregistrationError(
-        thread_id, request_id, error_type,
-        base::ASCIIToUTF16(kServiceWorkerUnregisterErrorPrefix) +
-            error_message));
-    return;
-  }
-  const bool is_success = (status == SERVICE_WORKER_OK);
-  Send(new ServiceWorkerMsg_ServiceWorkerUnregistered(thread_id,
-                                                      request_id,
-                                                      is_success));
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {

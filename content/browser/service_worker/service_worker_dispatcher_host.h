@@ -146,10 +146,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   void OnProviderCreated(ServiceWorkerProviderHostInfo info) override;
 
   // IPC Message handlers
-  void OnUnregisterServiceWorker(int thread_id,
-                                 int request_id,
-                                 int provider_id,
-                                 int64_t registration_id);
   void OnEnableNavigationPreload(int thread_id,
                                  int request_id,
                                  int provider_id,
@@ -216,10 +212,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   ServiceWorkerRegistrationHandle* FindRegistrationHandle(
       int provider_id,
       int64_t registration_id);
-
-  void UnregistrationComplete(int thread_id,
-                              int request_id,
-                              ServiceWorkerStatusCode status);
 
   ServiceWorkerContextCore* GetContext();
   // Returns the provider host with id equal to |provider_id|, or nullptr

@@ -154,12 +154,6 @@ IPC_STRUCT_END()
 //---------------------------------------------------------------------------
 // Messages sent from the child process to the browser.
 
-IPC_MESSAGE_CONTROL4(ServiceWorkerHostMsg_UnregisterServiceWorker,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     int /* provider_id */,
-                     int64_t /* registration_id */)
-
 // Asks the browser to enable/disable navigation preload for a registration.
 IPC_MESSAGE_CONTROL5(ServiceWorkerHostMsg_EnableNavigationPreload,
                      int /* thread_id */,
@@ -269,20 +263,6 @@ IPC_MESSAGE_ROUTED1(ServiceWorkerHostMsg_ClaimClients,
 // a thread_id as their first field so that ServiceWorkerMessageFilter can
 // extract it and dispatch the message to the correct ServiceWorkerDispatcher
 // on the correct thread.
-
-// Response to ServiceWorkerHostMsg_UnregisterServiceWorker.
-IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerUnregistered,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     bool /* is_success */)
-
-// Sent when any kind of registration error occurs during a
-// UnregisterServiceWorker handler above.
-IPC_MESSAGE_CONTROL4(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
-                     int /* thread_id */,
-                     int /* request_id */,
-                     blink::mojom::ServiceWorkerErrorType,
-                     base::string16 /* message */)
 
 // Informs the child process that the ServiceWorker's state has changed.
 IPC_MESSAGE_CONTROL3(ServiceWorkerMsg_ServiceWorkerStateChanged,

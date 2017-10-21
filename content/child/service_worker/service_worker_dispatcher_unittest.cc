@@ -52,7 +52,12 @@ class MockServiceWorkerRegistrationObjectHost
   int GetBindingCount() const { return bindings_.size(); }
 
  private:
+  // Implements blink::mojom::ServiceWorkerRegistrationObjectHost.
   void Update(UpdateCallback callback) override {
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                            base::nullopt);
+  }
+  void Unregister(UnregisterCallback callback) override {
     std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
                             base::nullopt);
   }

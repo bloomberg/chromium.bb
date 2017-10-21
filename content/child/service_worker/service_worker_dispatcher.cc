@@ -68,16 +68,12 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
   // handler in ServiceWorkerMessageFilter to release references passed from
   // the browser process in case we fail to post task to the thread.
   IPC_BEGIN_MESSAGE_MAP(ServiceWorkerDispatcher, msg)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistered,
-                        OnUnregistered)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidEnableNavigationPreload,
                         OnDidEnableNavigationPreload)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidGetNavigationPreloadState,
                         OnDidGetNavigationPreloadState)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_DidSetNavigationPreloadHeader,
                         OnDidSetNavigationPreloadHeader)
-    IPC_MESSAGE_HANDLER(ServiceWorkerMsg_ServiceWorkerUnregistrationError,
-                        OnUnregistrationError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_EnableNavigationPreloadError,
                         OnEnableNavigationPreloadError)
     IPC_MESSAGE_HANDLER(ServiceWorkerMsg_GetNavigationPreloadStateError,
@@ -98,19 +94,6 @@ void ServiceWorkerDispatcher::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   DCHECK(handled) << "Unhandled message:" << msg.type();
-}
-
-void ServiceWorkerDispatcher::UnregisterServiceWorker(
-    int provider_id,
-    int64_t registration_id,
-    std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks) {
-  DCHECK(callbacks);
-  int request_id = pending_unregistration_callbacks_.Add(std::move(callbacks));
-  TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
-                           "ServiceWorkerDispatcher::UnregisterServiceWorker",
-                           request_id, "Registration ID", registration_id);
-  thread_safe_sender_->Send(new ServiceWorkerHostMsg_UnregisterServiceWorker(
-      CurrentWorkerId(), request_id, provider_id, registration_id));
 }
 
 void ServiceWorkerDispatcher::EnableNavigationPreload(
@@ -291,26 +274,6 @@ ServiceWorkerDispatcher::GetOrCreateRegistrationForServiceWorkerClient(
   return registration;
 }
 
-void ServiceWorkerDispatcher::OnUnregistered(int thread_id,
-                                             int request_id,
-                                             bool is_success) {
-  TRACE_EVENT_ASYNC_STEP_INTO0(
-      "ServiceWorker",
-      "ServiceWorkerDispatcher::UnregisterServiceWorker",
-      request_id,
-      "OnUnregistered");
-  TRACE_EVENT_ASYNC_END0("ServiceWorker",
-                         "ServiceWorkerDispatcher::UnregisterServiceWorker",
-                         request_id);
-  WebServiceWorkerUnregistrationCallbacks* callbacks =
-      pending_unregistration_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-  callbacks->OnSuccess(is_success);
-  pending_unregistration_callbacks_.Remove(request_id);
-}
-
 void ServiceWorkerDispatcher::OnDidEnableNavigationPreload(int thread_id,
                                                            int request_id) {
   WebEnableNavigationPreloadCallbacks* callbacks =
@@ -345,30 +308,6 @@ void ServiceWorkerDispatcher::OnDidSetNavigationPreloadHeader(int thread_id,
     return;
   callbacks->OnSuccess();
   set_navigation_preload_header_callbacks_.Remove(request_id);
-}
-
-void ServiceWorkerDispatcher::OnUnregistrationError(
-    int thread_id,
-    int request_id,
-    blink::mojom::ServiceWorkerErrorType error_type,
-    const base::string16& message) {
-  TRACE_EVENT_ASYNC_STEP_INTO0(
-      "ServiceWorker",
-      "ServiceWorkerDispatcher::UnregisterServiceWorker",
-      request_id,
-      "OnUnregistrationError");
-  TRACE_EVENT_ASYNC_END0("ServiceWorker",
-                         "ServiceWorkerDispatcher::UnregisterServiceWorker",
-                         request_id);
-  WebServiceWorkerUnregistrationCallbacks* callbacks =
-      pending_unregistration_callbacks_.Lookup(request_id);
-  DCHECK(callbacks);
-  if (!callbacks)
-    return;
-
-  callbacks->OnError(
-      WebServiceWorkerError(error_type, blink::WebString::FromUTF16(message)));
-  pending_unregistration_callbacks_.Remove(request_id);
 }
 
 void ServiceWorkerDispatcher::OnEnableNavigationPreloadError(

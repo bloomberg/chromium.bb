@@ -159,6 +159,10 @@ class CONTENT_EXPORT WebServiceWorkerRegistrationImpl
   void OnUpdated(std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks,
                  blink::mojom::ServiceWorkerErrorType error,
                  const base::Optional<std::string>& error_msg);
+  void OnUnregistered(
+      std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks,
+      blink::mojom::ServiceWorkerErrorType error,
+      const base::Optional<std::string>& error_msg);
 
   // |handle_id_| is the key to map with remote
   // content::ServiceWorkerRegistrationHandle.

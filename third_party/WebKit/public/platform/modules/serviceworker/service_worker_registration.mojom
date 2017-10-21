@@ -59,8 +59,15 @@ interface ServiceWorkerRegistrationObjectHost {
   // Otherwise, |error| and |error_msg| describe the failure.
   Update() => (ServiceWorkerErrorType error, string? error_msg);
 
+  // Corresponds to ServiceWorkerRegistration#unregister().
+  // On success, |error| is kNone without |error_msg| set.
+  // Otherwise, |error| and |error_msg| describe the failure.
+  Unregister() => (ServiceWorkerErrorType error, string? error_msg);
+
   // TODO(leonhsl): Implement all methods.
-  // Unregister() => (ServiceWorkerErrorType error, string? error_msg);
+  // EnableNavigationPreload();
+  // GetNavigationPreloadState();
+  // SetNavigationPreloadHeader();
 };
 
 // This interface lives in the renderer process, it corresponds to one

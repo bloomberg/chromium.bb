@@ -51,9 +51,6 @@ struct ServiceWorkerVersionAttributes;
 // scripts through methods like navigator.registerServiceWorker().
 class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
  public:
-  typedef blink::WebServiceWorkerRegistration::
-      WebServiceWorkerUnregistrationCallbacks
-          WebServiceWorkerUnregistrationCallbacks;
   using WebEnableNavigationPreloadCallbacks =
       blink::WebServiceWorkerRegistration::WebEnableNavigationPreloadCallbacks;
   using WebGetNavigationPreloadStateCallbacks = blink::
@@ -67,12 +64,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   ~ServiceWorkerDispatcher() override;
 
   void OnMessageReceived(const IPC::Message& msg);
-
-  // Corresponds to ServiceWorkerRegistration.unregister().
-  void UnregisterServiceWorker(
-      int provider_id,
-      int64_t registration_id,
-      std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks);
 
   // Corresponds to NavigationPreloadManager.enable/disable.
   void EnableNavigationPreload(
@@ -141,8 +132,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   }
 
  private:
-  using UnregistrationCallbackMap =
-      base::IDMap<std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>>;
   using EnableNavigationPreloadCallbackMap =
       base::IDMap<std::unique_ptr<WebEnableNavigationPreloadCallbacks>>;
   using GetNavigationPreloadStateCallbackMap =
@@ -165,18 +154,11 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
 
-  void OnUnregistered(int thread_id,
-                      int request_id,
-                      bool is_success);
   void OnDidEnableNavigationPreload(int thread_id, int request_id);
   void OnDidGetNavigationPreloadState(int thread_id,
                                       int request_id,
                                       const NavigationPreloadState& state);
   void OnDidSetNavigationPreloadHeader(int thread_id, int request_id);
-  void OnUnregistrationError(int thread_id,
-                             int request_id,
-                             blink::mojom::ServiceWorkerErrorType error_type,
-                             const base::string16& message);
   void OnEnableNavigationPreloadError(
       int thread_id,
       int request_id,
@@ -222,7 +204,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   std::unique_ptr<ServiceWorkerHandleReference> Adopt(
       const blink::mojom::ServiceWorkerObjectInfo& info);
 
-  UnregistrationCallbackMap pending_unregistration_callbacks_;
   EnableNavigationPreloadCallbackMap enable_navigation_preload_callbacks_;
   GetNavigationPreloadStateCallbackMap get_navigation_preload_state_callbacks_;
   SetNavigationPreloadHeaderCallbackMap

@@ -110,35 +110,8 @@ void ServiceWorkerRegistrationHandle::OnUpdateFound(
 }
 
 void ServiceWorkerRegistrationHandle::Update(UpdateCallback callback) {
-  if (!provider_host_ || !context_) {
-    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kAbort,
-                            std::string(kServiceWorkerUpdateErrorPrefix) +
-                                std::string(kShutdownErrorMessage));
-    return;
-  }
-  // TODO(falken): This check can be removed once crbug.com/439697 is fixed.
-  if (provider_host_->document_url().is_empty()) {
-    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kSecurity,
-                            std::string(kServiceWorkerUpdateErrorPrefix) +
-                                std::string(kNoDocumentURLErrorMessage));
-    return;
-  }
-
-  std::vector<GURL> urls = {provider_host_->document_url(),
-                            registration_->pattern()};
-  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
-    bindings_.ReportBadMessage(kBadMessageImproperOrigins);
-    return;
-  }
-
-  if (!GetContentClient()->browser()->AllowServiceWorker(
-          registration_->pattern(), provider_host_->topmost_frame_url(),
-          dispatcher_host_->resource_context(),
-          base::Bind(&GetWebContents, provider_host_->process_id(),
-                     provider_host_->frame_id()))) {
-    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kDisabled,
-                            std::string(kServiceWorkerUpdateErrorPrefix) +
-                                std::string(kUserDeniedPermissionMessage));
+  if (!CanServeRegistrationObjectHostMethods(&callback,
+                                             kServiceWorkerUpdateErrorPrefix)) {
     return;
   }
 
@@ -157,6 +130,18 @@ void ServiceWorkerRegistrationHandle::Update(UpdateCallback callback) {
       base::AdaptCallbackForRepeating(
           base::BindOnce(&ServiceWorkerRegistrationHandle::UpdateComplete,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
+}
+void ServiceWorkerRegistrationHandle::Unregister(UnregisterCallback callback) {
+  if (!CanServeRegistrationObjectHostMethods(
+          &callback, kServiceWorkerUnregisterErrorPrefix)) {
+    return;
+  }
+
+  context_->UnregisterServiceWorker(
+      registration_->pattern(),
+      base::AdaptCallbackForRepeating(base::BindOnce(
+          &ServiceWorkerRegistrationHandle::UnregistrationComplete,
+          weak_ptr_factory_.GetWeakPtr(), std::move(callback))));
 }
 
 void ServiceWorkerRegistrationHandle::UpdateComplete(
@@ -185,6 +170,30 @@ void ServiceWorkerRegistrationHandle::UpdateComplete(
                           base::nullopt);
 }
 
+void ServiceWorkerRegistrationHandle::UnregistrationComplete(
+    UnregisterCallback callback,
+    ServiceWorkerStatusCode status) {
+  if (!provider_host_ || !context_) {
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kAbort,
+                            std::string(kServiceWorkerUnregisterErrorPrefix) +
+                                std::string(kShutdownErrorMessage));
+    return;
+  }
+
+  if (status != SERVICE_WORKER_OK) {
+    std::string error_message;
+    blink::mojom::ServiceWorkerErrorType error_type;
+    GetServiceWorkerErrorTypeForRegistration(status, std::string(), &error_type,
+                                             &error_message);
+    std::move(callback).Run(
+        error_type, kServiceWorkerUnregisterErrorPrefix + error_message);
+    return;
+  }
+
+  std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kNone,
+                          base::nullopt);
+}
+
 void ServiceWorkerRegistrationHandle::SetVersionAttributes(
     ChangedVersionAttributesMask changed_mask,
     ServiceWorkerVersion* installing_version,
@@ -205,6 +214,50 @@ void ServiceWorkerRegistrationHandle::OnConnectionError() {
     return;
   // Will destroy |this|.
   dispatcher_host_->UnregisterServiceWorkerRegistrationHandle(handle_id_);
+}
+
+template <typename CallbackType, typename... Args>
+bool ServiceWorkerRegistrationHandle::CanServeRegistrationObjectHostMethods(
+    CallbackType* callback,
+    const char* error_prefix,
+    Args... args) {
+  if (!provider_host_ || !context_) {
+    std::move(*callback).Run(
+        blink::mojom::ServiceWorkerErrorType::kAbort,
+        std::string(error_prefix) + std::string(kShutdownErrorMessage),
+        args...);
+    return false;
+  }
+
+  // TODO(falken): This check can be removed once crbug.com/439697 is fixed.
+  // (Also see crbug.com/776408)
+  if (provider_host_->document_url().is_empty()) {
+    std::move(*callback).Run(
+        blink::mojom::ServiceWorkerErrorType::kSecurity,
+        std::string(error_prefix) + std::string(kNoDocumentURLErrorMessage),
+        args...);
+    return false;
+  }
+
+  std::vector<GURL> urls = {provider_host_->document_url(),
+                            registration_->pattern()};
+  if (!ServiceWorkerUtils::AllOriginsMatchAndCanAccessServiceWorkers(urls)) {
+    bindings_.ReportBadMessage(kBadMessageImproperOrigins);
+    return false;
+  }
+
+  if (!GetContentClient()->browser()->AllowServiceWorker(
+          registration_->pattern(), provider_host_->topmost_frame_url(),
+          dispatcher_host_->resource_context(),
+          base::Bind(&GetWebContents, provider_host_->process_id(),
+                     provider_host_->frame_id()))) {
+    std::move(*callback).Run(
+        blink::mojom::ServiceWorkerErrorType::kDisabled,
+        std::string(error_prefix) + std::string(kUserDeniedPermissionMessage));
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content
