@@ -554,24 +554,25 @@ void BrowsingHistoryService::ReturnResultsToDriver(
   // call to Web History is successful, we shouldn't be able to have empty sync
   // results at the same time as we have pending local.
   if (state->remote_results.size()) {
-    int local_result_count = state->local_results.size();
     MergeDuplicateResults(state.get(), &results);
 
-    if (local_result_count) {
-      // In the best case, we expect that all local results are duplicated on
-      // the server. Keep track of how many are missing.
-      int missing_count = 0;
-      for (const HistoryEntry& entry : results) {
-        missing_count +=
-            entry.entry_type ==
-                    BrowsingHistoryService::HistoryEntry::LOCAL_ENTRY
-                ? entry.all_timestamps.size()
-                : 0;
-      }
-      DCHECK_GE(local_result_count, missing_count);
-      UMA_HISTOGRAM_PERCENTAGE("WebHistory.LocalResultMissingOnServer",
-                               missing_count * 100.0 / local_result_count);
+    // In the best case, we expect that all local results are duplicated on
+    // the server. Keep track of how many are missing.
+    int combined_count = 0;
+    int local_count = 0;
+    for (const HistoryEntry& entry : results) {
+      if (entry.entry_type == HistoryEntry::LOCAL_ENTRY)
+        ++local_count;
+      else if (entry.entry_type == HistoryEntry::COMBINED_ENTRY)
+        ++combined_count;
     }
+
+    int local_and_combined = combined_count + local_count;
+    if (local_and_combined > 0) {
+      UMA_HISTOGRAM_PERCENTAGE("WebHistory.LocalResultMissingOnServer",
+                               local_count * 100.0 / local_and_combined);
+    }
+
   } else {
     // TODO(skym): Is the optimization to skip merge on local only results worth
     // the complexity increase here?
