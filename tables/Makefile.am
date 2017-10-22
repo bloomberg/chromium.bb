@@ -193,6 +193,7 @@ table_files = \
 	hyph_fr_FR.dic \
 	hyph_hu_HU.dic \
 	hyph_it_IT.dic \
+	hyph_lt.dic \
 	hyph_nb_NO.dic \
 	hyph_nl_NL.dic \
 	hyph_nn_NO.dic \
@@ -237,6 +238,8 @@ table_files = \
 	loweredDigits8Dots.uti \
 	lt.ctb \
 	lt.tbl \
+	lt-6dot.utb \
+	lt-6dot.tbl \
 	Lv-Lv-g1.utb \
 	lv.tbl \
 	malayalam.cti \

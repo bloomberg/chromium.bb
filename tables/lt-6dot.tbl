@@ -1,0 +1,9 @@
+#+locale:lt
+#+type:literary
+#+contraction:no
+#+dots:6
+#+direction:both
+#+hyphenation:yes
+
+include lt-6dot.utb
+include hyph_lt.dic
