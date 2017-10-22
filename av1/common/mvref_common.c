@@ -1407,7 +1407,7 @@ static void get_mv_projection(MV *output, MV ref, int num, int den) {
 }
 
 #define MAX_OFFSET_WIDTH 64
-#define MAX_OFFSET_HEIGHT 32
+#define MAX_OFFSET_HEIGHT 0
 
 static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
                               int blk_col, MV mv, int sign_bias) {
@@ -1423,9 +1423,10 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
       col >= (cm->mi_cols >> 1))
     return 0;
 
-  if (row < base_blk_row || row > base_blk_row + 7 ||
+  if (row <= base_blk_row - (MAX_OFFSET_HEIGHT >> 3) ||
+      row >= base_blk_row + 8 + (MAX_OFFSET_HEIGHT >> 3) ||
       col <= base_blk_col - (MAX_OFFSET_WIDTH >> 3) ||
-      col >= base_blk_col + (MAX_OFFSET_WIDTH >> 3))
+      col >= base_blk_col + 8 + (MAX_OFFSET_WIDTH >> 3))
     return 0;
 
   *mi_r = row;
