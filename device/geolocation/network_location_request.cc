@@ -131,7 +131,7 @@ bool NetworkLocationRequest::MakeRequest(
   wifi_timestamp_ = wifi_timestamp;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
-      net::CompleteNetworkTrafficAnnotation("device_geolocation_request",
+      net::CompleteNetworkTrafficAnnotation("network_location_request",
                                             partial_traffic_annotation,
                                             R"(
         semantics {
