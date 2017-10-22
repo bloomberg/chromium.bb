@@ -230,7 +230,7 @@ void NetworkLocationProvider::RequestPosition() {
 
   net::PartialNetworkTrafficAnnotationTag partial_traffic_annotation =
       net::DefinePartialNetworkTrafficAnnotation("network_location_provider",
-                                                 "device_geolocation_request",
+                                                 "network_location_request",
                                                  R"(
       semantics {
         sender: "Network Location Provider"
