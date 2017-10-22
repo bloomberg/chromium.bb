@@ -1788,6 +1788,640 @@
   } \
   while (0)
 
+/* Embedded 32-point orthonormal Type-IV fDST. */
+#define OD_FDST_32(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta, tb, tc, td, \
+  te, tf, tg, th, ti, tj, tk, tl, tm, tn, to, tp, tq, tr, ts, tt, tu, tv) \
+  /* 117 "muls", 117 + 128 = 245 adds, 36 shifts */ \
+  do { \
+    od_coeff t0h; \
+    od_coeff t1h; \
+    od_coeff t2h; \
+    od_coeff t3h; \
+    od_coeff t4h; \
+    od_coeff t6h; \
+    od_coeff t8h; \
+    od_coeff t9h; \
+    od_coeff tah; \
+    od_coeff tbh; \
+    od_coeff tch; \
+    od_coeff tdh; \
+    od_coeff teh; \
+    od_coeff tfh; \
+    od_coeff tgh; \
+    od_coeff thh; \
+    od_coeff tih; \
+    od_coeff tjh; \
+    od_coeff tkh; \
+    od_coeff tlh; \
+    od_coeff tmh; \
+    od_coeff tnh; \
+    od_coeff tph; \
+    od_coeff trh; \
+    od_coeff tsh; \
+    od_coeff tth; \
+    od_coeff tuh; \
+    od_coeff tvh; \
+    /* Stage 0 */ \
+    tp += (t6*659 + 2048) >> 12; \
+    t6 -= (tp*10279 + 16384) >> 15; \
+    tp += (t6*659 + 2048) >> 12; \
+    th += (te*3045 + 4096) >> 13; \
+    te -= (th*21403 + 16384) >> 15; \
+    th += (te*3045 + 4096) >> 13; \
+    t9 += (tm*20191 + 16384) >> 15; \
+    tm -= (t9*29269 + 16384) >> 15; \
+    t9 += (tm*20191 + 16384) >> 15; \
+    tu += (t1*1207 + 16384) >> 15; \
+    t1 -= (tu*2411 + 16384) >> 15; \
+    tu += (t1*1207 + 16384) >> 15; \
+    t4 += (tr*13113 + 8192) >> 14; \
+    tr -= (t4*7993 + 4096) >> 13; \
+    t4 += (tr*13113 + 8192) >> 14; \
+    tj += (tc*10381 + 16384) >> 15; \
+    tc -= (tj*4717 + 4096) >> 13; \
+    tj += (tc*10381 + 16384) >> 15; \
+    tb += (tk*18035 + 16384) >> 15; \
+    tk -= (tb*6921 + 4096) >> 13; \
+    tb += (tk*18035 + 16384) >> 15; \
+    ts += (t3*1411 + 8192) >> 14; \
+    t3 -= (ts*2801 + 8192) >> 14; \
+    ts += (t3*1411 + 8192) >> 14; \
+    tq += (t5*2225 + 8192) >> 14; \
+    t5 -= (tq*2185 + 4096) >> 13; \
+    tq += (t5*2225 + 8192) >> 14; \
+    ti += (td*11273 + 16384) >> 15; \
+    td -= (ti*315 + 256) >> 9; \
+    ti += (td*11273 + 16384) >> 15; \
+    tl += (ta*8637 + 16384) >> 15; \
+    ta -= (tl*16151 + 16384) >> 15; \
+    tl += (ta*8637 + 16384) >> 15; \
+    tt += (t2*2013 + 16384) >> 15; \
+    t2 -= (tt*4011 + 16384) >> 15; \
+    tt += (t2*2013 + 16384) >> 15; \
+    to += (t7*6101 + 16384) >> 15; \
+    t7 -= (to*11793 + 16384) >> 15; \
+    to += (t7*6101 + 16384) >> 15; \
+    t8 += (tn*10659 + 8192) >> 14; \
+    tn -= (t8*29957 + 16384) >> 15; \
+    t8 += (tn*10659 + 8192) >> 14; \
+    tg += (tf*819 + 1024) >> 11; \
+    tf -= (tg*22595 + 16384) >> 15; \
+    tg += (tf*819 + 1024) >> 11; \
+    t0 += (tv*31973 + 16384) >> 15; \
+    tv -= (t0*16379 + 8192) >> 14; \
+    t0 += (tv*31973 + 16384) >> 15; \
+    /* Stage 1 */ \
+    tj -= ts; \
+    tjh = OD_DCT_RSHIFT(tj, 1); \
+    ts += tjh; \
+    tr = tk - tr; \
+    trh = OD_DCT_RSHIFT(tr, 1); \
+    tk = trh - tk; \
+    tc += t3; \
+    tch = OD_DCT_RSHIFT(tc, 1); \
+    t3 -= tch; \
+    t4 += tb; \
+    t4h = OD_DCT_RSHIFT(t4, 1); \
+    tb -= t4h; \
+    tv += tf; \
+    tvh = OD_DCT_RSHIFT(tv, 1); \
+    tf -= tvh; \
+    t8 -= to; \
+    t8h = OD_DCT_RSHIFT(t8, 1); \
+    to += t8h; \
+    t0 += tg; \
+    t0h = OD_DCT_RSHIFT(t0, 1); \
+    tg -= t0h; \
+    tn = t7 - tn; \
+    tnh = OD_DCT_RSHIFT(tn, 1); \
+    t7 -= tnh; \
+    th -= tu; \
+    thh = OD_DCT_RSHIFT(th, 1); \
+    tu += thh; \
+    t6 += tm; \
+    t6h = OD_DCT_RSHIFT(t6, 1); \
+    tm = t6h - tm; \
+    te += t1; \
+    teh = OD_DCT_RSHIFT(te, 1); \
+    t1 -= teh; \
+    tp += t9; \
+    tph = OD_DCT_RSHIFT(tp, 1); \
+    t9 -= tph; \
+    t2 -= td; \
+    t2h = OD_DCT_RSHIFT(t2, 1); \
+    td += t2h; \
+    tl = tq - tl; \
+    tlh = OD_DCT_RSHIFT(tl, 1); \
+    tq -= tlh; \
+    tt += ti; \
+    tth = OD_DCT_RSHIFT(tt, 1); \
+    ti -= tth; \
+    ta += t5; \
+    tah = OD_DCT_RSHIFT(ta, 1); \
+    t5 -= tah; \
+    /* Stage 2 */ \
+    tm -= thh; \
+    th += tm; \
+    t9 = teh - t9; \
+    te -= t9; \
+    td = tlh - td; \
+    tl -= td; \
+    ti += tah; \
+    ta -= ti; \
+    tk = tjh - tk; \
+    tj -= tk; \
+    tb -= tch; \
+    tc += tb; \
+    tg += tnh; \
+    tn = tg - tn; \
+    tf += t8h; \
+    t8 = tf - t8; \
+    t3 -= trh; \
+    tr += t3; \
+    ts += t4h; \
+    t4 -= ts; \
+    to -= t0h; \
+    t0 += to; \
+    t7 = tvh - t7; \
+    tv = t7 - tv; \
+    t1 -= t6h; \
+    t6 += t1; \
+    tu += tph; \
+    tp -= tu; \
+    tq -= tth; \
+    tt += tq; \
+    t5 += t2h; \
+    t2 -= t5; \
+    /* Stage 3 */ \
+    tj += (tc*11725 + 16384) >> 15; \
+    tc -= (tj*5197 + 4096) >> 13; \
+    tj += (tc*11725 + 16384) >> 15; \
+    td += (ti*513 + 1024) >> 11; \
+    ti -= (td*15447 + 16384) >> 15; \
+    td += (ti*513 + 1024) >> 11; \
+    th += (te*4861 + 16384) >> 15; \
+    te -= (th*1189 + 2048) >> 12; \
+    th += (te*4861 + 16384) >> 15; \
+    tg += (tf*805 + 8192) >> 14; \
+    tf -= (tg*803 + 4096) >> 13; \
+    tg += (tf*805 + 8192) >> 14; \
+    tb += (tk*7749 + 8192) >> 14; \
+    tk -= (tb*12665 + 8192) >> 14; \
+    tb += (tk*7749 + 8192) >> 14; \
+    tl += (ta*2455 + 2048) >> 12; \
+    ta -= (tl*28899 + 16384) >> 15; \
+    tl += (ta*2455 + 2048) >> 12; \
+    t9 += (tm*12151 + 8192) >> 14; \
+    tm -= (t9*31357 + 16384) >> 15; \
+    t9 += (tm*12151 + 8192) >> 14; \
+    tn += (t8*29699 + 16384) >> 15; \
+    t8 -= (tn*16305 + 8192) >> 14; \
+    tn += (t8*29699 + 16384) >> 15; \
+    /* Stage 4 */ \
+    tf -= tc; \
+    tfh = OD_DCT_RSHIFT(tf, 1); \
+    tc += tfh; \
+    ti = th - ti; \
+    tih = OD_DCT_RSHIFT(ti, 1); \
+    th -= tih; \
+    tg += tj; \
+    tgh = OD_DCT_RSHIFT(tg, 1); \
+    tj = tgh - tj; \
+    td -= te; \
+    tdh = OD_DCT_RSHIFT(td, 1); \
+    te += tdh; \
+    tm = ta - tm; \
+    tmh = OD_DCT_RSHIFT(tm, 1); \
+    ta = tmh - ta; \
+    t9 += tl; \
+    t9h = OD_DCT_RSHIFT(t9, 1); \
+    tl -= t9h; \
+    tb += t8; \
+    tbh = OD_DCT_RSHIFT(tb, 1); \
+    t8 -= tbh; \
+    tk += tn; \
+    tkh = OD_DCT_RSHIFT(tk, 1); \
+    tn -= tkh; \
+    t1 -= t2; \
+    t1h = OD_DCT_RSHIFT(t1, 1); \
+    t2 += t1h; \
+    t3 += tv; \
+    t3h = OD_DCT_RSHIFT(t3, 1); \
+    tv -= t3h; \
+    tu += tt; \
+    tuh = OD_DCT_RSHIFT(tu, 1); \
+    tt -= tuh; \
+    ts -= t0; \
+    tsh = OD_DCT_RSHIFT(ts, 1); \
+    t0 += tsh; \
+    tq = t6 - tq; \
+    t6 -= OD_DCT_RSHIFT(tq, 1); \
+    to += tr; \
+    tr = OD_DCT_RSHIFT(to, 1) - tr; \
+    t7 = t4 - t7; \
+    t4 -= OD_DCT_RSHIFT(t7, 1); \
+    t5 -= tp; \
+    tp += OD_DCT_RSHIFT(t5, 1); \
+    /* Stage 5 */ \
+    tp += (t6*2485 + 4096) >> 13; \
+    t6 -= (tp*18205 + 16384) >> 15; \
+    tp += (t6*2485 + 4096) >> 13; \
+    to += (t7*3227 + 16384) >> 15; \
+    t7 -= (to*6393 + 16384) >> 15; \
+    to += (t7*3227 + 16384) >> 15; \
+    tq += (t5*17515 + 16384) >> 15; \
+    t5 -= (tq*13623 + 8192) >> 14; \
+    tq += (t5*17515 + 16384) >> 15; \
+    t4 += (tr*6723 + 4096) >> 13; \
+    tr -= (t4*16069 + 8192) >> 14; \
+    t4 += (tr*6723 + 4096) >> 13; \
+    /* Stage 6 */ \
+    tj += tdh; \
+    td -= tj; \
+    tc -= tih; \
+    ti += tc; \
+    th = tgh - th; \
+    tg -= th; \
+    te += tfh; \
+    tf -= te; \
+    tl = tkh - tl; \
+    tk -= tl; \
+    ta += tbh; \
+    tb -= ta; \
+    tn -= tmh; \
+    tm += tn; \
+    t8 += t9h; \
+    t9 = t8 - t9; \
+    tt = t3h - tt; \
+    t3 -= tt; \
+    t2 -= tsh; \
+    ts += t2; \
+    tv -= t1h; \
+    t1 += tv; \
+    t0 += tuh; \
+    tu -= t0; \
+    tp = OD_DCT_RSHIFT(to, 1) - tp; \
+    to -= tp; \
+    t6 += OD_DCT_RSHIFT(t7, 1); \
+    t7 -= t6; \
+    t4 = OD_DCT_RSHIFT(tq, 1) - t4; \
+    tq -= t4; \
+    tr += OD_DCT_RSHIFT(t5, 1); \
+    t5 = tr - t5; \
+    /* Stage 7 */ \
+    td += (ti*21894 + 16384) >> 15; \
+    ti -= (td*15137 + 8192) >> 14; \
+    td += (ti*21895 + 16384) >> 15; \
+    tj += (tc*21894 + 16384) >> 15; \
+    tc -= (tj*15137 + 8192) >> 14; \
+    tj += (tc*21895 + 16384) >> 15; \
+    th += (te*13573 + 16384) >> 15; \
+    te -= (th*11585 + 8192) >> 14; \
+    th += (te*13573 + 16384) >> 15; \
+    tb += (tk*21894 + 16384) >> 15; \
+    tk -= (tb*15137 + 8192) >> 14; \
+    tb += (tk*21895 + 16384) >> 15; \
+    ta += (tl*3259 + 8192) >> 14; \
+    tl -= (ta*3135 + 4096) >> 13; \
+    ta += (tl*3259 + 8192) >> 14; \
+    t9 += (tm*13573 + 16384) >> 15; \
+    tm -= (t9*11585 + 8192) >> 14; \
+    t9 += (tm*13573 + 16384) >> 15; \
+    ts += (t3*3259 + 8192) >> 14; \
+    t3 -= (ts*3135 + 4096) >> 13; \
+    ts += (t3*3259 + 8192) >> 14; \
+    t2 += (tt*3259 + 8192) >> 14; \
+    tt -= (t2*3135 + 4096) >> 13; \
+    t2 += (tt*3259 + 8192) >> 14; \
+    tu += (t1*13573 + 16384) >> 15; \
+    t1 -= (tu*11585 + 8192) >> 14; \
+    tu += (t1*13573 + 16384) >> 15; \
+    tp += (t6*13573 + 16384) >> 15; \
+    t6 -= (tp*11585 + 8192) >> 14; \
+    tp += (t6*13573 + 16384) >> 15; \
+    tq += (t5*13573 + 16384) >> 15; \
+    t5 -= (tq*11585 + 8192) >> 14; \
+    tq += (t5*13573 + 16384) >> 15; \
+  } \
+  while (0)
+
+/* Embedded 32-point orthonormal Type-IV iDST. */
+#define OD_IDST_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, \
+  te, tu, t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv) \
+  /* 117 "muls", 117 + 128 = 245 adds, 36 shifts */ \
+  do { \
+    od_coeff t0h; \
+    od_coeff t1h; \
+    od_coeff t2h; \
+    od_coeff t3h; \
+    od_coeff t4h; \
+    od_coeff t6h; \
+    od_coeff t8h; \
+    od_coeff t9h; \
+    od_coeff tah; \
+    od_coeff tbh; \
+    od_coeff tch; \
+    od_coeff tdh; \
+    od_coeff teh; \
+    od_coeff tfh; \
+    od_coeff tgh; \
+    od_coeff thh; \
+    od_coeff tih; \
+    od_coeff tjh; \
+    od_coeff tkh; \
+    od_coeff tlh; \
+    od_coeff tmh; \
+    od_coeff tnh; \
+    od_coeff tph; \
+    od_coeff trh; \
+    od_coeff tsh; \
+    od_coeff tth; \
+    od_coeff tuh; \
+    od_coeff tvh; \
+    /* Stage 0 */ \
+    tq -= (t5*13573 + 16384) >> 15; \
+    t5 += (tq*11585 + 8192) >> 14; \
+    tq -= (t5*13573 + 16384) >> 15; \
+    tp -= (t6*13573 + 16384) >> 15; \
+    t6 += (tp*11585 + 8192) >> 14; \
+    tp -= (t6*13573 + 16384) >> 15; \
+    tu -= (t1*13573 + 16384) >> 15; \
+    t1 += (tu*11585 + 8192) >> 14; \
+    tu -= (t1*13573 + 16384) >> 15; \
+    t2 -= (tt*3259 + 8192) >> 14; \
+    tt += (t2*3135 + 4096) >> 13; \
+    t2 -= (tt*3259 + 8192) >> 14; \
+    ts -= (t3*3259 + 8192) >> 14; \
+    t3 += (ts*3135 + 4096) >> 13; \
+    ts -= (t3*3259 + 8192) >> 14; \
+    t9 -= (tm*13573 + 16384) >> 15; \
+    tm += (t9*11585 + 8192) >> 14; \
+    t9 -= (tm*13573 + 16384) >> 15; \
+    ta -= (tl*3259 + 8192) >> 14; \
+    tl += (ta*3135 + 4096) >> 13; \
+    ta -= (tl*3259 + 8192) >> 14; \
+    tb -= (tk*21895 + 16384) >> 15; \
+    tk += (tb*15137 + 8192) >> 14; \
+    tb -= (tk*21894 + 16384) >> 15; \
+    th -= (te*13573 + 16384) >> 15; \
+    te += (th*11585 + 8192) >> 14; \
+    th -= (te*13573 + 16384) >> 15; \
+    tj -= (tc*21895 + 16384) >> 15; \
+    tc += (tj*15137 + 8192) >> 14; \
+    tj -= (tc*21894 + 16384) >> 15; \
+    td -= (ti*21895 + 16384) >> 15; \
+    ti += (td*15137 + 8192) >> 14; \
+    td -= (ti*21894 + 16384) >> 15; \
+    /* Stage 1 */ \
+    t5 = tr - t5; \
+    tr -= OD_DCT_RSHIFT(t5, 1); \
+    tq += t4; \
+    t4 = OD_DCT_RSHIFT(tq, 1) - t4; \
+    t7 += t6; \
+    t6 -= OD_DCT_RSHIFT(t7, 1); \
+    to += tp; \
+    tp = OD_DCT_RSHIFT(to, 1) - tp; \
+    tu += t0; \
+    tuh = OD_DCT_RSHIFT(tu, 1); \
+    t0 -= tuh; \
+    t1 -= tv; \
+    t1h = OD_DCT_RSHIFT(t1, 1); \
+    tv += t1h; \
+    ts -= t2; \
+    tsh = OD_DCT_RSHIFT(ts, 1); \
+    t2 += tsh; \
+    t3 += tt; \
+    t3h = OD_DCT_RSHIFT(t3, 1); \
+    tt = t3h - tt; \
+    t9 = t8 - t9; \
+    t9h = OD_DCT_RSHIFT(t9, 1); \
+    t8 -= t9h; \
+    tm -= tn; \
+    tmh = OD_DCT_RSHIFT(tm, 1); \
+    tn += tmh; \
+    tb += ta; \
+    tbh = OD_DCT_RSHIFT(tb, 1); \
+    ta -= tbh; \
+    tk += tl; \
+    tkh = OD_DCT_RSHIFT(tk, 1); \
+    tl = tkh - tl; \
+    tf += te; \
+    tfh = OD_DCT_RSHIFT(tf, 1); \
+    te -= tfh; \
+    tg += th; \
+    tgh = OD_DCT_RSHIFT(tg, 1); \
+    th = tgh - th; \
+    ti -= tc; \
+    tih = OD_DCT_RSHIFT(ti, 1); \
+    tc += tih; \
+    td += tj; \
+    tdh = OD_DCT_RSHIFT(td, 1); \
+    tj -= tdh; \
+    /* Stage 2 */ \
+    t4 -= (tr*6723 + 4096) >> 13; \
+    tr += (t4*16069 + 8192) >> 14; \
+    t4 -= (tr*6723 + 4096) >> 13; \
+    tq -= (t5*17515 + 16384) >> 15; \
+    t5 += (tq*13623 + 8192) >> 14; \
+    tq -= (t5*17515 + 16384) >> 15; \
+    to -= (t7*3227 + 16384) >> 15; \
+    t7 += (to*6393 + 16384) >> 15; \
+    to -= (t7*3227 + 16384) >> 15; \
+    tp -= (t6*2485 + 4096) >> 13; \
+    t6 += (tp*18205 + 16384) >> 15; \
+    tp -= (t6*2485 + 4096) >> 13; \
+    /* Stage 3 */ \
+    tp -= OD_DCT_RSHIFT(t5, 1); \
+    t5 += tp; \
+    t4 += OD_DCT_RSHIFT(t7, 1); \
+    t7 = t4 - t7; \
+    tr = OD_DCT_RSHIFT(to, 1) - tr; \
+    to -= tr; \
+    t6 += OD_DCT_RSHIFT(tq, 1); \
+    tq = t6 - tq; \
+    t0 -= tsh; \
+    ts += t0; \
+    tt += tuh; \
+    tu -= tt; \
+    tv += t3h; \
+    t3 -= tv; \
+    t2 -= t1h; \
+    t1 += t2; \
+    tn += tkh; \
+    tk -= tn; \
+    t8 += tbh; \
+    tb -= t8; \
+    tl += t9h; \
+    t9 -= tl; \
+    ta = tmh - ta; \
+    tm = ta - tm; \
+    te -= tdh; \
+    td += te; \
+    tj = tgh - tj; \
+    tg -= tj; \
+    th += tih; \
+    ti = th - ti; \
+    tc -= tfh; \
+    tf += tc; \
+    /* Stage 4 */ \
+    tn -= (t8*29699 + 16384) >> 15; \
+    t8 += (tn*16305 + 8192) >> 14; \
+    tn -= (t8*29699 + 16384) >> 15; \
+    t9 -= (tm*12151 + 8192) >> 14; \
+    tm += (t9*31357 + 16384) >> 15; \
+    t9 -= (tm*12151 + 8192) >> 14; \
+    tl -= (ta*2455 + 2048) >> 12; \
+    ta += (tl*28899 + 16384) >> 15; \
+    tl -= (ta*2455 + 2048) >> 12; \
+    tb -= (tk*7749 + 8192) >> 14; \
+    tk += (tb*12665 + 8192) >> 14; \
+    tb -= (tk*7749 + 8192) >> 14; \
+    tg -= (tf*805 + 8192) >> 14; \
+    tf += (tg*803 + 4096) >> 13; \
+    tg -= (tf*805 + 8192) >> 14; \
+    th -= (te*4861 + 16384) >> 15; \
+    te += (th*1189 + 2048) >> 12; \
+    th -= (te*4861 + 16384) >> 15; \
+    td -= (ti*513 + 1024) >> 11; \
+    ti += (td*15447 + 16384) >> 15; \
+    td -= (ti*513 + 1024) >> 11; \
+    tj -= (tc*11725 + 16384) >> 15; \
+    tc += (tj*5197 + 4096) >> 13; \
+    tj -= (tc*11725 + 16384) >> 15; \
+    /* Stage 5 */ \
+    t2 += t5; \
+    t2h = OD_DCT_RSHIFT(t2, 1); \
+    t5 -= t2h; \
+    tt -= tq; \
+    tth = OD_DCT_RSHIFT(tt, 1); \
+    tq += tth; \
+    tp += tu; \
+    tph = OD_DCT_RSHIFT(tp, 1); \
+    tu -= tph; \
+    t6 -= t1; \
+    t6h = OD_DCT_RSHIFT(t6, 1); \
+    t1 += t6h; \
+    tv = t7 - tv; \
+    tvh = OD_DCT_RSHIFT(tv, 1); \
+    t7 = tvh - t7; \
+    t0 -= to; \
+    t0h = OD_DCT_RSHIFT(t0, 1); \
+    to += t0h; \
+    t4 += ts; \
+    t4h = OD_DCT_RSHIFT(t4, 1); \
+    ts -= t4h; \
+    tr -= t3; \
+    trh = OD_DCT_RSHIFT(tr, 1); \
+    t3 += trh; \
+    t8 = tf - t8; \
+    t8h = OD_DCT_RSHIFT(t8, 1); \
+    tf -= t8h; \
+    tn = tg - tn; \
+    tnh = OD_DCT_RSHIFT(tn, 1); \
+    tg -= tnh; \
+    tc -= tb; \
+    tch = OD_DCT_RSHIFT(tc, 1); \
+    tb += tch; \
+    tj += tk; \
+    tjh = OD_DCT_RSHIFT(tj, 1); \
+    tk = tjh - tk; \
+    ta += ti; \
+    tah = OD_DCT_RSHIFT(ta, 1); \
+    ti -= tah; \
+    tl += td; \
+    tlh = OD_DCT_RSHIFT(tl, 1); \
+    td = tlh - td; \
+    te += t9; \
+    teh = OD_DCT_RSHIFT(te, 1); \
+    t9 = teh - t9; \
+    th -= tm; \
+    thh = OD_DCT_RSHIFT(th, 1); \
+    tm += thh; \
+    /* Stage 6 */ \
+    t5 += tah; \
+    ta -= t5; \
+    ti += tth; \
+    tt -= ti; \
+    tq += tlh; \
+    tl = tq - tl; \
+    td -= t2h; \
+    t2 += td; \
+    t9 += tph; \
+    tp -= t9; \
+    t1 += teh; \
+    te -= t1; \
+    tm = t6h - tm; \
+    t6 -= tm; \
+    tu -= thh; \
+    th += tu; \
+    t7 += tnh; \
+    tn = t7 - tn; \
+    tg += t0h; \
+    t0 -= tg; \
+    to -= t8h; \
+    t8 += to; \
+    tf += tvh; \
+    tv -= tf; \
+    tb += t4h; \
+    t4 -= tb; \
+    t3 += tch; \
+    tc -= t3; \
+    tk = trh - tk; \
+    tr = tk - tr; \
+    ts -= tjh; \
+    tj += ts; \
+    /* Stage 7 */ \
+    t0 -= (tv*31973 + 16384) >> 15; \
+    tv += (t0*16379 + 8192) >> 14; \
+    t0 -= (tv*31973 + 16384) >> 15; \
+    tg -= (tf*819 + 1024) >> 11; \
+    tf += (tg*22595 + 16384) >> 15; \
+    tg -= (tf*819 + 1024) >> 11; \
+    t8 -= (tn*10659 + 8192) >> 14; \
+    tn += (t8*29957 + 16384) >> 15; \
+    t8 -= (tn*10659 + 8192) >> 14; \
+    to -= (t7*6101 + 16384) >> 15; \
+    t7 += (to*11793 + 16384) >> 15; \
+    to -= (t7*6101 + 16384) >> 15; \
+    tt -= (t2*2013 + 16384) >> 15; \
+    t2 += (tt*4011 + 16384) >> 15; \
+    tt -= (t2*2013 + 16384) >> 15; \
+    tl -= (ta*8637 + 16384) >> 15; \
+    ta += (tl*16151 + 16384) >> 15; \
+    tl -= (ta*8637 + 16384) >> 15; \
+    ti -= (td*11273 + 16384) >> 15; \
+    td += (ti*315 + 256) >> 9; \
+    ti -= (td*11273 + 16384) >> 15; \
+    tq -= (t5*2225 + 8192) >> 14; \
+    t5 += (tq*2185 + 4096) >> 13; \
+    tq -= (t5*2225 + 8192) >> 14; \
+    ts -= (t3*1411 + 8192) >> 14; \
+    t3 += (ts*2801 + 8192) >> 14; \
+    ts -= (t3*1411 + 8192) >> 14; \
+    tb -= (tk*18035 + 16384) >> 15; \
+    tk += (tb*6921 + 4096) >> 13; \
+    tb -= (tk*18035 + 16384) >> 15; \
+    tj -= (tc*10381 + 16384) >> 15; \
+    tc += (tj*4717 + 4096) >> 13; \
+    tj -= (tc*10381 + 16384) >> 15; \
+    t4 -= (tr*13113 + 8192) >> 14; \
+    tr += (t4*7993 + 4096) >> 13; \
+    t4 -= (tr*13113 + 8192) >> 14; \
+    tu -= (t1*1207 + 16384) >> 15; \
+    t1 += (tu*2411 + 16384) >> 15; \
+    tu -= (t1*1207 + 16384) >> 15; \
+    t9 -= (tm*20191 + 16384) >> 15; \
+    tm += (t9*29269 + 16384) >> 15; \
+    t9 -= (tm*20191 + 16384) >> 15; \
+    th -= (te*3045 + 4096) >> 13; \
+    te += (th*21403 + 16384) >> 15; \
+    th -= (te*3045 + 4096) >> 13; \
+    tp -= (t6*659 + 2048) >> 12; \
+    t6 += (tp*10279 + 16384) >> 15; \
+    tp -= (t6*659 + 2048) >> 12; \
+  } \
+  while (0)
+
 #if CONFIG_TX64X64
 #define OD_FDCT_32_ASYM(t0, tg, tgh, t8, to, toh, t4, tk, tkh, tc, ts, tsh, \
   t2, ti, tih, ta, tq, tqh, t6, tm, tmh, te, tu, tuh, t1, th, thh, \
@@ -3898,6 +4532,208 @@ void od_bin_idct32(od_coeff *x, int xstride, const od_coeff y[32]) {
   x[31*xstride] = (od_coeff)tv;
 }
 
+void od_bin_fdst32(od_coeff y[32], const od_coeff *x, int xstride) {
+  od_coeff t0;
+  od_coeff t1;
+  od_coeff t2;
+  od_coeff t3;
+  od_coeff t4;
+  od_coeff t5;
+  od_coeff t6;
+  od_coeff t7;
+  od_coeff t8;
+  od_coeff t9;
+  od_coeff ta;
+  od_coeff tb;
+  od_coeff tc;
+  od_coeff td;
+  od_coeff te;
+  od_coeff tf;
+  od_coeff tg;
+  od_coeff th;
+  od_coeff ti;
+  od_coeff tj;
+  od_coeff tk;
+  od_coeff tl;
+  od_coeff tm;
+  od_coeff tn;
+  od_coeff to;
+  od_coeff tp;
+  od_coeff tq;
+  od_coeff tr;
+  od_coeff ts;
+  od_coeff tt;
+  od_coeff tu;
+  od_coeff tv;
+  t0 = x[0*xstride];
+  t1 = x[1*xstride];
+  t2 = x[2*xstride];
+  t3 = x[3*xstride];
+  t4 = x[4*xstride];
+  t5 = x[5*xstride];
+  t6 = x[6*xstride];
+  t7 = x[7*xstride];
+  t8 = x[8*xstride];
+  t9 = x[9*xstride];
+  ta = x[10*xstride];
+  tb = x[11*xstride];
+  tc = x[12*xstride];
+  td = x[13*xstride];
+  te = x[14*xstride];
+  tf = x[15*xstride];
+  tg = x[16*xstride];
+  th = x[17*xstride];
+  ti = x[18*xstride];
+  tj = x[19*xstride];
+  tk = x[20*xstride];
+  tl = x[21*xstride];
+  tm = x[22*xstride];
+  tn = x[23*xstride];
+  to = x[24*xstride];
+  tp = x[25*xstride];
+  tq = x[26*xstride];
+  tr = x[27*xstride];
+  ts = x[28*xstride];
+  tt = x[29*xstride];
+  tu = x[30*xstride];
+  tv = x[31*xstride];
+  OD_FDST_32(t0, t1, t2, t3, t4, t5, t6, t7, t8, t9, ta, tb, tc, td, te, tf,
+    tg, th, ti, tj, tk, tl, tm, tn, to, tp, tq, tr, ts, tt, tu, tv);
+  y[0] = t0;
+  y[1] = tg;
+  y[2] = t8;
+  y[3] = to;
+  y[4] = t4;
+  y[5] = tk;
+  y[6] = tc;
+  y[7] = ts;
+  y[8] = t2;
+  y[9] = ti;
+  y[10] = ta;
+  y[11] = tq;
+  y[12] = t6;
+  y[13] = tm;
+  y[14] = te;
+  y[15] = tu;
+  y[16] = t1;
+  y[17] = th;
+  y[18] = t9;
+  y[19] = tp;
+  y[20] = t5;
+  y[21] = tl;
+  y[22] = td;
+  y[23] = tt;
+  y[24] = t3;
+  y[25] = tj;
+  y[26] = tb;
+  y[27] = tr;
+  y[28] = t7;
+  y[29] = tn;
+  y[30] = tf;
+  y[31] = tv;
+}
+
+void od_bin_idst32(od_coeff *x, int xstride, const od_coeff y[32]) {
+  od_coeff t0;
+  od_coeff t1;
+  od_coeff t2;
+  od_coeff t3;
+  od_coeff t4;
+  od_coeff t5;
+  od_coeff t6;
+  od_coeff t7;
+  od_coeff t8;
+  od_coeff t9;
+  od_coeff ta;
+  od_coeff tb;
+  od_coeff tc;
+  od_coeff td;
+  od_coeff te;
+  od_coeff tf;
+  od_coeff tg;
+  od_coeff th;
+  od_coeff ti;
+  od_coeff tj;
+  od_coeff tk;
+  od_coeff tl;
+  od_coeff tm;
+  od_coeff tn;
+  od_coeff to;
+  od_coeff tp;
+  od_coeff tq;
+  od_coeff tr;
+  od_coeff ts;
+  od_coeff tt;
+  od_coeff tu;
+  od_coeff tv;
+  t0 = y[0];
+  tg = y[1];
+  t8 = y[2];
+  to = y[3];
+  t4 = y[4];
+  tk = y[5];
+  tc = y[6];
+  ts = y[7];
+  t2 = y[8];
+  ti = y[9];
+  ta = y[10];
+  tq = y[11];
+  t6 = y[12];
+  tm = y[13];
+  te = y[14];
+  tu = y[15];
+  t1 = y[16];
+  th = y[17];
+  t9 = y[18];
+  tp = y[19];
+  t5 = y[20];
+  tl = y[21];
+  td = y[22];
+  tt = y[23];
+  t3 = y[24];
+  tj = y[25];
+  tb = y[26];
+  tr = y[27];
+  t7 = y[28];
+  tn = y[29];
+  tf = y[30];
+  tv = y[31];
+  OD_IDST_32(t0, tg, t8, to, t4, tk, tc, ts, t2, ti, ta, tq, t6, tm, te, tu,
+    t1, th, t9, tp, t5, tl, td, tt, t3, tj, tb, tr, t7, tn, tf, tv);
+  x[0*xstride] = t0;
+  x[1*xstride] = t1;
+  x[2*xstride] = t2;
+  x[3*xstride] = t3;
+  x[4*xstride] = t4;
+  x[5*xstride] = t5;
+  x[6*xstride] = t6;
+  x[7*xstride] = t7;
+  x[8*xstride] = t8;
+  x[9*xstride] = t9;
+  x[10*xstride] = ta;
+  x[11*xstride] = tb;
+  x[12*xstride] = tc;
+  x[13*xstride] = td;
+  x[14*xstride] = te;
+  x[15*xstride] = tf;
+  x[16*xstride] = tg;
+  x[17*xstride] = th;
+  x[18*xstride] = ti;
+  x[19*xstride] = tj;
+  x[20*xstride] = tk;
+  x[21*xstride] = tl;
+  x[22*xstride] = tm;
+  x[23*xstride] = tn;
+  x[24*xstride] = to;
+  x[25*xstride] = tp;
+  x[26*xstride] = tq;
+  x[27*xstride] = tr;
+  x[28*xstride] = ts;
+  x[29*xstride] = tt;
+  x[30*xstride] = tu;
+  x[31*xstride] = tv;
+}
+
 #if CONFIG_TX64X64
 void od_bin_fdct64(od_coeff y[64], const od_coeff *x, int xstride) {
   int t0;
@@ -4441,30 +5277,22 @@ void daala_idct32(const tran_low_t *input, tran_low_t *output) {
   for (i = 0; i < 32; i++) output[i] = (tran_low_t)x[i];
 }
 
-/* Preserve the "half-right" transform behavior. */
 void daala_fdst32(const tran_low_t *input, tran_low_t *output) {
   int i;
-  tran_low_t inputhalf[16];
-  for (i = 0; i < 16; ++i) {
-    output[16 + i] = input[i];
-  }
-  for (i = 0; i < 16; ++i) {
-    inputhalf[i] = input[i + 16];
-  }
-  daala_fdct16(inputhalf, output);
+  od_coeff x[32];
+  od_coeff y[32];
+  for (i = 0; i < 32; i++) x[i] = (od_coeff)input[i];
+  od_bin_fdst32(y, x, 1);
+  for (i = 0; i < 32; i++) output[i] = (tran_low_t)y[i];
 }
 
-/* Preserve the "half-right" transform behavior. */
 void daala_idst32(const tran_low_t *input, tran_low_t *output) {
   int i;
-  tran_low_t inputhalf[16];
-  for (i = 0; i < 16; ++i) {
-    inputhalf[i] = input[i];
-  }
-  for (i = 0; i < 16; ++i) {
-    output[i] = input[16 + i];
-  }
-  daala_idct16(inputhalf, output + 16);
+  od_coeff x[32];
+  od_coeff y[32];
+  for (i = 0; i < 32; i++) y[i] = input[i];
+  od_bin_idst32(x, 1, y);
+  for (i = 0; i < 32; i++) output[i] = (tran_low_t)x[i];
 }
 
 void daala_idtx32(const tran_low_t *input, tran_low_t *output) {
