@@ -751,7 +751,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter data
 [Worker]     getter dir
 [Worker]     getter icon
-[Worker]     getter image
 [Worker]     getter lang
 [Worker]     getter onclick
 [Worker]     getter onclose

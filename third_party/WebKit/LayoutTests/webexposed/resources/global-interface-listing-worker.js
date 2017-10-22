@@ -29,7 +29,13 @@
     };
   }
 
-  globalInterfaceListing(globalObject, propertyNamesInGlobal, debug);
+  // Note that this test is not split into platform-specific
+  // vs. platform-neutral versions like the non-worker global-interface-listing
+  // tests are. This is because it should be unlikely that there would be an
+  // interface that is both worker-specific and platform-specific. This can be
+  // reconsidered in the future if that does become the case however.
+
+  globalInterfaceListing(globalObject, propertyNamesInGlobal, false /* platformSpecific */, debug);
 
   finishJSTest();
 

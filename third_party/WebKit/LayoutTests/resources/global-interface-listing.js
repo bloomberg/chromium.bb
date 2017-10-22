@@ -1,9 +1,13 @@
 // * |globalObject| should be the global (usually |this|).
 // * |propertyNamesInGlobal| should be a list of properties captured before
 //   other scripts are loaded, using: Object.getOwnPropertyNames(this);
+// * |platformSpecific| determines the platform-filtering of interfaces and
+//   properties. Only platform-specific interfaces/properties will be tested if
+//   set to true, and only all-platform interfaces/properties will be used
+//   if set to false.
 // * |outputFunc| is called back with each line of output.
 
-function globalInterfaceListing(globalObject, propertyNamesInGlobal, outputFunc) {
+function globalInterfaceListing(globalObject, propertyNamesInGlobal, platformSpecific, outputFunc) {
 
 // List of builtin JS constructors; Blink is not controlling what properties these
 // objects have, so exercising them in a Blink test doesn't make sense.
@@ -87,18 +91,66 @@ var wellKnownSymbols = new Map([
     [Symbol.unscopables, "@@unscopables"]
 ]);
 
+// List of all platform-specific interfaces. Please update this list when adding
+// a new platform-specific interface. This enables us to keep the churn on the
+// platform-specific expectations files to a bare minimum to make updates in the
+// common (platform-neutral) case as simple as possible.
+var platformSpecificInterfaces = new Set([
+    'Bluetooth',
+    'BluetoothCharacteristicProperties',
+    'BluetoothDevice',
+    'BluetoothRemoteGATTCharacteristic',
+    'BluetoothRemoteGATTDescriptor',
+    'BluetoothRemoteGATTServer',
+    'BluetoothRemoteGATTService',
+    'BluetoothUUID',
+]);
+
+// List of all platform-specific properties on interfaces that appear on all
+// platforms. Please update this list when adding a new platform-specific
+// property to a platform-neutral interface.
+var platformSpecificProperties = {
+    Navigator: new Set([
+        'getter bluetooth',
+    ]),
+    Notification: new Set([
+        'getter image',
+    ]),
+};
+
+// List of all platform-specific global properties. Please update this list when
+// adding a new platform-specific global property.
+var platformSpecificGlobalProperties = new Set([
+]);
+
+function filterPlatformSpecificInterface(interfaceName) {
+    return platformSpecificProperties.hasOwnProperty(interfaceName) ||
+        platformSpecificInterfaces.has(interfaceName) == platformSpecific;
+}
+
+function filterPlatformSpecificProperty(interfaceName, property) {
+    return (platformSpecificInterfaces.has(interfaceName) ||
+            (platformSpecificProperties.hasOwnProperty(interfaceName) &&
+             platformSpecificProperties[interfaceName].has(property))) ==
+        platformSpecific;
+}
+
+function filterPlatformSpecificGlobalProperty(property) {
+    return platformSpecificGlobalProperties.has(property) == platformSpecific;
+}
+
 function collectPropertyInfo(object, propertyKey, output) {
     var propertyString = wellKnownSymbols.get(propertyKey) || propertyKey.toString();
     var keywords = Object.prototype.hasOwnProperty.call(object, 'prototype') ? 'static ' : '';
     var descriptor = Object.getOwnPropertyDescriptor(object, propertyKey);
     if ('value' in descriptor) {
         var type = typeof descriptor.value === 'function' ? 'method' : 'attribute';
-        output.push('    ' + keywords + type + ' ' + propertyString);
+        output.push(keywords + type + ' ' + propertyString);
     } else {
         if (descriptor.get)
-            output.push('    ' + keywords + 'getter ' + propertyString);
+            output.push(keywords + 'getter ' + propertyString);
         if (descriptor.set)
-            output.push('    ' + keywords + 'setter ' + propertyString);
+            output.push(keywords + 'setter ' + propertyString);
     }
 }
 
@@ -126,9 +178,15 @@ function collectPropertyKeys(object) {
    return Object.getOwnPropertyNames(object).concat(Object.getOwnPropertySymbols(object));
 }
 
+function outputProperty(property) {
+    outputFunc('    ' + property);
+}
+
 // FIXME: List interfaces with NoInterfaceObject specified in their IDL file.
 outputFunc('[INTERFACES]');
-var interfaceNames = Object.getOwnPropertyNames(this).filter(isWebIDLConstructor);
+var interfaceNames = Object.getOwnPropertyNames(this)
+                           .filter(isWebIDLConstructor)
+                           .filter(filterPlatformSpecificInterface);
 interfaceNames.sort();
 interfaceNames.forEach(function(interfaceName) {
     var inheritsFrom = this[interfaceName].__proto__.name;
@@ -143,7 +201,9 @@ interfaceNames.forEach(function(interfaceName) {
         propertyKeys.forEach(function(propertyKey) {
             collectPropertyInfo(object, propertyKey, propertyStrings);
         });
-        propertyStrings.sort().forEach(outputFunc);
+
+        propertyStrings.filter((property) => filterPlatformSpecificProperty(interfaceName, property))
+            .sort().forEach(outputProperty);
     });
 });
 
@@ -155,6 +215,5 @@ var memberNames = propertyNamesInGlobal.filter(function(propertyKey) {
 memberNames.forEach(function(propertyKey) {
     collectPropertyInfo(globalObject, propertyKey, propertyStrings);
 });
-propertyStrings.sort().forEach(outputFunc);
-
+propertyStrings.sort().filter(filterPlatformSpecificGlobalProperty).forEach(outputProperty);
 }
