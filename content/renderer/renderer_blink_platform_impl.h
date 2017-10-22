@@ -37,6 +37,7 @@ class SyncMessageFilter;
 namespace blink {
 namespace scheduler {
 class RendererScheduler;
+class WebThreadBase;
 }
 class TrialPolicy;
 class WebCanvasCaptureHandler;
@@ -108,6 +109,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& cacheStorageCacheName) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
+  blink::WebThread* CompositorThread() const override;
   std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
       override;
   blink::Platform::FileHandle DatabaseOpenFile(
@@ -216,6 +218,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebTrialTokenValidator> TrialTokenValidator() override;
   std::unique_ptr<blink::TrialPolicy> OriginTrialPolicy() override;
   blink::WebNotificationManager* GetNotificationManager() override;
+  void DidStartWorkerThread() override;
+  void WillStopWorkerThread() override;
   void WorkerContextCreated(const v8::Local<v8::Context>& worker) override;
 
   // Set the PlatformEventObserverBase in |platform_event_observers_| associated
@@ -263,6 +267,11 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ChildURLLoaderFactoryGetter>
   CreateDefaultURLLoaderFactoryGetter();
 
+  // This class does *not* own the compositor thread. It is the responsibility
+  // of the caller to ensure that the compositor thread is cleared before it is
+  // destructed.
+  void SetCompositorThread(blink::scheduler::WebThreadBase* compositor_thread);
+
  private:
   bool CheckPreparsedJsCachingEnabled() const;
 
@@ -280,6 +289,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // Return the mojo interface for making WebDatabaseHost calls.
   mojom::WebDatabaseHost& GetWebDatabaseHost();
+
+  blink::scheduler::WebThreadBase* compositor_thread_;
 
   std::unique_ptr<blink::WebThread> main_thread_;
   std::unique_ptr<service_manager::Connector> connector_;

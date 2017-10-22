@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_database_observer_impl.h"
+#include "content/renderer/web_database_observer_impl.h"
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/child/storage_util.h"
+#include "content/renderer/storage_util.h"
 #include "storage/common/database/database_identifier.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebString.h"

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_STORAGE_UTIL_H_
-#define CONTENT_CHILD_STORAGE_UTIL_H_
+#ifndef CONTENT_RENDERER_STORAGE_UTIL_H_
+#define CONTENT_RENDERER_STORAGE_UTIL_H_
 
 class GURL;
 
@@ -21,4 +21,4 @@ GURL WebSecurityOriginToGURL(const blink::WebSecurityOrigin& origin);
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_STORAGE_UTIL_H_
+#endif  // CONTENT_RENDERER_STORAGE_UTIL_H_

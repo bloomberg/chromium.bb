@@ -10,11 +10,11 @@
 
 #include "base/macros.h"
 #include "base/unguessable_token.h"
-#include "content/child/child_message_filter.h"
 #include "content/child/scoped_child_process_reference.h"
 #include "content/common/shared_worker/shared_worker.mojom.h"
 #include "content/common/shared_worker/shared_worker_host.mojom.h"
 #include "content/common/shared_worker/shared_worker_info.mojom.h"
+#include "content/renderer/child_message_filter.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/interfaces/interface_provider.mojom.h"

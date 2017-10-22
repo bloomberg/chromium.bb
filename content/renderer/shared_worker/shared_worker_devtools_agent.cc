@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/shared_worker_devtools_agent.h"
+#include "content/renderer/shared_worker/shared_worker_devtools_agent.h"
 
 #include <stddef.h>
 

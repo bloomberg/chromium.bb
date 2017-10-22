@@ -50,8 +50,6 @@ class ScopedIPCSupport;
 
 namespace content {
 class InProcessChildThreadParams;
-class QuotaDispatcher;
-class QuotaMessageFilter;
 class ThreadSafeSender;
 
 // The main thread of a child process derives from this class.
@@ -115,10 +113,6 @@ class CONTENT_EXPORT ChildThreadImpl
                          base::ThreadPriority priority);
 #endif
 
-  QuotaDispatcher* quota_dispatcher() const {
-    return quota_dispatcher_.get();
-  }
-
   IPC::SyncMessageFilter* sync_message_filter() const {
     return sync_message_filter_.get();
   }
@@ -128,10 +122,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // the main thread.
   ThreadSafeSender* thread_safe_sender() const {
     return thread_safe_sender_.get();
-  }
-
-  QuotaMessageFilter* quota_message_filter() const {
-    return quota_message_filter_.get();
   }
 
   base::MessageLoop* message_loop() const { return message_loop_; }
@@ -237,10 +227,6 @@ class CONTENT_EXPORT ChildThreadImpl
   bool on_channel_error_called_;
 
   base::MessageLoop* message_loop_;
-
-  std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
-
-  scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 

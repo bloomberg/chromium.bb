@@ -95,13 +95,10 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   void SuddenTerminationChanged(bool enabled) override {}
-  blink::WebThread* CompositorThread() const override;
   std::unique_ptr<blink::WebGestureCurve> CreateFlingAnimationCurve(
       blink::WebGestureDevice device_source,
       const blink::WebFloatPoint& velocity,
       const blink::WebSize& cumulative_scroll) override;
-  void DidStartWorkerThread() override;
-  void WillStopWorkerThread() override;
   bool AllowScriptExtensionForServiceWorker(
       const blink::WebURL& script_url) override;
   blink::WebCrypto* Crypto() override;
@@ -114,11 +111,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   int DomKeyEnumFromString(const blink::WebString& key_string) override;
   bool IsDomKeyForModifier(int dom_key) override;
 
-  // This class does *not* own the compositor thread. It is the responsibility
-  // of the caller to ensure that the compositor thread is cleared before it is
-  // destructed.
-  void SetCompositorThread(blink::scheduler::WebThreadBase* compositor_thread);
-
   std::unique_ptr<blink::WebFeaturePolicy> CreateFeaturePolicy(
       const blink::WebFeaturePolicy* parentPolicy,
       const blink::WebParsedFeaturePolicy& containerPolicy,
@@ -128,8 +120,9 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
       const blink::WebFeaturePolicy& policy,
       const blink::WebSecurityOrigin& new_origin) override;
 
- private:
   void WaitUntilWebThreadTLSUpdate(blink::scheduler::WebThreadBase* thread);
+
+ private:
   void UpdateWebThreadTLS(blink::WebThread* thread, base::WaitableEvent* event);
 
   bool IsMainThread() const;
@@ -140,8 +133,6 @@ class CONTENT_EXPORT BlinkPlatformImpl : public blink::Platform {
   base::ThreadLocalStorage::Slot current_thread_slot_;
   webcrypto::WebCryptoImpl web_crypto_;
   media::WebMediaCapabilitiesClientImpl media_capabilities_client_;
-
-  blink::scheduler::WebThreadBase* compositor_thread_;
 };
 
 }  // namespace content

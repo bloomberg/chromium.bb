@@ -40,7 +40,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/child/content_child_helpers.h"
 #include "content/child/feature_policy/feature_policy_platform.h"
-#include "content/child/worker_thread_registry.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
@@ -317,8 +316,7 @@ BlinkPlatformImpl::BlinkPlatformImpl()
 
 BlinkPlatformImpl::BlinkPlatformImpl(
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
-    : main_thread_task_runner_(main_thread_task_runner),
-      compositor_thread_(nullptr) {
+    : main_thread_task_runner_(main_thread_task_runner) {
 }
 
 void BlinkPlatformImpl::WaitUntilWebThreadTLSUpdate(
@@ -371,13 +369,6 @@ std::unique_ptr<blink::WebThread> BlinkPlatformImpl::CreateWebAudioThread() {
   thread->Init();
   WaitUntilWebThreadTLSUpdate(thread.get());
   return std::move(thread);
-}
-
-void BlinkPlatformImpl::SetCompositorThread(
-    blink::scheduler::WebThreadBase* compositor_thread) {
-  compositor_thread_ = compositor_thread;
-  if (compositor_thread_)
-    WaitUntilWebThreadTLSUpdate(compositor_thread_);
 }
 
 blink::WebThread* BlinkPlatformImpl::CurrentThread() {
@@ -598,10 +589,6 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
       GetContentClient()->GetLocalizedString(message_id), values, NULL));
 }
 
-blink::WebThread* BlinkPlatformImpl::CompositorThread() const {
-  return compositor_thread_;
-}
-
 std::unique_ptr<blink::WebGestureCurve>
 BlinkPlatformImpl::CreateFlingAnimationCurve(
     blink::WebGestureDevice device_source,
@@ -611,14 +598,6 @@ BlinkPlatformImpl::CreateFlingAnimationCurve(
       device_source, gfx::Vector2dF(velocity.x, velocity.y),
       gfx::Vector2dF(cumulative_scroll.width, cumulative_scroll.height),
       IsMainThread());
-}
-
-void BlinkPlatformImpl::DidStartWorkerThread() {
-  WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();
-}
-
-void BlinkPlatformImpl::WillStopWorkerThread() {
-  WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
 }
 
 bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(

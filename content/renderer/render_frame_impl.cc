@@ -40,7 +40,6 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "content/child/feature_policy/feature_policy_platform.h"
-#include "content/child/quota_dispatcher.h"
 #include "content/child/v8_value_converter_impl.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interface_provider_impl.h"
@@ -131,6 +130,7 @@
 #include "content/renderer/pepper/plugin_instance_throttler_impl.h"
 #include "content/renderer/presentation/presentation_dispatcher.h"
 #include "content/renderer/push_messaging/push_messaging_client.h"
+#include "content/renderer/quota_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process.h"
 #include "content/renderer/render_thread_impl.h"
@@ -4678,7 +4678,7 @@ void RenderFrameImpl::RequestStorageQuota(
     callbacks.DidFail(blink::kWebStorageQuotaErrorAbort);
     return;
   }
-  ChildThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
+  RenderThreadImpl::current()->quota_dispatcher()->RequestStorageQuota(
       routing_id_, url::Origin(origin).GetURL(),
       static_cast<storage::StorageType>(type), requested_size,
       QuotaDispatcher::CreateWebStorageQuotaCallbacksWrapper(callbacks));

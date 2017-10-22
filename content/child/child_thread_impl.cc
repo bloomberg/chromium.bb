@@ -38,8 +38,6 @@
 #include "components/tracing/child/child_trace_message_filter.h"
 #include "content/child/child_histogram_fetcher_impl.h"
 #include "content/child/child_process.h"
-#include "content/child/quota_dispatcher.h"
-#include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/field_trial_recorder.mojom.h"
@@ -478,13 +476,6 @@ void ChildThreadImpl::Init(const Options& options) {
   GetServiceManagerConnection()->AddConnectionFilter(
       base::MakeUnique<SimpleConnectionFilter>(std::move(registry)));
 
-  quota_message_filter_ =
-      new QuotaMessageFilter(thread_safe_sender_.get());
-  quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender_.get(),
-                                              quota_message_filter_.get()));
-
-  channel_->AddFilter(quota_message_filter_->GetFilter());
-
   InitTracing();
 
   // In single process mode, browser-side tracing and memory will cover the
@@ -629,7 +620,6 @@ ChildThreadImpl::~ChildThreadImpl() {
 void ChildThreadImpl::Shutdown() {
   // Delete objects that hold references to blink so derived classes can
   // safely shutdown blink in their Shutdown implementation.
-  quota_dispatcher_.reset();
 }
 
 bool ChildThreadImpl::ShouldBeDestroyed() {

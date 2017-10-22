@@ -63,9 +63,6 @@
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/web_database_impl.h"
-#include "content/child/web_database_observer_impl.h"
-#include "content/child/worker_thread_registry.h"
 #include "content/common/child_process_messages.h"
 #include "content/common/content_constants_internal.h"
 #include "content/common/dom_storage/dom_storage_messages.h"
@@ -127,6 +124,8 @@
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
+#include "content/renderer/quota_dispatcher.h"
+#include "content/renderer/quota_message_filter.h"
 #include "content/renderer/render_frame_proxy.h"
 #include "content/renderer/render_process_impl.h"
 #include "content/renderer/render_view_impl.h"
@@ -138,6 +137,9 @@
 #include "content/renderer/service_worker/service_worker_message_filter.h"
 #include "content/renderer/shared_worker/embedded_shared_worker_stub.h"
 #include "content/renderer/shared_worker/shared_worker_factory_impl.h"
+#include "content/renderer/web_database_impl.h"
+#include "content/renderer/web_database_observer_impl.h"
+#include "content/renderer/worker_thread_registry.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "gin/public/debug.h"
 #include "gpu/GLES2/gl2extchromium.h"
@@ -687,6 +689,12 @@ void RenderThreadImpl::Init(
   resource_message_filter_ =
       new ChildResourceMessageFilter(resource_dispatcher_.get());
   AddFilter(resource_message_filter_.get());
+  quota_message_filter_ =
+      new QuotaMessageFilter(thread_safe_sender());
+  quota_dispatcher_.reset(new QuotaDispatcher(thread_safe_sender(),
+                                              quota_message_filter_.get()));
+
+  AddFilter(quota_message_filter_->GetFilter());
 
   InitializeWebKit(resource_task_queue);
   blink_initialized_time_ = base::TimeTicks::Now();
@@ -976,6 +984,7 @@ RenderThreadImpl::~RenderThreadImpl() {
 
 void RenderThreadImpl::Shutdown() {
   ChildThreadImpl::Shutdown();
+  quota_dispatcher_.reset();
   file_system_dispatcher_.reset();
   WebFileSystemImpl::DeleteThreadSpecificInstance();
   // In a multi-process mode, we immediately exit the renderer.

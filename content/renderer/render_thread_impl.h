@@ -144,6 +144,8 @@ class NotificationDispatcher;
 class P2PSocketDispatcher;
 class PeerConnectionDependencyFactory;
 class PeerConnectionTracker;
+class QuotaDispatcher;
+class QuotaMessageFilter;
 class RenderThreadObserver;
 class RendererBlinkPlatformImpl;
 class ResourceDispatcher;
@@ -336,6 +338,14 @@ class CONTENT_EXPORT RenderThreadImpl
 
   MidiMessageFilter* midi_message_filter() {
     return midi_message_filter_.get();
+  }
+
+  QuotaDispatcher* quota_dispatcher() const {
+    return quota_dispatcher_.get();
+  }
+
+  QuotaMessageFilter* quota_message_filter() const {
+    return quota_message_filter_.get();
   }
 
   ResourceDispatcher* resource_dispatcher() const {
@@ -633,6 +643,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
   std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
+  std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<BlobMessageFilter> blob_message_filter_;
@@ -641,6 +652,7 @@ class CONTENT_EXPORT RenderThreadImpl
   scoped_refptr<DevToolsAgentFilter> devtools_agent_message_filter_;
   scoped_refptr<ServiceWorkerMessageFilter> service_worker_message_filter_;
   scoped_refptr<ChildResourceMessageFilter> resource_message_filter_;
+  scoped_refptr<QuotaMessageFilter> quota_message_filter_;
 
   std::unique_ptr<BrowserPluginManager> browser_plugin_manager_;
 

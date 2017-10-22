@@ -5,9 +5,9 @@
 #include "content/renderer/indexed_db/webidbfactory_impl.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/child/storage_util.h"
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"
+#include "content/renderer/storage_util.h"
 #include "ipc/ipc_sync_channel.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"

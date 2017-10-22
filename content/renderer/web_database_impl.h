@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_CHILD_WEB_DATABASE_IMPL_H_
-#define CONTENT_CHILD_WEB_DATABASE_IMPL_H_
+#ifndef CONTENT_RENDERER_WEB_DATABASE_IMPL_H_
+#define CONTENT_RENDERER_WEB_DATABASE_IMPL_H_
 
 #include <stdint.h>
 
@@ -36,4 +36,4 @@ class WebDatabaseImpl : public content::mojom::WebDatabase {
 
 }  // namespace content
 
-#endif  // CONTENT_CHILD_WEB_DATABASE_IMPL_H_
+#endif  // CONTENT_RENDERER_WEB_DATABASE_IMPL_H_
