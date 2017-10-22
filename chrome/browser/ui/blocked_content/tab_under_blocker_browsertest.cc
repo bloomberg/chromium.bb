@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <memory>
+#include <string>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -23,6 +24,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
 
 class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
  public:
@@ -34,6 +36,11 @@ class TabUnderBlockerBrowserTest : public InProcessBrowserTest {
         TabUnderNavigationThrottle::kBlockTabUnders);
     host_resolver()->AddRule("*", "127.0.0.1");
     ASSERT_TRUE(embedded_test_server()->Start());
+  }
+
+  static std::string GetError(const GURL& blocked_url) {
+    return base::StringPrintf(kBlockTabUnderFormatMessage,
+                              blocked_url.spec().c_str());
   }
 
  private:
@@ -61,11 +68,22 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest, SimpleTabUnder_IsBlocked) {
   content::TestNavigationObserver tab_under_observer(opener, 1);
   const GURL cross_origin_url =
       embedded_test_server()->GetURL("a.com", "/title1.html");
+
+  std::string expected_error = GetError(cross_origin_url);
+  content::ConsoleObserverDelegate console_observer(opener, expected_error);
+  opener->SetDelegate(&console_observer);
+
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
       opener, base::StringPrintf("window.location = '%s';",
                                  cross_origin_url.spec().c_str())));
   tab_under_observer.Wait();
   EXPECT_FALSE(tab_under_observer.last_navigation_succeeded());
+
+  // Round trip to the renderer to ensure the message was sent. Don't use Wait()
+  // to be consistent with the NotBlocked test below, which has to use this
+  // technique.
+  EXPECT_TRUE(content::ExecuteScript(opener, "var a = 0;"));
+  EXPECT_EQ(expected_error, console_observer.message());
 }
 
 IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
@@ -91,9 +109,16 @@ IN_PROC_BROWSER_TEST_F(TabUnderBlockerBrowserTest,
   content::TestNavigationObserver tab_under_observer(opener, 1);
   const GURL cross_origin_url =
       embedded_test_server()->GetURL("a.com", "/title1.html");
+  content::ConsoleObserverDelegate console_observer(opener,
+                                                    GetError(cross_origin_url));
+  opener->SetDelegate(&console_observer);
   EXPECT_TRUE(content::ExecuteScriptWithoutUserGesture(
       opener, base::StringPrintf("window.location = '%s';",
                                  cross_origin_url.spec().c_str())));
   tab_under_observer.Wait();
   EXPECT_TRUE(tab_under_observer.last_navigation_succeeded());
+
+  // Round trip to the renderer to ensure the message would have been sent.
+  EXPECT_TRUE(content::ExecuteScript(opener, "var a = 0;"));
+  EXPECT_TRUE(console_observer.message().empty());
 }
