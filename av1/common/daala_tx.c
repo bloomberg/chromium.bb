@@ -3238,60 +3238,207 @@ void od_bin_idct8(od_coeff *x, int xstride, const od_coeff y[8]) {
   x[7*xstride] = (od_coeff)r7;
 }
 
+const int OD_DST_8_PERM[8] = { 0, 7, 1, 6, 2, 5, 3, 4 };
+
+/* Computes the Polynomial Product Y(z) ≡ X(z)*H(z) modulo (z^8 + 1) using
+    Nussbaumer's "short" algorithm [1].
+   The monomial coefficients in Y(z) are exactly the values of an acyclic
+    convolution of the monomial coefficients of X(z) and H(z).
+   Since H(z) is fixed, the multiplication terms are constant and precomputed.
+
+   [1] Nussbaumer, Henri J. "Fast Fourier Transform and Convolution Algorithms"
+        Springer-Verlag: Berlin, Heidelberg, New York (1981) pages 76-78. */
+static void od_poly_prod_8(od_coeff y[8], const od_coeff x[8]) {
+  /* 21 "muls", 75 adds, 18 shifts */
+  od_coeff q0;
+  od_coeff q1;
+  od_coeff q2;
+  od_coeff q3;
+  od_coeff q4;
+  od_coeff q5;
+  od_coeff q6;
+  od_coeff q7;
+  od_coeff q8;
+  od_coeff q9;
+  od_coeff q10;
+  od_coeff q11;
+  od_coeff q12;
+  od_coeff q13;
+  od_coeff q14;
+  od_coeff q15;
+  od_coeff q16;
+  od_coeff q17;
+  od_coeff q18;
+  od_coeff q19;
+  od_coeff q20;
+  od_coeff t0;
+  od_coeff t1;
+  od_coeff t2;
+  od_coeff t3;
+  od_coeff t4;
+  od_coeff t5;
+  od_coeff t6;
+  od_coeff t7;
+  od_coeff u0;
+  od_coeff u1;
+  od_coeff u1h;
+  od_coeff u2;
+  od_coeff u2h;
+  od_coeff u3;
+  od_coeff u4;
+  od_coeff u4h;
+  od_coeff u5;
+  od_coeff u6;
+  od_coeff u7;
+  od_coeff u7h;
+  od_coeff u8;
+  od_coeff u9;
+  od_coeff u10;
+  od_coeff u11;
+  od_coeff u12;
+  od_coeff u13;
+  od_coeff u14;
+  od_coeff u15;
+  od_coeff u16;
+  od_coeff u17;
+  od_coeff u18;
+  od_coeff u19;
+  od_coeff u20;
+  od_coeff u21;
+  od_coeff u22;
+  od_coeff u23;
+  od_coeff u24;
+  od_coeff u25;
+  od_coeff u26;
+  od_coeff u27;
+  t0 = x[0];
+  t1 = x[1];
+  t2 = x[2];
+  t3 = x[3];
+  t4 = x[4];
+  t5 = x[5];
+  t6 = x[6];
+  t7 = x[7];
+  /* Stage 0 Butterfly */
+  u7 = t0 - t7;
+  u7h = OD_DCT_RSHIFT(u7, 1);
+  u0 = t0 - u7h;
+  u2 = t2 - t6;
+  u2h = OD_DCT_RSHIFT(u2, 1);
+  u6 = t2 - u2h;
+  u4 = t4 + t5;
+  u4h = OD_DCT_RSHIFT(u4, 1);
+  u5 = t4 - u4h;
+  u1 = t3 - t1;
+  u1h = OD_DCT_RSHIFT(u1, 1);
+  u3 = t3 - u1h;
+  /* Stage 1 Butterfly */
+  q0 = u0 + u2h;
+  q1 = q0 - u2;
+  q4 = u3 + u4h;
+  q5 = q4 - u4;
+  q2 = u7h + u5;
+  q7 = u7 - q2;
+  q6 = u1h + u6;
+  q3 = u1 - q6;
+  /* Stage 2 Half-Butterfly */
+  /*The intermediate sums can overflow 16 bits, but all SIMD instruction sets
+     should be able to compute them without issue (i.e., using PAVGW or
+     V{R}HADD.S16).*/
+  q8 = (q0 + q4 + 1) >> 1;
+  q9 = (q1 + q5) >> 1;
+  q10 = (q2 + q3 + 1) >> 1;
+  q11 = (q7 + q6) >> 1;
+  /* Stage 3 */
+  q12 = t0 + t3;
+  q13 = t0;
+  q14 = t3;
+  q15 = t5 - t6;
+  q16 = t6;
+  q17 = t5;
+  q18 = ((q6 + ((t0 + t6 + 1) >> 1)) - (q4 + (t5 >> 1))) >> 1;
+  q19 = ((q7 + ((t5 + t6 + 1) >> 1)) - (q0 + (t3 >> 1))) >> 1;
+  q20 = (q18 - q19) >> 1;
+  /* Stage 4 */
+  q0 = (-5995*q0 + 8192) >> 14;
+  q1 = (-1373*q1 + 4096) >> 13;
+  q2 = (22891*q2 + 16384) >> 15;
+  q3 = (-217*q3 + 512) >> 10;
+  q4 = (13427*q4 + 16384) >> 15;
+  q5 = (-11013*q5 + 8192) >> 14;
+  q6 = (1373*q6 + 1024) >> 11;
+  q7 = (-14077*q7 + 16384) >> 15;
+  q8 = (-1437*q8 + 16384) >> 15;
+  q9 = (27519*q9 + 16384) >> 15;
+  q10 = (-15947*q10 + 16384) >> 15;
+  q11 = (-7891*q11 + 16384) >> 15;
+  q12 = (4897*q12 + 16384) >> 15;
+  q13 = (-5079*q13 + 8192) >> 14;
+  q14 = (365*q14 + 16384) >> 15;
+  q15 = (3325*q15 + 8192) >> 14;
+  q16 = (-5225*q16 + 8192) >> 14;
+  q17 = (-1425*q17 + 8192) >> 14;
+  q18 = (3453*q18 + 16384) >> 15;
+  q19 = (-8421*q19 + 8192) >> 14;
+  q20 = (-20295*q20 + 16384) >> 15;
+  /* Stage 5 */
+  u0 = q0 + q8;
+  u1 = q1 + q9;
+  u2 = q2 + q10;
+  u3 = q3 + q10;
+  u4 = q4 + q8;
+  u5 = q5 + q9;
+  u6 = q6 + q11;
+  u7 = q7 + q11;
+  /* Stage 6 */
+  u10 = u0 + u1;
+  u11 = u0 - u1;
+  u12 = u2 + u7;
+  u13 = u2 - u7;
+  u14 = u3 + u6;
+  u15 = u3 - u6;
+  u16 = u5 + u4;
+  u17 = u5 - u4;
+  /* Stage 7 */
+  u8 = q19 + q20;
+  u9 = q19 - q18;
+  u18 = q12 + u8;
+  u19 = u18 + q13;
+  u20 = u18 + q14;
+  u21 = u9 << 1;
+  u22 = q15 + u21;
+  u23 = q16 - u22;
+  u24 = u22 + q17;
+  u25 = u8 << 1;
+  u26 = u25 << 1;
+  u27 = u25 - u9;
+  /* Stage 8 */
+  y[0] = u14 + u16 + u20;
+  y[1] = u12 - u10 - u25;
+  y[2] = u9 + u13 - u17;
+  y[3] = u9 - u10 - u12 - u19;
+  y[4] = u15 - u11 - u27;
+  y[5] = u23 - u11 - u15;
+  y[6] = u13 + u17 - u24 + u26;
+  y[7] = u16 - u14 + u21 - u25;
+}
+
 void od_bin_fdst8(od_coeff y[8], const od_coeff *x, int xstride) {
-  int r0;
-  int r1;
-  int r2;
-  int r3;
-  int r4;
-  int r5;
-  int r6;
-  int r7;
-  r0 = x[0*xstride];
-  r4 = x[1*xstride];
-  r2 = x[2*xstride];
-  r6 = x[3*xstride];
-  r1 = x[4*xstride];
-  r5 = x[5*xstride];
-  r3 = x[6*xstride];
-  r7 = x[7*xstride];
-  OD_FDST_8(r0, r4, r2, r6, r1, r5, r3, r7);
-  y[0] = (od_coeff)r0;
-  y[1] = (od_coeff)r1;
-  y[2] = (od_coeff)r2;
-  y[3] = (od_coeff)r3;
-  y[4] = (od_coeff)r4;
-  y[5] = (od_coeff)r5;
-  y[6] = (od_coeff)r6;
-  y[7] = (od_coeff)r7;
+  int i;
+  od_coeff xp[8];
+  od_coeff yp[8];
+  for (i = 0; i < 8; i++) xp[i] = x[i*xstride];
+  od_poly_prod_8(yp, xp);
+  for (i = 0; i < 8; i++) y[OD_DST_8_PERM[i]] = yp[i];
 }
 
 void od_bin_idst8(od_coeff *x, int xstride, const od_coeff y[8]) {
-  int r0;
-  int r1;
-  int r2;
-  int r3;
-  int r4;
-  int r5;
-  int r6;
-  int r7;
-  r0 = y[0];
-  r4 = y[1];
-  r2 = y[2];
-  r6 = y[3];
-  r1 = y[4];
-  r5 = y[5];
-  r3 = y[6];
-  r7 = y[7];
-  OD_IDST_8(r0, r4, r2, r6, r1, r5, r3, r7);
-  x[0*xstride] = (od_coeff)r0;
-  x[1*xstride] = (od_coeff)r1;
-  x[2*xstride] = (od_coeff)r2;
-  x[3*xstride] = (od_coeff)r3;
-  x[4*xstride] = (od_coeff)r4;
-  x[5*xstride] = (od_coeff)r5;
-  x[6*xstride] = (od_coeff)r6;
-  x[7*xstride] = (od_coeff)r7;
+  int i;
+  od_coeff xp[8];
+  od_coeff yp[8];
+  for (i = 0; i < 8; i++) yp[i] = y[OD_DST_8_PERM[i]];
+  od_poly_prod_8(xp, yp);
+  for (i = 0; i < 8; i++) x[i*xstride] = xp[i];
 }
 
 void od_bin_fdct16(od_coeff y[16], const od_coeff *x, int xstride) {
