@@ -50,6 +50,7 @@ class CORE_EXPORT InspectorSession
   void Dispose();
   void DidCommitLoadForLocalFrame(LocalFrame*);
   void DispatchProtocolMessage(const String& method, const String& message);
+  void DispatchProtocolMessage(const String& message);
   void flushProtocolNotifications() override;
 
   void Trace(blink::Visitor*);
