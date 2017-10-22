@@ -180,14 +180,14 @@ renderer needs to:
  4. Hold the blob data until the browser is finished requesting it.
 
 The meat of blob construction starts in the [WebBlobRegistryImpl](
-https://cs.chromium.org/chromium/src/content/child/blob_storage/webblobregistry_impl.h)'s
+https://cs.chromium.org/chromium/src/content/renderer/blob_storage/webblobregistry_impl.h)'s
 `createBuilder(uuid, content_type)`.
 
 ## Blob Data Consolidation
 
 Since blobs are often constructed with arrays with single bytes, we try to
 consolidate all **adjacent** memory blob items into one. This is done in
-[BlobConsolidation](https://cs.chromium.org/chromium/src/content/child/blob_storage/blob_consolidation.h).
+[BlobConsolidation](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_consolidation.h).
 The implementation doesn't actually do any copying or allocating of new memory
 buffers, instead it facilitates the transformation between the 'consolidated'
 blob items and the underlying bytes items. This way we don't waste any memory.
@@ -195,27 +195,27 @@ blob items and the underlying bytes items. This way we don't waste any memory.
 ## Blob Transportation (Renderer)
 
 After the blob has been 'consolidated', it is given to the
-[BlobTransportController](https://cs.chromium.org/chromium/src/content/child/blob_storage/blob_transport_controller.h).
+[BlobTransportController](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.h).
 This class:
 
 1. Immediately communicates the blob description to the Browser. We also
-[optimistically send](https://cs.chromium.org/chromium/src/content/child/blob_storage/blob_transport_controller.cc?l=325)
+[optimistically send](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?l=325)
 the blob data if the total memory is less than our IPC threshold.
 2. Stores the blob consolidation for data requests from the browser.
 3. Answers requests from the browser to populate or send the blob data. The
 browser can request the renderer:
   1. Send items and populate the data in IPC ([code](
-https://cs.chromium.org/chromium/src/content/child/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::IPC")).
+https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::IPC")).
   2. Populate items in shared memory and notify the browser when population is
-complete ([code](https://cs.chromium.org/chromium/src/content/child/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::SHARED_MEMORY")).
+complete ([code](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::SHARED_MEMORY")).
   3. Populate items in files and notify the browser when population is complete
-([code](https://cs.chromium.org/chromium/src/content/child/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::FILE")).
+([code](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?q="case+IPCBlobItemRequestStrategy::FILE")).
 4. Destroys the blob consolidation when the browser says it's done.
 
 The transport controller also tries to keep the renderer alive while we are
 sending blobs, as if the renderer is closed then we would lose any pending blob
 data. It does this the [incrementing and decrementing the process reference
-count](https://cs.chromium.org/chromium/src/content/child/blob_storage/blob_transport_controller.cc?l=62),
+count](https://cs.chromium.org/chromium/src/content/renderer/blob_storage/blob_transport_controller.cc?l=62),
 which should prevent fast shutdown.
 
 # Blob Transportation & Storage (Browser)

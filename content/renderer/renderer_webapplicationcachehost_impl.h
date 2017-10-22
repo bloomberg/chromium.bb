@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 #define CONTENT_RENDERER_RENDERER_WEBAPPLICATIONCACHEHOST_IMPL_H_
 
-#include "content/child/appcache/web_application_cache_host_impl.h"
+#include "content/renderer/appcache/web_application_cache_host_impl.h"
 
 namespace content {
 class RenderViewImpl;

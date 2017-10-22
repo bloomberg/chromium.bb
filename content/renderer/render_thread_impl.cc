@@ -60,10 +60,6 @@
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
 #include "components/viz/common/resources/buffer_to_texture_target_map.h"
 #include "components/viz/common/switches.h"
-#include "content/child/appcache/appcache_dispatcher.h"
-#include "content/child/appcache/appcache_frontend_impl.h"
-#include "content/child/blob_storage/blob_message_filter.h"
-#include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/runtime_features.h"
 #include "content/child/thread_safe_sender.h"
@@ -93,6 +89,9 @@
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_thread_observer.h"
 #include "content/public/renderer/render_view_visitor.h"
+#include "content/renderer/appcache/appcache_dispatcher.h"
+#include "content/renderer/appcache/appcache_frontend_impl.h"
+#include "content/renderer/blob_storage/blob_message_filter.h"
 #include "content/renderer/browser_plugin/browser_plugin_manager.h"
 #include "content/renderer/cache_storage/cache_storage_dispatcher.h"
 #include "content/renderer/cache_storage/cache_storage_message_filter.h"
@@ -102,9 +101,12 @@
 #include "content/renderer/dom_storage/webstoragearea_impl.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
 #include "content/renderer/effective_connection_type_helper.h"
+#include "content/renderer/fileapi/file_system_dispatcher.h"
+#include "content/renderer/fileapi/webfilesystem_impl.h"
 #include "content/renderer/gpu/compositor_external_begin_frame_source.h"
 #include "content/renderer/gpu/compositor_forwarding_message_filter.h"
 #include "content/renderer/gpu/frame_swap_message_queue.h"
+#include "content/renderer/indexed_db/indexed_db_dispatcher.h"
 #include "content/renderer/input/input_event_filter.h"
 #include "content/renderer/input/input_handler_manager.h"
 #include "content/renderer/input/main_thread_input_event_filter.h"
@@ -680,8 +682,6 @@ void RenderThreadImpl::Init(
       new NotificationDispatcher(thread_safe_sender());
   AddFilter(notification_dispatcher_->GetFilter());
 
-  // Note: This may reorder messages from the ResourceDispatcher with respect to
-  // other subsystems.
   resource_dispatcher_.reset(new ResourceDispatcher(
       this, message_loop()->task_runner()));
   resource_message_filter_ =
@@ -704,7 +704,10 @@ void RenderThreadImpl::Init(
   main_thread_indexed_db_dispatcher_.reset(new IndexedDBDispatcher());
   main_thread_cache_storage_dispatcher_.reset(
       new CacheStorageDispatcher(thread_safe_sender()));
+  file_system_dispatcher_.reset(new FileSystemDispatcher());
 
+  // Note: This may reorder messages from the ResourceDispatcher with respect to
+  // other subsystems.
   resource_dispatch_throttler_.reset(new ResourceDispatchThrottler(
       static_cast<RenderThread*>(this), renderer_scheduler_.get(),
       base::TimeDelta::FromSecondsD(kThrottledResourceRequestFlushPeriodS),
@@ -972,6 +975,9 @@ RenderThreadImpl::~RenderThreadImpl() {
 }
 
 void RenderThreadImpl::Shutdown() {
+  ChildThreadImpl::Shutdown();
+  file_system_dispatcher_.reset();
+  WebFileSystemImpl::DeleteThreadSpecificInstance();
   // In a multi-process mode, we immediately exit the renderer.
   // Historically we had a graceful shutdown sequence here but it was
   // 1) a waste of performance and 2) a source of lots of complicated
@@ -1579,6 +1585,8 @@ void RenderThreadImpl::SetRendererProcessType(
 bool RenderThreadImpl::OnMessageReceived(const IPC::Message& msg) {
   // Resource responses are sent to the resource dispatcher.
   if (resource_dispatcher_->OnMessageReceived(msg))
+    return true;
+  if (file_system_dispatcher_->OnMessageReceived(msg))
     return true;
   return ChildThreadImpl::OnMessageReceived(msg);
 }
