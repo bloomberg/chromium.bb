@@ -1,4 +1,4 @@
-CONSOLE WARNING: line 70: 'webkitURL' is deprecated. Please use 'URL' instead.
+CONSOLE WARNING: line 74: 'webkitURL' is deprecated. Please use 'URL' instead.
 This test documents all interface attributes and methods on the global window object and element instances.
 
 On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE".
@@ -3847,7 +3847,6 @@ interface Notification : EventTarget
     getter data
     getter dir
     getter icon
-    getter image
     getter lang
     getter onclick
     getter onclose
