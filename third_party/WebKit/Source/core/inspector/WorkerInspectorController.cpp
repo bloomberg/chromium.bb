@@ -106,10 +106,7 @@ void WorkerInspectorController::DispatchMessageFromFrontend(
   auto it = sessions_.find(session_id);
   if (it == sessions_.end())
     return;
-  String method;
-  if (!protocol::DispatcherBase::getCommandName(message, &method))
-    return;
-  it->value->DispatchProtocolMessage(method, message);
+  it->value->DispatchProtocolMessage(message);
 }
 
 void WorkerInspectorController::Dispose() {
