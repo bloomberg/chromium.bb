@@ -936,7 +936,7 @@ void UiSceneManager::OnCloseButtonClicked() {
 
 void UiSceneManager::OnVoiceSearchButtonClicked() {
   recognizing_speech_ = !recognizing_speech_;
-  browser_->SetVoiceSearchActivate(recognizing_speech_);
+  browser_->SetVoiceSearchActive(recognizing_speech_);
 }
 
 void UiSceneManager::OnUnsupportedMode(UiUnsupportedMode mode) {

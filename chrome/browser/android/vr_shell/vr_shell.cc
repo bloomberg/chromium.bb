@@ -721,8 +721,8 @@ void VrShell::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {
                                      window_size.height(), dpr);
 }
 
-void VrShell::SetVoiceSearchActivate(bool activate) {
-  if (!activate && !speech_recognizer_)
+void VrShell::SetVoiceSearchActive(bool active) {
+  if (!active && !speech_recognizer_)
     return;
 
   if (!speech_recognizer_) {
@@ -731,7 +731,7 @@ void VrShell::SetVoiceSearchActivate(bool activate) {
     speech_recognizer_.reset(new vr::SpeechRecognizer(
         this, profile->GetRequestContext(), profile_locale));
   }
-  if (activate) {
+  if (active) {
     speech_recognizer_->Start();
   } else {
     speech_recognizer_->Stop();

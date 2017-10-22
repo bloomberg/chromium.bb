@@ -25,7 +25,7 @@ class UiBrowserInterface {
   virtual void OnExitVrPromptResult(UiUnsupportedMode reason,
                                     ExitVrPromptChoice choice) = 0;
   virtual void OnContentScreenBoundsChanged(const gfx::SizeF& bounds) = 0;
-  virtual void SetVoiceSearchActivate(bool activate) = 0;
+  virtual void SetVoiceSearchActive(bool active) = 0;
 };
 
 }  // namespace vr

@@ -50,6 +50,7 @@ class VrTestContext : public vr::ContentInputDelegate,
                              const gfx::PointF& normalized_hit_point) override;
   void OnContentScrollEnd(std::unique_ptr<blink::WebGestureEvent> gesture,
                           const gfx::PointF& normalized_hit_point) override;
+  void SetVoiceSearchActive(bool active) override;
 
   // vr::UiBrowserInterface implementation (UI calling to VrShell).
   void ExitPresent() override;

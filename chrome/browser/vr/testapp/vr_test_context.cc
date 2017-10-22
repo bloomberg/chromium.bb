@@ -241,6 +241,7 @@ void VrTestContext::OnContentScrollEnd(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& normalized_hit_point) {}
 
+void VrTestContext::SetVoiceSearchActive(bool active) {}
 void VrTestContext::ExitPresent() {}
 void VrTestContext::ExitFullscreen() {}
 void VrTestContext::NavigateBack() {}
