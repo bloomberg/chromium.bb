@@ -181,7 +181,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnExitVrPromptResult(vr::UiUnsupportedMode reason,
                             vr::ExitVrPromptChoice choice);
   void OnContentScreenBoundsChanged(const gfx::SizeF& bounds);
-  void SetVoiceSearchActivate(bool activate);
+  void SetVoiceSearchActive(bool active);
 
   void ProcessContentGesture(std::unique_ptr<blink::WebInputEvent> event,
                              int content_id);
