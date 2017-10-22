@@ -38,8 +38,6 @@
 #include "components/tracing/child/child_trace_message_filter.h"
 #include "content/child/child_histogram_fetcher_impl.h"
 #include "content/child/child_process.h"
-#include "content/child/fileapi/file_system_dispatcher.h"
-#include "content/child/fileapi/webfilesystem_impl.h"
 #include "content/child/quota_dispatcher.h"
 #include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
@@ -474,8 +472,6 @@ void ChildThreadImpl::Init(const Options& options) {
   thread_safe_sender_ = new ThreadSafeSender(
       message_loop_->task_runner(), sync_message_filter_.get());
 
-  file_system_dispatcher_.reset(new FileSystemDispatcher());
-
   auto registry = base::MakeUnique<service_manager::BinderRegistry>();
   registry->AddInterface(base::Bind(&ChildHistogramFetcherFactoryImpl::Create),
                          GetIOTaskRunner());
@@ -633,9 +629,7 @@ ChildThreadImpl::~ChildThreadImpl() {
 void ChildThreadImpl::Shutdown() {
   // Delete objects that hold references to blink so derived classes can
   // safely shutdown blink in their Shutdown implementation.
-  file_system_dispatcher_.reset();
   quota_dispatcher_.reset();
-  WebFileSystemImpl::DeleteThreadSpecificInstance();
 }
 
 bool ChildThreadImpl::ShouldBeDestroyed() {
@@ -731,9 +725,6 @@ void ChildThreadImpl::SetThreadPriority(base::PlatformThreadId id,
 #endif
 
 bool ChildThreadImpl::OnMessageReceived(const IPC::Message& msg) {
-  if (file_system_dispatcher_->OnMessageReceived(msg))
-    return true;
-
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(ChildThreadImpl, msg)
     IPC_MESSAGE_HANDLER(ChildProcessMsg_Shutdown, OnShutdown)

@@ -49,7 +49,6 @@ class ScopedIPCSupport;
 }  // namespace mojo
 
 namespace content {
-class FileSystemDispatcher;
 class InProcessChildThreadParams;
 class QuotaDispatcher;
 class QuotaMessageFilter;
@@ -115,10 +114,6 @@ class CONTENT_EXPORT ChildThreadImpl
   void SetThreadPriority(base::PlatformThreadId id,
                          base::ThreadPriority priority);
 #endif
-
-  FileSystemDispatcher* file_system_dispatcher() const {
-    return file_system_dispatcher_.get();
-  }
 
   QuotaDispatcher* quota_dispatcher() const {
     return quota_dispatcher_.get();
@@ -242,8 +237,6 @@ class CONTENT_EXPORT ChildThreadImpl
   bool on_channel_error_called_;
 
   base::MessageLoop* message_loop_;
-
-  std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
   std::unique_ptr<QuotaDispatcher> quota_dispatcher_;
 

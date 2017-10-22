@@ -134,6 +134,7 @@ class ChildResourceMessageFilter;
 class CompositorForwardingMessageFilter;
 class DevToolsAgentFilter;
 class DomStorageDispatcher;
+class FileSystemDispatcher;
 class FrameSwapMessageQueue;
 class GpuVideoAcceleratorFactoriesImpl;
 class IndexedDBDispatcher;
@@ -327,6 +328,10 @@ class CONTENT_EXPORT RenderThreadImpl
 
   AudioInputMessageFilter* audio_input_message_filter() {
     return audio_input_message_filter_.get();
+  }
+
+  FileSystemDispatcher* file_system_dispatcher() const {
+    return file_system_dispatcher_.get();
   }
 
   MidiMessageFilter* midi_message_filter() {
@@ -627,6 +632,7 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
   std::unique_ptr<ResourceDispatchThrottler> resource_dispatch_throttler_;
   std::unique_ptr<CacheStorageDispatcher> main_thread_cache_storage_dispatcher_;
+  std::unique_ptr<FileSystemDispatcher> file_system_dispatcher_;
 
   // Used on the renderer and IPC threads.
   scoped_refptr<BlobMessageFilter> blob_message_filter_;
