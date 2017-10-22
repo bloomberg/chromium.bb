@@ -6,7 +6,7 @@
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_CONTEXT_MESSAGE_FILTER_H_
 
 #include "base/macros.h"
-#include "content/child/worker_thread_message_filter.h"
+#include "content/renderer/worker_thread_message_filter.h"
 
 namespace content {
 

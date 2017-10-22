@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/quota_message_filter.h"
+#include "content/renderer/quota_message_filter.h"
 
-#include "content/child/quota_dispatcher.h"
+#include "content/renderer/quota_dispatcher.h"
 #include "content/common/quota_messages.h"
 
 namespace content {

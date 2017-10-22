@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/synchronization/lock.h"
-#include "content/child/worker_thread_message_filter.h"
+#include "content/renderer/worker_thread_message_filter.h"
 
 namespace content {
 

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/web_database_impl.h"
+#include "content/renderer/web_database_impl.h"
 
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"

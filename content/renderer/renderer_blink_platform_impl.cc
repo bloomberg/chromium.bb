@@ -27,13 +27,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
-#include "content/child/file_info_util.h"
-#include "content/child/quota_dispatcher.h"
-#include "content/child/quota_message_filter.h"
-#include "content/child/storage_util.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/web_database_observer_impl.h"
-#include "content/child/webfileutilities_impl.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/common/render_process_messages.h"
@@ -51,6 +45,7 @@
 #include "content/renderer/dom_storage/local_storage_cached_areas.h"
 #include "content/renderer/dom_storage/local_storage_namespace.h"
 #include "content/renderer/dom_storage/webstoragenamespace_impl.h"
+#include "content/renderer/file_info_util.h"
 #include "content/renderer/fileapi/webfilesystem_impl.h"
 #include "content/renderer/gamepad_shared_memory_reader.h"
 #include "content/renderer/image_capture/image_capture_frame_grabber.h"
@@ -71,11 +66,17 @@
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "content/renderer/notifications/notification_manager.h"
 #include "content/renderer/push_messaging/push_provider.h"
+#include "content/renderer/quota_dispatcher.h"
+#include "content/renderer/quota_message_filter.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/renderer_clipboard_delegate.h"
+#include "content/renderer/storage_util.h"
+#include "content/renderer/web_database_observer_impl.h"
 #include "content/renderer/webclipboard_impl.h"
+#include "content/renderer/webfileutilities_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
 #include "content/renderer/webpublicsuffixlist_impl.h"
+#include "content/renderer/worker_thread_registry.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/config/gpu_info.h"
@@ -114,6 +115,7 @@
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceOrientationListener.h"
 #include "third_party/WebKit/public/platform/modules/webmidi/WebMIDIAccessor.h"
+#include "third_party/WebKit/public/platform/scheduler/child/webthread_base.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/sqlite/sqlite3.h"
@@ -263,6 +265,7 @@ class RendererBlinkPlatformImpl::SandboxSupport
 RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
     blink::scheduler::RendererScheduler* renderer_scheduler)
     : BlinkPlatformImpl(renderer_scheduler->DefaultTaskRunner()),
+      compositor_thread_(nullptr),
       main_thread_(renderer_scheduler->CreateMainThread()),
       clipboard_delegate_(new RendererClipboardDelegate),
       clipboard_(new WebClipboardImpl(clipboard_delegate_.get())),
@@ -398,6 +401,13 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   return url_loader_factory;
 }
 
+void RendererBlinkPlatformImpl::SetCompositorThread(
+    blink::scheduler::WebThreadBase* compositor_thread) {
+  compositor_thread_ = compositor_thread;
+  if (compositor_thread_)
+    WaitUntilWebThreadTLSUpdate(compositor_thread_);
+}
+
 blink::WebThread* RendererBlinkPlatformImpl::CurrentThread() {
   if (main_thread_->IsCurrentThread())
     return main_thread_.get();
@@ -529,6 +539,10 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
   RenderThread* thread = RenderThread::Get();
   if (thread)  // NULL in unittests.
     thread->Send(new RenderProcessHostMsg_SuddenTerminationChanged(enabled));
+}
+
+blink::WebThread* RendererBlinkPlatformImpl::CompositorThread() const {
+  return compositor_thread_;
 }
 
 std::unique_ptr<WebStorageNamespace>
@@ -1367,6 +1381,14 @@ RendererBlinkPlatformImpl::GetNotificationManager() {
 }
 
 //------------------------------------------------------------------------------
+
+void RendererBlinkPlatformImpl::DidStartWorkerThread() {
+  WorkerThreadRegistry::Instance()->DidStartCurrentWorkerThread();
+}
+
+void RendererBlinkPlatformImpl::WillStopWorkerThread() {
+  WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
+}
 
 void RendererBlinkPlatformImpl::WorkerContextCreated(
     const v8::Local<v8::Context>& worker) {

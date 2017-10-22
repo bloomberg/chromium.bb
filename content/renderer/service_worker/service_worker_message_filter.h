@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "content/child/worker_thread_message_filter.h"
 #include "content/common/content_export.h"
+#include "content/renderer/worker_thread_message_filter.h"
 
 struct ServiceWorkerMsg_MessageToDocument_Params;
 struct ServiceWorkerMsg_SetControllerServiceWorker_Params;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/quota_dispatcher.h"
+#include "content/renderer/quota_dispatcher.h"
 
 #include <memory>
 #include <utility>
@@ -11,9 +11,9 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_local.h"
-#include "content/child/quota_message_filter.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/quota_messages.h"
+#include "content/renderer/quota_message_filter.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaType.h"
 #include "third_party/WebKit/public/web/WebUserGestureIndicator.h"

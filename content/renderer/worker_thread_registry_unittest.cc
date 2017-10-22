@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/worker_thread_registry.h"
+#include "content/renderer/worker_thread_registry.h"
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"

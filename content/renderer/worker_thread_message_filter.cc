@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/worker_thread_message_filter.h"
+#include "content/renderer/worker_thread_message_filter.h"
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/thread_safe_sender.h"
-#include "content/child/worker_thread_registry.h"
+#include "content/renderer/worker_thread_registry.h"
 #include "ipc/ipc_message_macros.h"
 
 namespace content {

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/child/webfileutilities_impl.h"
+#include "content/renderer/webfileutilities_impl.h"
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
-#include "content/child/file_info_util.h"
+#include "content/renderer/file_info_util.h"
 #include "net/base/filename_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
