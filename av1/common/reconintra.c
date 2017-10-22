@@ -205,7 +205,7 @@ static const uint16_t orders_8x8[256] = {
   170, 171, 174, 175, 186, 187, 190, 191, 234, 235, 238, 239, 250, 251, 254,
   255,
 };
-
+#if CONFIG_EXT_PARTITION
 static const uint16_t orders_4x8[512] = {
   0,   1,   2,   3,   8,   9,   10,  11,  32,  33,  34,  35,  40,  41,  42,
   43,  128, 129, 130, 131, 136, 137, 138, 139, 160, 161, 162, 163, 168, 169,
@@ -363,6 +363,7 @@ static const uint16_t orders_4x4[1024] = {
   747,  750,  751,  762,  763,  766,  767,  938,  939,  942,  943,  954,  955,
   958,  959,  1002, 1003, 1006, 1007, 1018, 1019, 1022, 1023,
 };
+#endif  // CONFIG_EXT_PARTITION
 
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
@@ -493,7 +494,7 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 };
 /* clang-format on */
 #endif  // CONFIG_EXT_PARTITION
-#endif  // CONFIG_EXT_PARTITION_TYPES
+#endif  // CONFIG_EXT_PARTITION_TYPES && !CONFIG_EXT_PARTITION_TYPES_AB
 
 static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
                          int mi_col, int top_available, int right_available,
