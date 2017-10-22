@@ -3643,7 +3643,6 @@ crbug.com/767040 [ Mac10.12 ] external/wpt/clear-site-data/storage.https.html [ 
 crbug.com/767091 [ Mac10.12 ] http/tests/security/link-crossorigin-preload-use-credentials.html [ Failure ]
 
 # Sheriff failures 2017-09-21
-crbug.com/767012 [ Win10 ] http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Timeout ]
 crbug.com/767469 http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/stable/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
 crbug.com/767469 virtual/mojo-loading/http/tests/navigation/start-load-during-provisional-loader-detach.html [ Pass Failure ]
@@ -3686,3 +3685,11 @@ crbug.com/774751 [ Mac ] virtual/gpu/fast/canvas/canvas-transforms-during-path.h
 crbug.com/774751 [ Mac ] virtual/gpu/fast/canvas/quadraticCurveTo.xml [ Failure ]
 
 crbug.com/776201 [ Win7 Debug ] virtual/longtask-v2/http/tests/performance-timing/longtask-v2/longtask-v8compile.html [ Pass Failure ]
+
+# Sheriff failures 2017-10-23
+crbug.com/777222 http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
+crbug.com/777222 http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
+crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation.html [ Pass Failure Timeout ]
+crbug.com/777222 virtual/mojo-loading/http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
+crbug.com/777222 virtual/mojo-loading/http/tests/devtools/import-open-inspector.js [ Pass Failure Timeout ]
+crbug.com/777222 virtual/mojo-loading/http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
