@@ -44,7 +44,6 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
-import org.chromium.chrome.browser.ntp.ContextMenuManager.TouchEnabledDelegate;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.cards.SignInPromo;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
@@ -173,16 +172,15 @@ public class ArticleSnippetsTest {
         assertThat(FeatureUtilities.isChromeHomeEnabled(), is(mChromeHomeEnabled));
 
         ThreadUtils.runOnUiThreadBlocking(() -> {
-            mContentView = new FrameLayout(mActivityTestRule.getActivity());
+            ChromeActivity activity = mActivityTestRule.getActivity();
+            mContentView = new FrameLayout(activity);
             mUiConfig = new UiConfig(mContentView);
 
-            mActivityTestRule.getActivity().setContentView(mContentView);
+            activity.setContentView(mContentView);
 
-            mRecyclerView = new SuggestionsRecyclerView(mActivityTestRule.getActivity());
-            TouchEnabledDelegate touchEnabledDelegate =
-                    enabled -> mRecyclerView.setTouchEnabled(enabled);
-            mContextMenuManager = new ContextMenuManager(mActivityTestRule.getActivity(),
-                    mUiDelegate.getNavigationDelegate(), touchEnabledDelegate);
+            mRecyclerView = new SuggestionsRecyclerView(activity);
+            mContextMenuManager = new ContextMenuManager(mUiDelegate.getNavigationDelegate(),
+                    mRecyclerView::setTouchEnabled, activity::closeContextMenu);
             mRecyclerView.init(mUiConfig, mContextMenuManager);
 
             mSuggestion = new SnippetArticleViewHolder(mRecyclerView, mContextMenuManager,
