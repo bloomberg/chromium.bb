@@ -324,22 +324,44 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   if (!renderer || !layout_box)
     return;
 
+  if (Width() == 0 || Height() == 0)
+    return;
+
   // Apply transformation and get the bounding rect
   Path transformed_path = path;
   transformed_path.Transform(GetState().Transform());
   FloatRect bounding_rect = transformed_path.BoundingRect();
 
-  // Offset by the canvas rect
+  // We first map canvas coordinates to layout coordinates.
   LayoutRect path_rect(bounding_rect);
   IntRect canvas_rect = layout_box->AbsoluteContentBox();
-  path_rect.MoveBy(canvas_rect.Location());
+  path_rect.SetX(
+      (canvas_rect.X() + path_rect.X() * canvas_rect.Width() / Width()));
+  path_rect.SetY(
+      (canvas_rect.Y() + path_rect.Y() * canvas_rect.Height() / Height()));
+  path_rect.SetWidth((path_rect.Width() * canvas_rect.Width() / Width()));
+  path_rect.SetHeight((path_rect.Height() * canvas_rect.Height() / Height()));
 
-  renderer->ScrollRectToVisible(path_rect, ScrollAlignment::kAlignCenterAlways,
-                                ScrollAlignment::kAlignTopAlways);
+  // Then we clip the bounding box to the canvas visible range.
+  path_rect.Intersect(LayoutRect(canvas_rect));
 
-  // TODO: should implement "inform the user" that the caret and/or
-  // selection the specified rectangle of the canvas. See
-  // http://crbug.com/357987
+  bool is_horizontal_writing_mode =
+      canvas()->EnsureComputedStyle()->IsHorizontalWritingMode();
+
+  bool make_visible_in_visual_viewport = !canvas()
+                                              ->GetDocument()
+                                              .GetPage()
+                                              ->GetSettings()
+                                              .GetInertVisualViewport();
+
+  renderer->ScrollRectToVisible(
+      path_rect,
+      is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
+                                 : ScrollAlignment::kAlignLeftAlways,
+      !is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
+                                  : ScrollAlignment::kAlignTopAlways,
+      kProgrammaticScroll, make_visible_in_visual_viewport,
+      kScrollBehaviorAuto);
 }
 
 void CanvasRenderingContext2D::clearRect(double x,

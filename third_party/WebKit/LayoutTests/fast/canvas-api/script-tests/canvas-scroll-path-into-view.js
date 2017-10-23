@@ -108,7 +108,7 @@ function getRealValue(shape, degree, usePathObject) {
     context.stroke();
     context.restore();
 
-    return container.scrollTop;
+    return Math.round(container.scrollTop);
 }
 
 function scrollTest(shape, degree, usePathObject, expectedValue) {
