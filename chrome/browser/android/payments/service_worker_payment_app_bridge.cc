@@ -11,8 +11,8 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/payments/content/manifest_verifier.h"
-#include "components/payments/content/payment_manifest_parser_host.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
+#include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/payment_manifest_downloader.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -54,7 +54,7 @@ class SelfDeletingManifestVerifier {
                       content::BrowserContext::GetDefaultStoragePartition(
                           web_contents->GetBrowserContext())
                           ->GetURLRequestContext()),
-                  std::make_unique<payments::PaymentManifestParserHost>(),
+                  std::make_unique<payments::PaymentManifestParser>(),
                   WebDataServiceFactory::GetPaymentManifestWebDataForProfile(
                       ProfileManager::GetActiveUserProfile(),
                       ServiceAccessType::EXPLICIT_ACCESS)) {}

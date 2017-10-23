@@ -14,7 +14,7 @@ import org.chromium.components.payments.PaymentManifestDownloader;
 import org.chromium.components.payments.PaymentManifestDownloader.ManifestDownloadCallback;
 import org.chromium.components.payments.PaymentManifestParser;
 import org.chromium.components.payments.PaymentManifestParser.ManifestParseCallback;
-import org.chromium.payments.mojom.WebAppManifestSection;
+import org.chromium.components.payments.WebAppManifestSection;
 
 import java.net.URI;
 import java.security.MessageDigest;

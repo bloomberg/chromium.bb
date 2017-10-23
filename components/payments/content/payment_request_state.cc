@@ -17,10 +17,10 @@
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 #include "components/payments/content/manifest_verifier.h"
-#include "components/payments/content/payment_manifest_parser_host.h"
 #include "components/payments/content/payment_manifest_web_data_service.h"
 #include "components/payments/content/payment_response_helper.h"
 #include "components/payments/content/service_worker_payment_instrument.h"
+#include "components/payments/content/utility/payment_manifest_parser.h"
 #include "components/payments/core/autofill_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
 #include "components/payments/core/payment_instrument.h"
@@ -96,7 +96,7 @@ PaymentRequestState::PaymentRequestState(
         std::make_unique<payments::PaymentManifestDownloader>(
             content::BrowserContext::GetDefaultStoragePartition(context)
                 ->GetURLRequestContext()),
-        std::make_unique<payments::PaymentManifestParserHost>(),
+        std::make_unique<payments::PaymentManifestParser>(),
         payment_request_delegate_->GetPaymentManifestWebDataService());
     content::PaymentAppProvider::GetInstance()->GetAllPaymentApps(
         context, base::BindOnce(&PaymentRequestState::GetAllPaymentAppsCallback,

@@ -2049,7 +2049,7 @@ test("browser_tests") {
     if (toolkit_views) {
       sources += [
         "../browser/payments/manifest_verifier_browsertest.cc",
-        "../browser/payments/payment_manifest_parser_host_browsertest.cc",
+        "../browser/payments/payment_manifest_parser_browsertest.cc",
         "../browser/payments/site_per_process_payments_browsertest.cc",
         "../browser/ui/global_error/global_error_browsertest.cc",
         "../browser/ui/global_error/global_error_service_browsertest.cc",
