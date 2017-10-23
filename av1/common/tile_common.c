@@ -11,6 +11,9 @@
 
 #include "av1/common/tile_common.h"
 #include "av1/common/onyxc_int.h"
+#if CONFIG_FRAME_SUPERRES
+#include "av1/common/resize.h"
+#endif
 #include "aom_dsp/aom_dsp_common.h"
 
 #if CONFIG_DEPENDENT_HORZTILES
@@ -234,6 +237,38 @@ int get_tile_size(int mi_frame_size, int log2_tile_num, int *ntiles) {
   }
 
   return mi_tile_size;
+}
+
+AV1PixelRect av1_get_tile_rect(const TileInfo *tile_info, const AV1_COMMON *cm,
+                               int is_uv) {
+  AV1PixelRect r;
+  const int ss_x = is_uv && cm->subsampling_x;
+  const int ss_y = is_uv && cm->subsampling_y;
+
+  r.left = (tile_info->mi_col_start * MI_SIZE + ss_x) >> ss_x;
+  r.right = (tile_info->mi_col_end * MI_SIZE + ss_x) >> ss_x;
+  r.top = (tile_info->mi_row_start * MI_SIZE + ss_y) >> ss_y;
+  r.bottom = (tile_info->mi_row_end * MI_SIZE + ss_y) >> ss_y;
+
+#if CONFIG_FRAME_SUPERRES
+  // If upscaling is enabled, the tile limits need scaling to match the
+  // upscaled frame where the restoration tiles live. To do this, scale up the
+  // top-left and bottom-right of the tile.
+  if (!av1_superres_unscaled(cm)) {
+    av1_calculate_unscaled_superres_size(&r.left, &r.top,
+                                         cm->superres_scale_denominator);
+    av1_calculate_unscaled_superres_size(&r.right, &r.bottom,
+                                         cm->superres_scale_denominator);
+
+    // Make sure we don't fall off the bottom-right of the frame.
+    const int plane_width = (cm->superres_upscaled_width + ss_x) >> ss_x;
+    const int plane_height = (cm->superres_upscaled_height + ss_y) >> ss_y;
+    r.right = AOMMIN(r.right, plane_width);
+    r.bottom = AOMMIN(r.bottom, plane_height);
+  }
+#endif  // CONFIG_FRAME_SUPERRES
+
+  return r;
 }
 
 #if CONFIG_LOOPFILTERING_ACROSS_TILES

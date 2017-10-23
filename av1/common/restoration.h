@@ -275,29 +275,6 @@ static INLINE int av1_get_rest_ntiles(int width, int height, int tilesize,
 
 typedef struct { int h_start, h_end, v_start, v_end; } RestorationTileLimits;
 
-static INLINE RestorationTileLimits
-av1_get_rest_tile_limits(int tile_idx, int nhtiles, int nvtiles, int rtile_size,
-                         int im_width, int im_height, int subsampling_y) {
-  const int htile_idx = tile_idx % nhtiles;
-  const int vtile_idx = tile_idx / nhtiles;
-  RestorationTileLimits limits;
-  limits.h_start = htile_idx * rtile_size;
-  limits.v_start = vtile_idx * rtile_size;
-  limits.h_end =
-      (htile_idx < nhtiles - 1) ? limits.h_start + rtile_size : im_width;
-  limits.v_end =
-      (vtile_idx < nvtiles - 1) ? limits.v_start + rtile_size : im_height;
-#if CONFIG_STRIPED_LOOP_RESTORATION
-  // Offset the tile upwards to align with the restoration processing stripe
-  const int voffset = RESTORATION_TILE_OFFSET >> subsampling_y;
-  limits.v_start = AOMMAX(0, limits.v_start - voffset);
-  if (limits.v_end < im_height) limits.v_end -= voffset;
-#else
-  (void)subsampling_y;
-#endif
-  return limits;
-}
-
 extern const sgr_params_type sgr_params[SGRPROJ_PARAMS];
 extern int sgrproj_mtable[MAX_EPS][MAX_NELEM];
 extern const int32_t x_by_xplus1[256];
@@ -348,6 +325,19 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        int components_pattern,
                                        YV12_BUFFER_CONFIG *dst);
 void av1_loop_restoration_precal();
+
+typedef void (*rest_unit_visitor_t)(const RestorationTileLimits *limits,
+                                    int rest_unit_idx, void *priv);
+
+typedef void (*rest_tile_start_visitor_t)(int tile_row, int tile_col,
+                                          void *priv);
+
+// Call on_rest_unit for each loop restoration unit in the frame. At the start
+// of each tile, call on_tile.
+void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
+                                    rest_tile_start_visitor_t on_tile,
+                                    rest_unit_visitor_t on_rest_unit,
+                                    void *priv);
 
 // Return 1 iff the block at mi_row, mi_col with size bsize is a
 // top-level superblock containing the top-left corner of at least one

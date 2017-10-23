@@ -1404,6 +1404,30 @@ static const struct restore_borders restore_borders[RESTORE_TYPES] = {
   { RESTORATION_BORDER_HORZ, RESTORATION_BORDER_VERT }
 };
 
+static RestorationTileLimits get_rest_tile_limits(int tile_idx, int nhtiles,
+                                                  int nvtiles, int rtile_size,
+                                                  int im_width, int im_height,
+                                                  int subsampling_y) {
+  const int htile_idx = tile_idx % nhtiles;
+  const int vtile_idx = tile_idx / nhtiles;
+  RestorationTileLimits limits;
+  limits.h_start = htile_idx * rtile_size;
+  limits.v_start = vtile_idx * rtile_size;
+  limits.h_end =
+      (htile_idx < nhtiles - 1) ? limits.h_start + rtile_size : im_width;
+  limits.v_end =
+      (vtile_idx < nvtiles - 1) ? limits.v_start + rtile_size : im_height;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  // Offset the tile upwards to align with the restoration processing stripe
+  const int voffset = RESTORATION_TILE_OFFSET >> subsampling_y;
+  limits.v_start = AOMMAX(0, limits.v_start - voffset);
+  if (limits.v_end < im_height) limits.v_end -= voffset;
+#else
+  (void)subsampling_y;
+#endif
+  return limits;
+}
+
 void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                                        AV1_COMMON *cm, RestorationInfo *rsi,
                                        int components_pattern,
@@ -1485,7 +1509,7 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
                  highbd);
 
     for (int tile_idx = 0; tile_idx < ntiles; ++tile_idx) {
-      RestorationTileLimits limits = av1_get_rest_tile_limits(
+      RestorationTileLimits limits = get_rest_tile_limits(
           tile_idx, nhtiles, nvtiles, prsi->restoration_tilesize, plane_width,
           plane_height, ss_y);
 
@@ -1507,6 +1531,68 @@ void av1_loop_restoration_filter_frame(YV12_BUFFER_CONFIG *frame,
       }
     }
     aom_free_frame_buffer(dst);
+  }
+}
+
+static void foreach_rest_unit_in_tile(const AV1PixelRect *tile_rect,
+                                      int nunits_x, int nunits_y, int unit_size,
+                                      int plane_w, int plane_h, int ss_y,
+                                      rest_unit_visitor_t on_rest_unit,
+                                      void *priv) {
+  const int col0 = (tile_rect->left + unit_size - 1) / unit_size;
+  const int col1 =
+      AOMMIN((tile_rect->right + unit_size - 1) / unit_size, nunits_x);
+  const int row0 = (tile_rect->top + unit_size - 1) / unit_size;
+  const int row1 =
+      AOMMIN((tile_rect->bottom + unit_size - 1) / unit_size, nunits_y);
+
+  for (int i = row0; i < row1; ++i) {
+    for (int j = col0; j < col1; ++j) {
+      const int rtile_idx = i * nunits_x + j;
+      RestorationTileLimits limits = get_rest_tile_limits(
+          rtile_idx, nunits_x, nunits_y, unit_size, plane_w, plane_h, ss_y);
+
+      on_rest_unit(&limits, rtile_idx, priv);
+    }
+  }
+}
+
+void av1_foreach_rest_unit_in_frame(const struct AV1Common *cm, int plane,
+                                    rest_tile_start_visitor_t on_tile,
+                                    rest_unit_visitor_t on_rest_unit,
+                                    void *priv) {
+  const int is_uv = plane > 0;
+  const int ss_x = is_uv && cm->subsampling_x;
+  const int ss_y = is_uv && cm->subsampling_y;
+
+#if CONFIG_FRAME_SUPERRES
+  const int frame_w = cm->superres_upscaled_width;
+  const int frame_h = cm->superres_upscaled_height;
+#else
+  const int frame_w = cm->width;
+  const int frame_h = cm->height;
+#endif
+
+  const int plane_w = (frame_w + ss_x) >> ss_x;
+  const int plane_h = (frame_h + ss_y) >> ss_y;
+
+  const int unit_size = cm->rst_info[plane].restoration_tilesize;
+
+  int nunits_x, nunits_y;
+  av1_get_rest_ntiles(plane_w, plane_h, unit_size, &nunits_x, &nunits_y);
+
+  TileInfo tile_info;
+  for (int tile_row = 0; tile_row < cm->tile_rows; ++tile_row) {
+    av1_tile_set_row(&tile_info, cm, tile_row);
+    for (int tile_col = 0; tile_col < cm->tile_cols; ++tile_col) {
+      av1_tile_set_col(&tile_info, cm, tile_col);
+
+      on_tile(tile_row, tile_col, priv);
+
+      AV1PixelRect tile_rect = av1_get_tile_rect(&tile_info, cm, is_uv);
+      foreach_rest_unit_in_tile(&tile_rect, nunits_x, nunits_y, unit_size,
+                                plane_w, plane_h, ss_y, on_rest_unit, priv);
+    }
   }
 }
 
