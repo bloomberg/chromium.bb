@@ -183,12 +183,13 @@ std::unique_ptr<HttpResponse> HandleOAuth2TokenExchangeURL(
 
 // Handler for OAuth2 token revocation.
 std::unique_ptr<HttpResponse> HandleOAuth2TokenRevokeURL(
-    int* out_token_revoked_count,
+    const base::Closure& callback,
     const HttpRequest& request) {
   if (!net::test_server::ShouldHandle(request, kOAuth2TokenRevokeURL))
     return nullptr;
 
-  ++(*out_token_revoked_count);
+  content::BrowserThread::PostTask(content::BrowserThread::UI, FROM_HERE,
+                                   callback);
 
   std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse);
   http_response->AddCustomHeader("Cache-Control", "no-store");
@@ -245,8 +246,10 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
         base::Bind(&FakeGaia::HandleOAuth2TokenExchangeURL,
                    base::Bind(&DiceBrowserTestBase::OnTokenExchangeRequest,
                               base::Unretained(this))));
-    https_server_.RegisterDefaultHandler(base::Bind(
-        &FakeGaia::HandleOAuth2TokenRevokeURL, &token_revoked_count_));
+    https_server_.RegisterDefaultHandler(
+        base::Bind(&FakeGaia::HandleOAuth2TokenRevokeURL,
+                   base::Bind(&DiceBrowserTestBase::OnTokenRevocationRequest,
+                              base::Unretained(this))));
     https_server_.RegisterDefaultHandler(
         base::Bind(&FakeGaia::HandleServiceLoginURL,
                    base::Bind(&DiceBrowserTestBase::OnServiceLoginRequest,
@@ -434,6 +437,11 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     RunClosureIfValid(&token_requested_quit_closure_);
   }
 
+  void OnTokenRevocationRequest() {
+    ++token_revoked_count_;
+    RunClosureIfValid(&token_revoked_quit_closure_);
+  }
+
   // AccountReconcilor::Observer:
   void OnBlockReconcile() override { ++reconcilor_blocked_count_; }
   void OnUnblockReconcile() override {
@@ -473,6 +481,13 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
     EXPECT_TRUE(refresh_token_available_);
   }
 
+  void WaitForTokenRevokedCount(int count) {
+    EXPECT_LE(token_revoked_count_, count);
+    while (token_revoked_count_ < count)
+      WaitForClosure(&token_revoked_quit_closure_);
+    EXPECT_EQ(count, token_revoked_count_);
+  }
+
   net::EmbeddedTestServer https_server_;
   AccountConsistencyMethod account_consistency_method_;
   bool token_requested_;
@@ -486,6 +501,7 @@ class DiceBrowserTestBase : public InProcessBrowserTest,
 
   // Used for waiting asynchronous events.
   base::Closure token_requested_quit_closure_;
+  base::Closure token_revoked_quit_closure_;
   base::Closure refresh_token_available_quit_closure_;
   base::Closure service_login_quit_closure_;
   base::Closure unblock_count_quit_closure_;
@@ -529,14 +545,8 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Signin) {
   EXPECT_EQ(1, reconcilor_started_count_);
 }
 
-// This test is flaky on Mac, see https://crbug.com/765093
-#if defined(OS_MACOSX)
-#define MAYBE_Reauth DISABLED_Reauth
-#else
-#define MAYBE_Reauth Reauth
-#endif
 // Checks that re-auth on Gaia triggers the fetch for a refresh token.
-IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Reauth) {
+IN_PROC_BROWSER_TEST_F(DiceBrowserTest, Reauth) {
   EXPECT_EQ(0, reconcilor_started_count_);
 
   // Start from a signed-in state.
@@ -560,7 +570,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, MAYBE_Reauth) {
             GetSigninManager()->GetAuthenticatedAccountId());
   // Old token must be revoked silently.
   EXPECT_EQ(0, token_revoked_notification_count_);
-  EXPECT_EQ(1, token_revoked_count_);
+  WaitForTokenRevokedCount(1);
 
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
@@ -581,7 +591,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutMainAccount) {
   EXPECT_FALSE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
   EXPECT_EQ(2, token_revoked_notification_count_);
-  EXPECT_EQ(2, token_revoked_count_);
+  WaitForTokenRevokedCount(2);
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
 }
@@ -603,7 +613,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutSecondaryAccount) {
   EXPECT_FALSE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
   EXPECT_EQ(1, token_revoked_notification_count_);
-  EXPECT_EQ(1, token_revoked_count_);
+  WaitForTokenRevokedCount(1);
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
 }
@@ -622,7 +632,7 @@ IN_PROC_BROWSER_TEST_F(DiceBrowserTest, SignoutAllAccounts) {
   EXPECT_FALSE(
       GetTokenService()->RefreshTokenIsAvailable(GetSecondaryAccountID()));
   EXPECT_EQ(2, token_revoked_notification_count_);
-  EXPECT_EQ(2, token_revoked_count_);
+  WaitForTokenRevokedCount(2);
   EXPECT_EQ(1, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(1);
 }
@@ -738,7 +748,7 @@ IN_PROC_BROWSER_TEST_F(DiceFixAuthErrorsBrowserTest, ReauthFixAuthError) {
             GetSigninManager()->GetAuthenticatedAccountId());
   // Old token must be revoked silently.
   EXPECT_EQ(0, token_revoked_notification_count_);
-  EXPECT_EQ(1, token_revoked_count_);
+  WaitForTokenRevokedCount(1);
   EXPECT_EQ(0, reconcilor_blocked_count_);
   WaitForReconcilorUnblockedCount(0);
 }
