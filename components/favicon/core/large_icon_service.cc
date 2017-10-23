@@ -58,6 +58,9 @@ const double kGoogleServerV2DesiredToMaxSizeFactor = 2.0;
 const char kGoogleServerV2DesiredToMaxSizeFactorParam[] =
     "desired_to_max_size_factor";
 
+const double kGoogleServerV2MinimumMaxSizeInPixel = 256.0;
+const char kGoogleServerV2MinimumMaxSizeInPixelParam[] = "minimum_max_size";
+
 GURL TrimPageUrlForGoogleServer(const GURL& page_url) {
   if (!page_url.SchemeIsHTTPOrHTTPS() || page_url.HostIsIPAddress())
     return GURL();
@@ -80,6 +83,10 @@ GURL GetRequestUrlForGoogleServerV2(const GURL& page_url,
       kLargeIconServiceFetchingFeature,
       kGoogleServerV2DesiredToMaxSizeFactorParam,
       kGoogleServerV2DesiredToMaxSizeFactor);
+  int minimum_max_size_in_pixel = base::GetFieldTrialParamByFeatureAsInt(
+      kLargeIconServiceFetchingFeature,
+      kGoogleServerV2MinimumMaxSizeInPixelParam,
+      kGoogleServerV2MinimumMaxSizeInPixel);
 
   min_source_size_in_pixel = std::max(
       min_source_size_in_pixel, base::GetFieldTrialParamByFeatureAsInt(
@@ -90,6 +97,7 @@ GURL GetRequestUrlForGoogleServerV2(const GURL& page_url,
       std::max(desired_size_in_pixel, min_source_size_in_pixel);
   int max_size_in_pixel =
       static_cast<int>(desired_size_in_pixel * desired_to_max_size_factor);
+  max_size_in_pixel = std::max(max_size_in_pixel, minimum_max_size_in_pixel);
 
   return GURL(base::StringPrintf(
       url_format.empty() ? kGoogleServerV2RequestFormat : url_format.c_str(),
