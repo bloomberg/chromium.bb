@@ -4,11 +4,13 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "content/common/resize_params.h"
+#include "content/public/renderer/render_frame_visitor.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/render_view_impl.h"
 #include "content/renderer/render_widget.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputMethodController.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebRange.h"
 #include "ui/base/ime/text_input_type.h"
 
@@ -121,6 +123,21 @@ TEST_F(RenderWidgetInitialSizeTest, InitialSize) {
   EXPECT_EQ(initial_size_, widget()->size());
   EXPECT_EQ(initial_size_, gfx::Size(widget()->GetWebWidget()->Size()));
   EXPECT_TRUE(next_paint_is_resize_ack());
+}
+
+TEST_F(RenderWidgetTest, HitTestAPI) {
+  LoadHTML(
+      "<body style='padding: 0px; margin: 0px'>"
+      "<div style='background: green; padding: 100px; margin: 0px;'>"
+      "<iframe style='width: 200px; height: 100px;'"
+      "srcdoc='<body style=\"margin: 0px; height: 100px; width: 200px;\">"
+      "</body>'></iframe><div></body>");
+  blink::WebFrame* main_web_frame =
+      static_cast<RenderViewImpl*>(view_)->GetMainRenderFrame()->GetWebFrame();
+  EXPECT_EQ(RenderFrame::GetRoutingIdForWebFrame(main_web_frame),
+            widget()->GetWidgetRoutingIdAtPoint(gfx::Point(10, 10)));
+  EXPECT_EQ(RenderFrame::GetRoutingIdForWebFrame(main_web_frame->FirstChild()),
+            widget()->GetWidgetRoutingIdAtPoint(gfx::Point(150, 150)));
 }
 
 TEST_F(RenderWidgetTest, GetCompositionRangeValidComposition) {

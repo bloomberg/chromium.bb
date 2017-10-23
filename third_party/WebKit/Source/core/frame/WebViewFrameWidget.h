@@ -104,6 +104,7 @@ class CORE_EXPORT WebViewFrameWidget : public WebFrameWidgetBase {
   WebLayerTreeView* GetLayerTreeView() const override;
   CompositorAnimationHost* AnimationHost() const override;
   WebWidgetClient* Client() const override { return client_; }
+  WebHitTestResult HitTestResultAt(const WebPoint&) override;
   HitTestResult CoreHitTestResultAt(const WebPoint&) override;
 
   virtual void Trace(blink::Visitor*);
