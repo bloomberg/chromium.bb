@@ -695,7 +695,7 @@ void DOMWebSocket::DidReceiveBinaryMessage(
   switch (binary_type_) {
     case kBinaryTypeBlob: {
       size_t size = binary_data->size();
-      RefPtr<RawData> raw_data = RawData::Create();
+      scoped_refptr<RawData> raw_data = RawData::Create();
       binary_data->swap(*raw_data->MutableData());
       std::unique_ptr<BlobData> blob_data = BlobData::Create();
       blob_data->AppendData(std::move(raw_data), 0, BlobDataItem::kToEndOfFile);

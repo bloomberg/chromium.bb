@@ -77,7 +77,7 @@ class MODULES_EXPORT Request final : public Body {
   const BodyStreamBuffer* BodyBuffer() const override {
     return request_->Buffer();
   }
-  RefPtr<EncodedFormData> AttachedCredential() const {
+  scoped_refptr<EncodedFormData> AttachedCredential() const {
     return request_->AttachedCredential();
   }
 

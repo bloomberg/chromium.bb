@@ -227,12 +227,12 @@ void RequestInit::SetUpBody(ExecutionContext* context,
     body_ = new FormDataBytesConsumer(
         V8ArrayBufferView::ToImpl(v8_body.As<v8::Object>()));
   } else if (V8Blob::hasInstance(v8_body, isolate)) {
-    RefPtr<BlobDataHandle> blob_data_handle =
+    scoped_refptr<BlobDataHandle> blob_data_handle =
         V8Blob::ToImpl(v8_body.As<v8::Object>())->GetBlobDataHandle();
     content_type_ = blob_data_handle->GetType();
     body_ = new BlobBytesConsumer(context, std::move(blob_data_handle));
   } else if (V8FormData::hasInstance(v8_body, isolate)) {
-    RefPtr<EncodedFormData> form_data =
+    scoped_refptr<EncodedFormData> form_data =
         V8FormData::ToImpl(v8_body.As<v8::Object>())->EncodeMultiPartFormData();
     // Here we handle formData->boundary() as a C-style string. See
     // FormDataEncoder::generateUniqueBoundaryString.
@@ -240,7 +240,7 @@ void RequestInit::SetUpBody(ExecutionContext* context,
                     form_data->Boundary().data();
     body_ = new FormDataBytesConsumer(context, std::move(form_data));
   } else if (V8URLSearchParams::hasInstance(v8_body, isolate)) {
-    RefPtr<EncodedFormData> form_data =
+    scoped_refptr<EncodedFormData> form_data =
         V8URLSearchParams::ToImpl(v8_body.As<v8::Object>())
             ->ToEncodedFormData();
     content_type_ =

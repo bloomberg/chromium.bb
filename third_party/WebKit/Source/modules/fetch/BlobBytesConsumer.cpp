@@ -18,9 +18,10 @@
 
 namespace blink {
 
-BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* execution_context,
-                                     RefPtr<BlobDataHandle> blob_data_handle,
-                                     ThreadableLoader* loader)
+BlobBytesConsumer::BlobBytesConsumer(
+    ExecutionContext* execution_context,
+    scoped_refptr<BlobDataHandle> blob_data_handle,
+    ThreadableLoader* loader)
     : ContextLifecycleObserver(execution_context),
       blob_data_handle_(std::move(blob_data_handle)),
       loader_(loader) {
@@ -34,8 +35,9 @@ BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* execution_context,
   }
 }
 
-BlobBytesConsumer::BlobBytesConsumer(ExecutionContext* execution_context,
-                                     RefPtr<BlobDataHandle> blob_data_handle)
+BlobBytesConsumer::BlobBytesConsumer(
+    ExecutionContext* execution_context,
+    scoped_refptr<BlobDataHandle> blob_data_handle)
     : BlobBytesConsumer(execution_context,
                         std::move(blob_data_handle),
                         nullptr) {}
@@ -117,7 +119,7 @@ BytesConsumer::Result BlobBytesConsumer::EndRead(size_t read) {
   return body_->EndRead(read);
 }
 
-RefPtr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
+scoped_refptr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
     BlobSizePolicy policy) {
   if (!IsClean())
     return nullptr;
@@ -129,12 +131,12 @@ RefPtr<BlobDataHandle> BlobBytesConsumer::DrainAsBlobDataHandle(
   return std::move(blob_data_handle_);
 }
 
-RefPtr<EncodedFormData> BlobBytesConsumer::DrainAsFormData() {
-  RefPtr<BlobDataHandle> handle =
+scoped_refptr<EncodedFormData> BlobBytesConsumer::DrainAsFormData() {
+  scoped_refptr<BlobDataHandle> handle =
       DrainAsBlobDataHandle(BlobSizePolicy::kAllowBlobWithInvalidSize);
   if (!handle)
     return nullptr;
-  RefPtr<EncodedFormData> form_data = EncodedFormData::Create();
+  scoped_refptr<EncodedFormData> form_data = EncodedFormData::Create();
   form_data->AppendBlob(handle->Uuid(), handle);
   return form_data;
 }
@@ -272,7 +274,7 @@ void BlobBytesConsumer::Trace(blink::Visitor* visitor) {
 
 BlobBytesConsumer* BlobBytesConsumer::CreateForTesting(
     ExecutionContext* execution_context,
-    RefPtr<BlobDataHandle> blob_data_handle,
+    scoped_refptr<BlobDataHandle> blob_data_handle,
     ThreadableLoader* loader) {
   return new BlobBytesConsumer(execution_context, std::move(blob_data_handle),
                                loader);

@@ -45,7 +45,7 @@ class BytesConsumerTeeTest : public ::testing::Test {
 
 class FakeBlobBytesConsumer : public BytesConsumer {
  public:
-  explicit FakeBlobBytesConsumer(RefPtr<BlobDataHandle> handle)
+  explicit FakeBlobBytesConsumer(scoped_refptr<BlobDataHandle> handle)
       : blob_handle_(std::move(handle)) {}
   ~FakeBlobBytesConsumer() override {}
 
@@ -63,7 +63,7 @@ class FakeBlobBytesConsumer : public BytesConsumer {
     state_ = PublicState::kErrored;
     return Result::kError;
   }
-  RefPtr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy policy) {
+  scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(BlobSizePolicy policy) {
     if (state_ != PublicState::kReadableOrWaiting)
       return nullptr;
     DCHECK(blob_handle_);
@@ -83,7 +83,7 @@ class FakeBlobBytesConsumer : public BytesConsumer {
 
  private:
   PublicState state_ = PublicState::kReadableOrWaiting;
-  RefPtr<BlobDataHandle> blob_handle_;
+  scoped_refptr<BlobDataHandle> blob_handle_;
 };
 
 TEST_F(BytesConsumerTeeTest, CreateDone) {
@@ -275,7 +275,7 @@ TEST_F(BytesConsumerTeeTest, CancelShouldNotAffectTheOtherDestination2) {
 }
 
 TEST_F(BytesConsumerTeeTest, BlobHandle) {
-  RefPtr<BlobDataHandle> blob_data_handle =
+  scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create(BlobData::Create(), 12345);
   BytesConsumer* src = new FakeBlobBytesConsumer(blob_data_handle);
 
@@ -283,10 +283,12 @@ TEST_F(BytesConsumerTeeTest, BlobHandle) {
   BytesConsumer* dest2 = nullptr;
   BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  RefPtr<BlobDataHandle> dest_blob_data_handle1 = dest1->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
-  RefPtr<BlobDataHandle> dest_blob_data_handle2 = dest2->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
+  scoped_refptr<BlobDataHandle> dest_blob_data_handle1 =
+      dest1->DrainAsBlobDataHandle(
+          BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
+  scoped_refptr<BlobDataHandle> dest_blob_data_handle2 =
+      dest2->DrainAsBlobDataHandle(
+          BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
   ASSERT_TRUE(dest_blob_data_handle1);
   ASSERT_TRUE(dest_blob_data_handle2);
   EXPECT_EQ(12345u, dest_blob_data_handle1->size());
@@ -294,7 +296,7 @@ TEST_F(BytesConsumerTeeTest, BlobHandle) {
 }
 
 TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
-  RefPtr<BlobDataHandle> blob_data_handle =
+  scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create(BlobData::Create(), -1);
   BytesConsumer* src = new FakeBlobBytesConsumer(blob_data_handle);
 
@@ -302,10 +304,12 @@ TEST_F(BytesConsumerTeeTest, BlobHandleWithInvalidSize) {
   BytesConsumer* dest2 = nullptr;
   BytesConsumer::Tee(GetDocument(), src, &dest1, &dest2);
 
-  RefPtr<BlobDataHandle> dest_blob_data_handle1 = dest1->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
-  RefPtr<BlobDataHandle> dest_blob_data_handle2 = dest2->DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
+  scoped_refptr<BlobDataHandle> dest_blob_data_handle1 =
+      dest1->DrainAsBlobDataHandle(
+          BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
+  scoped_refptr<BlobDataHandle> dest_blob_data_handle2 =
+      dest2->DrainAsBlobDataHandle(
+          BytesConsumer::BlobSizePolicy::kDisallowBlobWithInvalidSize);
   ASSERT_TRUE(dest_blob_data_handle1);
   ASSERT_FALSE(dest_blob_data_handle2);
   EXPECT_EQ(UINT64_MAX, dest_blob_data_handle1->size());

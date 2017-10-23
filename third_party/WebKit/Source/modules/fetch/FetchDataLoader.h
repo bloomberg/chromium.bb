@@ -35,7 +35,7 @@ class MODULES_EXPORT FetchDataLoader
     virtual ~Client() {}
 
     // The method corresponding to createLoaderAs... is called on success.
-    virtual void DidFetchDataLoadedBlobHandle(RefPtr<BlobDataHandle>) {
+    virtual void DidFetchDataLoadedBlobHandle(scoped_refptr<BlobDataHandle>) {
       NOTREACHED();
     }
     virtual void DidFetchDataLoadedArrayBuffer(DOMArrayBuffer*) {

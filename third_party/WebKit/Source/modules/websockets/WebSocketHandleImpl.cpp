@@ -158,7 +158,7 @@ void WebSocketHandleImpl::OnStartOpeningHandshake(
   NETWORK_DVLOG(1) << this << " OnStartOpeningHandshake("
                    << request->url.GetString() << ")";
 
-  RefPtr<WebSocketHandshakeRequest> request_to_pass =
+  scoped_refptr<WebSocketHandshakeRequest> request_to_pass =
       WebSocketHandshakeRequest::Create(request->url);
   for (size_t i = 0; i < request->headers.size(); ++i) {
     const mojom::blink::HttpHeaderPtr& header = request->headers[i];

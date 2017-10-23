@@ -37,8 +37,9 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   ScriptValue Stream();
 
   // Callable only when neither locked nor disturbed.
-  RefPtr<BlobDataHandle> DrainAsBlobDataHandle(BytesConsumer::BlobSizePolicy);
-  RefPtr<EncodedFormData> DrainAsFormData();
+  scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
+      BytesConsumer::BlobSizePolicy);
+  scoped_refptr<EncodedFormData> DrainAsFormData();
   void StartLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
   void Tee(BodyStreamBuffer**, BodyStreamBuffer**);
 
@@ -77,7 +78,7 @@ class MODULES_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void EndLoading();
   void StopLoading();
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   Member<BytesConsumer> consumer_;
   // We need this member to keep it alive while loading.
   Member<FetchDataLoader> loader_;

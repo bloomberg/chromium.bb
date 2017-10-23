@@ -57,7 +57,7 @@ class BodyBlobConsumer final : public BodyConsumerBase {
       : BodyConsumerBase(resolver) {}
 
   void DidFetchDataLoadedBlobHandle(
-      RefPtr<BlobDataHandle> blob_data_handle) override {
+      scoped_refptr<BlobDataHandle> blob_data_handle) override {
     Resolver()->Resolve(Blob::Create(std::move(blob_data_handle)));
   }
 };

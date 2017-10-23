@@ -74,7 +74,7 @@ class DataConsumerHandleTestUtil {
     std::unique_ptr<WaitableEvent> waitable_event_;
     Persistent<NullExecutionContext> execution_context_;
     std::unique_ptr<gin::IsolateHolder> isolate_holder_;
-    RefPtr<ScriptState> script_state_;
+    scoped_refptr<ScriptState> script_state_;
   };
 
   class ThreadingTestBase : public ThreadSafeRefCounted<ThreadingTestBase> {
@@ -85,7 +85,9 @@ class DataConsumerHandleTestUtil {
 
     class Context : public ThreadSafeRefCounted<Context> {
      public:
-      static RefPtr<Context> Create() { return WTF::AdoptRef(new Context); }
+      static scoped_refptr<Context> Create() {
+        return WTF::AdoptRef(new Context);
+      }
       void RecordAttach(const String& handle) {
         MutexLocker locker(logging_mutex_);
         result_.Append("A reader is attached to ");
@@ -176,7 +178,7 @@ class DataConsumerHandleTestUtil {
       }
 
      private:
-      RefPtr<Context> context_;
+      scoped_refptr<Context> context_;
       std::unique_ptr<Thread> reading_thread_;
       std::unique_ptr<Thread> updating_thread_;
     };
@@ -185,7 +187,7 @@ class DataConsumerHandleTestUtil {
       USING_FAST_MALLOC(ReaderImpl);
 
      public:
-      ReaderImpl(const String& name, RefPtr<Context> context)
+      ReaderImpl(const String& name, scoped_refptr<Context> context)
           : name_(name.IsolatedCopy()), context_(std::move(context)) {
         context_->RecordAttach(name_.IsolatedCopy());
       }
@@ -202,7 +204,7 @@ class DataConsumerHandleTestUtil {
 
      private:
       const String name_;
-      RefPtr<Context> context_;
+      scoped_refptr<Context> context_;
     };
     class DataConsumerHandle final : public WebDataConsumerHandle {
       USING_FAST_MALLOC(DataConsumerHandle);
@@ -210,13 +212,13 @@ class DataConsumerHandleTestUtil {
      public:
       static std::unique_ptr<WebDataConsumerHandle> Create(
           const String& name,
-          RefPtr<Context> context) {
+          scoped_refptr<Context> context) {
         return WTF::WrapUnique(
             new DataConsumerHandle(name, std::move(context)));
       }
 
      private:
-      DataConsumerHandle(const String& name, RefPtr<Context> context)
+      DataConsumerHandle(const String& name, scoped_refptr<Context> context)
           : name_(name.IsolatedCopy()), context_(std::move(context)) {}
 
       std::unique_ptr<Reader> ObtainReader(Client*) {
@@ -227,7 +229,7 @@ class DataConsumerHandleTestUtil {
       }
 
       const String name_;
-      RefPtr<Context> context_;
+      scoped_refptr<Context> context_;
     };
 
     void ResetReader() { reader_ = nullptr; }
@@ -255,7 +257,7 @@ class DataConsumerHandleTestUtil {
    protected:
     ThreadingTestBase() : context_(Context::Create()) {}
 
-    RefPtr<Context> context_;
+    scoped_refptr<Context> context_;
     std::unique_ptr<WebDataConsumerHandle::Reader> reader_;
     std::unique_ptr<WaitableEvent> waitable_event_;
     NoopClient client_;
@@ -265,7 +267,7 @@ class DataConsumerHandleTestUtil {
                                           public WebDataConsumerHandle::Client {
    public:
     using Self = ThreadingHandleNotificationTest;
-    static RefPtr<Self> Create() { return WTF::AdoptRef(new Self); }
+    static scoped_refptr<Self> Create() { return WTF::AdoptRef(new Self); }
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
@@ -297,7 +299,7 @@ class DataConsumerHandleTestUtil {
         public WebDataConsumerHandle::Client {
    public:
     using Self = ThreadingHandleNoNotificationTest;
-    static RefPtr<Self> Create() { return WTF::AdoptRef(new Self); }
+    static scoped_refptr<Self> Create() { return WTF::AdoptRef(new Self); }
 
     void Run(std::unique_ptr<WebDataConsumerHandle> handle) {
       ThreadHolder holder(this);
@@ -366,7 +368,9 @@ class DataConsumerHandleTestUtil {
 
     class Context final : public ThreadSafeRefCounted<Context> {
      public:
-      static RefPtr<Context> Create() { return WTF::AdoptRef(new Context); }
+      static scoped_refptr<Context> Create() {
+        return WTF::AdoptRef(new Context);
+      }
 
       // This function cannot be called after creating a tee.
       void Add(const Command&);
@@ -405,7 +409,7 @@ class DataConsumerHandleTestUtil {
     ReplayingHandle();
     const char* DebugName() const override { return "ReplayingHandle"; }
 
-    RefPtr<Context> context_;
+    scoped_refptr<Context> context_;
   };
 
   static std::unique_ptr<WebDataConsumerHandle>

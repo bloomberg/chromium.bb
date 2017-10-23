@@ -75,7 +75,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
   void Send(const DOMArrayBuffer&,
             unsigned byte_offset,
             unsigned byte_length) override;
-  void Send(RefPtr<BlobDataHandle>) override;
+  void Send(scoped_refptr<BlobDataHandle>) override;
   void SendTextAsCharVector(std::unique_ptr<Vector<char>>) override {
     NOTREACHED();
   }
@@ -106,7 +106,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
    public:
     MainChannelClient(Bridge*,
-                      RefPtr<WebTaskRunner>,
+                      scoped_refptr<WebTaskRunner>,
                       WorkerThreadLifecycleContext*);
     ~MainChannelClient() override;
 
@@ -118,7 +118,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
                  mojom::blink::WebSocketPtr);
     void SendTextAsCharVector(std::unique_ptr<Vector<char>>);
     void SendBinaryAsCharVector(std::unique_ptr<Vector<char>>);
-    void SendBlob(RefPtr<BlobDataHandle>);
+    void SendBlob(scoped_refptr<BlobDataHandle>);
     void Close(int code, const String& reason);
     void Fail(const String& reason,
               MessageLevel,
@@ -148,7 +148,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     void ReleaseMainChannel();
 
     CrossThreadWeakPersistent<Bridge> bridge_;
-    RefPtr<WebTaskRunner> worker_networking_task_runner_;
+    scoped_refptr<WebTaskRunner> worker_networking_task_runner_;
     Member<DocumentWebSocketChannel> main_channel_;
   };
 
@@ -169,7 +169,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
     void Send(const DOMArrayBuffer&,
               unsigned byte_offset,
               unsigned byte_length);
-    void Send(RefPtr<BlobDataHandle>);
+    void Send(scoped_refptr<BlobDataHandle>);
     void Close(int code, const String& reason);
     void Fail(const String& reason,
               MessageLevel,
@@ -178,7 +178,7 @@ class WorkerWebSocketChannel final : public WebSocketChannel {
 
     void ConnectOnMainThread(std::unique_ptr<SourceLocation>,
                              ThreadableLoadingContext*,
-                             RefPtr<WebTaskRunner>,
+                             scoped_refptr<WebTaskRunner>,
                              WorkerThreadLifecycleContext*,
                              const KURL&,
                              const String& protocol,

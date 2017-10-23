@@ -72,7 +72,7 @@ class DocumentWebSocketChannel::BlobLoader final
     : public GarbageCollectedFinalized<DocumentWebSocketChannel::BlobLoader>,
       public FileReaderLoaderClient {
  public:
-  BlobLoader(RefPtr<BlobDataHandle>, DocumentWebSocketChannel*);
+  BlobLoader(scoped_refptr<BlobDataHandle>, DocumentWebSocketChannel*);
   ~BlobLoader() override {}
 
   void Cancel();
@@ -94,7 +94,7 @@ class DocumentWebSocketChannel::Message
     : public GarbageCollectedFinalized<DocumentWebSocketChannel::Message> {
  public:
   explicit Message(const CString&);
-  explicit Message(RefPtr<BlobDataHandle>);
+  explicit Message(scoped_refptr<BlobDataHandle>);
   explicit Message(DOMArrayBuffer*);
   // For WorkerWebSocketChannel
   explicit Message(std::unique_ptr<Vector<char>>, MessageType);
@@ -106,7 +106,7 @@ class DocumentWebSocketChannel::Message
   MessageType type;
 
   CString text;
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
   Member<DOMArrayBuffer> array_buffer;
   std::unique_ptr<Vector<char>> vector_data;
   unsigned short code;
@@ -114,7 +114,7 @@ class DocumentWebSocketChannel::Message
 };
 
 DocumentWebSocketChannel::BlobLoader::BlobLoader(
-    RefPtr<BlobDataHandle> blob_data_handle,
+    scoped_refptr<BlobDataHandle> blob_data_handle,
     DocumentWebSocketChannel* channel)
     : channel_(channel),
       loader_(FileReaderLoader::Create(FileReaderLoader::kReadAsArrayBuffer,
@@ -301,7 +301,8 @@ void DocumentWebSocketChannel::Send(const CString& message) {
   ProcessSendQueue();
 }
 
-void DocumentWebSocketChannel::Send(RefPtr<BlobDataHandle> blob_data_handle) {
+void DocumentWebSocketChannel::Send(
+    scoped_refptr<BlobDataHandle> blob_data_handle) {
   NETWORK_DVLOG(1) << this << " Send(" << blob_data_handle->Uuid() << ", "
                    << blob_data_handle->GetType() << ", "
                    << blob_data_handle->size() << ") "
@@ -411,7 +412,7 @@ DocumentWebSocketChannel::Message::Message(const CString& text)
     : type(kMessageTypeText), text(text) {}
 
 DocumentWebSocketChannel::Message::Message(
-    RefPtr<BlobDataHandle> blob_data_handle)
+    scoped_refptr<BlobDataHandle> blob_data_handle)
     : type(kMessageTypeBlob), blob_data_handle(std::move(blob_data_handle)) {}
 
 DocumentWebSocketChannel::Message::Message(DOMArrayBuffer* array_buffer)
@@ -573,7 +574,7 @@ void DocumentWebSocketChannel::DidConnect(WebSocketHandle* handle,
 
 void DocumentWebSocketChannel::DidStartOpeningHandshake(
     WebSocketHandle* handle,
-    RefPtr<WebSocketHandshakeRequest> request) {
+    scoped_refptr<WebSocketHandshakeRequest> request) {
   NETWORK_DVLOG(1) << this << " DidStartOpeningHandshake(" << handle << ")";
 
   DCHECK(handle_);
