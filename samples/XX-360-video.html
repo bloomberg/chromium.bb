@@ -116,7 +116,7 @@ found in the LICENSE file.
         } else if (video.canPlayType('video/webm; codecs="vp8, vorbis"')) {
           return "media/textures/vr_bench_man.webm";
         } else {
-          VRSamplesUtil.addError("Error: No supported video available", 3000);
+          VRSamplesUtil.addError("No supported video available", 3000);
           return null;
         }
       }

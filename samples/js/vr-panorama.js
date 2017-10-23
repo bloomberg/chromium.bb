@@ -159,12 +159,18 @@ window.VRPanorama = (function () {
         reject(video.error);
       }, false);
 
-      video.loop = true;
       // Videos must be muted to play without a user gesture.
       video.muted = true;
+
+      // These lines are required to play the video on iPhone
+      video.setAttribute("playsinline", "");
+      video.setAttribute("webkit-playsinline", "");
+
+      video.loop = true;
       video.crossOrigin = 'anonymous';
       video.setAttribute('webkit-playsinline', '');
       video.src = url;
+
       // As the video is never visible on the page, we must explicitly
       // call play to start the video instead of being able to use
       // autoplay attributes.
@@ -183,7 +189,7 @@ window.VRPanorama = (function () {
     if(promise) {
       promise.catch((err) => {
         console.error(err);
-        VRSamplesUtil.addError("Error: Video has failed to start", 3000)
+        VRSamplesUtil.addError("Video has failed to start", 3000)
       });
     } else {
       console.error("videoElement.play does not support promise api");
