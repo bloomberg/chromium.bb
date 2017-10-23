@@ -48,7 +48,7 @@ viz_source_set("unit_tests") {
 
   sources = [
     "hit_test/hit_test_query_unittest.cc",
-    "host_frame_sink_manager_unittest.cc",
+    "host_frame_sink_manager_unittests.cc",
     "server_gpu_memory_buffer_manager_unittest.cc",
   ]
 
@@ -56,7 +56,6 @@ viz_source_set("unit_tests") {
     ":host",
     "//base",
     "//base/test:test_support",
-    "//components/viz/test:test_support",
     "//gpu/ipc/host",
     "//mojo/public/cpp/bindings",
     "//services/ui/gpu/interfaces",

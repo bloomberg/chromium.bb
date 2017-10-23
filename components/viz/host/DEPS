@@ -1,6 +1,7 @@
 include_rules = [
   "+cc/ipc",
   "-components/viz/common/switches.h",
+  "+components/viz/host",
   "+gpu/command_buffer/client",
   "+gpu/command_buffer/common",
   "+gpu/ipc/client",
@@ -17,8 +18,5 @@ specific_include_rules = {
     "+components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h",
     "+components/viz/service/frame_sinks/frame_sink_manager_impl.h",
     "+components/viz/service/surfaces/surface_manager.h",
-  ],
-  ".*_unittest\.cc": [
-    "+components/viz/test",
   ]
 }
