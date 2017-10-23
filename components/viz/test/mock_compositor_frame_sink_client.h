@@ -5,7 +5,6 @@
 #ifndef COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 #define COMPONENTS_VIZ_TEST_MOCK_COMPOSITOR_FRAME_SINK_CLIENT_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -16,9 +15,6 @@ class MockCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
   MockCompositorFrameSinkClient();
   ~MockCompositorFrameSinkClient() override;
 
-  // Returns a CompositorFrameSinkClientPtr bound to this object.
-  mojom::CompositorFrameSinkClientPtr BindInterfacePtr();
-
   // mojom::CompositorFrameSinkClient implementation.
   MOCK_METHOD1(DidReceiveCompositorFrameAck,
                void(const std::vector<ReturnedResource>&));
@@ -26,11 +22,6 @@ class MockCompositorFrameSinkClient : public mojom::CompositorFrameSinkClient {
   MOCK_METHOD1(ReclaimResources, void(const std::vector<ReturnedResource>&));
   MOCK_METHOD2(WillDrawSurface, void(const LocalSurfaceId&, const gfx::Rect&));
   MOCK_METHOD1(OnBeginFramePausedChanged, void(bool paused));
-
- private:
-  mojo::Binding<mojom::CompositorFrameSinkClient> binding_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockCompositorFrameSinkClient);
 };
 
 }  // namespace viz

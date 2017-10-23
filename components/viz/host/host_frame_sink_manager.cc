@@ -37,20 +37,8 @@ void HostFrameSinkManager::BindAndSetManager(
 
   binding_.Bind(std::move(request), std::move(task_runner));
   frame_sink_manager_ptr_ = std::move(ptr);
+
   frame_sink_manager_ = frame_sink_manager_ptr_.get();
-
-  frame_sink_manager_ptr_.set_connection_error_handler(base::BindOnce(
-      &HostFrameSinkManager::OnConnectionLost, base::Unretained(this)));
-
-  if (connection_was_lost_) {
-    RegisterAfterConnectionLoss();
-    connection_was_lost_ = false;
-  }
-}
-
-void HostFrameSinkManager::SetConnectionLostCallback(
-    base::RepeatingClosure callback) {
-  connection_lost_callback_ = std::move(callback);
 }
 
 void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
@@ -243,42 +231,6 @@ void HostFrameSinkManager::PerformAssignTemporaryReference(
   // We don't have any hierarchy information for what will embed the new
   // surface, drop the temporary reference.
   frame_sink_manager_->DropTemporaryReference(surface_id);
-}
-
-void HostFrameSinkManager::OnConnectionLost() {
-  connection_was_lost_ = true;
-
-  binding_.Close();
-  frame_sink_manager_ptr_.reset();
-  frame_sink_manager_impl_ = nullptr;
-
-  // CompositorFrameSinks are lost along with the connection to
-  // mojom::FrameSinkManager.
-  for (auto& map_entry : frame_sink_data_map_)
-    map_entry.second.has_created_compositor_frame_sink = false;
-
-  if (!connection_lost_callback_.is_null())
-    connection_lost_callback_.Run();
-}
-
-void HostFrameSinkManager::RegisterAfterConnectionLoss() {
-  // Register FrameSinkIds first.
-  for (auto& map_entry : frame_sink_data_map_) {
-    const FrameSinkId& frame_sink_id = map_entry.first;
-    FrameSinkData& data = map_entry.second;
-    if (data.client)
-      frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
-  }
-
-  // Register FrameSink hierarchy second.
-  for (auto& map_entry : frame_sink_data_map_) {
-    const FrameSinkId& frame_sink_id = map_entry.first;
-    FrameSinkData& data = map_entry.second;
-    for (auto& child_frame_sink_id : data.children) {
-      frame_sink_manager_->RegisterFrameSinkHierarchy(frame_sink_id,
-                                                      child_frame_sink_id);
-    }
-  }
 }
 
 void HostFrameSinkManager::OnFirstSurfaceActivation(
