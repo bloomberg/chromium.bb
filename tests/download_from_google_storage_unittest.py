@@ -66,6 +66,9 @@ class GsutilMock(object):
       else:
         return (0, '', '')
 
+  def check_call_with_retries(self, *args):
+    return self.check_call(*args)
+
 
 class ChangedWorkingDirectory(object):
   def __init__(self, working_directory):
@@ -135,6 +138,7 @@ class GstoolsUnitTests(unittest.TestCase):
                                                             tar_dir))
 
   def test_gsutil(self):
+    # This will download a real gsutil package from Google Storage.
     gsutil = download_from_google_storage.Gsutil(GSUTIL_DEFAULT_PATH, None)
     self.assertEqual(gsutil.path, GSUTIL_DEFAULT_PATH)
     code, _, err = gsutil.check_call()
@@ -190,7 +194,7 @@ class DownloadTests(unittest.TestCase):
     self.parser = optparse.OptionParser()
     self.queue = Queue.Queue()
     self.ret_codes = Queue.Queue()
-    self.lorem_ipsum = os.path.join(self.base_path, 'lorem_ipsum.txt')
+    self.lorem_ipsum = os.path.join(TEST_DIR, 'gstools', 'lorem_ipsum.txt')
     self.lorem_ipsum_sha1 = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     self.maxDiff = None
 
@@ -222,9 +226,12 @@ class DownloadTests(unittest.TestCase):
     self.assertEqual(queue_size, 3)
 
   def test_download_worker_single_file(self):
-    sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
+    sha1_hash = self.lorem_ipsum_sha1
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
+    self.gsutil.add_expected(0, '', '')  # ls
+    self.gsutil.add_expected(0, '', '', lambda: shutil.copyfile(
+        self.lorem_ipsum, output_filename))  # cp
     self.queue.put((sha1_hash, output_filename))
     self.queue.put((None, None))
     stdout_queue = Queue.Queue()
@@ -257,10 +264,8 @@ class DownloadTests(unittest.TestCase):
     download_from_google_storage._downloader_worker_thread(
         0, self.queue, False, self.base_url, self.gsutil,
         stdout_queue, self.ret_codes, True, False)
-    expected_output = [
-        '0> File %s exists and SHA1 matches. Skipping.' % output_filename
-    ]
-    self.assertEqual(list(stdout_queue.queue), expected_output)
+    # dfgs does not output anything in the no-op case.
+    self.assertEqual(list(stdout_queue.queue), [])
     self.assertEqual(self.gsutil.history, [])
 
   def test_download_extract_archive(self):
@@ -354,11 +359,6 @@ class DownloadTests(unittest.TestCase):
         ('check_call',
             ('cp', input_filename, output_filename))
     ]
-    if sys.platform != 'win32':
-      expected_calls.append(
-          ('check_call',
-           ('stat',
-            'gs://sometesturl/7871c8e24da15bad8b0be2c36edc9dc77e37727f')))
     self.assertEqual(self.gsutil.history, expected_calls)
     self.assertEqual(code, 101)
 
@@ -392,6 +392,9 @@ class DownloadTests(unittest.TestCase):
     sha1_hash = '7871c8e24da15bad8b0be2c36edc9dc77e37727f'
     input_filename = '%s/%s' % (self.base_url, sha1_hash)
     output_filename = os.path.join(self.base_path, 'uploaded_lorem_ipsum.txt')
+    self.gsutil.add_expected(0, '', '')  # ls
+    self.gsutil.add_expected(0, '', '', lambda: shutil.copyfile(
+        self.lorem_ipsum, output_filename))  # cp
     code = download_from_google_storage.download_from_google_storage(
         input_filename=self.base_path,
         base_url=self.base_url,

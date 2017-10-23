@@ -19,8 +19,8 @@ import unittest
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import upload_to_google_storage
-from download_from_google_storage_unittests import GsutilMock
-from download_from_google_storage_unittests import ChangedWorkingDirectory
+from download_from_google_storage_unittest import GsutilMock
+from download_from_google_storage_unittest import ChangedWorkingDirectory
 
 # ../third_party/gsutil/gsutil
 GSUTIL_DEFAULT_PATH = os.path.join(
