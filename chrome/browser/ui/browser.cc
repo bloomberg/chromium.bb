@@ -1419,6 +1419,14 @@ bool Browser::ShouldAllowRunningInsecureContent(
   return false;
 }
 
+void Browser::OnAudioStateChanged(content::WebContents* web_contents,
+                                  bool is_audible) {
+  TabSpecificContentSettings* content_settings =
+      TabSpecificContentSettings::FromWebContents(web_contents);
+  if (content_settings)
+    content_settings->OnAudioStateChanged(is_audible);
+}
+
 bool Browser::IsMouseLocked() const {
   return exclusive_access_manager_->mouse_lock_controller()->IsMouseLocked();
 }

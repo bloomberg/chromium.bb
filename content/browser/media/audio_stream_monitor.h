@@ -79,6 +79,8 @@ class CONTENT_EXPORT AudioStreamMonitor {
     was_recently_audible_ = value;
   }
 
+  void set_is_currently_audible_for_testing(bool value) { is_audible_ = value; }
+
  private:
   friend class AudioStreamMonitorTest;
 
