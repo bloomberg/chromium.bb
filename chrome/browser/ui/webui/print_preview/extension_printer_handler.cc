@@ -307,13 +307,14 @@ void ExtensionPrinterHandler::WrapGetPrintersCallback(
 void ExtensionPrinterHandler::WrapGetCapabilityCallback(
     const GetCapabilityCallback& callback,
     const base::DictionaryValue& capability) {
-  std::unique_ptr<base::DictionaryValue> capabilities =
-      std::make_unique<base::DictionaryValue>();
+  auto capabilities = std::make_unique<base::DictionaryValue>();
   std::unique_ptr<base::DictionaryValue> cdd =
       printing::ValidateCddForPrintPreview(capability);
-  // TODO (thestig): Remove call to Clone().
-  if (!cdd->empty())  // empty capability -> empty return dictionary
-    capabilities->SetPath({printing::kSettingCapabilities}, cdd->Clone());
+  // Leave |capabilities| empty if |cdd| is empty.
+  if (!cdd->empty()) {
+    capabilities->SetPath({printing::kSettingCapabilities},
+                          base::Value::FromUniquePtrValue(std::move(cdd)));
+  }
   callback.Run(std::move(capabilities));
 }
 
