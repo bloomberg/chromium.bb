@@ -269,35 +269,12 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void SetViewportIntersectionFromParent(const IntRect&);
   IntRect RemoteViewportIntersection() { return remote_viewport_intersection_; }
 
-  // Activates the user activation state of this frame and all its ancestors.
-  void NotifyUserActivation();
-
-  // Creates a |UserGestureIndicator| that contains a |UserGestureToken| with
-  // the given status.  Also activates the user activation state of the
-  // |LocalFrame| (provided it's non-null) and all its ancestors.
+  // Dummy leftover for compile test.
   static std::unique_ptr<UserGestureIndicator> CreateUserGesture(
       LocalFrame*,
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
-
-  // Returns the transient user activation state of the |LocalFrame|, provided
-  // it is non-null.  Otherwise returns |false|.
-  //
-  // The |checkIfMainThread| parameter determines if the token based gestures
-  // (legacy code) must be used in a thread-safe manner.
-  //
-  // TODO(mustaq): clarify/enforce the relation between the two params after
-  // null-frame main-thread cases (crbug.com/730690) have been removed.
-  static bool HasTransientUserActivation(LocalFrame*,
-                                         bool checkIfMainThread = false);
-
-  // Consumes the transient user activation state of the |LocalFrame|, provided
-  // the frame pointer is non-null and the state hasn't been consumed since
-  // activation.  Returns |true| if succesfully consumed the state.
-  //
-  // The |checkIfMainThread| parameter determines if the token based gestures
-  // (legacy code) must be used in a thread-safe manner.
-  static bool ConsumeTransientUserActivation(LocalFrame*,
-                                             bool checkIfMainThread = false);
+      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture) {
+    return WTF::MakeUnique<UserGestureIndicator>();
+  }
 
   // Replaces the initial empty document with a Document suitable for
   // |mime_type| and populated with the contents of |data|. Only intended for

@@ -336,7 +336,7 @@ WebInputEventResult PointerEventManager::HandleTouchEvents(
       !in_canceled_state_for_pointer_type_touch_ && event.touches_length &&
       first_pointer_event_target.target_frame) {
     holder =
-        LocalFrame::CreateUserGesture(first_pointer_event_target.target_frame);
+        Frame::NotifyUserActivation(first_pointer_event_target.target_frame);
   }
 
   for (unsigned touch_point_idx = 0; touch_point_idx < event.touches_length;

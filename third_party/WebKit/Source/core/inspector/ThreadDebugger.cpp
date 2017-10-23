@@ -135,7 +135,7 @@ void ThreadDebugger::beginUserGesture() {
   ExecutionContext* ec = CurrentExecutionContext(isolate_);
   Document* document = ec && ec->IsDocument() ? ToDocument(ec) : nullptr;
   user_gesture_indicator_ =
-      LocalFrame::CreateUserGesture(document ? document->GetFrame() : nullptr);
+      Frame::NotifyUserActivation(document ? document->GetFrame() : nullptr);
 }
 
 void ThreadDebugger::endUserGesture() {

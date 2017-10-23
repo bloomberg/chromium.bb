@@ -2883,7 +2883,7 @@ void Element::focus(const FocusParams& params) {
     return;
 
   if (GetDocument().FocusedElement() == this &&
-      GetDocument().GetFrame()->HasReceivedUserGesture()) {
+      GetDocument().GetFrame()->HasBeenActivated()) {
     // Bring up the keyboard in the context of anything triggered by a user
     // gesture. Since tracking that across arbitrary boundaries (eg.
     // animations) is difficult, for now we match IE's heuristic and bring

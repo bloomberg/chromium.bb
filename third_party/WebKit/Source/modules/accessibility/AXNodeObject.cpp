@@ -2248,7 +2248,7 @@ bool AXNodeObject::OnNativeFocusAction() {
 bool AXNodeObject::OnNativeIncrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
+      Frame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
   AlterSliderValue(true);
   return true;
 }
@@ -2256,7 +2256,7 @@ bool AXNodeObject::OnNativeIncrementAction() {
 bool AXNodeObject::OnNativeDecrementAction() {
   LocalFrame* frame = GetDocument() ? GetDocument()->GetFrame() : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(frame, UserGestureToken::kNewGesture);
+      Frame::NotifyUserActivation(frame, UserGestureToken::kNewGesture);
   AlterSliderValue(false);
   return true;
 }

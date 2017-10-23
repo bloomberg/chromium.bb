@@ -842,7 +842,7 @@ void VRDisplay::OnActivate(device::mojom::blink::VRDisplayEventReason reason,
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator;
   if (reason == device::mojom::blink::VRDisplayEventReason::MOUNTED)
-    gesture_indicator = LocalFrame::CreateUserGesture(doc->GetFrame());
+    gesture_indicator = Frame::NotifyUserActivation(doc->GetFrame());
 
   navigator_vr_->DispatchVREvent(VRDisplayEvent::Create(
       EventTypeNames::vrdisplayactivate, true, false, this, reason));

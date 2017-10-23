@@ -3350,7 +3350,7 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient& chrome_client,
   if (!GetFrame() || before_unload_event->returnValue().IsNull())
     return true;
 
-  if (!GetFrame()->HasReceivedUserGesture()) {
+  if (!GetFrame()->HasBeenActivated()) {
     beforeunload_dialog_histogram.Count(kNoDialogNoUserGesture);
     AddConsoleMessage(ConsoleMessage::Create(
         kJSMessageSource, kErrorMessageLevel,
@@ -3521,7 +3521,7 @@ int Document::ElapsedTime() const {
 }
 
 bool Document::CanCreateHistoryEntry() const {
-  if (!frame_ || frame_->HasReceivedUserGesture())
+  if (!frame_ || frame_->HasBeenActivated())
     return true;
   if (ElapsedTime() >= kElapsedTimeForHistoryEntryWithoutUserGestureMS)
     return true;

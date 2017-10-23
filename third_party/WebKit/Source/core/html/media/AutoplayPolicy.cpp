@@ -84,7 +84,7 @@ AutoplayPolicy::Type AutoplayPolicy::GetAutoplayPolicyForDocument(
 bool AutoplayPolicy::IsDocumentAllowedToPlay(const Document& document) {
   if (!document.GetFrame())
     return false;
-  return document.GetFrame()->HasReceivedUserGesture() ||
+  return document.GetFrame()->HasBeenActivated() ||
          document.GetFrame()->HasReceivedUserGestureBeforeNavigation();
 }
 

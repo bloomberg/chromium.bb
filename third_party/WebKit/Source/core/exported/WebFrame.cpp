@@ -120,7 +120,7 @@ bool WebFrame::Swap(WebFrame* frame) {
     ToWebRemoteFrameImpl(frame)->InitializeCoreFrame(*page, owner, name);
   }
 
-  if (parent_ && old_frame->HasReceivedUserGesture())
+  if (parent_ && old_frame->HasBeenActivated())
     ToCoreFrame(*frame)->UpdateUserActivationInFrameTree();
 
   ToCoreFrame(*frame)->GetWindowProxyManager()->SetGlobalProxies(

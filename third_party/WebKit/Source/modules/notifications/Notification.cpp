@@ -232,8 +232,8 @@ void Notification::DispatchClickEvent() {
   ExecutionContext* context = GetExecutionContext();
   Document* document = context->IsDocument() ? ToDocument(context) : nullptr;
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(document ? document->GetFrame() : nullptr,
-                                    UserGestureToken::kNewGesture);
+      Frame::NotifyUserActivation(document ? document->GetFrame() : nullptr,
+                                  UserGestureToken::kNewGesture);
   ScopedWindowFocusAllowedIndicator window_focus_allowed(GetExecutionContext());
   DispatchEvent(Event::Create(EventTypeNames::click));
 }
