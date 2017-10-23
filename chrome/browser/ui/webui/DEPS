@@ -1,7 +1,7 @@
 include_rules = [
-  # TODO(mash): Remove. http://crbug.com/678705
-  "+ash",
-  "+components/about_ui"
+  # TODO(mash): Remove. http://crbug.com/628715
+  "+ash/strings",
+  "+components/about_ui",
   "+components/invalidation",
   "+components/onc",
   "+components/proximity_auth",

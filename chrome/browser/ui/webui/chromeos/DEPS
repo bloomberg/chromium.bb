@@ -1,4 +1,6 @@
 include_rules = [
+  # TODO(mash): Remove. http://crbug.com/678705
+  "+ash",
   "+components/login",
   "+components/user_manager",
   "+media/audio/sounds",
