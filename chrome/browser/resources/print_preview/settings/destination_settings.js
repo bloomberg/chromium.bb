@@ -80,7 +80,7 @@ cr.define('print_preview', function() {
 
     /** @override */
     set isEnabled(isEnabled) {
-      var changeButton = this.getElement().getElementsByClassName(
+      const changeButton = this.getElement().getElementsByClassName(
           print_preview.DestinationSettingsClasses_.CHANGE_BUTTON)[0];
       changeButton.disabled = !isEnabled;
     },
@@ -88,7 +88,7 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
-      var changeButton = this.getElement().getElementsByClassName(
+      const changeButton = this.getElement().getElementsByClassName(
           print_preview.DestinationSettingsClasses_.CHANGE_BUTTON)[0];
       this.tracker.add(
           changeButton, 'click', this.onChangeButtonClick_.bind(this));
@@ -118,34 +118,34 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationSelect_: function() {
-      var destinationSettingsBoxEl =
+      const destinationSettingsBoxEl =
           this.getChildElement('.destination-settings-box');
 
-      var destination = this.destinationStore_.selectedDestination;
+      const destination = this.destinationStore_.selectedDestination;
       if (destination != null) {
-        var nameEl = this.getElement().getElementsByClassName(
+        const nameEl = this.getElement().getElementsByClassName(
             print_preview.DestinationSettingsClasses_.NAME)[0];
         nameEl.textContent = destination.displayName;
         nameEl.title = destination.displayName;
 
-        var iconEl = this.getElement().getElementsByClassName(
+        const iconEl = this.getElement().getElementsByClassName(
             print_preview.DestinationSettingsClasses_.ICON)[0];
         iconEl.src = destination.iconUrl;
         iconEl.srcset = destination.srcSet;
 
-        var hint = destination.hint;
-        var locationEl = this.getElement().getElementsByClassName(
+        const hint = destination.hint;
+        const locationEl = this.getElement().getElementsByClassName(
             print_preview.DestinationSettingsClasses_.LOCATION)[0];
         locationEl.textContent = hint;
         locationEl.title = hint;
 
-        var offlineStatusText = destination.offlineStatusText;
-        var offlineStatusEl =
+        const offlineStatusText = destination.offlineStatusText;
+        const offlineStatusEl =
             this.getChildElement('.destination-settings-offline-status');
         offlineStatusEl.textContent = offlineStatusText;
         offlineStatusEl.title = offlineStatusText;
 
-        var isOffline = destination.isOffline;
+        const isOffline = destination.isOffline;
         destinationSettingsBoxEl.classList.toggle(
             print_preview.DestinationSettingsClasses_.STALE, isOffline);
         setIsVisible(locationEl, !isOffline);
@@ -159,9 +159,9 @@ cr.define('print_preview', function() {
     },
 
     onSelectedDestinationNameSet_: function() {
-      var destinationName =
+      const destinationName =
           this.destinationStore_.selectedDestination.displayName;
-      var nameEl = this.getElement().getElementsByClassName(
+      const nameEl = this.getElement().getElementsByClassName(
           print_preview.DestinationSettingsClasses_.THOBBER_NAME)[0];
       nameEl.textContent = destinationName;
       nameEl.title = destinationName;

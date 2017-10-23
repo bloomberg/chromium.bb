@@ -109,7 +109,7 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.SettingsSection.prototype.enterDocument.call(this);
-      var customInput = assert(this.customInput_);
+      const customInput = assert(this.customInput_);
       this.tracker.add(
           assert(this.allRadio_), 'click', this.onAllRadioClick_.bind(this));
       this.tracker.add(
@@ -164,7 +164,7 @@ cr.define('print_preview', function() {
         fadeOutElement(this.customHintEl_);
         return;
       }
-      var message;
+      let message;
       if (validity === PageRangeStatus.LIMIT_ERROR) {
         if (this.pageRangeTicketItem_.getDocumentNumPages()) {
           message = loadTimeData.getStringF(
@@ -277,7 +277,7 @@ cr.define('print_preview', function() {
      */
     onPageRangeTicketItemChange_: function() {
       if (this.isAvailable()) {
-        var pageRangeStr = this.pageRangeTicketItem_.getValue();
+        const pageRangeStr = this.pageRangeTicketItem_.getValue();
         if (pageRangeStr || this.customRadio_.checked) {
           if (!document.hasFocus() ||
               document.activeElement != this.customInput_) {

@@ -58,8 +58,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onSelectChange_: function() {
-      var select = this.select_;
-      var isColor = select.options[select.selectedIndex].value == 'color';
+      const select = this.select_;
+      const isColor = select.options[select.selectedIndex].value == 'color';
       this.colorTicketItem_.updateValue(isColor);
     },
 
@@ -78,9 +78,9 @@ cr.define('print_preview', function() {
      */
     updateState_: function() {
       if (this.isAvailable()) {
-        var select = this.select_;
-        var valueToSelect = this.colorTicketItem_.getValue() ? 'color' : 'bw';
-        for (var i = 0; i < select.options.length; i++) {
+        const select = this.select_;
+        const valueToSelect = this.colorTicketItem_.getValue() ? 'color' : 'bw';
+        for (let i = 0; i < select.options.length; i++) {
           if (select.options[i].value == valueToSelect) {
             select.selectedIndex = i;
             break;

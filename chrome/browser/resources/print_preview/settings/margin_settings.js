@@ -75,8 +75,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onSelectChange_: function() {
-      var select = this.select_;
-      var marginsType =
+      const select = this.select_;
+      const marginsType =
           /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (
               select.selectedIndex);
       this.marginsTypeTicketItem_.updateValue(marginsType);
@@ -89,11 +89,11 @@ cr.define('print_preview', function() {
      */
     onMarginsTypeTicketItemChange_: function() {
       if (this.isAvailable()) {
-        var select = this.select_;
-        var marginsType =
+        const select = this.select_;
+        const marginsType =
             /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (
                 this.marginsTypeTicketItem_.getValue());
-        var selectedMarginsType =
+        const selectedMarginsType =
             /** @type {!print_preview.ticket_items.MarginsTypeValue} */ (
                 select.selectedIndex);
         if (marginsType != selectedMarginsType) {
