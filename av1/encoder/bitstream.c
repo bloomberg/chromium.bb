@@ -1762,8 +1762,17 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           aom_write_bit(w, mbmi->interinter_compound_type == COMPOUND_AVERAGE);
         else
 #endif  // CONFIG_WEDGE && CONFIG_COMPOUND_SEGMENT
-          aom_write_symbol(w, mbmi->interinter_compound_type,
-                           ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
+#if CONFIG_JNT_COMP
+        {
+          if (mbmi->compound_idx) {
+            aom_write_symbol(w, mbmi->interinter_compound_type,
+                             ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
+          }
+        }
+#else
+        aom_write_symbol(w, mbmi->interinter_compound_type,
+                         ec_ctx->compound_type_cdf[bsize], COMPOUND_TYPES);
+#endif  // CONFIG_JNT_COMP
 #if CONFIG_WEDGE
         if (is_interinter_compound_used(COMPOUND_WEDGE, bsize) &&
             mbmi->interinter_compound_type == COMPOUND_WEDGE) {
@@ -1773,7 +1782,10 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 #endif  // CONFIG_WEDGE
 #if CONFIG_COMPOUND_SEGMENT
         if (mbmi->interinter_compound_type == COMPOUND_SEG) {
-          aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
+#if CONFIG_JNT_COMP
+          if (mbmi->compound_idx)
+#endif  // CONFIG_JNT_COMP
+            aom_write_literal(w, mbmi->mask_type, MAX_SEG_MASK_BITS);
         }
 #endif  // CONFIG_COMPOUND_SEGMENT
       }

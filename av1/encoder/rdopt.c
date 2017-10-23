@@ -8613,7 +8613,11 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_COMPOUND_SINGLEREF
   if (is_comp_pred || is_singleref_comp_mode)
 #else
+#if CONFIG_JNT_COMP
+  if (is_comp_pred && mbmi->compound_idx)
+#else
   if (is_comp_pred)
+#endif  // CONFIG_JNT_COMP
 #endif  // CONFIG_COMPOUND_SINGLEREF
   {
     int rate_sum, rs2;
