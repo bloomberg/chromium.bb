@@ -9,7 +9,7 @@ using namespace clang;
 namespace {
 
 const char kClassMustLeftMostlyDeriveGC[] =
-    "[blink-gc] Class %0 must derive its GC base in the left-most position.";
+    "[blink-gc] Class %0 must derive from GarbageCollected in the left-most position.";
 
 const char kClassRequiresTraceMethod[] =
     "[blink-gc] Class %0 requires a trace method.";

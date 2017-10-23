@@ -25,6 +25,15 @@ public:
 
 class IllFormed : public A, public C { }; // Error
 
+class LeftMixin : public GarbageCollectedMixin {
+public:
+    virtual void Trace(Visitor*);
+};
+
+class DerivedLeftMixin : public LeftMixin, public GarbageCollected<DerivedLeftMixin> {
+  USING_GARBAGE_COLLECTED_MIXIN(DerivedLeftMixin);
+};
+
 }
 
 #endif

@@ -360,7 +360,7 @@ void BlinkGCPluginConsumer::CheckLeftMostDerived(RecordInfo* info) {
   CXXRecordDecl* left_most = GetLeftMostBase(info->record());
   if (!left_most)
     return;
-  if (!Config::IsGCBase(left_most->getName()))
+  if (!Config::IsGCBase(left_most->getName()) || Config::IsGCMixinBase(left_most->getName()))
     reporter_.ClassMustLeftMostlyDeriveGC(info);
 }
 
