@@ -3697,4 +3697,5 @@ crbug.com/777222 virtual/mojo-loading/http/tests/devtools/inspect-iframe-from-di
 crbug.com/777259 [ Win7 ] fast/reflections/reflection-masks-outset.html [ Pass Failure ]
 
 crbug.com/776107 crbug.com/769323 media/controls/captions-menu-always-visible.html [ Pass Failure ]
+crbug.com/776107 crbug.com/769323 media/controls/overflow-menu-always-visible.html [ Pass Failure ]
 crbug.com/776107 crbug.com/769323 virtual/new-remote-playback-pipeline/media/controls/captions-menu-always-visible.html [ Pass Failure ]
