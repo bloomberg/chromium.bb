@@ -27,6 +27,15 @@ class GLTestHelper {
                           GLsizei width,
                           GLsizei height,
                           const uint8_t expected_color[4]);
+
+  // Checks an area of pixels for a color, given an admissible per component
+  // error.
+  static bool CheckPixelsWithError(GLint x,
+                                   GLint y,
+                                   GLsizei width,
+                                   GLsizei height,
+                                   int error,
+                                   const uint8_t expected_color[4]);
 };
 
 }  // namespace gl

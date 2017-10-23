@@ -42,6 +42,7 @@ class GLImageSharedMemoryTestDelegate {
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
   const uint8_t* GetImageColor() { return kGreen; }
+  int GetAdmissibleError() const { return 0; }
 };
 
 using GLImageTestTypes = testing::Types<
@@ -97,6 +98,7 @@ class GLImageSharedMemoryPoolTestDelegate {
 
   unsigned GetTextureTarget() const { return GL_TEXTURE_2D; }
   const uint8_t* GetImageColor() { return kGreen; }
+  int GetAdmissibleError() const { return 0; }
 };
 
 INSTANTIATE_TYPED_TEST_CASE_P(GLImageSharedMemoryPool,
