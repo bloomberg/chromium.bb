@@ -1203,6 +1203,11 @@ const char kShowOverdrawFeedbackDescription[] =
     "Visualize overdraw by color-coding elements based on if they have other "
     "elements drawn underneath.";
 
+const char kEnableDrawOcclusionName[] = "Enable draw occlusion";
+const char kEnableDrawOcclusionDescription[] =
+    "Enable the system to use draw occlusion to skip draw quads when they are "
+    "not shown on the screen.";
+
 const char kShowSavedCopyName[] = "Show Saved Copy Button";
 const char kShowSavedCopyDescription[] =
     "When a page fails to load, if a stale copy of the page exists in the "
