@@ -346,9 +346,7 @@ void SystemTrayClient::ShowNetworkConfigure(const std::string& network_id) {
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           chromeos::switches::kNetworkSettingsConfig)) {
-    chromeos::InternetConfigDialog::ShowDialogForNetworkState(
-        ProfileManager::GetActiveUserProfile(), GetDialogParentContainerId(),
-        network_state);
+    chromeos::InternetConfigDialog::ShowDialogForNetworkState(network_state);
 
   } else {
     chromeos::NetworkConfigView::ShowForNetworkId(network_id);
@@ -371,9 +369,7 @@ void SystemTrayClient::ShowNetworkCreate(const std::string& type) {
     // is deprecated.
     std::string onc_type =
         chromeos::network_util::TranslateShillTypeToONC(type);
-    chromeos::InternetConfigDialog::ShowDialogForNetworkType(
-        ProfileManager::GetActiveUserProfile(), GetDialogParentContainerId(),
-        onc_type);
+    chromeos::InternetConfigDialog::ShowDialogForNetworkType(onc_type);
   } else {
     chromeos::NetworkConfigView::ShowForType(type);
   }

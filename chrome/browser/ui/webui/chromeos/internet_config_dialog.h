@@ -9,46 +9,27 @@
 
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/web_dialogs/web_dialog_delegate.h"
+#include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
-
-namespace content {
-class BrowserContext;
-}
 
 namespace chromeos {
 
 class NetworkState;
 
-class InternetConfigDialog : public ui::WebDialogDelegate {
+class InternetConfigDialog : public SystemWebDialogDelegate {
  public:
   // Shows a network configuration dialog for |network_state|.
-  static void ShowDialogForNetworkState(
-      content::BrowserContext* browser_context,
-      int container_id,
-      const NetworkState* network_state);
+  static void ShowDialogForNetworkState(const NetworkState* network_state);
   // Shows a network configuration dialog for a new network of |network_type|.
-  static void ShowDialogForNetworkType(content::BrowserContext* browser_context,
-                                       int container_id,
-                                       const std::string& network_type);
+  static void ShowDialogForNetworkType(const std::string& network_type);
 
  protected:
-  // ui::WebDialogDelegate
-  ui::ModalType GetDialogModalType() const override;
-  base::string16 GetDialogTitle() const override;
-  GURL GetDialogContentURL() const override;
-  void GetWebUIMessageHandlers(
-      std::vector<content::WebUIMessageHandler*>* handlers) const override;
-  void GetDialogSize(gfx::Size* size) const override;
-  std::string GetDialogArgs() const override;
-  void OnDialogClosed(const std::string& json_retval) override;
-  void OnCloseContents(content::WebContents* source,
-                       bool* out_close_dialog) override;
-  bool ShouldShowDialogTitle() const override;
-
   InternetConfigDialog(const std::string& network_type,
                        const std::string& network_id);
   ~InternetConfigDialog() override;
+
+  // ui::WebDialogDelegate
+  std::string GetDialogArgs() const override;
 
  private:
   std::string network_type_;

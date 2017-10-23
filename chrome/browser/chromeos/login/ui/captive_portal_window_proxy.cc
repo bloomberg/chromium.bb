@@ -6,8 +6,8 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/login/ui/captive_portal_view.h"
-#include "chrome/browser/chromeos/login/ui/internet_detail_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_host.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"

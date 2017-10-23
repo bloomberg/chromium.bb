@@ -1066,8 +1066,6 @@ source_set("chromeos") {
     "login/ui/captive_portal_window_proxy.h",
     "login/ui/input_events_blocker.cc",
     "login/ui/input_events_blocker.h",
-    "login/ui/internet_detail_dialog.cc",
-    "login/ui/internet_detail_dialog.h",
     "login/ui/login_display.cc",
     "login/ui/login_display.h",
     "login/ui/login_display_host.cc",
