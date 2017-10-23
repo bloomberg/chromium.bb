@@ -11,6 +11,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -35,6 +36,7 @@
 #include "content/common/sandbox_linux/sandbox_debug_handling_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/zygote_commands_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "content/public/common/sandbox_linux.h"
@@ -53,10 +55,6 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #include "third_party/skia/include/ports/SkFontMgr_android.h"
-
-#if defined(OS_LINUX)
-#include <sys/prctl.h>
-#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/common/pepper_plugin_list.h"

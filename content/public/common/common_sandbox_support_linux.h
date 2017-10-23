@@ -39,6 +39,10 @@ CONTENT_EXPORT bool GetFontTable(int fd,
 CONTENT_EXPORT int MakeSharedMemorySegmentViaIPC(size_t length,
                                                  bool executable);
 
+// Gets the well-known file descriptor on which we expect to find the
+// sandbox IPC channel.
+CONTENT_EXPORT int GetSandboxFD();
+
 };  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_COMMON_SANDBOX_SUPPORT_LINUX_H_
