@@ -81478,6 +81478,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Storage.Blob.GetBlobFromUUIDTime" units="ms">
+  <owner>mek@chromium.org</owner>
+  <summary>
+    The amount of time taken to complete the synchronous
+    BlobRegistry.GetBlobFromUUID mojo call.
+  </summary>
+</histogram>
+
 <histogram name="Storage.Blob.InvalidReference" enum="RefcountOperation">
   <owner>dmurph@chromium.org</owner>
   <summary>

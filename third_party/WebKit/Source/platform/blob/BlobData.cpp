@@ -33,6 +33,7 @@
 #include <memory>
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/Histogram.h"
 #include "platform/UUID.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/blob/BlobBytesProvider.h"
@@ -399,6 +400,7 @@ BlobDataHandle::BlobDataHandle(const String& uuid,
       size_(size),
       is_single_unknown_size_file_(false) {
   if (RuntimeEnabledFeatures::MojoBlobsEnabled()) {
+    SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Storage.Blob.GetBlobFromUUIDTime");
     // TODO(mek): Going through InterfaceProvider to get a BlobRegistryPtr
     // ends up going through the main thread. Ideally workers wouldn't need
     // to do that.
