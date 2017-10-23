@@ -827,12 +827,13 @@ String ExternalRepresentation(LocalFrame* frame,
   LayoutObject* layout_object = frame->ContentLayoutObject();
   if (!layout_object || !layout_object->IsBox())
     return String();
+  LayoutBox* layout_box = ToLayoutBox(layout_object);
 
   PrintContext print_context(frame);
   bool is_text_printing_mode = !!(behavior & kLayoutAsTextPrintingMode);
   if (is_text_printing_mode) {
-    FloatSize size(ToLayoutBox(layout_object)->Size());
-    print_context.BeginPrintMode(size.Width(), size.Height());
+    print_context.BeginPrintMode(layout_box->ClientWidth(),
+                                 layout_box->ClientHeight());
   }
 
   String representation = ExternalRepresentation(ToLayoutBox(layout_object),
