@@ -19,7 +19,8 @@ from chromite.lib import terminal
 from chromite.lib import workon_helper
 
 
-def main(argv):
+def GetParser():
+  """Get a CLI parser."""
   parser = commandline.ArgumentParser(description=__doc__)
   parser.add_argument('--board', default=cros_build_lib.GetDefaultBoard(),
                       help='The board to set package keywords for.')
@@ -53,6 +54,11 @@ def main(argv):
     sub_parser.add_argument('packages', nargs='*',
                             help='The packages to run command against.')
 
+  return parser
+
+
+def main(argv):
+  parser = GetParser()
   options = parser.parse_args(argv)
   options.Freeze()
 
