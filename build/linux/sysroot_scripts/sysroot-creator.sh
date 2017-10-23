@@ -184,7 +184,7 @@ ClearInstallDir() {
 
 CreateTarBall() {
   Banner "Creating tarball ${TARBALL}"
-  tar Jcf ${TARBALL} -C ${INSTALL_ROOT} .
+  tar -I "xz -9 -T0" -cf ${TARBALL} -C ${INSTALL_ROOT} .
 }
 
 ExtractPackageGz() {
