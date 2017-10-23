@@ -22,8 +22,8 @@ function test() {
     cssResource.requestContent().then(step2);
   }
 
-  function step2() {
-    var content = cssResource.contentEncoded ? window.atob(cssResource.content) : cssResource.content;
+  async function step2() {
+    var content = (await cssResource.contentEncoded()) ? window.atob(cssResource.content) : cssResource.content;
     TestRunner.addResult('Resource.content: ' + content);
     TestRunner.completeTest();
   }
