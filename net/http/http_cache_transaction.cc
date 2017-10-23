@@ -2065,7 +2065,7 @@ int HttpCache::Transaction::DoCacheReadDataComplete(int result) {
   if (result > 0) {
     read_offset_ += result;
   } else if (result == 0) {  // End of file.
-    // TODO(shivanisha@), ideally it should not happen that |this| is not a
+    // TODO(shivanisha), ideally it should not happen that |this| is not a
     // reader but referenced from entry in another field, but it seems to be
     // happening in some edge case (crbug.com/752774). Thus not invoking
     // DoneReadingFromEntry here.
@@ -2937,7 +2937,7 @@ void HttpCache::Transaction::DoomPartialEntry(bool delete_object) {
     int rv = cache_->DoomEntry(cache_key_, NULL);
     DCHECK_EQ(OK, rv);
   }
-  cache_->DoneWithEntry(entry_, this, false /* process_cancel */,
+  cache_->DoneWithEntry(entry_, this, true /* process_cancel */,
                         partial_ != nullptr);
   entry_ = NULL;
   is_sparse_ = false;
