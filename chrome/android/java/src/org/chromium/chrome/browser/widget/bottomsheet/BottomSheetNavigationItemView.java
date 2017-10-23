@@ -6,10 +6,10 @@ package org.chromium.chrome.browser.widget.bottomsheet;
 
 import android.content.Context;
 import android.content.res.ColorStateList;
-import android.graphics.drawable.Drawable;
 import android.support.annotation.NonNull;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.widget.bottomsheet.base.BottomNavigationItemV
  */
 public class BottomSheetNavigationItemView extends BottomNavigationItemView {
     private boolean mLabelHidden;
-    private TintedImageView mIcon;
     private TextView mLabel;
 
     public BottomSheetNavigationItemView(@NonNull Context context) {
@@ -40,7 +39,7 @@ public class BottomSheetNavigationItemView extends BottomNavigationItemView {
         setGravity(Gravity.CENTER);
         setBackgroundResource(
                 android.support.design.R.drawable.design_bottom_navigation_item_background);
-        mIcon = (TintedImageView) findViewById(R.id.icon);
+        mIcon = (ImageView) findViewById(R.id.icon);
         mLabel = (TextView) findViewById(R.id.label);
     }
 
@@ -50,17 +49,12 @@ public class BottomSheetNavigationItemView extends BottomNavigationItemView {
     }
 
     @Override
-    public void setIcon(Drawable icon) {
-        mIcon.setImageDrawable(icon);
-    }
-
-    @Override
     public void setChecked(boolean checked) {
         refreshDrawableState();
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
+    protected void setEnabledInternal(boolean enabled) {
         mLabel.setEnabled(enabled);
         mIcon.setEnabled(enabled);
     }
@@ -71,11 +65,6 @@ public class BottomSheetNavigationItemView extends BottomNavigationItemView {
         mLabelHidden = true;
         mLabel.setVisibility(GONE);
         setContentDescription(mItemData.getTitle());
-    }
-
-    @Override
-    public void setIconTint(ColorStateList tint) {
-        mIcon.setTint(tint);
     }
 
     @Override

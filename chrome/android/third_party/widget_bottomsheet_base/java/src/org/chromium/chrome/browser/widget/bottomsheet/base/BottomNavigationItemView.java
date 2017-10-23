@@ -46,7 +46,7 @@ public class BottomNavigationItemView extends LinearLayout implements MenuView.I
     private float mScaleUpFactor;
     private float mScaleDownFactor;
 
-    private ImageView mIcon;
+    protected ImageView mIcon;
     private TextView mSmallLabel;
     private TextView mLargeLabel;
     private int mItemPosition = INVALID_ITEM_POSITION;
@@ -166,6 +166,15 @@ public class BottomNavigationItemView extends LinearLayout implements MenuView.I
     @Override
     public void setEnabled(boolean enabled) {
         super.setEnabled(enabled);
+        setEnabledInternal(enabled);
+    }
+
+    /**
+     * Enables/disables the child elements of this navigation item view.
+     *
+     * @param enabled Whether or not the item is enabled.
+     */
+    protected void setEnabledInternal(boolean enabled) {
         mSmallLabel.setEnabled(enabled);
         mLargeLabel.setEnabled(enabled);
         mIcon.setEnabled(enabled);
