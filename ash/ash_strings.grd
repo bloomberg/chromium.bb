@@ -1099,16 +1099,19 @@ This file contains the strings for ash.
         Click your photo
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING" desc="Couldn't sign in because password is invalid">
-        Sorry, your password could not be verified. Please try again.
+        Sorry, your password couldn't be verified. Please try again.
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME" desc="Couldn't sign in because password is invalid for the 2nd time">
-        Sorry, your password still could not be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.
+        Sorry, your password still couldn't be verified. Note: if you changed your password recently, your new password will be applied once you sign out, please use the old password here.
       </message>
       <message name="IDS_ASH_LOGIN_ERROR_CAPS_LOCK_HINT" desc="A hint text for the login and lock screens that Caps Lock is on">
         Caps Lock is on.
       </message>
+      <message name="IDS_ASH_LOGIN_KEYBOARD_SWITCH_SHORTCUT" desc="A keyboard shortcut to switch keyboard layput">
+        Control-Shift-Space
+      </message>
       <message name="IDS_ASH_LOGIN_ERROR_KEYBOARD_SWITCH_HINT" desc="A hint text for the login and lock screens about layout switching">
-        Hit Control-Shift-Space to switch keyboard layout.
+        Hit <ph name="KEYBOARD_SHORTCUT">$1<ex>Control-Shift-Space</ex></ph> to switch keyboard layout.
       </message>
       <message name="IDS_ASH_LOGIN_POD_PASSWORD_FIELD_ACCESSIBLE_NAME" desc="Text to be spoken when the focus is set to the password field of a user pod on the sign-in screen.">
         Password for <ph name="USER_EMAIL_ADDRESS">$1<ex>john.doe@example.com</ex></ph>

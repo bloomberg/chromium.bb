@@ -13,7 +13,7 @@ namespace {
 constexpr int kBubbleBetweenChildSpacing = 6;
 
 // Total width of the bubble view.
-constexpr int kBubbleTotalWidthDp = 176;
+constexpr int kBubbleTotalWidthDp = 178;
 
 // Horizontal margin of the bubble view.
 constexpr int kBubbleHorizontalMarginDp = 14;

@@ -10,6 +10,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -43,7 +44,7 @@ views::Label* CreateLabel(const base::string16& message, SkColor color) {
 
 class LoginErrorBubbleView : public LoginBaseBubbleView {
  public:
-  LoginErrorBubbleView(const base::string16& message, views::View* anchor_view)
+  LoginErrorBubbleView(views::StyledLabel* label, views::View* anchor_view)
       : LoginBaseBubbleView(anchor_view) {
     set_anchor_view_insets(gfx::Insets(kAnchorViewVerticalSpacingDp, 0));
 
@@ -57,8 +58,7 @@ class LoginErrorBubbleView : public LoginBaseBubbleView {
     alert_view->AddChildView(alert_icon);
     AddChildView(alert_view);
 
-    views::Label* label = CreateLabel(message, SK_ColorWHITE);
-    label->SetMultiLine(true);
+    label->set_auto_color_readability_enabled(false);
     AddChildView(label);
   }
 
@@ -122,10 +122,10 @@ LoginBubble::~LoginBubble() {
     bubble_view_->GetWidget()->RemoveObserver(this);
 }
 
-void LoginBubble::ShowErrorBubble(const base::string16& message,
+void LoginBubble::ShowErrorBubble(views::StyledLabel* label,
                                   views::View* anchor_view) {
   DCHECK_EQ(bubble_view_, nullptr);
-  bubble_view_ = new LoginErrorBubbleView(message, anchor_view);
+  bubble_view_ = new LoginErrorBubbleView(label, anchor_view);
   Show();
 }
 
