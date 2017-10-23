@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
@@ -97,19 +98,17 @@ std::string GetUserFriendlyName(const std::string& printer_name) {
 }
 #endif
 
-void PrintersToValues(const printing::PrinterList& printer_list,
+void PrintersToValues(const PrinterList& printer_list,
                       base::ListValue* printers) {
-  for (const printing::PrinterBasicInfo& printer : printer_list) {
+  for (const PrinterBasicInfo& printer : printer_list) {
     auto printer_info = base::MakeUnique<base::DictionaryValue>();
-    printer_info->SetString(printing::kSettingDeviceName, printer.printer_name);
+    printer_info->SetString(kSettingDeviceName, printer.printer_name);
 
-    const auto printer_name_description =
-        printing::GetPrinterNameAndDescription(printer);
+    const auto printer_name_description = GetPrinterNameAndDescription(printer);
     const std::string& printer_name = printer_name_description.first;
     const std::string& printer_description = printer_name_description.second;
-    printer_info->SetString(printing::kSettingPrinterName, printer_name);
-    printer_info->SetString(printing::kSettingPrinterDescription,
-                            printer_description);
+    printer_info->SetString(kSettingPrinterName, printer_name);
+    printer_info->SetString(kSettingPrinterDescription, printer_description);
 
     auto options = base::MakeUnique<base::DictionaryValue>();
     for (const auto opt_it : printer.options)
@@ -120,7 +119,7 @@ void PrintersToValues(const printing::PrinterList& printer_list,
         base::ContainsKey(printer.options, kCUPSEnterprisePrinter) &&
             printer.options.at(kCUPSEnterprisePrinter) == kValueTrue);
 
-    printer_info->Set(printing::kSettingPrinterOptions, std::move(options));
+    printer_info->Set(kSettingPrinterOptions, std::move(options));
 
     printers->Append(std::move(printer_info));
 
@@ -215,7 +214,7 @@ std::unique_ptr<base::DictionaryValue> GetSettingsOnBlockingPool(
 void ConvertPrinterListForCallback(
     const PrinterHandler::AddedPrintersCallback& callback,
     const PrinterHandler::GetPrintersDoneCallback& done_callback,
-    const printing::PrinterList& printer_list) {
+    const PrinterList& printer_list) {
   base::ListValue printers;
   PrintersToValues(printer_list, &printers);
 
@@ -228,56 +227,59 @@ void ConvertPrinterListForCallback(
 
 std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
     const base::DictionaryValue& cdd) {
-  auto out_final =
-      base::DictionaryValue::From(std::make_unique<base::Value>(cdd.Clone()));
+  auto validated_cdd =
+      base::DictionaryValue::From(base::Value::ToUniquePtrValue(cdd.Clone()));
   const base::Value* caps = cdd.FindPath({kPrinter});
   if (!caps || !caps->is_dict())
-    return out_final;
-  out_final->RemovePath({kPrinter});
+    return validated_cdd;
+  validated_cdd->RemovePath({kPrinter});
   auto out_caps = std::make_unique<base::DictionaryValue>();
-  for (const auto capability : caps->DictItems()) {
+  for (const auto& capability : caps->DictItems()) {
     const auto& path = capability.first;
-    const base::Value* dict =
-        caps->FindPathOfType({path}, base::Value::Type::DICTIONARY);
-    const base::Value* list =
-        dict ? dict->FindPathOfType({kOptionKey}, base::Value::Type::LIST)
-             : caps->FindPathOfType({path}, base::Value::Type::LIST);
+    const base::Value& value = capability.second;
+
+    const base::Value* list = nullptr;
+    if (value.is_dict())
+      list = value.FindPathOfType({kOptionKey}, base::Value::Type::LIST);
+    else if (value.is_list())
+      list = &value;
     if (!list) {
-      out_caps->SetPath({path}, capability.second.Clone());
+      out_caps->SetPath({path}, value.Clone());
       continue;
     }
 
     bool is_vendor_capability = path == kVendorCapabilityKey;
-    auto out_list = GetFilteredList(
+    base::Value out_list = GetFilteredList(
         list, is_vendor_capability ? VendorCapabilityInvalid : ValueIsNull);
     if (out_list.GetList().empty())  // leave out empty lists.
       continue;
     if (is_vendor_capability) {
       // Need to also filter the individual capability lists.
       for (auto& vendor_option : out_list.GetList()) {
-        if (vendor_option.FindPathOfType({kTypeKey}, base::Value::Type::STRING)
-                ->GetString() != kSelectString) {
+        const base::Value* option_type =
+            vendor_option.FindPathOfType({kTypeKey}, base::Value::Type::STRING);
+        if (option_type->GetString() != kSelectString)
           continue;
-        }
+
         base::Value* options_dict = vendor_option.FindPathOfType(
             {kSelectCapKey}, base::Value::Type::DICTIONARY);
-        base::Value* options_list =
+        const base::Value* options_list =
             options_dict->FindPathOfType({kOptionKey}, base::Value::Type::LIST);
         options_dict->SetPath({kOptionKey},
                               GetFilteredList(options_list, ValueIsNull));
       }
     }
-    if (dict) {
+    if (value.is_dict()) {
       base::Value::DictStorage option_dict;
       option_dict[kOptionKey] =
-          std::make_unique<base::Value>(std::move(out_list));
+          base::Value::ToUniquePtrValue(std::move(out_list));
       out_caps->SetPath({path}, base::Value(option_dict));
     } else {
       out_caps->SetPath({path}, std::move(out_list));
     }
   }
-  out_final->SetDictionary(kPrinter, std::move(out_caps));
-  return out_final;
+  validated_cdd->SetDictionary(kPrinter, std::move(out_caps));
+  return validated_cdd;
 }
 
 }  // namespace printing
