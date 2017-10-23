@@ -198,14 +198,6 @@ void SubresourceFilterContentSettingsManager::OnContentSettingChanged(
     ChromeSubresourceFilterClient::LogAction(
         kActionContentSettingsAllowedWhileUISuppressed);
   }
-  // Reset the smart UI here. Be careful not to delete the metadata (as
-  // ClearSiteMetadata would do), just remove the timestamp.
-  //
-  // This is to allow the UI appear again after a user has made a manual setting
-  // change in the settings UI. Deleting the metadata would affect how the
-  // permission behaves in Site Details / Page Info.
-  SetSiteMetadata(url, base::MakeUnique<base::DictionaryValue>());
-  DCHECK(ShouldShowUIForSite(url));
 }
 
 // When history URLs are deleted, clear the metadata for the smart UI.

@@ -309,22 +309,16 @@ TEST_F(SubresourceFilterContentSettingsManagerTest,
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerTest,
-       ManualSettingsChange_ResetsSmartUI) {
+       DefaultSettingsChange_NoWebsiteMetadata) {
   GURL url("https://example.test/");
-  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
-  settings_manager()->OnDidShowUI(url);
+  EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
 
-  EXPECT_FALSE(settings_manager()->ShouldShowUIForSite(url));
-
-  // Manual settings change should reset the smart UI.
+  // Set the setting to the default, should not populate the metadata.
   GetSettingsMap()->SetContentSettingDefaultScope(
       url, GURL(), CONTENT_SETTINGS_TYPE_ADS, std::string(),
-      CONTENT_SETTING_BLOCK);
-  EXPECT_TRUE(settings_manager()->ShouldShowUIForSite(url));
+      CONTENT_SETTING_DEFAULT);
 
-  // Metadata should not be completely cleared, as we still want to maintain the
-  // invariant that the existence of the metadata implies that the UI was shown.
-  EXPECT_TRUE(settings_manager()->GetSiteMetadata(url));
+  EXPECT_FALSE(settings_manager()->GetSiteMetadata(url));
 }
 
 TEST_F(SubresourceFilterContentSettingsManagerHistoryTest,
