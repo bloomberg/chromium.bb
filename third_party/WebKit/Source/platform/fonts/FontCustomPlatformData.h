@@ -56,7 +56,7 @@ class PLATFORM_EXPORT FontCustomPlatformData
   WTF_MAKE_NONCOPYABLE(FontCustomPlatformData);
 
  public:
-  static RefPtr<FontCustomPlatformData> Create(SharedBuffer*,
+  static scoped_refptr<FontCustomPlatformData> Create(SharedBuffer*,
                                                String& ots_parse_message);
   ~FontCustomPlatformData();
 

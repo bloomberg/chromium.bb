@@ -12,8 +12,8 @@ namespace blink {
 namespace {
 
 template <typename T, typename U>
-RefPtr<T> MakeSettings(std::initializer_list<U> items) {
-  RefPtr<T> settings = T::Create();
+scoped_refptr<T> MakeSettings(std::initializer_list<U> items) {
+  scoped_refptr<T> settings = T::Create();
   for (auto item = items.begin(); item != items.end(); ++item) {
     settings->Append(*item);
   }
@@ -23,20 +23,20 @@ RefPtr<T> MakeSettings(std::initializer_list<U> items) {
 }  // namespace
 
 TEST(FontSettingsTest, HashTest) {
-  RefPtr<FontVariationSettings> one_axis_a =
+  scoped_refptr<FontVariationSettings> one_axis_a =
       MakeSettings<FontVariationSettings, FontVariationAxis>(
           {FontVariationAxis{"a   ", 0}});
-  RefPtr<FontVariationSettings> one_axis_b =
+  scoped_refptr<FontVariationSettings> one_axis_b =
       MakeSettings<FontVariationSettings, FontVariationAxis>(
           {FontVariationAxis{"b   ", 0}});
-  RefPtr<FontVariationSettings> two_axes =
+  scoped_refptr<FontVariationSettings> two_axes =
       MakeSettings<FontVariationSettings, FontVariationAxis>(
           {FontVariationAxis{"a   ", 0}, FontVariationAxis{"b   ", 0}});
-  RefPtr<FontVariationSettings> two_axes_different_value =
+  scoped_refptr<FontVariationSettings> two_axes_different_value =
       MakeSettings<FontVariationSettings, FontVariationAxis>(
           {FontVariationAxis{"a   ", 0}, FontVariationAxis{"b   ", 1}});
 
-  RefPtr<FontVariationSettings> empty_variation_settings =
+  scoped_refptr<FontVariationSettings> empty_variation_settings =
       FontVariationSettings::Create();
 
   CHECK_NE(one_axis_a->GetHash(), one_axis_b->GetHash());
@@ -48,13 +48,13 @@ TEST(FontSettingsTest, HashTest) {
 
 TEST(FontSettingsTest, ToString) {
   {
-    RefPtr<FontVariationSettings> settings =
+    scoped_refptr<FontVariationSettings> settings =
         MakeSettings<FontVariationSettings, FontVariationAxis>(
             {FontVariationAxis{"a", 42}, FontVariationAxis{"b", 8118}});
     EXPECT_EQ("a=42,b=8118", settings->ToString());
   }
   {
-    RefPtr<FontFeatureSettings> settings =
+    scoped_refptr<FontFeatureSettings> settings =
         MakeSettings<FontFeatureSettings, FontFeature>(
             {FontFeature{"a", 42}, FontFeature{"b", 8118}});
     EXPECT_EQ("a=42,b=8118", settings->ToString());

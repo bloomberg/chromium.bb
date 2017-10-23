@@ -42,8 +42,8 @@ namespace blink {
 struct SameSizeAsFontDescription {
   DISALLOW_NEW();
   FontFamily family_list;
-  RefPtr<FontFeatureSettings> feature_settings_;
-  RefPtr<FontVariationSettings> variation_settings_;
+  scoped_refptr<FontFeatureSettings> feature_settings_;
+  scoped_refptr<FontVariationSettings> variation_settings_;
   AtomicString locale;
   float sizes[6];
   FontSelectionRequest selection_request_;

@@ -43,7 +43,7 @@ const unsigned kCMaxInactiveFontData = 225;
 const unsigned kCTargetInactiveFontData = 200;
 #endif
 
-RefPtr<SimpleFontData> FontDataCache::Get(const FontPlatformData* platform_data,
+scoped_refptr<SimpleFontData> FontDataCache::Get(const FontPlatformData* platform_data,
                                           ShouldRetain should_retain,
                                           bool subpixel_ascent_descent) {
   if (!platform_data)
@@ -60,7 +60,7 @@ RefPtr<SimpleFontData> FontDataCache::Get(const FontPlatformData* platform_data,
 
   Cache::iterator result = cache_.find(platform_data);
   if (result == cache_.end()) {
-    std::pair<RefPtr<SimpleFontData>, unsigned> new_value(
+    std::pair<scoped_refptr<SimpleFontData>, unsigned> new_value(
         SimpleFontData::Create(*platform_data, nullptr, false,
                                subpixel_ascent_descent),
         should_retain == kRetain ? 1 : 0);
@@ -139,12 +139,12 @@ bool FontDataCache::PurgeLeastRecentlyUsed(int count) {
 
   is_purging = true;
 
-  Vector<RefPtr<SimpleFontData>, 20> font_data_to_delete;
-  ListHashSet<RefPtr<SimpleFontData>>::iterator end = inactive_font_data_.end();
-  ListHashSet<RefPtr<SimpleFontData>>::iterator it =
+  Vector<scoped_refptr<SimpleFontData>, 20> font_data_to_delete;
+  ListHashSet<scoped_refptr<SimpleFontData>>::iterator end = inactive_font_data_.end();
+  ListHashSet<scoped_refptr<SimpleFontData>>::iterator it =
       inactive_font_data_.begin();
   for (int i = 0; i < count && it != end; ++it, ++i) {
-    RefPtr<SimpleFontData>& font_data = *it.Get();
+    scoped_refptr<SimpleFontData>& font_data = *it.Get();
     cache_.erase(&(font_data->PlatformData()));
     // We should not delete SimpleFontData here because deletion can modify
     // m_inactiveFontData. See http://trac.webkit.org/changeset/44011

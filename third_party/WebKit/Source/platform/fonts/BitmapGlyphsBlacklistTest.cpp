@@ -19,7 +19,7 @@ static void TestBitmapGlyphsBlacklisted(AtomicString windows_family_name,
   FontFamily font_family;
   font_family.SetFamily(windows_family_name);
   font_description.SetFamily(font_family);
-  RefPtr<SimpleFontData> simple_font_data =
+  scoped_refptr<SimpleFontData> simple_font_data =
       font_cache->GetFontData(font_description, windows_family_name);
   ASSERT_TRUE(simple_font_data);
   const FontPlatformData& font_platform_data = simple_font_data->PlatformData();

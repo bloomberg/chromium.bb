@@ -62,7 +62,7 @@ static const size_t kMaxVDMXTableSize = 1024 * 1024;  // 1 MB
 #endif
 
 SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
-                               RefPtr<CustomFontData> custom_data,
+                               scoped_refptr<CustomFontData> custom_data,
                                bool is_text_orientation_fallback,
                                bool subpixel_ascent_descent)
     : max_char_width_(-1),
@@ -84,7 +84,7 @@ SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
 }
 
 SimpleFontData::SimpleFontData(const FontPlatformData& platform_data,
-                               RefPtr<OpenTypeVerticalData> vertical_data)
+                               scoped_refptr<OpenTypeVerticalData> vertical_data)
     : platform_data_(platform_data),
       vertical_data_(std::move(vertical_data)),
       is_text_orientation_fallback_(false),
@@ -314,7 +314,7 @@ bool SimpleFontData::IsSegmented() const {
   return false;
 }
 
-RefPtr<SimpleFontData> SimpleFontData::VerticalRightOrientationFontData()
+scoped_refptr<SimpleFontData> SimpleFontData::VerticalRightOrientationFontData()
     const {
   if (!derived_font_data_)
     derived_font_data_ = DerivedFontData::Create();
@@ -328,7 +328,7 @@ RefPtr<SimpleFontData> SimpleFontData::VerticalRightOrientationFontData()
   return derived_font_data_->vertical_right_orientation;
 }
 
-RefPtr<SimpleFontData> SimpleFontData::UprightOrientationFontData() const {
+scoped_refptr<SimpleFontData> SimpleFontData::UprightOrientationFontData() const {
   if (!derived_font_data_)
     derived_font_data_ = DerivedFontData::Create();
   if (!derived_font_data_->upright_orientation)
@@ -338,7 +338,7 @@ RefPtr<SimpleFontData> SimpleFontData::UprightOrientationFontData() const {
   return derived_font_data_->upright_orientation;
 }
 
-RefPtr<SimpleFontData> SimpleFontData::SmallCapsFontData(
+scoped_refptr<SimpleFontData> SimpleFontData::SmallCapsFontData(
     const FontDescription& font_description) const {
   if (!derived_font_data_)
     derived_font_data_ = DerivedFontData::Create();
@@ -349,7 +349,7 @@ RefPtr<SimpleFontData> SimpleFontData::SmallCapsFontData(
   return derived_font_data_->small_caps;
 }
 
-RefPtr<SimpleFontData> SimpleFontData::EmphasisMarkFontData(
+scoped_refptr<SimpleFontData> SimpleFontData::EmphasisMarkFontData(
     const FontDescription& font_description) const {
   if (!derived_font_data_)
     derived_font_data_ = DerivedFontData::Create();
@@ -373,7 +373,7 @@ SimpleFontData::DerivedFontData::Create() {
   return WTF::WrapUnique(new DerivedFontData());
 }
 
-RefPtr<SimpleFontData> SimpleFontData::CreateScaledFontData(
+scoped_refptr<SimpleFontData> SimpleFontData::CreateScaledFontData(
     const FontDescription& font_description,
     float scale_factor) const {
   const float scaled_size =

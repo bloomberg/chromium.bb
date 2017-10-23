@@ -41,7 +41,7 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
   WTF_MAKE_NONCOPYABLE(FontFallbackList);
 
  public:
-  static RefPtr<FontFallbackList> Create() {
+  static scoped_refptr<FontFallbackList> Create() {
     return WTF::AdoptRef(new FontFallbackList());
   }
 
@@ -85,14 +85,14 @@ class PLATFORM_EXPORT FontFallbackList : public RefCounted<FontFallbackList> {
  private:
   FontFallbackList();
 
-  RefPtr<FontData> GetFontData(const FontDescription&, int& family_index) const;
+  scoped_refptr<FontData> GetFontData(const FontDescription&, int& family_index) const;
 
   const SimpleFontData* DeterminePrimarySimpleFontData(
       const FontDescription&) const;
 
   void ReleaseFontData();
 
-  mutable Vector<RefPtr<FontData>, 1> font_list_;
+  mutable Vector<scoped_refptr<FontData>, 1> font_list_;
   mutable const SimpleFontData* cached_primary_simple_font_data_;
   Persistent<FontSelector> font_selector_;
   unsigned font_selector_version_;

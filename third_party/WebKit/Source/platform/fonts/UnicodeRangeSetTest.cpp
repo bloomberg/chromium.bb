@@ -12,7 +12,7 @@ static const UChar kHiraganaA[2] = {0x3042, 0};
 
 TEST(UnicodeRangeSet, Empty) {
   Vector<UnicodeRange> ranges;
-  RefPtr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
+  scoped_refptr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
   EXPECT_TRUE(set->IsEntireRange());
   EXPECT_EQ(0u, set->size());
   EXPECT_FALSE(set->IntersectsWith(String()));
@@ -23,7 +23,7 @@ TEST(UnicodeRangeSet, Empty) {
 TEST(UnicodeRangeSet, SingleCharacter) {
   Vector<UnicodeRange> ranges;
   ranges.push_back(UnicodeRange('b', 'b'));
-  RefPtr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
+  scoped_refptr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
   EXPECT_FALSE(set->IsEntireRange());
   EXPECT_FALSE(set->IntersectsWith(String()));
   EXPECT_FALSE(set->IntersectsWith(String("a")));
@@ -40,7 +40,7 @@ TEST(UnicodeRangeSet, TwoRanges) {
   Vector<UnicodeRange> ranges;
   ranges.push_back(UnicodeRange('6', '7'));
   ranges.push_back(UnicodeRange('2', '4'));
-  RefPtr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
+  scoped_refptr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
   EXPECT_FALSE(set->IsEntireRange());
   EXPECT_FALSE(set->IntersectsWith(String()));
   EXPECT_FALSE(set->IntersectsWith(String("1")));
@@ -64,7 +64,7 @@ TEST(UnicodeRangeSet, Overlap) {
   ranges.push_back(UnicodeRange('1', '1'));
   ranges.push_back(UnicodeRange('3', '5'));
   ranges.push_back(UnicodeRange('4', '6'));
-  RefPtr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
+  scoped_refptr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
   ASSERT_EQ(1u, set->size());
   EXPECT_EQ('0', set->RangeAt(0).From());
   EXPECT_EQ('6', set->RangeAt(0).To());
@@ -73,7 +73,7 @@ TEST(UnicodeRangeSet, Overlap) {
 TEST(UnicodeRangeSet, Non8Bit) {
   Vector<UnicodeRange> ranges;
   ranges.push_back(UnicodeRange(0x3042, 0x3042));
-  RefPtr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
+  scoped_refptr<UnicodeRangeSet> set = WTF::AdoptRef(new UnicodeRangeSet(ranges));
   ASSERT_EQ(1u, set->size());
   EXPECT_EQ(0x3042, set->RangeAt(0).From());
   EXPECT_EQ(0x3042, set->RangeAt(0).To());

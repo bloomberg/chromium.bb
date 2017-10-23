@@ -17,18 +17,18 @@ namespace blink {
 // logic should move into ShapeResult itself and then the ShapeResultBuffer
 // implementation may wrap that.
 CharacterRange ShapeResultBuffer::GetCharacterRange(
-    RefPtr<const ShapeResult> result,
+    scoped_refptr<const ShapeResult> result,
     TextDirection direction,
     float total_width,
     unsigned from,
     unsigned to) {
-  Vector<RefPtr<const ShapeResult>, 64> results;
+  Vector<scoped_refptr<const ShapeResult>, 64> results;
   results.push_back(result);
   return GetCharacterRangeInternal(results, direction, total_width, from, to);
 }
 
 CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
-    const Vector<RefPtr<const ShapeResult>, 64>& results,
+    const Vector<scoped_refptr<const ShapeResult>, 64>& results,
     TextDirection direction,
     float total_width,
     unsigned absolute_from,
@@ -50,7 +50,7 @@ CharacterRange ShapeResultBuffer::GetCharacterRangeInternal(
 
   unsigned total_num_characters = 0;
   for (unsigned j = 0; j < results.size(); j++) {
-    const RefPtr<const ShapeResult> result = results[j];
+    const scoped_refptr<const ShapeResult> result = results[j];
     if (direction == TextDirection::kRtl) {
       // Convert logical offsets to visual offsets, because results are in
       // logical order while runs are in visual order.
@@ -148,7 +148,7 @@ Vector<CharacterRange> ShapeResultBuffer::IndividualCharacterRanges(
     float total_width) const {
   Vector<CharacterRange> ranges;
   float current_x = direction == TextDirection::kRtl ? total_width : 0;
-  for (const RefPtr<const ShapeResult> result : results_) {
+  for (const scoped_refptr<const ShapeResult> result : results_) {
     if (direction == TextDirection::kRtl)
       current_x -= result->Width();
     unsigned run_count = result->runs_.size();
@@ -171,7 +171,7 @@ int ShapeResultBuffer::OffsetForPosition(const TextRun& run,
   if (run.Rtl()) {
     total_offset = run.length();
     for (unsigned i = results_.size(); i; --i) {
-      const RefPtr<const ShapeResult>& word_result = results_[i - 1];
+      const scoped_refptr<const ShapeResult>& word_result = results_[i - 1];
       if (!word_result)
         continue;
       total_offset -= word_result->NumCharacters();

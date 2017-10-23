@@ -71,7 +71,7 @@ void HbFaceDeleter::operator()(hb_face_t* face) {
     hb_face_destroy(face);
 }
 
-static RefPtr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t*);
+static scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t*);
 
 HarfBuzzFace::HarfBuzzFace(FontPlatformData* platform_data, uint64_t unique_id)
     : platform_data_(platform_data), unique_id_(unique_id) {
@@ -307,13 +307,13 @@ hb_face_t* HarfBuzzFace::CreateFace() {
   return face;
 }
 
-RefPtr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face) {
+scoped_refptr<HbFontCacheEntry> CreateHbFontCacheEntry(hb_face_t* face) {
   HbFontUniquePtr ot_font(hb_font_create(face));
   hb_ot_font_set_funcs(ot_font.get());
   // Creating a sub font means that non-available functions
   // are found from the parent.
   hb_font_t* unscaled_font = hb_font_create_sub_font(ot_font.get());
-  RefPtr<HbFontCacheEntry> cache_entry =
+  scoped_refptr<HbFontCacheEntry> cache_entry =
       HbFontCacheEntry::Create(unscaled_font);
   hb_font_set_funcs(unscaled_font, HarfBuzzSkiaGetFontFuncs(),
                     cache_entry->HbFontData(), nullptr);
@@ -332,7 +332,7 @@ static_assert(
     "size.");
 
 hb_font_t* HarfBuzzFace::GetScaledFont(
-    RefPtr<UnicodeRangeSet> range_set) const {
+    scoped_refptr<UnicodeRangeSet> range_set) const {
   platform_data_->SetupPaint(&harf_buzz_font_data_->paint_);
   harf_buzz_font_data_->paint_.setTextEncoding(SkPaint::kGlyphID_TextEncoding);
   harf_buzz_font_data_->range_set_ = std::move(range_set);

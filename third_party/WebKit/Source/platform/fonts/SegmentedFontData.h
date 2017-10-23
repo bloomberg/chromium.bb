@@ -36,15 +36,15 @@ namespace blink {
 
 class PLATFORM_EXPORT SegmentedFontData : public FontData {
  public:
-  static RefPtr<SegmentedFontData> Create() {
+  static scoped_refptr<SegmentedFontData> Create() {
     return WTF::AdoptRef(new SegmentedFontData);
   }
 
-  void AppendFace(RefPtr<FontDataForRangeSet> font_data_for_range_set) {
+  void AppendFace(scoped_refptr<FontDataForRangeSet> font_data_for_range_set) {
     faces_.push_back(std::move(font_data_for_range_set));
   }
   unsigned NumFaces() const { return faces_.size(); }
-  RefPtr<FontDataForRangeSet> FaceAt(unsigned i) const { return faces_[i]; }
+  scoped_refptr<FontDataForRangeSet> FaceAt(unsigned i) const { return faces_[i]; }
   bool ContainsCharacter(UChar32) const;
 
  private:
@@ -58,7 +58,7 @@ class PLATFORM_EXPORT SegmentedFontData : public FontData {
   bool IsSegmented() const override;
   bool ShouldSkipDrawing() const override;
 
-  Vector<RefPtr<FontDataForRangeSet>, 1> faces_;
+  Vector<scoped_refptr<FontDataForRangeSet>, 1> faces_;
 };
 
 DEFINE_FONT_DATA_TYPE_CASTS(SegmentedFontData, true);

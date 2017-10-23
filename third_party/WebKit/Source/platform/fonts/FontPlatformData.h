@@ -152,7 +152,7 @@ class PLATFORM_EXPORT FontPlatformData {
   bool IsHashTableDeletedValue() const { return is_hash_table_deleted_value_; }
   bool FontContainsCharacter(UChar32 character);
 
-  RefPtr<OpenTypeVerticalData> VerticalData() const;
+  scoped_refptr<OpenTypeVerticalData> VerticalData() const;
   Vector<char> OpenTypeTable(SkFontTableTag) const;
 
 #if defined(OS_LINUX) || defined(OS_ANDROID)
@@ -190,7 +190,7 @@ class PLATFORM_EXPORT FontPlatformData {
   FontRenderStyle style_;
 #endif
 
-  mutable RefPtr<HarfBuzzFace> harf_buzz_face_;
+  mutable scoped_refptr<HarfBuzzFace> harf_buzz_face_;
   bool is_hash_table_deleted_value_;
 #if defined(OS_WIN)
   int paint_text_flags_;

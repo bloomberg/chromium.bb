@@ -41,7 +41,7 @@ class SimpleFontData;
 class PLATFORM_EXPORT OpenTypeVerticalData
     : public RefCounted<OpenTypeVerticalData> {
  public:
-  static RefPtr<OpenTypeVerticalData> Create(
+  static scoped_refptr<OpenTypeVerticalData> Create(
       const FontPlatformData& platform_data) {
     return WTF::AdoptRef(new OpenTypeVerticalData(platform_data));
   }

@@ -19,7 +19,7 @@ TEST(FontCache, getLastResortFallbackFont) {
 
   FontDescription font_description;
   font_description.SetGenericFamily(FontDescription::kStandardFamily);
-  RefPtr<SimpleFontData> font_data =
+  scoped_refptr<SimpleFontData> font_data =
       font_cache->GetLastResortFallbackFont(font_description, kRetain);
   EXPECT_TRUE(font_data);
 

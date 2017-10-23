@@ -53,7 +53,7 @@ struct HarfBuzzFontData {
 
   SkPaint paint_;
   SimpleFontData* simple_font_data_;
-  RefPtr<UnicodeRangeSet> range_set_;
+  scoped_refptr<UnicodeRangeSet> range_set_;
 };
 
 // Though we have FontCache class, which provides the cache mechanism for
@@ -65,7 +65,7 @@ struct HarfBuzzFontData {
 // FontPlatformData object independent of size, then consider using this here.
 class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
  public:
-  static RefPtr<HbFontCacheEntry> Create(hb_font_t* hb_font) {
+  static scoped_refptr<HbFontCacheEntry> Create(hb_font_t* hb_font) {
     DCHECK(hb_font);
     return WTF::AdoptRef(new HbFontCacheEntry(hb_font));
   }
@@ -83,7 +83,7 @@ class HbFontCacheEntry : public RefCounted<HbFontCacheEntry> {
 };
 
 typedef HashMap<uint64_t,
-                RefPtr<HbFontCacheEntry>,
+                scoped_refptr<HbFontCacheEntry>,
                 WTF::IntHash<uint64_t>,
                 WTF::UnsignedWithZeroKeyHashTraits<uint64_t>>
     HarfBuzzFontCache;

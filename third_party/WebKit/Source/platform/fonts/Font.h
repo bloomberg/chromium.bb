@@ -199,7 +199,7 @@ class PLATFORM_EXPORT Font {
 
  public:
   FontSelector* GetFontSelector() const;
-  RefPtr<FontFallbackIterator> CreateFontFallbackIterator(
+  scoped_refptr<FontFallbackIterator> CreateFontFallbackIterator(
       FontFallbackPriority) const;
 
   void WillUseFontData(const String& text) const;
@@ -213,7 +213,7 @@ class PLATFORM_EXPORT Font {
   }
 
   FontDescription font_description_;
-  mutable RefPtr<FontFallbackList> font_fallback_list_;
+  mutable scoped_refptr<FontFallbackList> font_fallback_list_;
   mutable unsigned can_shape_word_by_word_ : 1;
   mutable unsigned shape_word_by_word_computed_ : 1;
 

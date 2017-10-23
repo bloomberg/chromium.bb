@@ -21,7 +21,7 @@ TEST(FontCacheAndroid, fallbackFontForCharacter) {
 
   FontCache* font_cache = FontCache::GetFontCache();
   ASSERT_TRUE(font_cache);
-  RefPtr<SimpleFontData> font_data =
+  scoped_refptr<SimpleFontData> font_data =
       font_cache->FallbackFontForCharacter(font_description, kTestChar, 0);
   EXPECT_TRUE(font_data);
 }

@@ -21,10 +21,10 @@ class LayoutLocale;
 class FontCache;
 
 using LayoutLocaleMap =
-    HashMap<AtomicString, RefPtr<LayoutLocale>, CaseFoldingHash>;
+    HashMap<AtomicString, scoped_refptr<LayoutLocale>, CaseFoldingHash>;
 
 typedef HashMap<FontCache::FontFileKey,
-                RefPtr<OpenTypeVerticalData>,
+                scoped_refptr<OpenTypeVerticalData>,
                 IntHash<FontCache::FontFileKey>,
                 WTF::UnsignedWithZeroKeyHashTraits<FontCache::FontFileKey>>
     FontVerticalDataCache;

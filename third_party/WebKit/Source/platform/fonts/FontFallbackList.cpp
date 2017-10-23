@@ -148,7 +148,7 @@ const SimpleFontData* FontFallbackList::DeterminePrimarySimpleFontData(
   }
 }
 
-RefPtr<FontData> FontFallbackList::GetFontData(
+scoped_refptr<FontData> FontFallbackList::GetFontData(
     const FontDescription& font_description,
     int& family_index) const {
   const FontFamily* curr_family = &font_description.Family();
@@ -158,7 +158,7 @@ RefPtr<FontData> FontFallbackList::GetFontData(
   for (; curr_family; curr_family = curr_family->Next()) {
     family_index++;
     if (curr_family->Family().length()) {
-      RefPtr<FontData> result;
+      scoped_refptr<FontData> result;
       if (font_selector_)
         result = font_selector_->GetFontData(font_description,
                                              curr_family->Family());
@@ -173,7 +173,7 @@ RefPtr<FontData> FontFallbackList::GetFontData(
 
   if (font_selector_) {
     // Try the user's preferred standard font.
-    if (RefPtr<FontData> data = font_selector_->GetFontData(
+    if (scoped_refptr<FontData> data = font_selector_->GetFontData(
             font_description, FontFamilyNames::webkit_standard))
       return data;
   }
@@ -190,7 +190,7 @@ FallbackListCompositeKey FontFallbackList::CompositeKey(
     if (current_family->Family().length()) {
       FontFaceCreationParams params(
           AdjustFamilyNameToAvoidUnsupportedFonts(current_family->Family()));
-      RefPtr<FontData> result;
+      scoped_refptr<FontData> result;
       if (font_selector_)
         result = font_selector_->GetFontData(font_description,
                                              current_family->Family());
@@ -232,7 +232,7 @@ const FontData* FontFallbackList::FontDataAt(
   // the same spot in the list twice.  getFontData will adjust our
   // |m_familyIndex| as it scans for the right font to make.
   DCHECK_EQ(FontCache::GetFontCache()->Generation(), generation_);
-  RefPtr<FontData> result = GetFontData(font_description, family_index_);
+  scoped_refptr<FontData> result = GetFontData(font_description, family_index_);
   if (result) {
     font_list_.push_back(result);
     if (result->IsLoadingFallback())
