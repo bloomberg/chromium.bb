@@ -29,13 +29,13 @@ If you're at Google, this will automatically download the Windows SDK for you.
 If you are not at Google, you'll have to figure out how to get the SDK, and
 you'll need to put a JSON file describing the SDK layout in a certain location.
 
-# GN setup
+## GN setup
 
 Add `target_os = "win"` to your args.gn.  Then just build, e.g.
 
     ninja -C out/gnwin base_unittests.exe
 
-# Running tests on swarming
+## Running tests on swarming
 
 You can run the Windows binaries you built on swarming, like so:
 
