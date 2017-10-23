@@ -17,7 +17,6 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "components/search_engines/util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 @interface FirstRunKeyResponder : NSResponder
@@ -134,7 +133,7 @@
 namespace chrome {
 
 void ShowFirstRunBubble(Browser* browser) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (chrome::ShowAllDialogsWithViewsToolkit())
     return chrome::ShowFirstRunBubbleViews(browser);
   NSPoint anchor = gfx::ScreenPointToNSPoint(
       bubble_anchor_util::GetPageInfoAnchorRect(browser).CenterPoint());

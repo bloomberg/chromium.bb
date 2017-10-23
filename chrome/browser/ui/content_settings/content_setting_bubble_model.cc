@@ -627,7 +627,7 @@ ContentSettingPopupBubbleModel::CreateListItem(int32_t id, const GURL& url) {
 
   const bool use_md = ui::MaterialDesignController::IsSecondaryUiMaterial();
   if (use_md) {
-    // Format the title to inlude the unicode single dot bullet code-point
+    // Format the title to include the unicode single dot bullet code-point
     // \u2022 and two spaces.
     title = l10n_util::GetStringFUTF16(IDS_LIST_BULLET, title);
   }

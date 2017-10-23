@@ -20,14 +20,22 @@
 #include "components/zoom/zoom_controller.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/material_design/material_design_controller.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
+
+namespace {
+
+// Whether the toolkit-views zoom bubble should be used.
+bool UseViews() {
+  return chrome::ShowPilotDialogsWithViewsToolkit();
+}
+
+}  // namespace
 
 ZoomDecoration::ZoomDecoration(LocationBarViewMac* owner)
     : owner_(owner), bubble_(nullptr), vector_icon_(nullptr) {}
 
 ZoomDecoration::~ZoomDecoration() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (UseViews()) {
     CloseBubble();
     return;
   }
@@ -84,7 +92,7 @@ void ZoomDecoration::ShowBubble(BOOL auto_close) {
   const NSRect frame =
       [[field cell] frameForDecoration:this inFrame:[field bounds]];
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (UseViews()) {
     NSWindow* window = [web_contents->GetNativeView() window];
     if (!window) {
       // The tab isn't active right now.
@@ -111,7 +119,7 @@ void ZoomDecoration::ShowBubble(BOOL auto_close) {
 }
 
 void ZoomDecoration::CloseBubble() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (UseViews()) {
     chrome::CloseZoomBubbleViews();
     return;
   }
@@ -135,7 +143,7 @@ void ZoomDecoration::UpdateUI(zoom::ZoomController* zoom_controller,
 
   tooltip_.reset([tooltip_string retain]);
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (UseViews())
     chrome::RefreshZoomBubbleViews();
   else
     [bubble_ onZoomChanged];
@@ -159,9 +167,7 @@ bool ZoomDecoration::IsAtDefaultZoom() const {
 }
 
 bool ZoomDecoration::IsBubbleShown() const {
-  return (ui::MaterialDesignController::IsSecondaryUiMaterial() &&
-          chrome::IsZoomBubbleViewsShown()) ||
-         bubble_;
+  return (UseViews() && chrome::IsZoomBubbleViewsShown()) || bubble_;
 }
 
 bool ZoomDecoration::ShouldShowDecoration() const {
@@ -180,8 +186,7 @@ bool ZoomDecoration::OnMousePressed(NSRect frame, NSPoint location) {
   } else {
     // With Material Design enabled the zoom bubble is no longer auto-closed
     // when activated with a mouse click.
-    const BOOL auto_close =
-        !ui::MaterialDesignController::IsSecondaryUiMaterial();
+    const BOOL auto_close = !UseViews();
     ShowBubble(auto_close);
   }
   return true;
@@ -196,7 +201,7 @@ content::WebContents* ZoomDecoration::GetWebContents() {
 }
 
 void ZoomDecoration::OnClose() {
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (!UseViews()) {
     bubble_.delegate = nil;
     bubble_ = nil;
   }

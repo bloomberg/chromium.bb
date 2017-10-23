@@ -12,11 +12,11 @@
 #include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
 #include "chrome/browser/extensions/device_permissions_dialog_controller.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/chooser_dialog_cocoa_controller.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 ChooserDialogCocoa::ChooserDialogCocoa(
     content::WebContents* web_contents,
@@ -53,7 +53,7 @@ void ChooserDialogCocoa::Dismissed() {
 
 void ChromeExtensionChooserDialog::ShowDialog(
     std::unique_ptr<ChooserController> chooser_controller) const {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     return ChromeExtensionChooserDialog::ShowDialogImpl(
         std::move(chooser_controller));
   }
@@ -69,7 +69,7 @@ void ChromeExtensionChooserDialog::ShowDialog(
 }
 
 void ChromeDevicePermissionsPrompt::ShowDialog() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (chrome::ShowAllDialogsWithViewsToolkit())
     return ChromeDevicePermissionsPrompt::ShowDialogViews();
 
   std::unique_ptr<ChooserController> chooser_controller(

@@ -213,6 +213,10 @@ extern const base::Feature kRuntimeMemoryLeakDetector;
 
 extern const base::Feature kSafeSearchUrlReporting;
 
+#if defined(OS_MACOSX)
+extern const base::Feature kShowAllDialogsWithViewsToolkit;
+#endif
+
 extern const base::Feature kSimplifiedFullscreenUI;
 
 extern const base::Feature kSiteDetails;

@@ -8,6 +8,7 @@
 #import "base/mac/mac_util.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "chrome/browser/themes/theme_service.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/autocomplete_text_field_cell.h"
@@ -18,7 +19,6 @@
 #import "chrome/browser/ui/cocoa/url_drop_target.h"
 #import "chrome/browser/ui/cocoa/view_id_util.h"
 #import "ui/base/cocoa/nsview_additions.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/scoped_ns_graphics_context_save_gstate_mac.h"
 
 namespace {
@@ -293,7 +293,10 @@ const CGFloat kAnimationDuration = 0.2;
 }
 
 - (NSPoint)bubblePointForDecoration:(LocationBarDecoration*)decoration {
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+  // Use MD-style anchoring, even if only pilot dialogs are enabled. MD dialogs
+  // have no arrow and align corners. Cocoa dialogs will always have an arrow.
+  // This causes the arrows on Cocoa dialogs to align to the omnibox corner.
+  if (!chrome::ShowPilotDialogsWithViewsToolkit())
     return [self arrowAnchorPointForDecoration:decoration];
 
   // Under MD, dialogs have no arrow and anchor to corner of the location bar

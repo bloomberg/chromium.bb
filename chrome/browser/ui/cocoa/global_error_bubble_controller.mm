@@ -12,6 +12,7 @@
 #import "chrome/browser/ui/browser.h"
 #import "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/app_menu/app_menu_controller.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/l10n_util.h"
@@ -24,7 +25,6 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "ui/base/cocoa/a11y_util.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image.h"
 
 using base::SysUTF16ToNSString;
@@ -173,7 +173,7 @@ class Bridge : public GlobalErrorBubbleViewBase {
 GlobalErrorBubbleViewBase* GlobalErrorBubbleViewBase::ShowStandardBubbleView(
     Browser* browser,
     const base::WeakPtr<GlobalErrorWithStandardBubble>& error) {
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (!chrome::ShowAllDialogsWithViewsToolkit())
     return [GlobalErrorBubbleController showForBrowser:browser error:error];
 
   NSPoint ns_point = [ToolbarControllerForBrowser(browser) appMenuBubblePoint];

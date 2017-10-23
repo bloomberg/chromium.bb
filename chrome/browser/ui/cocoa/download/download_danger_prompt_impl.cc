@@ -9,6 +9,7 @@
 #include "chrome/browser/download/download_stats.h"
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog_delegate.h"
 #include "chrome/grit/chromium_strings.h"
@@ -18,7 +19,6 @@
 #include "content/public/browser/download_danger_type.h"
 #include "content/public/browser/download_item.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "url/gurl.h"
 
 using extensions::ExperienceSamplingEvent;
@@ -257,7 +257,7 @@ DownloadDangerPrompt* DownloadDangerPrompt::Create(
     content::WebContents* web_contents,
     bool show_context,
     const OnDone& done) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     return DownloadDangerPrompt::CreateDownloadDangerPromptViews(
         item, web_contents, show_context, done);
   }

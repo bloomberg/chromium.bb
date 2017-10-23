@@ -4,10 +4,10 @@
 
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/external_protocol_dialog.h"
 #include "chrome/browser/ui/external_protocol_dialog_delegate.h"
 #include "chrome/browser/ui/views/external_protocol_dialog.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 namespace {
 
@@ -40,7 +40,7 @@ void ExternalProtocolHandler::RunExternalProtocolDialog(
     int routing_id,
     ui::PageTransition page_transition,
     bool has_user_gesture) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     RunExternalProtocolDialogViews(url, render_process_host_id, routing_id,
                                    page_transition, has_user_gesture);
     return;
