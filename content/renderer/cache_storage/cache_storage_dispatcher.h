@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "ipc/ipc_message.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"

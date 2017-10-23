@@ -7,9 +7,9 @@
 #include <map>
 
 #include "base/guid.h"
-#include "content/public/child/worker_thread.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature.h"

@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/threading/thread_local.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
 

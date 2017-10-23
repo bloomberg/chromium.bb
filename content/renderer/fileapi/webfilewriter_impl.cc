@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "content/renderer/fileapi/file_system_dispatcher.h"
 #include "content/renderer/render_thread_impl.h"
 

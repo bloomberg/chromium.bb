@@ -14,7 +14,7 @@
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "storage/common/quota/quota_types.h"
 
 class GURL;

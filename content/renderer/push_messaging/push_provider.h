@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/push_messaging.mojom.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushError.h"
 #include "third_party/WebKit/public/platform/modules/push_messaging/WebPushProvider.h"
 

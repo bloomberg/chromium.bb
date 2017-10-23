@@ -13,7 +13,7 @@
 #include "base/strings/nullable_string16.h"
 #include "content/common/content_export.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "content/renderer/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/renderer/indexed_db/indexed_db_database_callbacks_impl.h"
 #include "ipc/ipc_sync_message_filter.h"

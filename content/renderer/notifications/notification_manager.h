@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "content/common/platform_notification_messages.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "content/renderer/notifications/notification_dispatcher.h"
 #include "third_party/WebKit/public/platform/modules/notifications/WebNotificationManager.h"
 #include "url/gurl.h"

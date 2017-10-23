@@ -72,6 +72,7 @@ target(link_target_type, "renderer_sources") {
     "video_encode_accelerator.h",
     "window_features_converter.cc",
     "window_features_converter.h",
+    "worker_thread.h",
   ]
 
   configs += [ "//content:content_implementation" ]

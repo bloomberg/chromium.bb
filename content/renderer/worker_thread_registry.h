@@ -12,7 +12,7 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/platform_thread.h"
 #include "content/common/content_export.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 
 namespace base {
 class TaskRunner;
