@@ -2514,15 +2514,23 @@ LayerImpl* LayerTreeHostImpl::ViewportMainScrollLayer() {
 void LayerTreeHostImpl::QueueImageDecode(
     const PaintImage& image,
     const base::Callback<void(bool)>& embedder_callback) {
+  TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "LayerTreeHostImpl::QueueImageDecode", "frame_key",
+               image.GetKeyForFrame(image.frame_index()).ToString());
+  // Optimistically specify the current raster color space, since we assume that
+  // it won't change.
   decoded_image_tracker_.QueueImageDecode(
-      image, base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
-                        base::Unretained(this), embedder_callback));
+      image, GetRasterColorSpace(),
+      base::Bind(&LayerTreeHostImpl::ImageDecodeFinished,
+                 base::Unretained(this), embedder_callback));
   tile_manager_.checker_image_tracker().DisallowCheckeringForImage(image);
 }
 
 void LayerTreeHostImpl::ImageDecodeFinished(
     const base::Callback<void(bool)>& embedder_callback,
     bool decode_succeeded) {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
+               "LayerTreeHostImpl::ImageDecodeFinished");
   completed_image_decode_callbacks_.emplace_back(
       base::Bind(embedder_callback, decode_succeeded));
   client_->NotifyImageDecodeRequestFinished();
