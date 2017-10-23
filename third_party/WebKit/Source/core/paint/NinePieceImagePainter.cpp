@@ -13,6 +13,7 @@
 #include "platform/geometry/IntSize.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/ScopedInterpolationQuality.h"
 
 namespace blink {
 
@@ -96,20 +97,16 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
   scoped_refptr<Image> image = style_image->GetImage(
       observer, document, style, image_size, &logical_image_size);
 
-  InterpolationQuality interpolation_quality = style.GetInterpolationQuality();
-  InterpolationQuality previous_interpolation_quality =
-      graphics_context.ImageInterpolationQuality();
-  graphics_context.SetImageInterpolationQuality(interpolation_quality);
-
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
                InspectorPaintImageEvent::Data(node, *style_image, image->Rect(),
                                               FloatRect(border_image_rect)));
 
+  ScopedInterpolationQuality interpolation_quality_scope(
+      graphics_context, style.GetInterpolationQuality());
   PaintPieces(graphics_context, border_image_rect, style, nine_piece_image,
               image.get(), image_size, op);
 
-  graphics_context.SetImageInterpolationQuality(previous_interpolation_quality);
   return true;
 }
 

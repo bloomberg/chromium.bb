@@ -16,6 +16,7 @@
 #include "core/svg/SVGImageElement.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "platform/graphics/GraphicsContext.h"
+#include "platform/graphics/ScopedInterpolationQuality.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/PaintRecord.h"
 
@@ -73,16 +74,12 @@ void SVGImagePainter::PaintForeground(const PaintInfo& paint_info) {
       ToSVGImageElement(layout_svg_image_.GetElement());
   image_element->preserveAspectRatio()->CurrentValue()->TransformRect(dest_rect,
                                                                       src_rect);
-  InterpolationQuality interpolation_quality =
-      layout_svg_image_.StyleRef().GetInterpolationQuality();
-  InterpolationQuality previous_interpolation_quality =
-      paint_info.context.ImageInterpolationQuality();
-  paint_info.context.SetImageInterpolationQuality(interpolation_quality);
+  ScopedInterpolationQuality interpolation_quality_scope(
+      paint_info.context,
+      layout_svg_image_.StyleRef().GetInterpolationQuality());
   Image::ImageDecodingMode decode_mode =
       image_element->GetDecodingModeForPainting(image->paint_image_id());
   paint_info.context.DrawImage(image.get(), decode_mode, dest_rect, &src_rect);
-  paint_info.context.SetImageInterpolationQuality(
-      previous_interpolation_quality);
 }
 
 FloatSize SVGImagePainter::ComputeImageViewportSize() const {
