@@ -50,6 +50,9 @@ void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
 RefPtr<StaticBitmapImage> StaticBitmapImage::ConvertToColorSpace(
     sk_sp<SkColorSpace> target,
     SkTransferFunctionBehavior premulBehavior) {
+  if (!target)
+    return this;
+
   sk_sp<SkImage> skia_image = PaintImageForCurrentFrame().GetSkImage();
   sk_sp<SkImage> converted_skia_image =
       skia_image->makeColorSpace(target, premulBehavior);

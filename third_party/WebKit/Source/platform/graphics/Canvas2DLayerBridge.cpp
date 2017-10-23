@@ -141,16 +141,10 @@ static sk_sp<SkSurface> CreateSkSurface(GrContext* gr,
   if (gr)
     gr->resetContext();
 
-  // If we need color correction for all color spaces, we set the proper color
-  // space when creating the surface. If color correct rendering is only toward
-  // SRGB, we leave the surface with no color space. The painting canvas will
-  // get wrapped with a proper SkColorSpaceXformCanvas in GetOrCreateSurface().
-  sk_sp<SkColorSpace> color_space = nullptr;
-  if (RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
-    color_space = color_params.GetSkColorSpaceForSkSurfaces();
   SkImageInfo info = SkImageInfo::Make(
       size.Width(), size.Height(), color_params.GetSkColorType(),
-      color_params.GetSkAlphaType(), color_space);
+      color_params.GetSkAlphaType(),
+      color_params.GetSkColorSpaceForSkSurfaces());
   SkSurfaceProps disable_lcd_props(0, kUnknown_SkPixelGeometry);
   sk_sp<SkSurface> surface;
 

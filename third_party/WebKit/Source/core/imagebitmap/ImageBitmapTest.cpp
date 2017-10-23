@@ -89,7 +89,6 @@ class ImageBitmapTest : public ::testing::Test {
 };
 
 TEST_F(ImageBitmapTest, ImageResourceConsistency) {
-  ScopedColorCanvasExtensionsForTest color_canvas_extensions(true);
   const ImageBitmapOptions default_options;
   HTMLImageElement* image_element =
       HTMLImageElement::Create(*Document::CreateForTest());
@@ -158,7 +157,6 @@ TEST_F(ImageBitmapTest, ImageResourceConsistency) {
 // Verifies that ImageBitmaps constructed from HTMLImageElements hold a
 // reference to the original Image if the HTMLImageElement src is changed.
 TEST_F(ImageBitmapTest, ImageBitmapSourceChanged) {
-  ScopedColorCanvasExtensionsForTest color_canvas_extensions(true);
   HTMLImageElement* image =
       HTMLImageElement::Create(*Document::CreateForTest());
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
@@ -249,7 +247,6 @@ static ImageBitmapOptions PrepareBitmapOptionsAndSetRuntimeFlags(
 
   // Set the runtime flags
   RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled(true);
-  RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled(true);
 
   return options;
 }
@@ -604,6 +601,7 @@ TEST_F(ImageBitmapTest, ImageBitmapColorSpaceConversionImageData) {
   unsigned char data_buffer[4] = {32, 96, 160, 255};
   DOMUint8ClampedArray* data = DOMUint8ClampedArray::Create(data_buffer, 4);
   ImageDataColorSettings color_settings;
+  color_settings.setColorSpace("srgb");
   ImageData* image_data = ImageData::Create(
       IntSize(1, 1), NotShared<DOMUint8ClampedArray>(data), &color_settings);
   std::unique_ptr<uint8_t[]> src_pixel(new uint8_t[4]());

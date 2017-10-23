@@ -20,9 +20,6 @@ namespace blink {
 // rounding issues (floats don't round-trip perfectly through ICC fixed point).
 // Instead, it color converts a pixel and compares the result.
 TEST(CanvasColorParamsTest, MatchSkColorSpaceWithGfxColorSpace) {
-  // Enable color canvas extensions for this test
-  ScopedEnableColorCanvasExtensions color_canvas_extensions_enabler;
-
   const float wide_gamut_color_correction_tolerance = 0.001;
   sk_sp<SkColorSpace> src_rgb_color_space = SkColorSpace::MakeSRGB();
   std::unique_ptr<uint8_t[]> src_pixel(new uint8_t[4]{32, 96, 160, 255});

@@ -43,8 +43,6 @@ TEST_F(ImageDataTest, MAYBE_CreateImageDataTooBig) {
 // format. This function is used in BaseRenderingContext2D::getImageData.
 TEST_F(ImageDataTest,
        TestConvertPixelsFromCanvasPixelFormatToImageDataStorageFormat) {
-  // Enable color canvas extensions for this test
-  ScopedEnableColorCanvasExtensions color_canvas_extensions_enabler;
   // Source pixels in RGBA32
   unsigned char rgba32_pixels[] = {255, 0,   0,   255,  // Red
                                    0,   0,   0,   0,    // Transparent
@@ -235,9 +233,6 @@ bool ConvertPixelsToColorSpaceAndPixelFormatForTest(
 // to convert image data from image data storage format to canvas pixel format.
 // This function is used in BaseRenderingContext2D::putImageData.
 TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
-  // Enable color canvas extensions for this test
-  ScopedEnableColorCanvasExtensions color_canvas_extensions_enabler;
-
   unsigned num_image_data_color_spaces = 3;
   CanvasColorSpace image_data_color_spaces[] = {
       kSRGBCanvasColorSpace, kRec2020CanvasColorSpace, kP3CanvasColorSpace,
@@ -361,9 +356,6 @@ TEST_F(ImageDataTest, TestGetImageDataInCanvasColorSettings) {
 
 // This test examines ImageData::CropRect()
 TEST_F(ImageDataTest, TestCropRect) {
-  // Enable color canvas extensions for this test
-  ScopedEnableColorCanvasExtensions color_canvas_extensions_enabler;
-
   const int num_image_data_storage_formats = 3;
   ImageDataStorageFormat image_data_storage_formats[] = {
       kUint8ClampedArrayStorageFormat, kUint16ArrayStorageFormat,
