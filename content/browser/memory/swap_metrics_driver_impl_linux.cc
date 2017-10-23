@@ -43,15 +43,15 @@ SwapMetricsDriverImplLinux::~SwapMetricsDriverImplLinux() = default;
 
 SwapMetricsDriver::SwapMetricsUpdateResult
 SwapMetricsDriverImplLinux::UpdateMetricsInternal(base::TimeDelta interval) {
-  base::SystemMemoryInfoKB memory_info;
-  if (!base::GetSystemMemoryInfo(&memory_info)) {
+  base::VmStatInfo vmstat;
+  if (!base::GetVmStatInfo(&vmstat)) {
     return SwapMetricsDriver::SwapMetricsUpdateResult::kSwapMetricsUpdateFailed;
   }
 
-  uint64_t in_counts = memory_info.pswpin - last_pswpin_;
-  uint64_t out_counts = memory_info.pswpout - last_pswpout_;
-  last_pswpin_ = memory_info.pswpin;
-  last_pswpout_ = memory_info.pswpout;
+  uint64_t in_counts = vmstat.pswpin - last_pswpin_;
+  uint64_t out_counts = vmstat.pswpout - last_pswpout_;
+  last_pswpin_ = vmstat.pswpin;
+  last_pswpout_ = vmstat.pswpout;
 
   if (interval.is_zero())
     return SwapMetricsDriver::SwapMetricsUpdateResult::
