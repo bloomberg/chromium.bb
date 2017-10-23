@@ -2181,13 +2181,15 @@ TEST_F(SpdyNetworkTransactionTest, RedirectGetRequest) {
 
   SpdySerializedFrame req0(
       spdy_util_.ConstructSpdyHeaders(1, std::move(headers0), LOWEST, true));
-  MockWrite writes0[] = {CreateMockWrite(req0, 0)};
+  SpdySerializedFrame rst(
+      spdy_util_.ConstructSpdyRstStream(1, ERROR_CODE_CANCEL));
+  MockWrite writes0[] = {CreateMockWrite(req0, 0), CreateMockWrite(rst, 2)};
 
   const char* const kExtraHeaders[] = {"location",
                                        "https://www.foo.com/index.php"};
   SpdySerializedFrame resp0(spdy_util_.ConstructSpdyReplyError(
       "301", kExtraHeaders, arraysize(kExtraHeaders) / 2, 1));
-  MockRead reads0[] = {CreateMockRead(resp0, 1), MockRead(ASYNC, 0, 2)};
+  MockRead reads0[] = {CreateMockRead(resp0, 1), MockRead(ASYNC, 0, 3)};
 
   SequencedSocketData data0(reads0, arraysize(reads0), writes0,
                             arraysize(writes0));

@@ -11,9 +11,11 @@
 #include "base/run_loop.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_cache_transaction.h"
+#include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/mock_http_cache.h"
+#include "net/http/partial_data.h"
 #include "net/test/gtest_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -23,92 +25,48 @@ using net::test::IsOk;
 
 namespace net {
 
-class MockHttpCacheTransaction : public HttpCache::Transaction {
+class WritersTest;
+
+class TestHttpCacheTransaction : public HttpCache::Transaction {
   typedef WebSocketHandshakeStreamBase::CreateHelper CreateHelper;
 
  public:
-  MockHttpCacheTransaction(RequestPriority priority, HttpCache* cache)
+  TestHttpCacheTransaction(RequestPriority priority, HttpCache* cache)
       : HttpCache::Transaction(priority, cache){};
-  ~MockHttpCacheTransaction() override{};
+  ~TestHttpCacheTransaction() override{};
 
-  // HttpCache::Transaction:
+  Transaction::Mode mode() const override { return Transaction::READ_WRITE; }
+};
 
-  int Start(const HttpRequestInfo* request,
-            const CompletionCallback& callback,
-            const NetLogWithSource& net_log) override {
-    return OK;
+class TestHttpCache : public HttpCache {
+ public:
+  TestHttpCache(std::unique_ptr<HttpTransactionFactory> network_layer,
+                std::unique_ptr<BackendFactory> backend_factory)
+      : HttpCache(std::move(network_layer), std::move(backend_factory), false) {
   }
 
-  int RestartIgnoringLastError(const CompletionCallback& callback) override {
-    return OK;
-  }
+  void WritersDoneWritingToEntry(ActiveEntry* entry,
+                                 bool success,
+                                 TransactionSet) override {}
 
-  int RestartWithCertificate(scoped_refptr<X509Certificate> client_cert,
-                             scoped_refptr<SSLPrivateKey> client_private_key,
-                             const CompletionCallback& callback) override {
-    return OK;
-  }
-
-  int RestartWithAuth(const AuthCredentials& credentials,
-                      const CompletionCallback& callback) override {
-    return OK;
-  }
-
-  bool IsReadyToRestartForAuth() override { return true; }
-
-  int Read(IOBuffer* buf,
-           int buf_len,
-           const CompletionCallback& callback) override {
-    return OK;
-  }
-
-  void PopulateNetErrorDetails(NetErrorDetails* details) const override {}
-
-  void StopCaching() override {}
-
-  bool GetFullRequestHeaders(HttpRequestHeaders* headers) const override {
-    return true;
-  }
-
-  int64_t GetTotalReceivedBytes() const override { return OK; }
-
-  int64_t GetTotalSentBytes() const override { return OK; }
-
-  void DoneReading() override {}
-
-  const HttpResponseInfo* GetResponseInfo() const override { return nullptr; }
-
-  LoadState GetLoadState() const override { return LOAD_STATE_IDLE; }
-
-  void SetQuicServerInfo(QuicServerInfo* quic_server_info) override {}
-
-  bool GetLoadTimingInfo(LoadTimingInfo* load_timing_info) const override {
-    return true;
-  }
-
-  bool GetRemoteEndpoint(IPEndPoint* endpoint) const override { return true; }
-
-  void SetWebSocketHandshakeStreamCreateHelper(
-      CreateHelper* create_helper) override {}
-
-  void SetBeforeNetworkStartCallback(
-      const BeforeNetworkStartCallback& callback) override {}
-
-  void SetBeforeHeadersSentCallback(
-      const BeforeHeadersSentCallback& callback) override {}
-
-  int ResumeNetworkStart() override { return OK; }
-
-  void GetConnectionAttempts(ConnectionAttempts* out) const override {}
-
-  CreateHelper* websocket_handshake_stream_create_helper() { return nullptr; }
+  void WritersDoomEntryRestartTransactions(ActiveEntry* entry) override {}
 };
 
 class WritersTest : public testing::Test {
  public:
   enum class DeleteTransactionType { NONE, ACTIVE, WAITING, IDLE };
-
-  WritersTest() : disk_entry_(nullptr), request_(kSimpleGET_Transaction) {}
+  WritersTest()
+      : disk_entry_(nullptr),
+        test_cache_(base::MakeUnique<MockNetworkLayer>(),
+                    base::MakeUnique<MockBackendFactory>()),
+        request_(kSimpleGET_Transaction) {
+    ScopedMockTransaction transaction(kSimpleGET_Transaction);
+    transaction.response_headers =
+        "Last-Modified: Wed, 28 Nov 2007 00:40:09 GMT\n"
+        "Content-Length: 22\n"
+        "Etag: \"foopy\"\n";
+    request_ = MockHttpRequest(transaction);
+  }
 
   ~WritersTest() override {
     if (disk_entry_)
@@ -118,7 +76,9 @@ class WritersTest : public testing::Test {
   void CreateWriters(const std::string& url) {
     cache_.CreateBackendEntry(kSimpleGET_Transaction.url, &disk_entry_,
                               nullptr);
-    writers_ = std::make_unique<HttpCache::Writers>(disk_entry_);
+    entry_ = std::make_unique<HttpCache::ActiveEntry>(disk_entry_);
+    (static_cast<MockDiskEntry*>(disk_entry_))->AddRef();
+    writers_ = std::make_unique<HttpCache::Writers>(&test_cache_, entry_.get());
   }
 
   std::unique_ptr<HttpTransaction> CreateNetworkTransaction() {
@@ -137,16 +97,24 @@ class WritersTest : public testing::Test {
     network_transaction->Start(&request_, callback.callback(),
                                NetLogWithSource());
     base::RunLoop().RunUntilIdle();
+    response_info_ = *(network_transaction->GetResponseInfo());
 
     // Create a mock cache transaction.
-    std::unique_ptr<MockHttpCacheTransaction> transaction =
-        std::make_unique<MockHttpCacheTransaction>(DEFAULT_PRIORITY,
+    std::unique_ptr<TestHttpCacheTransaction> transaction =
+        std::make_unique<TestHttpCacheTransaction>(DEFAULT_PRIORITY,
                                                    cache_.http_cache());
 
     CreateWriters(kSimpleGET_Transaction.url);
     EXPECT_TRUE(writers_->IsEmpty());
-    writers_->AddTransaction(transaction.get(), std::move(network_transaction),
-                             is_exclusive);
+    HttpCache::Writers::TransactionInfo info(transaction->partial(),
+                                             transaction->is_truncated(),
+                                             *(transaction->GetResponseInfo()));
+
+    info.response_info = response_info_;
+    writers_->AddTransaction(transaction.get(), is_exclusive,
+                             transaction->priority(), info);
+    writers_->SetNetworkTransaction(transaction.get(),
+                                    std::move(network_transaction));
     EXPECT_TRUE(writers_->HasTransaction(transaction.get()));
     transactions_.push_back(std::move(transaction));
   }
@@ -154,7 +122,7 @@ class WritersTest : public testing::Test {
   void CreateWritersAddTransactionPriority(net::RequestPriority priority,
                                            bool is_exclusive = false) {
     CreateWritersAddTransaction(is_exclusive);
-    MockHttpCacheTransaction* transaction = transactions_.begin()->get();
+    TestHttpCacheTransaction* transaction = transactions_.begin()->get();
     transaction->SetPriority(priority);
   }
 
@@ -162,17 +130,22 @@ class WritersTest : public testing::Test {
     EXPECT_TRUE(writers_);
 
     // Create a mock cache transaction.
-    std::unique_ptr<MockHttpCacheTransaction> transaction =
-        std::make_unique<MockHttpCacheTransaction>(DEFAULT_PRIORITY,
+    std::unique_ptr<TestHttpCacheTransaction> transaction =
+        std::make_unique<TestHttpCacheTransaction>(DEFAULT_PRIORITY,
                                                    cache_.http_cache());
 
-    writers_->AddTransaction(transaction.get(), nullptr, false);
+    HttpCache::Writers::TransactionInfo info(transaction->partial(),
+                                             transaction->is_truncated(),
+                                             *(transaction->GetResponseInfo()));
+    info.response_info = response_info_;
+    writers_->AddTransaction(transaction.get(), false, transaction->priority(),
+                             info);
     transactions_.push_back(std::move(transaction));
   }
 
   int Read(std::string* result) {
     EXPECT_TRUE(transactions_.size() >= (size_t)1);
-    MockHttpCacheTransaction* transaction = transactions_.begin()->get();
+    TestHttpCacheTransaction* transaction = transactions_.begin()->get();
     TestCompletionCallback callback;
 
     std::string content;
@@ -205,7 +178,7 @@ class WritersTest : public testing::Test {
 
     // Check only the 1st Read and not the complete response because the smaller
     // buffer transaction will need to read the remaining response from the
-    // cache which will be tested when integrated with MockHttpCacheTransaction
+    // cache which will be tested when integrated with TestHttpCacheTransaction
     // layer.
 
     int rv = 0;
@@ -289,8 +262,12 @@ class WritersTest : public testing::Test {
       }
 
       if (first_iter && deleteType != DeleteTransactionType::NONE) {
-        writers_->RemoveTransaction(transactions_.at(delete_index).get());
+        writers_->RemoveTransaction(transactions_.at(delete_index).get(),
+                                    false /* success */);
       }
+
+      // Verify Add Transaction should succeed mid-read.
+      AddTransactionToExistingWriters();
 
       std::vector<int> rvs;
       for (size_t i = 0; i < callbacks.size(); i++) {
@@ -326,6 +303,46 @@ class WritersTest : public testing::Test {
     }
 
     EXPECT_EQ(OK, rv);
+  }
+
+  void MidReadDeleteActiveTransaction() {
+    EXPECT_TRUE(transactions_.size() == 1u);
+    TestHttpCacheTransaction* transaction = transactions_[0].get();
+
+    // Read a few bytes so that truncation is possible.
+    TestCompletionCallback callback;
+    scoped_refptr<IOBuffer> buf = new IOBuffer(5);
+    int rv = writers_->Read(buf.get(), 5, callback.callback(), transaction);
+    EXPECT_EQ(ERR_IO_PENDING, rv);  // Since the default is asynchronous.
+
+    writers_->RemoveTransaction(transaction, false /* success */);
+
+    EXPECT_TRUE(writers_->IsEmpty());
+
+    // Cannot add more writers while we are in truncation pending state.
+    EXPECT_FALSE(writers_->CanAddWriters());
+
+    // Complete the Read and the entry should be truncated.
+    base::RunLoop().RunUntilIdle();
+  }
+
+  void MidReadStopCaching() {
+    EXPECT_TRUE(transactions_.size() == 1u);
+    TestHttpCacheTransaction* transaction = transactions_[0].get();
+
+    // Read a few bytes so that truncation is possible.
+    TestCompletionCallback callback;
+    scoped_refptr<IOBuffer> buf = new IOBuffer(5);
+    int rv = writers_->Read(buf.get(), 5, callback.callback(), transaction);
+    EXPECT_EQ(ERR_IO_PENDING, rv);  // Since the default is asynchronous.
+
+    writers_->StopCaching(false /* keep_entry */);
+
+    // Cannot add more writers while we are in network read only state.
+    EXPECT_FALSE(writers_->CanAddWriters());
+
+    // Complete the Read and the entry should be truncated.
+    base::RunLoop().RunUntilIdle();
   }
 
   void ReadAll() { ReadAllDeleteTransaction(DeleteTransactionType::NONE); }
@@ -396,15 +413,15 @@ class WritersTest : public testing::Test {
   }
 
   bool StopCaching() {
-    MockHttpCacheTransaction* transaction = transactions_.begin()->get();
+    TestHttpCacheTransaction* transaction = transactions_.begin()->get();
     EXPECT_TRUE(transaction);
     return writers_->StopCaching(transaction);
   }
 
   void RemoveFirstTransaction() {
-    MockHttpCacheTransaction* transaction = transactions_.begin()->get();
+    TestHttpCacheTransaction* transaction = transactions_.begin()->get();
     EXPECT_TRUE(transaction);
-    writers_->RemoveTransaction(transaction);
+    writers_->RemoveTransaction(transaction, false /* success */);
   }
 
   void UpdateAndVerifyPriority(RequestPriority priority) {
@@ -412,23 +429,34 @@ class WritersTest : public testing::Test {
     EXPECT_EQ(priority, writers_->priority_);
   }
 
+  void TruncateEntryNoStrongValidators() {
+    writers_->InitiateTruncateEntry();
+    EXPECT_FALSE(writers_->ShouldKeepEntry());
+  }
+
   MockHttpCache cache_;
   std::unique_ptr<HttpCache::Writers> writers_;
   disk_cache::Entry* disk_entry_;
+  std::unique_ptr<HttpCache::ActiveEntry> entry_;
+  TestHttpCache test_cache_;
 
   // Should be before transactions_ since it is accessed in the network
   // transaction's destructor.
   MockHttpRequest request_;
 
+  HttpResponseInfo response_info_;
   static const int kDefaultBufferSize = 256;
 
-  std::vector<std::unique_ptr<MockHttpCacheTransaction>> transactions_;
+  std::vector<std::unique_ptr<TestHttpCacheTransaction>> transactions_;
 };
 
 // Tests successful addition of a transaction.
 TEST_F(WritersTest, AddTransaction) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
+
+  // Verify keep_entry_ is true by default.
+  EXPECT_TRUE(writers_->ShouldKeepEntry());
 }
 
 // Tests successful addition of multiple transactions.
@@ -439,7 +467,7 @@ TEST_F(WritersTest, AddManyTransactions) {
   for (int i = 0; i < 5; i++)
     AddTransactionToExistingWriters();
 
-  EXPECT_EQ(6, writers_->CountTransactionsForTesting());
+  EXPECT_EQ(6, writers_->GetTransactionsCount());
 }
 
 // Tests that CanAddWriters should return false if it is writing exclusively.
@@ -471,6 +499,13 @@ TEST_F(WritersTest, StopCaching) {
   EXPECT_FALSE(writers_->CanAddWriters());
 }
 
+// Tests StopCaching should be successful when invoked mid-read.
+TEST_F(WritersTest, StopCachingMidRead) {
+  CreateWritersAddTransaction();
+  EXPECT_FALSE(writers_->IsEmpty());
+  MidReadStopCaching();
+}
+
 // Tests removing of an idle transaction and change in priority.
 TEST_F(WritersTest, RemoveIdleTransaction) {
   CreateWritersAddTransactionPriority(HIGHEST);
@@ -480,10 +515,10 @@ TEST_F(WritersTest, RemoveIdleTransaction) {
   UpdateAndVerifyPriority(HIGHEST);
 
   EXPECT_FALSE(writers_->IsEmpty());
-  EXPECT_EQ(2, writers_->CountTransactionsForTesting());
+  EXPECT_EQ(2, writers_->GetTransactionsCount());
 
   RemoveFirstTransaction();
-  EXPECT_EQ(1, writers_->CountTransactionsForTesting());
+  EXPECT_EQ(1, writers_->GetTransactionsCount());
 
   UpdateAndVerifyPriority(DEFAULT_PRIORITY);
 }
@@ -551,6 +586,16 @@ TEST_F(WritersTest, ReadMultipleDeleteActiveTransaction) {
   ReadAllDeleteTransaction(DeleteTransactionType::ACTIVE);
 }
 
+// Tests that ongoing Read completes even when active transaction is deleted
+// mid-read and there are no more transactions. It should also successfully
+// initiate truncation of the entry.
+TEST_F(WritersTest, MidReadDeleteActiveTransaction) {
+  CreateWritersAddTransaction();
+  EXPECT_FALSE(writers_->IsEmpty());
+  EXPECT_TRUE(writers_->CanAddWriters());
+  MidReadDeleteActiveTransaction();
+}
+
 // Tests that removing a waiting for read transaction does not impact other
 // transactions.
 TEST_F(WritersTest, ReadMultipleDeleteWaitingTransaction) {
@@ -596,9 +641,6 @@ TEST_F(WritersTest, ReadMultipleCacheWriteFailed) {
 
   // Only active_transaction_ should succeed.
   EXPECT_EQ(expected, contents.at(0));
-
-  // No new transactions should now be added.
-  EXPECT_FALSE(writers_->CanAddWriters());
 }
 
 // Tests that network read failure fails all transactions: active, waiting and
@@ -622,43 +664,44 @@ TEST_F(WritersTest, ReadMultipleNetworkReadFailed) {
   EXPECT_EQ(ERR_INTERNET_DISCONNECTED, rv);
 }
 
-// Tests moving idle writers to readers.
-TEST_F(WritersTest, MoveIdleWritersToReaders) {
+// Tests GetLoadState.
+TEST_F(WritersTest, GetLoadState) {
   CreateWritersAddTransaction();
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_TRUE(writers_->CanAddWriters());
-  AddTransactionToExistingWriters();
-  AddTransactionToExistingWriters();
-
-  EXPECT_FALSE(writers_->IsEmpty());
-  writers_->RemoveAllIdleWriters();
-  EXPECT_TRUE(writers_->IsEmpty());
+  EXPECT_EQ(LOAD_STATE_IDLE, writers_->GetLoadState());
 }
 
-// Tests GetWriterLoadState.
-TEST_F(WritersTest, GetWriterLoadState) {
+// Tests truncating logic.
+TEST_F(WritersTest, TruncateEntryFail) {
   CreateWritersAddTransaction();
+
   EXPECT_FALSE(writers_->IsEmpty());
 
-  EXPECT_EQ(LOAD_STATE_IDLE, writers_->GetWriterLoadState());
+  RemoveFirstTransaction();
+
+  // Should return false since the entry does not have strong validators and
+  // thus cannot be resumed.
+  TruncateEntryNoStrongValidators();
 }
 
-// Tests truncating the entry via Writers.
-TEST_F(WritersTest, TruncateEntry) {
-  CreateWritersAddTransaction();
-  EXPECT_FALSE(writers_->IsEmpty());
+// Set network read only.
+TEST_F(WritersTest, StopCachingWithKeepEntry) {
+  CreateWritersAddTransaction(true /* is exclusive */);
+  EXPECT_FALSE(writers_->network_read_only());
 
-  std::string content;
-  int rv = Read(&content);
+  writers_->StopCaching(true /* keep_entry */);
+  EXPECT_TRUE(writers_->network_read_only());
+  EXPECT_TRUE(writers_->ShouldKeepEntry());
+}
 
-  EXPECT_THAT(rv, IsOk());
-  std::string expected(kSimpleGET_Transaction.data);
-  EXPECT_EQ(expected, content);
+TEST_F(WritersTest, StopCachingWithNotKeepEntry) {
+  CreateWritersAddTransaction(true /* is exclusive */);
+  EXPECT_FALSE(writers_->network_read_only());
 
-  writers_->TruncateEntry();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(writers_->IsTruncatedForTesting());
+  writers_->StopCaching(false /* keep_entry */);
+  EXPECT_TRUE(writers_->network_read_only());
+  EXPECT_FALSE(writers_->ShouldKeepEntry());
 }
 
 }  // namespace net

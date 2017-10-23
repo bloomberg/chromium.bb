@@ -14,6 +14,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_cache_writers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -724,16 +725,12 @@ void MockHttpCache::SetTestMode(int test_mode) {
 
 bool MockHttpCache::IsWriterPresent(const std::string& key) {
   HttpCache::ActiveEntry* entry = http_cache_.FindActiveEntry(key);
-  if (entry)
-    return entry->writer;
-  return false;
+  return entry && entry->writers && !entry->writers->IsEmpty();
 }
 
 bool MockHttpCache::IsHeadersTransactionPresent(const std::string& key) {
   HttpCache::ActiveEntry* entry = http_cache_.FindActiveEntry(key);
-  if (entry)
-    return entry->headers_transaction;
-  return false;
+  return entry && entry->headers_transaction;
 }
 
 int MockHttpCache::GetCountReaders(const std::string& key) {
