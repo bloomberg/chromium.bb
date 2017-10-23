@@ -154,7 +154,7 @@ def main(argv=None):
                     help="Write last change to FILE. " +
                     "Can be combined with --header to write both files.")
   parser.add_option("", "--header", metavar="FILE",
-                    help="Write last change go FILE as a C/C++ header. " +
+                    help="Write last change to FILE as a C/C++ header. " +
                     "Can be combined with --output to write both files.")
   parser.add_option("--revision-id-only", action='store_true',
                     help="Output the revision as a VCS revision ID only (in " +
