@@ -320,7 +320,7 @@ const base::Feature kTurnOff2DAndOpacityCompositorAnimations{
 // Use Feature Policy to gate the use of permission features like midi,
 // geolocation, camera, microphone, etc.
 const base::Feature kUseFeaturePolicyForPermissions{
-    "UseFeaturePolicyForPermissions", base::FEATURE_DISABLED_BY_DEFAULT};
+    "UseFeaturePolicyForPermissions", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Use MojoAudioOutputIPC and RenderFrameAudioOutputStreamFactory rather than
 // AudioMessageFilter and AudioRendererHost.
