@@ -24,6 +24,11 @@ const char kANGLEImplementationOpenGLName[]   = "gl";
 const char kANGLEImplementationOpenGLESName[] = "gles";
 const char kANGLEImplementationNullName[]     = "null";
 
+// Special switches for "NULL"/stub driver implementations.
+const char kANGLEImplementationD3D11NULLName[] = "d3d11-null";
+const char kANGLEImplementationOpenGLNULLName[] = "gl-null";
+const char kANGLEImplementationOpenGLESNULLName[] = "gles-null";
+
 }  // namespace gl
 
 namespace switches {
