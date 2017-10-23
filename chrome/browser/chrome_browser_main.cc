@@ -160,10 +160,12 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/site_instance.h"
+#include "content/public/browser/webvr_service_provider.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
+#include "device/vr/features/features.h"
 #include "extensions/features/features.h"
 #include "media/base/localized_strings.h"
 #include "media/media_features.h"
@@ -286,6 +288,10 @@
 #if defined(OS_WIN) || defined(OS_MACOSX) || \
     (defined(OS_LINUX) && !defined(OS_CHROMEOS))
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
+#endif
+
+#if BUILDFLAG(ENABLE_VR)
+#include "chrome/browser/vr/service/vr_service_impl.h"
 #endif
 
 using content::BrowserThread;
@@ -1131,6 +1137,11 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 #endif  // defined(OS_CHROMEOS)
 
   SetupOriginTrialsCommandLine();
+
+#if BUILDFLAG(ENABLE_VR)
+  content::WebvrServiceProvider::SetWebvrServiceCallback(
+      base::Bind(&vr::VRServiceImpl::Create));
+#endif
 
   // Now that the command line has been mutated based on about:flags, we can
   // initialize field trials. The field trials are needed by IOThread's
