@@ -165,9 +165,6 @@ struct URLRequestContextConfig {
   std::unique_ptr<base::DictionaryValue> effective_experimental_options =
       nullptr;
 
-  // Enable reading of the network quality from the prefs.
-  bool nqe_persistent_caching_enabled;
-
   // If set, forces NQE to return the set value as the effective connection
   // type.
   base::Optional<net::EffectiveConnectionType>

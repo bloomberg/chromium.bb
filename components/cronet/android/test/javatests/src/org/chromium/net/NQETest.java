@@ -274,11 +274,6 @@ public class NQETest {
                     false);
             cronetEngineBuilder.setStoragePath(getTestStorage(getContext()));
 
-            JSONObject nqeOptions = new JSONObject().put("persistent_cache_reading_enabled", true);
-            JSONObject experimentalOptions =
-                    new JSONObject().put("NetworkQualityEstimator", nqeOptions);
-
-            cronetEngineBuilder.setExperimentalOptions(experimentalOptions.toString());
             final ExperimentalCronetEngine cronetEngine = cronetEngineBuilder.build();
             cronetEngine.configureNetworkQualityEstimatorForTesting(true, true, true);
             cronetEngine.addRttListener(rttListener);
