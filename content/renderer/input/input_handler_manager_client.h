@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "cc/input/touch_action.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_event_ack_state.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEventResult.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/vector2d_f.h"

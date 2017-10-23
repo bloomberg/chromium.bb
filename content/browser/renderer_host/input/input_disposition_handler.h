@@ -6,9 +6,9 @@
 #define CONTENT_BROWSER_RENDERER_HOST_INPUT_INPUT_DISPOSITION_HANDLER_H_
 
 #include "content/browser/renderer_host/event_with_latency_info.h"
-#include "content/common/input/input_event_ack_source.h"
-#include "content/common/input/input_event_ack_state.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input_event_ack_source.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {

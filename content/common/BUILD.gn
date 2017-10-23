@@ -172,8 +172,6 @@ source_set("common") {
     "input/input_event.h",
     "input/input_event_ack.cc",
     "input/input_event_ack.h",
-    "input/input_event_ack_source.h",
-    "input/input_event_ack_state.h",
     "input/input_event_dispatch_type.h",
     "input/input_event_stream_validator.cc",
     "input/input_event_stream_validator.h",

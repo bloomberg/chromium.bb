@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_event_ack_state.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "ui/android/overscroll_glow.h"
 #include "ui/android/overscroll_refresh.h"
 #include "ui/gfx/geometry/vector2d_f.h"

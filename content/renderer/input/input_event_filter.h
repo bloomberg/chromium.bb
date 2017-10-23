@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/synchronization/lock.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_event_ack_state.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "content/renderer/input/input_handler_manager_client.h"
 #include "content/renderer/input/main_thread_event_queue.h"
 #include "ipc/message_filter.h"

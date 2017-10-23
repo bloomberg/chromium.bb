@@ -9,9 +9,9 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 #include "content/browser/renderer_host/input/touch_event_queue.h"
-#include "content/common/input/input_event_ack_state.h"
 #include "content/common/widget.mojom.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_listener.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
