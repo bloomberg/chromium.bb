@@ -108,7 +108,7 @@ AddressNormalizationManager::NormalizerDelegate::NormalizerDelegate(
   const std::string country_code =
       autofill::data_util::GetCountryCodeWithFallback(*profile_,
                                                       owner->app_locale_);
-  address_normalizer->NormalizeAddress(
+  address_normalizer->NormalizeAddressAsync(
       *profile_, country_code, kAddressNormalizationTimeoutSeconds,
       base::BindOnce(&NormalizerDelegate::OnAddressNormalized,
                      base::Unretained(this)));

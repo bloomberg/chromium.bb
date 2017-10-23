@@ -71,7 +71,7 @@ void AutofillPaymentInstrument::InvokePaymentApp(
   // from the |app_locale_|.
   std::string country_code = autofill::data_util::GetCountryCodeWithFallback(
       billing_address_, app_locale_);
-  payment_request_delegate_->GetAddressNormalizer()->NormalizeAddress(
+  payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
       billing_address_, country_code, /*timeout_seconds=*/5,
       base::BindOnce(&AutofillPaymentInstrument::OnAddressNormalized,
                      weak_ptr_factory_.GetWeakPtr()));

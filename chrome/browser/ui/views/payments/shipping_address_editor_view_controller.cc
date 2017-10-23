@@ -58,8 +58,7 @@ ShippingAddressEditorViewController::ShippingAddressEditorViewController(
       on_added_(std::move(on_added)),
       profile_to_edit_(profile),
       chosen_country_index_(kInvalidCountryIndex),
-      failed_to_load_region_data_(false),
-      weak_ptr_factory_(this) {
+      failed_to_load_region_data_(false) {
   if (profile_to_edit_)
     temporary_profile_ = *profile_to_edit_;
   UpdateCountries(/*model=*/nullptr);
@@ -487,11 +486,9 @@ void ShippingAddressEditorViewController::OnDataChanged(bool synchronous) {
   // (there's no data to go in the region combobox anyways).
   std::string country_code = countries_[chosen_country_index_].first;
   if (state()->GetAddressNormalizer()->AreRulesLoadedForRegion(country_code)) {
-    state()->GetAddressNormalizer()->NormalizeAddress(
-        temporary_profile_, country_code, /*timeout_seconds=*/1,
-        base::BindOnce(
-            &ShippingAddressEditorViewController::OnAddressNormalized,
-            weak_ptr_factory_.GetWeakPtr()));
+    bool success = state()->GetAddressNormalizer()->NormalizeAddressSync(
+        &temporary_profile_, country_code);
+    DCHECK(success);
   }
 
   UpdateEditorFields();
@@ -584,12 +581,6 @@ void ShippingAddressEditorViewController::OnComboboxModelChanged(
       OnPerformAction(combobox);
     }
   }
-}
-
-void ShippingAddressEditorViewController::OnAddressNormalized(
-    bool success,
-    const autofill::AutofillProfile& normalized) {
-  temporary_profile_ = normalized;
 }
 
 }  // namespace payments

@@ -57,7 +57,7 @@ PaymentResponseHelper::PaymentResponseHelper(
     const std::string country_code =
         autofill::data_util::GetCountryCodeWithFallback(
             *selected_shipping_profile, app_locale_);
-    payment_request_delegate_->GetAddressNormalizer()->NormalizeAddress(
+    payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
         *selected_shipping_profile, country_code,
         /*timeout_seconds=*/5,
         base::BindOnce(&PaymentResponseHelper::OnAddressNormalized,

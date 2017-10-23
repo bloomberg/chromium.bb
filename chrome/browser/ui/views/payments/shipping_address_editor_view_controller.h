@@ -11,7 +11,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/ui/views/payments/editor_view_controller.h"
 #include "chrome/browser/ui/views/payments/validating_textfield.h"
@@ -29,9 +28,7 @@ class PaymentRequestState;
 class PaymentRequestDialogView;
 
 // Shipping Address editor screen of the Payment Request flow.
-class ShippingAddressEditorViewController
-    : public EditorViewController,
-      public base::SupportsWeakPtr<ShippingAddressEditorViewController> {
+class ShippingAddressEditorViewController : public EditorViewController {
  public:
   // Does not take ownership of the arguments (except for the |on_edited| and
   // |on_added| callbacks), which should outlive this object. Additionally,
@@ -120,10 +117,6 @@ class ShippingAddressEditorViewController
   // there is no data in the combobox and it must be converted to a text field.
   void OnComboboxModelChanged(views::Combobox* combobox);
 
-  // Used as AddressNormalizer::NormalizationCallback.
-  void OnAddressNormalized(bool success,
-                           const autofill::AutofillProfile& normalized_profile);
-
   // Called when |profile_to_edit_| was successfully edited.
   base::OnceClosure on_edited_;
   // Called when a new profile was added. The const reference is short-lived,
@@ -163,8 +156,6 @@ class ShippingAddressEditorViewController
 
   // Owned by the state combobox, which is owned by this object's base class.
   autofill::RegionComboboxModel* region_model_;
-
-  base::WeakPtrFactory<ShippingAddressEditorViewController> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ShippingAddressEditorViewController);
 };

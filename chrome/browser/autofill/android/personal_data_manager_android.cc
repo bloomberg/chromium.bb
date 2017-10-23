@@ -724,7 +724,7 @@ void PersonalDataManagerAndroid::StartAddressNormalization(
   PopulateNativeProfileFromJava(jprofile, env, &profile);
 
   // Start the normalization.
-  address_normalizer_.NormalizeAddress(
+  address_normalizer_.NormalizeAddressAsync(
       profile, region_code, jtimeout_seconds,
       base::BindOnce(&OnAddressNormalized,
                      ScopedJavaGlobalRef<jobject>(jdelegate)));

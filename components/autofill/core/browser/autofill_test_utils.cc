@@ -241,6 +241,14 @@ AutofillProfile GetFullProfile2() {
   return profile;
 }
 
+AutofillProfile GetFullCanadianProfile() {
+  AutofillProfile profile(base::GenerateGUID(), "http://www.example.com/");
+  SetProfileInfo(&profile, "Wayne", "", "Gretzky", "wayne@hockey.com", "NHL",
+                 "123 Hockey rd.", "Apt 8", "Moncton", "New Brunswick",
+                 "E1A 0A6", "CA", "15068531212");
+  return profile;
+}
+
 AutofillProfile GetIncompleteProfile1() {
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com/");
   SetProfileInfo(&profile, "John", "H.", "Doe", "jsmith@example.com", "ACME",

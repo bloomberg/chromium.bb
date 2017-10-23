@@ -332,7 +332,7 @@ void PaymentRequestState::SetSelectedShippingProfile(
   // from the |app_locale_|.
   std::string country_code = autofill::data_util::GetCountryCodeWithFallback(
       *selected_shipping_profile_, app_locale_);
-  payment_request_delegate_->GetAddressNormalizer()->NormalizeAddress(
+  payment_request_delegate_->GetAddressNormalizer()->NormalizeAddressAsync(
       *selected_shipping_profile_, country_code, /*timeout_seconds=*/2,
       base::BindOnce(&PaymentRequestState::OnAddressNormalized,
                      weak_ptr_factory_.GetWeakPtr()));
