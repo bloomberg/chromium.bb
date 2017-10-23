@@ -57,7 +57,7 @@ class ScopedAnimatorsSweeper {
 AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
     const KURL& url,
     const String& user_agent,
-    RefPtr<SecurityOrigin> document_security_origin,
+    scoped_refptr<SecurityOrigin> document_security_origin,
     v8::Isolate* isolate,
     WorkerThread* thread,
     WorkerClients* worker_clients) {
@@ -69,7 +69,7 @@ AnimationWorkletGlobalScope* AnimationWorkletGlobalScope::Create(
 AnimationWorkletGlobalScope::AnimationWorkletGlobalScope(
     const KURL& url,
     const String& user_agent,
-    RefPtr<SecurityOrigin> document_security_origin,
+    scoped_refptr<SecurityOrigin> document_security_origin,
     v8::Isolate* isolate,
     WorkerThread* thread,
     WorkerClients* worker_clients)

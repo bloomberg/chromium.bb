@@ -232,8 +232,9 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
   response->PopulateWebServiceWorkerResponse(web_response);
   BodyStreamBuffer* buffer = response->InternalBodyBuffer();
   if (buffer) {
-    RefPtr<BlobDataHandle> blob_data_handle = buffer->DrainAsBlobDataHandle(
-        BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
+    scoped_refptr<BlobDataHandle> blob_data_handle =
+        buffer->DrainAsBlobDataHandle(
+            BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
     if (blob_data_handle) {
       // Handle the blob response body.
       web_response.SetBlobDataHandle(blob_data_handle);

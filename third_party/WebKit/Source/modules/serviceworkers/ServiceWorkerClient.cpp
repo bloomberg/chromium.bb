@@ -86,10 +86,11 @@ String ServiceWorkerClient::frameType(ScriptState* script_state) const {
   return String();
 }
 
-void ServiceWorkerClient::postMessage(ScriptState* script_state,
-                                      RefPtr<SerializedScriptValue> message,
-                                      const MessagePortArray& ports,
-                                      ExceptionState& exception_state) {
+void ServiceWorkerClient::postMessage(
+    ScriptState* script_state,
+    scoped_refptr<SerializedScriptValue> message,
+    const MessagePortArray& ports,
+    ExceptionState& exception_state) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   // Disentangle the port in preparation for sending it to the remote context.
   auto channels =

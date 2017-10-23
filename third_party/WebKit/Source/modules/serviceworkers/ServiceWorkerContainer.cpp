@@ -165,7 +165,7 @@ void ServiceWorkerContainer::RegisterServiceWorkerImpl(
     return;
   }
 
-  RefPtr<SecurityOrigin> document_origin =
+  scoped_refptr<SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
   String error_message;
   // Restrict to secure origins:
@@ -190,7 +190,8 @@ void ServiceWorkerContainer::RegisterServiceWorkerImpl(
   KURL script_url = raw_script_url;
   script_url.RemoveFragmentIdentifier();
   if (!document_origin->CanRequest(script_url)) {
-    RefPtr<SecurityOrigin> script_origin = SecurityOrigin::Create(script_url);
+    scoped_refptr<SecurityOrigin> script_origin =
+        SecurityOrigin::Create(script_url);
     callbacks->OnError(
         WebServiceWorkerError(mojom::blink::ServiceWorkerErrorType::kSecurity,
                               String("Failed to register a ServiceWorker: The "
@@ -214,7 +215,8 @@ void ServiceWorkerContainer::RegisterServiceWorkerImpl(
   pattern_url.RemoveFragmentIdentifier();
 
   if (!document_origin->CanRequest(pattern_url)) {
-    RefPtr<SecurityOrigin> pattern_origin = SecurityOrigin::Create(pattern_url);
+    scoped_refptr<SecurityOrigin> pattern_origin =
+        SecurityOrigin::Create(pattern_url);
     callbacks->OnError(
         WebServiceWorkerError(mojom::blink::ServiceWorkerErrorType::kSecurity,
                               String("Failed to register a ServiceWorker: The "
@@ -322,7 +324,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   if (!execution_context)
     return ScriptPromise();
 
-  RefPtr<SecurityOrigin> document_origin =
+  scoped_refptr<SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
   String error_message;
   if (!execution_context->IsSecureContext(error_message)) {
@@ -344,7 +346,7 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
   KURL completed_url = execution_context->CompleteURL(document_url);
   completed_url.RemoveFragmentIdentifier();
   if (!document_origin->CanRequest(completed_url)) {
-    RefPtr<SecurityOrigin> document_url_origin =
+    scoped_refptr<SecurityOrigin> document_url_origin =
         SecurityOrigin::Create(completed_url);
     resolver->Reject(
         DOMException::Create(kSecurityError,
@@ -375,7 +377,7 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
   }
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  RefPtr<SecurityOrigin> document_origin =
+  scoped_refptr<SecurityOrigin> document_origin =
       execution_context->GetSecurityOrigin();
   String error_message;
   if (!execution_context->IsSecureContext(error_message)) {
@@ -454,7 +456,8 @@ void ServiceWorkerContainer::DispatchMessageEvent(
 
   MessagePortArray* ports =
       MessagePort::EntanglePorts(*GetExecutionContext(), std::move(channels));
-  RefPtr<SerializedScriptValue> value = SerializedScriptValue::Create(message);
+  scoped_refptr<SerializedScriptValue> value =
+      SerializedScriptValue::Create(message);
   ServiceWorker* source = ServiceWorker::From(
       GetExecutionContext(), WTF::WrapUnique(handle.release()));
   DispatchEvent(MessageEvent::Create(
