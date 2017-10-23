@@ -44,5 +44,7 @@ Patches:
       * Include stdlib.h for declaration of malloc, free.
     0004-Remove-truncating-cast-of-constant.patch:
       * Truncate after multiplying when doing random number stuff.
+    0005-Fix-Win-Clang-Wsign-compare-warning.patch
+      * Adds a cast to fix Clang -Wsign-compare warning.
   Added files:
     lib/expat_config.h (a generated config file)
