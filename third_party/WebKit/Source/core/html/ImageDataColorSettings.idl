@@ -11,6 +11,6 @@ enum ImageDataStorageFormat {
 };
 
 dictionary ImageDataColorSettings {
-  CanvasColorSpace colorSpace = "srgb";
+  CanvasColorSpace colorSpace = "legacy-srgb";
   ImageDataStorageFormat storageFormat = "uint8";
 };

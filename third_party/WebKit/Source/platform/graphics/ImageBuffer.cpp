@@ -387,11 +387,6 @@ bool ImageBuffer::GetImageData(Multiply multiplied,
   SkImageInfo info =
       SkImageInfo::Make(rect.Width(), rect.Height(), color_type, alpha_type,
                         surface_->ColorParams().GetSkColorSpaceForSkSurfaces());
-
-  // If color correct rendering is enabled but color canvas extensions is not,
-  // unpremul must be done in gamma encoded color space.
-  if (!RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled())
-    info = info.makeColorSpace(nullptr);
   snapshot->PaintImageForCurrentFrame().GetSkImage()->readPixels(
       info, result.Data(), bytes_per_pixel * rect.Width(), rect.X(), rect.Y());
   gpu_readback_invoked_in_current_frame_ = true;

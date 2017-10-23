@@ -73,10 +73,6 @@ typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::SetExperimentalCanvasFeaturesEnabled>
     ScopedExperimentalCanvasFeaturesForTest;
 typedef ScopedRuntimeEnabledFeatureForTest<
-    RuntimeEnabledFeatures::ColorCanvasExtensionsEnabled,
-    RuntimeEnabledFeatures::SetColorCanvasExtensionsEnabled>
-    ScopedColorCanvasExtensionsForTest;
-typedef ScopedRuntimeEnabledFeatureForTest<
     RuntimeEnabledFeatures::CSSVariables2Enabled,
     RuntimeEnabledFeatures::SetCSSVariables2Enabled>
     ScopedCSSVariables2ForTest;
