@@ -13,13 +13,9 @@ class ContainerFullWidthBehaviorTest : public testing::Test {
  public:
   ContainerFullWidthBehaviorTest() {}
   ~ContainerFullWidthBehaviorTest() override {}
-
-  void SetUp() override {}
-
-  void TearDown() override {}
 };
 
-TEST_F(ContainerFullWidthBehaviorTest, AdjustSetBoundsRequest) {
+TEST(ContainerFullWidthBehaviorTest, AdjustSetBoundsRequest) {
   ContainerFullWidthBehavior full_width_behavior;
 
   gfx::Rect workspace(0, 0, 300, 200);
