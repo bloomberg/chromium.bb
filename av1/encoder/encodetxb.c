@@ -452,7 +452,7 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   if (eob == 0) return;
 
   for (int i = 0; i < seg_eob; i++) {
-    levels[i] = (uint8_t)abs(tcoeff[i]);
+    levels[i] = (uint8_t)clamp(abs(tcoeff[i]), 0, UINT8_MAX);
     signs[i] = (int8_t)(tcoeff[i] < 0);
   }
 
@@ -670,7 +670,8 @@ void av1_write_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #endif  // BR_NODE
 
     // use 0-th order Golomb code to handle the residual level.
-    write_golomb(w, level - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
+    write_golomb(w,
+                 abs(tcoeff[scan[c]]) - COEFF_BASE_RANGE - 1 - NUM_BASE_LEVELS);
   }
 }
 
@@ -2623,7 +2624,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
               pd->left_context + blk_row, &txb_ctx);
   const int bwl = b_width_log2_lookup[txsize_to_bsize[tx_size]] + 2;
   const int height = tx_size_high[tx_size];
-  int cul_level = 0;
   uint8_t levels[64 * 64];
   int8_t signs[64 * 64];
 
@@ -2647,7 +2647,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
   }
 
   for (i = 0; i < seg_eob; i++) {
-    levels[i] = (uint8_t)abs(tcoeff[i]);
+    levels[i] = (uint8_t)clamp(abs(tcoeff[i]), 0, UINT8_MAX);
     signs[i] = (int8_t)(tcoeff[i] < 0);
   }
 
@@ -2737,7 +2737,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 #endif
           x->mbmi_ext->dc_sign_ctx[plane][block] = dc_sign_ctx;
         }
-        cul_level += level;
         continue;
       }
       ++td->counts->coeff_base[txsize_ctx][plane_type][i][ctx][0];
@@ -2756,7 +2755,6 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
 
     if (level <= NUM_BASE_LEVELS) continue;
 
-    cul_level += level;
     if (c == 0) {
       int dc_sign_ctx = txb_ctx.dc_sign_ctx;
 
@@ -2826,10 +2824,7 @@ void av1_update_and_record_txb_context(int plane, int block, int blk_row,
     // use 0-th order Golomb code to handle the residual level.
   }
 
-  cul_level = AOMMIN(COEFF_CONTEXT_MASK, cul_level);
-
-  // DC value
-  set_dc_sign(&cul_level, tcoeff[0]);
+  int cul_level = av1_get_txb_entropy_context(tcoeff, scan_order, eob);
   av1_set_contexts(xd, pd, plane, tx_size, cul_level, blk_col, blk_row);
 
 #if CONFIG_ADAPT_SCAN

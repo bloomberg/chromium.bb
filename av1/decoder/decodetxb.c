@@ -592,15 +592,16 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
 #endif
 
     // decode 0-th order Golomb code
-    *level =
-        read_golomb(xd, r, counts) + COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
-    cul_level += *level;
+    *level = COEFF_BASE_RANGE + 1 + NUM_BASE_LEVELS;
+    // Save golomb in tcoeffs because adding it to level may incur overflow
+    tcoeffs[scan[c]] = read_golomb(xd, r, counts);
+    cul_level += *level + tcoeffs[scan[c]];
   }
 
   for (c = 0; c < *eob; ++c) {
     const int16_t dqv = (c == 0) ? dequant[0] : dequant[1];
     const int level = levels[scan[c]];
-    const int16_t t = (level * dqv) >> shift;
+    const int16_t t = ((level + tcoeffs[scan[c]]) * dqv) >> shift;
 #if CONFIG_SYMBOLRATE
     av1_record_coeff(counts, level);
 #endif
