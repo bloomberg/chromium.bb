@@ -70,6 +70,34 @@ bool URLsEqualUpToHttpHttpsSubstitution(const GURL& a, const GURL& b) {
   return false;
 }
 
+// Checks if the observed form looks like the submitted one to handle "Invalid
+// password entered" case so we don't offer a password save when we shouldn't.
+bool IsPasswordFormReappeared(const autofill::PasswordForm& observed_form,
+                              const autofill::PasswordForm& submitted_form) {
+  if (observed_form.action.is_valid() &&
+      URLsEqualUpToHttpHttpsSubstitution(submitted_form.action,
+                                         observed_form.action)) {
+    return true;
+  }
+
+  // Match the form if username and password fields are same.
+  if (base::EqualsCaseInsensitiveASCII(observed_form.username_element,
+                                       submitted_form.username_element) &&
+      base::EqualsCaseInsensitiveASCII(observed_form.password_element,
+                                       submitted_form.password_element)) {
+    return true;
+  }
+
+  // Match the form if the observed username field has the same value as in
+  // the submitted form.
+  if (!submitted_form.username_value.empty() &&
+      observed_form.username_value == submitted_form.username_value) {
+    return true;
+  }
+
+  return false;
+}
+
 // Helper UMA reporting function for differences in URLs during form submission.
 void RecordWhetherTargetDomainDiffers(const GURL& src, const GURL& target) {
   bool target_domain_differs =
@@ -702,10 +730,9 @@ void PasswordManager::OnPasswordFormsRendered(
         // HTTP<->HTTPS substitution for now. If it becomes more complex, it may
         // make sense to consider modifying and using
         // PasswordFormManager::DoesManage for it.
-        if (all_visible_forms_[i].action.is_valid() &&
-            URLsEqualUpToHttpHttpsSubstitution(
-                provisional_save_manager_->pending_credentials().action,
-                all_visible_forms_[i].action)) {
+        if (IsPasswordFormReappeared(
+                all_visible_forms_[i],
+                provisional_save_manager_->pending_credentials())) {
           if (provisional_save_manager_
                   ->is_possible_change_password_form_without_username() &&
               AreAllFieldsEmpty(all_visible_forms_[i]))
