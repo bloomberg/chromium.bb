@@ -8,6 +8,7 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "content/network/network_context.h"
 #include "content/network/network_service_impl.h"
 #include "content/public/common/network_service.mojom.h"
@@ -361,10 +362,10 @@ class TestNetworkChangeManagerClient
 
 // mojom:NetworkChangeManager currently doesn't support ChromeOS, which has a
 // different code path to set up net::NetworkChangeNotifier.
-#if defined(OS_CHROMEOS)
+#if defined(OS_CHROMEOS) || defined(OS_FUCHSIA)
 #define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
 #else
-#define MAYBE_NetworkChangeManagerRequest DISABLED_NetworkChangeManagerRequest
+#define MAYBE_NetworkChangeManagerRequest NetworkChangeManagerRequest
 #endif
 TEST_F(NetworkServiceTest, MAYBE_NetworkChangeManagerRequest) {
   TestNetworkChangeManagerClient manager_client(service());
