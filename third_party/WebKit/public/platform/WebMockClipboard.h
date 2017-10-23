@@ -5,16 +5,24 @@
 #ifndef WebMockClipboard_h
 #define WebMockClipboard_h
 
+#include "base/containers/span.h"
 #include "public/platform/WebClipboard.h"
+#include "public/platform/WebCommon.h"
 #include "public/platform/WebImage.h"
 
 namespace blink {
 
 // Provides convenience methods for retrieving data from the mock clipboard
 // used in layout and unit tests.
-class WebMockClipboard : public WebClipboard {
+class BLINK_PLATFORM_EXPORT WebMockClipboard : public WebClipboard {
  public:
   virtual WebImage ReadRawImage(Buffer) { return WebImage(); }
+
+ protected:
+  // Convenience method for WebMockClipoard implementations to create a blob
+  // from bytes.
+  WebBlobInfo CreateBlobFromData(base::span<const uint8_t> data,
+                                 const WebString& mime_type);
 };
 
 }  // namespace blink

@@ -2,6 +2,7 @@ include_rules = [
     "+base/callback.h",
     "+base/callback_forward.h",
     "+base/containers/flat_set.h",
+    "+base/containers/span.h",
     "+base/location.h",
     "+base/logging.h",
     "+base/memory/ref_counted.h",
