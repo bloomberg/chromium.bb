@@ -374,6 +374,14 @@ void ArcAccessibilityHelperBridge::OnAction(
     case ui::AX_ACTION_DO_DEFAULT:
       action_data->action_type = arc::mojom::AccessibilityActionType::CLICK;
       break;
+    case ui::AX_ACTION_FOCUS:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::ACCESSIBILITY_FOCUS;
+      break;
+    case ui::AX_ACTION_SCROLL_TO_MAKE_VISIBLE:
+      action_data->action_type =
+          arc::mojom::AccessibilityActionType::SHOW_ON_SCREEN;
+      break;
     case ui::AX_ACTION_SCROLL_BACKWARD:
       action_data->action_type =
           arc::mojom::AccessibilityActionType::SCROLL_BACKWARD;
