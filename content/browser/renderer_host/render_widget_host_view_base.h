@@ -135,6 +135,8 @@ class CONTENT_EXPORT RenderWidgetHostViewBase : public RenderWidgetHostView,
   // that handle content embedded within other RenderWidgetHostViews.
   gfx::PointF TransformPointToRootCoordSpaceF(
       const gfx::PointF& point) override;
+  gfx::PointF TransformRootPointToViewCoordSpace(
+      const gfx::PointF& point) override;
 
   // IPC::Listener implementation:
   bool OnMessageReceived(const IPC::Message& msg) override;

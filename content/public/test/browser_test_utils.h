@@ -26,6 +26,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/context_menu_params.h"
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -135,6 +136,13 @@ void SimulateMouseClickAt(WebContents* web_contents,
                           int modifiers,
                           blink::WebMouseEvent::Button button,
                           const gfx::Point& point);
+
+// Same as SimulateMouseClickAt() except it forces the mouse event to go through
+// RenderWidgetHostInputEventRouter.
+void SimulateRoutedMouseClickAt(WebContents* web_contents,
+                                int modifiers,
+                                blink::WebMouseEvent::Button button,
+                                const gfx::Point& point);
 
 // Simulates asynchronously a mouse enter/move/leave event.
 void SimulateMouseEvent(WebContents* web_contents,
@@ -949,6 +957,30 @@ class MockOverscrollController {
   virtual void WaitForConsumedScroll() = 0;
 };
 #endif  // defined(USE_AURA)
+
+// This class filters for FrameHostMsg_ContextMenu messages coming in
+// from a renderer process, and allows observing the ContextMenuParams
+// as sent by the renderer.
+class ContextMenuFilter : public content::BrowserMessageFilter {
+ public:
+  ContextMenuFilter();
+
+  bool OnMessageReceived(const IPC::Message& message) override;
+  void Wait();
+
+  content::ContextMenuParams get_params() { return last_params_; }
+
+ private:
+  ~ContextMenuFilter() override;
+
+  void OnContextMenu(const content::ContextMenuParams& params);
+
+  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  content::ContextMenuParams last_params_;
+  bool handled_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuFilter);
+};
 
 }  // namespace content
 

@@ -266,10 +266,8 @@ void RenderViewContextMenuViews::Show() {
   if (menu_model().GetItemCount() == 0)
     return;
 
-  gfx::Point screen_point(params().x, params().y);
-  screen_point += RenderViewContextMenuViews::GetOffset(GetRenderFrameHost());
-
   // Convert from target window coordinates to root window coordinates.
+  gfx::Point screen_point(params().x, params().y);
   aura::Window* target_window = GetActiveNativeView();
   aura::Window* root_window = target_window->GetRootWindow();
   aura::client::ScreenPositionClient* screen_position_client =

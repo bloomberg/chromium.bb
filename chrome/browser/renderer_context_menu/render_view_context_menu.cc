@@ -523,32 +523,6 @@ const extensions::Extension* GetBookmarkAppForURL(
 }  // namespace
 
 // static
-gfx::Vector2d RenderViewContextMenu::GetOffset(
-    RenderFrameHost* render_frame_host) {
-  gfx::Vector2d offset;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  // When --use-cross-process-frames-for-guests is enabled, the position is
-  // transformed in the browser process hittesting code.
-  WebContents* web_contents =
-      WebContents::FromRenderFrameHost(render_frame_host);
-  // TODO(ekaramad): For now, MimeHandlerView is based on BrowserPlugin even
-  // when guests use OOPIF. Remove the check below when MimeHandlerView is also
-  // based on OOPIF (https://crbug.com/642826).
-  if (!content::GuestMode::IsCrossProcessFrameGuest(web_contents)) {
-    WebContents* top_level_web_contents =
-        guest_view::GuestViewBase::GetTopLevelWebContents(web_contents);
-    if (web_contents && top_level_web_contents &&
-        web_contents != top_level_web_contents) {
-      gfx::Rect bounds = web_contents->GetContainerBounds();
-      gfx::Rect top_level_bounds = top_level_web_contents->GetContainerBounds();
-      offset = bounds.origin() - top_level_bounds.origin();
-    }
-  }
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
-  return offset;
-}
-
-// static
 bool RenderViewContextMenu::IsDevToolsURL(const GURL& url) {
   return url.SchemeIs(content::kChromeDevToolsScheme);
 }

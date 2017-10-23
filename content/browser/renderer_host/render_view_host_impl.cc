@@ -938,12 +938,20 @@ void RenderViewHostImpl::DisableAutoResize(const gfx::Size& new_size) {
 
 void RenderViewHostImpl::ExecuteMediaPlayerActionAtLocation(
   const gfx::Point& location, const blink::WebMediaPlayerAction& action) {
+  // TODO(wjmaclean): See if coordinate transforms need to be done for OOPIFs
+  // and guest views. https://crbug.com/776807
   Send(new ViewMsg_MediaPlayerActionAt(GetRoutingID(), location, action));
 }
 
 void RenderViewHostImpl::ExecutePluginActionAtLocation(
   const gfx::Point& location, const blink::WebPluginAction& action) {
-  Send(new ViewMsg_PluginActionAt(GetRoutingID(), location, action));
+  // TODO(wjmaclean): See if this needs to be done for OOPIFs as well.
+  // https://crbug.com/776807
+  gfx::PointF local_location_f =
+      GetWidget()->GetView()->TransformRootPointToViewCoordSpace(
+          gfx::PointF(location.x(), location.y()));
+  gfx::Point local_location(local_location_f.x(), local_location_f.y());
+  Send(new ViewMsg_PluginActionAt(GetRoutingID(), local_location, action));
 }
 
 void RenderViewHostImpl::NotifyMoveOrResizeStarted() {

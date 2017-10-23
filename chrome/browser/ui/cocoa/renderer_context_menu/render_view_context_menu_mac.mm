@@ -199,7 +199,6 @@ void RenderViewContextMenuMac::Show() {
                      useWithPopUpButtonCell:NO]);
 
   gfx::Point params_position(params_.x, params_.y);
-  params_position += RenderViewContextMenu::GetOffset(GetRenderFrameHost());
 
   // Synthesize an event for the click, as there is no certainty that
   // [NSApp currentEvent] will return a valid event.

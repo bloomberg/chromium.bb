@@ -414,6 +414,11 @@ gfx::PointF RenderWidgetHostViewBase::TransformPointToRootCoordSpaceF(
   return point;
 }
 
+gfx::PointF RenderWidgetHostViewBase::TransformRootPointToViewCoordSpace(
+    const gfx::PointF& point) {
+  return point;
+}
+
 bool RenderWidgetHostViewBase::TransformPointToLocalCoordSpace(
     const gfx::PointF& point,
     const viz::SurfaceId& original_surface,

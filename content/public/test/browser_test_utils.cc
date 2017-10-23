@@ -709,6 +709,32 @@ void SimulateMouseClickAt(WebContents* web_contents,
       mouse_event);
 }
 
+void SimulateRoutedMouseClickAt(WebContents* web_contents,
+                                int modifiers,
+                                blink::WebMouseEvent::Button button,
+                                const gfx::Point& point) {
+  content::WebContentsImpl* web_contents_impl =
+      static_cast<content::WebContentsImpl*>(web_contents);
+  content::RenderWidgetHostViewBase* rwhvb =
+      static_cast<content::RenderWidgetHostViewBase*>(
+          web_contents->GetRenderWidgetHostView());
+  blink::WebMouseEvent mouse_event(
+      blink::WebInputEvent::kMouseDown, modifiers,
+      ui::EventTimeStampToSeconds(ui::EventTimeForNow()));
+  mouse_event.button = button;
+  mouse_event.SetPositionInWidget(point.x(), point.y());
+  // Mac needs positionInScreen for events to plugins.
+  gfx::Rect offset = web_contents->GetContainerBounds();
+  mouse_event.SetPositionInScreen(point.x() + offset.x(),
+                                  point.y() + offset.y());
+  mouse_event.click_count = 1;
+  web_contents_impl->GetInputEventRouter()->RouteMouseEvent(rwhvb, &mouse_event,
+                                                            ui::LatencyInfo());
+  mouse_event.SetType(blink::WebInputEvent::kMouseUp);
+  web_contents_impl->GetInputEventRouter()->RouteMouseEvent(rwhvb, &mouse_event,
+                                                            ui::LatencyInfo());
+}
+
 void SimulateMouseEvent(WebContents* web_contents,
                         blink::WebInputEvent::Type type,
                         const gfx::Point& point) {
@@ -2255,5 +2281,38 @@ MockOverscrollController* MockOverscrollController::Create(
 }
 
 #endif  // defined(USE_AURA)
+
+ContextMenuFilter::ContextMenuFilter()
+    : content::BrowserMessageFilter(FrameMsgStart),
+      message_loop_runner_(new content::MessageLoopRunner),
+      handled_(false) {}
+
+bool ContextMenuFilter::OnMessageReceived(const IPC::Message& message) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  if (message.type() == FrameHostMsg_ContextMenu::ID) {
+    FrameHostMsg_ContextMenu::Param params;
+    FrameHostMsg_ContextMenu::Read(&message, &params);
+    content::ContextMenuParams menu_params = std::get<0>(params);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&ContextMenuFilter::OnContextMenu, this, menu_params));
+  }
+  return false;
+}
+
+void ContextMenuFilter::Wait() {
+  if (!handled_)
+    message_loop_runner_->Run();
+}
+
+ContextMenuFilter::~ContextMenuFilter() {}
+
+void ContextMenuFilter::OnContextMenu(
+    const content::ContextMenuParams& params) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  handled_ = true;
+  last_params_ = params;
+  message_loop_runner_->Quit();
+}
 
 }  // namespace content
