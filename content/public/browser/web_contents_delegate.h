@@ -537,8 +537,8 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Requests the app banner. This method is called from the DevTools.
   virtual void RequestAppBannerFromDevTools(content::WebContents* web_contents);
 
-  // Called when audio change occurs
-  virtual void OnAudioStateChanged(bool audible) {}
+  // Called when an audio change occurs.
+  virtual void OnAudioStateChanged(WebContents* web_contents, bool audible) {}
 
   // Called when a suspicious navigation of the main frame has been blocked.
   // Allows the delegate to provide some UI to let the user know about the

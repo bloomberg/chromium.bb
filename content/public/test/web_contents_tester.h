@@ -137,6 +137,9 @@ class WebContentsTester {
 
   // Override WasRecentlyAudible for testing.
   virtual void SetWasRecentlyAudible(bool audible) = 0;
+
+  // Override IsCurrentlyAudible for testing.
+  virtual void SetIsCurrentlyAudible(bool audible) = 0;
 };
 
 }  // namespace content

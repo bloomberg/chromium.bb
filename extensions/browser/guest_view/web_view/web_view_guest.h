@@ -246,7 +246,8 @@ class WebViewGuest : public guest_view::GuestView<WebViewGuest> {
   void RequestToLockMouse(content::WebContents* web_contents,
                           bool user_gesture,
                           bool last_unlocked_by_target) override;
-  void OnAudioStateChanged(bool audible) final;
+  void OnAudioStateChanged(content::WebContents* web_contents,
+                           bool audible) final;
 
   // WebContentsObserver implementation.
   void DidStartNavigation(content::NavigationHandle* navigation_handle) final;

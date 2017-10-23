@@ -1471,7 +1471,7 @@ void WebContentsImpl::OnAudioStateChanged(bool is_audible) {
   NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
 
   if (delegate_)
-    delegate_->OnAudioStateChanged(is_audible);
+    delegate_->OnAudioStateChanged(this, is_audible);
 }
 
 base::TimeTicks WebContentsImpl::GetLastActiveTime() const {

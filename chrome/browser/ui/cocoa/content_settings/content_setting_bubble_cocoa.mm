@@ -323,6 +323,7 @@ const ContentTypeToNibPath kNibPaths[] = {
     {CONTENT_SETTINGS_TYPE_IMAGES, @"ContentBlockedSimple"},
     {CONTENT_SETTINGS_TYPE_JAVASCRIPT, @"ContentBlockedSimple"},
     {CONTENT_SETTINGS_TYPE_PPAPI_BROKER, @"ContentBlockedSimple"},
+    {CONTENT_SETTINGS_TYPE_SOUND, @"ContentBlockedSimple"},
     {CONTENT_SETTINGS_TYPE_POPUPS, @"ContentBlockedPopups"},
     {CONTENT_SETTINGS_TYPE_GEOLOCATION, @"ContentBlockedGeolocation"},
     {CONTENT_SETTINGS_TYPE_MIXEDSCRIPT, @"ContentBlockedMixedScript"},

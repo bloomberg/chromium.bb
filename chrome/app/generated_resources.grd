@@ -2300,6 +2300,15 @@ From <ph name="DOWNLOAD_DOMAIN">$3<ex>example.com</ex></ph>
       <message name="IDS_BLOCKED_PLUGINS_LOAD_ALL" desc="Button to load all blocked plugins on a page, displayed in bubble when a page tries to display plugins.">
         Run Flash this time
       </message>
+      <message name="IDS_BLOCKED_SOUND_TITLE" desc="Tooltip and bubble info header text when a page is not allowed to play sound.">
+        Sound was muted on this page.
+      </message>
+      <message name="IDS_BLOCKED_SOUND_UNBLOCK" desc="Radio button choice to unblock a site from playing sound, displayed in bubble when a page tries to play sound.">
+        Always allow sound on <ph name="HOST">$1<ex>mail.google.com</ex></ph>
+      </message>
+      <message name="IDS_BLOCKED_SOUND_NO_ACTION" desc="Radio button choice to continue blocking a site from playing sound, displayed in bubble when a page tries to play sound.">
+        Continue muting sound
+      </message>
 
       <!-- Win certificate selector dialog strings.  -->
       <if expr="toolkit_views">

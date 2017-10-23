@@ -566,7 +566,8 @@ void WebViewGuest::FindReply(WebContents* source,
                          active_match_ordinal, final_update);
 }
 
-void WebViewGuest::OnAudioStateChanged(bool audible) {
+void WebViewGuest::OnAudioStateChanged(content::WebContents* web_contents,
+                                       bool audible) {
   auto args = std::make_unique<base::DictionaryValue>();
   args->Set(webview::kAudible, std::make_unique<base::Value>(audible));
   DispatchEventToView(std::make_unique<GuestViewEvent>(

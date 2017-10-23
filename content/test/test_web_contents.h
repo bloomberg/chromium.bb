@@ -93,6 +93,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
       const std::vector<gfx::Size>& original_bitmap_sizes) override;
   void SetLastCommittedURL(const GURL& url) override;
   void SetWasRecentlyAudible(bool audible) override;
+  void SetIsCurrentlyAudible(bool audible) override;
 
   // True if a cross-site navigation is pending.
   bool CrossProcessNavigationPending();
