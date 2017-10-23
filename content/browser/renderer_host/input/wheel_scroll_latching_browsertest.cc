@@ -4,6 +4,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -240,8 +241,16 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingDisabledBrowserTest,
 
 // Tests that wheel events are retargeted if their target gets deleted in the
 // middle of scrolling.
+// Times out on Android. http://crbug.com/777258
+#if defined(OS_ANDROID)
+#define MAYBE_WheelEventRetargetWhenTargetRemoved \
+  DISABLED_WheelEventRetargetWhenTargetRemoved
+#else
+#define MAYBE_WheelEventRetargetWhenTargetRemoved \
+  WheelEventRetargetWhenTargetRemoved
+#endif
 IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       WheelEventRetargetWhenTargetRemoved) {
+                       MAYBE_WheelEventRetargetWhenTargetRemoved) {
   LoadURL();
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
