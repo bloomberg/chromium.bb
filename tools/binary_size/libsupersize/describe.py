@@ -149,7 +149,7 @@ class Describer(object):
   def _DescribeSymbol(self, sym, single_line=False):
     pass
 
-  def _DescribeList(self, obj):
+  def _DescribeIterable(self, obj):
     for i, x in enumerate(obj):
       yield '{}: {!r}'.format(i, x)
 
@@ -164,8 +164,8 @@ class Describer(object):
       return self._DescribeSymbolGroup(obj)
     if isinstance(obj, (models.Symbol, models.DeltaSymbol)):
       return self._DescribeSymbol(obj)
-    if isinstance(obj, list):
-      return self._DescribeList(obj)
+    if hasattr(obj, '__iter__'):
+      return self._DescribeIterable(obj)
     return (repr(obj),)
 
 

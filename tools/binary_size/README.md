@@ -39,8 +39,8 @@ tools/binary_size/diagnose_bloat.py HEAD -v
 # Diff BEFORE_REV and AFTER_REV using build artifacts downloaded from perf bots.
 tools/binary_size/diagnose_bloat.py AFTER_REV --reference-rev BEFORE_REV --cloud -v
 
-# Fetch a single .size and .apk from the bots:
-tools/binary_size/diagnose_bloat.py AFTER_REV --cloud --single
+# Fetch a .size, libmonochrome.so, and MonochromePublic.apk from perf bots (Googlers only):
+tools/binary_size/diagnose_bloat.py AFTER_REV --cloud --unstripped --single
 
 # Build and diff all contiguous revs in range BEFORE_REV..AFTER_REV for src/v8.
 tools/binary_size/diagnose_bloat.py AFTER_REV --reference-rev BEFORE_REV --subrepo v8 --all -v
@@ -146,6 +146,11 @@ Collect size information and dump it into a `.size` file.
 **Note:** Refer to
 [diagnose_bloat.py](https://cs.chromium.org/search/?q=file:diagnose_bloat.py+gn_args)
 for list of GN args to build a Release binary (or just use the tool with --single).
+
+**Googlers:** If you just want a `.size` for a commit on master:
+
+    GIT_REV="HEAD~200"
+    tools/binary_size/diagnose_bloat.py --single --cloud --unstripped $GIT_REV
 ***
 
 Example Usage:
@@ -188,7 +193,7 @@ tools/binary_size/supersize diff before.size after.size --all
 ### Usage: console
 
 Starts a Python interpreter where you can run custom queries, or run pre-made
-queries from canned_queries.py.
+queries from `canned_queries.py`.
 
 Example Usage:
 
@@ -214,6 +219,12 @@ Example session:
 >>> help(canned_queries)
 ...
 >>> Print(canned_queries.TemplatesByName(depth=-1))
+...
+>>> syms = size_info.symbols.WherePathMatches(r'skia').Sorted()
+>>> Print(syms, verbose=True)  # Show full symbol names with parameter types.
+...
+>>> # Dump all string literals from skia files to "strings.txt".
+>>> Print((t[1] for t in ReadStringLiterals(syms)), to_file='strings.txt')
 ```
 
 ### Roadmap
@@ -226,11 +237,8 @@ Example session:
     * Collect java symbol information
     * Collect .apk entry information
 1. More `console` features:
-   * CSV output (for pasting into a spreadsheet).
    * Add `SplitByName()` - Like `GroupByName()`, but recursive.
    * A canned query, that does what ShowGlobals does (as described in [Windows Binary Sizes](https://www.chromium.org/developers/windows-binary-sizes)).
-   * Show symbol counts by bucket size.
-     * 3 symbols < 64 bytes. 10 symbols < 128, 3 < 256, 5 < 512, 0 < 1024, 3 < 2048
 1. More `html_report` features:
    * Able to render size diffs (tint negative size red).
    * Break down by other groupings (Create from result of `SplitByName()`)
