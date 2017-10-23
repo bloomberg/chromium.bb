@@ -79,6 +79,21 @@ invalid_urls.forEach(function (url) {
         debug('FAIL Invalid url "' + url + '" allowed.');
 });
 
+// Test if the API can register when URL's origin is same with the document's origin.
+var succeeded = false;
+var errorMessage;
+try {
+    window.navigator.registerProtocolHandler('web+myprotocol', "http://127.0.0.1:8000/navigatorcontentutils/url=%s", "title");
+    succeeded = true;
+} catch (e) {
+    errorMessage = e.message;
+}
+
+if (succeeded)
+    debug('PASS The registeration of URL that has the same origin with the document origin is allowed.');
+else
+    debug('FAIL The registeration of URL that has the same origin with the document origin is denied. errorMessage: "' + errorMessage + '".');
+
 // Test that the API throws SecurityError exception if the URL's origin differs from the document's origin.
 succeeded = false;
 var errorMessage;

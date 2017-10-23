@@ -37,6 +37,7 @@ PASS Invalid scheme "magnet:+" falied.
 PASS Invalid scheme "tel:sip" falied.
 PASS Invalid url "" threw SyntaxError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The url provided ('') does not contain '%s'.".
 PASS Invalid url "%S" threw SyntaxError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': The url provided ('%S') does not contain '%s'.".
+PASS The registeration of URL that has the same origin with the document origin is allowed.
 PASS URL with origin different than document origin threw SecurityError exception: "Failed to execute 'registerProtocolHandler' on 'Navigator': Can only register custom handler in the document's origin.".
 PASS Valid call succeeded.
 
