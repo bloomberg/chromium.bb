@@ -167,8 +167,10 @@ class URLDatabase {
                              URLRows* results);
 
   // Returns true if the database holds some past typed navigation to a URL on
-  // the provided hostname.
-  bool IsTypedHost(const std::string& host);
+  // the provided hostname. If the return value is true and |scheme| is not
+  // nullptr, |scheme| holds the scheme of one of the corresponding entries in
+  // the database.
+  bool IsTypedHost(const std::string& host, std::string* scheme);
 
   // Tries to find the shortest URL beginning with |base| that strictly
   // prefixes |url|, and has minimum visit_ and typed_counts as specified.

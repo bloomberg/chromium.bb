@@ -380,7 +380,7 @@ bool HistoryBackend::IsUntypedIntranetHost(const GURL& url) {
       net::registry_controlled_domains::GetCanonicalHostRegistryLength(
           host, net::registry_controlled_domains::EXCLUDE_UNKNOWN_REGISTRIES,
           net::registry_controlled_domains::EXCLUDE_PRIVATE_REGISTRIES);
-  return (registry_length == 0) && !db_->IsTypedHost(host);
+  return (registry_length == 0) && !db_->IsTypedHost(host, /*scheme=*/nullptr);
 }
 
 TopHostsList HistoryBackend::TopHosts(size_t num_hosts) const {

@@ -313,7 +313,7 @@ bool URLDatabase::AutocompleteForPrefix(const std::string& prefix,
   return !results->empty();
 }
 
-bool URLDatabase::IsTypedHost(const std::string& host) {
+bool URLDatabase::IsTypedHost(const std::string& host, std::string* scheme) {
   const char* schemes[] = {
     url::kHttpScheme,
     url::kHttpsScheme,
@@ -324,8 +324,11 @@ bool URLDatabase::IsTypedHost(const std::string& host) {
     std::string scheme_and_host(schemes[i]);
     scheme_and_host += url::kStandardSchemeSeparator + host;
     if (AutocompleteForPrefix(scheme_and_host + '/', 1, true, &dummy) ||
-        AutocompleteForPrefix(scheme_and_host + ':', 1, true, &dummy))
+        AutocompleteForPrefix(scheme_and_host + ':', 1, true, &dummy)) {
+      if (scheme != nullptr)
+        *scheme = schemes[i];
       return true;
+    }
   }
   return false;
 }

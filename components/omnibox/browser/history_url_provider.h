@@ -271,10 +271,13 @@ class HistoryURLProvider : public HistoryProvider {
                             const VisitClassifier& classifier,
                             HistoryURLProviderParams* params) const;
 
-  // Helper function for FixupExactSuggestion, this returns true if the input
-  // corresponds to some intranet URL where the user has previously visited the
-  // host in question.  In this case the input should be treated as a URL.
-  bool CanFindIntranetURL(history::URLDatabase* db,
+  // Helper function for FixupExactSuggestion. If a URL with the same host name
+  // has been visited by the user in the past, the function returns a valid URL.
+  // The return value is built from the canonicalized version of the
+  // autocomplete input in |params|. The scheme and host format (e.g. prefixed
+  // with "www.") of the return value is the same as one of the corresponding
+  // entries in the database.
+  GURL AsKnownIntranetURL(history::URLDatabase* db,
                           const AutocompleteInput& input) const;
 
   // Sees if a shorter version of the best match should be created, and if so
