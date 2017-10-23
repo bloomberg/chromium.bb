@@ -45,10 +45,6 @@ config("skia_config") {
     "//third_party/skia/third_party/vulkan",
   ]
 
-  if (!is_ios) {
-    include_dirs += [ "//third_party/skia/include/codec" ]
-  }
-
   defines = skia_for_chromium_defines
   defines += [
     "SK_HAS_PNG_LIBRARY",
@@ -286,39 +282,16 @@ component("skia") {
     "//third_party/skia/src/images/SkPngEncoder.cpp",
     "//third_party/skia/src/images/SkWebpEncoder.cpp",
     "//third_party/skia/src/ports/SkGlobalInitialization_default.cpp",
+    "//third_party/skia/src/ports/SkImageGenerator_none.cpp",
     "//third_party/skia/src/ports/SkOSFile_stdio.cpp",
     "//third_party/skia/src/sfnt/SkOTTable_name.cpp",
     "//third_party/skia/src/sfnt/SkOTUtils.cpp",
   ]
   if (!is_ios) {
     sources += [
-      "//third_party/skia/src/codec/SkBmpBaseCodec.cpp",
-      "//third_party/skia/src/codec/SkBmpCodec.cpp",
-      "//third_party/skia/src/codec/SkBmpMaskCodec.cpp",
-      "//third_party/skia/src/codec/SkBmpRLECodec.cpp",
-      "//third_party/skia/src/codec/SkBmpStandardCodec.cpp",
-      "//third_party/skia/src/codec/SkCodec.cpp",
-      "//third_party/skia/src/codec/SkCodecImageGenerator.cpp",
-      "//third_party/skia/src/codec/SkGifCodec.cpp",
-      "//third_party/skia/src/codec/SkIcoCodec.cpp",
-      "//third_party/skia/src/codec/SkJpegCodec.cpp",
-      "//third_party/skia/src/codec/SkJpegDecoderMgr.cpp",
-      "//third_party/skia/src/codec/SkJpegUtility.cpp",
-      "//third_party/skia/src/codec/SkMaskSwizzler.cpp",
-      "//third_party/skia/src/codec/SkMasks.cpp",
-      "//third_party/skia/src/codec/SkPngCodec.cpp",
-      "//third_party/skia/src/codec/SkSampler.cpp",
-      "//third_party/skia/src/codec/SkStreamBuffer.cpp",
-      "//third_party/skia/src/codec/SkSwizzler.cpp",
-      "//third_party/skia/src/codec/SkWbmpCodec.cpp",
-      "//third_party/skia/src/codec/SkWebpCodec.cpp",
       "//third_party/skia/src/images/SkJPEGWriteUtility.cpp",
       "//third_party/skia/src/images/SkJpegEncoder.cpp",
-      "//third_party/skia/src/ports/SkImageGenerator_skia.cpp",
-      "//third_party/skia/third_party/gif/SkGifImageReader.cpp",
     ]
-  } else {
-    sources += [ "//third_party/skia/src/ports/SkImageGenerator_none.cpp" ]
   }
 
   # This and skia_opts are really the same conceptual target so share headers.
