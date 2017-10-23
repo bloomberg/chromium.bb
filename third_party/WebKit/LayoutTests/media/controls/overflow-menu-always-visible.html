@@ -26,6 +26,10 @@
     var coords = elementCoordinates(overflowButton(video));
     clickAtCoordinates(coords[0], coords[1]);
 
+    // Disabling pointer events on the overflow menu to avoid a flakyness with
+    // :hover sometimes applying.
+    overflowMenu(video).style = 'pointer-events: none;';
+
     testRunner.layoutAndPaintAsyncThen(() => {
       testRunner.notifyDone();
     });
