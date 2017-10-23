@@ -120,6 +120,14 @@ NSButton* EyeIcon(id target, SEL action) {
   return saveButton_;
 }
 
+- (void)viewWillAppear {
+  NSView* firstResponder = saveButton_.get();
+  if ([usernameField_ isEditable] && [[usernameField_ stringValue] length] == 0)
+    firstResponder = usernameField_.get();
+  [[self.view window] setInitialFirstResponder:firstResponder];
+  [[self.view window] recalculateKeyViewLoop];
+}
+
 - (void)onEyeClicked:(id)sender {
   if (!self.model)
     return;  // The view will be destroyed soon.
