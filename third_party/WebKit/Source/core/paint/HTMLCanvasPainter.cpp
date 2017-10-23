@@ -9,10 +9,25 @@
 #include "core/layout/LayoutHTMLCanvas.h"
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
+#include "platform/graphics/ScopedInterpolationQuality.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 #include "platform/graphics/paint/ForeignLayerDisplayItem.h"
 
 namespace blink {
+
+namespace {
+
+InterpolationQuality InterpolationQualityForCanvas(const ComputedStyle& style) {
+  if (style.ImageRendering() == EImageRendering::kWebkitOptimizeContrast)
+    return kInterpolationLow;
+
+  if (style.ImageRendering() == EImageRendering::kPixelated)
+    return kInterpolationNone;
+
+  return CanvasDefaultInterpolationQuality;
+}
+
+}  // namespace
 
 void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
                                       const LayoutPoint& paint_offset) {
@@ -52,22 +67,11 @@ void HTMLCanvasPainter::PaintReplaced(const PaintInfo& paint_info,
     context.Clip(FloatRect(content_rect));
   }
 
-  // FIXME: InterpolationNone should be used if ImageRenderingOptimizeContrast
-  // is set.  See bug for more details: crbug.com/353716.
-  InterpolationQuality interpolation_quality =
-      layout_html_canvas_.Style()->ImageRendering() ==
-              EImageRendering::kWebkitOptimizeContrast
-          ? kInterpolationLow
-          : CanvasDefaultInterpolationQuality;
-  if (layout_html_canvas_.Style()->ImageRendering() ==
-      EImageRendering::kPixelated)
-    interpolation_quality = kInterpolationNone;
-
-  InterpolationQuality previous_interpolation_quality =
-      context.ImageInterpolationQuality();
-  context.SetImageInterpolationQuality(interpolation_quality);
-  canvas->Paint(context, paint_rect);
-  context.SetImageInterpolationQuality(previous_interpolation_quality);
+  {
+    ScopedInterpolationQuality interpolation_quality_scope(
+        context, InterpolationQualityForCanvas(layout_html_canvas_.StyleRef()));
+    canvas->Paint(context, paint_rect);
+  }
 
   if (clip)
     context.Restore();

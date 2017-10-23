@@ -18,6 +18,7 @@
 #include "core/paint/PaintInfo.h"
 #include "platform/geometry/LayoutPoint.h"
 #include "platform/graphics/Path.h"
+#include "platform/graphics/ScopedInterpolationQuality.h"
 #include "platform/graphics/paint/DisplayItemCacheSkipper.h"
 #include "platform/graphics/paint/DrawingRecorder.h"
 
@@ -160,9 +161,6 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
   if (!image || image->IsNull())
     return;
 
-  InterpolationQuality interpolation_quality =
-      layout_image_.StyleRef().GetInterpolationQuality();
-
   FloatRect src_rect = image->Rect();
   // If the content rect requires clipping, adjust |srcRect| and
   // |pixelSnappedDestRect| over using a clip.
@@ -181,9 +179,8 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
                InspectorPaintImageEvent::Data(layout_image_, src_rect,
                                               FloatRect(dest_rect)));
 
-  InterpolationQuality previous_interpolation_quality =
-      context.ImageInterpolationQuality();
-  context.SetImageInterpolationQuality(interpolation_quality);
+  ScopedInterpolationQuality interpolation_quality_scope(
+      context, layout_image_.StyleRef().GetInterpolationQuality());
 
   Node* node = layout_image_.GetNode();
   Image::ImageDecodingMode decode_mode =
@@ -195,7 +192,6 @@ void ImagePainter::PaintIntoRect(GraphicsContext& context,
       image.get(), decode_mode, pixel_snapped_dest_rect, &src_rect,
       SkBlendMode::kSrcOver,
       LayoutObject::ShouldRespectImageOrientation(&layout_image_));
-  context.SetImageInterpolationQuality(previous_interpolation_quality);
 }
 
 }  // namespace blink

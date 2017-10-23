@@ -966,6 +966,7 @@ jumbo_component("platform") {
     "graphics/RecordingImageBufferSurface.h",
     "graphics/ReplayingCanvas.cpp",
     "graphics/ReplayingCanvas.h",
+    "graphics/ScopedInterpolationQuality.h",
     "graphics/SkiaTextureHolder.cpp",
     "graphics/SkiaTextureHolder.h",
     "graphics/SquashingDisallowedReasons.cpp",
