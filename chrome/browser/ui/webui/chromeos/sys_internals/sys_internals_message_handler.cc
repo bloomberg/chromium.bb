@@ -129,7 +129,9 @@ double GetAvailablePhysicalMemory(const base::SystemMemoryInfoKB& info) {
   return available * kBytesInKB;
 }
 
-void SetMemValue(const base::SystemMemoryInfoKB& info, base::Value* result) {
+void SetMemValue(const base::SystemMemoryInfoKB& info,
+                 const base::VmStatInfo& vmstat,
+                 base::Value* result) {
   DCHECK(result);
   base::Value mem_result(base::Value::Type::DICTIONARY);
 
@@ -142,8 +144,8 @@ void SetMemValue(const base::SystemMemoryInfoKB& info, base::Value* result) {
   double swap_free = static_cast<double>(info.swap_free) * kBytesInKB;
   mem_result.SetKey("swapFree", base::Value(swap_free));
 
-  mem_result.SetKey("pswpin", base::Value(ToCounter(info.pswpin)));
-  mem_result.SetKey("pswpout", base::Value(ToCounter(info.pswpout)));
+  mem_result.SetKey("pswpin", base::Value(ToCounter(vmstat.pswpin)));
+  mem_result.SetKey("pswpout", base::Value(ToCounter(vmstat.pswpout)));
 
   result->SetKey("memory", std::move(mem_result));
 }
@@ -176,6 +178,10 @@ base::Value GetSysInfo() {
   if (!GetSystemMemoryInfo(&mem_info)) {
     DLOG(WARNING) << "Failed to get system memory info.";
   }
+  base::VmStatInfo vmstat_info;
+  if (!GetVmStatInfo(&vmstat_info)) {
+    DLOG(WARNING) << "Failed to get system vmstat info.";
+  }
   base::SwapInfo swap_info;
   if (!GetSwapInfo(&swap_info)) {
     DLOG(WARNING) << ("Failed to get system zram info.");
@@ -184,7 +190,7 @@ base::Value GetSysInfo() {
   base::Value result(base::Value::Type::DICTIONARY);
   SetConstValue(&result);
   SetCpusValue(cpu_infos, &result);
-  SetMemValue(mem_info, &result);
+  SetMemValue(mem_info, vmstat_info, &result);
   SetZramValue(swap_info, &result);
 
   return result;

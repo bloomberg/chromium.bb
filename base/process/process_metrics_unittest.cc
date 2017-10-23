@@ -251,7 +251,7 @@ TEST_F(SystemMetricsTest, ParseMeminfo) {
 }
 
 TEST_F(SystemMetricsTest, ParseVmstat) {
-  SystemMemoryInfoKB meminfo;
+  VmStatInfo vmstat;
   // part of vmstat from a 3.2 kernel with numa enabled
   const char valid_input1[] =
       "nr_free_pages 905104\n"
@@ -341,21 +341,21 @@ TEST_F(SystemMetricsTest, ParseVmstat) {
       "pgrefill_normal 0\n"
       "pgrefill_high 0\n"
       "pgrefill_movable 0\n";
-  EXPECT_TRUE(ParseProcVmstat(valid_input1, &meminfo));
-  EXPECT_EQ(179LU, meminfo.pswpin);
-  EXPECT_EQ(406LU, meminfo.pswpout);
-  EXPECT_EQ(487192LU, meminfo.pgmajfault);
-  EXPECT_TRUE(ParseProcVmstat(valid_input2, &meminfo));
-  EXPECT_EQ(12LU, meminfo.pswpin);
-  EXPECT_EQ(901LU, meminfo.pswpout);
-  EXPECT_EQ(2023LU, meminfo.pgmajfault);
+  EXPECT_TRUE(ParseProcVmstat(valid_input1, &vmstat));
+  EXPECT_EQ(179LU, vmstat.pswpin);
+  EXPECT_EQ(406LU, vmstat.pswpout);
+  EXPECT_EQ(487192LU, vmstat.pgmajfault);
+  EXPECT_TRUE(ParseProcVmstat(valid_input2, &vmstat));
+  EXPECT_EQ(12LU, vmstat.pswpin);
+  EXPECT_EQ(901LU, vmstat.pswpout);
+  EXPECT_EQ(2023LU, vmstat.pgmajfault);
 
   const char missing_pgmajfault_input[] =
       "pswpin 12\n"
       "pswpout 901\n";
-  EXPECT_FALSE(ParseProcVmstat(missing_pgmajfault_input, &meminfo));
+  EXPECT_FALSE(ParseProcVmstat(missing_pgmajfault_input, &vmstat));
   const char empty_input[] = "";
-  EXPECT_FALSE(ParseProcVmstat(empty_input, &meminfo));
+  EXPECT_FALSE(ParseProcVmstat(empty_input, &vmstat));
 }
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
