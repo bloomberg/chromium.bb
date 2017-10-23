@@ -155,15 +155,13 @@ void ThreadState::AttachCurrentThread() {
 
 void ThreadState::DetachCurrentThread() {
   ThreadState* state = Current();
+  DCHECK(!state->IsMainThread());
   state->RunTerminationGC();
   delete state;
 }
 
 void ThreadState::RunTerminationGC() {
-  if (IsMainThread()) {
-    Heap().RemoveAllPages();
-    return;
-  }
+  DCHECK(!IsMainThread());
   DCHECK(CheckThread());
 
   // Finish sweeping.
