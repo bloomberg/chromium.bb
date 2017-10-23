@@ -1465,6 +1465,11 @@ const char kV8ContextSnapshotName[] = "Use a snapshot to create V8 contexts.";
 const char kV8ContextSnapshotDescription[] =
     "Sets to use a snapshot to create V8 contexts in frame creation.";
 
+const char kV8VmFutureName[] = "Future V8 VM features";
+const char kV8VmFutureDescription[] =
+    "This enables upcoming and experimental V8 VM features. "
+    "This flag does not enable experimental JavaScript features.";
+
 const char kVibrateRequiresUserGestureName[] =
     "Requiring user gesture for the Vibration API";
 const char kVibrateRequiresUserGestureDescription[] =

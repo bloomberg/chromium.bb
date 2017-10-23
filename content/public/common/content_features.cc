@@ -456,6 +456,10 @@ const base::Feature kMacV2Sandbox{"MacV2Sandbox",
 const base::Feature kV8ContextSnapshot{"V8ContextSnapshot",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables future V8 VM features
+const base::Feature kV8VmFuture{"V8VmFuture",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsMojoBlobsEnabled() {
   return base::FeatureList::IsEnabled(features::kMojoBlobs) ||
          base::FeatureList::IsEnabled(features::kNetworkService);

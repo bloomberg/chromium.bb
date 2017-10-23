@@ -1388,6 +1388,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableWasmStreamingName,
      flag_descriptions::kEnableWasmStreamingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAssemblyStreaming)},
+    {"enable-future-v8-vm-features", flag_descriptions::kV8VmFutureName,
+     flag_descriptions::kV8VmFutureDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kV8VmFuture)},
     {"disable-software-rasterizer", flag_descriptions::kSoftwareRasterizerName,
      flag_descriptions::kSoftwareRasterizerDescription,
 #if BUILDFLAG(ENABLE_SWIFTSHADER)
