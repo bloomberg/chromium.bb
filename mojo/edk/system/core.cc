@@ -968,7 +968,7 @@ MojoResult Core::DuplicateBufferHandle(
   *new_buffer_handle = AddDispatcher(new_dispatcher);
   if (*new_buffer_handle == MOJO_HANDLE_INVALID) {
     LOG(ERROR) << "Handle table full";
-    dispatcher->Close();
+    new_dispatcher->Close();
     return MOJO_RESULT_RESOURCE_EXHAUSTED;
   }
 
