@@ -16,8 +16,6 @@ jumbo_source_set("scheduler") {
     "base/moveable_auto_lock.h",
     "base/pollable_thread_safe_flag.cc",
     "base/pollable_thread_safe_flag.h",
-    "base/queueing_time_estimator.cc",
-    "base/queueing_time_estimator.h",
     "base/real_time_domain.cc",
     "base/real_time_domain.h",
     "base/task_queue.cc",
@@ -85,6 +83,8 @@ jumbo_source_set("scheduler") {
     "renderer/main_thread_scheduler_helper.h",
     "renderer/main_thread_task_queue.cc",
     "renderer/main_thread_task_queue.h",
+    "renderer/queueing_time_estimator.cc",
+    "renderer/queueing_time_estimator.h",
     "renderer/render_widget_scheduling_state.cc",
     "renderer/render_widget_signals.cc",
     "renderer/render_widget_signals.h",
@@ -169,7 +169,6 @@ jumbo_source_set("unit_tests") {
 
   sources = [
     "base/intrusive_heap_unittest.cc",
-    "base/queueing_time_estimator_unittest.cc",
     "base/task_queue_manager_unittest.cc",
     "base/task_queue_selector_unittest.cc",
     "base/test_count_uses_time_source.cc",
@@ -189,6 +188,7 @@ jumbo_source_set("unit_tests") {
     "renderer/budget_pool_unittest.cc",
     "renderer/deadline_task_runner_unittest.cc",
     "renderer/idle_time_estimator_unittest.cc",
+    "renderer/queueing_time_estimator_unittest.cc",
     "renderer/render_widget_signals_unittest.cc",
     "renderer/renderer_metrics_helper_unittest.cc",
     "renderer/renderer_scheduler_impl_unittest.cc",

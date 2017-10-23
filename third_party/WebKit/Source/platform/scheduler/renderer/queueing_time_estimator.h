@@ -5,9 +5,11 @@
 #ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_QUEUEING_TIME_ESTIMATOR_H_
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_QUEUEING_TIME_ESTIMATOR_H_
 
+#include "base/containers/small_map.h"
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "platform/PlatformExport.h"
+#include "platform/scheduler/renderer/main_thread_task_queue.h"
 
 #include <vector>
 
@@ -15,13 +17,16 @@ namespace blink {
 namespace scheduler {
 
 // Records the expected queueing time for a high priority task occurring
-// randomly during each interval of length |window_duration|.
+// randomly during each interval of length equal to window's duration.
 class PLATFORM_EXPORT QueueingTimeEstimator {
  public:
   class PLATFORM_EXPORT Client {
    public:
     virtual void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
                                                   bool is_disjoint_window) = 0;
+    virtual void OnReportSplitExpectedQueueingTime(
+        const std::string& split_description,
+        base::TimeDelta queueing_time) = 0;
     Client() {}
     virtual ~Client() {}
 
@@ -43,17 +48,29 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     base::TimeDelta running_sum_;
   };
 
-  class State {
+  class Calculator {
    public:
-    explicit State(int steps_per_window);
-    void OnTopLevelTaskStarted(Client* client, base::TimeTicks task_start_time);
-    void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
-    void OnBeginNestedRunLoop();
-    void OnRendererStateChanged(Client* client,
-                                bool backgrounded,
-                                base::TimeTicks transition_time);
+    explicit Calculator(int steps_per_window);
+    static std::string GetReportingMessageFromQueueType(
+        MainThreadTaskQueue::QueueType queue_type);
 
-    // |step_expected_queueing_time| is the expected queuing time of a
+    void UpdateQueueType(MainThreadTaskQueue::QueueType queue_type);
+    void AddQueueingTime(base::TimeDelta queuing_time);
+    void EndStep(Client* client);
+    void ResetStep();
+
+   private:
+    static bool IsSupportedQueueType(MainThreadTaskQueue::QueueType queue_type);
+
+    // Variables to compute the total Expected Queueing Time.
+    // |steps_per_window_| is the ratio of window duration to the sliding
+    // window's step width. It is an integer since the window must be a integer
+    // multiple of the step's width. This parameter is used for deciding the
+    // sliding window's step width, and the number of bins of the circular
+    // buffer.
+    const int steps_per_window_;
+
+    // |step_expected_queueing_time_| is the expected queuing time of a
     // smaller window of a step's width. By combining these step EQTs through a
     // running average, we can get window EQTs of a bigger window.
     //
@@ -74,24 +91,38 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
     //                 |------windowEQT_3------|
     //
     // In this case:
-    // |steps_per_window| = 3, because each window is the length of 3 steps.
+    // |steps_per_window_| = 3, because each window is the length of 3 steps.
+    base::TimeDelta step_expected_queueing_time_;
+    RunningAverage step_queueing_times_;
 
-    base::TimeDelta step_expected_queueing_time;
-    // |window_duration| is the size of the sliding window.
-    base::TimeDelta window_duration;
+    // Variables to split Expected Queueing Time by task queue type.
+    base::small_map<std::map<MainThreadTaskQueue::QueueType, base::TimeDelta>>
+        eqt_by_queue_type_;
+    base::small_map<std::map<MainThreadTaskQueue::QueueType, std::string>>
+        message_by_queue_type_;
+    MainThreadTaskQueue::QueueType current_queue_type_ =
+        MainThreadTaskQueue::QueueType::OTHER;
+  };
+
+  class State {
+   public:
+    explicit State(int steps_per_window);
+    void OnTopLevelTaskStarted(Client* client,
+                               base::TimeTicks task_start_time,
+                               MainThreadTaskQueue::QueueType queue_type);
+    void OnTopLevelTaskCompleted(Client* client, base::TimeTicks task_end_time);
+    void OnBeginNestedRunLoop();
+    void OnRendererStateChanged(Client* client,
+                                bool backgrounded,
+                                base::TimeTicks transition_time);
+
     base::TimeDelta window_step_width;
-    // |steps_per_window| is the ratio of |window_duration| to the sliding
-    // window's step width. It is an integer since the window must be a integer
-    // multiple of the step's width. This parameter is used for deciding the
-    // sliding window's step width, and the number of bins of the circular
-    // buffer.
-    int steps_per_window;
     base::TimeTicks step_start_time;
     base::TimeTicks current_task_start_time;
-    RunningAverage step_queueing_times;
     // |renderer_backgrounded| is the renderer's current status.
     bool renderer_backgrounded = false;
     bool processing_task = false;
+    Calculator calculator_;
 
    private:
     void AdvanceTime(Client* client, base::TimeTicks current_time);
@@ -104,7 +135,8 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
                         int steps_per_window);
   explicit QueueingTimeEstimator(const State& state);
 
-  void OnTopLevelTaskStarted(base::TimeTicks task_start_time);
+  void OnTopLevelTaskStarted(base::TimeTicks task_start_time,
+                             MainThreadTaskQueue::QueueType queue_type);
   void OnTopLevelTaskCompleted(base::TimeTicks task_end_time);
   void OnBeginNestedRunLoop();
   void OnRendererStateChanged(bool backgrounded,

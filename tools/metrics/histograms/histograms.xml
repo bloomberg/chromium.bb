@@ -104483,6 +104483,28 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <affected-histogram name="Memory.Experimental.Renderer.V8MainThreadIsolate"/>
 </histogram_suffixes>
 
+<histogram_suffixes
+    name="RendererScheduler.ExpectedQueueingTimeByTaskQueueType" separator=".">
+  <owner>npm@chromium.org</owner>
+  <suffix name="Compositor"
+      label="Expected Queueing Time from the compositor task queue."/>
+  <suffix name="Default"
+      label="Expected Queueing Time from the default task queue."/>
+  <suffix name="DefaultLoading"
+      label="Expected Queueing Time from the default loading task queue."/>
+  <suffix name="FrameLoading"
+      label="Expected Queueing Time from the frame loading task queue."/>
+  <suffix name="FramePausable"
+      label="Expected Queueing Time from the frame pausable task queue."/>
+  <suffix name="FrameThrottleable"
+      label="Expected Queueing Time from the frame throttleable task queue."/>
+  <suffix name="Unthrottled"
+      label="Expected Queueing Time from the unthrottled task queue."/>
+  <suffix name="Other"
+      label="Expected Queueing Time from events in any other task queue."/>
+  <affected-histogram name="RendererScheduler.ExpectedTaskQueueingDuration"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="RendererScheduler.MainThreadLoadSplit" separator=".">
   <suffix name="Extension" label="This only includes extension renderers"/>
   <suffix name="Background"
