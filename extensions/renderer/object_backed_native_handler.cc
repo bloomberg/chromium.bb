@@ -7,7 +7,7 @@
 #include <stddef.h>
 
 #include "base/logging.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/renderer/console.h"
 #include "extensions/renderer/module_system.h"

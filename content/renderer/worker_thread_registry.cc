@@ -15,7 +15,7 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 
 namespace content {
 

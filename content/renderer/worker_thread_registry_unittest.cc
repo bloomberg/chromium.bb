@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/public/child/worker_thread.h"
+#include "content/public/renderer/worker_thread.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerError.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
