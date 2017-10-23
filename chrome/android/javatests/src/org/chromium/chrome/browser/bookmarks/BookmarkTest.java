@@ -142,6 +142,8 @@ public class BookmarkTest {
     @SmallTest
     public void testAddBookmark() throws InterruptedException {
         mActivityTestRule.loadUrl(mTestPage);
+        // Check partner bookmarks are lazily loaded.
+        Assert.assertFalse(mBookmarkModel.isBookmarkModelLoaded());
         // Click star button to bookmark the current tab.
         MenuUtils.invokeCustomMenuActionSync(InstrumentationRegistry.getInstrumentation(),
                 mActivityTestRule.getActivity(), R.id.bookmark_this_page_id);
