@@ -399,7 +399,7 @@ var renderTile = function(data) {
   var html = [];
   html.push('<div class="mv-favicon"></div>');
   html.push('<div class="mv-title"></div><div class="mv-thumb"></div>');
-  html.push('<div class="mv-x" role="button"></div>');
+  html.push('<button class="mv-x"></button>');
   tile.innerHTML = html.join('');
   tile.lastElementChild.title = queryArgs['removeTooltip'] || '';
 
@@ -512,6 +512,12 @@ var renderTile = function(data) {
     blacklistTile(tile);
     ev.preventDefault();
     ev.stopPropagation();
+  });
+
+  // Don't allow the event to bubble out to the containing tile, as that would
+  // trigger navigation to the tile URL.
+  mvx.addEventListener('keydown', function(event) {
+    event.stopPropagation();
   });
 
   return tile;
