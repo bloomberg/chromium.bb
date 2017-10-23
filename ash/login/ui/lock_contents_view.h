@@ -19,11 +19,13 @@
 #include "base/scoped_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/screen.h"
+#include "ui/views/controls/styled_label_listener.h"
 #include "ui/views/view.h"
 
 namespace views {
 class BoxLayout;
 class ScrollView;
+class StyledLabel;
 }  // namespace views
 
 namespace ash {
@@ -45,7 +47,8 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
                                     public LockScreenAppsFocusObserver,
                                     public LoginDataDispatcher::Observer,
                                     public SystemTrayFocusObserver,
-                                    public display::DisplayObserver {
+                                    public display::DisplayObserver,
+                                    public views::StyledLabelListener {
  public:
   // TestApi is used for tests to get internal implementation details.
   class ASH_EXPORT TestApi {
@@ -93,6 +96,11 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   // display::DisplayObserver:
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
+
+  // views::StyledLabelListener:
+  void StyledLabelLinkClicked(views::StyledLabel* label,
+                              const gfx::Range& range,
+                              int event_flags) override{};
 
  private:
   class UserState {
