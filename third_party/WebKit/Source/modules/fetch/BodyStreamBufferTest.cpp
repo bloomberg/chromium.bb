@@ -168,7 +168,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
   std::unique_ptr<BlobData> data = BlobData::Create();
   data->AppendText("hello", false);
   auto size = data->length();
-  RefPtr<BlobDataHandle> blob_data_handle =
+  scoped_refptr<BlobDataHandle> blob_data_handle =
       BlobDataHandle::Create(std::move(data), size);
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
       scope.GetScriptState(),
@@ -177,7 +177,7 @@ TEST_F(BodyStreamBufferTest, DrainAsBlobDataHandle) {
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
-  RefPtr<BlobDataHandle> output_blob_data_handle =
+  scoped_refptr<BlobDataHandle> output_blob_data_handle =
       buffer->DrainAsBlobDataHandle(
           BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
 
@@ -232,7 +232,8 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
   FormData* data = FormData::Create(UTF8Encoding());
   data->append("name1", "value1");
   data->append("name2", "value2");
-  RefPtr<EncodedFormData> input_form_data = data->EncodeMultiPartFormData();
+  scoped_refptr<EncodedFormData> input_form_data =
+      data->EncodeMultiPartFormData();
 
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
       scope.GetScriptState(),
@@ -241,7 +242,7 @@ TEST_F(BodyStreamBufferTest, DrainAsFormData) {
   EXPECT_FALSE(buffer->IsStreamLocked());
   EXPECT_FALSE(buffer->IsStreamDisturbed());
   EXPECT_FALSE(buffer->HasPendingActivity());
-  RefPtr<EncodedFormData> output_form_data = buffer->DrainAsFormData();
+  scoped_refptr<EncodedFormData> output_form_data = buffer->DrainAsFormData();
 
   EXPECT_TRUE(buffer->IsStreamLocked());
   EXPECT_TRUE(buffer->IsStreamDisturbed());
@@ -328,7 +329,7 @@ TEST_F(BodyStreamBufferTest, LoadBodyStreamBufferAsBlob) {
   V8TestingScope scope;
   Checkpoint checkpoint;
   MockFetchDataLoaderClient* client = MockFetchDataLoaderClient::Create();
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));

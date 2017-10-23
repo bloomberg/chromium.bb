@@ -40,7 +40,8 @@ class FetchDataLoaderAsBlobHandle final : public FetchDataLoader,
     client_ = client;
     consumer_ = consumer;
 
-    RefPtr<BlobDataHandle> blob_handle = consumer_->DrainAsBlobDataHandle();
+    scoped_refptr<BlobDataHandle> blob_handle =
+        consumer_->DrainAsBlobDataHandle();
     if (blob_handle) {
       DCHECK_NE(UINT64_MAX, blob_handle->size());
       if (blob_handle->GetType() != mime_type_) {

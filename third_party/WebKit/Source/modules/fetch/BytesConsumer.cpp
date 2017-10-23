@@ -389,7 +389,7 @@ void BytesConsumer::Tee(ExecutionContext* execution_context,
                         BytesConsumer* src,
                         BytesConsumer** dest1,
                         BytesConsumer** dest2) {
-  RefPtr<BlobDataHandle> blob_data_handle =
+  scoped_refptr<BlobDataHandle> blob_data_handle =
       src->DrainAsBlobDataHandle(BlobSizePolicy::kAllowBlobWithInvalidSize);
   if (blob_data_handle) {
     // Register a client in order to be consistent.

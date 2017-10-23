@@ -51,7 +51,7 @@ class MockWebSocketChannel : public WebSocketChannel {
   MOCK_METHOD1(Send, void(const CString&));
   MOCK_METHOD3(Send, void(const DOMArrayBuffer&, unsigned, unsigned));
   MOCK_METHOD1(SendMock, void(BlobDataHandle*));
-  void Send(RefPtr<BlobDataHandle> handle) { SendMock(handle.get()); }
+  void Send(scoped_refptr<BlobDataHandle> handle) { SendMock(handle.get()); }
   MOCK_METHOD1(SendTextAsCharVectorMock, void(Vector<char>*));
   void SendTextAsCharVector(std::unique_ptr<Vector<char>> vector) {
     SendTextAsCharVectorMock(vector.get());

@@ -101,7 +101,7 @@ void DataConsumerHandleTestUtil::Thread::Shutdown() {
 class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
     : public Reader {
  public:
-  ReaderImpl(RefPtr<Context> context, Client* client)
+  ReaderImpl(scoped_refptr<Context> context, Client* client)
       : context_(std::move(context)) {
     context_->AttachReader(client);
   }
@@ -117,7 +117,7 @@ class DataConsumerHandleTestUtil::ReplayingHandle::ReaderImpl final
   }
 
  private:
-  RefPtr<Context> context_;
+  scoped_refptr<Context> context_;
 };
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::Add(

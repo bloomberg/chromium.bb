@@ -112,7 +112,7 @@ class MODULES_EXPORT BytesConsumer
   // When |policy| is DisallowBlobWithInvalidSize, this function doesn't
   // return a non-null blob handle with unspecified size.
   // The type of the returned blob handle may not be meaningful.
-  virtual RefPtr<BlobDataHandle> DrainAsBlobDataHandle(
+  virtual scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
       BlobSizePolicy = BlobSizePolicy::kDisallowBlobWithInvalidSize) {
     return nullptr;
   }
@@ -125,7 +125,7 @@ class MODULES_EXPORT BytesConsumer
   // When this function returns null value, this function does nothing.
   // This function returns a non-null form data when the handle is made
   // from an EncodedFormData-convertible value.
-  virtual RefPtr<EncodedFormData> DrainAsFormData() { return nullptr; }
+  virtual scoped_refptr<EncodedFormData> DrainAsFormData() { return nullptr; }
 
   // Sets a client. This can be called only when no client is set. When
   // this object is already closed or errored, this function does nothing.

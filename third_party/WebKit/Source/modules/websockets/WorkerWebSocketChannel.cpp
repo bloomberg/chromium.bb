@@ -119,7 +119,7 @@ void WorkerWebSocketChannel::Send(const DOMArrayBuffer& binary_data,
   bridge_->Send(binary_data, byte_offset, byte_length);
 }
 
-void WorkerWebSocketChannel::Send(RefPtr<BlobDataHandle> blob_data) {
+void WorkerWebSocketChannel::Send(scoped_refptr<BlobDataHandle> blob_data) {
   DCHECK(bridge_);
   bridge_->Send(std::move(blob_data));
 }
@@ -161,7 +161,7 @@ void WorkerWebSocketChannel::Trace(blink::Visitor* visitor) {
 
 MainChannelClient::MainChannelClient(
     Bridge* bridge,
-    RefPtr<WebTaskRunner> worker_networking_task_runner,
+    scoped_refptr<WebTaskRunner> worker_networking_task_runner,
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context)
     : WorkerThreadLifecycleObserver(worker_thread_lifecycle_context),
       bridge_(bridge),
@@ -211,7 +211,7 @@ void MainChannelClient::SendBinaryAsCharVector(
     main_channel_->SendBinaryAsCharVector(std::move(data));
 }
 
-void MainChannelClient::SendBlob(RefPtr<BlobDataHandle> blob_data) {
+void MainChannelClient::SendBlob(scoped_refptr<BlobDataHandle> blob_data) {
   DCHECK(IsMainThread());
   if (main_channel_)
     main_channel_->Send(std::move(blob_data));
@@ -378,7 +378,7 @@ Bridge::~Bridge() {
 void Bridge::ConnectOnMainThread(
     std::unique_ptr<SourceLocation> location,
     ThreadableLoadingContext* loading_context,
-    RefPtr<WebTaskRunner> worker_networking_task_runner,
+    scoped_refptr<WebTaskRunner> worker_networking_task_runner,
     WorkerThreadLifecycleContext* worker_thread_lifecycle_context,
     const KURL& url,
     const String& protocol,
@@ -404,7 +404,7 @@ bool Bridge::Connect(std::unique_ptr<SourceLocation> location,
   // Wait for completion of the task on the main thread because the mixed
   // content check must synchronously be conducted.
   WebSocketChannelSyncHelper sync_helper;
-  RefPtr<WebTaskRunner> worker_networking_task_runner =
+  scoped_refptr<WebTaskRunner> worker_networking_task_runner =
       TaskRunnerHelper::Get(TaskType::kNetworking, worker_global_scope_.Get());
   WorkerThread* worker_thread = worker_global_scope_->GetThread();
 
@@ -469,7 +469,7 @@ void Bridge::Send(const DOMArrayBuffer& binary_data,
                           main_channel_client_, WTF::Passed(std::move(data))));
 }
 
-void Bridge::Send(RefPtr<BlobDataHandle> data) {
+void Bridge::Send(scoped_refptr<BlobDataHandle> data) {
   DCHECK(main_channel_client_);
   parent_frame_task_runners_->Get(TaskType::kNetworking)
       ->PostTask(BLINK_FROM_HERE,

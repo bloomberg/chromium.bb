@@ -100,7 +100,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   void Send(const DOMArrayBuffer&,
             unsigned byte_offset,
             unsigned byte_length) override;
-  void Send(RefPtr<BlobDataHandle>) override;
+  void Send(scoped_refptr<BlobDataHandle>) override;
   void SendTextAsCharVector(std::unique_ptr<Vector<char>> data) override;
   void SendBinaryAsCharVector(std::unique_ptr<Vector<char>> data) override;
   // Start closing handshake. Use the CloseEventCodeNotSpecified for the code
@@ -161,8 +161,9 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   void DidConnect(WebSocketHandle*,
                   const String& selected_protocol,
                   const String& extensions) override;
-  void DidStartOpeningHandshake(WebSocketHandle*,
-                                RefPtr<WebSocketHandshakeRequest>) override;
+  void DidStartOpeningHandshake(
+      WebSocketHandle*,
+      scoped_refptr<WebSocketHandshakeRequest>) override;
   void DidFinishOpeningHandshake(WebSocketHandle*,
                                  const WebSocketHandshakeResponse*) override;
   void DidFail(WebSocketHandle*, const String& message) override;
@@ -213,7 +214,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
       connection_handle_for_scheduler_;
 
   std::unique_ptr<SourceLocation> location_at_construction_;
-  RefPtr<WebSocketHandshakeRequest> handshake_request_;
+  scoped_refptr<WebSocketHandshakeRequest> handshake_request_;
   std::unique_ptr<WebSocketHandshakeThrottle> handshake_throttle_;
   // This field is only initialised if the object is still waiting for a
   // throttle response when DidConnect is called.

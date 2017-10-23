@@ -39,7 +39,7 @@ class BodyStreamBuffer::LoaderClient final
         client_(client) {}
 
   void DidFetchDataLoadedBlobHandle(
-      RefPtr<BlobDataHandle> blob_data_handle) override {
+      scoped_refptr<BlobDataHandle> blob_data_handle) override {
     buffer_->EndLoading();
     client_->DidFetchDataLoadedBlobHandle(std::move(blob_data_handle));
   }
@@ -136,7 +136,7 @@ ScriptValue BodyStreamBuffer::Stream() {
           .GetOrEmpty(body));
 }
 
-RefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
+scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
     BytesConsumer::BlobSizePolicy policy) {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbed());
@@ -146,7 +146,7 @@ RefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
   if (made_from_readable_stream_)
     return nullptr;
 
-  RefPtr<BlobDataHandle> blob_data_handle =
+  scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer_->DrainAsBlobDataHandle(policy);
   if (blob_data_handle) {
     CloseAndLockAndDisturb();
@@ -155,7 +155,7 @@ RefPtr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
   return nullptr;
 }
 
-RefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
+scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbed());
   if (IsStreamClosed() || IsStreamErrored())
@@ -164,7 +164,7 @@ RefPtr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
   if (made_from_readable_stream_)
     return nullptr;
 
-  RefPtr<EncodedFormData> form_data = consumer_->DrainAsFormData();
+  scoped_refptr<EncodedFormData> form_data = consumer_->DrainAsFormData();
   if (form_data) {
     CloseAndLockAndDisturb();
     return form_data;

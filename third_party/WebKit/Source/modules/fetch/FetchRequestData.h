@@ -44,8 +44,10 @@ class FetchRequestData final
   const KURL& Url() const { return url_; }
   WebURLRequest::RequestContext Context() const { return context_; }
   void SetContext(WebURLRequest::RequestContext context) { context_ = context; }
-  RefPtr<SecurityOrigin> Origin() { return origin_; }
-  void SetOrigin(RefPtr<SecurityOrigin> origin) { origin_ = std::move(origin); }
+  scoped_refptr<SecurityOrigin> Origin() { return origin_; }
+  void SetOrigin(scoped_refptr<SecurityOrigin> origin) {
+    origin_ = std::move(origin);
+  }
   bool SameOriginDataURLFlag() { return same_origin_data_url_flag_; }
   void SetSameOriginDataURLFlag(bool flag) {
     same_origin_data_url_flag_ = flag;
@@ -83,10 +85,11 @@ class FetchRequestData final
   void SetMIMEType(const String& type) { mime_type_ = type; }
   String Integrity() const { return integrity_; }
   void SetIntegrity(const String& integrity) { integrity_ = integrity; }
-  RefPtr<EncodedFormData> AttachedCredential() const {
+  scoped_refptr<EncodedFormData> AttachedCredential() const {
     return attached_credential_;
   }
-  void SetAttachedCredential(RefPtr<EncodedFormData> attached_credential) {
+  void SetAttachedCredential(
+      scoped_refptr<EncodedFormData> attached_credential) {
     attached_credential_ = std::move(attached_credential);
   }
 
@@ -108,7 +111,7 @@ class FetchRequestData final
   Member<FetchHeaderList> header_list_;
   // FIXME: Support m_skipServiceWorkerFlag;
   WebURLRequest::RequestContext context_;
-  RefPtr<SecurityOrigin> origin_;
+  scoped_refptr<SecurityOrigin> origin_;
   // FIXME: Support m_forceOriginHeaderFlag;
   bool same_origin_data_url_flag_;
   // |m_referrer| consists of referrer string and referrer policy.
@@ -130,7 +133,7 @@ class FetchRequestData final
   Member<BodyStreamBuffer> buffer_;
   String mime_type_;
   String integrity_;
-  RefPtr<EncodedFormData> attached_credential_;
+  scoped_refptr<EncodedFormData> attached_credential_;
 };
 
 }  // namespace blink

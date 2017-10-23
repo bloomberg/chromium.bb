@@ -66,7 +66,7 @@ TEST(FetchDataLoaderTest, LoadAsBlob) {
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
   MockFetchDataLoaderClient* fetch_data_loader_client =
       MockFetchDataLoaderClient::Create();
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -186,7 +186,7 @@ TEST(FetchDataLoaderTest,
   blob_data->AppendBytes(kQuickBrownFox,
                          kQuickBrownFoxLengthWithTerminatingNull);
   blob_data->SetContentType("text/test");
-  RefPtr<BlobDataHandle> input_blob_data_handle = BlobDataHandle::Create(
+  scoped_refptr<BlobDataHandle> input_blob_data_handle = BlobDataHandle::Create(
       std::move(blob_data), kQuickBrownFoxLengthWithTerminatingNull);
 
   Checkpoint checkpoint;
@@ -196,7 +196,7 @@ TEST(FetchDataLoaderTest,
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
   MockFetchDataLoaderClient* fetch_data_loader_client =
       MockFetchDataLoaderClient::Create();
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));
@@ -228,7 +228,7 @@ TEST(FetchDataLoaderTest,
   blob_data->AppendBytes(kQuickBrownFox,
                          kQuickBrownFoxLengthWithTerminatingNull);
   blob_data->SetContentType("text/different");
-  RefPtr<BlobDataHandle> input_blob_data_handle = BlobDataHandle::Create(
+  scoped_refptr<BlobDataHandle> input_blob_data_handle = BlobDataHandle::Create(
       std::move(blob_data), kQuickBrownFoxLengthWithTerminatingNull);
 
   Checkpoint checkpoint;
@@ -238,7 +238,7 @@ TEST(FetchDataLoaderTest,
       FetchDataLoader::CreateLoaderAsBlobHandle("text/test");
   MockFetchDataLoaderClient* fetch_data_loader_client =
       MockFetchDataLoaderClient::Create();
-  RefPtr<BlobDataHandle> blob_data_handle;
+  scoped_refptr<BlobDataHandle> blob_data_handle;
 
   InSequence s;
   EXPECT_CALL(checkpoint, Call(1));

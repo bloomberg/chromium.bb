@@ -163,7 +163,7 @@ Response* Response::Create(ScriptState* script_state,
     body_buffer = new BodyStreamBuffer(
         script_state, new FormDataBytesConsumer(array_buffer_view));
   } else if (V8FormData::hasInstance(body, isolate)) {
-    RefPtr<EncodedFormData> form_data =
+    scoped_refptr<EncodedFormData> form_data =
         V8FormData::ToImpl(body.As<v8::Object>())->EncodeMultiPartFormData();
     // Here we handle formData->boundary() as a C-style string. See
     // FormDataEncoder::generateUniqueBoundaryString.
@@ -173,7 +173,7 @@ Response* Response::Create(ScriptState* script_state,
         script_state,
         new FormDataBytesConsumer(execution_context, std::move(form_data)));
   } else if (V8URLSearchParams::hasInstance(body, isolate)) {
-    RefPtr<EncodedFormData> form_data =
+    scoped_refptr<EncodedFormData> form_data =
         V8URLSearchParams::ToImpl(body.As<v8::Object>())->ToEncodedFormData();
     body_buffer = new BodyStreamBuffer(
         script_state,

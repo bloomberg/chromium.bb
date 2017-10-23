@@ -61,7 +61,7 @@ class MODULES_EXPORT ReadableStreamBytesConsumer final : public BytesConsumer {
   // Holding a ScopedPersistent here is safe in terms of cross-world wrapper
   // leakage because we read only Uint8Array chunks from the reader.
   ScopedPersistent<v8::Value> reader_;
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   Member<BytesConsumer::Client> client_;
   Member<DOMUint8Array> pending_buffer_;
   size_t pending_offset_ = 0;
