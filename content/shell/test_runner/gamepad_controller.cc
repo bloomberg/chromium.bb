@@ -47,6 +47,7 @@ class GamepadControllerBindings
   void SetButtonData(int index, int button, double data);
   void SetAxisCount(int index, int axes);
   void SetAxisData(int index, int axis, double data);
+  void SetDualRumbleVibrationActuator(int index, bool enabled);
 
   base::WeakPtr<GamepadController> controller_;
 
@@ -94,7 +95,9 @@ gin::ObjectTemplateBuilder GamepadControllerBindings::GetObjectTemplateBuilder(
       .SetMethod("setButtonCount", &GamepadControllerBindings::SetButtonCount)
       .SetMethod("setButtonData", &GamepadControllerBindings::SetButtonData)
       .SetMethod("setAxisCount", &GamepadControllerBindings::SetAxisCount)
-      .SetMethod("setAxisData", &GamepadControllerBindings::SetAxisData);
+      .SetMethod("setAxisData", &GamepadControllerBindings::SetAxisData)
+      .SetMethod("setDualRumbleVibrationActuator",
+                 &GamepadControllerBindings::SetDualRumbleVibrationActuator);
 }
 
 void GamepadControllerBindings::Connect(int index) {
@@ -137,6 +140,12 @@ void GamepadControllerBindings::SetAxisCount(int index, int axes) {
 void GamepadControllerBindings::SetAxisData(int index, int axis, double data) {
   if (controller_)
     controller_->SetAxisData(index, axis, data);
+}
+
+void GamepadControllerBindings::SetDualRumbleVibrationActuator(int index,
+                                                               bool enabled) {
+  if (controller_)
+    controller_->SetDualRumbleVibrationActuator(index, enabled);
 }
 
 // static
@@ -236,6 +245,15 @@ void GamepadController::SetAxisData(int index, int axis, double data) {
   if (axis < 0 || axis >= static_cast<int>(Gamepad::kAxesLengthCap))
     return;
   gamepads_.items[index].axes[axis] = data;
+}
+
+void GamepadController::SetDualRumbleVibrationActuator(int index,
+                                                       bool enabled) {
+  if (index < 0 || index >= static_cast<int>(Gamepads::kItemsLengthCap))
+    return;
+  gamepads_.items[index].vibration_actuator.type =
+      device::GamepadHapticActuatorType::kDualRumble;
+  gamepads_.items[index].vibration_actuator.not_null = enabled;
 }
 
 }  // namespace test_runner
