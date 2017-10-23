@@ -24,6 +24,7 @@
 
 namespace blink {
 struct WebRect;
+struct WebRemoteScrollProperties;
 }
 
 namespace viz {
@@ -208,6 +209,9 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnSetFocusedFrame();
   void OnWillEnterFullscreen();
   void OnSetHasReceivedUserGesture();
+  void OnScrollRectToVisible(
+      const gfx::Rect& rect_to_scroll,
+      const blink::WebRemoteScrollProperties& properties);
 
 #if defined(USE_AURA)
   // MusEmbeddedFrameDelegate

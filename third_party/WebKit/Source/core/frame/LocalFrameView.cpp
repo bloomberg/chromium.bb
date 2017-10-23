@@ -133,6 +133,8 @@
 #include "platform/wtf/PtrUtil.h"
 #include "platform/wtf/StdLibExtras.h"
 #include "public/platform/WebDisplayItemList.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebRemoteScrollProperties.h"
 
 // Used to check for dirty layouts violating document lifecycle rules.
 // If arg evaluates to true, the program will continue. If arg evaluates to
@@ -157,6 +159,27 @@ constexpr int kLetterPortraitPageHeight = 792;
 }  // namespace
 
 namespace blink {
+namespace {
+using WebRemoteScrollAlignment = WebRemoteScrollProperties::Alignment;
+WebRemoteScrollAlignment ToWebRemoteScrollAlignment(
+    const ScrollAlignment& alignment) {
+  if (alignment == ScrollAlignment::kAlignCenterIfNeeded)
+    return WebRemoteScrollAlignment::kCenterIfNeeded;
+  if (alignment == ScrollAlignment::kAlignToEdgeIfNeeded)
+    return WebRemoteScrollAlignment::kToEdgeIfNeeded;
+  if (alignment == ScrollAlignment::kAlignTopAlways)
+    return WebRemoteScrollAlignment::kTopAlways;
+  if (alignment == ScrollAlignment::kAlignBottomAlways)
+    return WebRemoteScrollAlignment::kBottomAlways;
+  if (alignment == ScrollAlignment::kAlignLeftAlways)
+    return WebRemoteScrollAlignment::kLeftAlways;
+  if (alignment == ScrollAlignment::kAlignRightAlways)
+    return WebRemoteScrollAlignment::kRightAlways;
+  NOTREACHED();
+  return WebRemoteScrollAlignment::kCenterIfNeeded;
+}
+
+}  // namespace
 
 using namespace HTMLNames;
 
@@ -4498,6 +4521,36 @@ ScrollableArea* LocalFrameView::ScrollableAreaWithElementId(
     }
   }
   return nullptr;
+}
+
+void LocalFrameView::ScrollRectToVisibleInRemoteParent(
+    const LayoutRect& rect_to_scroll,
+    const ScrollAlignment& align_x,
+    const ScrollAlignment& align_y,
+    ScrollType scroll_type,
+    bool make_visible_in_visual_viewport,
+    ScrollBehavior scroll_behavior,
+    bool is_for_scroll_sequence) {
+  DCHECK(GetFrame().IsLocalRoot() && !GetFrame().IsMainFrame() &&
+         safe_to_propagate_scroll_to_parent_);
+  // Find the coordinates of the |rect_to_scroll| after removing all transforms
+  // on this LayoutObject. |new_rect| will be in the coordinate space of this
+  // frame; which is a local root. In the parent frame process, a similar
+  // transformation will convert the absolute coordinates in here to the space
+  // of the parent frame. The combination of the two transforms should act as a
+  // call to LocalToAncestorQuad when frame and its parent are in the same
+  // process (which is done in LayoutBox::ScrollRectIntoVisibleRecusive).
+  LayoutRect new_rect = EnclosingLayoutRect(
+      GetLayoutView()
+          ->LocalToAbsoluteQuad(FloatRect(rect_to_scroll), 0)
+          .BoundingBox());
+  GetFrame().Client()->ScrollRectToVisibleInParentFrame(
+      WebRect(new_rect.X().ToInt(), new_rect.Y().ToInt(),
+              new_rect.Width().ToInt(), new_rect.Height().ToInt()),
+      WebRemoteScrollProperties(ToWebRemoteScrollAlignment(align_x),
+                                ToWebRemoteScrollAlignment(align_y),
+                                scroll_type, make_visible_in_visual_viewport,
+                                scroll_behavior, is_for_scroll_sequence));
 }
 
 void LocalFrameView::ScrollContentsIfNeeded() {

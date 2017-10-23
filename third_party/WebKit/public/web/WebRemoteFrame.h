@@ -21,6 +21,8 @@ class WebLayer;
 class WebRemoteFrameClient;
 class WebString;
 class WebView;
+struct WebRect;
+struct WebRemoteScrollProperties;
 
 class WebRemoteFrame : public WebFrame {
  public:
@@ -104,6 +106,14 @@ class WebRemoteFrame : public WebFrame {
   virtual void WillEnterFullscreen() = 0;
 
   virtual void SetHasReceivedUserGesture() = 0;
+
+  // Scrolls the given rectangle into view. This kicks off the recursive scroll
+  // into visible starting from the frame's owner element. The coordinates of
+  // the rect are absolute (transforms removed) with respect to the frame in
+  // OOPIF process. The parameters are sent by the OOPIF local root and can be
+  // used to properly chain the recursive scrolling between the two processes.
+  virtual void ScrollRectToVisible(const WebRect&,
+                                   const WebRemoteScrollProperties&) = 0;
 
  protected:
   explicit WebRemoteFrame(WebTreeScopeType scope) : WebFrame(scope) {}

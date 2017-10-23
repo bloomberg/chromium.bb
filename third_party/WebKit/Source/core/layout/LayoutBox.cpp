@@ -31,6 +31,7 @@
 #include "core/dom/Document.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/LocalFrameClient.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/Settings.h"
 #include "core/html/HTMLElement.h"
@@ -73,6 +74,8 @@
 #include "platform/geometry/FloatQuad.h"
 #include "platform/geometry/FloatRoundedRect.h"
 #include "platform/wtf/PtrUtil.h"
+#include "public/platform/WebRect.h"
+#include "public/platform/WebRemoteScrollProperties.h"
 
 namespace blink {
 
@@ -742,6 +745,14 @@ void LayoutBox::ScrollRectToVisibleRecursive(
         new_rect, align_x, align_y, scroll_type,
         make_visible_in_visual_viewport, scroll_behavior,
         is_for_scroll_sequence);
+  } else if (GetFrame()->IsLocalRoot() && !GetFrame()->IsMainFrame()) {
+    LocalFrameView* frame_view = GetFrameView();
+    if (frame_view && frame_view->SafeToPropagateScrollToParent()) {
+      frame_view->ScrollRectToVisibleInRemoteParent(
+          new_rect, align_x, align_y, scroll_type,
+          make_visible_in_visual_viewport, scroll_behavior,
+          is_for_scroll_sequence);
+    }
   }
 }
 

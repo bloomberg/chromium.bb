@@ -92,6 +92,13 @@ struct CORE_EXPORT ScrollAlignment {
   ScrollAlignmentBehavior rect_partial_;
 };
 
+inline bool CORE_EXPORT operator==(const ScrollAlignment& lhs,
+                                   const ScrollAlignment& rhs) {
+  return lhs.rect_visible_ == rhs.rect_visible_ &&
+         lhs.rect_hidden_ == rhs.rect_hidden_ &&
+         lhs.rect_partial_ == rhs.rect_partial_;
+}
+
 }  // namespace blink
 
 #endif  // ScrollAlignment_h

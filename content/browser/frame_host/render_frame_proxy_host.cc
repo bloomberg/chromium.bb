@@ -226,6 +226,13 @@ void RenderFrameProxyHost::SetFocusedFrame() {
   Send(new FrameMsg_SetFocusedFrame(routing_id_));
 }
 
+void RenderFrameProxyHost::ScrollRectToVisible(
+    const gfx::Rect& rect_to_scroll,
+    const blink::WebRemoteScrollProperties properties) {
+  Send(new FrameMsg_ScrollRectToVisible(routing_id_, rect_to_scroll,
+                                        properties));
+}
+
 void RenderFrameProxyHost::SetDestructionCallback(
     DestructionCallback destruction_callback) {
   destruction_callback_ = std::move(destruction_callback);

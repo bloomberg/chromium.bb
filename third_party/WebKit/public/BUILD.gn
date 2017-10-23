@@ -314,6 +314,7 @@ source_set("blink_headers") {
     "platform/WebRTCVoidRequest.h",
     "platform/WebRect.h",
     "platform/WebReferrerPolicy.h",
+    "platform/WebRemoteScrollProperties.h",
     "platform/WebRenderingStats.h",
     "platform/WebRuntimeFeatures.h",
     "platform/WebScreenInfo.h",
