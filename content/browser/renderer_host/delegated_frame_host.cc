@@ -752,7 +752,8 @@ void DelegatedFrameHost::CopyFromCompositingSurfaceHasResultForVideo(
              << region_in_frame.size().ToString();
 
     std::unique_ptr<viz::GLHelper::ScalerInterface> scaler =
-        gl_helper->CreateScaler(quality, scale_from, scale_to, false, false);
+        gl_helper->CreateScaler(quality, scale_from, scale_to, false, false,
+                                false);
     DCHECK(scaler);  // Arguments to CreateScaler() should never be invalid.
     yuv_readback_pipeline->SetScaler(std::move(scaler));
   }

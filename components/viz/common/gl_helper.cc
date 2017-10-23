@@ -76,7 +76,8 @@ class I420ConverterImpl : public I420Converter {
  public:
   I420ConverterImpl(GLES2Interface* gl,
                     GLHelperScaling* scaler_impl,
-                    bool flip_vertically,
+                    bool flipped_source,
+                    bool flip_output,
                     bool swizzle,
                     bool use_mrt);
 
@@ -91,6 +92,8 @@ class I420ConverterImpl : public I420Converter {
                GLuint u_plane_texture,
                GLuint v_plane_texture) override;
 
+  bool IsSamplingFlippedSource() const override;
+  bool IsFlippingOutput() const override;
   GLenum GetReadbackFormat() const override;
 
  protected:
@@ -383,11 +386,12 @@ std::unique_ptr<GLHelper::ScalerInterface> GLHelper::CreateScaler(
     ScalerQuality quality,
     const gfx::Vector2d& scale_from,
     const gfx::Vector2d& scale_to,
-    bool vertically_flip_texture,
+    bool flipped_source,
+    bool flip_output,
     bool swizzle) {
   InitScalerImpl();
   return scaler_impl_->CreateScaler(quality, scale_from, scale_to,
-                                    vertically_flip_texture, swizzle);
+                                    flipped_source, flip_output, swizzle);
 }
 
 GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
@@ -419,7 +423,7 @@ GLuint GLHelper::CopyTextureToImpl::ScaleTexture(
 
   const std::unique_ptr<ScalerInterface> scaler = helper_->CreateScaler(
       quality, gfx::Vector2d(src_size.width(), src_size.height()),
-      gfx::Vector2d(dst_size.width(), dst_size.height()),
+      gfx::Vector2d(dst_size.width(), dst_size.height()), false,
       vertically_flip_texture, swizzle);
   scaler->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
                 gfx::Rect(dst_size));
@@ -447,7 +451,7 @@ GLuint GLHelper::CopyTextureToImpl::EncodeTextureAsGrayscale(
   helper_->InitScalerImpl();
   const std::unique_ptr<ScalerInterface> planerizer =
       helper_->scaler_impl_.get()->CreateGrayscalePlanerizer(
-          vertically_flip_texture, swizzle);
+          false, vertically_flip_texture, swizzle);
   planerizer->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,
                     gfx::Rect(*encoded_texture_size));
   return dst_texture;
@@ -955,22 +959,28 @@ namespace {
 
 I420ConverterImpl::I420ConverterImpl(GLES2Interface* gl,
                                      GLHelperScaling* scaler_impl,
-                                     bool flip_vertically,
+                                     bool flipped_source,
+                                     bool flip_output,
                                      bool swizzle,
                                      bool use_mrt)
     : gl_(gl),
       y_planerizer_(
-          use_mrt
-              ? scaler_impl->CreateI420MrtPass1Planerizer(flip_vertically,
-                                                          swizzle)
-              : scaler_impl->CreateI420Planerizer(0, flip_vertically, swizzle)),
-      u_planerizer_(
-          use_mrt
-              ? scaler_impl->CreateI420MrtPass2Planerizer(false, swizzle)
-              : scaler_impl->CreateI420Planerizer(1, flip_vertically, swizzle)),
+          use_mrt ? scaler_impl->CreateI420MrtPass1Planerizer(flipped_source,
+                                                              flip_output,
+                                                              swizzle)
+                  : scaler_impl->CreateI420Planerizer(0,
+                                                      flipped_source,
+                                                      flip_output,
+                                                      swizzle)),
+      u_planerizer_(use_mrt ? scaler_impl->CreateI420MrtPass2Planerizer(swizzle)
+                            : scaler_impl->CreateI420Planerizer(1,
+                                                                flipped_source,
+                                                                flip_output,
+                                                                swizzle)),
       v_planerizer_(use_mrt ? nullptr
                             : scaler_impl->CreateI420Planerizer(2,
-                                                                flip_vertically,
+                                                                flipped_source,
+                                                                flip_output,
                                                                 swizzle)) {}
 
 I420ConverterImpl::~I420ConverterImpl() = default;
@@ -1024,6 +1034,14 @@ void I420ConverterImpl::Convert(GLuint src_texture,
   }
 }
 
+bool I420ConverterImpl::IsSamplingFlippedSource() const {
+  return y_planerizer_->IsSamplingFlippedSource();
+}
+
+bool I420ConverterImpl::IsFlippingOutput() const {
+  return y_planerizer_->IsFlippingOutput();
+}
+
 GLenum I420ConverterImpl::GetReadbackFormat() const {
   return y_planerizer_->GetReadbackFormat();
 }
@@ -1072,6 +1090,7 @@ GLHelper::CopyTextureToImpl::ReadbackYUVImpl::ReadbackYUVImpl(
     bool use_mrt)
     : I420ConverterImpl(gl,
                         scaler_impl,
+                        false,
                         flip_vertically,
                         swizzle == kSwizzleBGRA,
                         use_mrt),
@@ -1156,13 +1175,14 @@ bool GLHelper::IsReadbackConfigSupported(SkColorType color_type) {
 }
 
 std::unique_ptr<I420Converter> GLHelper::CreateI420Converter(
-    bool vertically_flip_texture,
+    bool flipped_source,
+    bool flip_output,
     bool swizzle,
     bool use_mrt) {
   InitCopyTextToImpl();
   InitScalerImpl();
   return std::make_unique<I420ConverterImpl>(
-      gl_, scaler_impl_.get(), vertically_flip_texture, swizzle,
+      gl_, scaler_impl_.get(), flipped_source, flip_output, swizzle,
       use_mrt && (copy_texture_to_impl_->MaxDrawBuffers() >= 2));
 }
 

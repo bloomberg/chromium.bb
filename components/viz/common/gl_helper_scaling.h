@@ -49,7 +49,8 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
       GLHelper::ScalerQuality quality,
       const gfx::Vector2d& scale_from,
       const gfx::Vector2d& scale_to,
-      bool vertically_flip_texture,
+      bool flipped_source,
+      bool flip_output,
       bool swizzle);
 
   // These convert source textures with RGBA pixel data into a single-color-
@@ -58,11 +59,13 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
   // While these output RGBA pixels in the destination texture(s), each RGBA
   // pixel is actually a container for 4 consecutive pixels in the result.
   std::unique_ptr<GLHelper::ScalerInterface> CreateGrayscalePlanerizer(
-      bool vertically_flip_texture,
+      bool flipped_source,
+      bool flip_output,
       bool swizzle);
   std::unique_ptr<GLHelper::ScalerInterface> CreateI420Planerizer(
       int plane,  // 0=Y, 1=U, 2=V
-      bool vertically_flip_texture,
+      bool flipped_source,
+      bool flip_output,
       bool swizzle);
 
   // These are a faster path to I420 planerization, if the platform supports
@@ -72,10 +75,10 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
   // and final V plane. Thus, clients should call ScaleToMultipleOutputs() on
   // the returned instance.
   std::unique_ptr<GLHelper::ScalerInterface> CreateI420MrtPass1Planerizer(
-      bool vertically_flip_texture,
+      bool flipped_source,
+      bool flip_output,
       bool swizzle);
   std::unique_ptr<GLHelper::ScalerInterface> CreateI420MrtPass2Planerizer(
-      bool vertically_flip_texture,
       bool swizzle);
 
  private:
@@ -142,7 +145,8 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
     gfx::Vector2d scale_from;
     gfx::Vector2d scale_to;
     bool scale_x;
-    bool vertically_flip_texture;
+    bool flipped_source;
+    bool flip_output;
     bool swizzle;
   };
 
@@ -151,7 +155,8 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
   static void ComputeScalerStages(GLHelper::ScalerQuality quality,
                                   const gfx::Vector2d& scale_from,
                                   const gfx::Vector2d& scale_to,
-                                  bool vertically_flip_texture,
+                                  bool flipped_source,
+                                  bool flip_output,
                                   bool swizzle,
                                   std::vector<ScalerStage>* scaler_stages);
 
@@ -161,8 +166,6 @@ class VIZ_COMMON_EXPORT GLHelperScaling {
   static void ConvertScalerOpsToScalerStages(
       GLHelper::ScalerQuality quality,
       gfx::Vector2d scale_from,
-      bool vertically_flip_texture,
-      bool swizzle,
       base::circular_deque<GLHelperScaling::ScaleOp>* x_ops,
       base::circular_deque<GLHelperScaling::ScaleOp>* y_ops,
       std::vector<ScalerStage>* scaler_stages);

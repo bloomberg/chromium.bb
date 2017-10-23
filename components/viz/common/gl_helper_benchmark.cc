@@ -162,7 +162,7 @@ TEST_F(GLHelperBenchmark, ScaleBenchmark) {
                 kQualities[q],
                 gfx::Vector2d(src_size.width(), src_size.height()),
                 gfx::Vector2d(dst_size.width(), dst_size.height()), false,
-                false);
+                false, false);
         // Scale once beforehand before we start measuring.
         const gfx::Rect output_rect(dst_size);
         scaler->Scale(src_texture, src_size, gfx::Vector2dF(), dst_texture,

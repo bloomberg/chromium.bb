@@ -338,6 +338,15 @@ class VIZ_COMMON_EXPORT GLHelper {
     virtual bool IsSameScaleRatio(const gfx::Vector2d& from,
                                   const gfx::Vector2d& to) const = 0;
 
+    // Returns true if the scaler is assuming the source texture's content is
+    // vertically flipped.
+    virtual bool IsSamplingFlippedSource() const = 0;
+
+    // Returns true if the scaler will vertically-flip the output. Note that if
+    // both this method and IsSamplingFlippedSource() return true, then the
+    // scaler output will be right-side up.
+    virtual bool IsFlippingOutput() const = 0;
+
     // Returns the format to use when calling glReadPixels() to read-back the
     // output texture(s). This indicates whether the 0th and 2nd bytes in each
     // RGBA quad have been swapped. If no swapping has occurred, this will
@@ -354,12 +363,24 @@ class VIZ_COMMON_EXPORT GLHelper {
   // Create a scaler that upscales or downscales at the given ratio
   // (scale_from:scale_to). Returns null on invalid arguments.
   //
+  // If |flipped_source| is true, then the scaler will assume the content of the
+  // source texture is vertically-flipped. This is required so that the scaler
+  // can correctly compute the sampling region.
+  //
+  // If |flip_output| is true, then the scaler will vertically-flip its output
+  // result. This is used when the output texture will be read-back into system
+  // memory, so that the rows do not have to be copied in reverse.
+  //
+  // If |swizzle| is true, the 0th and 2nd elements in each RGBA quad will be
+  // swapped. This is beneficial for optimizing read-back into system memory.
+  //
   // WARNING: The returned scaler assumes both this GLHelper and its
   // GLES2Interface/ContextSupport will outlive it!
   std::unique_ptr<ScalerInterface> CreateScaler(ScalerQuality quality,
                                                 const gfx::Vector2d& scale_from,
                                                 const gfx::Vector2d& scale_to,
-                                                bool vertically_flip_texture,
+                                                bool flipped_source,
+                                                bool flip_output,
                                                 bool swizzle);
 
   // Create a pipeline that will (optionally) scale a source texture, and then
@@ -373,8 +394,8 @@ class VIZ_COMMON_EXPORT GLHelper {
   // memory, note that a width 1/4 the actual |output_rect.width()| must be
   // used.
   //
-  // If |swizzle| is true, the 0th and 2nd elements in each RGBA quad will be
-  // swapped. This is beneficial for optimizing read-back into system memory.
+  // |flipped_source|, |flip_output|, and |swizzle| have the same meaning as
+  // that explained in the method comments for CreateScaler().
   //
   // If |use_mrt| is true, the pipeline will try to optimize the YUV conversion
   // using the multi-render-target extension, if the platform is capable.
@@ -388,8 +409,10 @@ class VIZ_COMMON_EXPORT GLHelper {
   //
   // WARNING: The returned I420Converter instance assumes both this GLHelper and
   // its GLES2Interface/ContextSupport will outlive it!
-  std::unique_ptr<I420Converter>
-  CreateI420Converter(bool vertically_flip_texture, bool swizzle, bool use_mrt);
+  std::unique_ptr<I420Converter> CreateI420Converter(bool flipped_source,
+                                                     bool flip_output,
+                                                     bool swizzle,
+                                                     bool use_mrt);
 
   // Create a readback pipeline that will (optionally) scale a source texture,
   // then convert it to YUV420 planar form, and finally read back that. This
@@ -468,6 +491,13 @@ class I420Converter {
                        GLuint y_plane_texture,
                        GLuint u_plane_texture,
                        GLuint v_plane_texture) = 0;
+
+  // Returns true if the converter is assuming the source texture's content is
+  // vertically flipped.
+  virtual bool IsSamplingFlippedSource() const = 0;
+
+  // Returns true if the converter will vertically-flip the output.
+  virtual bool IsFlippingOutput() const = 0;
 
   // Returns the format to use when calling glReadPixels() to read-back the
   // output textures. This indicates whether the 0th and 2nd bytes in each RGBA

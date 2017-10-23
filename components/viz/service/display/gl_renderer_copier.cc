@@ -495,7 +495,7 @@ GLRendererCopier::TakeCachedScalerOrCreate(
                                               ? GLHelper::SCALER_QUALITY_GOOD
                                               : GLHelper::SCALER_QUALITY_BEST;
   return helper_.CreateScaler(quality, for_request.scale_from(),
-                              for_request.scale_to(), false, false);
+                              for_request.scale_to(), false, false, false);
 }
 
 void GLRendererCopier::CacheScalerOrDelete(
