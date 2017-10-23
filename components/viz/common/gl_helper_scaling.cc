@@ -201,7 +201,7 @@ class ScalerImpl : public GLHelper::ScalerInterface {
       Execute(intermediate.first, intermediate.second.size(), src_rect,
               dest_texture_0, dest_texture_1, output_rect.size());
     } else {
-      if (spec_.vertically_flip_texture) {
+      if (spec_.flipped_source) {
         src_rect.set_x(src_rect.x() + src_offset.x());
         src_rect.set_y(src_texture_size.height() - src_rect.bottom() -
                        src_offset.y());
@@ -248,7 +248,7 @@ class ScalerImpl : public GLHelper::ScalerInterface {
             chain_properties_->scale_to.x(),
         static_cast<float>(chain_properties_->scale_from.y()) /
             chain_properties_->scale_to.y());
-    if (scaler->spec_.vertically_flip_texture) {
+    if (scaler->spec_.flipped_source) {
       offset->set_x(offset->x() - sampling_rect->x());
       offset->set_y(offset->y() -
                     (src_texture_size.height() - sampling_rect->bottom()));
@@ -274,6 +274,25 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     const gfx::Vector2d& overall_to = chain_properties_->scale_to;
     return AreRatiosEqual(overall_from.x(), overall_to.x(), from.x(), to.x()) &&
            AreRatiosEqual(overall_from.y(), overall_to.y(), from.y(), to.y());
+  }
+
+  bool IsSamplingFlippedSource() const override {
+    const ScalerImpl* scaler = this;
+    while (scaler->subscaler_) {
+      DCHECK(!scaler->spec_.flipped_source);
+      scaler = scaler->subscaler_.get();
+    }
+    return scaler->spec_.flipped_source;
+  }
+
+  bool IsFlippingOutput() const override {
+    bool flipped_overall = false;
+    const ScalerImpl* scaler = this;
+    while (scaler) {
+      flipped_overall = (flipped_overall != scaler->spec_.flip_output);
+      scaler = scaler->subscaler_.get();
+    }
+    return flipped_overall;
   }
 
   GLenum GetReadbackFormat() const override {
@@ -353,24 +372,32 @@ class ScalerImpl : public GLHelper::ScalerInterface {
       const gfx::Rect& requested_output_rect) const {
     DCHECK(!subscaler_);
 
-    // The output rect will be the |requested_output_rect|, clamped to just
-    // the region the source texture can provide.
-    gfx::Rect output_rect = requested_output_rect;
-    const gfx::RectF src_bounds = gfx::RectF(gfx::SizeF(src_texture_size));
-    const gfx::Rect output_bounds = ToOutputRect(src_bounds - src_offset);
-    output_rect.Intersect(output_bounds);
+    // Determine what the requested source rect is, and clamp to the texture's
+    // bounds.
+    gfx::RectF src_rect = ToSourceRect(requested_output_rect);
+    src_rect += src_offset;
+    if (spec_.flipped_source)
+      src_rect.set_y(src_texture_size.height() - src_rect.bottom());
+    src_rect.Intersect(gfx::RectF(gfx::SizeF(src_texture_size)));
 
-    // The source rect is computed based on the clamped output rect, and then
-    // transformed further to account for both the |src_offset| re-positioning
-    // and vertical flipping.
-    gfx::RectF src_rect = ToSourceRect(output_rect);
-    if (spec_.vertically_flip_texture) {
-      src_rect.set_x(src_rect.x() + src_offset.x());
-      src_rect.set_y(src_texture_size.height() - src_rect.bottom() -
-                     src_offset.y());
-    } else {
-      src_rect += src_offset;
-    }
+    // From the clamped source rect, re-compute the output rect that will be
+    // provided to the next scaler stage. This will either be all of what was
+    // requested or a smaller rect. See comments in
+    // GenerateIntermediateTexture().
+    if (spec_.flipped_source)
+      src_rect.set_y(src_texture_size.height() - src_rect.bottom());
+    src_rect -= src_offset;
+    const gfx::Rect output_rect = ToOutputRect(src_rect);
+
+    // Once again, compute the source rect from the output rect, which might
+    // spill-over the texture's bounds slightly (but only by the minimal amount
+    // necessary). Apply the |src_offset| and vertically-flip this source rect,
+    // if necessary, as this is what will be provided directly to the shader
+    // program.
+    src_rect = ToSourceRect(output_rect);
+    src_rect += src_offset;
+    if (spec_.flipped_source)
+      src_rect.set_y(src_texture_size.height() - src_rect.bottom());
 
     return std::make_pair(src_rect, output_rect);
   }
@@ -439,7 +466,7 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     // Render the output, but do not account for |src_offset| nor vertical
     // flipping because that should have been handled in the base case.
     EnsureIntermediateTextureDefined(output_rect.size());
-    DCHECK(!spec_.vertically_flip_texture);
+    DCHECK(!spec_.flipped_source);
     Execute(sampling_texture, sampling_bounds.size(),
             sampling_rect - sampling_bounds.OffsetFromOrigin(),
             intermediate_texture_, 0, output_rect.size());
@@ -478,7 +505,7 @@ class ScalerImpl : public GLHelper::ScalerInterface {
     ScopedBufferBinder<GL_ARRAY_BUFFER> buffer_binder(
         gl_, scaler_helper_->vertex_attributes_buffer_);
     shader_program_->UseProgram(src_texture_size, src_rect, result_size,
-                                spec_.scale_x, spec_.vertically_flip_texture,
+                                spec_.scale_x, spec_.flip_output,
                                 color_weights_);
 
     // Execute the draw.
@@ -530,8 +557,6 @@ class ScalerImpl : public GLHelper::ScalerInterface {
 void GLHelperScaling::ConvertScalerOpsToScalerStages(
     GLHelper::ScalerQuality quality,
     gfx::Vector2d scale_from,
-    bool vertically_flip_texture,
-    bool swizzle,
     base::circular_deque<GLHelperScaling::ScaleOp>* x_ops,
     base::circular_deque<GLHelperScaling::ScaleOp>* y_ops,
     std::vector<ScalerStage>* scaler_stages) {
@@ -633,11 +658,9 @@ void GLHelperScaling::ConvertScalerOpsToScalerStages(
     }
 
     scaler_stages->emplace_back(ScalerStage{current_shader, scale_from,
-                                            intermediate_scale, scale_x,
-                                            vertically_flip_texture, swizzle});
+                                            intermediate_scale, scale_x, false,
+                                            false, false});
     scale_from = intermediate_scale;
-    vertically_flip_texture = false;
-    swizzle = false;
   }
 }
 
@@ -646,13 +669,14 @@ void GLHelperScaling::ComputeScalerStages(
     GLHelper::ScalerQuality quality,
     const gfx::Vector2d& scale_from,
     const gfx::Vector2d& scale_to,
-    bool vertically_flip_texture,
+    bool flipped_source,
+    bool flip_output,
     bool swizzle,
     std::vector<ScalerStage>* scaler_stages) {
   if (quality == GLHelper::SCALER_QUALITY_FAST || scale_from == scale_to) {
     scaler_stages->emplace_back(ScalerStage{SHADER_BILINEAR, scale_from,
-                                            scale_to, false,
-                                            vertically_flip_texture, swizzle});
+                                            scale_to, false, flipped_source,
+                                            flip_output, swizzle});
     return;
   }
 
@@ -664,16 +688,34 @@ void GLHelperScaling::ComputeScalerStages(
                                    quality == GLHelper::SCALER_QUALITY_GOOD,
                                    &y_ops);
   DCHECK_GT(x_ops.size() + y_ops.size(), 0u);
-  ConvertScalerOpsToScalerStages(quality, scale_from, vertically_flip_texture,
-                                 swizzle, &x_ops, &y_ops, scaler_stages);
+  ConvertScalerOpsToScalerStages(quality, scale_from, &x_ops, &y_ops,
+                                 scaler_stages);
   DCHECK_EQ(x_ops.size() + y_ops.size(), 0u);
+  DCHECK(!scaler_stages->empty());
+
+  // If the source content is flipped, the first scaler stage will perform math
+  // to account for this. It also will flip the content during scaling so that
+  // all following stages may assume the content is not flipped. Then, the final
+  // stage must ensure the final output is correctly flipped-back (or not) based
+  // on what the first stage did PLUS what is being requested by the client
+  // code.
+  if (flipped_source) {
+    scaler_stages->front().flipped_source = true;
+    scaler_stages->front().flip_output = true;
+  }
+  if (flipped_source != flip_output) {
+    scaler_stages->back().flip_output = !scaler_stages->back().flip_output;
+  }
+
+  scaler_stages->back().swizzle = swizzle;
 }
 
 std::unique_ptr<GLHelper::ScalerInterface> GLHelperScaling::CreateScaler(
     GLHelper::ScalerQuality quality,
     const gfx::Vector2d& scale_from,
     const gfx::Vector2d& scale_to,
-    bool vertically_flip_texture,
+    bool flipped_source,
+    bool flip_output,
     bool swizzle) {
   if (scale_from.x() == 0 || scale_from.y() == 0 || scale_to.x() == 0 ||
       scale_to.y() == 0) {
@@ -682,8 +724,8 @@ std::unique_ptr<GLHelper::ScalerInterface> GLHelperScaling::CreateScaler(
   }
 
   std::vector<ScalerStage> scaler_stages;
-  ComputeScalerStages(quality, scale_from, scale_to, vertically_flip_texture,
-                      swizzle, &scaler_stages);
+  ComputeScalerStages(quality, scale_from, scale_to, flipped_source,
+                      flip_output, swizzle, &scaler_stages);
 
   std::unique_ptr<ScalerImpl> ret;
   for (unsigned int i = 0; i < scaler_stages.size(); i++) {
@@ -695,11 +737,13 @@ std::unique_ptr<GLHelper::ScalerInterface> GLHelperScaling::CreateScaler(
 }
 
 std::unique_ptr<GLHelper::ScalerInterface>
-GLHelperScaling::CreateGrayscalePlanerizer(bool vertically_flip_texture,
+GLHelperScaling::CreateGrayscalePlanerizer(bool flipped_source,
+                                           bool flip_output,
                                            bool swizzle) {
-  const ScalerStage stage = {SHADER_PLANAR,           gfx::Vector2d(4, 1),
-                             gfx::Vector2d(1, 1),     true,
-                             vertically_flip_texture, swizzle};
+  const ScalerStage stage = {
+      SHADER_PLANAR, gfx::Vector2d(4, 1), gfx::Vector2d(1, 1),
+      true,          flipped_source,      flip_output,
+      swizzle};
   auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
   result->SetColorWeights(0, kRGBtoGrayscaleColorWeights);
   result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
@@ -708,14 +752,16 @@ GLHelperScaling::CreateGrayscalePlanerizer(bool vertically_flip_texture,
 
 std::unique_ptr<GLHelper::ScalerInterface>
 GLHelperScaling::CreateI420Planerizer(int plane,
-                                      bool vertically_flip_texture,
+                                      bool flipped_source,
+                                      bool flip_output,
                                       bool swizzle) {
   const ScalerStage stage = {
       SHADER_PLANAR,
       plane == 0 ? gfx::Vector2d(4, 1) : gfx::Vector2d(8, 2),
       gfx::Vector2d(1, 1),
       true,
-      vertically_flip_texture,
+      flipped_source,
+      flip_output,
       swizzle};
   auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
   switch (plane) {
@@ -736,11 +782,16 @@ GLHelperScaling::CreateI420Planerizer(int plane,
 }
 
 std::unique_ptr<GLHelper::ScalerInterface>
-GLHelperScaling::CreateI420MrtPass1Planerizer(bool vertically_flip_texture,
+GLHelperScaling::CreateI420MrtPass1Planerizer(bool flipped_source,
+                                              bool flip_output,
                                               bool swizzle) {
-  const ScalerStage stage = {SHADER_YUV_MRT_PASS1,    gfx::Vector2d(4, 1),
-                             gfx::Vector2d(1, 1),     true,
-                             vertically_flip_texture, swizzle};
+  const ScalerStage stage = {SHADER_YUV_MRT_PASS1,
+                             gfx::Vector2d(4, 1),
+                             gfx::Vector2d(1, 1),
+                             true,
+                             flipped_source,
+                             flip_output,
+                             swizzle};
   auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
   result->SetColorWeights(0, kRGBtoYColorWeights);
   result->SetColorWeights(1, kRGBtoUColorWeights);
@@ -750,11 +801,14 @@ GLHelperScaling::CreateI420MrtPass1Planerizer(bool vertically_flip_texture,
 }
 
 std::unique_ptr<GLHelper::ScalerInterface>
-GLHelperScaling::CreateI420MrtPass2Planerizer(bool vertically_flip_texture,
-                                              bool swizzle) {
-  const ScalerStage stage = {SHADER_YUV_MRT_PASS2,    gfx::Vector2d(2, 2),
-                             gfx::Vector2d(1, 1),     true,
-                             vertically_flip_texture, swizzle};
+GLHelperScaling::CreateI420MrtPass2Planerizer(bool swizzle) {
+  const ScalerStage stage = {SHADER_YUV_MRT_PASS2,
+                             gfx::Vector2d(2, 2),
+                             gfx::Vector2d(1, 1),
+                             true,
+                             false,
+                             false,
+                             swizzle};
   auto result = base::MakeUnique<ScalerImpl>(gl_, this, stage, nullptr);
   result->SetChainProperties(stage.scale_from, stage.scale_to, swizzle);
   return result;

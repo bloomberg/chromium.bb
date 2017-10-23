@@ -354,7 +354,7 @@ bool AuraWindowCaptureMachine::ProcessCopyOutputResponse(
   } else if (!scaler || !scaler->IsSameScaleRatio(scale_from, scale_to)) {
     std::unique_ptr<viz::GLHelper::ScalerInterface> scaler =
         gl_helper->CreateScaler(viz::GLHelper::SCALER_QUALITY_FAST, scale_from,
-                                scale_to, false, false);
+                                scale_to, false, false, false);
     DCHECK(scaler);  // Arguments to CreateScaler() should never be invalid.
     yuv_readback_pipeline_->SetScaler(std::move(scaler));
   }

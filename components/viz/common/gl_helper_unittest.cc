@@ -752,7 +752,7 @@ class GLHelperTest : public testing::Test {
                  const gfx::Size& scaled_size,
                  int test_pattern,
                  size_t quality_index,
-                 bool flip) {
+                 bool flip_output) {
     // The source texture is meant to be the contents of a framebuffer. Thus, it
     // includes (0,0), and all the way out to the lower-right corner of the
     // |source_rect|.
@@ -771,7 +771,8 @@ class GLHelperTest : public testing::Test {
         "output size: %s "
         "pattern: %d quality: %s %s",
         source_rect.ToString().c_str(), scaled_size.ToString().c_str(),
-        test_pattern, kQualityNames[quality_index], flip ? "flip" : "noflip");
+        test_pattern, kQualityNames[quality_index],
+        flip_output ? "flipout" : "noflipout");
 
     std::vector<GLHelperScaling::ScalerStage> stages;
     const auto scale_from =
@@ -779,7 +780,8 @@ class GLHelperTest : public testing::Test {
     const auto scale_to =
         gfx::Vector2d(scaled_size.width(), scaled_size.height());
     helper_scaling_->ComputeScalerStages(kQualities[quality_index], scale_from,
-                                         scale_to, flip, false, &stages);
+                                         scale_to, false, flip_output, false,
+                                         &stages);
     ValidateScalerStages(kQualities[quality_index], stages, scale_from,
                          scale_to, message);
 
@@ -790,24 +792,21 @@ class GLHelperTest : public testing::Test {
     GLuint dst_texture = 0;
     if (source_rect == gfx::Rect(framebuffer_size)) {
       dst_texture = helper_->CopyAndScaleTexture(
-          src_texture, source_rect.size(), scaled_size, flip,
+          src_texture, source_rect.size(), scaled_size, flip_output,
           kQualities[quality_index]);
     } else {
-      std::unique_ptr<GLHelper::ScalerInterface> scaler = helper_->CreateScaler(
-          kQualities[quality_index], scale_from, scale_to, flip, false);
+      std::unique_ptr<GLHelper::ScalerInterface> scaler =
+          helper_->CreateScaler(kQualities[quality_index], scale_from, scale_to,
+                                false, flip_output, false);
+      ASSERT_FALSE(scaler->IsSamplingFlippedSource());
+      ASSERT_EQ(flip_output, scaler->IsFlippingOutput());
       gl_->GenTextures(1, &dst_texture);
       gl_->BindTexture(GL_TEXTURE_2D, dst_texture);
       gl_->TexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, scaled_size.width(),
                       scaled_size.height(), 0, GL_RGBA, GL_UNSIGNED_BYTE,
                       nullptr);
-      gfx::Vector2dF offset;
-      if (flip) {
-        offset.set_x(source_rect.x());
-        offset.set_y(framebuffer_size.height() - source_rect.bottom());
-      } else {
-        offset = source_rect.OffsetFromOrigin();
-      }
-      scaler->Scale(src_texture, framebuffer_size, offset, dst_texture,
+      scaler->Scale(src_texture, framebuffer_size,
+                    source_rect.OffsetFromOrigin(), dst_texture,
                     gfx::Rect(scaled_size));
     }
 
@@ -820,7 +819,7 @@ class GLHelperTest : public testing::Test {
         dst_texture, gfx::Rect(scaled_size),
         static_cast<unsigned char*>(output_pixels.getPixels()),
         kRGBA_8888_SkColorType);
-    if (flip) {
+    if (flip_output) {
       // Flip the pixels back.
       FlipSKBitmap(&output_pixels);
     }
@@ -861,12 +860,14 @@ class GLHelperTest : public testing::Test {
                          const gfx::Vector2d& scale_to,
                          int test_pattern,
                          size_t quality_index,
-                         bool flip) {
+                         bool flipped_source) {
     // Generate a source texture representing copied-from-framebuffer content
     // with a test pattern that is twice the size of the "from" vector.
     const gfx::Size framebuffer_size(scale_from.x() * 2, scale_from.y() * 2);
     std::unique_ptr<SkBitmap> test_bitmap =
         CreateTestBitmap(framebuffer_size, gfx::Point(), test_pattern);
+    if (flipped_source)
+      FlipSKBitmap(test_bitmap.get());
     GLuint src_texture;
     gl_->GenTextures(1, &src_texture);
     gl_->BindTexture(GL_TEXTURE_2D, src_texture);
@@ -876,12 +877,15 @@ class GLHelperTest : public testing::Test {
 
     const std::unique_ptr<GLHelper::ScalerInterface> scaler =
         helper_->CreateScaler(kQualities[quality_index], scale_from, scale_to,
-                              flip, false);
+                              flipped_source, false, false);
+    ASSERT_EQ(flipped_source, scaler->IsSamplingFlippedSource());
+    ASSERT_FALSE(scaler->IsFlippingOutput());
     // Note: These scaler stages are only being computed here for the benefit
     // Compare()'s error output messaging, below.
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ComputeScalerStages(kQualities[quality_index], scale_from,
-                                         scale_to, flip, false, &stages);
+                                         scale_to, flipped_source, false, false,
+                                         &stages);
 
     // First, produce the entire output image, a full scan of the source to
     // produce all the output pixels. The output image is twice the size of the
@@ -909,7 +913,8 @@ class GLHelperTest : public testing::Test {
         "scale to: %s "
         "pattern: %d quality: %s %s",
         scale_from.ToString().c_str(), scale_to.ToString().c_str(),
-        test_pattern, kQualityNames[quality_index], flip ? "flip" : "noflip");
+        test_pattern, kQualityNames[quality_index],
+        flipped_source ? "flippedsource" : "");
 
     // Check the entire output image against the reference implementation.
     SkBitmap entire_output_ref;
@@ -918,8 +923,6 @@ class GLHelperTest : public testing::Test {
         kRGBA_8888_SkColorType, kPremul_SkAlphaType));
     ScaleSlowRecursive(test_bitmap.get(), gfx::Rect(framebuffer_size),
                        kQualities[quality_index], &entire_output_ref);
-    if (flip)
-      FlipSKBitmap(&entire_output_ref);
     Compare(&entire_output_ref, &entire_output, 2, test_bitmap.get(), stages,
             human_readable_test_params + " ENTIRE OUTPUT");
     if (HasFailure())
@@ -948,9 +951,13 @@ class GLHelperTest : public testing::Test {
             static_cast<unsigned char*>(patch_output.getPixels()),
             kRGBA_8888_SkColorType);
         SkBitmap expected;
-        ASSERT_TRUE(entire_output.extractSubset(
-            &expected, SkIRect{patch_rect.x(), patch_rect.y(),
-                               patch_rect.right(), patch_rect.bottom()}));
+        SkIRect expected_subrect{patch_rect.x(), patch_rect.y(),
+                                 patch_rect.right(), patch_rect.bottom()};
+        if (flipped_source) {
+          expected_subrect.fTop = entire_output.height() - patch_rect.bottom();
+          expected_subrect.fBottom = entire_output.height() - patch_rect.y();
+        }
+        ASSERT_TRUE(entire_output.extractSubset(&expected, expected_subrect));
         Compare(&expected, &patch_output, 2, test_bitmap.get(), stages,
                 "METHOD1 " + human_readable_test_params +
                     " patch rect: " + patch_rect.ToString());
@@ -1010,7 +1017,7 @@ class GLHelperTest : public testing::Test {
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ComputeScalerStages(
         kQualities[quality], gfx::Vector2d(xsize, ysize),
-        gfx::Vector2d(dst_xsize, dst_ysize), false, false, &stages);
+        gfx::Vector2d(dst_xsize, dst_ysize), false, false, false, &stages);
     ValidateScalerStages(kQualities[quality], stages,
                          gfx::Vector2d(xsize, ysize),
                          gfx::Vector2d(dst_xsize, dst_ysize),
@@ -1032,7 +1039,7 @@ class GLHelperTest : public testing::Test {
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ComputeScalerStages(quality, gfx::Vector2d(xsize, ysize),
                                          gfx::Vector2d(dst_xsize, dst_ysize),
-                                         false, false, &stages);
+                                         false, false, false, &stages);
     ValidateScalerStages(GLHelper::SCALER_QUALITY_GOOD, stages,
                          gfx::Vector2d(xsize, ysize),
                          gfx::Vector2d(dst_xsize, dst_ysize), "");
@@ -1310,8 +1317,8 @@ class GLHelperTest : public testing::Test {
                       const std::string& description) {
     std::vector<GLHelperScaling::ScalerStage> stages;
     helper_scaling_->ConvertScalerOpsToScalerStages(
-        GLHelper::SCALER_QUALITY_GOOD, gfx::Vector2d(xsize, ysize), false,
-        false, &x_ops_, &y_ops_, &stages);
+        GLHelper::SCALER_QUALITY_GOOD, gfx::Vector2d(xsize, ysize), &x_ops_,
+        &y_ops_, &stages);
     EXPECT_EQ(x_ops_.size(), 0U);
     EXPECT_EQ(y_ops_.size(), 0U);
     ValidateScalerStages(GLHelper::SCALER_QUALITY_GOOD, stages,
@@ -1510,15 +1517,15 @@ TEST_P(GLHelperPixelReadbackTest, ScaleTest) {
   unsigned int dst_x = std::tr1::get<3>(GetParam());
   unsigned int dst_y = std::tr1::get<4>(GetParam());
 
-  for (int flip = 0; flip <= 1; flip++) {
-    for (int pattern = 0; pattern < 3; pattern++) {
+  for (int flip_output = 0; flip_output <= 1; ++flip_output) {
+    for (int pattern = 0; pattern < 3; ++pattern) {
       for (int xoffset = 0; xoffset < 4; ++xoffset) {
         for (int yoffset = 0; yoffset < 4; ++yoffset) {
           TestScale(
               gfx::Rect(xoffset, yoffset, kRGBReadBackSizes[x],
                         kRGBReadBackSizes[y]),
               gfx::Size(kRGBReadBackSizes[dst_x], kRGBReadBackSizes[dst_y]),
-              pattern, q_index, flip == 1);
+              pattern, q_index, !!flip_output);
           if (HasFailure()) {
             return;
           }
@@ -1529,14 +1536,14 @@ TEST_P(GLHelperPixelReadbackTest, ScaleTest) {
 }
 
 TEST_P(GLHelperPixelReadbackTest, ScalePatching) {
-  for (int flip = 0; flip <= 1; flip++) {
-    for (int pattern = 0; pattern < 3; pattern++) {
+  for (int flipped_source = 0; flipped_source <= 1; ++flipped_source) {
+    for (int pattern = 0; pattern < 3; ++pattern) {
       TestScalePatching(
           gfx::Vector2d(kRGBReadBackSizes[std::tr1::get<1>(GetParam())],
                         kRGBReadBackSizes[std::tr1::get<2>(GetParam())]),
           gfx::Vector2d(kRGBReadBackSizes[std::tr1::get<3>(GetParam())],
                         kRGBReadBackSizes[std::tr1::get<4>(GetParam())]),
-          pattern, std::tr1::get<0>(GetParam()), flip == 1);
+          pattern, std::tr1::get<0>(GetParam()), !!flipped_source);
       if (HasFailure()) {
         return;
       }
