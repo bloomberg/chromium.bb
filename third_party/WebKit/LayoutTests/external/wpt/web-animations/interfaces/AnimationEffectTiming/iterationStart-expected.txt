@@ -1,8 +1,0 @@
-This is a testharness.js-based test.
-PASS Test default value
-FAIL Test that changing the iterationStart affects computed timing when backwards-filling assert_equals: expected 0.5 but got 0.4999999999999999
-FAIL Test that changing the iterationStart affects computed timing during the active phase assert_equals: expected 0.5 but got 0.4999999999999999
-FAIL Test that changing the iterationStart affects computed timing when forwards-filling assert_equals: expected 0.5 but got 0.4999999999999996
-PASS Using invalid values should throw TypeError
-Harness: the test ran to completion.
-

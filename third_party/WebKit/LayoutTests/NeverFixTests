@@ -1022,7 +1022,6 @@ virtual/mojo-localstorage/external/wpt/webstorage/storage_session-manual.html [ 
 
 # Requires --use-fake-ui-for-media-stream to run.
 external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.html [ WontFix ]
-external/wpt/mediacapture-streams/MediaStream-default-feature-policy.https.sub.html [ WontFix ]
 
 # These directories have manual tests that don't have to run with
 # run-webkit-tests; see https://crbug.com/359838.

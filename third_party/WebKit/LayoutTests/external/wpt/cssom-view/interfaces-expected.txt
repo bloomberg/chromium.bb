@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 304 tests; 230 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 300 tests; 226 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS HTMLElement interface: attribute offsetParent
 PASS HTMLElement interface: attribute offsetTop
@@ -13,7 +13,6 @@ PASS HTMLElement interface: document.createElement('div') must inherit property 
 PASS HTMLElement interface: document.createElement('div') must inherit property "offsetHeight" with the proper type
 PASS Element interface: document.createElement('div') must inherit property "getClientRects()" with the proper type
 PASS Element interface: document.createElement('div') must inherit property "getBoundingClientRect()" with the proper type
-PASS Element interface: document.createElement('div') must inherit property "scrollIntoView()" with the proper type
 PASS Element interface: document.createElement('div') must inherit property "scrollIntoView([object Object],[object Object])" with the proper type
 PASS Element interface: calling scrollIntoView([object Object],[object Object]) on document.createElement('div') with too few arguments must throw TypeError
 PASS Element interface: document.createElement('div') must inherit property "scroll(ScrollToOptions)" with the proper type
@@ -55,7 +54,6 @@ PASS HTMLElement interface: document.createElement('img') must inherit property 
 PASS HTMLElement interface: document.createElement('img') must inherit property "offsetHeight" with the proper type
 PASS Element interface: document.createElement('img') must inherit property "getClientRects()" with the proper type
 PASS Element interface: document.createElement('img') must inherit property "getBoundingClientRect()" with the proper type
-PASS Element interface: document.createElement('img') must inherit property "scrollIntoView()" with the proper type
 PASS Element interface: document.createElement('img') must inherit property "scrollIntoView([object Object],[object Object])" with the proper type
 PASS Element interface: calling scrollIntoView([object Object],[object Object]) on document.createElement('img') with too few arguments must throw TypeError
 PASS Element interface: document.createElement('img') must inherit property "scroll(ScrollToOptions)" with the proper type
@@ -173,7 +171,6 @@ FAIL Document interface: document must inherit property "convertPointFromNode(DO
 FAIL Document interface: calling convertPointFromNode(DOMPointInit, GeometryNode, ConvertCoordinateOptions) on document with too few arguments must throw TypeError assert_inherits: property "convertPointFromNode" not found in prototype chain
 PASS Element interface: operation getClientRects()
 PASS Element interface: operation getBoundingClientRect()
-PASS Element interface: operation scrollIntoView()
 PASS Element interface: operation scrollIntoView([object Object],[object Object])
 PASS Element interface: operation scroll(ScrollToOptions)
 PASS Element interface: operation scroll(unrestricted double, unrestricted double)
@@ -195,7 +192,6 @@ FAIL Element interface: operation convertRectFromNode(DOMRectReadOnly, GeometryN
 FAIL Element interface: operation convertPointFromNode(DOMPointInit, GeometryNode, ConvertCoordinateOptions) assert_own_property: interface prototype object missing non-static operation expected property "convertPointFromNode" missing
 PASS Element interface: document.createElementNS('x', 'y') must inherit property "getClientRects()" with the proper type
 PASS Element interface: document.createElementNS('x', 'y') must inherit property "getBoundingClientRect()" with the proper type
-PASS Element interface: document.createElementNS('x', 'y') must inherit property "scrollIntoView()" with the proper type
 PASS Element interface: document.createElementNS('x', 'y') must inherit property "scrollIntoView([object Object],[object Object])" with the proper type
 PASS Element interface: calling scrollIntoView([object Object],[object Object]) on document.createElementNS('x', 'y') with too few arguments must throw TypeError
 PASS Element interface: document.createElementNS('x', 'y') must inherit property "scroll(ScrollToOptions)" with the proper type
