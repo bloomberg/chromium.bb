@@ -265,6 +265,10 @@ class NET_EXPORT NetworkChangeNotifier {
   // which might try to use it.
   static NetworkChangeNotifier* Create();
 
+  // Returns whether the process-wide, platform-specific NetworkChangeNotifier
+  // has been created.
+  static bool HasNetworkChangeNotifier();
+
   // Returns the connection type.
   // A return value of |CONNECTION_NONE| is a pretty strong indicator that the
   // user won't be able to connect to remote sites. However, another return

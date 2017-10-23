@@ -537,6 +537,11 @@ NetworkChangeNotifier* NetworkChangeNotifier::Create() {
 }
 
 // static
+bool NetworkChangeNotifier::HasNetworkChangeNotifier() {
+  return g_network_change_notifier != nullptr;
+}
+
+// static
 NetworkChangeNotifier::ConnectionType
 NetworkChangeNotifier::GetConnectionType() {
   return g_network_change_notifier ?
