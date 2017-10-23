@@ -1505,12 +1505,7 @@ static void model_rd_for_sb(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   for (plane = plane_from; plane <= plane_to; ++plane) {
     struct macroblock_plane *const p = &x->plane[plane];
     struct macroblockd_plane *const pd = &xd->plane[plane];
-#if CONFIG_CHROMA_SUB8X8
     const BLOCK_SIZE bs = AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#else
-    const BLOCK_SIZE bs = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
-
     unsigned int sse;
     int rate;
     int64_t dist;
@@ -1727,20 +1722,15 @@ int av1_cost_coeffs(const AV1_COMP *const cpi, MACROBLOCK *x, int plane,
 #endif
   return cost_coeffs(cm, x, plane, block, tx_size, scan_order, a, l,
                      use_fast_coef_costing);
-#else  // !CONFIG_LV_MAP
+#else   // !CONFIG_LV_MAP
   (void)scan_order;
   (void)use_fast_coef_costing;
   const MACROBLOCKD *xd = &x->e_mbd;
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const struct macroblockd_plane *pd = &xd->plane[plane];
   const BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#else
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
-
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
   return av1_cost_coeffs_txb(cm, x, plane, blk_row, blk_col, block, tx_size,
@@ -2122,11 +2112,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 #if CONFIG_CFL
   if (plane == AOM_PLANE_Y && xd->cfl->store_y) {
-#if CONFIG_CHROMA_SUB8X8
     assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
-#else
-    assert(!is_inter_block(mbmi));
-#endif  // CONFIG_CHROMA_SUB8X8
     cfl_store_tx(xd, blk_row, blk_col, tx_size, plane_bsize);
   }
 #endif  // CONFIG_CFL

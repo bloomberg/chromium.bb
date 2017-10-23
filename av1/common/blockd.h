@@ -31,12 +31,6 @@
 extern "C" {
 #endif
 
-#if (CONFIG_CHROMA_SUB8X8)
-#define SUB8X8_COMP_REF 0
-#else
-#define SUB8X8_COMP_REF 1
-#endif
-
 #define MAX_MB_PLANE 3
 
 #if CONFIG_COMPOUND_SEGMENT
@@ -72,11 +66,7 @@ typedef enum {
 
 static INLINE int is_comp_ref_allowed(BLOCK_SIZE bsize) {
   (void)bsize;
-#if SUB8X8_COMP_REF
-  return 1;
-#else
   return AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8;
-#endif  // SUB8X8_COMP_REF
 }
 
 static INLINE int is_inter_mode(PREDICTION_MODE mode) {
@@ -611,11 +601,11 @@ typedef struct {
 #endif  // CONFIG_LOOP_RESTORATION
 
 #if CONFIG_CFL
-#if CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#if CONFIG_DEBUG
 #define CFL_SUB8X8_VAL_MI_SIZE (4)
 #define CFL_SUB8X8_VAL_MI_SQUARE \
   (CFL_SUB8X8_VAL_MI_SIZE * CFL_SUB8X8_VAL_MI_SIZE)
-#endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#endif  // CONFIG_DEBUG
 typedef struct cfl_ctx {
   // The CfL prediction buffer is used in two steps:
   //   1. Stores Q3 reconstructed luma pixels
@@ -644,12 +634,12 @@ typedef struct cfl_ctx {
   int store_y;
 
   int is_chroma_reference;
-#if CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#if CONFIG_DEBUG
   // The prediction used for sub8x8 blocks originates from multiple luma blocks,
   // this array is used to validate that cfl_store() is called only once for
   // each luma block
   uint8_t sub8x8_val[CFL_SUB8X8_VAL_MI_SQUARE];
-#endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#endif  // CONFIG_DEBUG
 } CFL_CTX;
 #endif  // CONFIG_CFL
 
@@ -671,10 +661,8 @@ typedef struct macroblockd {
 
   int up_available;
   int left_available;
-#if CONFIG_CHROMA_SUB8X8
   int chroma_up_available;
   int chroma_left_available;
-#endif
 
   const aom_prob (*partition_probs)[PARTITION_TYPES - 1];
 
@@ -1027,11 +1015,9 @@ static INLINE int is_lgt_allowed(PREDICTION_MODE mode, TX_SIZE tx_size) {
 #if CONFIG_RECT_TX
 static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_SUB8X8
     0,  // BLOCK_2X2
     0,  // BLOCK_2X4
     0,  // BLOCK_4X2
-#endif
     0,  // BLOCK_4X4
     1,  // BLOCK_4X8
     1,  // BLOCK_8X4
@@ -1076,11 +1062,9 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
 #if CONFIG_RECT_TX_EXT
 static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT_QTTX[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_SUB8X8
     0,  // BLOCK_2X2
     0,  // BLOCK_2X4
     0,  // BLOCK_4X2
-#endif
     0,  // BLOCK_4X4
     0,  // BLOCK_4X8
     0,  // BLOCK_8X4

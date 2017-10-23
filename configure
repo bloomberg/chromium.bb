@@ -291,7 +291,6 @@ EXPERIMENT_LIST="
     daala_tx16
     daala_tx32
     daala_tx64
-    chroma_sub8x8
     frame_size
     ext_delta_q
     adapt_scan
@@ -503,7 +502,6 @@ post_process_cmdline() {
     # Enable adopted experiments by default
     soft_enable adopted_experiments
     if enabled adopted_experiments; then
-      soft_enable chroma_sub8x8
       soft_enable rect_tx
       soft_enable global_motion
       soft_enable ext_tx

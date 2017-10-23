@@ -257,12 +257,8 @@ static void inverse_transform_block(MACROBLOCKD *xd, int plane,
 static int get_block_idx(const MACROBLOCKD *xd, int plane, int row, int col) {
   const int bsize = xd->mi[0]->mbmi.sb_type;
   const struct macroblockd_plane *pd = &xd->plane[plane];
-#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#else
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
   const uint8_t txh_unit = tx_size_high_unit[tx_size];
@@ -612,11 +608,11 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 
   set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
-#if CONFIG_CFL && CONFIG_CHROMA_SUB8X8
+#if CONFIG_CFL
   CFL_CTX *const cfl = xd->cfl;
   cfl->is_chroma_reference = is_chroma_reference(
       mi_row, mi_col, bsize, cfl->subsampling_x, cfl->subsampling_y);
-#endif  // CONFIG_CFL && CONFIG_CHROMA_SUB8X8
+#endif  // CONFIG_CFL
 
   if (cm->delta_q_present_flag) {
     int i;
@@ -769,12 +765,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
       const int stepr = tx_size_high_unit[tx_size];
       const int stepc = tx_size_wide_unit[tx_size];
-#if CONFIG_CHROMA_SUB8X8
       const BLOCK_SIZE plane_bsize =
           AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#else
-      const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
       int row, col;
       const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
       const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
@@ -864,12 +856,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 
       for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
-#if CONFIG_CHROMA_SUB8X8
         const BLOCK_SIZE plane_bsize =
             AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#else
-        const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
         const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
         const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
         int row, col;
@@ -915,7 +903,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       }
     }
   }
-#if CONFIG_CFL && CONFIG_CHROMA_SUB8X8
+#if CONFIG_CFL
   if (mbmi->uv_mode != UV_CFL_PRED) {
 #if CONFIG_DEBUG
     if (cfl->is_chroma_reference) {
@@ -926,7 +914,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
       cfl_store_block(xd, mbmi->sb_type, mbmi->tx_size);
     }
   }
-#endif  // CONFIG_CFL && CONFIG_CHROMA_SUB8X8
+#endif  // CONFIG_CFL
 #endif  // CONFIG_COEF_INTERLEAVE
 
   int reader_corrupted_flag = aom_reader_has_error(r);

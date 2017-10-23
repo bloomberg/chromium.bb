@@ -681,13 +681,8 @@ void av1_write_coeffs_mb(const AV1_COMMON *const cm, MACROBLOCK *x,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   BLOCK_SIZE bsize = mbmi->sb_type;
   struct macroblockd_plane *pd = &xd->plane[plane];
-
-#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize =
       AOMMAX(BLOCK_4X4, get_plane_block_size(bsize, pd));
-#else
-  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-#endif  // CONFIG_CHROMA_SUB8X8
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
   const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
   const TX_SIZE tx_size = av1_get_tx_size(plane, xd);

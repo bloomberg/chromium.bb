@@ -674,11 +674,11 @@ static INLINE int frame_is_intra_only(const AV1_COMMON *const cm) {
 }
 
 #if CONFIG_CFL
-#if CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#if CONFIG_DEBUG
 static INLINE void cfl_clear_sub8x8_val(CFL_CTX *cfl) {
   memset(cfl->sub8x8_val, 0, sizeof(cfl->sub8x8_val));
 }
-#endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#endif  // CONFIG_DEBUG
 void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm);
 #endif  // CONFIG_CFL
 
@@ -729,14 +729,12 @@ static INLINE void set_skip_context(MACROBLOCKD *xd, int mi_row, int mi_col) {
   int col_offset = mi_col;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
     struct macroblockd_plane *const pd = &xd->plane[i];
-#if CONFIG_CHROMA_SUB8X8
     // Offset the buffer pointer
     const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
     if (pd->subsampling_y && (mi_row & 0x01) && (mi_size_high[bsize] == 1))
       row_offset = mi_row - 1;
     if (pd->subsampling_x && (mi_col & 0x01) && (mi_size_wide[bsize] == 1))
       col_offset = mi_col - 1;
-#endif
     int above_idx = col_offset << (MI_SIZE_LOG2 - tx_size_wide_log2[0]);
     int left_idx = (row_offset & MAX_MIB_MASK)
                    << (MI_SIZE_LOG2 - tx_size_high_log2[0]);
@@ -787,14 +785,12 @@ static INLINE void set_mi_row_col(MACROBLOCKD *xd, const TileInfo *const tile,
 #endif  // CONFIG_DEPENDENT_HORZTILES
 
   xd->left_available = (mi_col > tile->mi_col_start);
-#if CONFIG_CHROMA_SUB8X8
   xd->chroma_up_available = xd->up_available;
   xd->chroma_left_available = xd->left_available;
   if (xd->plane[1].subsampling_x && bw < mi_size_wide[BLOCK_8X8])
     xd->chroma_left_available = (mi_col - 1) > tile->mi_col_start;
   if (xd->plane[1].subsampling_y && bh < mi_size_high[BLOCK_8X8])
     xd->chroma_up_available = (mi_row - 1) > tile->mi_row_start;
-#endif
   if (xd->up_available) {
     xd->above_mi = xd->mi[-xd->mi_stride];
     // above_mi may be NULL in encoder's first pass.
@@ -876,22 +872,11 @@ static INLINE void update_partition_context(MACROBLOCKD *xd, int mi_row,
 
 static INLINE int is_chroma_reference(int mi_row, int mi_col, BLOCK_SIZE bsize,
                                       int subsampling_x, int subsampling_y) {
-#if CONFIG_CHROMA_SUB8X8
   const int bw = mi_size_wide[bsize];
   const int bh = mi_size_high[bsize];
-
   int ref_pos = ((mi_row & 0x01) || !(bh & 0x01) || !subsampling_y) &&
                 ((mi_col & 0x01) || !(bw & 0x01) || !subsampling_x);
-
   return ref_pos;
-#else
-  int ref_pos = !(((mi_row & 0x01) && subsampling_y) ||
-                  ((mi_col & 0x01) && subsampling_x));
-
-  if (AOMMIN(block_size_wide[bsize], block_size_high[bsize]) >= 8) ref_pos = 1;
-
-  return ref_pos;
-#endif
 }
 
 static INLINE BLOCK_SIZE scale_chroma_bsize(BLOCK_SIZE bsize, int subsampling_x,

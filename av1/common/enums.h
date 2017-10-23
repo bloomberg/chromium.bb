@@ -122,11 +122,9 @@ typedef enum BITSTREAM_PROFILE {
 // type, so that we can save memory when they are used in structs/arrays.
 
 typedef enum ATTRIBUTE_PACKED {
-#if CONFIG_CHROMA_SUB8X8
   BLOCK_2X2,
   BLOCK_2X4,
   BLOCK_4X2,
-#endif
   BLOCK_4X4,
   BLOCK_4X8,
   BLOCK_8X4,

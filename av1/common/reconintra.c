@@ -367,10 +367,8 @@ static const uint16_t orders_4x4[1024] = {
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_4x4,     orders_4x4,     orders_4x4,
-#endif
   //                              4X4
                                   orders_4x4,
   // 4X8,         8X4,            8X8
@@ -394,10 +392,8 @@ static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
 #else
 /* clang-format off */
 static const uint16_t *const orders[BLOCK_SIZES_ALL] = {
-#if CONFIG_CHROMA_SUB8X8
   // 2X2,         2X4,            4X2
   orders_8x8,     orders_8x8,     orders_8x8,
-#endif
   //                              4X4
                                   orders_8x8,
   // 4X8,         8X4,            8X8
@@ -453,10 +449,8 @@ static const uint16_t orders_verta_8x8[256] = {
 #if CONFIG_EXT_PARTITION
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
-#if CONFIG_CHROMA_SUB8X8
   // 2X2,           2X4,              4X2
   orders_4x4,       orders_4x4,       orders_4x4,
-#endif
   //                                  4X4
                                       orders_verta_8x8,
   // 4X8,           8X4,              8X8
@@ -475,10 +469,8 @@ static const uint16_t *const orders_verta[BLOCK_SIZES] = {
 #else
 /* clang-format off */
 static const uint16_t *const orders_verta[BLOCK_SIZES] = {
-#if CONFIG_CHROMA_SUB8X8
   // 2X2,             2X4,                4X2
   orders_verta_8x8,   orders_verta_8x8,   orders_verta_8x8,
-#endif
   //                                      4X4
                                           orders_verta_8x8,
   // 4X8,             8X4,                8X8
@@ -2579,16 +2571,11 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide_unit[tx_size];
-#if CONFIG_CHROMA_SUB8X8
   const int have_top = row_off || (pd->subsampling_y ? xd->chroma_up_available
                                                      : xd->up_available);
   const int have_left =
       col_off ||
       (pd->subsampling_x ? xd->chroma_left_available : xd->left_available);
-#else
-  const int have_top = row_off || xd->up_available;
-  const int have_left = col_off || xd->left_available;
-#endif
   const int x = col_off << tx_size_wide_log2[0];
   const int y = row_off << tx_size_high_log2[0];
   const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
@@ -2598,13 +2585,8 @@ static void predict_intra_block_helper(const AV1_COMMON *cm,
 #if !INTRA_USES_RECT_TRANSFORMS
   assert(txwpx == txhpx);
 #endif  // !INTRA_USES_RECT_TRANSFORMS
-#if !CONFIG_CHROMA_SUB8X8
-  const int xr_chr_offset = (pd->subsampling_x && bsize < BLOCK_8X8) ? 2 : 0;
-  const int yd_chr_offset = (pd->subsampling_y && bsize < BLOCK_8X8) ? 2 : 0;
-#else
   const int xr_chr_offset = 0;
   const int yd_chr_offset = 0;
-#endif
 
   // Distance between the right edge of this prediction block to
   // the frame right edge

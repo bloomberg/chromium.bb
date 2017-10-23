@@ -24,9 +24,9 @@ void cfl_init(CFL_CTX *cfl, AV1_COMMON *cm) {
   cfl->subsampling_y = cm->subsampling_y;
   cfl->are_parameters_computed = 0;
   cfl->store_y = 0;
-#if CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#if CONFIG_DEBUG
   cfl_clear_sub8x8_val(cfl);
-#endif  // CONFIG_CHROMA_SUB8X8 && CONFIG_DEBUG
+#endif  // CONFIG_DEBUG
 }
 
 // Due to frame boundary issues, it is possible that the total area covered by
@@ -169,20 +169,16 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
   int sum_u = 0;
   int sum_v = 0;
 
-// Match behavior of build_intra_predictors_high (reconintra.c) at superblock
-// boundaries:
-// base-1 base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
-// base+1   A      B  ..     Y      Z
-// base+1   C      D  ..     W      X
-// base+1   E      F  ..     U      V
-// base+1   G      H  ..     S      T      T      T      T      T
-// ..
+  // Match behavior of build_intra_predictors_high (reconintra.c) at superblock
+  // boundaries:
+  // base-1 base-1 base-1 .. base-1 base-1 base-1 base-1 base-1 base-1
+  // base+1   A      B  ..     Y      Z
+  // base+1   C      D  ..     W      X
+  // base+1   E      F  ..     U      V
+  // base+1   G      H  ..     S      T      T      T      T      T
+  // ..
 
-#if CONFIG_CHROMA_SUB8X8
   if (xd->chroma_up_available && xd->mb_to_right_edge >= 0) {
-#else
-  if (xd->up_available && xd->mb_to_right_edge >= 0) {
-#endif
     sum_above_row(xd, width, &sum_u, &sum_v);
   } else {
     const int base = 128 << (xd->bd - 8);
@@ -190,11 +186,7 @@ static void cfl_dc_pred(MACROBLOCKD *xd, BLOCK_SIZE plane_bsize) {
     sum_v = width * (base - 1);
   }
 
-#if CONFIG_CHROMA_SUB8X8
   if (xd->chroma_left_available && xd->mb_to_bottom_edge >= 0) {
-#else
-  if (xd->left_available && xd->mb_to_bottom_edge >= 0) {
-#endif
     sum_left_col(xd, height, &sum_u, &sum_v);
   } else {
     const int base = 128 << (xd->bd - 8);
@@ -454,7 +446,6 @@ static INLINE void cfl_store(CFL_CTX *cfl, const uint8_t *input,
   }
 }
 
-#if CONFIG_CHROMA_SUB8X8
 // Adjust the row and column of blocks smaller than 8X8, as chroma-referenced
 // and non-chroma-referenced blocks are stored together in the CfL buffer.
 static INLINE void sub8x8_adjust_offset(const CFL_CTX *cfl, int *row_out,
@@ -485,7 +476,6 @@ static INLINE void sub8x8_set_val(CFL_CTX *cfl, int row, int col, int val_high,
   }
 }
 #endif  // CONFIG_DEBUG
-#endif  // CONFIG_CHROMA_SUB8X8
 
 void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
                   BLOCK_SIZE bsize) {
@@ -494,8 +484,6 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
   uint8_t *dst =
       &pd->dst.buf[(row * pd->dst.stride + col) << tx_size_wide_log2[0]];
   (void)bsize;
-#if CONFIG_CHROMA_SUB8X8
-
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     // Only dimensions of size 4 can have an odd offset.
     assert(!((col & 1) && tx_size_wide[tx_size] != 4));
@@ -506,7 +494,6 @@ void cfl_store_tx(MACROBLOCKD *const xd, int row, int col, TX_SIZE tx_size,
                    tx_size_wide_unit[tx_size]);
 #endif  // CONFIG_DEBUG
   }
-#endif
   cfl_store(cfl, dst, pd->dst.stride, row, col, tx_size_wide[tx_size],
             tx_size_high[tx_size], get_bitdepth_data_path_index(xd));
 }
@@ -516,7 +503,6 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
   struct macroblockd_plane *const pd = &xd->plane[AOM_PLANE_Y];
   int row = 0;
   int col = 0;
-#if CONFIG_CHROMA_SUB8X8
   bsize = AOMMAX(BLOCK_4X4, bsize);
   if (block_size_high[bsize] == 4 || block_size_wide[bsize] == 4) {
     sub8x8_adjust_offset(cfl, &row, &col);
@@ -524,7 +510,6 @@ void cfl_store_block(MACROBLOCKD *const xd, BLOCK_SIZE bsize, TX_SIZE tx_size) {
     sub8x8_set_val(cfl, row, col, mi_size_high[bsize], mi_size_wide[bsize]);
 #endif  // CONFIG_DEBUG
   }
-#endif  // CONFIG_CHROMA_SUB8X8
   const int width = max_intra_block_width(xd, bsize, AOM_PLANE_Y, tx_size);
   const int height = max_intra_block_height(xd, bsize, AOM_PLANE_Y, tx_size);
   cfl_store(cfl, pd->dst.buf, pd->dst.stride, row, col, width, height,
@@ -538,7 +523,6 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
   // Do not call cfl_compute_parameters multiple time on the same values.
   assert(cfl->are_parameters_computed == 0);
 
-#if CONFIG_CHROMA_SUB8X8
   const BLOCK_SIZE plane_bsize = AOMMAX(
       BLOCK_4X4, get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]));
 #if CONFIG_DEBUG
@@ -551,10 +535,6 @@ void cfl_compute_parameters(MACROBLOCKD *const xd, TX_SIZE tx_size) {
     cfl_clear_sub8x8_val(cfl);
   }
 #endif  // CONFIG_DEBUG
-#else
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(mbmi->sb_type, &xd->plane[AOM_PLANE_U]);
-#endif
   // AOM_PLANE_U is used, but both planes will have the same sizes.
   cfl->uv_width = max_intra_block_width(xd, plane_bsize, AOM_PLANE_U, tx_size);
   cfl->uv_height =
