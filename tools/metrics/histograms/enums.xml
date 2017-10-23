@@ -16706,6 +16706,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2191" label="PaintTimingRequested"/>
   <int value="2192" label="HTMLMediaElementMediaPlaybackRateOutOfRange"/>
   <int value="2193" label="CSSFilterFunctionNegativeBrightness"/>
+  <int value="2194" label="CookieSet"/>
+  <int value="2195" label="CookieGet"/>
 </enum>
 
 <enum name="FeedbackSource">
