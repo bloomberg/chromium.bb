@@ -503,6 +503,8 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
 // Removes placeholder overlay.
 - (void)removePlaceholderOverlay;
 
+// Creates a container view if it's not yet created.
+- (void)ensureContainerViewCreated;
 // Creates a web view if it's not yet created.
 - (void)ensureWebViewCreated;
 // Creates a web view with given |config|. No-op if web view is already created.
@@ -1360,9 +1362,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 }
 
 - (UIView*)view {
-  // Kick off the process of lazily creating the view and starting the load if
-  // necessary; this creates _containerView if it doesn't exist.
-  [self triggerPendingLoad];
+  [self ensureContainerViewCreated];
   DCHECK(_containerView);
   return _containerView;
 }
@@ -1877,32 +1877,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (void)triggerPendingLoad {
   if (!_containerView) {
-    DCHECK(!_isBeingDestroyed);
-    // Create the top-level parent view, which will contain the content (whether
-    // native or web). Note, this needs to be created with a non-zero size
-    // to allow for (native) subviews with autosize constraints to be correctly
-    // processed.
-    _containerView =
-        [[CRWWebControllerContainerView alloc] initWithDelegate:self];
+    [self ensureContainerViewCreated];
 
-    // This will be resized later, but matching the final frame will minimize
-    // re-rendering. Use the screen size because the application's key window
-    // may still be nil.
-    // TODO(crbug.com/688259): Stop subtracting status bar height.
-    CGFloat statusBarHeight =
-        [[UIApplication sharedApplication] statusBarFrame].size.height;
-    CGRect containerViewFrame = [UIScreen mainScreen].bounds;
-    containerViewFrame.origin.y += statusBarHeight;
-    containerViewFrame.size.height -= statusBarHeight;
-    _containerView.frame = containerViewFrame;
-    DCHECK(!CGRectIsEmpty(_containerView.frame));
-
-    // TODO(crbug.com/691116): Remove this workaround once tests are no longer
-    // dependent upon this accessibility ID.
-    if (!base::ios::IsRunningOnIOS10OrLater())
-      [_containerView setAccessibilityIdentifier:@"Container View"];
-
-    [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     // Is |currentUrl| a web scheme or native chrome scheme.
     web::NavigationItem* item = self.currentNavItem;
     const GURL currentNavigationURL =
@@ -3824,6 +3800,38 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   _webStateImpl->OnVisibleSecurityStateChange();
   [self loadCancelled];
+}
+
+- (void)ensureContainerViewCreated {
+  if (_containerView)
+    return;
+
+  DCHECK(!_isBeingDestroyed);
+  // Create the top-level parent view, which will contain the content (whether
+  // native or web). Note, this needs to be created with a non-zero size
+  // to allow for (native) subviews with autosize constraints to be correctly
+  // processed.
+  _containerView =
+      [[CRWWebControllerContainerView alloc] initWithDelegate:self];
+
+  // This will be resized later, but matching the final frame will minimize
+  // re-rendering. Use the screen size because the application's key window
+  // may still be nil.
+  // TODO(crbug.com/688259): Stop subtracting status bar height.
+  CGFloat statusBarHeight =
+      [[UIApplication sharedApplication] statusBarFrame].size.height;
+  CGRect containerViewFrame = [UIScreen mainScreen].bounds;
+  containerViewFrame.origin.y += statusBarHeight;
+  containerViewFrame.size.height -= statusBarHeight;
+  _containerView.frame = containerViewFrame;
+  DCHECK(!CGRectIsEmpty(_containerView.frame));
+
+  // TODO(crbug.com/691116): Remove this workaround once tests are no longer
+  // dependent upon this accessibility ID.
+  if (!base::ios::IsRunningOnIOS10OrLater())
+    [_containerView setAccessibilityIdentifier:@"Container View"];
+
+  [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
 }
 
 - (void)ensureWebViewCreated {

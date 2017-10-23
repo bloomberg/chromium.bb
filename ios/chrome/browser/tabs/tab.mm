@@ -427,6 +427,12 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   // Record reload of previously-evicted tab.
   if (self.webState->IsEvicted() && [_parentTabModel tabUsageRecorder])
     [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(self.webState);
+
+  // Do not trigger the load if the tab has crashed. SadTabTabHelper is
+  // responsible for handing reload logic for crashed tabs.
+  if (!self.webState->IsCrashed()) {
+    self.webState->GetNavigationManager()->LoadIfNecessary();
+  }
   return self.webState->GetView();
 }
 
