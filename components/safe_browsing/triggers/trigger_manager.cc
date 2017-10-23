@@ -8,6 +8,7 @@
 #include "components/safe_browsing/base_ui_manager.h"
 #include "components/safe_browsing/browser/threat_details.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
 #include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -55,6 +56,15 @@ bool TriggerNeedsOptInForCollection(const TriggerType trigger_type) {
 
 bool CanSendReport(const SBErrorOptions& error_display_options,
                    const TriggerType trigger_type) {
+  // If the |kAdSamplerCollectButDontSendFeature| feature is enabled then we
+  // will overlook other checks to force the report to be created (which is safe
+  // because we ensure it will be discarded downstream).
+  // TODO(crbug.com/776893): Remote the feature and this logic.
+  if (trigger_type == TriggerType::AD_SAMPLE &&
+      base::FeatureList::IsEnabled(kAdSamplerCollectButDontSendFeature)) {
+    return true;
+  }
+
   // Some triggers require that users are eligible for elevated Scout data
   // collection in order to run.
   bool scout_check_ok = !TriggerNeedsScout(trigger_type) ||
@@ -99,6 +109,15 @@ SBErrorOptions TriggerManager::GetSBErrorDisplayOptions(
 bool TriggerManager::CanStartDataCollection(
     const SBErrorOptions& error_display_options,
     const TriggerType trigger_type) {
+  // If the |kAdSamplerCollectButDontSendFeature| feature is enabled then we
+  // will overlook other checks to force the report to be created (which is safe
+  // because we ensure it will be discarded downstream).
+  // TODO(crbug.com/776893): Remote the feature and this logic.
+  if (trigger_type == TriggerType::AD_SAMPLE &&
+      base::FeatureList::IsEnabled(kAdSamplerCollectButDontSendFeature)) {
+    return true;
+  }
+
   // Some triggers require that the user be opted-in to extended reporting in
   // order to run, while others can run without opt-in (eg: because users are
   // prompted for opt-in as part of the trigger).
