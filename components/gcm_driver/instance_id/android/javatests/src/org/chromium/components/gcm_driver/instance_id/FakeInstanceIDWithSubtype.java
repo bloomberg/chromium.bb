@@ -4,7 +4,6 @@
 
 package org.chromium.components.gcm_driver.instance_id;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.os.Looper;
 import android.util.Pair;
@@ -15,7 +14,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.io.IOException;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -26,6 +24,7 @@ import java.util.Random;
  */
 @JNINamespace("instance_id")
 public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
+    private String mSubtype;
     private String mId;
     private long mCreationTime;
 
@@ -44,8 +43,8 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
             if (enable) {
                 sFakeFactoryForTesting = new FakeFactory() {
                     @Override
-                    public InstanceIDWithSubtype create(Context context, String subtype) {
-                        return new FakeInstanceIDWithSubtype(context, subtype);
+                    public InstanceIDWithSubtype create(String subtype) {
+                        return new FakeInstanceIDWithSubtype(subtype);
                     }
                 };
             } else {
@@ -79,8 +78,9 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
         return Pair.create(iid.getSubtype(), authorizedEntity);
     }
 
-    private FakeInstanceIDWithSubtype(Context context, String subtype) {
-        super(context, subtype);
+    private FakeInstanceIDWithSubtype(String subtype) {
+        super(null);
+        mSubtype = subtype;
 
         // The first call to InstanceIDWithSubtype.getInstance calls InstanceID.getInstance which
         // triggers a strict mode violation if it's called on the main thread, by reading from
@@ -88,6 +88,11 @@ public class FakeInstanceIDWithSubtype extends InstanceIDWithSubtype {
         // mode violation in tests, check the thread here (which is only called from getInstance).
         if (Looper.getMainLooper() == Looper.myLooper())
             throw new AssertionError(InstanceID.ERROR_MAIN_THREAD);
+    }
+
+    @Override
+    public String getSubtype() {
+        return mSubtype;
     }
 
     @Override
