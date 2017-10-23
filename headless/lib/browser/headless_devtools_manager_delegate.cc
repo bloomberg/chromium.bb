@@ -155,9 +155,11 @@ void OnBeginFrameFinished(
     ImageEncoding encoding,
     int quality,
     bool has_damage,
+    bool main_frame_content_updated,
     std::unique_ptr<SkBitmap> bitmap) {
   auto result = base::MakeUnique<base::DictionaryValue>();
   result->SetBoolean("hasDamage", has_damage);
+  result->SetBoolean("mainFrameContentUpdated", main_frame_content_updated);
 
   if (bitmap && !bitmap->drawsNothing()) {
     result->SetString("screenshotData",
