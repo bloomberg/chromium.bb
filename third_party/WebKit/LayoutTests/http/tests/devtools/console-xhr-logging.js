@@ -14,7 +14,7 @@
           makeSimpleXHR(method, url, false);
       }
   `);
-
+  Common.settingForTest('consoleGroupSimilar').set(false);
   Common.settingForTest('monitoringXHREnabled').set(true);
   await TestRunner.evaluateInPagePromise('requestHelper(\'GET\', \'resources/xhr-exists.html\')');
   await TestRunner.evaluateInPagePromise('requestHelper(\'GET\', \'resources/xhr-does-not-exist.html\')');
