@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -29,6 +30,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_test_sink.h"
+#include "net/cert/mock_cert_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -149,6 +151,11 @@ class ChromeContentRendererClientBrowserTest :
     public InProcessBrowserTest,
     public ::testing::WithParamInterface<FlashEmbedsTestData> {
  public:
+  ChromeContentRendererClientBrowserTest()
+      : https_server_(std::make_unique<net::EmbeddedTestServer>(
+            net::EmbeddedTestServer::TYPE_HTTPS)),
+        mock_cert_verifier_(std::make_unique<net::MockCertVerifier>()) {}
+
   void MonitorRequestHandler(const net::test_server::HttpRequest& request) {
     // We're only interested in YouTube video embeds
     if (request.headers.at("Host").find("youtube.com") == std::string::npos)
@@ -175,50 +182,62 @@ class ChromeContentRendererClientBrowserTest :
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    embedded_test_server()->ServeFilesFromSourceDirectory(
-        base::FilePath(kDocRoot));
-    embedded_test_server()->RegisterRequestMonitor(base::Bind(
+    https_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    https_server_->RegisterRequestMonitor(base::Bind(
         &ChromeContentRendererClientBrowserTest::MonitorRequestHandler,
         base::Unretained(this)));
-    ASSERT_TRUE(embedded_test_server()->Start());
+    ASSERT_TRUE(https_server_->Start());
     message_runner_ = new content::MessageLoopRunner();
   }
 
+ protected:
+  void SetUpInProcessBrowserTestFixture() override {
+    InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
+
+    mock_cert_verifier_->set_default_result(net::OK);
+    ProfileIOData::SetCertVerifierForTesting(mock_cert_verifier_.get());
+  }
+
+  void TearDownInProcessBrowserTestFixture() override {
+    InProcessBrowserTest::TearDownInProcessBrowserTestFixture();
+
+    ProfileIOData::SetCertVerifierForTesting(nullptr);
+  }
+
+  net::EmbeddedTestServer* https_server() const { return https_server_.get(); }
+
  private:
   scoped_refptr<content::MessageLoopRunner> message_runner_;
+
+  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  std::unique_ptr<net::MockCertVerifier> mock_cert_verifier_;
 };
 
-// TODO(crbug.com/771338): This test needs to be rewritten to work with
-// preloaded HSTS for youtube.com
 IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
-                       DISABLED_RewriteYouTubeFlashEmbed) {
-  GURL url(embedded_test_server()->GetURL("/flash_embeds.html"));
+                       RewriteYouTubeFlashEmbed) {
+  GURL url(https_server()->GetURL("/flash_embeds.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  std::string port = std::to_string(embedded_test_server()->port());
 
-  std::string video_url =
-      "http://" + GetParam().host + ":" + port + GetParam().path;
-  EXPECT_TRUE(ExecuteScript(web_contents,
-      "appendEmbedToDOM('" + video_url + "','" + GetParam().type + "');"));
+  GURL video_url = https_server()->GetURL(GetParam().host, GetParam().path);
+  EXPECT_TRUE(ExecuteScript(web_contents, "appendEmbedToDOM('" +
+                                              video_url.spec() + "','" +
+                                              GetParam().type + "');"));
   WaitForYouTubeRequest();
 }
 
-// TODO(crbug.com/771338): This test needs to be rewritten to work with
-// preloaded HSTS for youtube.com
 IN_PROC_BROWSER_TEST_P(ChromeContentRendererClientBrowserTest,
-                       DISABLED_RewriteYouTubeFlashEmbedObject) {
-  GURL url(embedded_test_server()->GetURL("/flash_embeds.html"));
+                       RewriteYouTubeFlashEmbedObject) {
+  GURL url(https_server()->GetURL("/flash_embeds.html"));
   ui_test_utils::NavigateToURL(browser(), url);
   content::WebContents* web_contents =
      browser()->tab_strip_model()->GetActiveWebContents();
-  std::string port = std::to_string(embedded_test_server()->port());
 
-  std::string video_url =
-     "http://" + GetParam().host + ":" + port + GetParam().path;
-  EXPECT_TRUE(ExecuteScript(web_contents,
-     "appendDataEmbedToDOM('" + video_url + "','" + GetParam().type + "');"));
+  GURL video_url = https_server()->GetURL(GetParam().host, GetParam().path);
+  EXPECT_TRUE(ExecuteScript(web_contents, "appendDataEmbedToDOM('" +
+                                              video_url.spec() + "','" +
+                                              GetParam().type + "');"));
   WaitForYouTubeRequest();
 }
 
