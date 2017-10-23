@@ -21,6 +21,7 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/public/common/content_client.h"
+#include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
@@ -29,9 +30,9 @@
 namespace content {
 namespace {
 
-// The client_id used here should not conflict with the client_id generated
-// from RenderWidgetHostImpl.
-constexpr uint32_t kDefaultClientId = 0u;
+// The client id for the browser process. It must not conflict with any
+// child process client id.
+constexpr uint32_t kBrowserClientId = 0u;
 
 scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host,
@@ -58,6 +59,16 @@ scoped_refptr<ui::ContextProviderCommandBuffer> CreateContextProviderImpl(
       shared_context_provider, type);
 }
 
+bool LockAndCheckContextLost(
+    ui::ContextProviderCommandBuffer* context_provider) {
+  if (!context_provider)
+    return false;
+
+  viz::ContextProvider::ScopedContextLock lock(context_provider);
+  auto status = context_provider->ContextGL()->GetGraphicsResetStatusKHR();
+  return status != GL_NO_ERROR;
+}
+
 }  // namespace
 
 VizProcessTransportFactory::VizProcessTransportFactory(
@@ -65,7 +76,7 @@ VizProcessTransportFactory::VizProcessTransportFactory(
     scoped_refptr<base::SingleThreadTaskRunner> resize_task_runner)
     : gpu_channel_establish_factory_(gpu_channel_establish_factory),
       resize_task_runner_(std::move(resize_task_runner)),
-      frame_sink_id_allocator_(kDefaultClientId),
+      frame_sink_id_allocator_(kBrowserClientId),
       task_graph_runner_(std::make_unique<cc::SingleThreadTaskGraphRunner>()),
       renderer_settings_(
           viz::CreateRendererSettings(CreateBufferToTextureTargetMap())),
@@ -73,6 +84,9 @@ VizProcessTransportFactory::VizProcessTransportFactory(
   DCHECK(gpu_channel_establish_factory_);
   task_graph_runner_->Start("CompositorTileWorker1",
                             base::SimpleThread::Options());
+  GetHostFrameSinkManager()->SetConnectionLostCallback(
+      base::BindRepeating(&VizProcessTransportFactory::OnGpuProcessLost,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 VizProcessTransportFactory::~VizProcessTransportFactory() {
@@ -97,6 +111,8 @@ void VizProcessTransportFactory::ConnectHostFrameSinkManager() {
                           base::BindOnce(
                               [](viz::mojom::FrameSinkManagerRequest request,
                                  viz::mojom::FrameSinkManagerClientPtr client) {
+                                // TODO(kylechar): Check GpuProcessHost isn't
+                                // null but don't enter a restart loop.
                                 GpuProcessHost::Get()->ConnectFrameSinkManager(
                                     std::move(request), std::move(client));
                               },
@@ -255,6 +271,14 @@ void VizProcessTransportFactory::SetCompositorSuspendedForRecycle(
 }
 #endif
 
+void VizProcessTransportFactory::OnGpuProcessLost() {
+  // Reconnect HostFrameSinkManager to new GPU process.
+  ConnectHostFrameSinkManager();
+
+  for (auto& observer : observer_list_)
+    observer.OnLostResources();
+}
+
 void VizProcessTransportFactory::CreateLayerTreeFrameSinkForGpuChannel(
     base::WeakPtr<ui::Compositor> compositor_weak_ptr,
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
@@ -271,7 +295,7 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSinkForGpuChannel(
     return;
   }
 
-  // TODO(crbug.com/776050): Deal with context loss and GPU restartability.
+  // TODO(crbug.com/776050): Deal with context loss.
 
   // Create interfaces for a root CompositorFrameSink.
   viz::mojom::CompositorFrameSinkAssociatedPtrInfo sink_info;
@@ -316,7 +340,9 @@ void VizProcessTransportFactory::CreateLayerTreeFrameSinkForGpuChannel(
 scoped_refptr<ui::ContextProviderCommandBuffer>
 VizProcessTransportFactory::CreateContextProvider(
     scoped_refptr<gpu::GpuChannelHost> gpu_channel_host) {
-  // TODO(kylechar): Check if |shared_worker_context_provider_| is lost.
+  if (LockAndCheckContextLost(shared_worker_context_provider_.get()))
+    shared_worker_context_provider_ = nullptr;
+
   if (!shared_worker_context_provider_) {
     shared_worker_context_provider_ = CreateContextProviderImpl(
         gpu_channel_host, true /* support_locking */, nullptr,
