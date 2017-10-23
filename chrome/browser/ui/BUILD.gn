@@ -1755,10 +1755,14 @@ split_static_library("ui") {
       "cocoa/tab_contents/chrome_web_contents_view_delegate_mac.mm",
       "cocoa/tab_contents/web_drag_bookmark_handler_mac.h",
       "cocoa/tab_contents/web_drag_bookmark_handler_mac.mm",
+      "cocoa/task_manager_mac.h",
+      "cocoa/task_manager_mac.mm",
       "cocoa/ui_localizer.h",
       "cocoa/ui_localizer.mm",
       "cocoa/web_contents_modal_dialog_host_cocoa.h",
       "cocoa/web_contents_modal_dialog_host_cocoa.mm",
+      "cocoa/window_size_autosaver.h",
+      "cocoa/window_size_autosaver.mm",
 
       # TODO(estade): this class should be folded into
       # manage_passwords_decoration.mm
@@ -2343,8 +2347,6 @@ split_static_library("ui") {
         "cocoa/tabs/tab_view.mm",
         "cocoa/tabs/tab_window_controller.h",
         "cocoa/tabs/tab_window_controller.mm",
-        "cocoa/task_manager_mac.h",
-        "cocoa/task_manager_mac.mm",
         "cocoa/themed_window.h",
         "cocoa/themed_window.mm",
         "cocoa/toolbar/app_toolbar_button.h",
@@ -2381,8 +2383,6 @@ split_static_library("ui") {
         "cocoa/web_contents_modal_dialog_manager_views_mac.mm",
         "cocoa/web_textfield_touch_bar_controller.h",
         "cocoa/web_textfield_touch_bar_controller.mm",
-        "cocoa/window_size_autosaver.h",
-        "cocoa/window_size_autosaver.mm",
 
         # TODO(estade): this class should be deleted in favor of a combobox model.
         # See crbug.com/590850

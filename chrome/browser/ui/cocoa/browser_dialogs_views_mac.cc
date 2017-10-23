@@ -108,14 +108,6 @@ bool IsZoomBubbleViewsShown() {
   return ZoomBubbleView::GetZoomBubble() != nullptr;
 }
 
-task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser) {
-  return task_manager::TaskManagerView::Show(browser);
-}
-
-void HideTaskManagerViews() {
-  task_manager::TaskManagerView::Hide();
-}
-
 void ContentSettingBubbleViewsBridge::Show(gfx::NativeView parent_view,
                                            ContentSettingBubbleModel* model,
                                            content::WebContents* web_contents,
