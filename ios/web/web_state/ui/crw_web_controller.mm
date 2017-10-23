@@ -859,6 +859,10 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
             (base::DictionaryValue*)message
                                           context:(NSDictionary*)context;
 
+// Handles 'restoresession.error' message.
+- (BOOL)handleRestoreSessionErrorMessage:(base::DictionaryValue*)message
+                                 context:(NSDictionary*)context;
+
 // Caches request POST data in the given session entry.
 - (void)cachePOSTDataForRequest:(NSURLRequest*)request
                inNavigationItem:(web::NavigationItemImpl*)item;
@@ -2274,6 +2278,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
         @selector(handleWindowHistoryForwardMessage:context:);
     (*handlers)["window.history.go"] =
         @selector(handleWindowHistoryGoMessage:context:);
+    (*handlers)["restoresession.error"] =
+        @selector(handleRestoreSessionErrorMessage:context:);
   });
   DCHECK(handlers);
   auto iter = handlers->find(command);
@@ -2671,6 +2677,25 @@ registerLoadRequestForURL:(const GURL&)requestURL
             return;
           [strongSelf didFinishNavigation:nil];
         }];
+  return YES;
+}
+
+- (BOOL)handleRestoreSessionErrorMessage:(base::DictionaryValue*)message
+                                 context:(NSDictionary*)context {
+  std::string errorMessage;
+  if (!message->GetString("message", &errorMessage)) {
+    DLOG(WARNING) << "JS message parameter not found: message";
+    return NO;
+  }
+
+  // Restore session error is likely a result of coding error. Log diagnostics
+  // information that is sent back by the page to aid debugging.
+  NOTREACHED()
+      << "Session restore failed unexpectedly with error: " << errorMessage
+      << ". Web view URL: "
+      << (self.webView
+              ? net::GURLWithNSURL(self.webView.URL).possibly_invalid_spec()
+              : " N/A");
   return YES;
 }
 

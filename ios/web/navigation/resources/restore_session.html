@@ -93,7 +93,7 @@
         var currentItemOffset = parseInt(sessionHistoryObject.offset);
         history.go(currentItemOffset);
       } catch (e) {
-        handleError(e.name + ": " + e.message);
+        handleError(e.name + ": " + e.message + " raw session history: " + sessionHistory);
       }
     }
 
@@ -116,6 +116,7 @@
           {"command": "restoresession.error", "message": message});
         __gCrWeb.message.invokeQueues();
       }
+      window.location.replace("about:blank");
     }
   </script>
   </head>
