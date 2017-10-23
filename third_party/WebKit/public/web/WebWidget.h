@@ -41,6 +41,7 @@
 #include "public/platform/WebRect.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebTextInputInfo.h"
+#include "public/web/WebHitTestResult.h"
 #include "public/web/WebImeTextSpan.h"
 #include "public/web/WebRange.h"
 #include "public/web/WebTextDirection.h"
@@ -118,6 +119,11 @@ class WebWidget {
   // Implementors that cache rendered copies of widgets need to re-render
   // on receiving this message
   virtual void ThemeChanged() {}
+
+  // Do a hit test at given point and return the WebHitTestResult.
+  virtual WebHitTestResult HitTestResultAt(const WebPoint&) {
+    return WebHitTestResult();
+  }
 
   // Called to inform the WebWidget of an input event.
   virtual WebInputEventResult HandleInputEvent(const WebCoalescedInputEvent&) {

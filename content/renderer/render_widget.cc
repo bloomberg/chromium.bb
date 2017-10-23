@@ -859,6 +859,10 @@ void RenderWidget::OnHandleInputEvent(
       latency_info, std::move(callback));
 }
 
+int RenderWidget::GetWidgetRoutingIdAtPoint(const gfx::Point& point) {
+  return input_handler_->GetWidgetRoutingIdAtPoint(point);
+}
+
 void RenderWidget::HandleInputEvent(
     const blink::WebCoalescedInputEvent& input_event,
     const ui::LatencyInfo& latency_info,

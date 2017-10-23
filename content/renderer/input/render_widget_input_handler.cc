@@ -16,6 +16,7 @@
 #include "content/common/input/input_event_ack.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/input_event_ack_state.h"
+#include "content/public/renderer/render_frame.h"
 #include "content/renderer/gpu/render_widget_compositor.h"
 #include "content/renderer/ime_event_guard.h"
 #include "content/renderer/input/render_widget_input_handler_delegate.h"
@@ -28,6 +29,9 @@
 #include "third_party/WebKit/public/platform/WebMouseWheelEvent.h"
 #include "third_party/WebKit/public/platform/WebTouchEvent.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
+#include "third_party/WebKit/public/web/WebDocument.h"
+#include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebNode.h"
 #include "ui/events/blink/web_input_event_traits.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/latency/latency_info.h"
@@ -152,6 +156,23 @@ RenderWidgetInputHandler::RenderWidgetInputHandler(
 }
 
 RenderWidgetInputHandler::~RenderWidgetInputHandler() {}
+
+int RenderWidgetInputHandler::GetWidgetRoutingIdAtPoint(
+    const gfx::Point& point) {
+  blink::WebNode result_node =
+      widget_->GetWebWidget()
+          ->HitTestResultAt(blink::WebPoint(point.x(), point.y()))
+          .GetNode();
+
+  blink::WebFrame* result_frame =
+      blink::WebFrame::FromFrameOwnerElement(result_node);
+  if (!result_frame) {
+    // This means that the node is not an iframe itself. So we just return the
+    // the frame containing the node.
+    result_frame = result_node.GetDocument().GetFrame();
+  }
+  return RenderFrame::GetRoutingIdForWebFrame(result_frame);
+}
 
 void RenderWidgetInputHandler::HandleInputEvent(
     const blink::WebCoalescedInputEvent& coalesced_event,

@@ -242,6 +242,10 @@ CompositorAnimationHost* WebViewFrameWidget::AnimationHost() const {
   return web_view_->AnimationHost();
 }
 
+WebHitTestResult WebViewFrameWidget::HitTestResultAt(const WebPoint& point) {
+  return web_view_->HitTestResultAt(point);
+}
+
 HitTestResult WebViewFrameWidget::CoreHitTestResultAt(const WebPoint& point) {
   return web_view_->CoreHitTestResultAt(point);
 }

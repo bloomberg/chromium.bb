@@ -284,12 +284,12 @@ WebFrame* WebFrame::TraverseNext() const {
   return nullptr;
 }
 
-WebFrame* WebFrame::FromFrameOwnerElement(const WebElement& web_element) {
-  Element* element = web_element;
+WebFrame* WebFrame::FromFrameOwnerElement(const WebNode& web_node) {
+  Node* node = web_node;
 
-  if (!element->IsFrameOwnerElement())
+  if (!node->IsFrameOwnerElement())
     return nullptr;
-  return FromFrame(ToHTMLFrameOwnerElement(element)->ContentFrame());
+  return FromFrame(ToHTMLFrameOwnerElement(node)->ContentFrame());
 }
 
 bool WebFrame::IsLoading() const {
