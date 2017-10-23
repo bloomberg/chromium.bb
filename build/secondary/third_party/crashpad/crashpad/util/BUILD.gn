@@ -167,7 +167,6 @@ static_library("util") {
     "thread/worker_thread.cc",
     "thread/worker_thread.h",
     "win/address_types.h",
-    "win/capture_context.asm",
     "win/capture_context.h",
     "win/checked_win_address_range.h",
     "win/command_line.cc",
@@ -248,6 +247,20 @@ static_library("util") {
       "mach/task_memory.cc",
       "mach/task_memory.h",
     ]
+  }
+
+  if (is_win) {
+    # RtlCaptureContext() has a few shortcomings, so crashpad ships its
+    # own context capturing code, written in masm-style assembly.
+    # Since ml.exe isn't available on non-Windows hosts, provide a dummy
+    # CaptureContext() that has the drawback that it crashes when called, but
+    # the advantage that it doesn't require masm to compile.
+    # TODO(thakis): Use the .asm file in cross builds somehow, crbug.com/762167
+    if (host_os == "win") {
+      sources += [ "win/capture_context.asm" ]
+    } else {
+      sources += [ "win/capture_context_broken.cc" ]
+    }
   }
 
   # Include files from here and generated files starting with "util".
