@@ -5,9 +5,11 @@
 #include "components/safe_browsing/triggers/trigger_manager.h"
 
 #include "base/stl_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/browser/threat_details.h"
+#include "components/safe_browsing/features.h"
 #include "components/safe_browsing/triggers/trigger_throttler.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -130,6 +132,14 @@ class TriggerManagerTest : public ::testing::Test {
     return trigger_manager_.data_collectors_map_;
   }
 
+  void SetCollectDontSendFeature(bool enabled) {
+    feature_list_.reset(new base::test::ScopedFeatureList);
+    if (enabled)
+      feature_list_->InitAndEnableFeature(kAdSamplerCollectButDontSendFeature);
+    else
+      feature_list_->InitAndDisableFeature(kAdSamplerCollectButDontSendFeature);
+  }
+
  private:
   TriggerManager trigger_manager_;
   MockThreatDetailsFactory mock_threat_details_factory_;
@@ -137,6 +147,7 @@ class TriggerManagerTest : public ::testing::Test {
   content::TestBrowserContext browser_context_;
   content::TestWebContentsFactory web_contents_factory_;
   TestingPrefServiceSimple pref_service_;
+  std::unique_ptr<base::test::ScopedFeatureList> feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(TriggerManagerTest);
 };
@@ -335,6 +346,13 @@ TEST_F(TriggerManagerTest, AdSamplerTrigger) {
   SetPref(prefs::kSafeBrowsingExtendedReportingOptInAllowed, false);
   EXPECT_FALSE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  // It can be forced on via a finch feature.
+  SetCollectDontSendFeature(true);
+  EXPECT_TRUE(
+      StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
+                                            web_contents, true));
+  SetCollectDontSendFeature(false);
   // Confirm it can fire when we re-enable SBEROptInAllowed
   SetPref(prefs::kSafeBrowsingExtendedReportingOptInAllowed, true);
   EXPECT_TRUE(
@@ -347,6 +365,13 @@ TEST_F(TriggerManagerTest, AdSamplerTrigger) {
   SetPref(prefs::kSafeBrowsingExtendedReportingEnabled, true);
   EXPECT_FALSE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  // It can be forced on via a finch feature.
+  SetCollectDontSendFeature(true);
+  EXPECT_TRUE(
+      StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
+                                            web_contents, true));
+  SetCollectDontSendFeature(false);
   // Confirm it can fire when we re-enable Scout and disable legacy SBER.
   SetPref(prefs::kSafeBrowsingScoutReportingEnabled, true);
   SetPref(prefs::kSafeBrowsingExtendedReportingEnabled, false);
@@ -359,8 +384,35 @@ TEST_F(TriggerManagerTest, AdSamplerTrigger) {
   SetTriggerHasQuota(TriggerType::AD_SAMPLE, false);
   EXPECT_FALSE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  // It can be forced on via a finch feature.
+  SetCollectDontSendFeature(true);
+  EXPECT_TRUE(
+      StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
+                                            web_contents, true));
+  SetCollectDontSendFeature(false);
   // Confirm it can fire again when quota is available.
   SetTriggerHasQuota(TriggerType::AD_SAMPLE, true);
+  EXPECT_TRUE(
+      StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+  EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
+                                            web_contents, true));
+}
+
+TEST_F(TriggerManagerTest, AdSamplerTrigger_Incognito) {
+  // Check the conditions required for the Ad Sampler trigger to fire. It needs
+  // opt-in to start collecting data, scout opt-in, and quota, and it can't fire
+  // in inconito (except when forced on by finch feature).
+  content::WebContents* web_contents = CreateIncognitoWebContents();
+
+  // The default setup in this test makes the trigger fire (all prefs enabled,
+  // all triggers have quota), but the incognito window prevents it from firing.
+  EXPECT_FALSE(
+      StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
+
+  // The Finch feature makes the trigger fire even in incognito (which is safe
+  // because data is discarded and not sent to Google downstream).
+  SetCollectDontSendFeature(true);
   EXPECT_TRUE(
       StartCollectingThreatDetails(TriggerType::AD_SAMPLE, web_contents));
   EXPECT_TRUE(FinishCollectingThreatDetails(TriggerType::AD_SAMPLE,
