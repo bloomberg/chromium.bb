@@ -65,9 +65,9 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
       net::NetworkDelegate* network_delegate,
       ResourceContext* resource_context) override;
 
-  // Used only for IsServicificationEnabled (PlzNavigate and
-  // --enable-network-service) cases.
-  // This will replace MaybeCreateJob() once NetworkService is enabled.
+  // S13nServiceWorker:
+  // MaybeCreateLoader replaces MaybeCreateJob() when S13nServiceWorker is
+  // enabled.
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)

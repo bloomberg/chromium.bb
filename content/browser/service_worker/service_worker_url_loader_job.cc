@@ -87,7 +87,7 @@ ServiceWorkerURLLoaderJob::ServiceWorkerURLLoaderJob(
 ServiceWorkerURLLoaderJob::~ServiceWorkerURLLoaderJob() {}
 
 void ServiceWorkerURLLoaderJob::FallbackToNetwork() {
-  response_type_ = FALLBACK_TO_NETWORK;
+  response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   // This could be called multiple times in some cases because we simply
   // call this synchronously here and don't wait for a separate async
   // StartRequest cue like what URLRequestJob case does.
@@ -102,12 +102,12 @@ void ServiceWorkerURLLoaderJob::FallbackToNetworkOrRenderer() {
 }
 
 void ServiceWorkerURLLoaderJob::ForwardToServiceWorker() {
-  response_type_ = FORWARD_TO_SERVICE_WORKER;
+  response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
   StartRequest();
 }
 
 bool ServiceWorkerURLLoaderJob::ShouldFallbackToNetwork() {
-  return response_type_ == FALLBACK_TO_NETWORK;
+  return response_type_ == ResponseType::FALLBACK_TO_NETWORK;
 }
 
 ui::PageTransition ServiceWorkerURLLoaderJob::GetPageTransition() {
@@ -141,7 +141,7 @@ bool ServiceWorkerURLLoaderJob::WasCanceled() const {
 }
 
 void ServiceWorkerURLLoaderJob::StartRequest() {
-  DCHECK_EQ(FORWARD_TO_SERVICE_WORKER, response_type_);
+  DCHECK_EQ(ResponseType::FORWARD_TO_SERVICE_WORKER, response_type_);
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
 
