@@ -10,8 +10,6 @@
 #include "base/trace_event/trace_event.h"
 #include "platform/PlatformExport.h"
 
-// TODO(kraynov): Move platform/scheduler/base/trace_helper.h here.
-
 namespace blink {
 namespace scheduler {
 
@@ -49,6 +47,7 @@ class TraceableState {
     DCHECK(category == kTracingCategoryNameDefault ||
            category == kTracingCategoryNameInfo ||
            category == kTracingCategoryNameDebug);
+    Trace();
   }
 
   ~TraceableState() {
@@ -70,15 +69,18 @@ class TraceableState {
   }
 
   void OnTraceLogEnabled() {
-    Assign(state_, true);
+    Trace();
   }
 
  private:
-  void Assign(T new_state, bool force_trace = false) {
-    if (!force_trace && new_state == state_)
-      return;
-    state_ = new_state;
+  void Assign(T new_state) {
+    if (state_ != new_state) {
+      state_ = new_state;
+      Trace();
+    }
+  }
 
+  void Trace() {
     if (started_)
       TRACE_EVENT_ASYNC_END0(category, name_, object_);
 
