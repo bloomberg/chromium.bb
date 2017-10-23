@@ -15,37 +15,35 @@ const char* MainThreadTaskQueue::NameForQueueType(
     MainThreadTaskQueue::QueueType queue_type) {
   switch (queue_type) {
     case MainThreadTaskQueue::QueueType::CONTROL:
-      return "TaskQueueType.Control";
+      return "control_tq";
     case MainThreadTaskQueue::QueueType::DEFAULT:
-      return "TaskQueueType.Default";
+      return "default_tq";
     case MainThreadTaskQueue::QueueType::DEFAULT_LOADING:
-      return "TaskQueueType.DefaultLoading";
+      return "default_loading_tq";
     case MainThreadTaskQueue::QueueType::DEFAULT_TIMER:
-      return "TaskQueueType.DefaultTimer";
+      return "default_timer_tq";
     case MainThreadTaskQueue::QueueType::UNTHROTTLED:
-      return "TaskQueueType.Unthrottled";
+      return "unthrottled_tq";
     case MainThreadTaskQueue::QueueType::FRAME_LOADING:
-      return "TaskQueueType.FrameLoading";
+      return "frame_loading_tq";
     case MainThreadTaskQueue::QueueType::FRAME_THROTTLEABLE:
-      return "TaskQueueType.FrameThrottleable";
+      return "frame_throttleable_tq";
     case MainThreadTaskQueue::QueueType::FRAME_DEFERRABLE:
-      return "TaskQueueType.FrameDeferrable";
+      return "frame_deferrable_tq";
     case MainThreadTaskQueue::QueueType::FRAME_PAUSABLE:
-      return "TaskQueueType.FramePausable";
+      return "frame_pausable_tq";
     case MainThreadTaskQueue::QueueType::FRAME_UNPAUSABLE:
-      return "TaskQueueType.FrameUnpausable";
+      return "frame_unpausable_tq";
     case MainThreadTaskQueue::QueueType::COMPOSITOR:
-      return "TaskQueueType.Compositor";
+      return "compositor_tq";
     case MainThreadTaskQueue::QueueType::IDLE:
-      return "TaskQueueType.Idle";
+      return "idle_tq";
     case MainThreadTaskQueue::QueueType::TEST:
-      return "TaskQueueType.Test";
+      return "test_tq";
     case MainThreadTaskQueue::QueueType::FRAME_LOADING_CONTROL:
-      return "TaskQueueType.FrameLoadingControl";
+      return "frame_loading_control_tq";
     case MainThreadTaskQueue::QueueType::V8:
-      return "TaskQueueType.V8";
-    case MainThreadTaskQueue::QueueType::OTHER:
-      return "TaskQueueType.Other";
+      return "v8_tq";
     case MainThreadTaskQueue::QueueType::COUNT:
       NOTREACHED();
       return nullptr;
@@ -76,7 +74,6 @@ MainThreadTaskQueue::QueueClass MainThreadTaskQueue::QueueClassForQueueType(
       return QueueClass::TIMER;
     case QueueType::COMPOSITOR:
       return QueueClass::COMPOSITOR;
-    case QueueType::OTHER:
     case QueueType::COUNT:
       DCHECK(false);
       return QueueClass::COUNT;
