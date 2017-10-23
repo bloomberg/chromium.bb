@@ -223,10 +223,13 @@ void PictureLayerImpl::AppendQuads(viz::RenderPass* render_pass,
 
     gfx::Rect scaled_visible_layer_rect =
         shared_quad_state->visible_quad_layer_rect;
+    Occlusion scaled_occlusion =
+        draw_properties()
+            .occlusion_in_content_space.GetOcclusionWithGivenDrawTransform(
+                shared_quad_state->quad_to_target_transform);
     SolidColorLayerImpl::AppendSolidQuads(
-        render_pass, draw_properties().occlusion_in_content_space,
-        shared_quad_state, scaled_visible_layer_rect,
-        raster_source_->GetSolidColor(),
+        render_pass, scaled_occlusion, shared_quad_state,
+        scaled_visible_layer_rect, raster_source_->GetSolidColor(),
         !layer_tree_impl()->settings().enable_edge_anti_aliasing,
         append_quads_data);
     return;
