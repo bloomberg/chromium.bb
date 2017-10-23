@@ -385,7 +385,7 @@ void ServiceWorkerGlobalScopeProxy::DispatchForeignFetchEvent(
 
   ScriptState::Scope scope(
       WorkerGlobalScope()->ScriptController()->GetScriptState());
-  RefPtr<SecurityOrigin> origin =
+  scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::Create(web_request.ReferrerUrl());
   WaitUntilObserver* wait_until_observer = WaitUntilObserver::Create(
       WorkerGlobalScope(), WaitUntilObserver::kFetch, fetch_event_id);

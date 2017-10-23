@@ -44,7 +44,7 @@ void InstallEvent::registerForeignFetch(ScriptState* script_state,
   // The origins parameter is either just a "*" to indicate all origins, or an
   // explicit list of origins as absolute URLs. Internally an empty list of
   // origins is used to represent the "*" case though.
-  Vector<RefPtr<SecurityOrigin>> parsed_origins;
+  Vector<scoped_refptr<SecurityOrigin>> parsed_origins;
   if (origin_list.size() != 1 || origin_list[0] != "*") {
     parsed_origins.resize(origin_list.size());
     for (size_t i = 0; i < origin_list.size(); ++i) {
@@ -63,7 +63,7 @@ void InstallEvent::registerForeignFetch(ScriptState* script_state,
       ServiceWorkerGlobalScopeClient::From(execution_context);
 
   String scope_path = static_cast<KURL>(client->Scope()).GetPath();
-  RefPtr<SecurityOrigin> origin = execution_context->GetSecurityOrigin();
+  scoped_refptr<SecurityOrigin> origin = execution_context->GetSecurityOrigin();
 
   if (!options.hasScopes() || options.scopes().IsEmpty()) {
     exception_state.ThrowTypeError("At least one scope is required");

@@ -63,7 +63,7 @@ class MODULES_EXPORT ServiceWorker final
   EAGERLY_FINALIZE();
 
   void postMessage(ScriptState*,
-                   RefPtr<SerializedScriptValue> message,
+                   scoped_refptr<SerializedScriptValue> message,
                    const MessagePortArray&,
                    ExceptionState&);
   static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }

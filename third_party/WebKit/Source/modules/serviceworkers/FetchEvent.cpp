@@ -189,7 +189,7 @@ void FetchEvent::OnNavigationPreloadComplete(
   // According to the current spec of Resource Timing, the initiator type of
   // navigation preload request must be "other". But it may change when the spec
   // discussion is settled. https://github.com/w3c/resource-timing/issues/110
-  RefPtr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
+  scoped_refptr<ResourceTimingInfo> info = ResourceTimingInfo::Create(
       "other", resource_response.GetResourceLoadTiming()->RequestTime(),
       false /* is_main_resource */);
   info->SetNegativeAllowed(true);

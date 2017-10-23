@@ -264,7 +264,7 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
     return value.IsEmpty();
   }
 
-  RefPtr<SecurityOrigin> security_origin_;
+  scoped_refptr<SecurityOrigin> security_origin_;
   std::unique_ptr<WorkerReportingProxy> reporting_proxy_;
 };
 

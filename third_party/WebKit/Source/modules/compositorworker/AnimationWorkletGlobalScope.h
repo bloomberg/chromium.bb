@@ -35,7 +35,7 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   static AnimationWorkletGlobalScope* Create(
       const KURL&,
       const String& user_agent,
-      RefPtr<SecurityOrigin> document_security_origin,
+      scoped_refptr<SecurityOrigin> document_security_origin,
       v8::Isolate*,
       WorkerThread*,
       WorkerClients*);
@@ -59,12 +59,13 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
   unsigned GetAnimatorsSizeForTest() { return animators_.size(); }
 
  private:
-  AnimationWorkletGlobalScope(const KURL&,
-                              const String& user_agent,
-                              RefPtr<SecurityOrigin> document_security_origin,
-                              v8::Isolate*,
-                              WorkerThread*,
-                              WorkerClients*);
+  AnimationWorkletGlobalScope(
+      const KURL&,
+      const String& user_agent,
+      scoped_refptr<SecurityOrigin> document_security_origin,
+      v8::Isolate*,
+      WorkerThread*,
+      WorkerClients*);
 
   Animator* GetAnimatorFor(int player_id, const String& name);
   typedef HeapHashMap<String, TraceWrapperMember<AnimatorDefinition>>

@@ -59,7 +59,7 @@ WorkletAnimation* WorkletAnimation::Create(
     String animator_name,
     const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
     HeapVector<DocumentTimelineOrScrollTimeline>& timelines,
-    RefPtr<SerializedScriptValue> options,
+    scoped_refptr<SerializedScriptValue> options,
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
@@ -89,7 +89,7 @@ WorkletAnimation::WorkletAnimation(
     Document& document,
     const HeapVector<Member<KeyframeEffectReadOnly>>& effects,
     HeapVector<DocumentTimelineOrScrollTimeline>& timelines,
-    RefPtr<SerializedScriptValue> options)
+    scoped_refptr<SerializedScriptValue> options)
     : animator_name_(animator_name),
       play_state_(Animation::kIdle),
       document_(document),

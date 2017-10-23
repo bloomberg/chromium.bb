@@ -41,7 +41,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
       String animator_name,
       const HeapVector<Member<KeyframeEffectReadOnly>>&,
       HeapVector<DocumentTimelineOrScrollTimeline>&,
-      RefPtr<SerializedScriptValue>,
+      scoped_refptr<SerializedScriptValue>,
       ExceptionState&);
 
   virtual ~WorkletAnimation() {}
@@ -71,7 +71,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
     return timelines_;
   }
 
-  const RefPtr<SerializedScriptValue> Options() { return options_; }
+  const scoped_refptr<SerializedScriptValue> Options() { return options_; }
 
   virtual void Trace(blink::Visitor*);
 
@@ -80,7 +80,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
                    Document&,
                    const HeapVector<Member<KeyframeEffectReadOnly>>&,
                    HeapVector<DocumentTimelineOrScrollTimeline>&,
-                   RefPtr<SerializedScriptValue>);
+                   scoped_refptr<SerializedScriptValue>);
 
   const String animator_name_;
   Animation::AnimationPlayState play_state_;
@@ -89,7 +89,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   HeapVector<Member<KeyframeEffectReadOnly>> effects_;
   HeapVector<DocumentTimelineOrScrollTimeline> timelines_;
-  RefPtr<SerializedScriptValue> options_;
+  scoped_refptr<SerializedScriptValue> options_;
 
   std::unique_ptr<CompositorAnimationPlayer> compositor_player_;
 };

@@ -19,7 +19,7 @@ ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::Create(
     WebURLRequest::FetchRedirectMode redirect_mode,
     WebURLRequest::FrameType frame_type,
     WebURLRequest::RequestContext request_context,
-    RefPtr<SecurityOrigin> request_origin,
+    scoped_refptr<SecurityOrigin> request_origin,
     WaitUntilObserver* observer) {
   return new ForeignFetchRespondWithObserver(
       context, event_id, request_url, request_mode, redirect_mode, frame_type,
@@ -102,7 +102,7 @@ ForeignFetchRespondWithObserver::ForeignFetchRespondWithObserver(
     WebURLRequest::FetchRedirectMode redirect_mode,
     WebURLRequest::FrameType frame_type,
     WebURLRequest::RequestContext request_context,
-    RefPtr<SecurityOrigin> request_origin,
+    scoped_refptr<SecurityOrigin> request_origin,
     WaitUntilObserver* observer)
     : FetchRespondWithObserver(context,
                                event_id,
