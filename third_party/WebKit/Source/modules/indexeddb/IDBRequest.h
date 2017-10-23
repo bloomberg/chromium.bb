@@ -242,10 +242,10 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void HandleResponse(std::unique_ptr<WebIDBCursor>,
                       IDBKey*,
                       IDBKey* primary_key,
-                      RefPtr<IDBValue>&&);
-  void HandleResponse(IDBKey*, IDBKey* primary_key, RefPtr<IDBValue>&&);
-  void HandleResponse(RefPtr<IDBValue>&&);
-  void HandleResponse(const Vector<RefPtr<IDBValue>>&);
+                      scoped_refptr<IDBValue>&&);
+  void HandleResponse(IDBKey*, IDBKey* primary_key, scoped_refptr<IDBValue>&&);
+  void HandleResponse(scoped_refptr<IDBValue>&&);
+  void HandleResponse(const Vector<scoped_refptr<IDBValue>>&);
   void HandleResponse(int64_t);
   void HandleResponse();
 
@@ -296,7 +296,7 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // (which hangs onto the BlobDataHandle) may get garbage-collected. IDBRequest
   // needs to hang onto the BlobDataHandle as well, to avoid having the
   // browser-side Blob get destroyed before the IndexedDB request is processed.
-  inline Vector<RefPtr<BlobDataHandle>>* transit_blob_handles() {
+  inline Vector<scoped_refptr<BlobDataHandle>>* transit_blob_handles() {
     return &transit_blob_handles_;
   }
 
@@ -349,19 +349,19 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   void SetResultCursor(IDBCursor*,
                        IDBKey*,
                        IDBKey* primary_key,
-                       RefPtr<IDBValue>&&);
+                       scoped_refptr<IDBValue>&&);
   void AckReceivedBlobs(const IDBValue*);
-  void AckReceivedBlobs(const Vector<RefPtr<IDBValue>>&);
+  void AckReceivedBlobs(const Vector<scoped_refptr<IDBValue>>&);
 
   void EnqueueResponse(DOMException*);
   void EnqueueResponse(IDBKey*);
   void EnqueueResponse(std::unique_ptr<WebIDBCursor>,
                        IDBKey*,
                        IDBKey* primary_key,
-                       RefPtr<IDBValue>&&);
-  void EnqueueResponse(IDBKey*, IDBKey* primary_key, RefPtr<IDBValue>&&);
-  void EnqueueResponse(RefPtr<IDBValue>&&);
-  void EnqueueResponse(const Vector<RefPtr<IDBValue>>&);
+                       scoped_refptr<IDBValue>&&);
+  void EnqueueResponse(IDBKey*, IDBKey* primary_key, scoped_refptr<IDBValue>&&);
+  void EnqueueResponse(scoped_refptr<IDBValue>&&);
+  void EnqueueResponse(const Vector<scoped_refptr<IDBValue>>&);
   void EnqueueResponse();
 
   void ClearPutOperationBlobs() { transit_blob_handles_.clear(); }
@@ -383,9 +383,9 @@ class MODULES_EXPORT IDBRequest : public EventTargetWithInlineData,
   // dispatched.
   Member<IDBKey> cursor_key_;
   Member<IDBKey> cursor_primary_key_;
-  RefPtr<IDBValue> cursor_value_;
+  scoped_refptr<IDBValue> cursor_value_;
 
-  Vector<RefPtr<BlobDataHandle>> transit_blob_handles_;
+  Vector<scoped_refptr<BlobDataHandle>> transit_blob_handles_;
 
   bool did_fire_upgrade_needed_event_ = false;
   bool prevent_propagation_ = false;

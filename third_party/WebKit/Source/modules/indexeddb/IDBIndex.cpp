@@ -45,7 +45,7 @@ using blink::WebIDBDatabase;
 
 namespace blink {
 
-IDBIndex::IDBIndex(RefPtr<IDBIndexMetadata> metadata,
+IDBIndex::IDBIndex(scoped_refptr<IDBIndexMetadata> metadata,
                    IDBObjectStore* object_store,
                    IDBTransaction* transaction)
     : metadata_(std::move(metadata)),
@@ -103,7 +103,7 @@ ScriptValue IDBIndex::keyPath(ScriptState* script_state) const {
   return ScriptValue::From(script_state, Metadata().key_path);
 }
 
-void IDBIndex::RevertMetadata(RefPtr<IDBIndexMetadata> old_metadata) {
+void IDBIndex::RevertMetadata(scoped_refptr<IDBIndexMetadata> old_metadata) {
   metadata_ = std::move(old_metadata);
 
   // An index's metadata will only get reverted if the index was in the

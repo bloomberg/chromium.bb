@@ -93,7 +93,7 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   void PostSuccessHandlerCallback();
   bool IsDeleted() const;
   void Close();
-  void SetValueReady(IDBKey*, IDBKey* primary_key, RefPtr<IDBValue>);
+  void SetValueReady(IDBKey*, IDBKey* primary_key, scoped_refptr<IDBValue>);
   IDBKey* IdbPrimaryKey() const { return primary_key_; }
   virtual bool IsKeyCursor() const { return true; }
   virtual bool IsCursorWithValue() const { return false; }
@@ -119,7 +119,7 @@ class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
   bool value_dirty_ = true;
   Member<IDBKey> key_;
   Member<IDBKey> primary_key_;
-  RefPtr<IDBValue> value_;
+  scoped_refptr<IDBValue> value_;
 };
 
 }  // namespace blink

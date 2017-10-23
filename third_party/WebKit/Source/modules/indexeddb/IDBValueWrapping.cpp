@@ -137,14 +137,14 @@ bool IDBValueWrapper::WrapIfBiggerThan(unsigned max_bytes) {
 }
 
 void IDBValueWrapper::ExtractBlobDataHandles(
-    Vector<RefPtr<BlobDataHandle>>* blob_data_handles) {
+    Vector<scoped_refptr<BlobDataHandle>>* blob_data_handles) {
   for (const auto& kvp : serialized_value_->BlobDataHandles())
     blob_data_handles->push_back(kvp.value);
   if (wrapper_handle_)
     blob_data_handles->push_back(std::move(wrapper_handle_));
 }
 
-RefPtr<SharedBuffer> IDBValueWrapper::ExtractWireBytes() {
+scoped_refptr<SharedBuffer> IDBValueWrapper::ExtractWireBytes() {
 #if DCHECK_IS_ON()
   DCHECK(!had_exception_) << __FUNCTION__
                           << " called on wrapper with serialization exception";
@@ -169,7 +169,8 @@ bool IDBValueUnwrapper::IsWrapped(IDBValue* value) {
          header[2] == kBlobWrappedValue;
 }
 
-bool IDBValueUnwrapper::IsWrapped(const Vector<RefPtr<IDBValue>>& values) {
+bool IDBValueUnwrapper::IsWrapped(
+    const Vector<scoped_refptr<IDBValue>>& values) {
   for (const auto& value : values) {
     if (IsWrapped(value.get()))
       return true;
@@ -177,9 +178,9 @@ bool IDBValueUnwrapper::IsWrapped(const Vector<RefPtr<IDBValue>>& values) {
   return false;
 }
 
-RefPtr<IDBValue> IDBValueUnwrapper::Unwrap(
+scoped_refptr<IDBValue> IDBValueUnwrapper::Unwrap(
     IDBValue* wrapped_value,
-    RefPtr<SharedBuffer>&& wrapper_blob_content) {
+    scoped_refptr<SharedBuffer>&& wrapper_blob_content) {
   DCHECK(wrapped_value);
   DCHECK(wrapped_value->data_);
   DCHECK_GT(wrapped_value->blob_info_->size(), 0U);
@@ -188,8 +189,8 @@ RefPtr<IDBValue> IDBValueUnwrapper::Unwrap(
 
   // Create an IDBValue with the same blob information, minus the last blob.
   unsigned blob_count = wrapped_value->BlobInfo()->size() - 1;
-  std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data =
-      WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>();
+  std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data =
+      WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>();
   blob_data->ReserveCapacity(blob_count);
   std::unique_ptr<Vector<WebBlobInfo>> blob_info =
       WTF::MakeUnique<Vector<WebBlobInfo>>();
@@ -232,7 +233,7 @@ bool IDBValueUnwrapper::Parse(IDBValue* value) {
   return true;
 }
 
-RefPtr<BlobDataHandle> IDBValueUnwrapper::WrapperBlobHandle() {
+scoped_refptr<BlobDataHandle> IDBValueUnwrapper::WrapperBlobHandle() {
   DCHECK(blob_handle_);
 
   return std::move(blob_handle_);

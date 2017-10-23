@@ -22,13 +22,15 @@ struct WebIDBValue;
 
 class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
  public:
-  static RefPtr<IDBValue> Create();
-  static RefPtr<IDBValue> Create(const WebIDBValue&, v8::Isolate*);
-  static RefPtr<IDBValue> Create(const IDBValue*, IDBKey*, const IDBKeyPath&);
+  static scoped_refptr<IDBValue> Create();
+  static scoped_refptr<IDBValue> Create(const WebIDBValue&, v8::Isolate*);
+  static scoped_refptr<IDBValue> Create(const IDBValue*,
+                                        IDBKey*,
+                                        const IDBKeyPath&);
   // Used by IDBValueUnwrapper and its tests.
-  static RefPtr<IDBValue> Create(
-      RefPtr<SharedBuffer> unwrapped_data,
-      std::unique_ptr<Vector<RefPtr<BlobDataHandle>>>,
+  static scoped_refptr<IDBValue> Create(
+      scoped_refptr<SharedBuffer> unwrapped_data,
+      std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>>,
       std::unique_ptr<Vector<WebBlobInfo>>,
       const IDBKey*,
       const IDBKeyPath&);
@@ -39,7 +41,7 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
 
   bool IsNull() const;
   Vector<String> GetUUIDs() const;
-  RefPtr<SerializedScriptValue> CreateSerializedValue() const;
+  scoped_refptr<SerializedScriptValue> CreateSerializedValue() const;
   Vector<WebBlobInfo>* BlobInfo() const { return blob_info_.get(); }
   const IDBKey* PrimaryKey() const { return primary_key_; }
   const IDBKeyPath& KeyPath() const { return key_path_; }
@@ -49,21 +51,21 @@ class MODULES_EXPORT IDBValue final : public RefCounted<IDBValue> {
 
   IDBValue();
   IDBValue(const WebIDBValue&, v8::Isolate*);
-  IDBValue(RefPtr<SharedBuffer>,
+  IDBValue(scoped_refptr<SharedBuffer>,
            const WebVector<WebBlobInfo>&,
            IDBKey*,
            const IDBKeyPath&);
   IDBValue(const IDBValue*, IDBKey*, const IDBKeyPath&);
-  IDBValue(RefPtr<SharedBuffer> unwrapped_data,
-           std::unique_ptr<Vector<RefPtr<BlobDataHandle>>>,
+  IDBValue(scoped_refptr<SharedBuffer> unwrapped_data,
+           std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>>,
            std::unique_ptr<Vector<WebBlobInfo>>,
            const IDBKey*,
            const IDBKeyPath&);
 
   // Keep this private to prevent new refs because we manually bookkeep the
   // memory to V8.
-  const RefPtr<SharedBuffer> data_;
-  const std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data_;
+  const scoped_refptr<SharedBuffer> data_;
+  const std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data_;
   const std::unique_ptr<Vector<WebBlobInfo>> blob_info_;
   const Persistent<const IDBKey> primary_key_;
   const IDBKeyPath key_path_;

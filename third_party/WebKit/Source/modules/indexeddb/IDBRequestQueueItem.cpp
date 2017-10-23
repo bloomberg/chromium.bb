@@ -68,7 +68,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
 }
 
 IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
-                                         RefPtr<IDBValue> value,
+                                         scoped_refptr<IDBValue> value,
                                          bool attach_loader,
                                          WTF::Closure on_result_load_complete)
     : request_(request),
@@ -83,10 +83,11 @@ IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
     loader_ = WTF::MakeUnique<IDBRequestLoader>(this, &values_);
 }
 
-IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
-                                         const Vector<RefPtr<IDBValue>>& values,
-                                         bool attach_loader,
-                                         WTF::Closure on_result_load_complete)
+IDBRequestQueueItem::IDBRequestQueueItem(
+    IDBRequest* request,
+    const Vector<scoped_refptr<IDBValue>>& values,
+    bool attach_loader,
+    WTF::Closure on_result_load_complete)
     : request_(request),
       values_(values),
       on_result_load_complete_(std::move(on_result_load_complete)),
@@ -102,7 +103,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
 IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
                                          IDBKey* key,
                                          IDBKey* primary_key,
-                                         RefPtr<IDBValue> value,
+                                         scoped_refptr<IDBValue> value,
                                          bool attach_loader,
                                          WTF::Closure on_result_load_complete)
     : request_(request),
@@ -123,7 +124,7 @@ IDBRequestQueueItem::IDBRequestQueueItem(IDBRequest* request,
                                          std::unique_ptr<WebIDBCursor> cursor,
                                          IDBKey* key,
                                          IDBKey* primary_key,
-                                         RefPtr<IDBValue> value,
+                                         scoped_refptr<IDBValue> value,
                                          bool attach_loader,
                                          WTF::Closure on_result_load_complete)
     : request_(request),

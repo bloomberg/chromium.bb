@@ -39,14 +39,15 @@ IDBObjectStoreMetadata::IDBObjectStoreMetadata(const String& name,
       auto_increment(auto_increment),
       max_index_id(max_index_id) {}
 
-RefPtr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::CreateCopy() const {
-  RefPtr<IDBObjectStoreMetadata> copy =
+scoped_refptr<IDBObjectStoreMetadata> IDBObjectStoreMetadata::CreateCopy()
+    const {
+  scoped_refptr<IDBObjectStoreMetadata> copy =
       WTF::AdoptRef(new IDBObjectStoreMetadata(name, id, key_path,
                                                auto_increment, max_index_id));
 
   for (const auto& it : indexes) {
     IDBIndexMetadata* index = it.value.get();
-    RefPtr<IDBIndexMetadata> index_copy = WTF::AdoptRef(
+    scoped_refptr<IDBIndexMetadata> index_copy = WTF::AdoptRef(
         new IDBIndexMetadata(index->name, index->id, index->key_path,
                              index->unique, index->multi_entry));
     copy->indexes.insert(it.key, std::move(index_copy));
@@ -74,7 +75,7 @@ IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& web_metadata)
   for (size_t i = 0; i < web_metadata.object_stores.size(); ++i) {
     const WebIDBMetadata::ObjectStore& web_object_store =
         web_metadata.object_stores[i];
-    RefPtr<IDBObjectStoreMetadata> object_store =
+    scoped_refptr<IDBObjectStoreMetadata> object_store =
         WTF::AdoptRef(new IDBObjectStoreMetadata(
             web_object_store.name, web_object_store.id,
             IDBKeyPath(web_object_store.key_path),
@@ -82,9 +83,10 @@ IDBDatabaseMetadata::IDBDatabaseMetadata(const WebIDBMetadata& web_metadata)
 
     for (size_t j = 0; j < web_object_store.indexes.size(); ++j) {
       const WebIDBMetadata::Index& web_index = web_object_store.indexes[j];
-      RefPtr<IDBIndexMetadata> index = WTF::AdoptRef(new IDBIndexMetadata(
-          web_index.name, web_index.id, IDBKeyPath(web_index.key_path),
-          web_index.unique, web_index.multi_entry));
+      scoped_refptr<IDBIndexMetadata> index =
+          WTF::AdoptRef(new IDBIndexMetadata(
+              web_index.name, web_index.id, IDBKeyPath(web_index.key_path),
+              web_index.unique, web_index.multi_entry));
       object_store->indexes.Set(web_index.id, std::move(index));
     }
     object_stores.Set(web_object_store.id, std::move(object_store));

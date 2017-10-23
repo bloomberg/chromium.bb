@@ -388,7 +388,7 @@ SnapshotFileCallback::SnapshotFileCallback(DOMFileSystemBase* filesystem,
 
 void SnapshotFileCallback::DidCreateSnapshotFile(
     const FileMetadata& metadata,
-    RefPtr<BlobDataHandle> snapshot) {
+    scoped_refptr<BlobDataHandle> snapshot) {
   if (!success_callback_)
     return;
 

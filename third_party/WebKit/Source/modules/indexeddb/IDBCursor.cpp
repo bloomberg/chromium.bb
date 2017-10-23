@@ -388,8 +388,8 @@ ScriptValue IDBCursor::value(ScriptState* script_state) {
     value = IDBAny::CreateUndefined();
   } else if (object_store->autoIncrement() &&
              !object_store->IdbKeyPath().IsNull()) {
-    RefPtr<IDBValue> idb_value = IDBValue::Create(value_.get(), primary_key_,
-                                                  object_store->IdbKeyPath());
+    scoped_refptr<IDBValue> idb_value = IDBValue::Create(
+        value_.get(), primary_key_, object_store->IdbKeyPath());
 #if DCHECK_IS_ON()
     AssertPrimaryKeyValidOrInjectable(script_state, idb_value.get());
 #endif  // DCHECK_IS_ON()
@@ -409,7 +409,7 @@ ScriptValue IDBCursor::source(ScriptState* script_state) const {
 
 void IDBCursor::SetValueReady(IDBKey* key,
                               IDBKey* primary_key,
-                              RefPtr<IDBValue> value) {
+                              scoped_refptr<IDBValue> value) {
   key_ = key;
   key_dirty_ = true;
 

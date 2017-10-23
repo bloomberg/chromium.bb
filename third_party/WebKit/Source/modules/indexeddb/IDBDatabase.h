@@ -144,7 +144,8 @@ class MODULES_EXPORT IDBDatabase final
   }
   void RenameObjectStore(int64_t store_id, const String& new_name);
   void RevertObjectStoreCreation(int64_t object_store_id);
-  void RevertObjectStoreMetadata(RefPtr<IDBObjectStoreMetadata> old_metadata);
+  void RevertObjectStoreMetadata(
+      scoped_refptr<IDBObjectStoreMetadata> old_metadata);
 
   // Will return nullptr if this database is stopped.
   WebIDBDatabase* Backend() const { return backend_.get(); }

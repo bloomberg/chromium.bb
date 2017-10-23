@@ -224,7 +224,7 @@ class ExecutableWithDatabase
   ScriptState* GetScriptState() const { return script_state_.get(); }
 
  private:
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
 };
 
 template <typename RequestCallback>
@@ -270,7 +270,8 @@ class OpenDatabaseCallback final : public EventListener {
       ExecutableWithDatabase<RequestCallback>* executable_with_database)
       : EventListener(EventListener::kCPPEventListenerType),
         executable_with_database_(executable_with_database) {}
-  RefPtr<ExecutableWithDatabase<RequestCallback>> executable_with_database_;
+  scoped_refptr<ExecutableWithDatabase<RequestCallback>>
+      executable_with_database_;
 };
 
 template <typename RequestCallback>
@@ -310,7 +311,8 @@ class UpgradeDatabaseCallback final : public EventListener {
       ExecutableWithDatabase<RequestCallback>* executable_with_database)
       : EventListener(EventListener::kCPPEventListenerType),
         executable_with_database_(executable_with_database) {}
-  RefPtr<ExecutableWithDatabase<RequestCallback>> executable_with_database_;
+  scoped_refptr<ExecutableWithDatabase<RequestCallback>>
+      executable_with_database_;
 };
 
 static IDBTransaction* TransactionForDatabase(
@@ -381,7 +383,7 @@ static std::unique_ptr<KeyPath> KeyPathFromIDBKeyPath(
 class DatabaseLoader final
     : public ExecutableWithDatabase<RequestDatabaseCallback> {
  public:
-  static RefPtr<DatabaseLoader> Create(
+  static scoped_refptr<DatabaseLoader> Create(
       ScriptState* script_state,
       std::unique_ptr<RequestDatabaseCallback> request_callback) {
     return WTF::AdoptRef(
@@ -619,7 +621,7 @@ class OpenCursorCallback final : public EventListener {
   }
 
   v8_inspector::V8InspectorSession* v8_session_;
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   std::unique_ptr<RequestDataCallback> request_callback_;
   int skip_count_;
   unsigned page_size_;
@@ -628,7 +630,7 @@ class OpenCursorCallback final : public EventListener {
 
 class DataLoader final : public ExecutableWithDatabase<RequestDataCallback> {
  public:
-  static RefPtr<DataLoader> Create(
+  static scoped_refptr<DataLoader> Create(
       v8_inspector::V8InspectorSession* v8_session,
       ScriptState* script_state,
       std::unique_ptr<RequestDataCallback> request_callback,
@@ -822,7 +824,7 @@ void InspectorIndexedDBAgent::requestDatabase(
   }
 
   ScriptState::Scope scope(script_state);
-  RefPtr<DatabaseLoader> database_loader =
+  scoped_refptr<DatabaseLoader> database_loader =
       DatabaseLoader::Create(script_state, std::move(request_callback));
   database_loader->Start(idb_factory, document->GetSecurityOrigin(),
                          database_name);
@@ -866,7 +868,7 @@ void InspectorIndexedDBAgent::requestData(
   }
 
   ScriptState::Scope scope(script_state);
-  RefPtr<DataLoader> data_loader = DataLoader::Create(
+  scoped_refptr<DataLoader> data_loader = DataLoader::Create(
       v8_session_, script_state, std::move(request_callback), object_store_name,
       index_name, idb_key_range, skip_count, page_size);
   data_loader->Start(idb_factory, document->GetSecurityOrigin(), database_name);
@@ -910,7 +912,7 @@ class ClearObjectStoreListener final : public EventListener {
 class ClearObjectStore final
     : public ExecutableWithDatabase<ClearObjectStoreCallback> {
  public:
-  static RefPtr<ClearObjectStore> Create(
+  static scoped_refptr<ClearObjectStore> Create(
       ScriptState* script_state,
       const String& object_store_name,
       std::unique_ptr<ClearObjectStoreCallback> request_callback) {
@@ -992,7 +994,7 @@ void InspectorIndexedDBAgent::clearObjectStore(
   }
 
   ScriptState::Scope scope(script_state);
-  RefPtr<ClearObjectStore> clear_object_store = ClearObjectStore::Create(
+  scoped_refptr<ClearObjectStore> clear_object_store = ClearObjectStore::Create(
       script_state, object_store_name, std::move(request_callback));
   clear_object_store->Start(idb_factory, document->GetSecurityOrigin(),
                             database_name);

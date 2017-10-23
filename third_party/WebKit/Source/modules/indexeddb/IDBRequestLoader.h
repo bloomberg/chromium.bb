@@ -37,7 +37,7 @@ class IDBRequestLoader : public FileReaderLoaderClient {
   // result_values must be kept alive until the loader calls
   // IDBRequestQueueItem::OnResultLoadComplete().
   IDBRequestLoader(IDBRequestQueueItem*,
-                   Vector<RefPtr<IDBValue>>* result_values);
+                   Vector<scoped_refptr<IDBValue>>* result_values);
 
   ~IDBRequestLoader() override;
 
@@ -76,13 +76,13 @@ class IDBRequestLoader : public FileReaderLoaderClient {
   //
   // The Vector is owned by the IDBRequestLoader owner, which is currently a
   // IDBRequestQueueItem.
-  Vector<RefPtr<IDBValue>>* const values_;
+  Vector<scoped_refptr<IDBValue>>* const values_;
 
   // Buffer used to unwrap an IDBValue.
   Vector<char> wrapped_data_;
 
   // The value being currently unwrapped.
-  Vector<RefPtr<IDBValue>>::iterator current_value_;
+  Vector<scoped_refptr<IDBValue>>::iterator current_value_;
 
 #if DCHECK_IS_ON()
   // True after Start() is called.

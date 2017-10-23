@@ -179,14 +179,14 @@ class Database final : public GarbageCollectedFinalized<Database>,
     return context_thread_security_origin_->ToString() + "::" + name_;
   }
 
-  RefPtr<SecurityOrigin> context_thread_security_origin_;
-  RefPtr<SecurityOrigin> database_thread_security_origin_;
+  scoped_refptr<SecurityOrigin> context_thread_security_origin_;
+  scoped_refptr<SecurityOrigin> database_thread_security_origin_;
   Member<DatabaseContext>
       database_context_;  // Associated with m_executionContext.
   // TaskRunnerHelper::get is not thread-safe, so we save WebTaskRunner for
   // TaskType::DatabaseAccess for later use as the constructor runs in the main
   // thread.
-  RefPtr<WebTaskRunner> database_task_runner_;
+  scoped_refptr<WebTaskRunner> database_task_runner_;
 
   String name_;
   String expected_version_;

@@ -37,7 +37,7 @@ class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>,
  private:
   IDBObservation(const WebIDBObservation&, v8::Isolate*);
   Member<IDBKeyRange> key_range_;
-  RefPtr<IDBValue> value_;
+  scoped_refptr<IDBValue> value_;
   const WebIDBOperationType operation_type_;
 };
 

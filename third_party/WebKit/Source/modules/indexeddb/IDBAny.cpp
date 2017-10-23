@@ -96,7 +96,7 @@ IDBValue* IDBAny::Value() const {
   return idb_value_.get();
 }
 
-const Vector<RefPtr<IDBValue>>* IDBAny::Values() const {
+const Vector<scoped_refptr<IDBValue>>* IDBAny::Values() const {
   DCHECK_EQ(type_, kIDBValueArrayType);
   return &idb_values_;
 }
@@ -122,10 +122,10 @@ IDBAny::IDBAny(IDBIndex* value) : type_(kIDBIndexType), idb_index_(value) {}
 IDBAny::IDBAny(IDBObjectStore* value)
     : type_(kIDBObjectStoreType), idb_object_store_(value) {}
 
-IDBAny::IDBAny(const Vector<RefPtr<IDBValue>>& values)
+IDBAny::IDBAny(const Vector<scoped_refptr<IDBValue>>& values)
     : type_(kIDBValueArrayType), idb_values_(values) {}
 
-IDBAny::IDBAny(RefPtr<IDBValue> value)
+IDBAny::IDBAny(scoped_refptr<IDBValue> value)
     : type_(kIDBValueType), idb_value_(std::move(value)) {}
 
 IDBAny::IDBAny(IDBKey* key) : type_(kKeyType), idb_key_(key) {}
