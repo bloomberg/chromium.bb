@@ -47,12 +47,12 @@ void NotifyProcessHostStreamRemoved(int render_process_id) {
 }
 
 // Safe to call from any thread.
-void LogMessage(int stream_id, base::StringPiece msg) {
-  const std::string message =
+void LogMessage(int stream_id, base::StringPiece message) {
+  const std::string out_message =
       base::StringPrintf("[stream_id=%d] %.*s", stream_id,
-                         static_cast<int>(msg.size()), msg.data());
-  content::MediaStreamManager::SendMessageToNativeLog(message);
-  DVLOG(1) << message;
+                         static_cast<int>(message.size()), message.data());
+  content::MediaStreamManager::SendMessageToNativeLog(out_message);
+  DVLOG(1) << out_message;
 }
 
 }  // namespace
@@ -64,15 +64,14 @@ class AudioInputDelegateImpl::ControllerEventHandler
                          base::WeakPtr<AudioInputDelegateImpl> weak_delegate)
       : stream_id_(stream_id), weak_delegate_(std::move(weak_delegate)) {}
 
-  void OnCreated(media::AudioInputController*, bool initially_muted) override {
+  void OnCreated(bool initially_muted) override {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(&AudioInputDelegateImpl::SendCreatedNotification,
                        weak_delegate_, initially_muted));
   }
 
-  void OnError(media::AudioInputController*,
-               media::AudioInputController::ErrorCode error_code) override {
+  void OnError(media::AudioInputController::ErrorCode error_code) override {
     // To ensure that the error is logged even during the destruction sequence,
     // we log it here.
     LogMessage(stream_id_,
@@ -82,12 +81,11 @@ class AudioInputDelegateImpl::ControllerEventHandler
         base::BindOnce(&AudioInputDelegateImpl::OnError, weak_delegate_));
   }
 
-  void OnLog(media::AudioInputController*,
-             const std::string& message) override {
+  void OnLog(base::StringPiece message) override {
     LogMessage(stream_id_, message);
   }
 
-  void OnMuted(media::AudioInputController*, bool is_muted) override {
+  void OnMuted(bool is_muted) override {
     LogMessage(stream_id_, is_muted ? "OnMuted: State changed to muted"
                                     : "OnMuted: State changed to not muted");
     BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,

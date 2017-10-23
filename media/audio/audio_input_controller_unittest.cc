@@ -63,14 +63,10 @@ class MockAudioInputControllerEventHandler
  public:
   MockAudioInputControllerEventHandler() {}
 
-  MOCK_METHOD2(OnCreated,
-               void(AudioInputController* controller, bool initially_muted));
-  MOCK_METHOD2(OnError, void(AudioInputController* controller,
-                             AudioInputController::ErrorCode error_code));
-  MOCK_METHOD2(OnLog,
-               void(AudioInputController* controller,
-                    const std::string& message));
-  MOCK_METHOD2(OnMuted, void(AudioInputController* controller, bool is_muted));
+  MOCK_METHOD1(OnCreated, void(bool initially_muted));
+  MOCK_METHOD1(OnError, void(AudioInputController::ErrorCode error_code));
+  MOCK_METHOD1(OnLog, void(base::StringPiece));
+  MOCK_METHOD1(OnMuted, void(bool is_muted));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAudioInputControllerEventHandler);
@@ -153,8 +149,8 @@ TEST_F(AudioInputControllerTest, CreateAndClose) {
       audio_manager_.get(), &event_handler, &sync_writer, &user_input_monitor_,
       params, AudioDeviceDescription::kDefaultDeviceId, false);
   ASSERT_TRUE(controller.get());
-  EXPECT_CALL(event_handler, OnCreated(controller.get(), _)).Times(Exactly(1));
-  EXPECT_CALL(event_handler, OnLog(controller.get(), _)).Times(Exactly(3));
+  EXPECT_CALL(event_handler, OnCreated(_)).Times(Exactly(1));
+  EXPECT_CALL(event_handler, OnLog(_)).Times(Exactly(3));
   EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
   ResumeAudioThread();
 
@@ -168,8 +164,7 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
   int count = 0;
 
   // OnCreated() will be called once.
-  EXPECT_CALL(event_handler, OnCreated(NotNull(), _))
-      .Times(Exactly(1));
+  EXPECT_CALL(event_handler, OnCreated(_)).Times(Exactly(1));
 
   // Write() should be called ten times.
   EXPECT_CALL(sync_writer, Write(NotNull(), _, _, _))
@@ -177,7 +172,7 @@ TEST_F(AudioInputControllerTest, RecordAndClose) {
       .WillRepeatedly(
           CheckCountAndPostQuitTask(&count, 10, message_loop_.task_runner()));
 
-  EXPECT_CALL(event_handler, OnLog(_, _)).Times(AnyNumber());
+  EXPECT_CALL(event_handler, OnLog(_)).Times(AnyNumber());
   EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
   EXPECT_CALL(user_input_monitor_, StartKeyboardMonitoring()).Times(Exactly(1));
 
@@ -206,7 +201,7 @@ TEST_F(AudioInputControllerTest, SamplesPerPacketTooLarge) {
   MockSyncWriter sync_writer;
 
   // OnCreated() shall not be called in this test.
-  EXPECT_CALL(event_handler, OnCreated(NotNull(), _)).Times(Exactly(0));
+  EXPECT_CALL(event_handler, OnCreated(_)).Times(Exactly(0));
 
   AudioParameters params(AudioParameters::AUDIO_FAKE,
                          kChannelLayout,
@@ -225,8 +220,8 @@ TEST_F(AudioInputControllerTest, CloseTwice) {
   MockSyncWriter sync_writer;
 
   // OnCreated() will be called only once.
-  EXPECT_CALL(event_handler, OnCreated(NotNull(), _)).Times(Exactly(1));
-  EXPECT_CALL(event_handler, OnLog(_, _)).Times(AnyNumber());
+  EXPECT_CALL(event_handler, OnCreated(_)).Times(Exactly(1));
+  EXPECT_CALL(event_handler, OnLog(_)).Times(AnyNumber());
   // This callback should still only be called once.
   EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
 
@@ -272,14 +267,17 @@ TEST_F(AudioInputControllerTest, TestOnmutedCallbackInitiallyUnmuted) {
   base::RunLoop unmute_run_loop;
   base::RunLoop mute_run_loop;
   base::RunLoop setup_run_loop;
-  EXPECT_CALL(event_handler, OnCreated(_, false))
-      .WillOnce(InvokeWithoutArgs([&] { setup_run_loop.QuitWhenIdle(); }));
-  EXPECT_CALL(event_handler, OnLog(_, _)).Times(Exactly(3));
+  EXPECT_CALL(event_handler, OnCreated(false)).WillOnce(InvokeWithoutArgs([&] {
+    setup_run_loop.QuitWhenIdle();
+  }));
+  EXPECT_CALL(event_handler, OnLog(_)).Times(Exactly(3));
   EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
-  EXPECT_CALL(event_handler, OnMuted(_, true))
-      .WillOnce(InvokeWithoutArgs([&] { mute_run_loop.Quit(); }));
-  EXPECT_CALL(event_handler, OnMuted(_, false))
-      .WillOnce(InvokeWithoutArgs([&] { unmute_run_loop.Quit(); }));
+  EXPECT_CALL(event_handler, OnMuted(true)).WillOnce(InvokeWithoutArgs([&] {
+    mute_run_loop.Quit();
+  }));
+  EXPECT_CALL(event_handler, OnMuted(false)).WillOnce(InvokeWithoutArgs([&] {
+    unmute_run_loop.Quit();
+  }));
 
   FakeAudioInputStream::SetGlobalMutedState(false);
   controller = AudioInputController::Create(
@@ -309,12 +307,14 @@ TEST_F(AudioInputControllerTest, TestOnmutedCallbackInitiallyMuted) {
 
   base::RunLoop unmute_run_loop;
   base::RunLoop setup_run_loop;
-  EXPECT_CALL(event_handler, OnCreated(_, true))
-      .WillOnce(InvokeWithoutArgs([&] { setup_run_loop.QuitWhenIdle(); }));
-  EXPECT_CALL(event_handler, OnLog(_, _)).Times(Exactly(3));
+  EXPECT_CALL(event_handler, OnCreated(true)).WillOnce(InvokeWithoutArgs([&] {
+    setup_run_loop.QuitWhenIdle();
+  }));
+  EXPECT_CALL(event_handler, OnLog(_)).Times(Exactly(3));
   EXPECT_CALL(sync_writer, Close()).Times(Exactly(1));
-  EXPECT_CALL(event_handler, OnMuted(_, false))
-      .WillOnce(InvokeWithoutArgs([&] { unmute_run_loop.Quit(); }));
+  EXPECT_CALL(event_handler, OnMuted(false)).WillOnce(InvokeWithoutArgs([&] {
+    unmute_run_loop.Quit();
+  }));
 
   FakeAudioInputStream::SetGlobalMutedState(true);
   controller = AudioInputController::Create(

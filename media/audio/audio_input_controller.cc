@@ -301,7 +301,7 @@ void AudioInputController::DoCreate(AudioManager* audio_manager,
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!stream_);
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioInputController.CreateTime");
-  handler_->OnLog(this, "AIC::DoCreate");
+  handler_->OnLog("AIC::DoCreate");
 
 #if defined(AUDIO_POWER_MONITORING)
   // We only do power measurements for UMA stats for low latency streams, and
@@ -324,18 +324,18 @@ void AudioInputController::DoCreateForStream(
     bool enable_agc) {
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!stream_);
-  handler_->OnLog(this, "AIC::DoCreateForStream");
+  handler_->OnLog("AIC::DoCreateForStream");
 
   if (!stream_to_control) {
     LogCaptureStartupResult(CAPTURE_STARTUP_CREATE_STREAM_FAILED);
-    handler_->OnError(this, STREAM_CREATE_ERROR);
+    handler_->OnError(STREAM_CREATE_ERROR);
     return;
   }
 
   if (!stream_to_control->Open()) {
     stream_to_control->Close();
     LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
-    handler_->OnError(this, STREAM_OPEN_ERROR);
+    handler_->OnError(STREAM_OPEN_ERROR);
     return;
   }
 
@@ -356,7 +356,7 @@ void AudioInputController::DoCreateForStream(
 
   // Send initial muted state along with OnCreated, to avoid races.
   is_muted_ = stream_->IsMuted();
-  handler_->OnCreated(this, is_muted_);
+  handler_->OnCreated(is_muted_);
 
   check_muted_state_timer_.Start(
       FROM_HERE, base::TimeDelta::FromSeconds(kCheckMutedStateIntervalSeconds),
@@ -371,7 +371,7 @@ void AudioInputController::DoRecord() {
   if (!stream_ || audio_callback_)
     return;
 
-  handler_->OnLog(this, "AIC::DoRecord");
+  handler_->OnLog("AIC::DoRecord");
 
   if (user_input_monitor_) {
     user_input_monitor_->EnableKeyPressMonitoring();
@@ -437,7 +437,7 @@ void AudioInputController::DoClose() {
         base::StringPrintf("%s recording never started", kLogStringPrefix);
   }
 
-  handler_->OnLog(this, log_string);
+  handler_->OnLog(log_string);
 
   stream_->Close();
   stream_ = nullptr;
@@ -456,7 +456,7 @@ void AudioInputController::DoClose() {
 
 void AudioInputController::DoReportError() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  handler_->OnError(this, STREAM_ERROR);
+  handler_->OnError(STREAM_ERROR);
 }
 
 void AudioInputController::DoSetVolume(double volume) {
@@ -494,7 +494,7 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
   const bool microphone_is_muted = stream_->IsMuted();
   if (microphone_is_muted) {
     LogMicrophoneMuteResult(MICROPHONE_IS_MUTED);
-    handler_->OnLog(this, "AIC::OnData: microphone is muted!");
+    handler_->OnLog("AIC::OnData: microphone is muted!");
     // Return early if microphone is muted. No need to adding logs and UMA stats
     // of audio levels if we know that the micropone is muted.
     return;
@@ -507,7 +507,7 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
   static const float kSilenceThresholdDBFS = -72.24719896f;
   if (level_dbfs < kSilenceThresholdDBFS)
     log_string += " <=> low audio input level!";
-  handler_->OnLog(this, log_string);
+  handler_->OnLog(log_string);
 
   UpdateSilenceState(level_dbfs < kSilenceThresholdDBFS);
 
@@ -516,7 +516,7 @@ void AudioInputController::DoLogAudioLevels(float level_dbfs,
       "AIC::OnData: microphone volume=%d%%", microphone_volume_percent);
   if (microphone_volume_percent < kLowLevelMicrophoneLevelPercent)
     log_string += " <=> low microphone level!";
-  handler_->OnLog(this, log_string);
+  handler_->OnLog(log_string);
 #endif
 }
 
@@ -592,7 +592,7 @@ void AudioInputController::LogCallbackError() {
 
 void AudioInputController::LogMessage(const std::string& message) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  handler_->OnLog(this, message);
+  handler_->OnLog(message);
 }
 
 bool AudioInputController::CheckForKeyboardInput() {
@@ -643,7 +643,7 @@ void AudioInputController::CheckMutedState() {
   if (new_state != is_muted_) {
     is_muted_ = new_state;
     // We don't log OnMuted here, but leave that for AudioInputRendererHost.
-    handler_->OnMuted(this, is_muted_);
+    handler_->OnMuted(is_muted_);
   }
 }
 
