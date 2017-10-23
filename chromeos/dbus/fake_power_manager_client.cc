@@ -60,7 +60,13 @@ void FakePowerManagerClient::SetScreenBrightnessPercent(double percent,
                                                         bool gradual) {}
 
 void FakePowerManagerClient::GetScreenBrightnessPercent(
-    const GetScreenBrightnessPercentCallback& callback) {}
+    const GetScreenBrightnessPercentCallback& callback) {
+  if (screen_brightness_percent_.has_value()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(callback, screen_brightness_percent_.value()));
+  }
+}
 
 void FakePowerManagerClient::DecreaseKeyboardBrightness() {}
 

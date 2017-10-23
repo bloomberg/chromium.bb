@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
@@ -111,6 +112,13 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   // lock has been created.
   void SetPowerPolicyQuitClosure(base::OnceClosure quit_closure);
 
+  // Sets the screen brightness percent to be returned.
+  // The nullopt |percent| means an error. In case of success,
+  // |percent| must be in the range of [0, 100].
+  void set_screen_brightness_percent(const base::Optional<double>& percent) {
+    screen_brightness_percent_ = percent;
+  }
+
  private:
   // Callback that will be run by asynchronous suspend delays to report
   // readiness.
@@ -136,6 +144,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
 
   // Number of pending suspend readiness callbacks.
   int num_pending_suspend_readiness_callbacks_ = 0;
+
+  // The ratio of the screen brightness.
+  base::Optional<double> screen_brightness_percent_;
 
   // Last projecting state set in SetIsProjecting().
   bool is_projecting_ = false;
