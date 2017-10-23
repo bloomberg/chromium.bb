@@ -11,3 +11,5 @@ class HardwareAcceleratedFeatureExpectations(GpuTestExpectations):
     # Accelerated 2D canvas is not available on Linux due to driver instability
     self.Fail('HardwareAcceleratedFeature_canvas_accelerated',
         ['linux'], bug=254724)
+    self.Fail('HardwareAcceleratedFeature_canvas_accelerated',
+        ['highsierra', 'nvidia'], bug=777590)
