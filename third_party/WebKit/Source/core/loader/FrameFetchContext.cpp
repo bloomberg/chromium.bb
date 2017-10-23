@@ -621,25 +621,10 @@ bool FrameFetchContext::ShouldLoadNewResource(Resource::Type type) const {
   return document_loader_ == loader.GetDocumentLoader();
 }
 
-static std::unique_ptr<TracedValue>
-LoadResourceTraceData(unsigned long identifier, const KURL& url, int priority) {
-  String request_id = IdentifiersFactory::RequestId(identifier);
-
-  std::unique_ptr<TracedValue> value = TracedValue::Create();
-  value->SetString("requestId", request_id);
-  value->SetString("url", url.GetString());
-  value->SetInteger("priority", priority);
-  return value;
-}
-
 void FrameFetchContext::RecordLoadingActivity(
-    unsigned long identifier,
     const ResourceRequest& request,
     Resource::Type type,
     const AtomicString& fetch_initiator_name) {
-  TRACE_EVENT_ASYNC_BEGIN1(
-      "blink.net", "Resource", identifier, "data",
-      LoadResourceTraceData(identifier, request.Url(), request.Priority()));
   if (!document_loader_ || document_loader_->Fetcher()->Archive() ||
       !request.Url().IsValid())
     return;

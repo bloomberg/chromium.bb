@@ -670,7 +670,7 @@ Resource* ResourceFetcher::RequestResource(
 
   if (!params.IsSpeculativePreload()) {
     // Only log if it's not for speculative preload.
-    Context().RecordLoadingActivity(identifier, resource_request, resource_type,
+    Context().RecordLoadingActivity(resource_request, resource_type,
                                     params.Options().initiator_info.name);
   }
 
