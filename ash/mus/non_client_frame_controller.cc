@@ -82,7 +82,9 @@ class ImmersiveFullscreenControllerDelegateMus
  public:
   ImmersiveFullscreenControllerDelegateMus(views::Widget* frame,
                                            aura::Window* frame_window)
-      : frame_(frame), frame_window_(frame_window) {}
+      : frame_(frame), frame_window_(frame_window) {
+    LOG(ERROR) << "~~~ImmersiveFullscreenControllerDelegateMus is created!";
+  }
   ~ImmersiveFullscreenControllerDelegateMus() override {
     DestroyTitleAreaWindow();
   }
@@ -128,6 +130,9 @@ class ImmersiveFullscreenControllerDelegateMus
   void CreateTitleAreaWindow() {
     if (GetTitleAreaWindow())
       return;
+    LOG(ERROR) << "~~~CreateTitleAreaWindow";
+    base::debug::StackTrace st;
+    LOG(ERROR) << st.ToString();
 
     // TODO(sky): bounds aren't right here. Need to convert to display.
     gfx::Rect bounds = frame_window_->bounds();
