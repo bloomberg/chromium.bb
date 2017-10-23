@@ -43,6 +43,7 @@ crbug.com/755625 external/wpt/beacon/beacon-error.window.html [ Leak ]
 # Flakily leaks
 # -----------------------------------------------------------------
 crbug.com/762353 external/wpt/beacon/headers/header-referrer-no-referrer.html [ Leak Pass ]
+crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-beacon-allowed.sub.html [ Leak Pass ]
 
 # -----------------------------------------------------------------
 # Not revert suspected CL as jam@ request, expected to be fixed soon.

@@ -3693,4 +3693,3 @@ crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation
 crbug.com/777222 virtual/mojo-loading/http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
 crbug.com/777222 virtual/mojo-loading/http/tests/devtools/import-open-inspector.js [ Pass Failure Timeout ]
 crbug.com/777222 virtual/mojo-loading/http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
-crbug.com/651742 external/wpt/content-security-policy/connect-src/connect-src-beacon-allowed.sub.html [ Pass Failure ]
