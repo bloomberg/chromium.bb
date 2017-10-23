@@ -1921,19 +1921,6 @@ void UserSessionManager::RunCallbackOnLocaleLoaded(
   callback.Run();
 }
 
-// static
-bool UserSessionManager::NeedRestartToApplyPerSessionFlagsForProfile(
-    const Profile* profile) {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kLoginUser))
-    return false;
-
-  const base::CommandLine user_flags(
-      CreatePerSessionCommandLine(const_cast<Profile*>(profile)));
-  std::set<base::CommandLine::StringType> command_line_difference;
-  return NeedRestartToApplyPerSessionFlags(user_flags,
-                                           &command_line_difference);
-}
-
 void UserSessionManager::RemoveProfileForTesting(Profile* profile) {
   default_ime_states_.erase(profile);
 }
