@@ -100,8 +100,10 @@
                     "name": "Tracking",
                     "params": {
                         "availability": "any",
-                        "event_trigger": "name:chrome_home_menu_header_iph_trigger;comparator:any;window:680;storage:680",
-                        "event_used": "name:chrome_home_menu_header_clicked;comparator:any;window:680;storage:680",
+                        "event_1": "name:bottom_sheet_expanded;comparator:<50;window:680;storage:680",
+                        "event_3": "name:chrome_home_non_home_content_shown;comparator:<20;window:680;storage:680",
+                        "event_trigger": "name:chrome_home_menu_header_iph_trigger;comparator:<100;window:680;storage:680",
+                        "event_used": "name:chrome_home_menu_header_clicked;comparator:<20;window:680;storage:680",
                         "session_rate": "any",
                         "session_rate_impact": "none"
                     },

@@ -16,7 +16,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -31,14 +30,13 @@ import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.third_party.android.datausagechart.ChartDataUsageView;
 
 /**
- * Specific {@link LinearLayout} that is displays the data savings of Data Saver in the main menu
- * footer.
+ * Specific {@link FrameLayout} that displays the data savings of Data Saver in the main menu.
  */
-public class DataReductionMainMenuFooter extends FrameLayout implements View.OnClickListener {
+public class DataReductionMainMenuItem extends FrameLayout implements View.OnClickListener {
     /**
-     * Constructs a new {@link DataReductionMainMenuFooter} with the appropriate context.
+     * Constructs a new {@link DataReductionMainMenuItem} with the appropriate context.
      */
-    public DataReductionMainMenuFooter(Context context, AttributeSet attrs) {
+    public DataReductionMainMenuItem(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 

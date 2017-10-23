@@ -24,6 +24,7 @@ import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.KeyboardShortcutGroup;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -124,7 +125,9 @@ import org.chromium.chrome.browser.widget.OverviewListLayout;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
+import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomeIphMenuHeader;
 import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomePromoDialog;
+import org.chromium.chrome.browser.widget.bottomsheet.ChromeHomePromoMenuHeader;
 import org.chromium.chrome.browser.widget.emptybackground.EmptyBackgroundViewWrapper;
 import org.chromium.chrome.browser.widget.textbubble.ViewAnchoredTextBubble;
 import org.chromium.components.feature_engagement.EventConstants;
@@ -1591,7 +1594,7 @@ public class ChromeTabbedActivity
     @Override
     protected AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new AppMenuPropertiesDelegate(this) {
-            private boolean mDismissChromeHomeIPHOnMenuDismissed;
+            private ChromeHomeIphMenuHeader mChromeHomeIphMenuHeader;
 
             private boolean showDataSaverFooter() {
                 return getBottomSheet() == null
@@ -1603,11 +1606,9 @@ public class ChromeTabbedActivity
             public void onMenuDismissed() {
                 super.onMenuDismissed();
 
-                if (mDismissChromeHomeIPHOnMenuDismissed) {
-                    Tracker tracker =
-                            TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                    tracker.dismissed(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE);
-                    mDismissChromeHomeIPHOnMenuDismissed = false;
+                if (mChromeHomeIphMenuHeader != null) {
+                    mChromeHomeIphMenuHeader.onMenuDismissed();
+                    mChromeHomeIphMenuHeader = null;
                 }
             }
 
@@ -1618,60 +1619,55 @@ public class ChromeTabbedActivity
                     return R.layout.icon_row_menu_footer;
                 }
 
-                return showDataSaverFooter() ? R.layout.data_reduction_main_menu_footer : 0;
+                return showDataSaverFooter() ? R.layout.data_reduction_main_menu_item : 0;
             }
 
             @Override
-            public int getHeaderResourceId() {
+            public View getHeaderView() {
+                // Return early if Chrome Home is not enabled or the menu being shown isn't
+                // for a web page.
                 if (getBottomSheet() == null
                         || !getAppMenuPropertiesDelegate().shouldShowPageMenu()) {
-                    return 0;
+                    return null;
                 }
 
+                LayoutInflater inflater = LayoutInflater.from(ChromeTabbedActivity.this);
+
+                // Show the Chrome Home promo header if available.
                 if (ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
-                    return R.layout.chrome_home_promo_header;
+                    ChromeHomePromoMenuHeader menuHeader =
+                            (ChromeHomePromoMenuHeader) inflater.inflate(
+                                    R.layout.chrome_home_promo_header, null);
+                    menuHeader.initialize(ChromeTabbedActivity.this);
+                    return menuHeader;
                 }
 
-                if (mControlContainer.getVisibility() == View.VISIBLE
-                        && !getBottomSheet().isSheetOpen()) {
-                    Tracker tracker =
-                            TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                    if (tracker.shouldTriggerHelpUI(
-                                FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
-                        mDismissChromeHomeIPHOnMenuDismissed = true;
-                        return R.layout.chrome_home_iph_header;
-                    }
+                // Return early if the conditions aren't right to show the Chrome Home IPH menu
+                // header.
+                if (mControlContainer.getVisibility() != View.VISIBLE
+                        || getBottomSheet().isSheetOpen()) {
+                    return null;
                 }
 
-                return 0;
-            }
+                // Show the Chrome Home menu header if the Tracker allows it.
+                Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
+                if (tracker.shouldTriggerHelpUI(FeatureConstants.CHROME_HOME_MENU_HEADER_FEATURE)) {
+                    mChromeHomeIphMenuHeader = (ChromeHomeIphMenuHeader) inflater.inflate(
+                            R.layout.chrome_home_iph_header, null);
+                    mChromeHomeIphMenuHeader.initialize(ChromeTabbedActivity.this);
+                    return mChromeHomeIphMenuHeader;
+                }
 
-            @Override
-            public OnClickListener getHeaderOnClickListener() {
-                return new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if (getBottomSheet() != null
-                                && ChromeFeatureList.isEnabled(
-                                           ChromeFeatureList.CHROME_HOME_PROMO)) {
-                            new ChromeHomePromoDialog(ChromeTabbedActivity.this,
-                                    ChromeHomePromoDialog.ShowReason.MENU)
-                                    .show();
-                            return;
-                        }
-
-                        mDismissChromeHomeIPHOnMenuDismissed = false;
-
-                        Tracker tracker =
-                                TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
-                        tracker.notifyEvent(EventConstants.CHROME_HOME_MENU_HEADER_CLICKED);
-
-                        getBottomSheet()
-                                .getBottomSheetMetrics()
-                                .recordInProductHelpMenuItemClicked();
-                        getBottomSheet().showHelpBubble(true);
-                    }
-                };
+                // TODO(twellington): A new API method is being added to the feature engagement
+                //                    system that will allow us to determine if the configuration
+                //                    criteria for showing the IPH menu header is met without
+                //                    calling #shouldTriggerHelpUI (which requires showing the IPH
+                //                    if the method returns true). Once the new API is ready, hook
+                //                    into that to determine if the data reduction header should be
+                //                    be shown. See crbug.com/776007.
+                return DataReductionProxySettings.getInstance().shouldUseDataReductionMainMenuItem()
+                        ? inflater.inflate(R.layout.data_reduction_main_menu_item, null)
+                        : null;
             }
 
             @Override

@@ -105,7 +105,7 @@ public class DataSaverAppMenuTest {
             // Turn Data Saver on, the footer should show.
             DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                     mActivityTestRule.getActivity().getApplicationContext(), true);
-            Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
+            Assert.assertEquals(R.layout.data_reduction_main_menu_item,
                     mAppMenuHandler.getDelegate().getFooterResourceId());
 
             // Ensure the footer is removed if the proxy is turned off.
@@ -136,13 +136,13 @@ public class DataSaverAppMenuTest {
             // Turn Data Saver on, the footer should show.
             DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                     mActivityTestRule.getActivity().getApplicationContext(), true);
-            Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
+            Assert.assertEquals(R.layout.data_reduction_main_menu_item,
                     mAppMenuHandler.getDelegate().getFooterResourceId());
 
             // Ensure the footer remains if the proxy is turned off.
             DataReductionProxySettings.getInstance().setDataReductionProxyEnabled(
                     mActivityTestRule.getActivity().getApplicationContext(), false);
-            Assert.assertEquals(R.layout.data_reduction_main_menu_footer,
+            Assert.assertEquals(R.layout.data_reduction_main_menu_item,
                     mAppMenuHandler.getDelegate().getFooterResourceId());
         });
     }
