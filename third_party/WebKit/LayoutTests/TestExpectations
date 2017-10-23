@@ -3694,7 +3694,7 @@ crbug.com/777222 http/tests/devtools/startup/console-log-before-frame-navigation
 crbug.com/777222 virtual/mojo-loading/http/tests/devtools/change-iframe-src.js [ Pass Failure Timeout ]
 crbug.com/777222 virtual/mojo-loading/http/tests/devtools/import-open-inspector.js [ Pass Failure Timeout ]
 crbug.com/777222 virtual/mojo-loading/http/tests/devtools/inspect-iframe-from-different-domain.js [ Pass Failure Timeout ]
-crbug.com/777259 [ Win7 ] fast/reflections/reflection-masks-outset.html [ Pass Failure ]
+crbug.com/777259 fast/reflections/reflection-masks-outset.html [ Pass Failure ]
 
 crbug.com/776107 crbug.com/769323 media/controls/captions-menu-always-visible.html [ Pass Failure ]
 crbug.com/776107 crbug.com/769323 media/controls/overflow-menu-always-visible.html [ Pass Failure ]
