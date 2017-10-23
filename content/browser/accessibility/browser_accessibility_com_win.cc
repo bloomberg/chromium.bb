@@ -1714,30 +1714,10 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
   std::map<int, std::vector<base::string16>> attributes_map;
   if (owner()->PlatformIsLeaf() || owner()->IsSimpleTextControl()) {
     attributes_map[0] = ComputeTextAttributes();
-    std::map<int, std::vector<base::string16>> spelling_attributes =
+    const std::map<int, std::vector<base::string16>> spelling_attributes =
         GetSpellingAttributes();
-    for (auto& spelling_attribute : spelling_attributes) {
-      auto attributes_iterator = attributes_map.find(spelling_attribute.first);
-      if (attributes_iterator == attributes_map.end()) {
-        attributes_map[spelling_attribute.first] =
-            std::move(spelling_attribute.second);
-      } else {
-        std::vector<base::string16>& existing_attributes =
-            attributes_iterator->second;
-
-        // There might be a spelling attribute already in the list of text
-        // attributes, originating from "aria-invalid".
-        auto existing_spelling_attribute =
-            std::find(existing_attributes.begin(), existing_attributes.end(),
-                      L"invalid:false");
-        if (existing_spelling_attribute != existing_attributes.end())
-          existing_attributes.erase(existing_spelling_attribute);
-
-        existing_attributes.insert(existing_attributes.end(),
-                                   spelling_attribute.second.begin(),
-                                   spelling_attribute.second.end());
-      }
-    }
+    MergeSpellingIntoTextAttributes(spelling_attributes, 0 /* start_offset */,
+                                    &attributes_map);
     win_attributes_->offset_to_text_attributes.swap(attributes_map);
     return;
   }
@@ -1761,10 +1741,15 @@ void BrowserAccessibilityComWin::ComputeStylesIfNeeded() {
       }
     }
 
-    if (child->owner()->IsTextOnlyObject())
+    if (child->owner()->IsTextOnlyObject()) {
+      const std::map<int, std::vector<base::string16>> spelling_attributes =
+          child->GetSpellingAttributes();
+      MergeSpellingIntoTextAttributes(spelling_attributes, start_offset,
+                                      &attributes_map);
       start_offset += child->GetText().length();
-    else
+    } else {
       start_offset += 1;
+    }
   }
 
   win_attributes_->offset_to_text_attributes.swap(attributes_map);
@@ -2209,6 +2194,39 @@ HRESULT BrowserAccessibilityComWin::GetStringAttributeAsBstr(
   DCHECK(*value_bstr);
 
   return S_OK;
+}
+
+// static
+void BrowserAccessibilityComWin::MergeSpellingIntoTextAttributes(
+    const std::map<int, std::vector<base::string16>>& spelling_attributes,
+    int start_offset,
+    std::map<int, std::vector<base::string16>>* text_attributes) {
+  if (!text_attributes) {
+    NOTREACHED();
+    return;
+  }
+
+  for (const auto& spelling_attribute : spelling_attributes) {
+    int offset = start_offset + spelling_attribute.first;
+    const auto iterator = text_attributes->find(offset);
+    if (iterator == text_attributes->end()) {
+      text_attributes->emplace(offset, spelling_attribute.second);
+    } else {
+      std::vector<base::string16>& existing_attributes = iterator->second;
+      // There might be a spelling attribute already in the list of text
+      // attributes, originating from "aria-invalid", that is being overwritten
+      // by a spelling marker.
+      auto existing_spelling_attribute =
+          std::find(existing_attributes.begin(), existing_attributes.end(),
+                    L"invalid:false");
+      if (existing_spelling_attribute != existing_attributes.end())
+        existing_attributes.erase(existing_spelling_attribute);
+
+      existing_attributes.insert(existing_attributes.end(),
+                                 spelling_attribute.second.begin(),
+                                 spelling_attribute.second.end());
+    }
+  }
 }
 
 // Static
