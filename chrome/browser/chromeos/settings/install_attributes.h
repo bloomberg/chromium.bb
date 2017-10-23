@@ -206,10 +206,10 @@ class InstallAttributes {
   // errors (cryptohomed startup is slow).
   void TriggerConsistencyCheck(int dbus_retries);
 
-  // Callback for TpmIsOwned() DBUS call.  Generates UMA or schedules retry in
-  // case of DBUS error.
-  void OnTpmOwnerCheckCompleted(int dbus_retries_remaining,
-                                base::Optional<bool> response);
+  // Callback for TpmGetPassword() DBUS call.  Generates UMA or schedules retry
+  // in case of DBUS error.
+  void OnTpmGetPasswordCompleted(int dbus_retries_remaining,
+                                 base::Optional<std::string> result);
 
   CryptohomeClient* cryptohome_client_;
 
