@@ -19,7 +19,7 @@ XMLParserScriptRunner::~XMLParserScriptRunner() {
   DCHECK(!parser_blocking_script_);
 }
 
-DEFINE_TRACE(XMLParserScriptRunner) {
+void XMLParserScriptRunner::Trace(Visitor* visitor) {
   visitor->Trace(parser_blocking_script_);
   visitor->Trace(script_element_);
   visitor->Trace(host_);

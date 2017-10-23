@@ -118,17 +118,20 @@ The tracing method of a garbage-collected class, if any, must contain a delegati
 
 ```c++
 class P : public GarbageCollectedMixin {
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(m_q); } // OK, needs to trace m_q.
-private:
-    Member<Q> m_q; // OK, allowed to have Member<T>.
+ public:
+  // OK, needs to trace q_.
+  virtual void Trace(Visitor* visitor) { visitor->Trace(q_); }
+ private:
+  // OK, allowed to have Member<T>.
+  Member<Q> q_;
 };
 
 class A : public GarbageCollected<A>, public P {
-    USING_GARBAGE_COLLECTED_MIXIN(A);
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE() { ...; P::trace(visitor); } // Delegating call for P is needed.
-    ...
+  USING_GARBAGE_COLLECTED_MIXIN(A);
+ public:
+  // Delegating call for P is needed.
+  virtual void Trace(Visitor* visitor) { ...; P::Trace(visitor); }
+  ...
 };
 ```
 
@@ -221,7 +224,7 @@ any pre-finalized objects. Choose the one you think best fits your need for prom
 
 Class level annotation that should be used if the object is only stack allocated; it disallows use
 of `operator new`. Any garbage-collected objects should be kept as `Member<T>` references, but you do not
-need to define a `trace()` method as they are on the stack, and automatically traced and kept alive should
+need to define a `Trace()` method as they are on the stack, and automatically traced and kept alive should
 a conservative GC be required.
 
 Classes with this annotation do not need a `Trace()` method, and should not inherit a garbage collected class.
@@ -229,7 +232,7 @@ Classes with this annotation do not need a `Trace()` method, and should not inhe
 ### DISALLOW_NEW()
 
 Class-level annotation declaring the class a part object that cannot be separately allocated using `operator new`.
-If the class has `Member<T>` references, you need a `trace()` method which the object containing the `DISALLOW_NEW()`
+If the class has `Member<T>` references, you need a `Trace()` method which the object containing the `DISALLOW_NEW()`
 part object must call upon. The clang Blink GC plugin checks and enforces this.
 
 Classes with this annotation need a `Trace()` method, but should not inherit a garbage collected class.
@@ -238,7 +241,7 @@ Classes with this annotation need a `Trace()` method, but should not inherit a g
 
 Class-level annotation allowing only the use of the placement `new` operator. This disallows general allocation of the
 object but allows putting the object as a value object in collections.  If the class has `Member<T>` references,
-you need to declare a `trace()` method. That trace method will be called automatically by the on-heap collections.
+you need to declare a `Trace()` method. That trace method will be called automatically by the on-heap collections.
 
 Classes with this annotation need a `Trace()` method, but should not inherit a garbage collected class.
 
@@ -343,73 +346,64 @@ The basic form of tracing is illustrated below:
 
 ```c++
 // In a header file:
-class SomeGarbageCollectedClass : public GarbageCollected<SomeGarbageCollectedClass> {
-public:
-    DECLARE_TRACE();
+class SomeGarbageCollectedClass
+    : public GarbageCollected<SomeGarbageCollectedClass> {
+ public:
+  void Trace(Visitor*);
 
 private:
-    Member<AnotherGarbageCollectedClass> m_another;
+  Member<AnotherGarbageCollectedClass> another_;
 };
 
 // In an implementation file:
-DEFINE_TRACE(SomeGarbageCollectedClass)
-{
-    visitor->trace(m_another);
+void SomeGarbageCollectedClass::Trace(Visitor* visitor) {
+  visitor->Trace(another_);
 }
 ```
 
-Specifically, if your class needs a tracing method, you need to:
-
-*   Declare a tracing method in your class declaration, using the `DECLARE_TRACE()` macro; and
-*   Define a tracing method in your implementation file, using the `DEFINE_TRACE(ClassName)` macro.
+Specifically, if your class needs a tracing method, you need to declare and
+define a `Trace(Visitor*)` method. This method is normally declared in the
+header file and defined once in the implementation file, but there are
+variations. Another common variation is to declare a virtual `Trace()` for base
+classes that will be subclassed.
 
 The function implementation must contain:
 
-*   For each on-heap object `m_object` in your class, a tracing call: "```visitor->trace(m_object);```".
+*   For each on-heap object `object` in your class, a tracing call: `visitor->Trace(object_);`.
 *   If your class has one or more weak references (`WeakMember<T>`), you have the option of
     registering a *weak callback* for the object. See details below for how.
 *   For each base class of your class `BaseClass` that is a descendant of `GarbageCollected<T>` or
-    `GarbageCollectedMixin`, a delegation call to base class: "```BaseClass::trace(visitor);```"
+    `GarbageCollectedMixin`, a delegation call to base class: `BaseClass::Trace(visitor);`"
 
 It is recommended that the delegation call, if any, is put at the end of a tracing method.
-
-If you want to define your tracing method inline or need to have your tracing method polymorphic, you can use the
-following variants of the tracing macros:
-
-*   "```DECLARE_VIRTUAL_TRACE();```" in a class declaration makes the method ```virtual```. Use
-    "```DEFINE_TRACE(ClassName) { ... }```" in the implementation file to define.
-*   "```DEFINE_INLINE_TRACE() { ... }```" in a class declaration lets you define the method inline. If you use this,
-    you may not write "```DEFINE_TRACE(ClassName) { ... }```" in your implementation file.
-*   "```DEFINE_INLINE_VIRTUAL_TRACE() { ... }```" in a class declaration does both of the above.
 
 The following example shows more involved usage:
 
 ```c++
 class A : public GarbageCollected<A> {
-public:
-    DEFINE_INLINE_VIRTUAL_TRACE() { } // Nothing to trace here. Just to declare a virtual method.
+ public:
+  virtual void Trace(Visitor*) { } // Nothing to trace here.
 };
 
 class B : public A {
-    // Nothing to trace here; exempted from having a tracing method.
+  // Nothing to trace here; exempted from having a tracing method.
 };
 
 class C : public B {
-public:
-    DECLARE_VIRTUAL_TRACE();
+ public:
+  void Trace(Visitor*) override;
 
-private:
-    Member<X> m_x;
-    WeakMember<Y> m_y;
-    HeapVector<Member<Z>> m_z;
+ private:
+  Member<X> x_;
+  WeakMember<Y> y_;
+  HeapVector<Member<Z>> z_;
 };
 
-DEFINE_TRACE(C)
-{
-    visitor->trace(m_x);
-    visitor->trace(m_y); // Weak member needs to be traced.
-    visitor->trace(m_z); // Heap collection does, too.
-    B::trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
+void C::Trace(Visitor* visitor) {
+    visitor->Trace(x_);
+    visitor->Trace(y_); // Weak member needs to be traced.
+    visitor->Trace(z_); // Heap collection does, too.
+    B::Trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
 }
 ```
 
@@ -419,33 +413,32 @@ phase:
 
 ```c++
 
-void C::clearWeakMembers(Visitor* visitor)
+void C::ClearWeakMembers(Visitor* visitor)
 {
-    if (ThreadHeap::isHeapObjectAlive(m_y))
+    if (ThreadHeap::isHeapObjectAlive(y_))
         return;
 
     // |m_y| is not referred to by anyone else, clear the weak
     // reference along with updating state / clearing any other
     // resources at the same time. None of those operations are
     // allowed to perform heap allocations:
-    m_y->detach();
+    y_->detach();
 
     // Note: if the weak callback merely clears the weak reference,
     // it is much simpler to just |trace| the field rather than
     // install a custom weak callback.
-    m_y = nullptr;
+    y_ = nullptr;
 }
 
-DEFINE_TRACE(C)
-{
-    visitor->template registerWeakMembers<C, &C::clearWeakMembers>(this);
-    visitor->trace(m_x);
-    visitor->trace(m_z); // Heap collection does, too.
-    B::trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
+void C::Trace(Visitor* visitor) {
+    visitor->template registerWeakMembers<C, &C::ClearWeakMembers>(this);
+    visitor->Trace(x_);
+    visitor->Trace(z_); // Heap collection does, too.
+    B::Trace(visitor); // Delegate to the parent. In this case it's empty, but this is required.
 }
 ```
 
-Please notice that if the object (of type `C`) is also not reachable, its `trace` method
+Please notice that if the object (of type `C`) is also not reachable, its `Trace` method
 will not be invoked and any follow-on weak processing will not be done. Hence, if the
 object must always perform some operation when the weak reference is cleared, that
 needs to (also) happen during finalization.
@@ -472,10 +465,10 @@ Heap collections are special in that the types themselves do not inherit from Ga
 
 ```c++
 class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass> {
-public:
-    DEFINE_INLINE_TRACE() { visitor->trace(m_list); }
-private:
-    HeapVector<Member<AnotherGarbageCollectedClass>> m_list;
+ public:
+  void Trace(Visitor* visitor) { visitor->Trace(list_); }
+ private:
+  HeapVector<Member<AnotherGarbageCollectedClass>> list_;
 };
 ```
 
@@ -483,8 +476,8 @@ When you want to add a heap collection as a member of a non-garbage-collected cl
 
 ```c++
 class MyNotGarbageCollectedClass {
-private:
-    PersistentHeapVector<Member<MyGarbageCollectedClass>> m_list;
+ private:
+  PersistentHeapVector<Member<MyGarbageCollectedClass>> list_;
 };
 ```
 

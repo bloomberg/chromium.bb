@@ -35,7 +35,7 @@ class {{export_symbol}} {{sink_class}} : public GarbageCollectedFinalized<{{sink
 
   {{sink_class}}();
   ~{{sink_class}}();
-  DECLARE_TRACE();
+  void Trace(Visitor*);
 
 {% for agent in agents %}
 {% set class_name = agent | agent_name_to_class %}

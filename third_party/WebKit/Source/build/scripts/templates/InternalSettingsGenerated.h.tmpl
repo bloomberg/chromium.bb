@@ -29,7 +29,7 @@ class InternalSettingsGenerated
   void set{{setting.name|upper_first}}({{setting.type|to_passing_type}} {{setting.name}});
   {% endfor %}
 
-  DECLARE_VIRTUAL_TRACE();
+  virtual void Trace(Visitor*);
 
  private:
   Member<Page> m_page;

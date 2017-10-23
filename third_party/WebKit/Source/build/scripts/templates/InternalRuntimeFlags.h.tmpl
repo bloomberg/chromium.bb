@@ -37,7 +37,7 @@ class InternalRuntimeFlags :
   }
   {% endfor %}
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(Visitor*) {}
 
  private:
   InternalRuntimeFlags() {}

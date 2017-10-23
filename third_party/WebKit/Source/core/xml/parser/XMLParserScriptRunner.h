@@ -33,7 +33,7 @@ class XMLParserScriptRunner final
   void ProcessScriptElement(Document&, Element*, TextPosition);
   void Detach();
 
-  DECLARE_TRACE();
+  void Trace(Visitor*);
 
  private:
   explicit XMLParserScriptRunner(XMLParserScriptRunnerHost*);
