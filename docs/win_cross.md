@@ -16,7 +16,7 @@ All other targets build fine (including `chrome`, `browser_tests`, ...).
 Uses of `.asm` files have been stubbed out.  As a result, some of skia's
 software rendering paths are not present in cross builds, crashpad cannot
 report crashes, and NaCl defaults to disabled and cannot be enabled in
-cross builds ([.asm bug](https://crbug.com/762167).
+cross builds ([.asm bug](https://crbug.com/762167)).
 
 ## .gclient setup
 
