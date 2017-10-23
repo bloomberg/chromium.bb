@@ -6,6 +6,7 @@
 
 #include "base/numerics/safe_conversions.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
@@ -58,7 +59,9 @@ class BlobBytesStreamer {
       } else if (write_result == MOJO_RESULT_SHOULD_WAIT) {
         break;
       } else {
-        // TODO(mek): Something went wrong, log this error somewhere.
+        // Writing failed. This isn't necessarily bad, as this could just mean
+        // the browser no longer needs the data for this blob. So just delete
+        // this as sending data is definitely finished.
         delete this;
         return;
       }
@@ -136,6 +139,10 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
                                       RequestAsFileCallback callback) {
   DCHECK(!Platform::Current()->FileTaskRunner() ||
          Platform::Current()->FileTaskRunner()->RunsTasksInCurrentSequence());
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(BooleanHistogram, seek_histogram,
+                                  ("Storage.Blob.RendererFileSeekFailed"));
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(BooleanHistogram, write_histogram,
+                                  ("Storage.Blob.RendererFileWriteFailed"));
 
   if (!file.IsValid()) {
     std::move(callback).Run(WTF::nullopt);
@@ -145,8 +152,8 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
   int64_t seek_distance =
       file.Seek(base::File::FROM_BEGIN, SafeCast<int64_t>(file_offset));
   bool seek_failed = seek_distance < 0;
+  seek_histogram.Count(seek_failed);
   if (seek_failed) {
-    // TODO(mek): Log histogram Storage.Blob.RendererFileSeekFailed.
     std::move(callback).Run(WTF::nullopt);
     return;
   }
@@ -179,8 +186,8 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
       int actual_written = file.WriteAtCurrentPos(
           data->data() + data_offset + written, writing_size);
       bool write_failed = actual_written < 0;
+      write_histogram.Count(write_failed);
       if (write_failed) {
-        // TODO(mek): Log histogram Storage.Blob.RendererFileWriteFailed
         std::move(callback).Run(WTF::nullopt);
         return;
       }
