@@ -2210,6 +2210,9 @@ void av1_average_tile_coef_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
   AVERAGE_TILE_CDFS(txb_skip_cdf)
   AVERAGE_TILE_CDFS(nz_map_cdf)
   AVERAGE_TILE_CDFS(eob_flag_cdf)
+#if CONFIG_EOB_FIRST
+  AVERAGE_TILE_CDFS(eob_extra_cdf)
+#endif
   AVERAGE_TILE_CDFS(dc_sign_cdf)
   AVERAGE_TILE_CDFS(coeff_base_cdf)
   AVERAGE_TILE_CDFS(coeff_lps_cdf)
