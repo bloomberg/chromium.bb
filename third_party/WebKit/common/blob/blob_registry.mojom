@@ -33,7 +33,8 @@ interface BlobRegistry {
 
   // Returns a reference to an existing blob. Should not be used by new code,
   // is only exposed to make converting existing blob using code easier.
-  GetBlobFromUUID(blink.mojom.Blob& blob, string uuid);
+  // TODO(mek): Remove when crbug.com/740744 is resolved.
+  [Sync] GetBlobFromUUID(Blob& blob, string uuid) => ();
 };
 
 // A blob is built up of elements of various types.

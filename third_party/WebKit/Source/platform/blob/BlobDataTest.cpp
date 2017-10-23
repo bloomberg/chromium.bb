@@ -105,9 +105,12 @@ class MockBlobRegistry : public BlobRegistry {
     std::move(callback).Run();
   }
 
-  void GetBlobFromUUID(BlobRequest blob, const String& uuid) override {
+  void GetBlobFromUUID(BlobRequest blob,
+                       const String& uuid,
+                       GetBlobFromUUIDCallback callback) override {
     binding_requests.push_back(BindingRequest{uuid});
     mojo::MakeStrongBinding(WTF::MakeUnique<MockBlob>(uuid), std::move(blob));
+    std::move(callback).Run();
   }
 
   void RegisterURL(BlobPtr blob,
