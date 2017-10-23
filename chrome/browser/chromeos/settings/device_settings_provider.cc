@@ -108,6 +108,7 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenInputMethods,
     kDeviceOffHours,
     kTPMFirmwareUpdateSettings,
+    kMinimumRequiredChromeVersion,
 };
 
 void DecodeLoginPolicies(
@@ -585,6 +586,14 @@ void DecodeGenericPolicies(
     new_values_cache->SetValue(kTPMFirmwareUpdateSettings,
                                tpm_firmware_update::DecodeSettingsProto(
                                    policy.tpm_firmware_update_settings()));
+  }
+
+  if (policy.has_minimum_required_version()) {
+    const em::MinimumRequiredVersionProto& container(
+        policy.minimum_required_version());
+    if (container.has_chrome_version())
+      new_values_cache->SetString(kMinimumRequiredChromeVersion,
+                                  container.chrome_version());
   }
 }
 

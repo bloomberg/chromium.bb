@@ -900,6 +900,13 @@ message TPMFirmwareUpdateSettingsProto {
   optional bool allow_user_initiated_powerwash = 1;
 }
 
+// Settings to control the minimum version that is allowed to sign in / stay
+// in session.
+message MinimumRequiredVersionProto {
+  // Value is chrome_version string, e.g. 61.0.3163.120
+  optional string chrome_version = 1;
+}
+
 message ChromeDeviceSettingsProto {
   optional DevicePolicyRefreshRateProto device_policy_refresh_rate = 1;
   optional UserWhitelistProto user_whitelist = 2;
@@ -972,4 +979,5 @@ message ChromeDeviceSettingsProto {
   optional DeviceNativePrintersWhitelistProto native_device_printers_whitelist =
       58;
   optional TPMFirmwareUpdateSettingsProto tpm_firmware_update_settings = 59;
+  optional MinimumRequiredVersionProto minimum_required_version = 60;
 }
