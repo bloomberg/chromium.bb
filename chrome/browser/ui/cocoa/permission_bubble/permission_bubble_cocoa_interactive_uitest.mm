@@ -7,6 +7,7 @@
 #include "base/command_line.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/permissions/permission_request_manager_test_api.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,7 +20,7 @@
 #include "chrome/test/base/interactive_test_utils.h"
 #include "ui/base/test/ui_controls.h"
 #import "ui/base/test/windowed_nsnotification_observer.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_features.h"
 #import "ui/events/test/cocoa_test_event_utils.h"
 
 namespace {
@@ -91,9 +92,12 @@ class PermissionBubbleInteractiveUITest
   }
 
   // InProcessBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
+  void SetUp() override {
     if (GetParam() == UiMode::VIEWS)
-      command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+    InProcessBrowserTest::SetUp();
   }
 
   void SetUpOnMainThread() override {
@@ -122,6 +126,7 @@ class PermissionBubbleInteractiveUITest
  protected:
   std::unique_ptr<test::PermissionRequestManagerTestApi> test_api_;
   std::unique_ptr<test::LocationBarDecorationTestApi> decoration_test_api_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PermissionBubbleInteractiveUITest);

@@ -19,17 +19,12 @@ class MaterialDesignControllerTestAPI {
   explicit MaterialDesignControllerTestAPI(MaterialDesignController::Mode mode);
   ~MaterialDesignControllerTestAPI();
 
-  // Force the given |value| for IsSecondaryUiMaterial() for the lifetime of the
-  // test API.
-  void SetSecondaryUiMaterial(bool value);
-
   // Wrapper functions for MaterialDesignController internal functions.
   static void Uninitialize();
 
  private:
   const MaterialDesignController::Mode previous_mode_;
   const bool previous_initialized_;
-  const bool previous_include_secondary_ui_;
 
   DISALLOW_COPY_AND_ASSIGN(MaterialDesignControllerTestAPI);
 };

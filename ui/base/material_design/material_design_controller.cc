@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
 
 #if defined(OS_CHROMEOS)
@@ -37,8 +38,6 @@ bool MaterialDesignController::is_mode_initialized_ = false;
 
 MaterialDesignController::Mode MaterialDesignController::mode_ =
     MaterialDesignController::MATERIAL_NORMAL;
-
-bool MaterialDesignController::include_secondary_ui_ = false;
 
 // static
 void MaterialDesignController::Initialize() {
@@ -68,9 +67,6 @@ void MaterialDesignController::Initialize() {
     }
     SetMode(DefaultMode());
   }
-
-  include_secondary_ui_ = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kExtendMdToSecondaryUi);
 }
 
 // static
@@ -81,7 +77,7 @@ MaterialDesignController::Mode MaterialDesignController::GetMode() {
 
 // static
 bool MaterialDesignController::IsSecondaryUiMaterial() {
-  return include_secondary_ui_;
+  return base::FeatureList::IsEnabled(features::kSecondaryUiMd);
 }
 
 // static

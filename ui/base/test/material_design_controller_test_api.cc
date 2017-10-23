@@ -10,21 +10,13 @@ namespace test {
 MaterialDesignControllerTestAPI::MaterialDesignControllerTestAPI(
     MaterialDesignController::Mode mode)
     : previous_mode_(MaterialDesignController::mode_),
-      previous_initialized_(MaterialDesignController::is_mode_initialized_),
-      previous_include_secondary_ui_(
-          MaterialDesignController::include_secondary_ui_) {
+      previous_initialized_(MaterialDesignController::is_mode_initialized_) {
   MaterialDesignController::SetMode(mode);
 }
 
 MaterialDesignControllerTestAPI::~MaterialDesignControllerTestAPI() {
-  MaterialDesignController::include_secondary_ui_ =
-      previous_include_secondary_ui_;
   MaterialDesignController::is_mode_initialized_ = previous_initialized_;
   MaterialDesignController::mode_ = previous_mode_;
-}
-
-void MaterialDesignControllerTestAPI::SetSecondaryUiMaterial(bool value) {
-  MaterialDesignController::include_secondary_ui_ = value;
 }
 
 void MaterialDesignControllerTestAPI::Uninitialize() {

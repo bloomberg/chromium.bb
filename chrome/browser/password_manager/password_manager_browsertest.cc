@@ -3608,10 +3608,11 @@ class PasswordManagerDialogBrowserTest
  public:
   PasswordManagerDialogBrowserTest() = default;
 
-  // content::BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // BrowserDialogTest only works on Mac with --secondary-ui-md.
-    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+  // SupportsTestDialog:
+  void SetUp() override {
+    // Secondary UI needs to be enabled before ShowDialog for the test to work.
+    UseMdOnly();
+    SupportsTestDialog::SetUp();
   }
 
   void ShowDialog(const std::string& name) override {

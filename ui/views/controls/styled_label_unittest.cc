@@ -11,9 +11,10 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/gfx/font_list.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/link.h"
@@ -70,8 +71,7 @@ class MDStyledLabelTest
     : public StyledLabelTest,
       public ::testing::WithParamInterface<SecondaryUiMode> {
  public:
-  MDStyledLabelTest()
-      : md_test_api_(ui::MaterialDesignController::Mode::MATERIAL_NORMAL) {}
+  MDStyledLabelTest() {}
 
   // StyledLabelTest:
   void SetUp() override {
@@ -80,11 +80,14 @@ class MDStyledLabelTest
     // StyledLabelTest::SetUp(), so that StyledLabelTest::SetUp() obeys the MD
     // setting.
     StyledLabelTest::SetUp();
-    md_test_api_.SetSecondaryUiMaterial(GetParam() == SecondaryUiMode::MD);
+    if (GetParam() == SecondaryUiMode::MD)
+      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
   }
 
  private:
-  ui::test::MaterialDesignControllerTestAPI md_test_api_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MDStyledLabelTest);
 };

@@ -5,20 +5,19 @@
 #include "base/command_line.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "ui/base/ui_base_switches.h"
 
 class UpdateRecommendedDialogTest : public DialogBrowserTest {
  public:
   UpdateRecommendedDialogTest() {}
 
   // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override {
-    InProcessBrowserTest::browser()->window()->ShowUpdateChromeDialog();
+  void SetUp() override {
+    UseMdOnly();
+    DialogBrowserTest::SetUp();
   }
 
-  // content::BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+  void ShowDialog(const std::string& name) override {
+    InProcessBrowserTest::browser()->window()->ShowUpdateChromeDialog();
   }
 
  private:

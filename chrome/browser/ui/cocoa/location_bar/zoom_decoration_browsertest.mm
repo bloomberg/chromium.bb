@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -23,7 +24,7 @@
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/test/test_utils.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_features.h"
 
 class ZoomDecorationTest : public InProcessBrowserTest,
                            public ::testing::WithParamInterface<bool> {
@@ -33,14 +34,14 @@ class ZoomDecorationTest : public InProcessBrowserTest,
         should_quit_on_zoom_(false) {
   }
 
-  // testing::Test:
+  // InProcessBrowserTest:
   void SetUp() override {
     // TODO(crbug.com/630357): Remove parameterized testing for this class when
     // secondary-ui-md is enabled by default on all platforms.
-    if (GetParam()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kExtendMdToSecondaryUi);
-    }
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
     InProcessBrowserTest::SetUp();
   }
 
@@ -90,6 +91,7 @@ class ZoomDecorationTest : public InProcessBrowserTest,
  private:
   bool should_quit_on_zoom_;
   std::unique_ptr<content::HostZoomMap::Subscription> zoom_subscription_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomDecorationTest);
 };

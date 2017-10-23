@@ -9,7 +9,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/passwords/manage_passwords_test.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
-#include "ui/base/ui_base_switches.h"
 
 class ManagePasswordsBubbleDialogViewTest
     : public SupportsTestDialog<ManagePasswordsTest> {
@@ -41,11 +40,12 @@ class ManagePasswordsBubbleDialogViewTest
     }
   }
 
-  // content::BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
+  // SupportsTestDialog:
+  void SetUp() override {
 #if defined(OS_MACOSX)
-    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+    UseMdOnly();  // This needs to be called during SetUp() on Mac.
 #endif
+    SupportsTestDialog::SetUp();
   }
 
  private:

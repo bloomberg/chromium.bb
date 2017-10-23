@@ -10,12 +10,13 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/canvas_painter.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -120,15 +121,9 @@ class LabelTest : public ViewsTestBase {
  public:
   LabelTest() {}
 
-  // Called after ViewsTestBase is set up. ViewsTestBase initializes the
-  // MaterialDesignController, so this allows a subclass to influence settings
-  // used for the remainder of SetUp().
-  virtual void OnBaseSetUp() {}
-
   // ViewsTestBase:
   void SetUp() override {
     ViewsTestBase::SetUp();
-    OnBaseSetUp();
 
     Widget::InitParams params =
         CreateParams(Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -276,16 +271,19 @@ class LabelSelectionTest : public LabelTest {
 class MDLabelTest : public LabelTest,
                     public ::testing::WithParamInterface<SecondaryUiMode> {
  public:
-  MDLabelTest()
-      : md_test_api_(ui::MaterialDesignController::Mode::MATERIAL_NORMAL) {}
+  MDLabelTest() {}
 
   // LabelTest:
-  void OnBaseSetUp() override {
-    md_test_api_.SetSecondaryUiMaterial(GetParam() == SecondaryUiMode::MD);
+  void SetUp() override {
+    if (GetParam() == SecondaryUiMode::MD)
+      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
+    LabelTest::SetUp();
   }
 
  private:
-  ui::test::MaterialDesignControllerTestAPI md_test_api_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(MDLabelTest);
 };

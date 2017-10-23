@@ -11,7 +11,6 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "ui/base/ui_base_switches.h"
 
 using ::testing::_;
 using ::testing::Eq;
@@ -282,13 +281,12 @@ class TryChromeDialogTest
   TryChromeDialogTest()
       : SupportsTestDialog<TryChromeDialogBrowserTestBase>(GetParam()) {}
 
-  // DialogBrowserTest:
-  void ShowDialog(const std::string& name) override { ShowDialogSync(); }
-
-  // content::BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+  // SupportsTestDialog:
+  void SetUp() override {
+    UseMdOnly();
+    SupportsTestDialog::SetUp();
   }
+  void ShowDialog(const std::string& name) override { ShowDialogSync(); }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TryChromeDialogTest);

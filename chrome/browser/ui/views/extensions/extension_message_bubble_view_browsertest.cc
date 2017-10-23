@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_actions_bar_bubble_views.h"
 #include "ui/accessibility/ax_node_data.h"
-#include "ui/base/ui_base_switches.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/link_listener.h"
@@ -49,7 +48,7 @@ class ExtensionMessageBubbleViewBrowserTest
   ~ExtensionMessageBubbleViewBrowserTest() override {}
 
   // ExtensionMessageBubbleBrowserTest:
-  void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUp() override;
 
   // TestBrowserDialog:
   void ShowDialog(const std::string& name) override;
@@ -71,13 +70,12 @@ class ExtensionMessageBubbleViewBrowserTest
   DISALLOW_COPY_AND_ASSIGN(ExtensionMessageBubbleViewBrowserTest);
 };
 
-void ExtensionMessageBubbleViewBrowserTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  ExtensionMessageBubbleBrowserTest::SetUpCommandLine(command_line);
+void ExtensionMessageBubbleViewBrowserTest::SetUp() {
   // MD is required on Mac to get a Views bubble. On other platforms, it should
   // not affect the behavior of the bubble (just the appearance), so enable for
   // all platforms.
-  command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+  UseMdOnly();
+  SupportsTestDialog::SetUp();
 }
 
 void ExtensionMessageBubbleViewBrowserTest::ShowDialog(

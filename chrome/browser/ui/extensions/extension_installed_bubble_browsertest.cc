@@ -4,6 +4,7 @@
 
 #include "base/auto_reset.h"
 #include "base/optional.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
@@ -15,7 +16,7 @@
 #include "components/signin/core/browser/signin_manager.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
-#include "ui/base/test/material_design_controller_test_api.h"
+#include "ui/base/ui_base_features.h"
 
 using extensions::Manifest;
 using ActionType = extensions::ExtensionBuilder::ActionType;
@@ -157,9 +158,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
 // Tests if the BubbleController gets removed from the BubbleManager when
 // the BubbleUi is closed.
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest, CloseBubbleUi) {
-  ui::test::MaterialDesignControllerTestAPI md_test_api(
-      ui::MaterialDesignController::MATERIAL_NORMAL);
-  md_test_api.SetSecondaryUiMaterial(true);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kSecondaryUiMd);
 
   auto bubble = MakeBubble("No action", base::nullopt);
   BubbleManager* manager = browser()->GetBubbleManager();
