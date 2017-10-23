@@ -1051,7 +1051,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name) {
           : nullptr;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(GetFrame(), UserGestureToken::kNewGesture);
+      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer(plugin_lookup_context_node);
@@ -1066,7 +1066,7 @@ bool WebLocalFrameImpl::ExecuteCommand(const WebString& name,
   DCHECK(GetFrame());
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(GetFrame(), UserGestureToken::kNewGesture);
+      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
 
   WebPluginContainerImpl* plugin_container =
       GetFrame()->GetWebPluginContainer();
@@ -1896,7 +1896,7 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const KURL& url) {
   String script = DecodeURLEscapeSequences(
       url.GetString().Substring(strlen("javascript:")));
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(GetFrame(), UserGestureToken::kNewGesture);
+      Frame::NotifyUserActivation(GetFrame(), UserGestureToken::kNewGesture);
   v8::HandleScope handle_scope(ToIsolate(GetFrame()));
   v8::Local<v8::Value> result =
       GetFrame()->GetScriptController().ExecuteScriptInMainWorldAndReturnValue(

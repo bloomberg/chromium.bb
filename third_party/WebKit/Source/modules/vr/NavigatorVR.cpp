@@ -121,8 +121,7 @@ ScriptPromise NavigatorVR::getVRDisplays(ScriptState* script_state) {
           script_state,
           DOMException::Create(kSecurityError, kFeaturePolicyBlockedMessage));
     }
-  } else if (!frame->HasReceivedUserGesture() &&
-             frame->IsCrossOriginSubframe()) {
+  } else if (!frame->HasBeenActivated() && frame->IsCrossOriginSubframe()) {
     // Before we introduced feature policy, cross-origin iframes had access to
     // WebVR APIs. Ideally, we want to block access to WebVR APIs for
     // cross-origin iframes. To be backward compatible, we changed to require a

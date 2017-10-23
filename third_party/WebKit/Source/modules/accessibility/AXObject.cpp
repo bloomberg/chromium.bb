@@ -2004,8 +2004,8 @@ bool AXObject::OnNativeClickAction() {
     return false;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(document->GetFrame(),
-                                    UserGestureToken::kNewGesture);
+      Frame::NotifyUserActivation(document->GetFrame(),
+                                  UserGestureToken::kNewGesture);
 
   Element* element = GetElement();
   if (!element && GetNode())

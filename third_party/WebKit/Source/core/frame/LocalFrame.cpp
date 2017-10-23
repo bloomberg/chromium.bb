@@ -799,7 +799,7 @@ bool LocalFrame::CanNavigate(const Frame& target_frame,
       CanNavigateWithoutFramebusting(target_frame, error_reason);
   const bool sandboxed =
       GetSecurityContext()->GetSandboxFlags() != kSandboxNone;
-  const bool has_user_gesture = HasReceivedUserGesture();
+  const bool has_user_gesture = HasBeenActivated();
 
   // Top navigation in sandbox with or w/o 'allow-top-navigation'.
   if (target_frame != this && sandboxed && target_frame == Tree().Top()) {
@@ -1144,50 +1144,6 @@ void LocalFrame::ForceSynchronousDocumentInstall(
         return true;
       });
   GetDocument()->Parser()->Finish();
-}
-
-void LocalFrame::NotifyUserActivation() {
-  bool had_gesture = HasReceivedUserGesture();
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled() || !had_gesture)
-    UpdateUserActivationInFrameTree();
-  Client()->SetHasReceivedUserGesture(had_gesture);
-}
-
-// static
-std::unique_ptr<UserGestureIndicator> LocalFrame::CreateUserGesture(
-    LocalFrame* frame,
-    UserGestureToken::Status status) {
-  if (frame)
-    frame->NotifyUserActivation();
-  return WTF::MakeUnique<UserGestureIndicator>(status);
-}
-
-// static
-bool LocalFrame::HasTransientUserActivation(LocalFrame* frame,
-                                            bool checkIfMainThread) {
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    return frame ? ((Frame*)frame)->HasTransientUserActivation() : false;
-  }
-
-  return checkIfMainThread
-             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
-             : UserGestureIndicator::ProcessingUserGesture();
-}
-
-// static
-bool LocalFrame::ConsumeTransientUserActivation(LocalFrame* frame,
-                                                bool checkIfMainThread) {
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
-    // TODO(mustaq): During our first phase of experiments, we will see if
-    // consumption of user activation is really necessary or not.  If it turns
-    // out to be unavoidable, we will replace the following call with
-    // |ConsumeTransientUserActivation()|.  crbug.com/776404
-    return frame ? ((Frame*)frame)->HasTransientUserActivation() : false;
-  }
-
-  return checkIfMainThread
-             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
-             : UserGestureIndicator::ConsumeUserGesture();
 }
 
 }  // namespace blink

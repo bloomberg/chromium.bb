@@ -74,8 +74,7 @@ ScriptPromise VR::getDevices(ScriptState* script_state) {
           script_state,
           DOMException::Create(kSecurityError, kFeaturePolicyBlocked));
     }
-  } else if (!frame->HasReceivedUserGesture() &&
-             frame->IsCrossOriginSubframe()) {
+  } else if (!frame->HasBeenActivated() && frame->IsCrossOriginSubframe()) {
     // Block calls from cross-origin iframes that have never had a user gesture.
     return ScriptPromise::RejectWithDOMException(
         script_state,

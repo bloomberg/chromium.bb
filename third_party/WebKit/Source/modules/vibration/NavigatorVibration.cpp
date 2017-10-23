@@ -90,7 +90,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
     return false;
   }
 
-  if (!frame->HasReceivedUserGesture()) {
+  if (!frame->HasBeenActivated()) {
     String message;
     MessageLevel level = kErrorMessageLevel;
     if (frame->IsCrossOriginSubframe()) {
@@ -124,7 +124,7 @@ bool NavigatorVibration::vibrate(Navigator& navigator,
 // static
 void NavigatorVibration::CollectHistogramMetrics(const LocalFrame& frame) {
   NavigatorVibrationType type;
-  bool user_gesture = frame.HasReceivedUserGesture();
+  bool user_gesture = frame.HasBeenActivated();
   UseCounter::Count(&frame, WebFeature::kNavigatorVibrate);
   if (!frame.IsMainFrame()) {
     UseCounter::Count(&frame, WebFeature::kNavigatorVibrateSubFrame);

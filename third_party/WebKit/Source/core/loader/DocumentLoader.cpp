@@ -1067,7 +1067,7 @@ void DocumentLoader::InstallNewDocument(
   if (!should_reuse_default_view)
     frame_->SetDOMWindow(LocalDOMWindow::Create(*frame_));
 
-  bool user_gesture_bit_set = frame_->HasReceivedUserGesture() ||
+  bool user_gesture_bit_set = frame_->HasBeenActivated() ||
                               frame_->HasReceivedUserGestureBeforeNavigation();
 
   if (reason == InstallNewDocumentReason::kNavigation)
@@ -1091,7 +1091,7 @@ void DocumentLoader::InstallNewDocument(
     // Clear the user gesture bit that is not persisted.
     // TODO(crbug.com/736415): Clear this bit unconditionally for all frames.
     if (frame_->IsMainFrame())
-      frame_->ClearDocumentHasReceivedUserGesture();
+      frame_->ClearActivation();
   }
 
   if (ShouldClearWindowName(*frame_, previous_security_origin, *document)) {

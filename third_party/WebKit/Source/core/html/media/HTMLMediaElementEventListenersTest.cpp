@@ -154,7 +154,7 @@ TEST_F(HTMLMediaElementEventListenersTest,
   EXPECT_NE(Video(), nullptr);
   SimulateReadyState(HTMLMediaElement::kHaveMetadata);
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::CreateUserGesture(GetDocument().GetFrame());
+      Frame::NotifyUserActivation(GetDocument().GetFrame());
   Fullscreen::RequestFullscreen(*Video());
   Fullscreen::From(GetDocument()).DidEnterFullscreen();
 

@@ -186,6 +186,50 @@ void Frame::UpdateUserActivationInFrameTree() {
     parent->UpdateUserActivationInFrameTree();
 }
 
+void Frame::NotifyUserActivation() {
+  bool had_gesture = HasBeenActivated();
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled() || !had_gesture)
+    UpdateUserActivationInFrameTree();
+  if (IsLocalFrame())
+    ToLocalFrame(this)->Client()->SetHasReceivedUserGesture(had_gesture);
+}
+
+// static
+std::unique_ptr<UserGestureIndicator> Frame::NotifyUserActivation(
+    Frame* frame,
+    UserGestureToken::Status status) {
+  if (frame)
+    frame->NotifyUserActivation();
+  return WTF::MakeUnique<UserGestureIndicator>(status);
+}
+
+// static
+bool Frame::HasTransientUserActivation(Frame* frame, bool checkIfMainThread) {
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
+    return frame ? frame->HasTransientUserActivation() : false;
+  }
+
+  return checkIfMainThread
+             ? UserGestureIndicator::ProcessingUserGestureThreadSafe()
+             : UserGestureIndicator::ProcessingUserGesture();
+}
+
+// static
+bool Frame::ConsumeTransientUserActivation(Frame* frame,
+                                           bool checkIfMainThread) {
+  if (RuntimeEnabledFeatures::UserActivationV2Enabled()) {
+    // TODO(mustaq): During our first phase of experiments, we will see if
+    // consumption of user activation is really necessary or not.  If it turns
+    // out to be unavoidable, we will replace the following call with
+    // |ConsumeTransientUserActivation()|.
+    return frame ? frame->HasTransientUserActivation() : false;
+  }
+
+  return checkIfMainThread
+             ? UserGestureIndicator::ConsumeUserGestureThreadSafe()
+             : UserGestureIndicator::ConsumeUserGesture();
+}
+
 bool Frame::IsFeatureEnabled(WebFeaturePolicyFeature feature) const {
   WebFeaturePolicy* feature_policy = GetSecurityContext()->GetFeaturePolicy();
   // The policy should always be initialized before checking it to ensure we
