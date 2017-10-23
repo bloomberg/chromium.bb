@@ -33,9 +33,6 @@ class CompositorFrameSinkSupport;
 class FrameSinkManagerImpl;
 class SurfaceInfo;
 
-namespace test {
-class HostFrameSinkManagerTest;
-}
 
 // Browser side wrapper of mojom::FrameSinkManager, to be used from the
 // UI thread. Manages frame sinks and is intended to replace all usage of
@@ -64,6 +61,10 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
       mojom::FrameSinkManagerClientRequest request,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
       mojom::FrameSinkManagerPtr ptr);
+
+  // Sets a callback to be notified when the connection to the FrameSinkManager
+  // on |frame_sink_manager_ptr_| is lost.
+  void SetConnectionLostCallback(base::RepeatingClosure callback);
 
   // Registers |frame_sink_id| will be used. This must be called before
   // CreateCompositorFrameSink(Support) is called.
@@ -124,7 +125,7 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
       bool needs_sync_points) override;
 
  private:
-  friend class test::HostFrameSinkManagerTest;
+  friend class HostFrameSinkManagerTestBase;
 
   struct FrameSinkData {
     FrameSinkData();
@@ -173,6 +174,13 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   // embeded |surface_id|, otherwise drops the temporary reference.
   void PerformAssignTemporaryReference(const SurfaceId& surface_id);
 
+  // Handles connection loss to |frame_sink_manager_ptr_|. This should only
+  // happen when the GPU process crashes.
+  void OnConnectionLost();
+
+  // Registers FrameSinkId and FrameSink hierarchy again after connection loss.
+  void RegisterAfterConnectionLoss();
+
   // mojom::FrameSinkManagerClient:
   void OnFirstSurfaceActivation(const SurfaceInfo& surface_info) override;
   void OnClientConnectionClosed(const FrameSinkId& frame_sink_id) override;
@@ -205,6 +213,11 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
 
   // Per CompositorFrameSink data.
   base::flat_map<FrameSinkId, FrameSinkData> frame_sink_data_map_;
+
+  // If |frame_sink_manager_ptr_| connection was lost.
+  bool connection_was_lost_ = false;
+
+  base::RepeatingClosure connection_lost_callback_;
 
   DisplayHitTestQueryMap display_hit_test_query_;
 
