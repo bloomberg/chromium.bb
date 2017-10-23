@@ -29,6 +29,7 @@ source_set("cdm") {
 
     deps += [
       "//chromecast/media/base",
+      "//chromecast/media/base:media_resource_tracker",
       "//url:url",
     ]
   }

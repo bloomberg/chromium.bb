@@ -8,23 +8,9 @@ import("//testing/test.gni")
 
 assert(is_fuchsia)
 
-cast_shared_library("libcast_media_1.0_fuchsia") {
+source_set("fuchsia") {
   sources = [
     "cast_media_shlib_fuchsia.cc",
-  ]
-
-  deps = [
-    ":fuchsia_cma_backend",
-    "//base",
-    "//chromecast/base",
-    "//chromecast/public",
-    "//chromecast/public/media",
-    "//media",
-  ]
-}
-
-source_set("fuchsia_cma_backend") {
-  sources = [
     "fuchsia_volume_control.cc",
     "mixer_output_stream_fuchsia.cc",
     "mixer_output_stream_fuchsia.h",
@@ -34,6 +20,8 @@ source_set("fuchsia_cma_backend") {
     "//base",
     "//chromecast/base",
     "//chromecast/media/cma/backend:audio",
+    "//chromecast/public",
+    "//chromecast/public/media",
     "//media",
   ]
 }
@@ -44,7 +32,7 @@ source_set("unit_tests") {
     "mixer_output_stream_fuchsia_unittest.cc",
   ]
   deps = [
-    ":fuchsia_cma_backend",
+    ":fuchsia",
     "//testing/gtest",
   ]
 }
