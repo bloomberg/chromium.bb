@@ -74,8 +74,6 @@ target(link_target_type, "child") {
     "service_factory.h",
     "thread_safe_sender.cc",
     "thread_safe_sender.h",
-    "v8_value_converter_impl.cc",
-    "v8_value_converter_impl.h",
     "webfallbackthemeengine_impl.cc",
     "webfallbackthemeengine_impl.h",
     "webthemeengine_impl_android.cc",

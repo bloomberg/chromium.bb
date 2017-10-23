@@ -8,7 +8,7 @@
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/bindings/exception_handler.h"
 #include "gin/converter.h"
 #include "gin/data_object_builder.h"

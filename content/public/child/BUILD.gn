@@ -32,7 +32,6 @@ source_set("child_sources") {
     "child_thread.h",
     "dwrite_font_proxy_init_win.h",
     "image_decoder_utils.h",
-    "v8_value_converter.h",
   ]
 
   configs += [

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/memory/ptr_util.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/event_filter.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/event_matcher.h"

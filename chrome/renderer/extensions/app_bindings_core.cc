@@ -8,8 +8,8 @@
 
 #include "base/values.h"
 #include "chrome/common/extensions/extension_constants.h"
-#include "content/public/child/v8_value_converter.h"
 #include "content/public/renderer/render_frame.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/extension_set.h"

@@ -7,7 +7,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "extensions/renderer/script_context.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
