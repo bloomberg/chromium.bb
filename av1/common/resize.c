@@ -451,19 +451,19 @@ static void interpolate(const uint8_t *const input, int in_length,
 #define UPSCALE_PROC_UNIT 64  // Source step (roughly)
 #define UPSCALE_PROC_UNIT_SCALE (UPSCALE_PROC_UNIT / SCALE_NUMERATOR)
 
-static int get_upscale_convolve_params(int in_length, int out_length,
-                                       int out_start, int32_t *x0_qn,
-                                       int32_t *x_step_qn) {
-  assert(out_length >= in_length);
-  *x_step_qn =
-      ((in_length << INTERP_PRECISION_BITS) + out_length / 2) / out_length;
-  *x0_qn = (-((out_length - in_length) << (INTERP_PRECISION_BITS - 1)) +
-            out_length / 2) /
-               out_length +
-           out_start * (*x_step_qn) + SUBPEL_INTERP_EXTRA_OFF;
-  const int off = (*x0_qn >> INTERP_PRECISION_BITS);
-  *x0_qn = (int32_t)((uint32_t)(*x0_qn) & INTERP_PRECISION_MASK);
-  return off;
+static int32_t get_upscale_convolve_step(int in_length, int out_length) {
+  return ((in_length << INTERP_PRECISION_BITS) + out_length / 2) / out_length;
+}
+
+static int32_t get_upscale_convolve_x0(int in_length, int out_length,
+                                       int32_t x_step_qn) {
+  const int err = out_length * x_step_qn - (in_length << INTERP_PRECISION_BITS);
+  const int32_t x0 =
+      (-((out_length - in_length) << (INTERP_PRECISION_BITS - 1)) +
+       out_length / 2) /
+          out_length +
+      SUBPEL_INTERP_EXTRA_OFF - err / 2;
+  return (int32_t)((uint32_t)x0 & INTERP_PRECISION_MASK);
 }
 
 static void convolve_horiz_superres_c(const uint8_t *src, uint8_t *dst,
@@ -490,16 +490,24 @@ static void interpolate_normative_core(const uint8_t *const src, int in_length,
                                        int superres_denom,
                                        const int16_t *interp_filters,
                                        int interp_taps) {
+  assert(in_length < out_length);
   const int oproc_unit = UPSCALE_PROC_UNIT_SCALE * superres_denom;
-  int32_t x_step_qn, x0_qn;
+  const int32_t x_step_qn = get_upscale_convolve_step(in_length, out_length);
+  const int32_t x0_qn =
+      get_upscale_convolve_x0(in_length, out_length, x_step_qn);
+  const uint8_t *srcp = src - 1;
+  int32_t x0 = x0_qn;
   int olen = oproc_unit;
   for (int op = 0; op < out_length; op += olen) {
-    const uint8_t *srcp =
-        src + get_upscale_convolve_params(in_length, out_length, op, &x0_qn,
-                                          &x_step_qn);
+    // Note since we are upscaling, the first output sample is located before
+    // the first input sample. Hence srcp = src - 1 + ... below
     olen = AOMMIN(oproc_unit, out_length - op);
-    convolve_horiz_superres_c(srcp, dst + op, interp_filters, interp_taps,
-                              x0_qn, x_step_qn, olen);
+    convolve_horiz_superres_c(srcp, dst + op, interp_filters, interp_taps, x0,
+                              x_step_qn, olen);
+    x0 += olen * x_step_qn;
+    // Note srcp may advance by UPSCALE_PROC_UNIT +/- 1
+    srcp += (x0 >> INTERP_PRECISION_BITS);
+    x0 &= INTERP_PRECISION_MASK;
   }
 }
 
@@ -507,7 +515,7 @@ static void interpolate_normative(const uint8_t *const input, int in_length,
                                   uint8_t *output, int out_length,
                                   int superres_denom) {
   uint8_t *intbuf_alloc = (uint8_t *)aom_malloc(
-      sizeof(uint8_t) * (in_length + UPSCALE_NORMATIVE_TAPS + 2));
+      sizeof(*input) * (in_length + UPSCALE_NORMATIVE_TAPS + 2));
   uint8_t *intbuf = intbuf_alloc + UPSCALE_NORMATIVE_TAPS / 2 + 1;
   memcpy(intbuf, input, sizeof(*intbuf) * in_length);
   for (int k = 0; k < UPSCALE_NORMATIVE_TAPS / 2 + 1; ++k) {
@@ -903,16 +911,24 @@ static void highbd_interpolate_normative_core(const uint16_t *const src,
                                               int superres_denom, int bd,
                                               const int16_t *interp_filters,
                                               int interp_taps) {
+  assert(in_length < out_length);
   const int oproc_unit = UPSCALE_PROC_UNIT_SCALE * superres_denom;
-  int32_t x_step_qn, x0_qn;
+  const int32_t x_step_qn = get_upscale_convolve_step(in_length, out_length);
+  const int32_t x0_qn =
+      get_upscale_convolve_x0(in_length, out_length, x_step_qn);
+  const uint16_t *srcp = src - 1;
+  int32_t x0 = x0_qn;
   int olen = oproc_unit;
   for (int op = 0; op < out_length; op += olen) {
-    const uint16_t *srcp =
-        src + get_upscale_convolve_params(in_length, out_length, op, &x0_qn,
-                                          &x_step_qn);
+    // Note since we are upscaling, the first output sample is located before
+    // the first input sample. Hence srcp = src - 1 + ... below
     olen = AOMMIN(oproc_unit, out_length - op);
     highbd_convolve_horiz_superres_c(srcp, dst + op, interp_filters,
-                                     interp_taps, x0_qn, x_step_qn, olen, bd);
+                                     interp_taps, x0, x_step_qn, olen, bd);
+    x0 += olen * x_step_qn;
+    // Note srcp may advance by UPSCALE_PROC_UNIT +/- 1
+    srcp += (x0 >> INTERP_PRECISION_BITS);
+    x0 &= INTERP_PRECISION_MASK;
   }
 }
 
@@ -921,10 +937,10 @@ static void highbd_interpolate_normative(const uint16_t *const input,
                                          int out_length, int bd,
                                          int superres_denom) {
   uint16_t *intbuf_alloc = (uint16_t *)aom_malloc(
-      sizeof(uint16_t) * (in_length + UPSCALE_NORMATIVE_TAPS));
-  uint16_t *intbuf = intbuf_alloc + UPSCALE_NORMATIVE_TAPS / 2;
+      sizeof(*input) * (in_length + UPSCALE_NORMATIVE_TAPS + 2));
+  uint16_t *intbuf = intbuf_alloc + UPSCALE_NORMATIVE_TAPS / 2 + 1;
   memcpy(intbuf, input, sizeof(*intbuf) * in_length);
-  for (int k = 0; k < UPSCALE_NORMATIVE_TAPS / 2; ++k) {
+  for (int k = 0; k < UPSCALE_NORMATIVE_TAPS / 2 + 1; ++k) {
     intbuf[-k - 1] = intbuf[0];
     intbuf[in_length + k] = intbuf[in_length - 1];
   }
@@ -1366,27 +1382,28 @@ YV12_BUFFER_CONFIG *av1_scale_if_required(AV1_COMMON *cm,
 // Calculates scaled dimensions given original dimensions and the scale
 // denominator. If 'scale_height' is 1, both width and height are scaled;
 // otherwise, only the width is scaled.
-static void calculate_scaled_size_helper(int *width, int *height, int denom,
-                                         int scale_height) {
+static void calculate_scaled_size_helper(int *dim, int denom) {
   if (denom != SCALE_NUMERATOR) {
-    *width = *width * SCALE_NUMERATOR / denom;
-    *width += *width & 1;  // Make it even.
-    if (scale_height) {
-      *height = *height * SCALE_NUMERATOR / denom;
-      *height += *height & 1;  // Make it even.
-    }
+    // Use this version if we need *dim to be even
+    // *width = (*width * SCALE_NUMERATOR + denom) / (2 * denom);
+    // *width <<= 1;
+    *dim = (*dim * SCALE_NUMERATOR + denom / 2) / (denom);
   }
 }
 
 void av1_calculate_scaled_size(int *width, int *height, int resize_denom) {
-  calculate_scaled_size_helper(width, height, resize_denom, 1);
+  calculate_scaled_size_helper(width, resize_denom);
+  calculate_scaled_size_helper(height, resize_denom);
 }
 
 #if CONFIG_FRAME_SUPERRES
 void av1_calculate_scaled_superres_size(int *width, int *height,
                                         int superres_denom) {
-  calculate_scaled_size_helper(width, height, superres_denom,
-                               !CONFIG_HORZONLY_FRAME_SUPERRES);
+  (void)height;
+  calculate_scaled_size_helper(width, superres_denom);
+#if !CONFIG_HORZONLY_FRAME_SUPERRES
+  calculate_scaled_size_helper(height, superres_denom);
+#endif  // !CONFIG_HORZONLY_FRAME_SUPERRES
 }
 
 void av1_calculate_unscaled_superres_size(int *width, int *height, int denom) {
