@@ -85,7 +85,7 @@ AutocompleteInput::AutocompleteInput(
       allow_exact_keyword_match_(true),
       want_asynchronous_matches_(true),
       from_omnibox_focus_(false) {
-  Init(text, std::string(), scheme_classifier);
+  Init(text, scheme_classifier);
 }
 
 AutocompleteInput::AutocompleteInput(
@@ -100,7 +100,7 @@ AutocompleteInput::AutocompleteInput(
       allow_exact_keyword_match_(true),
       want_asynchronous_matches_(true),
       from_omnibox_focus_(false) {
-  Init(text, std::string(), scheme_classifier);
+  Init(text, scheme_classifier);
 }
 
 AutocompleteInput::AutocompleteInput(
@@ -111,17 +111,17 @@ AutocompleteInput::AutocompleteInput(
     const AutocompleteSchemeClassifier& scheme_classifier)
     : cursor_position_(cursor_position),
       current_page_classification_(current_page_classification),
+      desired_tld_(desired_tld),
       prevent_inline_autocomplete_(false),
       prefer_keyword_(false),
       allow_exact_keyword_match_(true),
       want_asynchronous_matches_(true),
       from_omnibox_focus_(false) {
-  Init(text, desired_tld, scheme_classifier);
+  Init(text, scheme_classifier);
 }
 
 void AutocompleteInput::Init(
     const base::string16& text,
-    const std::string& desired_tld,
     const AutocompleteSchemeClassifier& scheme_classifier) {
   DCHECK(cursor_position_ <= text.length() ||
          cursor_position_ == base::string16::npos)
@@ -134,7 +134,7 @@ void AutocompleteInput::Init(
                                     &cursor_position_);
 
   GURL canonicalized_url;
-  type_ = Parse(text_, desired_tld, scheme_classifier, &parts_, &scheme_,
+  type_ = Parse(text_, desired_tld_, scheme_classifier, &parts_, &scheme_,
                 &canonicalized_url);
   PopulateTermsPrefixedByHttpOrHttps(text_, &terms_prefixed_by_http_or_https_);
 

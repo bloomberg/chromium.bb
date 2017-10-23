@@ -153,6 +153,9 @@ class AutocompleteInput {
   // The input as an URL to navigate to, if possible.
   const GURL& canonicalized_url() const { return canonicalized_url_; }
 
+  // The user's desired TLD.
+  const std::string& desired_tld() const { return desired_tld_; }
+
   // Returns whether inline autocompletion should be prevented.
   bool prevent_inline_autocomplete() const {
     return prevent_inline_autocomplete_;
@@ -229,7 +232,6 @@ class AutocompleteInput {
   // the initial fields are set. These remaining parameters are used as inputs
   // to setting the remaining fields.
   void Init(const base::string16& text,
-            const std::string& desired_tld,
             const AutocompleteSchemeClassifier& scheme_classifier);
 
   // NOTE: Whenever adding a new field here, please make sure to update Clear()
@@ -243,6 +245,7 @@ class AutocompleteInput {
   url::Parsed parts_;
   base::string16 scheme_;
   GURL canonicalized_url_;
+  std::string desired_tld_;
   bool prevent_inline_autocomplete_;
   bool prefer_keyword_;
   bool allow_exact_keyword_match_;

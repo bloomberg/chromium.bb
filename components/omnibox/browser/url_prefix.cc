@@ -52,6 +52,7 @@ URLPrefix::URLPrefix(const base::string16& lower_prefix, size_t num_components)
 const URLPrefixes& URLPrefix::GetURLPrefixes() {
   CR_DEFINE_STATIC_LOCAL(URLPrefixes, prefixes, ());
   if (prefixes.empty()) {
+    // Keep this list in descending number of components.
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("https://www."), 2));
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("http://www."), 2));
     prefixes.push_back(URLPrefix(base::ASCIIToUTF16("ftp://www."), 2));

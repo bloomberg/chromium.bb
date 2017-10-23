@@ -135,6 +135,7 @@ struct TestURLInfo {
     {"http://intra/one", "Intranet", 2, 2, 80},
     {"http://intra/two", "Intranet two", 1, 1, 80},
     {"http://intra/three", "Intranet three", 2, 2, 80},
+    {"https://www.prefixintra/one", "Intranet www", 1, 1, 80},
     {"http://moo/bar", "Intranet moo", 1, 1, 80},
     {"http://typedhost/typedpath", "Intranet typed", 1, 1, 80},
     {"http://typedhost/untypedpath", "Intranet untyped", 1, 0, 80},
@@ -158,8 +159,15 @@ struct TestURLInfo {
     {"http://7.com/5a", "Five A", 8, 0, 64},  // never typed.
 
     // For match URL formatting test.
-    {"https://www.abc.def.com/path", "URL with subdomain", 4, 4, 80},
-    {"https://www.hij.com/path", "URL with www only", 4, 4, 80},
+    {"https://www.abc.def.com/path", "URL with subdomain", 10, 10, 80},
+    {"https://www.hij.com/path", "URL with www only", 10, 10, 80},
+
+    // For URL-what-you-typed in history tests.
+    {"https://wytih/", "What you typed in history main", 1, 1, 80},
+    {"https://www.wytih/", "What you typed in history www main", 2, 2, 80},
+    {"https://www.wytih/page", "What you typed in history www page", 5, 5, 80},
+    {"ftp://wytih/file", "What you typed in history ftp file", 6, 6, 80},
+    {"https://www.wytih/file", "What you typed in history www file", 7, 7, 80},
 };
 
 class FakeAutocompleteProviderClient : public MockAutocompleteProviderClient {
@@ -644,6 +652,24 @@ TEST_F(HistoryURLProviderTest, WhatYouTyped) {
   };
   RunTest(ASCIIToUTF16("https://wytmatch foo bar"), std::string(), false,
           results_3, arraysize(results_3));
+
+  const UrlAndLegalDefault results_4[] = {{"https://wytih/", true},
+                                          {"https://www.wytih/file", true},
+                                          {"ftp://wytih/file", true},
+                                          {"https://www.wytih/page", true}};
+  RunTest(ASCIIToUTF16("wytih"), std::string(), false, results_4,
+          arraysize(results_4));
+
+  const UrlAndLegalDefault results_5[] = {{"https://www.wytih/", true},
+                                          {"https://www.wytih/file", true},
+                                          {"https://www.wytih/page", true}};
+  RunTest(ASCIIToUTF16("www.wytih"), std::string(), false, results_5,
+          arraysize(results_5));
+
+  const UrlAndLegalDefault results_6[] = {{"ftp://wytih/file", true},
+                                          {"https://www.wytih/file", true}};
+  RunTest(ASCIIToUTF16("wytih/file"), std::string(), false, results_6,
+          arraysize(results_6));
 }
 
 TEST_F(HistoryURLProviderTest, Fixup) {
@@ -881,6 +907,10 @@ TEST_F(HistoryURLProviderTest, IntranetURLCompletion) {
                                   arraysize(expected7)));
   EXPECT_LE(1400, matches_[0].relevance);
   EXPECT_LT(matches_[0].relevance, 1410);
+
+  const UrlAndLegalDefault expected8[] = {{"https://www.prefixintra/x", true}};
+  ASSERT_NO_FATAL_FAILURE(RunTest(ASCIIToUTF16("prefixintra/x"), std::string(),
+                                  false, expected8, arraysize(expected8)));
 }
 
 TEST_F(HistoryURLProviderTest, CrashDueToFixup) {

@@ -132,13 +132,14 @@ void HistoryQuickProvider::DoAutocomplete() {
           // HistoryURLProvider gives visited what-you-typed URLs a high score.
           url_what_you_typed_match_score =
               HistoryURLProvider::kScoreForBestInlineableResult;
-        } else if (url_db->IsTypedHost(host) &&
-             (!autocomplete_input_.parts().path.is_nonempty() ||
-              ((autocomplete_input_.parts().path.len == 1) &&
-               (autocomplete_input_.text()[
-                   autocomplete_input_.parts().path.begin] == '/'))) &&
-             !autocomplete_input_.parts().query.is_nonempty() &&
-             !autocomplete_input_.parts().ref.is_nonempty()) {
+        } else if (url_db->IsTypedHost(host, /*scheme=*/nullptr) &&
+                   (!autocomplete_input_.parts().path.is_nonempty() ||
+                    ((autocomplete_input_.parts().path.len == 1) &&
+                     (autocomplete_input_
+                          .text()[autocomplete_input_.parts().path.begin] ==
+                      '/'))) &&
+                   !autocomplete_input_.parts().query.is_nonempty() &&
+                   !autocomplete_input_.parts().ref.is_nonempty()) {
           // Not visited, but we've seen the host before.
           will_have_url_what_you_typed_match_first = true;
           if (net::registry_controlled_domains::HostHasRegistryControlledDomain(

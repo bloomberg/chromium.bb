@@ -178,7 +178,8 @@ bool OmniboxPageHandler::LookupIsTypedHost(const base::string16& host,
   history::URLDatabase* url_db = history_service->InMemoryDatabase();
   if (!url_db)
     return false;
-  *is_typed_host = url_db->IsTypedHost(base::UTF16ToUTF8(host));
+  *is_typed_host =
+      url_db->IsTypedHost(base::UTF16ToUTF8(host), /*scheme=*/nullptr);
   return true;
 }
 
