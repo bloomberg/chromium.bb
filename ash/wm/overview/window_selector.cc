@@ -758,13 +758,14 @@ void WindowSelector::OnSplitViewStateChanged(
     ResetFocusRestoreWindow(false);
   }
 
-  if (state == SplitViewController::BOTH_SNAPPED ||
-      state == SplitViewController::NO_SNAP) {
+  if (state == SplitViewController::BOTH_SNAPPED) {
     // If two windows were snapped to both sides of the screen, end overview
-    // mode. If split view mode was ended (e.g., one of the snapped window was
-    // closed or minimized / fullscreened / maximized), also end overview mode
-    // if overview mode is active.
+    // mode.
     CancelSelection();
+  } else {
+    // Otherwise adjust the overview window grid bounds if overview mode is
+    // active at the moment.
+    OnDisplayBoundsChanged();
   }
 }
 
