@@ -1,7 +1,0 @@
-Test to ensure on save the content has been loaded in the UISourceCode.
-
-Saving
-URL: http://127.0.0.1:8000/resources/dummy.js
-Data: var x;
-
-
