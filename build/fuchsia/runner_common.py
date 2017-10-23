@@ -15,6 +15,7 @@ import shutil
 import signal
 import subprocess
 import sys
+import uuid
 
 
 DIR_SOURCE_ROOT = os.path.abspath(
@@ -27,6 +28,11 @@ SYMBOLIZATION_TIMEOUT_SECS = 10
 GUEST_NET = '192.168.3.0/24'
 GUEST_IP_ADDRESS = '192.168.3.9'
 HOST_IP_ADDRESS = '192.168.3.2'
+
+# Signals to the host that the the remote binary has finished executing.
+# The UUID reduces the likelihood of the remote end generating the signal
+# by coincidence.
+ALL_DONE_MESSAGE = '*** RUN FINISHED: %s' % uuid.uuid1()
 
 
 def _RunAndCheck(dry_run, args):
@@ -193,7 +199,7 @@ class BootfsData(object):
 
 
 def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
-                bootdata, summary_output, power_off, target_cpu):
+                bootdata, summary_output, power_off, target_cpu, use_device):
   # |runtime_deps| already contains (target, source) pairs for the runtime deps,
   # so we can initialize |file_mapping| from it directly.
   file_mapping = dict(runtime_deps)
@@ -225,12 +231,14 @@ def BuildBootfs(output_directory, runtime_deps, bin_name, child_args, dry_run,
   for arg in child_args:
     autorun_file.write(' "%s"' % arg);
   autorun_file.write('\n')
+  autorun_file.write('echo \"%s\"\n' % ALL_DONE_MESSAGE)
 
   if power_off:
     autorun_file.write('echo Sleeping and shutting down...\n')
-    # A delay is required to give qemu a chance to flush stdout before it
-    # terminates.
-    autorun_file.write('msleep 3000\n')
+
+    # A delay is required to give the guest OS or remote device a chance to
+    # flush its output before it terminates.
+    autorun_file.write('msleep %d\n' % (8000 if use_device else 3000))
     autorun_file.write('dm poweroff\n')
 
   autorun_file.flush()
@@ -379,76 +387,9 @@ def _GetResultsFromImg(dry_run, test_launcher_summary_output):
                          'cp', '::/output.json', test_launcher_summary_output])
 
 
-def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
-               test_launcher_summary_output):
-  if not kernel_path:
-    # TODO(wez): Parameterize this on the |target_cpu| from GN.
-    kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
-                               'zircon.bin')
-
-  if use_device:
-    # TODO(fuchsia): This doesn't capture stdout as there's no way to do so
-    # currently. See https://crbug.com/749242.
-    bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
-    bootserver_command = [bootserver_path, '-1', kernel_path,
-                          bootfs_data.bootfs]
-    return _RunAndCheck(dry_run, bootserver_command)
-
-  qemu_path = os.path.join(
-      SDK_ROOT, 'qemu', 'bin',
-      'qemu-system-' + _TargetCpuToArch(bootfs_data.target_cpu))
-  qemu_command = [qemu_path,
-      '-m', '2048',
-      '-nographic',
-      '-kernel', kernel_path,
-      '-initrd', bootfs_data.bootfs,
-      '-smp', '4',
-
-      # Configure virtual network. It is used in the tests to connect to
-      # testserver running on the host.
-      '-netdev', 'user,id=net0,net=%s,dhcpstart=%s,host=%s' %
-          (GUEST_NET, GUEST_IP_ADDRESS, HOST_IP_ADDRESS),
-      '-device', 'e1000,netdev=net0,mac=52:54:00:63:5e:7b',
-
-      # Use stdio for the guest OS only; don't attach the QEMU interactive
-      # monitor.
-      '-serial', 'stdio',
-      '-monitor', 'none',
-
-      # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
-      # noisy ANSI spew from the user's terminal emulator.
-      '-append', 'TERM=dumb kernel.halt_on_panic=true',
-    ]
-
-  # Configure the machine & CPU to emulate, based on the target architecture.
-  if bootfs_data.target_cpu == 'arm64':
-    qemu_command.extend([
-        '-machine','virt',
-        '-cpu', 'cortex-a53',
-    ])
-  else:
-    qemu_command.extend([
-        '-enable-kvm',
-        '-machine', 'q35',
-        '-cpu', 'host,migratable=no',
-    ])
-
-  if test_launcher_summary_output:
-    # Make and mount a 100M minfs formatted image that is used to copy the
-    # results json to, for extraction from the target.
-    img_filename = test_launcher_summary_output + '.minfs'
-    _RunAndCheck(dry_run, ['truncate', '-s100M', img_filename,])
-    _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'),
-                           img_filename, 'mkfs'])
-    qemu_command.extend(['-drive', 'file=' + img_filename + ',format=raw'])
-
-
-  if dry_run:
-    print 'Run:', ' '.join(qemu_command)
-    return 0
-
+def _HandleOutputFromProcess(process, symbols_mapping):
   # Set up backtrace-parsing regexps.
-  qemu_prefix = re.compile(r'^.*> ')
+  fuch_prefix = re.compile(r'^.*> ')
   backtrace_prefix = re.compile(r'bt#(?P<frame_id>\d+): ')
 
   # Back-trace line matcher/parser assumes that 'pc' is always present, and
@@ -458,14 +399,6 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
       r'(?:sp 0x[0-9a-f]+ )?' +
       r'(?:\((?P<binary>\S+),(?P<pc_offset>0x[0-9a-f]+)\))?$')
 
-  # We pass a separate stdin stream to qemu. Sharing stdin across processes
-  # leads to flakiness due to the OS prematurely killing the stream and the
-  # Python script panicking and aborting.
-  # The precise root cause is still nebulous, but this fix works.
-  # See crbug.com/741194.
-  qemu_popen = subprocess.Popen(
-      qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
-
   # A buffer of backtrace entries awaiting symbolization, stored as dicts:
   # raw: The original back-trace line that followed the prefix.
   # frame_id: backtrace frame number (starting at 0).
@@ -473,16 +406,21 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
   # pc_offset: memory offset within the executable.
   backtrace_entries = []
 
+  # Continue processing until we receive the ALL_DONE_MESSAGE or we read EOF,
+  # whichever happens first.
   success = False
   while True:
-    line = qemu_popen.stdout.readline().strip()
+    line = process.stdout.readline().strip()
     if not line:
       break
+
     if 'SUCCESS: all tests passed.' in line:
       success = True
+    elif ALL_DONE_MESSAGE in line:
+      break
 
-    # If the line is not from QEMU then don't try to process it.
-    matched = qemu_prefix.match(line)
+    # If the line is not from Fuchsia then don't try to process it.
+    matched = fuch_prefix.match(line)
     if not matched:
       print line
       continue
@@ -500,7 +438,7 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
     if backtrace_line == 'end':
       if backtrace_entries:
         for processed in _SymbolizeBacktrace(backtrace_entries,
-                                             bootfs_data.symbols_mapping):
+                                             symbols_mapping):
           print processed
       backtrace_entries = []
       continue
@@ -518,7 +456,95 @@ def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
           {'raw': backtrace_line, 'frame_id': frame_id,
            'binary': None, 'pc_offset': None})
 
-  qemu_popen.wait()
+  return success
+
+
+def RunFuchsia(bootfs_data, use_device, kernel_path, dry_run,
+               test_launcher_summary_output):
+  if not kernel_path:
+    # TODO(wez): Parameterize this on the |target_cpu| from GN.
+    kernel_path = os.path.join(_TargetCpuToSdkBinPath(bootfs_data.target_cpu),
+                               'zircon.bin')
+
+  if use_device:
+    # Deploy the boot image to the device.
+    bootserver_path = os.path.join(SDK_ROOT, 'tools', 'bootserver')
+    bootserver_command = [bootserver_path, '-1', kernel_path,
+                          bootfs_data.bootfs]
+    _RunAndCheck(dry_run, bootserver_command)
+
+    # Start listening for logging lines.
+    process = subprocess.Popen(
+        [os.path.join(SDK_ROOT, 'tools', 'loglistener')],
+        stdout=subprocess.PIPE, stdin=open(os.devnull))
+  else:
+    qemu_path = os.path.join(
+        SDK_ROOT, 'qemu', 'bin',
+        'qemu-system-' + _TargetCpuToArch(bootfs_data.target_cpu))
+    qemu_command = [qemu_path,
+        '-m', '2048',
+        '-nographic',
+        '-kernel', kernel_path,
+        '-initrd', bootfs_data.bootfs,
+        '-smp', '4',
+
+        # Configure virtual network. It is used in the tests to connect to
+        # testserver running on the host.
+        '-netdev', 'user,id=net0,net=%s,dhcpstart=%s,host=%s' %
+            (GUEST_NET, GUEST_IP_ADDRESS, HOST_IP_ADDRESS),
+        '-device', 'e1000,netdev=net0,mac=52:54:00:63:5e:7b',
+
+        # Use stdio for the guest OS only; don't attach the QEMU interactive
+        # monitor.
+        '-serial', 'stdio',
+        '-monitor', 'none',
+
+        # TERM=dumb tells the guest OS to not emit ANSI commands that trigger
+        # noisy ANSI spew from the user's terminal emulator.
+        '-append', 'TERM=dumb kernel.halt_on_panic=true',
+      ]
+
+    # Configure the machine & CPU to emulate, based on the target architecture.
+    if bootfs_data.target_cpu == 'arm64':
+      qemu_command.extend([
+          '-machine','virt',
+          '-cpu', 'cortex-a53',
+      ])
+    else:
+      qemu_command.extend([
+          '-enable-kvm',
+          '-machine', 'q35',
+          '-cpu', 'host,migratable=no',
+      ])
+
+    if test_launcher_summary_output:
+      # Make and mount a 100M minfs formatted image that is used to copy the
+      # results json to, for extraction from the target.
+      img_filename = test_launcher_summary_output + '.minfs'
+      _RunAndCheck(dry_run, ['truncate', '-s100M', img_filename,])
+      _RunAndCheck(dry_run, [os.path.join(SDK_ROOT, 'tools', 'minfs'),
+                             img_filename, 'mkfs'])
+      qemu_command.extend(['-drive', 'file=' + img_filename + ',format=raw'])
+
+    if dry_run:
+      print 'Run:', ' '.join(qemu_command)
+      return 0
+
+    # We pass a separate stdin stream to qemu. Sharing stdin across processes
+    # leads to flakiness due to the OS prematurely killing the stream and the
+    # Python script panicking and aborting.
+    # The precise root cause is still nebulous, but this fix works.
+    # See crbug.com/741194.
+    process = subprocess.Popen(
+        qemu_command, stdout=subprocess.PIPE, stdin=open(os.devnull))
+
+  success = _HandleOutputFromProcess(process,
+                                     bootfs_data.symbols_mapping)
+
+  if not use_device:
+    process.wait()
+
+  sys.stdout.flush()
 
   if test_launcher_summary_output:
     _GetResultsFromImg(dry_run, test_launcher_summary_output)

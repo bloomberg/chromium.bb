@@ -45,7 +45,8 @@ def main():
       args.output_directory,
       ReadRuntimeDeps(args.runtime_deps_path, args.output_directory),
       args.exe_name, child_args, args.dry_run, args.bootdata,
-      summary_output=None, power_off=False, target_cpu=args.target_cpu)
+      summary_output=None, power_off=False, target_cpu=args.target_cpu,
+      use_device=args.device)
   if not bootfs:
     return 2
 
