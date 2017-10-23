@@ -3174,14 +3174,17 @@ class MediaStreamDevicesControllerBrowserTest
       public testing::WithParamInterface<bool> {
  public:
   MediaStreamDevicesControllerBrowserTest()
-      : request_url_allowed_via_whitelist_(false),
-        request_url_("https://www.example.com/foo") {
+      : request_url_allowed_via_whitelist_(false) {
     policy_value_ = GetParam();
   }
   virtual ~MediaStreamDevicesControllerBrowserTest() {}
 
   void SetUpOnMainThread() override {
     PolicyTest::SetUpOnMainThread();
+
+    ASSERT_TRUE(embedded_test_server()->Start());
+    request_url_ = embedded_test_server()->GetURL("/simple.html");
+    request_pattern_ = request_url_.GetOrigin().spec();
     ui_test_utils::NavigateToURL(browser(), request_url_);
 
     // Testing both the new (PermissionManager) and old code-paths is not simple
@@ -3282,12 +3285,8 @@ class MediaStreamDevicesControllerBrowserTest
   bool policy_value_;
   bool request_url_allowed_via_whitelist_;
   GURL request_url_;
-  static const char kExampleRequestPattern[];
+  std::string request_pattern_;
 };
-
-// static
-const char MediaStreamDevicesControllerBrowserTest::kExampleRequestPattern[] =
-    "https://[*.]example.com/";
 
 IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
                        AudioCaptureAllowed) {
@@ -3320,11 +3319,11 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   audio_devices.push_back(fake_audio_device);
 
   const char* allow_pattern[] = {
-    kExampleRequestPattern,
-    // This will set an allow-all policy whitelist.  Since we do not allow
-    // setting an allow-all entry in the whitelist, this entry should be ignored
-    // and therefore the request should be denied.
-    NULL,
+      request_pattern_.c_str(),
+      // This will set an allow-all policy whitelist.  Since we do not allow
+      // setting an allow-all entry in the whitelist, this entry should be
+      // ignored and therefore the request should be denied.
+      nullptr,
   };
 
   for (size_t i = 0; i < arraysize(allow_pattern); ++i) {
@@ -3378,11 +3377,11 @@ IN_PROC_BROWSER_TEST_P(MediaStreamDevicesControllerBrowserTest,
   video_devices.push_back(fake_video_device);
 
   const char* allow_pattern[] = {
-    kExampleRequestPattern,
-    // This will set an allow-all policy whitelist.  Since we do not allow
-    // setting an allow-all entry in the whitelist, this entry should be ignored
-    // and therefore the request should be denied.
-    NULL,
+      request_pattern_.c_str(),
+      // This will set an allow-all policy whitelist.  Since we do not allow
+      // setting an allow-all entry in the whitelist, this entry should be
+      // ignored and therefore the request should be denied.
+      nullptr,
   };
 
   for (size_t i = 0; i < arraysize(allow_pattern); ++i) {
