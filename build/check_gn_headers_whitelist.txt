@@ -264,7 +264,6 @@ third_party/WebKit/Source/platform/graphics/cpu/arm/WebGLImageConversionNEON.h
 third_party/WebKit/Source/platform/graphics/cpu/mips/WebGLImageConversionMSA.h
 third_party/WebKit/Source/platform/graphics/paint/PaintImage.h
 third_party/WebKit/Source/platform/scheduler/base/task_queue.h
-third_party/WebKit/Source/platform/scroll/ScrollerSizeMetrics.h
 third_party/WebKit/Source/platform/text/TabSize.h
 third_party/WebKit/Source/platform/text/TextDirection.h
 third_party/WebKit/Source/platform/transforms/TransformOperation.h

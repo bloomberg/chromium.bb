@@ -887,60 +887,6 @@ TEST_F(LayerTreeHostImplTest, ScrollDeltaRepeatedScrolls) {
                                  scroll_delta + scroll_delta2));
 }
 
-TEST_F(LayerTreeHostImplTest, ScrollerSizeOfCCScrollingHistogramRecordingTest) {
-  const gfx::Size content_size(800, 600);
-  const gfx::Size viewport_size(500, 500);
-  CreateBasicVirtualViewportLayers(viewport_size, content_size);
-
-  LayerImpl* outer_viewport_scroll_layer =
-      host_impl_->active_tree()->OuterViewportScrollLayer();
-  int id = outer_viewport_scroll_layer->id();
-  std::unique_ptr<LayerImpl> child =
-      LayerImpl::Create(host_impl_->active_tree(), id + 2);
-
-  child->SetScrollable(gfx::Size(100, 100));
-  child->SetElementId(LayerIdToElementIdForTesting(child->id()));
-  child->SetBounds(gfx::Size(100, 400));
-  child->SetPosition(gfx::PointF());
-  child->SetDrawsContent(true);
-
-  outer_viewport_scroll_layer->test_properties()->AddChild(std::move(child));
-  host_impl_->active_tree()->BuildPropertyTreesForTesting();
-
-  base::HistogramTester histogram_tester;
-
-  // Test touch scroll.
-  InputHandler::ScrollStatus status = host_impl_->ScrollBegin(
-      BeginState(gfx::Point()).get(), InputHandler::TOUCHSCREEN);
-  EXPECT_EQ(InputHandler::SCROLL_ON_IMPL_THREAD, status.thread);
-  EXPECT_EQ(MainThreadScrollingReason::kNotScrollingOnMain,
-            status.main_thread_scrolling_reasons);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
-  host_impl_->ScrollEnd(EndState().get());
-
-  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnScroll_Touch",
-                                     10000, 1);
-  histogram_tester.ExpectTotalCount("Event.Scroll.ScrollerSize.OnScroll_Touch",
-                                    1);
-
-  // Scrolling root layer doesn't add to count.
-  host_impl_->ScrollBegin(BeginState(gfx::Point(450, 450)).get(),
-                          InputHandler::TOUCHSCREEN);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
-  host_impl_->ScrollEnd(EndState().get());
-  histogram_tester.ExpectTotalCount("Event.Scroll.ScrollerSize.OnScroll_Touch",
-                                    1);
-
-  // Test wheel scroll.
-  host_impl_->ScrollBegin(BeginState(gfx::Point()).get(), InputHandler::WHEEL);
-  host_impl_->ScrollBy(UpdateState(gfx::Point(), gfx::Vector2d(0, 10)).get());
-  host_impl_->ScrollEnd(EndState().get());
-  histogram_tester.ExpectBucketCount("Event.Scroll.ScrollerSize.OnScroll_Wheel",
-                                     10000, 1);
-  histogram_tester.ExpectTotalCount("Event.Scroll.ScrollerSize.OnScroll_Wheel",
-                                    1);
-}
-
 TEST_F(CommitToPendingTreeLayerTreeHostImplTest,
        GPUMemoryForSmallLayerHistogramTest) {
   base::HistogramTester histogram_tester;

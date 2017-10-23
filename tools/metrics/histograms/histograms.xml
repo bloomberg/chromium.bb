@@ -20491,6 +20491,9 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
 </histogram>
 
 <histogram name="Event.Scroll.ScrollerSize.OnScroll" units="pixels">
+  <obsolete>
+    Deprecated 10/2017 due to the completion of the experiment.
+  </obsolete>
   <owner>yigu@chromium.org</owner>
   <summary>
     Record the area of a scroller upon ScrollBegin. This is intended to help us
