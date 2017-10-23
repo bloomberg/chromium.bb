@@ -31,6 +31,7 @@ class CC_EXPORT DecodedImageTracker {
   // completion. The callback takes a bool indicating whether the decode was
   // successful or not.
   void QueueImageDecode(const PaintImage& image,
+                        const gfx::ColorSpace& target_color_space,
                         const base::Callback<void(bool)>& callback);
   void NotifyFrameFinished();
 
