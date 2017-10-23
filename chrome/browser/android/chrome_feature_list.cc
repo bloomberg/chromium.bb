@@ -67,7 +67,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeHomeOptOutSnackbar,
     &kChromeHomeSwipeLogic,
     &kChromeMemexFeature,
-    &kContentSuggestionsLargeThumbnail,
     &kContentSuggestionsScrollToLoad,
     &kContentSuggestionsSettings,
     &kContentSuggestionsThumbnailDominantColor,
@@ -186,9 +185,6 @@ const base::Feature kChromeHomeSwipeLogic{"ChromeHomeSwipeLogic",
 
 const base::Feature kChromeMemexFeature{"ChromeMemex",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kContentSuggestionsLargeThumbnail{
-    "ContentSuggestionsLargeThumbnail", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContentSuggestionsScrollToLoad{
     "ContentSuggestionsScrollToLoad", base::FEATURE_ENABLED_BY_DEFAULT};

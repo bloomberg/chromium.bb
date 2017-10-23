@@ -2531,11 +2531,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpTilesLowerResolutionFaviconsName,
      flag_descriptions::kNtpTilesLowerResolutionFaviconsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(ntp_tiles::kLowerResolutionFaviconsFeature)},
-    {"enable-content-suggestions-large-thumbnail",
-     flag_descriptions::kEnableContentSuggestionsLargeThumbnailName,
-     flag_descriptions::kEnableContentSuggestionsLargeThumbnailDescription,
-     kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kContentSuggestionsLargeThumbnail)},
     {"enable-content-suggestions-thumbnail-dominant-color",
      flag_descriptions::kEnableContentSuggestionsThumbnailDominantColorName,
      flag_descriptions::

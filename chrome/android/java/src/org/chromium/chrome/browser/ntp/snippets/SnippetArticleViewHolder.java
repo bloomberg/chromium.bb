@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.ntp.snippets;
 import android.support.annotation.LayoutRes;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.metrics.ImpressionTracker;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.ContextMenuManager.ContextMenuItemId;
@@ -204,9 +203,6 @@ public class SnippetArticleViewHolder extends CardViewHolder implements Impressi
         if (FeatureUtilities.isChromeHomeEnabled()) {
             return R.layout.content_suggestions_card_modern;
         }
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
-            return R.layout.new_tab_page_snippets_card_large_thumbnail;
-        }
-        return R.layout.new_tab_page_snippets_card;
+        return R.layout.new_tab_page_snippets_card_large_thumbnail;
     }
 }

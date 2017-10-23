@@ -1708,12 +1708,6 @@ const char kEnableAndroidSpellcheckerName[] = "Enable spell checking";
 const char kEnableAndroidSpellcheckerDescription[] =
     "Enables use of the Android spellchecker.";
 
-const char kEnableContentSuggestionsLargeThumbnailName[] =
-    "Large thumbnails layout for content suggestions cards.";
-const char kEnableContentSuggestionsLargeThumbnailDescription[] =
-    "If enabled, the content suggestions cards will use large thumbnails and "
-    "some related adjustments.";
-
 const char kEnableContentSuggestionsNewFaviconServerName[] =
     "Get favicons for content suggestions from a new server.";
 const char kEnableContentSuggestionsNewFaviconServerDescription[] =
