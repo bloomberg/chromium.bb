@@ -3557,8 +3557,8 @@ def ApplyCustomOverrides(site_config, ge_build_config):
       'betty-release':
           site_config.templates.tast_vm_canary_tests,
 
-      'auron-paladin': {
-          'hw_tests_override': [
+      'auron_paine-paladin': {
+          'hw_tests': [
               config_lib.HWTestConfig(
                   constants.HWTEST_PROVISION_SUITE,
                   pool=constants.HWTEST_PALADIN_POOL,
