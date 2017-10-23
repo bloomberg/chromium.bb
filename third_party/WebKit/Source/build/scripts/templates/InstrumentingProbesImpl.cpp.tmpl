@@ -79,7 +79,7 @@ void {{sink_class}}::remove{{class_name}}({{class_name}}* agent) {
 
 {% endfor -%}
 
-DEFINE_TRACE({{sink_class}})
+void {{sink_class}}::Trace(Visitor* visitor)
 {
 {% for agent in agents %}
 {% set getter_name = agent | agent_name_to_class | to_lower_case %}

@@ -30,24 +30,6 @@ using MissedWriteBarrierCallback = void (*)();
 using TraceWrappersCallback = void (*)(const ScriptWrappableVisitor*,
                                        const void* self);
 
-#define DECLARE_TRACE_WRAPPERS() \
-  void TraceWrappers(const ScriptWrappableVisitor* visitor) const
-
-#define DECLARE_VIRTUAL_TRACE_WRAPPERS() virtual DECLARE_TRACE_WRAPPERS()
-
-#define DEFINE_TRACE_WRAPPERS(T) \
-  void T::TraceWrappers(const ScriptWrappableVisitor* visitor) const
-
-#define DECLARE_TRACE_WRAPPERS_AFTER_DISPATCH() \
-  void TraceWrappersAfterDispatch(const ScriptWrappableVisitor*) const
-
-#define DEFINE_TRACE_WRAPPERS_AFTER_DISPATCH(T)                             \
-  void T::TraceWrappersAfterDispatch(const ScriptWrappableVisitor* visitor) \
-      const
-
-#define DEFINE_INLINE_TRACE_WRAPPERS() DECLARE_TRACE_WRAPPERS()
-#define DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() DECLARE_VIRTUAL_TRACE_WRAPPERS()
-
 #define DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)                   \
   template <>                                                        \
   inline void TraceTrait<ClassName>::TraceMarkedWrapper(             \

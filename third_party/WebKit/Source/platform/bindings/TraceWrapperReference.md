@@ -11,17 +11,16 @@ following checklist highlights the modifications needed to make a class
 participate in wrapper tracing.
 
 1. Make sure that objects participating in tracing either inherit from
-``ScriptWrappable`` (if they can reference wrappers) or ``TraceWrapperBase``
+`ScriptWrappable` (if they can reference wrappers) or `TraceWrapperBase`
 (transitively holding wrappers alive).
-2. Use ``TraceWrapperMember<T>`` to annotate fields that need to be followed to
+2. Use `TraceWrapperMember<T>` to annotate fields that need to be followed to
 find other wrappers that this object should keep alive.
-3. Use ``TraceWrapperV8Reference<T>`` to annotate references to V8 that this
+3. Use `TraceWrapperV8Reference<T>` to annotate references to V8 that this
 object should keep alive.
-4. Declare a method to trace other wrappers using
-``DECLARE_VIRTUAL_TRACE_WRAPPERS()``.
-5. Define the method using ``DEFINE_TRACE_WRAPPERS(ClassName)``.
-6. Trace all fields that received a wrapper tracing type in (1) and (2) using
-``visitor->TraceWrappers(<field_>)`` in the body of ``DEFINE_TRACE_WRAPPERS``.
+4. Declare a `virtual void TraceWrappers(const ScriptWrappableVisitor*) const`
+method to trace other wrappers.
+5. Define the method and trace all fields that received a wrapper tracing type
+in (1) and (2) using `visitor->TraceWrappers(<field_>)` in the body.
 
 The following example illustrates these steps:
 
@@ -32,7 +31,8 @@ The following example illustrates these steps:
 
 class SomeDOMObject : public ScriptWrappable {          // (1)
  public:
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();                     // (4)
+  virtual void TraceWrappers(
+      const ScriptWrappableVisitor*) const;             // (4)
 
  private:
   TraceWrapperMember<OtherWrappable> other_wrappable_;  // (2)
@@ -41,9 +41,10 @@ class SomeDOMObject : public ScriptWrappable {          // (1)
   // ...
 };
 
-DEFINE_TRACE_WRAPPERS(SomeDOMObject) {                  // (5)
-  visitor->TraceWrappers(other_wrappable_);             // (6)
-  visitor->TraceWrappers(v8object_);                    // (6)
+void SomeDOMObject::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {      // (5)
+  visitor->TraceWrappers(other_wrappable_);             // (5)
+  visitor->TraceWrappers(v8object_);                    // (5)
 }
 ```
 
@@ -86,7 +87,7 @@ Pick the header file depending on what types are needed.
 ```
 
 The following example will guide through the modifications that are needed to
-adjust a given class ``SomeDOMObject`` to participate in wrapper tracing.
+adjust a given class `SomeDOMObject` to participate in wrapper tracing.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
@@ -97,33 +98,23 @@ class SomeDOMObject : public ScriptWrappable {
 };
 ```
 
-In this scenario ``SomeDOMObject`` is the object that is wrapped by an object on
+In this scenario `SomeDOMObject` is the object that is wrapped by an object on
 the JavaScript side. The next step is to identify the paths that lead to other
-wrappables. In this case, only ``other_wrappable_`` needs to be traced to find
+wrappables. In this case, only `other_wrappable_` needs to be traced to find
 other *wrappers* in V8.
-
-As wrapper tracing only traces a subset of members residing on the Oilpan heap,
-it requires its own tracing method. The macros are as follows:
-
-* ``DECLARE_VIRTUAL_TRACE_WRAPPERS();``: Use in the class declaration to declare
-the needed wrapper tracing method.
-* ``DEFINE_TRACE_WRAPPERS(ClassName)``: Use to define the implementation of
-wrapper tracing.
-
-Many more convenience wrappers, like inline definitions, can be found in
-``platform/bindings/ScriptWrappableVisitor.h``.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
  public:
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   Member<OtherWrappable> other_wrappable_;
   Member<NonWrappable> non_wrappable_;
 };
 
-DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
+void SomeDOMObject::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(other_wrappable_);
 }
 ```
@@ -134,39 +125,40 @@ can be interleaved with JavaScript or even DOM operations. This poses a
 challenge, because already marked objects will not be considered again if they
 are reached through some other path.
 
-For example, consider an object ``A`` that has already been marked and a write
-to a field ``A.x`` setting ``x`` to an unmarked object ``Y``.  Since ``A.x`` is
-the only reference keeping ``Y``, and ``A`` has already been marked, the garbage
-collector will not find ``Y`` and reclaim it.
+For example, consider an object `A` that has already been marked and a write
+to a field `A.x` setting `x` to an unmarked object `Y`.  Since `A.x` is
+the only reference keeping `Y`, and `A` has already been marked, the garbage
+collector will not find `Y` and reclaim it.
 
 To overcome this problem we require all writes of interesting objects, i.e.,
 writes to traced fields, to go through a write barrier.
 The write barrier will check for the problem case above and make sure
-``Y`` will be marked. In order to automatically issue a write barrier
-``other_wrappable_`` needs ``TraceWrapperMember`` type.
+`Y` will be marked. In order to automatically issue a write barrier
+`other_wrappable_` needs `TraceWrapperMember` type.
 
 ```c++
 class SomeDOMObject : public ScriptWrappable {
  public:
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   TraceWrapperMember<OtherWrappable> other_wrappable_;
   Member<NonWrappable> non_wrappable_;
 };
 
-DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
+void SomeDOMObject::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappers(other_wrappable_);
 }
 ```
 
-``TraceWrapperMember`` makes sure that any write to ``other_wrappable_`` will
+`TraceWrapperMember` makes sure that any write to `other_wrappable_` will
 consider doing a write barrier. Using the proper type, the write barrier is
 correct by construction, i.e., it will never be missed.
 
 ## Heap collections
 
-The proper type usage for collections, e.g. ``HeapVector`` looks like the
+The proper type usage for collections, e.g. `HeapVector` looks like the
 following.
 
 ```c++
@@ -174,20 +166,21 @@ class SomeDOMObject : public ScriptWrappable {
  public:
   // ...
   void AppendNewValue(OtherWrappable* newValue);
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   HeapVector<TraceWrapperMember<OtherWrappable>> other_wrappables_;
 };
 
-DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
+void SomeDOMObject::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   for (auto other : other_wrappables_)
     visitor->TraceWrappers(other);
 }
 ```
 
 Note that this is different to Oilpan which can just trace the whole collection.
-``TraceWrapperMember`` can be constructed in place, so  using ``append`` and
+`TraceWrapperMember` can be constructed in place, so  using `append` and
 friends will work out of the box, e.g.
 
 ```c++
@@ -196,13 +189,13 @@ void SomeDOMObject::AppendNewValue(OtherWrappable* newValue) {
 }
 ```
 
-The compiler will throw an error for each omitted ``TraceWrapperMember``
+The compiler will throw an error for each omitted `TraceWrapperMember`
 construction.
 
-### Swapping ``HeapVector`` containing ``TraceWrapperMember`` and ``Member``
+### Swapping `HeapVector` containing `TraceWrapperMember` and `Member`
 
-It is possible to swap two ``HeapVectors`` containing ``TraceWrapperMember`` and
-``Member`` by using ``blink::swap``. The underlying swap will avoid copies and
+It is possible to swap two `HeapVectors` containing `TraceWrapperMember` and
+`Member` by using `blink::swap`. The underlying swap will avoid copies and
 write barriers if possible.
 
 ```c++
@@ -217,22 +210,22 @@ HeapVector<Member<Wrappable>> temporary;
 blink::swap(c, temporary);
 ```
 
-## Tracing through non-``ScriptWrappable`` types
+## Tracing through non-`ScriptWrappable` types
 
 Sometimes it is necessary to trace through types that do not inherit from
-``ScriptWrappable``. For example, consider the object graph
-``A -> B -> C`` where both ``A`` and ``C`` are ``ScriptWrappable``s that
+`ScriptWrappable`. For example, consider the object graph
+`A -> B -> C` where both `A` and `C` are `ScriptWrappable`s that
 need to be traced.
 
-In this case, the same rules as with ``ScriptWrappables`` apply, except for the
-difference that these classes need to inherit from ``TraceWrapperBase``.
+In this case, the same rules as with `ScriptWrappables` apply, except for the
+difference that these classes need to inherit from `TraceWrapperBase`.
 
 ### Memory-footprint critical uses
 
-In the case we cannot afford inheriting from ``TraceWrapperBase``, which will
+In the case we cannot afford inheriting from `TraceWrapperBase`, which will
 add a vtable pointer for tracing wrappers, use
-``DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)`` after defining
-``ClassName`` to define the proper tracing specializations.
+`DEFINE_TRAIT_FOR_TRACE_WRAPPERS(ClassName)` after defining
+`ClassName` to define the proper tracing specializations.
 
 ## Explicit write barriers
 
@@ -248,12 +241,13 @@ class ManualWrappable : public ScriptWrappable {
     SriptWrappableVisitor::WriteBarrier(other_wrappable_);
   }
 
-  DECLARE_VIRTUAL_TRACE_WRAPPERS();
+  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
  private:
   Member<OtherWrappable>> other_wrappable_;
 };
 
-DEFINE_TRACE_WRAPPERS(ManualWrappable) {
+void ManualWrappable::TraceWrappers(
+    const ScriptWrappableVisitor* visitor) const {
   visitor->TraceWrappersWithManualWriteBarrier(other_wrappable_);
 }
 ```

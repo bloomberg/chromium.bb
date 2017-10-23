@@ -68,32 +68,6 @@ struct TraceMethodDelegate {
   }
 };
 
-#define DECLARE_TRACE_IMPL(maybevirtual) \
- public:                                 \
-  maybevirtual void Trace(blink::Visitor*);
-
-#define DECLARE_TRACE_AFTER_DISPATCH() \
- public:                               \
-  void TraceAfterDispatch(blink::Visitor*);
-
-#define DEFINE_TRACE(T) void T::Trace(blink::Visitor* visitor)
-
-#define DEFINE_INLINE_TRACE_IMPL(maybevirtual) \
-  maybevirtual void Trace(blink::Visitor* visitor)
-
-#define DEFINE_TRACE_AFTER_DISPATCH(T) \
-  void T::TraceAfterDispatch(blink::Visitor* visitor)
-
-#define DEFINE_INLINE_TRACE_AFTER_DISPATCH() \
-  void TraceAfterDispatch(blink::Visitor* visitor)
-
-#define EMPTY_MACRO_ARGUMENT
-
-#define DECLARE_TRACE() DECLARE_TRACE_IMPL(EMPTY_MACRO_ARGUMENT)
-#define DECLARE_VIRTUAL_TRACE() DECLARE_TRACE_IMPL(virtual)
-#define DEFINE_INLINE_TRACE() DEFINE_INLINE_TRACE_IMPL(EMPTY_MACRO_ARGUMENT)
-#define DEFINE_INLINE_VIRTUAL_TRACE() DEFINE_INLINE_TRACE_IMPL(virtual)
-
 // Visitor is used to traverse the Blink object graph. Used for the
 // marking phase of the mark-sweep garbage collector.
 //

@@ -28,7 +28,7 @@ class MODULES_EXPORT EffectProxy : public GarbageCollected<EffectProxy>,
 
   WTF::TimeDelta GetLocalTime() const { return local_time_; }
 
-  DEFINE_INLINE_TRACE() {}
+  void Trace(Visitor*) {}
 
  private:
   WTF::TimeDelta local_time_;
