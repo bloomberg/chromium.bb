@@ -67,7 +67,7 @@ struct CheckedAddOp<T,
       return false;
     }
 
-    Promotion presult;
+    Promotion presult = {};
     bool is_valid = true;
     if (IsIntegerArithmeticSafe<Promotion, T, U>::value) {
       presult = static_cast<Promotion>(x) + static_cast<Promotion>(y);
@@ -127,7 +127,7 @@ struct CheckedSubOp<T,
       return false;
     }
 
-    Promotion presult;
+    Promotion presult = {};
     bool is_valid = true;
     if (IsIntegerArithmeticSafe<Promotion, T, U>::value) {
       presult = static_cast<Promotion>(x) - static_cast<Promotion>(y);
@@ -183,7 +183,7 @@ struct CheckedMulOp<T,
       return false;
     }
 
-    Promotion presult;
+    Promotion presult = {};
     bool is_valid = true;
     if (CheckedMulFastOp<Promotion, Promotion>::is_supported) {
       // The fast op may be available with the promoted type.

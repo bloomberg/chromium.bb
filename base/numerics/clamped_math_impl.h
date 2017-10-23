@@ -87,7 +87,7 @@ struct ClampedAddOp<T,
                   "The saturation result cannot be determined from the "
                   "provided types.");
     const V saturated = CommonMaxOrMin<V>(IsValueNegative(y));
-    V result;
+    V result = {};
     return BASE_NUMERICS_LIKELY((CheckedAddOp<T, U>::Do(x, y, &result)))
                ? result
                : saturated;
@@ -114,7 +114,7 @@ struct ClampedSubOp<T,
                   "The saturation result cannot be determined from the "
                   "provided types.");
     const V saturated = CommonMaxOrMin<V>(!IsValueNegative(y));
-    V result;
+    V result = {};
     return BASE_NUMERICS_LIKELY((CheckedSubOp<T, U>::Do(x, y, &result)))
                ? result
                : saturated;
@@ -136,7 +136,7 @@ struct ClampedMulOp<T,
     if (ClampedMulFastOp<T, U>::is_supported)
       return ClampedMulFastOp<T, U>::template Do<V>(x, y);
 
-    V result;
+    V result = {};
     const V saturated =
         CommonMaxOrMin<V>(IsValueNegative(x) ^ IsValueNegative(y));
     return BASE_NUMERICS_LIKELY((CheckedMulOp<T, U>::Do(x, y, &result)))
@@ -156,7 +156,7 @@ struct ClampedDivOp<T,
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
   static constexpr V Do(T x, U y) {
-    V result;
+    V result = {};
     if (BASE_NUMERICS_LIKELY((CheckedDivOp<T, U>::Do(x, y, &result))))
       return result;
     // Saturation goes to max, min, or NaN (if x is zero).
@@ -176,7 +176,7 @@ struct ClampedModOp<T,
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V = result_type>
   static constexpr V Do(T x, U y) {
-    V result;
+    V result = {};
     return BASE_NUMERICS_LIKELY((CheckedModOp<T, U>::Do(x, y, &result)))
                ? result
                : x;
