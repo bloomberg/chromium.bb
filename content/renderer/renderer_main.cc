@@ -40,9 +40,11 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #endif  // OS_ANDROID
 
-#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(OS_POSIX) && !defined(OS_MACOSX) && !defined(OS_ANDROID) && \
+    !defined(OS_FUCHSIA)
 #include "content/common/font_config_ipc_linux.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "third_party/skia/include/ports/SkFontConfigInterface.h"
 #endif
 

@@ -13,6 +13,7 @@
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/zygote_handle_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"

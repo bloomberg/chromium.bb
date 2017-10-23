@@ -13,10 +13,12 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/pickle.h"
 #include "base/posix/eintr_wrapper.h"
+#include "base/posix/global_descriptors.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/sys_byteorder.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
+#include "content/public/common/content_descriptors.h"
 
 namespace content {
 
@@ -107,6 +109,10 @@ int MakeSharedMemorySegmentViaIPC(size_t length, bool executable) {
   if (result == -1)
     return -1;
   return result_fd;
+}
+
+int GetSandboxFD() {
+  return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
 }
 
 }  // namespace content

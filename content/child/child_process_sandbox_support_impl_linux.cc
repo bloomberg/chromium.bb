@@ -16,6 +16,7 @@
 #include "base/sys_byteorder.h"
 #include "base/trace_event/trace_event.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/linux/WebFallbackFont.h"

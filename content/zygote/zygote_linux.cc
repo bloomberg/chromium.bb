@@ -34,6 +34,7 @@
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_linux.h"
 #include "content/common/zygote_commands_linux.h"
+#include "content/public/common/common_sandbox_support_linux.h"
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/mojo_channel_switches.h"
 #include "content/public/common/result_codes.h"

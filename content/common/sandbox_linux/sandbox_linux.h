@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
-#include "content/public/common/content_descriptors.h"
 #include "content/public/common/sandbox_linux.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 
@@ -32,10 +31,6 @@ class Thread;
 namespace sandbox { class SetuidSandboxClient; }
 
 namespace content {
-
-inline int GetSandboxFD() {
-  return kSandboxIPCChannel + base::GlobalDescriptors::kBaseDescriptor;
-}
 
 // A singleton class to represent and change our sandboxing state for the
 // three main Linux sandboxes.
