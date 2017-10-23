@@ -23,7 +23,6 @@ import org.chromium.chrome.browser.BasicNativePage;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
-import org.chromium.chrome.browser.partnerbookmarks.PartnerBookmarksShim;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -165,10 +164,7 @@ public class BookmarkManager implements BookmarkDelegate, SearchDelegate {
         mUndoController = new BookmarkUndoController(activity, mBookmarkModel, snackbarManager);
         mBookmarkModel.addObserver(mBookmarkModelObserver);
         initializeToLoadingState();
-        mBookmarkModel.runAfterBookmarkModelLoaded(mModelLoadedRunnable);
-
-        // Load partner bookmarks explicitly.
-        PartnerBookmarksShim.kickOffReading(activity);
+        mBookmarkModel.finishLoadingBookmarkModel(mModelLoadedRunnable);
 
         mLargeIconBridge = new LargeIconBridge(Profile.getLastUsedProfile().getOriginalProfile());
         ActivityManager activityManager = ((ActivityManager) ContextUtils
