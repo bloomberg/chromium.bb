@@ -32,12 +32,12 @@ bool LoadImages(const base::DictionaryValue* theme_value,
       // The value may be a dictionary of scales and files paths.
       // Or the value may be a file path, in which case a scale
       // of 100% is assumed.
-      if (iter.value().IsType(base::Value::Type::DICTIONARY)) {
+      if (iter.value().is_dict()) {
         const base::DictionaryValue* inner_value = NULL;
         if (iter.value().GetAsDictionary(&inner_value)) {
           for (base::DictionaryValue::Iterator inner_iter(*inner_value);
                !inner_iter.IsAtEnd(); inner_iter.Advance()) {
-            if (!inner_iter.value().IsType(base::Value::Type::STRING)) {
+            if (!inner_iter.value().is_string()) {
               *error = base::ASCIIToUTF16(errors::kInvalidThemeImages);
               return false;
             }
@@ -46,7 +46,7 @@ bool LoadImages(const base::DictionaryValue* theme_value,
           *error = base::ASCIIToUTF16(errors::kInvalidThemeImages);
           return false;
         }
-      } else if (!iter.value().IsType(base::Value::Type::STRING)) {
+      } else if (!iter.value().is_string()) {
         *error = base::ASCIIToUTF16(errors::kInvalidThemeImages);
         return false;
       }

@@ -17,29 +17,29 @@ std::unique_ptr<protocol::Value> toProtocolValue(const base::Value* value,
                                                  int depth) {
   if (!value || !depth)
     return nullptr;
-  if (value->IsType(base::Value::Type::NONE))
+  if (value->is_none())
     return protocol::Value::null();
-  if (value->IsType(base::Value::Type::BOOLEAN)) {
+  if (value->is_bool()) {
     bool inner;
     value->GetAsBoolean(&inner);
     return protocol::FundamentalValue::create(inner);
   }
-  if (value->IsType(base::Value::Type::INTEGER)) {
+  if (value->is_int()) {
     int inner;
     value->GetAsInteger(&inner);
     return protocol::FundamentalValue::create(inner);
   }
-  if (value->IsType(base::Value::Type::DOUBLE)) {
+  if (value->is_double()) {
     double inner;
     value->GetAsDouble(&inner);
     return protocol::FundamentalValue::create(inner);
   }
-  if (value->IsType(base::Value::Type::STRING)) {
+  if (value->is_string()) {
     std::string inner;
     value->GetAsString(&inner);
     return protocol::StringValue::create(inner);
   }
-  if (value->IsType(base::Value::Type::LIST)) {
+  if (value->is_list()) {
     const base::ListValue* list = nullptr;
     value->GetAsList(&list);
     std::unique_ptr<protocol::ListValue> result = protocol::ListValue::create();
@@ -53,7 +53,7 @@ std::unique_ptr<protocol::Value> toProtocolValue(const base::Value* value,
     }
     return std::move(result);
   }
-  if (value->IsType(base::Value::Type::DICTIONARY)) {
+  if (value->is_dict()) {
     const base::DictionaryValue* dictionary = nullptr;
     value->GetAsDictionary(&dictionary);
     std::unique_ptr<protocol::DictionaryValue> result =

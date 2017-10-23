@@ -45,8 +45,7 @@ bool IncognitoModePolicyHandler::CheckPolicySettings(const PolicyMap& policies,
 
   const base::Value* deprecated_enabled =
       policies.GetValue(key::kIncognitoEnabled);
-  if (deprecated_enabled &&
-      !deprecated_enabled->IsType(base::Value::Type::BOOLEAN)) {
+  if (deprecated_enabled && !deprecated_enabled->is_bool()) {
     errors->AddError(key::kIncognitoEnabled, IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(base::Value::Type::BOOLEAN));
     return false;

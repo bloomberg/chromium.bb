@@ -63,7 +63,7 @@ void ExtensionManagementPrefUpdaterBase::
     ClearInstallationModesForIndividualExtensions() {
   for (base::DictionaryValue::Iterator it(*pref_); !it.IsAtEnd();
        it.Advance()) {
-    DCHECK(it.value().IsType(base::Value::Type::DICTIONARY));
+    DCHECK(it.value().is_dict());
     if (it.key() != schema::kWildcard) {
       DCHECK(crx_file::id_util::IdIsValid(it.key()));
       pref_->Remove(make_path(it.key(), schema::kInstallationMode), nullptr);

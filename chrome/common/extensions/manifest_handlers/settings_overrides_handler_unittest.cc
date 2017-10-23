@@ -85,7 +85,7 @@ TEST(OverrideSettingsTest, ParseManifest) {
   std::string error;
   std::unique_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
-  ASSERT_TRUE(root->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(root->is_dict());
   scoped_refptr<Extension> extension = Extension::Create(
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,
@@ -134,7 +134,7 @@ TEST(OverrideSettingsTest, ParsePrepopulatedId) {
   std::string error;
   std::unique_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
-  ASSERT_TRUE(root->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(root->is_dict());
   scoped_refptr<Extension> extension =
       Extension::Create(base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
                         Manifest::INVALID_LOCATION,
@@ -173,7 +173,7 @@ TEST(OverrideSettingsTest, ParseBrokenManifest) {
   std::string error;
   std::unique_ptr<base::Value> root(json.Deserialize(NULL, &error));
   ASSERT_TRUE(root);
-  ASSERT_TRUE(root->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(root->is_dict());
   scoped_refptr<Extension> extension = Extension::Create(
       base::FilePath(FILE_PATH_LITERAL("//nonexistent")),
       Manifest::INVALID_LOCATION,

@@ -240,7 +240,7 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
 
     bool has_external_version = false;
     if (extension->Get(kExternalVersion, &external_version_value)) {
-      if (external_version_value->IsType(base::Value::Type::STRING)) {
+      if (external_version_value->is_string()) {
         external_version_value->GetAsString(&external_version);
         has_external_version = true;
       } else {

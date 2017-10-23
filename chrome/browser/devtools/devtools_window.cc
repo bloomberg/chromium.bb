@@ -106,7 +106,7 @@ void SetPreferencesFromJson(Profile* profile, const std::string& json) {
     return;
   DictionaryPrefUpdate update(profile->GetPrefs(), prefs::kDevToolsPreferences);
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    if (!it.value().IsType(base::Value::Type::STRING))
+    if (!it.value().is_string())
       continue;
     update.Get()->SetWithoutPathExpansion(
         it.key(), it.value().CreateDeepCopy());
@@ -1293,7 +1293,7 @@ void DevToolsWindow::ShowCertificateViewer(const std::string& cert_chain) {
   std::vector<std::string> decoded;
   for (size_t i = 0; i < list->GetSize(); ++i) {
     base::Value* item;
-    if (!list->Get(i, &item) || item->type() != base::Value::Type::STRING) {
+    if (!list->Get(i, &item) || !item->is_string()) {
       NOTREACHED();
       return;
     }

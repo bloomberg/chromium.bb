@@ -273,7 +273,7 @@ ChromeDevToolsManagerDelegate::SetRemoteLocations(
     return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
                                                          kLocationsParam);
   for (const auto& item : *locations) {
-    if (!item.IsType(base::Value::Type::DICTIONARY)) {
+    if (!item.is_dict()) {
       return DevToolsProtocol::CreateInvalidParamsResponse(command_id,
                                                            kLocationsParam);
     }

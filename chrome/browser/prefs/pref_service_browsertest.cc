@@ -95,7 +95,7 @@ IN_PROC_BROWSER_TEST_F(PreferenceServiceTest, Test) {
   }
 
   ASSERT_TRUE(root.get());
-  ASSERT_TRUE(root->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(root->is_dict());
 
   base::DictionaryValue* root_dict =
       static_cast<base::DictionaryValue*>(root.get());

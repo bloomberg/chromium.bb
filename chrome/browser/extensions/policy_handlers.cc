@@ -234,14 +234,14 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
   // |policy_value| is expected to conform to the defined schema. But it's
   // not strictly valid since there are additional restrictions.
   const base::DictionaryValue* dict_value = NULL;
-  DCHECK(policy_value->IsType(base::Value::Type::DICTIONARY));
+  DCHECK(policy_value->is_dict());
   policy_value->GetAsDictionary(&dict_value);
 
   for (base::DictionaryValue::Iterator it(*dict_value); !it.IsAtEnd();
        it.Advance()) {
     DCHECK(it.key() == schema_constants::kWildcard ||
            crx_file::id_util::IdIsValid(it.key()));
-    DCHECK(it.value().IsType(base::Value::Type::DICTIONARY));
+    DCHECK(it.value().is_dict());
 
     // Extracts sub dictionary.
     const base::DictionaryValue* sub_dict = NULL;

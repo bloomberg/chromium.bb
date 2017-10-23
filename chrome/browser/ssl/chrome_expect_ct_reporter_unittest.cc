@@ -215,7 +215,7 @@ void CheckExpectCTReport(const std::string& serialized_report,
                          const net::SSLInfo& ssl_info) {
   std::unique_ptr<base::Value> value(base::JSONReader::Read(serialized_report));
   ASSERT_TRUE(value);
-  ASSERT_TRUE(value->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(value->is_dict());
 
   base::DictionaryValue* outer_report_dict;
   ASSERT_TRUE(value->GetAsDictionary(&outer_report_dict));

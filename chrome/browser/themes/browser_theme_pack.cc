@@ -1069,7 +1069,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
 
   for (base::DictionaryValue::Iterator iter(*images_value); !iter.IsAtEnd();
        iter.Advance()) {
-    if (iter.value().IsType(base::Value::Type::DICTIONARY)) {
+    if (iter.value().is_dict()) {
       const base::DictionaryValue* inner_value = NULL;
       if (iter.value().GetAsDictionary(&inner_value)) {
         for (base::DictionaryValue::Iterator inner_iter(*inner_value);
@@ -1078,7 +1078,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
           std::string name;
           ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE;
           if (GetScaleFactorFromManifestKey(inner_iter.key(), &scale_factor) &&
-              inner_iter.value().IsType(base::Value::Type::STRING) &&
+              inner_iter.value().is_string() &&
               inner_iter.value().GetAsString(&name)) {
             AddFileAtScaleToMap(iter.key(),
                                 scale_factor,
@@ -1087,7 +1087,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
           }
         }
       }
-    } else if (iter.value().IsType(base::Value::Type::STRING)) {
+    } else if (iter.value().is_string()) {
       std::string name;
       if (iter.value().GetAsString(&name)) {
         AddFileAtScaleToMap(iter.key(),

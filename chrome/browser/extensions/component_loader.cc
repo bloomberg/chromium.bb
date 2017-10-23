@@ -172,7 +172,7 @@ std::unique_ptr<base::DictionaryValue> ComponentLoader::ParseManifest(
   JSONStringValueDeserializer deserializer(manifest_contents);
   std::unique_ptr<base::Value> manifest = deserializer.Deserialize(NULL, NULL);
 
-  if (!manifest.get() || !manifest->IsType(base::Value::Type::DICTIONARY)) {
+  if (!manifest.get() || !manifest->is_dict()) {
     LOG(ERROR) << "Failed to parse extension manifest.";
     return std::unique_ptr<base::DictionaryValue>();
   }

@@ -83,7 +83,7 @@ bool ExtractUninstallMetricsFromFile(const base::FilePath& file_path,
     return false;
 
   // Preferences should always have a dictionary root.
-  if (!root->IsType(base::Value::Type::DICTIONARY))
+  if (!root->is_dict())
     return false;
 
   return ExtractUninstallMetrics(

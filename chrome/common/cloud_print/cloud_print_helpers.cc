@@ -192,7 +192,7 @@ std::unique_ptr<base::DictionaryValue> ParseResponseJSON(
   if (!message_value.get())
     return std::unique_ptr<base::DictionaryValue>();
 
-  if (!message_value->IsType(base::Value::Type::DICTIONARY))
+  if (!message_value->is_dict())
     return std::unique_ptr<base::DictionaryValue>();
 
   std::unique_ptr<base::DictionaryValue> response_dict(

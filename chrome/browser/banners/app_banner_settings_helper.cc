@@ -353,7 +353,7 @@ bool AppBannerSettingsHelper::WasLaunchedRecently(Profile* profile,
       base::TimeDelta::FromDays(kRecentLastLaunchInDays);
   for (base::DictionaryValue::Iterator it(*origin_dict); !it.IsAtEnd();
        it.Advance()) {
-    if (it.value().IsType(base::Value::Type::DICTIONARY)) {
+    if (it.value().is_dict()) {
       const base::DictionaryValue* value;
       it.value().GetAsDictionary(&value);
 

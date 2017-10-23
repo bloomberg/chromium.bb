@@ -243,7 +243,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionManagementApiEscalationTest,
   std::unique_ptr<base::Value> result(util::RunFunctionAndReturnSingleResult(
       function.get(), base::StringPrintf("[\"%s\"]", kId), browser()));
   ASSERT_TRUE(result.get() != NULL);
-  ASSERT_TRUE(result->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(result->is_dict());
   base::DictionaryValue* dict =
       static_cast<base::DictionaryValue*>(result.get());
   std::string reason;

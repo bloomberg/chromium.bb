@@ -85,7 +85,7 @@ TEST(ComponentInstallerTest, PepperFlashCheck) {
       base::DictionaryValue::From(deserializer.Deserialize(NULL, &error));
 
   ASSERT_TRUE(root);
-  ASSERT_TRUE(root->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(root->is_dict());
 
   // This checks that the whole manifest is compatible.
   base::Version version;

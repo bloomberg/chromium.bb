@@ -451,7 +451,7 @@ const base::Value* ExtensionManagement::LoadPreference(
   if (pref && !pref->IsDefaultValue() &&
       (!force_managed || pref->IsManaged())) {
     const base::Value* value = pref->GetValue();
-    if (value && value->IsType(expected_type))
+    if (value && value->type() == expected_type)
       return value;
   }
   return nullptr;
