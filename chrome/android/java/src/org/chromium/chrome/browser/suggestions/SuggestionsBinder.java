@@ -60,9 +60,6 @@ public class SuggestionsBinder {
     private final @Nullable ImageView mVideoBadge;
     private final ImageView mOfflineBadge;
     private final View mPublisherBar;
-
-    /** Total horizontal space occupied by the thumbnail, sum of its size and margin. */
-    private final int mThumbnailFootprintPx;
     private final int mThumbnailSize;
 
     boolean mHasVideoBadge;
@@ -80,7 +77,6 @@ public class SuggestionsBinder {
 
         mTextLayout = mCardContainerView.findViewById(R.id.text_layout);
         mThumbnailView = mCardContainerView.findViewById(R.id.article_thumbnail);
-
         mHeadlineTextView = mCardContainerView.findViewById(R.id.article_headline);
         mPublisherTextView = mCardContainerView.findViewById(R.id.article_publisher);
         mAgeTextView = mCardContainerView.findViewById(R.id.article_age);
@@ -89,9 +85,6 @@ public class SuggestionsBinder {
         mPublisherBar = mCardContainerView.findViewById(R.id.publisher_bar);
 
         mThumbnailSize = getThumbnailSize(mCardContainerView.getResources());
-        mThumbnailFootprintPx = mThumbnailSize
-                + mCardContainerView.getResources().getDimensionPixelSize(
-                          R.dimen.snippets_thumbnail_margin);
     }
 
     public void updateViewInformation(SnippetArticle suggestion) {
@@ -127,13 +120,7 @@ public class SuggestionsBinder {
             publisherBarParams.topMargin = 0;
         }
 
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
-            mTextLayout.setMinimumHeight(showThumbnail ? mThumbnailSize : 0);
-        } else {
-            ApiCompatibilityUtils.setMarginEnd(
-                    publisherBarParams, showThumbnail ? mThumbnailFootprintPx : 0);
-        }
-
+        mTextLayout.setMinimumHeight(showThumbnail ? mThumbnailSize : 0);
         mPublisherBar.setLayoutParams(publisherBarParams);
     }
 
@@ -415,9 +402,6 @@ public class SuggestionsBinder {
         final int dimension;
         if (FeatureUtilities.isChromeHomeEnabled()) {
             dimension = R.dimen.snippets_thumbnail_size_modern;
-        } else if (ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CONTENT_SUGGESTIONS_LARGE_THUMBNAIL)) {
-            dimension = R.dimen.snippets_thumbnail_size_large;
         } else {
             dimension = R.dimen.snippets_thumbnail_size;
         }

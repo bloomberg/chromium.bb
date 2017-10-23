@@ -336,10 +336,8 @@
     <dimen name="ntp_shadow_height">9dp</dimen>
     <dimen name="ntp_sign_in_promo_margin_top">20dp</dimen>
     <dimen name="ntp_progress_indicator_diameter">56dp</dimen>
-    <dimen name="snippets_thumbnail_size">72dp</dimen>
-    <dimen name="snippets_thumbnail_size_large">124dp</dimen>
+    <dimen name="snippets_thumbnail_size">124dp</dimen>
     <dimen name="snippets_thumbnail_size_modern">114dp</dimen>
-    <dimen name="snippets_thumbnail_margin">16dp</dimen>
     <!-- The default padding for the peeking card and the amount the card peeks by in the current
          peeking card animation (the calculations assume this is the same). -->
     <dimen name="snippets_padding">16dp</dimen>
