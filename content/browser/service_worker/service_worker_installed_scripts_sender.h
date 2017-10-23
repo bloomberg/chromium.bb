@@ -5,8 +5,7 @@
 #ifndef CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPTS_SENDER_H_
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPTS_SENDER_H_
 
-#include <queue>
-
+#include "base/containers/queue.h"
 #include "content/common/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -110,7 +109,7 @@ class CONTENT_EXPORT ServiceWorkerInstalledScriptsSender
   FinishedReason last_finished_reason_;
 
   GURL current_sending_url_;
-  std::queue<std::pair<int64_t /* resource_id */, GURL>> pending_scripts_;
+  base::queue<std::pair<int64_t /* resource_id */, GURL>> pending_scripts_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerInstalledScriptsSender);
 };

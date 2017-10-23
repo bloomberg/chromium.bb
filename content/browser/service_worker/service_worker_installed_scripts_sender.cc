@@ -412,9 +412,9 @@ void ServiceWorkerInstalledScriptsSender::Abort(FinishedReason reason) {
                                   "FinishedReason", static_cast<int>(reason));
 
   // Remove all pending scripts.
-  // Note that std::queue doesn't have clear(), and also base::STLClearObject is
-  // not applicable for std::queue since it doesn't have reserve().
-  std::queue<std::pair<int64_t, GURL>> empty;
+  // Note that base::queue doesn't have clear(), and also base::STLClearObject
+  // is not applicable for base::queue since it doesn't have reserve().
+  base::queue<std::pair<int64_t, GURL>> empty;
   pending_scripts_.swap(empty);
 
   UpdateFinishedReasonAndBecomeIdle(reason);
