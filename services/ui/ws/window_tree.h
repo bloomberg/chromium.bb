@@ -435,11 +435,10 @@ class WindowTree : public mojom::WindowTree,
   bool ProcessSetBlockingContainers(std::vector<mojom::BlockingContainersPtr>
                                         transport_all_blocking_containers);
 
-  // Returns the ClientWindowId from a transport id or WindowId. Uses id_ as the
-  // ClientWindowId::client_id part if it was invalid. These functions do a
-  // straight mapping, there may not be a window with the returned id.
+  // Returns the ClientWindowId from a transport id. Uses id_ as the
+  // ClientWindowId::client_id part if it was invalid. This function
+  // do a straight mapping, there may not be a window with the returned id.
   ClientWindowId MakeClientWindowId(Id transport_window_id) const;
-  ClientWindowId MakeClientWindowId(const WindowId& id) const;
 
   // Returns the WindowTreeClient previously scheduled for an embed with the
   // given |token| from ScheduleEmbed(). If this client is the result of an

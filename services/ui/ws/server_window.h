@@ -249,7 +249,7 @@ class ServerWindow : public viz::HostFrameSinkClient {
 
   ServerWindowDelegate* const delegate_;
   const WindowId id_;
-  viz::FrameSinkId frame_sink_id_;
+  const viz::FrameSinkId frame_sink_id_;
   base::Optional<viz::LocalSurfaceId> current_local_surface_id_;
 
   ServerWindow* parent_;
