@@ -13,6 +13,8 @@
   var tzOffset = new Date(baseDate).getTimezoneOffset() * 60 * 1000;
   var baseTimestamp = 1400000000000 + tzOffset;
 
+  Common.settingForTest('consoleGroupSimilar').set(false);
+
   function addMessageWithFixedTimestamp(messageText, timestamp, type) {
     var message = new ConsoleModel.ConsoleMessage(
         TestRunner.runtimeModel,
