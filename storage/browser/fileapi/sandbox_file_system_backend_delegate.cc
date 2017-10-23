@@ -133,10 +133,13 @@ void OpenFileSystemOnFileTaskRunner(
 
 void DidOpenFileSystem(
     base::WeakPtr<SandboxFileSystemBackendDelegate> delegate,
+    base::OnceClosure quota_callback,
     base::OnceCallback<void(base::File::Error error)> callback,
     base::File::Error* error) {
   if (delegate)
     delegate->CollectOpenFileSystemMetrics(*error);
+  if (*error == base::File::FILE_OK)
+    std::move(quota_callback).Run();
   std::move(callback).Run(*error);
 }
 
@@ -177,6 +180,7 @@ SandboxFileSystemBackendDelegate::SandboxFileSystemBackendDelegate(
     storage::SpecialStoragePolicy* special_storage_policy,
     const FileSystemOptions& file_system_options)
     : file_task_runner_(file_task_runner),
+      quota_manager_proxy_(quota_manager_proxy),
       sandbox_file_util_(new AsyncFileUtilAdapter(
           new ObfuscatedFileUtil(special_storage_policy,
                                  profile_path.Append(kFileSystemDirectory),
@@ -259,12 +263,22 @@ void SandboxFileSystemBackendDelegate::OpenFileSystem(
 
   std::string name = GetFileSystemName(origin_url, type);
 
+  // |quota_manager_proxy_| may be null in unit tests.
+  base::OnceClosure quota_callback =
+      (quota_manager_proxy_.get())
+          ? base::BindOnce(&QuotaManagerProxy::NotifyStorageAccessed,
+                           quota_manager_proxy_,
+                           storage::QuotaClient::kFileSystem, origin_url,
+                           FileSystemTypeToQuotaStorageType(type))
+          : base::BindOnce(&base::DoNothing);
+
   base::File::Error* error_ptr = new base::File::Error;
   file_task_runner_->PostTaskAndReply(
       FROM_HERE,
       base::BindOnce(&OpenFileSystemOnFileTaskRunner, obfuscated_file_util(),
                      origin_url, type, mode, base::Unretained(error_ptr)),
       base::BindOnce(&DidOpenFileSystem, weak_factory_.GetWeakPtr(),
+                     std::move(quota_callback),
                      base::BindOnce(std::move(callback), root_url, name),
                      base::Owned(error_ptr)));
 

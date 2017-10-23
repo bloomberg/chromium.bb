@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/fileapi/file_system_url.h"
+#include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/test_file_system_options.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -35,19 +37,53 @@ class SandboxFileSystemBackendDelegateTest : public testing::Test {
  protected:
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
+    quota_manager_proxy_ = new MockQuotaManagerProxy(
+        nullptr, base::ThreadTaskRunnerHandle::Get().get());
     delegate_.reset(new storage::SandboxFileSystemBackendDelegate(
-        NULL /* quota_manager_proxy */,
-        base::ThreadTaskRunnerHandle::Get().get(), data_dir_.GetPath(),
-        NULL /* special_storage_policy */, CreateAllowFileAccessOptions()));
+        quota_manager_proxy_.get(), base::ThreadTaskRunnerHandle::Get().get(),
+        data_dir_.GetPath(), NULL /* special_storage_policy */,
+        CreateAllowFileAccessOptions()));
   }
 
   bool IsAccessValid(const FileSystemURL& url) const {
     return delegate_->IsAccessValid(url);
   }
 
+  void OpenFileSystem(const GURL& origin,
+                      storage::FileSystemType type,
+                      storage::OpenFileSystemMode mode) {
+    delegate_->OpenFileSystem(
+        origin, type, mode,
+        base::BindOnce(
+            &SandboxFileSystemBackendDelegateTest::OpenFileSystemCallback,
+            base::Unretained(this)),
+        GURL());
+    scoped_task_environment_.RunUntilIdle();
+  }
+
+  int callback_count() const { return callback_count_; }
+
+  base::File::Error last_error() const { return last_error_; }
+
+  MockQuotaManagerProxy* quota_manager_proxy() const {
+    return quota_manager_proxy_.get();
+  }
+
+ private:
+  void OpenFileSystemCallback(const GURL& root_url,
+                              const std::string& name,
+                              base::File::Error error) {
+    ++callback_count_;
+    last_error_ = error;
+  }
+
   base::ScopedTempDir data_dir_;
   base::test::ScopedTaskEnvironment scoped_task_environment_;
+  scoped_refptr<MockQuotaManagerProxy> quota_manager_proxy_;
   std::unique_ptr<storage::SandboxFileSystemBackendDelegate> delegate_;
+
+  int callback_count_ = 0;
+  base::File::Error last_error_ = base::File::FILE_OK;
 };
 
 TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
@@ -83,6 +119,23 @@ TEST_F(SandboxFileSystemBackendDelegateTest, IsAccessValid) {
 
   // A path that looks like a drive letter.
   EXPECT_TRUE(IsAccessValid(CreateFileSystemURL("c:")));
+}
+
+TEST_F(SandboxFileSystemBackendDelegateTest, OpenFileSystemAccessesStorage) {
+  GURL origin("http://example.com");
+
+  EXPECT_EQ(quota_manager_proxy()->notify_storage_accessed_count(), 0);
+  EXPECT_EQ(callback_count(), 0);
+
+  OpenFileSystem(origin, storage::kFileSystemTypeTemporary,
+                 storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT);
+
+  EXPECT_EQ(callback_count(), 1);
+  EXPECT_EQ(last_error(), base::File::FILE_OK);
+  EXPECT_EQ(quota_manager_proxy()->notify_storage_accessed_count(), 1);
+  EXPECT_EQ(quota_manager_proxy()->last_notified_origin(), origin);
+  EXPECT_EQ(quota_manager_proxy()->last_notified_type(),
+            storage::kStorageTypeTemporary);
 }
 
 }  // namespace content

@@ -231,6 +231,7 @@ class STORAGE_EXPORT SandboxFileSystemBackendDelegate
   ObfuscatedFileUtil* obfuscated_file_util();
 
   scoped_refptr<base::SequencedTaskRunner> file_task_runner_;
+  scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
 
   std::unique_ptr<AsyncFileUtil> sandbox_file_util_;
   std::unique_ptr<FileSystemUsageCache> file_system_usage_cache_;
