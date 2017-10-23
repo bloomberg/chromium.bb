@@ -26,6 +26,14 @@ cross builds ([.asm bug](https://crbug.com/762167)).
 1. `gclient sync`, follow instructions on screen.
 
 If you're at Google, this will automatically download the Windows SDK for you.
+If this fails with an error: Please follow the instructions at
+https://www.chromium.org/developers/how-tos/build-instructions-windows
+then you may need to re-authenticate via:
+
+    cd path/to/chrome/src
+    # Follow instructions, enter 0 as project id.
+    download_from_google_storage --config
+
 If you are not at Google, you'll have to figure out how to get the SDK, and
 you'll need to put a JSON file describing the SDK layout in a certain location.
 
