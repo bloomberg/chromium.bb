@@ -24,6 +24,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/render_process_host_observer.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/context_menu_params.h"
@@ -700,32 +701,30 @@ class MainThreadFrameObserver : public IPC::Listener {
 };
 
 // Watches for an input msg to be consumed.
-class InputMsgWatcher : public BrowserMessageFilter {
+class InputMsgWatcher : public RenderWidgetHost::InputEventObserver {
  public:
   InputMsgWatcher(RenderWidgetHost* render_widget_host,
                   blink::WebInputEvent::Type type);
+  ~InputMsgWatcher() override;
 
   bool HasReceivedAck() const;
 
   // Wait until ack message occurs, returning the ack result from
   // the message.
-  uint32_t WaitForAck();
+  InputEventAckState WaitForAck();
 
-  uint32_t last_event_ack_source() const { return ack_source_; }
+  InputEventAckSource last_event_ack_source() const { return ack_source_; }
 
  private:
-  ~InputMsgWatcher() override;
+  // Overridden InputEventObserver methods.
+  void OnInputEventAck(InputEventAckSource source,
+                       InputEventAckState state,
+                       const blink::WebInputEvent&) override;
 
-  // Overridden BrowserMessageFilter methods.
-  bool OnMessageReceived(const IPC::Message& message) override;
-
-  void ReceivedAck(blink::WebInputEvent::Type ack_type,
-                   uint32_t ack_state,
-                   uint32_t ack_source);
-
+  RenderWidgetHost* render_widget_host_;
   blink::WebInputEvent::Type wait_for_type_;
-  uint32_t ack_result_;
-  uint32_t ack_source_;
+  InputEventAckState ack_result_;
+  InputEventAckSource ack_source_;
   base::Closure quit_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMsgWatcher);

@@ -11,6 +11,8 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
 #include "content/public/common/drop_data.h"
+#include "content/public/common/input_event_ack_source.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/WebKit/public/platform/WebDragOperation.h"
@@ -224,7 +226,9 @@ class CONTENT_EXPORT RenderWidgetHost : public IPC::Sender {
     virtual ~InputEventObserver() {}
 
     virtual void OnInputEvent(const blink::WebInputEvent&) {}
-    virtual void OnInputEventAck(const blink::WebInputEvent&) {}
+    virtual void OnInputEventAck(InputEventAckSource source,
+                                 InputEventAckState state,
+                                 const blink::WebInputEvent&) {}
   };
 
   // Add/remove an input event observer.

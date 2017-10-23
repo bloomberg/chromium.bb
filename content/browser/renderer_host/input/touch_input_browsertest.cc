@@ -98,8 +98,8 @@ class TouchInputBrowserTest : public ContentBrowserTest {
         shell()->web_contents()->GetRenderViewHost()->GetWidget());
   }
 
-  scoped_refptr<InputMsgWatcher> AddFilter(blink::WebInputEvent::Type type) {
-    return new InputMsgWatcher(GetWidgetHost(), type);
+  std::unique_ptr<InputMsgWatcher> AddFilter(blink::WebInputEvent::Type type) {
+    return std::make_unique<InputMsgWatcher>(GetWidgetHost(), type);
   }
 
  protected:
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchNoHandler) {
   // A press on |first| should be acked with NO_CONSUMER_EXISTS since there is
   // no touch-handler on it.
   touch.PressPoint(25, 25);
-  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
 
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, filter->WaitForAck());
@@ -163,7 +163,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerNoConsume) {
   // Press on |second| should be acked with NOT_CONSUMED since there is a
   // touch-handler on |second|, but it doesn't consume the event.
   touch.PressPoint(125, 25);
-  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED, filter->WaitForAck());
 
@@ -186,7 +186,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_TouchHandlerConsume) {
   // Press on |third| should be acked with CONSUMED since the touch-handler on
   // |third| consimes the event.
   touch.PressPoint(25, 125);
-  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, filter->WaitForAck());
 
@@ -212,7 +212,7 @@ IN_PROC_BROWSER_TEST_F(TouchInputBrowserTest, MAYBE_MultiPointTouchPress) {
   // Press on |first|, which sould be acked with NO_CONSUMER_EXISTS. Then press
   // on |third|. That point should be acked with CONSUMED.
   touch.PressPoint(25, 25);
-  scoped_refptr<InputMsgWatcher> filter = AddFilter(WebInputEvent::kTouchStart);
+  auto filter = AddFilter(WebInputEvent::kTouchStart);
   SendTouchEvent(&touch);
   EXPECT_EQ(INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS, filter->WaitForAck());
 

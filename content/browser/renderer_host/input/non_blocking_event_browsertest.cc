@@ -128,8 +128,8 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(kWebsiteHeight, scrollHeight);
 
     FrameWatcher frame_watcher(shell()->web_contents());
-    scoped_refptr<InputMsgWatcher> input_msg_watcher(new InputMsgWatcher(
-        GetWidgetHost(), blink::WebInputEvent::kMouseWheel));
+    auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+        GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
 
     blink::WebMouseWheelEvent wheel_event =
         SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, -53, 0, true);
