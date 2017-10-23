@@ -815,7 +815,12 @@ gfx::Rect PictureLayerImpl::GetEnclosingRectInTargetSpace() const {
 }
 
 bool PictureLayerImpl::ShouldAnimate(PaintImage::Id paint_image_id) const {
+  // If we are registered with the animation controller, which queries whether
+  // the image should be animated, then we must have recordings with this image.
   DCHECK(raster_source_);
+  DCHECK(raster_source_->GetDisplayItemList());
+  DCHECK(
+      !raster_source_->GetDisplayItemList()->discardable_image_map().empty());
 
   // Only animate images for layers which HasValidTilePriorities. This check is
   // important for 2 reasons:
@@ -829,9 +834,10 @@ bool PictureLayerImpl::ShouldAnimate(PaintImage::Id paint_image_id) const {
   //
   //  Additionally only animate images which are on-screen, animations are
   //  paused once they are not visible.
-  return HasValidTilePriorities() &&
-         raster_source_->GetRectForImage(paint_image_id)
-             .Intersects(visible_layer_rect());
+  return HasValidTilePriorities() && raster_source_->GetDisplayItemList()
+                                         ->discardable_image_map()
+                                         .GetRegionForImage(paint_image_id)
+                                         .Intersects(visible_layer_rect());
 }
 
 gfx::Size PictureLayerImpl::CalculateTileSize(
@@ -1562,23 +1568,34 @@ bool PictureLayerImpl::HasValidTilePriorities() const {
 
 void PictureLayerImpl::InvalidateRegionForImages(
     const PaintImageIdFlatSet& images_to_invalidate) {
-  TRACE_EVENT_BEGIN0("cc", "PictureLayerImpl::InvalidateRegionForImages");
+  TRACE_EVENT0("cc", "PictureLayerImpl::InvalidateRegionForImages");
+
+  if (!raster_source_ || !raster_source_->GetDisplayItemList() ||
+      raster_source_->GetDisplayItemList()->discardable_image_map().empty()) {
+    TRACE_EVENT0("cc", "PictureLayerImpl::InvalidateRegionForImages NoImages");
+    return;
+  }
 
   InvalidationRegion image_invalidation;
-  for (auto image_id : images_to_invalidate)
-    image_invalidation.Union(raster_source_->GetRectForImage(image_id));
+  for (auto image_id : images_to_invalidate) {
+    image_invalidation.Union(raster_source_->GetDisplayItemList()
+                                 ->discardable_image_map()
+                                 .GetRegionForImage(image_id));
+  }
   Region invalidation;
   image_invalidation.Swap(&invalidation);
 
   if (invalidation.IsEmpty()) {
-    TRACE_EVENT_END1("cc", "PictureLayerImpl::InvalidateRegionForImages",
-                     "Invalidation", invalidation.ToString());
+    TRACE_EVENT0("cc",
+                 "PictureLayerImpl::InvalidateRegionForImages NoInvalidation");
     return;
   }
 
   // Make sure to union the rect from this invalidation with the update_rect
   // instead of over-writing it. We don't want to reset the update that came
   // from the main thread.
+  // Note: We can use a rect here since this is only used to track damage for a
+  // frame and not raster invalidation.
   gfx::Rect new_update_rect = invalidation.bounds();
   new_update_rect.Union(update_rect());
   SetUpdateRect(new_update_rect);
@@ -1586,8 +1603,8 @@ void PictureLayerImpl::InvalidateRegionForImages(
   invalidation_.Union(invalidation);
   tilings_->Invalidate(invalidation);
   SetNeedsPushProperties();
-  TRACE_EVENT_END1("cc", "PictureLayerImpl::InvalidateRegionForImages",
-                   "Invalidation", invalidation.ToString());
+  TRACE_EVENT1("cc", "PictureLayerImpl::InvalidateRegionForImages Invalidation",
+               "Invalidation", invalidation.ToString());
 }
 
 void PictureLayerImpl::RegisterAnimatedImages() {

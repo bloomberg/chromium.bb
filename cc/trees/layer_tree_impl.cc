@@ -303,6 +303,8 @@ void LayerTreeImpl::InvalidateRegionForImages(
   if (images_to_invalidate.empty())
     return;
 
+  // TODO(khushalsagar): It might be better to keep track of layers with images
+  // and only iterate through those here.
   for (auto* picture_layer : picture_layers_)
     picture_layer->InvalidateRegionForImages(images_to_invalidate);
 }
