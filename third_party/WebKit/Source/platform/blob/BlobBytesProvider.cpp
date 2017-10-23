@@ -5,6 +5,7 @@
 #include "platform/blob/BlobBytesProvider.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "platform/CrossThreadFunctional.h"
 #include "platform/WebTaskRunner.h"
 #include "platform/wtf/Functional.h"
 #include "public/platform/Platform.h"
@@ -77,18 +78,36 @@ class BlobBytesStreamer {
   mojo::SimpleWatcher watcher_;
 };
 
+// This keeps the process alive while blobs are being transferred.
+void IncreaseChildProcessRefCount() {
+  if (!Platform::Current()->MainThread()->IsCurrentThread()) {
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        FROM_HERE, CrossThreadBind(&IncreaseChildProcessRefCount));
+    return;
+  }
+  Platform::Current()->SuddenTerminationChanged(false);
+  Platform::Current()->AddRefProcess();
+}
+
+void DecreaseChildProcessRefCount() {
+  if (!Platform::Current()->MainThread()->IsCurrentThread()) {
+    Platform::Current()->MainThread()->GetWebTaskRunner()->PostTask(
+        FROM_HERE, CrossThreadBind(&DecreaseChildProcessRefCount));
+    return;
+  }
+  Platform::Current()->SuddenTerminationChanged(true);
+  Platform::Current()->ReleaseRefProcess();
+}
+
 }  // namespace
 
 BlobBytesProvider::BlobBytesProvider(scoped_refptr<RawData> data) {
-  // TODO(mek): This is probably not enough to keep the renderer alive while
-  // data is being transferred. The IPC based blob code additionally calls
-  // ChildProcess::current()->AddRefProcess/ReleaseProcess.
-  Platform::Current()->SuddenTerminationChanged(false);
+  IncreaseChildProcessRefCount();
   data_.push_back(std::move(data));
 }
 
 BlobBytesProvider::~BlobBytesProvider() {
-  Platform::Current()->SuddenTerminationChanged(true);
+  DecreaseChildProcessRefCount();
 }
 
 void BlobBytesProvider::AppendData(scoped_refptr<RawData> data) {
