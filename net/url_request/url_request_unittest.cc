@@ -7788,6 +7788,9 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect) {
     base::RunLoop().Run();
 
     EXPECT_EQ(1, d.received_redirect_count());
+    EXPECT_TRUE(d.have_full_request_headers());
+    CheckFullRequestHeaders(d.full_request_headers(), test_url);
+    d.ClearFullRequestHeaders();
 
     req->FollowDeferredRedirect();
     base::RunLoop().Run();
@@ -7823,9 +7826,6 @@ TEST_F(URLRequestTestHTTP, DeferredRedirect_GetFullRequestHeaders) {
     base::RunLoop().Run();
 
     EXPECT_EQ(1, d.received_redirect_count());
-    EXPECT_TRUE(d.have_full_request_headers());
-    CheckFullRequestHeaders(d.full_request_headers(), test_url);
-    d.ClearFullRequestHeaders();
 
     req->FollowDeferredRedirect();
     base::RunLoop().Run();
