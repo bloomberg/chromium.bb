@@ -274,7 +274,7 @@ class DataConsumerHandleTestUtil {
 
       PostTaskToReadingThreadAndWait(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::ObtainReader, WrapRefPtr(this)));
+          CrossThreadBind(&Self::ObtainReader, WrapRefCounted(this)));
     }
 
    private:
@@ -283,10 +283,10 @@ class DataConsumerHandleTestUtil {
     void DidGetReadable() override {
       PostTaskToReadingThread(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::ResetReader, WrapRefPtr(this)));
+          CrossThreadBind(&Self::ResetReader, WrapRefCounted(this)));
       PostTaskToReadingThread(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::SignalDone, WrapRefPtr(this)));
+          CrossThreadBind(&Self::SignalDone, WrapRefCounted(this)));
     }
 
     std::unique_ptr<WebDataConsumerHandle> handle_;
@@ -306,7 +306,7 @@ class DataConsumerHandleTestUtil {
 
       PostTaskToReadingThreadAndWait(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::ObtainReader, WrapRefPtr(this)));
+          CrossThreadBind(&Self::ObtainReader, WrapRefCounted(this)));
     }
 
    private:
@@ -316,7 +316,7 @@ class DataConsumerHandleTestUtil {
       reader_ = nullptr;
       PostTaskToReadingThread(
           BLINK_FROM_HERE,
-          CrossThreadBind(&Self::SignalDone, WrapRefPtr(this)));
+          CrossThreadBind(&Self::SignalDone, WrapRefCounted(this)));
     }
     void DidGetReadable() override { NOTREACHED(); }
 

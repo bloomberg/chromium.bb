@@ -30,11 +30,7 @@ template <typename T>
 using RefPtr = scoped_refptr<T>;
 
 using base::AdoptRef;
-
-template <typename T>
-RefPtr<T> WrapRefPtr(T* ptr) {
-  return RefPtr<T>(ptr);
-}
+using base::WrapRefCounted;
 
 }  // namespace WTF
 

@@ -39,7 +39,7 @@ PopStateEvent::PopStateEvent(ScriptState* script_state,
                              const PopStateEventInit& initializer)
     : Event(type, initializer), state_(this), history_(nullptr) {
   if (initializer.hasState()) {
-    world_ = WrapRefPtr(&script_state->World());
+    world_ = WrapRefCounted(&script_state->World());
     state_.Set(initializer.state().GetIsolate(), initializer.state().V8Value());
   }
 }
