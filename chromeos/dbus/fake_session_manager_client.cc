@@ -197,18 +197,18 @@ FakeSessionManagerClient::BlockingRetrieveDeviceLocalAccountPolicy(
 
 void FakeSessionManagerClient::StoreDevicePolicy(
     const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
+    VoidDBusMethodCallback callback) {
   enterprise_management::PolicyFetchResponse policy;
   if (!policy.ParseFromString(policy_blob)) {
     LOG(ERROR) << "Unable to parse policy protobuf";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, false /* success */));
+        FROM_HERE, base::BindOnce(std::move(callback), false /* success */));
     return;
   }
 
   if (!store_device_policy_success_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(callback, false /* success */));
+        FROM_HERE, base::BindOnce(std::move(callback), false /* success */));
     return;
   }
 
@@ -218,7 +218,7 @@ void FakeSessionManagerClient::StoreDevicePolicy(
   device_policy_ = policy_blob;
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback, true /* success */));
+      FROM_HERE, base::BindOnce(std::move(callback), true /* success */));
   if (policy.has_new_public_key()) {
     for (auto& observer : observers_)
       observer.OwnerKeySet(owner_key_store_success);
@@ -230,23 +230,23 @@ void FakeSessionManagerClient::StoreDevicePolicy(
 void FakeSessionManagerClient::StorePolicyForUser(
     const cryptohome::Identification& cryptohome_id,
     const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
+    VoidDBusMethodCallback callback) {
   bool result = false;
   if (store_user_policy_success_) {
     user_policies_[cryptohome_id] = policy_blob;
     result = true;
   }
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, result));
+      FROM_HERE, base::BindOnce(std::move(callback), result));
 }
 
 void FakeSessionManagerClient::StoreDeviceLocalAccountPolicy(
     const std::string& account_id,
     const std::string& policy_blob,
-    const StorePolicyCallback& callback) {
+    VoidDBusMethodCallback callback) {
   device_local_account_policy_[account_id] = policy_blob;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
 }
 
 bool FakeSessionManagerClient::SupportsRestartToApplyUserFlags() const {

@@ -84,12 +84,12 @@ class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
   // SessionManagerClient override:
   void StorePolicyForUser(const cryptohome::Identification& cryptohome_id,
                           const std::string& policy_blob,
-                          const StorePolicyCallback& callback) override {
+                          chromeos::VoidDBusMethodCallback callback) override {
     chromeos::FakeSessionManagerClient::StorePolicyForUser(
         cryptohome_id, policy_blob,
-        base::Bind(&FakeSessionManagerClient::OnStorePolicyForUser,
-                   weak_ptr_factory_.GetWeakPtr(), cryptohome_id, policy_blob,
-                   callback));
+        base::BindOnce(&FakeSessionManagerClient::OnStorePolicyForUser,
+                       weak_ptr_factory_.GetWeakPtr(), cryptohome_id,
+                       std::move(callback)));
   }
 
   void set_user_public_key(const cryptohome::Identification& cryptohome_id,
@@ -99,15 +99,14 @@ class FakeSessionManagerClient : public chromeos::FakeSessionManagerClient {
 
  private:
   void OnStorePolicyForUser(const cryptohome::Identification& cryptohome_id,
-                            const std::string& policy_blob,
-                            const StorePolicyCallback& callback,
+                            chromeos::VoidDBusMethodCallback callback,
                             bool result) {
     if (result) {
       auto iter = public_key_map_.find(cryptohome_id);
       if (iter != public_key_map_.end())
         StoreUserPolicyKey(user_policy_dir_, cryptohome_id, iter->second);
     }
-    callback.Run(result);
+    std::move(callback).Run(result);
   }
 
   const base::FilePath user_policy_dir_;
