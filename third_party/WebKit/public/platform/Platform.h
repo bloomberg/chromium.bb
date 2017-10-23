@@ -429,12 +429,21 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Must return non-null.
   virtual WebScrollbarBehavior* ScrollbarBehavior() { return nullptr; }
 
-  // Sudden Termination --------------------------------------------------
+  // Process lifetime management -----------------------------------------
 
   // Disable/Enable sudden termination on a process level. When possible, it
   // is preferable to disable sudden termination on a per-frame level via
   // WebFrameClient::SuddenTerminationDisablerChanged.
+  // This method should only be called on the main thread.
   virtual void SuddenTerminationChanged(bool enabled) {}
+
+  // Increase/decrease the process refcount. The process won't shut itself
+  // down until this refcount reaches 0. The browser might still shut down the
+  // renderer through fast shutdown. See SuddenTerminationChanged to disable
+  // that.
+  // These methods should only be called on the main thread.
+  virtual void AddRefProcess() {}
+  virtual void ReleaseRefProcess() {}
 
   // System --------------------------------------------------------------
 

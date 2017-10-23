@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
+#include "content/child/child_process.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
 #include "content/common/gpu_stream_constants.h"
@@ -539,6 +540,14 @@ void RendererBlinkPlatformImpl::SuddenTerminationChanged(bool enabled) {
   RenderThread* thread = RenderThread::Get();
   if (thread)  // NULL in unittests.
     thread->Send(new RenderProcessHostMsg_SuddenTerminationChanged(enabled));
+}
+
+void RendererBlinkPlatformImpl::AddRefProcess() {
+  ChildProcess::current()->AddRefProcess();
+}
+
+void RendererBlinkPlatformImpl::ReleaseRefProcess() {
+  ChildProcess::current()->ReleaseProcess();
 }
 
 blink::WebThread* RendererBlinkPlatformImpl::CompositorThread() const {

@@ -109,6 +109,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const blink::WebString& cacheStorageCacheName) override;
   blink::WebString DefaultLocale() override;
   void SuddenTerminationChanged(bool enabled) override;
+  void AddRefProcess() override;
+  void ReleaseRefProcess() override;
   blink::WebThread* CompositorThread() const override;
   std::unique_ptr<blink::WebStorageNamespace> CreateLocalStorageNamespace()
       override;
