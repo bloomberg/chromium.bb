@@ -257,6 +257,7 @@ const char kPaymentPortalPostData[] = "postdata";
 const char kOperatorNameKey[] = "name";
 const char kOperatorCodeKey[] = "code";
 const char kOperatorCountryKey[] = "country";
+const char kOperatorUuidKey[] = "uuid";
 
 // Flimflam network technology options.
 const char kNetworkTechnology1Xrtt[] = "1xRTT";
