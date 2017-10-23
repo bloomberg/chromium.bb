@@ -152,7 +152,8 @@ void av1_init_txb_probs(FRAME_CONTEXT *fc) {
 
 #if CONFIG_EOB_FIRST
       for (ctx = 0; ctx < EOB_COEF_CONTEXTS; ++ctx) {
-        fc->eob_extra_cdf[tx_size][plane][ctx][0] = AOM_ICDF(128 * 145);
+        fc->eob_extra_cdf[tx_size][plane][ctx][0] =
+            AOM_ICDF(128 * (aom_cdf_prob)fc->eob_extra[tx_size][plane][ctx]);
         fc->eob_extra_cdf[tx_size][plane][ctx][1] = AOM_ICDF(32768);
         fc->eob_extra_cdf[tx_size][plane][ctx][2] = 0;
       }

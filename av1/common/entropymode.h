@@ -149,6 +149,9 @@ typedef struct frame_contexts {
   aom_prob txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS];
   aom_prob nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS];
   aom_prob eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
+#if CONFIG_EOB_FIRST
+  aom_prob eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS];
+#endif
   aom_prob dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS];
   aom_prob coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                      [COEFF_BASE_CONTEXTS];
@@ -417,6 +420,9 @@ typedef struct FRAME_COUNTS {
   unsigned int txb_skip[TX_SIZES][TXB_SKIP_CONTEXTS][2];
   unsigned int nz_map[TX_SIZES][PLANE_TYPES][SIG_COEF_CONTEXTS][2];
   unsigned int eob_flag[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
+#if CONFIG_EOB_FIRST
+  unsigned int eob_extra[TX_SIZES][PLANE_TYPES][EOB_COEF_CONTEXTS][2];
+#endif
   unsigned int dc_sign[PLANE_TYPES][DC_SIGN_CONTEXTS][2];
   unsigned int coeff_base[TX_SIZES][PLANE_TYPES][NUM_BASE_LEVELS]
                          [COEFF_BASE_CONTEXTS][2];
