@@ -516,7 +516,9 @@ IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDisplayNoneWebviewLoad) {
   RunTest("testDisplayNoneWebviewLoad", "web_view/apitest");
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewAPITest, TestDisplayNoneWebviewRemoveChild) {
+// Flaky. See http://crbug.com/769467.
+IN_PROC_BROWSER_TEST_F(WebViewAPITest,
+                       DISABLED_TestDisplayNoneWebviewRemoveChild) {
   RunTest("testDisplayNoneWebviewRemoveChild", "web_view/apitest");
 }
 
