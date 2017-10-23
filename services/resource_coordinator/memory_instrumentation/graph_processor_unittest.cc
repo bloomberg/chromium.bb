@@ -30,6 +30,10 @@ class GraphProcessorTest : public testing::Test {
     std::set<const Node*> visited;
     GraphProcessor::MarkWeakOwnersAndChildrenRecursively(node, &visited);
   }
+
+  void RemoveWeakNodesRecursively(Node* node) {
+    GraphProcessor::RemoveWeakNodesRecursively(node);
+  }
 };
 
 TEST_F(GraphProcessorTest, SmokeComputeMemoryGraph) {
@@ -234,6 +238,78 @@ TEST_F(GraphProcessorTest, MarkWeakParentOwner) {
   ASSERT_TRUE(child.is_weak());
   ASSERT_TRUE(child_2.is_weak());
   ASSERT_TRUE(owner.is_weak());
+}
+
+TEST_F(GraphProcessorTest, RemoveWeakNodesRecursively) {
+  GlobalDumpGraph graph;
+  Node parent(graph.shared_memory_graph(), nullptr);
+  Node child(graph.shared_memory_graph(), &parent);
+  Node child_2(graph.shared_memory_graph(), &child);
+  Node owned(graph.shared_memory_graph(), &parent);
+
+  parent.InsertChild("owned", &owned);
+  parent.InsertChild("child", &child);
+  child.InsertChild("child", &child_2);
+
+  Edge edge(&child, &owned, 0);
+  owned.AddOwnedByEdge(&edge);
+  child.SetOwnsEdge(&edge);
+
+  // Make only the parent node weak.
+  child.set_weak(true);
+  child_2.set_weak(false);
+  owned.set_weak(false);
+
+  // Starting from parent node should lead child and child_2 being
+  // removed and owned to have the edge from it removed.
+  RemoveWeakNodesRecursively(&parent);
+
+  ASSERT_EQ(parent.children()->size(), 1ul);
+  ASSERT_EQ(parent.children()->begin()->second, &owned);
+
+  ASSERT_TRUE(owned.owned_by_edges()->empty());
+}
+
+TEST_F(GraphProcessorTest, RemoveWeakNodesRecursivelyBetweenGraphs) {
+  GlobalDumpGraph graph;
+  GlobalDumpGraph::Process first_process(&graph);
+  GlobalDumpGraph::Process second_process(&graph);
+
+  Node parent(&first_process, first_process.root());
+  Node child(&first_process, &parent);
+  Node child_2(&first_process, &child);
+  Node owned(&second_process, second_process.root());
+
+  first_process.root()->InsertChild("parent", &parent);
+  parent.InsertChild("child", &child);
+  child.InsertChild("child", &child_2);
+
+  second_process.root()->InsertChild("owned", &owned);
+
+  Edge edge(&child, &owned, 0);
+  owned.AddOwnedByEdge(&edge);
+  child.SetOwnsEdge(&edge);
+
+  // Make only the parent node weak.
+  child.set_weak(true);
+  child_2.set_weak(false);
+  owned.set_weak(false);
+
+  // Starting from parent node should lead child and child_2 being
+  // removed.
+  RemoveWeakNodesRecursively(first_process.root());
+
+  ASSERT_EQ(first_process.root()->children()->size(), 1ul);
+  ASSERT_EQ(parent.children()->size(), 0ul);
+  ASSERT_EQ(second_process.root()->children()->size(), 1ul);
+
+  // This should be false until our next pass.
+  ASSERT_FALSE(owned.owned_by_edges()->empty());
+
+  RemoveWeakNodesRecursively(second_process.root());
+
+  // We should now have cleaned up the owned node's edges.
+  ASSERT_TRUE(owned.owned_by_edges()->empty());
 }
 
 }  // namespace memory_instrumentation
