@@ -10,6 +10,7 @@ group("media") {
   public_deps = [
     "//chromecast/media/audio",
     "//chromecast/media/base",
+    "//chromecast/media/base:media_resource_tracker",
     "//chromecast/media/cdm",
     "//chromecast/media/cma",
   ]
@@ -28,6 +29,10 @@ group("libcast_media") {
         "//chromecast/media/cma/backend:cast_media_android_dummy",
       ]
     }
+  } else if (is_fuchsia) {
+    deps = [
+      "//chromecast/media/cma/backend/fuchsia",
+    ]
   } else {
     deps = [
       "//chromecast/media/cma/backend:libcast_media_1.0",

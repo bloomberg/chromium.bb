@@ -32,8 +32,6 @@ source_set("base") {
     "decrypt_context_impl_clearkey.h",
     "media_caps.cc",
     "media_caps.h",
-    "media_resource_tracker.cc",
-    "media_resource_tracker.h",
     "slew_volume.cc",
     "slew_volume.h",
     "supported_codec_profile_levels_memo.cc",
@@ -60,12 +58,24 @@ source_set("base") {
   deps = [
     "//base",
     "//chromecast/base",
-    "//chromecast/media:libcast_media",
     "//crypto",
     "//crypto:platform",
     "//media",
     "//media:shared_memory_support",
     "//ui/gfx/geometry",
+  ]
+}
+
+source_set("media_resource_tracker") {
+  sources = [
+    "media_resource_tracker.cc",
+    "media_resource_tracker.h",
+  ]
+
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/media:libcast_media",
   ]
 }
 
