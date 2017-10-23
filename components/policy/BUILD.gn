@@ -184,7 +184,7 @@ action("policy_templates") {
   deps = [
     ":translate_policy_templates",
   ]
-  inputs = [ chrome_version_path ] + policy_templates_translation_outputs
+  inputs = [ chrome_version_abspath ] + policy_templates_translation_outputs
   outputs = []
   args = [
            "--translations",
