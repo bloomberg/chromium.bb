@@ -1,17 +1,22 @@
 # Cross-compiling Chrome/win
 
-It's possible to build parts of the codebase on a Linux (and soon, Mac) host
+It's possible to most parts of the codebase on a Linux (and soon, Mac) host
 while targeting Windows.  This document describes how to set that up, and
 current restrictions.
 
 What does *not* work:
 
-* goma. Sorry. ([internal bug](b/64390790))
-* targets depending on crashpad ([bug](https://crbug.com/762167))
+* goma. Sorry. ([internal bug](b/64390790)) You can use the
+  [jumbo build](jumbo.md) for faster build times.
+* mini_installer ([bug](https://crbug.com/762073))
 * linking on Mac ([bug](https://crbug.com/774209)), should change soon
 
-This disqualifies most interesting targets for now, but a few smaller ones
-(`base_unittests`, ...) do work.  Over time, more things should work.
+All other targets build fine (including `chrome`, `browser_tests`, ...).
+
+Uses of `.asm` files have been stubbed out.  As a result, some of skia's
+software rendering paths are not present in cross builds, crashpad cannot
+report crashes, and NaCl defaults to disabled and cannot be enabled in
+cross builds ([.asm bug](https://crbug.com/762167).
 
 ## .gclient setup
 
