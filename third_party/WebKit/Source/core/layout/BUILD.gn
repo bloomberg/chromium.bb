@@ -387,6 +387,8 @@ blink_core_sources("layout") {
     "ng/layout_ng_block_flow.h",
     "ng/layout_ng_list_item.cc",
     "ng/layout_ng_list_item.h",
+    "ng/layout_ng_mixin.cc",
+    "ng/layout_ng_mixin.h",
     "ng/legacy_layout_tree_walking.cc",
     "ng/legacy_layout_tree_walking.h",
     "ng/ng_absolute_utils.cc",

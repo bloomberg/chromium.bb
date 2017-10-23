@@ -6,9 +6,9 @@
 #define NGInlineNode_h
 
 #include "core/CoreExport.h"
+#include "core/layout/LayoutBlockFlow.h"
 #include "core/layout/ng/inline/ng_inline_item.h"
 #include "core/layout/ng/inline/ng_inline_node_data.h"
-#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/ng_layout_input_node.h"
 #include "platform/wtf/Optional.h"
 #include "platform/wtf/text/WTFString.h"
@@ -19,7 +19,7 @@ template <typename OffsetMappingBuilder>
 class NGInlineItemsBuilderTemplate;
 
 class EmptyOffsetMappingBuilder;
-class LayoutNGBlockFlow;
+class LayoutBlockFlow;
 struct MinMaxSize;
 class NGConstraintSpace;
 class NGInlineItem;
@@ -34,10 +34,10 @@ class NGOffsetMappingResult;
 // inline nodes and their descendants.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
-  NGInlineNode(LayoutNGBlockFlow*);
+  NGInlineNode(LayoutBlockFlow*);
 
-  LayoutNGBlockFlow* GetLayoutBlockFlow() const {
-    return ToLayoutNGBlockFlow(box_);
+  LayoutBlockFlow* GetLayoutBlockFlow() const {
+    return ToLayoutBlockFlow(box_);
   }
   NGLayoutInputNode NextSibling();
 
@@ -97,10 +97,10 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   void ShapeTextForFirstLineIfNeeded();
 
   NGInlineNodeData* MutableData() {
-    return ToLayoutNGBlockFlow(box_)->GetNGInlineNodeData();
+    return ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   }
   const NGInlineNodeData& Data() const {
-    return *ToLayoutNGBlockFlow(box_)->GetNGInlineNodeData();
+    return *ToLayoutBlockFlow(box_)->GetNGInlineNodeData();
   }
 
   friend class NGLineBreakerTest;

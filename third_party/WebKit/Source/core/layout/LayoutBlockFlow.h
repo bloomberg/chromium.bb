@@ -36,6 +36,7 @@
 #ifndef LayoutBlockFlow_h
 #define LayoutBlockFlow_h
 
+#include <memory>
 #include "core/CoreExport.h"
 #include "core/layout/FloatingObjects.h"
 #include "core/layout/LayoutBlock.h"
@@ -43,12 +44,13 @@
 #include "core/layout/line/LineBoxList.h"
 #include "core/layout/line/RootInlineBox.h"
 #include "core/layout/line/TrailingObjects.h"
-#include <memory>
+#include "core/layout/ng/ng_layout_result.h"
 
 namespace blink {
 
+template <class Run>
+class BidiRunList;
 class BlockChildrenLayoutInfo;
-class MarginInfo;
 class LayoutInline;
 class LineInfo;
 class LineLayoutState;
@@ -56,8 +58,10 @@ class LineWidth;
 class LayoutMultiColumnFlowThread;
 class LayoutMultiColumnSpannerPlaceholder;
 class LayoutRubyRun;
-template <class Run>
-class BidiRunList;
+class MarginInfo;
+class NGPaintFragment;
+
+struct NGInlineNodeData;
 
 enum IndentTextOrNot { kDoNotIndentText, kIndentText };
 
@@ -411,6 +415,27 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   // This function is only public so we can call it from NGBlockNode while we're
   // still working on LayoutNG.
   void AddOverflowFromFloats();
+
+  virtual NGInlineNodeData* GetNGInlineNodeData() const { return nullptr; }
+  virtual void ResetNGInlineNodeData() {}
+  virtual bool HasNGInlineNodeData() const { return false; }
+  virtual NGPaintFragment* PaintFragment() const { return nullptr; }
+  virtual scoped_refptr<NGLayoutResult> CachedLayoutResult(
+      const NGConstraintSpace&,
+      NGBreakToken*) const {
+    return nullptr;
+  }
+  virtual scoped_refptr<NGLayoutResult> CachedLayoutResultForTesting() {
+    return nullptr;
+  }
+  virtual void SetCachedLayoutResult(const NGConstraintSpace&,
+                                     NGBreakToken*,
+                                     scoped_refptr<NGLayoutResult>) {}
+  virtual void WillCollectInlines() {}
+  virtual void SetPaintFragment(scoped_refptr<const NGPhysicalFragment>) {}
+  virtual const NGPhysicalBoxFragment* CurrentFragment() const {
+    return nullptr;
+  }
 
 #ifndef NDEBUG
   void ShowLineTreeAndMark(const InlineBox* = nullptr,
