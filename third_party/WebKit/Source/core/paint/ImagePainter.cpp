@@ -90,17 +90,16 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
 
 void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
                                  const LayoutPoint& paint_offset) {
-  LayoutUnit c_width = layout_image_.ContentWidth();
-  LayoutUnit c_height = layout_image_.ContentHeight();
+  LayoutSize content_size = layout_image_.ContentSize();
   bool has_image = layout_image_.ImageResource()->HasImage();
 
   if (has_image) {
-    if (!c_width || !c_height)
+    if (content_size.IsEmpty())
       return;
   } else {
     if (paint_info.phase == PaintPhase::kSelection)
       return;
-    if (c_width <= 2 || c_height <= 2)
+    if (content_size.Width() <= 2 || content_size.Height() <= 2)
       return;
   }
 
@@ -117,14 +116,12 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
           PaintInvalidationReason::kDelayedFull)
     cache_skipper.emplace(context);
 
+  LayoutRect content_rect(paint_offset + layout_image_.ContentBoxOffset(),
+                          content_size);
+
   if (!has_image) {
     // Draw an outline rect where the image should be.
-    IntRect paint_rect = PixelSnappedIntRect(
-        LayoutRect(paint_offset.X() + layout_image_.BorderLeft() +
-                       layout_image_.PaddingLeft(),
-                   paint_offset.Y() + layout_image_.BorderTop() +
-                       layout_image_.PaddingTop(),
-                   c_width, c_height));
+    IntRect paint_rect = PixelSnappedIntRect(content_rect);
     DrawingRecorder recorder(context, layout_image_, paint_info.phase,
                              paint_rect);
     context.SetStrokeStyle(kSolidStroke);
@@ -134,8 +131,6 @@ void ImagePainter::PaintReplaced(const PaintInfo& paint_info,
     return;
   }
 
-  LayoutRect content_rect = layout_image_.ContentBoxRect();
-  content_rect.MoveBy(paint_offset);
   LayoutRect paint_rect = layout_image_.ReplacedContentRect();
   paint_rect.MoveBy(paint_offset);
 
