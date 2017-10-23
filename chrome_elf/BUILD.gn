@@ -58,6 +58,7 @@ shared_library("chrome_elf") {
     ":hook_util",
     ":nt_registry",
     ":security",
+    ":whitelist",
     "//build/config:exe_and_shlib_deps",
     "//chrome/install_static:install_static_util",
     "//chrome/install_static:primary_module",
@@ -218,6 +219,18 @@ static_library("nt_registry") {
   libs = [ "kernel32.lib" ]
 }
 
+static_library("whitelist") {
+  sources = [
+    "whitelist/whitelist.cc",
+    "whitelist/whitelist.h",
+    "whitelist/whitelist_ime.cc",
+    "whitelist/whitelist_ime.h",
+  ]
+  deps = [
+    ":nt_registry",
+  ]
+}
+
 ##------------------------------------------------------------------------------
 ## tests
 ##------------------------------------------------------------------------------
@@ -230,6 +243,7 @@ test("chrome_elf_unittests") {
     "hook_util/test/hook_util_test.cc",
     "nt_registry/nt_registry_unittest.cc",
     "run_all_unittests.cc",
+    "whitelist/whitelist_ime_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
   deps = [
@@ -241,6 +255,7 @@ test("chrome_elf_unittests") {
     ":hook_util_test_dll",
     ":nt_registry",
     ":security",
+    ":whitelist",
     "//base",
     "//base/test:test_support",
     "//chrome/common:version_header",
