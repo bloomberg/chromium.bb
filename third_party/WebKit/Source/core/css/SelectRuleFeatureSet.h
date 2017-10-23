@@ -31,7 +31,7 @@
 #ifndef SelectRuleFeatureSet_h
 #define SelectRuleFeatureSet_h
 
-#include "core/css/RuleFeature.h"
+#include "core/css/RuleFeatureSet.h"
 #include "core/dom/Element.h"
 
 namespace blink {

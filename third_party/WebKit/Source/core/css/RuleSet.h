@@ -26,7 +26,7 @@
 #include "core/CoreExport.h"
 #include "core/css/CSSKeyframesRule.h"
 #include "core/css/MediaQueryEvaluator.h"
-#include "core/css/RuleFeature.h"
+#include "core/css/RuleFeatureSet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/resolver/MediaQueryResult.h"
 #include "platform/heap/HeapLinkedStack.h"
