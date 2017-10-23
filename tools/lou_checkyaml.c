@@ -282,6 +282,82 @@ read_mode(yaml_parser_t *parser) {
 }
 
 int *
+read_inPos(yaml_parser_t *parser, int len) {
+	int *pos = malloc(sizeof(int) * len);
+	int i = 0;
+	yaml_event_t event;
+	int parse_error = 1;
+	char *tail;
+
+	if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SEQUENCE_START_EVENT))
+		yaml_error(YAML_SEQUENCE_START_EVENT, &event);
+	yaml_event_delete(&event);
+
+	while ((parse_error = yaml_parser_parse(parser, &event)) &&
+			(event.type == YAML_SCALAR_EVENT)) {
+		errno = 0;
+		int val = strtol((const char *)event.data.scalar.value, &tail, 0);
+		if (errno != 0)
+			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+					"Not a valid inpos position '%s'. Must be a number\n",
+					event.data.scalar.value);
+		if ((const char *)event.data.scalar.value == tail)
+			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+					"No digits found in inpos position '%s'. Must be a number\n",
+					event.data.scalar.value);
+		pos[i++] = val;
+		yaml_event_delete(&event);
+	}
+	if (i != len)
+		error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+				"Too many or too few inpos positions (%i) for translation of length %i\n", i,
+				len);
+	if (!parse_error) yaml_parse_error(parser);
+	if (event.type != YAML_SEQUENCE_END_EVENT)
+		yaml_error(YAML_SEQUENCE_END_EVENT, &event);
+	yaml_event_delete(&event);
+	return pos;
+}
+
+int *
+read_outPos(yaml_parser_t *parser, int len) {
+	int *pos = malloc(sizeof(int) * len);
+	int i = 0;
+	yaml_event_t event;
+	int parse_error = 1;
+	char *tail;
+
+	if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SEQUENCE_START_EVENT))
+		yaml_error(YAML_SEQUENCE_START_EVENT, &event);
+	yaml_event_delete(&event);
+
+	while ((parse_error = yaml_parser_parse(parser, &event)) &&
+			(event.type == YAML_SCALAR_EVENT)) {
+		errno = 0;
+		int val = strtol((const char *)event.data.scalar.value, &tail, 0);
+		if (errno != 0)
+			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+					"Not a valid outpos position '%s'. Must be a number\n",
+					event.data.scalar.value);
+		if ((const char *)event.data.scalar.value == tail)
+			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+					"No digits found in outpos position '%s'. Must be a number\n",
+					event.data.scalar.value);
+		pos[i++] = val;
+		yaml_event_delete(&event);
+	}
+	if (i != len)
+		error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
+				"Too many or too few outpos positions (%i) for word of length %i\n", i,
+				len);
+	if (!parse_error) yaml_parse_error(parser);
+	if (event.type != YAML_SEQUENCE_END_EVENT)
+		yaml_error(YAML_SEQUENCE_END_EVENT, &event);
+	yaml_event_delete(&event);
+	return pos;
+}
+
+int *
 read_cursorPos(yaml_parser_t *parser, int len) {
 	int *pos = malloc(sizeof(int) * len);
 	int i = 0;
@@ -382,8 +458,8 @@ read_typeforms(yaml_parser_t *parser, int len) {
 }
 
 void
-read_options(yaml_parser_t *parser, int len, int *xfail, translationModes *mode,
-		formtype **typeform, int **cursorPos) {
+read_options(yaml_parser_t *parser, int wordLen, int translationLen, int *xfail, translationModes *mode,
+		formtype **typeform, int **inPos, int **outPos, int **cursorPos) {
 	yaml_event_t event;
 	char *option_name;
 	int parse_error = 1;
@@ -391,6 +467,8 @@ read_options(yaml_parser_t *parser, int len, int *xfail, translationModes *mode,
 	*mode = 0;
 	*xfail = 0;
 	*typeform = NULL;
+	*inPos = NULL;
+	*outPos = NULL;
 	*cursorPos = NULL;
 
 	while ((parse_error = yaml_parser_parse(parser, &event)) &&
@@ -406,10 +484,18 @@ read_options(yaml_parser_t *parser, int len, int *xfail, translationModes *mode,
 			*mode = read_mode(parser);
 		} else if (!strcmp(option_name, "typeform")) {
 			yaml_event_delete(&event);
-			*typeform = read_typeforms(parser, len);
-		} else if (!strcmp(option_name, "cursorPos")) {
+			*typeform = read_typeforms(parser, wordLen);
+
+			// FIXME: Comparisons should be truly case insensitive, but apparently no standard function for that.
+		} else if (!strcmp(option_name, "inPos") || !strcmp(option_name, "inpos")) {
 			yaml_event_delete(&event);
-			*cursorPos = read_cursorPos(parser, len);
+			*inPos = read_inPos(parser, translationLen);
+		} else if (!strcmp(option_name, "outPos") || !strcmp(option_name, "outpos")) {
+			yaml_event_delete(&event);
+			*outPos = read_outPos(parser, wordLen);
+		} else if (!strcmp(option_name, "cursorPos") || !strcmp(option_name, "cursorpos")) {
+			yaml_event_delete(&event);
+			*cursorPos = read_cursorPos(parser, wordLen);
 		} else {
 			error_at_line(EXIT_FAILURE, 0, file_name, event.start_mark.line + 1,
 					"Unsupported option %s", option_name);
@@ -441,6 +527,8 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	int xfail = 0;
 	translationModes mode = 0;
 	formtype *typeform = NULL;
+	int *inPos = NULL;
+	int *outPos = NULL;
 	int *cursorPos = NULL;
 
 	if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SCALAR_EVENT))
@@ -472,7 +560,7 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	if (event.type == YAML_MAPPING_START_EVENT) {
 		yaml_event_delete(&event);
 		read_options(
-				parser, my_strlen_utf8_c(word), &xfail, &mode, &typeform, &cursorPos);
+				parser, my_strlen_utf8_c(word), my_strlen_utf8_c(translation), &xfail, &mode, &typeform, &inPos, &outPos, &cursorPos);
 
 		if (!yaml_parser_parse(parser, &event) || (event.type != YAML_SEQUENCE_END_EVENT))
 			yaml_error(YAML_SEQUENCE_END_EVENT, &event);
@@ -484,12 +572,30 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 
 	char **table = tables;
 	while (*table) {
-		if (cursorPos) {
-			if (xfail != check_cursor_pos(*table, word, cursorPos)) {
-				if (description) fprintf(stderr, "%s\n", description);
-				error_at_line(0, 0, file_name, event.start_mark.line + 1,
+		if (inPos || outPos || cursorPos) {
+			if (inPos) {
+				if (xfail != check_inpos(*table, word, inPos)) {
+					if (description) fprintf(stderr, "%s\n", description);
+					error_at_line(0, 0, file_name, event.start_mark.line + 1,
 						(xfail ? "Unexpected Pass" : "Failure"));
-				errors++;
+					errors++;
+				}
+			}
+			if (outPos) {
+				if (xfail != check_outpos(*table, word, outPos)) {
+					if (description) fprintf(stderr, "%s\n", description);
+					error_at_line(0, 0, file_name, event.start_mark.line + 1,
+							(xfail ? "Unexpected Pass" : "Failure"));
+					errors++;
+				}
+			}
+			if (cursorPos) {
+				if (xfail != check_cursor_pos(*table, word, cursorPos)) {
+					if (description) fprintf(stderr, "%s\n", description);
+					error_at_line(0, 0, file_name, event.start_mark.line + 1,
+							(xfail ? "Unexpected Pass" : "Failure"));
+					errors++;
+				}
 			}
 		} else if (hyphenation) {
 			if (xfail != check_hyphenation(*table, word, translation)) {
@@ -520,6 +626,8 @@ read_test(yaml_parser_t *parser, char **tables, int direction, int hyphenation) 
 	free(word);
 	free(translation);
 	free(typeform);
+	free(inPos);
+	free(outPos);
 	free(cursorPos);
 }
 
