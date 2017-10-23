@@ -99,7 +99,7 @@ PaintInvalidationReason BoxPaintInvalidator::ComputePaintInvalidationReason() {
 
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
        style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
-      box_.PreviousContentBoxSize() != box_.ContentBoxRect().Size())
+      box_.PreviousContentBoxSize() != box_.ContentSize())
     return PaintInvalidationReason::kGeometry;
 
   LayoutSize old_border_box_size = box_.PreviousSize();
@@ -329,7 +329,7 @@ bool BoxPaintInvalidator::
   // crbug.com/490533
   if ((style.BackgroundLayers().ThisOrNextLayersUseContentBox() ||
        style.MaskLayers().ThisOrNextLayersUseContentBox()) &&
-      box_.ContentBoxRect().Size() != box_.Size())
+      box_.ContentSize() != box_.Size())
     return true;
   if ((BackgroundGeometryDependsOnLayoutOverflowRect() ||
        BackgroundPaintsOntoScrollingContentsLayer()) &&

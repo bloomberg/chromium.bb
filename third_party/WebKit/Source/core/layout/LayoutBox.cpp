@@ -5991,7 +5991,7 @@ void LayoutBox::MutableForPainting::
     SavePreviousContentBoxSizeAndLayoutOverflowRect() {
   auto& rare_data = GetLayoutBox().EnsureRareData();
   rare_data.has_previous_content_box_size_and_layout_overflow_rect_ = true;
-  rare_data.previous_content_box_size_ = GetLayoutBox().ContentBoxRect().Size();
+  rare_data.previous_content_box_size_ = GetLayoutBox().ContentSize();
   rare_data.previous_layout_overflow_rect_ =
       GetLayoutBox().LayoutOverflowRect();
 }
