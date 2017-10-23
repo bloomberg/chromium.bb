@@ -35,7 +35,9 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
                                      public OAuth2TokenService::Consumer,
                                      public net::URLFetcherDelegate {
  public:
-  ArcBackgroundAuthCodeFetcher(Profile* profile, ArcAuthContext* context);
+  ArcBackgroundAuthCodeFetcher(Profile* profile,
+                               ArcAuthContext* context,
+                               bool initial_signin);
   ~ArcBackgroundAuthCodeFetcher() override;
 
   // ArcAuthCodeFetcher:
@@ -67,6 +69,10 @@ class ArcBackgroundAuthCodeFetcher : public ArcAuthCodeFetcher,
 
   std::unique_ptr<OAuth2TokenService::Request> login_token_request_;
   std::unique_ptr<net::URLFetcher> auth_code_fetcher_;
+
+  // Keeps context of account code request. |initial_signin_| is true if request
+  // is made for initial sign-in flow.
+  bool initial_signin_;
 
   base::WeakPtrFactory<ArcBackgroundAuthCodeFetcher> weak_ptr_factory_;
 

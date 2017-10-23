@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Next MinVersion: 11
+// Next MinVersion: 12
 
 module arc.mojom;
 
@@ -72,6 +72,9 @@ enum ArcSignInStatus {
   [MinVersion=10] ARC_DISABLED = 17,
 
   [MinVersion=10] SUCCESS = 18,
+
+  // ARC was already provisioned.
+  [MinVersion=11] SUCCESS_ALREADY_PROVISIONED = 19,
 };
 
 // These values describe account check status.
@@ -154,16 +157,25 @@ struct AccountInfo {
   bool is_managed@2;
 };
 
-// Next Method ID: 10.
+// Next Method ID: 11.
 interface AuthHost {
+  // Notifies Chrome that the authorization flow is completed and provides
+  // resulting |status|. If |initial_signin| is true then this indicates that
+  // authorization happened for initial device provisioning.
+  [MinVersion=11] OnAuthorizationComplete@10(ArcSignInStatus status,
+                                             bool initial_signin);
+
   // Notifies Chrome that the sign-in is completed successfully.
-  [MinVersion=2] OnSignInComplete@2();
+  [MinVersion=2] OnSignInCompleteDeprecated@2();
+
   // Notifies Chrome that the sign-in fails to complete and provides failure
   // reason.
-  [MinVersion=2] OnSignInFailed@3(ArcSignInStatus reason);
+  [MinVersion=2] OnSignInFailedDeprecated@3(ArcSignInStatus reason);
+
   // Asynchronously requests an authorization code, as well as the account
-  // information.
-  [MinVersion=5] RequestAccountInfo@7();
+  // information. If |initial_signin| is true then that means request is for
+  // initial signin flow. Otherwise it is used for reauthorization flow.
+  [MinVersion=5] RequestAccountInfo@7([MinVersion=11] bool initial_signin);
 
   // Reports metrics to Chrome to be recorded in UMA.
   [MinVersion=7] ReportMetrics@8(MetricsType metrics_type, int32 value);

@@ -255,18 +255,22 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   // and |State::Active| is not guaranteed to be set here.
   // prefs::kArcDataRemoveRequested also can be active for now.
 
+  const bool provisioning_successful =
+      result == ProvisioningResult::SUCCESS ||
+      result == ProvisioningResult::SUCCESS_ALREADY_PROVISIONED;
   if (provisioning_reported_) {
-    // We don't expect ProvisioningResult::SUCCESS is reported twice or reported
-    // after an error.
-    DCHECK_NE(result, ProvisioningResult::SUCCESS);
+    // We don't expect ProvisioningResult::SUCCESS or
+    // ProvisioningResult::SUCCESS_ALREADY_PROVISIONED to be reported twice or
+    // reported after an error.
+    DCHECK(!provisioning_successful);
     // TODO(khmel): Consider changing LOG to NOTREACHED once we guaranty that
     // no double message can happen in production.
     LOG(WARNING) << "Provisioning result was already reported. Ignoring "
-                 << "additional result " << static_cast<int>(result) << ".";
+                 << "additional result " << result << ".";
     return;
   }
   provisioning_reported_ = true;
-  if (scoped_opt_in_tracker_ && result != ProvisioningResult::SUCCESS)
+  if (scoped_opt_in_tracker_ && !provisioning_successful)
     scoped_opt_in_tracker_->TrackError();
 
   if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
@@ -285,15 +289,15 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     arc_sign_in_timer_.Stop();
 
     UpdateProvisioningTiming(base::Time::Now() - sign_in_start_time_,
-                             result == ProvisioningResult::SUCCESS,
+                             provisioning_successful,
                              policy_util::IsAccountManaged(profile_));
     UpdateProvisioningResultUMA(result,
                                 policy_util::IsAccountManaged(profile_));
-    if (result != ProvisioningResult::SUCCESS)
+    if (!provisioning_successful)
       UpdateOptInCancelUMA(OptInCancelReason::CLOUD_PROVISION_FLOW_FAIL);
   }
 
-  if (result == ProvisioningResult::SUCCESS) {
+  if (provisioning_successful) {
     if (support_host_)
       support_host_->Close();
 

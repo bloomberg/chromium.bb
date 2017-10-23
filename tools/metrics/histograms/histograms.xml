@@ -2429,9 +2429,15 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <owner>elijahtaylor@google.com</owner>
   <summary>
     Arc Silent Auth Code status. This status is set during the ARC OptIn flow.
-    Retrieving Auth Code silently is optional feature. If it is not activated,
-    Disabled state is reported. Once it active, Auth code is retrieved silently.
-    In no error occurs, Success is reported. Otherwise specific error is sent.
+  </summary>
+</histogram>
+
+<histogram name="Arc.OptInSilentAuthCode.Reauthorization"
+    enum="ArcOptInSilentAuthCode">
+  <owner>khmel@google.com</owner>
+  <summary>
+    Arc Silent Auth Code status. This status is set during the ARC
+    reauthorization flow.
   </summary>
 </histogram>
 
@@ -2537,6 +2543,24 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   <summary>
     Elapsed time from the signing in process start to successful call to
     onSignInComplete for unmanaged users.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Reauthorization.Result.Managed"
+    enum="ArcProvisioningResult">
+  <owner>khmel@google.com</owner>
+  <summary>
+    The result (success or the type of failure) of ARC reauthorization on
+    managed devices.
+  </summary>
+</histogram>
+
+<histogram name="Arc.Reauthorization.Result.Unmanaged"
+    enum="ArcProvisioningResult">
+  <owner>khmel@google.com</owner>
+  <summary>
+    The result (success or the type of failure) of ARC reauthorization on
+    unmanaged devices.
   </summary>
 </histogram>
 

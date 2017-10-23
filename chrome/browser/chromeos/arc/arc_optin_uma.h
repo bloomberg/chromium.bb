@@ -100,9 +100,11 @@ enum class OptInSilentAuthCode {
 };
 
 // The values should be listed in ascending order for SIZE a last, for safety.
-// For detailed meaning, please see also to auth.mojom.
+// They are also persisted to logs, and their values should therefore never be
+// renumbered nor reused. For detailed meaning, please consult auth.mojom.
 enum class ProvisioningResult : int {
-  // Provisioning was successful.
+  // Provisioning was successful. Note, SUCCESS_ALREADY_PROVISIONED is also
+  // successful state.
   SUCCESS = 0,
 
   // Unclassified failure.
@@ -154,6 +156,9 @@ enum class ProvisioningResult : int {
   // ARC is not enabled.
   ARC_DISABLED = 20,
 
+  // Device was already provisioned.
+  SUCCESS_ALREADY_PROVISIONED = 21,
+
   // The size of this enum; keep last.
   SIZE,
 };
@@ -186,8 +191,10 @@ void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed);
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
                               bool success,
                               bool managed);
+void UpdateReauthorizationResultUMA(ProvisioningResult result, bool managed);
 void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time, bool managed);
 void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state);
+void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state);
 void UpdateAuthTiming(const char* histogram_name, base::TimeDelta elapsed_time);
 void UpdateAuthCheckinAttempts(int32_t num_attempts);
 void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status);

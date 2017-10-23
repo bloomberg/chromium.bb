@@ -41,12 +41,9 @@ void UpdateOptInFlowResultUMA(OptInFlowResult result) {
 
 void UpdateProvisioningResultUMA(ProvisioningResult result, bool managed) {
   DCHECK_NE(result, ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR);
-  base::LinearHistogram::FactoryGet(
-      GetHistogramName("Arc.Provisioning.Result.", managed), 0,
-      static_cast<int>(ProvisioningResult::SIZE),
-      static_cast<int>(ProvisioningResult::SIZE) + 1,
-      base::HistogramBase::kUmaTargetedHistogramFlag)
-      ->Add(static_cast<int>(result));
+  base::UmaHistogramEnumeration(
+      GetHistogramName("Arc.Provisioning.Result.", managed), result,
+      ProvisioningResult::SIZE);
 }
 
 void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
@@ -60,6 +57,12 @@ void UpdateProvisioningTiming(const base::TimeDelta& elapsed_time,
   base::UmaHistogramCustomTimes(GetHistogramName(histogram_name, managed),
                                 elapsed_time, base::TimeDelta::FromSeconds(1),
                                 base::TimeDelta::FromMinutes(6), 50);
+}
+
+void UpdateReauthorizationResultUMA(ProvisioningResult result, bool managed) {
+  base::UmaHistogramEnumeration(
+      GetHistogramName("Arc.Reauthorization.Result.", managed), result,
+      ProvisioningResult::SIZE);
 }
 
 void UpdatePlayStoreShowTime(const base::TimeDelta& elapsed_time,
@@ -93,6 +96,11 @@ void UpdateSilentAuthCodeUMA(OptInSilentAuthCode state) {
                               static_cast<int>(state));
 }
 
+void UpdateReauthorizationSilentAuthCodeUMA(OptInSilentAuthCode state) {
+  UMA_HISTOGRAM_SPARSE_SLOWLY("Arc.OptInSilentAuthCode.Reauthorization",
+                              static_cast<int>(state));
+}
+
 std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result) {
 #define MAP_PROVISIONING_RESULT(name) \
   case ProvisioningResult::name:      \
@@ -120,6 +128,7 @@ std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result) {
     MAP_PROVISIONING_RESULT(CHROME_SERVER_COMMUNICATION_ERROR);
     MAP_PROVISIONING_RESULT(NO_NETWORK_CONNECTION);
     MAP_PROVISIONING_RESULT(ARC_DISABLED);
+    MAP_PROVISIONING_RESULT(SUCCESS_ALREADY_PROVISIONED);
     MAP_PROVISIONING_RESULT(SIZE);
   }
 

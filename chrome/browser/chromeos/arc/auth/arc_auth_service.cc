@@ -81,6 +81,7 @@ ProvisioningResult ConvertArcSignInStatusToProvisioningResult(
     MAP_PROVISIONING_RESULT(CHROME_SERVER_COMMUNICATION_ERROR);
     MAP_PROVISIONING_RESULT(ARC_DISABLED);
     MAP_PROVISIONING_RESULT(SUCCESS);
+    MAP_PROVISIONING_RESULT(SUCCESS_ALREADY_PROVISIONED);
   }
 #undef MAP_PROVISIONING_RESULT
 
@@ -150,14 +151,29 @@ void ArcAuthService::OnInstanceClosed() {
   fetcher_.reset();
 }
 
-void ArcAuthService::OnSignInComplete() {
-  ArcSessionManager::Get()->OnProvisioningFinished(ProvisioningResult::SUCCESS);
+void ArcAuthService::OnAuthorizationComplete(mojom::ArcSignInStatus status,
+                                             bool initial_signin) {
+  if (!initial_signin) {
+    // Note, UMA for initial signin is updated from ArcSessionManager.
+    DCHECK_NE(mojom::ArcSignInStatus::SUCCESS_ALREADY_PROVISIONED, status);
+    UpdateReauthorizationResultUMA(
+        ConvertArcSignInStatusToProvisioningResult(status),
+        policy_util::IsAccountManaged(profile_));
+    return;
+  }
+
+  ArcSessionManager::Get()->OnProvisioningFinished(
+      ConvertArcSignInStatusToProvisioningResult(status));
 }
 
-void ArcAuthService::OnSignInFailed(mojom::ArcSignInStatus reason) {
+void ArcAuthService::OnSignInCompleteDeprecated() {
+  OnAuthorizationComplete(mojom::ArcSignInStatus::SUCCESS,
+                          true /* initial_signin */);
+}
+
+void ArcAuthService::OnSignInFailedDeprecated(mojom::ArcSignInStatus reason) {
   DCHECK_NE(mojom::ArcSignInStatus::SUCCESS, reason);
-  ArcSessionManager::Get()->OnProvisioningFinished(
-      ConvertArcSignInStatusToProvisioningResult(reason));
+  OnAuthorizationComplete(reason, true /* initial_signin */);
 }
 
 void ArcAuthService::ReportMetrics(mojom::MetricsType metrics_type,
@@ -199,7 +215,7 @@ void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info,
   instance->OnAccountInfoReady(std::move(account_info), status);
 }
 
-void ArcAuthService::RequestAccountInfo() {
+void ArcAuthService::RequestAccountInfo(bool initial_signin) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // No other auth code-related operation may be in progress.
   DCHECK(!fetcher_);
@@ -234,7 +250,7 @@ void ArcAuthService::RequestAccountInfo() {
   } else {
     // Optionally retrieve auth code in silent mode.
     auth_code_fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
-        profile_, ArcSessionManager::Get()->auth_context());
+        profile_, ArcSessionManager::Get()->auth_context(), initial_signin);
   }
   auth_code_fetcher->Fetch(base::Bind(&ArcAuthService::OnAuthCodeFetched,
                                       weak_ptr_factory_.GetWeakPtr()));
