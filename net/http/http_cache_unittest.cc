@@ -1457,16 +1457,19 @@ TEST(HttpCache, RangeGET_ParallelValidationNoMatch) {
   // Allow all requests to move from the Create queue to the active entry.
   base::RunLoop().RunUntilIdle();
 
-  // The first entry should have been doomed. Since the 1st transaction has not
-  // started writing to the cache, MockDiskEntry::CouldBeSparse() returns false
-  // leading to restarting the dooming the entry and restarting the second
-  // transaction.
+  // First entry created is doomed due to 2nd transaction's validation leading
+  // to restarting of the queued transactions.
   EXPECT_TRUE(cache.IsWriterPresent(kRangeGET_TransactionOK.url));
-  EXPECT_EQ(0, cache.GetCountDoneHeadersQueue(kRangeGET_TransactionOK.url));
 
+  // TODO(shivanisha): The restarted transactions race for creating the entry
+  // and thus instead of all 4 succeeding, 2 of them succeed. This is very
+  // implementation specific and happens because the queued transactions get
+  // restarted synchronously and get to the queue of creating the entry before
+  // the transaction that is restarting them. Fix the test to make it less
+  // vulnerable to any scheduling changes in the code.
   EXPECT_EQ(5, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
-  EXPECT_EQ(5, cache.disk_cache()->create_count());
+  EXPECT_EQ(3, cache.disk_cache()->create_count());
 
   for (auto& context : context_list) {
     EXPECT_EQ(LOAD_STATE_IDLE, context->trans->GetLoadState());
@@ -1482,7 +1485,7 @@ TEST(HttpCache, RangeGET_ParallelValidationNoMatch) {
 
   EXPECT_EQ(5, cache.network_layer()->transaction_count());
   EXPECT_EQ(0, cache.disk_cache()->open_count());
-  EXPECT_EQ(5, cache.disk_cache()->create_count());
+  EXPECT_EQ(3, cache.disk_cache()->create_count());
 }
 
 // Tests that if a transaction is dooming the entry and the entry was doomed by

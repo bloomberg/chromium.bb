@@ -409,8 +409,7 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // Called when the transaction has finished working with this entry.
   // |process_cancel| is true if the transaction could have been writing the
   // response body and was cancelled by the caller instead of running
-  // to completion. This will be confirmed and if true, its impact on queued
-  // transactions will be processed.
+  // to completion or if its a case of dooming the entry.
   void DoneWithEntry(ActiveEntry* entry,
                      Transaction* transaction,
                      bool process_cancel,
