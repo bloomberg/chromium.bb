@@ -119,21 +119,6 @@ public class NtpUiCaptureTestData {
                     /* thumbnailDominantColor = */ null),
     };
 
-    private static final SnippetArticle[] FAKE_BOOKMARK_SUGGESTIONS = new SnippetArticle[] {
-            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark0",
-                    "Light pollution worse than ever", FACTS_PUBLISHER, "http://example.com",
-                    getTimestamp(2017, Calendar.MARCH, 10), 0.0f, 0L, false,
-                    /* thumbnailDominantColor = */ null),
-            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark1",
-                    "Emergency services suffering further budget cuts", NEWS_PUBLISHER,
-                    "http://example.com", getTimestamp(2017, Calendar.FEBRUARY, 20), 0.0f, 0L,
-                    false, /* thumbnailDominantColor = */ null),
-            new SnippetArticle(KnownCategories.BOOKMARKS, "bookmark2",
-                    "Local election yields surprise winner", FACTS_PUBLISHER, "http://example.com",
-                    getTimestamp(2017, Calendar.MARCH, 30), 0.0f, 0L, false,
-                    /* thumbnailDominantColor = */ null),
-    };
-
     public static void registerArticleSamples(FakeSuggestionsSource suggestionsSource) {
         ContentSuggestionsTestUtils.registerCategory(suggestionsSource, KnownCategories.ARTICLES);
         suggestionsSource.setSuggestionsForCategory(
@@ -151,13 +136,6 @@ public class NtpUiCaptureTestData {
         suggestionsSource.setFaviconForId("suggestion8", NEWS_ICON);
     }
 
-    public static void registerBookmarkSamples(FakeSuggestionsSource suggestionsSource) {
-        ContentSuggestionsTestUtils.registerCategory(suggestionsSource, KnownCategories.BOOKMARKS);
-        suggestionsSource.setSuggestionsForCategory(
-                KnownCategories.BOOKMARKS, Arrays.asList(FAKE_BOOKMARK_SUGGESTIONS));
-        suggestionsSource.setThumbnailForId("bookmark1", "/android/UiCapture/fire.jpg");
-    }
-
     private static long getTimestamp(int year, int month, int day) {
         Calendar c = Calendar.getInstance();
         c.set(year, month, day);
@@ -167,7 +145,6 @@ public class NtpUiCaptureTestData {
     private static SuggestionsSource createSuggestionsSource() {
         FakeSuggestionsSource fakeSuggestionsSource = new FakeSuggestionsSource();
         registerArticleSamples(fakeSuggestionsSource);
-        registerBookmarkSamples(fakeSuggestionsSource);
         return fakeSuggestionsSource;
     }
 
