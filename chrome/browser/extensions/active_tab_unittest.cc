@@ -358,14 +358,14 @@ TEST_F(ActiveTabTest, OnlyActiveTab) {
   EXPECT_FALSE(HasTabsPermission(extension, tab_id() + 1));
 }
 
-TEST_F(ActiveTabTest, NavigateInPage) {
+TEST_F(ActiveTabTest, SameDocumentNavigations) {
   GURL google("http://www.google.com");
   NavigateAndCommit(google);
 
   active_tab_permission_granter()->GrantIfRequested(extension.get());
 
-  // Perform an in-page navigation. The extension should not lose the temporary
-  // permission.
+  // Perform a same-document navigation. The extension should not lose the
+  // temporary permission.
   GURL google_h1("http://www.google.com#h1");
   NavigateAndCommit(google_h1);
 
