@@ -884,6 +884,16 @@ class CORE_EXPORT LocalFrameView final
   // LocalFrameView (or possibly the LocalFrameView itself).
   ScrollableArea* ScrollableAreaWithElementId(const CompositorElementId&);
 
+  // When the frame is a local root and not a main frame, any recursive
+  // scrolling should continue in the parent process.
+  void ScrollRectToVisibleInRemoteParent(const LayoutRect&,
+                                         const ScrollAlignment&,
+                                         const ScrollAlignment&,
+                                         ScrollType,
+                                         bool,
+                                         ScrollBehavior,
+                                         bool);
+
   PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
     return paint_artifact_compositor_.get();

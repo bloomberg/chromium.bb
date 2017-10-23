@@ -1117,4 +1117,11 @@ String LocalFrameClientImpl::GetInstrumentationToken() {
   return web_frame_->Client()->GetInstrumentationToken();
 }
 
+void LocalFrameClientImpl::ScrollRectToVisibleInParentFrame(
+    const WebRect& rect_to_scroll,
+    const WebRemoteScrollProperties& properties) {
+  web_frame_->Client()->ScrollRectToVisibleInParentFrame(rect_to_scroll,
+                                                         properties);
+}
+
 }  // namespace blink

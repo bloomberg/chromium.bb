@@ -180,6 +180,7 @@
 #include "third_party/WebKit/public/platform/WebMediaPlayer.h"
 #include "third_party/WebKit/public/platform/WebMediaPlayerSource.h"
 #include "third_party/WebKit/public/platform/WebPoint.h"
+#include "third_party/WebKit/public/platform/WebRemoteScrollProperties.h"
 #include "third_party/WebKit/public/platform/WebSecurityOrigin.h"
 #include "third_party/WebKit/public/platform/WebStorageQuotaCallbacks.h"
 #include "third_party/WebKit/public/platform/WebString.h"
@@ -6872,6 +6873,14 @@ std::unique_ptr<blink::WebURLLoader> RenderFrameImpl::CreateURLLoader(
 void RenderFrameImpl::DraggableRegionsChanged() {
   for (auto& observer : observers_)
     observer.DraggableRegionsChanged();
+}
+
+void RenderFrameImpl::ScrollRectToVisibleInParentFrame(
+    const blink::WebRect& rect_to_scroll,
+    const blink::WebRemoteScrollProperties& properties) {
+  DCHECK(IsLocalRoot());
+  Send(new FrameHostMsg_ScrollRectToVisibleInParentFrame(
+      routing_id_, rect_to_scroll, properties));
 }
 
 blink::WebPageVisibilityState RenderFrameImpl::GetVisibilityState() const {

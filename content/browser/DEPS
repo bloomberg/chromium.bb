@@ -81,6 +81,8 @@ include_rules = [
   "+third_party/WebKit/public/platform/WebMouseWheelEvent.h",
   "+third_party/WebKit/public/platform/WebPageVisibilityState.h",
   "+third_party/WebKit/public/platform/WebReferrerPolicy.h",
+  "+third_party/WebKit/public/platform/WebRemoteFrameProperties.h",
+  "+third_party/WebKit/public/platform/WebRemoteScrollProperties.h",
   "+third_party/WebKit/public/platform/WebScreenInfo.h",
   "+third_party/WebKit/public/platform/WebSecurityStyle.h",
   "+third_party/WebKit/public/platform/WebSuddenTerminationDisablerType.h",

@@ -943,6 +943,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_FocusedNodeChanged, OnFocusedNodeChanged)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SetHasReceivedUserGesture,
                         OnSetHasReceivedUserGesture)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_ScrollRectToVisibleInParentFrame,
+                        OnScrollRectToVisibleInParentFrame)
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
     IPC_MESSAGE_HANDLER(FrameHostMsg_ShowPopup, OnShowPopup)
     IPC_MESSAGE_HANDLER(FrameHostMsg_HidePopup, OnHidePopup)
@@ -2697,6 +2699,16 @@ void RenderFrameHostImpl::OnFocusedNodeChanged(
 
 void RenderFrameHostImpl::OnSetHasReceivedUserGesture() {
   frame_tree_node_->OnSetHasReceivedUserGesture();
+}
+
+void RenderFrameHostImpl::OnScrollRectToVisibleInParentFrame(
+    const gfx::Rect& rect_to_scroll,
+    const blink::WebRemoteScrollProperties& properties) {
+  RenderFrameProxyHost* proxy =
+      frame_tree_node_->render_manager()->GetProxyToParent();
+  if (!proxy)
+    return;
+  proxy->ScrollRectToVisible(rect_to_scroll, properties);
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

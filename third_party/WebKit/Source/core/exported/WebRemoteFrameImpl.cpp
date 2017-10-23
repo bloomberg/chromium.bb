@@ -17,14 +17,19 @@
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutObject.h"
+#include "core/layout/LayoutView.h"
+#include "core/layout/ScrollAlignment.h"
 #include "core/page/ChromeClient.h"
 #include "core/page/Page.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/feature_policy/FeaturePolicy.h"
+#include "platform/geometry/FloatQuad.h"
+#include "platform/geometry/LayoutRect.h"
 #include "platform/heap/Handle.h"
 #include "public/platform/WebFeaturePolicy.h"
 #include "public/platform/WebFloatRect.h"
 #include "public/platform/WebRect.h"
+#include "public/platform/WebRemoteScrollProperties.h"
 #include "public/web/WebDocument.h"
 #include "public/web/WebFrameOwnerProperties.h"
 #include "public/web/WebPerformance.h"
@@ -33,6 +38,29 @@
 #include "v8/include/v8.h"
 
 namespace blink {
+namespace {
+using WebRemoteScrollAlignment = WebRemoteScrollProperties::Alignment;
+ScrollAlignment ToScrollAlignment(WebRemoteScrollAlignment alignment) {
+  switch (alignment) {
+    case WebRemoteScrollAlignment::kCenterIfNeeded:
+      return ScrollAlignment::kAlignCenterIfNeeded;
+    case WebRemoteScrollAlignment::kToEdgeIfNeeded:
+      return ScrollAlignment::kAlignToEdgeIfNeeded;
+    case WebRemoteScrollAlignment::kTopAlways:
+      return ScrollAlignment::kAlignTopAlways;
+    case WebRemoteScrollAlignment::kBottomAlways:
+      return ScrollAlignment::kAlignBottomAlways;
+    case WebRemoteScrollAlignment::kLeftAlways:
+      return ScrollAlignment::kAlignLeftAlways;
+    case WebRemoteScrollAlignment::kRightAlways:
+      return ScrollAlignment::kAlignRightAlways;
+    default:
+      NOTREACHED();
+      return ScrollAlignment::kAlignCenterIfNeeded;
+  }
+}
+
+}  // namespace
 
 WebRemoteFrame* WebRemoteFrame::Create(WebTreeScopeType scope,
                                        WebRemoteFrameClient* client) {
@@ -318,6 +346,29 @@ void WebRemoteFrameImpl::WillEnterFullscreen() {
 
 void WebRemoteFrameImpl::SetHasReceivedUserGesture() {
   GetFrame()->UpdateUserActivationInFrameTree();
+}
+
+void WebRemoteFrameImpl::ScrollRectToVisible(
+    const WebRect& rect_to_scroll,
+    const WebRemoteScrollProperties& properties) {
+  Element* owner_element = frame_->DeprecatedLocalOwner();
+  LayoutObject* owner_object = owner_element->GetLayoutObject();
+
+  // Schedule the scroll.
+  auto* scroll_sequencer =
+      owner_element->GetDocument().GetPage()->GetSmoothScrollSequencer();
+  scroll_sequencer->AbortAnimations();
+  LayoutRect new_rect_to_scroll = EnclosingLayoutRect(
+      owner_object
+          ->LocalToAncestorQuad(FloatRect(rect_to_scroll), owner_object->View(),
+                                kUseTransforms | kTraverseDocumentBoundaries)
+          .BoundingBox());
+  owner_object->EnclosingBox()->ScrollRectToVisibleRecursive(
+      LayoutRect(new_rect_to_scroll), ToScrollAlignment(properties.align_x),
+      ToScrollAlignment(properties.align_y), properties.GetScrollType(),
+      properties.make_visible_in_visual_viewport,
+      properties.GetScrollBehavior(), properties.is_for_scroll_sequence);
+  scroll_sequencer->RunQueuedAnimations();
 }
 
 v8::Local<v8::Object> WebRemoteFrameImpl::GlobalProxy() const {
