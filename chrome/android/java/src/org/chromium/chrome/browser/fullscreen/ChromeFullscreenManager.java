@@ -189,6 +189,11 @@ public class ChromeFullscreenManager
             public void didCloseTab(int tabId, boolean incognito) {
                 setTab(modelSelector.getCurrentTab());
             }
+
+            @Override
+            public void pendingTabAdd(boolean isPendingTabAdd) {
+                setTab(modelSelector.getCurrentTab());
+            }
         };
 
         assert controlContainer != null;
