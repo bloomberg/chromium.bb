@@ -8,7 +8,7 @@
 #include "base/json/json_writer.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "gin/converter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

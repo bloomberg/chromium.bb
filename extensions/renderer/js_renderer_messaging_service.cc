@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "content/public/child/v8_value_converter.h"
 #include "content/public/common/child_process_host.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/api/messaging/port_id.h"
 #include "extensions/common/extension_messages.h"

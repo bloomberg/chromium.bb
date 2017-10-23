@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/bindings/api_invocation_errors.h"
 #include "extensions/renderer/bindings/api_type_reference_map.h"
 #include "gin/converter.h"

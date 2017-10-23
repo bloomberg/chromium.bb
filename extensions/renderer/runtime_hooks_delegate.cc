@@ -7,7 +7,7 @@
 #include "base/containers/span.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"

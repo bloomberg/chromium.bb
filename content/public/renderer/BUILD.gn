@@ -68,6 +68,7 @@ target(link_target_type, "renderer_sources") {
     "resource_dispatcher_delegate.h",
     "resource_fetcher.h",
     "seccomp_sandbox_status_android.h",
+    "v8_value_converter.h",
     "video_encode_accelerator.cc",
     "video_encode_accelerator.h",
     "window_features_converter.cc",

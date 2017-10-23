@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "content/common/content_export.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 
 namespace content {
 

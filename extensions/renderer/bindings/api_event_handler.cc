@@ -14,7 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/supports_user_data.h"
 #include "base/values.h"
-#include "content/public/child/v8_value_converter.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/bindings/api_event_listeners.h"
 #include "extensions/renderer/bindings/event_emitter.h"
 #include "gin/handle.h"
