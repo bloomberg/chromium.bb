@@ -81,6 +81,9 @@ extern "C" {
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_HARDWARE_ANGLE 0x320A
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE 0x320B
 #define EGL_PLATFORM_ANGLE_DEVICE_TYPE_REFERENCE_ANGLE 0x320C
+
+// Hidden enum for the NULL D3D device type.
+#define EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE 0x6AC0
 #endif /* EGL_ANGLE_platform_angle_d3d */
 
 #ifndef EGL_ANGLE_platform_angle_opengl
@@ -206,15 +209,21 @@ class EGLSyncControlVSyncProvider : public SyncControlVSyncProvider {
 
 EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
                                    EGLenum platform_type,
-                                   bool warpDevice) {
+                                   bool warpDevice,
+                                   bool nullDevice) {
   std::vector<EGLint> display_attribs;
 
   display_attribs.push_back(EGL_PLATFORM_ANGLE_TYPE_ANGLE);
   display_attribs.push_back(platform_type);
 
   if (warpDevice) {
+    DCHECK(!nullDevice);
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
     display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_WARP_ANGLE);
+  } else if (nullDevice) {
+    DCHECK(!warpDevice);
+    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_ANGLE);
+    display_attribs.push_back(EGL_PLATFORM_ANGLE_DEVICE_TYPE_NULL_ANGLE);
   }
 
 #if defined(USE_X11)
@@ -243,20 +252,29 @@ EGLDisplay GetDisplayFromType(DisplayType display_type,
     case SWIFT_SHADER:
       return eglGetDisplay(native_display);
     case ANGLE_D3D9:
-      return GetPlatformANGLEDisplay(native_display,
-                                     EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, false);
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D9_ANGLE, false, false);
     case ANGLE_D3D11:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false, false);
+    case ANGLE_D3D11_NULL:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE, false, true);
     case ANGLE_OPENGL:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE, false);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE, false, false);
+    case ANGLE_OPENGL_NULL:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGL_ANGLE, false, true);
     case ANGLE_OPENGLES:
       return GetPlatformANGLEDisplay(
-          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE, false);
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE, false, false);
+    case ANGLE_OPENGLES_NULL:
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_OPENGLES_ANGLE, false, true);
     case ANGLE_NULL:
-      return GetPlatformANGLEDisplay(native_display,
-                                     EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE, false);
+      return GetPlatformANGLEDisplay(
+          native_display, EGL_PLATFORM_ANGLE_TYPE_NULL_ANGLE, false, false);
     default:
       NOTREACHED();
       return EGL_NO_DISPLAY;
@@ -486,9 +504,10 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
     } else {
       if (requested_renderer == kANGLEImplementationD3D11Name) {
         init_displays->push_back(ANGLE_D3D11);
-      }
-      if (requested_renderer == kANGLEImplementationD3D9Name) {
+      } else if (requested_renderer == kANGLEImplementationD3D9Name) {
         init_displays->push_back(ANGLE_D3D9);
+      } else if (requested_renderer == kANGLEImplementationD3D11NULLName) {
+        init_displays->push_back(ANGLE_D3D11_NULL);
       }
     }
   }
@@ -500,9 +519,12 @@ void GetEGLInitDisplays(bool supports_angle_d3d,
     } else {
       if (requested_renderer == kANGLEImplementationOpenGLName) {
         init_displays->push_back(ANGLE_OPENGL);
-      }
-      if (requested_renderer == kANGLEImplementationOpenGLESName) {
+      } else if (requested_renderer == kANGLEImplementationOpenGLESName) {
         init_displays->push_back(ANGLE_OPENGLES);
+      } else if (requested_renderer == kANGLEImplementationOpenGLNULLName) {
+        init_displays->push_back(ANGLE_OPENGL_NULL);
+      } else if (requested_renderer == kANGLEImplementationOpenGLESNULLName) {
+        init_displays->push_back(ANGLE_OPENGLES_NULL);
       }
     }
   }
