@@ -143,7 +143,9 @@ class HEADLESS_EXPORT HeadlessWebContentsImpl
   void SetBeginFrameEventsEnabled(int session_id, bool enabled);
 
   using FrameFinishedCallback =
-      base::Callback<void(bool /*has_damage*/, std::unique_ptr<SkBitmap>)>;
+      base::Callback<void(bool /* has_damage */,
+                          bool /* main_frame_content_updated */,
+                          std::unique_ptr<SkBitmap>)>;
   void BeginFrame(const base::TimeTicks& frame_timeticks,
                   const base::TimeTicks& deadline,
                   const base::TimeDelta& interval,
