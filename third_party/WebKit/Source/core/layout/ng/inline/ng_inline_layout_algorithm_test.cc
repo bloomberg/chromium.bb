@@ -45,34 +45,26 @@ TEST_F(NGInlineLayoutAlgorithmTest, BreakToken) {
           /* icb_size */ size.ConvertToPhysical(kHorizontalTopBottom))
           .SetAvailableSize(size)
           .ToConstraintSpace(kHorizontalTopBottom);
+
   scoped_refptr<NGLayoutResult> layout_result =
       inline_node.Layout(*constraint_space, nullptr);
-  auto* wrapper =
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
-
-  // Test that the anonymous wrapper has 2 line boxes, and both have unfinished
-  // break tokens.
-  EXPECT_EQ(2u, wrapper->Children().size());
-  auto* line1 = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
+  auto* line1 =
+      ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment().get());
   EXPECT_FALSE(line1->BreakToken()->IsFinished());
-  auto* line2 = ToNGPhysicalLineBoxFragment(wrapper->Children()[1].get());
+
+  // Perform 2nd layout with the break token from the 1st line.
+  scoped_refptr<NGLayoutResult> layout_result2 =
+      inline_node.Layout(*constraint_space, line1->BreakToken());
+  auto* line2 =
+      ToNGPhysicalLineBoxFragment(layout_result2->PhysicalFragment().get());
   EXPECT_FALSE(line2->BreakToken()->IsFinished());
 
-  // Perform 2nd layout with the break token from the 2nd line.
-  scoped_refptr<NGLayoutResult> layout_result2 =
+  // Perform 3rd layout with the break token from the 2nd line.
+  scoped_refptr<NGLayoutResult> layout_result3 =
       inline_node.Layout(*constraint_space, line2->BreakToken());
-  auto* wrapper2 =
-      ToNGPhysicalBoxFragment(layout_result2->PhysicalFragment().get());
-
-  // Test that the anonymous wrapper has 1 line boxes, and has a finished break
-  // token.
-  EXPECT_EQ(1u, wrapper2->Children().size());
-  auto* line3 = ToNGPhysicalLineBoxFragment(wrapper2->Children()[0].get());
+  auto* line3 =
+      ToNGPhysicalLineBoxFragment(layout_result3->PhysicalFragment().get());
   EXPECT_TRUE(line3->BreakToken()->IsFinished());
-
-  // Test that the wrapper has the break token without children.
-  auto* wrapper2_break_token = ToNGBlockBreakToken(wrapper2->BreakToken());
-  EXPECT_EQ(0u, wrapper2_break_token->ChildBreakTokens().size());
 }
 
 // A block with inline children generates fragment tree as follows:
@@ -105,13 +97,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, ContainerBorderPadding) {
   EXPECT_EQ(0, layout_result->BfcOffset().value().line_offset);
   EXPECT_EQ(0, layout_result->BfcOffset().value().block_offset);
 
-  auto* wrapper = ToNGPhysicalBoxFragment(block_box->Children()[0].get());
-  EXPECT_EQ(5, wrapper->Offset().left);
-  EXPECT_EQ(10, wrapper->Offset().top);
-
-  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
-  EXPECT_EQ(0, line->Offset().left);
-  EXPECT_EQ(0, line->Offset().top);
+  auto* line = ToNGPhysicalLineBoxFragment(block_box->Children()[0].get());
+  EXPECT_EQ(5, line->Offset().left);
+  EXPECT_EQ(10, line->Offset().top);
 }
 
 // The test leaks memory. crbug.com/721932
@@ -135,10 +123,9 @@ TEST_F(NGInlineLayoutAlgorithmTest, MAYBE_VerticalAlignBottomReplaced) {
   scoped_refptr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   scoped_refptr<NGLayoutResult> layout_result = inline_node.Layout(*space);
-  auto* wrapper =
-      ToNGPhysicalBoxFragment(layout_result->PhysicalFragment().get());
-  EXPECT_EQ(1u, wrapper->Children().size());
-  auto* line = ToNGPhysicalLineBoxFragment(wrapper->Children()[0].get());
+
+  auto* line =
+      ToNGPhysicalLineBoxFragment(layout_result->PhysicalFragment().get());
   EXPECT_EQ(LayoutUnit(96), line->Size().height);
   auto* img = line->Children()[0].get();
   EXPECT_EQ(LayoutUnit(0), img->Offset().top);
@@ -186,10 +173,8 @@ TEST_F(NGInlineLayoutAlgorithmTest, TextFloatsAroundFloatsBefore) {
       ToNGPhysicalBoxFragment(body_fragment->Children()[0].get());
   auto* span_box_fragments_wrapper =
       ToNGPhysicalBoxFragment(container_fragment->Children()[3].get());
-  auto* line_box_fragments_wrapper =
-      ToNGPhysicalBoxFragment(span_box_fragments_wrapper->Children()[0].get());
   Vector<NGPhysicalLineBoxFragment*> line_boxes;
-  for (const auto& child : line_box_fragments_wrapper->Children()) {
+  for (const auto& child : span_box_fragments_wrapper->Children()) {
     line_boxes.push_back(ToNGPhysicalLineBoxFragment(child.get()));
   }
 

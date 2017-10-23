@@ -49,27 +49,6 @@ NGFragmentBuilder& NGFragmentBuilder::SetIntrinsicBlockSize(
   return *this;
 }
 
-// TODO(ikilpatrick): Remove this once line-by-line refactoring is complete.
-// This is temporary code, which is duplicated from NGBlockLayoutAlgorithm.
-NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
-    scoped_refptr<NGLayoutResult> child,
-    const NGBfcOffset& child_bfc_offset,
-    const NGBfcOffset& parent_bfc_offset) {
-  NGFragment child_fragment(WritingMode(), *child->PhysicalFragment());
-
-  LayoutUnit relative_line_offset =
-      child_bfc_offset.line_offset - parent_bfc_offset.line_offset;
-
-  LayoutUnit inline_offset =
-      Direction() == TextDirection::kLtr
-          ? relative_line_offset
-          : inline_size_ - relative_line_offset - child_fragment.InlineSize();
-
-  return AddChild(child, NGLogicalOffset{inline_offset,
-                                         child_bfc_offset.block_offset -
-                                             parent_bfc_offset.block_offset});
-}
-
 NGContainerFragmentBuilder& NGFragmentBuilder::AddChild(
     scoped_refptr<NGPhysicalFragment> child,
     const NGLogicalOffset& child_offset) {

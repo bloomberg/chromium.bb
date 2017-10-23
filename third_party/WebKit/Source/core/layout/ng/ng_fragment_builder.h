@@ -46,10 +46,6 @@ class CORE_EXPORT NGFragmentBuilder final : public NGContainerFragmentBuilder {
 
   using NGContainerFragmentBuilder::AddChild;
 
-  NGContainerFragmentBuilder& AddChild(scoped_refptr<NGLayoutResult>,
-                                       const NGBfcOffset& child_bfc_offset,
-                                       const NGBfcOffset& parent_bfc_offset);
-
   // Our version of AddChild captures any child NGBreakTokens.
   NGContainerFragmentBuilder& AddChild(scoped_refptr<NGPhysicalFragment>,
                                        const NGLogicalOffset&) final;

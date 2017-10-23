@@ -17,12 +17,15 @@ namespace blink {
 NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
     NGInlineNode node,
     scoped_refptr<const ComputedStyle> style,
-    NGWritingMode writing_mode)
+    NGWritingMode writing_mode,
+    TextDirection)
     : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
       node_(node) {}
 
+NGLineBoxFragmentBuilder::~NGLineBoxFragmentBuilder() {}
+
 NGLogicalSize NGLineBoxFragmentBuilder::Size() const {
-  return {inline_size_, metrics_.LineHeight()};
+  return {inline_size_, metrics_.LineHeight().ClampNegativeToZero()};
 }
 
 const NGPhysicalFragment* NGLineBoxFragmentBuilder::Child::PhysicalFragment()
@@ -66,6 +69,10 @@ void NGLineBoxFragmentBuilder::SetMetrics(const NGLineHeightMetrics& metrics) {
   metrics_ = metrics;
 }
 
+void NGLineBoxFragmentBuilder::SetBlockSize(LayoutUnit block_size) {
+  block_size_ = block_size;
+}
+
 void NGLineBoxFragmentBuilder::AddPositionedFloat(
     const NGPositionedFloat& positioned_float) {
   positioned_floats_.push_back(positioned_float);
@@ -98,7 +105,8 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
 
   NGWritingMode writing_mode(
       FromPlatformWritingMode(node_.Style().GetWritingMode()));
-  NGPhysicalSize physical_size = Size().ConvertToPhysical(writing_mode);
+  NGPhysicalSize physical_size =
+      NGLogicalSize(inline_size_, block_size_).ConvertToPhysical(writing_mode);
 
   for (size_t i = 0; i < children_.size(); ++i) {
     NGPhysicalFragment* child = children_[i].get();

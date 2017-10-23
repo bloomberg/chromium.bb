@@ -6,7 +6,7 @@
 #define NGLineBoxFragmentBuilder_h
 
 #include "core/layout/ng/geometry/ng_logical_offset.h"
-#include "core/layout/ng/inline/ng_inline_break_token.h"
+#include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_line_height_metrics.h"
 #include "core/layout/ng/ng_container_fragment_builder.h"
 #include "core/layout/ng/ng_positioned_float.h"
@@ -15,22 +15,26 @@
 namespace blink {
 
 class ComputedStyle;
+class NGInlineBreakToken;
 class NGInlineNode;
 class NGPhysicalFragment;
 
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
   STACK_ALLOCATED();
-
  public:
   NGLineBoxFragmentBuilder(NGInlineNode,
                            scoped_refptr<const ComputedStyle>,
-                           NGWritingMode);
+                           NGWritingMode,
+                           TextDirection);
+  ~NGLineBoxFragmentBuilder() override;
 
   NGLogicalSize Size() const final;
 
   void SetMetrics(const NGLineHeightMetrics&);
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
+
+  void SetBlockSize(LayoutUnit);
 
   void AddPositionedFloat(const NGPositionedFloat&);
 
@@ -102,6 +106,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   NGInlineNode node_;
 
   NGLineHeightMetrics metrics_;
+  LayoutUnit block_size_;
   Vector<NGPositionedFloat> positioned_floats_;
 
   scoped_refptr<NGInlineBreakToken> break_token_;

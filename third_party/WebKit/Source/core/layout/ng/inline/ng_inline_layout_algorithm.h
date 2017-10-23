@@ -33,19 +33,14 @@ class NGTextFragmentBuilder;
 // Uses NGLineBreaker to find NGInlineItems to form a line.
 class CORE_EXPORT NGInlineLayoutAlgorithm final
     : public NGLayoutAlgorithm<NGInlineNode,
-                               NGFragmentBuilder,
+                               NGLineBoxFragmentBuilder,
                                NGInlineBreakToken> {
  public:
   NGInlineLayoutAlgorithm(NGInlineNode,
                           const NGConstraintSpace&,
                           NGInlineBreakToken* = nullptr);
 
-  // Create a line.
-  // @return false if the line does not fit in the constraint space in block
-  //         direction.
-  bool CreateLine(NGLineInfo*,
-                  NGExclusionSpace*,
-                  scoped_refptr<NGInlineBreakToken> = nullptr);
+  void CreateLine(NGLineInfo*, NGExclusionSpace*);
 
   scoped_refptr<NGLayoutResult> Layout() override;
 
@@ -54,9 +49,7 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   void BidiReorder(NGInlineItemResults*);
 
-  bool PlaceItems(NGLineInfo*,
-                  const NGExclusionSpace&,
-                  scoped_refptr<NGInlineBreakToken>);
+  void PlaceItems(NGLineInfo*, const NGExclusionSpace&);
   void PlaceText(scoped_refptr<const ShapeResult>,
                  scoped_refptr<const ComputedStyle>,
                  LayoutUnit* position,
@@ -86,17 +79,11 @@ class CORE_EXPORT NGInlineLayoutAlgorithm final
 
   LayoutUnit ComputeContentSize(const NGLineInfo&,
                                 const NGExclusionSpace&,
-                                LayoutUnit line_bottom);
-
-  void PropagateBaselinesFromChildren();
-  bool AddBaseline(const NGBaselineRequest&,
-                   const NGPhysicalFragment*,
-                   LayoutUnit child_offset);
+                                LayoutUnit line_height);
 
   NGLineBoxFragmentBuilder::ChildList line_box_;
-  NGInlineLayoutStateStack box_states_;
-  LayoutUnit content_size_;
-  LayoutUnit max_inline_size_;
+  std::unique_ptr<NGInlineLayoutStateStack> box_states_;
+
   FontBaseline baseline_type_ = FontBaseline::kAlphabeticBaseline;
 
   unsigned is_horizontal_writing_mode_ : 1;
