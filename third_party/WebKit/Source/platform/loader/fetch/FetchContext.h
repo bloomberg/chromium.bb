@@ -151,8 +151,7 @@ class PLATFORM_EXPORT FetchContext
 
   // Called when a resource load is first requested, which may not be when the
   // load actually begins.
-  virtual void RecordLoadingActivity(unsigned long identifier,
-                                     const ResourceRequest&,
+  virtual void RecordLoadingActivity(const ResourceRequest&,
                                      Resource::Type,
                                      const AtomicString& fetch_initiator_name);
 

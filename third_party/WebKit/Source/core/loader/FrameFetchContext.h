@@ -117,8 +117,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
                        bool is_internal_request) override;
 
   bool ShouldLoadNewResource(Resource::Type) const override;
-  void RecordLoadingActivity(unsigned long identifier,
-                             const ResourceRequest&,
+  void RecordLoadingActivity(const ResourceRequest&,
                              Resource::Type,
                              const AtomicString& fetch_initiator_name) override;
   void DidLoadResource(Resource*) override;

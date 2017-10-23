@@ -1100,11 +1100,11 @@ TEST_F(FrameFetchContextTest, RecordLoadingActivityWhenDetached) {
 
   dummy_page_holder = nullptr;
 
-  fetch_context->RecordLoadingActivity(4, request, Resource::kRaw,
+  fetch_context->RecordLoadingActivity(request, Resource::kRaw,
                                        FetchInitiatorTypeNames::xmlhttprequest);
   // Should not crash.
 
-  fetch_context->RecordLoadingActivity(8, request, Resource::kRaw,
+  fetch_context->RecordLoadingActivity(request, Resource::kRaw,
                                        FetchInitiatorTypeNames::document);
   // Should not crash.
 }
