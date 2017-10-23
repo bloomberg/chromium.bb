@@ -332,9 +332,6 @@ AutocompleteMatch BaseSearchProvider::CreateSearchSuggestion(
 bool BaseSearchProvider::ZeroSuggestEnabled(
     OmniboxEventProto::PageClassification page_classification,
     const AutocompleteProviderClient* client) {
-  if (!OmniboxFieldTrial::InZeroSuggestFieldTrial())
-    return false;
-
   // Don't show zero suggest on the NTP.
   // TODO(hfung): Experiment with showing MostVisited zero suggest on NTP
   // under the conditions described in crbug.com/305366.

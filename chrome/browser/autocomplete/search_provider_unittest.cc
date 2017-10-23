@@ -3222,9 +3222,6 @@ TEST_F(SearchProviderTest, CanSendURL) {
   template_url_data.id = SEARCH_ENGINE_GOOGLE;
   TemplateURL google_template_url(template_url_data);
 
-  // Create field trial.
-  CreateFieldTrial(OmniboxFieldTrial::kZeroSuggestRule, true);
-
   ChromeAutocompleteProviderClient client(&profile_);
 
   // Not signed in.
@@ -3240,16 +3237,6 @@ TEST_F(SearchProviderTest, CanSendURL) {
       GURL("http://www.google.com/search"),
       GURL("https://www.google.com/complete/search"), &google_template_url,
       metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
-
-  // Not in field trial.
-  ResetFieldTrialList();
-  CreateFieldTrial(OmniboxFieldTrial::kZeroSuggestRule, false);
-  EXPECT_TRUE(SearchProvider::CanSendURL(
-      GURL("http://www.google.com/search"),
-      GURL("https://www.google.com/complete/search"), &google_template_url,
-      metrics::OmniboxEventProto::OTHER, SearchTermsData(), &client));
-  ResetFieldTrialList();
-  CreateFieldTrial(OmniboxFieldTrial::kZeroSuggestRule, true);
 
   // Invalid page URL.
   EXPECT_FALSE(SearchProvider::CanSendURL(

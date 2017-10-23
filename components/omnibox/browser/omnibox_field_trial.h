@@ -55,6 +55,10 @@ extern const base::Feature kUIExperimentSwapTitleAndUrl;
 extern const base::Feature kUIExperimentVerticalLayout;
 extern const base::Feature kUIExperimentVerticalMargin;
 extern const base::Feature kSpeculativeServiceWorkerStartOnQueryInput;
+
+#if defined(OS_IOS)
+extern const base::Feature kZeroSuggestProviderIOS;
+#endif
 }
 
 // The set of parameters customizing the HUP scoring.
@@ -189,11 +193,6 @@ class OmniboxFieldTrial {
 
   // ---------------------------------------------------------
   // For the ZeroSuggestProvider field trial.
-
-  // Returns whether the user is in any field trial where the
-  // ZeroSuggestProvider should be used to get suggestions when the
-  // user clicks on the omnibox but has not typed anything yet.
-  static bool InZeroSuggestFieldTrial();
 
   // Returns whether the user is in a ZeroSuggest field trial, which shows
   // most visited URLs. This is true for both "MostVisited" and
@@ -460,7 +459,6 @@ class OmniboxFieldTrial {
   static const char kHQPTypedValueRule[];
   static const char kHQPAllowMatchInTLDRule[];
   static const char kHQPAllowMatchInSchemeRule[];
-  static const char kZeroSuggestRule[];
   static const char kZeroSuggestVariantRule[];
   static const char kDisableResultsCachingRule[];
   static const char kMeasureSuggestPollingDelayFromLastKeystrokeRule[];
