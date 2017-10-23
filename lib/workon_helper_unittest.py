@@ -160,11 +160,16 @@ class WorkonHelperTest(cros_test_lib.MockTempDirTestCase):
     """
     workon_path = workon_helper.GetWorkonPath(
         source_root=self._mock_srcdir, sub_path=system)
-    self.assertEqual(sorted([WORKED_ON_PATTERN % atom for atom in atoms]),
-                     sorted(osutils.ReadFile(workon_path).splitlines()))
     mask_path = workon_path + '.mask'
-    self.assertEqual(sorted([MASKED_PATTERN % atom for atom in atoms]),
-                     sorted(osutils.ReadFile(mask_path).splitlines()))
+
+    if atoms:
+      self.assertEqual(sorted([WORKED_ON_PATTERN % atom for atom in atoms]),
+                       sorted(osutils.ReadFile(workon_path).splitlines()))
+      self.assertEqual(sorted([MASKED_PATTERN % atom for atom in atoms]),
+                       sorted(osutils.ReadFile(mask_path).splitlines()))
+    else:
+      self.assertNotExists(workon_path)
+      self.assertNotExists(mask_path)
 
   def testShouldDetectBoardNotSetUp(self):
     """Check that we complain if a board has not been previously setup."""

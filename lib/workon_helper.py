@@ -104,7 +104,10 @@ def _WriteLinesToFile(path, lines, line_prefix, line_suffix):
   """
   contents = ''.join(
       ['%s%s%s\n' % (line_prefix, line, line_suffix) for line in lines])
-  osutils.WriteFile(path, contents, makedirs=True)
+  if not contents:
+    osutils.SafeUnlink(path)
+  else:
+    osutils.WriteFile(path, contents, makedirs=True)
 
 
 def GetWorkonPath(source_root=constants.CHROOT_SOURCE_ROOT, sub_path=None):
