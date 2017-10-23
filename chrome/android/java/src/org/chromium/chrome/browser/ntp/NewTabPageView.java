@@ -412,7 +412,10 @@ public class NewTabPageView extends FrameLayout implements TileGroup.Observer {
     }
 
     private void initializeChromeHomePromo() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) return;
+        if (DeviceFormFactor.isTablet()
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_HOME_PROMO)) {
+            return;
+        }
 
         NoUnderlineClickableSpan link = new NoUnderlineClickableSpan() {
             @Override
