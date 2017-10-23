@@ -676,7 +676,7 @@ typedef enum ATTRIBUTE_PACKED {
 /* Segment Feature Masks */
 #define MAX_MV_REF_CANDIDATES 2
 
-#define MAX_REF_MV_STACK_SIZE 16
+#define MAX_REF_MV_STACK_SIZE 8
 #if CONFIG_EXT_PARTITION
 #define REF_CAT_LEVEL 640
 #else
