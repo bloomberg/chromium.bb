@@ -87,6 +87,23 @@ Alternative way is to use `gsutil` tool:
 gsutil -m rsync <corpus_dir_on_disk> gs://clusterfuzz-corpus/libfuzzer/%YOUR_FUZZER_NAME%_static
 ```
 
+### Corpus Minimization
+
+It's important to minimize seed corpus before uploading. The minimization can
+be done with `-merge=1` option of libFuzzer:
+
+```bash
+# Create an empty directory.
+mkdir seed_corpus_minimized
+# Run the fuzzer with -merge=1 flag.
+./my_fuzzer -merge=1 ./seed_corpus_minimized ./seed_corpus
+```
+
+After running the command above, `seed_corpus_minimized` directory will contain
+a minimized corpus that gives the same code coverage as the initial
+`seed_corpus` directory.
+
+
 ## Fuzzer Dictionary
 
 It is very useful to provide fuzzer a set of common words/values that you expect
