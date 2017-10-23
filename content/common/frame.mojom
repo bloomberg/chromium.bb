@@ -75,12 +75,20 @@ struct CreateNewWindowParams {
   blink.mojom.WindowFeatures features;
 };
 
+// Operation result when the renderer asks the browser to create a new window.
+enum CreateNewWindowStatus {
+  // Ignore creation of the new window. This can happen because creation is
+  // blocked or because the new window should have no opener relationship.
+  kIgnore,
+  // Reuse the current window rather than creating a new window.
+  kReuse,
+  // Create a new window using the corresponding params in |reply|.
+  kSuccess,
+};
+
+// All routing IDs in this struct must be set to a valid routing ID.
 struct CreateNewWindowReply {
-  // The ID of the view to be created. If the ID is MSG_ROUTING_NONE, then the
-  // opener RenderFrame should not create a RenderView in its process.
-  // MSG_ROUTING_NONE does not necessarily indicate failure; it may also occur
-  // in cases where a window was created, but the opener relationship is
-  // severed.
+  // The ID of the view to be created.
   int32 route_id;
 
   // The ID of the main frame hosted in the view.
@@ -111,11 +119,10 @@ struct DidCommitProvisionalLoadParams;
 // Implemented by the frame server (i.e. the browser process). For messages that
 // must be associated with the IPC channel.
 interface FrameHost {
-  // Sent by the renderer when it is creating a new window.  The browser creates
-  // a tab for it.  If |reply.route_id| is MSG_ROUTING_NONE, the window couldn't
-  // be created.
+  // Sent by the renderer to request the browser to create a new window. |reply|
+  // is only non-null on when status == CreateNewWindowStatus::kSuccess.
   [Sync] CreateNewWindow(CreateNewWindowParams params)
-      => (CreateNewWindowReply reply);
+      => (CreateNewWindowStatus status, CreateNewWindowReply? reply);
 
   // Creates and returns a KeepAliveHandle.
   IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);

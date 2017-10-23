@@ -1352,10 +1352,11 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
       params->disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
   bool opened_by_user_gesture = params->user_gesture;
 
+  mojom::CreateNewWindowStatus status;
   mojom::CreateNewWindowReplyPtr reply;
   auto* frame_host = creator_frame->GetFrameHost();
-  bool err = !frame_host->CreateNewWindow(std::move(params), &reply);
-  if (err || reply->route_id == MSG_ROUTING_NONE)
+  bool err = !frame_host->CreateNewWindow(std::move(params), &status, &reply);
+  if (err || status == mojom::CreateNewWindowStatus::kIgnore)
     return nullptr;
 
   // For Android WebView, we support a pop-up like behavior for window.open()
@@ -1364,8 +1365,16 @@ WebView* RenderViewImpl::CreateView(WebLocalFrame* creator,
   // passed. We also don't need to consume user gestures to protect against
   // multiple windows being opened, because, well, the app doesn't support
   // multiple windows.
-  if (reply->route_id == GetRoutingID())
+  // TODO(dcheng): It's awkward that this is plumbed into Blink but not really
+  // used much in Blink, except to enable layout testing... perhaps this should
+  // be checked directly in the browser side.
+  if (status == mojom::CreateNewWindowStatus::kReuse)
     return webview();
+
+  DCHECK(reply);
+  DCHECK_NE(MSG_ROUTING_NONE, reply->route_id);
+  DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_route_id);
+  DCHECK_NE(MSG_ROUTING_NONE, reply->main_frame_widget_route_id);
 
   WebUserGestureIndicator::ConsumeUserGesture();
 
