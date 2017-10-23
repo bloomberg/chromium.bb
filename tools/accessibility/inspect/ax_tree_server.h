@@ -13,15 +13,20 @@ namespace content {
 
 class AXTreeServer {
  public:
-  AXTreeServer(base::ProcessId pid, base::string16& filters_path);
-  AXTreeServer(gfx::AcceleratedWidget widget, base::string16& filters_path);
+  AXTreeServer(base::ProcessId pid,
+               base::string16& filters_path,
+               bool use_json);
+  AXTreeServer(gfx::AcceleratedWidget widget,
+               base::string16& filters_path,
+               bool use_json);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXTreeServer);
 
   void Format(AccessibilityTreeFormatter& formatter,
               base::DictionaryValue& dict,
-              base::string16& filters_path);
+              base::string16& filters_path,
+              bool use_json);
 };
 
 }  // namespace content

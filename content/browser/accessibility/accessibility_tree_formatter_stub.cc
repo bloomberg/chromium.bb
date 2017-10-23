@@ -20,7 +20,9 @@ class AccessibilityTreeFormatterStub
   const std::string GetDenyString() override;
   void AddProperties(const BrowserAccessibility& node,
                      base::DictionaryValue* dict) override;
-  base::string16 ToString(const base::DictionaryValue& node) override;
+  base::string16 ProcessTreeForOutput(
+      const base::DictionaryValue& node,
+      base::DictionaryValue* filtered_dict_result = nullptr) override;
 };
 
 #if !defined(PLATFORM_HAS_NATIVE_ACCESSIBILITY_IMPL)
@@ -42,8 +44,9 @@ void AccessibilityTreeFormatterStub::AddProperties(
   dict->SetInteger("id", node.GetId());
 }
 
-base::string16 AccessibilityTreeFormatterStub::ToString(
-    const base::DictionaryValue& node) {
+base::string16 AccessibilityTreeFormatterStub::ProcessTreeForOutput(
+    const base::DictionaryValue& node,
+    base::DictionaryValue* filtered_dict_result) {
   int id_value;
   node.GetInteger("id", &id_value);
   return base::IntToString16(id_value);
