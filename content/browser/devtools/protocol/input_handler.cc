@@ -290,7 +290,9 @@ void InputHandler::OnInputEvent(const blink::WebInputEvent& event) {
   input_queued_ = true;
 }
 
-void InputHandler::OnInputEventAck(const blink::WebInputEvent& event) {
+void InputHandler::OnInputEventAck(InputEventAckSource source,
+                                   InputEventAckState state,
+                                   const blink::WebInputEvent& event) {
   if (blink::WebInputEvent::IsKeyboardEventType(event.GetType()) &&
       !pending_key_callbacks_.empty()) {
     pending_key_callbacks_.front()->sendSuccess();

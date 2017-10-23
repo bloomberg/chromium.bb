@@ -1831,20 +1831,21 @@ bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
 
 InputMsgWatcher::InputMsgWatcher(RenderWidgetHost* render_widget_host,
                                  blink::WebInputEvent::Type type)
-    : BrowserMessageFilter(InputMsgStart),
+    : render_widget_host_(render_widget_host),
       wait_for_type_(type),
       ack_result_(INPUT_EVENT_ACK_STATE_UNKNOWN),
-      ack_source_(static_cast<uint32_t>(InputEventAckSource::UNKNOWN)) {
-  render_widget_host->GetProcess()->AddFilter(this);
+      ack_source_(InputEventAckSource::UNKNOWN) {
+  render_widget_host->AddInputEventObserver(this);
 }
 
-InputMsgWatcher::~InputMsgWatcher() {}
+InputMsgWatcher::~InputMsgWatcher() {
+  render_widget_host_->RemoveInputEventObserver(this);
+}
 
-void InputMsgWatcher::ReceivedAck(blink::WebInputEvent::Type ack_type,
-                                  uint32_t ack_state,
-                                  uint32_t ack_source) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (wait_for_type_ == ack_type) {
+void InputMsgWatcher::OnInputEventAck(InputEventAckSource ack_source,
+                                      InputEventAckState ack_state,
+                                      const blink::WebInputEvent& event) {
+  if (event.GetType() == wait_for_type_) {
     ack_result_ = ack_state;
     ack_source_ = ack_source;
     if (!quit_.is_null())
@@ -1852,30 +1853,12 @@ void InputMsgWatcher::ReceivedAck(blink::WebInputEvent::Type ack_type,
   }
 }
 
-bool InputMsgWatcher::OnMessageReceived(const IPC::Message& message) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (message.type() == InputHostMsg_HandleInputEvent_ACK::ID) {
-    InputHostMsg_HandleInputEvent_ACK::Param params;
-    InputHostMsg_HandleInputEvent_ACK::Read(&message, &params);
-    blink::WebInputEvent::Type ack_type = std::get<0>(params).type;
-    InputEventAckState ack_state = std::get<0>(params).state;
-    InputEventAckSource ack_source = std::get<0>(params).source;
-    BrowserThread::PostTask(
-        BrowserThread::UI, FROM_HERE,
-        base::BindOnce(&InputMsgWatcher::ReceivedAck, this, ack_type, ack_state,
-                       static_cast<uint32_t>(ack_source)));
-  }
-  return false;
-}
-
 bool InputMsgWatcher::HasReceivedAck() const {
   return ack_result_ != INPUT_EVENT_ACK_STATE_UNKNOWN;
 }
 
-uint32_t InputMsgWatcher::WaitForAck() {
+InputEventAckState InputMsgWatcher::WaitForAck() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (HasReceivedAck())
-    return ack_result_;
   base::RunLoop run_loop;
   base::AutoReset<base::Closure> reset_quit(&quit_, run_loop.QuitClosure());
   run_loop.Run();

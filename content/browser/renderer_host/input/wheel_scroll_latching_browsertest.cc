@@ -142,8 +142,8 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
     EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
     FrameWatcher frame_watcher(shell()->web_contents());
-    scoped_refptr<InputMsgWatcher> input_msg_watcher(new InputMsgWatcher(
-        GetWidgetHost(), blink::WebInputEvent::kMouseWheel));
+    auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
+        GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
 
     float scrollable_div_top =
         ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top");
@@ -247,8 +247,8 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
   FrameWatcher frame_watcher(shell()->web_contents());
-  scoped_refptr<InputMsgWatcher> update_msg_watcher(new InputMsgWatcher(
-      GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate));
+  auto update_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kGestureScrollUpdate);
 
   float scrollable_div_top =
       ExecuteScriptAndExtractInt("scrollableDiv.getBoundingClientRect().top");

@@ -562,7 +562,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticKeyEventTest, KeyboardEventAck) {
       shell()->web_contents()->GetRenderViewHost(),
       "document.body.addEventListener('keydown', () => console.log('x'));"));
 
-  scoped_refptr<InputMsgWatcher> filter = new InputMsgWatcher(
+  auto filter = std::make_unique<InputMsgWatcher>(
       RenderWidgetHostImpl::From(
           shell()->web_contents()->GetRenderViewHost()->GetWidget()),
       blink::WebInputEvent::kMouseMove);
@@ -588,7 +588,7 @@ IN_PROC_BROWSER_TEST_F(SyntheticMouseEventTest, MouseEventAck) {
       shell()->web_contents()->GetRenderViewHost(),
       "document.body.addEventListener('mousemove', () => console.log('x'));"));
 
-  scoped_refptr<InputMsgWatcher> filter = new InputMsgWatcher(
+  auto filter = std::make_unique<InputMsgWatcher>(
       RenderWidgetHostImpl::From(
           shell()->web_contents()->GetRenderViewHost()->GetWidget()),
       blink::WebInputEvent::kMouseMove);
