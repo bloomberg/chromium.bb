@@ -92,13 +92,13 @@ class MODULES_EXPORT IDBValueWrapper {
   // This method must be called at most once, and must be called after
   // WrapIfBiggerThan().
   void ExtractBlobDataHandles(
-      Vector<RefPtr<BlobDataHandle>>* blob_data_handles);
+      Vector<scoped_refptr<BlobDataHandle>>* blob_data_handles);
 
   // Obtains the byte array for the serialized value.
   //
   // This method must be called at most once, and must be called after
   // WrapIfBiggerThan().
-  RefPtr<SharedBuffer> ExtractWireBytes();
+  scoped_refptr<SharedBuffer> ExtractWireBytes();
 
   // Obtains WebBlobInfos for the serialized value's Blob array.
   //
@@ -135,8 +135,8 @@ class MODULES_EXPORT IDBValueWrapper {
   // Used to serialize the wrapped value.
   static void WriteVarint(unsigned value, Vector<char>& output);
 
-  RefPtr<SerializedScriptValue> serialized_value_;
-  RefPtr<BlobDataHandle> wrapper_handle_;
+  scoped_refptr<SerializedScriptValue> serialized_value_;
+  scoped_refptr<BlobDataHandle> wrapper_handle_;
   Vector<WebBlobInfo> blob_info_;
   Vector<char> wire_bytes_;
   size_t original_data_length_ = 0;
@@ -164,11 +164,12 @@ class MODULES_EXPORT IDBValueUnwrapper {
   static bool IsWrapped(IDBValue*);
 
   // True if at least one of the IDBValues' data was wrapped in a Blob.
-  static bool IsWrapped(const Vector<RefPtr<IDBValue>>&);
+  static bool IsWrapped(const Vector<scoped_refptr<IDBValue>>&);
 
   // Pieces together an unwrapped IDBValue from a wrapped value and Blob data.
-  static RefPtr<IDBValue> Unwrap(IDBValue* wrapped_value,
-                                 RefPtr<SharedBuffer>&& wrapper_blob_content);
+  static scoped_refptr<IDBValue> Unwrap(
+      IDBValue* wrapped_value,
+      scoped_refptr<SharedBuffer>&& wrapper_blob_content);
 
   // Parses the wrapper Blob information from a wrapped IDBValue.
   //
@@ -188,7 +189,7 @@ class MODULES_EXPORT IDBValueUnwrapper {
   // Returns a handle to the Blob obtained by the last Unwrap() call.
   //
   // Should only be called exactly once after a successful result from Unwrap().
-  RefPtr<BlobDataHandle> WrapperBlobHandle();
+  scoped_refptr<BlobDataHandle> WrapperBlobHandle();
 
  private:
   // Used to deserialize the wrapped value.
@@ -207,7 +208,7 @@ class MODULES_EXPORT IDBValueUnwrapper {
   unsigned blob_size_;
 
   // Handle to the Blob holding the data for the last unwrapped IDBValue.
-  RefPtr<BlobDataHandle> blob_handle_;
+  scoped_refptr<BlobDataHandle> blob_handle_;
 };
 
 }  // namespace blink

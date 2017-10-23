@@ -13,7 +13,7 @@ namespace {
 
 TEST(QuotaTrackerTest, UpdateAndGetSizeAndSpaceAvailable) {
   QuotaTracker& tracker = QuotaTracker::Instance();
-  RefPtr<SecurityOrigin> origin =
+  scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("file:///a/b/c");
 
   const String database_name = "db";
@@ -31,7 +31,7 @@ TEST(QuotaTrackerTest, UpdateAndGetSizeAndSpaceAvailable) {
 
 TEST(QuotaTrackerTest, LocalAccessBlocked) {
   QuotaTracker& tracker = QuotaTracker::Instance();
-  RefPtr<SecurityOrigin> origin =
+  scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("file:///a/b/c");
 
   const String database_name = "db";

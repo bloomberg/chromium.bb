@@ -15,8 +15,8 @@
 
 namespace blink {
 
-RefPtr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
-                                          bool create_wrapped_value) {
+scoped_refptr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
+                                                 bool create_wrapped_value) {
   size_t element_count = create_wrapped_value ? 16 : 2;
   v8::Local<v8::Array> v8_array = v8::Array::New(isolate, element_count);
   for (size_t i = 0; i < element_count; ++i)
@@ -28,15 +28,16 @@ RefPtr<IDBValue> CreateIDBValueForTesting(v8::Isolate* isolate,
                           non_throwable_exception_state);
   wrapper.WrapIfBiggerThan(create_wrapped_value ? 0 : 1024 * element_count);
 
-  std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data_handles =
-      WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>();
+  std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data_handles =
+      WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>();
   wrapper.ExtractBlobDataHandles(blob_data_handles.get());
   Vector<WebBlobInfo>& blob_infos = wrapper.WrappedBlobInfo();
-  RefPtr<SharedBuffer> wrapped_marker_buffer = wrapper.ExtractWireBytes();
+  scoped_refptr<SharedBuffer> wrapped_marker_buffer =
+      wrapper.ExtractWireBytes();
   IDBKey* key = IDBKey::CreateNumber(42.0);
   IDBKeyPath key_path(String("primaryKey"));
 
-  RefPtr<IDBValue> idb_value = IDBValue::Create(
+  scoped_refptr<IDBValue> idb_value = IDBValue::Create(
       std::move(wrapped_marker_buffer), std::move(blob_data_handles),
       WTF::MakeUnique<Vector<WebBlobInfo>>(blob_infos), key, key_path);
 

@@ -57,24 +57,24 @@ class IDBRequestQueueItem {
                       IDBKey*,
                       WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
-                      RefPtr<IDBValue>,
+                      scoped_refptr<IDBValue>,
                       bool attach_loader,
                       WTF::Closure on_load_complete);
   IDBRequestQueueItem(IDBRequest*,
-                      const Vector<RefPtr<IDBValue>>&,
+                      const Vector<scoped_refptr<IDBValue>>&,
                       bool attach_loader,
                       WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       IDBKey*,
                       IDBKey* primary_key,
-                      RefPtr<IDBValue>,
+                      scoped_refptr<IDBValue>,
                       bool attach_loader,
                       WTF::Closure on_result_load_complete);
   IDBRequestQueueItem(IDBRequest*,
                       std::unique_ptr<WebIDBCursor>,
                       IDBKey*,
                       IDBKey* primary_key,
-                      RefPtr<IDBValue>,
+                      scoped_refptr<IDBValue>,
                       bool attach_loader,
                       WTF::Closure on_result_load_complete);
   ~IDBRequestQueueItem();
@@ -143,7 +143,7 @@ class IDBRequestQueueItem {
   Persistent<DOMException> error_;
 
   // All the values that will be passed back to the IDBRequest.
-  Vector<RefPtr<IDBValue>> values_;
+  Vector<scoped_refptr<IDBValue>> values_;
 
   // The cursor argument to the IDBRequest callback.
   std::unique_ptr<WebIDBCursor> cursor_;

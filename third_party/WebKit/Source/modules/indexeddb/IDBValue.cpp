@@ -27,12 +27,12 @@ IDBValue::IDBValue(const WebIDBValue& value, v8::Isolate* isolate)
     isolate_->AdjustAmountOfExternalAllocatedMemory(external_allocated_size_);
 }
 
-IDBValue::IDBValue(RefPtr<SharedBuffer> data,
+IDBValue::IDBValue(scoped_refptr<SharedBuffer> data,
                    const WebVector<WebBlobInfo>& web_blob_info,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
     : data_(std::move(data)),
-      blob_data_(WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>()),
+      blob_data_(WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>()),
       blob_info_(
           WTF::WrapUnique(new Vector<WebBlobInfo>(web_blob_info.size()))),
       primary_key_(primary_key && primary_key->IsValid() ? primary_key
@@ -49,7 +49,7 @@ IDBValue::IDBValue(const IDBValue* value,
                    IDBKey* primary_key,
                    const IDBKeyPath& key_path)
     : data_(value->data_),
-      blob_data_(WTF::MakeUnique<Vector<RefPtr<BlobDataHandle>>>()),
+      blob_data_(WTF::MakeUnique<Vector<scoped_refptr<BlobDataHandle>>>()),
       blob_info_(
           WTF::WrapUnique(new Vector<WebBlobInfo>(value->blob_info_->size()))),
       primary_key_(primary_key),
@@ -61,11 +61,12 @@ IDBValue::IDBValue(const IDBValue* value,
   }
 }
 
-IDBValue::IDBValue(RefPtr<SharedBuffer> unwrapped_data,
-                   std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data,
-                   std::unique_ptr<Vector<WebBlobInfo>> blob_info,
-                   const IDBKey* primary_key,
-                   const IDBKeyPath& key_path)
+IDBValue::IDBValue(
+    scoped_refptr<SharedBuffer> unwrapped_data,
+    std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data,
+    std::unique_ptr<Vector<WebBlobInfo>> blob_info,
+    const IDBKey* primary_key,
+    const IDBKeyPath& key_path)
     : data_(std::move(unwrapped_data)),
       blob_data_(std::move(blob_data)),
       blob_info_(std::move(blob_info)),
@@ -77,24 +78,24 @@ IDBValue::~IDBValue() {
     isolate_->AdjustAmountOfExternalAllocatedMemory(-external_allocated_size_);
 }
 
-RefPtr<IDBValue> IDBValue::Create() {
+scoped_refptr<IDBValue> IDBValue::Create() {
   return WTF::AdoptRef(new IDBValue());
 }
 
-RefPtr<IDBValue> IDBValue::Create(const WebIDBValue& value,
-                                  v8::Isolate* isolate) {
+scoped_refptr<IDBValue> IDBValue::Create(const WebIDBValue& value,
+                                         v8::Isolate* isolate) {
   return WTF::AdoptRef(new IDBValue(value, isolate));
 }
 
-RefPtr<IDBValue> IDBValue::Create(const IDBValue* value,
-                                  IDBKey* primary_key,
-                                  const IDBKeyPath& key_path) {
+scoped_refptr<IDBValue> IDBValue::Create(const IDBValue* value,
+                                         IDBKey* primary_key,
+                                         const IDBKeyPath& key_path) {
   return WTF::AdoptRef(new IDBValue(value, primary_key, key_path));
 }
 
-RefPtr<IDBValue> IDBValue::Create(
-    RefPtr<SharedBuffer> unwrapped_data,
-    std::unique_ptr<Vector<RefPtr<BlobDataHandle>>> blob_data,
+scoped_refptr<IDBValue> IDBValue::Create(
+    scoped_refptr<SharedBuffer> unwrapped_data,
+    std::unique_ptr<Vector<scoped_refptr<BlobDataHandle>>> blob_data,
     std::unique_ptr<Vector<WebBlobInfo>> blob_info,
     const IDBKey* primary_key,
     const IDBKeyPath& key_path) {
@@ -111,7 +112,7 @@ Vector<String> IDBValue::GetUUIDs() const {
   return uuids;
 }
 
-RefPtr<SerializedScriptValue> IDBValue::CreateSerializedValue() const {
+scoped_refptr<SerializedScriptValue> IDBValue::CreateSerializedValue() const {
   return SerializedScriptValue::Create(data_);
 }
 

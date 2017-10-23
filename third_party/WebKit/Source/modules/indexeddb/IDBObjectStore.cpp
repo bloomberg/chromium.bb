@@ -66,7 +66,7 @@ namespace {
 using IndexKeys = HeapVector<Member<IDBKey>>;
 }
 
-IDBObjectStore::IDBObjectStore(RefPtr<IDBObjectStoreMetadata> metadata,
+IDBObjectStore::IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata> metadata,
                                IDBTransaction* transaction)
     : metadata_(std::move(metadata)), transaction_(transaction) {
   DCHECK(transaction_);
@@ -628,11 +628,12 @@ namespace {
 // cursor success handlers are kept alive.
 class IndexPopulator final : public EventListener {
  public:
-  static IndexPopulator* Create(ScriptState* script_state,
-                                IDBDatabase* database,
-                                int64_t transaction_id,
-                                int64_t object_store_id,
-                                RefPtr<const IDBIndexMetadata> index_metadata) {
+  static IndexPopulator* Create(
+      ScriptState* script_state,
+      IDBDatabase* database,
+      int64_t transaction_id,
+      int64_t object_store_id,
+      scoped_refptr<const IDBIndexMetadata> index_metadata) {
     return new IndexPopulator(script_state, database, transaction_id,
                               object_store_id, std::move(index_metadata));
   }
@@ -651,7 +652,7 @@ class IndexPopulator final : public EventListener {
                  IDBDatabase* database,
                  int64_t transaction_id,
                  int64_t object_store_id,
-                 RefPtr<const IDBIndexMetadata> index_metadata)
+                 scoped_refptr<const IDBIndexMetadata> index_metadata)
       : EventListener(kCPPEventListenerType),
         script_state_(script_state),
         database_(database),
@@ -711,11 +712,11 @@ class IndexPopulator final : public EventListener {
     }
   }
 
-  RefPtr<ScriptState> script_state_;
+  scoped_refptr<ScriptState> script_state_;
   Member<IDBDatabase> database_;
   const int64_t transaction_id_;
   const int64_t object_store_id_;
-  RefPtr<const IDBIndexMetadata> index_metadata_;
+  scoped_refptr<const IDBIndexMetadata> index_metadata_;
 };
 }  // namespace
 
@@ -772,8 +773,9 @@ IDBIndex* IDBObjectStore::createIndex(ScriptState* script_state,
 
   ++metadata_->max_index_id;
 
-  RefPtr<IDBIndexMetadata> index_metadata = WTF::AdoptRef(new IDBIndexMetadata(
-      name, index_id, key_path, options.unique(), options.multiEntry()));
+  scoped_refptr<IDBIndexMetadata> index_metadata =
+      WTF::AdoptRef(new IDBIndexMetadata(
+          name, index_id, key_path, options.unique(), options.multiEntry()));
   IDBIndex* index = IDBIndex::Create(index_metadata, this, transaction_.Get());
   index_map_.Set(name, index);
   metadata_->indexes.Set(index_id, index_metadata);
@@ -822,7 +824,8 @@ IDBIndex* IDBObjectStore::index(const String& name,
   }
 
   DCHECK(Metadata().indexes.Contains(index_id));
-  RefPtr<IDBIndexMetadata> index_metadata = Metadata().indexes.at(index_id);
+  scoped_refptr<IDBIndexMetadata> index_metadata =
+      Metadata().indexes.at(index_id);
   DCHECK(index_metadata.get());
   IDBIndex* index =
       IDBIndex::Create(std::move(index_metadata), this, transaction_.Get());
@@ -1031,7 +1034,7 @@ void IDBObjectStore::ClearIndexCache() {
 }
 
 void IDBObjectStore::RevertMetadata(
-    RefPtr<IDBObjectStoreMetadata> old_metadata) {
+    scoped_refptr<IDBObjectStoreMetadata> old_metadata) {
   DCHECK(transaction_->IsVersionChange());
   DCHECK(!transaction_->IsActive());
   DCHECK(old_metadata.get());
@@ -1052,7 +1055,7 @@ void IDBObjectStore::RevertMetadata(
     // its metadata. The index might have been deleted, so we
     // unconditionally reset the deletion marker.
     DCHECK(old_metadata->indexes.Contains(index_id));
-    RefPtr<IDBIndexMetadata> old_index_metadata =
+    scoped_refptr<IDBIndexMetadata> old_index_metadata =
         old_metadata->indexes.at(index_id);
     index->RevertMetadata(std::move(old_index_metadata));
   }
@@ -1072,7 +1075,8 @@ void IDBObjectStore::RevertDeletedIndexMetadata(IDBIndex& deleted_index) {
   const int64_t index_id = deleted_index.Id();
   DCHECK(metadata_->indexes.Contains(index_id))
       << "The object store's metadata was not correctly reverted";
-  RefPtr<IDBIndexMetadata> old_index_metadata = metadata_->indexes.at(index_id);
+  scoped_refptr<IDBIndexMetadata> old_index_metadata =
+      metadata_->indexes.at(index_id);
   deleted_index.RevertMetadata(std::move(old_index_metadata));
 }
 

@@ -221,7 +221,7 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
   }
 
   DCHECK(database_->Metadata().object_stores.Contains(object_store_id));
-  RefPtr<IDBObjectStoreMetadata> object_store_metadata =
+  scoped_refptr<IDBObjectStoreMetadata> object_store_metadata =
       database_->Metadata().object_stores.at(object_store_id);
   DCHECK(object_store_metadata.get());
 
@@ -233,7 +233,7 @@ IDBObjectStore* IDBTransaction::objectStore(const String& name,
   if (IsVersionChange()) {
     DCHECK(!object_store->IsNewlyCreated())
         << "Object store IDs are not assigned sequentially";
-    RefPtr<IDBObjectStoreMetadata> backup_metadata =
+    scoped_refptr<IDBObjectStoreMetadata> backup_metadata =
         object_store->Metadata().CreateCopy();
     old_store_metadata_.Set(object_store, std::move(backup_metadata));
   }
@@ -267,7 +267,7 @@ void IDBTransaction::ObjectStoreDeleted(const int64_t object_store_id,
     // revert the metadata change if the transaction aborts, in order to return
     // correct values from IDB{Database, Transaction}.objectStoreNames.
     DCHECK(database_->Metadata().object_stores.Contains(object_store_id));
-    RefPtr<IDBObjectStoreMetadata> metadata =
+    scoped_refptr<IDBObjectStoreMetadata> metadata =
         database_->Metadata().object_stores.at(object_store_id);
     DCHECK(metadata.get());
     DCHECK_EQ(metadata->name, name);
@@ -600,7 +600,7 @@ void IDBTransaction::RevertDatabaseMetadata() {
 
   for (auto& it : old_store_metadata_) {
     IDBObjectStore* object_store = it.key;
-    RefPtr<IDBObjectStoreMetadata> old_metadata = it.value;
+    scoped_refptr<IDBObjectStoreMetadata> old_metadata = it.value;
 
     database_->RevertObjectStoreMetadata(old_metadata);
     object_store->RevertMetadata(old_metadata);

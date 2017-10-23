@@ -108,7 +108,7 @@ class CreateFileHelper final : public AsyncFileSystemCallbacks {
   ~CreateFileHelper() override {}
 
   void DidCreateSnapshotFile(const FileMetadata& metadata,
-                             RefPtr<BlobDataHandle> snapshot) override {
+                             scoped_refptr<BlobDataHandle> snapshot) override {
     // We can't directly use the snapshot blob data handle because the content
     // type on it hasn't been set.  The |snapshot| param is here to provide a a
     // chain of custody thru thread bridging that is held onto until *after*
