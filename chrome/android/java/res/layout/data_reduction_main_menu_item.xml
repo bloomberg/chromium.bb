@@ -3,10 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-<org.chromium.chrome.browser.preferences.datareduction.DataReductionMainMenuFooter
+<org.chromium.chrome.browser.preferences.datareduction.DataReductionMainMenuItem
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:chrome="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/data_reduction_footer"
+    android:id="@+id/data_reduction_menu_item"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -55,4 +55,4 @@
 
     </FrameLayout>
 
-</org.chromium.chrome.browser.preferences.datareduction.DataReductionMainMenuFooter>
+</org.chromium.chrome.browser.preferences.datareduction.DataReductionMainMenuItem>

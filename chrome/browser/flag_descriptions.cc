@@ -1745,9 +1745,9 @@ const char kEnableCustomFeedbackUiDescription[] =
     "Feedback. Works with Google Play Services v10.2+";
 
 const char kEnableDataReductionProxyMainMenuName[] =
-    "Enable Data Saver main menu footer";
+    "Enable Data Saver main menu item";
 const char kEnableDataReductionProxyMainMenuDescription[] =
-    "Enables the Data Saver footer in the main menu";
+    "Enables the Data Saver menu item in the main menu";
 
 const char kEnableDataReductionProxySiteBreakdownName[] =
     "Data Saver Site Breakdown";

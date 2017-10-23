@@ -194,6 +194,13 @@ public class TextBubble implements OnTouchListener {
     }
 
     /**
+     * @return Whether the bubble is currently showing.
+     */
+    public boolean isShowing() {
+        return mPopupWindow.isShowing();
+    }
+
+    /**
      * Dismisses all the currently showing bubbles.
      */
     public static void dismissBubbles() {
