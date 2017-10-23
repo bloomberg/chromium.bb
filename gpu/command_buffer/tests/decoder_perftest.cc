@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/mailbox_manager_impl.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/service_discardable_manager.h"
+#include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -139,8 +140,8 @@ class RecordReplayCommandBuffer : public CommandBufferDirect {
 
 GpuPreferences GetGpuPreferences() {
   GpuPreferences preferences;
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kUsePassthroughCmdDecoder))
+  if (gles2::UsePassthroughCommandDecoder(
+          base::CommandLine::ForCurrentProcess()))
     preferences.use_passthrough_cmd_decoder = true;
   return preferences;
 }

@@ -2238,7 +2238,6 @@ void GLES2DecoderPassthroughTestBase::OnRescheduleAfterFinished() {}
 void GLES2DecoderPassthroughTestBase::SetUp() {
   base::CommandLine::Init(0, NULL);
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  command_line->AppendSwitch(switches::kUsePassthroughCmdDecoder);
   command_line->AppendSwitchASCII(switches::kUseGL,
                                   gl::kGLImplementationANGLEName);
   command_line->AppendSwitchASCII(switches::kUseANGLE,

@@ -6,6 +6,13 @@
 
 #include "base/macros.h"
 
+namespace gpu {
+
+const char kCmdDecoderValidatingName[] = "validating";
+const char kCmdDecoderPassthroughName[] = "passthrough";
+
+}  // namespace gpu
+
 namespace switches {
 
 // Always return success when compiling a shader. Linking will still fail.
@@ -64,6 +71,6 @@ const char kEmulateShaderPrecision[] = "emulate-shader-precision";
 
 // Use the Pass-through command decoder, skipping all validation and state
 // tracking.
-const char kUsePassthroughCmdDecoder[] = "use-passthrough-cmd-decoder";
+const char kUseCmdDecoder[] = "use-cmd-decoder";
 
 }  // namespace switches

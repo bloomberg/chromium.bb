@@ -30,7 +30,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -321,7 +322,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
@@ -387,7 +388,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -678,7 +680,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
@@ -720,7 +722,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -999,7 +1002,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
@@ -1060,7 +1063,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1339,7 +1343,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
@@ -1382,7 +1386,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -1683,7 +1688,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
@@ -1750,7 +1755,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2051,7 +2057,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
@@ -2095,7 +2101,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2113,7 +2120,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--use-passthrough-cmd-decoder"
+          "--use-cmd-decoder=passthrough"
         ],
         "name": "gl_tests_passthrough",
         "swarming": {
@@ -2424,7 +2431,7 @@
           "--browser=debug",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",
@@ -2488,7 +2495,8 @@
       },
       {
         "args": [
-          "--use-gpu-in-tests"
+          "--use-gpu-in-tests",
+          "--use-cmd-decoder=validating"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -2506,7 +2514,7 @@
       {
         "args": [
           "--use-gpu-in-tests",
-          "--use-passthrough-cmd-decoder"
+          "--use-cmd-decoder=passthrough"
         ],
         "name": "gl_tests_passthrough",
         "swarming": {
@@ -2817,7 +2825,7 @@
           "--browser=release",
           "--passthrough",
           "-v",
-          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc"
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-cmd-decoder=validating"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
         "name": "webgl_conformance_tests",

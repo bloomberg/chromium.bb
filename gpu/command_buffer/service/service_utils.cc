@@ -59,7 +59,19 @@ gl::GLContextAttribs GenerateGLContextAttribs(
 }
 
 bool UsePassthroughCommandDecoder(const base::CommandLine* command_line) {
-  return command_line->HasSwitch(switches::kUsePassthroughCmdDecoder);
+  std::string switch_value;
+  if (command_line->HasSwitch(switches::kUseCmdDecoder)) {
+    switch_value = command_line->GetSwitchValueASCII(switches::kUseCmdDecoder);
+  }
+
+  if (switch_value == kCmdDecoderPassthroughName) {
+    return true;
+  } else if (switch_value == kCmdDecoderValidatingName) {
+    return false;
+  } else {
+    // Unrecognized or missing switch, use the default.
+    return false;
+  }
 }
 
 bool PassthroughCommandDecoderSupported() {
