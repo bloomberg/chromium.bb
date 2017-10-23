@@ -43,6 +43,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
 
   // Overridden from TileItemView:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
   void OnFocus() override;
 
