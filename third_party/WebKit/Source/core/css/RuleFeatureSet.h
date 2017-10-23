@@ -20,8 +20,8 @@
  *
  */
 
-#ifndef RuleFeature_h
-#define RuleFeature_h
+#ifndef RuleFeatureSet_h
+#define RuleFeatureSet_h
 
 #include "core/CoreExport.h"
 #include "core/css/CSSSelector.h"
@@ -296,4 +296,4 @@ class CORE_EXPORT RuleFeatureSet {
 
 }  // namespace blink
 
-#endif  // RuleFeature_h
+#endif  // RuleFeatureSet_h

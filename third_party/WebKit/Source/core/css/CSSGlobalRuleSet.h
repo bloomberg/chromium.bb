@@ -5,7 +5,7 @@
 #ifndef CSSGlobalRuleSet_h
 #define CSSGlobalRuleSet_h
 
-#include "core/css/RuleFeature.h"
+#include "core/css/RuleFeatureSet.h"
 
 namespace blink {
 

@@ -33,7 +33,7 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/FontFace.h"
 #include "core/css/PageRuleCollector.h"
-#include "core/css/RuleFeature.h"
+#include "core/css/RuleFeatureSet.h"
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
 #include "core/css/StyleRule.h"
