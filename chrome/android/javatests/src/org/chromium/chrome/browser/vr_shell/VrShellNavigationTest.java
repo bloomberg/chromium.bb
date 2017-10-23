@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -22,6 +23,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.history.HistoryItemView;
 import org.chromium.chrome.browser.history.HistoryPage;
 import org.chromium.chrome.browser.tab.Tab;
@@ -33,6 +35,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.ChromeTabUtils;
 import org.chromium.content.browser.ContentViewCore;
+import org.chromium.content.browser.test.util.ClickUtils;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
 
@@ -135,7 +138,7 @@ public class VrShellNavigationTest {
                 PresentationMode.NON_PRESENTING, FullscreenMode.NON_FULLSCREENED);
 
         // Test that the navigations were added to history
-        mVrTestRule.loadUrl("chrome://history", PAGE_LOAD_TIMEOUT_S);
+        mVrTestRule.loadUrl(UrlConstants.HISTORY_URL, PAGE_LOAD_TIMEOUT_S);
         HistoryPage historyPage =
                 (HistoryPage) mVrTestRule.getActivity().getActivityTab().getNativePage();
         ArrayList<HistoryItemView> itemViews = historyPage.getHistoryManagerForTesting()
@@ -337,5 +340,26 @@ public class VrShellNavigationTest {
         Assert.assertTrue("Back button isn't enabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
                 "Forward button isn't disabled.", VrTransitionUtils.isForwardButtonEnabled());
+    }
+
+    /**
+     * Tests that navigation to/from native pages works properly and that interacting with the
+     * screen doesn't cause issues. See crbug.com/737167.
+     */
+    @Test
+    @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
+    public void testNativeNavigationAndInteraction()
+            throws IllegalArgumentException, InterruptedException {
+        String[] nativeUrls = {UrlConstants.NTP_URL, UrlConstants.BOOKMARKS_URL,
+                UrlConstants.DOWNLOADS_URL, UrlConstants.RECENT_TABS_URL,
+                UrlConstants.NATIVE_HISTORY_URL};
+        for (String url : nativeUrls) {
+            mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
+            mVrTestRule.loadUrl(url, PAGE_LOAD_TIMEOUT_S);
+            ClickUtils.mouseSingleClickView(InstrumentationRegistry.getInstrumentation(),
+                    mVrTestRule.getActivity().getWindow().getDecorView().getRootView());
+        }
+        mVrTestRule.loadUrl(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
     }
 }
