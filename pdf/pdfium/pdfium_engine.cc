@@ -74,6 +74,20 @@ using printing::kPixelsPerInch;
 
 namespace chrome_pdf {
 
+static_assert(static_cast<int>(PDFEngine::FormType::kNone) == FORMTYPE_NONE,
+              "None form types must match");
+static_assert(static_cast<int>(PDFEngine::FormType::kAcroForm) ==
+                  FORMTYPE_ACRO_FORM,
+              "AcroForm form types must match");
+static_assert(static_cast<int>(PDFEngine::FormType::kXFAFull) ==
+                  FORMTYPE_XFA_FULL,
+              "XFA full form types must match");
+static_assert(static_cast<int>(PDFEngine::FormType::kXFAForeground) ==
+                  FORMTYPE_XFA_FOREGROUND,
+              "XFA foreground form types must match");
+static_assert(static_cast<int>(PDFEngine::FormType::kCount) == FORMTYPE_COUNT,
+              "Form type counts must match");
+
 namespace {
 
 const int32_t kPageShadowTop = 3;
@@ -1282,6 +1296,7 @@ void PDFiumEngine::FinishLoadingDocument() {
     document_features.is_linearized =
         (FPDFAvail_IsLinearized(fpdf_availability_) == PDF_LINEARIZED);
     document_features.is_tagged = FPDFCatalog_IsTagged(doc_);
+    document_features.form_type = static_cast<FormType>(FPDF_GetFormType(doc_));
     client_->DocumentLoadComplete(document_features);
   }
 }

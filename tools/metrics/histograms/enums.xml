@@ -31229,6 +31229,13 @@ from previous Chrome versions.
   <int value="2" label="Has Bookmarks"/>
 </enum>
 
+<enum name="PDFFormTypes">
+  <int value="0" label="None"/>
+  <int value="1" label="AcroForm"/>
+  <int value="2" label="Full XFA"/>
+  <int value="3" label="Foreground XFA (XFAF)"/>
+</enum>
+
 <enum name="PeerConnectionCounters">
   <int value="0" label="PeerConnection enabled with IPv4."/>
   <int value="1" label="PeerConnection enabled with Ipv6."/>

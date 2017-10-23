@@ -58,6 +58,16 @@ class PDFEngine {
     PERMISSION_PRINT_HIGH_QUALITY,
   };
 
+  // Values other then |kCount| are persisted to logs as part of metric
+  // collection, so should not be changed.
+  enum class FormType {
+    kNone = 0,
+    kAcroForm = 1,
+    kXFAFull = 2,
+    kXFAForeground = 3,
+    kCount = 4,
+  };
+
   struct DocumentFeatures {
     // Number of pages in document.
     size_t page_count = 0;
@@ -69,6 +79,8 @@ class PDFEngine {
     bool is_linearized = false;
     // Whether the PDF is Tagged (see 10.7 "Tagged PDF" in PDF Reference 1.7).
     bool is_tagged = false;
+    // What type of form the document contains.
+    FormType form_type = FormType::kNone;
   };
 
   // The interface that's provided to the rendering engine.

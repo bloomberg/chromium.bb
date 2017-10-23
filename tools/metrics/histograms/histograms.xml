@@ -58368,6 +58368,14 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="PDF.FormType" enum="PDFFormTypes">
+  <owner>rharrison@chromium.org</owner>
+  <summary>
+    Tracks what types of forms are present in PDF document, logged when the
+    document finishes loading.
+  </summary>
+</histogram>
+
 <histogram name="PDF.HasAttachment" enum="Boolean">
   <owner>hnakashima@chromium.org</owner>
   <summary>
