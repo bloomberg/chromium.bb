@@ -83,6 +83,8 @@ class Command(object):
       _Method.POST, '/session/:sessionId/window/:windowHandle/size')
   SET_WINDOW_POSITION = (
       _Method.POST, '/session/:sessionId/window/:windowHandle/position')
+  SET_WINDOW_RECT = (
+      _Method.POST, '/session/:sessionId/window/rect')
   MAXIMIZE_WINDOW = (
       _Method.POST, '/session/:sessionId/window/:windowHandle/maximize')
   FULLSCREEN_WINDOW = (
