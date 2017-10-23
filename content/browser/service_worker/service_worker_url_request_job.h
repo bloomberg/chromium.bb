@@ -59,6 +59,7 @@ class ServiceWorkerVersion;
 class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
  public:
   using Delegate = ServiceWorkerURLJobWrapper::Delegate;
+  using ResponseType = ServiceWorkerResponseType;
 
   ServiceWorkerURLRequestJob(
       net::URLRequest* request,
@@ -110,10 +111,10 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
   void FailDueToLostController();
 
   bool ShouldFallbackToNetwork() const {
-    return response_type_ == FALLBACK_TO_NETWORK;
+    return response_type_ == ResponseType::FALLBACK_TO_NETWORK;
   }
   bool ShouldForwardToServiceWorker() const {
-    return response_type_ == FORWARD_TO_SERVICE_WORKER;
+    return response_type_ == ResponseType::FORWARD_TO_SERVICE_WORKER;
   }
 
   // net::URLRequestJob overrides:
@@ -276,7 +277,7 @@ class CONTENT_EXPORT ServiceWorkerURLRequestJob : public net::URLRequestJob {
 
   std::unique_ptr<NavigationPreloadMetrics> nav_preload_metrics_;
 
-  ServiceWorkerResponseType response_type_;
+  ResponseType response_type_;
 
   // True if URLRequestJob::Start() has been called.
   bool is_started_;

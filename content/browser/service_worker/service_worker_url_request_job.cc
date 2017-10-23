@@ -334,7 +334,7 @@ ServiceWorkerURLRequestJob::ServiceWorkerURLRequestJob(
     Delegate* delegate)
     : net::URLRequestJob(request, network_delegate),
       delegate_(delegate),
-      response_type_(NOT_DETERMINED),
+      response_type_(ResponseType::NOT_DETERMINED),
       is_started_(false),
       fetch_response_type_(network::mojom::FetchResponseType::kDefault),
       client_id_(client_id),
@@ -371,32 +371,32 @@ ServiceWorkerURLRequestJob::~ServiceWorkerURLRequestJob() {
 }
 
 void ServiceWorkerURLRequestJob::FallbackToNetwork() {
-  DCHECK_EQ(NOT_DETERMINED, response_type_);
+  DCHECK_EQ(ResponseType::NOT_DETERMINED, response_type_);
   DCHECK(!IsFallbackToRendererNeeded());
-  response_type_ = FALLBACK_TO_NETWORK;
+  response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   MaybeStartRequest();
 }
 
 void ServiceWorkerURLRequestJob::FallbackToNetworkOrRenderer() {
-  DCHECK_EQ(NOT_DETERMINED, response_type_);
+  DCHECK_EQ(ResponseType::NOT_DETERMINED, response_type_);
   DCHECK_NE(ServiceWorkerFetchType::FOREIGN_FETCH, fetch_type_);
   if (IsFallbackToRendererNeeded()) {
-    response_type_ = FALLBACK_TO_RENDERER;
+    response_type_ = ResponseType::FALLBACK_TO_RENDERER;
   } else {
-    response_type_ = FALLBACK_TO_NETWORK;
+    response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   }
   MaybeStartRequest();
 }
 
 void ServiceWorkerURLRequestJob::ForwardToServiceWorker() {
-  DCHECK_EQ(NOT_DETERMINED, response_type_);
-  response_type_ = FORWARD_TO_SERVICE_WORKER;
+  DCHECK_EQ(ResponseType::NOT_DETERMINED, response_type_);
+  response_type_ = ResponseType::FORWARD_TO_SERVICE_WORKER;
   MaybeStartRequest();
 }
 
 void ServiceWorkerURLRequestJob::FailDueToLostController() {
-  DCHECK_EQ(NOT_DETERMINED, response_type_);
-  response_type_ = FAIL_DUE_TO_LOST_CONTROLLER;
+  DCHECK_EQ(ResponseType::NOT_DETERMINED, response_type_);
+  response_type_ = ResponseType::FAIL_DUE_TO_LOST_CONTROLLER;
   MaybeStartRequest();
 }
 
@@ -507,7 +507,7 @@ const net::HttpResponseInfo* ServiceWorkerURLRequestJob::http_info() const {
 }
 
 void ServiceWorkerURLRequestJob::MaybeStartRequest() {
-  if (is_started_ && response_type_ != NOT_DETERMINED) {
+  if (is_started_ && response_type_ != ResponseType::NOT_DETERMINED) {
     // Start asynchronously.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&ServiceWorkerURLRequestJob::StartRequest,
@@ -520,25 +520,25 @@ void ServiceWorkerURLRequestJob::StartRequest() {
       net::NetLogEventType::SERVICE_WORKER_START_REQUEST);
 
   switch (response_type_) {
-    case NOT_DETERMINED:
+    case ResponseType::NOT_DETERMINED:
       NOTREACHED();
       return;
 
-    case FAIL_DUE_TO_LOST_CONTROLLER:
+    case ResponseType::FAIL_DUE_TO_LOST_CONTROLLER:
       request()->net_log().AddEvent(
           net::NetLogEventType::SERVICE_WORKER_ERROR_NO_ACTIVE_VERSION);
       NotifyStartError(net::URLRequestStatus::FromError(net::ERR_FAILED));
       return;
 
-    case FALLBACK_TO_NETWORK:
+    case ResponseType::FALLBACK_TO_NETWORK:
       FinalizeFallbackToNetwork();
       return;
 
-    case FALLBACK_TO_RENDERER:
+    case ResponseType::FALLBACK_TO_RENDERER:
       FinalizeFallbackToRenderer();
       return;
 
-    case FORWARD_TO_SERVICE_WORKER:
+    case ResponseType::FORWARD_TO_SERVICE_WORKER:
       if (HasRequestBody()) {
         DCHECK(!file_size_resolver_);
         file_size_resolver_.reset(new FileSizeResolver(this));
@@ -837,7 +837,7 @@ void ServiceWorkerURLRequestJob::FinalizeFallbackToNetwork() {
   // intercept.
   if (ShouldRecordResult())
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_RESPONSE);
-  response_type_ = FALLBACK_TO_NETWORK;
+  response_type_ = ResponseType::FALLBACK_TO_NETWORK;
   NotifyRestartRequired();
   return;
 }
@@ -851,7 +851,7 @@ void ServiceWorkerURLRequestJob::FinalizeFallbackToRenderer() {
     RecordResult(ServiceWorkerMetrics::REQUEST_JOB_FALLBACK_FOR_CORS);
   CreateResponseHeader(400, "Service Worker Fallback Required",
                        ServiceWorkerHeaderMap());
-  response_type_ = FALLBACK_TO_RENDERER;
+  response_type_ = ResponseType::FALLBACK_TO_RENDERER;
   CommitResponseHeader();
 }
 
@@ -882,7 +882,7 @@ void ServiceWorkerURLRequestJob::SetResponseBodyType(ResponseBodyType type) {
 
 bool ServiceWorkerURLRequestJob::ShouldRecordResult() {
   return !did_record_result_ && is_started_ &&
-         response_type_ == FORWARD_TO_SERVICE_WORKER;
+         response_type_ == ResponseType::FORWARD_TO_SERVICE_WORKER;
 }
 
 void ServiceWorkerURLRequestJob::RecordStatusZeroResponseError(
@@ -919,11 +919,11 @@ void ServiceWorkerURLRequestJob::NotifyRestartRequired() {
 
 void ServiceWorkerURLRequestJob::OnStartCompleted() const {
   switch (response_type_) {
-    case NOT_DETERMINED:
+    case ResponseType::NOT_DETERMINED:
       NOTREACHED();
       return;
-    case FAIL_DUE_TO_LOST_CONTROLLER:
-    case FALLBACK_TO_NETWORK:
+    case ResponseType::FAIL_DUE_TO_LOST_CONTROLLER:
+    case ResponseType::FALLBACK_TO_NETWORK:
       // Indicate that the service worker did not respond to the request.
       ServiceWorkerResponseInfo::ForRequest(request_, true)
           ->OnStartCompleted(
@@ -939,8 +939,8 @@ void ServiceWorkerURLRequestJob::OnStartCompleted() const {
               ServiceWorkerHeaderList() /* cors_exposed_header_names */,
               did_navigation_preload_);
       break;
-    case FALLBACK_TO_RENDERER:
-    case FORWARD_TO_SERVICE_WORKER:
+    case ResponseType::FALLBACK_TO_RENDERER:
+    case ResponseType::FORWARD_TO_SERVICE_WORKER:
       // Indicate that the service worker responded to the request, which is
       // considered true if "fallback to renderer" was required since the
       // renderer expects that.

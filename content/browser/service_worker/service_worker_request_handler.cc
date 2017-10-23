@@ -116,7 +116,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   navigation_handle_core->DidPreCreateProviderHost(std::move(provider_host));
 }
 
-// PlzNavigate and --enable-network-service.
+// S13nServiceWorker:
 // static
 std::unique_ptr<URLLoaderRequestHandler>
 ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
@@ -131,8 +131,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     bool is_parent_frame_secure,
     scoped_refptr<ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
-  DCHECK(IsBrowserSideNavigationEnabled() &&
-         base::FeatureList::IsEnabled(features::kNetworkService));
+  DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
   DCHECK(navigation_handle_core);
 
   // Create the handler even for insecure HTTP since it's used in the

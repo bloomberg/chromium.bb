@@ -8,7 +8,7 @@
 namespace content {
 
 // Response handling type, used in URL {request,loader} jobs.
-enum ServiceWorkerResponseType {
+enum class ServiceWorkerResponseType {
   NOT_DETERMINED,
   FAIL_DUE_TO_LOST_CONTROLLER,
   FALLBACK_TO_NETWORK,

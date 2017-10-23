@@ -63,7 +63,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       scoped_refptr<ResourceRequestBody> body,
       const base::Callback<WebContents*(void)>& web_contents_getter);
 
-  // PlzNavigate and --enable-network-service.
+  // S13nServiceWorker:
   // Same as InitializeForNavigation() but instead of attaching to a URLRequest,
   // just creates a URLLoaderRequestHandler and returns it.
   static std::unique_ptr<URLLoaderRequestHandler>
