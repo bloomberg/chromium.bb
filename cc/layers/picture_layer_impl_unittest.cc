@@ -3273,6 +3273,34 @@ TEST_F(PictureLayerImplTest, Occlusion) {
   }
 }
 
+TEST_F(PictureLayerImplTest, OcclusionOnSolidColorPictureLayer) {
+  gfx::Size layer_bounds(1000, 1000);
+  gfx::Size viewport_size(1000, 1000);
+
+  LayerTestCommon::LayerImplTest impl;
+  host_impl()->SetViewportSize(viewport_size);
+
+  scoped_refptr<FakeRasterSource> pending_raster_source =
+      FakeRasterSource::CreateFilledSolidColor(layer_bounds);
+  SetupPendingTree(pending_raster_source);
+  host_impl()->pending_tree()->SetDeviceScaleFactor(2.f);
+  ActivateTree();
+
+  {
+    SCOPED_TRACE("Scaled occlusion");
+    gfx::Rect occluded(150, 0, 200, 1000);
+    impl.AppendQuadsWithOcclusion(active_layer(), occluded);
+
+    size_t partial_occluded_count = 0;
+    LayerTestCommon::VerifyQuadsAreOccluded(impl.quad_list(), occluded,
+                                            &partial_occluded_count);
+    // None of the quads shall be occluded and half of them are partially
+    // occluded.
+    EXPECT_EQ(16u, impl.quad_list().size());
+    EXPECT_EQ(8u, partial_occluded_count);
+  }
+}
+
 TEST_F(PictureLayerImplTest, RasterScaleChangeWithoutAnimation) {
   gfx::Size tile_size(host_impl()->settings().default_tile_size);
   SetupDefaultTrees(tile_size);
