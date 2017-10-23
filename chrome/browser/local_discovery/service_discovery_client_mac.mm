@@ -139,25 +139,26 @@ std::unique_ptr<ServiceWatcher> ServiceDiscoveryClientMac::CreateServiceWatcher(
     const ServiceWatcher::UpdatedCallback& callback) {
   StartThreadIfNotStarted();
   VLOG(1) << "CreateServiceWatcher: " << service_type;
-  return std::unique_ptr<ServiceWatcher>(new ServiceWatcherImplMac(
-      service_type, callback, service_discovery_thread_->task_runner()));
+  return std::make_unique<ServiceWatcherImplMac>(
+      service_type, callback, service_discovery_thread_->task_runner());
 }
 
 std::unique_ptr<ServiceResolver>
 ServiceDiscoveryClientMac::CreateServiceResolver(
     const std::string& service_name,
-    const ServiceResolver::ResolveCompleteCallback& callback) {
+    ServiceResolver::ResolveCompleteCallback callback) {
   StartThreadIfNotStarted();
   VLOG(1) << "CreateServiceResolver: " << service_name;
-  return std::unique_ptr<ServiceResolver>(new ServiceResolverImplMac(
-      service_name, callback, service_discovery_thread_->task_runner()));
+  return std::make_unique<ServiceResolverImplMac>(
+      service_name, std::move(callback),
+      service_discovery_thread_->task_runner());
 }
 
 std::unique_ptr<LocalDomainResolver>
 ServiceDiscoveryClientMac::CreateLocalDomainResolver(
     const std::string& domain,
     net::AddressFamily address_family,
-    const LocalDomainResolver::IPAddressCallback& callback) {
+    LocalDomainResolver::IPAddressCallback callback) {
   NOTIMPLEMENTED();  // TODO(noamsml): Implement.
   VLOG(1) << "CreateLocalDomainResolver: " << domain;
   return std::unique_ptr<LocalDomainResolver>();
@@ -296,14 +297,13 @@ void ServiceWatcherImplMac::OnServicesUpdate(ServiceWatcher::UpdateType update,
 
 ServiceResolverImplMac::NetServiceContainer::NetServiceContainer(
     const std::string& service_name,
-    const ServiceResolver::ResolveCompleteCallback& callback,
+    ServiceResolver::ResolveCompleteCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_name_(service_name),
-      callback_(callback),
+      callback_(std::move(callback)),
       callback_runner_(base::ThreadTaskRunnerHandle::Get()),
       service_discovery_runner_(service_discovery_runner),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 ServiceResolverImplMac::NetServiceContainer::~NetServiceContainer() {
   DCHECK(IsOnServiceDiscoveryThread());
@@ -359,7 +359,8 @@ void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
     RequestStatus status) {
   if (status != STATUS_SUCCESS) {
     callback_runner_->PostTask(
-        FROM_HERE, base::Bind(callback_, status, ServiceDescription()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback_), status, ServiceDescription()));
     return;
   }
 
@@ -382,7 +383,8 @@ void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
     VLOG(1) << "Service IP is not resolved: " << service_name_;
     callback_runner_->PostTask(
         FROM_HERE,
-        base::Bind(callback_, STATUS_KNOWN_NONEXISTENT, ServiceDescription()));
+        base::BindOnce(std::move(callback_), STATUS_KNOWN_NONEXISTENT,
+                       ServiceDescription()));
     return;
   }
 
@@ -391,7 +393,8 @@ void ServiceResolverImplMac::NetServiceContainer::OnResolveUpdate(
   // TODO(justinlin): Implement last_seen.
   service_description_.last_seen = base::Time::Now();
   callback_runner_->PostTask(
-      FROM_HERE, base::Bind(callback_, status, service_description_));
+      FROM_HERE,
+      base::BindOnce(std::move(callback_), status, service_description_));
 }
 
 void ServiceResolverImplMac::NetServiceContainer::SetServiceForTesting(
@@ -401,16 +404,16 @@ void ServiceResolverImplMac::NetServiceContainer::SetServiceForTesting(
 
 ServiceResolverImplMac::ServiceResolverImplMac(
     const std::string& service_name,
-    const ServiceResolver::ResolveCompleteCallback& callback,
+    ServiceResolver::ResolveCompleteCallback callback,
     scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner)
     : service_name_(service_name),
-      callback_(callback),
+      callback_(std::move(callback)),
       has_resolved_(false),
       weak_factory_(this) {
   container_.reset(new NetServiceContainer(
       service_name,
-      base::Bind(&ServiceResolverImplMac::OnResolveComplete,
-                 weak_factory_.GetWeakPtr()),
+      base::BindOnce(&ServiceResolverImplMac::OnResolveComplete,
+                     weak_factory_.GetWeakPtr()),
       service_discovery_runner));
 }
 
@@ -432,7 +435,7 @@ void ServiceResolverImplMac::OnResolveComplete(
 
   has_resolved_ = true;
 
-  callback_.Run(status, description);
+  std::move(callback_).Run(status, description);
 }
 
 ServiceResolverImplMac::NetServiceContainer*

@@ -26,11 +26,11 @@ class TestServiceDiscoveryClient : public ServiceDiscoverySharedClient {
       const ServiceWatcher::UpdatedCallback& callback) override;
   std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
-      const ServiceResolver::ResolveCompleteCallback& callback) override;
+      ServiceResolver::ResolveCompleteCallback callback) override;
   std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback) override;
+      LocalDomainResolver::IPAddressCallback callback) override;
 
   MOCK_METHOD1(OnSendTo, void(const std::string& data));
 

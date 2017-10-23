@@ -26,22 +26,23 @@ class ServiceDiscoverySharedClient;
 
 class EndpointResolver {
  public:
-  using ResultCallback = base::Callback<void(const net::IPEndPoint& endpoint)>;
+  using ResultCallback =
+      base::OnceCallback<void(const net::IPEndPoint& endpoint)>;
 
   EndpointResolver();
   ~EndpointResolver();
 
-  void Start(const std::string& service_name, const ResultCallback& callback);
+  void Start(const std::string& service_name, ResultCallback callback);
 
-  void Start(const net::HostPortPair& address, const ResultCallback& callback);
+  void Start(const net::HostPortPair& address, ResultCallback callback);
 
  private:
-  void ServiceResolveComplete(const ResultCallback& callback,
+  void ServiceResolveComplete(ResultCallback callback,
                               ServiceResolver::RequestStatus result,
                               const ServiceDescription& description);
 
   void DomainResolveComplete(uint16_t port,
-                             const ResultCallback& callback,
+                             ResultCallback callback,
                              bool success,
                              const net::IPAddress& address_ipv4,
                              const net::IPAddress& address_ipv6);

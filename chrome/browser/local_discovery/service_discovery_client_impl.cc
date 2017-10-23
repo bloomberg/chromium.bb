@@ -37,25 +37,25 @@ std::unique_ptr<ServiceWatcher>
 ServiceDiscoveryClientImpl::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
-  return std::unique_ptr<ServiceWatcher>(
-      new ServiceWatcherImpl(service_type, callback, mdns_client_));
+  return std::make_unique<ServiceWatcherImpl>(service_type, callback,
+                                              mdns_client_);
 }
 
 std::unique_ptr<ServiceResolver>
 ServiceDiscoveryClientImpl::CreateServiceResolver(
     const std::string& service_name,
-    const ServiceResolver::ResolveCompleteCallback& callback) {
-  return std::unique_ptr<ServiceResolver>(
-      new ServiceResolverImpl(service_name, callback, mdns_client_));
+    ServiceResolver::ResolveCompleteCallback callback) {
+  return std::make_unique<ServiceResolverImpl>(
+      service_name, std::move(callback), mdns_client_);
 }
 
 std::unique_ptr<LocalDomainResolver>
 ServiceDiscoveryClientImpl::CreateLocalDomainResolver(
     const std::string& domain,
     net::AddressFamily address_family,
-    const LocalDomainResolver::IPAddressCallback& callback) {
-  return std::unique_ptr<LocalDomainResolver>(new LocalDomainResolverImpl(
-      domain, address_family, callback, mdns_client_));
+    LocalDomainResolver::IPAddressCallback callback) {
+  return std::make_unique<LocalDomainResolverImpl>(
+      domain, address_family, std::move(callback), mdns_client_);
 }
 
 ServiceWatcherImpl::ServiceWatcherImpl(
@@ -323,14 +323,14 @@ void ServiceWatcherImpl::SendQuery(int next_timeout_seconds) {
   ScheduleQuery(next_timeout_seconds);
 }
 
-ServiceResolverImpl::ServiceResolverImpl(
-    const std::string& service_name,
-    const ResolveCompleteCallback& callback,
-    net::MDnsClient* mdns_client)
-    : service_name_(service_name), callback_(callback),
-      metadata_resolved_(false), address_resolved_(false),
-      mdns_client_(mdns_client) {
-}
+ServiceResolverImpl::ServiceResolverImpl(const std::string& service_name,
+                                         ResolveCompleteCallback callback,
+                                         net::MDnsClient* mdns_client)
+    : service_name_(service_name),
+      callback_(std::move(callback)),
+      metadata_resolved_(false),
+      address_resolved_(false),
+      mdns_client_(mdns_client) {}
 
 void ServiceResolverImpl::StartResolving() {
   address_resolved_ = false;
@@ -430,7 +430,7 @@ void ServiceResolverImpl::AlertCallbackIfReady() {
     srv_transaction_.reset();
     a_transaction_.reset();
     if (!callback_.is_null())
-      callback_.Run(STATUS_SUCCESS, service_staging_);
+      std::move(callback_).Run(STATUS_SUCCESS, service_staging_);
   }
 }
 
@@ -440,7 +440,7 @@ void ServiceResolverImpl::ServiceNotFound(
   srv_transaction_.reset();
   a_transaction_.reset();
   if (!callback_.is_null())
-    callback_.Run(status, ServiceDescription());
+    std::move(callback_).Run(status, ServiceDescription());
 }
 
 ServiceResolver::RequestStatus ServiceResolverImpl::MDnsStatusToRequestStatus(
@@ -481,11 +481,13 @@ net::IPAddress ServiceResolverImpl::RecordToIPAddress(
 LocalDomainResolverImpl::LocalDomainResolverImpl(
     const std::string& domain,
     net::AddressFamily address_family,
-    const IPAddressCallback& callback,
+    IPAddressCallback callback,
     net::MDnsClient* mdns_client)
-    : domain_(domain), address_family_(address_family), callback_(callback),
-      transactions_finished_(0), mdns_client_(mdns_client) {
-}
+    : domain_(domain),
+      address_family_(address_family),
+      callback_(std::move(callback)),
+      transactions_finished_(0),
+      mdns_client_(mdns_client) {}
 
 LocalDomainResolverImpl::~LocalDomainResolverImpl() {
   timeout_callback_.Cancel();
@@ -551,7 +553,7 @@ void LocalDomainResolverImpl::SendResolvedAddresses() {
   transaction_a_.reset();
   transaction_aaaa_.reset();
   timeout_callback_.Cancel();
-  callback_.Run(IsSuccess(), address_ipv4_, address_ipv6_);
+  std::move(callback_).Run(IsSuccess(), address_ipv4_, address_ipv6_);
 }
 
 }  // namespace local_discovery

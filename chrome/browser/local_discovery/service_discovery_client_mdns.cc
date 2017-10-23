@@ -67,9 +67,9 @@ class ServiceDiscoveryClientMdns::Proxy {
 
   // Runs callback using this method to abort callback if instance of |Proxy|
   // is deleted.
-  void RunCallback(const base::Closure& callback) {
+  void RunCallback(base::OnceClosure callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    callback.Run();
+    std::move(callback).Run();
   }
 
  protected:
@@ -87,8 +87,9 @@ class ServiceDiscoveryClientMdns::Proxy {
     delayed_tasks_.push_back(task);
   }
 
-  static bool PostToUIThread(const base::Closure& task) {
-    return BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
+  static bool PostToUIThread(base::OnceClosure task) {
+    return BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                   std::move(task));
   }
 
   ServiceDiscoveryClient* client() {
@@ -260,14 +261,13 @@ class ServiceResolverProxy : public ProxyBase<ServiceResolver> {
  public:
   ServiceResolverProxy(ServiceDiscoveryClientMdns* client_mdns,
                        const std::string& service_name,
-                       const ServiceResolver::ResolveCompleteCallback& callback)
-      : ProxyBase(client_mdns),
-        service_name_(service_name) {
+                       ServiceResolver::ResolveCompleteCallback callback)
+      : ProxyBase(client_mdns), service_name_(service_name) {
     // It's safe to call |CreateServiceResolver| on UI thread, because
     // |MDnsClient| is not used there. It's simplify implementation.
     set_implementation(client()->CreateServiceResolver(
-        service_name,
-        base::Bind(&ServiceResolverProxy::OnCallback, GetWeakPtr(), callback)));
+        service_name, base::BindOnce(&ServiceResolverProxy::OnCallback,
+                                     GetWeakPtr(), std::move(callback))));
   }
 
   // ServiceResolver methods.
@@ -281,14 +281,13 @@ class ServiceResolverProxy : public ProxyBase<ServiceResolver> {
   std::string GetName() const override { return service_name_; }
 
  private:
-  static void OnCallback(
-      const WeakPtr& proxy,
-      const ServiceResolver::ResolveCompleteCallback& callback,
-      RequestStatus a1,
-      const ServiceDescription& a2) {
+  static void OnCallback(const WeakPtr& proxy,
+                         ServiceResolver::ResolveCompleteCallback callback,
+                         RequestStatus a1,
+                         const ServiceDescription& a2) {
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-    PostToUIThread(base::Bind(&Base::RunCallback, proxy,
-                              base::Bind(callback, a1, a2)));
+    PostToUIThread(base::BindOnce(&Base::RunCallback, proxy,
+                                  base::BindOnce(std::move(callback), a1, a2)));
   }
 
   std::string service_name_;
@@ -298,19 +297,17 @@ class ServiceResolverProxy : public ProxyBase<ServiceResolver> {
 
 class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
  public:
-  LocalDomainResolverProxy(
-      ServiceDiscoveryClientMdns* client_mdns,
-      const std::string& domain,
-      net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback)
+  LocalDomainResolverProxy(ServiceDiscoveryClientMdns* client_mdns,
+                           const std::string& domain,
+                           net::AddressFamily address_family,
+                           LocalDomainResolver::IPAddressCallback callback)
       : ProxyBase(client_mdns) {
     // It's safe to call |CreateLocalDomainResolver| on UI thread, because
     // |MDnsClient| is not used there. It's simplify implementation.
     set_implementation(client()->CreateLocalDomainResolver(
-        domain,
-        address_family,
-        base::Bind(
-            &LocalDomainResolverProxy::OnCallback, GetWeakPtr(), callback)));
+        domain, address_family,
+        base::BindOnce(&LocalDomainResolverProxy::OnCallback, GetWeakPtr(),
+                       std::move(callback))));
   }
 
   // LocalDomainResolver methods.
@@ -323,13 +320,14 @@ class LocalDomainResolverProxy : public ProxyBase<LocalDomainResolver> {
 
  private:
   static void OnCallback(const WeakPtr& proxy,
-                         const LocalDomainResolver::IPAddressCallback& callback,
+                         LocalDomainResolver::IPAddressCallback callback,
                          bool a1,
                          const net::IPAddress& a2,
                          const net::IPAddress& a3) {
     DCHECK(!BrowserThread::CurrentlyOn(BrowserThread::UI));
-    PostToUIThread(base::Bind(&Base::RunCallback, proxy,
-                              base::Bind(callback, a1, a2, a3)));
+    PostToUIThread(
+        base::BindOnce(&Base::RunCallback, proxy,
+                       base::BindOnce(std::move(callback), a1, a2, a3)));
   }
 
   DISALLOW_COPY_AND_ASSIGN(LocalDomainResolverProxy);
@@ -352,30 +350,26 @@ ServiceDiscoveryClientMdns::CreateServiceWatcher(
     const std::string& service_type,
     const ServiceWatcher::UpdatedCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto watcher =
-      base::MakeUnique<ServiceWatcherProxy>(this, service_type, callback);
-  return std::move(watcher);
+  return std::make_unique<ServiceWatcherProxy>(this, service_type, callback);
 }
 
 std::unique_ptr<ServiceResolver>
 ServiceDiscoveryClientMdns::CreateServiceResolver(
     const std::string& service_name,
-    const ServiceResolver::ResolveCompleteCallback& callback) {
+    ServiceResolver::ResolveCompleteCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto resolver =
-      base::MakeUnique<ServiceResolverProxy>(this, service_name, callback);
-  return std::move(resolver);
+  return std::make_unique<ServiceResolverProxy>(this, service_name,
+                                                std::move(callback));
 }
 
 std::unique_ptr<LocalDomainResolver>
 ServiceDiscoveryClientMdns::CreateLocalDomainResolver(
     const std::string& domain,
     net::AddressFamily address_family,
-    const LocalDomainResolver::IPAddressCallback& callback) {
+    LocalDomainResolver::IPAddressCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  auto resolver = base::MakeUnique<LocalDomainResolverProxy>(
-      this, domain, address_family, callback);
-  return std::move(resolver);
+  return std::make_unique<LocalDomainResolverProxy>(
+      this, domain, address_family, std::move(callback));
 }
 
 ServiceDiscoveryClientMdns::~ServiceDiscoveryClientMdns() {
