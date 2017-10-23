@@ -878,6 +878,40 @@ Status ExecuteGetWindowSize(Session* session,
   return Status(kOk);
 }
 
+Status ExecuteSetWindowRect(Session* session,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value) {
+  double width = 0;
+  double height = 0;
+  double x = 0;
+  double y = 0;
+
+  ChromeDesktopImpl* desktop = NULL;
+  Status status = session->chrome->GetAsDesktop(&desktop);
+  if (status.IsError())
+    return status;
+
+  // to pass to the set window rect command
+  base::DictionaryValue rect_params;
+
+  // only set position if both x and y are given
+  if (params.GetDouble("x", &x) && params.GetDouble("y", &y)) {
+    rect_params.SetInteger("x", static_cast<int>(x));
+    rect_params.SetInteger("y", static_cast<int>(y));
+  }  // only set size if both height and width are given
+  if (params.GetDouble("width", &width) &&
+      params.GetDouble("height", &height)) {
+    rect_params.SetInteger("width", static_cast<int>(width));
+    rect_params.SetInteger("height", static_cast<int>(height));
+  }
+  status = desktop->SetWindowRect(session->window, rect_params);
+  if (status.IsError())
+    return status;
+
+  // return the current window rect
+  return ExecuteGetWindowRect(session, params, value);
+}
+
 Status ExecuteSetWindowSize(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value) {

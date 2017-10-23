@@ -145,6 +145,10 @@ Status ExecuteGetWindowSize(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value);
 
+Status ExecuteSetWindowRect(Session* session,
+                            const base::DictionaryValue& params,
+                            std::unique_ptr<base::Value>* value);
+
 Status ExecuteSetWindowSize(Session* session,
                             const base::DictionaryValue& params,
                             std::unique_ptr<base::Value>* value);
