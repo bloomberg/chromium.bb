@@ -525,7 +525,6 @@ void RenderWidgetHostViewGuest::ShowDefinitionForSelection() {
   if (!guest_)
     return;
 
-  gfx::Point origin;
   gfx::Rect guest_bounds = GetViewBounds();
   RenderWidgetHostView* rwhv = guest_->GetOwnerRenderWidgetHostView();
   gfx::Rect embedder_bounds;
