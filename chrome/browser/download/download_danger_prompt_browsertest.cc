@@ -7,6 +7,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_danger_prompt.h"
 #include "chrome/browser/profiles/profile.h"
@@ -23,7 +24,7 @@
 #include "content/public/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_features.h"
 #include "url/gurl.h"
 
 using ::testing::_;
@@ -77,6 +78,12 @@ class DownloadDangerPromptTest
   ~DownloadDangerPromptTest() override {}
 
   void SetUp() override {
+    // TODO(crbug.com/630357): Remove parameterized testing for this class when
+    // secondary-ui-md is enabled by default on all platforms.
+    if (GetParam() == SecondaryUiMd::ENABLED)
+      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
     SafeBrowsingService::RegisterFactory(test_safe_browsing_factory_.get());
     InProcessBrowserTest::SetUp();
   }
@@ -84,13 +91,6 @@ class DownloadDangerPromptTest
   void TearDown() override {
     SafeBrowsingService::RegisterFactory(nullptr);
     InProcessBrowserTest::TearDown();
-  }
-
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    // TODO(crbug.com/630357): Remove parameterized testing for this class when
-    // secondary-ui-md is enabled by default on all platforms.
-    if (GetParam() == SecondaryUiMd::ENABLED)
-      command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
   }
 
   // Opens a new tab and waits for navigations to finish. If there are pending
@@ -206,6 +206,7 @@ class DownloadDangerPromptTest
   bool did_receive_callback_;
   std::unique_ptr<TestSafeBrowsingServiceFactory> test_safe_browsing_factory_;
   std::string expected_serialized_report_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadDangerPromptTest);
 };

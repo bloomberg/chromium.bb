@@ -52,10 +52,6 @@ class UI_BASE_EXPORT MaterialDesignController {
   // The current Mode to be used by the system.
   static Mode mode_;
 
-  // True when |mode_| applies beyond the primary UI (toolbar, tabstrip,
-  // etc.). For example, this controls use of MD inside bubbles and dialogs.
-  static bool include_secondary_ui_;
-
   // Declarations only. Do not allow construction of an object.
   MaterialDesignController();
   ~MaterialDesignController();

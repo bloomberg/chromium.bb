@@ -8,12 +8,11 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/platform_util.h"
-#include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/test/material_design_controller_test_api.h"
 #include "ui/base/test/user_interactive_test_case.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
@@ -97,13 +96,15 @@ TestBrowserDialog::TestBrowserDialog() {}
 void TestBrowserDialog::RunDialog() {
 #if defined(OS_MACOSX)
   // The rest of this method assumes the child dialog is toolkit-views. So, for
-  // Mac, it will only work if --secondary-ui-md is passed. Without this, a
+  // Mac, it will only work when MD for secondary UI is enabled. Without this, a
   // Cocoa dialog will be created, which TestBrowserDialog doesn't support.
-  // Force SecondaryUiMaterial() on Mac to get coverage on the bots. Leave it
-  // optional elsewhere so that the non-MD dialog can be invoked to compare.
-  ui::test::MaterialDesignControllerTestAPI md_test_api(
-      ui::MaterialDesignController::GetMode());
-  md_test_api.SetSecondaryUiMaterial(true);
+  // Force kSecondaryUiMd on Mac to get coverage on the bots. Leave it optional
+  // elsewhere so that the non-MD dialog can be invoked to compare. Note that
+  // since SetUp() has already been called, some parts of the toolkit may
+  // already be initialized without MD - this is just to ensure Cocoa dialogs
+  // are not selected.
+  base::test::ScopedFeatureList enable_views_on_mac_always;
+  enable_views_on_mac_always.InitAndEnableFeature(features::kSecondaryUiMd);
 #endif
 
   views::Widget::Widgets widgets_before =
@@ -150,6 +151,10 @@ void TestBrowserDialog::RunDialog() {
 
   WidgetCloser closer(added[0], action);
   ::test::RunTestInteractively();
+}
+
+void TestBrowserDialog::UseMdOnly() {
+  maybe_enable_md_.InitAndEnableFeature(features::kSecondaryUiMd);
 }
 
 bool TestBrowserDialog::AlwaysCloseAsynchronously() {

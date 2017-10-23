@@ -7,18 +7,8 @@
 #ifndef UI_BASE_UI_BASE_SWITCHES_H_
 #define UI_BASE_UI_BASE_SWITCHES_H_
 
-#include "base/compiler_specific.h"
-#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "ui/base/ui_base_export.h"
-
-namespace features {
-
-#if defined(OS_WIN)
-UI_BASE_EXPORT extern const base::Feature kDirectManipulationStylus;
-#endif  // defined(OS_WIN)
-
-}  // namespace features
 
 namespace switches {
 
@@ -39,7 +29,6 @@ UI_BASE_EXPORT extern const char kDisableDwmComposition[];
 UI_BASE_EXPORT extern const char kDisableTouchAdjustment[];
 UI_BASE_EXPORT extern const char kDisableTouchDragDrop[];
 UI_BASE_EXPORT extern const char kEnableTouchDragDrop[];
-UI_BASE_EXPORT extern const char kExtendMdToSecondaryUi[];
 UI_BASE_EXPORT extern const char kGlCompositedOverlayCandidateQuadBorder[];
 UI_BASE_EXPORT extern const char kLang[];
 UI_BASE_EXPORT extern const char kMaterialDesignInkDropAnimationSpeed[];

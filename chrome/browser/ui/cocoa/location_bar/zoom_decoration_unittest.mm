@@ -6,9 +6,10 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/zoom/zoom_controller.h"
-#include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_base_features.h"
 
 namespace {
 
@@ -19,16 +20,19 @@ class ZoomDecorationTest : public ChromeRenderViewHostTestHarness,
   ~ZoomDecorationTest() override {}
 
  protected:
-  // testing::Test:
+  // ChromeRenderViewHostTestHarness:
   void SetUp() override {
     // TODO(crbug.com/630357): Remove parameterized testing for this class when
     // secondary-ui-md is enabled by default on all platforms.
-    if (GetParam()) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitch(
-          switches::kExtendMdToSecondaryUi);
-    }
+    if (GetParam())
+      scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    else
+      scoped_feature_list_.InitAndDisableFeature(features::kSecondaryUiMd);
     ChromeRenderViewHostTestHarness::SetUp();
   }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ZoomDecorationTest);
 };

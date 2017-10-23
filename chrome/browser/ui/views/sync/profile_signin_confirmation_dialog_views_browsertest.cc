@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "components/bookmarks/browser/bookmark_model.h"
-#include "ui/base/ui_base_switches.h"
 
 namespace {
 
@@ -38,12 +37,12 @@ class ProfileSigninConfirmationDialogTest : public DialogBrowserTest {
  public:
   ProfileSigninConfirmationDialogTest() {}
 
-  // content::BrowserTestBase:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    command_line->AppendSwitch(switches::kExtendMdToSecondaryUi);
+  // DialogBrowserTest:
+  void SetUp() override {
+    UseMdOnly();
+    DialogBrowserTest::SetUp();
   }
 
-  // DialogBrowserTest:
   void ShowDialog(const std::string& name) override {
     Profile* profile = browser()->profile();
 
