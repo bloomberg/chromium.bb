@@ -2266,7 +2266,6 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Other utility functions.
   bool IsStyleAvailable() const;
-  bool IsSharable() const;
 
   bool RequireTransformOrigin(ApplyTransformOrigin apply_origin,
                               ApplyMotionPath) const;
@@ -2613,14 +2612,6 @@ inline bool ComputedStyle::SetEffectiveZoom(float f) {
   if (EffectiveZoom() == clamped_effective_zoom)
     return false;
   SetEffectiveZoomInternal(clamped_effective_zoom);
-  return true;
-}
-
-inline bool ComputedStyle::IsSharable() const {
-  if (Unique())
-    return false;
-  if (HasUniquePseudoStyle())
-    return false;
   return true;
 }
 
