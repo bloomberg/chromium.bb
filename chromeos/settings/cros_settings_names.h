@@ -130,6 +130,8 @@ CHROMEOS_EXPORT extern const char kDevicePrintersWhitelist[];
 
 CHROMEOS_EXPORT extern const char kTPMFirmwareUpdateSettings[];
 
+CHROMEOS_EXPORT extern const char kMinimumRequiredChromeVersion[];
+
 }  // namespace chromeos
 
 #endif  // CHROMEOS_SETTINGS_CROS_SETTINGS_NAMES_H_
