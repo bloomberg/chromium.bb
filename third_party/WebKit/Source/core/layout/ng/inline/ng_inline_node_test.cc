@@ -106,11 +106,8 @@ class NGInlineNodeTest : public RenderingTest {
     scoped_refptr<NGLayoutResult> result =
         NGInlineLayoutAlgorithm(node, *constraint_space).Layout();
 
-    const NGPhysicalBoxFragment* container =
-        ToNGPhysicalBoxFragment(result->PhysicalFragment().get());
-    EXPECT_EQ(container->Children().size(), 1u);
     const NGPhysicalLineBoxFragment* line =
-        ToNGPhysicalLineBoxFragment(container->Children()[0].get());
+        ToNGPhysicalLineBoxFragment(result->PhysicalFragment().get());
     for (const auto& child : line->Children()) {
       fragments_out->push_back(ToNGPhysicalTextFragment(child.get()));
     }

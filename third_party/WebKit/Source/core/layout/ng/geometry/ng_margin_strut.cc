@@ -33,6 +33,11 @@ void NGMarginStrut::Append(const LayoutUnit& value, bool is_quirky) {
   }
 }
 
+bool NGMarginStrut::IsEmpty() const {
+  return positive_margin == LayoutUnit() && negative_margin == LayoutUnit() &&
+         quirky_positive_margin == LayoutUnit();
+}
+
 bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
   return positive_margin == other.positive_margin &&
          negative_margin == other.negative_margin &&

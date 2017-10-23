@@ -50,7 +50,8 @@ class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
   MinMaxSize ComputeMinMaxSize();
 
   // Copy fragment data of all lines to LayoutBlockFlow.
-  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&, NGLayoutResult*);
+  void CopyFragmentDataToLayoutBox(const NGConstraintSpace&,
+                                   const NGLayoutResult&);
 
   // Instruct to re-compute |PrepareLayout| on the next layout.
   void InvalidatePrepareLayout();

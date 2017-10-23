@@ -10,6 +10,7 @@
 #include "core/layout/LayoutTable.h"
 #include "core/layout/MinMaxSize.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
+#include "core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/layout/ng/legacy_layout_tree_walking.h"
 #include "core/layout/ng/ng_block_break_token.h"
@@ -151,8 +152,15 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
       layout_result->UnpositionedFloats().IsEmpty()) {
     DCHECK(layout_result->PhysicalFragment());
 
-    // If this node has inline children, enable LayoutNGPaintFragmets.
-    if (block_flow && FirstChild().IsInline()) {
+    NGLayoutInputNode first_child = FirstChild();
+    if (block_flow && first_child && first_child.IsInline()) {
+      if (!RuntimeEnabledFeatures::LayoutNGPaintFragmentsEnabled()) {
+        // TODO(ikilpatrick): Move line-box creation logic from
+        // NGInlineNode::CopyFragmentDataToLayoutBox to NGBlockNode.
+        NGInlineNode node = ToNGInlineNode(first_child);
+        node.CopyFragmentDataToLayoutBox(constraint_space, *layout_result);
+      }
+
       block_flow->SetPaintFragment(layout_result->PhysicalFragment());
     }
 
@@ -379,23 +387,11 @@ void NGBlockNode::PlaceChildrenInLayoutBox(
     auto* child_object = child_fragment->GetLayoutObject();
     DCHECK(child_fragment->IsPlaced());
 
-    // At the moment "anonymous" fragments for inline layout will have the same
-    // layout object as ourselves, we need to copy its floats across.
-    if (child_object == box_) {
-      for (const auto& maybe_float_fragment :
-           ToNGPhysicalBoxFragment(child_fragment.get())->Children()) {
-        // The child of the anonymous fragment might be just a line-box
-        // fragment - ignore.
-        if (IsFloatFragment(*maybe_float_fragment)) {
-          // We need to include the anonymous fragments offset here for the
-          // correct position.
-          CopyChildFragmentPosition(
-              ToNGPhysicalBoxFragment(*maybe_float_fragment),
-              offset_from_start + child_fragment->Offset());
-        }
-      }
+    // Skip any line-boxes we have as children, this is handled within
+    // NGInlineNode at the moment.
+    if (!child_fragment->IsBox())
       continue;
-    }
+
     const auto& box_fragment = *ToNGPhysicalBoxFragment(child_fragment.get());
     if (IsFirstFragment(constraint_space, box_fragment))
       CopyChildFragmentPosition(box_fragment, offset_from_start);

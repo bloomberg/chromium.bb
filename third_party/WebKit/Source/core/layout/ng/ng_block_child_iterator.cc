@@ -21,8 +21,16 @@ NGBlockChildIterator::NGBlockChildIterator(NGLayoutInputNode first_child,
   child_ = child_break_tokens[0]->InputNode();
 }
 
-NGBlockChildIterator::Entry NGBlockChildIterator::NextChild() {
+NGBlockChildIterator::Entry NGBlockChildIterator::NextChild(
+    NGBreakToken* previous_inline_break_token) {
   NGBreakToken* child_break_token = nullptr;
+
+  if (previous_inline_break_token &&
+      !previous_inline_break_token->IsFinished()) {
+    DCHECK(previous_inline_break_token->IsInlineType());
+    return Entry(previous_inline_break_token->InputNode(),
+                 previous_inline_break_token);
+  }
 
   if (break_token_) {
     // If we're resuming layout after a fragmentainer break, we need to skip

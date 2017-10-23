@@ -36,20 +36,6 @@ struct NGInflowChildData {
   NGBoxStrut margins;
 };
 
-// Updates the fragment's BFC offset if it's not already set.
-bool MaybeUpdateFragmentBfcOffset(const NGConstraintSpace&,
-                                  LayoutUnit bfc_block_offset,
-                                  NGFragmentBuilder* builder);
-
-// Positions pending floats starting from {@origin_block_offset} and relative
-// to container's BFC offset.
-void PositionPendingFloats(
-    const NGConstraintSpace&,
-    LayoutUnit origin_block_offset,
-    NGFragmentBuilder* container_builder,
-    Vector<scoped_refptr<NGUnpositionedFloat>>* unpositioned_floats,
-    NGExclusionSpace*);
-
 // A class for general block layout (e.g. a <div> with no special style).
 // Lays out the children in sequence.
 class CORE_EXPORT NGBlockLayoutAlgorithm
@@ -136,9 +122,11 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   //
   // Returns false if we need to abort layout, because a previously unknown BFC
   // offset has now been resolved.
-  bool HandleNewFormattingContext(NGLayoutInputNode child,
-                                  NGBreakToken* child_break_token,
-                                  NGPreviousInflowPosition*);
+  bool HandleNewFormattingContext(
+      NGLayoutInputNode child,
+      NGBreakToken* child_break_token,
+      NGPreviousInflowPosition*,
+      RefPtr<NGBreakToken>* previous_inline_break_token);
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
@@ -154,7 +142,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // offset has now been resolved. (Same as HandleNewFormattingContext).
   bool HandleInflow(NGLayoutInputNode child,
                     NGBreakToken* child_break_token,
-                    NGPreviousInflowPosition*);
+                    NGPreviousInflowPosition*,
+                    RefPtr<NGBreakToken>* previous_inline_break_token);
 
   // Return the amount of block space available in the current fragmentainer
   // for the node being laid out by this algorithm.
@@ -179,6 +168,15 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   bool AddBaseline(const NGBaselineRequest&,
                    const NGPhysicalFragment*,
                    LayoutUnit child_offset);
+
+  // Updates the fragment's BFC offset if it's not already set.
+  bool MaybeUpdateFragmentBfcOffset(LayoutUnit bfc_block_offset);
+
+  // Positions pending floats starting from {@origin_block_offset}.
+  void PositionPendingFloats(LayoutUnit origin_block_offset);
+
+  // Adds a set of positioned floats as children to the current fragment.
+  void AddPositionedFloats(const Vector<NGPositionedFloat>& positioned_floats);
 
   // Calculates logical offset for the current fragment using either {@code
   // intrinsic_block_size_} when the fragment doesn't know it's offset or

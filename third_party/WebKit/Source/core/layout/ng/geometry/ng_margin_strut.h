@@ -34,6 +34,9 @@ struct CORE_EXPORT NGMarginStrut {
   // containers to sum up the last margin.
   LayoutUnit QuirkyContainerSum() const;
 
+  // Whether there have been no margins appended to this margin strut.
+  bool IsEmpty() const;
+
   bool operator==(const NGMarginStrut& other) const;
   bool operator!=(const NGMarginStrut& other) const {
     return !(*this == other);
