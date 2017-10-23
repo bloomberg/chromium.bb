@@ -16,7 +16,7 @@ bool TestAddressNormalizer::AreRulesLoadedForRegion(
   return true;
 }
 
-void TestAddressNormalizer::NormalizeAddress(
+void TestAddressNormalizer::NormalizeAddressAsync(
     const AutofillProfile& profile,
     const std::string& region_code,
     int timeout_seconds,
@@ -29,6 +29,12 @@ void TestAddressNormalizer::NormalizeAddress(
   // Setup the necessary variables for the delayed normalization.
   profile_ = profile;
   callback_ = std::move(callback);
+}
+
+bool TestAddressNormalizer::NormalizeAddressSync(
+    AutofillProfile* profile,
+    const std::string& region_code) {
+  return true;
 }
 
 void TestAddressNormalizer::DelayNormalization() {

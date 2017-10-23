@@ -34,11 +34,13 @@ class AddressNormalizerImpl : public AddressNormalizer {
   // AddressNormalizer implementation.
   void LoadRulesForRegion(const std::string& region_code) override;
   bool AreRulesLoadedForRegion(const std::string& region_code) override;
-  void NormalizeAddress(
+  void NormalizeAddressAsync(
       const AutofillProfile& profile,
       const std::string& region_code,
       int timeout_seconds,
       AddressNormalizer::NormalizationCallback callback) override;
+  bool NormalizeAddressSync(AutofillProfile* profile,
+                            const std::string& region_code) override;
 
  private:
   // Called when the validation rules for the |region_code| have finished

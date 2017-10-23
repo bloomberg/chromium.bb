@@ -28,18 +28,23 @@ class AddressNormalizer : public autofill::LoadRulesListener {
   // loading.
   virtual bool AreRulesLoadedForRegion(const std::string& region_code) = 0;
 
-  // Starts the normalization of the |profile| based on the |region_code|. The
-  // normalized profile will be returned to the |requester| possibly
-  // asynchronously. If the normalization is not completed in |timeout_seconds|
-  // |callback| will be called with success=false. |timeout_seconds| should be
-  // greater or equal to 0, for which it means that the normalization should
-  // happen synchronously, or not at all if the rules are not already loaded.
-  // Will start loading the rules for the |region_code| if they had not started
-  // loading.
-  virtual void NormalizeAddress(const AutofillProfile& profile,
-                                const std::string& region_code,
-                                int timeout_seconds,
-                                NormalizationCallback callback) = 0;
+  // Normalize |profile| asynchronously based on the |region_code|. If the
+  // normalization is not completed in |timeout_seconds|, |callback| will be
+  // called with success=false. If |timeout_seconds| is 0, |callback| is called
+  // immediately, and may have success=false if the rules had not already been
+  // loaded. Will start loading the rules for the |region_code| if they had not
+  // started loading. The phone number gets normalized to the E.164 format,
+  // which is notably compatible with Payment Request. See documentation of
+  // PhoneNumberFormat::E164 for details.
+  virtual void NormalizeAddressAsync(const AutofillProfile& profile,
+                                     const std::string& region_code,
+                                     int timeout_seconds,
+                                     NormalizationCallback callback) = 0;
+
+  // Normalizes |profile| and returns whether it was successful. Callers should
+  // call |AreRulesLoadedForRegion| to ensure success.
+  virtual bool NormalizeAddressSync(AutofillProfile* profile,
+                                    const std::string& region_code) = 0;
 };
 
 }  // namespace autofill

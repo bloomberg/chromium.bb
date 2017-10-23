@@ -74,6 +74,9 @@ AutofillProfile GetFullProfile();
 // Returns a profile full of dummy info, different to the above.
 AutofillProfile GetFullProfile2();
 
+// Returns a profile full of dummy info, different to the above.
+AutofillProfile GetFullCanadianProfile();
+
 // Returns an incomplete profile of dummy info.
 AutofillProfile GetIncompleteProfile1();
 
