@@ -41,7 +41,20 @@ login.createScreen('TermsOfServiceScreen', 'terms-of-service', function() {
      */
     setTermsOfService: function(termsOfService) {
       this.classList.remove('tos-loading');
-      $('tos-content-main').textContent = termsOfService;
+      // Load the Terms of Service text as data url in a <webview> to ensure
+      // the content from the web does not load within the privileged WebUI
+      // process.
+      $('tos-content-main').src = 'data:text/html;charset=utf-8,' +
+          encodeURIComponent('<style>' +
+                             'body {' +
+                             '  font-family: Roboto, sans-serif;' +
+                             '  font-size: 14px;' +
+                             '  margin : 0;' +
+                             '  padding : 0;' +
+                             '  white-space: pre-wrap;' +
+                             '}' +
+                             '</style>' +
+                             '<body>' + termsOfService + '<body>');
       $('tos-accept-button').disabled = false;
       // Initially, the back button is focused and the accept button is
       // disabled.

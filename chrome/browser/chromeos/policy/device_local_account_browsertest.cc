@@ -2356,7 +2356,8 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
   // Wait for the Terms of Service to finish downloading, then get the status of
   // the screen's UI elements.
   std::string json;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents_,
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      contents_,
       "var screenElement = document.getElementById('terms-of-service');"
       "function SendReplyIfDownloadDone() {"
       "  if (screenElement.classList.contains('tos-loading'))"
@@ -2367,12 +2368,26 @@ IN_PROC_BROWSER_TEST_P(TermsOfServiceDownloadTest, TermsOfServiceScreen) {
       "      document.getElementById('tos-subheading').textContent;"
       "  status.contentHeading ="
       "      document.getElementById('tos-content-heading').textContent;"
-      "  status.content ="
-      "      document.getElementById('tos-content-main').textContent;"
       "  status.error = screenElement.classList.contains('error');"
       "  status.acceptEnabled ="
       "      !document.getElementById('tos-accept-button').disabled;"
-      "  domAutomationController.send(JSON.stringify(status));"
+      "  var tosWebview = document.getElementById('tos-content-main');"
+      "  if (status.error) {"
+      "    status.content = tosWebview.src;"
+      "    domAutomationController.send(JSON.stringify(status));"
+      "  } else {"
+      "    var extractTos = function() {"
+      "      tosWebview.executeScript("
+      "          {code:'document.body.textContent'},"
+      "          (results) => {"
+      "            status.content = results[0];"
+      "            domAutomationController.send(JSON.stringify(status));"
+      "            tosWebview.removeEventListener('contentload', extractTos);"
+      "          });"
+      "    };"
+      "    tosWebview.addEventListener('contentload', extractTos);"
+      "    extractTos();"
+      "  }"
       "  observer.disconnect();"
       "  return true;"
       "}"
