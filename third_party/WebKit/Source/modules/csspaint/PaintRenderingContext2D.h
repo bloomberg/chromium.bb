@@ -18,8 +18,8 @@ class CanvasImageSource;
 class Color;
 
 class MODULES_EXPORT PaintRenderingContext2D
-    : public BaseRenderingContext2D,
-      public GarbageCollectedFinalized<PaintRenderingContext2D>,
+    : public GarbageCollectedFinalized<PaintRenderingContext2D>,
+      public BaseRenderingContext2D,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
