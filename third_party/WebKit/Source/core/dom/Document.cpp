@@ -2831,12 +2831,14 @@ void Document::ClearAXObjectCache() {
 }
 
 AXObjectCache* Document::ExistingAXObjectCache() const {
+  auto& cache_owner = AxObjectCacheOwner();
+
   // If the layoutObject is gone then we are in the process of destruction.
   // This method will be called before m_frame = nullptr.
-  if (!AxObjectCacheOwner().GetLayoutView())
+  if (!cache_owner.GetLayoutView())
     return nullptr;
 
-  return AxObjectCacheOwner().ax_object_cache_.Get();
+  return cache_owner.ax_object_cache_.Get();
 }
 
 AXObjectCache* Document::AxObjectCache() const {
