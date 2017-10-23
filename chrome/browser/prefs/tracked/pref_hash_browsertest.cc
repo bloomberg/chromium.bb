@@ -139,7 +139,7 @@ std::unique_ptr<base::DictionaryValue> ReadPrefsDictionary(
     ADD_FAILURE() << "Error #" << error_code << ": " << error_str;
     return std::unique_ptr<base::DictionaryValue>();
   }
-  if (!prefs->IsType(base::Value::Type::DICTIONARY)) {
+  if (!prefs->is_dict()) {
     ADD_FAILURE();
     return std::unique_ptr<base::DictionaryValue>();
   }

@@ -103,7 +103,7 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::ExtensionToBrowserPref(
   // When ExtensionToBrowserPref is called, the format of |extension_pref|
   // has been verified already by the extension API to match the schema
   // defined in the extension API JSON.
-  CHECK(extension_pref->IsType(base::Value::Type::DICTIONARY));
+  CHECK(extension_pref->is_dict());
   const base::DictionaryValue* config =
       static_cast<const base::DictionaryValue*>(extension_pref);
 
@@ -140,7 +140,7 @@ std::unique_ptr<base::Value> ProxyPrefTransformer::ExtensionToBrowserPref(
 
 std::unique_ptr<base::Value> ProxyPrefTransformer::BrowserToExtensionPref(
     const base::Value* browser_pref) {
-  CHECK(browser_pref->IsType(base::Value::Type::DICTIONARY));
+  CHECK(browser_pref->is_dict());
 
   // This is a dictionary wrapper that exposes the proxy configuration stored in
   // the browser preferences.

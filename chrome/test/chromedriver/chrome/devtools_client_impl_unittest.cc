@@ -519,7 +519,7 @@ TEST(ParseInspectorMessage, EventNoParams) {
       "{\"method\":\"method\"}", 0, &type, &event, &response));
   ASSERT_EQ(internal::kEventMessageType, type);
   ASSERT_STREQ("method", event.method.c_str());
-  ASSERT_TRUE(event.params->IsType(base::Value::Type::DICTIONARY));
+  ASSERT_TRUE(event.params->is_dict());
 }
 
 TEST(ParseInspectorMessage, EventWithParams) {

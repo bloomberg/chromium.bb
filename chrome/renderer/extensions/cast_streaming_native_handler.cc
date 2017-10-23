@@ -927,7 +927,7 @@ void CastStreamingNativeHandler::StartCastRtpReceiver(
     std::unique_ptr<base::Value> options_value =
         V8ValueConverter::Create()->FromV8Value(args[8],
                                                 context()->v8_context());
-    if (!options_value->IsType(base::Value::Type::NONE)) {
+    if (!options_value->is_none()) {
       options = base::DictionaryValue::From(std::move(options_value));
       if (!options) {
         args.GetIsolate()->ThrowException(v8::Exception::TypeError(

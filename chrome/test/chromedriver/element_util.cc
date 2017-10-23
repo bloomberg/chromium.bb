@@ -264,7 +264,7 @@ Status FindElement(int interval_ms,
     if (status.IsError())
       return status;
 
-    if (!temp->IsType(base::Value::Type::NONE)) {
+    if (!temp->is_none()) {
       if (only_one) {
         *value = std::move(temp);
         return Status(kOk);

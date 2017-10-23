@@ -336,7 +336,7 @@ void CheckVersion(const base::FilePath& pnacl_path, std::string* version) {
   JSONFileValueDeserializer deserializer(pnacl_json_path);
   std::string error;
   std::unique_ptr<base::Value> root = deserializer.Deserialize(NULL, &error);
-  if (!root || !root->IsType(base::Value::Type::DICTIONARY))
+  if (!root || !root->is_dict())
     return;
 
   // Now try to get the field. This may leave version empty if the

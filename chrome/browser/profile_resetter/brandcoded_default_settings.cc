@@ -23,7 +23,7 @@ BrandcodedDefaultSettings::BrandcodedDefaultSettings(const std::string& prefs) {
       VLOG(1) << "Failed to parse brandcode prefs file: " << error;
       return;
     }
-    if (!root->IsType(base::Value::Type::DICTIONARY)) {
+    if (!root->is_dict()) {
       VLOG(1) << "Failed to parse brandcode prefs file: "
               << "Root item must be a dictionary.";
       return;

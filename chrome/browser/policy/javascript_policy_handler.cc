@@ -26,13 +26,12 @@ bool JavascriptPolicyHandler::CheckPolicySettings(const PolicyMap& policies,
   const base::Value* default_setting =
       policies.GetValue(key::kDefaultJavaScriptSetting);
 
-  if (javascript_enabled &&
-      !javascript_enabled->IsType(base::Value::Type::BOOLEAN)) {
+  if (javascript_enabled && !javascript_enabled->is_bool()) {
     errors->AddError(key::kJavascriptEnabled, IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(base::Value::Type::BOOLEAN));
   }
 
-  if (default_setting && !default_setting->IsType(base::Value::Type::INTEGER)) {
+  if (default_setting && !default_setting->is_int()) {
     errors->AddError(key::kDefaultJavaScriptSetting, IDS_POLICY_TYPE_ERROR,
                      base::Value::GetTypeName(base::Value::Type::INTEGER));
   }

@@ -52,7 +52,7 @@ void CheckAlertResult(const std::string& dialog_name,
                       size_t* call_count,
                       const base::Value* value) {
   ASSERT_TRUE(value) << dialog_name;
-  ASSERT_TRUE(value->IsType(base::Value::Type::NONE));
+  ASSERT_TRUE(value->is_none());
   ++*call_count;
 }
 

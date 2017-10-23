@@ -54,7 +54,7 @@ void MapBoolToBool(const std::string& arc_policy_name,
   const base::Value* const policy_value = policy_map.GetValue(policy_name);
   if (!policy_value)
     return;
-  if (!policy_value->IsType(base::Value::Type::BOOLEAN)) {
+  if (!policy_value->is_bool()) {
     NOTREACHED() << "Policy " << policy_name << " is not a boolean.";
     return;
   }
@@ -74,7 +74,7 @@ void MapIntToBool(const std::string& arc_policy_name,
   const base::Value* const policy_value = policy_map.GetValue(policy_name);
   if (!policy_value)
     return;
-  if (!policy_value->IsType(base::Value::Type::INTEGER)) {
+  if (!policy_value->is_int()) {
     NOTREACHED() << "Policy " << policy_name << " is not an integer.";
     return;
   }
