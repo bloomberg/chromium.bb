@@ -125,6 +125,7 @@
 #include "core/frame/LocalFrameView.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/VisualViewport.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/html/DocumentNameCollection.h"
@@ -5059,6 +5060,8 @@ String Document::cookie(ExceptionState& exception_state) const {
   if (GetSettings() && !GetSettings()->GetCookieEnabled())
     return String();
 
+  UseCounter::Count(*this, WebFeature::kCookieGet);
+
   // FIXME: The HTML5 DOM spec states that this attribute can raise an
   // InvalidStateError exception on getting if the Document has no
   // browsing context.
@@ -5092,6 +5095,8 @@ String Document::cookie(ExceptionState& exception_state) const {
 void Document::setCookie(const String& value, ExceptionState& exception_state) {
   if (GetSettings() && !GetSettings()->GetCookieEnabled())
     return;
+
+  UseCounter::Count(*this, WebFeature::kCookieSet);
 
   // FIXME: The HTML5 DOM spec states that this attribute can raise an
   // InvalidStateError exception on setting if the Document has no
