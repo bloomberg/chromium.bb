@@ -745,7 +745,7 @@ TEST(ValuesTest, List) {
   mixed_list->Set(3, std::make_unique<Value>("foo"));
   ASSERT_EQ(4u, mixed_list->GetSize());
 
-  Value *value = NULL;
+  Value* value = nullptr;
   bool bool_value = false;
   int int_value = 0;
   double double_value = 0.0;
@@ -1916,7 +1916,21 @@ TEST(ValuesTest, GetWithNullOutValue) {
 TEST(ValuesTest, SelfSwap) {
   base::Value test(1);
   std::swap(test, test);
-  EXPECT_TRUE(test.GetInt() == 1);
+  EXPECT_EQ(1, test.GetInt());
+}
+
+TEST(ValuesTest, FromToUniquePtrValue) {
+  std::unique_ptr<DictionaryValue> dict = std::make_unique<DictionaryValue>();
+  dict->SetString("name", "Froogle");
+  dict->SetString("url", "http://froogle.com");
+  Value dict_copy = dict->Clone();
+
+  Value dict_converted = Value::FromUniquePtrValue(std::move(dict));
+  EXPECT_EQ(dict_copy, dict_converted);
+
+  std::unique_ptr<Value> val =
+      Value::ToUniquePtrValue(std::move(dict_converted));
+  EXPECT_EQ(dict_copy, *val);
 }
 
 }  // namespace base
