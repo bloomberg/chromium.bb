@@ -990,8 +990,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
                                  details_script_value.V8Value(), details,
                                  exception_state);
   if (exception_state.HadException()) {
-    show_resolver_->Reject(
-        DOMException::Create(kSyntaxError, exception_state.Message()));
+    show_resolver_->Reject(exception_state.GetException());
     ClearResolversAndCloseMojoConnection();
     return;
   }
@@ -1009,8 +1008,7 @@ void PaymentRequest::OnUpdatePaymentDetails(
       details, options_, validated_details, shipping_option_,
       *GetExecutionContext(), exception_state);
   if (exception_state.HadException()) {
-    show_resolver_->Reject(
-        DOMException::Create(kSyntaxError, exception_state.Message()));
+    show_resolver_->Reject(exception_state.GetException());
     ClearResolversAndCloseMojoConnection();
     return;
   }
