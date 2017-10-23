@@ -1414,10 +1414,14 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
   const int base_blk_row = (blk_row >> 3) << 3;
   const int base_blk_col = (blk_col >> 3) << 3;
 
-  int row = (sign_bias == 1) ? blk_row - (mv.row >> (4 + MI_SIZE_LOG2))
-                             : blk_row + (mv.row >> (4 + MI_SIZE_LOG2));
-  int col = (sign_bias == 1) ? blk_col - (mv.col >> (4 + MI_SIZE_LOG2))
-                             : blk_col + (mv.col >> (4 + MI_SIZE_LOG2));
+  const int row_offset = (mv.row >= 0) ? (mv.row >> (4 + MI_SIZE_LOG2))
+                                       : -((-mv.row) >> (4 + MI_SIZE_LOG2));
+
+  const int col_offset = (mv.col >= 0) ? (mv.col >> (4 + MI_SIZE_LOG2))
+                                       : -((-mv.col) >> (4 + MI_SIZE_LOG2));
+
+  int row = (sign_bias == 1) ? blk_row - row_offset : blk_row + row_offset;
+  int col = (sign_bias == 1) ? blk_col - col_offset : blk_col + col_offset;
 
   if (row < 0 || row >= (cm->mi_rows >> 1) || col < 0 ||
       col >= (cm->mi_cols >> 1))
