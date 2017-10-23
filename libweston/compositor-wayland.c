@@ -2541,7 +2541,10 @@ wayland_backend_create(struct weston_compositor *compositor,
 
 	b->parent.wl_display = wl_display_connect(new_config->display_name);
 	if (b->parent.wl_display == NULL) {
-		weston_log("failed to create display: %m\n");
+		weston_log("Error: Failed to connect to parent Wayland compositor: %m\n");
+		weston_log_continue(STAMP_SPACE "display option: %s, WAYLAND_DISPLAY=%s\n",
+				    new_config->display_name ?: "(none)",
+				    getenv("WAYLAND_DISPLAY") ?: "(not set)");
 		goto err_compositor;
 	}
 
