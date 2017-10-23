@@ -508,7 +508,7 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
         String message = getString(R.string.confirm_host_delete_android, hostInfo.name);
         new AlertDialog.Builder(this)
                 .setMessage(message)
-                .setPositiveButton(android.R.string.yes,
+                .setPositiveButton(android.R.string.ok,
                         new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
@@ -516,8 +516,9 @@ public class Chromoting extends AppCompatActivity implements ConnectionListener,
                                 dialog.dismiss();
                             }
                         })
-                .setNegativeButton(android.R.string.no, null)
-                .create().show();
+                .setNegativeButton(android.R.string.cancel, null)
+                .create()
+                .show();
     }
 
     /** Called when the user taps on a host entry. */
