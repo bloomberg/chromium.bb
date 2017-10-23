@@ -21,11 +21,6 @@ namespace {
 const uint8_t kRed[] = {0xF0, 0x0, 0x0, 0xFF};
 const uint8_t kGreen[] = {0x0, 0xFF, 0x0, 0xFF};
 
-// These values are picked so that RGB -> YVU on the CPU converted
-// back to RGB on the GPU produces the original RGB values without
-// any error.
-const uint8_t kYvuColor[] = {0x10, 0x20, 0, 0xFF};
-
 template <gfx::BufferUsage usage, gfx::BufferFormat format>
 class GLImageNativePixmapTestDelegate {
  public:
@@ -66,13 +61,14 @@ class GLImageNativePixmapTestDelegate {
   unsigned GetTextureTarget() const { return GL_TEXTURE_EXTERNAL_OES; }
 
   const uint8_t* GetImageColor() {
-    if (format == gfx::BufferFormat::R_8) {
-      return kRed;
-    } else if (format == gfx::BufferFormat::YVU_420 ||
-               format == gfx::BufferFormat::YUV_420_BIPLANAR) {
-      return kYvuColor;
-    }
-    return kGreen;
+    return format == gfx::BufferFormat::R_8 ? kRed : kGreen;
+  }
+
+  int GetAdmissibleError() const {
+    return (format == gfx::BufferFormat::YVU_420 ||
+            format == gfx::BufferFormat::YUV_420_BIPLANAR)
+               ? 1
+               : 0;
   }
 
  private:

@@ -329,8 +329,9 @@ TYPED_TEST_P(GLImageBindTest, BindTexImage) {
   DrawTextureQuad(target, image_size);
 
   // Read back pixels to check expectations.
-  GLTestHelper::CheckPixels(0, 0, image_size.width(), image_size.height(),
-                            image_color);
+  GLTestHelper::CheckPixelsWithError(
+      0, 0, image_size.width(), image_size.height(),
+      this->delegate_.GetAdmissibleError(), image_color);
 
   // Clean up.
   glDeleteTextures(1, &texture);
@@ -390,8 +391,9 @@ TYPED_TEST_P(GLImageCopyTest, CopyTexImage) {
   DrawTextureQuad(target, image_size);
 
   // Read back pixels to check expectations.
-  GLTestHelper::CheckPixels(0, 0, image_size.width(), image_size.height(),
-                            image_color);
+  GLTestHelper::CheckPixelsWithError(
+      0, 0, image_size.width(), image_size.height(),
+      this->delegate_.GetAdmissibleError(), image_color);
 
   // Clean up.
   glDeleteTextures(1, &texture);

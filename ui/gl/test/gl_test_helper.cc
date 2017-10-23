@@ -52,6 +52,16 @@ bool GLTestHelper::CheckPixels(int x,
                                int width,
                                int height,
                                const uint8_t expected_color[4]) {
+  return CheckPixelsWithError(x, y, width, height, 0, expected_color);
+}
+
+// static
+bool GLTestHelper::CheckPixelsWithError(int x,
+                                        int y,
+                                        int width,
+                                        int height,
+                                        int error,
+                                        const uint8_t expected_color[4]) {
   int size = width * height * 4;
   std::unique_ptr<uint8_t[]> pixels(new uint8_t[size]);
   const uint8_t kCheckClearValue = 123u;
@@ -64,8 +74,8 @@ bool GLTestHelper::CheckPixels(int x,
       for (int jj = 0; jj < 4; ++jj) {
         uint8_t actual = pixels[offset + jj];
         uint8_t expected = expected_color[jj];
-        EXPECT_EQ(expected, actual) << " at " << (xx + x) << ", " << (yy + y)
-                                    << " channel " << jj;
+        EXPECT_NEAR(expected, actual, error)
+            << " at " << (xx + x) << ", " << (yy + y) << " channel " << jj;
         bad_count += actual != expected;
         // Exit early just so we don't spam the log but we print enough to
         // hopefully make it easy to diagnose the issue.
