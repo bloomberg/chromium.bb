@@ -30,7 +30,9 @@ class CONTENT_EXPORT AccessibilityTreeFormatterBlink
   std::string IntAttrToString(const BrowserAccessibility& node,
                               ui::AXIntAttribute attr,
                               int value) const;
-  base::string16 ToString(const base::DictionaryValue& node) override;
+  base::string16 ProcessTreeForOutput(
+      const base::DictionaryValue& node,
+      base::DictionaryValue* filtered_dict_result = nullptr) override;
 };
 
 }  // namespace content

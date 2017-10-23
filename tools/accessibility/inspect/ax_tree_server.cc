@@ -10,6 +10,7 @@
 #include "base/at_exit.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/json/json_writer.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,7 +23,9 @@ constexpr char kAllowOptEmptyStr[] = "@ALLOW-EMPTY:";
 constexpr char kAllowOptStr[] = "@ALLOW:";
 constexpr char kDenyOptStr[] = "@DENY:";
 
-AXTreeServer::AXTreeServer(base::ProcessId pid, base::string16& filters_path) {
+AXTreeServer::AXTreeServer(base::ProcessId pid,
+                           base::string16& filters_path,
+                           bool use_json) {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(
       AccessibilityTreeFormatter::Create());
 
@@ -36,11 +39,12 @@ AXTreeServer::AXTreeServer(base::ProcessId pid, base::string16& filters_path) {
     return;
   }
 
-  Format(*formatter, *dict, filters_path);
+  Format(*formatter, *dict, filters_path, use_json);
 }
 
 AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget,
-                           base::string16& filters_path) {
+                           base::string16& filters_path,
+                           bool use_json) {
   std::unique_ptr<AccessibilityTreeFormatter> formatter(
       AccessibilityTreeFormatter::Create());
 
@@ -53,7 +57,7 @@ AXTreeServer::AXTreeServer(gfx::AcceleratedWidget widget,
     return;
   }
 
-  Format(*formatter, *dict, filters_path);
+  Format(*formatter, *dict, filters_path, use_json);
 }
 
 std::vector<AccessibilityTreeFormatter::Filter> GetFilters(
@@ -96,19 +100,32 @@ std::vector<AccessibilityTreeFormatter::Filter> GetFilters(
 
 void AXTreeServer::Format(AccessibilityTreeFormatter& formatter,
                           base::DictionaryValue& dict,
-                          base::string16& filters_path) {
+                          base::string16& filters_path,
+                          bool use_json) {
   std::vector<AccessibilityTreeFormatter::Filter> filters =
       GetFilters(filters_path);
 
   // Set filters.
   formatter.SetFilters(filters);
 
-  // Format accessibility tree as text.
-  base::string16 accessibility_contents_utf16;
-  formatter.FormatAccessibilityTree(dict, &accessibility_contents_utf16);
+  std::string accessibility_contents_utf8;
+
+  // Format accessibility tree as JSON or text.
+  if (use_json) {
+    const std::unique_ptr<base::DictionaryValue> filtered_dict =
+        formatter.FilterAccessibilityTree(dict);
+    base::JSONWriter::WriteWithOptions(*filtered_dict,
+                                       base::JSONWriter::OPTIONS_PRETTY_PRINT,
+                                       &accessibility_contents_utf8);
+  } else {
+    base::string16 accessibility_contents_utf16;
+    formatter.FormatAccessibilityTree(dict, &accessibility_contents_utf16);
+    accessibility_contents_utf8 =
+        base::UTF16ToUTF8(accessibility_contents_utf16);
+  }
 
   // Write to console.
-  std::cout << accessibility_contents_utf16;
+  std::cout << accessibility_contents_utf8;
 }
 
 }  // namespace content

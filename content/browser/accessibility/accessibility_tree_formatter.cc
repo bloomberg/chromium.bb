@@ -51,11 +51,30 @@ void AccessibilityTreeFormatter::FormatAccessibilityTree(
   RecursiveFormatAccessibilityTree(dict, contents);
 }
 
+std::unique_ptr<base::DictionaryValue>
+AccessibilityTreeFormatter::FilterAccessibilityTree(
+    const base::DictionaryValue& dict) {
+  auto filtered_dict = std::make_unique<base::DictionaryValue>();
+  ProcessTreeForOutput(dict, filtered_dict.get());
+  const base::ListValue* children;
+  if (dict.GetList(kChildrenDictAttr, &children) && !children->empty()) {
+    const base::DictionaryValue* child_dict;
+    auto filtered_children = std::make_unique<base::ListValue>();
+    for (size_t i = 0; i < children->GetSize(); i++) {
+      children->GetDictionary(i, &child_dict);
+      auto filtered_child = FilterAccessibilityTree(*child_dict);
+      filtered_children->Append(std::move(filtered_child));
+    }
+    filtered_dict->Set(kChildrenDictAttr, std::move(filtered_children));
+  }
+  return filtered_dict;
+}
+
 void AccessibilityTreeFormatter::RecursiveFormatAccessibilityTree(
     const base::DictionaryValue& dict, base::string16* contents, int depth) {
   base::string16 indent = base::string16(depth * kIndentSymbolCount,
                                          kIndentSymbol);
-  base::string16 line = indent + ToString(dict);
+  base::string16 line = indent + ProcessTreeForOutput(dict);
   if (line.find(base::ASCIIToUTF16(kSkipString)) != base::string16::npos)
     return;
 
@@ -120,20 +139,23 @@ base::string16 AccessibilityTreeFormatter::FormatCoordinates(
   return base::UTF8ToUTF16(xy_str);
 }
 
-void AccessibilityTreeFormatter::WriteAttribute(
-    bool include_by_default, const std::string& attr, base::string16* line) {
-  WriteAttribute(include_by_default, base::UTF8ToUTF16(attr), line);
+bool AccessibilityTreeFormatter::WriteAttribute(bool include_by_default,
+                                                const std::string& attr,
+                                                base::string16* line) {
+  return WriteAttribute(include_by_default, base::UTF8ToUTF16(attr), line);
 }
 
-void AccessibilityTreeFormatter::WriteAttribute(
-    bool include_by_default, const base::string16& attr, base::string16* line) {
+bool AccessibilityTreeFormatter::WriteAttribute(bool include_by_default,
+                                                const base::string16& attr,
+                                                base::string16* line) {
   if (attr.empty())
-    return;
+    return false;
   if (!MatchesFilters(attr, include_by_default))
-    return;
+    return false;
   if (!line->empty())
     *line += base::ASCIIToUTF16(" ");
   *line += attr;
+  return true;
 }
 
 }  // namespace content

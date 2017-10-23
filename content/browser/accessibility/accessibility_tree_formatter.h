@@ -89,6 +89,10 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   virtual std::unique_ptr<base::DictionaryValue>
   BuildAccessibilityTreeForWindow(gfx::AcceleratedWidget widget) = 0;
 
+  // Returns a filtered accesibility tree using the current filters.
+  std::unique_ptr<base::DictionaryValue> FilterAccessibilityTree(
+      const base::DictionaryValue& dict);
+
   // Dumps a BrowserAccessibility tree into a string.
   void FormatAccessibilityTree(
       BrowserAccessibility* root, base::string16* contents);
@@ -132,8 +136,15 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
   // Overridden by platform subclasses.
   //
 
-  // Returns a platform specific representation of a BrowserAccessibility.
-  virtual base::string16 ToString(const base::DictionaryValue& node) = 0;
+  // Process accessibility tree with filters for output.
+  // Given a dictionary that contains a platform-specific dictionary
+  // representing an accessibility tree, and utilizing filters_:
+  // - Returns a filtered text view as one large string.
+  // - Provides a filtered version of the dictionary in an out param,
+  //   (only if the out param is provided).
+  virtual base::string16 ProcessTreeForOutput(
+      const base::DictionaryValue& node,
+      base::DictionaryValue* filtered_dict_result = nullptr) = 0;
 
   //
   // Utility functions to be used by each platform.
@@ -145,10 +156,11 @@ class CONTENT_EXPORT AccessibilityTreeFormatter {
                                    const base::DictionaryValue& value);
 
   // Writes the given attribute string out to |line| if it matches the filters.
-  void WriteAttribute(bool include_by_default,
+  // Returns false if the attribute was filtered out.
+  bool WriteAttribute(bool include_by_default,
                       const base::string16& attr,
                       base::string16* line);
-  void WriteAttribute(bool include_by_default,
+  bool WriteAttribute(bool include_by_default,
                       const std::string& attr,
                       base::string16* line);
 

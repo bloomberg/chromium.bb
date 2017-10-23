@@ -12,6 +12,7 @@
 char kPidSwitch[] = "pid";
 char kWindowSwitch[] = "window";
 char kFiltersSwitch[] = "filters";
+char kJsonSwitch[] = "json";
 
 // Convert from string to int, whether in 0x hex format or decimal format.
 bool StringToInt(std::string str, int* result) {
@@ -32,6 +33,9 @@ int main(int argc, char** argv) {
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kFiltersSwitch));
 
+  bool use_json =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(kJsonSwitch);
+
   std::string window_str =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
           kWindowSwitch);
@@ -41,7 +45,7 @@ int main(int argc, char** argv) {
       gfx::AcceleratedWidget widget(
           reinterpret_cast<gfx::AcceleratedWidget>(window));
       std::unique_ptr<content::AXTreeServer> server(
-          new content::AXTreeServer(widget, filters_path));
+          new content::AXTreeServer(widget, filters_path, use_json));
       return 0;
     }
   }
@@ -52,7 +56,7 @@ int main(int argc, char** argv) {
     if (StringToInt(pid_str, &pid)) {
       base::ProcessId process_id = static_cast<base::ProcessId>(pid);
       std::unique_ptr<content::AXTreeServer> server(
-          new content::AXTreeServer(process_id, filters_path));
+          new content::AXTreeServer(process_id, filters_path, use_json));
     }
   }
   return 0;

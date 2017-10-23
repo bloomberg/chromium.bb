@@ -242,8 +242,13 @@ void AccessibilityTreeFormatterBlink::AddProperties(
     dict->SetString("actions", base::JoinString(actions_strings, ","));
 }
 
-base::string16 AccessibilityTreeFormatterBlink::ToString(
-    const base::DictionaryValue& dict) {
+base::string16 AccessibilityTreeFormatterBlink::ProcessTreeForOutput(
+    const base::DictionaryValue& dict,
+    base::DictionaryValue* filtered_dict_result) {
+  base::string16 error_value;
+  if (dict.GetString("error", &error_value))
+    return error_value;
+
   base::string16 line;
 
   if (show_ids()) {
