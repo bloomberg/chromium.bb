@@ -8,7 +8,7 @@
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "modules/ModulesExport.h"
-#include "modules/canvas2d/CanvasRenderingContext2D.h"
+#include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/ShapeDetector.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "services/shape_detection/public/interfaces/barcodedetection.mojom-blink.h"

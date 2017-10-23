@@ -7,7 +7,7 @@
 
 #include <memory>
 #include "modules/ModulesExport.h"
-#include "modules/canvas2d/BaseRenderingContext2D.h"
+#include "modules/canvas/canvas2d/BaseRenderingContext2D.h"
 #include "modules/csspaint/PaintRenderingContext2DSettings.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/graphics/ImageBuffer.h"
