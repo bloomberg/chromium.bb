@@ -45,11 +45,11 @@ class ServiceDiscoveryClientMac : public ServiceDiscoverySharedClient {
       const ServiceWatcher::UpdatedCallback& callback) override;
   std::unique_ptr<ServiceResolver> CreateServiceResolver(
       const std::string& service_name,
-      const ServiceResolver::ResolveCompleteCallback& callback) override;
+      ServiceResolver::ResolveCompleteCallback callback) override;
   std::unique_ptr<LocalDomainResolver> CreateLocalDomainResolver(
       const std::string& domain,
       net::AddressFamily address_family,
-      const LocalDomainResolver::IPAddressCallback& callback) override;
+      LocalDomainResolver::IPAddressCallback callback) override;
 
   void StartThreadIfNotStarted();
 
@@ -101,12 +101,12 @@ class ServiceWatcherImplMac : public ServiceWatcher {
       const ServiceWatcher::UpdatedCallback& callback,
       scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner);
 
+  ~ServiceWatcherImplMac() override;
+
   void OnServicesUpdate(ServiceWatcher::UpdateType update,
                         const std::string& service);
 
  private:
-  ~ServiceWatcherImplMac() override;
-
   void Start() override;
   void DiscoverNewServices() override;
   void SetActivelyRefreshServices(bool actively_refresh_services) override;
@@ -130,7 +130,7 @@ class ServiceResolverImplMac : public ServiceResolver {
    public:
     NetServiceContainer(
         const std::string& service_name,
-        const ServiceResolver::ResolveCompleteCallback& callback,
+        ServiceResolver::ResolveCompleteCallback callback,
         scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner);
 
     virtual ~NetServiceContainer();
@@ -165,14 +165,15 @@ class ServiceResolverImplMac : public ServiceResolver {
 
   ServiceResolverImplMac(
       const std::string& service_name,
-      const ServiceResolver::ResolveCompleteCallback& callback,
+      ServiceResolver::ResolveCompleteCallback callback,
       scoped_refptr<base::SingleThreadTaskRunner> service_discovery_runner);
+
+  ~ServiceResolverImplMac() override;
 
   // Testing methods.
   NetServiceContainer* GetContainerForTesting();
 
  private:
-  ~ServiceResolverImplMac() override;
 
   void StartResolving() override;
   std::string GetName() const override;
