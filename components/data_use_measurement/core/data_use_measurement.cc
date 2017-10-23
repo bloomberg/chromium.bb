@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/sparse_histogram.h"
+#include "base/rand_util.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
@@ -48,9 +49,19 @@ void RecordUMAHistogramCount(const std::string& name, int64_t sample) {
 void IncreaseSparseHistogramByValue(const std::string& name,
                                     int64_t sample,
                                     int64_t value) {
+  // Convert raw value to KiB and probabilistically round up/down if the
+  // remainder is more than a random number [0, 1KiB). This gives a more
+  // accurate count when there are a large number of records. RandInt is
+  // "inclusive", hence the -1 for the max value.
+  int64_t value_kb = value >> 10;
+  if (value - (value_kb << 10) > base::RandInt(0, (1 << 10) - 1))
+    value_kb += 1;
+  if (value_kb == 0)
+    return;
+
   base::HistogramBase* histogram = base::SparseHistogram::FactoryGet(
-      name, base::HistogramBase::kUmaTargetedHistogramFlag);
-  histogram->AddCount(sample, value);
+      name + "KB", base::HistogramBase::kUmaTargetedHistogramFlag);
+  histogram->AddCount(sample, value_kb);
 }
 
 #if defined(OS_ANDROID)
