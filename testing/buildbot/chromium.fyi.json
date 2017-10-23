@@ -14849,8 +14849,7 @@
           "--additional-driver-flag",
           "--site-per-process",
           "--additional-expectations",
-          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process",
-          "http/tests"
+          "src/third_party/WebKit/LayoutTests/FlagExpectations/site-per-process"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
         "merge": {
@@ -14868,7 +14867,7 @@
               "os": "Ubuntu-14.04"
             }
           ],
-          "shards": 1
+          "shards": 10
         }
       }
     ]
