@@ -1,35 +1,53 @@
 <!DOCTYPE html>
-<html>
-<body>
-<div id="container">
-<p id="description"></p>
-<p>To test manually:<br>1. Place the cursor at the end of 'abc'. Delete 'c'. Type in 'x'. Delete 'x'. Do ctrl+z. You should now see 'abx'.<br>2. Make sure you have the cursor at the end of 'abx'. Type in 'y'. Delete 'y'. Do ctrl+z. You should now see 'abxy'.</p>
-<div id="test" style="border: 2px solid red;" contenteditable>abc</div>
-</div>
-<div id="console"></div>
-<script src="../../resources/js-test.js"></script>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-description('Verifies undo functionality that follows text insertion.');
+// This layout tests demonstartes the undo command.
+for (const platform of ['mac', 'win', 'unix', 'android']) {
+  selection_test(
+    '<div contenteditable>abc|</div>',
+    selection => {
+      assert_not_equals(window.internals, undefined,
+        'this test requires internals');
 
-var selection = window.getSelection();
-selection.collapse(document.getElementById('test').firstChild, 3);
+      internals.settings.setEditingBehavior(platform);
 
-// Use case 1:  Place the cursor at the end of 'abc'. Delete 'c'. Type in 'x'. Delete 'x'. Do ctrl+z. You should now see 'abx'.
-document.execCommand('delete');
-document.execCommand('insertText', false, 'x');
-document.execCommand('delete');
-document.execCommand('undo');
-shouldBeEqualToString('selection.focusNode.data', 'abx');
+      const document = selection.document;
+      document.execCommand('delete');
+      document.execCommand('insertText', false, 'x');
+      document.execCommand('delete');
+      document.execCommand('undo');
+    },
+    [
+        '<div contenteditable>',
+        platform === 'mac'
+          ? 'ab|x^'
+          : 'abx|',
+        '</div>'
+    ],
+    `${platform}: undo on delete insert delete`);
 
-// Use case 2: Type in 'y'. Delete 'y'. Do ctrl+z. You should now see 'abxy'.
-selection.collapseToEnd(); // This is needed for this test to work on mac platform
-document.execCommand('insertText', false, 'y');
-document.execCommand('delete');
-document.execCommand('undo');
-shouldBeEqualToString('selection.focusNode.data', 'abxy');
+  selection_test(
+    '<div contenteditable>abx|</div>',
+    selection => {
+      assert_not_equals(window.internals, undefined,
+        'this test requires internals');
 
-if (window.testRunner)
-  document.getElementById('container').outerHTML = '';
+      internals.settings.setEditingBehavior(platform);
+
+      const document = selection.document;
+      document.execCommand('insertText', false, 'y');
+      document.execCommand('delete');
+      document.execCommand('undo');
+    },
+    [
+        '<div contenteditable>',
+        platform === 'mac'
+          ? 'abx|y^'
+          : 'abxy|',
+        '</div>'
+    ],
+    `${platform}: undo on delete insert delete.`);
+}
 </script>
-</body>
-</html>

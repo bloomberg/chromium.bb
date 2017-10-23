@@ -1,6 +1,0 @@
-PASS selection.focusNode.data is "abx"
-PASS selection.focusNode.data is "abxy"
-PASS successfullyParsed is true
-
-TEST COMPLETE
-
