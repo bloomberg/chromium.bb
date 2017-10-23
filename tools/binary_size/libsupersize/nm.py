@@ -292,7 +292,10 @@ def _IterArchiveChunks(path):
 
 
 def _ParseOneObjectFileNmOutput(lines):
-  symbol_names = []
+  # Constructors are often repeated because they have the same unmangled
+  # name, but multiple mangled names. See:
+  # https://stackoverflow.com/questions/6921295/dual-emission-of-constructor-symbols
+  symbol_names = set()
   string_addresses = []
   for line in lines:
     if not line:
@@ -308,7 +311,7 @@ def _ParseOneObjectFileNmOutput(lines):
         # Leave as a string for easier marshalling.
         string_addresses.append(line[:space_idx].lstrip('0') or '0')
       elif _IsRelevantObjectFileName(name):
-        symbol_names.append(name)
+        symbol_names.add(name)
   return string_addresses, symbol_names
 
 

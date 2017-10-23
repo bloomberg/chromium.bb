@@ -32,6 +32,7 @@ _OBJECT_OUTPUTS = {
         '00000000 r .L.str',
         '00000005 r .L.str.1',
         '01010101 r vtable for ChromeMainDelegate',
+        '01010101 r vtable for ChromeMainDelegate',
         '01010101 r vtable for chrome::mojom::FieldTrialRecorder',
         ('01010101 t ucnv_extMatchFromU(int const*, int, unsigned short const*,'
          ' int, unsigned short const*, int, unsigned int*, signed char, signed '
