@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//testing/test.gni")
-import("//third_party/protobuf/proto_library.gni")
 
 component("tracing") {
   sources = [
@@ -13,18 +12,6 @@ component("tracing") {
     "common/graphics_memory_dump_provider_android.h",
     "common/tracing_messages.cc",
     "common/tracing_messages.h",
-    "core/proto_utils.cc",
-    "core/proto_utils.h",
-    "core/proto_zero_message.cc",
-    "core/proto_zero_message.h",
-    "core/proto_zero_message_handle.cc",
-    "core/proto_zero_message_handle.h",
-    "core/scattered_stream_writer.cc",
-    "core/scattered_stream_writer.h",
-    "core/trace_buffer_writer.cc",
-    "core/trace_buffer_writer.h",
-    "core/trace_ring_buffer.cc",
-    "core/trace_ring_buffer.h",
     "tracing_export.h",
   ]
 
@@ -33,10 +20,6 @@ component("tracing") {
   deps = [
     "//base",
     "//ipc",
-  ]
-
-  public_deps = [
-    "//components/tracing/proto:protos",
   ]
 }
 
@@ -60,47 +43,17 @@ component("startup_tracing") {
   ]
 }
 
-# For unit testing of generated stubs.
-proto_library("proto_zero_testing_messages") {
-  visibility = [ "//components/tracing/*" ]
-
-  sources = [
-    "test/example_proto/library.proto",
-    "test/example_proto/library_internals/galaxies.proto",
-    "test/example_proto/test_messages.proto",
-    "test/example_proto/upper_import.proto",
-  ]
-
-  proto_in_dir = "test/example_proto"
-
-  generator_plugin_label = "tools/proto_zero_plugin:proto_zero_plugin"
-  generator_plugin_suffix = ".pbzero"
-  generator_plugin_options = "wrapper_namespace=pbzero"
-  generate_cc = true
-  generate_python = false
-}
-
 source_set("unit_tests") {
   testonly = true
 
   sources = [
     "child/child_trace_message_filter_unittest.cc",
     "common/graphics_memory_dump_provider_android_unittest.cc",
-    "core/proto_utils_unittest.cc",
-    "core/proto_zero_message_unittest.cc",
-    "core/scattered_stream_writer_unittest.cc",
-    "core/trace_buffer_writer_unittest.cc",
-    "core/trace_ring_buffer_unittest.cc",
-    "test/fake_scattered_buffer.cc",
-    "test/fake_scattered_buffer.h",
-    "test/proto_zero_generation_unittest.cc",
   ]
 
   deps = [
-    ":proto_zero_testing_messages",
     ":tracing",
     "//base/test:test_support",
-    "//components/tracing/proto:golden_protos_for_tests",
     "//ipc",
     "//testing/gmock:gmock",
     "//testing/gtest",
