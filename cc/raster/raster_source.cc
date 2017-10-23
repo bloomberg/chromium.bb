@@ -203,12 +203,6 @@ RasterSource::TakeDecodingModeMap() {
   return display_list_->TakeDecodingModeMap();
 }
 
-gfx::Rect RasterSource::GetRectForImage(PaintImage::Id image_id) const {
-  if (!display_list_)
-    return gfx::Rect();
-  return display_list_->discardable_image_map().GetRectForImage(image_id);
-}
-
 bool RasterSource::CoversRect(const gfx::Rect& layer_rect) const {
   if (size_.IsEmpty())
     return false;

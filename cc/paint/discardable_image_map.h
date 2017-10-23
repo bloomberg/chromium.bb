@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/containers/flat_map.h"
+#include "cc/base/region.h"
 #include "cc/base/rtree.h"
 #include "cc/paint/draw_image.h"
 #include "cc/paint/image_animation_count.h"
@@ -50,10 +51,10 @@ class CC_PAINT_EXPORT DiscardableImageMap {
   DiscardableImageMap();
   ~DiscardableImageMap();
 
-  bool empty() const { return image_id_to_rect_.empty(); }
+  bool empty() const { return image_id_to_region_.empty(); }
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   std::vector<const DrawImage*>* images) const;
-  gfx::Rect GetRectForImage(PaintImage::Id image_id) const;
+  const Region& GetRegionForImage(PaintImage::Id image_id) const;
   bool all_images_are_srgb() const { return all_images_are_srgb_; }
   const std::vector<AnimatedImageMetadata>& animated_images_metadata() const {
     return animated_images_metadata_;
@@ -76,7 +77,7 @@ class CC_PAINT_EXPORT DiscardableImageMap {
       std::vector<std::pair<DrawImage, gfx::Rect>> images,
       base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect);
 
-  base::flat_map<PaintImage::Id, gfx::Rect> image_id_to_rect_;
+  base::flat_map<PaintImage::Id, Region> image_id_to_region_;
   std::vector<AnimatedImageMetadata> animated_images_metadata_;
   base::flat_map<PaintImage::Id, PaintImage::DecodingMode> decoding_mode_map_;
   bool all_images_are_srgb_ = false;

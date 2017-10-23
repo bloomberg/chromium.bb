@@ -35,6 +35,15 @@ void InvalidationRegion::Union(const gfx::Rect& rect) {
     pending_rects_.push_back(rect);
 }
 
+void InvalidationRegion::Union(const Region& region) {
+  if (region_.GetRegionComplexity() + region.GetRegionComplexity() >
+      kMaxInvalidationRectCount) {
+    region_ = gfx::UnionRects(region_.bounds(), region.bounds());
+  } else {
+    region_.Union(region);
+  }
+}
+
 void InvalidationRegion::FinalizePendingRects() {
   if (pending_rects_.empty())
     return;
