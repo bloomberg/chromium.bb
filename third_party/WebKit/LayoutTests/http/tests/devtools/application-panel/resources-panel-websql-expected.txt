@@ -20,12 +20,8 @@ Cache
 Frames
   top
     Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
       json-value.js
-      resources-test.js
-    resources-panel-websql.html
+    inspected-page.html
 Found: true
 Database created state:
 Application
@@ -48,12 +44,8 @@ Cache
 Frames
   top
     Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
       json-value.js
-      resources-test.js
-    resources-panel-websql.html
+    inspected-page.html
 Table added:
 Application
   Manifest
@@ -76,10 +68,6 @@ Cache
 Frames
   top
     Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
       json-value.js
-      resources-test.js
-    resources-panel-websql.html
+    inspected-page.html
 

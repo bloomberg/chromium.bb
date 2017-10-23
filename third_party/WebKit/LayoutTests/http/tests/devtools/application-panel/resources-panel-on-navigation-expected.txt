@@ -1,4 +1,3 @@
-CONSOLE MESSAGE: line 3: InspectorTest.IndexedDB_callback1
 Tests Application Panel response to a main frame navigation.
 
 Initial state:
@@ -22,12 +21,7 @@ Cache
   Application Cache
 Frames
   top
-    Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
-      resources-test.js
-    resources-panel-on-navigation.html
+    inspected-page.html
 Visible view is a query view: true
 Page reloaded.
 After navigation:
@@ -50,11 +44,6 @@ Cache
   Application Cache
 Frames
   top
-    Scripts
-      console-test.js
-      indexeddb-test.js
-      inspector-test.js
-      resources-test.js
-    resources-panel-on-navigation.html
+    inspected-page.html
 Visible view is a query view: false
 
