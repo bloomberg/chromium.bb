@@ -17,6 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/strings/string_piece.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -77,7 +78,7 @@ class MEDIA_EXPORT AudioOutputController
     virtual void OnControllerPlaying() = 0;
     virtual void OnControllerPaused() = 0;
     virtual void OnControllerError() = 0;
-    virtual void OnLog(const std::string& message) = 0;
+    virtual void OnLog(base::StringPiece message) = 0;
 
    protected:
     virtual ~EventHandler() {}

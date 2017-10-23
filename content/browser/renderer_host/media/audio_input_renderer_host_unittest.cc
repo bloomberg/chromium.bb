@@ -167,8 +167,7 @@ class MockAudioInputController : public AudioInputController {
     GetTaskRunnerForTesting()->PostTask(
         FROM_HERE,
         base::BindOnce(&AudioInputController::EventHandler::OnCreated,
-                       base::Unretained(event_handler), base::Unretained(this),
-                       false));
+                       base::Unretained(event_handler), false));
   }
 
   EventHandler* handler() { return GetHandlerForTesting(); }
@@ -498,7 +497,7 @@ TEST_F(AudioInputRendererHostTest, Error_ClosesController) {
   EXPECT_CALL(renderer_, NotifyStreamError(kStreamId));
 
   controller_factory_.controller(0)->handler()->OnError(
-      controller_factory_.controller(0), AudioInputController::UNKNOWN_ERROR);
+      AudioInputController::UNKNOWN_ERROR);
 
   // Check Close expectation before the destructor.
   base::RunLoop().RunUntilIdle();

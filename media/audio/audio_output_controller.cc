@@ -169,8 +169,8 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
   DCHECK(message_loop_->BelongsToCurrentThread());
   SCOPED_UMA_HISTOGRAM_TIMER("Media.AudioOutputController.CreateTime");
   TRACE_EVENT0("audio", "AudioOutputController::DoCreate");
-  handler_->OnLog(base::StringPrintf("AOC::DoCreate (for device change: %s)",
-                                     is_for_device_change ? "yes" : "no"));
+  handler_->OnLog(is_for_device_change ? "AOC::DoCreate (for device change)"
+                                       : "AOC::DoCreate");
 
   // Close() can be called before DoCreate() is executed.
   if (state_ == kClosed)
