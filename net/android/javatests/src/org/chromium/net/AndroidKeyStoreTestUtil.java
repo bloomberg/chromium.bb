@@ -45,6 +45,7 @@ public class AndroidKeyStoreTestUtil {
         }
 
         try {
+            @SuppressWarnings("InsecureCryptoUsage") // This util class is for test only.
             KeyFactory factory = KeyFactory.getInstance(algorithm);
             KeySpec ks = new PKCS8EncodedKeySpec(encodedKey);
             PrivateKey key = factory.generatePrivate(ks);

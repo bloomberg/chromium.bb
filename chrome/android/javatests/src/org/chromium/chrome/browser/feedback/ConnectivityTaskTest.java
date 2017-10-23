@@ -168,6 +168,7 @@ public class ConnectivityTaskTest {
     @Test
     @MediumTest
     @Feature({"Feedback"})
+    @SuppressWarnings("TryFailThrowable") // TODO(tedchoc): Remove after fixing timeout.
     public void testTwoTimeoutsShouldFillInTheRest() {
         final ConnectivityTask task = ThreadUtils.runOnUiThreadBlockingNoException(
                 new Callable<ConnectivityTask>() {

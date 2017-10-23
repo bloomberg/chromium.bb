@@ -46,7 +46,7 @@ public class CronetUploadTest {
     private CronetTestFramework mTestFramework;
 
     @Before
-    @SuppressWarnings("PrimitiveArrayPassedToVarargsMethod")
+    @SuppressWarnings({"PrimitiveArrayPassedToVarargsMethod", "ArraysAsListPrimitiveArray"})
     public void setUp() throws Exception {
         mTestFramework = mTestRule.startCronetTestFramework();
         ExecutorService executor = Executors.newSingleThreadExecutor();

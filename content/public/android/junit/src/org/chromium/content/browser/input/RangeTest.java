@@ -42,6 +42,7 @@ public class RangeTest {
 
     @Test
     @Feature({"TextInput"})
+    @SuppressWarnings("SelfEquals") // Allow this rather than using guava's EqualsTester.
     public void testEquals() {
         assertTrue(new Range(1, 3).equals(new Range(1, 3)));
         assertFalse(new Range(1, 2).equals(new Range(1, 3)));
