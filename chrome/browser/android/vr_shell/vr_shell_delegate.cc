@@ -265,8 +265,6 @@ jlong Init(JNIEnv* env, const JavaParamRef<jobject>& obj) {
 static void OnLibraryAvailable(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   device::GvrDelegateProviderFactory::Install(
       new VrShellDelegateProviderFactory);
-  content::WebvrServiceProvider::SetWebvrServiceCallback(
-      base::Bind(&vr::VRServiceImpl::Create));
 }
 
 }  // namespace vr_shell

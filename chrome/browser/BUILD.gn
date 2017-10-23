@@ -3927,6 +3927,8 @@ split_static_library("browser") {
       deps += [ "android/vr_shell:vr_android" ]
       configs += [ "//third_party/gvr-android-sdk:libgvr_config" ]
     }
+
+    deps += [ "//chrome/browser/vr:vr_common" ]
   }
 
   if (enable_wayland_server) {
