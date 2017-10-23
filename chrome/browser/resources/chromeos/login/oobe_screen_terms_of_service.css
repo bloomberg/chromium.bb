@@ -32,12 +32,15 @@
 
 #tos-container {
   -webkit-margin-end: -2px;
-  overflow: auto;
   width: 630px;
 }
 
 #tos-content {
-  padding: 8px 13px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px 13px 0 13px;
 }
 
 #terms-of-service h2 {
@@ -46,7 +49,8 @@
 }
 
 #tos-content-main {
-  white-space: pre-wrap;
+  display: block;
+  flex: 1;
 }
 
 #tos-loading,
