@@ -49,6 +49,10 @@ class SynchronousCompositorBrowserFilter;
 class SynchronousCompositorHost;
 class TextInputClientMac;
 }  // namespace content
+namespace cronet {
+class CronetPrefsManager;
+class CronetURLRequestContextAdapter;
+}  // namespace cronet
 namespace dbus {
 class Bus;
 }
@@ -182,6 +186,8 @@ class BASE_EXPORT ScopedAllowBlocking {
   // This can only be instantiated by friends. Use ScopedAllowBlockingForTesting
   // in unit tests to avoid the friend requirement.
   FRIEND_TEST_ALL_PREFIXES(ThreadRestrictionsTest, ScopedAllowBlocking);
+  friend class cronet::CronetPrefsManager;
+  friend class cronet::CronetURLRequestContextAdapter;
   friend class ScopedAllowBlockingForTesting;
 
   ScopedAllowBlocking() EMPTY_BODY_IF_DCHECK_IS_OFF;

@@ -31,6 +31,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -334,6 +335,8 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
   DCHECK(!is_context_initialized_);
   DCHECK(proxy_config_service_);
 
+  base::DisallowBlocking();
+
   // TODO(mmenke):  Add method to have the builder enable SPDY.
   net::URLRequestContextBuilder context_builder;
 
@@ -513,9 +516,13 @@ void CronetURLRequestContextAdapter::Destroy(
   // Stick network_thread_ in a local, as |this| may be destroyed from the
   // network thread before delete network_thread is called.
   base::Thread* network_thread = network_thread_;
+  // Transfer ownership of |file_thread_| to local variable |file_thread|, so
+  // the underlying thread object is not deleted when |this| is destroyed.
+  base::Thread* file_thread = file_thread_.release();
   GetNetworkTaskRunner()->DeleteSoon(FROM_HERE, this);
   // Deleting thread stops it after all tasks are completed.
   delete network_thread;
+  delete file_thread;
 }
 
 net::URLRequestContext* CronetURLRequestContextAdapter::GetURLRequestContext() {
@@ -720,8 +727,11 @@ void CronetURLRequestContextAdapter::StartNetLogToBoundedFileOnNetworkThread(
   // just pass a file path.
   base::FilePath file_path =
       base::FilePath(dir_path).AppendASCII("netlog.json");
-  if (!base::PathIsWritable(file_path)) {
-    LOG(ERROR) << "Path is not writable: " << file_path.value();
+  {
+    base::ScopedAllowBlocking allow_blocking;
+    if (!base::PathIsWritable(file_path)) {
+      LOG(ERROR) << "Path is not writable: " << file_path.value();
+    }
   }
 
   net_log_file_observer_ = net::FileNetLogObserver::CreateBounded(
