@@ -22,7 +22,7 @@ class PLATFORM_EXPORT CompositorKeyframe {
 
   virtual double Time() const = 0;
 
-  RefPtr<TimingFunction> GetTimingFunctionForTesting() const;
+  scoped_refptr<TimingFunction> GetTimingFunctionForTesting() const;
 
  private:
   virtual const cc::TimingFunction* CcTimingFunction() const = 0;

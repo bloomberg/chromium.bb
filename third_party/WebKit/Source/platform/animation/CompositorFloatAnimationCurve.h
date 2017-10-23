@@ -51,7 +51,7 @@ class PLATFORM_EXPORT CompositorFloatAnimationCurve
   using Keyframes = Vector<std::unique_ptr<CompositorFloatKeyframe>>;
   Keyframes KeyframesForTesting() const;
 
-  RefPtr<TimingFunction> GetTimingFunctionForTesting() const;
+  scoped_refptr<TimingFunction> GetTimingFunctionForTesting() const;
 
  private:
   CompositorFloatAnimationCurve();
