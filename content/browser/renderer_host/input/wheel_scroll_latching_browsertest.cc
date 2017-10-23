@@ -294,8 +294,16 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
   EXPECT_EQ(1, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 }
 
+// crbug.com/777258 Flaky on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
+  DISABLED_WheelScrollingRelatchWhenLatchedScrollerRemoved
+#else
+#define MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved \
+  WheelScrollingRelatchWhenLatchedScrollerRemoved
+#endif
 IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
-                       WheelScrollingRelatchWhenLatchedScrollerRemoved) {
+                       MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
   LoadURL();
   EXPECT_EQ(ExecuteScriptAndExtractInt("document.scrollingElement.scrollTop"),
             0);
