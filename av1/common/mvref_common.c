@@ -1780,10 +1780,12 @@ void av1_setup_motion_field(AV1_COMMON *cm) {
     }
   }
 
-  motion_field_projection(cm, BWDREF_FRAME, 1);
+  if (bwd_frame_index > cur_frame_index)
+    motion_field_projection(cm, BWDREF_FRAME, 1);
   if (alt2_frame_index > cur_frame_index)
     motion_field_projection(cm, ALTREF2_FRAME, 2);
-  motion_field_projection(cm, ALTREF_FRAME, 3);
+  if (alt_frame_index > cur_frame_index)
+    motion_field_projection(cm, ALTREF_FRAME, 3);
 }
 #endif  // CONFIG_MFMV
 
