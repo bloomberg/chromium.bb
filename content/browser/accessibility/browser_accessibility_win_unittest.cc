@@ -1671,12 +1671,10 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
                             ui::AX_TEXT_STYLE_UNDERLINE);
 
   // The name "lnk" is misspelled.
-  std::vector<int32_t> marker_types;
-  marker_types.push_back(static_cast<int32_t>(ui::AX_MARKER_TYPE_SPELLING));
-  std::vector<int32_t> marker_starts;
-  marker_starts.push_back(0);
-  std::vector<int32_t> marker_ends;
-  marker_ends.push_back(3);
+  std::vector<int32_t> marker_types{
+      static_cast<int32_t>(ui::AX_MARKER_TYPE_SPELLING)};
+  std::vector<int32_t> marker_starts{0};
+  std::vector<int32_t> marker_ends{3};
   link_text.AddIntListAttribute(ui::AX_ATTR_MARKER_TYPES, marker_types);
   link_text.AddIntListAttribute(ui::AX_ATTR_MARKER_STARTS, marker_starts);
   link_text.AddIntListAttribute(ui::AX_ATTR_MARKER_ENDS, marker_ends);
@@ -1778,6 +1776,10 @@ TEST_F(BrowserAccessibilityTest, TestTextAttributesInContentEditables) {
   EXPECT_NE(
       base::string16::npos,
       base::string16(text_attributes).find(L"text-underline-type:single"));
+  // For compatibility with Firefox, spelling attributes should also be
+  // propagated to the parent of static text leaves.
+  EXPECT_NE(base::string16::npos,
+            base::string16(text_attributes).find(L"invalid:spelling"));
   text_attributes.Reset();
 
   hr = ax_link_text->GetCOM()->get_attributes(2, &start_offset, &end_offset,
