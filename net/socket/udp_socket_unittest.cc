@@ -637,12 +637,10 @@ TEST_F(UDPSocketTest, CloseWithPendingRead) {
   EXPECT_FALSE(callback.have_result());
 }
 
-#if defined(OS_ANDROID) || defined(OS_FUCHSIA)
+#if defined(OS_ANDROID)
 // Some Android devices do not support multicast socket.
 // The ones supporting multicast need WifiManager.MulitcastLock to enable it.
 // http://goo.gl/jjAk9
-//
-// TODO(fuchsia): Multicast is not implemented on Fuchsia yet.
 #define MAYBE_JoinMulticastGroup DISABLED_JoinMulticastGroup
 #else
 #define MAYBE_JoinMulticastGroup JoinMulticastGroup
@@ -660,6 +658,14 @@ TEST_F(UDPSocketTest, MAYBE_JoinMulticastGroup) {
   UDPSocket socket(DatagramSocket::DEFAULT_BIND, RandIntCallback(), NULL,
                    NetLogSource());
   EXPECT_THAT(socket.Open(bind_address.GetFamily()), IsOk());
+
+#if defined(OS_FUCHSIA)
+  // Fuchsia currently doesn't support automatic interface selection for
+  // multicast, so interface index needs to be set explicitly.
+  // See https://fuchsia.atlassian.net/browse/NET-195 .
+  EXPECT_THAT(socket.SetMulticastInterface(1), IsOk());
+#endif  // defined(OS_FUCHSIA)
+
   EXPECT_THAT(socket.Bind(bind_address), IsOk());
   EXPECT_THAT(socket.JoinGroup(group_ip), IsOk());
   // Joining group multiple times.

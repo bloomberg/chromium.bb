@@ -34,8 +34,9 @@ bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
 
     // Skip loopback addresses.
     if (internal::IsLoopbackOrUnspecifiedAddress(
-            reinterpret_cast<sockaddr*>(&(interface->addr))))
+            reinterpret_cast<sockaddr*>(&(interface->addr)))) {
       continue;
+    }
 
     IPEndPoint address;
     if (!address.FromSockAddr(reinterpret_cast<sockaddr*>(&(interface->addr)),
