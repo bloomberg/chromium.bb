@@ -83,6 +83,8 @@ class AXTreeSourceArc
   // not.
   // - Root node is relative to its container, i.e. focused window.
   // - Non-root node is relative to the root node of this tree.
+  //
+  // focused_window is nullptr for notification.
   const gfx::Rect GetBounds(mojom::AccessibilityNodeInfoData* node,
                             aura::Window* focused_window) const;
 
@@ -99,6 +101,7 @@ class AXTreeSourceArc
   int32_t root_id_;
   int32_t window_id_;
   int32_t focused_node_id_;
+  bool is_notification_;
 
   // A delegate that handles accessibility actions on behalf of this tree. The
   // delegate is valid during the lifetime of this tree.

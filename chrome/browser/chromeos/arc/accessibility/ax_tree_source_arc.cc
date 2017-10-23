@@ -312,6 +312,7 @@ AXTreeSourceArc::AXTreeSourceArc(Delegate* delegate)
       root_id_(-1),
       window_id_(-1),
       focused_node_id_(-1),
+      is_notification_(false),
       delegate_(delegate),
       focus_stealer_(new FocusStealer(tree_id())) {}
 
@@ -326,6 +327,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
   root_id_ = -1;
 
   window_id_ = event_data->window_id;
+  is_notification_ = event_data->notification_key.has_value();
 
   for (size_t i = 0; i < event_data->node_data.size(); ++i) {
     if (!event_data->node_data[i]->int_list_properties)
@@ -506,13 +508,11 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
   // - Root node must exist.
   // - Window where this tree is attached to need to be focused.
   if (root_id_ != -1 && wm_helper) {
-    aura::Window* focused_window = wm_helper->GetFocusedWindow();
-    if (focused_window) {
-      const gfx::Rect bounds_in_screen = GetBounds(node, focused_window);
-      out_data->location.SetRect(bounds_in_screen.x(), bounds_in_screen.y(),
-                                 bounds_in_screen.width(),
-                                 bounds_in_screen.height());
-    }
+    aura::Window* focused_window =
+        is_notification_ ? nullptr : wm_helper->GetFocusedWindow();
+    const gfx::Rect local_bounds = GetBounds(node, focused_window);
+    out_data->location.SetRect(local_bounds.x(), local_bounds.y(),
+                               local_bounds.width(), local_bounds.height());
   }
 
   if (out_data->role == ui::AX_ROLE_TEXT_FIELD && !text.empty())
@@ -550,12 +550,11 @@ void AXTreeSourceArc::SerializeNode(mojom::AccessibilityNodeInfoData* node,
 const gfx::Rect AXTreeSourceArc::GetBounds(
     mojom::AccessibilityNodeInfoData* node,
     aura::Window* focused_window) const {
-  DCHECK(focused_window);
   DCHECK_NE(root_id_, -1);
 
   gfx::Rect node_bounds = node->bounds_in_screen;
 
-  if (node->id == root_id_) {
+  if (focused_window && node->id == root_id_) {
     // Top level window returns its bounds in dip.
     aura::Window* toplevel_window = focused_window->GetToplevelWindow();
     float scale = toplevel_window->layer()->device_scale_factor();
