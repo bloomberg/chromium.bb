@@ -1672,7 +1672,10 @@
     ],
 
     'win_clang_release_bot': [
-      'clang', 'release_bot', 'minimal_symbols',
+      # Now that the default win bots use clang, use a "clang" bot to make sure
+      # things stay compilable with msvc. TODO(thakis): Having a "clang" bot
+      # check that is very confusing, so rename the bot to "msvc".
+      'no_clang', 'release_bot', 'minimal_symbols',
     ],
 
     # TODO(tikuta): Remove this once gcp goma backend supports all windows nacl compilers.
