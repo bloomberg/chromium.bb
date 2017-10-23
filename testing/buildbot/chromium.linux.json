@@ -3436,7 +3436,6 @@
     "additional_compile_targets": [
       "base_unittests",
       "content_unittests",
-      "crypto_unittests",
       "gl_unittests",
       "headless_shell",
       "ipc_tests",
@@ -3447,9 +3446,43 @@
       "mojo_public_system_unittests",
       "mojo_system_unittests",
       "net_unittests",
-      "skia_unittests",
       "service_manager_unittests",
       "ui_base_unittests"
+    ],
+    "gtest_tests": [
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "crypto_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "skia_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "kvm": "1"
+            }
+          ]
+        },
+        "test": "sql_unittests"
+      }
     ]
   },
   "Linux Builder": {
