@@ -4687,8 +4687,7 @@ uint8_t* av_packet_get_side_data(const AVPacket *pkt, enum AVPacketSideDataType 
 attribute_deprecated
 int av_packet_merge_side_data(AVPacket *pkt);
 
-// Chromium: Avoid calling this. http://crbug.com/720142
-// attribute_deprecated
+attribute_deprecated
 int av_packet_split_side_data(AVPacket *pkt);
 #endif
 
