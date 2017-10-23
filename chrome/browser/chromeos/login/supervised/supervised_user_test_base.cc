@@ -4,8 +4,11 @@
 
 #include "chrome/browser/chromeos/login/supervised/supervised_user_test_base.h"
 
+#include <memory>
 #include <string>
 
+#include "base/bind.h"
+#include "base/callback_list.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -25,6 +28,8 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/stub_cros_settings_provider.h"
 #include "chrome/browser/profiles/profile_impl.h"
+#include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
+#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_registration_utility_stub.h"
 #include "chrome/browser/supervised_user/legacy/supervised_user_shared_settings_service.h"
@@ -36,12 +41,18 @@
 #include "chromeos/cryptohome/mock_homedir_methods.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
+#include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/sync/model/attachments/attachment_service_proxy_for_test.h"
 #include "components/sync/model/fake_sync_change_processor.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_error_factory_mock.h"
 #include "components/sync/protocol/sync.pb.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_observer.h"
+#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 
@@ -55,6 +66,62 @@ namespace {
 const char kCurrentPage[] = "$('supervised-user-creation').currentPage_";
 
 const char kStubEthernetGuid[] = "eth0";
+
+// Class to initialize login profile credentials.
+// It injects fake OAuth2 token services into browser contexts that are
+// created during its lifetime, and sets up fake credentials for the login
+// profile when it's prepared.
+class LoginProfileInitializer : public content::NotificationObserver {
+ public:
+  LoginProfileInitializer(const std::string& user_id,
+                          const std::string& refresh_token)
+      : user_id_(user_id), refresh_token_(refresh_token) {
+    will_create_browser_context_services_subscription_ =
+        BrowserContextDependencyManager::GetInstance()
+            ->RegisterWillCreateBrowserContextServicesCallbackForTesting(
+                base::Bind(&LoginProfileInitializer::
+                               OnWillCreateBrowserContextServices,
+                           base::Unretained(this)));
+    registrar_.Add(this, chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
+                   content::NotificationService::AllSources());
+  }
+
+  ~LoginProfileInitializer() override = default;
+
+  void RunAndWaitForProfilePrepared() { run_loop_.Run(); }
+
+  void OnWillCreateBrowserContextServices(content::BrowserContext* context) {
+    ProfileOAuth2TokenServiceFactory::GetInstance()->SetTestingFactory(
+        context, BuildFakeProfileOAuth2TokenService);
+  }
+
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override {
+    Profile* profile = content::Details<Profile>(details).ptr();
+    FakeProfileOAuth2TokenService* token_service =
+        static_cast<FakeProfileOAuth2TokenService*>(
+            ProfileOAuth2TokenServiceFactory::GetInstance()->GetForProfile(
+                profile));
+
+    token_service->set_auto_post_fetch_response_on_message_loop(true);
+    token_service->UpdateCredentials(user_id_, refresh_token_);
+
+    run_loop_.Quit();
+  }
+
+ private:
+  const std::string user_id_;
+  const std::string refresh_token_;
+  base::RunLoop run_loop_;
+  content::NotificationRegistrar registrar_;
+
+  std::unique_ptr<
+      base::CallbackList<void(content::BrowserContext*)>::Subscription>
+      will_create_browser_context_services_subscription_;
+
+  DISALLOW_COPY_AND_ASSIGN(LoginProfileInitializer);
+};
 
 }  // namespace
 
@@ -288,19 +355,12 @@ void SupervisedUserTestBase::StartFlowLoginAsManager() {
       kTestManager, GetGaiaIDForUserID(kTestManager)));
   user_context.SetKey(Key(kTestManagerPassword));
   SetExpectedCredentials(user_context);
-  content::WindowedNotificationObserver login_observer(
-      chrome::NOTIFICATION_LOGIN_USER_PROFILE_PREPARED,
-      content::NotificationService::AllSources());
 
+  LoginProfileInitializer manager_initializer(kTestManager,
+                                              "fake-refresh-token");
   // Log in as manager.
   JSEval("$('supervised-user-creation-next-button').click()");
-  login_observer.Wait();
-
-  // OAuth token is valid.
-  user_manager::UserManager::Get()->SaveUserOAuthStatus(
-      AccountId::FromUserEmail(kTestManager),
-      user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
-  base::RunLoop().RunUntilIdle();
+  manager_initializer.RunAndWaitForProfilePrepared();
 
   // Check the page have changed.
   JSExpect(StringPrintf("%s == 'username'", kCurrentPage));
