@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+FAIL addTrack with a track and no stream makes ontrack fire with a track and no stream. assert_equals: Expected remote track not to belong to a stream. expected 0 but got 1
+PASS addTrack with a track and a stream makes ontrack fire with a track and a stream.
+PASS addTrack with two tracks and one stream makes ontrack fire twice with the tracks and shared stream.
+FAIL addTrack with a track and two streams makes ontrack fire with a track and two streams. Failed to execute 'addTrack' on 'RTCPeerConnection': Adding a track to multiple streams is not supported.
+FAIL ontrack fires before setRemoteDescription resolves. assert_equals: expected "ontrack;setRemoteDescription;" but got "setRemoteDescription;ontrack;"
+PASS ontrack's receiver matches getReceivers().
+FAIL removeTrack does not remove the receiver. assert_array_equals: Expected the set of receivers to remain the same. lengths differ, expected 1 got 0
+Harness: the test ran to completion.
+
