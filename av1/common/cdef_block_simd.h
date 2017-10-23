@@ -241,13 +241,14 @@ void SIMD_FUNC(cdef_filter_block_4x4_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
                                         int sec_strength, int dir,
                                         int pri_damping, int sec_damping,
-                                        AOM_UNUSED int max_unused)
+                                        AOM_UNUSED int max_unused,
+                                        int coeff_shift)
 #else
 void SIMD_FUNC(cdef_filter_block_4x4_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
                                         int sec_strength, int dir,
                                         int pri_damping, int sec_damping,
-                                        int max)
+                                        int max, int coeff_shift)
 #endif
 {
   v128 p0, p1, p2, p3;
@@ -265,8 +266,8 @@ void SIMD_FUNC(cdef_filter_block_4x4_8)(uint8_t *dst, int dstride,
   int s2o1 = cdef_directions[(dir + 6) & 7][0];
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
-  const int *pri_taps = cdef_pri_taps[pri_strength & 1];
-  const int *sec_taps = cdef_sec_taps[pri_strength & 1];
+  const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -478,13 +479,14 @@ void SIMD_FUNC(cdef_filter_block_8x8_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
                                         int sec_strength, int dir,
                                         int pri_damping, int sec_damping,
-                                        AOM_UNUSED int max_unused)
+                                        AOM_UNUSED int max_unused,
+                                        int coeff_shift)
 #else
 void SIMD_FUNC(cdef_filter_block_8x8_8)(uint8_t *dst, int dstride,
                                         const uint16_t *in, int pri_strength,
                                         int sec_strength, int dir,
                                         int pri_damping, int sec_damping,
-                                        int max)
+                                        int max, int coeff_shift)
 #endif
 {
   int i;
@@ -503,8 +505,8 @@ void SIMD_FUNC(cdef_filter_block_8x8_8)(uint8_t *dst, int dstride,
   int s2o1 = cdef_directions[(dir + 6) & 7][0];
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
-  const int *pri_taps = cdef_pri_taps[pri_strength & 1];
-  const int *sec_taps = cdef_sec_taps[pri_strength & 1];
+  const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -694,13 +696,14 @@ void SIMD_FUNC(cdef_filter_block_4x4_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
                                          int sec_strength, int dir,
                                          int pri_damping, int sec_damping,
-                                         AOM_UNUSED int max_unused)
+                                         AOM_UNUSED int max_unused,
+                                         int coeff_shift)
 #else
 void SIMD_FUNC(cdef_filter_block_4x4_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
                                          int sec_strength, int dir,
                                          int pri_damping, int sec_damping,
-                                         int max)
+                                         int max, int coeff_shift)
 #endif
 {
   int i;
@@ -718,8 +721,8 @@ void SIMD_FUNC(cdef_filter_block_4x4_16)(uint16_t *dst, int dstride,
   int s2o1 = cdef_directions[(dir + 6) & 7][0];
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
-  const int *pri_taps = cdef_pri_taps[pri_strength & 1];
-  const int *sec_taps = cdef_sec_taps[pri_strength & 1];
+  const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -867,13 +870,14 @@ void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
                                          int sec_strength, int dir,
                                          int pri_damping, int sec_damping,
-                                         AOM_UNUSED int max_unused)
+                                         AOM_UNUSED int max_unused,
+                                         int coeff_shift)
 #else
 void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
                                          const uint16_t *in, int pri_strength,
                                          int sec_strength, int dir,
                                          int pri_damping, int sec_damping,
-                                         int max)
+                                         int max, int coeff_shift)
 #endif
 {
   int i;
@@ -891,8 +895,8 @@ void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
   int s2o1 = cdef_directions[(dir + 6) & 7][0];
   int s2o2 = cdef_directions[(dir + 6) & 7][1];
 
-  const int *pri_taps = cdef_pri_taps[pri_strength & 1];
-  const int *sec_taps = cdef_sec_taps[pri_strength & 1];
+  const int *pri_taps = cdef_pri_taps[(pri_strength >> coeff_shift) & 1];
+  const int *sec_taps = cdef_sec_taps[(pri_strength >> coeff_shift) & 1];
 
   if (pri_strength)
     pri_damping = AOMMAX(0, pri_damping - get_msb(pri_strength));
@@ -1023,17 +1027,18 @@ void SIMD_FUNC(cdef_filter_block_8x8_16)(uint16_t *dst, int dstride,
 void SIMD_FUNC(cdef_filter_block)(uint8_t *dst8, uint16_t *dst16, int dstride,
                                   const uint16_t *in, int pri_strength,
                                   int sec_strength, int dir, int pri_damping,
-                                  int sec_damping, int bsize, int max) {
+                                  int sec_damping, int bsize, int max,
+                                  int coeff_shift) {
   if (dst8)
     (bsize == BLOCK_8X8 ? SIMD_FUNC(cdef_filter_block_8x8_8)
                         : SIMD_FUNC(cdef_filter_block_4x4_8))(
         dst8, dstride, in, pri_strength, sec_strength, dir, pri_damping,
-        sec_damping, max);
+        sec_damping, max, coeff_shift);
   else
     (bsize == BLOCK_8X8 ? SIMD_FUNC(cdef_filter_block_8x8_16)
                         : SIMD_FUNC(cdef_filter_block_4x4_16))(
         dst16, dstride, in, pri_strength, sec_strength, dir, pri_damping,
-        sec_damping, max);
+        sec_damping, max, coeff_shift);
 }
 
 #else
