@@ -155,7 +155,7 @@ void av1_update_eob_context(int eob, int seg_eob, TX_SIZE txsize,
   if (k_eob_offset_bits[eob_pt] > 0) {
     int eob_shift = k_eob_offset_bits[eob_pt] - 1;
     int bit = (eob_extra & (1 << eob_shift)) ? 1 : 0;
-// TODO(angiebird): update count as well
+    counts->eob_extra[txsize][plane][eob_pt][bit]++;
 #if LV_MAP_PROB
     update_cdf(ec_ctx->eob_extra_cdf[txsize][plane][eob_pt], bit, 2);
 #endif

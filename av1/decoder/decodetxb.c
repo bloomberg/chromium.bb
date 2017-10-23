@@ -374,6 +374,7 @@ uint8_t av1_read_coeffs_txb(const AV1_COMMON *const cm, MACROBLOCKD *xd,
     int bit = av1_read_record_bin(
         counts, r, ec_ctx->eob_extra_cdf[txs_ctx][plane_type][eob_pt], 2,
         ACCT_STR);
+    if (counts) ++counts->eob_extra[txs_ctx][plane_type][eob_pt][bit];
     if (bit) {
       eob_extra += (1 << eob_shift);
     }
