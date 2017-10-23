@@ -1,13 +1,37 @@
 # `Source/modules/canvas`
 
-Contains context creation for HTML canvas element,
+Contains canvas-related subdirectories.
 
 ## Class structure of Canvas-related objects
 
-The classes on this structure are divided between all directories that are used
-by canvas: `modules/canvas`, `modules/canvas2d`, `modules/offscreencanvas`,
-`modules/offscreencanvas2d`, `core/html/canvas`, `core/html`, `modules/webgl`,
-`modules/imagebitmap` and `modules/csspaint`.
+The classes on this structure are divided between all subdirectories that are
+used by canvas:
+
+1. `htmlcanvas`
+
+   Contains context creation for HTML canvas element
+
+2. `canvas2d`
+
+   Contains base class for 2D rendering contexts and `CanvasRenderingContext2D` related classes.
+
+3. `offscreencanvas`
+
+   Contains offscreencanvas object.
+
+4. `offscreencanvas2d`
+
+   Contains offscreencanvas 2D rendering context.
+
+5. `imagebitmap`
+
+   Contains ImageBitmap rendering context.
+
+Canvas-related classes are also present in these directories in `core`:
+`core/html/canvas` and `core/html`.
+
+There are also some other directories in `modules` that are a bit related to
+canvas: `modules/webgl`, `modules/imagebitmap` and `modules/csspaint`.
 
 ### Virtual classes
 
@@ -23,7 +47,6 @@ rendering context API. Used by `CanvasRenderingContext2D`,
 `OffscreenCanvasRenderingContext2D` and `PaintRenderingContext2D`.
 
 `WebGLRenderingContextBase` - Base class for `webgl` contexts.
-
 
 ### Final classes
 
