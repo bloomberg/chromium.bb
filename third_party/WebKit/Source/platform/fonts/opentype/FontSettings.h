@@ -78,7 +78,7 @@ class PLATFORM_EXPORT FontFeatureSettings
   WTF_MAKE_NONCOPYABLE(FontFeatureSettings);
 
  public:
-  static RefPtr<FontFeatureSettings> Create() {
+  static scoped_refptr<FontFeatureSettings> Create() {
     return WTF::AdoptRef(new FontFeatureSettings());
   }
 
@@ -92,7 +92,7 @@ class PLATFORM_EXPORT FontVariationSettings
   WTF_MAKE_NONCOPYABLE(FontVariationSettings);
 
  public:
-  static RefPtr<FontVariationSettings> Create() {
+  static scoped_refptr<FontVariationSettings> Create() {
     return WTF::AdoptRef(new FontVariationSettings());
   }
 

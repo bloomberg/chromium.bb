@@ -100,7 +100,7 @@ float ShapeResultBloberizer::FillGlyphs(
     unsigned word_offset = run_info.run.length();
     for (unsigned j = 0; j < results.size(); j++) {
       unsigned resolved_index = results.size() - 1 - j;
-      const RefPtr<const ShapeResult>& word_result = results[resolved_index];
+      const scoped_refptr<const ShapeResult>& word_result = results[resolved_index];
       word_offset -= word_result->NumCharacters();
       advance =
           FillGlyphsForResult(word_result.get(), run_info.run, run_info.from,
@@ -143,7 +143,7 @@ void ShapeResultBloberizer::FillTextEmphasisGlyphs(
 
   for (unsigned j = 0; j < results.size(); j++) {
     unsigned resolved_index = run_info.run.Rtl() ? results.size() - 1 - j : j;
-    const RefPtr<const ShapeResult>& word_result = results[resolved_index];
+    const scoped_refptr<const ShapeResult>& word_result = results[resolved_index];
     for (unsigned i = 0; i < word_result->runs_.size(); i++) {
       unsigned resolved_offset =
           word_offset - (run_info.run.Rtl() ? word_result->NumCharacters() : 0);

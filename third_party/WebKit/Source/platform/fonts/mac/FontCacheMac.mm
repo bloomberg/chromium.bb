@@ -105,13 +105,13 @@ static inline bool IsAppKitFontWeightBold(NSInteger app_kit_font_weight) {
   return app_kit_font_weight >= 7;
 }
 
-RefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 character,
     const SimpleFontData* font_data_to_substitute,
     FontFallbackPriority fallback_priority) {
   if (fallback_priority == FontFallbackPriority::kEmojiEmoji) {
-    RefPtr<SimpleFontData> emoji_font =
+    scoped_refptr<SimpleFontData> emoji_font =
         GetFontData(font_description, AtomicString(kColorEmojiFontMac));
     if (emoji_font)
       return emoji_font;
@@ -226,13 +226,13 @@ RefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
   return FontDataFromFontPlatformData(&alternate_font, kDoNotRetain);
 }
 
-RefPtr<SimpleFontData> FontCache::GetLastResortFallbackFont(
+scoped_refptr<SimpleFontData> FontCache::GetLastResortFallbackFont(
     const FontDescription& font_description,
     ShouldRetain should_retain) {
   // FIXME: Would be even better to somehow get the user's default font here.
   // For now we'll pick the default that the user would get without changing
   // any prefs.
-  RefPtr<SimpleFontData> simple_font_data =
+  scoped_refptr<SimpleFontData> simple_font_data =
       GetFontData(font_description, FontFamilyNames::Times,
                   AlternateFontName::kAllowAlternate, should_retain);
   if (simple_font_data)

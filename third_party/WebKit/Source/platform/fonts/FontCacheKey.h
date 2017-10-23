@@ -53,7 +53,7 @@ struct FontCacheKey {
   FontCacheKey(FontFaceCreationParams creation_params,
                float font_size,
                unsigned options,
-               RefPtr<FontVariationSettings> variation_settings)
+               scoped_refptr<FontVariationSettings> variation_settings)
       : creation_params_(creation_params),
         font_size_(font_size * kFontSizePrecisionMultiplier),
         options_(options),
@@ -89,7 +89,7 @@ struct FontCacheKey {
   FontFaceCreationParams creation_params_;
   unsigned font_size_;
   unsigned options_;
-  RefPtr<FontVariationSettings> variation_settings_;
+  scoped_refptr<FontVariationSettings> variation_settings_;
 };
 
 struct FontCacheKeyHash {

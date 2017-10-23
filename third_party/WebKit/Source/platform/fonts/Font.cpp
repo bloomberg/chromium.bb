@@ -430,7 +430,7 @@ void Font::WillUseFontData(const String& text) const {
         GetFontDescription(), family.Family(), text);
 }
 
-RefPtr<FontFallbackIterator> Font::CreateFontFallbackIterator(
+scoped_refptr<FontFallbackIterator> Font::CreateFontFallbackIterator(
     FontFallbackPriority fallback_priority) const {
   return FontFallbackIterator::Create(font_description_, font_fallback_list_,
                                       fallback_priority);

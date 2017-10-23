@@ -239,7 +239,7 @@ unsigned ShapeResult::EndIndexForResult() const {
   return first_run.start_index_ + first_run.num_characters_;
 }
 
-RefPtr<ShapeResult> ShapeResult::MutableUnique() const {
+scoped_refptr<ShapeResult> ShapeResult::MutableUnique() const {
   if (HasOneRef())
     return const_cast<ShapeResult*>(this);
   return ShapeResult::Create(*this);
@@ -479,12 +479,12 @@ void ShapeResult::ApplySpacing(ShapeResultSpacing<String>& spacing,
   ApplySpacingImpl(spacing, text_start_offset);
 }
 
-RefPtr<ShapeResult> ShapeResult::ApplySpacingToCopy(
+scoped_refptr<ShapeResult> ShapeResult::ApplySpacingToCopy(
     ShapeResultSpacing<TextRun>& spacing,
     const TextRun& run) const {
   unsigned index_of_sub_run = spacing.Text().IndexOfSubRun(run);
   DCHECK_NE(std::numeric_limits<unsigned>::max(), index_of_sub_run);
-  RefPtr<ShapeResult> result = ShapeResult::Create(*this);
+  scoped_refptr<ShapeResult> result = ShapeResult::Create(*this);
   if (index_of_sub_run != std::numeric_limits<unsigned>::max())
     result->ApplySpacingImpl(spacing, index_of_sub_run);
   return result;
@@ -760,7 +760,7 @@ void ShapeResult::CopyRange(unsigned start_offset,
   target->has_vertical_offsets_ |= has_vertical_offsets_;
 }
 
-RefPtr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
+scoped_refptr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
     const Font* font,
     const TextRun& text_run,
     float position_offset,
@@ -784,7 +784,7 @@ RefPtr<ShapeResult> ShapeResult::CreateForTabulationCharacters(
   }
   run->width_ = position - start_position;
 
-  RefPtr<ShapeResult> result =
+  scoped_refptr<ShapeResult> result =
       ShapeResult::Create(font, count, text_run.Direction());
   result->width_ = run->width_;
   result->num_glyphs_ = count;

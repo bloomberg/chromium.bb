@@ -67,20 +67,20 @@ TEST(FontDescriptionTest, ToString) {
 
   FontFamily family;
   family.SetFamily("A");
-  RefPtr<SharedFontFamily> b_family = SharedFontFamily::Create();
+  scoped_refptr<SharedFontFamily> b_family = SharedFontFamily::Create();
   b_family->SetFamily("B");
   family.AppendFamily(b_family);
   description.SetFamily(family);
 
   description.SetLocale(LayoutLocale::Get("no"));
 
-  RefPtr<FontVariationSettings> variation_settings =
+  scoped_refptr<FontVariationSettings> variation_settings =
       FontVariationSettings::Create();
   variation_settings->Append(FontVariationAxis{"a", 42});
   variation_settings->Append(FontVariationAxis{"b", 8118});
   description.SetVariationSettings(variation_settings);
 
-  RefPtr<FontFeatureSettings> feature_settings = FontFeatureSettings::Create();
+  scoped_refptr<FontFeatureSettings> feature_settings = FontFeatureSettings::Create();
   feature_settings->Append(FontFeature{"c", 76});
   feature_settings->Append(FontFeature{"d", 94});
   description.SetFeatureSettings(feature_settings);

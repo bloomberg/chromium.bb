@@ -144,7 +144,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
                           italic && !base_typeface_->isItalic(), orientation);
 }
 
-RefPtr<FontCustomPlatformData> FontCustomPlatformData::Create(
+scoped_refptr<FontCustomPlatformData> FontCustomPlatformData::Create(
     SharedBuffer* buffer,
     String& ots_parse_message) {
   DCHECK(buffer);

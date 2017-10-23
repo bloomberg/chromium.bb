@@ -86,7 +86,7 @@ void FontCache::GetFontForCharacter(
 }
 
 #if !defined(OS_ANDROID)
-RefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
+scoped_refptr<SimpleFontData> FontCache::FallbackFontForCharacter(
     const FontDescription& font_description,
     UChar32 c,
     const SimpleFontData*,
@@ -120,7 +120,7 @@ RefPtr<SimpleFontData> FontCache::FallbackFontForCharacter(
   if (fallback_priority != FontFallbackPriority::kEmojiEmoji &&
       (font_description.Style() == ItalicSlopeValue() ||
        font_description.Weight() >= BoldThreshold())) {
-    RefPtr<SimpleFontData> font_data =
+    scoped_refptr<SimpleFontData> font_data =
         FallbackOnStandardFontStyle(font_description, c);
     if (font_data)
       return font_data;

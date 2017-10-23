@@ -38,14 +38,14 @@ class CachingWordShaperTest : public ::testing::Test {
 };
 
 static inline const ShapeResultTestInfo* TestInfo(
-    RefPtr<const ShapeResult>& result) {
+    scoped_refptr<const ShapeResult>& result) {
   return static_cast<const ShapeResultTestInfo*>(result.get());
 }
 
 TEST_F(CachingWordShaperTest, LatinLeftToRightByWord) {
   TextRun text_run(reinterpret_cast<const LChar*>("ABC DEF."), 8);
 
-  RefPtr<const ShapeResult> result;
+  scoped_refptr<const ShapeResult> result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
   ASSERT_TRUE(iterator.Next(&result));
   ASSERT_TRUE(
@@ -76,7 +76,7 @@ TEST_F(CachingWordShaperTest, CommonAccentLeftToRightByWord) {
   TextRun text_run(kStr, 5);
 
   unsigned offset = 0;
-  RefPtr<const ShapeResult> result;
+  scoped_refptr<const ShapeResult> result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
   ASSERT_TRUE(iterator.Next(&result));
   ASSERT_TRUE(
@@ -116,7 +116,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKByCharacter) {
                         0x0};
   TextRun text_run(kStr, 10);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -151,7 +151,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKAndCommon) {
                         0x0};
   TextRun text_run(kStr, 7);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -178,7 +178,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKAndInherit) {
       0x0};
   TextRun text_run(kStr, 4);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -198,7 +198,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKAndNonCJKCommon) {
                         ' ', 0x0};
   TextRun text_run(kStr, 2);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -219,7 +219,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiZWJCommon) {
                         0xDC8B, 0x200D, 0xD83D, 0xDC68, 0x0};
   TextRun text_run(kStr, 22);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -235,7 +235,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiPilotJudgeSequence) {
                         0xD83D, 0xDC68, 0xD83C, 0xDFFB, 0x200D, 0x2708, 0xFE0F};
   TextRun text_run(kStr, ARRAY_SIZE(kStr));
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -250,7 +250,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiHeartZWJSequence) {
                         0xD83D, 0xDC8B, 0x200D, 0xD83D, 0xDC68, 0x0};
   TextRun text_run(kStr, 11);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -264,7 +264,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiSignsOfHornsModifier) {
   const UChar kStr[] = {0xD83E, 0xDD18, 0xD83C, 0xDFFB, 0x0};
   TextRun text_run(kStr, 4);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -281,7 +281,7 @@ TEST_F(CachingWordShaperTest, SegmentEmojiExtraZWJPrefix) {
                         0xD83D, 0xDC8B, 0x200D, 0xD83D, 0xDC68, 0x0};
   TextRun text_run(kStr, 23);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -300,7 +300,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKCommon) {
                         0x0};
   TextRun text_run(kStr, 3);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -314,7 +314,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKCommonAndNonCJK) {
                         'a', 'b', 0x0};
   TextRun text_run(kStr, 3);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -332,7 +332,7 @@ TEST_F(CachingWordShaperTest, SegmentCJKSmallFormVariants) {
                         0x0};
   TextRun text_run(kStr, 2);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));
@@ -347,7 +347,7 @@ TEST_F(CachingWordShaperTest, SegmentHangulToneMark) {
                         0x0};
   TextRun text_run(kStr, 2);
 
-  RefPtr<const ShapeResult> word_result;
+  scoped_refptr<const ShapeResult> word_result;
   CachingWordShapeIterator iterator(cache.get(), text_run, &font);
 
   ASSERT_TRUE(iterator.Next(&word_result));

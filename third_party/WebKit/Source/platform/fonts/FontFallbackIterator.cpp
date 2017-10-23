@@ -13,9 +13,9 @@
 
 namespace blink {
 
-RefPtr<FontFallbackIterator> FontFallbackIterator::Create(
+scoped_refptr<FontFallbackIterator> FontFallbackIterator::Create(
     const FontDescription& description,
-    RefPtr<FontFallbackList> fallback_list,
+    scoped_refptr<FontFallbackList> fallback_list,
     FontFallbackPriority font_fallback_priority) {
   return WTF::AdoptRef(new FontFallbackIterator(
       description, std::move(fallback_list), font_fallback_priority));
@@ -23,7 +23,7 @@ RefPtr<FontFallbackIterator> FontFallbackIterator::Create(
 
 FontFallbackIterator::FontFallbackIterator(
     const FontDescription& description,
-    RefPtr<FontFallbackList> fallback_list,
+    scoped_refptr<FontFallbackList> fallback_list,
     FontFallbackPriority font_fallback_priority)
     : font_description_(description),
       font_fallback_list_(std::move(fallback_list)),
@@ -62,8 +62,8 @@ void FontFallbackIterator::WillUseRange(const AtomicString& family,
   selector->WillUseRange(font_description_, family, range_set);
 }
 
-RefPtr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
-    RefPtr<FontDataForRangeSet> candidate,
+scoped_refptr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
+    scoped_refptr<FontDataForRangeSet> candidate,
     const Vector<UChar32>& hint_list) {
   SkTypeface* candidate_typeface =
       candidate->FontData()->PlatformData().Typeface();
@@ -82,7 +82,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::UniqueOrNext(
   return candidate;
 }
 
-RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
+scoped_refptr<FontDataForRangeSet> FontFallbackIterator::Next(
     const Vector<UChar32>& hint_list) {
   if (fallback_stage_ == kOutOfLuck)
     return WTF::AdoptRef(new FontDataForRangeSet());
@@ -91,7 +91,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     // Only try one fallback priority font,
     // then proceed to regular system fallback.
     fallback_stage_ = kSystemFonts;
-    RefPtr<FontDataForRangeSet> fallback_priority_font_range = WTF::AdoptRef(
+    scoped_refptr<FontDataForRangeSet> fallback_priority_font_range = WTF::AdoptRef(
         new FontDataForRangeSet(FallbackPriorityFont(hint_list[0])));
     if (fallback_priority_font_range->HasFontData())
       return UniqueOrNext(std::move(fallback_priority_font_range), hint_list);
@@ -100,7 +100,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
 
   if (fallback_stage_ == kSystemFonts) {
     // We've reached pref + system fallback.
-    RefPtr<SimpleFontData> system_font = UniqueSystemFontForHintList(hint_list);
+    scoped_refptr<SimpleFontData> system_font = UniqueSystemFontForHintList(hint_list);
     if (system_font) {
       // Fallback fonts are not retained in the FontDataCache.
       return UniqueOrNext(WTF::AdoptRef(new FontDataForRangeSet(system_font)),
@@ -114,7 +114,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     // LastResort font, not just Times or Arial.
     FontCache* font_cache = FontCache::GetFontCache();
     fallback_stage_ = kOutOfLuck;
-    RefPtr<SimpleFontData> last_resort =
+    scoped_refptr<SimpleFontData> last_resort =
         font_cache->GetLastResortFallbackFont(font_description_).get();
     if (!last_resort)
       FontCache::CrashWithFontInfo(&font_description_);
@@ -144,7 +144,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
     // Skip forward to the next font family for the next call to next().
     current_font_data_index_++;
     if (!font_data->IsLoading()) {
-      RefPtr<SimpleFontData> non_segmented =
+      scoped_refptr<SimpleFontData> non_segmented =
           const_cast<SimpleFontData*>(ToSimpleFontData(font_data));
       // The fontData object that we have here is tracked in m_fontList of
       // FontFallbackList and gets released in the font cache when the
@@ -164,7 +164,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
   }
 
   DCHECK_LT(segmented_face_index_, segmented->NumFaces());
-  RefPtr<FontDataForRangeSet> current_segmented_face =
+  scoped_refptr<FontDataForRangeSet> current_segmented_face =
       segmented->FaceAt(segmented_face_index_);
   segmented_face_index_++;
 
@@ -187,7 +187,7 @@ RefPtr<FontDataForRangeSet> FontFallbackIterator::Next(
   return Next(hint_list);
 }
 
-RefPtr<SimpleFontData> FontFallbackIterator::FallbackPriorityFont(
+scoped_refptr<SimpleFontData> FontFallbackIterator::FallbackPriorityFont(
     UChar32 hint) {
   return FontCache::GetFontCache()->FallbackFontForCharacter(
       font_description_, hint,
@@ -223,7 +223,7 @@ static inline unsigned ChooseHintIndex(const Vector<UChar32>& hint_list) {
   return 0;
 }
 
-RefPtr<SimpleFontData> FontFallbackIterator::UniqueSystemFontForHintList(
+scoped_refptr<SimpleFontData> FontFallbackIterator::UniqueSystemFontForHintList(
     const Vector<UChar32>& hint_list) {
   // When we're asked for a fallback for the same characters again, we give up
   // because the shaper must have previously tried shaping with the font

@@ -208,7 +208,7 @@ void FontCache::SetFontManager(sk_sp<SkFontMgr> font_manager) {
   static_font_manager_ = font_manager.release();
 }
 
-RefPtr<OpenTypeVerticalData> FontCache::GetVerticalData(
+scoped_refptr<OpenTypeVerticalData> FontCache::GetVerticalData(
     const FontFileKey& key,
     const FontPlatformData& platform_data) {
   FontVerticalDataCache& font_vertical_data_cache =
@@ -217,7 +217,7 @@ RefPtr<OpenTypeVerticalData> FontCache::GetVerticalData(
   if (result != font_vertical_data_cache.end())
     return result.Get()->value;
 
-  RefPtr<OpenTypeVerticalData> vertical_data =
+  scoped_refptr<OpenTypeVerticalData> vertical_data =
       OpenTypeVerticalData::Create(platform_data);
   if (!vertical_data->IsOpenType())
     vertical_data = nullptr;
@@ -230,7 +230,7 @@ void FontCache::AcceptLanguagesChanged(const String& accept_languages) {
   GetFontCache()->InvalidateShapeCache();
 }
 
-RefPtr<SimpleFontData> FontCache::GetFontData(
+scoped_refptr<SimpleFontData> FontCache::GetFontData(
     const FontDescription& font_description,
     const AtomicString& family,
     AlternateFontName altername_font_name,
@@ -247,7 +247,7 @@ RefPtr<SimpleFontData> FontCache::GetFontData(
   return nullptr;
 }
 
-RefPtr<SimpleFontData> FontCache::FontDataFromFontPlatformData(
+scoped_refptr<SimpleFontData> FontCache::FontDataFromFontPlatformData(
     const FontPlatformData* platform_data,
     ShouldRetain should_retain,
     bool subpixel_ascent_descent) {

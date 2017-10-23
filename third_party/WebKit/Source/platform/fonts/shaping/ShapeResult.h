@@ -54,12 +54,12 @@ class TextRun;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
-  static RefPtr<ShapeResult> Create(const Font* font,
+  static scoped_refptr<ShapeResult> Create(const Font* font,
                                     unsigned num_characters,
                                     TextDirection direction) {
     return WTF::AdoptRef(new ShapeResult(font, num_characters, direction));
   }
-  static RefPtr<ShapeResult> CreateForTabulationCharacters(
+  static scoped_refptr<ShapeResult> CreateForTabulationCharacters(
       const Font*,
       const TextRun&,
       float position_offset,
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   // Returns a mutable unique instance. If |this| has more than 1 ref count,
   // a clone is created.
-  RefPtr<ShapeResult> MutableUnique() const;
+  scoped_refptr<ShapeResult> MutableUnique() const;
 
   // The logical width of this result.
   float Width() const { return width_; }
@@ -115,7 +115,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // giving it to |ShapeResultSpacing|. It can be negative if
   // |StartIndexForResult()| is larger than the text in |ShapeResultSpacing|.
   void ApplySpacing(ShapeResultSpacing<String>&, int text_start_offset = 0);
-  RefPtr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
+  scoped_refptr<ShapeResult> ApplySpacingToCopy(ShapeResultSpacing<TextRun>&,
                                          const TextRun&) const;
 
   void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
@@ -129,7 +129,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   ShapeResult(const Font*, unsigned num_characters, TextDirection);
   ShapeResult(const ShapeResult&);
 
-  static RefPtr<ShapeResult> Create(const ShapeResult& other) {
+  static scoped_refptr<ShapeResult> Create(const ShapeResult& other) {
     return WTF::AdoptRef(new ShapeResult(other));
   }
 
@@ -151,7 +151,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   float width_;
   FloatRect glyph_bounding_box_;
   Vector<std::unique_ptr<RunInfo>> runs_;
-  RefPtr<SimpleFontData> primary_font_;
+  scoped_refptr<SimpleFontData> primary_font_;
 
   unsigned num_characters_;
   unsigned num_glyphs_ : 30;

@@ -50,7 +50,7 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   WTF_MAKE_NONCOPYABLE(HarfBuzzFace);
 
  public:
-  static RefPtr<HarfBuzzFace> Create(FontPlatformData* platform_data,
+  static scoped_refptr<HarfBuzzFace> Create(FontPlatformData* platform_data,
                                      uint64_t unique_id) {
     return WTF::AdoptRef(new HarfBuzzFace(platform_data, unique_id));
   }
@@ -59,7 +59,7 @@ class HarfBuzzFace : public RefCounted<HarfBuzzFace> {
   // In order to support the restricting effect of unicode-range optionally a
   // range restriction can be passed in, which will restrict which glyphs we
   // return in the harfBuzzGetGlyph function.
-  hb_font_t* GetScaledFont(RefPtr<UnicodeRangeSet> = nullptr) const;
+  hb_font_t* GetScaledFont(scoped_refptr<UnicodeRangeSet> = nullptr) const;
 
  private:
   HarfBuzzFace(FontPlatformData*, uint64_t);

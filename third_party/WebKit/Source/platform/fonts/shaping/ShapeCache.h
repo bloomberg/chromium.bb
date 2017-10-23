@@ -40,7 +40,7 @@ namespace blink {
 struct ShapeCacheEntry {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   ShapeCacheEntry() { shape_result_ = nullptr; }
-  RefPtr<const ShapeResult> shape_result_;
+  scoped_refptr<const ShapeResult> shape_result_;
 };
 
 class ShapeCache {

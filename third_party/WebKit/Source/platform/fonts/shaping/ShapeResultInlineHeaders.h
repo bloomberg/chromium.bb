@@ -207,7 +207,7 @@ struct ShapeResult::RunInfo {
         });
   }
 
-  RefPtr<SimpleFontData> font_data_;
+  scoped_refptr<SimpleFontData> font_data_;
   hb_direction_t direction_;
   hb_script_t script_;
   Vector<HarfBuzzRunGlyphData> glyph_data_;

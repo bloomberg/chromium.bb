@@ -44,7 +44,7 @@ class GenericFontFamilySettings;
 class PLATFORM_EXPORT FontSelector : public FontCacheClient {
  public:
   virtual ~FontSelector() {}
-  virtual RefPtr<FontData> GetFontData(const FontDescription&,
+  virtual scoped_refptr<FontData> GetFontData(const FontDescription&,
                                        const AtomicString& family_name) = 0;
 
   // TODO crbug.com/542629 - The String variant of this method shouldbe replaced

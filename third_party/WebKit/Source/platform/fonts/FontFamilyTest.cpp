@@ -11,7 +11,7 @@ namespace blink {
 namespace {
 
 FontFamily* CreateAndAppendFamily(FontFamily& parent, const char* name) {
-  RefPtr<SharedFontFamily> family = SharedFontFamily::Create();
+  scoped_refptr<SharedFontFamily> family = SharedFontFamily::Create();
   family->SetFamily(name);
   parent.AppendFamily(family);
   return family.get();
