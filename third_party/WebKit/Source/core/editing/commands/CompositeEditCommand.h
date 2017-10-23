@@ -58,12 +58,7 @@ class CORE_EXPORT CompositeEditCommand : public EditCommand {
   }
 
   void SetStartingSelection(const SelectionForUndoStep&);
-  void SetStartingSelection(const VisibleSelection&);
-  void SetEndingSelection(const SelectionInDOMTree&);
   void SetEndingSelection(const SelectionForUndoStep&);
-  // TODO(yosin): |SetEndingVisibleSelection()| will take |SelectionForUndoStep|
-  // You should not use this function other than copying existing selection.
-  void SetEndingVisibleSelection(const VisibleSelection&);
 
   void SetParent(CompositeEditCommand*) override;
 
