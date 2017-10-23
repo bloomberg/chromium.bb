@@ -727,6 +727,9 @@ extern const char kServiceWorkerScriptStreamingDescription[];
 extern const char kSettingsWindowName[];
 extern const char kSettingsWindowDescription[];
 
+extern const char kShowAllDialogsWithViewsToolkitName[];
+extern const char kShowAllDialogsWithViewsToolkitDescription[];
+
 extern const char kShowAutofillSignaturesName[];
 extern const char kShowAutofillSignaturesDescription[];
 

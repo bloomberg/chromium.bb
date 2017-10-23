@@ -14,7 +14,6 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util_mac.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 using base::UserMetricsAction;
 
@@ -22,7 +21,7 @@ namespace importer {
 
 void ShowImportLockDialog(gfx::NativeWindow parent,
                           const base::Callback<void(bool)>& callback) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (chrome::ShowAllDialogsWithViewsToolkit())
     return chrome::ShowImportLockDialogViews(parent, callback);
 
   base::scoped_nsobject<NSAlert> lock_alert([[NSAlert alloc] init]);

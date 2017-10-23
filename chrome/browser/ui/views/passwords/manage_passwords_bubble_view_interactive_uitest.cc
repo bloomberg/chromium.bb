@@ -21,6 +21,7 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
@@ -73,7 +74,9 @@ class ManagePasswordsBubbleViewTest : public ManagePasswordsTest {
   // ManagePasswordsTest:
   void SetUp() override {
 #if defined(OS_MACOSX)
-    scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    scoped_feature_list_.InitWithFeatures(
+        {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
+        {});
 #endif
     ManagePasswordsTest::SetUp();
   }

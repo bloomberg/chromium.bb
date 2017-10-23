@@ -6,10 +6,10 @@
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/permission_bubble/permission_bubble_cocoa.h"
 #include "chrome/browser/ui/views/permission_bubble/permission_prompt_impl.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -19,7 +19,7 @@ constexpr base::Feature kCocoaPermissionBubbles = {
     "CocoaPermissionBubbles", base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool UseViewsBubbles() {
-  return ui::MaterialDesignController::IsSecondaryUiMaterial() ||
+  return chrome::ShowPilotDialogsWithViewsToolkit() ||
          !base::FeatureList::IsEnabled(kCocoaPermissionBubbles);
 }
 

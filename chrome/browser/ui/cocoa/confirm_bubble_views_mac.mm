@@ -4,11 +4,11 @@
 
 #include "chrome/browser/ui/confirm_bubble.h"
 
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/confirm_bubble_controller.h"
 #include "chrome/browser/ui/confirm_bubble_model.h"
 #include "chrome/browser/ui/views/confirm_bubble_views.h"
 #include "components/constrained_window/constrained_window_views.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 namespace {
 
@@ -27,7 +27,7 @@ void ShowConfirmBubble(gfx::NativeWindow window,
                        gfx::NativeView anchor_view,
                        const gfx::Point& origin,
                        std::unique_ptr<ConfirmBubbleModel> model) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     ShowConfirmBubbleViews(window, std::move(model));
     return;
   }

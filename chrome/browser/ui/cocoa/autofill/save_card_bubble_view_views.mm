@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/autofill/save_card_bubble_view_bridge.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/browser_window_cocoa.h"
 #include "chrome/browser/ui/cocoa/browser_window_controller.h"
 #include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
@@ -10,7 +11,6 @@
 #include "chrome/browser/ui/cocoa/location_bar/save_credit_card_decoration.h"
 #include "chrome/browser/ui/views/autofill/save_card_bubble_views.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
 namespace autofill {
@@ -20,7 +20,7 @@ SaveCardBubbleView* CreateSaveCardBubbleView(
     autofill::SaveCardBubbleController* controller,
     BrowserWindowController* browser_window_controller,
     bool user_gesture) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     LocationBarViewMac* location_bar =
         [browser_window_controller locationBarBridge];
     gfx::Point anchor =

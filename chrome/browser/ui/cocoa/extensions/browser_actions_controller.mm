@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_action_button.h"
 #import "chrome/browser/ui/cocoa/extensions/browser_actions_container_view.h"
@@ -33,7 +34,6 @@
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMNSAnimation+Duration.h"
 #include "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 NSString* const kBrowserActionVisibilityChangedNotification =
     @"BrowserActionVisibilityChangedNotification";
@@ -268,7 +268,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
         new ToolbarActionsBar(toolbarActionsBarBridge_.get(),
                               browser_,
                               mainBar));
-    if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+    if (chrome::ShowAllDialogsWithViewsToolkit()) {
       viewsBubblePresenter_ =
           base::MakeUnique<ToolbarActionsBarBubbleViewsPresenter>(self);
     }
@@ -737,7 +737,7 @@ void ToolbarActionsBarBridge::ShowToolbarActionBubble(
 - (NSPoint)popupPointForView:(NSView*)view
                   withBounds:(NSRect)bounds {
   NSPoint anchor;
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     // Anchor to the bottom-right of the button.
     anchor = NSMakePoint(NSMaxX(bounds), [view isFlipped] ? NSMaxY(bounds) : 0);
   } else {

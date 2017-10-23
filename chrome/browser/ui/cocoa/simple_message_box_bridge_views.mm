@@ -5,10 +5,10 @@
 #include "base/callback.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/cocoa/simple_message_box_cocoa.h"
 #include "chrome/browser/ui/simple_message_box.h"
 #include "chrome/browser/ui/views/simple_message_box_views.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 
 namespace {
@@ -27,7 +27,7 @@ chrome::MessageBoxResult ShowMessageBoxImpl(
   if (base::MessageLoopForUI::IsCurrent() &&
       base::RunLoop::IsRunningOnCurrentThread() &&
       ui::ResourceBundle::HasSharedInstance() &&
-      ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+      chrome::ShowAllDialogsWithViewsToolkit()) {
     return SimpleMessageBoxViews::Show(parent, title, message, type, yes_text,
                                        no_text, checkbox_text);
   }

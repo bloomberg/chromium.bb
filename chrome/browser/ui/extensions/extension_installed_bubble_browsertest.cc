@@ -5,12 +5,14 @@
 #include "base/auto_reset.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/extensions/extension_installed_bubble.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
+#include "chrome/common/chrome_features.h"
 #include "components/bubble/bubble_controller.h"
 #include "components/bubble/bubble_ui.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -159,8 +161,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest,
 // the BubbleUi is closed.
 IN_PROC_BROWSER_TEST_F(ExtensionInstalledBubbleBrowserTest, CloseBubbleUi) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kSecondaryUiMd);
-
+#if defined(OS_MACOSX)
+  scoped_feature_list.InitWithFeatures(
+      {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
+      {});
+#else
+  scoped_feature_list.InitWithFeatures({features::kSecondaryUiMd}, {});
+#endif
   auto bubble = MakeBubble("No action", base::nullopt);
   BubbleManager* manager = browser()->GetBubbleManager();
   manager->ShowBubble(std::move(bubble));

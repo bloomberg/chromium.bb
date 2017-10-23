@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/cocoa/tab_dialogs_cocoa.h"
 
 #include "base/memory/ptr_util.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #import "chrome/browser/ui/cocoa/hung_renderer_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
@@ -13,7 +14,6 @@
 #import "chrome/browser/ui/cocoa/validation_message_bubble_cocoa.h"
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "content/public/browser/web_contents.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 // static
 void TabDialogs::CreateForWebContents(content::WebContents* contents) {
@@ -21,7 +21,7 @@ void TabDialogs::CreateForWebContents(content::WebContents* contents) {
 
   if (!FromWebContents(contents)) {
     std::unique_ptr<TabDialogs> tab_dialogs =
-        ui::MaterialDesignController::IsSecondaryUiMaterial()
+        chrome::ShowAllDialogsWithViewsToolkit()
             ? base::MakeUnique<TabDialogsViewsMac>(contents)
             : base::MakeUnique<TabDialogsCocoa>(contents);
     contents->SetUserData(UserDataKey(), std::move(tab_dialogs));

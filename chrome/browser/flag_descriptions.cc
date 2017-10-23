@@ -1183,6 +1183,12 @@ const char kSettingsWindowName[] = "Show settings in a window";
 const char kSettingsWindowDescription[] =
     "Settings will be shown in a dedicated window instead of as a browser tab.";
 
+const char kShowAllDialogsWithViewsToolkitName[] =
+    "Show all dialogs with Views toolkit";
+const char kShowAllDialogsWithViewsToolkitDescription[] =
+    "All browser dialogs will be shown using the Views toolkit rather than "
+    "Cocoa. This requires <a href=\"#secondary-ui-md\">#secondary-ui-md</a>.";
+
 const char kShowAutofillSignaturesName[] = "Show autofill signatures.";
 const char kShowAutofillSignaturesDescription[] =
     "Annotates web forms with Autofill signatures as HTML attributes.";

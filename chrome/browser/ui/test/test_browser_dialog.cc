@@ -10,7 +10,9 @@
 #include "base/test/gtest_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/platform_util.h"
+#include "chrome/common/chrome_features.h"
 #include "ui/base/test/user_interactive_test_case.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/views/test/widget_test.h"
@@ -104,7 +106,9 @@ void TestBrowserDialog::RunDialog() {
   // already be initialized without MD - this is just to ensure Cocoa dialogs
   // are not selected.
   base::test::ScopedFeatureList enable_views_on_mac_always;
-  enable_views_on_mac_always.InitAndEnableFeature(features::kSecondaryUiMd);
+  enable_views_on_mac_always.InitWithFeatures(
+      {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
+      {});
 #endif
 
   views::Widget::Widgets widgets_before =
@@ -154,7 +158,13 @@ void TestBrowserDialog::RunDialog() {
 }
 
 void TestBrowserDialog::UseMdOnly() {
-  maybe_enable_md_.InitAndEnableFeature(features::kSecondaryUiMd);
+#if defined(OS_MACOSX)
+  maybe_enable_md_.InitWithFeatures(
+      {features::kSecondaryUiMd, features::kShowAllDialogsWithViewsToolkit},
+      {});
+#else
+  maybe_enable_md_.InitWithFeatures({features::kSecondaryUiMd}, {});
+#endif
 }
 
 bool TestBrowserDialog::AlwaysCloseAsynchronously() {

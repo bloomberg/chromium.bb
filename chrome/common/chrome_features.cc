@@ -408,6 +408,13 @@ const base::Feature kRuntimeMemoryLeakDetector{
 const base::Feature kSafeSearchUrlReporting{"SafeSearchUrlReporting",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_MACOSX)
+// Whether to show all dialogs with toolkit-views on Mac, rather than Cocoa. A
+// subset of "pilot" dialogs can be enabled with kExtendMdToSecondaryUi.
+const base::Feature kShowAllDialogsWithViewsToolkit{
+    "ShowAllDialogsWithViewsToolkit", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_MACOSX)
+
 #if defined(OS_ANDROID)
 // Enables separate notification channels in Android O for notifications from
 // different origins, instead of sending them all to a single 'Sites' channel.

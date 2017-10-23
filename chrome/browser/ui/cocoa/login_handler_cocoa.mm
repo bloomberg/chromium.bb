@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #include "chrome/browser/ui/login/login_handler.h"
@@ -22,7 +23,6 @@
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;
@@ -135,7 +135,7 @@ class LoginHandlerMac : public LoginHandler,
 // static
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
                                    net::URLRequest* request) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (chrome::ShowPilotDialogsWithViewsToolkit())
     return chrome::CreateLoginHandlerViews(auth_info, request);
   return new LoginHandlerMac(auth_info, request);
 }

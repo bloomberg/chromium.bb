@@ -52,7 +52,7 @@ class CollectedCookiesTestMd : public CollectedCookiesTest {
 
   // CollectedCookiesTest:
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+    UseMdOnly();
     CollectedCookiesTest::SetUp();
   }
 

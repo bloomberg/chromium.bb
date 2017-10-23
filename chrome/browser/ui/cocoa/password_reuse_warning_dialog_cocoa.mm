@@ -7,7 +7,6 @@
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/password_reuse_warning_view_controller.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 namespace safe_browsing {
 
@@ -17,7 +16,7 @@ void ShowPasswordReuseModalWarningDialog(
     OnWarningDone done_callback) {
   DCHECK(web_contents);
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     chrome::ShowPasswordReuseWarningDialog(web_contents, service,
                                            std::move(done_callback));
     return;

@@ -55,7 +55,6 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/controls/hyperlink_text_view.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 using content::BrowserThread;
@@ -166,7 +165,7 @@ gfx::Point ExtensionInstalledBubble::GetAnchorPoint(
 
 // Implemented here to create the platform specific instance of the BubbleUi.
 std::unique_ptr<BubbleUi> ExtensionInstalledBubble::BuildBubbleUi() {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (chrome::ShowAllDialogsWithViewsToolkit())
     return chrome::BuildViewsExtensionInstalledBubbleUi(this);
 
   // |controller| is owned by the parent window.

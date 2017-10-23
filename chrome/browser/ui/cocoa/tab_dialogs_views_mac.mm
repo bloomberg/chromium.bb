@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
 #import "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_controller.h"
@@ -16,7 +17,6 @@
 #include "chrome/browser/ui/views/sync/profile_signin_confirmation_dialog_views.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
-#include "ui/base/material_design/material_design_controller.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 namespace {
@@ -47,7 +47,7 @@ void TabDialogsViewsMac::ShowProfileSigninConfirmation(
 }
 
 void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
     TabDialogsCocoa::ShowManagePasswordsBubble(user_action);
     return;
   }
@@ -90,7 +90,7 @@ void TabDialogsViewsMac::ShowManagePasswordsBubble(bool user_action) {
 
 void TabDialogsViewsMac::HideManagePasswordsBubble() {
   // Close toolkit-views bubble.
-  if (!ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (!chrome::ShowAllDialogsWithViewsToolkit()) {
     TabDialogsCocoa::HideManagePasswordsBubble();
     return;
   }

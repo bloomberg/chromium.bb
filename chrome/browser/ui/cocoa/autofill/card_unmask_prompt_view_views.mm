@@ -3,15 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/cocoa/autofill/card_unmask_prompt_view_bridge.h"
+#include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
 #include "chrome/browser/ui/views/autofill/card_unmask_prompt_views.h"
-#include "ui/base/material_design/material_design_controller.h"
 
 namespace autofill {
 
 CardUnmaskPromptView* CreateCardUnmaskPromptView(
     CardUnmaskPromptController* controller,
     content::WebContents* web_contents) {
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
+  if (chrome::ShowAllDialogsWithViewsToolkit())
     return new CardUnmaskPromptViews(controller, web_contents);
   return new CardUnmaskPromptViewBridge(controller, web_contents);
 }

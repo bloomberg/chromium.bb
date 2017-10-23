@@ -28,7 +28,6 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #import "ui/base/cocoa/nsview_additions.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
@@ -293,7 +292,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
           web_contents,
           profile_);
 
-  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
+  if (chrome::ShowAllDialogsWithViewsToolkit()) {
     gfx::Point origin = gfx::ScreenPointFromNSPoint(anchor);
     chrome::ContentSettingBubbleViewsBridge::Show(
         [web_contents->GetTopLevelNativeWindow() contentView], model,
