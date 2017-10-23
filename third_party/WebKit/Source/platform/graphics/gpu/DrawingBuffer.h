@@ -306,17 +306,10 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     bool pixel_pack_buffer_binding_dirty_ = false;
   };
 
-  // All parameters necessary to generate the texture for the ColorBuffer.
-  struct ColorBufferParameters {
-    DISALLOW_NEW();
-    GLenum target = 0;
-    bool allocate_alpha_channel = false;
-  };
-
   struct ColorBuffer : public RefCounted<ColorBuffer> {
     ColorBuffer(DrawingBuffer*,
-                const ColorBufferParameters&,
                 const IntSize&,
+                GLenum target,
                 GLuint texture_id,
                 GLuint image_id,
                 std::unique_ptr<gfx::GpuMemoryBuffer>);
@@ -327,9 +320,8 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
     // ColorBuffers.
     RefPtr<DrawingBuffer> drawing_buffer;
 
-    const ColorBufferParameters parameters;
     const IntSize size;
-
+    const GLenum target = 0;
     const GLuint texture_id = 0;
     const GLuint image_id = 0;
     std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer;
@@ -393,13 +385,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
                                const gpu::SyncToken&,
                                bool lost_resource);
 
-  // The texture parameters to use for a texture that will be backed by a
-  // CHROMIUM_image, backed by a GpuMemoryBuffer.
-  ColorBufferParameters GpuMemoryBufferColorBufferParameters();
-
-  // The texture parameters to use for an ordinary GL texture.
-  ColorBufferParameters TextureColorBufferParameters();
-
   // Attempts to allocator storage for, or resize all buffers. Returns whether
   // the operation was successful.
   bool ResizeDefaultFramebuffer(const IntSize&);
@@ -452,9 +437,6 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   // Whether the WebGL client wants a depth or stencil buffer.
   bool WantDepthOrStencil();
 
-  // The format to use when creating a multisampled renderbuffer.
-  GLenum GetMultisampledRenderbufferFormat();
-
   // Helpers to ensure correct behavior of BlitFramebuffer when using
   // an emulated RGB CHROMIUM_image back buffer.
   bool SetupRGBEmulationForBlitFramebuffer(bool is_user_draw_framebuffer_bound);
@@ -472,7 +454,13 @@ class PLATFORM_EXPORT DrawingBuffer : public cc::TextureLayerClient,
   std::unique_ptr<Extensions3DUtil> extensions_util_;
   IntSize size_ = {-1, -1};
   const bool discard_framebuffer_supported_;
+  // Did the user request an alpha channel be allocated.
   const bool want_alpha_channel_;
+  // Do we create an alpha channel for our allocation.
+  bool allocate_alpha_channel_ = false;
+  // Did the underlying allocation end up getting created with an alpha channel
+  // that we can write to (even if we didn't ask for it).
+  bool have_alpha_channel_ = false;
   const bool premultiplied_alpha_;
   const bool software_rendering_;
   bool has_implicit_stencil_buffer_ = false;
