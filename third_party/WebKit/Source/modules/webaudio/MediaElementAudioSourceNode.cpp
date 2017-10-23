@@ -204,7 +204,7 @@ void MediaElementAudioSourceHandler::Process(size_t number_of_frames) {
               ->PostTask(BLINK_FROM_HERE,
                          CrossThreadBind(
                              &MediaElementAudioSourceHandler::PrintCORSMessage,
-                             WrapRefPtr(this), current_src_string_));
+                             WrapRefCounted(this), current_src_string_));
         }
       }
       output_bus->Zero();

@@ -36,7 +36,7 @@ CustomEvent::CustomEvent(ScriptState* script_state,
                          const AtomicString& type,
                          const CustomEventInit& initializer)
     : Event(type, initializer), detail_(this) {
-  world_ = WrapRefPtr(&script_state->World());
+  world_ = WrapRefCounted(&script_state->World());
   if (initializer.hasDetail()) {
     detail_.Set(initializer.detail().GetIsolate(),
                 initializer.detail().V8Value());
@@ -51,7 +51,7 @@ void CustomEvent::initCustomEvent(ScriptState* script_state,
                                   bool cancelable,
                                   const ScriptValue& script_value) {
   initEvent(type, can_bubble, cancelable);
-  world_ = WrapRefPtr(&script_state->World());
+  world_ = WrapRefCounted(&script_state->World());
   if (!IsBeingDispatched() && !script_value.IsEmpty())
     detail_.Set(script_value.GetIsolate(), script_value.V8Value());
 }

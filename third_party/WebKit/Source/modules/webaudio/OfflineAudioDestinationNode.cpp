@@ -115,7 +115,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
     GetRenderingThread()->GetWebTaskRunner()->PostTask(
         BLINK_FROM_HERE,
         CrossThreadBind(&OfflineAudioDestinationHandler::StartOfflineRendering,
-                        WrapRefPtr(this)));
+                        WrapRefCounted(this)));
     return;
   }
 
@@ -124,7 +124,7 @@ void OfflineAudioDestinationHandler::StartRendering() {
   GetRenderingThread()->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
       CrossThreadBind(&OfflineAudioDestinationHandler::DoOfflineRendering,
-                      WrapRefPtr(this)));
+                      WrapRefCounted(this)));
 }
 
 void OfflineAudioDestinationHandler::StopRendering() {
@@ -205,7 +205,7 @@ void OfflineAudioDestinationHandler::DoOfflineRendering() {
       GetRenderingThread()->GetWebTaskRunner()->PostTask(
           BLINK_FROM_HERE,
           WTF::Bind(&OfflineAudioDestinationHandler::DoOfflineRendering,
-                    WrapRefPtr(this)));
+                    WrapRefCounted(this)));
       return;
     }
 
@@ -253,10 +253,10 @@ void OfflineAudioDestinationHandler::SuspendOfflineRendering() {
   if (Context()->GetExecutionContext()) {
     TaskRunnerHelper::Get(TaskType::kMediaElementEvent,
                           Context()->GetExecutionContext())
-        ->PostTask(
-            BLINK_FROM_HERE,
-            CrossThreadBind(&OfflineAudioDestinationHandler::NotifySuspend,
-                            WrapRefPtr(this), Context()->CurrentSampleFrame()));
+        ->PostTask(BLINK_FROM_HERE,
+                   CrossThreadBind(
+                       &OfflineAudioDestinationHandler::NotifySuspend,
+                       WrapRefCounted(this), Context()->CurrentSampleFrame()));
   }
 }
 
@@ -270,7 +270,7 @@ void OfflineAudioDestinationHandler::FinishOfflineRendering() {
         ->PostTask(
             BLINK_FROM_HERE,
             CrossThreadBind(&OfflineAudioDestinationHandler::NotifyComplete,
-                            WrapRefPtr(this)));
+                            WrapRefCounted(this)));
   }
 }
 

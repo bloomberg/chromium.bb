@@ -168,7 +168,7 @@ AudioWorkletNode::AudioWorkletNode(
                                                  param_info.MinValue(),
                                                  param_info.MaxValue());
     audio_param_map.Set(param_name, audio_param);
-    param_handler_map.Set(param_name, WrapRefPtr(&audio_param->Handler()));
+    param_handler_map.Set(param_name, WrapRefCounted(&audio_param->Handler()));
 
     if (options.hasParameterData()) {
       for (const auto& key_value_pair : options.parameterData()) {

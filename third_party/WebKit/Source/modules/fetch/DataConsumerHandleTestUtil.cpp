@@ -233,7 +233,7 @@ void DataConsumerHandleTestUtil::ReplayingHandle::Context::Notify() {
   DCHECK(reader_thread_);
   reader_thread_->GetWebTaskRunner()->PostTask(
       BLINK_FROM_HERE,
-      CrossThreadBind(&Context::NotifyInternal, WrapRefPtr(this)));
+      CrossThreadBind(&Context::NotifyInternal, WrapRefCounted(this)));
 }
 
 void DataConsumerHandleTestUtil::ReplayingHandle::Context::NotifyInternal() {

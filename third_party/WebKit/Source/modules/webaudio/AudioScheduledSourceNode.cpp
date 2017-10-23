@@ -231,7 +231,7 @@ void AudioScheduledSourceHandler::Finish() {
                           Context()->GetExecutionContext())
         ->PostTask(BLINK_FROM_HERE,
                    CrossThreadBind(&AudioScheduledSourceHandler::NotifyEnded,
-                                   WrapRefPtr(this)));
+                                   WrapRefCounted(this)));
   }
 }
 
