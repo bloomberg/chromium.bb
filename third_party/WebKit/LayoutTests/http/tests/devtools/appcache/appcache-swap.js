@@ -1,11 +1,17 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/appcache/appcache-test.js"></script>
-<script src="../../inspector/network-test.js"></script>
-<script src="../../inspector/resources-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(
+      `Tests that application cache model keeps track of manifest urls and statuses correctly after UPDATEREADY event and swapCache() call.\n`);
+  await TestRunner.loadModule('application_test_runner');
+  await TestRunner.loadModule('network_test_runner');
+  await TestRunner.showPanel('resources');
+  await TestRunner.loadHTML(`
+      <a href="https://bugs.webkit.org/show_bug.cgi?id=72123">Bug 72123</a>
+    `);
+
   var frameId1;
   var frameId2;
 
@@ -52,11 +58,4 @@ function test() {
     ApplicationTestRunner.dumpApplicationCache();
     TestRunner.completeTest();
   }
-}
-</script>
-</head>
-<body onload="runTest()">
-<p>Tests that application cache model keeps track of manifest urls and statuses correctly after UPDATEREADY event and swapCache() call.</p>
-<a href="https://bugs.webkit.org/show_bug.cgi?id=72123">Bug 72123</a>
-</body>
-</html>
+})();

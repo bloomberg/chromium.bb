@@ -635,7 +635,7 @@ crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
-crbug.com/749251 [ Mac ] http/tests/devtools/application-panel/resources-panel-websql.html [ Failure Pass ]
+crbug.com/749251 [ Mac ] http/tests/devtools/application-panel/resources-panel-websql.js [ Failure Pass ]
 
 crbug.com/761798 [ Mac ] inspector-protocol/emulation/device-emulation-desktop.js [ Failure ]
 
@@ -1677,8 +1677,8 @@ crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.html [ Pass
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/indexeddb/database-refresh-view.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/network/network-filters.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/network/network-filters.html [ Pass Failure ]
-crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
-crbug.com/626703 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-selection-on-reload.html [ Pass Failure ]
+crbug.com/626703 http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
+crbug.com/626703 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-selection-on-reload.js [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
 crbug.com/626703 virtual/mojo-loading/http/tests/devtools/extensions/extensions-sidebar.html [ Pass Failure ]
 crbug.com/626703 http/tests/devtools/network/network-columns-visible.html [ Pass Failure ]
@@ -2620,8 +2620,8 @@ crbug.com/678499 virtual/mojo-loading/http/tests/security/contentSecurityPolicy/
 crbug.com/680050 http/tests/devtools/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/sources/debugger-ui/watch-expressions-panel-switch.html [ Pass Timeout ]
 
-crbug.com/747751 http/tests/devtools/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
-crbug.com/747751 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-resource-preview.html [ Failure Pass ]
+crbug.com/747751 http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
+crbug.com/747751 virtual/mojo-loading/http/tests/devtools/application-panel/resources-panel-resource-preview.js [ Failure Pass ]
 
 crbug.com/689781 external/wpt/media-source/mediasource-duration.html [ Failure Pass ]
 
