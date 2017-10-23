@@ -1,4 +1,4 @@
-// Copyright 2017 the Chromium Authors. All rights reserved.
+// Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,7 +13,16 @@ namespace {
 
 class ZeroconfPrinterDetectorTest : public PrinterDetectorTest {};
 
-TEST_F(ZeroconfPrinterDetectorTest, ZeroconfPrinterDetectorStartObservers) {
+// Flaky on ASAN. See http://crbug.com/777236.
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_ZeroconfPrinterDetectorStartObservers \
+  DISABLED_ZeroconfPrinterDetectorStartObservers
+#else
+#define MAYBE_ZeroconfPrinterDetectorStartObservers \
+  ZeroconfPrinterDetectorStartObservers
+#endif
+TEST_F(ZeroconfPrinterDetectorTest,
+       MAYBE_ZeroconfPrinterDetectorStartObservers) {
   TestingProfile testing_profile;
   std::unique_ptr<PrinterDetector> zeroconf_printer_detector =
       ZeroconfPrinterDetector::Create(&testing_profile);
