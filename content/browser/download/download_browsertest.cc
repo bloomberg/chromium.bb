@@ -3076,7 +3076,9 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBody) {
 // Verify the case that the first response is HTTP 200, and then interrupted,
 // and the second response is HTTP 404, the response body of 404 should be
 // fetched.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest, FetchErrorResponseBodyResumption) {
+// Flaky. See http://crbug.com/769993.
+IN_PROC_BROWSER_TEST_F(DownloadContentTest,
+                       DISABLED_FetchErrorResponseBodyResumption) {
   SetupErrorInjectionDownloads();
   const std::string kNotFoundResponseBody = "This is 404 response body.";
 
