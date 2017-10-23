@@ -112,11 +112,6 @@ class CommandBufferSetup {
     auto* command_line = base::CommandLine::ForCurrentProcess();
     ALLOW_UNUSED_LOCAL(command_line);
 
-#if defined(GPU_FUZZER_USE_PASSTHROUGH_CMD_DECODER)
-    command_line->AppendSwitch(switches::kUsePassthroughCmdDecoder);
-    recreate_context_ = true;
-#endif
-
 #if defined(GPU_FUZZER_USE_ANGLE)
     command_line->AppendSwitchASCII(switches::kUseGL,
                                     gl::kGLImplementationANGLEName);

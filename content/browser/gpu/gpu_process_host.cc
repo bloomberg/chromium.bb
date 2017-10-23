@@ -160,7 +160,7 @@ static const char* const kSwitchNames[] = {
     switches::kGpuTestingGLRenderer,
     switches::kGpuTestingGLVersion,
     switches::kDisableGpuDriverBugWorkarounds,
-    switches::kUsePassthroughCmdDecoder,
+    switches::kUseCmdDecoder,
     switches::kIgnoreGpuBlacklist,
     switches::kForceVideoOverlays,
 };

@@ -1456,7 +1456,10 @@ COMMON_GTESTS = {
         ],
       },
     ],
-    'desktop_args': ['--use-gpu-in-tests']
+    'desktop_args': [
+      '--use-gpu-in-tests',
+      '--use-cmd-decoder=validating',
+    ]
   },
   'gl_tests_passthrough': {
     'tester_configs': [
@@ -1474,7 +1477,7 @@ COMMON_GTESTS = {
     'test': 'gl_tests',
     'desktop_args': [
       '--use-gpu-in-tests',
-      '--use-passthrough-cmd-decoder',
+      '--use-cmd-decoder=passthrough',
      ]
   },
   'gl_unittests': {
@@ -1924,6 +1927,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
         ],
       },
     ],
+    'extra_browser_args': [
+      '--use-cmd-decoder=validating',
+    ],
     'asan_args': ['--is-asan'],
     'android_swarming': {
       # On desktop platforms these don't take very long (~7 minutes),
@@ -1966,6 +1972,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-angle=d3d9',
+      '--use-cmd-decoder=validating',
     ],
     'asan_args': ['--is-asan'],
     'swarming': {
@@ -2017,6 +2024,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-angle=gl',
+      '--use-cmd-decoder=validating',
     ],
     'asan_args': ['--is-asan'],
     'swarming': {
@@ -2043,7 +2051,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-angle=d3d11',
-      '--use-passthrough-cmd-decoder',
+      '--use-cmd-decoder=passthrough',
     ],
     'asan_args': ['--is-asan'],
     'swarming': {
@@ -2070,7 +2078,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-gl=angle',
       '--use-angle=gl',
-      '--use-passthrough-cmd-decoder',
+      '--use-cmd-decoder=passthrough',
     ],
     'asan_args': ['--is-asan'],
     'swarming': {
@@ -2105,6 +2113,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       },
     ],
     'target_name': 'webgl_conformance',
+    'extra_browser_args': [
+      '--use-cmd-decoder=validating',
+    ],
     'args': [
       '--webgl-conformance-version=2.0.1',
       # The current working directory when run via isolate is
@@ -2156,7 +2167,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'extra_browser_args': [
       '--use-gl=angle',
       '--use-angle=gl',
-      '--use-passthrough-cmd-decoder',
+      '--use-cmd-decoder=passthrough',
     ],
     'args': [
       '--webgl-conformance-version=2.0.1',
@@ -2200,6 +2211,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-angle=gl',
+      '--use-cmd-decoder=validating',
     ],
     'args': [
       '--webgl-conformance-version=2.0.1',
@@ -2236,7 +2248,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'target_name': 'webgl_conformance',
     'extra_browser_args': [
       '--use-angle=d3d11',
-      '--use-passthrough-cmd-decoder',
+      '--use-cmd-decoder=passthrough',
     ],
     'args': [
       '--webgl-conformance-version=2.0.1',
