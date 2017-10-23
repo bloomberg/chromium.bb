@@ -955,7 +955,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   """
   REMOTE_STATEFUL_PATH_TO_CHECK = ['/var', '/home', '/mnt/stateful_partition']
   REMOTE_STATEFUL_TEST_FILENAME = '.test_file_to_be_deleted'
-  REMOTE_UPDATED_MARKERFILE_PATH = '/var/run/update_engine_autoupdate_completed'
+  REMOTE_UPDATED_MARKERFILE_PATH = '/run/update_engine_autoupdate_completed'
   REMOTE_LAB_MACHINE_FILE_PATH = '/mnt/stateful_partition/.labmachine'
   KERNEL_A = {'name': 'KERN-A', 'kernel': 2, 'root': 3}
   KERNEL_B = {'name': 'KERN-B', 'kernel': 4, 'root': 5}
