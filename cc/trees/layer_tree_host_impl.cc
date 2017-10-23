@@ -2989,24 +2989,6 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
     scrolling_node = FindScrollNodeForDeviceViewportPoint(
         device_viewport_point, type, layer_impl, &scroll_on_main_thread,
         &scroll_status.main_thread_scrolling_reasons);
-    if (!scroll_on_main_thread && scrolling_node &&
-        (settings_.is_layer_tree_for_subframe ||
-         (!scrolling_node->scrolls_outer_viewport &&
-          !scrolling_node->scrolls_inner_viewport))) {
-      const auto& container_bounds = scrolling_node->container_bounds;
-      int size = container_bounds.GetCheckedArea().ValueOrDefault(
-          std::numeric_limits<int>::max());
-      DCHECK_GT(size, 0);
-      if (IsWheelBasedScroll(type)) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Scroll.ScrollerSize.OnScroll_Wheel",
-                                    size, 1, kScrollerSizeLargestBucket,
-                                    kScrollerSizeBucketCount);
-      } else {
-        UMA_HISTOGRAM_CUSTOM_COUNTS("Event.Scroll.ScrollerSize.OnScroll_Touch",
-                                    size, 1, kScrollerSizeLargestBucket,
-                                    kScrollerSizeBucketCount);
-      }
-    }
   }
 
   if (scroll_on_main_thread) {

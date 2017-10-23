@@ -7,14 +7,6 @@
 
 namespace cc {
 
-// Use the two constants to add scroller size related UMA metrics.
-// The goal of the metrics is to find the frequency of scrollers of
-// different sizes that get scrolled. This experiment is aiming at small
-// scrollers therefore the big ones, e.g. larger than 400px * 500px, will get
-// capped into one bucket.
-static constexpr int kScrollerSizeLargestBucket = 200000;
-static constexpr int kScrollerSizeBucketCount = 50;
-
 // Use the two constants to record GPU memory for tilings. Any layer that
 // costs more than ~1GB will get capped.
 static constexpr int kGPUMemoryForTilingsLargestBucketKb = 1000000;
