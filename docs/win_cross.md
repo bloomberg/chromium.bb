@@ -1,7 +1,7 @@
 # Cross-compiling Chrome/win
 
-It's possible to most parts of the codebase on a Linux (and soon, Mac) host
-while targeting Windows.  This document describes how to set that up, and
+It's possible to build most parts of the codebase on a Linux (and soon, Mac)
+host while targeting Windows.  This document describes how to set that up, and
 current restrictions.
 
 What does *not* work:
@@ -13,8 +13,8 @@ What does *not* work:
 
 All other targets build fine (including `chrome`, `browser_tests`, ...).
 
-Uses of `.asm` files have been stubbed out.  As a result, some of skia's
-software rendering paths are not present in cross builds, crashpad cannot
+Uses of `.asm` files have been stubbed out.  As a result, some of Skia's
+software rendering paths are not present in cross builds, Crashpad cannot
 report crashes, and NaCl defaults to disabled and cannot be enabled in
 cross builds ([.asm bug](https://crbug.com/762167)).
 
@@ -22,7 +22,15 @@ cross builds ([.asm bug](https://crbug.com/762167)).
 
 1. Tell gclient that you need Windows build dependencies by adding
    `target_os = ['win']` to the end of your `.gclient`.  (If you already
-   have a `target_os` line in there, just add `'win'` to the list.)
+   have a `target_os` line in there, just add `'win'` to the list.) e.g.
+
+       solutions = [
+         {
+           ...
+         }
+       ]
+       target_os = ['android', 'win']
+
 1. `gclient sync`, follow instructions on screen.
 
 If you're at Google, this will automatically download the Windows SDK for you.
