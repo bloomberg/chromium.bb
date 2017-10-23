@@ -98,6 +98,9 @@ const char kUIDisablePartialSwap[] = "ui-disable-partial-swap";
 // Red: Overdrawn four or more times.
 const char kShowOverdrawFeedback[] = "show-overdraw-feedback";
 
+// Use draw occlusion to skip draw quads when they are not shown on screen.
+const char kEnableDrawOcclusion[] = "enable-draw-occlusion";
+
 // Use SkiaRenderer instead of GLRenderer for direct rendering.
 const char kUseSkiaRenderer[] = "use-skia-renderer";
 

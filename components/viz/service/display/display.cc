@@ -10,10 +10,14 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
+#include "cc/base/math_util.h"
+#include "cc/base/simple_enclosed_region.h"
 #include "cc/benchmarks/benchmark_instrumentation.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/draw_quad.h"
+#include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -28,6 +32,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/vulkan/features.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/rect_conversions.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "cc/output/vulkan_renderer.h"
@@ -308,6 +313,14 @@ bool Display::DrawAndSwap() {
   client_->DisplayWillDrawAndSwap(should_draw, frame.render_pass_list);
 
   if (should_draw) {
+    if (settings_.enable_draw_occlusion) {
+      base::ElapsedTimer draw_occlusion_timer;
+      RemoveOverdrawQuads(&frame);
+      UMA_HISTOGRAM_COUNTS_1000(
+          "Compositing.Display.Draw.Occlusion.Calculation.Time",
+          draw_occlusion_timer.Elapsed().InMicroseconds());
+    }
+
     bool disable_image_filtering =
         frame.metadata.is_resourceless_software_draw_with_scroll_or_animation;
     if (software_renderer_) {
@@ -449,6 +462,77 @@ void Display::ForceImmediateDrawAndSwapIfPossible() {
 void Display::SetNeedsOneBeginFrame() {
   if (scheduler_)
     scheduler_->SetNeedsOneBeginFrame();
+}
+
+void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
+  if (frame->render_pass_list.empty())
+    return;
+
+  const SharedQuadState* last_sqs = nullptr;
+  cc::SimpleEnclosedRegion occlusion_region;
+  bool current_sqs_intersects_occlusion = false;
+  for (const auto& pass : frame->render_pass_list) {
+    // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
+    // draw occlusion on render pass.
+    if (!pass->filters.IsEmpty() || !pass->background_filters.IsEmpty())
+      continue;
+
+    // TODO(yiyix): Perform draw occlusion inside the render pass with
+    // transparent background.
+    if (pass != frame->render_pass_list.back())
+      continue;
+
+    for (auto quad = pass->quad_list.begin(); quad != pass->quad_list.end();) {
+      // RenderPassDrawQuad is a special type of DrawQuad where the visible_rect
+      // of shared quad state is not entirely covered by draw quads in it.
+      if (quad->material == ContentDrawQuadBase::Material::RENDER_PASS) {
+        ++quad;
+        continue;
+      }
+
+      if (!last_sqs)
+        last_sqs = quad->shared_quad_state;
+
+      gfx::Transform transform =
+          quad->shared_quad_state->quad_to_target_transform;
+
+      // TODO(yiyix): Find a rect interior to each transformed quad.
+      if (last_sqs != quad->shared_quad_state) {
+        if (last_sqs->opacity == 1 && last_sqs->are_contents_opaque &&
+            last_sqs->quad_to_target_transform.Preserves2dAxisAlignment()) {
+          gfx::Rect sqs_rect_in_target =
+              cc::MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
+                  last_sqs->quad_to_target_transform,
+                  last_sqs->visible_quad_layer_rect);
+
+          if (last_sqs->is_clipped)
+            sqs_rect_in_target.Intersect(last_sqs->clip_rect);
+
+          occlusion_region.Union(sqs_rect_in_target);
+        }
+        // If the visible_rect of the current shared quad state does not
+        // intersect with the occlusion rect, we can skip draw occlusion checks
+        // for quads in the current SharedQuadState.
+        last_sqs = quad->shared_quad_state;
+        current_sqs_intersects_occlusion =
+            occlusion_region.Intersects(cc::MathUtil::MapEnclosingClippedRect(
+                transform, last_sqs->visible_quad_layer_rect));
+      }
+
+      if (!current_sqs_intersects_occlusion) {
+        quad++;
+        continue;
+      }
+
+      // TODO(yiyix): Using profile tools to analyze bottleneck of this
+      // algorithm.
+      if (occlusion_region.Contains(cc::MathUtil::MapEnclosingClippedRect(
+              transform, quad->visible_rect)))
+        quad = pass->quad_list.EraseAndInvalidateAllPointers(quad);
+      else
+        quad++;
+    }
+  }
 }
 
 }  // namespace viz

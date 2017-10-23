@@ -9890,6 +9890,13 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="Compositing.Display.Draw.Occlusion" units="microseconds">
+  <owner>yiyix@chromium.org</owner>
+  <summary>
+    Time spent to remove invisible quads from the quad_list in CompositorFrame.
+  </summary>
+</histogram>
+
 <histogram
     name="Compositing.DisplayListRecordingSource.UpdateInvalidatedAreaPerMs"
     units="pixels/ms">

@@ -739,6 +739,9 @@ extern const char kShowAutofillTypePredictionsDescription[];
 extern const char kShowOverdrawFeedbackName[];
 extern const char kShowOverdrawFeedbackDescription[];
 
+extern const char kEnableDrawOcclusionName[];
+extern const char kEnableDrawOcclusionDescription[];
+
 extern const char kShowSavedCopyName[];
 extern const char kShowSavedCopyDescription[];
 extern const char kEnableShowSavedCopyPrimary[];
