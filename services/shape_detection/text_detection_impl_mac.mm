@@ -59,7 +59,7 @@ void TextDetectionImplMac::Detect(const SkBitmap& bitmap,
     result->bounding_box = std::move(boundingbox);
 
     // Enumerate corner points starting from top-left in clockwise fashion:
-    // https://wicg.github.io/shape-detection-api/#dom-detectedtext-cornerpoints
+    // https://wicg.github.io/shape-detection-api/text.html#dom-detectedtext-cornerpoints
     result->corner_points.emplace_back(f.topLeft.x, height - f.topLeft.y);
     result->corner_points.emplace_back(f.topRight.x, height - f.topRight.y);
     result->corner_points.emplace_back(f.bottomRight.x,
