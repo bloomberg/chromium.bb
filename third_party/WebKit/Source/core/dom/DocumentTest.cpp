@@ -939,4 +939,31 @@ TEST_F(DocumentTest, ViewportPropagationNoRecalc) {
   EXPECT_EQ(1, new_element_count - old_element_count);
 }
 
+// TODO(pdr): Add support to the root layer scrolling codepaths so this test
+// passes (https://crbug.com/776607).
+TEST_F(DocumentTest, ElementFromPointOnScrollbar) {
+  // This test requires that scrollbars take up space.
+  ScopedOverlayScrollbarsForTest no_overlay_scrollbars(false);
+
+  SetHtmlInnerHTML(
+      "<style>"
+      "  body { margin: 0; }"
+      "</style>"
+      "<div id='content'>content</div>");
+
+  // A hit test close to the bottom of the page without scrollbars should hit
+  // the body element.
+  EXPECT_EQ(GetDocument().ElementFromPoint(1, 590), GetDocument().body());
+
+  // Add width which will cause a horizontal scrollbar.
+  auto* content = GetDocument().getElementById("content");
+  content->setAttribute("style", "width: 101%;");
+
+  // A hit test on the horizontal scrollbar should not return an element because
+  // it is outside the viewport.
+  EXPECT_EQ(GetDocument().ElementFromPoint(1, 590), nullptr);
+  // A hit test above the horizontal scrollbar should hit the body element.
+  EXPECT_EQ(GetDocument().ElementFromPoint(1, 580), GetDocument().body());
+}
+
 }  // namespace blink
