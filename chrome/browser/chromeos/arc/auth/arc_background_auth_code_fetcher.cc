@@ -47,10 +47,12 @@ const char kAuthTokenExchangeEndPoint[] =
 
 ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
     Profile* profile,
-    ArcAuthContext* context)
+    ArcAuthContext* context,
+    bool initial_signin)
     : OAuth2TokenService::Consumer(kConsumerName),
       profile_(profile),
       context_(context),
+      initial_signin_(initial_signin),
       weak_ptr_factory_(this) {}
 
 ArcBackgroundAuthCodeFetcher::~ArcBackgroundAuthCodeFetcher() = default;
@@ -180,7 +182,10 @@ void ArcBackgroundAuthCodeFetcher::ResetFetchers() {
 void ArcBackgroundAuthCodeFetcher::ReportResult(
     const std::string& auth_code,
     OptInSilentAuthCode uma_status) {
-  UpdateSilentAuthCodeUMA(uma_status);
+  if (initial_signin_)
+    UpdateSilentAuthCodeUMA(uma_status);
+  else
+    UpdateReauthorizationSilentAuthCodeUMA(uma_status);
   base::ResetAndReturn(&callback_).Run(!auth_code.empty(), auth_code);
 }
 

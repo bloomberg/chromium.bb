@@ -1370,7 +1370,7 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="ArcOptInSilentAuthCode">
   <summary>Defines Arc OptIn Silent Auth code state</summary>
-  <int value="0" label="Disabled"/>
+  <int value="0" label="Disabled (deprecated)"/>
   <int value="1" label="Success"/>
   <int value="2" label="HTTP Context cannot be prepared"/>
   <int value="3" label="No LST token is available"/>
@@ -1402,6 +1402,8 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="16" label="ARC instance is stopped before complete provisioning"/>
   <int value="17" label="Overall sign in timeout"/>
   <int value="19" label="Network is unavailable"/>
+  <int value="20" label="Disabled"/>
+  <int value="21" label="Already provisioned"/>
 </enum>
 
 <enum name="ArcVideoDecodeAcceleratorResult">

@@ -68,7 +68,7 @@ class FakeAuthInstance : public mojom::AuthInstance {
 
   void RequestAccountInfo(base::Closure done_closure) {
     done_closure_ = done_closure;
-    host_->RequestAccountInfo();
+    host_->RequestAccountInfo(true);
   }
 
   mojom::AccountInfo* account_info() { return account_info_.get(); }
