@@ -60,6 +60,9 @@ bool BrowserPluginEmbedder::NotifyScreenInfoChanged(
 }
 
 void BrowserPluginEmbedder::ScreenInfoChanged() {
+  if (!GetBrowserPluginGuestManager())
+    return;
+
   GetBrowserPluginGuestManager()->ForEachGuest(web_contents(), base::Bind(
       &BrowserPluginEmbedder::NotifyScreenInfoChanged));
 }
