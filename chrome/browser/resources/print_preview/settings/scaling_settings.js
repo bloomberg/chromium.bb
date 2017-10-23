@@ -227,7 +227,7 @@ cr.define('print_preview', function() {
         return;
       // Convert value to a valid number or ''. The scaling ticket item assumes
       // the only invalid value is ''.
-      var value =
+      const value =
           (this.inputField_.validity.valid && this.inputField_.value != '') ?
           this.inputField_.valueAsNumber.toString() :
           '';

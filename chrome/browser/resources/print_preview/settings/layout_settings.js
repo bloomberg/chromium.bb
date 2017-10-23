@@ -58,8 +58,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onSelectChange_: function() {
-      var select = this.select_;
-      var isLandscape =
+      const select = this.select_;
+      const isLandscape =
           select.options[select.selectedIndex].value == 'landscape';
       this.landscapeTicketItem_.updateValue(isLandscape);
     },
@@ -81,10 +81,10 @@ cr.define('print_preview', function() {
      */
     onLandscapeTicketItemChange_: function() {
       if (this.isAvailable()) {
-        var select = this.select_;
-        var valueToSelect =
+        const select = this.select_;
+        const valueToSelect =
             this.landscapeTicketItem_.getValue() ? 'landscape' : 'portrait';
-        for (var i = 0; i < select.options.length; i++) {
+        for (let i = 0; i < select.options.length; i++) {
           if (select.options[i].value == valueToSelect) {
             select.selectedIndex = i;
             break;

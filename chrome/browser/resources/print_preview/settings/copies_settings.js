@@ -139,7 +139,7 @@ cr.define('print_preview', function() {
      */
     onTextfieldTimeout_: function() {
       this.textfieldTimeout_ = null;
-      var newValue =
+      const newValue =
           (this.inputField_.validity.valid && this.inputField_.value != '') ?
           this.inputField_.valueAsNumber.toString() :
           '';

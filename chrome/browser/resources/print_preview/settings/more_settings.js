@@ -124,18 +124,18 @@ cr.define('print_preview', function() {
       this.getChildElement('.more-settings-label').textContent =
           loadTimeData.getString(
               this.isExpanded ? 'lessOptionsLabel' : 'moreOptionsLabel');
-      var iconEl = this.getChildElement('.more-settings-icon');
+      const iconEl = this.getChildElement('.more-settings-icon');
       iconEl.classList.toggle('more-settings-icon-plus', !this.isExpanded);
       iconEl.classList.toggle('more-settings-icon-minus', this.isExpanded);
 
-      var availableSections =
+      const availableSections =
           this.settingsSections_.reduce(function(count, section) {
             return count + (section.isAvailable() ? 1 : 0);
           }, 0);
 
       // Magic 6 is chosen as the number of sections when it still feels like
       // manageable and not too crowded.
-      var hasSectionsToToggle = availableSections > 6 &&
+      const hasSectionsToToggle = availableSections > 6 &&
           this.settingsSections_.some(function(section) {
             return section.hasCollapsibleContent();
           });
@@ -145,7 +145,7 @@ cr.define('print_preview', function() {
       else
         fadeOutElement(this.getElement());
 
-      var collapseContent = !this.isExpanded && hasSectionsToToggle;
+      const collapseContent = !this.isExpanded && hasSectionsToToggle;
       this.settingsSections_.forEach(function(section) {
         section.setCollapseContent(collapseContent, noAnimation);
       });

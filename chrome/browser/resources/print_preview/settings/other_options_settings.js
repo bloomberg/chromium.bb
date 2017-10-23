@@ -186,7 +186,7 @@ cr.define('print_preview', function() {
        * element, as this checkbox is enabled based on whether the user has
        * selected something in the page, which is different logic from the
        * other elements. */
-      for (var i = 0; i < this.elements_.length - 1; i++)
+      for (let i = 0; i < this.elements_.length - 1; i++)
         this.elements_[i].checkbox.disabled = !isEnabled;
     },
 
@@ -207,13 +207,13 @@ cr.define('print_preview', function() {
     /** @override */
     exitDocument: function() {
       print_preview.SettingsSection.prototype.exitDocument.call(this);
-      for (var i = 0; i < this.elements_.length; i++)
+      for (let i = 0; i < this.elements_.length; i++)
         this.elements_[i].exitDocument();
     },
 
     /** @override */
     decorateInternal: function() {
-      for (var i = 0; i < this.elements_.length; i++)
+      for (let i = 0; i < this.elements_.length; i++)
         this.elements_[i].decorate();
       $('rasterize-container').hidden = !this.rasterizeEnabled_;
     },
@@ -221,7 +221,7 @@ cr.define('print_preview', function() {
     /** @override */
     updateUiStateInternal: function() {
       if (this.isAvailable()) {
-        for (var i = 0; i < this.elements_.length; i++)
+        for (let i = 0; i < this.elements_.length; i++)
           this.elements_[i].setVisibility(this.collapseContent);
       }
       print_preview.SettingsSection.prototype.updateUiStateInternal.call(this);
