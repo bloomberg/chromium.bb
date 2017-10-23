@@ -87,8 +87,9 @@ void RegisterSyncableProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
       prefs::kDailyContentLengthViaDataReductionProxyUnknown, 0L);
 
   registry->RegisterInt64Pref(prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
-  registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
+  registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
+                              0L);
 }
 
 void RegisterSimpleProfilePrefs(PrefRegistrySimple* registry) {
@@ -166,8 +167,9 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
       prefs::kDailyContentLengthViaDataReductionProxyUnknown, 0L);
   registry->RegisterInt64Pref(
       prefs::kDailyHttpContentLengthLastUpdateDate, 0L);
-  registry->RegisterInt64Pref(prefs::kSimulatedConfigRetrieveTime, 0L);
   registry->RegisterStringPref(prefs::kDataReductionProxyConfig, std::string());
+  registry->RegisterInt64Pref(prefs::kDataReductionProxyLastConfigRetrievalTime,
+                              0L);
 }
 
 }  // namespace data_reduction_proxy

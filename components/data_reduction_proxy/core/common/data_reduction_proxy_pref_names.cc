@@ -204,12 +204,10 @@ const char kHttpReceivedContentLength[] = "http_received_content_length";
 // received over the network.
 const char kHttpOriginalContentLength[] = "http_original_content_length";
 
-// Pref to store the retrieval time of the last simulated Data Reduction Proxy
-// configuration. This is part of an experiment to see how many bytes are lost
-// if the Data Reduction Proxy is not used due to configuration being expired
-// or not available.
-const char kSimulatedConfigRetrieveTime[] =
-    "data_reduction.simulated_config_retrieve_time";
+// Pref to store the retrieval time of the last Data Reduction Proxy
+// configuration.
+const char kDataReductionProxyLastConfigRetrievalTime[] =
+    "data_reduction.last_config_retrieval_time";
 
 }  // namespace prefs
 }  // namespace data_reduction_proxy

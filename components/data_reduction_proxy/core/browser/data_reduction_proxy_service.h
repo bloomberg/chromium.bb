@@ -147,6 +147,9 @@ class DataReductionProxyService
   FRIEND_TEST_ALL_PREFIXES(DataReductionProxySettingsTest,
                            TestLoFiSessionStateHistograms);
 
+  // Loads the Data Reduction Proxy configuration from |prefs_| and applies it.
+  void ReadPersistedClientConfig();
+
   net::URLRequestContextGetter* url_request_context_getter_;
 
   // Tracks compression statistics to be displayed to the user.

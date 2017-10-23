@@ -148,6 +148,10 @@ class DataReductionProxyConfigServiceClient
   virtual bool IsApplicationStateBackground() const;
 #endif
 
+  // Returns true if the remote config has been applied. Virtualized for
+  // testing.
+  virtual bool RemoteConfigApplied() const;
+
  private:
   friend class TestDataReductionProxyConfigServiceClient;
 
