@@ -12,8 +12,9 @@ namespace blink {
 
 class HitTestResult;
 class HitTestLocation;
-class LayoutNGBlockFlow;
 class LayoutPoint;
+struct PaintInfo;
+class LayoutBlockFlow;
 class NGPaintFragment;
 struct PaintInfo;
 
@@ -24,8 +25,8 @@ class NGBlockFlowPainter {
   STACK_ALLOCATED();
 
  public:
-  NGBlockFlowPainter(const LayoutNGBlockFlow& layout_ng_block_flow)
-      : block_(layout_ng_block_flow) {}
+  NGBlockFlowPainter(const LayoutBlockFlow& layout_block_flow)
+      : block_(layout_block_flow) {}
   void Paint(const PaintInfo&, const LayoutPoint&);
 
   bool NodeAtPoint(HitTestResult&,
@@ -38,7 +39,7 @@ class NGBlockFlowPainter {
                         const PaintInfo&,
                         const LayoutPoint&);
 
-  const LayoutNGBlockFlow& block_;
+  const LayoutBlockFlow& block_;
 };
 
 }  // namespace blink

@@ -272,7 +272,7 @@ String GetTextForInlineCollection<NGOffsetMappingBuilder>(
 // for condition checking and branching.
 template <typename OffsetMappingBuilder>
 LayoutBox* CollectInlinesInternal(
-    LayoutNGBlockFlow* block,
+    LayoutBlockFlow* block,
     NGInlineItemsBuilderTemplate<OffsetMappingBuilder>* builder) {
   builder->EnterBlock(block->Style());
   LayoutObject* node = GetLayoutObjectForFirstChildNode(block);
@@ -358,9 +358,10 @@ LayoutBox* CollectInlinesInternal(
 
 }  // namespace
 
-NGInlineNode::NGInlineNode(LayoutNGBlockFlow* block)
+NGInlineNode::NGInlineNode(LayoutBlockFlow* block)
     : NGLayoutInputNode(block, kInline) {
   DCHECK(block);
+  DCHECK(block->IsLayoutNGMixin());
   if (!block->HasNGInlineNodeData())
     block->ResetNGInlineNodeData();
 }
@@ -420,7 +421,7 @@ const NGOffsetMappingResult& NGInlineNode::ComputeOffsetMappingIfNeeded() {
 void NGInlineNode::CollectInlines() {
   DCHECK(Data().text_content_.IsNull());
   DCHECK(Data().items_.IsEmpty());
-  LayoutNGBlockFlow* block = GetLayoutBlockFlow();
+  LayoutBlockFlow* block = GetLayoutBlockFlow();
   block->WillCollectInlines();
   NGInlineNodeData* data = MutableData();
   NGInlineItemsBuilder builder(&data->items_);
@@ -757,11 +758,11 @@ Optional<NGInlineNode> GetNGInlineNodeFor(const Node& node, unsigned offset) {
   const LayoutObject* layout_object = AssociatedLayoutObjectOf(node, offset);
   if (!layout_object || !layout_object->IsInline())
     return WTF::nullopt;
-  LayoutNGBlockFlow* ng_block_flow = layout_object->EnclosingNGBlockFlow();
-  if (!ng_block_flow)
+  LayoutBlockFlow* block_flow = layout_object->EnclosingNGBlockFlow();
+  if (!block_flow)
     return WTF::nullopt;
-  DCHECK(ng_block_flow->ChildrenInline());
-  return NGInlineNode(ng_block_flow);
+  DCHECK(block_flow->ChildrenInline());
+  return NGInlineNode(block_flow);
 }
 
 }  // namespace blink

@@ -676,10 +676,10 @@ LayoutBoxModelObject* LayoutObject::EnclosingBoxModelObject() const {
   return nullptr;
 }
 
-LayoutNGBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
+LayoutBlockFlow* LayoutObject::EnclosingNGBlockFlow() const {
   LayoutBox* box = EnclosingBox();
   DCHECK(box);
-  return box->IsLayoutNGBlockFlow() ? ToLayoutNGBlockFlow(box) : nullptr;
+  return box->IsLayoutNGMixin() ? ToLayoutBlockFlow(box) : nullptr;
 }
 
 LayoutBox* LayoutObject::EnclosingScrollableBox() const {

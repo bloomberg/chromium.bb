@@ -66,10 +66,10 @@ class HitTestResult;
 class InlineBox;
 class LayoutBoxModelObject;
 class LayoutBlock;
+class LayoutBlockFlow;
 class LayoutFlowThread;
 class LayoutGeometryMap;
 class LayoutMultiColumnSpannerPlaceholder;
-class LayoutNGBlockFlow;
 class LayoutView;
 class ObjectPaintProperties;
 class PaintLayer;
@@ -302,7 +302,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutBox* EnclosingScrollableBox() const;
 
   // Returns |EnclosingBox()| if it's a LayoutNGBlockFlow, or nullptr otherwise.
-  LayoutNGBlockFlow* EnclosingNGBlockFlow() const;
+  LayoutBlockFlow* EnclosingNGBlockFlow() const;
 
   // Function to return our enclosing flow thread if we are contained inside
   // one. This function follows the containing block chain.
@@ -505,6 +505,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   bool IsLayoutNGBlockFlow() const {
     return IsOfType(kLayoutObjectNGBlockFlow);
   }
+  bool IsLayoutNGMixin() const { return IsOfType(kLayoutObjectNGMixin); }
   bool IsLayoutNGListItem() const { return IsOfType(kLayoutObjectNGListItem); }
   bool IsLayoutTableCol() const {
     return IsOfType(kLayoutObjectLayoutTableCol);
@@ -1934,6 +1935,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     kLayoutObjectMedia,
     kLayoutObjectMenuList,
     kLayoutObjectNGBlockFlow,
+    kLayoutObjectNGMixin,
     kLayoutObjectNGListItem,
     kLayoutObjectProgress,
     kLayoutObjectQuote,

@@ -66,7 +66,7 @@ TEST_F(NGOutOfFlowLayoutPartTest, FixedInsideAbs) {
 
   // Test whether the oof fragments have been collected at NG->Legacy boundary.
   Element* rel = GetDocument().getElementById("rel");
-  LayoutNGBlockFlow* block_flow = ToLayoutNGBlockFlow(rel->GetLayoutObject());
+  LayoutBlockFlow* block_flow = ToLayoutBlockFlow(rel->GetLayoutObject());
   scoped_refptr<NGConstraintSpace> space =
       NGConstraintSpace::CreateFromLayoutObject(*block_flow);
   scoped_refptr<NGLayoutResult> result =

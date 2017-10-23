@@ -8,6 +8,7 @@
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTextFragment.h"
 #include "core/layout/ng/inline/ng_offset_mapping_result.h"
+#include "core/layout/ng/layout_ng_block_flow.h"
 #include "core/style/ComputedStyle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

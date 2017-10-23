@@ -22,7 +22,7 @@ namespace blink {
 class NGInlineLayoutTest : public SimTest {
  public:
   scoped_refptr<NGConstraintSpace> ConstraintSpaceForElement(
-      LayoutNGBlockFlow* block_flow) {
+      LayoutBlockFlow* block_flow) {
     return NGConstraintSpaceBuilder(
                FromPlatformWritingMode(block_flow->Style()->GetWritingMode()),
                /* icb_size */ {NGSizeIndefinite, NGSizeIndefinite})
@@ -46,8 +46,7 @@ TEST_F(NGInlineLayoutTest, BlockWithSingleTextNode) {
   ASSERT_FALSE(Compositor().NeedsBeginFrame());
 
   Element* target = GetDocument().getElementById("target");
-  LayoutNGBlockFlow* block_flow =
-      ToLayoutNGBlockFlow(target->GetLayoutObject());
+  LayoutBlockFlow* block_flow = ToLayoutBlockFlow(target->GetLayoutObject());
   scoped_refptr<NGConstraintSpace> constraint_space =
       ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
@@ -71,8 +70,7 @@ TEST_F(NGInlineLayoutTest, BlockWithTextAndAtomicInline) {
   ASSERT_FALSE(Compositor().NeedsBeginFrame());
 
   Element* target = GetDocument().getElementById("target");
-  LayoutNGBlockFlow* block_flow =
-      ToLayoutNGBlockFlow(target->GetLayoutObject());
+  LayoutBlockFlow* block_flow = ToLayoutBlockFlow(target->GetLayoutObject());
   scoped_refptr<NGConstraintSpace> constraint_space =
       ConstraintSpaceForElement(block_flow);
   NGBlockNode node(block_flow);
