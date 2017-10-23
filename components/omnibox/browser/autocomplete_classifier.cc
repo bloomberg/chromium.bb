@@ -43,8 +43,11 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       // Custom search engines cannot be used on mobile.
       AutocompleteProvider::TYPE_KEYWORD |
 #endif
-#if !defined(OS_IOS)
-      // TODO(rohitrao): crbug.com/725120 ZeroSuggest is not yet enabled on iOS.
+#if defined(OS_IOS)
+      (base::FeatureList::IsEnabled(omnibox::kZeroSuggestProviderIOS)
+           ? AutocompleteProvider::TYPE_ZERO_SUGGEST
+           : 0) |
+#else
       AutocompleteProvider::TYPE_ZERO_SUGGEST |
 #endif
       (base::FeatureList::IsEnabled(omnibox::kEnableClipboardProvider)

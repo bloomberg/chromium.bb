@@ -216,7 +216,6 @@ void ZeroSuggestProviderTest::ResetFieldTrialList() {
 
 void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
   std::map<std::string, std::string> params;
-  params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
   params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
       "Personalized";
   variations::AssociateVariationParams(
@@ -227,7 +226,6 @@ void ZeroSuggestProviderTest::CreatePersonalizedFieldTrial() {
 
 void ZeroSuggestProviderTest::CreateMostVisitedFieldTrial() {
   std::map<std::string, std::string> params;
-  params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
   params[std::string(OmniboxFieldTrial::kZeroSuggestVariantRule)] =
       "MostVisitedWithoutSERP";
   variations::AssociateVariationParams(

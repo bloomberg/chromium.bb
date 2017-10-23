@@ -57,16 +57,6 @@ class OmniboxFieldTrialTest : public testing::Test {
     return trial;
   }
 
-  // Add a field trial disabling ZeroSuggest.
-  static void CreateDisableZeroSuggestTrial() {
-    std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "false";
-    variations::AssociateVariationParams(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params);
-    base::FieldTrialList::CreateFieldTrial(
-        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-  }
-
   // EXPECT()s that demotions[match_type] exists with value expected_value.
   static void VerifyDemotion(
       const OmniboxFieldTrial::DemotionMultipliers& demotions,
@@ -201,34 +191,18 @@ TEST_F(OmniboxFieldTrialTest, GetDisabledProviderTypes) {
   }
 }
 
-// Test if InZeroSuggestFieldTrial() properly parses various field trial
+// Test if InZeroSuggestFieldTrial*() properly parses various field trial
 // group names.
 TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
-  // Default ZeroSuggest setting depends on OS.
-#if defined(OS_IOS)
-  EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-#else
-  EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-#endif
-
-  {
-    SCOPED_TRACE("Disable ZeroSuggest.");
-    ResetFieldTrialList();
-    CreateDisableZeroSuggestTrial();
-    EXPECT_FALSE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-  }
-
   {
     SCOPED_TRACE("Bundled field trial parameters.");
     ResetFieldTrialList();
     std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
     ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
     EXPECT_TRUE(
         OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
 #else
@@ -243,7 +217,6 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
     EXPECT_TRUE(
         OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
 
@@ -253,8 +226,7 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
     ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_IOS)
     EXPECT_TRUE(
         OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
 #else
@@ -267,12 +239,10 @@ TEST_F(OmniboxFieldTrialTest, ZeroSuggestFieldTrial) {
     SCOPED_TRACE("Chrome Home personalized suggestions.");
     ResetFieldTrialList();
     std::map<std::string, std::string> params;
-    params[std::string(OmniboxFieldTrial::kZeroSuggestRule)] = "true";
     ASSERT_TRUE(variations::AssociateVariationParams(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
     base::FieldTrialList::CreateFieldTrial(
         OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
-    EXPECT_TRUE(OmniboxFieldTrial::InZeroSuggestFieldTrial());
     EXPECT_TRUE(
         OmniboxFieldTrial::InZeroSuggestMostVisitedFieldTrial(GetPrefs()));
     EXPECT_FALSE(
