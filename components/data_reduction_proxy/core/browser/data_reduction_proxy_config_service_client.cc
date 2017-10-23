@@ -239,10 +239,15 @@ void DataReductionProxyConfigServiceClient::RetrieveConfig() {
   RetrieveRemoteConfig();
 }
 
+bool DataReductionProxyConfigServiceClient::RemoteConfigApplied() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  return remote_config_applied_;
+}
+
 void DataReductionProxyConfigServiceClient::ApplySerializedConfig(
     const std::string& config_value) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (remote_config_applied_)
+  if (RemoteConfigApplied())
     return;
 
   std::string decoded_config;

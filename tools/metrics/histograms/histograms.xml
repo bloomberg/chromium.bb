@@ -12306,6 +12306,17 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
+<histogram name="DataReductionProxy.ConfigService.PersistedConfigIsExpired"
+    enum="BooleanExpired">
+  <owner>tbansal@chromium.org</owner>
+  <owner>bengr@chromium.org</owner>
+  <summary>
+    Records whether the persisted client config for data saver proxies read from
+    the disk at the time of Chrome startup was expired or not. Recorded once at
+    the time of Chrome startup.
+  </summary>
+</histogram>
+
 <histogram name="DataReductionProxy.DaysSinceEnabled" units="days">
   <owner>tbansal@chromium.org</owner>
   <owner>bengr@chromium.org</owner>
