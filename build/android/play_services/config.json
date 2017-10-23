@@ -10,8 +10,9 @@
     "play-services-location",
     "play-services-nearby",
     "play-services-tasks",
-    "play-services-vision"
+    "play-services-vision",
+    "play-services-vision-common"
   ],
-  "version_number": "10.2.0",
+  "version_number": "11.2.0",
   "version_xml_path": "res/values/version.xml"
 }
