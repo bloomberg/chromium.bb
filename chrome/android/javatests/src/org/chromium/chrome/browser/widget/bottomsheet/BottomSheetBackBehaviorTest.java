@@ -128,7 +128,7 @@ public class BottomSheetBackBehaviorTest {
 
         assertEquals("The bottom sheet should be peeking.", BottomSheet.SHEET_STATE_PEEK,
                 mBottomSheet.getSheetState());
-        assertFalse("Chrome should no longer have focus.", mActivity.hasWindowFocus());
+        waitForClose();
     }
 
     @Test
@@ -164,7 +164,7 @@ public class BottomSheetBackBehaviorTest {
 
         assertEquals("The bottom sheet should be peeking.", BottomSheet.SHEET_STATE_PEEK,
                 mBottomSheet.getSheetState());
-        assertFalse("Chrome should no longer have focus.", mActivity.hasWindowFocus());
+        waitForClose();
     }
 
     @Test
@@ -241,7 +241,7 @@ public class BottomSheetBackBehaviorTest {
 
         assertEquals("The bottom sheet should be peeking.", BottomSheet.SHEET_STATE_PEEK,
                 mBottomSheet.getSheetState());
-        assertFalse("Chrome should no longer have focus.", mActivity.hasWindowFocus());
+        waitForClose();
     }
 
     /**
@@ -333,6 +333,17 @@ public class BottomSheetBackBehaviorTest {
             @Override
             public void run() {
                 mBottomSheet.endAnimations();
+            }
+        });
+    }
+
+    /** Wait until Chrome doesn't have window focus. */
+    private void waitForClose() {
+        // It takes some time for Chrome to completely close.
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return !mActivity.hasWindowFocus();
             }
         });
     }
