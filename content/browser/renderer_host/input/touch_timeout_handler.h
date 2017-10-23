@@ -12,7 +12,7 @@
 #include "base/time/time.h"
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
-#include "content/common/input/input_event_ack_state.h"
+#include "content/public/common/input_event_ack_state.h"
 
 namespace content {
 

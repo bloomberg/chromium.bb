@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
-#include "content/common/input/input_event_ack_state.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "content/renderer/android/synchronous_layer_tree_frame_sink.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/gfx/geometry/scroll_offset.h"

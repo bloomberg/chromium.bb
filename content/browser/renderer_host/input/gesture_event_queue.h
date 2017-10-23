@@ -15,8 +15,8 @@
 #include "content/browser/renderer_host/event_with_latency_info.h"
 #include "content/browser/renderer_host/input/fling_controller.h"
 #include "content/common/content_export.h"
-#include "content/common/input/input_event_ack_source.h"
-#include "content/common/input/input_event_ack_state.h"
+#include "content/public/common/input_event_ack_source.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
 namespace content {

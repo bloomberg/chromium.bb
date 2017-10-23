@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_TASK_H_
 #define CONTENT_RENDERER_INPUT_MAIN_THREAD_EVENT_QUEUE_TASK_H_
 
-#include "content/common/input/input_event_ack_state.h"
+#include "content/public/common/input_event_ack_state.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 
