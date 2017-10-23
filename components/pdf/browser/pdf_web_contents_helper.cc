@@ -37,6 +37,8 @@ PDFWebContentsHelper::PDFWebContentsHelper(
       pdf_service_bindings_(web_contents, this),
       client_(std::move(client)),
       touch_selection_controller_client_manager_(nullptr),
+      selection_left_height_(0),
+      selection_right_height_(0),
       has_selection_(false),
       remote_pdf_client_(nullptr),
       web_contents_(web_contents) {}
@@ -80,18 +82,27 @@ void PDFWebContentsHelper::SelectionChanged(const gfx::PointF& left,
                                             int32_t left_height,
                                             const gfx::PointF& right,
                                             int32_t right_height) {
+  selection_left_ = left;
+  selection_left_height_ = left_height;
+  selection_right_ = right;
+  selection_right_height_ = right_height;
+
+  DidScroll();
+}
+
+void PDFWebContentsHelper::DidScroll() {
   if (!touch_selection_controller_client_manager_)
     InitTouchSelectionClientManager();
 
   if (touch_selection_controller_client_manager_) {
     gfx::SelectionBound start;
     gfx::SelectionBound end;
-    start.SetEdgeTop(ConvertToRoot(left));
-    start.SetEdgeBottom(
-        ConvertToRoot(gfx::PointF(left.x(), left.y() + left_height)));
-    end.SetEdgeTop(ConvertToRoot(right));
-    end.SetEdgeBottom(
-        ConvertToRoot(gfx::PointF(right.x(), right.y() + right_height)));
+    start.SetEdgeTop(ConvertToRoot(selection_left_));
+    start.SetEdgeBottom(ConvertToRoot(gfx::PointF(
+        selection_left_.x(), selection_left_.y() + selection_left_height_)));
+    end.SetEdgeTop(ConvertToRoot(selection_right_));
+    end.SetEdgeBottom(ConvertToRoot(gfx::PointF(
+        selection_right_.x(), selection_right_.y() + selection_right_height_)));
 
     // Don't do left/right comparison after setting type.
     // TODO(wjmaclean): When PDFium supports editing, we'll need to detect
@@ -139,11 +150,6 @@ std::unique_ptr<ui::TouchHandleDrawable>
 PDFWebContentsHelper::CreateDrawable() {
   // We can return null here, as the manager will look after this.
   return std::unique_ptr<ui::TouchHandleDrawable>();
-}
-
-void PDFWebContentsHelper::DidScroll() {
-  // Nothing to do here, as PDFiumEngine sends a new selection for each scroll
-  // update.
 }
 
 void PDFWebContentsHelper::OnManagerWillDestroy(

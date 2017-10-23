@@ -85,7 +85,14 @@ class PDFWebContentsHelper
   std::unique_ptr<PDFWebContentsHelperClient> client_;
   content::TouchSelectionControllerClientManager*
       touch_selection_controller_client_manager_;
+
+  // Latest selection bounds received from PDFium.
+  gfx::PointF selection_left_;
+  int32_t selection_left_height_;
+  gfx::PointF selection_right_;
+  int32_t selection_right_height_;
   bool has_selection_;
+
   mojom::PdfListenerPtr remote_pdf_client_;
   // Not owned.
   content::WebContents* web_contents_;
