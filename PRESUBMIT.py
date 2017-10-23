@@ -21,9 +21,8 @@ def _WarnIfReadmeIsUnchanged(input_api, output_api):
   for f in input_api.AffectedFiles():
     if readme_re.match(f.LocalPath()):
       return []
-    if not chromium_re.match(f.LocalPath()):
+    if not has_ffmpeg_changes and not chromium_re.match(f.LocalPath()):
       has_ffmpeg_changes = True
-      break
 
   if not has_ffmpeg_changes:
     return []
