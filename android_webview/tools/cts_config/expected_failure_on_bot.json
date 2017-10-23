@@ -17,6 +17,10 @@
     {
       "name": "testLocalImageLoads",
       "_bug_id": "crbug.com/680759"
+    },
+    {
+      "name": "testAllowMixedMode",
+      "_bug_id": "crbug.com/777393"
     }
   ],
   "android.webkit.cts.WebViewClientTest": [
