@@ -529,7 +529,7 @@ class PLATFORM_EXPORT ThreadState {
     safe_point_scope_marker_ = nullptr;
   }
 
-  // shouldSchedule{Precise,Idle}GC and shouldForceConservativeGC
+  // shouldScheduleIdleGC and shouldForceConservativeGC
   // implement the heuristics that are used to determine when to collect
   // garbage.
   // If shouldForceConservativeGC returns true, we force the garbage
@@ -538,7 +538,6 @@ class PLATFORM_EXPORT ThreadState {
   // to the event loop. If both return false, we don't need to
   // collect garbage at this point.
   bool ShouldScheduleIdleGC();
-  bool ShouldSchedulePreciseGC();
   bool ShouldForceConservativeGC();
   bool ShouldScheduleIncrementalMarking() const;
   // V8 minor or major GC is likely to drop a lot of references to objects
