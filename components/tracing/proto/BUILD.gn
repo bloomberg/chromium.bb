@@ -9,21 +9,6 @@ tracing_proto_sources = [
   "events_chunk.proto",
 ]
 
-# Stubs generated using custom plugin.
-proto_library("protos") {
-  visibility = [ "//components/tracing/*" ]
-
-  proto_in_dir = "."
-  sources = tracing_proto_sources
-
-  generator_plugin_label =
-      "//components/tracing/tools/proto_zero_plugin:proto_zero_plugin"
-  generator_plugin_suffix = ".pbzero"
-  generator_plugin_options = "wrapper_namespace=pbzero"
-  generate_cc = false
-  generate_python = false
-}
-
 # Official protobuf C++ stubs to test conformance.
 proto_library("golden_protos_for_tests") {
   visibility = [ "//components/tracing/*" ]
