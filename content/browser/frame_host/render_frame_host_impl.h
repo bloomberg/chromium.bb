@@ -850,13 +850,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params) override;
 
-  void RunCreateWindowCompleteCallback(CreateNewWindowCallback callback,
-                                       mojom::CreateNewWindowReplyPtr reply,
-                                       int render_view_route_id,
-                                       int main_frame_route_id,
-                                       int main_frame_widget_route_id,
-                                       int cloned_session_storage_namespace_id);
-
   // Registers Mojo interfaces that this frame host makes available.
   void RegisterMojoInterfaces();
 

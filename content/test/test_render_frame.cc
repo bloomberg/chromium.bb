@@ -35,7 +35,9 @@ class MockFrameHost : public mojom::FrameHost {
   }
 
   bool CreateNewWindow(mojom::CreateNewWindowParamsPtr params,
+                       mojom::CreateNewWindowStatus* status,
                        mojom::CreateNewWindowReplyPtr* reply) override {
+    *status = mojom::CreateNewWindowStatus::kSuccess;
     *reply = mojom::CreateNewWindowReply::New();
     MockRenderThread* mock_render_thread =
         static_cast<MockRenderThread*>(RenderThread::Get());

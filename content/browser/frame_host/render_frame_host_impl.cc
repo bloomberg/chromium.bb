@@ -2778,11 +2778,8 @@ void RenderFrameHostImpl::CreateNewWindow(
           params->disposition, *params->features, params->user_gesture,
           params->opener_suppressed, &no_javascript_access);
 
-  mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New();
   if (!can_create_window) {
-    RunCreateWindowCompleteCallback(std::move(callback), std::move(reply),
-                                    MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                                    MSG_ROUTING_NONE, 0);
+    std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
     return;
   }
 
@@ -2791,14 +2788,11 @@ void RenderFrameHostImpl::CreateNewWindow(
   // window.open() will return "window" and navigate it to whatever URL was
   // passed.
   if (!render_view_host_->GetWebkitPreferences().supports_multiple_windows) {
-    RunCreateWindowCompleteCallback(std::move(callback), std::move(reply),
-                                    render_view_host_->GetRoutingID(),
-                                    MSG_ROUTING_NONE, MSG_ROUTING_NONE, 0);
+    std::move(callback).Run(mojom::CreateNewWindowStatus::kReuse, nullptr);
     return;
   }
 
   // This will clone the sessionStorage for namespace_id_to_clone.
-
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       GetSiteInstance()->GetBrowserContext(), GetSiteInstance());
   DOMStorageContextWrapper* dom_storage_context =
@@ -2806,7 +2800,6 @@ void RenderFrameHostImpl::CreateNewWindow(
           storage_partition->GetDOMStorageContext());
   auto cloned_namespace = base::MakeRefCounted<SessionStorageNamespaceImpl>(
       dom_storage_context, params->session_storage_namespace_id);
-  reply->cloned_session_storage_namespace_id = cloned_namespace->id();
 
   // If the opener is suppressed or script access is disallowed, we should
   // open the window in a new BrowsingInstance, and thus a new process. That
@@ -2847,28 +2840,36 @@ void RenderFrameHostImpl::CreateNewWindow(
                              main_frame_widget_route_id, *params,
                              cloned_namespace.get());
 
-  // If we did not create a WebContents to host the renderer-created
-  // RenderFrame/RenderView/RenderWidget objects, make sure to send invalid
-  // routing ids back to the renderer.
-  if (main_frame_route_id != MSG_ROUTING_NONE) {
-    bool succeeded =
-        RenderWidgetHost::FromID(render_process_id,
-                                 main_frame_widget_route_id) != nullptr;
-    if (!succeeded) {
-      DCHECK(!RenderFrameHost::FromID(render_process_id, main_frame_route_id));
-      DCHECK(!RenderViewHost::FromID(render_process_id, render_view_route_id));
-      RunCreateWindowCompleteCallback(std::move(callback), std::move(reply),
-                                      MSG_ROUTING_NONE, MSG_ROUTING_NONE,
-                                      MSG_ROUTING_NONE, 0);
-      return;
-    }
-    DCHECK(RenderFrameHost::FromID(render_process_id, main_frame_route_id));
-    DCHECK(RenderViewHost::FromID(render_process_id, render_view_route_id));
+  if (main_frame_route_id == MSG_ROUTING_NONE) {
+    // Opener suppressed or Javascript access disabled. Never tell the renderer
+    // about the new window.
+    std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
+    return;
   }
 
-  RunCreateWindowCompleteCallback(
-      std::move(callback), std::move(reply), render_view_route_id,
-      main_frame_route_id, main_frame_widget_route_id, cloned_namespace->id());
+  bool succeeded =
+      RenderWidgetHost::FromID(render_process_id, main_frame_widget_route_id) !=
+      nullptr;
+  if (!succeeded) {
+    // If we did not create a WebContents to host the renderer-created
+    // RenderFrame/RenderView/RenderWidget objects, signal failure to the
+    // renderer.
+    DCHECK(!RenderFrameHost::FromID(render_process_id, main_frame_route_id));
+    DCHECK(!RenderViewHost::FromID(render_process_id, render_view_route_id));
+    std::move(callback).Run(mojom::CreateNewWindowStatus::kIgnore, nullptr);
+    return;
+  }
+
+  // The view, widget, and frame should all be routable now.
+  DCHECK(RenderViewHost::FromID(render_process_id, render_view_route_id));
+  RenderFrameHost* rfh =
+      RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_route_id);
+  DCHECK(rfh);
+  mojom::CreateNewWindowReplyPtr reply = mojom::CreateNewWindowReply::New(
+      render_view_route_id, main_frame_route_id, main_frame_widget_route_id,
+      cloned_namespace->id(), rfh->GetDevToolsFrameToken());
+  std::move(callback).Run(mojom::CreateNewWindowStatus::kSuccess,
+                          std::move(reply));
 }
 
 void RenderFrameHostImpl::IssueKeepAliveHandle(
@@ -2913,25 +2914,6 @@ void GetRestrictedCookieManager(
 }
 
 }  // anonymous namespace
-
-void RenderFrameHostImpl::RunCreateWindowCompleteCallback(
-    CreateNewWindowCallback callback,
-    mojom::CreateNewWindowReplyPtr reply,
-    int render_view_route_id,
-    int main_frame_route_id,
-    int main_frame_widget_route_id,
-    int cloned_session_storage_namespace_id) {
-  reply->route_id = render_view_route_id;
-  reply->main_frame_route_id = main_frame_route_id;
-  reply->main_frame_widget_route_id = main_frame_widget_route_id;
-  reply->cloned_session_storage_namespace_id =
-      cloned_session_storage_namespace_id;
-  RenderFrameHost* rfh =
-      RenderFrameHost::FromID(GetProcess()->GetID(), main_frame_route_id);
-  reply->devtools_main_frame_token =
-      rfh ? rfh->GetDevToolsFrameToken() : base::UnguessableToken::Create();
-  std::move(callback).Run(std::move(reply));
-}
 
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
 #if !defined(OS_ANDROID)
