@@ -13,7 +13,9 @@
 #include "base/message_loop/message_loop.h"
 #include "build/build_config.h"
 #include "components/viz/common/surfaces/surface_sequence.h"
+#include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/surfaces/surface.h"
+#include "components/viz/service/surfaces/surface_hittest.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "content/browser/browser_plugin/browser_plugin_guest.h"
 #include "content/browser/compositor/surface_utils.h"
@@ -31,6 +33,7 @@
 #include "gpu/ipc/common/gpu_messages.h"
 #include "skia/ext/platform_canvas.h"
 #include "ui/events/base_event_utils.h"
+#include "ui/gfx/geometry/dip_util.h"
 
 #if defined(OS_MACOSX)
 #import "content/browser/renderer_host/render_widget_host_view_mac_dictionary_helper.h"
@@ -231,37 +234,86 @@ gfx::Rect RenderWidgetHostViewGuest::GetBoundsInRootWindow() {
   return GetViewBounds();
 }
 
-gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
-    const gfx::PointF& point) {
-  if (!guest_ || !last_received_local_surface_id_.is_valid())
-    return point;
+namespace {
 
-  RenderWidgetHostViewBase* rwhv = this;
+RenderWidgetHostViewBase* GetRootView(RenderWidgetHostViewBase* rwhv) {
   // If we're a pdf in a WebView, we could have nested guest views here.
   while (rwhv && rwhv->IsRenderWidgetHostViewGuest()) {
     rwhv = static_cast<RenderWidgetHostViewGuest*>(rwhv)
                ->GetOwnerRenderWidgetHostView();
   }
   if (!rwhv)
-    return point;
+    return nullptr;
 
   // We could be a guest inside an oopif frame, in which case we're not the
   // root.
   if (rwhv->IsRenderWidgetHostViewChildFrame()) {
     rwhv = static_cast<RenderWidgetHostViewChildFrame*>(rwhv)
                ->GetRootRenderWidgetHostView();
-    if (!rwhv)
-      return point;
   }
+  return rwhv;
+}
+
+}  // namespace
+
+gfx::PointF RenderWidgetHostViewGuest::TransformPointToRootCoordSpaceF(
+    const gfx::PointF& point) {
+  if (!guest_ || !last_received_local_surface_id_.is_valid())
+    return point;
+
+  RenderWidgetHostViewBase* root_rwhv = GetRootView(this);
+  if (!root_rwhv)
+    return point;
 
   gfx::PointF transformed_point = point;
   // TODO(wjmaclean): If we knew that TransformPointToLocalCoordSpace would
   // guarantee not to change transformed_point on failure, then we could skip
   // checking the function return value and directly return transformed_point.
-  if (!rwhv->TransformPointToLocalCoordSpace(
+  if (!root_rwhv->TransformPointToLocalCoordSpace(
           point,
           viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_),
           &transformed_point)) {
+    return point;
+  }
+  return transformed_point;
+}
+
+bool RenderWidgetHostViewGuest::TransformPointToLocalCoordSpace(
+    const gfx::PointF& point,
+    const viz::SurfaceId& original_surface,
+    gfx::PointF* transformed_point) {
+  *transformed_point = point;
+  if (!guest_ || !last_received_local_surface_id_.is_valid())
+    return false;
+
+  auto local_surface_id =
+      viz::SurfaceId(frame_sink_id_, last_received_local_surface_id_);
+  if (original_surface == local_surface_id)
+    return true;
+
+  *transformed_point =
+      gfx::ConvertPointToPixel(current_surface_scale_factor(), point);
+  viz::SurfaceHittest hittest(nullptr,
+                              GetFrameSinkManager()->surface_manager());
+  if (!hittest.TransformPointToTargetSurface(original_surface, local_surface_id,
+                                             transformed_point)) {
+    return false;
+  }
+
+  *transformed_point = gfx::ConvertPointToDIP(current_surface_scale_factor(),
+                                              *transformed_point);
+  return true;
+}
+
+gfx::PointF RenderWidgetHostViewGuest::TransformRootPointToViewCoordSpace(
+    const gfx::PointF& point) {
+  RenderWidgetHostViewBase* root_rwhv = GetRootView(this);
+  if (!root_rwhv)
+    return point;
+
+  gfx::PointF transformed_point;
+  if (!root_rwhv->TransformPointToCoordSpaceForView(point, this,
+                                                    &transformed_point)) {
     return point;
   }
   return transformed_point;
