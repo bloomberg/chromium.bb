@@ -16713,7 +16713,7 @@ http://cs/file:chrome/histograms.xml - but prefer this file for new entries.
   </summary>
 </histogram>
 
-<histogram name="Download.IOSDownloadFileNetError" enum="NetErrorCodes">
+<histogram name="Download.IOSDownloadedFileNetError" enum="NetErrorCodes">
   <owner>mrefaat@chromium.org</owner>
   <summary>
     Positive net error codes that happens in the case of download content fetch
