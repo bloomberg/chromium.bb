@@ -363,8 +363,6 @@ void CronetURLRequestContextAdapter::InitializeOnNetworkThread(
     std::unique_ptr<net::NetworkQualityEstimatorParams> nqe_params =
         base::MakeUnique<net::NetworkQualityEstimatorParams>(
             std::map<std::string, std::string>());
-    nqe_params->set_persistent_cache_reading_enabled(
-        config->nqe_persistent_caching_enabled);
     if (config->nqe_forced_effective_connection_type) {
       nqe_params->SetForcedEffectiveConnectionType(
           config->nqe_forced_effective_connection_type.value());

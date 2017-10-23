@@ -91,9 +91,6 @@ const char kHostResolverRules[] = "host_resolver_rules";
 
 // NetworkQualityEstimator (NQE) experiment dictionary name.
 const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
-// Name of the boolean to enable reading of the persistent prefs in NQE.
-const char kNQEPersistentCacheReadingEnabled[] =
-    "persistent_cache_reading_enabled";
 
 // Disable IPv6 when on WiFi. This is a workaround for a known issue on certain
 // Android phones, and should not be necessary when not on one of those devices.
@@ -163,7 +160,6 @@ URLRequestContextConfig::URLRequestContextConfig(
       bypass_public_key_pinning_for_local_trust_anchors(
           bypass_public_key_pinning_for_local_trust_anchors),
       cert_verifier_data(cert_verifier_data),
-      nqe_persistent_caching_enabled(false),
       experimental_options(experimental_options) {}
 
 URLRequestContextConfig::~URLRequestContextConfig() {}
@@ -359,12 +355,6 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
                    << "\" is not a dictionary value";
         effective_experimental_options->Remove(it.key(), nullptr);
         continue;
-      }
-
-      bool persistent_caching_enabled;
-      if (nqe_args->GetBoolean(kNQEPersistentCacheReadingEnabled,
-                               &persistent_caching_enabled)) {
-        nqe_persistent_caching_enabled = persistent_caching_enabled;
       }
 
       std::string nqe_option;
