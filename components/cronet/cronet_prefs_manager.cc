@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "components/cronet/host_cache_persistence_manager.h"
 #include "components/prefs/json_pref_store.h"
@@ -209,7 +210,11 @@ CronetPrefsManager::CronetPrefsManager(
   base::FilePath storage_file_path(storage_path);
 
   // Make sure storage directory has correct version.
-  InitializeStorageDirectory(storage_file_path);
+  {
+    base::ScopedAllowBlocking allow_blocking;
+    InitializeStorageDirectory(storage_file_path);
+  }
+
   base::FilePath filepath =
       storage_file_path.Append(FILE_PATH_LITERAL(kPrefsDirectoryName))
           .Append(FILE_PATH_LITERAL(kPrefsFileName));
@@ -236,6 +241,7 @@ CronetPrefsManager::CronetPrefsManager(
 
   {
     SCOPED_UMA_HISTOGRAM_TIMER("Net.Cronet.PrefsInitTime");
+    base::ScopedAllowBlocking allow_blocking;
     pref_service_ = factory.Create(registry.get());
   }
 

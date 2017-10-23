@@ -22,6 +22,7 @@
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/threading/thread_restrictions.h"
 #include "components/cronet/cronet_prefs_manager.h"
 #include "components/cronet/histogram_manager.h"
 #include "components/cronet/ios/version.h"
@@ -305,18 +306,18 @@ void CronetEnvironment::CleanUpOnNetworkThread() {
 
   // cronet_prefs_manager_ should be deleted on the network thread.
   cronet_prefs_manager_.reset();
-
-  file_thread_.reset();
 }
 
 CronetEnvironment::~CronetEnvironment() {
   // Deleting a thread blocks the current thread and waits until all pending
   // tasks are completed.
   network_io_thread_.reset();
+  file_thread_.reset();
 }
 
 void CronetEnvironment::InitializeOnNetworkThread() {
   DCHECK(GetNetworkThreadTaskRunner()->BelongsToCurrentThread());
+  base::DisallowBlocking();
 
   static bool ssl_key_log_file_set = false;
   if (!ssl_key_log_file_set && !ssl_key_log_file_name_.empty()) {
