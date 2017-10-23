@@ -17,6 +17,7 @@
 #include "device/base/synchronization/shared_memory_seqlock_buffer.h"
 #include "platform/PlatformExport.h"
 #include "platform/scheduler/base/pollable_thread_safe_flag.h"
+#include "platform/scheduler/base/queueing_time_estimator.h"
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
@@ -24,7 +25,6 @@
 #include "platform/scheduler/renderer/idle_time_estimator.h"
 #include "platform/scheduler/renderer/main_thread_scheduler_helper.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
-#include "platform/scheduler/renderer/queueing_time_estimator.h"
 #include "platform/scheduler/renderer/render_widget_signals.h"
 #include "platform/scheduler/renderer/renderer_metrics_helper.h"
 #include "platform/scheduler/renderer/task_cost_estimator.h"
@@ -150,9 +150,6 @@ class PLATFORM_EXPORT RendererSchedulerImpl
   // QueueingTimeEstimator::Client implementation:
   void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
                                         bool is_disjoint_window) override;
-  void OnReportSplitExpectedQueueingTime(
-      const std::string& split_description,
-      base::TimeDelta queueing_time) override;
 
   scoped_refptr<MainThreadTaskQueue> DefaultTaskQueue();
   scoped_refptr<MainThreadTaskQueue> CompositorTaskQueue();

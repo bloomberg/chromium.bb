@@ -9,7 +9,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
@@ -1950,10 +1949,7 @@ void RendererSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
                                           base::TimeTicks start) {
   main_thread_only().current_task_start_time = start;
   seqlock_queueing_time_estimator_.seqlock.WriteBegin();
-  // Use QueueType::OTHER if |queue| is null.
-  seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(
-      start,
-      queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::OTHER);
+  seqlock_queueing_time_estimator_.data.OnTopLevelTaskStarted(start);
   seqlock_queueing_time_estimator_.seqlock.WriteEnd();
 }
 
@@ -2025,12 +2021,6 @@ void RendererSchedulerImpl::OnQueueingTimeForWindowEstimated(
   TRACE_COUNTER1(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "estimated_queueing_time_for_window",
                  queueing_time.InMillisecondsF());
-}
-
-void RendererSchedulerImpl::OnReportSplitExpectedQueueingTime(
-    const std::string& split_description,
-    base::TimeDelta queueing_time) {
-  base::UmaHistogramTimes(split_description, queueing_time);
 }
 
 AutoAdvancingVirtualTimeDomain* RendererSchedulerImpl::GetVirtualTimeDomain() {
