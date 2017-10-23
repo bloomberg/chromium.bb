@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 5298 tests; 5165 PASS, 133 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 5284 tests; 5165 PASS, 119 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Document interface: attribute referrer
@@ -3984,13 +3984,13 @@ PASS HTMLScriptElement interface: existence and properties of interface prototyp
 PASS HTMLScriptElement interface: attribute src
 PASS HTMLScriptElement interface: attribute type
 PASS HTMLScriptElement interface: attribute noModule
-PASS HTMLScriptElement interface: attribute charset
 PASS HTMLScriptElement interface: attribute async
 PASS HTMLScriptElement interface: attribute defer
 PASS HTMLScriptElement interface: attribute crossOrigin
 PASS HTMLScriptElement interface: attribute text
 FAIL HTMLScriptElement interface: attribute nonce assert_own_property: expected property "nonce" missing
 PASS HTMLScriptElement interface: attribute integrity
+PASS HTMLScriptElement interface: attribute charset
 PASS HTMLScriptElement interface: attribute event
 PASS HTMLScriptElement interface: attribute htmlFor
 PASS HTMLScriptElement must be primary interface of document.createElement("script")
@@ -3998,13 +3998,13 @@ PASS Stringification of document.createElement("script")
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "src" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "type" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "noModule" with the proper type
-PASS HTMLScriptElement interface: document.createElement("script") must inherit property "charset" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "async" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "defer" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "crossOrigin" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "text" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "nonce" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "integrity" with the proper type
+PASS HTMLScriptElement interface: document.createElement("script") must inherit property "charset" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "event" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "htmlFor" with the proper type
 PASS HTMLTemplateElement interface: existence and properties of interface object
@@ -4741,6 +4741,7 @@ PASS History interface object length
 PASS History interface object name
 PASS History interface: existence and properties of interface prototype object
 PASS History interface: existence and properties of interface prototype object's "constructor" property
+FAIL History interface: attribute index assert_true: The prototype object must have a property "index" expected true got false
 PASS History interface: attribute length
 PASS History interface: attribute scrollRestoration
 PASS History interface: attribute state
@@ -4751,6 +4752,7 @@ PASS History interface: operation pushState(any, DOMString, USVString)
 PASS History interface: operation replaceState(any, DOMString, USVString)
 PASS History must be primary interface of window.history
 PASS Stringification of window.history
+FAIL History interface: window.history must inherit property "index" with the proper type assert_inherits: property "index" not found in prototype chain
 PASS History interface: window.history must inherit property "length" with the proper type
 PASS History interface: window.history must inherit property "scrollRestoration" with the proper type
 PASS History interface: window.history must inherit property "state" with the proper type
@@ -5152,22 +5154,6 @@ PASS StorageEvent interface: attribute oldValue
 PASS StorageEvent interface: attribute newValue
 PASS StorageEvent interface: attribute url
 PASS StorageEvent interface: attribute storageArea
-FAIL HTMLAppletElement interface: existence and properties of interface object assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface object length assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface object name assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: existence and properties of interface prototype object assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: existence and properties of interface prototype object's "constructor" property assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute align assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute alt assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute archive assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute code assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute codeBase assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute height assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute hspace assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute name assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute object assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute vspace assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
-FAIL HTMLAppletElement interface: attribute width assert_own_property: self does not have own property "HTMLAppletElement" expected property "HTMLAppletElement" missing
 PASS HTMLMarqueeElement interface: existence and properties of interface object
 PASS HTMLMarqueeElement interface object length
 PASS HTMLMarqueeElement interface object name
