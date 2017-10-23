@@ -257,7 +257,7 @@ void WindowTree::AddRootForWindowManager(const ServerWindow* root) {
 
   DCHECK(automatically_create_display_roots_);
   DCHECK(window_manager_internal_);
-  const ClientWindowId client_window_id = MakeClientWindowId(root->id());
+  const ClientWindowId client_window_id = root->frame_sink_id();
   DCHECK_EQ(0u, client_id_to_window_id_map_.count(client_window_id));
   client_id_to_window_id_map_[client_window_id] = root->id();
   window_id_to_client_id_map_[root->id()] = client_window_id;
@@ -1245,14 +1245,7 @@ void WindowTree::GetUnknownWindowsFrom(
   if (IsWindowKnown(window))
     return;
 
-  // There are two cases where this gets hit:
-  // . During init, in which case using the window id as the client id is
-  //   fine.
-  // . When a window is moved to a parent of a window we know about. This is
-  //   only encountered for the WM or embed roots. We assume such clients want
-  //   to see the real id of the window and are only created ClientWindowIds
-  //   with the client_id.
-  const ClientWindowId client_window_id = MakeClientWindowId(window->id());
+  const ClientWindowId client_window_id = window->frame_sink_id();
   DCHECK_EQ(0u, client_id_to_window_id_map_.count(client_window_id));
   client_id_to_window_id_map_[client_window_id] = window->id();
   window_id_to_client_id_map_[window->id()] = client_window_id;
@@ -1496,10 +1489,6 @@ ClientWindowId WindowTree::MakeClientWindowId(Id transport_window_id) const {
     return ClientWindowId(id_, transport_window_id);
   return ClientWindowId(HiWord(transport_window_id),
                         LoWord(transport_window_id));
-}
-
-ClientWindowId WindowTree::MakeClientWindowId(const WindowId& id) const {
-  return MakeClientWindowId((id.client_id << 16) | id.window_id);
 }
 
 mojom::WindowTreeClientPtr

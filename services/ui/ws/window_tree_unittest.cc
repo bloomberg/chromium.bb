@@ -1507,7 +1507,7 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   EXPECT_TRUE(embed_tree->SetCapture(embed_child_window_id));
   ASSERT_TRUE(!wm_client()->tracker()->changes()->empty());
   EXPECT_EQ("OnCaptureChanged new_window=" + kNextWindowClientIdString +
-                ",1 old_window=null",
+                ",2 old_window=null",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(embed_client->tracker()->changes()->empty());
 
@@ -1518,7 +1518,7 @@ TEST_F(WindowTreeTest, CaptureNotifiesWm) {
   // clients that created this window is receiving the event, so client_id part
   // would be reset to 0 before sending back to clients.
   EXPECT_EQ("OnCaptureChanged new_window=0,1 old_window=" +
-                kNextWindowClientIdString + ",1",
+                kNextWindowClientIdString + ",2",
             ChangesToDescription1(*wm_client()->tracker()->changes())[0]);
   EXPECT_TRUE(embed_client->tracker()->changes()->empty());
   wm_client()->tracker()->changes()->clear();

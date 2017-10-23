@@ -890,12 +890,12 @@ TEST_F(WindowTreeClientTest, CantAccessChildrenOfEmbeddedWindow) {
     // NOTE: we expect a match of WindowParentToString(window_2_2, window_1_1),
     // but the ids are in the id space of client2, which is not the same as
     // the id space of wt1().
-    EXPECT_EQ("window=" + std::to_string(client_id_2()) + ",1 parent=0,1",
+    EXPECT_EQ("window=" + std::to_string(client_id_2()) + ",2 parent=0,1",
               windows[1].ToString());
     // Same thing here, we really want to test for
     // WindowParentToString(window_3_3, window_2_2).
     EXPECT_EQ("window=" + std::to_string(client_id_3()) +
-                  ",1 parent=" + std::to_string(client_id_2()) + ",1",
+                  ",3 parent=" + std::to_string(client_id_2()) + ",2",
               windows[2].ToString());
   }
 }
@@ -1113,7 +1113,7 @@ TEST_F(WindowTreeClientTest, WindowHierarchyChangedAddingKnownToUnknown) {
     // client_id_2(),1 should be IdToString(window_2_11), but window_2_11 is in
     // the id space of client2, not client1.
     EXPECT_EQ("HierarchyChanged window=" + std::to_string(client_id_2()) +
-                  ",1 old_parent=" + IdToString(window11_in_wt1) +
+                  ",11 old_parent=" + IdToString(window11_in_wt1) +
                   " new_parent=null",
               SingleChangeToDescription(*changes1()));
   }
@@ -1131,7 +1131,7 @@ TEST_F(WindowTreeClientTest, WindowHierarchyChangedAddingKnownToUnknown) {
     // differing id spaces.
     EXPECT_EQ("[" + WindowParentToString(window22_in_wt1, window11_in_wt1) +
                   "],[window=" + std::to_string(client_id_2()) +
-                  ",3 parent=" + std::to_string(client_id_2()) + ",2]",
+                  ",21 parent=" + std::to_string(client_id_2()) + ",2]",
               ChangeWindowDescription(*changes1()));
   }
 }
@@ -2266,14 +2266,14 @@ TEST_F(WindowTreeClientTest, Ids) {
 
   // client_id_1(),100 is the id in the wt_client1's id space. The new client
   // should see client_id_2(),1 (the server id).
-  const Id window_1_100_in_ws2 = BuildWindowId(client_id_1(), 1);
+  const Id window_1_100_in_ws2 = BuildWindowId(client_id_1(), 100);
   EXPECT_EQ(window_1_100_in_ws2, wt_client2()->root_window_id());
 
   // The first window created in the second client gets a server id of
   // client_id_2(),1 regardless of the id the client uses.
   const Id window_2_101 = wt_client2()->NewWindow(101);
   ASSERT_TRUE(wt_client2()->AddWindow(window_1_100_in_ws2, window_2_101));
-  const Id window_2_101_in_ws1 = BuildWindowId(client_id_2(), 1);
+  const Id window_2_101_in_ws1 = BuildWindowId(client_id_2(), 101);
   wt_client1()->WaitForChangeCount(1);
   EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_101_in_ws1) +
                 " old_parent=null new_parent=" + IdToString(window_1_100),
@@ -2363,7 +2363,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
 
   // client_id_1(),100 is the id in the wt_client1's id space. The new client
   // should see client_id_2(),1 (the server id).
-  const Id window_1_100_in_ws2 = BuildWindowId(client_id_1(), 1);
+  const Id window_1_100_in_ws2 = BuildWindowId(client_id_1(), 100);
   EXPECT_EQ(window_1_100_in_ws2, wt_client2()->root_window_id());
 
   // Submit a CompositorFrame to window_1_100_in_ws2 (the embedded window in
@@ -2401,7 +2401,7 @@ TEST_F(WindowTreeClientTest, SurfaceIdPropagation) {
   // client_id_2(),1 regardless of the id the client uses.
   const Id window_2_101 = wt_client2()->NewWindow(101);
   ASSERT_TRUE(wt_client2()->AddWindow(window_1_100_in_ws2, window_2_101));
-  const Id window_2_101_in_ws2 = BuildWindowId(client_id_2(), 1);
+  const Id window_2_101_in_ws2 = BuildWindowId(client_id_2(), 101);
   wt_client1()->WaitForChangeCount(1);
   EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_101_in_ws2) +
                 " old_parent=null new_parent=" + IdToString(window_1_100),
@@ -2458,8 +2458,8 @@ TEST_F(WindowTreeClientTest, AddUnknownWindowKnownParent) {
   ASSERT_TRUE(
       wt_client2()->AddWindow(wt_client2()->root_window_id(), window_2_2));
   wt_client1()->WaitForChangeCount(1);
-  const Id window_2_1_in_wm = BuildWindowId(client_id_2(), 1);
-  const Id window_2_2_in_wm = BuildWindowId(client_id_2(), 2);
+  const Id window_2_1_in_wm = BuildWindowId(client_id_2(), 1000);
+  const Id window_2_2_in_wm = BuildWindowId(client_id_2(), 2000);
   EXPECT_EQ("HierarchyChanged window=" + IdToString(window_2_2_in_wm) +
                 " old_parent=null new_parent=" + IdToString(window_1_100),
             SingleChangeToDescription(*changes1()));
@@ -2480,10 +2480,10 @@ TEST_F(WindowTreeClientTest, Transform) {
 
   // The first window created in the second client gets a server id of
   // client_id_2(),1 regardless of the id the client uses.
-  const Id window1_in_client2 = BuildWindowId(client_id_1(), 1);
+  const Id window1_in_client2 = BuildWindowId(client_id_1(), 100);
   const Id window2 = wt_client2()->NewWindow(11);
   ASSERT_TRUE(wt_client2()->AddWindow(window1_in_client2, window2));
-  const Id window2_in_client1 = BuildWindowId(client_id_2(), 1);
+  const Id window2_in_client1 = BuildWindowId(client_id_2(), 11);
   wt_client1()->WaitForChangeCount(1);
   changes1()->clear();
 
