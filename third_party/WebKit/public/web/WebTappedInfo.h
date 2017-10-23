@@ -5,8 +5,9 @@
 #ifndef WebTappedInfo_h
 #define WebTappedInfo_h
 
-#include "core/dom/Node.h"
+#ifdef INSIDE_BLINK
 #include "platform/geometry/IntPoint.h"
+#endif  // INSIDE_BLINK
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebPoint.h"
 #include "public/web/WebNode.h"
@@ -15,16 +16,22 @@ namespace blink {
 
 struct WebPoint;
 
+#ifdef INSIDE_BLINK
+class Node;
+#endif  // INSIDE_BLINK
+
 /*
  * Encapsulates information needed by ShowUnhandledTapUIIfNeeded to describe
  * the tap.
  */
 class WebTappedInfo {
  public:
+#ifdef INSIDE_BLINK
   WebTappedInfo(bool dom_tree_changed,
                 bool style_changed,
                 Node* tapped_node,
                 IntPoint tapped_position_in_viewport);
+#endif  // INSIDE_BLINK
 
   BLINK_EXPORT const WebPoint& Position() const;
   BLINK_EXPORT const WebNode& GetNode() const;

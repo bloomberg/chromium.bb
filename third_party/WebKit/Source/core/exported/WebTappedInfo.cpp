@@ -4,6 +4,8 @@
 
 #include "public/web/WebTappedInfo.h"
 
+#include "core/dom/Node.h"
+
 namespace blink {
 
 WebTappedInfo::WebTappedInfo(bool dom_tree_changed,
