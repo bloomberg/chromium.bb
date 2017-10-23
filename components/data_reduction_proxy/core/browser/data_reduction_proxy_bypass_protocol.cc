@@ -151,7 +151,14 @@ bool DataReductionProxyBypassProtocol::HandleInValidResponseHeadersCase(
   if (status.error() == net::ERR_IO_PENDING ||
       status.error() == net::ERR_NETWORK_CHANGED ||
       status.error() == net::ERR_INTERNET_DISCONNECTED ||
-      status.error() == net::ERR_ABORTED || std::abs(status.error()) >= 400) {
+      status.error() == net::ERR_NETWORK_IO_SUSPENDED ||
+      status.error() == net::ERR_ABORTED ||
+      status.error() == net::ERR_INSUFFICIENT_RESOURCES ||
+      status.error() == net::ERR_OUT_OF_MEMORY ||
+      status.error() == net::ERR_NAME_NOT_RESOLVED ||
+      status.error() == net::ERR_NAME_RESOLUTION_FAILED ||
+      status.error() == net::ERR_ADDRESS_UNREACHABLE ||
+      std::abs(status.error()) >= 400) {
     // No need to retry the request or mark the proxy as bad. Only bypass on
     // System related errors, connection related errors and certificate errors.
     return false;
