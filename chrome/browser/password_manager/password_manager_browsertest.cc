@@ -316,7 +316,7 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                        LoginSuccessWithUnrelatedForm) {
   // Log in, see a form on the landing page. That form is not related to the
-  // login form (=has a different action), so we should offer saving the
+  // login form (=has different input fields), so we should offer saving the
   // password.
   NavigateToFile("/password/password_form.html");
 
@@ -468,6 +468,42 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
 
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill));
   ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), navigate_frame));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       NoPromptForSameFormWithDifferentAction) {
+  // Log in, see a form on the landing page. That form is related to the login
+  // form (has a different action but has same input fields), so we should not
+  // offer saving the password.
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver observer(WebContents());
+  auto prompt_observer = base::MakeUnique<BubbleObserver>(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_different_action').value = 'temp';"
+      "document.getElementById('password_different_action').value = 'random';"
+      "document.getElementById('submit_different_action').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
+  observer.Wait();
+  EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
+}
+
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
+                       NoPromptForFormWithEnteredUsername) {
+  // Log in, see a form on the landing page. That form is not related to the
+  // login form but has the same username as was entered previously, so we
+  // should not offer saving the password.
+  NavigateToFile("/password/password_form.html");
+
+  NavigationObserver observer(WebContents());
+  auto prompt_observer = base::MakeUnique<BubbleObserver>(WebContents());
+  std::string fill_and_submit =
+      "document.getElementById('username_contains_username').value = 'temp';"
+      "document.getElementById('password_contains_username').value = 'random';"
+      "document.getElementById('submit_contains_username').click()";
+  ASSERT_TRUE(content::ExecuteScript(RenderViewHost(), fill_and_submit));
   observer.Wait();
   EXPECT_FALSE(prompt_observer->IsSavePromptShownAutomatically());
 }

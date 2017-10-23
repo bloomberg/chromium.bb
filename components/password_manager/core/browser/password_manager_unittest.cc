@@ -976,6 +976,7 @@ TEST_F(PasswordManagerTest, AttemptedSavePasswordSameOriginInsecureScheme) {
   secure_form.signon_realm = secure_form.origin.spec();
 
   PasswordForm insecure_form(MakeSimpleForm());
+  insecure_form.username_element += ASCIIToUTF16("1");
   insecure_form.username_value = ASCIIToUTF16("compromised_user");
   insecure_form.password_value = ASCIIToUTF16("C0mpr0m1s3d_P4ss");
   insecure_form.origin = GURL("http://example.com/home");
@@ -1012,7 +1013,7 @@ TEST_F(PasswordManagerTest, AttemptedSavePasswordSameOriginInsecureScheme) {
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
   OnPasswordFormSubmitted(insecure_form);
 
-  // Expect no further calls to |ProptUserToSaveOrUpdatePassword| due to
+  // Expect no further calls to |PromptUserToSaveOrUpdatePassword| due to
   // insecure origin.
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_)).Times(0);
 
