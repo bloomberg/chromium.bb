@@ -86,9 +86,12 @@ using namespace HTMLNames;
 
 CompositeEditCommand::CompositeEditCommand(Document& document)
     : EditCommand(document) {
-  SetStartingSelection(document.GetFrame()
-                           ->Selection()
-                           .ComputeVisibleSelectionInDOMTreeDeprecated());
+  const VisibleSelection& visible_selection =
+      document.GetFrame()
+          ->Selection()
+          .ComputeVisibleSelectionInDOMTreeDeprecated();
+  SetStartingSelection(
+      SelectionForUndoStep::From(visible_selection.AsSelection()));
   SetEndingSelection(starting_selection_);
 }
 
@@ -1119,8 +1122,10 @@ void CompositeEditCommand::PushAnchorElementDown(Element* anchor_node,
 
   DCHECK(anchor_node->IsLink()) << anchor_node;
 
-  SetEndingSelection(
+  const VisibleSelection& visible_selection = CreateVisibleSelection(
       SelectionInDOMTree::Builder().SelectAllChildren(*anchor_node).Build());
+  SetEndingSelection(
+      SelectionForUndoStep::From(visible_selection.AsSelection()));
   ApplyStyledElement(anchor_node, editing_state);
   if (editing_state->IsAborted())
     return;
@@ -1320,8 +1325,8 @@ void CompositeEditCommand::MoveParagraphWithClones(
   CloneParagraphUnderNewElement(start, end, outer_node, block_element,
                                 editing_state);
 
-  SetEndingSelection(
-      SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build());
+  SetEndingSelection(SelectionForUndoStep::From(
+      SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build()));
   if (!DeleteSelection(editing_state, false, false, false))
     return;
 
@@ -1499,9 +1504,10 @@ void CompositeEditCommand::MoveParagraphs(
 
   DCHECK(!GetDocument().NeedsLayoutTreeUpdate());
 
-  const SelectionInDOMTree& selection_to_delete =
-      SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build();
-  SetEndingSelection(selection_to_delete);
+  const VisibleSelection& selection_to_delete = CreateVisibleSelection(
+      SelectionInDOMTree::Builder().Collapse(start).Extend(end).Build());
+  SetEndingSelection(
+      SelectionForUndoStep::From(selection_to_delete.AsSelection()));
   if (!DeleteSelection(editing_state, false, false, false))
     return;
 
@@ -1546,17 +1552,18 @@ void CompositeEditCommand::MoveParagraphs(
       destination.ToParentAnchoredPosition(),
       TextIteratorBehavior::AllVisiblePositionsRangeLengthBehavior());
 
-  const SelectionInDOMTree& destination_selection =
-      SelectionInDOMTree::Builder()
-          .Collapse(destination.ToPositionWithAffinity())
-          .SetIsDirectional(original_is_directional)
-          .Build();
+  const VisibleSelection& destination_selection =
+      CreateVisibleSelection(SelectionInDOMTree::Builder()
+                                 .Collapse(destination.ToPositionWithAffinity())
+                                 .SetIsDirectional(original_is_directional)
+                                 .Build());
   if (EndingSelection().IsNone()) {
     // We abort executing command since |destination| becomes invisible.
     editing_state->Abort();
     return;
   }
-  SetEndingSelection(destination_selection);
+  SetEndingSelection(
+      SelectionForUndoStep::From(destination_selection.AsSelection()));
   ReplaceSelectionCommand::CommandOptions options =
       ReplaceSelectionCommand::kSelectReplacement |
       ReplaceSelectionCommand::kMovingParagraph;
@@ -1604,11 +1611,14 @@ void CompositeEditCommand::MoveParagraphs(
                                  .CreateRangeForSelection(*document_element);
   if (end_range.IsNull())
     return;
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(start_range.StartPosition())
-                         .Extend(end_range.StartPosition())
-                         .SetIsDirectional(original_is_directional)
-                         .Build());
+  const VisibleSelection& visible_selection =
+      CreateVisibleSelection(SelectionInDOMTree::Builder()
+                                 .Collapse(start_range.StartPosition())
+                                 .Extend(end_range.StartPosition())
+                                 .SetIsDirectional(original_is_directional)
+                                 .Build());
+  SetEndingSelection(
+      SelectionForUndoStep::From(visible_selection.AsSelection()));
 }
 
 // FIXME: Send an appropriate shouldDeleteRange call.
@@ -1710,10 +1720,11 @@ bool CompositeEditCommand::BreakOutOfEmptyListItem(
   if (editing_state->IsAborted())
     return false;
 
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(Position::FirstPositionInNode(*new_block))
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(SelectionForUndoStep::From(
+      SelectionInDOMTree::Builder()
+          .Collapse(Position::FirstPositionInNode(*new_block))
+          .SetIsDirectional(EndingSelection().IsDirectional())
+          .Build()));
 
   style->PrepareToApplyAt(EndingSelection().Start());
   if (!style->IsEmpty()) {
@@ -1772,10 +1783,11 @@ bool CompositeEditCommand::BreakOutOfEmptyMailBlockquotedParagraph(
       return false;
     GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
-  SetEndingSelection(SelectionInDOMTree::Builder()
-                         .Collapse(at_br.ToPositionWithAffinity())
-                         .SetIsDirectional(EndingSelection().IsDirectional())
-                         .Build());
+  SetEndingSelection(SelectionForUndoStep::From(
+      SelectionInDOMTree::Builder()
+          .Collapse(at_br.ToPositionWithAffinity())
+          .SetIsDirectional(EndingSelection().IsDirectional())
+          .Build()));
 
   // If this is an empty paragraph there must be a line break here.
   if (!LineBreakExistsAtVisiblePosition(caret))
@@ -1937,32 +1949,6 @@ void CompositeEditCommand::SetStartingSelection(
     if (!command->Parent() || command->Parent()->IsFirstCommand(command))
       break;
   }
-}
-
-void CompositeEditCommand::SetStartingSelection(
-    const VisibleSelection& visible_selection) {
-  SetStartingSelection(
-      SelectionForUndoStep::From(visible_selection.AsSelection()));
-}
-
-// TODO(yosin): We will make |SelectionInDOMTree| version of
-// |setEndingSelection()| as primary function instead of wrapper, once
-// |EditCommand| holds other than |VisibleSelection|.
-void CompositeEditCommand::SetEndingSelection(
-    const SelectionInDOMTree& selection) {
-  // TODO(editing-dev): The use of
-  // updateStyleAndLayoutIgnorePendingStylesheets
-  // needs to be audited.  See http://crbug.com/590369 for more details.
-  GetDocument().UpdateStyleAndLayoutIgnorePendingStylesheets();
-  SetEndingVisibleSelection(CreateVisibleSelection(selection));
-}
-
-// TODO(yosin): We will make |SelectionInDOMTree| version of
-// |setEndingSelection()| as primary function instead of wrapper.
-void CompositeEditCommand::SetEndingVisibleSelection(
-    const VisibleSelection& visible_selection) {
-  SetEndingSelection(
-      SelectionForUndoStep::From(visible_selection.AsSelection()));
 }
 
 void CompositeEditCommand::SetEndingSelection(
