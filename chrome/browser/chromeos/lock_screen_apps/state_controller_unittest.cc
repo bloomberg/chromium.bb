@@ -108,20 +108,6 @@ scoped_refptr<extensions::Extension> CreateTestNoteTakingApp(
       .Build();
 }
 
-class TestPowerManagerClient : public chromeos::FakePowerManagerClient {
- public:
-  TestPowerManagerClient() = default;
-  ~TestPowerManagerClient() override = default;
-
-  void GetScreenBrightnessPercent(
-      const GetScreenBrightnessPercentCallback& callback) override {
-    callback.Run(80);
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestPowerManagerClient);
-};
-
 class TestFocusCyclerDelegate : public lock_screen_apps::FocusCyclerDelegate {
  public:
   TestFocusCyclerDelegate() = default;
@@ -418,11 +404,11 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
     SetUpStylusAvailability();
 
-    auto power_client = base::MakeUnique<TestPowerManagerClient>();
-    power_manager_client_ = power_client.get();
     std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter =
         chromeos::DBusThreadManager::GetSetterForTesting();
-    dbus_setter->SetPowerManagerClient(std::move(power_client));
+    dbus_setter->SetPowerManagerClient(
+        std::make_unique<chromeos::FakePowerManagerClient>());
+    GetPowerManagerClient()->set_screen_brightness_percent(80);
 
     BrowserWithTestWindowTest::SetUp();
 
@@ -667,8 +653,9 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
 
   TestingProfile* lock_screen_profile() { return lock_screen_profile_; }
 
-  chromeos::FakePowerManagerClient* power_manager_client() {
-    return power_manager_client_;
+  chromeos::FakePowerManagerClient* GetPowerManagerClient() {
+    return static_cast<chromeos::FakePowerManagerClient*>(
+        chromeos::DBusThreadManager::Get()->GetPowerManagerClient());
   }
 
   session_manager::SessionManager* session_manager() {
@@ -717,10 +704,6 @@ class LockScreenAppStateTest : public BrowserWithTestWindowTest {
   // before running the loop, as that is the method that starts the state
   // controller.
   base::RunLoop ready_waiter_;
-
-  // Power manager client set by the test - the power manager client instance is
-  // owned by DBusThreadManager.
-  chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;
 
   // The StateController does not really have dependency on ARC, but this is
   // needed to properly initialize NoteTakingHelper.
@@ -1286,8 +1269,8 @@ TEST_F(LockScreenAppStateTest, StylusRemovedWhileScreenOff) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
                                       true /* enable_app_launch */));
 
-  power_manager_client()->SendBrightnessChanged(0 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(0 /* level */,
+                                                 true /* user_initiated */);
 
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
 
@@ -1299,8 +1282,8 @@ TEST_F(LockScreenAppStateTest, StylusRemovedWhileScreenOff) {
 
   // The note action should be launched if the screen brightness is turned back
   // up soon after stylus eject.
-  power_manager_client()->SendBrightnessChanged(70 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(70 /* level */,
+                                                 true /* user_initiated */);
   EXPECT_EQ(TrayActionState::kLaunching,
             state_controller()->GetLockScreenNoteState());
   ExpectObservedStatesMatch({TrayActionState::kLaunching},
@@ -1317,8 +1300,8 @@ TEST_F(LockScreenAppStateTest,
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
                                       true /* enable_app_launch */));
 
-  power_manager_client()->SendBrightnessChanged(0 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(0 /* level */,
+                                                 true /* user_initiated */);
 
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
 
@@ -1331,8 +1314,8 @@ TEST_F(LockScreenAppStateTest,
   // If sufficient time has passed, turning screen brightness up should not
   // launch a lock screen note.
   tick_clock()->Advance(base::TimeDelta::FromSeconds(10));
-  power_manager_client()->SendBrightnessChanged(70 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(70 /* level */,
+                                                 true /* user_initiated */);
 
   EXPECT_EQ(TrayActionState::kAvailable,
             state_controller()->GetLockScreenNoteState());
@@ -1345,8 +1328,8 @@ TEST_F(LockScreenAppStateTest, StylusRemovedAndInsertedWhileScreenOff) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kAvailable,
                                       true /* enable_app_launch */));
 
-  power_manager_client()->SendBrightnessChanged(0 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(0 /* level */,
+                                                 true /* user_initiated */);
 
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::REMOVED);
 
@@ -1359,8 +1342,8 @@ TEST_F(LockScreenAppStateTest, StylusRemovedAndInsertedWhileScreenOff) {
   // Turning the screen brightness up soon after stylus eject should not launch
   // note taking app if the stylus has been inserted back.
   devices_test_api.NotifyObserversStylusStateChanged(ui::StylusState::INSERTED);
-  power_manager_client()->SendBrightnessChanged(70 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(70 /* level */,
+                                                 true /* user_initiated */);
   EXPECT_EQ(TrayActionState::kAvailable,
             state_controller()->GetLockScreenNoteState());
   EXPECT_TRUE(observer()->observed_states().empty());
@@ -1466,7 +1449,7 @@ TEST_F(LockScreenAppStateTest, CloseAppWindowOnSuspend) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
                                       true /* enable_app_launch */));
 
-  power_manager_client()->SendSuspendImminent();
+  GetPowerManagerClient()->SendSuspendImminent();
   EXPECT_EQ(TrayActionState::kAvailable,
             state_controller()->GetLockScreenNoteState());
 
@@ -1478,29 +1461,29 @@ TEST_F(LockScreenAppStateTest, CloseAppWindowOnScreenOff) {
   ASSERT_TRUE(InitializeNoteTakingApp(TrayActionState::kActive,
                                       true /* enable_app_launch */));
 
-  power_manager_client()->SendBrightnessChanged(10 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(10 /* level */,
+                                                 true /* user_initiated */);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(app_window()->closed());
   EXPECT_EQ(TrayActionState::kActive,
             state_controller()->GetLockScreenNoteState());
 
-  power_manager_client()->SendBrightnessChanged(0 /* level */,
-                                                true /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(0 /* level */,
+                                                 true /* user_initiated */);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(app_window()->closed());
   EXPECT_EQ(TrayActionState::kActive,
             state_controller()->GetLockScreenNoteState());
 
-  power_manager_client()->SendBrightnessChanged(10 /* level */,
-                                                false /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(10 /* level */,
+                                                 false /* user_initiated */);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(app_window()->closed());
   EXPECT_EQ(TrayActionState::kActive,
             state_controller()->GetLockScreenNoteState());
 
-  power_manager_client()->SendBrightnessChanged(0 /* level */,
-                                                false /* user_initiated */);
+  GetPowerManagerClient()->SendBrightnessChanged(0 /* level */,
+                                                 false /* user_initiated */);
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(app_window()->closed());
   EXPECT_EQ(TrayActionState::kAvailable,
