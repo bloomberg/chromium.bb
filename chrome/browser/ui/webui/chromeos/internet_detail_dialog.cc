@@ -2,20 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog_ui.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
+#include "chromeos/network/network_handler.h"
+#include "chromeos/network/network_state.h"
+#include "chromeos/network/network_state_handler.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace chromeos {
 
 namespace {
+
+int s_internet_detail_dialog_count = 0;
 
 void AddInternetStrings(content::WebUIDataSource* html_source) {
   // Add default strings first.
@@ -43,6 +50,45 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
 }
 
 }  // namespace
+
+bool InternetDetailDialog::IsShown() {
+  return s_internet_detail_dialog_count > 0;
+}
+
+void InternetDetailDialog::ShowDialog(const std::string& network_id) {
+  auto* network_state_handler = NetworkHandler::Get()->network_state_handler();
+  const NetworkState* network;
+  if (!network_id.empty())
+    network = network_state_handler->GetNetworkStateFromGuid(network_id);
+  else
+    network = network_state_handler->DefaultNetwork();
+  if (!network) {
+    LOG(ERROR) << "Network not found: " << network_id;
+    return;
+  }
+  InternetDetailDialog* dialog = new InternetDetailDialog(*network);
+  dialog->ShowSystemDialog();
+}
+
+InternetDetailDialog::InternetDetailDialog(const NetworkState& network)
+    : SystemWebDialogDelegate(GURL(chrome::kChromeUIIntenetDetailDialogURL),
+                              base::string16()),
+      guid_(network.guid()) {
+  title_ = network.Matches(NetworkTypePattern::Ethernet())
+               ? l10n_util::GetStringUTF16(IDS_NETWORK_TYPE_ETHERNET)
+               : base::UTF8ToUTF16(network.name());
+  ++s_internet_detail_dialog_count;
+}
+
+InternetDetailDialog::~InternetDetailDialog() {
+  --s_internet_detail_dialog_count;
+}
+
+std::string InternetDetailDialog::GetDialogArgs() const {
+  return guid_;
+}
+
+// InternetDetailDialogUI
 
 InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
     : ui::WebDialogUI(web_ui) {

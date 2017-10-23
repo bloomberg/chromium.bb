@@ -45,7 +45,6 @@
 #include "chrome/browser/chromeos/login/signin/token_handle_util.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/login/ui/input_events_blocker.h"
-#include "chrome/browser/chromeos/login/ui/internet_detail_dialog.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_view.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
@@ -61,6 +60,7 @@
 #include "chrome/browser/chromeos/system/timezone_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -626,8 +626,7 @@ void LoginDisplayHostImpl::Finalize(base::OnceClosure completion_callback) {
 
 void LoginDisplayHostImpl::OpenInternetDetailDialog(
     const std::string& network_id) {
-  InternetDetailDialog::ShowDialog(ProfileHelper::GetSigninProfile(),
-                                   GetNativeWindow(), network_id);
+  InternetDetailDialog::ShowDialog(network_id);
 }
 
 void LoginDisplayHostImpl::SetStatusAreaVisible(bool visible) {
