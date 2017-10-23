@@ -53,15 +53,15 @@ TEST(HttpAuthHandlerFactoryTest, RegistryFactory) {
   SSLInfo null_ssl_info;
   HttpAuthHandlerRegistryFactory registry_factory;
   GURL gurl("www.google.com");
-  const int kBasicReturnCode = ERR_INVALID_SPDY_STREAM;
+  const int kBasicReturnCode = -1;
   MockHttpAuthHandlerFactory* mock_factory_basic =
       new MockHttpAuthHandlerFactory(kBasicReturnCode);
 
-  const int kDigestReturnCode = ERR_PAC_SCRIPT_FAILED;
+  const int kDigestReturnCode = -2;
   MockHttpAuthHandlerFactory* mock_factory_digest =
       new MockHttpAuthHandlerFactory(kDigestReturnCode);
 
-  const int kDigestReturnCodeReplace = ERR_SYN_REPLY_NOT_RECEIVED;
+  const int kDigestReturnCodeReplace = -3;
   MockHttpAuthHandlerFactory* mock_factory_digest_replace =
       new MockHttpAuthHandlerFactory(kDigestReturnCodeReplace);
 

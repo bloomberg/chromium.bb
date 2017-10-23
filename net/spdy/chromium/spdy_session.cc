@@ -2555,7 +2555,7 @@ void SpdySession::DeleteExpiredPushedStreams() {
       continue;
     bytes_pushed_and_unclaimed_count_ += active_it->second->recv_bytes();
 
-    LogAbandonedActiveStream(active_it, ERR_INVALID_SPDY_STREAM);
+    LogAbandonedActiveStream(active_it, ERR_TIMED_OUT);
     // CloseActiveStreamIterator() will remove the stream from
     // |unclaimed_pushed_streams_|.
     ResetStreamIterator(active_it, ERROR_CODE_REFUSED_STREAM,
