@@ -88,10 +88,10 @@ class PLATFORM_EXPORT CubicBezierTimingFunction final : public TimingFunction {
  public:
   using EaseType = cc::CubicBezierTimingFunction::EaseType;
 
-  static RefPtr<CubicBezierTimingFunction> Create(double x1,
-                                                  double y1,
-                                                  double x2,
-                                                  double y2) {
+  static scoped_refptr<CubicBezierTimingFunction> Create(double x1,
+                                                         double y1,
+                                                         double x2,
+                                                         double y2) {
     return WTF::AdoptRef(new CubicBezierTimingFunction(x1, y1, x2, y2));
   }
 
@@ -153,8 +153,8 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
  public:
   using StepPosition = cc::StepsTimingFunction::StepPosition;
 
-  static RefPtr<StepsTimingFunction> Create(int steps,
-                                            StepPosition step_position) {
+  static scoped_refptr<StepsTimingFunction> Create(int steps,
+                                                   StepPosition step_position) {
     return WTF::AdoptRef(new StepsTimingFunction(steps, step_position));
   }
 
@@ -198,7 +198,7 @@ class PLATFORM_EXPORT StepsTimingFunction final : public TimingFunction {
 
 class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
  public:
-  static RefPtr<FramesTimingFunction> Create(int frames) {
+  static scoped_refptr<FramesTimingFunction> Create(int frames) {
     return WTF::AdoptRef(new FramesTimingFunction(frames));
   }
 
@@ -222,8 +222,8 @@ class PLATFORM_EXPORT FramesTimingFunction final : public TimingFunction {
   std::unique_ptr<cc::FramesTimingFunction> frames_;
 };
 
-PLATFORM_EXPORT RefPtr<TimingFunction> CreateCompositorTimingFunctionFromCC(
-    const cc::TimingFunction*);
+PLATFORM_EXPORT scoped_refptr<TimingFunction>
+CreateCompositorTimingFunctionFromCC(const cc::TimingFunction*);
 
 PLATFORM_EXPORT bool operator==(const LinearTimingFunction&,
                                 const TimingFunction&);

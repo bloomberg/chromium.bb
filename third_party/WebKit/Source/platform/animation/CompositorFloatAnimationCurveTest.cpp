@@ -112,7 +112,7 @@ TEST(WebFloatAnimationCurveTest, UnsortedKeyframes) {
 TEST(WebFloatAnimationCurveTest, CubicBezierTimingFunction) {
   std::unique_ptr<CompositorFloatAnimationCurve> curve =
       CompositorFloatAnimationCurve::Create();
-  RefPtr<CubicBezierTimingFunction> cubic =
+  scoped_refptr<CubicBezierTimingFunction> cubic =
       CubicBezierTimingFunction::Create(0.25, 0, 0.75, 1);
   curve->AddKeyframe(CompositorFloatKeyframe(0, 0, *cubic));
   curve->AddKeyframe(
@@ -230,7 +230,7 @@ TEST(WebFloatAnimationCurveTest, CustomBezierTimingFunction) {
   double y1 = 0.2;
   double x2 = 0.8;
   double y2 = 0.7;
-  RefPtr<CubicBezierTimingFunction> cubic =
+  scoped_refptr<CubicBezierTimingFunction> cubic =
       CubicBezierTimingFunction::Create(x1, y1, x2, y2);
   curve->AddKeyframe(CompositorFloatKeyframe(0, 0, *cubic));
   curve->AddKeyframe(
