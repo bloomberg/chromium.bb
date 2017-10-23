@@ -25,17 +25,26 @@ static_library("content") {
   ]
 
   deps = [
+    ":content_common",
     ":utils",
     "//components/autofill/core/browser",
     "//components/keyed_service/content",
+    "//components/payments/content/utility",
     "//components/payments/core",
     "//components/prefs",
     "//components/strings:components_strings_grit",
     "//components/url_formatter",
     "//content/public/browser",
-    "//mojo/public/cpp/bindings",
     "//third_party/WebKit/public:blink_headers",
     "//url",
+  ]
+}
+
+# Files used by content and utility.
+static_library("content_common") {
+  sources = [
+    "web_app_manifest_section.cc",
+    "web_app_manifest_section.h",
   ]
 }
 
@@ -45,8 +54,6 @@ static_library("utils") {
     "manifest_verifier.h",
     "origin_security_checker.cc",
     "origin_security_checker.h",
-    "payment_manifest_parser_host.cc",
-    "payment_manifest_parser_host.h",
     "payment_manifest_web_data_service.cc",
     "payment_manifest_web_data_service.h",
     "payment_method_manifest_table.cc",
@@ -56,9 +63,10 @@ static_library("utils") {
   ]
 
   deps = [
+    ":content_common",
     "//components/autofill/core/browser",
+    "//components/payments/content/utility",
     "//components/payments/core",
-    "//components/payments/mojom:mojom_parser",
     "//components/strings",
     "//components/webdata/common",
     "//content/public/browser",

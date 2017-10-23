@@ -39,7 +39,6 @@ static_library("utility") {
     "//chrome/common/printing:interfaces",
     "//chrome/common/profiling",
     "//chrome/profiling",
-    "//components/payments/content/utility",
     "//components/search_engines",
     "//components/strings",
     "//components/url_formatter",

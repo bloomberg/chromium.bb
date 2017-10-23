@@ -298,9 +298,7 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
         for (URI uriMethodName : uriMethods) {
             if (!methodToAppsMapping.containsKey(uriMethodName.toString())) continue;
 
-            // Start the parser utility process as soon as possible, once we know that a manifest
-            // file needs to be parsed. The startup can take up to 2 seconds.
-            if (!mParser.isUtilityProcessRunning()) mParser.startUtilityProcess();
+            if (!mParser.isNativeInitialized()) mParser.createNative();
 
             // Initialize the native side of the downloader, once we know that a manifest file needs
             // to be downloaded.
@@ -494,6 +492,6 @@ public class AndroidPaymentAppFinder implements ManifestVerifyCallback {
 
         mWebDataService.destroy();
         if (mDownloader.isInitialized()) mDownloader.destroy();
-        if (mParser.isUtilityProcessRunning()) mParser.stopUtilityProcess();
+        if (mParser.isNativeInitialized()) mParser.destroyNative();
     }
 }
