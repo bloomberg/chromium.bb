@@ -171,8 +171,9 @@ int PrintContext::PageNumberForElement(Element* element,
     return -1;
 
   FloatSize scaled_page_size = page_size_in_pixels;
-  scaled_page_size.Scale(frame->View()->ContentsSize().Width() /
-                         page_rect.Width());
+  scaled_page_size.Scale(
+      frame->View()->LayoutViewportScrollableArea()->ContentsSize().Width() /
+      page_rect.Width());
   print_context->ComputePageRectsWithPageSize(scaled_page_size);
 
   int top = box->PixelSnappedOffsetTop(box->OffsetParent());
@@ -296,8 +297,9 @@ int PrintContext::NumberOfPages(LocalFrame* frame,
   print_context->BeginPrintMode(page_rect.Width(), page_rect.Height());
   // Account for shrink-to-fit.
   FloatSize scaled_page_size = page_size_in_pixels;
-  scaled_page_size.Scale(frame->View()->ContentsSize().Width() /
-                         page_rect.Width());
+  scaled_page_size.Scale(
+      frame->View()->LayoutViewportScrollableArea()->ContentsSize().Width() /
+      page_rect.Width());
   print_context->ComputePageRectsWithPageSize(scaled_page_size);
   return print_context->PageCount();
 }

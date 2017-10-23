@@ -167,10 +167,15 @@ void FramePainter::PaintContents(GraphicsContext& context,
 
   // TODO(jchaffraix): GlobalPaintFlags should be const during a paint
   // phase. Thus we should set this flag upfront (crbug.com/510280).
-  GlobalPaintFlags local_paint_flags = global_paint_flags;
-  if (document->Printing())
-    local_paint_flags |=
+  GlobalPaintFlags updated_global_paint_flags = global_paint_flags;
+  PaintLayerFlags root_layer_paint_flags = 0;
+  if (document->Printing()) {
+    updated_global_paint_flags |=
         kGlobalPaintFlattenCompositingLayers | kGlobalPaintPrinting;
+    // This will prevent clipping the root PaintLayer to its visible content
+    // rect when root layer scrolling is enabled.
+    root_layer_paint_flags = kPaintLayerPaintingOverflowContents;
+  }
 
   PaintLayer* root_layer = layout_view->Layer();
 
@@ -186,11 +191,13 @@ void FramePainter::PaintContents(GraphicsContext& context,
       root_layer->GetLayoutObject().GetFrame());
   context.SetDeviceScaleFactor(device_scale_factor);
 
-  layer_painter.Paint(context, LayoutRect(rect), local_paint_flags);
+  layer_painter.Paint(context, LayoutRect(rect), updated_global_paint_flags,
+                      root_layer_paint_flags);
 
-  if (root_layer->ContainsDirtyOverlayScrollbars())
+  if (root_layer->ContainsDirtyOverlayScrollbars()) {
     layer_painter.PaintOverlayScrollbars(context, LayoutRect(rect),
-                                         local_paint_flags);
+                                         updated_global_paint_flags);
+  }
 
   // Regions may have changed as a result of the visibility/z-index of element
   // changing.
