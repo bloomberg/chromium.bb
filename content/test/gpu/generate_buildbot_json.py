@@ -1943,6 +1943,9 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--read-abbreviated-json-results-from=' + \
       '../../content/test/data/gpu/webgl_conformance_tests_output.json',
     ],
+    'swarming': {
+      'shards': 2,
+    },
   },
   'webgl_conformance_d3d9_tests': {
     'tester_configs': [
@@ -2114,7 +2117,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     'swarming': {
       # These tests currently take about an hour and fifteen minutes
       # to run. Split them into roughly 5-minute shards.
-      'shards': 15,
+      'shards': 20,
     },
   },
   'webgl2_conformance_gl_passthrough_tests': {
