@@ -567,13 +567,73 @@ IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
   EXPECT_EQ(web_contents()->GetMainFrame()->GetProcess(),
             new_shell->web_contents()->GetMainFrame()->GetProcess());
 
-  // Wait for response from the redirect in the first tab.  This should notice
-  // that the first process is no longer suitable for the final destination
-  // (which is an unisolated URL) and transfer to another process.  In
+  // Wait for response from the first tab.  This should notice that the first
+  // process is no longer suitable for the final destination (which is an
+  // unisolated URL) and transfer to another process.  In
   // https://crbug.com/773809, this led to a CHECK due to origin lock mismatch.
   manager.WaitForNavigationFinished();
 
   // Ensure that the isolated origin did not share a process with the first
+  // tab.
+  EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(),
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+}
+
+// Same as ProcessReuseWithLazilyAssignedSiteInstance above, but here the
+// navigation with a siteless SiteInstance is for an isolated origin, and the
+// unrelated tab loads an unisolated URL which reuses the siteless
+// SiteInstance's process.  Although the unisolated URL won't lock that process
+// to an origin (except when running with --site-per-process), it should still
+// mark it as used and cause the isolated origin to transfer when it receives a
+// response. See https://crbug.com/773809.
+IN_PROC_BROWSER_TEST_F(IsolatedOriginTest,
+                       ProcessReuseWithLazilyAssignedIsolatedSiteInstance) {
+  // This test requires PlzNavigate.
+  if (!IsBrowserSideNavigationEnabled())
+    return;
+
+  // Set the process limit to 1.
+  RenderProcessHost::SetMaxRendererProcessCount(1);
+
+  // Start from an about:blank page, where the SiteInstance will not have a
+  // site assigned, but will have an associated process.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
+  SiteInstanceImpl* starting_site_instance = static_cast<SiteInstanceImpl*>(
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance());
+  EXPECT_FALSE(starting_site_instance->HasSite());
+  EXPECT_TRUE(starting_site_instance->HasProcess());
+  EXPECT_TRUE(web_contents()->GetMainFrame()->GetProcess()->IsUnused());
+
+  // Inject and click a link to an isolated origin.  Note that
+  // setting location.href won't work here, as that goes through OpenURL
+  // instead of OnBeginNavigation when starting from an about:blank page, and
+  // that doesn't trigger this bug.
+  GURL isolated_url(
+      embedded_test_server()->GetURL("isolated.foo.com", "/title2.html"));
+  TestNavigationManager manager(shell()->web_contents(), isolated_url);
+  EXPECT_TRUE(ExecuteScript(shell()->web_contents(),
+                            "var link = document.createElement('a');"
+                            "link.href = '" + isolated_url.spec() + "';"
+                            "document.body.appendChild(link);"
+                            "link.click();"));
+  EXPECT_TRUE(manager.WaitForRequestStart());
+
+  // Before response is received, open a new, unrelated tab and navigate it to
+  // an unisolated URL. This should reuse the first process, which is still
+  // considered unused at this point, and marks it as used.
+  Shell* new_shell = CreateBrowser();
+  GURL foo_url(embedded_test_server()->GetURL("www.foo.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(new_shell, foo_url));
+  EXPECT_EQ(web_contents()->GetMainFrame()->GetProcess(),
+            new_shell->web_contents()->GetMainFrame()->GetProcess());
+  EXPECT_FALSE(web_contents()->GetMainFrame()->GetProcess()->IsUnused());
+
+  // Wait for response in the first tab.  This should notice that the first
+  // process is no longer suitable for the isolated origin because it should
+  // already be marked as used, and transfer to another process.
+  manager.WaitForNavigationFinished();
+
+  // Ensure that the isolated origin did not share a process with the second
   // tab.
   EXPECT_NE(web_contents()->GetMainFrame()->GetProcess(),
             new_shell->web_contents()->GetMainFrame()->GetProcess());
