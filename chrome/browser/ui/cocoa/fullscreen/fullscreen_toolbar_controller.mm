@@ -124,6 +124,10 @@ void RecordToolbarStyle(FullscreenToolbarStyle style) {
   }
 }
 
+- (FullscreenToolbarStyle)toolbarStyle {
+  return toolbarStyle_;
+}
+
 - (FullscreenToolbarLayout)computeLayout {
   FullscreenToolbarLayout layout;
   layout.toolbarStyle = toolbarStyle_;

@@ -87,6 +87,14 @@
   return shouldHideTitle_;
 }
 
+- (BOOL)makeFirstResponder:(NSResponder*)responder {
+  BrowserWindowController* bwc =
+      base::mac::ObjCCastStrict<BrowserWindowController>(
+          [self windowController]);
+  [bwc firstResponderUpdated:responder];
+  return [super makeFirstResponder:responder];
+}
+
 // This method is called whenever a window is moved in order to ensure it fits
 // on the screen.  We cannot always handle resizes without breaking, so we
 // prevent frame constraining in those cases.

@@ -1196,6 +1196,34 @@ bool IsTabDetachingInFullscreenEnabled() {
   [touchBar_ setIsPageLoading:isLoading];
 }
 
+- (void)firstResponderUpdated:(NSResponder*)responder {
+  if (![self isInAppKitFullscreen] ||
+      [fullscreenToolbarController_ toolbarStyle] ==
+          FullscreenToolbarStyle::TOOLBAR_NONE) {
+    return;
+  }
+
+  if (!responder) {
+    [self releaseToolbarVisibilityForOwner:self withAnimation:YES];
+    return;
+  }
+
+  if (![responder isKindOfClass:[NSView class]])
+    return;
+
+  // If the view is in the download shelf or the tab content area, don't
+  // lock the toolbar.
+  NSView* view = base::mac::ObjCCastStrict<NSView>(responder);
+  if (![view isDescendantOf:[[self window] contentView]] ||
+      [view isDescendantOf:[downloadShelfController_ view]] ||
+      [view isDescendantOf:[self tabContentArea]]) {
+    [self releaseToolbarVisibilityForOwner:self withAnimation:YES];
+    return;
+  }
+
+  [self lockToolbarVisibilityForOwner:self withAnimation:YES];
+}
+
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar:(BOOL)selectAll {
   [toolbarController_ focusLocationBar:selectAll];

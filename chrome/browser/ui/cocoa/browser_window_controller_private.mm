@@ -703,6 +703,8 @@ willPositionSheet:(NSWindow*)sheet
   browser_->WindowFullscreenStateChanged();
   [self.chromeContentView setAutoresizesSubviews:YES];
 
+  [self releaseToolbarVisibilityForOwner:self withAnimation:NO];
+
   [self resetCustomAppKitFullscreenVariables];
 
   [self invalidateTouchBar];
