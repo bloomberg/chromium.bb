@@ -34,16 +34,17 @@ namespace WTF {
 
 class Float64Array final : public TypedArrayBase<double> {
  public:
-  static inline RefPtr<Float64Array> Create(unsigned length);
-  static inline RefPtr<Float64Array> Create(const double* array,
-                                            unsigned length);
-  static inline RefPtr<Float64Array> Create(RefPtr<ArrayBuffer>,
-                                            unsigned byte_offset,
-                                            unsigned length);
+  static inline scoped_refptr<Float64Array> Create(unsigned length);
+  static inline scoped_refptr<Float64Array> Create(const double* array,
+                                                   unsigned length);
+  static inline scoped_refptr<Float64Array> Create(scoped_refptr<ArrayBuffer>,
+                                                   unsigned byte_offset,
+                                                   unsigned length);
 
   // Should only be used when it is known the entire array will be filled. Do
   // not return these results directly to JavaScript without filling first.
-  static inline RefPtr<Float64Array> CreateUninitialized(unsigned length);
+  static inline scoped_refptr<Float64Array> CreateUninitialized(
+      unsigned length);
 
   using TypedArrayBase<double>::Set;
 
@@ -56,30 +57,31 @@ class Float64Array final : public TypedArrayBase<double> {
   ViewType GetType() const override { return kTypeFloat64; }
 
  private:
-  inline Float64Array(RefPtr<ArrayBuffer>,
+  inline Float64Array(scoped_refptr<ArrayBuffer>,
                       unsigned byte_offset,
                       unsigned length);
   // Make constructor visible to superclass.
   friend class TypedArrayBase<double>;
 };
 
-RefPtr<Float64Array> Float64Array::Create(unsigned length) {
+scoped_refptr<Float64Array> Float64Array::Create(unsigned length) {
   return TypedArrayBase<double>::Create<Float64Array>(length);
 }
 
-RefPtr<Float64Array> Float64Array::Create(const double* array,
-                                          unsigned length) {
+scoped_refptr<Float64Array> Float64Array::Create(const double* array,
+                                                 unsigned length) {
   return TypedArrayBase<double>::Create<Float64Array>(array, length);
 }
 
-RefPtr<Float64Array> Float64Array::Create(RefPtr<ArrayBuffer> buffer,
-                                          unsigned byte_offset,
-                                          unsigned length) {
+scoped_refptr<Float64Array> Float64Array::Create(
+    scoped_refptr<ArrayBuffer> buffer,
+    unsigned byte_offset,
+    unsigned length) {
   return TypedArrayBase<double>::Create<Float64Array>(std::move(buffer),
                                                       byte_offset, length);
 }
 
-Float64Array::Float64Array(RefPtr<ArrayBuffer> buffer,
+Float64Array::Float64Array(scoped_refptr<ArrayBuffer> buffer,
                            unsigned byte_offset,
                            unsigned length)
     : TypedArrayBase<double>(std::move(buffer), byte_offset, length) {}

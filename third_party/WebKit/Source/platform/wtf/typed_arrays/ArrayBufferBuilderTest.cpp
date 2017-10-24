@@ -130,7 +130,7 @@ TEST(ArrayBufferBuilderTest, ToArrayBuffer) {
   const char kExpected[] = "HelloWorldGoodbyeWorld";
   size_t expected_size = sizeof(kExpected) - 1;
 
-  RefPtr<ArrayBuffer> result = builder.ToArrayBuffer();
+  scoped_refptr<ArrayBuffer> result = builder.ToArrayBuffer();
   ASSERT_EQ(data1_size + data2_size, result->ByteLength());
   ASSERT_EQ(expected_size, result->ByteLength());
   EXPECT_EQ(0, memcmp(kExpected, result->Data(), expected_size));
@@ -143,8 +143,8 @@ TEST(ArrayBufferBuilderTest, ToArrayBufferSameAddressIfExactCapacity) {
   ArrayBufferBuilder builder(data_size);
   builder.Append(kData, data_size);
 
-  RefPtr<ArrayBuffer> result1 = builder.ToArrayBuffer();
-  RefPtr<ArrayBuffer> result2 = builder.ToArrayBuffer();
+  scoped_refptr<ArrayBuffer> result1 = builder.ToArrayBuffer();
+  scoped_refptr<ArrayBuffer> result2 = builder.ToArrayBuffer();
   EXPECT_EQ(result1.get(), result2.get());
 }
 

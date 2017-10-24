@@ -96,7 +96,7 @@ class WTF_EXPORT String {
 
   // Construct a string referencing an existing StringImpl.
   String(StringImpl* impl) : impl_(impl) {}
-  String(RefPtr<StringImpl> impl) : impl_(std::move(impl)) {}
+  String(scoped_refptr<StringImpl> impl) : impl_(std::move(impl)) {}
 
   void swap(String& o) { impl_.swap(o.impl_); }
 
@@ -112,7 +112,7 @@ class WTF_EXPORT String {
   bool IsEmpty() const { return !impl_ || !impl_->length(); }
 
   StringImpl* Impl() const { return impl_.get(); }
-  RefPtr<StringImpl> ReleaseImpl() { return std::move(impl_); }
+  scoped_refptr<StringImpl> ReleaseImpl() { return std::move(impl_); }
 
   unsigned length() const {
     if (!impl_)
@@ -506,7 +506,7 @@ class WTF_EXPORT String {
   template <typename CharacterType>
   void AppendInternal(CharacterType);
 
-  RefPtr<StringImpl> impl_;
+  scoped_refptr<StringImpl> impl_;
 };
 
 #undef DISPATCH_CASE_OP

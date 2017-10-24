@@ -16,7 +16,7 @@ const LChar* const kChars8 = reinterpret_cast<const LChar*>(kChars);
 const UChar* const kChars16 = reinterpret_cast<const UChar*>(u"12345");
 
 TEST(StringViewTest, ConstructionStringImpl8) {
-  RefPtr<StringImpl> impl8_bit = StringImpl::Create(kChars8, 5);
+  scoped_refptr<StringImpl> impl8_bit = StringImpl::Create(kChars8, 5);
 
   // StringView(StringImpl*);
   ASSERT_TRUE(StringView(impl8_bit.get()).Is8Bit());
@@ -46,7 +46,7 @@ TEST(StringViewTest, ConstructionStringImpl8) {
 }
 
 TEST(StringViewTest, ConstructionStringImpl16) {
-  RefPtr<StringImpl> impl16_bit = StringImpl::Create(kChars16, 5);
+  scoped_refptr<StringImpl> impl16_bit = StringImpl::Create(kChars16, 5);
 
   // StringView(StringImpl*);
   ASSERT_FALSE(StringView(impl16_bit.get()).Is8Bit());
@@ -77,7 +77,7 @@ TEST(StringViewTest, ConstructionStringImpl16) {
 }
 
 TEST(StringViewTest, ConstructionStringImplRef8) {
-  RefPtr<StringImpl> impl8_bit = StringImpl::Create(kChars8, 5);
+  scoped_refptr<StringImpl> impl8_bit = StringImpl::Create(kChars8, 5);
 
   // StringView(StringImpl&);
   ASSERT_TRUE(StringView(*impl8_bit).Is8Bit());
@@ -106,7 +106,7 @@ TEST(StringViewTest, ConstructionStringImplRef8) {
 }
 
 TEST(StringViewTest, ConstructionStringImplRef16) {
-  RefPtr<StringImpl> impl16_bit = StringImpl::Create(kChars16, 5);
+  scoped_refptr<StringImpl> impl16_bit = StringImpl::Create(kChars16, 5);
 
   // StringView(StringImpl&);
   ASSERT_FALSE(StringView(*impl16_bit).Is8Bit());

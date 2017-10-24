@@ -32,7 +32,7 @@ namespace WTF {
 
 bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
   DCHECK(!IsShared());
-  RefPtr<ArrayBuffer> keep_alive(this);
+  scoped_refptr<ArrayBuffer> keep_alive(this);
 
   if (!contents_.Data()) {
     result.Neuter();
@@ -71,7 +71,7 @@ bool ArrayBuffer::Transfer(ArrayBufferContents& result) {
 
 bool ArrayBuffer::ShareContentsWith(ArrayBufferContents& result) {
   DCHECK(IsShared());
-  RefPtr<ArrayBuffer> keep_alive(this);
+  scoped_refptr<ArrayBuffer> keep_alive(this);
 
   if (!contents_.DataShared()) {
     result.Neuter();

@@ -30,7 +30,7 @@ void AtomicStringTable::ReserveCapacity(unsigned size) {
 }
 
 template <typename T, typename HashTranslator>
-RefPtr<StringImpl> AtomicStringTable::AddToStringTable(const T& value) {
+scoped_refptr<StringImpl> AtomicStringTable::AddToStringTable(const T& value) {
   HashSet<StringImpl*>::AddResult add_result =
       table_.AddWithTranslator<HashTranslator>(value);
 
@@ -127,7 +127,7 @@ struct HashAndUTF8CharactersTranslator {
                         const HashAndUTF8Characters& buffer,
                         unsigned hash) {
     UChar* target;
-    RefPtr<StringImpl> new_string =
+    scoped_refptr<StringImpl> new_string =
         StringImpl::CreateUninitialized(buffer.utf16_length, target);
 
     bool is_all_ascii;
@@ -147,7 +147,8 @@ struct HashAndUTF8CharactersTranslator {
   }
 };
 
-RefPtr<StringImpl> AtomicStringTable::Add(const UChar* s, unsigned length) {
+scoped_refptr<StringImpl> AtomicStringTable::Add(const UChar* s,
+                                                 unsigned length) {
   if (!s)
     return nullptr;
 
@@ -179,7 +180,8 @@ struct LCharBufferTranslator {
   }
 };
 
-RefPtr<StringImpl> AtomicStringTable::Add(const LChar* s, unsigned length) {
+scoped_refptr<StringImpl> AtomicStringTable::Add(const LChar* s,
+                                                 unsigned length) {
   if (!s)
     return nullptr;
 
@@ -203,8 +205,9 @@ StringImpl* AtomicStringTable::Add(StringImpl* string) {
   return result;
 }
 
-RefPtr<StringImpl> AtomicStringTable::AddUTF8(const char* characters_start,
-                                              const char* characters_end) {
+scoped_refptr<StringImpl> AtomicStringTable::AddUTF8(
+    const char* characters_start,
+    const char* characters_end) {
   HashAndUTF8Characters buffer;
   buffer.characters = characters_start;
   buffer.hash = CalculateStringHashAndLengthFromUTF8MaskingTop8Bits(

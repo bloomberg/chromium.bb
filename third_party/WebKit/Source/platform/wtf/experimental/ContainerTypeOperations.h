@@ -23,8 +23,8 @@ namespace experimental {
 // define customized operations such as fast copy with memcpy().
 //
 // TODO(yutak): Implement good enough defaults for common data types such as
-// fundamental types or RefPtr<T>, so in most cases people don't have to care
-// about those functions.
+// fundamental types or scoped_refptr<T>, so in most cases people don't have to
+// care about those functions.
 //
 // ====================================
 // ContainerTypeOperations requirements

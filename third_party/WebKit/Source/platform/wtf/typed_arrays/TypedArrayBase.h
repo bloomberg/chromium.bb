@@ -63,20 +63,20 @@ class TypedArrayBase : public ArrayBufferView {
   }
 
  protected:
-  TypedArrayBase(RefPtr<ArrayBuffer> buffer,
+  TypedArrayBase(scoped_refptr<ArrayBuffer> buffer,
                  unsigned byte_offset,
                  unsigned length)
       : ArrayBufferView(std::move(buffer), byte_offset), length_(length) {}
 
   template <class Subclass>
-  static RefPtr<Subclass> Create(unsigned length) {
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::Create(length, sizeof(T));
+  static scoped_refptr<Subclass> Create(unsigned length) {
+    scoped_refptr<ArrayBuffer> buffer = ArrayBuffer::Create(length, sizeof(T));
     return Create<Subclass>(std::move(buffer), 0, length);
   }
 
   template <class Subclass>
-  static RefPtr<Subclass> Create(const T* array, unsigned length) {
-    RefPtr<Subclass> a = Create<Subclass>(length);
+  static scoped_refptr<Subclass> Create(const T* array, unsigned length) {
+    scoped_refptr<Subclass> a = Create<Subclass>(length);
     if (a)
       for (unsigned i = 0; i < length; ++i)
         a->Set(i, array[i]);
@@ -84,24 +84,25 @@ class TypedArrayBase : public ArrayBufferView {
   }
 
   template <class Subclass>
-  static RefPtr<Subclass> Create(RefPtr<ArrayBuffer> buffer,
-                                 unsigned byte_offset,
-                                 unsigned length) {
+  static scoped_refptr<Subclass> Create(scoped_refptr<ArrayBuffer> buffer,
+                                        unsigned byte_offset,
+                                        unsigned length) {
     CHECK(VerifySubRange<T>(buffer.get(), byte_offset, length));
     return WTF::AdoptRef(new Subclass(std::move(buffer), byte_offset, length));
   }
 
   template <class Subclass>
-  static RefPtr<Subclass> CreateOrNull(unsigned length) {
-    RefPtr<ArrayBuffer> buffer = ArrayBuffer::CreateOrNull(length, sizeof(T));
+  static scoped_refptr<Subclass> CreateOrNull(unsigned length) {
+    scoped_refptr<ArrayBuffer> buffer =
+        ArrayBuffer::CreateOrNull(length, sizeof(T));
     if (!buffer)
       return nullptr;
     return Create<Subclass>(std::move(buffer), 0, length);
   }
 
   template <class Subclass>
-  static RefPtr<Subclass> CreateUninitializedOrNull(unsigned length) {
-    RefPtr<ArrayBuffer> buffer =
+  static scoped_refptr<Subclass> CreateUninitializedOrNull(unsigned length) {
+    scoped_refptr<ArrayBuffer> buffer =
         ArrayBuffer::CreateUninitializedOrNull(length, sizeof(T));
     if (!buffer)
       return nullptr;

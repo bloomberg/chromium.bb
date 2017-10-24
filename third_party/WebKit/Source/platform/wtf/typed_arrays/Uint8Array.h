@@ -35,12 +35,12 @@ class ArrayBuffer;
 
 class Uint8Array : public IntegralTypedArrayBase<unsigned char> {
  public:
-  static inline RefPtr<Uint8Array> Create(unsigned length);
-  static inline RefPtr<Uint8Array> Create(const unsigned char* array,
-                                          unsigned length);
-  static inline RefPtr<Uint8Array> Create(RefPtr<ArrayBuffer>,
-                                          unsigned byte_offset,
-                                          unsigned length);
+  static inline scoped_refptr<Uint8Array> Create(unsigned length);
+  static inline scoped_refptr<Uint8Array> Create(const unsigned char* array,
+                                                 unsigned length);
+  static inline scoped_refptr<Uint8Array> Create(scoped_refptr<ArrayBuffer>,
+                                                 unsigned byte_offset,
+                                                 unsigned length);
 
   using TypedArrayBase<unsigned char>::Set;
   using IntegralTypedArrayBase<unsigned char>::Set;
@@ -48,28 +48,30 @@ class Uint8Array : public IntegralTypedArrayBase<unsigned char> {
   ViewType GetType() const override { return kTypeUint8; }
 
  protected:
-  inline Uint8Array(RefPtr<ArrayBuffer>, unsigned byte_offset, unsigned length);
+  inline Uint8Array(scoped_refptr<ArrayBuffer>,
+                    unsigned byte_offset,
+                    unsigned length);
   // Make constructor visible to superclass.
   friend class TypedArrayBase<unsigned char>;
 };
 
-RefPtr<Uint8Array> Uint8Array::Create(unsigned length) {
+scoped_refptr<Uint8Array> Uint8Array::Create(unsigned length) {
   return TypedArrayBase<unsigned char>::Create<Uint8Array>(length);
 }
 
-RefPtr<Uint8Array> Uint8Array::Create(const unsigned char* array,
-                                      unsigned length) {
+scoped_refptr<Uint8Array> Uint8Array::Create(const unsigned char* array,
+                                             unsigned length) {
   return TypedArrayBase<unsigned char>::Create<Uint8Array>(array, length);
 }
 
-RefPtr<Uint8Array> Uint8Array::Create(RefPtr<ArrayBuffer> buffer,
-                                      unsigned byte_offset,
-                                      unsigned length) {
+scoped_refptr<Uint8Array> Uint8Array::Create(scoped_refptr<ArrayBuffer> buffer,
+                                             unsigned byte_offset,
+                                             unsigned length) {
   return TypedArrayBase<unsigned char>::Create<Uint8Array>(std::move(buffer),
                                                            byte_offset, length);
 }
 
-Uint8Array::Uint8Array(RefPtr<ArrayBuffer> buffer,
+Uint8Array::Uint8Array(scoped_refptr<ArrayBuffer> buffer,
                        unsigned byte_offset,
                        unsigned length)
     : IntegralTypedArrayBase<unsigned char>(std::move(buffer),

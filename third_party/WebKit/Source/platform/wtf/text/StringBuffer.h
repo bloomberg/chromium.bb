@@ -64,10 +64,10 @@ class StringBuffer {
     return Characters()[i];
   }
 
-  RefPtr<StringImpl> Release() { return std::move(data_); }
+  scoped_refptr<StringImpl> Release() { return std::move(data_); }
 
  private:
-  RefPtr<StringImpl> data_;
+  scoped_refptr<StringImpl> data_;
 };
 
 template <typename CharType>

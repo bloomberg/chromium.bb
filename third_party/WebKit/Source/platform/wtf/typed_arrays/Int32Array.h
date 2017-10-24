@@ -33,11 +33,12 @@ namespace WTF {
 
 class Int32Array final : public IntegralTypedArrayBase<int> {
  public:
-  static inline RefPtr<Int32Array> Create(unsigned length);
-  static inline RefPtr<Int32Array> Create(const int* array, unsigned length);
-  static inline RefPtr<Int32Array> Create(RefPtr<ArrayBuffer>,
-                                          unsigned byte_offset,
-                                          unsigned length);
+  static inline scoped_refptr<Int32Array> Create(unsigned length);
+  static inline scoped_refptr<Int32Array> Create(const int* array,
+                                                 unsigned length);
+  static inline scoped_refptr<Int32Array> Create(scoped_refptr<ArrayBuffer>,
+                                                 unsigned byte_offset,
+                                                 unsigned length);
 
   using TypedArrayBase<int>::Set;
   using IntegralTypedArrayBase<int>::Set;
@@ -45,27 +46,30 @@ class Int32Array final : public IntegralTypedArrayBase<int> {
   ViewType GetType() const override { return kTypeInt32; }
 
  private:
-  inline Int32Array(RefPtr<ArrayBuffer>, unsigned byte_offset, unsigned length);
+  inline Int32Array(scoped_refptr<ArrayBuffer>,
+                    unsigned byte_offset,
+                    unsigned length);
   // Make constructor visible to superclass.
   friend class TypedArrayBase<int>;
 };
 
-RefPtr<Int32Array> Int32Array::Create(unsigned length) {
+scoped_refptr<Int32Array> Int32Array::Create(unsigned length) {
   return TypedArrayBase<int>::Create<Int32Array>(length);
 }
 
-RefPtr<Int32Array> Int32Array::Create(const int* array, unsigned length) {
+scoped_refptr<Int32Array> Int32Array::Create(const int* array,
+                                             unsigned length) {
   return TypedArrayBase<int>::Create<Int32Array>(array, length);
 }
 
-RefPtr<Int32Array> Int32Array::Create(RefPtr<ArrayBuffer> buffer,
-                                      unsigned byte_offset,
-                                      unsigned length) {
+scoped_refptr<Int32Array> Int32Array::Create(scoped_refptr<ArrayBuffer> buffer,
+                                             unsigned byte_offset,
+                                             unsigned length) {
   return TypedArrayBase<int>::Create<Int32Array>(std::move(buffer), byte_offset,
                                                  length);
 }
 
-Int32Array::Int32Array(RefPtr<ArrayBuffer> buffer,
+Int32Array::Int32Array(scoped_refptr<ArrayBuffer> buffer,
                        unsigned byte_offset,
                        unsigned length)
     : IntegralTypedArrayBase<int>(std::move(buffer), byte_offset, length) {}

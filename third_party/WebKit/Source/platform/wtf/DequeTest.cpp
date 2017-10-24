@@ -313,8 +313,8 @@ void TestDequeDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
   LivenessCounter counter;
   EXPECT_EQ(0u, LivenessCounter::live_);
 
-  Deque<RefPtr<LivenessCounter>, inlineCapacity> deque;
-  Deque<RefPtr<LivenessCounter>, inlineCapacity> deque2;
+  Deque<scoped_refptr<LivenessCounter>, inlineCapacity> deque;
+  Deque<scoped_refptr<LivenessCounter>, inlineCapacity> deque2;
   deque.push_back(&counter);
   deque2.push_back(&counter);
   EXPECT_EQ(2u, LivenessCounter::live_);

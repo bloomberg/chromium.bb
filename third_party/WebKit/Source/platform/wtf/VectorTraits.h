@@ -80,7 +80,8 @@ struct SimpleClassVectorTraits : VectorTraitsBase<T> {
 // and moving with memcpy (and then not destructing the original) will totally
 // work.
 template <typename P>
-struct VectorTraits<RefPtr<P>> : SimpleClassVectorTraits<RefPtr<P>> {};
+struct VectorTraits<scoped_refptr<P>>
+    : SimpleClassVectorTraits<scoped_refptr<P>> {};
 
 template <typename P>
 struct VectorTraits<std::unique_ptr<P>>
@@ -90,11 +91,11 @@ struct VectorTraits<std::unique_ptr<P>>
   // copyable".
   static const bool kCanCopyWithMemcpy = false;
 };
-static_assert(VectorTraits<RefPtr<int>>::kCanInitializeWithMemset,
+static_assert(VectorTraits<scoped_refptr<int>>::kCanInitializeWithMemset,
               "inefficient RefPtr Vector");
-static_assert(VectorTraits<RefPtr<int>>::kCanMoveWithMemcpy,
+static_assert(VectorTraits<scoped_refptr<int>>::kCanMoveWithMemcpy,
               "inefficient RefPtr Vector");
-static_assert(VectorTraits<RefPtr<int>>::kCanCompareWithMemcmp,
+static_assert(VectorTraits<scoped_refptr<int>>::kCanCompareWithMemcmp,
               "inefficient RefPtr Vector");
 static_assert(VectorTraits<std::unique_ptr<int>>::kCanInitializeWithMemset,
               "inefficient std::unique_ptr Vector");

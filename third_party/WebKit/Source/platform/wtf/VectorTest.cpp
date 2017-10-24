@@ -434,8 +434,8 @@ void TestVectorDestructorAndConstructorCallsWhenSwappingWithInlineCapacity() {
   LivenessCounter counter;
   EXPECT_EQ(0u, LivenessCounter::live_);
 
-  Vector<RefPtr<LivenessCounter>, inlineCapacity> vector;
-  Vector<RefPtr<LivenessCounter>, inlineCapacity> vector2;
+  Vector<scoped_refptr<LivenessCounter>, inlineCapacity> vector;
+  Vector<scoped_refptr<LivenessCounter>, inlineCapacity> vector2;
   vector.push_back(&counter);
   vector2.push_back(&counter);
   EXPECT_EQ(2u, LivenessCounter::live_);

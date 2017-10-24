@@ -61,7 +61,8 @@ bool ArrayBufferBuilder::ExpandCapacity(unsigned size_to_increase) {
     new_buffer_size = exponential_growth_new_buffer_size;
 
   // Copy existing data in current buffer to new buffer.
-  RefPtr<ArrayBuffer> new_buffer = ArrayBuffer::Create(new_buffer_size, 1);
+  scoped_refptr<ArrayBuffer> new_buffer =
+      ArrayBuffer::Create(new_buffer_size, 1);
   if (!new_buffer)
     return false;
 
@@ -97,7 +98,7 @@ unsigned ArrayBufferBuilder::Append(const char* data, unsigned length) {
   return bytes_to_save;
 }
 
-RefPtr<ArrayBuffer> ArrayBufferBuilder::ToArrayBuffer() {
+scoped_refptr<ArrayBuffer> ArrayBufferBuilder::ToArrayBuffer() {
   // Fully used. Return m_buffer as-is.
   if (buffer_->ByteLength() == bytes_used_)
     return buffer_;

@@ -98,7 +98,7 @@ class X {
 };
 
 void func() {
-  RefPtr<X> x = adoptRefPtr(new X);  // This is allocated by PartitionAlloc.
+  scoped_refptr<X> x = adoptRefPtr(new X);  // This is allocated by PartitionAlloc.
 }
 ```
 

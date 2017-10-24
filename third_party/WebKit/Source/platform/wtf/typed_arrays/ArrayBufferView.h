@@ -71,7 +71,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
   virtual ~ArrayBufferView();
 
  protected:
-  ArrayBufferView(RefPtr<ArrayBuffer>, unsigned byte_offset);
+  ArrayBufferView(scoped_refptr<ArrayBuffer>, unsigned byte_offset);
 
   inline bool SetImpl(ArrayBufferView*, unsigned byte_offset);
 
@@ -104,7 +104,7 @@ class WTF_EXPORT ArrayBufferView : public RefCounted<ArrayBufferView> {
 
  private:
   friend class ArrayBuffer;
-  RefPtr<ArrayBuffer> buffer_;
+  scoped_refptr<ArrayBuffer> buffer_;
   ArrayBufferView* prev_view_;
   ArrayBufferView* next_view_;
 };

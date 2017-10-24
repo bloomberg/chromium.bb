@@ -58,13 +58,14 @@ template <typename StringType1, typename StringType2>
 StringAppend<StringType1, StringType2>::operator String() const {
   if (Is8Bit()) {
     LChar* buffer;
-    RefPtr<StringImpl> result =
+    scoped_refptr<StringImpl> result =
         StringImpl::CreateUninitialized(length(), buffer);
     WriteTo(buffer);
     return result;
   }
   UChar* buffer;
-  RefPtr<StringImpl> result = StringImpl::CreateUninitialized(length(), buffer);
+  scoped_refptr<StringImpl> result =
+      StringImpl::CreateUninitialized(length(), buffer);
   WriteTo(buffer);
   return result;
 }

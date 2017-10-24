@@ -16,14 +16,16 @@ namespace blink {
 template <typename T>
 class RefVector : public RefCounted<RefVector<T>> {
  public:
-  static RefPtr<RefVector> Create() { return WTF::AdoptRef(new RefVector<T>); }
-  static RefPtr<RefVector> Create(const Vector<T>& vector) {
+  static scoped_refptr<RefVector> Create() {
+    return WTF::AdoptRef(new RefVector<T>);
+  }
+  static scoped_refptr<RefVector> Create(const Vector<T>& vector) {
     return WTF::AdoptRef(new RefVector<T>(vector));
   }
-  static RefPtr<RefVector> Create(Vector<T>&& vector) {
+  static scoped_refptr<RefVector> Create(Vector<T>&& vector) {
     return WTF::AdoptRef(new RefVector<T>(std::move(vector)));
   }
-  RefPtr<RefVector> Copy() { return Create(GetVector()); }
+  scoped_refptr<RefVector> Copy() { return Create(GetVector()); }
 
   const T& operator[](size_t i) const { return vector_[i]; }
   T& operator[](size_t i) { return vector_[i]; }

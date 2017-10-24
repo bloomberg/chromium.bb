@@ -105,8 +105,8 @@ std::string StringImpl::AsciiForDebugging() const {
 }
 #endif
 
-RefPtr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
-                                                   LChar*& data) {
+scoped_refptr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
+                                                          LChar*& data) {
   if (!length) {
     data = nullptr;
     return empty_;
@@ -122,8 +122,8 @@ RefPtr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
   return AdoptRef(new (string) StringImpl(length, kForce8BitConstructor));
 }
 
-RefPtr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
-                                                   UChar*& data) {
+scoped_refptr<StringImpl> StringImpl::CreateUninitialized(unsigned length,
+                                                          UChar*& data) {
   if (!length) {
     data = nullptr;
     return empty_;
@@ -231,35 +231,36 @@ void StringImpl::ReserveStaticStringsCapacityForSize(unsigned size) {
   StaticStrings().ReserveCapacityForSize(size);
 }
 
-RefPtr<StringImpl> StringImpl::Create(const UChar* characters,
-                                      unsigned length) {
+scoped_refptr<StringImpl> StringImpl::Create(const UChar* characters,
+                                             unsigned length) {
   if (!characters || !length)
     return empty_;
 
   UChar* data;
-  RefPtr<StringImpl> string = CreateUninitialized(length, data);
+  scoped_refptr<StringImpl> string = CreateUninitialized(length, data);
   memcpy(data, characters, length * sizeof(UChar));
   return string;
 }
 
-RefPtr<StringImpl> StringImpl::Create(const LChar* characters,
-                                      unsigned length) {
+scoped_refptr<StringImpl> StringImpl::Create(const LChar* characters,
+                                             unsigned length) {
   if (!characters || !length)
     return empty_;
 
   LChar* data;
-  RefPtr<StringImpl> string = CreateUninitialized(length, data);
+  scoped_refptr<StringImpl> string = CreateUninitialized(length, data);
   memcpy(data, characters, length * sizeof(LChar));
   return string;
 }
 
-RefPtr<StringImpl> StringImpl::Create8BitIfPossible(const UChar* characters,
-                                                    unsigned length) {
+scoped_refptr<StringImpl> StringImpl::Create8BitIfPossible(
+    const UChar* characters,
+    unsigned length) {
   if (!characters || !length)
     return empty_;
 
   LChar* data;
-  RefPtr<StringImpl> string = CreateUninitialized(length, data);
+  scoped_refptr<StringImpl> string = CreateUninitialized(length, data);
 
   for (size_t i = 0; i < length; ++i) {
     if (characters[i] & 0xff00)
@@ -270,7 +271,7 @@ RefPtr<StringImpl> StringImpl::Create8BitIfPossible(const UChar* characters,
   return string;
 }
 
-RefPtr<StringImpl> StringImpl::Create(const LChar* string) {
+scoped_refptr<StringImpl> StringImpl::Create(const LChar* string) {
   if (!string)
     return empty_;
   size_t length = strlen(reinterpret_cast<const char*>(string));
@@ -300,8 +301,8 @@ bool StringImpl::ContainsOnlyWhitespace() {
   return true;
 }
 
-RefPtr<StringImpl> StringImpl::Substring(unsigned start,
-                                         unsigned length) const {
+scoped_refptr<StringImpl> StringImpl::Substring(unsigned start,
+                                                unsigned length) const {
   if (start >= length_)
     return empty_;
   unsigned max_length = length_ - start;
@@ -343,7 +344,7 @@ unsigned StringImpl::CopyTo(UChar* buffer,
   return number_of_characters_to_copy;
 }
 
-RefPtr<StringImpl> StringImpl::LowerASCII() {
+scoped_refptr<StringImpl> StringImpl::LowerASCII() {
   // First scan the string for uppercase and non-ASCII characters:
   if (Is8Bit()) {
     unsigned first_index_to_be_lowered = length_;
@@ -361,7 +362,7 @@ RefPtr<StringImpl> StringImpl::LowerASCII() {
     }
 
     LChar* data8;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data8);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
     memcpy(data8, Characters8(), first_index_to_be_lowered);
 
     for (unsigned i = first_index_to_be_lowered; i < length_; ++i) {
@@ -387,7 +388,7 @@ RefPtr<StringImpl> StringImpl::LowerASCII() {
   unsigned length = length_;
 
   UChar* data16;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data16);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
 
   for (unsigned i = 0; i < length; ++i) {
     UChar c = Characters16()[i];
@@ -396,7 +397,7 @@ RefPtr<StringImpl> StringImpl::LowerASCII() {
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::LowerUnicode() {
+scoped_refptr<StringImpl> StringImpl::LowerUnicode() {
   // Note: This is a hot function in the Dromaeo benchmark, specifically the
   // no-op code path up through the first 'return' statement.
 
@@ -416,7 +417,7 @@ RefPtr<StringImpl> StringImpl::LowerUnicode() {
       return this;
 
     LChar* data8;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data8);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
     memcpy(data8, Characters8(), first_index_to_be_lowered);
 
     for (unsigned i = first_index_to_be_lowered; i < length_; ++i) {
@@ -446,7 +447,7 @@ RefPtr<StringImpl> StringImpl::LowerUnicode() {
 
   if (!(ored & ~0x7F)) {
     UChar* data16;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data16);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
 
     for (int32_t i = 0; i < length; ++i) {
       UChar c = Characters16()[i];
@@ -457,7 +458,7 @@ RefPtr<StringImpl> StringImpl::LowerUnicode() {
 
   // Do a slower implementation for cases that include non-ASCII characters.
   UChar* data16;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data16);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
 
   bool error;
   int32_t real_length =
@@ -472,7 +473,7 @@ RefPtr<StringImpl> StringImpl::LowerUnicode() {
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::UpperUnicode() {
+scoped_refptr<StringImpl> StringImpl::UpperUnicode() {
   // This function could be optimized for no-op cases the way LowerUnicode() is,
   // but in empirical testing, few actual calls to UpperUnicode() are no-ops, so
   // it wouldn't be worth the extra time for pre-scanning.
@@ -482,7 +483,7 @@ RefPtr<StringImpl> StringImpl::UpperUnicode() {
 
   if (Is8Bit()) {
     LChar* data8;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data8);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
 
     // Do a faster loop for the case where all the characters are ASCII.
     LChar ored = 0;
@@ -538,11 +539,11 @@ RefPtr<StringImpl> StringImpl::UpperUnicode() {
   }
 
 upconvert:
-  RefPtr<StringImpl> upconverted = UpconvertedString();
+  scoped_refptr<StringImpl> upconverted = UpconvertedString();
   const UChar* source16 = upconverted->Characters16();
 
   UChar* data16;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data16);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
 
   // Do a faster loop for the case where all the characters are ASCII.
   UChar ored = 0;
@@ -567,10 +568,10 @@ upconvert:
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::UpperASCII() {
+scoped_refptr<StringImpl> StringImpl::UpperASCII() {
   if (Is8Bit()) {
     LChar* data8;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data8);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data8);
 
     for (unsigned i = 0; i < length_; ++i) {
       LChar c = Characters8()[i];
@@ -580,7 +581,7 @@ RefPtr<StringImpl> StringImpl::UpperASCII() {
   }
 
   UChar* data16;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data16);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data16);
 
   for (unsigned i = 0; i < length_; ++i) {
     UChar c = Characters16()[i];
@@ -609,14 +610,15 @@ typedef int32_t (*icuCaseConverter)(UChar*,
                                     const char*,
                                     UErrorCode*);
 
-static RefPtr<StringImpl> CaseConvert(const UChar* source16,
-                                      size_t length,
-                                      icuCaseConverter converter,
-                                      const char* locale,
-                                      StringImpl* original_string) {
+static scoped_refptr<StringImpl> CaseConvert(const UChar* source16,
+                                             size_t length,
+                                             icuCaseConverter converter,
+                                             const char* locale,
+                                             StringImpl* original_string) {
   UChar* data16;
   size_t target_length = length;
-  RefPtr<StringImpl> output = StringImpl::CreateUninitialized(length, data16);
+  scoped_refptr<StringImpl> output =
+      StringImpl::CreateUninitialized(length, data16);
   do {
     UErrorCode status = U_ZERO_ERROR;
     target_length =
@@ -633,7 +635,7 @@ static RefPtr<StringImpl> CaseConvert(const UChar* source16,
   } while (true);
 }
 
-RefPtr<StringImpl> StringImpl::LowerUnicode(
+scoped_refptr<StringImpl> StringImpl::LowerUnicode(
     const AtomicString& locale_identifier) {
   // Use the more optimized code path most of the time.
   // Only Turkic (tr and az) languages and Lithuanian requires
@@ -653,13 +655,13 @@ RefPtr<StringImpl> StringImpl::LowerUnicode(
   CHECK_LE(length_, static_cast<unsigned>(numeric_limits<int32_t>::max()));
   int length = length_;
 
-  RefPtr<StringImpl> upconverted = UpconvertedString();
+  scoped_refptr<StringImpl> upconverted = UpconvertedString();
   const UChar* source16 = upconverted->Characters16();
   return CaseConvert(source16, length, u_strToLower, locale_for_conversion,
                      this);
 }
 
-RefPtr<StringImpl> StringImpl::UpperUnicode(
+scoped_refptr<StringImpl> StringImpl::UpperUnicode(
     const AtomicString& locale_identifier) {
   // Use the more-optimized code path most of the time.
   // Only Turkic (tr and az) languages, Greek and Lithuanian require
@@ -678,36 +680,36 @@ RefPtr<StringImpl> StringImpl::UpperUnicode(
   CHECK_LE(length_, static_cast<unsigned>(numeric_limits<int32_t>::max()));
   int length = length_;
 
-  RefPtr<StringImpl> upconverted = UpconvertedString();
+  scoped_refptr<StringImpl> upconverted = UpconvertedString();
   const UChar* source16 = upconverted->Characters16();
 
   return CaseConvert(source16, length, u_strToUpper, locale_for_conversion,
                      this);
 }
 
-RefPtr<StringImpl> StringImpl::Fill(UChar character) {
+scoped_refptr<StringImpl> StringImpl::Fill(UChar character) {
   if (!(character & ~0x7F)) {
     LChar* data;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data);
     for (unsigned i = 0; i < length_; ++i)
       data[i] = static_cast<LChar>(character);
     return new_impl;
   }
   UChar* data;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data);
   for (unsigned i = 0; i < length_; ++i)
     data[i] = character;
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::FoldCase() {
+scoped_refptr<StringImpl> StringImpl::FoldCase() {
   CHECK_LE(length_, static_cast<unsigned>(numeric_limits<int32_t>::max()));
   int32_t length = length_;
 
   if (Is8Bit()) {
     // Do a faster loop for the case where all the characters are ASCII.
     LChar* data;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data);
     LChar ored = 0;
 
     for (int32_t i = 0; i < length; ++i) {
@@ -729,7 +731,7 @@ RefPtr<StringImpl> StringImpl::FoldCase() {
 
   // Do a faster loop for the case where all the characters are ASCII.
   UChar* data;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data);
   UChar ored = 0;
   for (int32_t i = 0; i < length; ++i) {
     UChar c = Characters16()[i];
@@ -752,7 +754,7 @@ RefPtr<StringImpl> StringImpl::FoldCase() {
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::Truncate(unsigned length) {
+scoped_refptr<StringImpl> StringImpl::Truncate(unsigned length) {
   if (length >= length_)
     return this;
   if (Is8Bit())
@@ -761,7 +763,7 @@ RefPtr<StringImpl> StringImpl::Truncate(unsigned length) {
 }
 
 template <class UCharPredicate>
-inline RefPtr<StringImpl> StringImpl::StripMatchedCharacters(
+inline scoped_refptr<StringImpl> StringImpl::StripMatchedCharacters(
     UCharPredicate predicate) {
   if (!length_)
     return empty_;
@@ -809,17 +811,17 @@ class SpaceOrNewlinePredicate final {
   inline bool operator()(UChar ch) const { return IsSpaceOrNewline(ch); }
 };
 
-RefPtr<StringImpl> StringImpl::StripWhiteSpace() {
+scoped_refptr<StringImpl> StringImpl::StripWhiteSpace() {
   return StripMatchedCharacters(SpaceOrNewlinePredicate());
 }
 
-RefPtr<StringImpl> StringImpl::StripWhiteSpace(
+scoped_refptr<StringImpl> StringImpl::StripWhiteSpace(
     IsWhiteSpaceFunctionPtr is_white_space) {
   return StripMatchedCharacters(UCharPredicate(is_white_space));
 }
 
 template <typename CharType>
-ALWAYS_INLINE RefPtr<StringImpl> StringImpl::RemoveCharacters(
+ALWAYS_INLINE scoped_refptr<StringImpl> StringImpl::RemoveCharacters(
     const CharType* characters,
     CharacterMatchFunctionPtr find_match) {
   const CharType* from = characters;
@@ -852,15 +854,15 @@ ALWAYS_INLINE RefPtr<StringImpl> StringImpl::RemoveCharacters(
   return data.Release();
 }
 
-RefPtr<StringImpl> StringImpl::RemoveCharacters(
+scoped_refptr<StringImpl> StringImpl::RemoveCharacters(
     CharacterMatchFunctionPtr find_match) {
   if (Is8Bit())
     return RemoveCharacters(Characters8(), find_match);
   return RemoveCharacters(Characters16(), find_match);
 }
 
-RefPtr<StringImpl> StringImpl::Remove(unsigned start,
-                                      unsigned length_to_remove) {
+scoped_refptr<StringImpl> StringImpl::Remove(unsigned start,
+                                             unsigned length_to_remove) {
   if (length_to_remove <= 0)
     return this;
   if (start >= length_)
@@ -884,7 +886,7 @@ RefPtr<StringImpl> StringImpl::Remove(unsigned start,
 }
 
 template <typename CharType, class UCharPredicate>
-inline RefPtr<StringImpl> StringImpl::SimplifyMatchedCharactersToSpace(
+inline scoped_refptr<StringImpl> StringImpl::SimplifyMatchedCharactersToSpace(
     UCharPredicate predicate,
     StripBehavior strip_behavior) {
   StringBuffer<CharType> data(length_);
@@ -933,7 +935,7 @@ inline RefPtr<StringImpl> StringImpl::SimplifyMatchedCharactersToSpace(
   return data.Release();
 }
 
-RefPtr<StringImpl> StringImpl::SimplifyWhiteSpace(
+scoped_refptr<StringImpl> StringImpl::SimplifyWhiteSpace(
     StripBehavior strip_behavior) {
   if (Is8Bit())
     return StringImpl::SimplifyMatchedCharactersToSpace<LChar>(
@@ -942,7 +944,7 @@ RefPtr<StringImpl> StringImpl::SimplifyWhiteSpace(
       SpaceOrNewlinePredicate(), strip_behavior);
 }
 
-RefPtr<StringImpl> StringImpl::SimplifyWhiteSpace(
+scoped_refptr<StringImpl> StringImpl::SimplifyWhiteSpace(
     IsWhiteSpaceFunctionPtr is_white_space,
     StripBehavior strip_behavior) {
   if (Is8Bit())
@@ -1441,7 +1443,7 @@ bool StringImpl::EndsWithIgnoringASCIICase(const StringView& suffix) const {
                                 suffix.Characters16(), suffix.length());
 }
 
-RefPtr<StringImpl> StringImpl::Replace(UChar old_c, UChar new_c) {
+scoped_refptr<StringImpl> StringImpl::Replace(UChar old_c, UChar new_c) {
   if (old_c == new_c)
     return this;
 
@@ -1455,7 +1457,7 @@ RefPtr<StringImpl> StringImpl::Replace(UChar old_c, UChar new_c) {
       LChar old_char = static_cast<LChar>(old_c);
       LChar new_char = static_cast<LChar>(new_c);
 
-      RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data);
+      scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data);
 
       for (i = 0; i != length_; ++i) {
         LChar ch = Characters8()[i];
@@ -1469,7 +1471,7 @@ RefPtr<StringImpl> StringImpl::Replace(UChar old_c, UChar new_c) {
     // There is the possibility we need to up convert from 8 to 16 bit,
     // create a 16 bit string for the result.
     UChar* data;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data);
 
     for (i = 0; i != length_; ++i) {
       UChar ch = Characters8()[i];
@@ -1482,7 +1484,7 @@ RefPtr<StringImpl> StringImpl::Replace(UChar old_c, UChar new_c) {
   }
 
   UChar* data;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(length_, data);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(length_, data);
 
   for (i = 0; i != length_; ++i) {
     UChar ch = Characters16()[i];
@@ -1496,9 +1498,9 @@ RefPtr<StringImpl> StringImpl::Replace(UChar old_c, UChar new_c) {
 // TODO(esprehn): Passing a null replacement is the same as empty string for
 // this method but all others treat null as a no-op. We should choose one
 // behavior.
-RefPtr<StringImpl> StringImpl::Replace(unsigned position,
-                                       unsigned length_to_replace,
-                                       const StringView& string) {
+scoped_refptr<StringImpl> StringImpl::Replace(unsigned position,
+                                              unsigned length_to_replace,
+                                              const StringView& string) {
   position = std::min(position, length());
   length_to_replace = std::min(length_to_replace, length() - position);
   unsigned length_to_insert = string.length();
@@ -1510,7 +1512,7 @@ RefPtr<StringImpl> StringImpl::Replace(unsigned position,
 
   if (Is8Bit() && (string.IsNull() || string.Is8Bit())) {
     LChar* data;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(
         length() - length_to_replace + length_to_insert, data);
     memcpy(data, Characters8(), position * sizeof(LChar));
     if (!string.IsNull())
@@ -1522,7 +1524,7 @@ RefPtr<StringImpl> StringImpl::Replace(unsigned position,
     return new_impl;
   }
   UChar* data;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(
       length() - length_to_replace + length_to_insert, data);
   if (Is8Bit())
     for (unsigned i = 0; i < position; ++i)
@@ -1549,8 +1551,8 @@ RefPtr<StringImpl> StringImpl::Replace(unsigned position,
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
-                                       const StringView& replacement) {
+scoped_refptr<StringImpl> StringImpl::Replace(UChar pattern,
+                                              const StringView& replacement) {
   if (replacement.IsNull())
     return this;
   if (replacement.Is8Bit())
@@ -1558,9 +1560,9 @@ RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
   return Replace(pattern, replacement.Characters16(), replacement.length());
 }
 
-RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
-                                       const LChar* replacement,
-                                       unsigned rep_str_length) {
+scoped_refptr<StringImpl> StringImpl::Replace(UChar pattern,
+                                              const LChar* replacement,
+                                              unsigned rep_str_length) {
   DCHECK(replacement);
 
   size_t src_segment_start = 0;
@@ -1593,7 +1595,7 @@ RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
 
   if (Is8Bit()) {
     LChar* data;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(new_size, data);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
 
     while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
       src_segment_length = src_segment_end - src_segment_start;
@@ -1615,7 +1617,7 @@ RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
   }
 
   UChar* data;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(new_size, data);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
 
   while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
     src_segment_length = src_segment_end - src_segment_start;
@@ -1639,9 +1641,9 @@ RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
-                                       const UChar* replacement,
-                                       unsigned rep_str_length) {
+scoped_refptr<StringImpl> StringImpl::Replace(UChar pattern,
+                                              const UChar* replacement,
+                                              unsigned rep_str_length) {
   DCHECK(replacement);
 
   size_t src_segment_start = 0;
@@ -1674,7 +1676,7 @@ RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
 
   if (Is8Bit()) {
     UChar* data;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(new_size, data);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
 
     while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
       src_segment_length = src_segment_end - src_segment_start;
@@ -1698,7 +1700,7 @@ RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
   }
 
   UChar* data;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(new_size, data);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
 
   while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
     src_segment_length = src_segment_end - src_segment_start;
@@ -1721,8 +1723,8 @@ RefPtr<StringImpl> StringImpl::Replace(UChar pattern,
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::Replace(const StringView& pattern,
-                                       const StringView& replacement) {
+scoped_refptr<StringImpl> StringImpl::Replace(const StringView& pattern,
+                                              const StringView& replacement) {
   if (pattern.IsNull() || replacement.IsNull())
     return this;
 
@@ -1769,7 +1771,7 @@ RefPtr<StringImpl> StringImpl::Replace(const StringView& pattern,
   if (src_is8_bit && replacement_is8_bit) {
     // Case 1
     LChar* data;
-    RefPtr<StringImpl> new_impl = CreateUninitialized(new_size, data);
+    scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
     while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
       src_segment_length = src_segment_end - src_segment_start;
       memcpy(data + dst_offset, Characters8() + src_segment_start,
@@ -1791,7 +1793,7 @@ RefPtr<StringImpl> StringImpl::Replace(const StringView& pattern,
   }
 
   UChar* data;
-  RefPtr<StringImpl> new_impl = CreateUninitialized(new_size, data);
+  scoped_refptr<StringImpl> new_impl = CreateUninitialized(new_size, data);
   while ((src_segment_end = Find(pattern, src_segment_start)) != kNotFound) {
     src_segment_length = src_segment_end - src_segment_start;
     if (src_is8_bit) {
@@ -1833,7 +1835,7 @@ RefPtr<StringImpl> StringImpl::Replace(const StringView& pattern,
   return new_impl;
 }
 
-RefPtr<StringImpl> StringImpl::UpconvertedString() {
+scoped_refptr<StringImpl> StringImpl::UpconvertedString() {
   if (Is8Bit())
     return String::Make16BitFrom8BitSource(Characters8(), length_)
         .ReleaseImpl();
