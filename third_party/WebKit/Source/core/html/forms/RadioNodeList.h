@@ -43,7 +43,7 @@ class RadioNodeList final : public LiveNodeList {
     return new RadioNodeList(owner_node, name, type);
   }
 
-  virtual ~RadioNodeList();
+  ~RadioNodeList() override;
 
   String value() const;
   void setValue(const String&);

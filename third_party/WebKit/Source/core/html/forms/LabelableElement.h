@@ -46,7 +46,7 @@ class CORE_EXPORT LabelableElement : public HTMLElement {
   LabelsNodeList* labels();
   virtual bool SupportLabels() const { return false; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   LabelableElement(const QualifiedName& tag_name, Document&);

@@ -40,7 +40,7 @@ class FormAttributeTargetObserver : public IdTargetObserver {
  public:
   static FormAttributeTargetObserver* Create(const AtomicString& id,
                                              ListedElement*);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void IdTargetChanged() override;
 
  private:

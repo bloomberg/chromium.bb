@@ -173,7 +173,7 @@ int HTMLOptionElement::index() const {
     return 0;
 
   int option_index = 0;
-  for (const auto& option : select_element->GetOptionList()) {
+  for (auto* const option : select_element->GetOptionList()) {
     if (option == this)
       return option_index;
     ++option_index;

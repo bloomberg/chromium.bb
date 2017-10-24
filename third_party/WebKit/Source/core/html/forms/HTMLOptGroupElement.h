@@ -47,7 +47,7 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
 
  private:
   explicit HTMLOptGroupElement(Document&);
-  ~HTMLOptGroupElement();
+  ~HTMLOptGroupElement() override;
 
   bool SupportsFocus() const override;
   void ParseAttribute(const AttributeModificationParams&) override;

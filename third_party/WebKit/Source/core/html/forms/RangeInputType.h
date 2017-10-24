@@ -44,7 +44,7 @@ class RangeInputType final : public InputType, public InputTypeView {
 
  public:
   static InputType* Create(HTMLInputElement&);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   using InputType::GetElement;
 
  private:
