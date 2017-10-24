@@ -30,6 +30,8 @@ enum class UMABluetoothDiscoverySessionOutcome {
   BLUEZ_DBUS_NOT_READY = 12,
   BLUEZ_DBUS_FAILED_MAYBE_UNSUPPORTED_TRANSPORT = 13,
   BLUEZ_DBUS_UNSUPPORTED_DEVICE = 14,
+
+  STOP_IN_PROGRESS = 15,
   // NOTE: Add new outcomes immediately above this line. Make sure to update the
   // enum list in tools/metrics/histograms/histograms.xml accordingly.
   COUNT
