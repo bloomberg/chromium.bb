@@ -25,6 +25,12 @@ interface ServiceWorkerFetchResponseCallback {
   OnResponseBlob(ServiceWorkerResponse response,
                  blink.mojom.Blob body_as_blob,
                  mojo.common.mojom.Time dispatch_event_time);
+   // Responds to the request with |response|. The body is provided as a
+   // non-Mojo Blob via |response.blob_uuid|. The callback is useful for Blob
+   // lifetime management purposes and is called once the caller is done with
+   // the Blob. TODO(kinuko): Remove this once MojoBlob is fully shipped.
+  OnResponseLegacyBlob(ServiceWorkerResponse response,
+                       mojo.common.mojom.Time dispatch_event_time) => ();
   // Responds to the request with |response|. The body is returned as a stream.
   OnResponseStream(ServiceWorkerResponse response,
                    blink.mojom.ServiceWorkerStreamHandle body_as_stream,
