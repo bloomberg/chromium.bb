@@ -110,6 +110,9 @@ class Histogram(object):
     num_items = len(keys)
     num_cols = 6
     num_rows = (num_items + num_cols - 1) / num_cols  # Divide and round up.
+    # Needed for xrange to not throw due to step by 0.
+    if num_rows == 0:
+      return
     # Spaces needed by items in each column, to align on ':'.
     name_col_widths = []
     value_col_widths = []
@@ -298,16 +301,16 @@ class DescriberText(Describer):
       section_sizes = collections.defaultdict(float)
       for s in group.IterLeafSymbols():
         section_sizes[s.section_name] += s.pss
-      histogram = Histogram()
-      for s in group:
-        histogram.Add(s.pss)
 
     # Apply this filter after calcualating size since an alias being removed
     # causes some symbols to be UNCHANGED, yet have pss != 0.
-    if group.IsDelta() and not self.verbose:
+    if group.IsDelta():
       group = group.WhereDiffStatusIs(models.DIFF_STATUS_UNCHANGED).Inverted()
 
     if self.summarize:
+      histogram = Histogram()
+      for s in group:
+        histogram.Add(s.pss)
       unique_paths = set()
       for s in group.IterLeafSymbols():
         # Ignore paths like foo/{shared}/2
@@ -397,8 +400,7 @@ class DescriberText(Describer):
   def _DescribeDeltaSymbolGroup(self, delta_group):
     if self.summarize:
       header_template = ('{} symbols added (+), {} changed (~), '
-                         '{} removed (-), {} unchanged ({})')
-      unchanged_msg = '=' if self.verbose else 'not shown'
+                         '{} removed (-), {} unchanged (not shown)')
       # Apply this filter since an alias being removed causes some symbols to be
       # UNCHANGED, yet have pss != 0.
       changed_delta_group = delta_group.WhereDiffStatusIs(
@@ -413,8 +415,7 @@ class DescriberText(Describer):
               counts[models.DIFF_STATUS_ADDED],
               counts[models.DIFF_STATUS_CHANGED],
               counts[models.DIFF_STATUS_REMOVED],
-              counts[models.DIFF_STATUS_UNCHANGED],
-              unchanged_msg),
+              counts[models.DIFF_STATUS_UNCHANGED]),
           'Of changed symbols, {} grew, {} shrank'.format(num_inc, num_dec),
           'Number of unique symbols {} -> {} ({:+})'.format(
               num_unique_before_symbols, num_unique_after_symbols,
@@ -551,9 +552,8 @@ class DescriberCsv(Describer):
   def _DescribeDeltaSymbolGroup(self, delta_group):
     yield self._RenderSymbolHeader(True);
     # Apply filter to remove UNCHANGED groups.
-    if not self.verbose:
-      delta_group = delta_group.WhereDiffStatusIs(
-          models.DIFF_STATUS_UNCHANGED).Inverted()
+    delta_group = delta_group.WhereDiffStatusIs(
+        models.DIFF_STATUS_UNCHANGED).Inverted()
     for sym in delta_group:
       yield self._RenderSymbolData(sym)
 

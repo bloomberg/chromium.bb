@@ -120,7 +120,9 @@ class SizeInfo(object):
   @property
   def symbols(self):
     if self._symbols is None:
+      logging.debug('Clustering symbols')
       self._symbols = self.raw_symbols._Clustered()
+      logging.debug('Done clustering symbols')
     return self._symbols
 
   @symbols.setter
@@ -160,7 +162,9 @@ class DeltaSizeInfo(object):
   @property
   def symbols(self):
     if self._symbols is None:
+      logging.debug('Clustering symbols')
       self._symbols = self.raw_symbols._Clustered()
+      logging.debug('Done clustering symbols')
     return self._symbols
 
   @symbols.setter
@@ -852,6 +856,30 @@ class SymbolGroup(BaseSymbol):
           cluster_func, min_count=2, group_factory=group_factory))
 
     return self._CreateTransformed(ret)
+
+  def GroupedByAliases(self, same_name_only=False, min_count=2):
+    """Groups by symbol.aliases (leaving non-aliases alone).
+
+    Useful when wanting an overview of symbol sizes without having their PSS
+    divided by number of aliases.
+
+    Args:
+      same_name_only: When True, groups only aliases with the same full_name
+                      (those that differ only by path).
+      min_count: Miniumum number of symbols for a group. If fewer than this many
+                 symbols end up in a group, they will not be put within a group.
+                 Use a negative value to omit symbols entirely rather than
+                 include them outside of a group.
+    """
+    def group_factory(_, symbols):
+      sym = symbols[0]
+      return self._CreateTransformed(
+          symbols, full_name=sym.full_name, template_name=sym.template_name,
+          name=sym.name, section_name=sym.section_name)
+
+    return self.GroupedBy(
+        lambda s: (same_name_only and s.full_name, id(s.aliases or s)),
+        min_count=min_count, group_factory=group_factory)
 
   def GroupedBySectionName(self):
     return self.GroupedBy(lambda s: s.section_name)

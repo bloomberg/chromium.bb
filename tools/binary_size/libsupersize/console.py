@@ -142,7 +142,14 @@ class _Session(object):
     after = after if after is not None else self._size_infos[1]
     ret = diff.Diff(before, after)
     if sort:
-      ret.symbols = ret.symbols.Sorted()
+      syms = ret.symbols  # Triggers clustering.
+      logging.debug('Grouping')
+      # Group path aliases so that functions defined in headers will be sorted
+      # by their actual size rather than shown as many small symbols.
+      syms = syms.GroupedByAliases(same_name_only=True)
+      logging.debug('Sorting')
+      ret.symbols = syms.Sorted()
+    logging.debug('Diff complete')
     return ret
 
   def _GetObjToPrint(self, obj=None):
