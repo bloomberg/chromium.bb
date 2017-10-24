@@ -114,8 +114,8 @@ class CORE_EXPORT NGOffsetMappingResult {
                                                       unsigned) const;
 
   // Returns the text content offset corresponding to the given DOM offset.
-  // TODO(xiaochengh): Use Optional<> return type to indicate inexistent result.
-  size_t GetTextContentOffset(const Node&, unsigned) const;
+  // Returns nullopt when the DOM offset is not in the inlines.
+  Optional<unsigned> GetTextContentOffset(const Node&, unsigned) const;
 
   // Starting from the given DOM offset in the node, finds the first non-
   // collapsed character and returns the offset before it; Or returns nullopt if
