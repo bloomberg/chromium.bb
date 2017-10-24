@@ -392,6 +392,10 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   WebRuntimeFeatures::EnableWorkStealingInScriptRunner(
       base::FeatureList::IsEnabled(features::kWorkStealingInScriptRunner));
 
+  WebRuntimeFeatures::EnableFeatureFromString(
+      "FeaturePolicyForPermissions",
+      base::FeatureList::IsEnabled(features::kUseFeaturePolicyForPermissions));
+
   // Enable explicitly enabled features, and then disable explicitly disabled
   // ones.
   for (const std::string& feature :
