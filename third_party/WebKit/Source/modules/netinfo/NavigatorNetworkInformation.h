@@ -25,7 +25,7 @@ class NavigatorNetworkInformation final
   static NavigatorNetworkInformation* ToNavigatorNetworkInformation(Navigator&);
   static NetworkInformation* connection(Navigator&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit NavigatorNetworkInformation(Navigator&);
