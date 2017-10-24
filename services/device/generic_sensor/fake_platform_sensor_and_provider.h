@@ -47,6 +47,14 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
     request_result_ = result;
   }
 
+  void set_accelerometer_is_available(bool accelerometer_is_available) {
+    accelerometer_is_available_ = accelerometer_is_available;
+  }
+
+  void set_magnetometer_is_available(bool magnetometer_is_available) {
+    magnetometer_is_available_ = magnetometer_is_available;
+  }
+
   MOCK_METHOD0(FreeResources, void());
 
  private:
@@ -55,6 +63,9 @@ class FakePlatformSensorProvider : public PlatformSensorProvider {
                             const CreateSensorCallback& callback) override;
 
   RequestResult request_result_ = kSuccess;
+  bool accelerometer_is_available_ = true;
+  bool magnetometer_is_available_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(FakePlatformSensorProvider);
 };
 

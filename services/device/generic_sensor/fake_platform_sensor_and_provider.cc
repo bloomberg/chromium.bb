@@ -65,6 +65,23 @@ void FakePlatformSensorProvider::CreateSensorInternal(
     return;
   }
 
+  switch (type) {
+    case mojom::SensorType::ACCELEROMETER:
+      if (!accelerometer_is_available_) {
+        callback.Run(nullptr);
+        return;
+      }
+      break;
+    case mojom::SensorType::MAGNETOMETER:
+      if (!magnetometer_is_available_) {
+        callback.Run(nullptr);
+        return;
+      }
+      break;
+    default:
+      break;
+  }
+
   auto sensor =
       base::MakeRefCounted<FakePlatformSensor>(type, std::move(mapping), this);
   callback.Run(sensor);
