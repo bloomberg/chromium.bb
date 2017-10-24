@@ -146,6 +146,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::Layout(
   if (block_flow) {
     block_flow->SetCachedLayoutResult(constraint_space, break_token,
                                       layout_result);
+    block_flow->ClearPaintFragment();
   }
 
   if (layout_result->Status() == NGLayoutResult::kSuccess &&
