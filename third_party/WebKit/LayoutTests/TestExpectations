@@ -1603,6 +1603,14 @@ crbug.com/694525 external/wpt/content-security-policy/style-src/inline-style-all
 crbug.com/694525 external/wpt/content-security-policy/style-src/style-blocked.sub.html [ Skip ]
 crbug.com/694525 external/wpt/content-security-policy/unsafe-eval/eval-blocked-in-about-blank-iframe.sub.html [ Skip ]
 
+# These tests will be added back soon:
+crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-aux-frame-navigation.sub.html [ Skip ]
+crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-main-frame-navigation.sub.html [ Skip ]
+crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-cross-origin-sub-frame-navigation.sub.html [ Skip ]
+crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-aux-frame-navigation.sub.html [ Skip ]
+crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-main-frame-navigation.sub.html [ Skip ]
+crbug.com/706350 external/wpt/html/browsers/browsing-the-web/history-traversal/window-name-after-same-origin-sub-frame-navigation.sub.html [ Skip ]
+
 crbug.com/626703 external/wpt/domxpath/001.html [ Failure ]
 
 # These HTTP tests that started failing after a web-platform-tests import.
