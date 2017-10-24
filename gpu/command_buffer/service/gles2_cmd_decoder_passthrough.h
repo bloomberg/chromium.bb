@@ -50,7 +50,8 @@ struct PassthroughResources {
   PassthroughResources();
   ~PassthroughResources();
 
-  void Destroy(bool have_context);
+  // api is null if we don't have a context (e.g. lost).
+  void Destroy(gl::GLApi* api);
 
   // Mappings from client side IDs to service side IDs.
   ClientServiceMap<GLuint, GLuint> texture_id_map;
@@ -77,29 +78,32 @@ struct PassthroughResources {
 
 class ScopedFramebufferBindingReset {
  public:
-  ScopedFramebufferBindingReset();
+  explicit ScopedFramebufferBindingReset(gl::GLApi* api);
   ~ScopedFramebufferBindingReset();
 
  private:
+  gl::GLApi* api_;
   GLint draw_framebuffer_;
   GLint read_framebuffer_;
 };
 
 class ScopedRenderbufferBindingReset {
  public:
-  ScopedRenderbufferBindingReset();
+  explicit ScopedRenderbufferBindingReset(gl::GLApi* api);
   ~ScopedRenderbufferBindingReset();
 
  private:
+  gl::GLApi* api_;
   GLint renderbuffer_;
 };
 
 class ScopedTexture2DBindingReset {
  public:
-  ScopedTexture2DBindingReset();
+  explicit ScopedTexture2DBindingReset(gl::GLApi* api);
   ~ScopedTexture2DBindingReset();
 
  private:
+  gl::GLApi* api_;
   GLint texture_;
 };
 
@@ -150,6 +154,8 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // Make this decoder's GL context current.
   bool MakeCurrent() override;
+
+  gl::GLApi* api() const { return api_; }
 
   // Gets the GLES2 Util which holds info.
   GLES2Util* GetGLES2Util() override;
@@ -403,6 +409,9 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[kNumCommands - kFirstGLES2Command];
 
+  // The GLApi to make the gl calls on.
+  gl::GLApi* api_;
+
   // The GL context this decoder renders to on behalf of the client.
   scoped_refptr<gl::GLSurface> surface_;
   scoped_refptr<gl::GLContext> context_;
@@ -532,11 +541,14 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   struct EmulatedColorBuffer {
     explicit EmulatedColorBuffer(
+        gl::GLApi* api,
         const EmulatedDefaultFramebufferFormat& format_in);
     ~EmulatedColorBuffer();
 
     void Resize(const gfx::Size& new_size);
     void Destroy(bool have_context);
+
+    gl::GLApi* api;
 
     scoped_refptr<TexturePassthrough> texture;
 
@@ -548,6 +560,7 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   struct EmulatedDefaultFramebuffer {
     EmulatedDefaultFramebuffer(
+        gl::GLApi* api,
         const EmulatedDefaultFramebufferFormat& format_in,
         const FeatureInfo* feature_info);
     ~EmulatedDefaultFramebuffer();
@@ -561,6 +574,8 @@ class GPU_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
     bool Resize(const gfx::Size& new_size, const FeatureInfo* feature_info);
     void Destroy(bool have_context);
+
+    gl::GLApi* api;
 
     // Service ID of the framebuffer
     GLuint framebuffer_service_id = 0;

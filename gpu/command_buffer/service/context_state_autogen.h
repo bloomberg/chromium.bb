@@ -206,8 +206,8 @@ inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
       return;
   }
   if (enable)
-    glEnable(cap);
+    api()->glEnableFn(cap);
   else
-    glDisable(cap);
+    api()->glDisableFn(cap);
 }
 #endif  // GPU_COMMAND_BUFFER_SERVICE_CONTEXT_STATE_AUTOGEN_H_
