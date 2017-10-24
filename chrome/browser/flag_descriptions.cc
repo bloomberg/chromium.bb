@@ -436,6 +436,12 @@ const char kEnableNightLightDescription[] =
     "Enable the Night Light feature which controls the color temperature of "
     "the screen.";
 
+const char kEnableOptimizationHintsName[] = "Optimization Hints";
+const char kEnableOptimizationHintsDescription[] =
+    "Enable the Optimization Hints feature which incorporates server hints"
+    "into decisions for what optimizations to perform on some pages on slow "
+    "networks.";
+
 const char kEnableOutOfBlinkCORSName[] = "Out of blink CORS";
 const char kEnableOutOfBlinkCORSDescription[] =
     "CORS handling logic is moved out of blink.";

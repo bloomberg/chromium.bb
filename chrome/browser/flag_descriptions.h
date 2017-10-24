@@ -283,6 +283,9 @@ extern const char kEnableNetworkServiceDescription[];
 extern const char kEnableNightLightName[];
 extern const char kEnableNightLightDescription[];
 
+extern const char kEnableOptimizationHintsName[];
+extern const char kEnableOptimizationHintsDescription[];
+
 extern const char kEnableOutOfBlinkCORSName[];
 extern const char kEnableOutOfBlinkCORSDescription[];
 
