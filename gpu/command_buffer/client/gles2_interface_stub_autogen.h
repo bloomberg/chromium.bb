@@ -704,7 +704,6 @@ void ProduceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) override;
 void ProduceTextureDirectCHROMIUM(GLuint texture,
                                   GLenum target,
                                   const GLbyte* mailbox) override;
-void ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) override;
 GLuint CreateAndConsumeTextureCHROMIUM(GLenum target,
                                        const GLbyte* mailbox) override;
 void BindUniformLocationCHROMIUM(GLuint program,

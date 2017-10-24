@@ -2570,16 +2570,6 @@ _FUNCTION_INFO = {
     'no_gl': True,
     'expectation': False,
   },
-  'ConsumeTextureCHROMIUM': {
-    'decoder_func': 'DoConsumeTextureCHROMIUM',
-    'impl_func': False,
-    'type': 'PUT',
-    'count': 16,  # GL_MAILBOX_SIZE_CHROMIUM
-    'unit_test': False,
-    'client_test': False,
-    'extension': "CHROMIUM_texture_mailbox",
-    'trace_level': 2,
-  },
   'CopyBufferSubData': {
     'decoder_func': 'DoCopyBufferSubData',
     'unit_test': False,

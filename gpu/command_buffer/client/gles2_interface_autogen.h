@@ -726,7 +726,6 @@ virtual void ProduceTextureCHROMIUM(GLenum target, const GLbyte* mailbox) = 0;
 virtual void ProduceTextureDirectCHROMIUM(GLuint texture,
                                           GLenum target,
                                           const GLbyte* mailbox) = 0;
-virtual void ConsumeTextureCHROMIUM(GLenum target, const GLbyte* mailbox) = 0;
 virtual GLuint CreateAndConsumeTextureCHROMIUM(GLenum target,
                                                const GLbyte* mailbox) = 0;
 virtual void BindUniformLocationCHROMIUM(GLuint program,

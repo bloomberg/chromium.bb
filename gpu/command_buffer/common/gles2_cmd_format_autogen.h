@@ -12920,45 +12920,6 @@ static_assert(
     offsetof(ProduceTextureDirectCHROMIUMImmediate, target) == 8,
     "offset of ProduceTextureDirectCHROMIUMImmediate target should be 8");
 
-struct ConsumeTextureCHROMIUMImmediate {
-  typedef ConsumeTextureCHROMIUMImmediate ValueType;
-  static const CommandId kCmdId = kConsumeTextureCHROMIUMImmediate;
-  static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-  static const uint8_t cmd_flags = CMD_FLAG_SET_TRACE_LEVEL(2);
-
-  static uint32_t ComputeDataSize() {
-    return static_cast<uint32_t>(sizeof(GLbyte) * 16);
-  }
-
-  static uint32_t ComputeSize() {
-    return static_cast<uint32_t>(sizeof(ValueType) + ComputeDataSize());
-  }
-
-  void SetHeader() { header.SetCmdByTotalSize<ValueType>(ComputeSize()); }
-
-  void Init(GLenum _target, const GLbyte* _mailbox) {
-    SetHeader();
-    target = _target;
-    memcpy(ImmediateDataAddress(this), _mailbox, ComputeDataSize());
-  }
-
-  void* Set(void* cmd, GLenum _target, const GLbyte* _mailbox) {
-    static_cast<ValueType*>(cmd)->Init(_target, _mailbox);
-    const uint32_t size = ComputeSize();
-    return NextImmediateCmdAddressTotalSize<ValueType>(cmd, size);
-  }
-
-  gpu::CommandHeader header;
-  uint32_t target;
-};
-
-static_assert(sizeof(ConsumeTextureCHROMIUMImmediate) == 8,
-              "size of ConsumeTextureCHROMIUMImmediate should be 8");
-static_assert(offsetof(ConsumeTextureCHROMIUMImmediate, header) == 0,
-              "offset of ConsumeTextureCHROMIUMImmediate header should be 0");
-static_assert(offsetof(ConsumeTextureCHROMIUMImmediate, target) == 4,
-              "offset of ConsumeTextureCHROMIUMImmediate target should be 4");
-
 struct CreateAndConsumeTextureINTERNALImmediate {
   typedef CreateAndConsumeTextureINTERNALImmediate ValueType;
   static const CommandId kCmdId = kCreateAndConsumeTextureINTERNALImmediate;

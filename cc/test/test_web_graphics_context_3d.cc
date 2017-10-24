@@ -479,9 +479,7 @@ void TestWebGraphicsContext3D::genMailboxCHROMIUM(GLbyte* mailbox) {
 GLuint TestWebGraphicsContext3D::createAndConsumeTextureCHROMIUM(
     GLenum target,
     const GLbyte* mailbox) {
-  GLuint texture_id = createTexture();
-  consumeTextureCHROMIUM(target, mailbox);
-  return texture_id;
+  return createTexture();
 }
 
 void TestWebGraphicsContext3D::loseContextCHROMIUM(GLenum current,

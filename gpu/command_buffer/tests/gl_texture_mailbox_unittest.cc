@@ -82,10 +82,8 @@ class GLTextureMailboxTest : public testing::Test {
     gl1_.decoder()->TakeFrontBuffer(mailbox);
 
     gl2_.MakeCurrent();
-    GLuint tex;
-    glGenTextures(1, &tex);
+    GLuint tex = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     glDeleteTextures(1, &tex);
     glFlush();
     gl1_.MakeCurrent();
@@ -142,19 +140,16 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTexture) {
 
   gl2_.MakeCurrent();
 
-  GLuint tex2;
-  glGenTextures(1, &tex2);
-
+  GLuint tex2 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox1);
   glBindTexture(GL_TEXTURE_2D, tex2);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox1);
   EXPECT_EQ(source_pixel, ReadTexel(tex2, 0, 0));
   glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox2);
   glFlush();
 
   gl1_.MakeCurrent();
 
+  tex1 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox2);
   glBindTexture(GL_TEXTURE_2D, tex1);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox2);
   EXPECT_EQ(source_pixel, ReadTexel(tex1, 0, 0));
 }
 
@@ -187,19 +182,16 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureRGB) {
 
   gl2_.MakeCurrent();
 
-  GLuint tex2;
-  glGenTextures(1, &tex2);
-
+  GLuint tex2 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox1);
   glBindTexture(GL_TEXTURE_2D, tex2);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox1);
   EXPECT_EQ(source_pixel, ReadTexel(tex2, 0, 0));
   glProduceTextureCHROMIUM(GL_TEXTURE_2D, mailbox2);
   glFlush();
 
   gl1_.MakeCurrent();
 
+  tex1 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox2);
   glBindTexture(GL_TEXTURE_2D, tex1);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox2);
   EXPECT_EQ(source_pixel, ReadTexel(tex1, 0, 0));
 }
 
@@ -245,35 +237,6 @@ TEST_F(GLTextureMailboxTest, ProduceAndConsumeTextureDirect) {
   EXPECT_EQ(source_pixel, ReadTexel(tex3, 0, 0));
 }
 
-TEST_F(GLTextureMailboxTest, ConsumeTextureValidatesKey) {
-  SetUpContexts();
-  GLuint tex;
-  glGenTextures(1, &tex);
-
-  glBindTexture(GL_TEXTURE_2D, tex);
-  uint32_t source_pixel = 0xFF0000FF;
-  glTexImage2D(GL_TEXTURE_2D,
-               0,
-               GL_RGBA,
-               1, 1,
-               0,
-               GL_RGBA,
-               GL_UNSIGNED_BYTE,
-               &source_pixel);
-
-  GLbyte invalid_mailbox[GL_MAILBOX_SIZE_CHROMIUM];
-  glGenMailboxCHROMIUM(invalid_mailbox);
-
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, invalid_mailbox);
-  EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
-
-  // Ensure level 0 is still intact after glConsumeTextureCHROMIUM fails.
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-  EXPECT_EQ(source_pixel, ReadTexel(tex, 0, 0));
-  EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
-}
-
 TEST_F(GLTextureMailboxTest, SharedTextures) {
   SetUpContexts();
   gl1_.MakeCurrent();
@@ -298,11 +261,8 @@ TEST_F(GLTextureMailboxTest, SharedTextures) {
   glFlush();
 
   gl2_.MakeCurrent();
-  GLuint tex2;
-  glGenTextures(1, &tex2);
-
+  GLuint tex2 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
   glBindTexture(GL_TEXTURE_2D, tex2);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   // Change texture in context 2.
@@ -353,10 +313,8 @@ TEST_F(GLTextureMailboxTest, SharedTextures) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   // The mailbox should still exist too.
-  GLuint tex3;
-  glGenTextures(1, &tex3);
+  GLuint tex3 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
   glBindTexture(GL_TEXTURE_2D, tex3);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   // Delete both textures.
@@ -365,9 +323,8 @@ TEST_F(GLTextureMailboxTest, SharedTextures) {
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   // Mailbox should be gone now.
-  glGenTextures(1, &tex2);
+  tex2 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
   glBindTexture(GL_TEXTURE_2D, tex2);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
   EXPECT_EQ(static_cast<GLenum>(GL_INVALID_OPERATION), glGetError());
   glDeleteTextures(1, &tex2);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
@@ -388,9 +345,6 @@ TEST_F(GLTextureMailboxTest, OrderingBarrierImpliesFlush) {
   GLuint fbo2 = 0;
   glGenFramebuffers(1, &fbo2);
   glBindFramebuffer(GL_FRAMEBUFFER, fbo2);
-  GLuint tex2 = 0;
-  glGenTextures(1, &tex2);
-  glBindTexture(GL_TEXTURE_2D, tex2);
   gl1_.MakeCurrent();
   GLuint tex1 = 0;
   GLuint fbo1 = 0;
@@ -417,7 +371,7 @@ TEST_F(GLTextureMailboxTest, OrderingBarrierImpliesFlush) {
     gl1_.gles2_implementation()->OrderingBarrierCHROMIUM();
     // Consume texture in context 2.
     gl2_.MakeCurrent();
-    glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
+    GLuint tex2 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
     // Set up framebuffer in context 2 (strictly, not necessary, could
     // do this just once).
@@ -428,6 +382,7 @@ TEST_F(GLTextureMailboxTest, OrderingBarrierImpliesFlush) {
     // Clear to green.
     glClearColor(0.0, 1.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
+    glDeleteTextures(1, &tex2);
     // Enforce ordering with respect to context 2.
     gl2_.gles2_implementation()->OrderingBarrierCHROMIUM();
     // Consume texture in context 1.
@@ -450,7 +405,6 @@ TEST_F(GLTextureMailboxTest, OrderingBarrierImpliesFlush) {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
   glDeleteFramebuffers(1, &fbo2);
   glBindTexture(GL_TEXTURE_2D, 0);
-  glDeleteTextures(1, &tex2);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 }
 
@@ -468,10 +422,8 @@ TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
   gl2_.decoder()->TakeFrontBuffer(mailbox);
 
   gl1_.MakeCurrent();
-  GLuint tex1;
-  glGenTextures(1, &tex1);
+  GLuint tex1 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   glBindTexture(GL_TEXTURE_2D, tex1);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   EXPECT_EQ(0xFFFFFF00u, ReadTexel(tex1, 0, 0));
 
@@ -499,9 +451,8 @@ TEST_F(GLTextureMailboxTest, TakeFrontBuffer) {
   gl2_.decoder()->TakeFrontBuffer(mailbox2);
 
   gl1_.MakeCurrent();
-  glGenTextures(1, &tex1);
+  tex1 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox2.name);
   glBindTexture(GL_TEXTURE_2D, tex1);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox2.name);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   EXPECT_EQ(0xFF0000FFu, ReadTexel(tex1, 0, 0));
 
@@ -616,10 +567,8 @@ TEST_F(GLTextureMailboxTest, FrontBufferChangeColor) {
     glFinish();
 
     gl2_.MakeCurrent();
-    GLuint tex;
-    glGenTextures(1, &tex);
+    GLuint tex = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
     glBindTexture(GL_TEXTURE_2D, tex);
-    glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
 
     EXPECT_EQ(0xFF0000FFu, ReadTexel(tex, 0, 0));
 
@@ -645,10 +594,8 @@ TEST_F(GLTextureMailboxTest, FrontBufferSamplerParameters) {
   gl2_.decoder()->TakeFrontBuffer(mailbox);
 
   gl1_.MakeCurrent();
-  GLuint tex1;
-  glGenTextures(1, &tex1);
+  GLuint tex1 = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   glBindTexture(GL_TEXTURE_2D, tex1);
-  glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox.name);
   EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
 
   constexpr std::pair<GLenum, GLint> expected_parameters[] = {
@@ -698,7 +645,6 @@ TEST_F(GLTextureMailboxTest, TakeFrontBufferMultipleContexts) {
   glGenMailboxCHROMIUM(mailbox[0].name);
   glGenMailboxCHROMIUM(mailbox[1].name);
   GLuint tex[2];
-  glGenTextures(2, tex);
 
   GLManager::Options options;
   options.share_mailbox_manager = &gl1_;
@@ -718,8 +664,8 @@ TEST_F(GLTextureMailboxTest, TakeFrontBufferMultipleContexts) {
 
   gl1_.MakeCurrent();
   for (size_t i = 0; i < 2; ++i) {
+    tex[i] = glCreateAndConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox[i].name);
     glBindTexture(GL_TEXTURE_2D, tex[i]);
-    glConsumeTextureCHROMIUM(GL_TEXTURE_2D, mailbox[i].name);
     EXPECT_EQ(static_cast<GLenum>(GL_NO_ERROR), glGetError());
   }
 

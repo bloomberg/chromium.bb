@@ -288,7 +288,6 @@ GL_APICALL void         GL_APIENTRY glVertexAttribDivisorANGLE (GLuint index, GL
 GL_APICALL void         GL_APIENTRY glGenMailboxCHROMIUM (GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glProduceTextureCHROMIUM (GLenumTextureBindTarget target, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glProduceTextureDirectCHROMIUM (GLidBindTexture texture, GLenumTextureBindTarget target, const GLbyte* mailbox);
-GL_APICALL void         GL_APIENTRY glConsumeTextureCHROMIUM (GLenumTextureBindTarget target, const GLbyte* mailbox);
 GL_APICALL GLuint       GL_APIENTRY glCreateAndConsumeTextureCHROMIUM (GLenumTextureBindTarget target, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glCreateAndConsumeTextureINTERNAL (GLenumTextureBindTarget target, GLuint texture, const GLbyte* mailbox);
 GL_APICALL void         GL_APIENTRY glBindUniformLocationCHROMIUM (GLidProgram program, GLint location, const char* name);
