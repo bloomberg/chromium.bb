@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "components/payments/content/web_app_manifest_section.h"
+#include "components/payments/mojom/payment_manifest_parser.mojom.h"
 #include "components/webdata/common/web_database_table.h"
 
 class WebDatabase;
@@ -49,11 +49,12 @@ class WebAppManifestSectionTable : public WebDatabaseTable {
 
   // Adds the web app |manifest|. Note that the previous web app manifest will
   // be deleted.
-  bool AddWebAppManifest(const std::vector<WebAppManifestSection>& manifest);
+  bool AddWebAppManifest(
+      const std::vector<mojom::WebAppManifestSectionPtr>& manifest);
 
   // Gets manifest of the |web_app|. Returns empty vector if no manifest exists
   // for the |web_app|.
-  std::vector<WebAppManifestSection> GetWebAppManifest(
+  std::vector<mojom::WebAppManifestSectionPtr> GetWebAppManifest(
       const std::string& web_app);
 
  private:
