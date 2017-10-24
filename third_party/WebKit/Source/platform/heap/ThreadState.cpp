@@ -1216,6 +1216,7 @@ void ThreadState::InvokePreFinalizers() {
 
 void ThreadState::IncrementalMarkingStart() {
   DataLogF("IncrementalMarkingStart\n");
+  Heap().EnableIncrementalMarkingBarrier();
   ScheduleIncrementalMarkingStep();
 }
 
@@ -1226,6 +1227,7 @@ void ThreadState::IncrementalMarkingStep() {
 
 void ThreadState::IncrementalMarkingFinalize() {
   DataLogF("IncrementalMarkingFinalize\n");
+  Heap().DisableIncrementalMarkingBarrier();
   SetGCState(kNoGCScheduled);
 }
 

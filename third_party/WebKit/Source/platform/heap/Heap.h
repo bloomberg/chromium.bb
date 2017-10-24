@@ -504,6 +504,11 @@ class PLATFORM_EXPORT ThreadHeap {
   enum SnapshotType { kHeapSnapshot, kFreelistSnapshot };
   void TakeSnapshot(SnapshotType);
 
+  // Enables or disables the incremental marking barrier that intercepts
+  // writes to Member<T> objects.
+  void EnableIncrementalMarkingBarrier();
+  void DisableIncrementalMarkingBarrier();
+
 #if defined(ADDRESS_SANITIZER)
   void PoisonEagerArena();
   void PoisonAllHeaps();
