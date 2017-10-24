@@ -108,6 +108,8 @@ void ContentViewRenderView::SetOverlayVideoMode(
     const JavaParamRef<jobject>& obj,
     bool enabled) {
   compositor_->SetRequiresAlphaChannel(enabled);
+  compositor_->SetBackgroundColor(enabled ? SK_ColorTRANSPARENT
+                                          : SK_ColorWHITE);
   compositor_->SetNeedsComposite();
 }
 
