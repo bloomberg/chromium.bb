@@ -1383,7 +1383,7 @@ def named_constructor_context(interface):
 
 def number_of_required_arguments(constructor):
     return len([argument for argument in constructor.arguments
-                if not argument.is_optional])
+                if not (argument.is_optional or argument.is_variadic)])
 
 
 def interface_length(constructors):
