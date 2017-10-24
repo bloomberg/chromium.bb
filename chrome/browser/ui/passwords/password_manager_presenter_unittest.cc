@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <utility>
 
+#include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -20,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::ASCIIToUTF16;
+using testing::_;
 using testing::Eq;
 using testing::Property;
 
@@ -345,5 +347,37 @@ TEST_F(PasswordManagerPresenterTest, Sorting_SpecialCharacters) {
   SortAndCheckPositions(test_cases, arraysize(test_cases),
                         PasswordEntryType::SAVED);
 }
+
+#if !defined(OS_ANDROID)  // Reauthentication is handled differently on Android.
+enum class ReauthResult { PASS, FAIL };
+bool FakeOsReauthCall(bool* reauth_called, ReauthResult result) {
+  *reauth_called = true;
+  return result == ReauthResult::PASS;
+}
+
+TEST_F(PasswordManagerPresenterTest, TestPassedReauthOnView) {
+  bool reauth_called = false;
+  GetUIController()->GetPasswordManagerPresenter()->SetOsReauthCallForTesting(
+      base::BindRepeating(&FakeOsReauthCall, &reauth_called,
+                          ReauthResult::PASS));
+
+  AddPasswordEntry(GURL("http://abc1.com"), "test@gmail.com", "test");
+  EXPECT_CALL(*GetUIController(), ShowPassword(0, base::ASCIIToUTF16("test")));
+  GetUIController()->GetPasswordManagerPresenter()->RequestShowPassword(0);
+  EXPECT_TRUE(reauth_called);
+}
+
+TEST_F(PasswordManagerPresenterTest, TestFailedReauthOnView) {
+  bool reauth_called = false;
+  GetUIController()->GetPasswordManagerPresenter()->SetOsReauthCallForTesting(
+      base::BindRepeating(&FakeOsReauthCall, &reauth_called,
+                          ReauthResult::FAIL));
+
+  AddPasswordEntry(GURL("http://abc1.com"), "test@gmail.com", "test");
+  EXPECT_CALL(*GetUIController(), ShowPassword(_, _)).Times(0);
+  GetUIController()->GetPasswordManagerPresenter()->RequestShowPassword(0);
+  EXPECT_TRUE(reauth_called);
+}
+#endif  // !defined(OS_ANDROID)
 
 }  // namespace
