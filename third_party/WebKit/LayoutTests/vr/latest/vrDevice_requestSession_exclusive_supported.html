@@ -13,28 +13,28 @@ let fakeDisplays = fakeVRDisplays();
 
 vr_test( (t) => {
   return navigator.vr.requestDevice().then( (device) => {
+
     runWithUserGesture( () => {
       device.requestSession({ exclusive: true }).then( (session) => {
         t.step( () => {
           assert_true(session.exclusive);
-          assert_equals(session.device, device);
-          assert_approx_equals(session.depthNear, 0.1, FLOAT_EPSILON);
-          assert_approx_equals(session.depthFar, 1000.0, FLOAT_EPSILON);
-        }, "requestSession returned correct results");
+        }, "requestSession resolved as expected");
       }, (err) => {
         t.step( () => {
-          assert_unreached("requestSession rejected");
+          assert_unreached("requestSession rejected unexpectedly");
         });
       }).then( () => {
         t.done();
       });
     });
+
   }, (err) => {
     t.step( () => {
-      assert_unreached("requestDevice rejected");
+      assert_unreached("getDevices rejected");
     });
   });
 }, [fakeDisplays["Pixel"]],
-"supportsSession returns expected exclusive session");
+"requestSession for an exclusive session with a user gesture resolves");
+
 
 </script>

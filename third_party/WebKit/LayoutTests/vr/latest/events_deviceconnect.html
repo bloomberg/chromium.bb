@@ -19,7 +19,7 @@ vr_test((t, mockService) => {
     });
 
   // The event should fire when a listener is added even if the devices are not
-  // explicity queried with navigator.vr.getDevices().
+  // explicity queried with navigator.vr.requestDevice().
   function onDeviceConnect(event) {
     t.step( () => {
       assert_equals(event.device.deviceName, 'Google, Inc. Daydream View');

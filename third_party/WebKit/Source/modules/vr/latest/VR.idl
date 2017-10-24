@@ -10,5 +10,5 @@
   attribute EventHandler ondeviceconnect;
   attribute EventHandler ondevicedisconnect;
 
-  [CallWith=ScriptState] Promise getDevices();
+  [CallWith=ScriptState] Promise requestDevice();
 };

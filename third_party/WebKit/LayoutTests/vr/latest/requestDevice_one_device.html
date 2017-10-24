@@ -10,22 +10,20 @@
 let fakeDisplays = fakeVRDisplays();
 
 vr_test( (t) => {
-  return navigator.vr.getDevices().then( (devices) => {
+  return navigator.vr.requestDevice().then( (device) => {
     t.step( () => {
-      assert_true(devices != null);
-      assert_equals(devices.length, 1);
-      let device = devices[0];
+      assert_true(device != null);
       assert_equals(device.deviceName, 'Google, Inc. Daydream View');
       assert_false(device.isExternal);
-    }, "getDevices returned correct results");
+    }, "requestDevice returned correct results");
   }, (err) => {
     t.step( () => {
-      assert_unreached("getDevices rejected");
+      assert_unreached("requestDevice rejected");
     });
   }).then( () => {
     t.done();
   });
 }, [fakeDisplays["Pixel"]],
-"navigator.vr.getDevices properly returns a single device");
+"navigator.vr.requestDevice properly returns a single device");
 
 </script>
