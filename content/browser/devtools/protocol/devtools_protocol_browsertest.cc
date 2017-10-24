@@ -243,7 +243,7 @@ class DevToolsProtocolTest : public ContentBrowserTest,
       return result_.get();
     }
     in_dispatch_ = false;
-    return nullptr;
+    return result_.get();
   }
 
   void WaitForResponse() {
@@ -1031,8 +1031,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, NavigationPreservesMessages) {
   bool enough_results = result_ids_.size() >= 2u;
   EXPECT_TRUE(enough_results);
   if (enough_results) {
-    EXPECT_EQ(1, result_ids_[0]);  // Page.enable
-    EXPECT_EQ(2, result_ids_[1]);  // Page.navigate
+    EXPECT_EQ(2, result_ids_[0]);  // Page.navigate
+    EXPECT_EQ(1, result_ids_[1]);  // Page.enable
   }
 
   enough_results = notifications_.size() >= 1u;
