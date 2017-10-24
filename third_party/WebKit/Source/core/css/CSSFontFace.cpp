@@ -52,10 +52,10 @@ void CSSFontFace::DidBeginLoad() {
     SetLoadStatus(FontFace::kLoading);
 }
 
-void CSSFontFace::FontLoaded(RemoteFontFaceSource* source,
+bool CSSFontFace::FontLoaded(RemoteFontFaceSource* source,
                              LoadFinishReason reason) {
   if (!IsValid() || source != sources_.front())
-    return;
+    return false;
 
   if (LoadStatus() == FontFace::kLoading) {
     if (source->IsValid()) {
@@ -73,6 +73,7 @@ void CSSFontFace::FontLoaded(RemoteFontFaceSource* source,
 
   if (segmented_font_face_)
     segmented_font_face_->FontFaceInvalidated();
+  return true;
 }
 
 size_t CSSFontFace::ApproximateBlankCharacterCount() const {
@@ -82,11 +83,12 @@ size_t CSSFontFace::ApproximateBlankCharacterCount() const {
   return 0;
 }
 
-void CSSFontFace::DidBecomeVisibleFallback(RemoteFontFaceSource* source) {
+bool CSSFontFace::DidBecomeVisibleFallback(RemoteFontFaceSource* source) {
   if (!IsValid() || source != sources_.front())
-    return;
+    return false;
   if (segmented_font_face_)
     segmented_font_face_->FontFaceInvalidated();
+  return true;
 }
 
 scoped_refptr<SimpleFontData> CSSFontFace::GetFontData(
