@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.support.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -42,14 +43,18 @@ public class PartnerDisableIncognitoModeUnitTest {
                 uri, "setIncognitoModeDisabled", null, bundle);
     }
 
+    @Before
+    public void setUp() throws Exception {
+        PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
+    }
+
     @Test
     @SmallTest
     @Feature({"ParentalControls"})
     public void testProviderNotFromSystemPackage() throws InterruptedException {
-        // Note that unlike other tests in this file, we do not call
-        // PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
-        // here to test if Chrome ignores a customizations provider that is not from
-        // a system package.
+        // Note that unlike other tests in this file, we test if Chrome ignores a customizations
+        // provider that is not from a system package.
+        PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(false);
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -72,7 +77,6 @@ public class PartnerDisableIncognitoModeUnitTest {
     @SmallTest
     @Feature({"ParentalControls"})
     public void testNoProvider() throws InterruptedException {
-        PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_NO_PROVIDER);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -94,7 +98,6 @@ public class PartnerDisableIncognitoModeUnitTest {
     @SmallTest
     @Feature({"ParentalControls"})
     public void testParentalControlsNotEnabled() throws InterruptedException {
-        PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
         setParentalControlsEnabled(false);
@@ -118,7 +121,6 @@ public class PartnerDisableIncognitoModeUnitTest {
     @SmallTest
     @Feature({"ParentalControls"})
     public void testParentalControlsEnabled() throws InterruptedException {
-        PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_PROVIDER);
         setParentalControlsEnabled(true);
@@ -142,7 +144,6 @@ public class PartnerDisableIncognitoModeUnitTest {
     @SmallTest
     @Feature({"ParentalControls"})
     public void testParentalControlsProviderDelayed() throws InterruptedException {
-        PartnerBrowserCustomizations.ignoreBrowserProviderSystemPackageCheckForTests(true);
         PartnerBrowserCustomizations.setProviderAuthorityForTests(
                 PARTNER_BROWSER_CUSTOMIZATIONS_DELAYED_PROVIDER);
         mTestRule.setDelayProviderUriPathForDelay(

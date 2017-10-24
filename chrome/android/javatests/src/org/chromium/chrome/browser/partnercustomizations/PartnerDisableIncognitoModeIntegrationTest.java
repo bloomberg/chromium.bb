@@ -98,30 +98,10 @@ public class PartnerDisableIncognitoModeIntegrationTest {
     }
 
     private void toggleActivityForegroundState() {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onPause();
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onStop();
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onStart();
-            }
-        });
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                mActivityTestRule.getActivity().onResume();
-            }
-        });
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onPause());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onStop());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onStart());
+        ThreadUtils.runOnUiThreadBlocking(() -> mActivityTestRule.getActivity().onResume());
     }
 
     @Test
@@ -178,12 +158,8 @@ public class PartnerDisableIncognitoModeIntegrationTest {
             toggleActivityForegroundState();
             waitForParentalControlsEnabledState(true);
 
-            CriteriaHelper.pollInstrumentationThread(Criteria.equals(0, new Callable<Integer>() {
-                @Override
-                public Integer call() {
-                    return mActivityTestRule.incognitoTabsCount();
-                }
-            }));
+            CriteriaHelper.pollInstrumentationThread(
+                    Criteria.equals(0, () -> mActivityTestRule.incognitoTabsCount()));
         } finally {
             testServer.stopAndDestroyServer();
         }
