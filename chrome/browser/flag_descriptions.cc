@@ -292,6 +292,11 @@ const char kEnableAutofillSendBillingCustomerNumberDescription[] =
     "If enabled, autofill sends billing customer number when calling Google "
     "Payments.";
 
+const char kEnableAutofillToolkitViewsCreditCardDialogsMac[] =
+    "Enable toolkit-views credit card dialogs on Mac";
+const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[] =
+    "Enable more modern credit card dialogs on Mac, based on toolkit-views.";
+
 const char kEnableBreakingNewsPushName[] = "Breaking News Push";
 const char kEnableBreakingNewsPushDescription[] =
     "Listen for breaking news content suggestions (e.g. for New Tab Page) "

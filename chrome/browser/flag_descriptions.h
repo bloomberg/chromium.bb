@@ -204,6 +204,9 @@ extern const char kEnableAutofillCreditCardUploadNewUiDescription[];
 extern const char kEnableAutofillSendBillingCustomerNumberName[];
 extern const char kEnableAutofillSendBillingCustomerNumberDescription[];
 
+extern const char kEnableAutofillToolkitViewsCreditCardDialogsMac[];
+extern const char kEnableAutofillToolkitViewsCreditCardDialogsMacDescription[];
+
 extern const char kEnableBreakingNewsPushName[];
 extern const char kEnableBreakingNewsPushDescription[];
 

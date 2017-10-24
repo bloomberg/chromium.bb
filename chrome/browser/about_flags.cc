@@ -2948,6 +2948,12 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAutofillSendBillingCustomerNumberName,
      flag_descriptions::kEnableAutofillSendBillingCustomerNumberDescription,
      kOsAll, FEATURE_VALUE_TYPE(autofill::kAutofillSendBillingCustomerNumber)},
+    {"enable-macviews-credit-card-dialogs",
+     flag_descriptions::kEnableAutofillToolkitViewsCreditCardDialogsMac,
+     flag_descriptions::
+         kEnableAutofillToolkitViewsCreditCardDialogsMacDescription,
+     kOsMac,
+     FEATURE_VALUE_TYPE(autofill::kAutofillToolkitViewsCreditCardDialogsMac)},
 
 #if defined(OS_WIN)
     {"windows10-custom-titlebar",
