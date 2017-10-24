@@ -36,7 +36,6 @@ FORWARD_DECLARE_TEST(AppCacheGroupTest, QueueUpdate);
 class AppCacheGroupTest;
 class AppCacheUpdateJobTest;
 class HostNotifier;
-class URLFetcher;
 
 // Application cache Update algorithm and state.
 class CONTENT_EXPORT AppCacheUpdateJob

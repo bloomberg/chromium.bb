@@ -51,7 +51,7 @@ void AppCacheURLRequestJob::Kill() {
     group_ = NULL;
     range_response_info_.reset();
     net::URLRequestJob::Kill();
-    AppCacheJob::weak_factory_.InvalidateWeakPtrs();
+    weak_factory_.InvalidateWeakPtrs();
   }
 }
 
@@ -87,8 +87,17 @@ void AppCacheURLRequestJob::DeliverErrorResponse() {
   MaybeBeginDelivery();
 }
 
-net::URLRequestJob* AppCacheURLRequestJob::AsURLRequestJob() {
+AppCacheURLRequestJob* AppCacheURLRequestJob::AsURLRequestJob() {
   return this;
+}
+
+base::WeakPtr<AppCacheJob> AppCacheURLRequestJob::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+base::WeakPtr<AppCacheURLRequestJob>
+AppCacheURLRequestJob::GetDerivedWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 AppCacheURLRequestJob::AppCacheURLRequestJob(
@@ -106,7 +115,8 @@ AppCacheURLRequestJob::AppCacheURLRequestJob(
       cache_id_(kAppCacheNoCacheId),
       is_fallback_(false),
       is_main_resource_(is_main_resource),
-      on_prepare_to_restart_callback_(std::move(restart_callback)) {
+      on_prepare_to_restart_callback_(std::move(restart_callback)),
+      weak_factory_(this) {
   DCHECK(storage_);
 }
 
@@ -116,7 +126,7 @@ void AppCacheURLRequestJob::MaybeBeginDelivery() {
     // callbacks happen as they would for network requests.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&AppCacheURLRequestJob::BeginDelivery,
-                                  StaticAsWeakPtr(this)));
+                                  GetDerivedWeakPtr()));
   }
 }
 
@@ -255,7 +265,7 @@ void AppCacheURLRequestJob::InvokeExecutableHandler(
   handler->HandleRequest(
       request(),
       base::Bind(&AppCacheURLRequestJob::OnExecutableResponseCallback,
-                 StaticAsWeakPtr(this)));
+                 GetDerivedWeakPtr()));
 }
 
 void AppCacheURLRequestJob::OnExecutableResponseCallback(
@@ -322,7 +332,13 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
           false, is_main_resource_, manifest_url_.GetOrigin());
     }
     cache_entry_not_found_ = true;
-    NotifyRestartRequired();
+
+    // We fallback to the network unless this job was falling back to the
+    // appcache from the network which had already failed in some way.
+    if (!is_fallback_)
+      NotifyRestartRequired();
+    else
+      BeginErrorDelivery("failed to load appcache response info");
   }
 }
 

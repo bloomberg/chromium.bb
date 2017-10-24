@@ -4,6 +4,7 @@
 
 #include "content/browser/appcache/appcache_url_loader_request.h"
 #include "content/public/common/resource_type.h"
+#include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 
 namespace content {
@@ -69,8 +70,24 @@ AppCacheURLLoaderRequest* AppCacheURLLoaderRequest::AsURLLoaderRequest() {
   return this;
 }
 
+base::WeakPtr<AppCacheURLLoaderRequest> AppCacheURLLoaderRequest::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
+}
+
+void AppCacheURLLoaderRequest::UpdateWithRedirectInfo(
+    const net::RedirectInfo& redirect_info) {
+  bool not_used_clear_body;
+  net::RedirectUtil::UpdateHttpRequest(request_.url, request_.method,
+                                       redirect_info, &request_.headers,
+                                       &not_used_clear_body);
+  request_.url = redirect_info.new_url;
+  request_.method = redirect_info.new_method;
+  request_.referrer = GURL(redirect_info.new_referrer);
+  request_.site_for_cookies = redirect_info.new_site_for_cookies;
+}
+
 AppCacheURLLoaderRequest::AppCacheURLLoaderRequest(
     const ResourceRequest& request)
-    : request_(request) {}
+    : request_(request), weak_factory_(this) {}
 
 }  // namespace content

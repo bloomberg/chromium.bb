@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_APPCACHE_APPCACHE_URL_LOADER_REQUEST_H_
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_URL_LOADER_REQUEST_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/browser/appcache/appcache_request.h"
 #include "content/public/common/resource_request.h"
 #include "content/public/common/resource_response.h"
+#include "net/url_request/redirect_info.h"
 
 namespace content {
 
@@ -37,10 +39,13 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
   ResourceRequest* GetResourceRequest() override;
   AppCacheURLLoaderRequest* AsURLLoaderRequest() override;
 
+  void UpdateWithRedirectInfo(const net::RedirectInfo& redirect_info);
   void set_request(const ResourceRequest& request) { request_ = request; }
   void set_response(const ResourceResponseHead& response) {
     response_ = response;
   }
+
+  base::WeakPtr<AppCacheURLLoaderRequest> GetWeakPtr();
 
  protected:
   explicit AppCacheURLLoaderRequest(const ResourceRequest& request);
@@ -48,7 +53,7 @@ class CONTENT_EXPORT AppCacheURLLoaderRequest : public AppCacheRequest {
  private:
   ResourceRequest request_;
   ResourceResponseHead response_;
-
+  base::WeakPtrFactory<AppCacheURLLoaderRequest> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(AppCacheURLLoaderRequest);
 };
 
