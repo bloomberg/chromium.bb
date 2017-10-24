@@ -208,6 +208,7 @@ public class DownloadNotificationServiceTest
     @Test
     @SmallTest
     @Feature({"Download"})
+    @RetryOnFailure(message = "crbug.com/653609")
     public void testResumptionNotScheduledWithDownloadOperationIntent() {
         MockDownloadResumptionScheduler scheduler =
                 new MockDownloadResumptionScheduler(getSystemContext().getApplicationContext());
