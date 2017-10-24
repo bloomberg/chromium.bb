@@ -79,13 +79,7 @@ MediaControlSliderElement::MediaControlSliderElement(
   resize_observer_->observe(this);
 }
 
-void MediaControlSliderElement::SetupBarSegments() {
-  DCHECK((segment_highlight_after_ && segment_highlight_before_) ||
-         (!segment_highlight_after_ && !segment_highlight_before_));
-
-  if (segment_highlight_after_ || segment_highlight_before_)
-    return;
-
+Element& MediaControlSliderElement::GetTrackElement() {
   // The timeline element has a shadow root with the following
   // structure:
   //
@@ -95,7 +89,18 @@ void MediaControlSliderElement::SetupBarSegments() {
   ShadowRoot& shadow_root = Shadow()->OldestShadowRoot();
   Element* track = shadow_root.getElementById(AtomicString("track"));
   DCHECK(track);
-  track->SetShadowPseudoId("-internal-media-controls-segmented-track");
+  return *track;
+}
+
+void MediaControlSliderElement::SetupBarSegments() {
+  DCHECK((segment_highlight_after_ && segment_highlight_before_) ||
+         (!segment_highlight_after_ && !segment_highlight_before_));
+
+  if (segment_highlight_after_ || segment_highlight_before_)
+    return;
+
+  Element& track = GetTrackElement();
+  track.SetShadowPseudoId("-internal-media-controls-segmented-track");
 
   // Add the following structure to #track.
   //
@@ -103,7 +108,7 @@ void MediaControlSliderElement::SetupBarSegments() {
   //   - div::internal-track-segment-highlight-before (blue highlight)
   //   - div::internal-track-segment-highlight-after (dark gray highlight)
   HTMLDivElement* background = MediaControlElementsHelper::CreateDiv(
-      "-internal-track-segment-background", track);
+      "-internal-track-segment-background", &track);
   segment_highlight_before_ = MediaControlElementsHelper::CreateDiv(
       "-internal-track-segment-highlight-before", background);
   segment_highlight_after_ = MediaControlElementsHelper::CreateDiv(
