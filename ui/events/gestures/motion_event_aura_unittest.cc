@@ -537,4 +537,15 @@ TEST(MotionEventAuraTest, IgnoresTouchesOverCapacity) {
   }
 }
 
+TEST(MotionEventAuraTest, PenRadiusDefault) {
+  MotionEventAura event;
+  TouchEvent touch_event = ui::TouchEvent(
+      ET_TOUCH_PRESSED, gfx::Point(0, 0), base::TimeTicks(),
+      ui::PointerDetails(ui::EventPointerType::POINTER_TYPE_PEN, 7));
+  EXPECT_TRUE(event.OnTouch(touch_event));
+  EXPECT_EQ(MotionEvent::TOOL_TYPE_STYLUS, event.GetToolType(0));
+  EXPECT_EQ(1u, event.GetTouchMajor(0));
+  EXPECT_EQ(1u, event.GetTouchMinor(0));
+}
+
 }  // namespace ui

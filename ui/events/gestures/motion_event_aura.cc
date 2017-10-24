@@ -44,10 +44,20 @@ PointerProperties GetPointerPropertiesFromTouchEvent(const TouchEvent& touch) {
                                            touch.pointer_details().radius_y,
                                            touch.rotation_angle());
   if (!pointer_properties.touch_major) {
-    pointer_properties.touch_major =
-        2.f * GestureConfiguration::GetInstance()->default_radius();
-    pointer_properties.touch_minor =
-        2.f * GestureConfiguration::GetInstance()->default_radius();
+    float default_size;
+    switch (touch.pointer_details().pointer_type) {
+      case EventPointerType::POINTER_TYPE_PEN:
+      case EventPointerType::POINTER_TYPE_ERASER:
+        // Default size for stylus events is 1x1.
+        default_size = 1;
+        break;
+      default:
+        default_size =
+            2.f * GestureConfiguration::GetInstance()->default_radius();
+        break;
+    }
+    pointer_properties.touch_major = pointer_properties.touch_minor =
+        default_size;
     pointer_properties.orientation = 0;
   }
 
