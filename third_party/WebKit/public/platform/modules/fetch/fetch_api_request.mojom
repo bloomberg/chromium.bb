@@ -73,6 +73,38 @@ enum FetchCredentialsMode {
   PASSWORD,
 };
 
+// https://fetch.spec.whatwg.org/#concept-request-cache-mode
+enum FetchCacheMode {
+  // "default": Fetch will inspect the HTTP cache on the way to the network. If
+  // there is a fresh response it will be used. If there is a stale response a
+  // conditional request will be created, and a normal request otherwise. It
+  // then updates the HTTP cache with the response.
+  kDefault,
+
+  // "no-store": Fetch behaves as if there is no HTTP cache at all.
+  kNoStore,
+
+  // "reload": Fetch behaves as if there is no HTTP cache on the way to the
+  // network. Ergo, it creates a normal request and updates the HTTP cache with
+  // the response.
+  kBypassCache,
+
+  // "no-cache": Fetch creates a conditional request if there is a response in
+  // the HTTP cache and a normal request otherwise. It then updates the HTTP
+  // cache with the response.
+  kValidateCache,
+
+  // "force-cache": Fetch uses any response in the HTTP cache matching the
+  // request, not paying attention to staleness. If there was no response, it
+  // creates a normal request and updates the HTTP cache with the response.
+  kForceCache,
+
+  // "only-if-cached": Fetch uses any response in the HTTP cache matching the
+  // request, not paying attention to staleness. If there was no response, it
+  // returns a network error.
+  kOnlyIfCached,
+};
+
 // The redirect mode indicating how redirects should be handled.
 // https://fetch.spec.whatwg.org/#concept-request-redirect-mode
 enum FetchRedirectMode {

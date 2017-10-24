@@ -129,17 +129,6 @@ class WebURLRequest {
     kFetchCredentialsModePassword
   };
 
-  // Corresponds to Fetch request's "cache mode":
-  // https://fetch.spec.whatwg.org/#concept-request-cache-mode
-  enum FetchRequestCacheMode : uint8_t {
-    kFetchRequestCacheModeDefault,
-    kFetchRequestCacheModeNoStore,
-    kFetchRequestCacheModeReload,
-    kFetchRequestCacheModeNoCache,
-    kFetchRequestCacheModeForceCache,
-    kFetchRequestCacheModeOnlyIfCached
-  };
-
   // Corresponds to Fetch request's "redirect mode":
   // https://fetch.spec.whatwg.org/#concept-request-redirect-mode
   enum FetchRedirectMode : uint8_t {
