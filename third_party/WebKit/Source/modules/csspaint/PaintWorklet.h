@@ -47,7 +47,7 @@ class MODULES_EXPORT PaintWorklet : public Worklet,
   DocumentDefinitionMap& GetDocumentDefinitionMap() {
     return document_definition_map_;
   }
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   explicit PaintWorklet(LocalFrame*);
