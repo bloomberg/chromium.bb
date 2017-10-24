@@ -1608,6 +1608,11 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
     first_run::DoPostImportTasks(profile_,
                                  master_prefs_->make_chrome_default_for_user);
 
+    // The first run dialog is modal, and spins a RunLoop, which could receive
+    // a SIGTERM, and call chrome::AttemptExit(). Exit cleanly in that case.
+    if (browser_shutdown::IsTryingToQuit())
+      return content::RESULT_CODE_NORMAL_EXIT;
+
     if (!master_prefs_->suppress_first_run_default_browser_prompt) {
       browser_creator_->set_show_main_browser_window(
           !chrome::ShowFirstRunDefaultBrowserPrompt(profile_));
