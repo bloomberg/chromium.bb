@@ -49,20 +49,6 @@ catalog("catalog") {
     "//services/ui:manifest",
     "//services/ui/demo:manifest",
     "//services/ui/ime/test_ime_driver:manifest",
-
-    # TODO(rockot): It seems like a layering violation to have these service
-    # names referenced here, but it's the most convenient thing to do for now,
-    # and this is only for developers.
-    #
-    # Note that there are no build-time dependencies on the actual Chrome
-    # binary implied by mash:all or other targets here. This only ensures that
-    # if you have such a binary built, the runner will be able to locate it.
-    "//chrome/app:chrome_content_browser_manifest",
-    "//chrome/app:chrome_content_gpu_manifest",
-    "//chrome/app:chrome_content_packaged_services_manifest_for_mash",
-    "//chrome/app:chrome_content_plugin_manifest",
-    "//chrome/app:chrome_content_renderer_manifest",
-    "//chrome/app:chrome_content_utility_manifest",
   ]
 
   executable_overrides = [ "content_packaged_services:@EXE_DIR/chrome" ]
