@@ -43,7 +43,8 @@ const SkColor kResultDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kResultDimmedTextColor = SkColorSetRGB(0x84, 0x84, 0x84);
 const SkColor kResultURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
 
-const SkColor kGridTitleColor = SK_ColorWHITE;
+const SkColor kGridTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
+const SkColor kGridTitleColorFullscreen = SK_ColorWHITE;
 
 const int kGridTileWidth = 96;
 const int kGridTileHeight = 99;
@@ -56,14 +57,16 @@ const int kGridSelectedCornerRadius = 8;
 
 const SkColor kFolderTitleColor = SkColorSetRGB(0x33, 0x33, 0x33);
 const SkColor kFolderTitleHintTextColor = SkColorSetRGB(0xA0, 0xA0, 0xA0);
-// Color of the folder ink bubble, 12% white..
-const SkColor kFolderBubbleColor = SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
+// Color of the folder ink bubble.
+const SkColor kFolderBubbleColor = SK_ColorWHITE;
+// Color of folder bubble color (12% white) in full screen mode.
+const SkColor kFolderBubbleColorFullScreen =
+    SkColorSetARGB(0x1F, 0xFF, 0xFF, 0xFF);
 // Color of the folder bubble shadow.
 const SkColor kFolderShadowColor = SkColorSetRGB(0xBF, 0xBF, 0xBF);
 const float kFolderBubbleOpacity = 0.12f;
 const float kFolderBubbleRadius = 23;
 const float kFolderBubbleOffsetY = 1;
-const int kFolderBackgroundBubbleRadius = 288;
 
 const SkColor kCardBackgroundColor = SK_ColorWHITE;
 const SkColor kCardBackgroundColorFullscreen = SkColorSetRGB(0xFA, 0xFA, 0xFC);
@@ -279,20 +282,22 @@ const gfx::ShadowValues& IconEndShadows() {
   return icon_shadows;
 }
 
-const gfx::FontList& AppListAppTitleFont() {
-  // The max line height of app titles which is determined by the sizes of app
-  // tile views, its paddings, and the icon.
-  constexpr int kAppTitleMaxLineHeight = 16;
+const gfx::FontList& FullscreenAppListAppTitleFont() {
+  // The max line height of app titles while the fullscreen launcher is enabled,
+  // which is determined by the sizes of app tile views, its paddings, and the
+  // icon.
+  constexpr int kFullscreenAppTitleMaxLineHeight = 16;
 
-  // The font for app titles. We're getting the largest font that doesn't exceed
-  // |kAppTitleMaxLineHeight|.Note: we resize the font to 1px larger,
-  // otherwise it looks too small.
-  static const gfx::FontList kAppListAppTitleFont =
+  // The font for app titles while the fullscreen launcher is enabled. We're
+  // getting the largest font that doesn't exceed
+  // |kFullscreenAppTitleMaxLineHeight|.
+  // Note: we resize the font to 1px larger, otherwise it looks too small.
+  static const gfx::FontList kFullscreenAppListAppTitleFont =
       ui::ResourceBundle::GetSharedInstance()
           .GetFontList(ui::ResourceBundle::LargeFont)
-          .DeriveWithHeightUpperBound(kAppTitleMaxLineHeight)
+          .DeriveWithHeightUpperBound(kFullscreenAppTitleMaxLineHeight)
           .DeriveWithSizeDelta(1);
-  return kAppListAppTitleFont;
+  return kFullscreenAppListAppTitleFont;
 }
 
 }  // namespace app_list

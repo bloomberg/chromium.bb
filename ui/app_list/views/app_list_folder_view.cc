@@ -56,6 +56,7 @@ AppListFolderView::AppListFolderView(AppsContainerView* container_view,
       model_(model),
       folder_item_(NULL),
       hide_for_reparent_(false),
+      is_fullscreen_app_list_enabled_(features::IsFullscreenAppListEnabled()),
       is_app_list_focus_enabled_(features::IsAppListFocusEnabled()) {
   AddChildView(folder_header_view_);
   view_model_->Add(folder_header_view_, kIndexFolderHeader);
@@ -110,8 +111,8 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
   UpdateFolderNameVisibility(true);
 
   ui::ScopedLayerAnimationSettings animation(layer()->GetAnimator());
-  animation.SetTweenType(show ? kFolderFadeInTweenType
-                              : kFolderFadeOutTweenType);
+  animation.SetTweenType(
+      show ? kFolderFadeInTweenType : kFolderFadeOutTweenType);
   animation.AddObserver(this);
   animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
       show ? kFolderTransitionInDurationMs : kFolderTransitionOutDurationMs));
@@ -121,8 +122,14 @@ void AppListFolderView::ScheduleShowHideAnimation(bool show,
 }
 
 gfx::Size AppListFolderView::CalculatePreferredSize() const {
-  gfx::Size size(kAppsFolderPreferredWidth, kAppsFolderPreferredHeight);
-  return size;
+  if (is_fullscreen_app_list_enabled_)
+    return gfx::Size(kAppsFolderPreferredWidth, kAppsFolderPreferredHeight);
+
+  const gfx::Size header_size = folder_header_view_->GetPreferredSize();
+  const gfx::Size grid_size = items_grid_view_->GetPreferredSize();
+  int width = std::max(header_size.width(), grid_size.width());
+  int height = header_size.height() + grid_size.height();
+  return gfx::Size(width, height);
 }
 
 void AppListFolderView::Layout() {
@@ -214,13 +221,15 @@ void AppListFolderView::StartSetupDragInRootLevelAppsGridView(
   // root level grid view.
   gfx::RectF rect_f(original_drag_view->bounds());
   views::View::ConvertRectToTarget(items_grid_view_,
-                                   container_view_->apps_grid_view(), &rect_f);
+                                   container_view_->apps_grid_view(),
+                                   &rect_f);
   gfx::Rect rect_in_root_grid_view = gfx::ToEnclosingRect(rect_f);
 
   container_view_->apps_grid_view()
-      ->InitiateDragFromReparentItemInRootLevelGridView(
-          original_drag_view, rect_in_root_grid_view, drag_point_in_root_grid,
-          has_native_drag);
+      ->InitiateDragFromReparentItemInRootLevelGridView(original_drag_view,
+                                                        rect_in_root_grid_view,
+                                                        drag_point_in_root_grid,
+                                                        has_native_drag);
 }
 
 gfx::Rect AppListFolderView::GetItemIconBoundsAt(int index) {
@@ -247,8 +256,8 @@ void AppListFolderView::UpdateFolderViewBackground(bool show_bubble) {
     UpdateFolderNameVisibility(false);
 
   container_view_->folder_background_view()->UpdateFolderContainerBubble(
-      show_bubble ? FolderBackgroundView::SHOW_BUBBLE
-                  : FolderBackgroundView::HIDE_BUBBLE);
+      show_bubble ? FolderBackgroundView::SHOW_BUBBLE :
+                    FolderBackgroundView::HIDE_BUBBLE);
 }
 
 void AppListFolderView::UpdateFolderNameVisibility(bool visible) {
@@ -266,8 +275,8 @@ bool AppListFolderView::IsPointOutsideOfFolderBoundary(
 
   gfx::Point center = GetLocalBounds().CenterPoint();
   float delta = (point - center).Length();
-  return delta >
-         kFolderBackgroundBubbleRadius + kOutOfFolderContainerBubbleDelta;
+  return delta > container_view_->folder_background_view()->
+      GetFolderContainerBubbleRadius() + kOutOfFolderContainerBubbleDelta;
 }
 
 // When user drags a folder item out of the folder boundary ink bubble, the
@@ -287,10 +296,11 @@ void AppListFolderView::ReparentItem(
     bool has_native_drag) {
   // Convert the drag point relative to the root level AppsGridView.
   gfx::Point to_root_level_grid = drag_point_in_folder_grid;
-  ConvertPointToTarget(items_grid_view_, container_view_->apps_grid_view(),
+  ConvertPointToTarget(items_grid_view_,
+                       container_view_->apps_grid_view(),
                        &to_root_level_grid);
-  StartSetupDragInRootLevelAppsGridView(original_drag_view, to_root_level_grid,
-                                        has_native_drag);
+  StartSetupDragInRootLevelAppsGridView(
+      original_drag_view, to_root_level_grid, has_native_drag);
   container_view_->ReparentFolderItemTransit(folder_item_);
 }
 

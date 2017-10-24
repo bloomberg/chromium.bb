@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/app_list/app_list_features.h"
 #include "ui/app_list/resources/grit/app_list_resources.h"
 #include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -69,7 +70,8 @@ void AllAppsTileItemView::ButtonPressed(views::Button* sender,
                             AppListModel::STATE_LAST);
 
   contents_view_->SetActiveState(AppListModel::STATE_APPS);
-  app_list_view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
+  if (features::IsFullscreenAppListEnabled())
+    app_list_view_->SetState(AppListView::FULLSCREEN_ALL_APPS);
 }
 
 }  // namespace app_list
