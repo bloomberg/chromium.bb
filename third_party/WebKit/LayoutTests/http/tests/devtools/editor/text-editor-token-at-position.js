@@ -1,10 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Test editor tokenAtTextPosition method.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   var text =
       ['function foo(a, b) {', '    var f = /.a/.test(a); /*', 'this is a comment */', '    return f + "looongword";'];
 
@@ -34,14 +36,4 @@ function test() {
       }
     },
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Test editor tokenAtTextPosition method.
-</p>
-</body>
-</html>
+})();

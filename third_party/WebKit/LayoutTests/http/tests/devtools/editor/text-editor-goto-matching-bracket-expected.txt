@@ -5,6 +5,7 @@ function MyClass(a, b)
     console.log("Test");
 }
 
+
 Running: testSingleCursorFromOutsideOpenBracket
 function.MyClass(a,.b)|
 {

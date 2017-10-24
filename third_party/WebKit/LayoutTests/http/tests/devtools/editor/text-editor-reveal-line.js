@@ -1,9 +1,12 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
-function test() {
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`This test checks that text editor's revealLine centers line where needed.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   var out = TestRunner.addResult;
   var textEditor = SourcesTestRunner.createTestEditor(500);
   textEditor.setMimeType('text/javascript');
@@ -34,15 +37,4 @@ function test() {
     out('\n');
   }
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-This test checks that text editor's revealLine centers line where needed.
-</p>
-
-</body>
-</html>
+})();

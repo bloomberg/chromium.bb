@@ -1,13 +1,23 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
-function codeSnippet() {
-    return document.getElementById("codeSnippet").textContent;
-}
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`This test verifies that auto-appended spaces are removed on consequent enters.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+<pre id="codeSnippet">function (){}
+    if (a == b) {
+</pre>
+  `);
+  await TestRunner.dumpInspectedPageElementText('#codeSnippet');
+  await TestRunner.evaluateInPagePromise(`
+      function codeSnippet() {
+          return document.getElementById("codeSnippet").textContent;
+      }
+  `);
+
   var textEditor = SourcesTestRunner.createTestEditor();
   textEditor.setMimeType('text/javascript');
   textEditor.setReadOnly(false);
@@ -75,20 +85,4 @@ function test() {
       }
     },
   ];
-}
-
-</script>
-</head>
-
-<body onload="runTest();">
-<p>
-This test verifies that auto-appended spaces are removed on consequent enters.
-</p>
-
-<pre id="codeSnippet">
-function (){}
-    if (a == b) {
-</pre>
-
-</body>
-</html>
+})();

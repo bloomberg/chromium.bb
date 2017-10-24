@@ -1,13 +1,46 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
-function codeSnippet() {
-    return document.getElementById("codeSnippet").textContent;
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+(async function() {
+  TestRunner.addResult(`This test verifies Ctrl-D functionality, which selects next occurrence of word.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+  await TestRunner.loadHTML(`
+<pre id="codeSnippet">function wordData() {
+    return {
+        original: $(&quot;.entry.original &gt; .input&quot;).text(),
+        translation: $(&quot;.entry.translation &gt; .input&quot;).text(),
+        tags: $(&quot;.active-tags &gt; .tagcloud &gt; .tag&quot;).toArray().map(function(value) { return value.textContent; })
+    };
 }
 
-function test() {
+function submitWord(url) {
+    var stub = new App.Stub($(&quot;.content&quot;));
+    $.post(url, wordData())
+    .done(function() {
+        var callback = $(&quot;meta[data-callback]&quot;).attr(&quot;data-callback&quot;);
+        if (callback) {
+            window.location = callback;
+        } else {
+            stub.success();
+            $(&quot;.entry.original &gt; .input&quot;).text(&quot;&quot;).focus();
+            $(&quot;.entry.translation &gt; .input&quot;).text(&quot;&quot;);
+        }
+    })
+    .fail(function(obj, err, errDescr) {
+        stub.failure(&quot;Error: &quot; + errDescr);
+    })
+}
+</pre>
+`);
+  await TestRunner.dumpInspectedPageElementText('#codeSnippet');
+  await TestRunner.evaluateInPagePromise(`
+      function codeSnippet() {
+          return document.getElementById("codeSnippet").textContent;
+      }
+  `);
+
   var textEditor = SourcesTestRunner.createTestEditor();
   textEditor.setMimeType('text/javascript');
   textEditor.setReadOnly(false);
@@ -95,43 +128,4 @@ function test() {
       next();
     },
   ];
-}
-
-</script>
-</head>
-
-<body onload="runTest();">
-<p>
-This test verifies Ctrl-D functionality, which selects next occurrence of word.
-</p>
-
-<pre id="codeSnippet">
-function wordData() {
-    return {
-        original: $(".entry.original > .input").text(),
-        translation: $(".entry.translation > .input").text(),
-        tags: $(".active-tags > .tagcloud > .tag").toArray().map(function(value) { return value.textContent; })
-    };
-}
-
-function submitWord(url) {
-    var stub = new App.Stub($(".content"));
-    $.post(url, wordData())
-    .done(function() {
-        var callback = $("meta[data-callback]").attr("data-callback");
-        if (callback) {
-            window.location = callback;
-        } else {
-            stub.success();
-            $(".entry.original > .input").text("").focus();
-            $(".entry.translation > .input").text("");
-        }
-    })
-    .fail(function(obj, err, errDescr) {
-        stub.failure("Error: " + errDescr);
-    })
-}
-</pre>
-
-</body>
-</html>
+})();

@@ -1,10 +1,13 @@
-<html>
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../resources/editor-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(
+      `This test checks that line endings are inferred from the initial text content, not incremental editing.\n`);
+  await TestRunner.loadModule('sources_test_runner');
+  await TestRunner.showPanel('sources');
+
   TestRunner.runTestSuite([
     function testCRInitial(next) {
       var textEditor = SourcesTestRunner.createTestEditor();
@@ -36,15 +39,4 @@ function test() {
       next();
     }
   ]);
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-This test checks that line endings are inferred from the initial text content, not incremental editing.
-</p>
-
-</body>
-</html>
+})();
