@@ -76,13 +76,14 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'type': 'group',
             'caption': 'Caption of main.',
             'desc': 'Description of main.',
-            'policies': [{
-              'name': 'MainPolicy',
-              'type': 'main',
-              'supported_on': ['chrome.mac:8-'],
-              'caption': 'Caption of main policy.',
-              'desc': 'Description of main policy.',
-            }],
+            'policies': ['MainPolicy'],
+          },
+          {
+            'name': 'MainPolicy',
+            'type': 'main',
+            'supported_on': ['chrome.mac:8-'],
+            'caption': 'Caption of main policy.',
+            'desc': 'Description of main policy.',
           },
         ],
         'placeholders': [],
@@ -116,14 +117,15 @@ class PListStringsWriterUnittest(writer_unittest_common.WriterUnittestCommon):
             'caption': 'Caption of group.',
             'desc': """Description of group.
 With a newline.""",
-            'policies': [{
-              'name': 'StringPolicy',
-              'type': 'string',
-              'caption': 'Caption of policy.',
-              'desc': """Description of policy.
+            'policies': ['StringPolicy'],
+          },
+          {
+            'name': 'StringPolicy',
+            'type': 'string',
+            'caption': 'Caption of policy.',
+            'desc': """Description of policy.
 With a newline.""",
-              'supported_on': ['chrome.mac:8-'],
-            }],
+            'supported_on': ['chrome.mac:8-'],
           },
         ],
         'placeholders': [],
@@ -156,18 +158,19 @@ With a newline.""",
             'type': 'group',
             'caption': '',
             'desc': '',
-            'policies': [{
-              'name': 'ListPolicy',
-              'type': 'list',
-              'caption': 'Caption of policy.',
-              'desc': """Description of policy.
+            'policies': ['ListPolicy'],
+          },
+          {
+            'name': 'ListPolicy',
+            'type': 'list',
+            'caption': 'Caption of policy.',
+            'desc': """Description of policy.
 With a newline.""",
-              'schema': {
-                  'type': 'array',
-                  'items': { 'type': 'string' },
-              },
-              'supported_on': ['chrome.mac:8-'],
-            }],
+            'schema': {
+                'type': 'array',
+                'items': { 'type': 'string' },
+            },
+            'supported_on': ['chrome.mac:8-'],
           },
         ],
         'placeholders': [],
@@ -200,30 +203,31 @@ With a newline.""",
             'type': 'group',
             'caption': '',
             'desc': '',
-            'policies': [{
-              'name': 'EnumPolicy',
-              'type': 'string-enum-list',
-              'caption': 'Caption of policy.',
-              'desc': """Description of policy.
+            'policies': ['EnumPolicy'],
+          },
+          {
+            'name': 'EnumPolicy',
+            'type': 'string-enum-list',
+            'caption': 'Caption of policy.',
+            'desc': """Description of policy.
 With a newline.""",
-              'schema': {
-                  'type': 'array',
-                  'items': { 'type': 'string' },
+            'schema': {
+                'type': 'array',
+                'items': { 'type': 'string' },
+            },
+            'items': [
+              {
+                'name': 'ProxyServerDisabled',
+                'value': 'one',
+                'caption': 'Option1'
               },
-              'items': [
-                {
-                  'name': 'ProxyServerDisabled',
-                  'value': 'one',
-                  'caption': 'Option1'
-                },
-                {
-                  'name': 'ProxyServerAutoDetect',
-                  'value': 'two',
-                  'caption': 'Option2'
-                },
-              ],
-              'supported_on': ['chrome.mac:8-'],
-            }],
+              {
+                'name': 'ProxyServerAutoDetect',
+                'value': 'two',
+                'caption': 'Option2'
+              },
+            ],
+            'supported_on': ['chrome.mac:8-'],
           },
         ],
         'placeholders': [],
@@ -257,25 +261,26 @@ With a newline.""",
             'type': 'group',
             'desc': '',
             'caption': '',
-            'policies': [{
-              'name': 'EnumPolicy',
-              'type': 'int-enum',
-              'desc': 'Description of policy.',
-              'caption': 'Caption of policy.',
-              'items': [
-                {
-                  'name': 'ProxyServerDisabled',
-                  'value': 0,
-                  'caption': 'Option1'
-                },
-                {
-                  'name': 'ProxyServerAutoDetect',
-                  'value': 1,
-                  'caption': 'Option2'
-                },
-              ],
-              'supported_on': ['chrome.mac:8-'],
-            }],
+            'policies': ['EnumPolicy'],
+          },
+          {
+            'name': 'EnumPolicy',
+            'type': 'int-enum',
+            'desc': 'Description of policy.',
+            'caption': 'Caption of policy.',
+            'items': [
+              {
+                'name': 'ProxyServerDisabled',
+                'value': 0,
+                'caption': 'Option1'
+              },
+              {
+                'name': 'ProxyServerAutoDetect',
+                'value': 1,
+                'caption': 'Option2'
+              },
+            ],
+            'supported_on': ['chrome.mac:8-'],
           },
         ],
         'placeholders': [],
@@ -309,25 +314,26 @@ With a newline.""",
             'type': 'group',
             'desc': '',
             'caption': '',
-            'policies': [{
-              'name': 'EnumPolicy',
-              'type': 'string-enum',
-              'desc': 'Description of policy.',
-              'caption': 'Caption of policy.',
-              'items': [
-                {
-                  'name': 'ProxyServerDisabled',
-                  'value': 'one',
-                  'caption': 'Option1'
-                },
-                {
-                  'name': 'ProxyServerAutoDetect',
-                  'value': 'two',
-                  'caption': 'Option2'
-                },
-              ],
-              'supported_on': ['chrome.mac:8-'],
-            }],
+            'policies': ['EnumPolicy'],
+          },
+          {
+            'name': 'EnumPolicy',
+            'type': 'string-enum',
+            'desc': 'Description of policy.',
+            'caption': 'Caption of policy.',
+            'items': [
+              {
+                'name': 'ProxyServerDisabled',
+                'value': 'one',
+                'caption': 'Option1'
+              },
+              {
+                'name': 'ProxyServerAutoDetect',
+                'value': 'two',
+                'caption': 'Option2'
+              },
+            ],
+            'supported_on': ['chrome.mac:8-'],
           },
         ],
         'placeholders': [],
@@ -362,13 +368,14 @@ With a newline.""",
             'type': 'group',
             'caption': '',
             'desc': '',
-            'policies': [{
-              'name': 'NonMacPolicy',
-              'type': 'string',
-              'caption': '',
-              'desc': '',
-              'supported_on': ['chrome_os:8-'],
-            }],
+            'policies': ['NonMacPolicy'],
+          },
+          {
+            'name': 'NonMacPolicy',
+            'type': 'string',
+            'caption': '',
+            'desc': '',
+            'supported_on': ['chrome_os:8-'],
           },
         ],
         'placeholders': [],

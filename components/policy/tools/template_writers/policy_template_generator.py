@@ -46,6 +46,8 @@ class PolicyTemplateGenerator:
     for key in self._messages.keys():
       self._messages[key]['text'] = self._ImportMessage(
           self._messages[key]['text'])
+    self._policy_data['policy_definitions'] = self._ExpandGroups(
+        self._policy_data['policy_definitions'])
     self._policy_definitions = self._policy_data['policy_definitions']
     self._ProcessPolicyList(self._policy_definitions)
 
@@ -155,3 +157,32 @@ class PolicyTemplateGenerator:
     # Create a copy, so that writers can't screw up subsequent writers.
     policy_data_copy = copy.deepcopy(self._policy_data)
     return template_writer.WriteTemplate(policy_data_copy)
+
+  def _ExpandGroups(self, policy_list):
+    '''Replaces policies names inside group definitions for actual policies
+    definitions. If policy does not belong to any group, leave it as is.
+
+    Args:
+      policy_list: A list of policies and groups.
+
+    Returns:
+      Modified policy_list
+    '''
+    groups = [policy for policy in policy_list if policy['type'] == 'group']
+    policies = {policy['name']: policy
+                for policy in policy_list if policy['type'] != 'group'}
+    policies_in_groups = set()
+    result_policies = []
+    for group in groups:
+      group_policies = group['policies']
+      expanded_policies = [policies[policy_name]
+                           for policy_name in group_policies]
+      assert policies_in_groups.isdisjoint(group_policies)
+      policies_in_groups.update(group_policies)
+      group['policies'] = expanded_policies
+      result_policies.append(group)
+
+    result_policies.extend([policy for policy in policy_list
+                            if policy['type'] != 'group' and
+                               policy['name'] not in policies_in_groups])
+    return result_policies

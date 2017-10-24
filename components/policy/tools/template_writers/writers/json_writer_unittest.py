@@ -421,21 +421,23 @@ class JsonWriterUnittest(writer_unittest_common.WriterUnittestCommon):
               "type": "group",
               "caption": "",
               "desc": "",
-              "policies": [{
-                "name": "Policy1",
-                "type": "list",
-                "caption": "Policy One",
-                "desc": "Policy One",
-                "supported_on": ["chrome.linux:8-"],
-                "example_value": ["a", "b"]
-              },{
-                "name": "Policy2",
-                "type": "string",
-                "caption": "Policy Two",
-                "desc": "Policy Two",
-                "supported_on": ["chrome.linux:8-"],
-                "example_value": "c"
-              }],
+              "policies": ["Policy1", "Policy2"],
+            },
+            {
+              "name": "Policy1",
+              "type": "list",
+              "caption": "Policy One",
+              "desc": "Policy One",
+              "supported_on": ["chrome.linux:8-"],
+              "example_value": ["a", "b"]
+            },
+            {
+              "name": "Policy2",
+              "type": "string",
+              "caption": "Policy Two",
+              "desc": "Policy Two",
+              "supported_on": ["chrome.linux:8-"],
+              "example_value": "c"
             },
           ],
           "placeholders": [],
