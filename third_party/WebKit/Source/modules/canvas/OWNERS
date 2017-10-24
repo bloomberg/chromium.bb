@@ -1,6 +1,8 @@
 junov@chromium.org
-senorblanco@chromium.org # canvas*, imagebitmap
-xlai@chromium.org # OffscreenCanvas*
+# canvas, imagebitmap
+senorblanco@chromium.org
+# OffscreenCanvas
+xlai@chromium.org
 
 # TEAM: paint-dev@chromium.org
 # COMPONENT: Blink>Canvas
