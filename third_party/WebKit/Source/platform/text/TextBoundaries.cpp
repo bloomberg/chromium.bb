@@ -90,16 +90,10 @@ int FindNextWordFromIndex(const UChar* chars,
   }
 }
 
-void FindWordBoundary(const UChar* chars,
-                      int len,
-                      int position,
-                      int* start,
-                      int* end) {
+int FindWordStartBoundary(const UChar* chars, int len, int position) {
   TextBreakIterator* it = WordBreakIterator(chars, len);
-  *end = it->following(position);
-  if (*end < 0)
-    *end = it->last();
-  *start = it->previous();
+  it->following(position);
+  return it->previous();
 }
 
 int FindWordEndBoundary(const UChar* chars, int len, int position) {
