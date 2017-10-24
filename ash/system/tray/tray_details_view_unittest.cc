@@ -7,6 +7,7 @@
 #include "ash/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/system_tray.h"
+#include "ash/system/tray/system_tray_bubble.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_header_button.h"

@@ -19,7 +19,7 @@ class View;
 
 namespace ash {
 class SystemTray;
-class SystemTrayBubble;
+class SystemTrayView;
 class TrayItemView;
 
 // Controller for an item in the system tray. Each item can create these views:
@@ -140,7 +140,7 @@ class ASH_EXPORT SystemTrayItem {
 
  private:
   // Accesses uma_type().
-  friend class SystemTrayBubble;
+  friend class SystemTrayView;
 
   UmaType uma_type() const { return uma_type_; }
 

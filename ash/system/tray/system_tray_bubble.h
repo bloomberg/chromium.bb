@@ -10,6 +10,7 @@
 
 #include "ash/login_status.h"
 #include "ash/system/tray/system_tray_item.h"
+#include "ash/system/tray/system_tray_view.h"
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
@@ -17,19 +18,16 @@
 namespace ash {
 class SystemTray;
 class SystemTrayItem;
+class SystemTrayView;
 
 class SystemTrayBubble {
  public:
-  enum BubbleType { BUBBLE_TYPE_DEFAULT, BUBBLE_TYPE_DETAILED };
-
-  SystemTrayBubble(ash::SystemTray* tray,
-                   const std::vector<ash::SystemTrayItem*>& items,
-                   BubbleType bubble_type);
+  SystemTrayBubble(SystemTray* tray, SystemTrayView* view);
   virtual ~SystemTrayBubble();
 
   // Change the items displayed in the bubble.
   void UpdateView(const std::vector<ash::SystemTrayItem*>& items,
-                  BubbleType bubble_type);
+                  SystemTrayView::SystemTrayType system_tray_type);
 
   // Creates |bubble_view_| and a child views for each member of |items_|.
   // Also creates |bubble_wrapper_|. |init_params| may be modified.
@@ -37,10 +35,9 @@ class SystemTrayBubble {
                 LoginStatus login_status,
                 views::TrayBubbleView::InitParams* init_params);
 
-  BubbleType bubble_type() const { return bubble_type_; }
   views::TrayBubbleView* bubble_view() const { return bubble_view_; }
+  SystemTrayView* system_tray_view() const { return system_tray_view_; }
 
-  void DestroyItemViews();
   void BubbleViewDestroyed();
   void StartAutoCloseTimer(int seconds);
   void StopAutoCloseTimer();
@@ -53,20 +50,15 @@ class SystemTrayBubble {
   // ShouldShowShelf().
   bool ShouldShowShelf() const;
 
-  // Records metrics for visible system menu rows. Only implemented for the
-  // BUBBLE_TYPE_DEFAULT BubbleType.
-  void RecordVisibleRowMetrics();
-
  private:
   // Updates the bottom padding of the |bubble_view_| based on the
-  // |bubble_type_|.
+  // |system_tray_type_|.
   void UpdateBottomPadding();
   void CreateItemViews(LoginStatus login_status);
 
   ash::SystemTray* tray_;
+  SystemTrayView* system_tray_view_;
   views::TrayBubbleView* bubble_view_;
-  std::vector<ash::SystemTrayItem*> items_;
-  BubbleType bubble_type_;
 
   // Tracks the views created in the last call to CreateItemViews().
   std::map<SystemTrayItem::UmaType, views::View*> tray_item_view_map_;

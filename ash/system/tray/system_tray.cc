@@ -182,8 +182,8 @@ class SystemBubbleWrapper {
 
   // Convenience accessors:
   SystemTrayBubble* bubble() const { return bubble_.get(); }
-  SystemTrayBubble::BubbleType bubble_type() const {
-    return bubble_->bubble_type();
+  SystemTrayView::SystemTrayType system_tray_type() const {
+    return bubble_->system_tray_view()->system_tray_type();
   }
   TrayBubbleView* bubble_view() const { return bubble_->bubble_view(); }
   bool is_persistent() const { return is_persistent_; }
@@ -210,6 +210,7 @@ SystemTray::SystemTray(Shelf* shelf) : TrayBackgroundView(shelf) {
 SystemTray::~SystemTray() {
   // Destroy any child views that might have back pointers before ~View().
   system_bubble_.reset();
+  system_tray_view_.reset();
   for (const auto& item : items_)
     item->OnTrayViewDestroyed();
 }
@@ -329,7 +330,7 @@ void SystemTray::ShowDetailedView(SystemTrayItem* item,
 }
 
 void SystemTray::SetDetailedViewCloseDelay(int close_delay) {
-  if (HasSystemBubbleType(SystemTrayBubble::BUBBLE_TYPE_DETAILED))
+  if (HasSystemTrayType(SystemTrayView::SYSTEM_TRAY_TYPE_DETAILED))
     system_bubble_->bubble()->StartAutoCloseTimer(close_delay);
 }
 
@@ -399,8 +400,8 @@ void SystemTray::CanSwitchAwayFromActiveUser(
 
 // Private methods.
 
-bool SystemTray::HasSystemBubbleType(SystemTrayBubble::BubbleType type) {
-  return system_bubble_.get() && system_bubble_->bubble_type() == type;
+bool SystemTray::HasSystemTrayType(SystemTrayView::SystemTrayType type) {
+  return system_bubble_.get() && system_bubble_->system_tray_type() == type;
 }
 
 void SystemTray::DestroySystemBubble() {
@@ -426,12 +427,12 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     return;
 
   // Destroy any existing bubble and create a new one.
-  SystemTrayBubble::BubbleType bubble_type =
-      detailed ? SystemTrayBubble::BUBBLE_TYPE_DETAILED
-               : SystemTrayBubble::BUBBLE_TYPE_DEFAULT;
+  SystemTrayView::SystemTrayType system_tray_type =
+      detailed ? SystemTrayView::SYSTEM_TRAY_TYPE_DETAILED
+               : SystemTrayView::SYSTEM_TRAY_TYPE_DEFAULT;
 
   if (system_bubble_.get() && creation_type == BUBBLE_USE_EXISTING) {
-    system_bubble_->bubble()->UpdateView(items, bubble_type);
+    system_bubble_->bubble()->UpdateView(items, system_tray_type);
   } else {
     // Cleanup the existing bubble before showing a new one. Otherwise, it's
     // possible to confuse the new system bubble with the old one during
@@ -461,9 +462,13 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     } else {
       init_params.bg_color = kHeaderBackgroundColor;
     }
-    SystemTrayBubble* bubble = new SystemTrayBubble(this, items, bubble_type);
+    system_tray_view_ =
+        std::make_unique<SystemTrayView>(system_tray_type, items);
+    system_tray_view_->set_owned_by_client();
 
-    system_bubble_.reset(new SystemBubbleWrapper(bubble));
+    SystemTrayBubble* bubble =
+        new SystemTrayBubble(this, system_tray_view_.get());
+    system_bubble_ = std::make_unique<SystemBubbleWrapper>(bubble);
     system_bubble_->InitView(this, GetBubbleAnchor(), GetBubbleAnchorInsets(),
                              &init_params, persistent);
 
@@ -589,7 +594,7 @@ views::TrayBubbleView* SystemTray::GetBubbleView() {
 
 void SystemTray::BubbleViewDestroyed() {
   if (system_bubble_) {
-    system_bubble_->bubble()->DestroyItemViews();
+    system_tray_view_->DestroyItemViews();
     system_bubble_->bubble()->BubbleViewDestroyed();
   }
 }
@@ -641,6 +646,8 @@ void SystemTray::ActivateBubble() {
 
 void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
   system_bubble_.reset();
+  if (system_tray_view_)
+    system_tray_view_->DestroyItemViews();
   // When closing a system bubble with the alternate shelf layout, we need to
   // turn off the active tinting of the shelf.
   if (full_system_tray_menu_) {
@@ -651,8 +658,9 @@ void SystemTray::CloseSystemBubbleAndDeactivateSystemTray() {
 
 void SystemTray::RecordSystemMenuMetrics() {
   DCHECK(system_bubble_);
+  DCHECK(system_tray_view_);
 
-  system_bubble_->bubble()->RecordVisibleRowMetrics();
+  system_tray_view_->RecordVisibleRowMetrics();
 
   TrayBubbleView* bubble_view = system_bubble_->bubble_view();
   int num_rows = 0;

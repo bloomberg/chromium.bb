@@ -136,8 +136,8 @@ void ScreenTrayItem::Start(const base::Closure& stop_callback) {
   if (default_view_)
     default_view_->UpdateFromScreenTrayItem();
 
-  if (!system_tray()->HasSystemBubbleType(
-          SystemTrayBubble::BUBBLE_TYPE_DEFAULT)) {
+  if (!system_tray()->HasSystemTrayType(
+          SystemTrayView::SYSTEM_TRAY_TYPE_DEFAULT)) {
     CreateOrUpdateNotification();
   }
 }
