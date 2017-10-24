@@ -34,7 +34,10 @@ namespace media {
 class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
     : public VideoEncodeAccelerator {
  public:
-  MediaFoundationVideoEncodeAccelerator();
+  // If |compatible_with_win7| is true, MediaFoundationVideoEncoderAccelerator
+  // works on Windows 7. Some attributes of the encoder are not supported on old
+  // systems, which may impact the performance or quality of the output.
+  explicit MediaFoundationVideoEncodeAccelerator(bool compatible_with_win7);
 
   // VideoEncodeAccelerator implementation.
   VideoEncodeAccelerator::SupportedProfiles GetSupportedProfiles() override;
@@ -111,6 +114,8 @@ class MEDIA_GPU_EXPORT MediaFoundationVideoEncodeAccelerator
 
   // Releases resources encoder holds.
   void ReleaseEncoderResources();
+
+  const bool compatible_with_win7_;
 
   // Bitstream buffers ready to be used to return encoded output as a FIFO.
   base::circular_deque<std::unique_ptr<BitstreamBufferRef>>

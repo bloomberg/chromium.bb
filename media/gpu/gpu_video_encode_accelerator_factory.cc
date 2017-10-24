@@ -62,9 +62,16 @@ std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
 #endif
 
 #if defined(OS_WIN)
+// Creates a MediaFoundationVEA for Windows 8 or above only.
 std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA() {
   return base::WrapUnique<VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator());
+      new MediaFoundationVideoEncodeAccelerator(false));
+}
+
+// Creates a MediaFoundationVEA compatible with Windows 7.
+std::unique_ptr<VideoEncodeAccelerator> CreateCompatibleMediaFoundationVEA() {
+  return base::WrapUnique<VideoEncodeAccelerator>(
+      new MediaFoundationVideoEncodeAccelerator(true));
 }
 #endif
 
@@ -91,8 +98,13 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
   vea_factory_functions.push_back(&CreateVTVEA);
 #endif
 #if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding))
-    vea_factory_functions.push_back(&CreateMediaFoundationVEA);
+  if (base::FeatureList::IsEnabled(kMediaFoundationH264Encoding)) {
+    if (gpu_preferences.enable_media_foundation_vea_on_windows7) {
+      vea_factory_functions.push_back(&CreateCompatibleMediaFoundationVEA);
+    } else {
+      vea_factory_functions.push_back(&CreateMediaFoundationVEA);
+    }
+  }
 #endif
   return vea_factory_functions;
 }

@@ -25,10 +25,13 @@ struct GpuPreferences {
 
   bool disable_web_rtc_hw_encoding;
 
+  // TODO(http://crbug.com/676224) Support preprocessing of mojoms. Following
+  // variables should be used on Windows only.
   VpxDecodeVendors enable_accelerated_vpx_decode;
   bool enable_low_latency_dxva;
   bool enable_zero_copy_dxgi_video;
   bool enable_nv12_dxgi_video;
+  bool enable_media_foundation_vea_on_windows7;
 
   bool compile_shader_always_succeeds;
   bool disable_gl_error_limit;
