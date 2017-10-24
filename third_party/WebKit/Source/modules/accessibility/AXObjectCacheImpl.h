@@ -154,7 +154,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void ChildrenChanged(AXObject*, Node* node_for_relation_update = nullptr);
 
   void HandleActiveDescendantChanged(Node*);
-  void HandleAriaRoleChanged(Node*);
+  void HandlePossibleRoleChange(Node*);
   void HandleAriaExpandedChange(Node*);
   void HandleAriaSelectedChanged(Node*);
 
@@ -260,6 +260,9 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Called when we get an updated AOM event listener permission value from
   // the browser.
   void OnPermissionStatusChange(mojom::PermissionStatus);
+
+  // Must be called an entire subtree of accessible objects are no longer valid.
+  void InvalidateTableSubtree(AXObject* subtree);
 
   // Whether the user has granted permission for the user to install event
   // listeners for accessibility events using the AOM.

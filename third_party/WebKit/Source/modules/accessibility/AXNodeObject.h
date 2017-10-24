@@ -206,7 +206,6 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void ChildrenChanged() override;
   void SelectionChanged() final;
   void TextChanged() override;
-  void UpdateAccessibilityRole() final;
 
   // Position in set and Size of set
   int PosInSet() const override;

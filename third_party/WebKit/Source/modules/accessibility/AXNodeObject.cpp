@@ -2359,16 +2359,6 @@ void AXNodeObject::TextChanged() {
   }
 }
 
-void AXNodeObject::UpdateAccessibilityRole() {
-  role_ = DetermineAccessibilityRole();
-  bool ignored_status = AccessibilityIsIgnored();
-
-  // The AX hierarchy only needs to be updated if the ignored status of an
-  // element has changed.
-  if (ignored_status != AccessibilityIsIgnored())
-    ChildrenChanged();
-}
-
 void AXNodeObject::ComputeAriaOwnsChildren(
     HeapVector<Member<AXObject>>& owned_children) const {
   Vector<String> id_vector;

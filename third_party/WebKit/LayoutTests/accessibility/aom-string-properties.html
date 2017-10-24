@@ -168,8 +168,10 @@ test(function(t) {
     var axNode = accessibilityController.accessibleElementById("role");
     assert_equals(axNode.role, "AXRole: AXButton");
     node.accessibleNode.role = "combobox";
+    axNode = accessibilityController.accessibleElementById("role");
     assert_equals(axNode.role, "AXRole: AXComboBox");
     node.accessibleNode.role = "banana button";
+    axNode = accessibilityController.accessibleElementById("role");
     assert_equals(axNode.role, "AXRole: AXButton");
 }, "AccessibleNode.role");
 </script>
