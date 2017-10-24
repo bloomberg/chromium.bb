@@ -195,7 +195,9 @@ HTMLMapElement* TreeScope::GetImageMap(const String& url) const {
       image_maps_by_name_->GetElementByMapName(AtomicString(name), *this));
 }
 
-static bool PointWithScrollAndZoomIfPossible(const Document& document,
+// If the point is not in the viewport, returns false. Otherwise, adjusts the
+// point to account for the frame's zoom and scroll.
+static bool PointWithScrollAndZoomIfPossible(Document& document,
                                              IntPoint& point) {
   LocalFrame* frame = document.GetFrame();
   if (!frame)
@@ -203,6 +205,9 @@ static bool PointWithScrollAndZoomIfPossible(const Document& document,
   LocalFrameView* frame_view = frame->View();
   if (!frame_view)
     return false;
+
+  // The visibleContentRect check below requires that scrollbars are up-to-date.
+  document.UpdateStyleAndLayoutIgnorePendingStylesheets();
 
   FloatPoint point_in_document(point);
   point_in_document.Scale(frame->PageZoomFactor(), frame->PageZoomFactor());
@@ -216,15 +221,15 @@ static bool PointWithScrollAndZoomIfPossible(const Document& document,
   return true;
 }
 
-HitTestResult HitTestInDocument(const Document* document,
+HitTestResult HitTestInDocument(Document* document,
                                 int x,
                                 int y,
                                 const HitTestRequest& request) {
-  IntPoint hit_point(x, y);
-  if (!PointWithScrollAndZoomIfPossible(*document, hit_point))
+  if (!document->IsActive())
     return HitTestResult();
 
-  if (!document->IsActive())
+  IntPoint hit_point(x, y);
+  if (!PointWithScrollAndZoomIfPossible(*document, hit_point))
     return HitTestResult();
 
   HitTestResult result(request, hit_point);
