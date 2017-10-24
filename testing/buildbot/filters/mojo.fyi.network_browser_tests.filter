@@ -2229,3 +2229,12 @@
 -UnloadTest.CrossSiteInfiniteBeforeUnloadAsync
 -UnloadTest.CrossSiteInfiniteUnloadAsync
 -UnloadTest.CrossSiteInfiniteUnloadSync
+
+# crbug.com/777993
+-ManifestVerifierBrowserTest.OneSupportedOrigin
+-PaymentManifestParserTest.AllOriginsSupported
+-ManifestVerifierBrowserTest.BobPayHandlerCanUseMethodThatSupportsAllOrigins
+-ManifestVerifierBrowserTest.ThreeTypesOfMethods
+-PaymentManifestParserTest.UrlsAndOrigins
+-PaymentManifestParserTest.WebAppManifest
+-ManifestVerifierBrowserTest.Handler404CanUseMethodThatSupportsAllOrigins
