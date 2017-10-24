@@ -208,7 +208,8 @@ void DevToolsEmulator::EnableDeviceEmulation(
       emulation_params_.screen_position == params.screen_position &&
       emulation_params_.device_scale_factor == params.device_scale_factor &&
       emulation_params_.scale == params.scale &&
-      emulation_params_.viewport_offset == params.viewport_offset) {
+      emulation_params_.viewport_offset == params.viewport_offset &&
+      emulation_params_.viewport_scale == params.viewport_scale) {
     return;
   }
   if (emulation_params_.device_scale_factor != params.device_scale_factor ||
