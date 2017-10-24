@@ -11,13 +11,13 @@
 #include "modules/csspaint/CSSPaintDefinition.h"
 #include "modules/csspaint/PaintWorkletGlobalScope.h"
 #include "platform/graphics/Image.h"
+#include "platform/wtf/CryptographicallyRandomNumber.h"
 
 namespace blink {
 
 const size_t PaintWorklet::kNumGlobalScopes = 2u;
+const size_t kMaxPaintCountToSwitch = 30u;
 DocumentPaintDefinition* const kInvalidDocumentDefinition = nullptr;
-// We use each global scope for many frames to try to maximize cache hits.
-const size_t kFrameCountToSwitch = 120u;
 
 // static
 PaintWorklet* PaintWorklet::From(LocalDOMWindow& window) {
@@ -47,13 +47,43 @@ void PaintWorklet::AddPendingGenerator(const String& name,
   pending_generator_registry_->AddPendingGenerator(name, generator);
 }
 
-// For this document, we try to check how many times there is a repaint, which
-// represents how many frames have executed this paint function. Then for every
-// 120 frames, we switch to another global scope, to enforce the constraint that
-// we can't rely on the state of the paint worklet global scope.
-size_t PaintWorklet::SelectGlobalScope() const {
+// We start with a random global scope when a new frame starts. Then within this
+// frame, we switch to the other global scope after certain amount of paint
+// calls (rand(kMaxPaintCountToSwitch)).
+// This approach ensures non-deterministic of global scope selecting, and that
+// there is a max of one switching within one frame.
+size_t PaintWorklet::SelectGlobalScope() {
   size_t current_paint_frame_count = GetFrame()->View()->PaintFrameCount();
-  return (current_paint_frame_count / kFrameCountToSwitch) % kNumGlobalScopes;
+  // Whether a new frame starts or not.
+  bool frame_changed = current_paint_frame_count != active_frame_count_;
+  if (frame_changed) {
+    paints_before_switching_global_scope_ = GetPaintsBeforeSwitching();
+    active_frame_count_ = current_paint_frame_count;
+  }
+  // We switch when |paints_before_switching_global_scope_| is 1 instead of 0
+  // because the var keeps decrementing and stays at 0.
+  if (frame_changed || paints_before_switching_global_scope_ == 1)
+    active_global_scope_ = SelectNewGlobalScope();
+  if (paints_before_switching_global_scope_ > 0)
+    paints_before_switching_global_scope_--;
+  return active_global_scope_;
+}
+
+int PaintWorklet::GetPaintsBeforeSwitching() {
+  // TODO(xidachen): Try not to reset |paints_before_switching_global_scope_|
+  // every frame. For example, if one frame typically has ~5 paint, then we can
+  // switch to another global scope after few frames where the accumulated
+  // number of paint calls during these frames reached the
+  // |paints_before_switching_global_scope_|.
+  // TODO(xidachen): Try to set |paints_before_switching_global_scope_|
+  // according to the actual paints per frame. For example, if we found that
+  // there are typically ~1000 paints in each frame, we'd want to set the number
+  // to average at 500.
+  return CryptographicallyRandomNumber() % kMaxPaintCountToSwitch;
+}
+
+size_t PaintWorklet::SelectNewGlobalScope() {
+  return CryptographicallyRandomNumber() % kNumGlobalScopes;
 }
 
 scoped_refptr<Image> PaintWorklet::Paint(const String& name,
