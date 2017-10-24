@@ -200,7 +200,7 @@ def main():
         args.dry_run, bootdata=args.bootdata,
         summary_output=args.test_launcher_summary_output,
         shutdown_machine=True, target_cpu=args.target_cpu,
-        use_device=args.device)
+        use_device=args.device, use_autorun=True)
     if not bootfs:
       return 2
 

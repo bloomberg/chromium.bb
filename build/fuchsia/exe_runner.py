@@ -39,6 +39,8 @@ def main():
   parser.add_argument('--kernel', type=os.path.realpath,
                       help='Path to a kernel to use instead of the default '
                            'one from the SDK')
+  parser.add_argument('--no-autorun', action='store_true',
+                      help='Disable generating an autorun file')
   args, child_args = parser.parse_known_args()
 
   bootfs = BuildBootfs(
@@ -46,7 +48,7 @@ def main():
       ReadRuntimeDeps(args.runtime_deps_path, args.output_directory),
       args.exe_name, child_args, args.dry_run, args.bootdata,
       summary_output=None, shutdown_machine=False, target_cpu=args.target_cpu,
-      use_device=args.device)
+      use_device=args.device, use_autorun=not args.no_autorun)
   if not bootfs:
     return 2
 
