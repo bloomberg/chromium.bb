@@ -61,7 +61,9 @@ cast_test_group("cast_tests") {
     tests += [ "//chromecast/crash:cast_crash_unittests" ]
   }
 
-  tests += [ "//chromecast/media/cma/backend:cast_audio_backend_unittests" ]
+  if (is_linux || is_fuchsia) {
+    tests += [ "//chromecast/media/cma/backend:cast_audio_backend_unittests" ]
+  }
 
   if (!is_android) {
     tests += [
