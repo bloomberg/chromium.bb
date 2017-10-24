@@ -413,11 +413,15 @@ int put_motion_vectors(char *buffer) {
 }
 
 int put_block_info(char *buffer, const map_entry *map, const char *name,
-                   size_t offset) {
+                   size_t offset, int len) {
   const int mi_rows = frame_data.mi_rows;
   const int mi_cols = frame_data.mi_cols;
   char *buf = buffer;
-  int r, c, t, v;
+  int r, c, t, i;
+  if (compress && len == 1) {
+    die("Can't encode scalars as arrays when RLE compression is enabled.");
+    return -1;
+  }
   if (map) {
     buf += snprintf(buf, MAX_BUFFER, "  \"%sMap\": {", name);
     buf += put_map(buf, map);
@@ -427,13 +431,36 @@ int put_block_info(char *buffer, const map_entry *map, const char *name,
   for (r = 0; r < mi_rows; ++r) {
     *(buf++) = '[';
     for (c = 0; c < mi_cols; ++c) {
-      insp_mi_data *curr_mi = &frame_data.mi_grid[r * mi_cols + c];
-      v = *(((int8_t *)curr_mi) + offset);
-      buf += put_num(buf, 0, v, 0);
+      insp_mi_data *mi = &frame_data.mi_grid[r * mi_cols + c];
+      int8_t *v = ((int8_t *)mi) + offset;
+      if (len == 0) {
+        buf += put_num(buf, 0, v[0], 0);
+      } else {
+        buf += put_str(buf, "[");
+        for (i = 0; i < len; i++) {
+          buf += put_num(buf, 0, v[i], 0);
+          if (i < len - 1) {
+            buf += put_str(buf, ",");
+          }
+        }
+        buf += put_str(buf, "]");
+      }
       if (compress) {  // RLE
         for (t = c + 1; t < mi_cols; ++t) {
           insp_mi_data *next_mi = &frame_data.mi_grid[r * mi_cols + t];
-          if (v != *(((int8_t *)next_mi) + offset)) {
+          int8_t *nv = ((int8_t *)next_mi) + offset;
+          int same = 0;
+          if (len == 0) {
+            same = v[0] == nv[0];
+          } else {
+            for (i = 0; i < len; i++) {
+              same = v[i] == nv[i];
+              if (!same) {
+                break;
+              }
+            }
+          }
+          if (!same) {
             break;
           }
         }
@@ -504,57 +531,65 @@ void inspect(void *pbi, void *data) {
   buf += put_str(buf, "{\n");
   if (layers & BLOCK_SIZE_LAYER) {
     buf += put_block_info(buf, block_size_map, "blockSize",
-                          offsetof(insp_mi_data, sb_type));
+                          offsetof(insp_mi_data, sb_type), 0);
   }
   if (layers & TRANSFORM_SIZE_LAYER) {
     buf += put_block_info(buf, tx_size_map, "transformSize",
-                          offsetof(insp_mi_data, tx_size));
+                          offsetof(insp_mi_data, tx_size), 0);
   }
   if (layers & TRANSFORM_TYPE_LAYER) {
     buf += put_block_info(buf, tx_type_map, "transformType",
-                          offsetof(insp_mi_data, tx_type));
+                          offsetof(insp_mi_data, tx_type), 0);
   }
 #if CONFIG_DUAL_FILTER
   if (layers & DUAL_FILTER_LAYER) {
     buf += put_block_info(buf, dual_filter_map, "dualFilterType",
-                          offsetof(insp_mi_data, dual_filter_type));
+                          offsetof(insp_mi_data, dual_filter_type), 0);
   }
 #endif
   if (layers & MODE_LAYER) {
     buf += put_block_info(buf, prediction_mode_map, "mode",
-                          offsetof(insp_mi_data, mode));
+                          offsetof(insp_mi_data, mode), 0);
   }
   if (layers & UV_MODE_LAYER) {
     buf += put_block_info(buf, uv_prediction_mode_map, "uv_mode",
-                          offsetof(insp_mi_data, uv_mode));
+                          offsetof(insp_mi_data, uv_mode), 0);
   }
   if (layers & SKIP_LAYER) {
-    buf += put_block_info(buf, skip_map, "skip", offsetof(insp_mi_data, skip));
+    buf +=
+        put_block_info(buf, skip_map, "skip", offsetof(insp_mi_data, skip), 1);
   }
   if (layers & FILTER_LAYER) {
-    buf += put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter));
+#if CONFIG_DUAL_FILTER
+    buf +=
+        put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter), 2);
+#else
+    buf +=
+        put_block_info(buf, NULL, "filter", offsetof(insp_mi_data, filter), 0);
+#endif
   }
 #if CONFIG_CDEF
   if (layers & CDEF_LAYER) {
     buf += put_block_info(buf, NULL, "cdef_level",
-                          offsetof(insp_mi_data, cdef_level));
+                          offsetof(insp_mi_data, cdef_level), 0);
     buf += put_block_info(buf, NULL, "cdef_strength",
-                          offsetof(insp_mi_data, cdef_strength));
+                          offsetof(insp_mi_data, cdef_strength), 0);
   }
 #endif
 #if CONFIG_CFL
   if (layers & CFL_LAYER) {
     buf += put_block_info(buf, NULL, "cfl_alpha_idx",
-                          offsetof(insp_mi_data, cfl_alpha_idx));
+                          offsetof(insp_mi_data, cfl_alpha_idx), 0);
     buf += put_block_info(buf, NULL, "cfl_alpha_sign",
-                          offsetof(insp_mi_data, cfl_alpha_sign));
+                          offsetof(insp_mi_data, cfl_alpha_sign), 0);
   }
 #endif
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
   }
   if (layers & REFERENCE_FRAME_LAYER) {
-    buf += put_reference_frame(buf);
+    buf += put_block_info(buf, refs_map, "referenceFrame",
+                          offsetof(insp_mi_data, ref_frame), 2);
   }
 #if CONFIG_ACCOUNTING
   if (layers & ACCOUNTING_LAYER) {
