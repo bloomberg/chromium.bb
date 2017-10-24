@@ -53,7 +53,7 @@ void ContainerFullWidthBehavior::InitializeShowAnimationStartingState(
 
 const gfx::Rect ContainerFullWidthBehavior::AdjustSetBoundsRequest(
     const gfx::Rect& display_bounds,
-    const gfx::Rect& requested_bounds) const {
+    const gfx::Rect& requested_bounds) {
   gfx::Rect new_bounds;
 
   // Honors only the height of the request bounds
