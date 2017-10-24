@@ -13,6 +13,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/history/history_tab_helper.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/prerender/preload_controller_delegate.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
@@ -218,6 +219,9 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
     Tab* tab = LegacyTabHelper::GetTabForWebState(webState_.get());
     [[tab webController] setNativeProvider:nil];
     [tab setDelegate:nil];
+
+    HistoryTabHelper::FromWebState(webState_.get())
+        ->SetDelayHistoryServiceNotification(false);
   }
 
   return std::move(webState_);
@@ -327,6 +331,9 @@ bool IsPrerenderTabEvictionExperimentalGroup() {
   webState_->SetWebUsageEnabled(true);
   [tab setIsPrerenderTab:YES];
   [tab setDelegate:self];
+
+  HistoryTabHelper::FromWebState(webState_.get())
+      ->SetDelayHistoryServiceNotification(true);
 
   web::NavigationManager::WebLoadParams loadParams(prerenderedURL_);
   loadParams.referrer = scheduledReferrer_;

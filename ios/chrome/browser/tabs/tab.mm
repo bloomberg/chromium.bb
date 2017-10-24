@@ -68,7 +68,6 @@
 #import "ios/chrome/browser/snapshots/snapshot_overlay_provider.h"
 #import "ios/chrome/browser/snapshots/web_controller_snapshot_helper.h"
 #import "ios/chrome/browser/tabs/legacy_tab_helper.h"
-#include "ios/chrome/browser/tabs/tab_constants.h"
 #import "ios/chrome/browser/tabs/tab_delegate.h"
 #import "ios/chrome/browser/tabs/tab_dialog_delegate.h"
 #import "ios/chrome/browser/tabs/tab_headers_delegate.h"
@@ -144,7 +143,6 @@ NSString* const kTabClosingCurrentDocumentNotificationForCrashReporting =
 NSString* const kTabUrlKey = @"url";
 
 namespace {
-class TabHistoryContext;
 class TabInfoBarObserver;
 
 // Returns true if |item| is the result of a HTTP redirect.
@@ -156,17 +154,6 @@ bool IsItemRedirectItem(web::NavigationItem* item) {
   return (ui::PageTransition::PAGE_TRANSITION_IS_REDIRECT_MASK &
           item->GetTransitionType()) == 0;
 }
-
-// TabHistoryContext is used by history to scope the lifetime of navigation
-// entry references to Tab.
-class TabHistoryContext : public history::Context {
- public:
-  TabHistoryContext() {}
-  ~TabHistoryContext() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TabHistoryContext);
-};
 }  // namespace
 
 @interface Tab ()<CRWWebStateObserver,
@@ -177,11 +164,6 @@ class TabHistoryContext : public history::Context {
 
   OpenInController* _openInController;
 
-  // Holds entries that need to be added to the history DB.  Prerender tabs do
-  // not write navigation data to the history DB.  Instead, they cache history
-  // data in this vector and add it to the DB when the prerender status is
-  // removed (when the Tab is swapped in as a real Tab).
-  std::vector<history::HistoryAddPageArgs> _addPageVector;
 
   // YES if this Tab is being prerendered.
   BOOL _isPrerenderTab;
@@ -213,10 +195,6 @@ class TabHistoryContext : public history::Context {
   // Allows Tab to conform CRWWebStateDelegate protocol.
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
 
-  // Context used by history to scope the lifetime of navigation entry
-  // references to Tab.
-  TabHistoryContext _tabHistoryContext;
-
   // Universal Second Factor (U2F) call controller.
   U2FController* _secondFactorController;
 
@@ -229,15 +207,6 @@ class TabHistoryContext : public history::Context {
 
 // Handles caching and retrieving of snapshots.
 @property(nonatomic, strong) SnapshotManager* snapshotManager;
-
-// Saves the current title to the history database.
-- (void)saveTitleToHistoryDB;
-
-// Adds the current session entry to this history database.
-- (void)addCurrentEntryToHistoryDB;
-
-// Adds any cached entries from |_addPageVector| to the history DB.
-- (void)commitCachedEntriesToHistoryDB;
 
 // Returns the OpenInController for this tab.
 - (OpenInController*)openInController;
@@ -456,8 +425,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
     return;
 
   [_fullScreenController moveContentBelowHeader];
-  [self commitCachedEntriesToHistoryDB];
-  [self saveTitleToHistoryDB];
 
   // If the page has finished loading, take a snapshot.  If the page is still
   // loading, do nothing, as CRWWebController will automatically take a
@@ -527,101 +494,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 
   // Forward the new dispatcher to tab helpers.
   PasswordTabHelper::FromWebState(self.webState)->SetDispatcher(_dispatcher);
-}
-
-- (void)saveTitleToHistoryDB {
-  web::WebState* webState = self.webState;
-  HistoryTabHelper* helper = HistoryTabHelper::FromWebState(webState);
-
-  web::NavigationItem* item =
-      webState->GetNavigationManager()->GetLastCommittedItem();
-  if (item) {
-    helper->UpdateHistoryPageTitle(*item);
-  }
-}
-
-- (void)addCurrentEntryToHistoryDB {
-  DCHECK([self navigationManager]->GetVisibleItem());
-  // If incognito, don't update history.
-  if (_browserState->IsOffTheRecord())
-    return;
-
-  web::NavigationItem* item = [self navigationManager]->GetVisibleItem();
-
-  // Do not update the history db for back/forward navigations.
-  // TODO(crbug.com/661667): We do not currently tag the entry with a
-  // FORWARD_BACK transition. Fix.
-  if (item->GetTransitionType() & ui::PAGE_TRANSITION_FORWARD_BACK)
-    return;
-
-  history::HistoryService* historyService =
-      ios::HistoryServiceFactory::GetForBrowserState(
-          _browserState, ServiceAccessType::IMPLICIT_ACCESS);
-  DCHECK(historyService);
-
-  const GURL url(item->GetURL());
-  const web::Referrer& referrer = item->GetReferrer();
-
-// Do not update the history db for data: urls.  This diverges from upstream,
-// but prevents us from dumping huge view-source urls into the history
-// database.  Since view-source is only activated in Debug builds, this check
-// can be Debug-only as well.
-#ifndef NDEBUG
-  if (url.scheme() == url::kDataScheme)
-    return;
-#endif
-
-  history::RedirectList redirects;
-  GURL originalURL = item->GetOriginalRequestURL();
-  if (item->GetURL() != originalURL) {
-    // Simulate a valid redirect chain in case of URL that have been modified
-    // in |CRWWebController finishHistoryNavigationFromEntry:|.
-    const std::string& urlSpec = item->GetURL().spec();
-    size_t urlSpecLength = urlSpec.size();
-    if (item->GetTransitionType() & ui::PAGE_TRANSITION_CLIENT_REDIRECT ||
-        (urlSpecLength && (urlSpec.at(urlSpecLength - 1) == '#') &&
-         !urlSpec.compare(0, urlSpecLength - 1, originalURL.spec()))) {
-      redirects.push_back(referrer.url);
-    }
-    // TODO(crbug.com/703872): the redirect chain is not constructed the same
-    // way as upstream so this part needs to be revised.
-    redirects.push_back(originalURL);
-    redirects.push_back(url);
-  }
-
-  DCHECK(item->GetTimestamp().ToInternalValue() > 0);
-
-  // Clicks on content suggestions on the NTP should not contribute to the
-  // Most Visited tiles in the NTP.
-  const bool considerForNTPMostVisited =
-      referrer.url != GURL(tab_constants::kDoNotConsiderForMostVisited);
-  history::HistoryAddPageArgs args(
-      url, item->GetTimestamp(), &_tabHistoryContext, item->GetUniqueID(),
-      referrer.url, redirects, item->GetTransitionType(),
-      history::SOURCE_BROWSED, false, considerForNTPMostVisited);
-  if ([self isPrerenderTab]) {
-    _addPageVector.push_back(args);
-  } else {
-    historyService->AddPage(args);
-    [self saveTitleToHistoryDB];
-  }
-}
-
-- (void)commitCachedEntriesToHistoryDB {
-  // If OTR, don't update history.
-  if (_browserState->IsOffTheRecord()) {
-    DCHECK_EQ(0U, _addPageVector.size());
-    return;
-  }
-
-  history::HistoryService* historyService =
-      ios::HistoryServiceFactory::GetForBrowserState(
-          _browserState, ServiceAccessType::IMPLICIT_ACCESS);
-  DCHECK(historyService);
-
-  for (size_t i = 0; i < _addPageVector.size(); ++i)
-    historyService->AddPage(_addPageVector[i]);
-  _addPageVector.clear();
 }
 
 - (void)webDidUpdateSessionForLoadWithURL:(const GURL&)URL {
@@ -784,11 +656,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 - (void)webState:(web::WebState*)webState
     didFinishNavigation:(web::NavigationContext*)navigation {
   if (!navigation->GetError()) {
-    bool is404Page = navigation->GetResponseHeaders() &&
-                     navigation->GetResponseHeaders()->response_code() == 404;
-    if (!is404Page) {
-      [self addCurrentEntryToHistoryDB];
-    }
     [self countMainFrameLoad];
   }
 
@@ -1145,7 +1012,6 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
 }
 
 - (void)webStateDidChangeTitle:(web::WebState*)webState {
-  [self saveTitleToHistoryDB];
   [_parentTabModel notifyTabChanged:self];
 }
 

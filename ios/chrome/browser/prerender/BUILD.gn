@@ -21,6 +21,7 @@ source_set("prerender") {
     "//components/prefs",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/history:tab_helper",
     "//ios/chrome/browser/net",
     "//ios/chrome/browser/prefs",
     "//ios/chrome/browser/tabs",

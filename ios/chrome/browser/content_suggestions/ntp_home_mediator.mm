@@ -9,12 +9,12 @@
 #include "base/metrics/user_metrics_action.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_alert_factory.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_mediator.h"
 #import "ios/chrome/browser/content_suggestions/content_suggestions_metrics_recorder.h"
 #import "ios/chrome/browser/content_suggestions/ntp_home_metrics.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
-#include "ios/chrome/browser/tabs/tab_constants.h"
 #import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
@@ -133,8 +133,8 @@ const char kRateThisAppCommand[] = "ratethisapp";
 
   // Use a referrer with a specific URL to mark this entry as coming from
   // ContentSuggestions.
-  web::Referrer referrer;
-  referrer.url = GURL(tab_constants::kDoNotConsiderForMostVisited);
+  const web::Referrer referrer(GURL(kNewTabPageReferrerURL),
+                               web::ReferrerPolicyDefault);
 
   [self.dispatcher loadURL:suggestionItem.URL
                   referrer:referrer
