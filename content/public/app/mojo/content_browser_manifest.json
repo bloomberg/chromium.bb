@@ -169,6 +169,24 @@
       "requires": {
         "content_renderer": [ "browser" ]
       }
+    },
+    "navigation:dedicated_worker": {
+      "provides": {
+        "renderer": [
+        ]
+      }
+    },
+    "navigation:service_worker": {
+      "provides": {
+        "renderer": [
+        ]
+      }
+    },
+    "navigation:shared_worker": {
+      "provides": {
+        "renderer": [
+        ]
+      }
     }
   }
 }

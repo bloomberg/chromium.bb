@@ -48,6 +48,7 @@
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/image_capture/image_capture_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
+#include "content/browser/interface_provider_filtering.h"
 #include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_scheduler_filter.h"
@@ -3807,13 +3808,10 @@ bool RenderFrameHostImpl::HasSelection() {
 
 void RenderFrameHostImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest interfaces) {
-  service_manager::Identity child_identity = GetProcess()->GetChildIdentity();
-  service_manager::Connector* connector =
-      BrowserContext::GetConnectorFor(GetProcess()->GetBrowserContext());
-  service_manager::mojom::InterfaceProviderPtr provider;
-  interface_provider_bindings_.AddBinding(this, mojo::MakeRequest(&provider));
-  connector->FilterInterfaces(mojom::kNavigation_FrameSpec, child_identity,
-                              std::move(interfaces), std::move(provider));
+  interface_provider_bindings_.AddBinding(
+      this, FilterRendererExposedInterfaces(mojom::kNavigation_FrameSpec,
+                                            GetProcess()->GetID(),
+                                            std::move(interfaces)));
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

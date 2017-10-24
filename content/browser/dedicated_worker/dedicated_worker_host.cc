@@ -6,6 +6,7 @@
 #include <utility>
 
 #include "content/browser/dedicated_worker/dedicated_worker_host.h"
+#include "content/browser/interface_provider_filtering.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -59,7 +60,9 @@ class DedicatedWorkerFactoryImpl : public blink::mojom::DedicatedWorkerFactory {
     // origin either matches the creating document's origin, or is unique.
     mojo::MakeStrongBinding(
         base::MakeUnique<DedicatedWorkerHost>(process_id_, origin),
-        std::move(request));
+        FilterRendererExposedInterfaces(
+            blink::mojom::kNavigation_DedicatedWorkerSpec, process_id_,
+            std::move(request)));
   }
 
  private:

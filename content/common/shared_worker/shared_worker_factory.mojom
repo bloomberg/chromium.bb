@@ -11,6 +11,11 @@ import "mojo/common/unguessable_token.mojom";
 import "services/service_manager/public/interfaces/interface_provider.mojom";
 import "third_party/WebKit/public/web/worker_content_settings_proxy.mojom";
 
+// The name of the InterfaceProviderSpec in service manifests used by the
+// frame tree to expose shared-worker-specific interfaces between renderer and
+// browser.
+const string kNavigation_SharedWorkerSpec = "navigation:shared_worker";
+
 // This interface is used to instantiate a shared worker. It is exported from a
 // child process where the shared worker should run.
 interface SharedWorkerFactory {

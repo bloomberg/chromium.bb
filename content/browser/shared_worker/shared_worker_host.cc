@@ -8,6 +8,7 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "content/browser/devtools/shared_worker_devtools_manager.h"
+#include "content/browser/interface_provider_filtering.h"
 #include "content/browser/shared_worker/shared_worker_content_settings_proxy_impl.h"
 #include "content/browser/shared_worker/shared_worker_instance.h"
 #include "content/browser/shared_worker/shared_worker_service_impl.h"
@@ -84,7 +85,10 @@ void SharedWorkerHost::Start(mojom::SharedWorkerFactoryPtr factory,
   binding_.Bind(mojo::MakeRequest(&host));
 
   service_manager::mojom::InterfaceProviderPtr interface_provider;
-  interface_provider_binding_.Bind(mojo::MakeRequest(&interface_provider));
+  interface_provider_binding_.Bind(FilterRendererExposedInterfaces(
+      mojom::kNavigation_SharedWorkerSpec, process_id_,
+      mojo::MakeRequest(&interface_provider)));
+
   mojom::SharedWorkerInfoPtr info(mojom::SharedWorkerInfo::New(
       instance_->url(), instance_->name(), instance_->content_security_policy(),
       instance_->content_security_policy_type(),
