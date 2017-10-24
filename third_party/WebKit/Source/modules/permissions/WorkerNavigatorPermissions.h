@@ -23,7 +23,7 @@ class WorkerNavigatorPermissions final
   static WorkerNavigatorPermissions& From(WorkerNavigator&);
   static Permissions* permissions(WorkerNavigator&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   static const char* SupplementName();
