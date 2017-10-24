@@ -886,17 +886,14 @@ void TabInfoBarObserver::OnInfoBarReplaced(infobars::InfoBar* old_infobar,
   if (!navigation->IsSameDocument()) {
     // Reset |isVoiceSearchResultsTab| since a new page is being navigated to.
     self.isVoiceSearchResultsTab = NO;
+    // Move the toolbar to visible during page load.
+    [_fullScreenController disableFullScreen];
   }
 
   if ([self shouldRecordPageLoadStartForNavigation:navigation] &&
       [_parentTabModel tabUsageRecorder] && !_isPrerenderTab) {
     [_parentTabModel tabUsageRecorder]->RecordPageLoadStart(webState);
   }
-
-  // Move the toolbar to visible during page load.
-  // TODO(crbug.com/707305): Do not disable fullscreen for same-document
-  // navigations.
-  [_fullScreenController disableFullScreen];
 
   [self.dialogDelegate cancelDialogForTab:self];
   [_parentTabModel notifyTabChanged:self];
