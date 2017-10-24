@@ -7217,8 +7217,10 @@ interface VRSession : EventTarget
     getter onend
     getter onfocus
     getter onresetpose
+    method cancelFrame
     method constructor
     method end
+    method requestFrame
     method requestFrameOfReference
     setter depthFar
     setter depthNear
