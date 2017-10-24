@@ -85,11 +85,11 @@ std::string GetAutoReplacementTypeAsString(QualType type,
   std::string result = GetAutoReplacementTypeAsString(
       non_reference_type->getPointeeType(), storage_class);
   result += "*";
-  if (non_reference_type.isLocalConstQualified())
+  if (non_reference_type.isConstQualified())
     result += " const";
-  if (non_reference_type.isLocalVolatileQualified())
+  if (non_reference_type.isVolatileQualified())
     result += " volatile";
-  if (type->isReferenceType() && !non_reference_type.isLocalConstQualified()) {
+  if (type->isReferenceType() && !non_reference_type.isConstQualified()) {
     if (type->isLValueReferenceType())
       result += "&";
     else if (type->isRValueReferenceType())
