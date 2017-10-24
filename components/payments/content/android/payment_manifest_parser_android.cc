@@ -74,7 +74,7 @@ class ParseCallback {
 
   // Copies web app manifest into Java.
   void OnWebAppManifestParsed(
-      const std::vector<WebAppManifestSection>& manifest) {
+      std::vector<mojom::WebAppManifestSectionPtr> manifest) {
     DCHECK_GE(100U, manifest.size());
     JNIEnv* env = base::android::AttachCurrentThread();
 
@@ -88,17 +88,17 @@ class ParseCallback {
         Java_PaymentManifestParser_createManifest(env, manifest.size());
 
     for (size_t i = 0; i < manifest.size(); ++i) {
-      const WebAppManifestSection& section = manifest[i];
-      DCHECK_GE(100U, section.fingerprints.size());
+      const mojom::WebAppManifestSectionPtr& section = manifest[i];
+      DCHECK_GE(100U, section->fingerprints.size());
 
       Java_PaymentManifestParser_addSectionToManifest(
           env, jmanifest, base::checked_cast<int>(i),
-          base::android::ConvertUTF8ToJavaString(env, section.id),
-          section.min_version,
-          base::checked_cast<int>(section.fingerprints.size()));
+          base::android::ConvertUTF8ToJavaString(env, section->id),
+          section->min_version,
+          base::checked_cast<int>(section->fingerprints.size()));
 
-      for (size_t j = 0; j < section.fingerprints.size(); ++j) {
-        const std::vector<uint8_t>& fingerprint = section.fingerprints[j];
+      for (size_t j = 0; j < section->fingerprints.size(); ++j) {
+        const std::vector<uint8_t>& fingerprint = section->fingerprints[j];
         Java_PaymentManifestParser_addFingerprintToSection(
             env, jmanifest, base::checked_cast<int>(i),
             base::checked_cast<int>(j),
@@ -123,15 +123,21 @@ PaymentManifestParserAndroid::PaymentManifestParserAndroid() {}
 
 PaymentManifestParserAndroid::~PaymentManifestParserAndroid() {}
 
+void PaymentManifestParserAndroid::StartUtilityProcess(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jcaller) {
+  host_.StartUtilityProcess();
+}
+
 void PaymentManifestParserAndroid::ParsePaymentMethodManifest(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jcontent,
     const base::android::JavaParamRef<jobject>& jcallback) {
-  parser_.ParsePaymentMethodManifest(
+  host_.ParsePaymentMethodManifest(
       base::android::ConvertJavaStringToUTF8(env, jcontent),
       base::BindOnce(&ParseCallback::OnPaymentMethodManifestParsed,
-                     std::make_unique<ParseCallback>(jcallback)));
+                     base::MakeUnique<ParseCallback>(jcallback)));
 }
 
 void PaymentManifestParserAndroid::ParseWebAppManifest(
@@ -139,13 +145,13 @@ void PaymentManifestParserAndroid::ParseWebAppManifest(
     const base::android::JavaParamRef<jobject>& jcaller,
     const base::android::JavaParamRef<jstring>& jcontent,
     const base::android::JavaParamRef<jobject>& jcallback) {
-  parser_.ParseWebAppManifest(
+  host_.ParseWebAppManifest(
       base::android::ConvertJavaStringToUTF8(env, jcontent),
       base::BindOnce(&ParseCallback::OnWebAppManifestParsed,
-                     std::make_unique<ParseCallback>(jcallback)));
+                     base::MakeUnique<ParseCallback>(jcallback)));
 }
 
-void PaymentManifestParserAndroid::DestroyPaymentManifestParserAndroid(
+void PaymentManifestParserAndroid::StopUtilityProcess(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& jcaller) {
   delete this;
