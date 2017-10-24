@@ -21,7 +21,7 @@ namespace crashpad {
 void CaptureContext(CONTEXT* context) {
   // Don't use this file in production.
   CHECK(false)
-      << "Don't use this; for cross builds only, https://crbug.com/762167";
+      << "Don't use this! For cross builds only. See https://crbug.com/762167.";
 }
 
 }  // namespace crashpad

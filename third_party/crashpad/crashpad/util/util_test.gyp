@@ -36,16 +36,18 @@
       ],
       'sources': [
         'file/delimited_file_reader_test.cc',
+        'file/directory_reader_test.cc',
         'file/file_io_test.cc',
         'file/file_reader_test.cc',
+        'file/filesystem_test.cc',
+        'file/filesystem_test_util.cc',
+        'file/filesystem_test_util.h',
         'file/string_file_test.cc',
         'linux/auxiliary_vector_test.cc',
         'linux/memory_map_test.cc',
         'linux/proc_stat_reader_test.cc',
-        'linux/process_memory_range_test.cc',
-        'linux/process_memory_test.cc',
+        'linux/ptracer_test.cc',
         'linux/scoped_ptrace_attach_test.cc',
-        'linux/thread_info_test.cc',
         'mac/launchd_test.mm',
         'mac/mac_util_test.mm',
         'mac/service_management_test.mm',
@@ -81,6 +83,7 @@
         'net/http_body_test_util.h',
         'net/http_multipart_builder_test.cc',
         'net/http_transport_test.cc',
+        'net/url_test.cc',
         'numeric/checked_address_range_test.cc',
         'numeric/checked_range_test.cc',
         'numeric/in_range_cast_test.cc',
@@ -89,6 +92,8 @@
         'posix/scoped_mmap_test.cc',
         'posix/signals_test.cc',
         'posix/symbolic_constants_posix_test.cc',
+        'process/process_memory_range_test.cc',
+        'process/process_memory_test.cc',
         'stdlib/aligned_allocator_test.cc',
         'stdlib/map_insert_test.cc',
         'stdlib/string_number_conversion_test.cc',
@@ -141,6 +146,11 @@
           'sources/' : [
             ['exclude', '^net/http_transport_test\\.cc$'],
           ]
+        }],
+        ['OS!="linux" and OS!="android"', {
+          'sources/': [
+            ['exclude', '^process/'],
+          ],
         }],
       ],
       'target_conditions': [

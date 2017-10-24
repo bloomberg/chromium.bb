@@ -12,10 +12,7 @@ config("compat_config") {
   }
 
   if (is_mac) {
-    include_dirs += [
-      "mac",
-      "non_cxx11_lib",
-    ]
+    include_dirs += [ "mac" ]
   }
 }
 
@@ -30,8 +27,6 @@ static_library("compat") {
       "mac/mach-o/loader.h",
       "mac/mach/mach.h",
       "mac/sys/resource.h",
-      "non_cxx11_lib/type_traits",
-      "non_cxx11_lib/utility",
     ]
   } else {
     sources += [ "non_mac/mach/mach.h" ]
@@ -46,6 +41,7 @@ static_library("compat") {
       "win/time.cc",
       "win/time.h",
       "win/winnt.h",
+      "win/winternl.h",
     ]
   } else {
     sources += [

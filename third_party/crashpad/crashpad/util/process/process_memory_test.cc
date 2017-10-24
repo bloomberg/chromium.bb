@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "util/linux/process_memory.h"
+#include "util/process/process_memory.h"
 
 #include <string.h>
 #include <sys/mman.h>
@@ -26,6 +26,7 @@
 #include "util/file/file_io.h"
 #include "util/misc/from_pointer_cast.h"
 #include "util/posix/scoped_mmap.h"
+#include "util/process/process_memory_linux.h"
 
 namespace crashpad {
 namespace test {
@@ -64,10 +65,10 @@ class ReadTest : public TargetProcessTest {
 
  private:
   void DoTest(pid_t pid) override {
-    ProcessMemory memory;
+    ProcessMemoryLinux memory;
     ASSERT_TRUE(memory.Initialize(pid));
 
-    LinuxVMAddress address = FromPointerCast<LinuxVMAddress>(region_.get());
+    VMAddress address = FromPointerCast<VMAddress>(region_.get());
     std::unique_ptr<char[]> result(new char[region_size_]);
 
     // Ensure that the entire region can be read.
@@ -124,7 +125,7 @@ TEST(ProcessMemory, ReadForked) {
 bool ReadCString(const ProcessMemory& memory,
                  const char* pointer,
                  std::string* result) {
-  return memory.ReadCString(FromPointerCast<LinuxVMAddress>(pointer), result);
+  return memory.ReadCString(FromPointerCast<VMAddress>(pointer), result);
 }
 
 bool ReadCStringSizeLimited(const ProcessMemory& memory,
@@ -132,7 +133,7 @@ bool ReadCStringSizeLimited(const ProcessMemory& memory,
                             size_t size,
                             std::string* result) {
   return memory.ReadCStringSizeLimited(
-      FromPointerCast<LinuxVMAddress>(pointer), size, result);
+      FromPointerCast<VMAddress>(pointer), size, result);
 }
 
 constexpr char kConstCharEmpty[] = "";
@@ -154,7 +155,7 @@ class ReadCStringTest : public TargetProcessTest {
 
  private:
   void DoTest(pid_t pid) override {
-    ProcessMemory memory;
+    ProcessMemoryLinux memory;
     ASSERT_TRUE(memory.Initialize(pid));
 
     std::string result;
@@ -258,11 +259,11 @@ class ReadUnmappedTest : public TargetProcessTest {
 
  private:
   void DoTest(pid_t pid) override {
-    ProcessMemory memory;
+    ProcessMemoryLinux memory;
     ASSERT_TRUE(memory.Initialize(pid));
 
-    LinuxVMAddress page_addr1 = pages_.addr_as<LinuxVMAddress>();
-    LinuxVMAddress page_addr2 = page_addr1 + page_size_;
+    VMAddress page_addr1 = pages_.addr_as<VMAddress>();
+    VMAddress page_addr2 = page_addr1 + page_size_;
 
     EXPECT_TRUE(memory.Read(page_addr1, page_size_, result_.get()));
     EXPECT_TRUE(memory.Read(page_addr2 - 1, 1, result_.get()));
@@ -337,7 +338,7 @@ class ReadCStringUnmappedTest : public TargetProcessTest {
 
  private:
   void DoTest(pid_t pid) {
-    ProcessMemory memory;
+    ProcessMemoryLinux memory;
     ASSERT_TRUE(memory.Initialize(pid));
 
     if (limit_size_) {
