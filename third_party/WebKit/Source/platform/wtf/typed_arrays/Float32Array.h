@@ -34,15 +34,16 @@ namespace WTF {
 
 class Float32Array final : public TypedArrayBase<float> {
  public:
-  static inline RefPtr<Float32Array> Create(unsigned length);
-  static inline RefPtr<Float32Array> Create(const float* array,
-                                            unsigned length);
-  static inline RefPtr<Float32Array> Create(RefPtr<ArrayBuffer>,
-                                            unsigned byte_offset,
-                                            unsigned length);
+  static inline scoped_refptr<Float32Array> Create(unsigned length);
+  static inline scoped_refptr<Float32Array> Create(const float* array,
+                                                   unsigned length);
+  static inline scoped_refptr<Float32Array> Create(scoped_refptr<ArrayBuffer>,
+                                                   unsigned byte_offset,
+                                                   unsigned length);
 
-  static inline RefPtr<Float32Array> CreateOrNull(unsigned length);
-  static inline RefPtr<Float32Array> CreateUninitializedOrNull(unsigned length);
+  static inline scoped_refptr<Float32Array> CreateOrNull(unsigned length);
+  static inline scoped_refptr<Float32Array> CreateUninitializedOrNull(
+      unsigned length);
 
   using TypedArrayBase<float>::Set;
 
@@ -55,37 +56,40 @@ class Float32Array final : public TypedArrayBase<float> {
   ViewType GetType() const override { return kTypeFloat32; }
 
  private:
-  inline Float32Array(RefPtr<ArrayBuffer>,
+  inline Float32Array(scoped_refptr<ArrayBuffer>,
                       unsigned byte_offset,
                       unsigned length);
   // Make constructor visible to superclass.
   friend class TypedArrayBase<float>;
 };
 
-RefPtr<Float32Array> Float32Array::Create(unsigned length) {
+scoped_refptr<Float32Array> Float32Array::Create(unsigned length) {
   return TypedArrayBase<float>::Create<Float32Array>(length);
 }
 
-RefPtr<Float32Array> Float32Array::Create(const float* array, unsigned length) {
+scoped_refptr<Float32Array> Float32Array::Create(const float* array,
+                                                 unsigned length) {
   return TypedArrayBase<float>::Create<Float32Array>(array, length);
 }
 
-RefPtr<Float32Array> Float32Array::Create(RefPtr<ArrayBuffer> buffer,
-                                          unsigned byte_offset,
-                                          unsigned length) {
+scoped_refptr<Float32Array> Float32Array::Create(
+    scoped_refptr<ArrayBuffer> buffer,
+    unsigned byte_offset,
+    unsigned length) {
   return TypedArrayBase<float>::Create<Float32Array>(std::move(buffer),
                                                      byte_offset, length);
 }
 
-RefPtr<Float32Array> Float32Array::CreateOrNull(unsigned length) {
+scoped_refptr<Float32Array> Float32Array::CreateOrNull(unsigned length) {
   return TypedArrayBase<float>::CreateOrNull<Float32Array>(length);
 }
 
-RefPtr<Float32Array> Float32Array::CreateUninitializedOrNull(unsigned length) {
+scoped_refptr<Float32Array> Float32Array::CreateUninitializedOrNull(
+    unsigned length) {
   return TypedArrayBase<float>::CreateUninitializedOrNull<Float32Array>(length);
 }
 
-Float32Array::Float32Array(RefPtr<ArrayBuffer> buffer,
+Float32Array::Float32Array(scoped_refptr<ArrayBuffer> buffer,
                            unsigned byte_offset,
                            unsigned length)
     : TypedArrayBase<float>(std::move(buffer), byte_offset, length) {}

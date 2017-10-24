@@ -184,11 +184,11 @@ class StaticSingleton final {
 // exit.  This macro should be used with ref-counted objects rather than
 // DEFINE_STATIC_LOCAL macro, as this macro does not lead to an extra memory
 // allocation.
-#define DEFINE_STATIC_REF(type, name, arguments) \
-  static type* name = [](RefPtr<type> o) {       \
-    if (o)                                       \
-      o->AddRef();                               \
-    return o.get();                              \
+#define DEFINE_STATIC_REF(type, name, arguments)  \
+  static type* name = [](scoped_refptr<type> o) { \
+    if (o)                                        \
+      o->AddRef();                                \
+    return o.get();                               \
   }(arguments);
 
 /*

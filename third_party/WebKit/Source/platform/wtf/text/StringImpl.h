@@ -173,26 +173,29 @@ class WTF_EXPORT StringImpl {
     return highest_static_string_length_;
   }
 
-  static RefPtr<StringImpl> Create(const UChar*, unsigned length);
-  static RefPtr<StringImpl> Create(const LChar*, unsigned length);
-  static RefPtr<StringImpl> Create8BitIfPossible(const UChar*, unsigned length);
+  static scoped_refptr<StringImpl> Create(const UChar*, unsigned length);
+  static scoped_refptr<StringImpl> Create(const LChar*, unsigned length);
+  static scoped_refptr<StringImpl> Create8BitIfPossible(const UChar*,
+                                                        unsigned length);
   template <size_t inlineCapacity>
-  static RefPtr<StringImpl> Create8BitIfPossible(
+  static scoped_refptr<StringImpl> Create8BitIfPossible(
       const Vector<UChar, inlineCapacity>& vector) {
     return Create8BitIfPossible(vector.data(), vector.size());
   }
 
-  ALWAYS_INLINE static RefPtr<StringImpl> Create(const char* s,
-                                                 unsigned length) {
+  ALWAYS_INLINE static scoped_refptr<StringImpl> Create(const char* s,
+                                                        unsigned length) {
     return Create(reinterpret_cast<const LChar*>(s), length);
   }
-  static RefPtr<StringImpl> Create(const LChar*);
-  ALWAYS_INLINE static RefPtr<StringImpl> Create(const char* s) {
+  static scoped_refptr<StringImpl> Create(const LChar*);
+  ALWAYS_INLINE static scoped_refptr<StringImpl> Create(const char* s) {
     return Create(reinterpret_cast<const LChar*>(s));
   }
 
-  static RefPtr<StringImpl> CreateUninitialized(unsigned length, LChar*& data);
-  static RefPtr<StringImpl> CreateUninitialized(unsigned length, UChar*& data);
+  static scoped_refptr<StringImpl> CreateUninitialized(unsigned length,
+                                                       LChar*& data);
+  static scoped_refptr<StringImpl> CreateUninitialized(unsigned length,
+                                                       UChar*& data);
 
   unsigned length() const { return length_; }
   bool Is8Bit() const { return is8_bit_; }
@@ -297,9 +300,10 @@ class WTF_EXPORT StringImpl {
   // Some string features, like refcounting and the atomicity flag, are not
   // thread-safe. We achieve thread safety by isolation, giving each thread
   // its own copy of the string.
-  RefPtr<StringImpl> IsolatedCopy() const;
+  scoped_refptr<StringImpl> IsolatedCopy() const;
 
-  RefPtr<StringImpl> Substring(unsigned pos, unsigned len = UINT_MAX) const;
+  scoped_refptr<StringImpl> Substring(unsigned pos,
+                                      unsigned len = UINT_MAX) const;
 
   UChar operator[](unsigned i) const {
     SECURITY_DCHECK(i < length_);
@@ -325,34 +329,38 @@ class WTF_EXPORT StringImpl {
   double ToDouble(bool* ok = 0);
   float ToFloat(bool* ok = 0);
 
-  RefPtr<StringImpl> LowerUnicode();
-  RefPtr<StringImpl> LowerASCII();
-  RefPtr<StringImpl> UpperUnicode();
-  RefPtr<StringImpl> UpperASCII();
-  RefPtr<StringImpl> LowerUnicode(const AtomicString& locale_identifier);
-  RefPtr<StringImpl> UpperUnicode(const AtomicString& locale_identifier);
+  scoped_refptr<StringImpl> LowerUnicode();
+  scoped_refptr<StringImpl> LowerASCII();
+  scoped_refptr<StringImpl> UpperUnicode();
+  scoped_refptr<StringImpl> UpperASCII();
+  scoped_refptr<StringImpl> LowerUnicode(const AtomicString& locale_identifier);
+  scoped_refptr<StringImpl> UpperUnicode(const AtomicString& locale_identifier);
 
-  RefPtr<StringImpl> Fill(UChar);
+  scoped_refptr<StringImpl> Fill(UChar);
   // FIXME: Do we need fill(char) or can we just do the right thing if UChar is
   // ASCII?
-  RefPtr<StringImpl> FoldCase();
+  scoped_refptr<StringImpl> FoldCase();
 
-  RefPtr<StringImpl> Truncate(unsigned length);
+  scoped_refptr<StringImpl> Truncate(unsigned length);
 
-  RefPtr<StringImpl> StripWhiteSpace();
-  RefPtr<StringImpl> StripWhiteSpace(IsWhiteSpaceFunctionPtr);
-  RefPtr<StringImpl> SimplifyWhiteSpace(StripBehavior = kStripExtraWhiteSpace);
-  RefPtr<StringImpl> SimplifyWhiteSpace(IsWhiteSpaceFunctionPtr,
-                                        StripBehavior = kStripExtraWhiteSpace);
+  scoped_refptr<StringImpl> StripWhiteSpace();
+  scoped_refptr<StringImpl> StripWhiteSpace(IsWhiteSpaceFunctionPtr);
+  scoped_refptr<StringImpl> SimplifyWhiteSpace(
+      StripBehavior = kStripExtraWhiteSpace);
+  scoped_refptr<StringImpl> SimplifyWhiteSpace(
+      IsWhiteSpaceFunctionPtr,
+      StripBehavior = kStripExtraWhiteSpace);
 
-  RefPtr<StringImpl> RemoveCharacters(CharacterMatchFunctionPtr);
+  scoped_refptr<StringImpl> RemoveCharacters(CharacterMatchFunctionPtr);
   template <typename CharType>
-  ALWAYS_INLINE RefPtr<StringImpl> RemoveCharacters(const CharType* characters,
-                                                    CharacterMatchFunctionPtr);
+  ALWAYS_INLINE scoped_refptr<StringImpl> RemoveCharacters(
+      const CharType* characters,
+      CharacterMatchFunctionPtr);
 
   // Remove characters between [start, start+lengthToRemove). The range is
   // clamped to the size of the string. Does nothing if start >= length().
-  RefPtr<StringImpl> Remove(unsigned start, unsigned length_to_remove = 1);
+  scoped_refptr<StringImpl> Remove(unsigned start,
+                                   unsigned length_to_remove = 1);
 
   // Find characters.
   size_t Find(LChar character, unsigned start = 0);
@@ -382,15 +390,16 @@ class WTF_EXPORT StringImpl {
   bool EndsWithIgnoringASCIICase(const StringView&) const;
 
   // Replace parts of the string.
-  RefPtr<StringImpl> Replace(UChar pattern, UChar replacement);
-  RefPtr<StringImpl> Replace(UChar pattern, const StringView& replacement);
-  RefPtr<StringImpl> Replace(const StringView& pattern,
-                             const StringView& replacement);
-  RefPtr<StringImpl> Replace(unsigned index,
-                             unsigned length_to_replace,
-                             const StringView& replacement);
+  scoped_refptr<StringImpl> Replace(UChar pattern, UChar replacement);
+  scoped_refptr<StringImpl> Replace(UChar pattern,
+                                    const StringView& replacement);
+  scoped_refptr<StringImpl> Replace(const StringView& pattern,
+                                    const StringView& replacement);
+  scoped_refptr<StringImpl> Replace(unsigned index,
+                                    unsigned length_to_replace,
+                                    const StringView& replacement);
 
-  RefPtr<StringImpl> UpconvertedString();
+  scoped_refptr<StringImpl> UpconvertedString();
 
   // Copy characters from string starting at |start| up until |maxLength| or
   // the end of the string is reached. Returns the actual number of characters
@@ -435,18 +444,18 @@ class WTF_EXPORT StringImpl {
     return sizeof(StringImpl) + length * sizeof(CharType);
   }
 
-  RefPtr<StringImpl> Replace(UChar pattern,
-                             const LChar* replacement,
-                             unsigned replacement_length);
-  RefPtr<StringImpl> Replace(UChar pattern,
-                             const UChar* replacement,
-                             unsigned replacement_length);
+  scoped_refptr<StringImpl> Replace(UChar pattern,
+                                    const LChar* replacement,
+                                    unsigned replacement_length);
+  scoped_refptr<StringImpl> Replace(UChar pattern,
+                                    const UChar* replacement,
+                                    unsigned replacement_length);
 
   template <class UCharPredicate>
-  RefPtr<StringImpl> StripMatchedCharacters(UCharPredicate);
+  scoped_refptr<StringImpl> StripMatchedCharacters(UCharPredicate);
   template <typename CharType, class UCharPredicate>
-  RefPtr<StringImpl> SimplifyMatchedCharactersToSpace(UCharPredicate,
-                                                      StripBehavior);
+  scoped_refptr<StringImpl> SimplifyMatchedCharactersToSpace(UCharPredicate,
+                                                             StripBehavior);
   NEVER_INLINE unsigned HashSlowCase() const;
 
   void DestroyIfNotStatic() const;
@@ -779,7 +788,7 @@ static inline bool IsSpaceOrNewline(UChar c) {
              : WTF::Unicode::Direction(c) == WTF::Unicode::kWhiteSpaceNeutral;
 }
 
-inline RefPtr<StringImpl> StringImpl::IsolatedCopy() const {
+inline scoped_refptr<StringImpl> StringImpl::IsolatedCopy() const {
   if (Is8Bit())
     return Create(Characters8(), length_);
   return Create(Characters16(), length_);
@@ -817,7 +826,7 @@ WTF_EXPORT UChar32 ToUpper(UChar32, const AtomicString& locale_identifier);
 
 struct StringHash;
 
-// StringHash is the default hash for StringImpl* and RefPtr<StringImpl>
+// StringHash is the default hash for StringImpl* and scoped_refptr<StringImpl>
 template <typename T>
 struct DefaultHash;
 template <>
@@ -825,7 +834,7 @@ struct DefaultHash<StringImpl*> {
   typedef StringHash Hash;
 };
 template <>
-struct DefaultHash<RefPtr<StringImpl>> {
+struct DefaultHash<scoped_refptr<StringImpl>> {
   typedef StringHash Hash;
 };
 

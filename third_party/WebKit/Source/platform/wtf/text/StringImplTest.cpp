@@ -31,7 +31,7 @@
 namespace WTF {
 
 TEST(StringImplTest, Create8Bit) {
-  RefPtr<StringImpl> test_string_impl = StringImpl::Create("1224");
+  scoped_refptr<StringImpl> test_string_impl = StringImpl::Create("1224");
   EXPECT_TRUE(test_string_impl->Is8Bit());
 }
 
@@ -44,7 +44,7 @@ TEST(StringImplTest, Latin1CaseFoldTable) {
 }
 
 TEST(StringImplTest, LowerASCII) {
-  RefPtr<StringImpl> test_string_impl = StringImpl::Create("link");
+  scoped_refptr<StringImpl> test_string_impl = StringImpl::Create("link");
   EXPECT_TRUE(test_string_impl->Is8Bit());
   EXPECT_TRUE(StringImpl::Create("a\xE1")->Is8Bit());
 
@@ -74,7 +74,7 @@ TEST(StringImplTest, LowerASCII) {
   static const UChar kTestCapitalized[5] = {0x004c, 0x0049, 0x004e, 0x004b,
                                             0};  // LINK
 
-  RefPtr<StringImpl> test_string_impl16 = StringImpl::Create(kTest, 4);
+  scoped_refptr<StringImpl> test_string_impl16 = StringImpl::Create(kTest, 4);
   EXPECT_FALSE(test_string_impl16->Is8Bit());
 
   EXPECT_TRUE(Equal(test_string_impl16.get(),
@@ -89,8 +89,8 @@ TEST(StringImplTest, LowerASCII) {
   static const UChar kTestWithNonASCIICapitalized[3] = {0x0041, 0x00e1,
                                                         0};  // A\xE1
 
-  // Make sure we support RefPtr<const StringImpl>.
-  RefPtr<const StringImpl> const_ref = test_string_impl->IsolatedCopy();
+  // Make sure we support scoped_refptr<const StringImpl>.
+  scoped_refptr<const StringImpl> const_ref = test_string_impl->IsolatedCopy();
   DCHECK(const_ref->HasOneRef());
   EXPECT_TRUE(Equal(
       StringImpl::Create(kTestWithNonASCII, 2).get(),
@@ -101,7 +101,7 @@ TEST(StringImplTest, LowerASCII) {
 }
 
 TEST(StringImplTest, UpperASCII) {
-  RefPtr<StringImpl> test_string_impl = StringImpl::Create("LINK");
+  scoped_refptr<StringImpl> test_string_impl = StringImpl::Create("LINK");
   EXPECT_TRUE(test_string_impl->Is8Bit());
   EXPECT_TRUE(StringImpl::Create("a\xE1")->Is8Bit());
 
@@ -131,7 +131,7 @@ TEST(StringImplTest, UpperASCII) {
   static const UChar kTestCapitalized[5] = {0x004c, 0x0049, 0x004e, 0x004b,
                                             0};  // LINK
 
-  RefPtr<StringImpl> test_string_impl16 =
+  scoped_refptr<StringImpl> test_string_impl16 =
       StringImpl::Create(kTestCapitalized, 4);
   EXPECT_FALSE(test_string_impl16->Is8Bit());
 
@@ -147,8 +147,8 @@ TEST(StringImplTest, UpperASCII) {
   static const UChar kTestWithNonASCIICapitalized[3] = {0x0041, 0x00e1,
                                                         0};  // A\xE1
 
-  // Make sure we support RefPtr<const StringImpl>.
-  RefPtr<const StringImpl> const_ref = test_string_impl->IsolatedCopy();
+  // Make sure we support scoped_refptr<const StringImpl>.
+  scoped_refptr<const StringImpl> const_ref = test_string_impl->IsolatedCopy();
   DCHECK(const_ref->HasOneRef());
   EXPECT_TRUE(
       Equal(StringImpl::Create(kTestWithNonASCIICapitalized, 2).get(),

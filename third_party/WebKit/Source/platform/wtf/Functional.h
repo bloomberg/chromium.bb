@@ -131,11 +131,11 @@ template <typename T>
 class RetainedRefWrapper final {
  public:
   explicit RetainedRefWrapper(T* ptr) : ptr_(ptr) {}
-  explicit RetainedRefWrapper(RefPtr<T> ptr) : ptr_(std::move(ptr)) {}
+  explicit RetainedRefWrapper(scoped_refptr<T> ptr) : ptr_(std::move(ptr)) {}
   T* get() const { return ptr_.get(); }
 
  private:
-  RefPtr<T> ptr_;
+  scoped_refptr<T> ptr_;
 };
 
 template <typename T>
@@ -144,7 +144,7 @@ RetainedRefWrapper<T> RetainedRef(T* ptr) {
 }
 
 template <typename T>
-RetainedRefWrapper<T> RetainedRef(RefPtr<T> ptr) {
+RetainedRefWrapper<T> RetainedRef(scoped_refptr<T> ptr) {
   return RetainedRefWrapper<T>(std::move(ptr));
 }
 
@@ -192,8 +192,8 @@ struct ParamStorageTraits {
 };
 
 template <typename T>
-struct ParamStorageTraits<RefPtr<T>> {
-  typedef RefPtr<T> StorageType;
+struct ParamStorageTraits<scoped_refptr<T>> {
+  typedef scoped_refptr<T> StorageType;
 };
 
 template <typename>

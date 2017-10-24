@@ -156,7 +156,7 @@ class WTF_EXPORT StringView {
 // we were constructed from a char pointer. So m_impl->bytes() might have
 // nothing to do with this view's bytes().
 #if DCHECK_IS_ON()
-  RefPtr<StringImpl> impl_;
+  scoped_refptr<StringImpl> impl_;
 #else
   StringImpl* impl_;
 #endif

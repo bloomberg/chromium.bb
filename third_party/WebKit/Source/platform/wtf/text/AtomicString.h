@@ -227,14 +227,14 @@ class WTF_EXPORT AtomicString {
 
   String string_;
 
-  ALWAYS_INLINE static RefPtr<StringImpl> Add(StringImpl* r) {
+  ALWAYS_INLINE static scoped_refptr<StringImpl> Add(StringImpl* r) {
     if (!r || r->IsAtomic())
       return r;
     return AddSlowCase(r);
   }
-  static RefPtr<StringImpl> AddSlowCase(StringImpl*);
+  static scoped_refptr<StringImpl> AddSlowCase(StringImpl*);
 #if defined(OS_MACOSX)
-  static RefPtr<StringImpl> Add(CFStringRef);
+  static scoped_refptr<StringImpl> Add(CFStringRef);
 #endif
 };
 

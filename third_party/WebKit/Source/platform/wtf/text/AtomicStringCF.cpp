@@ -35,7 +35,7 @@
 
 namespace WTF {
 
-RefPtr<StringImpl> AtomicString::Add(CFStringRef string) {
+scoped_refptr<StringImpl> AtomicString::Add(CFStringRef string) {
   if (!string)
     return nullptr;
 

@@ -33,13 +33,15 @@ namespace WTF {
 
 class TestTree : public RefCounted<TestTree>, public TreeNode<TestTree> {
  public:
-  static RefPtr<TestTree> Create() { return WTF::AdoptRef(new TestTree()); }
+  static scoped_refptr<TestTree> Create() {
+    return WTF::AdoptRef(new TestTree());
+  }
 };
 
 TEST(TreeNodeTest, AppendChild) {
-  RefPtr<TestTree> root = TestTree::Create();
-  RefPtr<TestTree> first_child = TestTree::Create();
-  RefPtr<TestTree> last_child = TestTree::Create();
+  scoped_refptr<TestTree> root = TestTree::Create();
+  scoped_refptr<TestTree> first_child = TestTree::Create();
+  scoped_refptr<TestTree> last_child = TestTree::Create();
 
   root->AppendChild(first_child.get());
   EXPECT_EQ(root->FirstChild(), first_child.get());
@@ -55,10 +57,10 @@ TEST(TreeNodeTest, AppendChild) {
 }
 
 TEST(TreeNodeTest, InsertBefore) {
-  RefPtr<TestTree> root = TestTree::Create();
-  RefPtr<TestTree> first_child = TestTree::Create();
-  RefPtr<TestTree> middle_child = TestTree::Create();
-  RefPtr<TestTree> last_child = TestTree::Create();
+  scoped_refptr<TestTree> root = TestTree::Create();
+  scoped_refptr<TestTree> first_child = TestTree::Create();
+  scoped_refptr<TestTree> middle_child = TestTree::Create();
+  scoped_refptr<TestTree> last_child = TestTree::Create();
 
   // Inserting single node
   root->InsertBefore(last_child.get(), nullptr);
@@ -86,9 +88,9 @@ TEST(TreeNodeTest, InsertBefore) {
 }
 
 TEST(TreeNodeTest, RemoveSingle) {
-  RefPtr<TestTree> root = TestTree::Create();
-  RefPtr<TestTree> child = TestTree::Create();
-  RefPtr<TestTree> null_node;
+  scoped_refptr<TestTree> root = TestTree::Create();
+  scoped_refptr<TestTree> child = TestTree::Create();
+  scoped_refptr<TestTree> null_node;
 
   root->AppendChild(child.get());
   root->RemoveChild(child.get());
@@ -113,10 +115,10 @@ class Trio {
     root->AppendChild(last_child.get());
   }
 
-  RefPtr<TestTree> root;
-  RefPtr<TestTree> first_child;
-  RefPtr<TestTree> middle_child;
-  RefPtr<TestTree> last_child;
+  scoped_refptr<TestTree> root;
+  scoped_refptr<TestTree> first_child;
+  scoped_refptr<TestTree> middle_child;
+  scoped_refptr<TestTree> last_child;
 };
 
 TEST(TreeNodeTest, RemoveMiddle) {
@@ -132,7 +134,7 @@ TEST(TreeNodeTest, RemoveMiddle) {
 }
 
 TEST(TreeNodeTest, RemoveLast) {
-  RefPtr<TestTree> null_node;
+  scoped_refptr<TestTree> null_node;
   Trio trio;
   trio.AppendChildren();
 
@@ -144,7 +146,7 @@ TEST(TreeNodeTest, RemoveLast) {
 }
 
 TEST(TreeNodeTest, RemoveFirst) {
-  RefPtr<TestTree> null_node;
+  scoped_refptr<TestTree> null_node;
   Trio trio;
   trio.AppendChildren();
 
@@ -156,7 +158,7 @@ TEST(TreeNodeTest, RemoveFirst) {
 }
 
 TEST(TreeNodeTest, TakeChildrenFrom) {
-  RefPtr<TestTree> new_parent = TestTree::Create();
+  scoped_refptr<TestTree> new_parent = TestTree::Create();
   Trio trio;
   trio.AppendChildren();
 
@@ -178,7 +180,7 @@ class TrioWithGrandChild : public Trio {
     middle_child->AppendChild(grand_child.get());
   }
 
-  RefPtr<TestTree> grand_child;
+  scoped_refptr<TestTree> grand_child;
 };
 
 TEST(TreeNodeTest, TraverseNext) {

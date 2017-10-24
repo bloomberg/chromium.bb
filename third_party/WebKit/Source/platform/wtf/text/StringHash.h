@@ -34,12 +34,13 @@ inline bool HashTraits<String>::IsEmptyValue(const String& value) {
 }
 
 inline bool HashTraits<String>::IsDeletedValue(const String& value) {
-  return HashTraits<RefPtr<StringImpl>>::IsDeletedValue(value.impl_);
+  return HashTraits<scoped_refptr<StringImpl>>::IsDeletedValue(value.impl_);
 }
 
 inline void HashTraits<String>::ConstructDeletedValue(String& slot,
                                                       bool zero_value) {
-  HashTraits<RefPtr<StringImpl>>::ConstructDeletedValue(slot.impl_, zero_value);
+  HashTraits<scoped_refptr<StringImpl>>::ConstructDeletedValue(slot.impl_,
+                                                               zero_value);
 }
 
 // The hash() functions on StringHash and CaseFoldingHash do not support null
@@ -58,10 +59,11 @@ struct StringHash {
     return EqualNonNull(a, b);
   }
 
-  static unsigned GetHash(const RefPtr<StringImpl>& key) {
+  static unsigned GetHash(const scoped_refptr<StringImpl>& key) {
     return key->GetHash();
   }
-  static bool Equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
+  static bool Equal(const scoped_refptr<StringImpl>& a,
+                    const scoped_refptr<StringImpl>& b) {
     return Equal(a.get(), b.get());
   }
 
@@ -112,11 +114,12 @@ class CaseFoldingHash {
     return DeprecatedEqualIgnoringCaseAndNullity(*a, *b);
   }
 
-  static unsigned GetHash(const RefPtr<StringImpl>& key) {
+  static unsigned GetHash(const scoped_refptr<StringImpl>& key) {
     return GetHash(key.get());
   }
 
-  static bool Equal(const RefPtr<StringImpl>& a, const RefPtr<StringImpl>& b) {
+  static bool Equal(const scoped_refptr<StringImpl>& a,
+                    const scoped_refptr<StringImpl>& b) {
     return Equal(a.get(), b.get());
   }
 

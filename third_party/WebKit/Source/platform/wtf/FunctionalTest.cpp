@@ -321,7 +321,7 @@ TEST(FunctionalTest, MemberFunctionBindByPassedUniquePtr) {
 class Number {
  public:
   REQUIRE_ADOPTION_FOR_REFCOUNTED_TYPE();
-  static RefPtr<Number> Create(int value) {
+  static scoped_refptr<Number> Create(int value) {
     return WTF::AdoptRef(new Number(value));
   }
 
@@ -352,7 +352,7 @@ int MultiplyNumberByTwo(Number* number) {
 }
 
 TEST(FunctionalTest, RefCountedStorage) {
-  RefPtr<Number> five = Number::Create(5);
+  scoped_refptr<Number> five = Number::Create(5);
   EXPECT_TRUE(five->HasOneRef());
   Function<int()> multiply_five_by_two_function =
       WTF::Bind(MultiplyNumberByTwo, WTF::RetainedRef(five));
@@ -364,7 +364,7 @@ TEST(FunctionalTest, RefCountedStorage) {
       WTF::Bind(MultiplyNumberByTwo, WTF::RetainedRef(Number::Create(4)));
   EXPECT_EQ(8, multiply_four_by_two_function());
 
-  RefPtr<Number> six = Number::Create(6);
+  scoped_refptr<Number> six = Number::Create(6);
   Function<int()> multiply_six_by_two_function =
       WTF::Bind(MultiplyNumberByTwo, WTF::RetainedRef(std::move(six)));
   EXPECT_FALSE(six);
@@ -372,7 +372,7 @@ TEST(FunctionalTest, RefCountedStorage) {
 }
 
 TEST(FunctionalTest, UnretainedWithRefCounted) {
-  RefPtr<Number> five = Number::Create(5);
+  scoped_refptr<Number> five = Number::Create(5);
   EXPECT_EQ(1, five->RefCount());
   Function<int()> multiply_five_by_two_function =
       WTF::Bind(MultiplyNumberByTwo, WTF::Unretained(five.get()));

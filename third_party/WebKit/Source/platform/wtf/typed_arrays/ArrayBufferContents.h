@@ -262,7 +262,7 @@ class WTF_EXPORT ArrayBufferContents {
     bool has_registered_external_allocation_;
   };
 
-  RefPtr<DataHolder> holder_;
+  scoped_refptr<DataHolder> holder_;
   static AdjustAmountOfExternalAllocatedMemoryFunction
       adjust_amount_of_external_allocated_memory_function_;
 #if DCHECK_IS_ON()

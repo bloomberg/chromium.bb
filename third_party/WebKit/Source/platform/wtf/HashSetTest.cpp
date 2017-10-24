@@ -156,9 +156,10 @@ TEST(HashSetTest, HashSetOwnPtr) {
 
 TEST(HashSetTest, HashSetRefPtr) {
   bool is_deleted = false;
-  RefPtr<DummyRefCounted> ptr = WTF::AdoptRef(new DummyRefCounted(is_deleted));
+  scoped_refptr<DummyRefCounted> ptr =
+      WTF::AdoptRef(new DummyRefCounted(is_deleted));
   EXPECT_EQ(0, DummyRefCounted::ref_invokes_count_);
-  HashSet<RefPtr<DummyRefCounted>> set;
+  HashSet<scoped_refptr<DummyRefCounted>> set;
   set.insert(ptr);
   // Referenced only once (to store a copy in the container).
   EXPECT_EQ(1, DummyRefCounted::ref_invokes_count_);
