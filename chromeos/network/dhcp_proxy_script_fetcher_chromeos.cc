@@ -25,7 +25,7 @@ std::string GetPacUrlFromDefaultNetwork() {
   const NetworkState* default_network =
       NetworkHandler::Get()->network_state_handler()->DefaultNetwork();
   if (default_network)
-    return default_network->web_proxy_auto_discovery_url().spec();
+    return default_network->GetWebProxyAutoDiscoveryUrl().spec();
   return std::string();
 }
 

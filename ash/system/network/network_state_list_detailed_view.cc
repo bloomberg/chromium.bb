@@ -316,7 +316,7 @@ views::View* NetworkStateListDetailedView::CreateNetworkInfoView() {
   std::string ip_address, ipv6_address;
   const NetworkState* network = handler->DefaultNetwork();
   if (network) {
-    ip_address = network->ip_address();
+    ip_address = network->GetIpAddress();
     const DeviceState* device = handler->GetDeviceState(network->device_path());
     if (device)
       ipv6_address = device->GetIpAddressByType(shill::kTypeIPv6);

@@ -173,27 +173,26 @@ void NetworkChangeNotifierChromeos::UpdateState(
   if (new_connection_type != connection_type_) {
     NET_LOG_EVENT(
         "NCNDefaultConnectionTypeChanged",
-        base::StringPrintf("%s -> %s",
-                           ConnectionTypeToString(connection_type_),
+        base::StringPrintf("%s -> %s", ConnectionTypeToString(connection_type_),
                            ConnectionTypeToString(new_connection_type)));
     *connection_type_changed = true;
   }
   if (default_network->path() != service_path_) {
-    NET_LOG_EVENT(
-        "NCNDefaultNetworkServicePathChanged",
-        base::StringPrintf("%s -> %s",
-                           service_path_.c_str(),
-                           default_network->path().c_str()));
+    NET_LOG_EVENT("NCNDefaultNetworkServicePathChanged",
+                  base::StringPrintf("%s -> %s", service_path_.c_str(),
+                                     default_network->path().c_str()));
 
     // If we had a default network service change, network resources
     // must always be invalidated.
     *ip_address_changed = true;
     *dns_changed = true;
   }
-  if (default_network->ip_address() != ip_address_) {
+
+  std::string new_ip_address = default_network->GetIpAddress();
+  if (new_ip_address != ip_address_) {
     // Is this a state update with an online->online transition?
-    bool stayed_online = (!*connection_type_changed &&
-                          connection_type_ != CONNECTION_NONE);
+    bool stayed_online =
+        (!*connection_type_changed && connection_type_ != CONNECTION_NONE);
 
     bool is_suppressed = true;
     // Suppress IP address change signalling on online->online transitions
@@ -202,27 +201,23 @@ void NetworkChangeNotifierChromeos::UpdateState(
       is_suppressed = false;
       *ip_address_changed = true;
     }
-    NET_LOG_EVENT(
-        base::StringPrintf("%s%s",
-                           "NCNDefaultIPAddressChanged",
-                           is_suppressed ? " (Suppressed)" : "" ),
-        base::StringPrintf("%s -> %s",
-                           ip_address_.c_str(),
-                           default_network->ip_address().c_str()));
+    NET_LOG_EVENT(base::StringPrintf("%s%s", "NCNDefaultIPAddressChanged",
+                                     is_suppressed ? " (Suppressed)" : ""),
+                  base::StringPrintf("%s -> %s", ip_address_.c_str(),
+                                     new_ip_address.c_str()));
   }
-  if (default_network->dns_servers() != dns_servers_) {
-    NET_LOG_EVENT(
-        "NCNDefaultDNSServerChanged",
-        base::StringPrintf(
-            "%s -> %s", base::JoinString(dns_servers_, ",").c_str(),
-            base::JoinString(default_network->dns_servers(), ",").c_str()));
+  std::string new_dns_servers = default_network->GetDnsServersAsString();
+  if (new_dns_servers != dns_servers_) {
+    NET_LOG_EVENT("NCNDefaultDNSServerChanged",
+                  base::StringPrintf("%s -> %s", dns_servers_.c_str(),
+                                     new_dns_servers.c_str()));
     *dns_changed = true;
   }
 
   connection_type_ = new_connection_type;
   service_path_ = default_network->path();
-  ip_address_ = default_network->ip_address();
-  dns_servers_ = default_network->dns_servers();
+  ip_address_ = new_ip_address;
+  dns_servers_ = new_dns_servers;
   double old_max_bandwidth = max_bandwidth_mbps_;
   max_bandwidth_mbps_ =
       GetMaxBandwidthForConnectionSubtype(GetConnectionSubtype(

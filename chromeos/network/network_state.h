@@ -69,14 +69,10 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
 
   const base::DictionaryValue& proxy_config() const { return proxy_config_; }
 
-  // IPConfig Properties. These require an extra call to ShillIPConfigClient,
-  // so cache them to avoid excessively complex client code.
-  const std::string& ip_address() const { return ip_address_; }
-  const std::string& gateway() const { return gateway_; }
-  const std::vector<std::string>& dns_servers() const { return dns_servers_; }
-  const GURL& web_proxy_auto_discovery_url() const {
-    return web_proxy_auto_discovery_url_;
-  }
+  const base::DictionaryValue& ipv4_config() const { return ipv4_config_; }
+  std::string GetIpAddress() const;
+  std::string GetGateway() const;
+  GURL GetWebProxyAutoDiscoveryUrl() const;
 
   // Wireless property accessors
   bool connectable() const { return connectable_; }
@@ -218,14 +214,9 @@ class CHROMEOS_EXPORT NetworkState : public ManagedState {
   // when a connection attempt is initiated.
   std::string last_error_;
 
-  // IPConfig properties.
-  // Note: These do not correspond to actual Shill.Service properties
-  // but are derived from the service's corresponding IPConfig object.
-  std::string ip_address_;
-  std::string gateway_;
-  std::vector<std::string> dns_servers_;
-  int prefix_length_ = 0;  // Used by GetNetmask()
-  GURL web_proxy_auto_discovery_url_;
+  // Cached copy of the Shill Service IPConfig object. For ipv6 properties use
+  // the ip_configs_ property in the corresponding DeviceState.
+  base::DictionaryValue ipv4_config_;
 
   // Wireless properties, used for icons and Connect logic.
   bool connectable_ = false;
