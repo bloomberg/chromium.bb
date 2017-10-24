@@ -252,11 +252,15 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, EmbeddedSearchAPIExposesStaticFunctions) {
       {"window.chrome.embeddedSearch.newTabPage.checkIsUserSyncingHistory",
        "\"user@email.com\""},
       {"window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem", "1"},
+      {"window.chrome.embeddedSearch.newTabPage.deleteMostVisitedItem",
+       "\"1\""},
       {"window.chrome.embeddedSearch.newTabPage.getMostVisitedItemData", "1"},
       {"window.chrome.embeddedSearch.newTabPage.logEvent", "1"},
       {"window.chrome.embeddedSearch.newTabPage.undoAllMostVisitedDeletions",
        ""},
       {"window.chrome.embeddedSearch.newTabPage.undoMostVisitedDeletion", "1"},
+      {"window.chrome.embeddedSearch.newTabPage.undoMostVisitedDeletion",
+       "\"1\""},
   };
 
   for (const TestCase& test_case : test_cases) {
