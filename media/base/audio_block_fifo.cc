@@ -9,6 +9,7 @@
 #include "media/base/audio_block_fifo.h"
 
 #include "base/logging.h"
+#include "base/trace_event/trace_event.h"
 
 namespace media {
 
@@ -27,15 +28,21 @@ AudioBlockFifo::~AudioBlockFifo() {}
 void AudioBlockFifo::Push(const void* source,
                           int frames,
                           int bytes_per_sample) {
+  TRACE_EVENT2("audio", "AudioBlockFifo::Push", "pushed frames", frames,
+               "available frames", GetAvailableFrames());
   PushInternal(source, frames, bytes_per_sample);
 }
 
 void AudioBlockFifo::PushSilence(int frames) {
+  TRACE_EVENT2("audio", "AudioBlockFifo::PushSilence", "pushed frames", frames,
+               "available frames", GetAvailableFrames());
   PushInternal(nullptr, frames, 0);
 }
 
 const AudioBus* AudioBlockFifo::Consume() {
   DCHECK(available_blocks_);
+  TRACE_EVENT1("audio", "AudioBlockFifo::Consume", "available frames",
+               GetAvailableFrames());
   AudioBus* audio_bus = audio_blocks_[read_block_].get();
   read_block_ = (read_block_ + 1) % audio_blocks_.size();
   --available_blocks_;

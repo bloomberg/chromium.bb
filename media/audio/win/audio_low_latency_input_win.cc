@@ -387,7 +387,8 @@ void WASAPIAudioInputStream::Run() {
         recording = false;
         break;
       case WAIT_OBJECT_0 + 1: {
-        TRACE_EVENT0("audio", "WASAPIAudioInputStream::Run_0");
+        TRACE_EVENT1("audio", "WASAPIAudioInputStream::Run_0", "sample rate",
+                     format_.nSamplesPerSec);
         // |audio_samples_ready_event_| has been set.
         BYTE* data_ptr = NULL;
         UINT32 num_frames_to_read = 0;
