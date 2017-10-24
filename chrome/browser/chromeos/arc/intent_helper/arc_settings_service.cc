@@ -145,7 +145,7 @@ class ArcSettingsServiceImpl
   // Retrieves Chrome's state for the settings that need to be synced on each
   // Android boot after AppInstance is ready and send it to Android.
   // TODO(crbug.com/762553): Sync settings at proper time.
-  void SyncAppTimeSettings() const;
+  void SyncAppTimeSettings();
   // Determine whether a particular setting needs to be synced to Android.
   // Keep these lines ordered lexicographically.
   bool ShouldSyncBackupEnabled() const;
@@ -265,6 +265,9 @@ void ArcSettingsServiceImpl::OnPrefChanged(const std::string& pref_name) const {
   } else if (pref_name == prefs::kArcLocationServiceEnabled) {
     if (ShouldSyncLocationServiceEnabled())
       SyncLocationServiceEnabled();
+  } else if (pref_name == ::prefs::kApplicationLocale ||
+             pref_name == ::prefs::kLanguagePreferredLanguages) {
+    SyncLocale();
   } else if (pref_name == ::prefs::kUse24HourClock) {
     SyncUse24HourClock();
   } else if (pref_name == ::prefs::kResolveTimezoneByGeolocation) {
@@ -375,8 +378,16 @@ void ArcSettingsServiceImpl::SyncBootTimeSettings() const {
     SyncLocationServiceEnabled();
 }
 
-void ArcSettingsServiceImpl::SyncAppTimeSettings() const {
+void ArcSettingsServiceImpl::SyncAppTimeSettings() {
   SyncLocale();
+
+  // Applying system locales change on ARC will cause restarting other services
+  // and applications on ARC and doing such change in early phase may lead to
+  // ARC OptIn failure.  So that observing preferred languages change should be
+  // deferred at least until |mojom::AppInstance| is ready. But it's not ideal
+  // (b/6773449, b/65385376).
+  AddPrefToObserve(::prefs::kApplicationLocale);
+  AddPrefToObserve(::prefs::kLanguagePreferredLanguages);
 }
 
 bool ArcSettingsServiceImpl::ShouldSyncBackupEnabled() const {
@@ -450,7 +461,18 @@ void ArcSettingsServiceImpl::SyncLocale() const {
   bool value_exists = pref->GetValue()->GetAsString(&locale);
   DCHECK(value_exists);
   base::DictionaryValue extras;
+  // Chrome OS locale may contain only the language part (e.g. fr) but country
+  // code (e.g. fr_FR).  Since Android expects locale to contain country code,
+  // ARC will derive a likely locale with country code from such.
   extras.SetString("locale", locale);
+  const std::string preferredLanguages =
+      registrar_.prefs()->GetString(::prefs::kLanguagePreferredLanguages);
+  // |preferredLanguages| consists of comma separated locale strings. It may be
+  // empty or contain empty items, but those are ignored on ARC.  If an item
+  // has no country code, it is derived in ARC.  In such a case, it may
+  // conflict with another item in the list, then these will be dedupped (the
+  // first one is taken) in ARC.
+  extras.SetString("preferredLanguages", preferredLanguages);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_LOCALE", extras);
 }
 
