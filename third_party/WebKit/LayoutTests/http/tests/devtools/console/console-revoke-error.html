@@ -21,7 +21,7 @@ function handleSomeRejections()
 function test() {
   var messageAddedListener = ConsoleTestRunner.wrapListener(messageAdded);
   TestRunner.consoleModel.addEventListener(ConsoleModel.ConsoleModel.Events.MessageAdded, messageAddedListener);
-
+  Common.settings.moduleSetting('consoleGroupSimilar').set(false);
   TestRunner.addResult('Creating promise');
   TestRunner.evaluateInPageWithTimeout('createPromises()');
 
