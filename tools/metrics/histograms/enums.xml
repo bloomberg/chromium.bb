@@ -16709,6 +16709,7 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="2194" label="CookieSet"/>
   <int value="2195" label="CookieGet"/>
   <int value="2196" label="GeolocationDisabledByFeaturePolicy"/>
+  <int value="2197" label="EncryptedMediaDisabledByFeaturePolicy"/>
 </enum>
 
 <enum name="FeedbackSource">

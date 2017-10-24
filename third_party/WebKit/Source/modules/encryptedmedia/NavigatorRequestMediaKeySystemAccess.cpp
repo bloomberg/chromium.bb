@@ -39,6 +39,11 @@ namespace blink {
 
 namespace {
 
+const char kEncryptedMediaFeaturePolicyConsoleWarning[] =
+    "Encrypted Media access has been blocked because of a Feature Policy "
+    "applied to the current document. See https://goo.gl/EuHzyv for more "
+    "details.";
+
 static WebVector<WebEncryptedMediaInitDataType> ConvertInitDataTypes(
     const Vector<String>& init_data_types) {
   WebVector<WebEncryptedMediaInitDataType> result(init_data_types.size());
@@ -273,19 +278,24 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   Document* document = ToDocument(execution_context);
 
-  Deprecation::CountDeprecationFeaturePolicy(
-      *document, WebFeaturePolicyFeature::kEncryptedMedia);
-
   if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
     if (!document->GetFrame() ||
         !document->GetFrame()->IsFeatureEnabled(
             WebFeaturePolicyFeature::kEncryptedMedia)) {
+      UseCounter::Count(document,
+                        WebFeature::kEncryptedMediaDisabledByFeaturePolicy);
+      document->AddConsoleMessage(
+          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                                 kEncryptedMediaFeaturePolicyConsoleWarning));
       return ScriptPromise::RejectWithDOMException(
           script_state,
           DOMException::Create(
-              kNotSupportedError,
+              kSecurityError,
               "requestMediaKeySystemAccess is disabled by feature policy."));
     }
+  } else {
+    Deprecation::CountDeprecationFeaturePolicy(
+        *document, WebFeaturePolicyFeature::kEncryptedMedia);
   }
 
   // From https://w3c.github.io/encrypted-media/#common-key-systems
