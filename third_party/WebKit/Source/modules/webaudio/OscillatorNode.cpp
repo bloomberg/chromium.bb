@@ -475,11 +475,15 @@ OscillatorNode::OscillatorNode(BaseAudioContext& context,
       // Use musical pitch standard A440 as a default.
       frequency_(AudioParam::Create(context,
                                     kParamTypeOscillatorFrequency,
+                                    "Oscillator.frequency",
                                     440,
                                     -context.sampleRate() / 2,
                                     context.sampleRate() / 2)),
       // Default to no detuning.
-      detune_(AudioParam::Create(context, kParamTypeOscillatorDetune, 0)) {
+      detune_(AudioParam::Create(context,
+                                 kParamTypeOscillatorDetune,
+                                 "Oscillator.detune",
+                                 0)) {
   SetHandler(OscillatorHandler::Create(
       *this, context.sampleRate(), oscillator_type, wave_table,
       frequency_->Handler(), detune_->Handler()));
