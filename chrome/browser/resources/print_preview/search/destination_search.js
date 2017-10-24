@@ -301,7 +301,7 @@ cr.define('print_preview', function() {
      * @private
      */
     getAvailableListsHeight_: function() {
-      var elStyle = window.getComputedStyle(this.getElement());
+      const elStyle = window.getComputedStyle(this.getElement());
       return this.getElement().offsetHeight -
           parseInt(elStyle.getPropertyValue('padding-top'), 10) -
           parseInt(elStyle.getPropertyValue('padding-bottom'), 10) -
@@ -336,12 +336,12 @@ cr.define('print_preview', function() {
      * @private
      */
     renderDestinations_: function() {
-      var recentDestinations = [];
-      var localDestinations = [];
-      var cloudDestinations = [];
-      var unregisteredCloudDestinations = [];
+      const recentDestinations = [];
+      const localDestinations = [];
+      const cloudDestinations = [];
+      const unregisteredCloudDestinations = [];
 
-      var destinations =
+      const destinations =
           this.destinationStore_.destinations(this.userInfo_.activeUser);
       destinations.forEach(function(destination) {
         if (destination.isRecent) {
@@ -367,7 +367,7 @@ cr.define('print_preview', function() {
         this.registerPromoShownMetricRecorded_ = true;
       }
 
-      var finalCloudDestinations =
+      const finalCloudDestinations =
           unregisteredCloudDestinations
               .slice(0, DestinationSearch.MAX_PROMOTED_UNREGISTERED_PRINTERS_)
               .concat(
@@ -389,42 +389,44 @@ cr.define('print_preview', function() {
         return;
       }
 
-      var hasCloudList = getIsVisible(this.getChildElement('.cloud-list'));
-      var lists = [this.recentList_, this.localList_];
+      const hasCloudList = getIsVisible(this.getChildElement('.cloud-list'));
+      const lists = [this.recentList_, this.localList_];
       if (hasCloudList) {
         lists.push(this.cloudList_);
       }
 
-      var getListsTotalHeight = function(lists, counts) {
+      const getListsTotalHeight = function(lists, counts) {
         return lists.reduce(function(sum, list, index) {
-          var container = list.getContainerElement();
+          const container = list.getContainerElement();
           return sum + list.getEstimatedHeightInPixels(counts[index]) +
               parseInt(window.getComputedStyle(container).paddingBottom, 10);
         }, 0);
       };
-      var getCounts = function(lists, count) {
+      const getCounts = function(lists, count) {
         return lists.map(function(list) {
           return count;
         });
       };
 
-      var availableHeight = this.getAvailableListsHeight_();
-      var listsEl = this.getChildElement('.lists');
+      const availableHeight = this.getAvailableListsHeight_();
+      const listsEl = this.getChildElement('.lists');
       listsEl.style.maxHeight = availableHeight + 'px';
 
-      var maxListLength = lists.reduce(function(prevCount, list) {
+      const maxListLength = lists.reduce(function(prevCount, list) {
         return Math.max(prevCount, list.getDestinationsCount());
       }, 0);
-      for (var i = 1; i <= maxListLength; i++) {
+
+      let i = 1;
+      for (; i <= maxListLength; i++) {
         if (getListsTotalHeight(lists, getCounts(lists, i)) > availableHeight) {
           i--;
           break;
         }
       }
-      var counts = getCounts(lists, i);
+      const counts = getCounts(lists, i);
       // Fill up the possible n-1 free slots left by the previous loop.
       if (getListsTotalHeight(lists, counts) < availableHeight) {
-        for (var countIndex = 0; countIndex < counts.length; countIndex++) {
+        for (let countIndex = 0; countIndex < counts.length; countIndex++) {
           counts[countIndex]++;
           if (getListsTotalHeight(lists, counts) > availableHeight) {
             counts[countIndex]--;
@@ -439,10 +441,10 @@ cr.define('print_preview', function() {
 
       // Set height of the list manually so that search filter doesn't change
       // lists height.
-      var listsHeight = getListsTotalHeight(lists, counts) + 'px';
+      const listsHeight = getListsTotalHeight(lists, counts) + 'px';
       if (listsHeight != listsEl.style.height) {
         // Try to close account select if there's a possibility it's open now.
-        var accountSelectEl = this.getChildElement('.account-select');
+        const accountSelectEl = this.getChildElement('.account-select');
         if (!accountSelectEl.disabled) {
           accountSelectEl.disabled = true;
           accountSelectEl.disabled = false;
@@ -472,7 +474,7 @@ cr.define('print_preview', function() {
      * @private
      */
     updateInvitations_: function() {
-      var invitations = this.userInfo_.activeUser ?
+      const invitations = this.userInfo_.activeUser ?
           this.invitationStore_.invitations(this.userInfo_.activeUser) :
           [];
       if (invitations.length > 0) {
@@ -495,7 +497,7 @@ cr.define('print_preview', function() {
      * @private
      */
     showInvitation_: function(invitation) {
-      var invitationText = '';
+      let invitationText = '';
       if (invitation.asGroupManager) {
         invitationText = loadTimeData.getStringF(
             'groupPrinterSharingInviteText', HTMLEscape(invitation.sender),
@@ -508,7 +510,7 @@ cr.define('print_preview', function() {
       }
       this.getChildElement('.invitation-text').innerHTML = invitationText;
 
-      var acceptButton = this.getChildElement('.invitation-accept-button');
+      const acceptButton = this.getChildElement('.invitation-accept-button');
       acceptButton.textContent = loadTimeData.getString(
           invitation.asGroupManager ? 'acceptForGroup' : 'accept');
       acceptButton.disabled = !!this.invitationStore_.invitationInProgress;
@@ -524,17 +526,17 @@ cr.define('print_preview', function() {
      * @private
      */
     onUsersChanged_: function() {
-      var loggedIn = this.userInfo_.loggedIn;
+      const loggedIn = this.userInfo_.loggedIn;
       if (loggedIn) {
-        var accountSelectEl = this.getChildElement('.account-select');
+        const accountSelectEl = this.getChildElement('.account-select');
         accountSelectEl.innerHTML = '';
         this.userInfo_.users.forEach(function(account) {
-          var option = document.createElement('option');
+          const option = document.createElement('option');
           option.text = account;
           option.value = account;
           accountSelectEl.add(option);
         });
-        var option = document.createElement('option');
+        const option = document.createElement('option');
         option.text = loadTimeData.getString('addAccountTitle');
         option.value = '';
         accountSelectEl.add(option);
@@ -569,11 +571,11 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationConfigureRequest_: function(event) {
-      var destination = event.detail.destination;
+      const destination = event.detail.destination;
       // Cloud Print Device printers are stored in the local list
       // crbug.com/713831.
       // TODO(crbug.com/416701): Upon resolution, update this.
-      var destinationItem =
+      const destinationItem =
           (destination.isLocal ||
            destination.origin == print_preview.DestinationOrigin.DEVICE) ?
           this.localList_.getDestinationItem(destination.id) :
@@ -650,7 +652,7 @@ cr.define('print_preview', function() {
             !!this.provisionalDestinationResolver_,
             'Unable to create provisional destination resolver');
 
-        var lastFocusedElement = document.activeElement;
+        const lastFocusedElement = document.activeElement;
         this.addChild(this.provisionalDestinationResolver_);
         this.provisionalDestinationResolver_.run(this.getElement())
             .then(resolvedDestination => {
@@ -688,9 +690,9 @@ cr.define('print_preview', function() {
      * @private
      */
     onDestinationStoreSelect_: function() {
-      var destinations =
+      const destinations =
           this.destinationStore_.destinations(this.userInfo_.activeUser);
-      var recentDestinations = [];
+      const recentDestinations = [];
       destinations.forEach(function(destination) {
         if (destination.isRecent) {
           recentDestinations.push(destination);
@@ -761,8 +763,8 @@ cr.define('print_preview', function() {
      * @private
      */
     onAccountChange_: function() {
-      var accountSelectEl = this.getChildElement('.account-select');
-      var account =
+      const accountSelectEl = this.getChildElement('.account-select');
+      const account =
           accountSelectEl.options[accountSelectEl.selectedIndex].value;
       if (account) {
         this.userInfo_.activeUser = account;
@@ -773,7 +775,7 @@ cr.define('print_preview', function() {
       } else {
         cr.dispatchSimpleEvent(this, DestinationSearch.EventType.ADD_ACCOUNT);
         // Set selection back to the active user.
-        for (var i = 0; i < accountSelectEl.options.length; i++) {
+        for (let i = 0; i < accountSelectEl.options.length; i++) {
           if (accountSelectEl.options[i].value == this.userInfo_.activeUser) {
             accountSelectEl.selectedIndex = i;
             break;

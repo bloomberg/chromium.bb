@@ -138,12 +138,12 @@ cr.define('print_preview', function() {
      * @private
      */
     updateUi_: function() {
-      var iconImg = this.getChildElement('.destination-list-item-icon');
+      const iconImg = this.getChildElement('.destination-list-item-icon');
       iconImg.src = this.destination_.iconUrl;
       iconImg.srcset = this.destination_.srcSet;
 
-      var nameEl = this.getChildElement('.destination-list-item-name');
-      var textContent = this.destination_.displayName;
+      const nameEl = this.getChildElement('.destination-list-item-name');
+      let textContent = this.destination_.displayName;
       if (this.query_) {
         nameEl.textContent = '';
         // When search query is specified, make it obvious why this particular
@@ -153,7 +153,7 @@ cr.define('print_preview', function() {
         // Show the first matching property.
         this.destination_.extraPropertiesToMatch.some(function(property) {
           if (property.match(this.query_)) {
-            var hintSpan = document.createElement('span');
+            const hintSpan = document.createElement('span');
             hintSpan.className = 'search-hint';
             nameEl.appendChild(hintSpan);
             this.addTextWithHighlight_(hintSpan, property);
@@ -169,8 +169,8 @@ cr.define('print_preview', function() {
       nameEl.title = textContent;
 
       if (this.destination_.isExtension) {
-        var extensionNameEl = this.getChildElement('.extension-name');
-        var extensionName = this.destination_.extensionName;
+        const extensionNameEl = this.getChildElement('.extension-name');
+        const extensionName = this.destination_.extensionName;
         extensionNameEl.title = this.destination_.extensionName;
         if (this.query_) {
           extensionNameEl.textContent = '';
@@ -179,7 +179,7 @@ cr.define('print_preview', function() {
           extensionNameEl.textContent = this.destination_.extensionName;
         }
 
-        var extensionIconEl = this.getChildElement('.extension-icon');
+        const extensionIconEl = this.getChildElement('.extension-icon');
         extensionIconEl.style.backgroundImage = '-webkit-image-set(' +
             'url(chrome://extension-icon/' + this.destination_.extensionId +
             '/24/1) 1x,' +
@@ -192,13 +192,13 @@ cr.define('print_preview', function() {
             this.onExtensionIconKeyDown_.bind(this));
       }
 
-      var extensionIndicatorEl =
+      const extensionIndicatorEl =
           this.getChildElement('.extension-controlled-indicator');
       setIsVisible(extensionIndicatorEl, this.destination_.isExtension);
 
       // Initialize the element which renders the destination's offline status.
       this.getElement().classList.toggle('stale', this.destination_.isOffline);
-      var offlineStatusEl = this.getChildElement('.offline-status');
+      const offlineStatusEl = this.getChildElement('.offline-status');
       offlineStatusEl.textContent = this.destination_.offlineStatusText;
       setIsVisible(offlineStatusEl, this.destination_.isOffline);
 
@@ -223,12 +223,12 @@ cr.define('print_preview', function() {
      * @private
      */
     addTextWithHighlight_: function(parent, text) {
-      var sections = text.split(this.query_);
-      for (var i = 0; i < sections.length; ++i) {
+      const sections = text.split(this.query_);
+      for (let i = 0; i < sections.length; ++i) {
         if (i % 2 == 0) {
           parent.appendChild(document.createTextNode(sections[i]));
         } else {
-          var span = document.createElement('span');
+          const span = document.createElement('span');
           span.className = 'destination-list-item-query-highlight';
           span.textContent = sections[i];
           parent.appendChild(span);
@@ -261,7 +261,7 @@ cr.define('print_preview', function() {
 
       // Check if the printer needs configuration before using. The user is only
       // allowed to set up one printer at one time.
-      var configureEvent = new CustomEvent(
+      const configureEvent = new CustomEvent(
           DestinationListItem.EventType.CONFIGURE_REQUEST,
           {detail: {destination: this.destination_}});
       this.eventTarget_.dispatchEvent(configureEvent);
@@ -275,7 +275,7 @@ cr.define('print_preview', function() {
     onDestinationActivated_: function() {
       if (this.destination_.connectionStatus !=
           print_preview.DestinationConnectionStatus.UNREGISTERED) {
-        var selectEvt = new Event(DestinationListItem.EventType.SELECT);
+        const selectEvt = new Event(DestinationListItem.EventType.SELECT);
         selectEvt.destination = this.destination_;
         this.eventTarget_.dispatchEvent(selectEvt);
       }
@@ -290,7 +290,7 @@ cr.define('print_preview', function() {
     onKeyDown_: function(e) {
       if (!hasKeyModifiers(e)) {
         if (e.keyCode == 13) {
-          var activeElementTag = document.activeElement ?
+          const activeElementTag = document.activeElement ?
               document.activeElement.tagName.toUpperCase() :
               '';
           if (activeElementTag == 'LI') {
@@ -307,7 +307,7 @@ cr.define('print_preview', function() {
      * @private
      */
     onRegisterPromoClicked_: function() {
-      var promoClickedEvent =
+      const promoClickedEvent =
           new Event(DestinationListItem.EventType.REGISTER_PROMO_CLICKED);
       promoClickedEvent.destination = this.destination_;
       this.eventTarget_.dispatchEvent(promoClickedEvent);

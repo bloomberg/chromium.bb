@@ -111,11 +111,11 @@ cr.define('print_preview', function() {
       this.setElementInternal(
           this.cloneTemplateInternal('extension-usb-resolver'));
 
-      var extNameEl = this.getChildElement('.usb-permission-extension-name');
+      const extNameEl = this.getChildElement('.usb-permission-extension-name');
       extNameEl.title = this.destination_.extensionName;
       extNameEl.textContent = this.destination_.extensionName;
 
-      var extIconEl = this.getChildElement('.usb-permission-extension-icon');
+      const extIconEl = this.getChildElement('.usb-permission-extension-icon');
       extIconEl.style.backgroundImage = '-webkit-image-set(' +
           'url(chrome://extension-icon/' + this.destination_.extensionId +
           '/24/1) 1x,' +
