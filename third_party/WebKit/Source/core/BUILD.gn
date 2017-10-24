@@ -1447,7 +1447,7 @@ jumbo_source_set("unit_tests") {
     "editing/CaretDisplayItemClientTest.cpp",
     "editing/KeyboardTest.cpp",
     "editing/LinkSelectionTest.cpp",
-    "editing/TextFinderTest.cpp",
+    "editing/finder/TextFinderTest.cpp",
     "events/PointerEventFactoryTest.cpp",
     "events/TouchEventTest.cpp",
     "events/WebInputEventConversionTest.cpp",

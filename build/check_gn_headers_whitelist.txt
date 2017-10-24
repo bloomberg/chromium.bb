@@ -252,7 +252,7 @@ third_party/WebKit/Source/core/css/resolver/StyleBuilder.h
 third_party/WebKit/Source/core/css/threaded/MultiThreadedTestUtil.h
 third_party/WebKit/Source/core/css/zoomAdjustedPixelValue.h
 third_party/WebKit/Source/core/dom/ArrayBufferViewHelpers.h
-third_party/WebKit/Source/core/editing/FindOptions.h
+third_party/WebKit/Source/core/editing/finder/FindOptions.h
 third_party/WebKit/Source/core/paint/FindPaintOffsetAndVisualRectNeedingUpdate.h
 third_party/WebKit/Source/core/style/ShapeValue.h
 third_party/WebKit/Source/core/style/TransformOrigin.h
