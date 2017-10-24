@@ -460,16 +460,14 @@ void ImageResource::ResponseReceived(
   // the cached response.
   Resource::ResponseReceived(response, std::move(handle));
 
-  if (RuntimeEnabledFeatures::ClientHintsEnabled()) {
-    device_pixel_ratio_header_value_ =
-        GetResponse()
-            .HttpHeaderField(HTTPNames::Content_DPR)
-            .ToFloat(&has_device_pixel_ratio_header_value_);
-    if (!has_device_pixel_ratio_header_value_ ||
-        device_pixel_ratio_header_value_ <= 0.0) {
-      device_pixel_ratio_header_value_ = 1.0;
-      has_device_pixel_ratio_header_value_ = false;
-    }
+  device_pixel_ratio_header_value_ =
+      GetResponse()
+          .HttpHeaderField(HTTPNames::Content_DPR)
+          .ToFloat(&has_device_pixel_ratio_header_value_);
+  if (!has_device_pixel_ratio_header_value_ ||
+      device_pixel_ratio_header_value_ <= 0.0) {
+    device_pixel_ratio_header_value_ = 1.0;
+    has_device_pixel_ratio_header_value_ = false;
   }
 
   if (placeholder_option_ ==

@@ -53,7 +53,7 @@ void ClientHintsPreferences::UpdateFrom(
 void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
     const String& header_value,
     Context* context) {
-  if (!RuntimeEnabledFeatures::ClientHintsEnabled() || header_value.IsEmpty())
+  if (header_value.IsEmpty())
     return;
 
   WebEnabledClientHints new_enabled_types;
@@ -94,8 +94,7 @@ void ClientHintsPreferences::UpdatePersistentHintsFromHeaders(
   String accept_ch_lifetime_header_value =
       response.HttpHeaderField(HTTPNames::Accept_CH_Lifetime);
 
-  if (!RuntimeEnabledFeatures::ClientHintsEnabled() ||
-      !RuntimeEnabledFeatures::ClientHintsPersistentEnabled() ||
+  if (!RuntimeEnabledFeatures::ClientHintsPersistentEnabled() ||
       accept_ch_header_value.IsEmpty() ||
       accept_ch_lifetime_header_value.IsEmpty()) {
     return;
