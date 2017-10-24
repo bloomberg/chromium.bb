@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/memory/ref_counted.h"
+#include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/validation_rules_storage_factory.h"
 #include "chrome/browser/browser_process.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_data_service_factory.h"
+#include "components/autofill/core/browser/address_normalizer_impl.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 #include "components/autofill/core/browser/region_combobox_model.h"
 #include "components/autofill/core/browser/region_data_loader_impl.h"
@@ -50,12 +52,7 @@ std::unique_ptr<::i18n::addressinput::Storage> GetAddressInputStorage() {
 
 ChromePaymentRequestDelegate::ChromePaymentRequestDelegate(
     content::WebContents* web_contents)
-    : dialog_(nullptr),
-      web_contents_(web_contents),
-      address_normalizer_(
-          GetAddressInputSource(
-              GetPersonalDataManager()->GetURLRequestContextGetter()),
-          GetAddressInputStorage()) {}
+    : dialog_(nullptr), web_contents_(web_contents) {}
 
 ChromePaymentRequestDelegate::~ChromePaymentRequestDelegate() {}
 
@@ -122,7 +119,7 @@ ChromePaymentRequestDelegate::GetRegionDataLoader() {
 
 autofill::AddressNormalizer*
 ChromePaymentRequestDelegate::GetAddressNormalizer() {
-  return &address_normalizer_;
+  return autofill::AddressNormalizerFactory::GetInstance();
 }
 
 ukm::UkmRecorder* ChromePaymentRequestDelegate::GetUkmRecorder() {

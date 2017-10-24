@@ -9,7 +9,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/autofill/core/browser/address_normalizer_impl.h"
 #include "components/payments/content/content_payment_request_delegate.h"
 
 namespace content {
@@ -56,9 +55,6 @@ class ChromePaymentRequestDelegate : public ContentPaymentRequestDelegate {
  private:
   // Not owned but outlives the PaymentRequest object that owns this.
   content::WebContents* web_contents_;
-
-  // The address normalizer to use for the duration of the Payment Request.
-  autofill::AddressNormalizerImpl address_normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePaymentRequestDelegate);
 };
