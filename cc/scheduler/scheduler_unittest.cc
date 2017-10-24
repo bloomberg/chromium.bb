@@ -266,7 +266,7 @@ class SchedulerTest : public testing::Test {
         std::make_unique<viz::FakeDelayBasedTimeSource>(now_src_.get(),
                                                         task_runner_.get())));
     fake_external_begin_frame_source_.reset(
-        new viz::FakeExternalBeginFrameSource(0.f, false));
+        new viz::FakeExternalBeginFrameSource(1.0, false));
     fake_external_begin_frame_source_->SetClient(client_.get());
     synthetic_frame_source_.reset(new viz::DelayBasedBeginFrameSource(
         std::make_unique<viz::FakeDelayBasedTimeSource>(now_src_.get(),
