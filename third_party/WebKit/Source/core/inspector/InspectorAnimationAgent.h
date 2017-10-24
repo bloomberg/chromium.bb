@@ -66,7 +66,7 @@ class CORE_EXPORT InspectorAnimationAgent final
   protocol::Response AssertAnimation(const String& id,
                                      blink::Animation*& result);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   using AnimationType = protocol::Animation::Animation::TypeEnum;

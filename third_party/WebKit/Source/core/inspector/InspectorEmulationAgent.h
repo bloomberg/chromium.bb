@@ -63,7 +63,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   void OnVirtualTimeAdvanced(WTF::TimeDelta virtual_time_offset) override;
   void OnVirtualTimePaused(WTF::TimeDelta virtual_time_offset) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   InspectorEmulationAgent(WebLocalFrameImpl*, Client*);

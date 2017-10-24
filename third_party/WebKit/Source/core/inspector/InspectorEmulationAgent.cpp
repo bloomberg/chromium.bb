@@ -63,7 +63,7 @@ void InspectorEmulationAgent::Restore() {
   String emulated_media;
   state_->getString(EmulationAgentState::kEmulatedMedia, &emulated_media);
   setEmulatedMedia(emulated_media);
-  auto rgba_value =
+  auto* rgba_value =
       state_->get(EmulationAgentState::kDefaultBackgroundColorOverrideRGBA);
   if (rgba_value) {
     blink::protocol::ErrorSupport errors;

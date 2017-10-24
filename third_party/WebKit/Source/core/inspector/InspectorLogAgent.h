@@ -30,7 +30,7 @@ class CORE_EXPORT InspectorLogAgent
                     PerformanceMonitor*,
                     v8_inspector::V8InspectorSession*);
   ~InspectorLogAgent() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void Restore() override;
 

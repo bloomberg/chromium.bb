@@ -43,7 +43,7 @@ class InspectorResourceContentLoader::ResourceClient final
       resource->AddClient(static_cast<StyleSheetResourceClient*>(this));
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(loader_);
     StyleSheetResourceClient::Trace(visitor);
     RawResourceClient::Trace(visitor);

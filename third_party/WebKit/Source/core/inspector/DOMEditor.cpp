@@ -70,7 +70,7 @@ class DOMEditor::RemoveChildAction final : public InspectorHistory::Action {
     return !exception_state.HadException();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_node_);
     visitor->Trace(node_);
     visitor->Trace(anchor_node_);
@@ -122,7 +122,7 @@ class DOMEditor::InsertBeforeAction final : public InspectorHistory::Action {
     return !exception_state.HadException();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_node_);
     visitor->Trace(node_);
     visitor->Trace(anchor_node_);
@@ -161,7 +161,7 @@ class DOMEditor::RemoveAttributeAction final : public InspectorHistory::Action {
     return true;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(element_);
     InspectorHistory::Action::Trace(visitor);
   }
@@ -206,7 +206,7 @@ class DOMEditor::SetAttributeAction final : public InspectorHistory::Action {
     return true;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(element_);
     InspectorHistory::Action::Trace(visitor);
   }
@@ -252,7 +252,7 @@ class DOMEditor::SetOuterHTMLAction final : public InspectorHistory::Action {
 
   Node* NewNode() { return new_node_; }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(node_);
     visitor->Trace(next_sibling_);
     visitor->Trace(new_node_);
@@ -296,7 +296,7 @@ class DOMEditor::ReplaceWholeTextAction final
     return true;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(text_node_);
     InspectorHistory::Action::Trace(visitor);
   }
@@ -334,7 +334,7 @@ class DOMEditor::ReplaceChildNodeAction final
     return !exception_state.HadException();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(parent_node_);
     visitor->Trace(new_node_);
     visitor->Trace(old_node_);
@@ -369,7 +369,7 @@ class DOMEditor::SetNodeValueAction final : public InspectorHistory::Action {
     return true;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(node_);
     InspectorHistory::Action::Trace(visitor);
   }
