@@ -102,7 +102,7 @@ class DISPLAY_MANAGER_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
   ~DisplayManager() override;
 #else
-  virtual ~DisplayManager();
+  ~DisplayManager();
 #endif
 
   DisplayLayoutStore* layout_store() { return layout_store_.get(); }
