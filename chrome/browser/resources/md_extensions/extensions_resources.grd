@@ -156,6 +156,12 @@
       <structure name="IDR_MD_EXTENSIONS_SIDEBAR_JS"
                  file="sidebar.js"
                  type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_TOGGLE_ROW_HTML"
+                 file="toggle_row.html"
+                 type="chrome_html" />
+      <structure name="IDR_MD_EXTENSIONS_TOGGLE_ROW_JS"
+                 file="toggle_row.js"
+                 type="chrome_html" />
       <structure name="IDR_MD_EXTENSIONS_TOOLBAR_HTML"
                  file="toolbar.html"
                  type="chrome_html"

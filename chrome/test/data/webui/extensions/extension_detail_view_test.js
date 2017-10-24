@@ -65,11 +65,7 @@ cr.define('extension_detail_view_tests', function() {
         {key: 'runOnAllUrls', id: '#allow-on-all-sites'},
         {key: 'errorCollection', id: '#collect-errors'},
       ];
-      var isChecked = function(id) {
-        var el = item.$$(id);
-        assert(el, id);
-        return el.hasAttribute('checked');
-      };
+      var isChecked = id => item.$$(id).checked;
       for (let option of accessOptions) {
         expectTrue(extension_test_util.isVisible(item, option.id));
         expectFalse(isChecked(option.id), option.id);
@@ -125,16 +121,16 @@ cr.define('extension_detail_view_tests', function() {
       item.set('data.optionsPage', {openInTab: true, url: optionsUrl});
       Polymer.dom.flush();
       mockDelegate.testClickingCalls(
-          item.$$('#allow-incognito'), 'setItemAllowedIncognito',
+          item.$$('#allow-incognito').getLabel(), 'setItemAllowedIncognito',
           [extensionData.id, true]);
       mockDelegate.testClickingCalls(
-          item.$$('#allow-on-file-urls'), 'setItemAllowedOnFileUrls',
+          item.$$('#allow-on-file-urls').getLabel(), 'setItemAllowedOnFileUrls',
           [extensionData.id, true]);
       mockDelegate.testClickingCalls(
-          item.$$('#allow-on-all-sites'), 'setItemAllowedOnAllSites',
+          item.$$('#allow-on-all-sites').getLabel(), 'setItemAllowedOnAllSites',
           [extensionData.id, true]);
       mockDelegate.testClickingCalls(
-          item.$$('#collect-errors'), 'setItemCollectsErrors',
+          item.$$('#collect-errors').getLabel(), 'setItemCollectsErrors',
           [extensionData.id, true]);
       mockDelegate.testClickingCalls(
           item.$$('#extensions-options'), 'showItemOptionsPage',

@@ -15,9 +15,10 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/color.html">
-<link rel="import" href="strings.html">
 <link rel="import" href="item_util.html">
 <link rel="import" href="navigation_helper.html">
+<link rel="import" href="strings.html">
+<link rel="import" href="toggle_row.html">
 
 <dom-module id="extensions-detail-view">
   <template>
@@ -296,36 +297,32 @@
         <template is="dom-if" if="[[shouldShowOptionsSection_(data.*)]]">
           <div id="options-section">
             <template is="dom-if" if="[[data.incognitoAccess.isEnabled]]">
-              <div class="section continuation control-line">
+              <extensions-toggle-row id="allow-incognito"
+                  checked="[[data.incognitoAccess.isActive]]"
+                  on-change="onAllowIncognitoChange_">
                 <span>$i18n{itemAllowIncognito}</span>
-                <cr-toggle id="allow-incognito"
-                    checked="[[data.incognitoAccess.isActive]]"
-                    on-change="onAllowIncognitoChange_"></cr-toggle>
-              </div>
+              </extensions-toggle-row>
             </template>
             <template is="dom-if" if="[[data.fileAccess.isEnabled]]">
-              <div class="section continuation control-line">
+              <extensions-toggle-row id="allow-on-file-urls"
+                  checked="[[data.fileAccess.isActive]]"
+                  on-change="onAllowOnFileUrlsChange_">
                 <span>$i18n{itemAllowOnFileUrls}</span>
-                <cr-toggle id="allow-on-file-urls"
-                    checked="[[data.fileAccess.isActive]]"
-                    on-change="onAllowOnFileUrlsChange_"></cr-toggle>
-              </div>
+              </extensions-toggle-row>
             </template>
             <template is="dom-if" if="[[data.runOnAllUrls.isEnabled]]">
-              <div class="section continuation control-line">
+              <extensions-toggle-row id="allow-on-all-sites"
+                  checked="[[data.runOnAllUrls.isActive]]"
+                  on-change="onAllowOnAllSitesChange_">
                 <span>$i18n{itemAllowOnAllSites}</span>
-                <cr-toggle id="allow-on-all-sites"
-                    checked="[[data.runOnAllUrls.isActive]]"
-                    on-change="onAllowOnAllSitesChange_"></cr-toggle>
-              </div>
+              </extensions-toggle-row>
             </template>
             <template is="dom-if" if="[[data.errorCollection.isEnabled]]">
-              <div class="section continuation control-line">
+              <extensions-toggle-row id="collect-errors"
+                checked="[[data.errorCollection.isActive]]"
+                on-change="onCollectErrorsChange_">
                 <span>$i18n{itemCollectErrors}</span>
-                <cr-toggle id="collect-errors"
-                    checked="[[data.errorCollection.isActive]]"
-                    on-change="onCollectErrorsChange_"></cr-toggle>
-              </div>
+              </extensions-toggle-row>
             </template>
           </div>
         </template>
