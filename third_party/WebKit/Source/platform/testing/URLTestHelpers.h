@@ -53,6 +53,11 @@ inline blink::KURL ToKURL(const std::string& url) {
 // get the appropriate |basePath| and |filePath| for test data directories.
 //  - For the mock URL, fullURL == baseURL + fileName.
 //  - For the file path, filePath == basePath + ("/" +) fileName.
+//
+// TODO(kinuko,toyoshim): These helpers should take URLLoaderMockFactory as a
+// parameter, or maybe have static {Set,Get}URLLoaderMockFactory() methods
+// so that we can deprecate the platform's GetURLLoaderMockFactory().
+// (crbug.com/751425)
 
 // Registers from a base URL and a base file path, and returns a calculated full
 // URL.

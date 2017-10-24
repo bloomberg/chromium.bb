@@ -175,9 +175,8 @@ class WebViewPlugin : public blink::WebPlugin,
     void DidInvalidateRect(const blink::WebRect&) override;
     void DidChangeCursor(const blink::WebCursorInfo& cursor) override;
     void ScheduleAnimation() override;
-    std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-        const blink::WebURLRequest& request,
-        scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+    std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
+        override;
 
     // WebFrameClient methods:
     void DidClearWindowObject() override;

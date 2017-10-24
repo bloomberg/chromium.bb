@@ -698,9 +698,7 @@ class PrepareFrameAndViewForPrint : public blink::WebViewClient,
       const blink::WebParsedFeaturePolicy& container_policy,
       const blink::WebFrameOwnerProperties& frame_owner_properties) override;
   void FrameDetached(DetachType detach_type) override;
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const blink::WebURLRequest& request,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
+  std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
   void CallOnReady();
   void ResizeForPrinting();
@@ -879,13 +877,9 @@ void PrepareFrameAndViewForPrint::FrameDetached(DetachType detach_type) {
   frame_.Reset(nullptr);
 }
 
-std::unique_ptr<blink::WebURLLoader>
-PrepareFrameAndViewForPrint::CreateURLLoader(
-    const blink::WebURLRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-  return blink::Platform::Current()->CreateURLLoader(request,
-                                                     std::move(task_runner));
+std::unique_ptr<blink::WebURLLoaderFactory>
+PrepareFrameAndViewForPrint::CreateURLLoaderFactory() {
+  return blink::Platform::Current()->CreateDefaultURLLoaderFactory();
 }
 
 void PrepareFrameAndViewForPrint::CallOnReady() {

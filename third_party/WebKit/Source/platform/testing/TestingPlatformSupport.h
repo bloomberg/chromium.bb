@@ -111,9 +111,8 @@ class TestingPlatformSupport : public Platform {
   WebFileUtilities* GetFileUtilities() override;
   WebIDBFactory* IdbFactory() override;
   WebURLLoaderMockFactory* GetURLLoaderMockFactory() override;
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const WebURLRequest&,
-      SingleThreadTaskRunnerRefPtr) override;
+  std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
+      override;
   WebData GetDataResource(const char* name) override;
   InterfaceProvider* GetInterfaceProvider() override;
 

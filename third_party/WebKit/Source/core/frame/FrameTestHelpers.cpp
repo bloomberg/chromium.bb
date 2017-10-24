@@ -75,6 +75,8 @@ namespace {
 // 7. At this point, all parsing, resource loads, and layout should be finished.
 
 void RunServeAsyncRequestsTask() {
+  // TODO(kinuko,toyoshim): Create a mock factory and use it instead of
+  // getting the platform's one. (crbug.com/751425)
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   if (TestWebFrameClient::IsLoading()) {
     Platform::Current()->CurrentThread()->GetWebTaskRunner()->PostTask(

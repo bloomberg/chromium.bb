@@ -364,13 +364,8 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
       WebApplicationCacheHostClient*) override;
 
   TextCheckerClient& GetTextCheckerClient() const override;
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const ResourceRequest& request,
-      scoped_refptr<WebTaskRunner> task_runner) override {
-    // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-    WrappedResourceRequest wrapped(request);
-    return Platform::Current()->CreateURLLoader(
-        wrapped, task_runner->ToSingleThreadTaskRunner());
+  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override {
+    return Platform::Current()->CreateDefaultURLLoaderFactory();
   }
 
   void AnnotatedRegionsChanged() override {}

@@ -14,6 +14,7 @@
 #include "platform/scheduler/test/fake_web_task_runner.h"
 #include "platform/wtf/PtrUtil.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebURLLoaderFactory.h"
 
 #include <memory>
 
@@ -82,8 +83,12 @@ class MockFetchContext : public FetchContext {
   std::unique_ptr<WebURLLoader> CreateURLLoader(
       const ResourceRequest& request,
       RefPtr<WebTaskRunner> task_runner) override {
+    if (!url_loader_factory_) {
+      url_loader_factory_ =
+          Platform::Current()->CreateDefaultURLLoaderFactory();
+    }
     WrappedResourceRequest wrapped(request);
-    return Platform::Current()->CreateURLLoader(
+    return url_loader_factory_->CreateURLLoader(
         wrapped, task_runner->ToSingleThreadTaskRunner());
   }
 
@@ -118,6 +123,7 @@ class MockFetchContext : public FetchContext {
   RefPtr<WebTaskRunner> runner_;
   RefPtr<SecurityOrigin> security_origin_;
   std::unique_ptr<WebFrameScheduler> frame_scheduler_;
+  std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
   bool complete_;
   long long transfer_size_;
 };

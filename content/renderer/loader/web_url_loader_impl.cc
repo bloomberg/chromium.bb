@@ -35,6 +35,7 @@
 #include "content/public/common/resource_request_body.h"
 #include "content/public/common/service_worker_modes.h"
 #include "content/public/common/url_loader.mojom.h"
+#include "content/public/renderer/child_url_loader_factory_getter.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/ftp_directory_listing_response_delegate.h"
@@ -342,6 +343,40 @@ StreamOverrideParameters::StreamOverrideParameters() {}
 StreamOverrideParameters::~StreamOverrideParameters() {
   if (on_delete)
     std::move(on_delete).Run(stream_url);
+}
+
+WebURLLoaderFactoryImpl::WebURLLoaderFactoryImpl(
+    base::WeakPtr<ResourceDispatcher> resource_dispatcher,
+    scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter)
+    : resource_dispatcher_(std::move(resource_dispatcher)),
+      loader_factory_getter_(std::move(loader_factory_getter)) {}
+
+WebURLLoaderFactoryImpl::~WebURLLoaderFactoryImpl() = default;
+
+std::unique_ptr<WebURLLoaderFactoryImpl>
+WebURLLoaderFactoryImpl::CreateTestOnlyFactory() {
+  return std::make_unique<WebURLLoaderFactoryImpl>(nullptr, nullptr);
+}
+
+std::unique_ptr<blink::WebURLLoader> WebURLLoaderFactoryImpl::CreateURLLoader(
+    const blink::WebURLRequest& request,
+    blink::SingleThreadTaskRunnerRefPtr task_runner) {
+  if (!loader_factory_getter_) {
+    // In some tests like RenderViewTests loader_factory_getter_ is not
+    // available. These tests can still use data URLs to bypass the
+    // ResourceDispatcher.
+    if (!task_runner)
+      task_runner = base::ThreadTaskRunnerHandle::Get();
+    return std::make_unique<WebURLLoaderImpl>(resource_dispatcher_.get(),
+                                              std::move(task_runner),
+                                              nullptr /* factory */);
+  }
+
+  DCHECK(task_runner);
+  DCHECK(resource_dispatcher_);
+  return std::make_unique<WebURLLoaderImpl>(
+      resource_dispatcher_.get(), std::move(task_runner),
+      loader_factory_getter_->GetFactoryForURL(request.Url()));
 }
 
 // This inner class exists since the WebURLLoader may be deleted while inside a

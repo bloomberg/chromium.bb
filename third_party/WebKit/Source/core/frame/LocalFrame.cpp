@@ -1088,10 +1088,10 @@ void LocalFrame::MaybeAllowImagePlaceholder(FetchParameters& params) const {
   }
 }
 
-std::unique_ptr<WebURLLoader> LocalFrame::CreateURLLoader(
-    const ResourceRequest& request,
-    scoped_refptr<WebTaskRunner> task_runner) {
-  return Client()->CreateURLLoader(request, std::move(task_runner));
+WebURLLoaderFactory* LocalFrame::GetURLLoaderFactory() {
+  if (!url_loader_factory_)
+    url_loader_factory_ = Client()->CreateURLLoaderFactory();
+  return url_loader_factory_.get();
 }
 
 WebPluginContainerImpl* LocalFrame::GetWebPluginContainer(Node* node) const {

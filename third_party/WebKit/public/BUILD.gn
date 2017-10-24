@@ -363,6 +363,7 @@ source_set("blink_headers") {
     "platform/WebURLLoadTiming.h",
     "platform/WebURLLoader.h",
     "platform/WebURLLoaderClient.h",
+    "platform/WebURLLoaderFactory.h",
     "platform/WebURLLoaderMockFactory.h",
     "platform/WebURLLoaderTestDelegate.h",
     "platform/WebURLRequest.h",
