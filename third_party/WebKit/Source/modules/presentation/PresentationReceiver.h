@@ -29,8 +29,7 @@ class WebPresentationClient;
 // to be eagerly created in order to have the receiver associated with the
 // client.
 class MODULES_EXPORT PresentationReceiver final
-    : public GarbageCollectedFinalized<PresentationReceiver>,
-      public ScriptWrappable,
+    : public ScriptWrappable,
       public ContextLifecycleObserver,
       public WebPresentationReceiver,
       public mojom::blink::PresentationReceiver {

@@ -517,6 +517,7 @@ Cache::Cache(GlobalFetch::ScopedFetcher* fetcher,
 
 void Cache::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
+  ScriptWrappable::Trace(visitor);
 }
 
 ScriptPromise Cache::MatchImpl(ScriptState* script_state,

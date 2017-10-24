@@ -21,8 +21,7 @@ class InternalDictionaryDerived;
 class InternalDictionaryDerivedDerived;
 class ScriptState;
 
-class DictionaryTest : public GarbageCollectedFinalized<DictionaryTest>,
-                       public ScriptWrappable {
+class DictionaryTest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

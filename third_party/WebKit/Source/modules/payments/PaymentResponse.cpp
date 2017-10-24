@@ -73,6 +73,7 @@ ScriptPromise PaymentResponse::complete(ScriptState* script_state,
 void PaymentResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(shipping_address_);
   visitor->Trace(payment_completer_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

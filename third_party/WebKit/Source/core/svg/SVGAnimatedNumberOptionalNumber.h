@@ -44,7 +44,10 @@ namespace blink {
 // are used.
 // For example, see SVGFEDropShadowElement::stdDeviation{X,Y}()
 class SVGAnimatedNumberOptionalNumber
-    : public SVGAnimatedPropertyCommon<SVGNumberOptionalNumber> {
+    : public GarbageCollectedFinalized<SVGAnimatedNumberOptionalNumber>,
+      public SVGAnimatedPropertyCommon<SVGNumberOptionalNumber> {
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedNumberOptionalNumber);
+
  public:
   static SVGAnimatedNumberOptionalNumber* Create(
       SVGElement* context_element,
@@ -63,7 +66,7 @@ class SVGAnimatedNumberOptionalNumber
   SVGAnimatedNumber* FirstNumber() { return first_number_.Get(); }
   SVGAnimatedNumber* SecondNumber() { return second_number_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   SVGAnimatedNumberOptionalNumber(SVGElement* context_element,

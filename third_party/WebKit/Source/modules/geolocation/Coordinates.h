@@ -32,8 +32,7 @@
 
 namespace blink {
 
-class Coordinates : public GarbageCollected<Coordinates>,
-                    public ScriptWrappable {
+class Coordinates : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -53,8 +52,6 @@ class Coordinates : public GarbageCollected<Coordinates>,
                            altitude_accuracy, provides_heading, heading,
                            provides_speed, speed);
   }
-
-  void Trace(blink::Visitor* visitor) {}
 
   double latitude() const { return latitude_; }
   double longitude() const { return longitude_; }

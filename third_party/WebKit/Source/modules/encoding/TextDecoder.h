@@ -47,8 +47,7 @@ class ExceptionState;
 
 typedef ArrayBufferOrArrayBufferView BufferSource;
 
-class TextDecoder final : public GarbageCollectedFinalized<TextDecoder>,
-                          public ScriptWrappable {
+class TextDecoder final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -63,8 +62,6 @@ class TextDecoder final : public GarbageCollectedFinalized<TextDecoder>,
   bool ignoreBOM() const { return ignore_bom_; }
   String decode(const BufferSource&, const TextDecodeOptions&, ExceptionState&);
   String decode(ExceptionState&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   TextDecoder(const WTF::TextEncoding&, bool fatal, bool ignore_bom);

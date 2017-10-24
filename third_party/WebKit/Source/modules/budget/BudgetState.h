@@ -15,8 +15,7 @@ class BudgetService;
 
 // This exposes the BudgetState interface which is returned from BudgetService
 // when there is a GetBudget call.
-class BudgetState final : public GarbageCollected<BudgetState>,
-                          public ScriptWrappable {
+class BudgetState final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -29,8 +28,6 @@ class BudgetState final : public GarbageCollected<BudgetState>,
 
   void SetBudgetAt(const double budget_at) { budget_at_ = budget_at; }
   void SetTime(const DOMTimeStamp& time) { time_ = time; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   double budget_at_;

@@ -25,9 +25,7 @@ class ScriptState;
 // any. The notification will be made asynchronously in order to combine changes
 // made inside the same event loop. When a MediaMetadata is created and assigned
 // to a MediaSession, the MediaSession will automatically update.
-class MODULES_EXPORT MediaMetadata final
-    : public GarbageCollectedFinalized<MediaMetadata>,
-      public ScriptWrappable {
+class MODULES_EXPORT MediaMetadata final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

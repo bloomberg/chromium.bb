@@ -44,8 +44,7 @@ class ExecutionContext;
 class FileReaderLoader;
 class ScriptState;
 
-class FileReaderSync final : public GarbageCollected<FileReaderSync>,
-                             public ScriptWrappable {
+class FileReaderSync final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -63,8 +62,6 @@ class FileReaderSync final : public GarbageCollected<FileReaderSync>,
                     const String& encoding,
                     ExceptionState&);
   String readAsDataURL(ScriptState*, Blob*, ExceptionState&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit FileReaderSync(ExecutionContext*);

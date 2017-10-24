@@ -18,8 +18,7 @@ class RequestDeviceOptions;
 class ScriptPromise;
 class ScriptState;
 
-class Bluetooth final : public GarbageCollectedFinalized<Bluetooth>,
-                        public ScriptWrappable {
+class Bluetooth final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

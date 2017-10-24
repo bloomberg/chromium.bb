@@ -37,6 +37,7 @@ void ReportingObserver::disconnect() {
 void ReportingObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(execution_context_);
   visitor->Trace(callback_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -17,8 +17,7 @@ namespace blink {
 
 class ScriptState;
 
-class IDBObserverChanges final : public GarbageCollected<IDBObserverChanges>,
-                                 public ScriptWrappable {
+class IDBObserverChanges final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

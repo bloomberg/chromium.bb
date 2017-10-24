@@ -48,9 +48,7 @@ class DOMStringList;
 class IDBAny;
 class ExceptionState;
 
-class MODULES_EXPORT IDBObjectStore final
-    : public GarbageCollectedFinalized<IDBObjectStore>,
-      public ScriptWrappable {
+class MODULES_EXPORT IDBObjectStore final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

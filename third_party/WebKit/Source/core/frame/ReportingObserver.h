@@ -15,9 +15,7 @@ namespace blink {
 class ExecutionContext;
 class Report;
 
-class CORE_EXPORT ReportingObserver final
-    : public GarbageCollected<ReportingObserver>,
-      public ScriptWrappable {
+class CORE_EXPORT ReportingObserver final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -48,6 +48,7 @@ SVGAnimatedAngle::~SVGAnimatedAngle() {}
 void SVGAnimatedAngle::Trace(blink::Visitor* visitor) {
   visitor->Trace(orient_type_);
   SVGAnimatedProperty<SVGAngle>::Trace(visitor);
+  ScriptWrappable::Trace(visitor);
 }
 
 void SVGAnimatedAngle::TraceWrappers(

@@ -20,14 +20,10 @@ class V8TestInterfaceCallback;
 class V8TestReceiverObjectCallback;
 class V8TestSequenceCallback;
 
-class CallbackFunctionTest final
-    : public GarbageCollected<CallbackFunctionTest>,
-      public ScriptWrappable {
+class CallbackFunctionTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  void Trace(blink::Visitor*);
-
   static CallbackFunctionTest* Create() { return new CallbackFunctionTest(); }
 
   String testCallback(V8TestCallback*,

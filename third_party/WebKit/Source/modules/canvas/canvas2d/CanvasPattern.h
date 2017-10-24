@@ -36,8 +36,7 @@ namespace blink {
 class ExceptionState;
 class Image;
 
-class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>,
-                            public ScriptWrappable {
+class CanvasPattern final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -54,8 +53,6 @@ class CanvasPattern final : public GarbageCollectedFinalized<CanvasPattern>,
   const AffineTransform& GetTransform() const { return pattern_transform_; }
 
   bool OriginClean() const { return origin_clean_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
   void setTransform(SVGMatrixTearOff*);
 

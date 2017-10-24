@@ -42,8 +42,7 @@ namespace XPath {
 struct EvaluationContext;
 }
 
-class XPathResult final : public GarbageCollected<XPathResult>,
-                          public ScriptWrappable {
+class XPathResult final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -44,9 +44,4 @@ SVGStringListTearOff::SVGStringListTearOff(
                                         property_is_anim_val,
                                         attribute_name) {}
 
-void SVGStringListTearOff::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
-  SVGPropertyTearOff<SVGStringList>::TraceWrappers(visitor);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-}
+}  // namespace blink

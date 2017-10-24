@@ -33,15 +33,12 @@
 
 #include "core/svg/SVGTransform.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
-#include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
 class SVGMatrixTearOff;
 
-class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform>,
-                                  public ScriptWrappable {
+class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -79,8 +76,6 @@ class SVGTransformTearOff final : public SVGPropertyTearOff<SVGTransform>,
   void setSkewY(float, ExceptionState&);
 
   virtual void Trace(blink::Visitor*);
-
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   SVGTransformTearOff(SVGTransform*,

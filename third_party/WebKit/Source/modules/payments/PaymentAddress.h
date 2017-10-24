@@ -16,9 +16,7 @@
 
 namespace blink {
 
-class MODULES_EXPORT PaymentAddress final
-    : public GarbageCollectedFinalized<PaymentAddress>,
-      public ScriptWrappable {
+class MODULES_EXPORT PaymentAddress final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(PaymentAddress);
 
@@ -39,8 +37,6 @@ class MODULES_EXPORT PaymentAddress final
   const String& organization() const { return organization_; }
   const String& recipient() const { return recipient_; }
   const String& phone() const { return phone_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   String country_;

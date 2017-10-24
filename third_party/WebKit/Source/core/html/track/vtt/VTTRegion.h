@@ -45,8 +45,7 @@ class HTMLDivElement;
 class VTTCueBox;
 class VTTScanner;
 
-class VTTRegion final : public GarbageCollectedFinalized<VTTRegion>,
-                        public ScriptWrappable {
+class VTTRegion final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

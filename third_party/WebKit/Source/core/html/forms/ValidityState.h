@@ -29,8 +29,7 @@
 
 namespace blink {
 
-class ValidityState final : public GarbageCollected<ValidityState>,
-                            public ScriptWrappable {
+class ValidityState final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(ValidityState);
 
@@ -38,7 +37,10 @@ class ValidityState final : public GarbageCollected<ValidityState>,
   static ValidityState* Create(ListedElement* control) {
     return new ValidityState(control);
   }
-  void Trace(blink::Visitor* visitor) { visitor->Trace(control_); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(control_);
+    ScriptWrappable::Trace(visitor);
+  }
 
   String ValidationMessage() const;
 

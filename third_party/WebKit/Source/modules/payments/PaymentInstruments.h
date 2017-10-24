@@ -20,9 +20,7 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class MODULES_EXPORT PaymentInstruments final
-    : public GarbageCollected<PaymentInstruments>,
-      public ScriptWrappable {
+class MODULES_EXPORT PaymentInstruments final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(PaymentInstruments);
 
@@ -38,8 +36,6 @@ class MODULES_EXPORT PaymentInstruments final
                     const PaymentInstrument& details,
                     ExceptionState&);
   ScriptPromise clear(ScriptState*);
-
-  void Trace(blink::Visitor*);
 
  private:
   void onDeletePaymentInstrument(ScriptPromiseResolver*,

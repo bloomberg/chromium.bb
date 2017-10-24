@@ -38,16 +38,22 @@
 namespace blink {
 
 class SVGAnimatedEnumerationBase
-    : public SVGAnimatedProperty<SVGEnumerationBase>,
-      public ScriptWrappable {
+    : public ScriptWrappable,
+      public SVGAnimatedProperty<SVGEnumerationBase> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedEnumerationBase);
 
  public:
   ~SVGAnimatedEnumerationBase() override;
 
   void setBaseVal(unsigned short, ExceptionState&);
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGEnumerationBase>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
+
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGEnumerationBase>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

@@ -49,6 +49,7 @@ bool SequenceTest::unionReceivedSequence(const DoubleOrDoubleSequence& arg) {
 
 void SequenceTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_sequence_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

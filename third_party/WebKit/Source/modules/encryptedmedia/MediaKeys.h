@@ -52,10 +52,9 @@ class WebContentDecryptionModule;
 
 // References are held by JS and HTMLMediaElement.
 // The WebContentDecryptionModule has the same lifetime as this object.
-class MediaKeys : public GarbageCollectedFinalized<MediaKeys>,
+class MediaKeys : public ScriptWrappable,
                   public ActiveScriptWrappable<MediaKeys>,
-                  public ContextLifecycleObserver,
-                  public ScriptWrappable {
+                  public ContextLifecycleObserver {
   USING_GARBAGE_COLLECTED_MIXIN(MediaKeys);
   DEFINE_WRAPPERTYPEINFO();
 

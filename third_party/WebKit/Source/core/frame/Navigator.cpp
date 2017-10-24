@@ -114,6 +114,7 @@ Vector<String> Navigator::languages() {
 }
 
 void Navigator::Trace(blink::Visitor* visitor) {
+  ScriptWrappable::Trace(visitor);
   DOMWindowClient::Trace(visitor);
   Supplementable<Navigator>::Trace(visitor);
 }

@@ -15,8 +15,7 @@ class ExceptionState;
 class USBEndpoint;
 class USBInterface;
 
-class USBAlternateInterface : public GarbageCollected<USBAlternateInterface>,
-                              public ScriptWrappable {
+class USBAlternateInterface : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

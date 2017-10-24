@@ -32,8 +32,7 @@
 
 namespace blink {
 
-class DeviceRotationRate final : public GarbageCollected<DeviceRotationRate>,
-                                 public ScriptWrappable {
+class DeviceRotationRate final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

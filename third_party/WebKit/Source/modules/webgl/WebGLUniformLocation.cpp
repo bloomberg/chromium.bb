@@ -57,6 +57,7 @@ GLint WebGLUniformLocation::Location() const {
 
 void WebGLUniformLocation::Trace(blink::Visitor* visitor) {
   visitor->Trace(program_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

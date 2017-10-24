@@ -231,6 +231,7 @@ void MediaSession::DidReceiveAction(
 void MediaSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(metadata_);
   visitor->Trace(action_handlers_);
+  ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
 }
 

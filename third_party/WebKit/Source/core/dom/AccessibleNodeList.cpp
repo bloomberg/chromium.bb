@@ -108,6 +108,7 @@ void AccessibleNodeList::NotifyChanged() {
 void AccessibleNodeList::Trace(blink::Visitor* visitor) {
   visitor->Trace(nodes_);
   visitor->Trace(owners_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -28,14 +28,12 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 class MODULES_EXPORT SpeechRecognitionAlternative final
-    : public GarbageCollectedFinalized<SpeechRecognitionAlternative>,
-      public ScriptWrappable {
+    : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -43,8 +41,6 @@ class MODULES_EXPORT SpeechRecognitionAlternative final
 
   const String& transcript() const { return transcript_; }
   double confidence() const { return confidence_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   SpeechRecognitionAlternative(const String&, double);

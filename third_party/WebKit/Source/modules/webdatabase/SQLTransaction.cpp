@@ -83,6 +83,7 @@ void SQLTransaction::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(success_callback_);
   visitor->Trace(error_callback_);
+  ScriptWrappable::Trace(visitor);
 }
 
 bool SQLTransaction::HasCallback() const {

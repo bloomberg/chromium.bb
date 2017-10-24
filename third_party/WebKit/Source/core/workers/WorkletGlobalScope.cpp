@@ -162,7 +162,7 @@ KURL WorkletGlobalScope::CompleteURL(const String& url) const {
 void WorkletGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(module_responses_map_proxy_);
   visitor->Trace(modulator_);
-  ExecutionContext::Trace(visitor);
+  ScriptWrappable::Trace(visitor);
   SecurityContext::Trace(visitor);
   WorkerOrWorkletGlobalScope::Trace(visitor);
 }

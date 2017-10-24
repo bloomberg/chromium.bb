@@ -31,8 +31,7 @@ namespace blink {
 
 class Node;
 
-class CORE_EXPORT NodeList : public GarbageCollectedFinalized<NodeList>,
-                             public ScriptWrappable {
+class CORE_EXPORT NodeList : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -47,8 +46,6 @@ class CORE_EXPORT NodeList : public GarbageCollectedFinalized<NodeList>,
   virtual bool IsChildNodeList() const { return false; }
 
   virtual Node* VirtualOwnerNode() const { return 0; }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   NodeList() {}

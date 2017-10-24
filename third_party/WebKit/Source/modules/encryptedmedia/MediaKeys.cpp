@@ -405,6 +405,7 @@ WebContentDecryptionModule* MediaKeys::ContentDecryptionModule() {
 void MediaKeys::Trace(blink::Visitor* visitor) {
   visitor->Trace(pending_actions_);
   visitor->Trace(media_element_);
+  ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 

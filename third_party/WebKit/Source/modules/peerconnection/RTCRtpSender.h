@@ -17,8 +17,7 @@ namespace blink {
 class MediaStreamTrack;
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpsender-interface
-class RTCRtpSender final : public GarbageCollectedFinalized<RTCRtpSender>,
-                           public ScriptWrappable {
+class RTCRtpSender final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

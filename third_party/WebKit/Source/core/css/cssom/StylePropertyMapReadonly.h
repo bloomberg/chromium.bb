@@ -16,8 +16,7 @@
 namespace blink {
 
 class CORE_EXPORT StylePropertyMapReadonly
-    : public GarbageCollectedFinalized<StylePropertyMapReadonly>,
-      public ScriptWrappable,
+    : public ScriptWrappable,
       public PairIterable<String, CSSStyleValueOrCSSStyleValueSequence> {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(StylePropertyMapReadonly);
@@ -34,8 +33,6 @@ class CORE_EXPORT StylePropertyMapReadonly
   virtual bool has(const String& property_name, ExceptionState&);
 
   virtual Vector<String> getProperties() = 0;
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   StylePropertyMapReadonly() = default;

@@ -25,9 +25,7 @@ class ScriptState;
 // BluetoothRemoteGATTDescriptor represents a GATT Descriptor, which is
 // a basic data element that provides further information about a peripheral's
 // characteristic.
-class BluetoothRemoteGATTDescriptor final
-    : public GarbageCollectedFinalized<BluetoothRemoteGATTDescriptor>,
-      public ScriptWrappable {
+class BluetoothRemoteGATTDescriptor final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

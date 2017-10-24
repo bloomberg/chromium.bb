@@ -13,8 +13,7 @@ namespace blink {
 
 class ExceptionState;
 
-class TrackDefaultList final : public GarbageCollected<TrackDefaultList>,
-                               public ScriptWrappable {
+class TrackDefaultList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

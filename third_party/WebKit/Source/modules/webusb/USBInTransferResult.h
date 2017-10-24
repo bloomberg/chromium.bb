@@ -14,9 +14,7 @@
 
 namespace blink {
 
-class USBInTransferResult final
-    : public GarbageCollectedFinalized<USBInTransferResult>,
-      public ScriptWrappable {
+class USBInTransferResult final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -43,7 +41,10 @@ class USBInTransferResult final
   String status() const { return status_; }
   DOMDataView* data() const { return data_; }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(data_); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(data_);
+    ScriptWrappable::Trace(visitor);
+  }
 
  private:
   const String status_;

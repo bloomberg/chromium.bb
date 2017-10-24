@@ -13,8 +13,7 @@
 
 namespace blink {
 
-class VRStageParameters final : public GarbageCollected<VRStageParameters>,
-                                public ScriptWrappable {
+class VRStageParameters final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -29,7 +28,7 @@ class VRStageParameters final : public GarbageCollected<VRStageParameters>,
 
   void Update(const device::mojom::blink::VRStageParametersPtr&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<DOMFloat32Array> standing_transform_;

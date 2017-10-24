@@ -250,6 +250,7 @@ Children:
 
 void TreeWalker::Trace(blink::Visitor* visitor) {
   visitor->Trace(current_);
+  ScriptWrappable::Trace(visitor);
   NodeIteratorBase::Trace(visitor);
 }
 

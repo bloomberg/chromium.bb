@@ -26,8 +26,7 @@
 
 namespace blink {
 
-class SVGUnitTypes final : public GarbageCollected<SVGUnitTypes>,
-                           public ScriptWrappable {
+class SVGUnitTypes final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -36,8 +35,6 @@ class SVGUnitTypes final : public GarbageCollected<SVGUnitTypes>,
     kSvgUnitTypeUserspaceonuse = 1,
     kSvgUnitTypeObjectboundingbox = 2
   };
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   SVGUnitTypes();  // No instantiation.

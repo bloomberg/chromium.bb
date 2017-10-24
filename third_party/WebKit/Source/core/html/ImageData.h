@@ -70,8 +70,7 @@ constexpr const char* kUint8ClampedArrayStorageFormatName = "uint8";
 constexpr const char* kUint16ArrayStorageFormatName = "uint16";
 constexpr const char* kFloat32ArrayStorageFormatName = "float32";
 
-class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
-                                    public ScriptWrappable,
+class CORE_EXPORT ImageData final : public ScriptWrappable,
                                     public ImageBitmapSource {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -152,7 +151,7 @@ class CORE_EXPORT ImageData final : public GarbageCollectedFinalized<ImageData>,
                                   Optional<IntRect> crop_rect,
                                   const ImageBitmapOptions&) override;
 
-  void Trace(Visitor*);
+  void Trace(blink::Visitor*) override;
 
   WARN_UNUSED_RESULT v8::Local<v8::Object> AssociateWithWrapper(
       v8::Isolate*,

@@ -11,6 +11,4 @@ MediaKeysPolicy::MediaKeysPolicy(const MediaKeysPolicyInit& initializer) {
     min_hdcp_version_ = initializer.minHdcpVersion();
 }
 
-void MediaKeysPolicy::Trace(blink::Visitor* visitor) {}
-
 }  // namespace blink

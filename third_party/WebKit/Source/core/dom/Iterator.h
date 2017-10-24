@@ -14,8 +14,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT Iterator : public GarbageCollectedFinalized<Iterator>,
-                             public ScriptWrappable {
+class CORE_EXPORT Iterator : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -27,8 +26,6 @@ class CORE_EXPORT Iterator : public GarbageCollectedFinalized<Iterator>,
                            ScriptValue /* value */,
                            ExceptionState&) = 0;
   Iterator* GetIterator(ScriptState*, ExceptionState&) { return this; }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

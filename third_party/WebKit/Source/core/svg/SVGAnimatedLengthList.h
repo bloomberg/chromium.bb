@@ -39,9 +39,10 @@ namespace blink {
 
 // SVG Spec:
 // http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedLengthList
-class SVGAnimatedLengthList final : public SVGAnimatedProperty<SVGLengthList>,
-                                    public ScriptWrappable {
+class SVGAnimatedLengthList final : public ScriptWrappable,
+                                    public SVGAnimatedProperty<SVGLengthList> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedLengthList);
 
  public:
   static SVGAnimatedLengthList* Create(SVGElement* context_element,
@@ -51,7 +52,12 @@ class SVGAnimatedLengthList final : public SVGAnimatedProperty<SVGLengthList>,
                                      initial_value);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGLengthList>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
+
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGLengthList>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

@@ -76,6 +76,7 @@ IDBObjectStore::IDBObjectStore(scoped_refptr<IDBObjectStoreMetadata> metadata,
 void IDBObjectStore::Trace(blink::Visitor* visitor) {
   visitor->Trace(transaction_);
   visitor->Trace(index_map_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void IDBObjectStore::setName(const String& name,

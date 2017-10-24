@@ -211,6 +211,7 @@ void VRFrameData::Trace(blink::Visitor* visitor) {
   visitor->Trace(right_projection_matrix_);
   visitor->Trace(right_view_matrix_);
   visitor->Trace(pose_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

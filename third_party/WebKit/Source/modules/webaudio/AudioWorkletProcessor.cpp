@@ -51,6 +51,7 @@ bool AudioWorkletProcessor::Process(
 
 void AudioWorkletProcessor::Trace(blink::Visitor* visitor) {
   visitor->Trace(global_scope_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void AudioWorkletProcessor::TraceWrappers(

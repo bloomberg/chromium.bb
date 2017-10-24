@@ -18,9 +18,8 @@ class ExecutionContext;
 class MojoHandleSignals;
 class V8MojoWatchCallback;
 
-class MojoWatcher final : public GarbageCollectedFinalized<MojoWatcher>,
+class MojoWatcher final : public ScriptWrappable,
                           public ActiveScriptWrappable<MojoWatcher>,
-                          public ScriptWrappable,
                           public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MojoWatcher);

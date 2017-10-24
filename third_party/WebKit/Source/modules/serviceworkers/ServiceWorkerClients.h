@@ -15,9 +15,7 @@ namespace blink {
 class ScriptPromise;
 class ScriptState;
 
-class ServiceWorkerClients final
-    : public GarbageCollected<ServiceWorkerClients>,
-      public ScriptWrappable {
+class ServiceWorkerClients final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -28,8 +26,6 @@ class ServiceWorkerClients final
   ScriptPromise matchAll(ScriptState*, const ClientQueryOptions&);
   ScriptPromise openWindow(ScriptState*, const String& url);
   ScriptPromise claim(ScriptState*);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   ServiceWorkerClients();

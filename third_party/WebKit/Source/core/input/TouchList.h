@@ -34,8 +34,7 @@
 
 namespace blink {
 
-class CORE_EXPORT TouchList final : public GarbageCollected<TouchList>,
-                                    public ScriptWrappable {
+class CORE_EXPORT TouchList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

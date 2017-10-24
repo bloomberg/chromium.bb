@@ -40,9 +40,10 @@ namespace blink {
 // SVG Spec:
 // http://www.w3.org/TR/SVG11/coords.html#InterfaceSVGAnimatedTransformList
 class SVGAnimatedTransformList final
-    : public SVGAnimatedProperty<SVGTransformList>,
-      public ScriptWrappable {
+    : public ScriptWrappable,
+      public SVGAnimatedProperty<SVGTransformList> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedTransformList);
 
  public:
   static SVGAnimatedTransformList* Create(
@@ -53,7 +54,12 @@ class SVGAnimatedTransformList final
                                         css_property_id);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGTransformList>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
+
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGTransformList>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

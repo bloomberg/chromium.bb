@@ -33,9 +33,7 @@
 
 namespace blink {
 
-class RTCLegacyStatsReport final
-    : public GarbageCollectedFinalized<RTCLegacyStatsReport>,
-      public ScriptWrappable {
+class RTCLegacyStatsReport final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -50,8 +48,6 @@ class RTCLegacyStatsReport final
   Vector<String> names() const;
 
   void AddStatistic(const String& name, const String& value);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   RTCLegacyStatsReport(const String& id, const String& type, double timestamp);

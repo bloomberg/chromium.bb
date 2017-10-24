@@ -37,8 +37,7 @@
 
 namespace blink {
 
-class Metadata final : public GarbageCollectedFinalized<Metadata>,
-                       public ScriptWrappable {
+class Metadata final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -57,8 +56,6 @@ class Metadata final : public GarbageCollectedFinalized<Metadata>,
   unsigned long long size() const {
     return static_cast<unsigned long long>(platform_metadata_.length);
   }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit Metadata(const FileMetadata& platform_metadata)

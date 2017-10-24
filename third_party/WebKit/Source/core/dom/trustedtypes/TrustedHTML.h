@@ -14,9 +14,7 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT TrustedHTML final
-    : public GarbageCollectedFinalized<TrustedHTML>,
-      public ScriptWrappable {
+class CORE_EXPORT TrustedHTML final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -28,8 +26,6 @@ class CORE_EXPORT TrustedHTML final
   String toString() const;
   static TrustedHTML* escape(ScriptState*, const String& html);
   static TrustedHTML* unsafelyCreate(ScriptState*, const String& html);
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  private:
   TrustedHTML(const String& html);

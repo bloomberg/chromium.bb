@@ -37,9 +37,7 @@
 
 namespace blink {
 
-class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>,
-                                    public CanvasPath,
-                                    public ScriptWrappable {
+class MODULES_EXPORT Path2D final : public ScriptWrappable, public CanvasPath {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(Path2D);
 
@@ -62,7 +60,6 @@ class MODULES_EXPORT Path2D final : public GarbageCollectedFinalized<Path2D>,
   }
 
   ~Path2D() override {}
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   Path2D() : CanvasPath() {}

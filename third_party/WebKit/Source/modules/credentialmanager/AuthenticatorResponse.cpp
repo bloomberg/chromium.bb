@@ -18,6 +18,7 @@ AuthenticatorResponse::~AuthenticatorResponse() {}
 
 void AuthenticatorResponse::Trace(blink::Visitor* visitor) {
   visitor->Trace(client_data_json_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

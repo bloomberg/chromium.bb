@@ -43,8 +43,7 @@ class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 
-class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>,
-                              public ScriptWrappable {
+class RTCIceCandidate final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -63,8 +62,6 @@ class RTCIceCandidate final : public GarbageCollectedFinalized<RTCIceCandidate>,
   ScriptValue toJSONForBinding(ScriptState*);
 
   WebRTCICECandidate WebCandidate() const;
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit RTCIceCandidate(WebRTCICECandidate);

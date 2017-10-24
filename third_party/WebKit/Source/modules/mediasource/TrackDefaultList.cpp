@@ -72,6 +72,7 @@ TrackDefaultList::TrackDefaultList(
 
 void TrackDefaultList::Trace(blink::Visitor* visitor) {
   visitor->Trace(track_defaults_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

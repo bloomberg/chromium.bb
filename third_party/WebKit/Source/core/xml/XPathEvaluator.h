@@ -39,8 +39,7 @@ class XPathExpression;
 class XPathNSResolver;
 class XPathResult;
 
-class XPathEvaluator final : public GarbageCollected<XPathEvaluator>,
-                             public ScriptWrappable {
+class XPathEvaluator final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -56,8 +55,6 @@ class XPathEvaluator final : public GarbageCollected<XPathEvaluator>,
                         unsigned short type,
                         const ScriptValue&,
                         ExceptionState&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   XPathEvaluator() {}

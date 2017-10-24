@@ -36,8 +36,7 @@
 
 namespace blink {
 
-class DOMStringMap : public GarbageCollected<DOMStringMap>,
-                     public ScriptWrappable {
+class DOMStringMap : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(DOMStringMap);
 
@@ -63,8 +62,6 @@ class DOMStringMap : public GarbageCollected<DOMStringMap>,
     GetNames(names);
   }
   bool NamedPropertyQuery(const AtomicString&, ExceptionState&);
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   DOMStringMap() {}

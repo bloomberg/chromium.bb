@@ -433,6 +433,7 @@ void BackgroundFetchManager::DidGetDeveloperIds(
 void BackgroundFetchManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
   visitor->Trace(bridge_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -144,6 +144,7 @@ void TextTrackCueList::ValidateCueIndexes() {
 
 void TextTrackCueList::Trace(blink::Visitor* visitor) {
   visitor->Trace(list_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void TextTrackCueList::TraceWrappers(

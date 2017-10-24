@@ -25,19 +25,17 @@
 #ifndef RTCStatsResponseBase_h
 #define RTCStatsResponseBase_h
 
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/Forward.h"
 #include "public/platform/WebRTCLegacyStats.h"
 
 namespace blink {
 
-class RTCStatsResponseBase
-    : public GarbageCollectedFinalized<RTCStatsResponseBase> {
+class RTCStatsResponseBase : public ScriptWrappable {
  public:
   virtual ~RTCStatsResponseBase() {}
 
   virtual void AddStats(const WebRTCLegacyStats&) = 0;
-
-  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

@@ -41,9 +41,10 @@ DOMPluginArray::DOMPluginArray(LocalFrame* frame)
 }
 
 void DOMPluginArray::Trace(blink::Visitor* visitor) {
+  visitor->Trace(dom_plugins_);
+  ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
   PluginsChangedObserver::Trace(visitor);
-  visitor->Trace(dom_plugins_);
 }
 
 unsigned DOMPluginArray::length() const {

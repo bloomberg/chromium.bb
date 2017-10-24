@@ -150,6 +150,7 @@ void PresentationReceiver::ContextDestroyed(ExecutionContext*) {
 void PresentationReceiver::Trace(blink::Visitor* visitor) {
   visitor->Trace(connection_list_);
   visitor->Trace(connection_list_property_);
+  ScriptWrappable::Trace(visitor);
   ContextLifecycleObserver::Trace(visitor);
 }
 

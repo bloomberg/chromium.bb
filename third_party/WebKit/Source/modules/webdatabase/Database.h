@@ -50,8 +50,7 @@ class SQLTransactionErrorCallback;
 class V8DatabaseCallback;
 class VoidCallback;
 
-class Database final : public GarbageCollectedFinalized<Database>,
-                       public ScriptWrappable {
+class Database final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

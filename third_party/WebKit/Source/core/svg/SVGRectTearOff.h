@@ -33,12 +33,10 @@
 
 #include "core/svg/SVGRect.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
-#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 
-class SVGRectTearOff : public SVGPropertyTearOff<SVGRect>,
-                       public ScriptWrappable {
+class SVGRectTearOff : public SVGPropertyTearOff<SVGRect> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -59,8 +57,6 @@ class SVGRectTearOff : public SVGPropertyTearOff<SVGRect>,
   float y() { return Target()->Y(); }
   float width() { return Target()->Width(); }
   float height() { return Target()->Height(); }
-
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   SVGRectTearOff(SVGRect*,

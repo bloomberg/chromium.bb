@@ -17,8 +17,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
 
-class SyncManager final : public GarbageCollectedFinalized<SyncManager>,
-                          public ScriptWrappable {
+class SyncManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

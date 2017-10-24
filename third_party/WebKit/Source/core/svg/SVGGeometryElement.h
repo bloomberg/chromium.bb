@@ -56,7 +56,7 @@ class SVGGeometryElement : public SVGGraphicsElement {
   float PathLengthScaleFactor() const;
   virtual float ComputePathLength() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   SVGGeometryElement(const QualifiedName&,

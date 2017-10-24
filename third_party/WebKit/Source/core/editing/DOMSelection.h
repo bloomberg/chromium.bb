@@ -44,8 +44,7 @@ class Node;
 class Range;
 class TreeScope;
 
-class CORE_EXPORT DOMSelection final : public GarbageCollected<DOMSelection>,
-                                       public ScriptWrappable,
+class CORE_EXPORT DOMSelection final : public ScriptWrappable,
                                        public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(DOMSelection);

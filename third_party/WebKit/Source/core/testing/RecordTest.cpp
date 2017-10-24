@@ -78,6 +78,7 @@ bool RecordTest::unionReceivedARecord(
 
 void RecordTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(string_element_record_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

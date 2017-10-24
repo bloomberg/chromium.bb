@@ -34,8 +34,7 @@ class MediaList;
 class Node;
 class StyleSheet;
 
-class CORE_EXPORT StyleSheet : public GarbageCollectedFinalized<StyleSheet>,
-                               public ScriptWrappable {
+class CORE_EXPORT StyleSheet : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -56,8 +55,6 @@ class CORE_EXPORT StyleSheet : public GarbageCollectedFinalized<StyleSheet>,
   virtual KURL BaseURL() const = 0;
   virtual bool IsLoading() const = 0;
   virtual bool IsCSSStyleSheet() const { return false; }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

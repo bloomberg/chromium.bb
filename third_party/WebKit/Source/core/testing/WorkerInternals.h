@@ -14,8 +14,7 @@ class ExceptionState;
 class OriginTrialsTest;
 class ScriptState;
 
-class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
-                              public ScriptWrappable {
+class WorkerInternals final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -27,8 +26,6 @@ class WorkerInternals final : public GarbageCollectedFinalized<WorkerInternals>,
   void countDeprecation(ScriptState*, uint32_t feature, ExceptionState&);
 
   void collectGarbage(ScriptState*);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit WorkerInternals();

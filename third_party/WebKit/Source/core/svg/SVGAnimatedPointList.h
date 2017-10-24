@@ -36,7 +36,31 @@
 
 namespace blink {
 
-typedef SVGAnimatedProperty<SVGPointList> SVGAnimatedPointList;
+class SVGAnimatedPointList final
+    : public GarbageCollectedFinalized<SVGAnimatedPointList>,
+      public SVGAnimatedProperty<SVGPointList> {
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedPointList);
+
+ public:
+  static SVGAnimatedPointList* Create(
+      SVGElement* context_element,
+      const QualifiedName& attribute_name,
+      SVGPointList* initial_value,
+      CSSPropertyID css_property_id = CSSPropertyInvalid) {
+    return new SVGAnimatedPointList(context_element, attribute_name,
+                                    initial_value, css_property_id);
+  }
+
+ protected:
+  SVGAnimatedPointList(SVGElement* context_element,
+                       const QualifiedName& attribute_name,
+                       SVGPointList* initial_value,
+                       CSSPropertyID css_property_id)
+      : SVGAnimatedProperty<SVGPointList>(context_element,
+                                          attribute_name,
+                                          initial_value,
+                                          css_property_id) {}
+};
 
 }  // namespace blink
 

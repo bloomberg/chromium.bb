@@ -47,6 +47,7 @@ SVGMatrixTearOff::SVGMatrixTearOff(SVGTransformTearOff* transform)
 
 void SVGMatrixTearOff::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_transform_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void SVGMatrixTearOff::TraceWrappers(

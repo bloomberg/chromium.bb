@@ -381,6 +381,7 @@ void Event::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(underlying_event_);
   visitor->Trace(event_path_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

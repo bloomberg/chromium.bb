@@ -38,13 +38,11 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 
-class IDBFactory final : public GarbageCollected<IDBFactory>,
-                         public ScriptWrappable {
+class IDBFactory final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static IDBFactory* Create() { return new IDBFactory(); }
-  virtual void Trace(blink::Visitor* visitor) {}
 
   // Implement the IDBFactory IDL
   IDBOpenDBRequest* open(ScriptState*, const String& name, ExceptionState&);

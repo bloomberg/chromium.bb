@@ -50,10 +50,8 @@ class ScriptState;
 class ScriptValue;
 
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
-class CORE_EXPORT PerformanceTiming final
-    : public GarbageCollected<PerformanceTiming>,
-      public ScriptWrappable,
-      public DOMWindowClient {
+class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
+                                            public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PerformanceTiming);
 
@@ -113,7 +111,7 @@ class CORE_EXPORT PerformanceTiming final
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   unsigned long long MonotonicTimeToIntegerMilliseconds(double) const;
   double IntegerMillisecondsToMonotonicTime(unsigned long long) const;

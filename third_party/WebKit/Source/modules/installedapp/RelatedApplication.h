@@ -11,9 +11,7 @@
 
 namespace blink {
 
-class RelatedApplication final
-    : public GarbageCollectedFinalized<RelatedApplication>,
-      public ScriptWrappable {
+class RelatedApplication final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -28,8 +26,6 @@ class RelatedApplication final
   String platform() const { return platform_; }
   String url() const { return url_; }
   String id() const { return id_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   RelatedApplication(const String& platform,

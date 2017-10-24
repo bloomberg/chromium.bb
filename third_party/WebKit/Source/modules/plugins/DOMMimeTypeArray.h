@@ -34,8 +34,7 @@ class ExceptionState;
 class LocalFrame;
 class PluginData;
 
-class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
-                               public ScriptWrappable,
+class DOMMimeTypeArray final : public ScriptWrappable,
                                public ContextLifecycleObserver,
                                public PluginsChangedObserver {
   DEFINE_WRAPPERTYPEINFO();
@@ -56,7 +55,7 @@ class DOMMimeTypeArray final : public GarbageCollected<DOMMimeTypeArray>,
   // PluginsChangedObserver implementation.
   void PluginsChanged();
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit DOMMimeTypeArray(LocalFrame*);

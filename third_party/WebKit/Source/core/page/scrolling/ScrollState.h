@@ -19,9 +19,7 @@ namespace blink {
 
 class Element;
 
-class CORE_EXPORT ScrollState final
-    : public GarbageCollectedFinalized<ScrollState>,
-      public ScriptWrappable {
+class CORE_EXPORT ScrollState final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -90,7 +88,10 @@ class CORE_EXPORT ScrollState final
 
   ScrollStateData* Data() const { return data_.get(); }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(element_); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(element_);
+    ScriptWrappable::Trace(visitor);
+  }
 
  private:
   ScrollState();

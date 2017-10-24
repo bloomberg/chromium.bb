@@ -76,6 +76,7 @@ void IDBObserverChanges::Trace(blink::Visitor* visitor) {
   visitor->Trace(database_);
   visitor->Trace(transaction_);
   visitor->Trace(records_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

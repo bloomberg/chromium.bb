@@ -11,9 +11,7 @@
 
 namespace blink {
 
-class CORE_EXPORT InputDeviceCapabilities final
-    : public GarbageCollected<InputDeviceCapabilities>,
-      public ScriptWrappable {
+class CORE_EXPORT InputDeviceCapabilities final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -27,8 +25,6 @@ class CORE_EXPORT InputDeviceCapabilities final
   }
 
   bool firesTouchEvents() const { return fires_touch_events_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   InputDeviceCapabilities(bool fires_touch_events);

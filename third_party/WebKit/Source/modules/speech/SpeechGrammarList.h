@@ -35,9 +35,7 @@ namespace blink {
 
 class ScriptState;
 
-class MODULES_EXPORT SpeechGrammarList final
-    : public GarbageCollected<SpeechGrammarList>,
-      public ScriptWrappable {
+class MODULES_EXPORT SpeechGrammarList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

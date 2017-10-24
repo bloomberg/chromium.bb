@@ -28,8 +28,7 @@ namespace blink {
 
 class Document;
 
-class DOMParser final : public GarbageCollected<DOMParser>,
-                        public ScriptWrappable {
+class DOMParser final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

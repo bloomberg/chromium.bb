@@ -15,8 +15,7 @@ class ExceptionState;
 
 // This class provides a way for script to look up UUIDs by name so they don't
 // need to be replicated in each application.
-class BluetoothUUID final : public GarbageCollected<BluetoothUUID>,
-                            public ScriptWrappable {
+class BluetoothUUID final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -25,9 +24,6 @@ class BluetoothUUID final : public GarbageCollected<BluetoothUUID>,
   static String getCharacteristic(StringOrUnsignedLong name, ExceptionState&);
   static String getDescriptor(StringOrUnsignedLong name, ExceptionState&);
   static String canonicalUUID(unsigned alias);
-
-  // Interface required by garbage collection.
-  void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

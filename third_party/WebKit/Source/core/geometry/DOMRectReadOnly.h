@@ -9,7 +9,6 @@
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/IntRect.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
@@ -17,8 +16,7 @@ class DOMRectInit;
 class ScriptValue;
 class ScriptState;
 
-class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
-                                    public ScriptWrappable {
+class CORE_EXPORT DOMRectReadOnly : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -39,8 +37,6 @@ class CORE_EXPORT DOMRectReadOnly : public GarbageCollected<DOMRectReadOnly>,
   double right() const { return std::max(x_, x_ + width_); }
   double bottom() const { return std::max(y_, y_ + height_); }
   double left() const { return std::min(x_, x_ + width_); }
-
-  void Trace(blink::Visitor* visitor) {}
 
   ScriptValue toJSONForBinding(ScriptState*) const;
 

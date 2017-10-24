@@ -35,8 +35,7 @@ class CSSRuleList;
 class CSSStyleSheet;
 class StyleRuleBase;
 
-class CORE_EXPORT CSSRule : public GarbageCollectedFinalized<CSSRule>,
-                            public ScriptWrappable {
+class CORE_EXPORT CSSRule : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

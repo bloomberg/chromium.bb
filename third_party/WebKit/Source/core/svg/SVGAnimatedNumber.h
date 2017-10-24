@@ -41,9 +41,10 @@ namespace blink {
 class SVGAnimatedNumberOptionalNumber;
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedNumber
-class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>,
-                          public ScriptWrappable {
+class SVGAnimatedNumber : public ScriptWrappable,
+                          public SVGAnimatedProperty<SVGNumber> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedNumber);
 
  public:
   static SVGAnimatedNumber* Create(SVGElement* context_element,
@@ -60,9 +61,9 @@ class SVGAnimatedNumber : public SVGAnimatedProperty<SVGNumber>,
     parent_number_optional_number_ = number_optional_number;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   SVGAnimatedNumber(SVGElement* context_element,

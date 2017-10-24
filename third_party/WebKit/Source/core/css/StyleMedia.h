@@ -36,9 +36,7 @@ namespace blink {
 
 class LocalFrame;
 
-class StyleMedia final : public GarbageCollected<StyleMedia>,
-                         public ContextClient,
-                         public ScriptWrappable {
+class StyleMedia final : public ScriptWrappable, public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(StyleMedia);
 
@@ -48,7 +46,7 @@ class StyleMedia final : public GarbageCollected<StyleMedia>,
   AtomicString type() const;
   bool matchMedium(const String&) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit StyleMedia(LocalFrame*);

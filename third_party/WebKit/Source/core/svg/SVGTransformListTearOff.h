@@ -41,8 +41,7 @@ class SVGTransformTearOff;
 
 class SVGTransformListTearOff final
     : public SVGListPropertyTearOffHelper<SVGTransformListTearOff,
-                                          SVGTransformList>,
-      public ScriptWrappable {
+                                          SVGTransformList> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -59,8 +58,6 @@ class SVGTransformListTearOff final
 
   SVGTransformTearOff* createSVGTransformFromMatrix(SVGMatrixTearOff*) const;
   SVGTransformTearOff* consolidate(ExceptionState&);
-
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  private:
   SVGTransformListTearOff(SVGTransformList*,

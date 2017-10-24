@@ -31,8 +31,7 @@
 
 namespace blink {
 
-class WebGLActiveInfo final : public GarbageCollectedFinalized<WebGLActiveInfo>,
-                              public ScriptWrappable {
+class WebGLActiveInfo final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -42,8 +41,6 @@ class WebGLActiveInfo final : public GarbageCollectedFinalized<WebGLActiveInfo>,
   String name() const { return name_; }
   GLenum type() const { return type_; }
   GLint size() const { return size_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   WebGLActiveInfo(const String& name, GLenum type, GLint size)

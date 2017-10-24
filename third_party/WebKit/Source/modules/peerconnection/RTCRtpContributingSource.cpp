@@ -36,6 +36,7 @@ uint32_t RTCRtpContributingSource::source() const {
 
 void RTCRtpContributingSource::Trace(blink::Visitor* visitor) {
   visitor->Trace(receiver_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

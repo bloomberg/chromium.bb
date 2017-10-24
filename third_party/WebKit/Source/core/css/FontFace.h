@@ -55,8 +55,7 @@ class StringOrArrayBufferOrArrayBufferView;
 class StylePropertySet;
 class StyleRuleFontFace;
 
-class CORE_EXPORT FontFace : public GarbageCollectedFinalized<FontFace>,
-                             public ScriptWrappable,
+class CORE_EXPORT FontFace : public ScriptWrappable,
                              public ActiveScriptWrappable<FontFace>,
                              public ContextClient {
   DEFINE_WRAPPERTYPEINFO();

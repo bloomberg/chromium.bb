@@ -38,7 +38,7 @@ namespace blink {
 class DOMArrayBufferView;
 class ExceptionState;
 
-class Crypto final : public GarbageCollected<Crypto>, public ScriptWrappable {
+class Crypto final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

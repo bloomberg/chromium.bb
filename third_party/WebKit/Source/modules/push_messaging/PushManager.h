@@ -17,8 +17,7 @@ class ScriptPromise;
 class ScriptState;
 class ServiceWorkerRegistration;
 
-class MODULES_EXPORT PushManager final : public GarbageCollected<PushManager>,
-                                         public ScriptWrappable {
+class MODULES_EXPORT PushManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

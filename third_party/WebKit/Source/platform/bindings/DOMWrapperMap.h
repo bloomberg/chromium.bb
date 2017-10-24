@@ -104,7 +104,11 @@ class DOMWrapperMap {
 
    public:
     // Map traits:
-    typedef HashMap<KeyType*, v8::PersistentContainerValue> Impl;
+    //
+    // DOMWrapperMap is NOT responsible to make |KeyType|s alive, so uses
+    // UntracedMember<KeyType> as the key type of the internal storage.
+    // |KeyType|s will be made alive by V8 wrapper objects.
+    typedef HashMap<UntracedMember<KeyType>, v8::PersistentContainerValue> Impl;
     typedef typename Impl::iterator Iterator;
     static size_t Size(const Impl* impl) { return impl->size(); }
     static bool Empty(Impl* impl) { return impl->IsEmpty(); }

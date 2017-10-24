@@ -41,9 +41,7 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageQuota final
-    : public GarbageCollected<DeprecatedStorageQuota>,
-      public ScriptWrappable {
+class DeprecatedStorageQuota final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -64,8 +62,6 @@ class DeprecatedStorageQuota final
                     unsigned long long new_quota_in_bytes,
                     StorageQuotaCallback*,
                     StorageErrorCallback*);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit DeprecatedStorageQuota(Type);

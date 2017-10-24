@@ -917,10 +917,11 @@ void NFC::OnWatchRegistered(MessageCallback* callback,
 }
 
 void NFC::Trace(blink::Visitor* visitor) {
-  PageVisibilityObserver::Trace(visitor);
-  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(requests_);
   visitor->Trace(callbacks_);
+  ScriptWrappable::Trace(visitor);
+  PageVisibilityObserver::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 }  // namespace blink

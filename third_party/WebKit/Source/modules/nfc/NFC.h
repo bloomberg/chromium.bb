@@ -22,8 +22,7 @@ class NFCPushOptions;
 using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
 class NFCWatchOptions;
 
-class NFC final : public GarbageCollectedFinalized<NFC>,
-                  public ScriptWrappable,
+class NFC final : public ScriptWrappable,
                   public PageVisibilityObserver,
                   public ContextLifecycleObserver,
                   public device::mojom::blink::NFCClient {
@@ -62,7 +61,7 @@ class NFC final : public GarbageCollectedFinalized<NFC>,
   void PageVisibilityChanged() override;
 
   // Interface required by garbage collection.
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   // Returns boolean indicating whether NFC is supported in this context. If

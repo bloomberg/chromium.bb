@@ -30,6 +30,7 @@ BluetoothRemoteGATTService::BluetoothRemoteGATTService(
 
 void BluetoothRemoteGATTService::Trace(blink::Visitor* visitor) {
   visitor->Trace(device_);
+  ScriptWrappable::Trace(visitor);
 }
 
 // Callback that allows us to resolve the promise with a single characteristic

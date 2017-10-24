@@ -669,6 +669,7 @@ void DataTransfer::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_object_);
   visitor->Trace(drag_image_);
   visitor->Trace(drag_image_element_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

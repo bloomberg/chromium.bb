@@ -27,8 +27,7 @@ class ScriptState;
 
 typedef RequestOrUSVString RequestInfo;
 
-class MODULES_EXPORT Cache final : public GarbageCollectedFinalized<Cache>,
-                                   public ScriptWrappable {
+class MODULES_EXPORT Cache final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(Cache);
 

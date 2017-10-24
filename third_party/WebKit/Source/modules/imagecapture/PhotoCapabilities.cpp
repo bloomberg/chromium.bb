@@ -53,6 +53,7 @@ bool PhotoCapabilities::IsRedEyeReductionControllable() const {
 void PhotoCapabilities::Trace(blink::Visitor* visitor) {
   visitor->Trace(image_height_);
   visitor->Trace(image_width_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

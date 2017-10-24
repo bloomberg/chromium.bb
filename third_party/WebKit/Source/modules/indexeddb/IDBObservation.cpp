@@ -82,6 +82,7 @@ IDBObservation::IDBObservation(const WebIDBObservation& observation,
 
 void IDBObservation::Trace(blink::Visitor* visitor) {
   visitor->Trace(key_range_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

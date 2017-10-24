@@ -13,8 +13,7 @@
 
 namespace blink {
 
-class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>,
-                             public ScriptWrappable {
+class UnionTypesTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -34,8 +33,6 @@ class UnionTypesTest final : public GarbageCollectedFinalized<UnionTypesTest>,
 
   String doubleOrStringOrStringSequenceArg(
       const DoubleOrStringOrStringSequence&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   UnionTypesTest() : attribute_type_(kSpecificTypeNone) {}

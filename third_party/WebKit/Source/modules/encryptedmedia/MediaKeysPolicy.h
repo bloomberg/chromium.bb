@@ -11,8 +11,7 @@
 
 namespace blink {
 
-class MediaKeysPolicy final : public GarbageCollectedFinalized<MediaKeysPolicy>,
-                              public ScriptWrappable {
+class MediaKeysPolicy final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -21,8 +20,6 @@ class MediaKeysPolicy final : public GarbageCollectedFinalized<MediaKeysPolicy>,
   }
 
   String minHdcpVersion() const { return min_hdcp_version_; }
-
-  virtual void Trace(blink::Visitor*);
 
  private:
   MediaKeysPolicy() = delete;

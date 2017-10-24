@@ -70,6 +70,7 @@ PerformanceEntryVector PerformanceObserverEntryList::getEntriesByName(
 
 void PerformanceObserverEntryList::Trace(blink::Visitor* visitor) {
   visitor->Trace(performance_entries_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

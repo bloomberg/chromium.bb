@@ -34,6 +34,7 @@ void InternalSettingsGenerated::set{{setting.name|upper_first}}({{setting.type|t
 
 void InternalSettingsGenerated::Trace(Visitor* visitor) {
   visitor->Trace(m_page);
+  ScriptWrappable::Trace(visitor);
 }
 
 } // namespace blink

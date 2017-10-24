@@ -15,8 +15,7 @@
 
 namespace blink {
 
-class SequenceTest final : public GarbageCollectedFinalized<SequenceTest>,
-                           public ScriptWrappable {
+class SequenceTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

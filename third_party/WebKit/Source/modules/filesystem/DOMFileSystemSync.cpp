@@ -213,8 +213,8 @@ FileWriterSync* DOMFileSystemSync::CreateWriter(
 }
 
 void DOMFileSystemSync::Trace(blink::Visitor* visitor) {
-  DOMFileSystemBase::Trace(visitor);
   visitor->Trace(root_entry_);
+  DOMFileSystemBase::Trace(visitor);
 }
 
 }  // namespace blink

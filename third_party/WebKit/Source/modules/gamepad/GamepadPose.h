@@ -13,8 +13,7 @@
 
 namespace blink {
 
-class GamepadPose final : public GarbageCollected<GamepadPose>,
-                          public ScriptWrappable {
+class GamepadPose final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

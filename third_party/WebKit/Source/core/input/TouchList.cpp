@@ -39,6 +39,7 @@ const Touch* TouchList::item(unsigned index) const {
 
 void TouchList::Trace(blink::Visitor* visitor) {
   visitor->Trace(values_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -16,8 +16,7 @@ class ScriptPromise;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class StorageManager final : public GarbageCollectedFinalized<StorageManager>,
-                             public ScriptWrappable {
+class StorageManager final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -25,7 +24,6 @@ class StorageManager final : public GarbageCollectedFinalized<StorageManager>,
   ScriptPromise persist(ScriptState*);
 
   ScriptPromise estimate(ScriptState*);
-  void Trace(blink::Visitor*);
 
  private:
   mojom::blink::PermissionService* GetPermissionService(ExecutionContext*);

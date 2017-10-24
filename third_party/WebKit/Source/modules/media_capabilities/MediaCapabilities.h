@@ -15,9 +15,7 @@ class MediaEncodingConfiguration;
 class ScriptPromise;
 class ScriptState;
 
-class MediaCapabilities final
-    : public GarbageCollectedFinalized<MediaCapabilities>,
-      public ScriptWrappable {
+class MediaCapabilities final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -25,8 +23,6 @@ class MediaCapabilities final
 
   ScriptPromise decodingInfo(ScriptState*, const MediaDecodingConfiguration&);
   ScriptPromise encodingInfo(ScriptState*, const MediaEncodingConfiguration&);
-
-  virtual void Trace(blink::Visitor*);
 };
 
 }  // namespace blink

@@ -51,9 +51,8 @@ class SQLValue;
 class ScriptValue;
 class VoidCallback;
 
-class SQLTransaction final : public GarbageCollectedFinalized<SQLTransaction>,
-                             public SQLTransactionStateMachine<SQLTransaction>,
-                             public ScriptWrappable {
+class SQLTransaction final : public ScriptWrappable,
+                             public SQLTransactionStateMachine<SQLTransaction> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

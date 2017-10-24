@@ -45,8 +45,7 @@ class IDBTransaction;
 class IDBValue;
 class ScriptState;
 
-class IDBCursor : public GarbageCollectedFinalized<IDBCursor>,
-                  public ScriptWrappable {
+class IDBCursor : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

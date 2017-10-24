@@ -10,15 +10,13 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/ShapeDetector.h"
-#include "platform/bindings/ScriptWrappable.h"
 #include "services/shape_detection/public/interfaces/textdetection.mojom-blink.h"
 
 namespace blink {
 
 class ExecutionContext;
 
-class MODULES_EXPORT TextDetector final : public ShapeDetector,
-                                          public ScriptWrappable {
+class MODULES_EXPORT TextDetector final : public ShapeDetector {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

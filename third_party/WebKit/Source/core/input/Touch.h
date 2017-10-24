@@ -40,8 +40,7 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT Touch final : public GarbageCollectedFinalized<Touch>,
-                                public ScriptWrappable {
+class CORE_EXPORT Touch final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

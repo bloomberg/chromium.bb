@@ -28,7 +28,6 @@
 #define XPathExpression_h
 
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
@@ -43,8 +42,7 @@ namespace XPath {
 class Expression;
 }
 
-class XPathExpression : public GarbageCollected<XPathExpression>,
-                        public ScriptWrappable {
+class XPathExpression : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

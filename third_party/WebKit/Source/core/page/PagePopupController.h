@@ -41,8 +41,7 @@ class Document;
 class PagePopup;
 class PagePopupClient;
 
-class PagePopupController final : public GarbageCollected<PagePopupController>,
-                                  public ScriptWrappable {
+class PagePopupController final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -59,8 +58,6 @@ class PagePopupController final : public GarbageCollected<PagePopupController>,
                     const String& localized_start_date);
   void ClearPagePopupClient();
   void setWindowRect(int x, int y, int width, int height);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   PagePopupController(PagePopup&, PagePopupClient*);

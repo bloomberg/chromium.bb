@@ -64,9 +64,8 @@ using MutationObserverVector = HeapVector<Member<MutationObserver>>;
 using MutationRecordVector = HeapVector<Member<MutationRecord>>;
 
 class CORE_EXPORT MutationObserver final
-    : public GarbageCollectedFinalized<MutationObserver>,
+    : public ScriptWrappable,
       public ActiveScriptWrappable<MutationObserver>,
-      public ScriptWrappable,
       public ContextClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(MutationObserver);

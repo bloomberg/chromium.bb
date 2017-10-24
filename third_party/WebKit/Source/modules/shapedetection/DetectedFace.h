@@ -13,8 +13,7 @@ namespace blink {
 class DOMRect;
 class Landmark;
 
-class MODULES_EXPORT DetectedFace final : public GarbageCollected<DetectedFace>,
-                                          public ScriptWrappable {
+class MODULES_EXPORT DetectedFace final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

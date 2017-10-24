@@ -33,7 +33,6 @@
 
 #include "modules/filesystem/DOMFileSystemSync.h"
 #include "modules/filesystem/EntryBase.h"
-#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
@@ -43,7 +42,7 @@ class DirectoryEntrySync;
 class Metadata;
 class ExceptionState;
 
-class EntrySync : public EntryBase, public ScriptWrappable {
+class EntrySync : public EntryBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
