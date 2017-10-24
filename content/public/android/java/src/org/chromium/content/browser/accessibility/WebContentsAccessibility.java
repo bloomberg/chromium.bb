@@ -1208,6 +1208,19 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
         return 0;
     }
 
+    /**
+     * @see View#onDetachedFromWindow()
+     */
+    public void onDetachedFromWindow() {}
+
+    /**
+     * @see View#onAttachedToWindow()
+     * For versions before L, this method will not be called when container view is already
+     * attached to a window and webContentsAccessibility gets created later as a check for L plus
+     * versions is added in {@link ContentViewCore#getAccessibilityNodeProvider()}.
+     */
+    public void onAttachedToWindow() {}
+
     private native long nativeInit(WebContents webContents);
     private native void nativeOnAutofillPopupDisplayed(long nativeWebContentsAccessibilityAndroid);
     private native void nativeOnAutofillPopupDismissed(long nativeWebContentsAccessibilityAndroid);
