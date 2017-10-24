@@ -25,7 +25,7 @@ cr.define('print_preview', function() {
     updateDestinations: function(destinations) {
       // Change the action link from "Manage..." to "Setup..." if user only has
       // the Docs printer.
-      var docsId = print_preview.Destination.GooglePromotedId.DOCS;
+      const docsId = print_preview.Destination.GooglePromotedId.DOCS;
       this.setActionLinkTextInternal(loadTimeData.getString(
           destinations.length == 1 && destinations[0].id == docsId ?
               'setupCloudPrinters' :

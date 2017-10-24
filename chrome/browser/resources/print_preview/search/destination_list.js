@@ -143,7 +143,7 @@ cr.define('print_preview', function() {
      */
     getEstimatedHeightInPixels: function(numItems) {
       numItems = Math.min(numItems, this.destinations_.length);
-      var headerHeight =
+      const headerHeight =
           this.getChildElement('.destination-list > header').offsetHeight;
       return headerHeight +
           (numItems > 0 ? numItems * DestinationList.HEIGHT_OF_ITEM_ :
@@ -185,7 +185,7 @@ cr.define('print_preview', function() {
           this.cloneTemplateInternal('destination-list-template'));
       this.getChildElement('.title').textContent = this.title_;
       if (this.actionLinkLabel_) {
-        var actionLinkEl = this.getChildElement('.action-link');
+        const actionLinkEl = this.getChildElement('.action-link');
         actionLinkEl.textContent = this.actionLinkLabel_;
         setIsVisible(actionLinkEl, true);
       }
@@ -260,7 +260,7 @@ cr.define('print_preview', function() {
       if (!this.query_) {
         this.renderDestinationsList_(this.destinations_);
       } else {
-        var filteredDests = this.destinations_.filter(function(destination) {
+        const filteredDests = this.destinations_.filter(function(destination) {
           return destination.matches(assert(this.query_));
         }, this);
         this.renderDestinationsList_(filteredDests);
@@ -279,7 +279,7 @@ cr.define('print_preview', function() {
           this.getChildElement('.no-destinations-message'),
           destinations.length == 0);
       setIsVisible(this.getChildElement('.destination-list > footer'), false);
-      var numItems = destinations.length;
+      let numItems = destinations.length;
       if (destinations.length > this.shortListSize_ && !this.isShowAll_) {
         numItems = this.shortListSize_ - 1;
         this.getChildElement('.total').textContent =
@@ -288,32 +288,33 @@ cr.define('print_preview', function() {
       }
       // Remove obsolete list items (those with no corresponding destinations).
       this.listItems_ = this.listItems_.filter(item => {
-        var isValid = this.destinationIds_.hasOwnProperty(item.destination.id);
+        const isValid =
+            this.destinationIds_.hasOwnProperty(item.destination.id);
         if (!isValid)
           this.removeChild(item);
         return isValid;
       });
       // Prepare id -> list item cache for visible destinations.
-      var visibleListItems = {};
-      for (var i = 0; i < numItems; i++)
+      const visibleListItems = {};
+      for (let i = 0; i < numItems; i++)
         visibleListItems[destinations[i].id] = null;
       // Update visibility for all existing list items.
       this.listItems_.forEach(function(item) {
-        var isVisible = visibleListItems.hasOwnProperty(item.destination.id);
+        const isVisible = visibleListItems.hasOwnProperty(item.destination.id);
         setIsVisible(item.getElement(), isVisible);
         if (isVisible)
           visibleListItems[item.destination.id] = item;
       });
       // Update the existing items, add the new ones (preserve the focused one).
-      var listEl = this.getChildElement('.destination-list > ul');
+      const listEl = this.getChildElement('.destination-list > ul');
       // We need to use activeElement instead of :focus selector, which doesn't
       // work in an inactive page. See crbug.com/723579.
-      var focusedEl = listEl.contains(document.activeElement) ?
+      const focusedEl = listEl.contains(document.activeElement) ?
           document.activeElement :
           null;
-      for (var i = 0; i < numItems; i++) {
-        var destination = assert(destinations[i]);
-        var listItem = visibleListItems[destination.id];
+      for (let i = 0; i < numItems; i++) {
+        const destination = assert(destinations[i]);
+        const listItem = visibleListItems[destination.id];
         if (listItem) {
           // Destination ID is the same, but it can be registered to a different
           // user account, hence passing it to the item update.
@@ -334,9 +335,9 @@ cr.define('print_preview', function() {
     updateListItem_: function(listEl, listItem, focusedEl, destination) {
       listItem.update(destination, this.query_);
 
-      var itemEl = listItem.getElement();
+      const itemEl = listItem.getElement();
       // Preserve focused inner element, if there's one.
-      var focusedInnerEl =
+      const focusedInnerEl =
           focusedEl && itemEl.contains(focusedEl) ? focusedEl : null;
       if (focusedEl)
         itemEl.classList.add('moving');
@@ -356,7 +357,7 @@ cr.define('print_preview', function() {
      * @private
      */
     renderListItem_: function(listEl, destination) {
-      var listItem = new print_preview.DestinationListItem(
+      const listItem = new print_preview.DestinationListItem(
           this.eventTarget_, destination, this.query_);
       this.addChild(listItem);
       listItem.render(assert(listEl));
