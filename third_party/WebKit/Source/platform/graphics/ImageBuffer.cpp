@@ -133,14 +133,6 @@ void ImageBuffer::DisableDeferral(DisableDeferralReason reason) const {
   return surface_->DisableDeferral(reason);
 }
 
-bool ImageBuffer::WritePixels(const SkImageInfo& info,
-                              const void* pixels,
-                              size_t row_bytes,
-                              int x,
-                              int y) {
-  return surface_->WritePixels(info, pixels, row_bytes, x, y);
-}
-
 bool ImageBuffer::IsSurfaceValid() const {
   return surface_->IsValid();
 }
