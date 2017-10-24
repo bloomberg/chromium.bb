@@ -4,24 +4,14 @@ Verify that SourceMap sources are correctly displayed in navigator.
 Running: initialWorkspace
 top
   127.0.0.1:8000
-    devtools/bindings
-      sourcemap-navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 
 Running: attachFrame1
 top
   127.0.0.1:8000
-    devtools/bindings
-      sourcemap-navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   (no domain)
     _test_create-iframe1.js
   frame1 (sourcemap-frame.html)
@@ -36,13 +26,8 @@ top
 Running: attachFrame2
 top
   127.0.0.1:8000
-    devtools/bindings
-      sourcemap-navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   (no domain)
     _test_create-iframe1.js
     _test_create-iframe2.js
@@ -66,13 +51,8 @@ top
 Running: detachFrame1
 top
   127.0.0.1:8000
-    devtools/bindings
-      sourcemap-navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   (no domain)
     _test_create-iframe1.js
     _test_create-iframe2.js
@@ -89,13 +69,8 @@ top
 Running: detachFrame2
 top
   127.0.0.1:8000
-    devtools/bindings
-      sourcemap-navigator-multiple-frames.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   (no domain)
     _test_create-iframe1.js
     _test_create-iframe2.js

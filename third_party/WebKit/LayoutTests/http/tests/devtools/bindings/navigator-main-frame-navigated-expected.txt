@@ -4,24 +4,14 @@ Verify that navigator properly handles main frame navigated event.
 Running: dumpInitialNavigator
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-main-frame-navigated.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 
 Running: attachFrame
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-main-frame-navigated.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   frame (sourcemap-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources
@@ -32,12 +22,8 @@ top
         sourcemap-style.css
 
 Running: navigateMainFrame
-Page reloaded.
 top
   127.0.0.1:8000
     devtools/bindings/resources
       empty-page.html
-
-Running: navigateBack
-Page reloaded.
 

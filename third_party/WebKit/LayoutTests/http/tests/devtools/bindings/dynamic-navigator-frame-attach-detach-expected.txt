@@ -4,24 +4,14 @@ Verify that navigator is rendered properly when frame with dynamic script and st
 Running: dumpInitialNavigator
 top
   127.0.0.1:8000
-    devtools/bindings
-      dynamic-navigator-frame-attach-detach.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 
 Running: attachFrame
 top
   127.0.0.1:8000
-    devtools/bindings
-      dynamic-navigator-frame-attach-detach.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   frame (dynamic-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources
@@ -33,11 +23,6 @@ top
 Running: detachFrame
 top
   127.0.0.1:8000
-    devtools/bindings
-      dynamic-navigator-frame-attach-detach.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 

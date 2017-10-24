@@ -1,28 +1,17 @@
 Verify that navigator is updated as frame gets navigated.
 
 
-
 Running: dumpInitialNavigator
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-frame-navigate.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
 
 Running: attachFrame
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-frame-navigate.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   frame (magic-frame.html)
     127.0.0.1:8000
       devtools/bindings/resources
@@ -33,13 +22,8 @@ top
 Running: navigateFrame
 top
   127.0.0.1:8000
-    devtools/bindings
-      navigator-frame-navigate.html
-    inspector
-      bindings
-        bindings-test.js
-      debugger-test.js
-      inspector-test.js
+    devtools/resources
+      inspected-page.html
   frame (empty-frame.html)
     127.0.0.1:8000
       devtools/bindings/resource

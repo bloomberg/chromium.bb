@@ -1,9 +1,11 @@
-<head>
-<script src="../../inspector/inspector-test.js"></script>
-<script src="../../inspector/bindings/bindings-test.js"></script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<script>
-async function test() {
+(async function() {
+  TestRunner.addResult(`Verify that SourceMap bindings are generating UISourceCodes properly.\n`);
+  await TestRunner.loadModule('bindings_test_runner');
+
   TestRunner.markStep('initialWorkspace');
   var snapshot = BindingsTestRunner.dumpWorkspace();
 
@@ -24,12 +26,4 @@ async function test() {
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
   TestRunner.completeTest();
-}
-
-</script>
-</head>
-<body onload="runTest()">
-<p>
-Verify that SourceMap bindings are generating UISourceCodes properly.
-</p>
-</body>
+})();
