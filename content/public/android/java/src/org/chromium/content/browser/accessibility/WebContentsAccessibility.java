@@ -58,6 +58,9 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
     protected static final int ACTION_SCROLL_LEFT = 0x01020039;
     protected static final int ACTION_SCROLL_RIGHT = 0x0102003b;
 
+    // Constant for no granularity selected.
+    private static final int NO_GRANULARITY_SELECTED = 0;
+
     protected final AccessibilityManager mAccessibilityManager;
     private final Context mContext;
     private final RenderCoordinates mRenderCoordinates;
@@ -410,11 +413,11 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
     }
 
     private void setGranularityAndUpdateSelection(int granularity) {
-        if (mSelectionGranularity == 0) {
+        mSelectionGranularity = granularity;
+        if (mSelectionGranularity == NO_GRANULARITY_SELECTED) {
             mSelectionStartIndex = -1;
             mSelectionEndIndex = -1;
         }
-        mSelectionGranularity = granularity;
         if (nativeIsEditableText(mNativeObj, mAccessibilityFocusId)
                 && nativeIsFocused(mNativeObj, mAccessibilityFocusId)) {
             mSelectionStartIndex =
@@ -428,7 +431,7 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
         setGranularityAndUpdateSelection(granularity);
         // This calls finishGranularityMove when it's done.
         return nativeNextAtGranularity(mNativeObj, mSelectionGranularity, extendSelection,
-                mAccessibilityFocusId, mSelectionEndIndex);
+                mAccessibilityFocusId, mSelectionStartIndex);
     }
 
     private boolean previousAtGranularity(int granularity, boolean extendSelection) {
@@ -514,9 +517,9 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
 
         mAccessibilityFocusId = newAccessibilityFocusId;
         mAccessibilityFocusRect = null;
-        mSelectionGranularity = 0;
-        mSelectionStartIndex = 0;
-        mSelectionEndIndex = 0;
+        mSelectionGranularity = NO_GRANULARITY_SELECTED;
+        mSelectionStartIndex = -1;
+        mSelectionEndIndex = nativeGetTextLength(mNativeObj, newAccessibilityFocusId);
 
         // Calling nativeSetAccessibilityFocus will asynchronously load inline text boxes for
         // this node and its subtree. If accessibility focus is on anything other than
@@ -1258,4 +1261,5 @@ public class WebContentsAccessibility extends AccessibilityNodeProvider {
             long nativeWebContentsAccessibilityAndroid, int id);
     protected native int[] nativeGetCharacterBoundingBoxes(
             long nativeWebContentsAccessibilityAndroid, int id, int start, int len);
+    private native int nativeGetTextLength(long nativeWebContentsAccessibilityAndroid, int id);
 }

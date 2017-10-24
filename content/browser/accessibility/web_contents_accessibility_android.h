@@ -191,6 +191,11 @@ class CONTENT_EXPORT WebContentsAccessibilityAndroid
       const base::android::JavaParamRef<jobject>& obj,
       jint id);
 
+  // Returns the length of the text node.
+  jint GetTextLength(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     jint id);
+
   // Request loading inline text boxes for a given node.
   void LoadInlineTextBoxes(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
