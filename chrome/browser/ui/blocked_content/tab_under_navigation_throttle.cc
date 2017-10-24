@@ -14,7 +14,11 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
+#include "components/rappor/public/rappor_parameters.h"
+#include "components/rappor/public/rappor_utils.h"
+#include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -28,6 +32,16 @@
 #endif  // defined(OS_ANDROID)
 
 namespace {
+
+// Logs RAPPOR for the opener URL, not the destination URL.
+void LogRappor(const GURL& opener_url) {
+  if (rappor::RapporService* rappor_service =
+          g_browser_process->rappor_service()) {
+    rappor_service->RecordSampleString(
+        "Tab.TabUnder.Opener", rappor::UMA_RAPPOR_TYPE,
+        rappor::GetDomainAndRegistrySampleFromGURL(opener_url));
+  }
+}
 
 void LogAction(TabUnderNavigationThrottle::Action action) {
   UMA_HISTOGRAM_ENUMERATION("Tab.TabUnderAction", action,
@@ -110,6 +124,7 @@ TabUnderNavigationThrottle::MaybeBlockNavigation() {
     seen_tab_under_ = true;
     popup_opener->OnDidTabUnder();
     LogAction(Action::kDidTabUnder);
+    LogRappor(contents->GetLastCommittedURL());
 
     if (block_) {
       const GURL& url = navigation_handle()->GetURL();

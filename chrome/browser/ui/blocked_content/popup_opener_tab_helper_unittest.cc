@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/blocked_content/popup_opener_tab_helper.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -21,6 +22,9 @@
 #include "chrome/browser/ui/blocked_content/popup_tracker.h"
 #include "chrome/browser/ui/blocked_content/tab_under_navigation_throttle.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "components/rappor/public/rappor_parameters.h"
+#include "components/rappor/test_rappor_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_utils.h"
@@ -543,4 +547,23 @@ TEST_F(BlockTabUnderTest, DisableFeature_LogsDidTabUnder) {
       kTabUnderAction,
       static_cast<int>(TabUnderNavigationThrottle::Action::kDidTabUnder), 1);
   histogram_tester()->ExpectTotalCount(kTabUnderAction, 3);
+}
+
+TEST_F(BlockTabUnderTest, LogsRappor) {
+  rappor::TestRapporServiceImpl test_rappor_service;
+  TestingBrowserProcess::GetGlobal()->SetRapporServiceImpl(
+      &test_rappor_service);
+
+  const GURL first_url("https://first.test/");
+  EXPECT_TRUE(NavigateAndCommitWithoutGesture(first_url));
+  SimulatePopup();
+  const GURL blocked_url("https://example.test/");
+  EXPECT_FALSE(NavigateAndCommitWithoutGesture(blocked_url));
+
+  std::string sample;
+  rappor::RapporType type;
+  EXPECT_TRUE(test_rappor_service.GetRecordedSampleForMetric(
+      "Tab.TabUnder.Opener", &sample, &type));
+  EXPECT_EQ(first_url.host(), sample);
+  EXPECT_EQ(rappor::UMA_RAPPOR_TYPE, type);
 }

@@ -2300,6 +2300,15 @@ now we are only interested in H264, VP8 and VP9.
   </summary>
 </rappor-metric>
 
+<rappor-metric name="Tab.TabUnder.Opener" type="UMA_RAPPOR_TYPE">
+  <owner>csharrison@chromium.org</owner>
+  <summary>
+    The domain and registry of the URL that attempted to initiate a
+    &quot;tab-under&quot; navigation. That is, a navigation which occurs in the
+    background without a user gesture, after the tab had already opened a popup.
+  </summary>
+</rappor-metric>
+
 <rappor-metric name="VR.FullScreenMode" type="ETLD_PLUS_ONE">
   <owner>billorr@chromium.org</owner>
   <summary>
