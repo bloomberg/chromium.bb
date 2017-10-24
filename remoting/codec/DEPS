@@ -8,4 +8,5 @@ include_rules = [
   "+gpu/command_buffer/service/gpu_preferences.h",
   "+media/video",
   "+media/gpu",
+  "+ui/gfx/geometry",
 ]

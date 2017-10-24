@@ -17,6 +17,8 @@ source_set("encoder") {
     "video_encoder_vpx.h",
     "webrtc_video_encoder_proxy.cc",
     "webrtc_video_encoder_proxy.h",
+    "webrtc_video_encoder_selector.cc",
+    "webrtc_video_encoder_selector.h",
     "webrtc_video_encoder_vpx.cc",
     "webrtc_video_encoder_vpx.h",
   ]
@@ -34,11 +36,15 @@ source_set("encoder") {
     "//third_party/opus",
     "//third_party/webrtc/modules/desktop_capture:primitives",
     "//ui/gfx:color_space",
+    "//ui/gfx/geometry",
   ]
+
+  defines = []
 
   # Currently, building WebrtcVideoEncoderGpu is only supported on Windows and
   # Linux, and encoding with WebrtcVideoEncoderGpu is only supported on Windows.
   if (is_win || is_linux) {
+    defines += [ "USE_H264_ENCODER" ]
     public_configs = [
       "//skia:skia_config",
     ]
@@ -124,6 +130,7 @@ source_set("unit_tests") {
     "video_encoder_helper_unittest.cc",
     "video_encoder_verbatim_unittest.cc",
     "video_encoder_vpx_unittest.cc",
+    "webrtc_video_encoder_selector_unittest.cc",
   ]
 
   deps = [

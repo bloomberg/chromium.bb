@@ -28,6 +28,9 @@ const int kDefaultDpi = 96;
 constexpr base::TimeDelta kDefaultProcessStatsInterval =
     base::TimeDelta::FromMilliseconds(2000);
 
+// The video frame rate.
+constexpr int kTargetFrameRate = 30;
+
 }  // namespace remoting
 
 #endif  // REMOTING_BASE_CONSTANTS_H_
