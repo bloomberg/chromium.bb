@@ -551,6 +551,15 @@ bool SelectionController::UpdateSelectionForMouseDownDispatchingSelectStart(
   return true;
 }
 
+static bool IsEmptyWordRange(const EphemeralRangeInFlatTree range) {
+  const String& str = PlainText(
+      range, TextIteratorBehavior::Builder()
+                 .SetEmitsObjectReplacementCharacter(
+                     HasEditableStyle(*range.StartPosition().AnchorNode()))
+                 .Build());
+  return str.IsEmpty() || str.SimplifyWhiteSpace().ContainsOnlyWhitespace();
+}
+
 bool SelectionController::SelectClosestWordFromHitTestResult(
     const HitTestResult& result,
     AppendTrailingWhitespace append_trailing_whitespace,
@@ -592,12 +601,7 @@ bool SelectionController::SelectClosestWordFromHitTestResult(
     // If node doesn't have text except space, tab or line break, do not
     // select that 'empty' area.
     EphemeralRangeInFlatTree range(new_selection.Start(), new_selection.End());
-    const String& str = PlainText(
-        range,
-        TextIteratorBehavior::Builder()
-            .SetEmitsObjectReplacementCharacter(HasEditableStyle(*inner_node))
-            .Build());
-    if (str.IsEmpty() || str.SimplifyWhiteSpace().ContainsOnlyWhitespace())
+    if (IsEmptyWordRange(range))
       return false;
 
     Element* const editable = new_selection.RootEditableElement();
