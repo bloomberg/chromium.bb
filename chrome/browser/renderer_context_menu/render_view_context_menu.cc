@@ -1504,17 +1504,21 @@ void RenderViewContextMenu::AppendProtocolHandlerSubMenu() {
 
 void RenderViewContextMenu::AppendPasswordItems() {
   bool add_separator = false;
-  if (password_manager::ForceSavingExperimentEnabled()) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
-                                    IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
-    add_separator = true;
-  }
-  if (password_manager_util::ManualPasswordGenerationEnabled(
-          ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
-              source_web_contents_->GetBrowserContext()))) {
-    menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
-                                    IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
-    add_separator = true;
+
+  // Don't offer saving or generating passwords in incognito profiles.
+  if (!browser_context_->IsOffTheRecord()) {
+    if (password_manager::ForceSavingExperimentEnabled()) {
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_FORCESAVEPASSWORD,
+                                      IDS_CONTENT_CONTEXT_FORCESAVEPASSWORD);
+      add_separator = true;
+    }
+    if (password_manager_util::ManualPasswordGenerationEnabled(
+            ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(
+                browser_context_))) {
+      menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_GENERATEPASSWORD,
+                                      IDS_CONTENT_CONTEXT_GENERATEPASSWORD);
+      add_separator = true;
+    }
   }
   if (password_manager_util::ShowAllSavedPasswordsContextMenuEnabled()) {
     menu_model_.AddItemWithStringId(IDC_CONTENT_CONTEXT_SHOWALLSAVEDPASSWORDS,
