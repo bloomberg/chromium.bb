@@ -102,7 +102,8 @@ Polymer({
    * @private
    */
   shouldShowAllowShared_: function(property) {
-    return !this.isControlled(property) && this.isShared_();
+    return this.isShared_() && !this.isNetworkPolicyEnforced(property) &&
+        !this.isExtensionControlled(property);
   },
 
   /**
