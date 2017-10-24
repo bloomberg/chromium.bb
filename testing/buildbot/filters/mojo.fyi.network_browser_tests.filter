@@ -33,6 +33,7 @@
 -IncognitoWindowPromoDialogTest.InvokeDialog_IncognitoWindowPromo
 -IncognitoWindowTrackerBrowserTest.ShowPromo
 -LocalNTPVoiceSearchSmokeTest.MicrophonePermission
+-MediaStreamDevicesControllerTest.ExtensionRequestMicCam
 -MemoryTracingBrowserTest.TestHeapProfilingPseudo
 -NewTabTrackerBrowserTest.TestShowPromo
 -NoStatePrefetchBrowserTest/NoStatePrefetchBrowserTest.SSLError/0
