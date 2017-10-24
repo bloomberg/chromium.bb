@@ -22,7 +22,7 @@ class ResourceLoaderTest : public ::testing::Test {
   ResourceLoaderTest()
       : foo_url_("https://foo.test"), bar_url_("https://bar.test"){};
 
-  void SetUp() {
+  void SetUp() override {
     context_ =
         MockFetchContext::Create(MockFetchContext::kShouldLoadNewResource);
   }

@@ -120,7 +120,7 @@ class Resource::CachedMetadataHandlerImpl : public CachedMetadataHandler {
     return new CachedMetadataHandlerImpl(resource);
   }
   ~CachedMetadataHandlerImpl() override {}
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void SetCachedMetadata(uint32_t, const char*, size_t, CacheType) override;
   void ClearCachedMetadata(CacheType) override;
   RefPtr<CachedMetadata> GetCachedMetadata(uint32_t) const override;
@@ -214,7 +214,7 @@ class Resource::ServiceWorkerResponseCachedMetadataHandler
                                                           security_origin);
   }
   ~ServiceWorkerResponseCachedMetadataHandler() override {}
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   void SendToPlatform() override;
@@ -399,7 +399,7 @@ void Resource::TriggerNotificationForFinishObservers(
   if (finish_observers_.IsEmpty())
     return;
 
-  auto new_collections = new HeapHashSet<WeakMember<ResourceFinishObserver>>(
+  auto* new_collections = new HeapHashSet<WeakMember<ResourceFinishObserver>>(
       std::move(finish_observers_));
   finish_observers_.clear();
 

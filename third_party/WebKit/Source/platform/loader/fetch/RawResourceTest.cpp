@@ -100,7 +100,9 @@ class DummyClient final : public GarbageCollectedFinalized<DummyClient>,
     return number_of_redirects_received_;
   }
   const Vector<char>& Data() { return data_; }
-  void Trace(blink::Visitor* visitor) { RawResourceClient::Trace(visitor); }
+  void Trace(blink::Visitor* visitor) override {
+    RawResourceClient::Trace(visitor);
+  }
 
  private:
   bool called_;
@@ -136,7 +138,7 @@ class AddingClient final : public GarbageCollectedFinalized<AddingClient>,
 
   void RemoveClient() { resource_->RemoveClient(dummy_client_); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(dummy_client_);
     visitor->Trace(resource_);
     RawResourceClient::Trace(visitor);
@@ -183,7 +185,7 @@ class RemovingClient : public GarbageCollectedFinalized<RemovingClient>,
     resource->RemoveClient(this);
   }
   String DebugName() const override { return "RemovingClient"; }
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(dummy_client_);
     RawResourceClient::Trace(visitor);
   }

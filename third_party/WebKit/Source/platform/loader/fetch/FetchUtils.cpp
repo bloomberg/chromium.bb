@@ -162,7 +162,7 @@ AtomicString FetchUtils::NormalizeMethod(const AtomicString& method) {
       "GET", "POST", "DELETE", "HEAD", "OPTIONS", "PUT",
   };
 
-  for (const auto& known : kMethods) {
+  for (auto* const known : kMethods) {
     if (EqualIgnoringASCIICase(method, known)) {
       // Don't bother allocating a new string if it's already all
       // uppercase.
