@@ -100,8 +100,13 @@ struct MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef {
   DISALLOW_IMPLICIT_CONSTRUCTORS(BitstreamBufferRef);
 };
 
-MediaFoundationVideoEncodeAccelerator::MediaFoundationVideoEncodeAccelerator()
-    : main_client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+// TODO(zijiehe): Respect |compatible_with_win7_| in the implementation. Some
+// attributes are not supported by Windows 7, setting them will return errors.
+// See bug: http://crbug.com/777659.
+MediaFoundationVideoEncodeAccelerator::MediaFoundationVideoEncodeAccelerator(
+    bool compatible_with_win7)
+    : compatible_with_win7_(compatible_with_win7),
+      main_client_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       encoder_thread_("MFEncoderThread"),
       encoder_task_weak_factory_(this) {}
 
@@ -360,7 +365,8 @@ bool MediaFoundationVideoEncodeAccelerator::CreateHardwareEncoderMFT() {
   DVLOG(3) << __func__;
   DCHECK(main_client_task_runner_->BelongsToCurrentThread());
 
-  if (base::win::GetVersion() < base::win::VERSION_WIN8) {
+  if (!compatible_with_win7_ &&
+      base::win::GetVersion() < base::win::VERSION_WIN8) {
     DVLOG(ERROR) << "Windows versions earlier than 8 are not supported.";
     return false;
   }

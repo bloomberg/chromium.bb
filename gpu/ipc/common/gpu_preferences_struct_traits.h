@@ -75,6 +75,8 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
     out->enable_low_latency_dxva = prefs.enable_low_latency_dxva();
     out->enable_zero_copy_dxgi_video = prefs.enable_zero_copy_dxgi_video();
     out->enable_nv12_dxgi_video = prefs.enable_nv12_dxgi_video();
+    out->enable_media_foundation_vea_on_windows7 =
+        prefs.enable_media_foundation_vea_on_windows7();
 #endif
 
     out->compile_shader_always_succeeds =
@@ -164,6 +166,14 @@ struct StructTraits<gpu::mojom::GpuPreferencesDataView, gpu::GpuPreferences> {
   static bool enable_nv12_dxgi_video(const gpu::GpuPreferences& prefs) {
 #if defined(OS_WIN)
     return prefs.enable_nv12_dxgi_video;
+#else
+    return false;
+#endif
+  }
+  static bool enable_media_foundation_vea_on_windows7(
+      const gpu::GpuPreferences& prefs) {
+#if defined(OS_WIN)
+    return prefs.enable_media_foundation_vea_on_windows7;
 #else
     return false;
 #endif
