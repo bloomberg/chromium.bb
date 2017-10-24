@@ -39,3 +39,7 @@ class GpuProcessExpectations(GpuTestExpectations):
 
     # Seems to have become flaky on Windows recently.
     self.Flaky('GpuProcess_only_one_workaround', ['win'], bug=700522)
+
+    # Seems to trigger SwiftShader, so the test becomes invalid.
+    # Will re-enable this test once we move SwiftShader decision to GPU process.
+    self.Skip('GpuProcess_readback_webgl_gpu_process', ['linux'], bug=732623)

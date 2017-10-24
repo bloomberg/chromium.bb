@@ -349,23 +349,6 @@ bool GpuDataManagerImplPrivate::IsFeatureBlacklisted(int feature) const {
   return use_swiftshader_ || (blacklisted_features_.count(feature) == 1);
 }
 
-bool GpuDataManagerImplPrivate::IsFeatureEnabled(int feature) const {
-  DCHECK_EQ(feature, gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION);
-  return gpu_feature_info_
-             .status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] ==
-         gpu::kGpuFeatureStatusEnabled;
-}
-
-bool GpuDataManagerImplPrivate::IsWebGLEnabled() const {
-  return use_swiftshader_ ||
-         !blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL);
-}
-
-bool GpuDataManagerImplPrivate::IsWebGL2Enabled() const {
-  return /*use_swiftshader_ ||*/ // Uncomment to enable WebGL 2 with SwiftShader
-         !blacklisted_features_.count(gpu::GPU_FEATURE_TYPE_ACCELERATED_WEBGL2);
-}
-
 size_t GpuDataManagerImplPrivate::GetBlacklistedFeatureCount() const {
   // SwiftShader blacklists all features
   return use_swiftshader_ ? gpu::NUMBER_OF_GPU_FEATURE_TYPES
@@ -702,15 +685,19 @@ void GpuDataManagerImplPrivate::UpdateGpuInfo(const gpu::GPUInfo& gpu_info) {
 
 void GpuDataManagerImplPrivate::UpdateGpuFeatureInfo(
     const gpu::GpuFeatureInfo& gpu_feature_info) {
-  if (!use_swiftshader_) {
-    gpu_feature_info_ = gpu_feature_info;
-    UpdateDriverBugListStats(gpu_feature_info);
-    NotifyGpuInfoUpdate();
-  }
+  gpu_feature_info_ = gpu_feature_info;
+  gpu_feature_info_available_ = true;
+  UpdateDriverBugListStats(gpu_feature_info);
 }
 
 gpu::GpuFeatureInfo GpuDataManagerImplPrivate::GetGpuFeatureInfo() const {
   return gpu_feature_info_;
+}
+
+gpu::GpuFeatureStatus GpuDataManagerImplPrivate::GetFeatureStatus(
+    gpu::GpuFeatureType feature) const {
+  DCHECK(feature >= 0 && feature < gpu::NUMBER_OF_GPU_FEATURE_TYPES);
+  return gpu_feature_info_.status_values[feature];
 }
 
 void GpuDataManagerImplPrivate::AppendRendererCommandLine(
