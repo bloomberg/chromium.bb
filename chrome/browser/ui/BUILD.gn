@@ -142,6 +142,8 @@ split_static_library("ui") {
     "passwords/manage_passwords_state.h",
     "passwords/manage_passwords_view_utils.cc",
     "passwords/manage_passwords_view_utils.h",
+    "passwords/password_access_authenticator.cc",
+    "passwords/password_access_authenticator.h",
     "passwords/password_manager_porter.cc",
     "passwords/password_manager_porter.h",
     "passwords/password_manager_presenter.cc",

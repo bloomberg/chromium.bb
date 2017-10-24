@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -18,7 +19,6 @@
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -216,7 +216,10 @@ PasswordManagerPresenter::PasswordManagerPresenter(
     : populater_(this),
       exception_populater_(this),
       password_view_(password_view),
-      password_manager_porter_(this) {
+      password_manager_porter_(this),
+      password_access_authenticator_(
+          base::BindRepeating(&PasswordManagerPresenter::OsReauthCall,
+                              base::Unretained(this))) {
   DCHECK(password_view_);
 }
 
@@ -310,7 +313,7 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
     return;
   }
 
-  if (!IsUserAuthenticated()) {
+  if (!password_access_authenticator_.EnsureUserIsAuthenticated()) {
     return;
   }
 
@@ -413,36 +416,6 @@ void PasswordManagerPresenter::SortEntriesAndHideDuplicates(
   }
 }
 
-// TODO(crbug.com/327331): Trigger Re-Auth after closing and opening the
-// settings tab.
-bool PasswordManagerPresenter::IsUserAuthenticated() {
-#if defined(OS_ANDROID)
-  NOTREACHED();
-#endif
-  if (base::TimeTicks::Now() - last_authentication_time_ >
-      base::TimeDelta::FromSeconds(60)) {
-    bool authenticated = true;
-#if defined(OS_WIN)
-    authenticated = password_manager_util_win::AuthenticateUser(
-        password_view_->GetNativeWindow());
-#elif defined(OS_MACOSX)
-    authenticated = password_manager_util_mac::AuthenticateUser();
-#endif
-    if (authenticated)
-      last_authentication_time_ = base::TimeTicks::Now();
-    UMA_HISTOGRAM_ENUMERATION(
-        "PasswordManager.ReauthToAccessPasswordInSettings",
-        authenticated ? password_manager::metrics_util::REAUTH_SUCCESS
-                      : password_manager::metrics_util::REAUTH_FAILURE,
-        password_manager::metrics_util::REAUTH_COUNT);
-    return authenticated;
-  }
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.ReauthToAccessPasswordInSettings",
-                            password_manager::metrics_util::REAUTH_SKIPPED,
-                            password_manager::metrics_util::REAUTH_COUNT);
-  return true;
-}
-
 void PasswordManagerPresenter::ImportPasswords(
     content::WebContents* web_contents) {
   password_manager_porter_.PresentFileSelector(
@@ -473,6 +446,26 @@ void PasswordManagerPresenter::RemoveLogin(const autofill::PasswordForm& form) {
   undo_manager_.AddUndoOperation(
       std::make_unique<RemovePasswordOperation>(this, form));
   store->RemoveLogin(form);
+}
+
+void PasswordManagerPresenter::SetOsReauthCallForTesting(
+    base::RepeatingCallback<bool()> os_reauth_call) {
+  password_access_authenticator_.SetOsReauthCallForTesting(
+      std::move(os_reauth_call));
+}
+
+bool PasswordManagerPresenter::OsReauthCall() {
+#if defined(OS_ANDROID)
+  NOTREACHED();
+  return true;
+#elif defined(OS_WIN)
+  return password_manager_util_win::AuthenticateUser(
+      password_view_->GetNativeWindow());
+#elif defined(OS_MACOSX)
+  return password_manager_util_mac::AuthenticateUser();
+#else
+  return true;
+#endif
 }
 
 PasswordManagerPresenter::ListPopulater::ListPopulater(
