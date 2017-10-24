@@ -80,3 +80,28 @@ TEST(SecureHashTest, TestLength) {
       crypto::SecureHash::Create(crypto::SecureHash::SHA256));
   EXPECT_EQ(crypto::kSHA256Length, ctx->GetHashLength());
 }
+
+TEST(SecureHashTest, Equality) {
+  std::string input1(10001, 'a');  // 'a' repeated 10001 times
+  std::string input2(10001, 'd');  // 'd' repeated 10001 times
+
+  uint8_t output1[crypto::kSHA256Length];
+  uint8_t output2[crypto::kSHA256Length];
+
+  // Call Update() twice on input1 and input2.
+  std::unique_ptr<crypto::SecureHash> ctx1(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  ctx1->Update(input1.data(), input1.size());
+  ctx1->Update(input2.data(), input2.size());
+  ctx1->Finish(output1, sizeof(output1));
+
+  // Call Update() once one input1 + input2 (concatenation).
+  std::unique_ptr<crypto::SecureHash> ctx2(
+      crypto::SecureHash::Create(crypto::SecureHash::SHA256));
+  std::string input3 = input1 + input2;
+  ctx2->Update(input3.data(), input3.size());
+  ctx2->Finish(output2, sizeof(output2));
+
+  // The hash should be the same.
+  EXPECT_EQ(0, memcmp(output1, output2, crypto::kSHA256Length));
+}
