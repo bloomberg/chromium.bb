@@ -21,6 +21,8 @@ enum InputEventAckState {
       INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING
 };
 
+const char* InputEventAckStateToString(InputEventAckState ack_state);
+
 }  // namespace content
 
 #endif  // CONTENT_PUBLIC_COMMON_INPUT_EVENT_ACK_STATE_H_

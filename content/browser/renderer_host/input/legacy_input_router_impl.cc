@@ -46,32 +46,6 @@ using blink::WebTouchEvent;
 using ui::WebInputEventTraits;
 
 namespace content {
-namespace {
-
-const char* GetEventAckName(InputEventAckState ack_result) {
-  switch (ack_result) {
-    case INPUT_EVENT_ACK_STATE_UNKNOWN:
-      return "UNKNOWN";
-    case INPUT_EVENT_ACK_STATE_CONSUMED:
-      return "CONSUMED";
-    case INPUT_EVENT_ACK_STATE_NOT_CONSUMED:
-      return "NOT_CONSUMED";
-    case INPUT_EVENT_ACK_STATE_CONSUMED_SHOULD_BUBBLE:
-      return "CONSUMED_SHOULD_BUBBLE";
-    case INPUT_EVENT_ACK_STATE_NO_CONSUMER_EXISTS:
-      return "NO_CONSUMER_EXISTS";
-    case INPUT_EVENT_ACK_STATE_IGNORED:
-      return "IGNORED";
-    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING:
-      return "SET_NON_BLOCKING";
-    case INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING_DUE_TO_FLING:
-      return "SET_NON_BLOCKING_DUE_TO_FLING";
-  }
-  DLOG(WARNING) << "Unhandled InputEventAckState in GetEventAckName.";
-  return "";
-}
-
-}  // namespace
 
 LegacyInputRouterImpl::LegacyInputRouterImpl(
     IPC::Sender* sender,
@@ -536,7 +510,7 @@ void LegacyInputRouterImpl::ProcessInputEventAck(
     uint32_t unique_touch_event_id) {
   TRACE_EVENT2("input", "LegacyInputRouterImpl::ProcessInputEventAck", "type",
                WebInputEvent::GetName(event_type), "ack",
-               GetEventAckName(ack_result));
+               InputEventAckStateToString(ack_result));
 
   if (WebInputEvent::IsKeyboardEventType(event_type)) {
     // Note: The keyboard ack must be treated carefully, as it may result in
