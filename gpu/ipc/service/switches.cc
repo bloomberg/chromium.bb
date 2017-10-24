@@ -6,6 +6,13 @@
 
 namespace switches {
 
+// Disable the thread that crashes the GPU process if it stops responding to
+// messages.
+const char kDisableGpuWatchdog[] = "disable-gpu-watchdog";
+
+// Starts the GPU sandbox before creating a GL context.
+const char kGpuSandboxStartEarly[] = "gpu-sandbox-start-early";
+
 const base::Feature kDirectCompositionOverlays{
     "DirectCompositionOverlays", base::FEATURE_ENABLED_BY_DEFAULT};
 

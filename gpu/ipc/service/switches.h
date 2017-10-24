@@ -10,6 +10,9 @@
 
 namespace switches {
 
+GPU_EXPORT extern const char kDisableGpuWatchdog[];
+GPU_EXPORT extern const char kGpuSandboxStartEarly[];
+
 GPU_EXPORT extern const base::Feature kDirectCompositionOverlays;
 
 }  // namespace switches
