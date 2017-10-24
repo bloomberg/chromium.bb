@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, so no include guard.
+#ifndef CHROME_COMMON_CHROME_UTILITY_PRINTING_MESSAGES_H_
+#define CHROME_COMMON_CHROME_UTILITY_PRINTING_MESSAGES_H_
 
 #include <string>
 #include <vector>
@@ -156,3 +157,5 @@ IPC_SYNC_MESSAGE_CONTROL2_0(ChromeUtilityHostMsg_PreCacheFontCharacters,
                             base::string16 /* characters */)
 
 #endif  // ENABLE_PRINTING && OS_WIN
+
+#endif  // CHROME_COMMON_CHROME_UTILITY_PRINTING_MESSAGES_H_

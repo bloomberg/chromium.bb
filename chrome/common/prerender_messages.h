@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, no traditional include guard.
+#ifndef CHROME_COMMON_PRERENDER_MESSAGES_H_
+#define CHROME_COMMON_PRERENDER_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -82,3 +83,5 @@ IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderRemoveAliases,
 // Signals to a launcher that a prerender is no longer running.
 IPC_MESSAGE_CONTROL1(PrerenderMsg_OnPrerenderStop,
                      int /* prerender_id */)
+
+#endif  // CHROME_COMMON_PRERENDER_MESSAGES_H_

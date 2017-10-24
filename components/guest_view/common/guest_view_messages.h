@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // IPC messages for GuestViews.
-// Multiply-included message file, hence no include guard.
+
+#ifndef COMPONENTS_GUEST_VIEW_COMMON_GUEST_VIEW_MESSAGES_H_
+#define COMPONENTS_GUEST_VIEW_COMMON_GUEST_VIEW_MESSAGES_H_
 
 #include "base/values.h"
 #include "ipc/ipc_message_macros.h"
@@ -58,3 +60,5 @@ IPC_MESSAGE_CONTROL2(GuestViewHostMsg_ViewCreated,
 // been garbage collected in JavaScript.
 IPC_MESSAGE_CONTROL1(GuestViewHostMsg_ViewGarbageCollected,
                      int /* view_instance_id */)
+
+#endif  // COMPONENTS_GUEST_VIEW_COMMON_GUEST_VIEW_MESSAGES_H_

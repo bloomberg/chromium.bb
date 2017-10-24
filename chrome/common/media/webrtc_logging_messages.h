@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_COMMON_MEDIA_WEBRTC_LOGGING_MESSAGES_H_
+#define CHROME_COMMON_MEDIA_WEBRTC_LOGGING_MESSAGES_H_
+
 // IPC messages for WebRTC logging.
-// Multiply-included message file, hence no include guard.
 
 #include "chrome/common/media/webrtc_logging_message_data.h"
 #include "ipc/ipc_message_macros.h"
@@ -32,3 +34,5 @@ IPC_MESSAGE_CONTROL0(WebRtcLoggingMsg_StartLogging)
 
 // Tells the renderer to stop sending log messages to the browser.
 IPC_MESSAGE_CONTROL0(WebRtcLoggingMsg_StopLogging)
+
+#endif  // CHROME_COMMON_MEDIA_WEBRTC_LOGGING_MESSAGES_H_

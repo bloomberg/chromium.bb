@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // IPC messages for extensions GuestViews.
-// Multiply-included message file, hence no include guard.
+
+#ifndef EXTENSIONS_COMMON_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_MESSAGES_H_
+#define EXTENSIONS_COMMON_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_MESSAGES_H_
 
 #include <string>
 
@@ -45,3 +47,5 @@ IPC_MESSAGE_CONTROL3(ExtensionsGuestViewHostMsg_ResizeGuest,
                      int /* routing_id */,
                      int /* element_instance_id*/,
                      gfx::Size /* new_size */)
+
+#endif  // EXTENSIONS_COMMON_GUEST_VIEW_EXTENSIONS_GUEST_VIEW_MESSAGES_H_

@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, so no include guard.
+#ifndef SAFE_BROWSING_IPC_PROTOBUF_MESSAGE_TEST_MESSAGES_H_
+#define SAFE_BROWSING_IPC_PROTOBUF_MESSAGE_TEST_MESSAGES_H_
 
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_message_protobuf_utils.h"
@@ -19,3 +20,5 @@ IPC_PROTOBUF_MESSAGE_TRAITS_BEGIN(TestMessage)
   IPC_PROTOBUF_MESSAGE_TRAITS_OPTIONAL_COMPLEX_MEMBER(op_comp_sub)
   IPC_PROTOBUF_MESSAGE_TRAITS_REPEATED_COMPLEX_MEMBER(rep_comp_sub)
 IPC_PROTOBUF_MESSAGE_TRAITS_END()
+
+#endif  // SAFE_BROWSING_IPC_PROTOBUF_MESSAGE_TEST_MESSAGES_H_

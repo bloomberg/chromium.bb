@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 // IPC messages for extensions.
-// Multiply-included message file, hence no include guard.
+
+#ifndef EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
+#define EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
 #include <stdint.h>
 
@@ -284,8 +286,8 @@ IPC_STRUCT_BEGIN(ServiceWorkerIdentifier)
 IPC_STRUCT_END()
 
 // Singly-included section for custom IPC traits.
-#ifndef EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
-#define EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
+#ifndef INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
+#define INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
 // IPC_MESSAGE macros choke on extra , in the std::map, when expanding. We need
 // to typedef it to avoid that.
@@ -444,7 +446,7 @@ struct ParamTraits<ExtensionMsg_Loaded_Params> {
 
 }  // namespace IPC
 
-#endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
+#endif  // INTERNAL_EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
 
 IPC_ENUM_TRAITS_MAX_VALUE(
     ExtensionHostMsg_AutomationQuerySelector_Error::Value,
@@ -976,3 +978,5 @@ IPC_MESSAGE_CONTROL2(ExtensionHostMsg_IncrementServiceWorkerActivity,
 IPC_MESSAGE_CONTROL2(ExtensionHostMsg_DecrementServiceWorkerActivity,
                      int64_t /* service_worker_version_id */,
                      std::string /* request_uuid */)
+
+#endif  // EXTENSIONS_COMMON_EXTENSION_MESSAGES_H_
