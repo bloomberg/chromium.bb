@@ -231,7 +231,7 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       av1_cost_tokens_from_cdf(x->tx_size_cost[i][j], fc->tx_size_cdf[i][j],
                                NULL);
 
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
 #if CONFIG_NEW_MULTISYMBOL
   av1_cost_tokens_from_cdf(x->quarter_tx_size_cost, fc->quarter_tx_size_cdf,
                            NULL);
@@ -241,7 +241,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
 #endif
 #endif
 
-#if CONFIG_VAR_TX
   for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i) {
 #if CONFIG_NEW_MULTISYMBOL
     av1_cost_tokens_from_cdf(x->txfm_partition_cost[i],
@@ -251,7 +250,6 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     x->txfm_partition_cost[i][1] = av1_cost_bit(fc->txfm_partition_prob[i], 1);
 #endif
   }
-#endif
 
 #if CONFIG_EXT_TX
 #if CONFIG_LGT_FROM_PRED
@@ -998,7 +996,7 @@ static void get_entropy_contexts_plane(
       for (i = 0; i < num_4x4_h; i += 4)
         t_left[i] = !!*(const uint32_t *)&left[i];
       break;
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
     case TX_4X16:
       memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
       for (i = 0; i < num_4x4_h; i += 4)

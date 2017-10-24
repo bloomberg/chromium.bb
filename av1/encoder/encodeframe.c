@@ -238,12 +238,10 @@ static void set_offsets_without_segment_id(const AV1_COMP *const cpi,
   set_mode_info_offsets(cpi, x, xd, mi_row, mi_col);
 
   set_skip_context(xd, mi_row, mi_col);
-#if CONFIG_VAR_TX
   xd->above_txfm_context =
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
   xd->left_txfm_context = xd->left_txfm_context_buffer +
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-#endif
 
   // Set up destination pointers.
   av1_setup_dst_planes(xd->plane, bsize, get_frame_new_buffer(cm), mi_row,
@@ -510,11 +508,9 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
 
   x->skip = ctx->skip;
 
-#if CONFIG_VAR_TX
   for (i = 0; i < 1; ++i)
     memcpy(x->blk_skip[i], ctx->blk_skip[i],
            sizeof(uint8_t) * ctx->num_4x4_blk);
-#endif
 
   if (dry_run) return;
 
@@ -1360,12 +1356,10 @@ typedef struct {
   ENTROPY_CONTEXT l[2 * MAX_MIB_SIZE * MAX_MB_PLANE];
   PARTITION_CONTEXT sa[MAX_MIB_SIZE];
   PARTITION_CONTEXT sl[MAX_MIB_SIZE];
-#if CONFIG_VAR_TX
   TXFM_CONTEXT *p_ta;
   TXFM_CONTEXT *p_tl;
   TXFM_CONTEXT ta[2 * MAX_MIB_SIZE];
   TXFM_CONTEXT tl[2 * MAX_MIB_SIZE];
-#endif
 } RD_SEARCH_MACROBLOCK_CONTEXT;
 
 static void restore_context(MACROBLOCK *x,
@@ -1397,14 +1391,12 @@ static void restore_context(MACROBLOCK *x,
          sizeof(*xd->above_seg_context) * mi_width);
   memcpy(xd->left_seg_context + (mi_row & MAX_MIB_MASK), ctx->sl,
          sizeof(xd->left_seg_context[0]) * mi_height);
-#if CONFIG_VAR_TX
   xd->above_txfm_context = ctx->p_ta;
   xd->left_txfm_context = ctx->p_tl;
   memcpy(xd->above_txfm_context, ctx->ta,
          sizeof(*xd->above_txfm_context) * (mi_width << TX_UNIT_WIDE_LOG2));
   memcpy(xd->left_txfm_context, ctx->tl,
          sizeof(*xd->left_txfm_context) * (mi_height << TX_UNIT_HIGH_LOG2));
-#endif
 }
 
 static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
@@ -1437,14 +1429,12 @@ static void save_context(const MACROBLOCK *x, RD_SEARCH_MACROBLOCK_CONTEXT *ctx,
          sizeof(*xd->above_seg_context) * mi_width);
   memcpy(ctx->sl, xd->left_seg_context + (mi_row & MAX_MIB_MASK),
          sizeof(xd->left_seg_context[0]) * mi_height);
-#if CONFIG_VAR_TX
   memcpy(ctx->ta, xd->above_txfm_context,
          sizeof(*xd->above_txfm_context) * (mi_width << TX_UNIT_WIDE_LOG2));
   memcpy(ctx->tl, xd->left_txfm_context,
          sizeof(*xd->left_txfm_context) * (mi_height << TX_UNIT_HIGH_LOG2));
   ctx->p_ta = xd->above_txfm_context;
   ctx->p_tl = xd->left_txfm_context;
-#endif
 }
 
 static void encode_b(const AV1_COMP *const cpi, const TileInfo *const tile,
@@ -1840,12 +1830,10 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
   pc_tree->partitioning = partition;
 
-#if CONFIG_VAR_TX
   xd->above_txfm_context =
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
   xd->left_txfm_context = xd->left_txfm_context_buffer +
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-#endif
   save_context(x, &x_ctx, mi_row, mi_col, bsize);
 
   if (bsize == BLOCK_16X16 && cpi->vaq_refresh) {
@@ -2623,14 +2611,12 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   }
 #endif
 
-#if CONFIG_VAR_TX
 #ifndef NDEBUG
   // Nothing should rely on the default value of this array (which is just
   // leftover from encoding the previous block. Setting it to magic number
   // when debugging.
   memset(x->blk_skip[0], 234, sizeof(x->blk_skip[0]));
 #endif  // NDEBUG
-#endif  // CONFIG_VAR_TX
 
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
 
@@ -2670,12 +2656,10 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
     partition_vert_allowed &= force_vert_split;
   }
 
-#if CONFIG_VAR_TX
   xd->above_txfm_context =
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
   xd->left_txfm_context = xd->left_txfm_context_buffer +
                           ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-#endif
   save_context(x, &x_ctx, mi_row, mi_col, bsize);
 
 #if CONFIG_FP_MB_STATS
@@ -3485,21 +3469,6 @@ static int check_dual_ref_flags(AV1_COMP *cpi) {
 }
 #endif  // !CONFIG_REF_ADAPT
 
-#if !CONFIG_VAR_TX
-static void reset_skip_tx_size(AV1_COMMON *cm, TX_SIZE max_tx_size) {
-  int mi_row, mi_col;
-  const int mis = cm->mi_stride;
-  MODE_INFO **mi_ptr = cm->mi_grid_visible;
-
-  for (mi_row = 0; mi_row < cm->mi_rows; ++mi_row, mi_ptr += mis) {
-    for (mi_col = 0; mi_col < cm->mi_cols; ++mi_col) {
-      if (txsize_sqr_up_map[mi_ptr[mi_col]->mbmi.tx_size] > max_tx_size)
-        mi_ptr[mi_col]->mbmi.tx_size = max_tx_size;
-    }
-  }
-}
-#endif
-
 static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
   if (frame_is_intra_only(&cpi->common)) return INTRA_FRAME;
   // We will not update the golden frame with an internal overlay frame
@@ -4049,10 +4018,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   cm->prev_mi =
       cm->use_prev_frame_mvs ? cm->prev_mip + cm->mi_stride + 1 : NULL;
 
-#if CONFIG_VAR_TX
   x->txb_split_count = 0;
   av1_zero(x->blk_skip_drl);
-#endif
 
 #if CONFIG_MFMV
   av1_setup_motion_field(cm);
@@ -4245,7 +4212,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
     }
     make_consistent_compound_tools(cm);
 
-#if CONFIG_VAR_TX
 #if CONFIG_RECT_TX_EXT
     if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0 &&
         counts->quarter_tx_size[1] == 0)
@@ -4253,145 +4219,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
     if (cm->tx_mode == TX_MODE_SELECT && cpi->td.mb.txb_split_count == 0)
 #endif
       cm->tx_mode = ALLOW_32X32 + CONFIG_TX64X64;
-#else
-#if CONFIG_RECT_TX_EXT && CONFIG_EXT_TX
-    if (cm->tx_mode == TX_MODE_SELECT && counts->quarter_tx_size[1] == 0)
-#else
-    if (cm->tx_mode == TX_MODE_SELECT)
-#endif
-    {
-#if CONFIG_TX64X64
-      int count4x4 = 0;
-      int count8x8_8x8p = 0, count8x8_lp = 0;
-      int count16x16_16x16p = 0, count16x16_lp = 0;
-      int count32x32_32x32p = 0, count32x32_lp = 0;
-      int count64x64_64x64p = 0;
-      for (i = 0; i < TX_SIZE_CONTEXTS; ++i) {
-        int depth;
-        // counts->tx_size[max_depth][context_idx][this_depth_level]
-        depth = tx_size_to_depth(TX_4X4);
-        count4x4 += counts->tx_size[TX_8X8 - TX_SIZE_CTX_MIN][i][depth];
-        count4x4 += counts->tx_size[TX_16X16 - TX_SIZE_CTX_MIN][i][depth];
-        count4x4 += counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-        count4x4 += counts->tx_size[TX_64X64 - TX_SIZE_CTX_MIN][i][depth];
-
-        depth = tx_size_to_depth(TX_8X8);
-        count8x8_8x8p += counts->tx_size[TX_8X8 - TX_SIZE_CTX_MIN][i][depth];
-        count8x8_lp += counts->tx_size[TX_16X16 - TX_SIZE_CTX_MIN][i][depth];
-        count8x8_lp += counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-        count8x8_lp += counts->tx_size[TX_64X64 - TX_SIZE_CTX_MIN][i][depth];
-
-        depth = tx_size_to_depth(TX_16X16);
-        count16x16_16x16p +=
-            counts->tx_size[TX_16X16 - TX_SIZE_CTX_MIN][i][depth];
-        count16x16_lp += counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-        count16x16_lp += counts->tx_size[TX_64X64 - TX_SIZE_CTX_MIN][i][depth];
-
-        depth = tx_size_to_depth(TX_32X32);
-        count32x32_32x32p +=
-            counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-        count32x32_lp += counts->tx_size[TX_64X64 - TX_SIZE_CTX_MIN][i][depth];
-
-        depth = tx_size_to_depth(TX_64X64);
-        count64x64_64x64p +=
-            counts->tx_size[TX_64X64 - TX_SIZE_CTX_MIN][i][depth];
-      }
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      count4x4 += counts->tx_size_implied[TX_4X4][TX_4X4];
-      count4x4 += counts->tx_size_implied[TX_8X8][TX_4X4];
-      count4x4 += counts->tx_size_implied[TX_16X16][TX_4X4];
-      count4x4 += counts->tx_size_implied[TX_32X32][TX_4X4];
-      count8x8_8x8p += counts->tx_size_implied[TX_8X8][TX_8X8];
-      count8x8_lp += counts->tx_size_implied[TX_16X16][TX_8X8];
-      count8x8_lp += counts->tx_size_implied[TX_32X32][TX_8X8];
-      count8x8_lp += counts->tx_size_implied[TX_64X64][TX_8X8];
-      count16x16_16x16p += counts->tx_size_implied[TX_16X16][TX_16X16];
-      count16x16_lp += counts->tx_size_implied[TX_32X32][TX_16X16];
-      count16x16_lp += counts->tx_size_implied[TX_64X64][TX_16X16];
-      count32x32_32x32p += counts->tx_size_implied[TX_32X32][TX_32X32];
-      count32x32_lp += counts->tx_size_implied[TX_64X64][TX_32X32];
-      count64x64_64x64p += counts->tx_size_implied[TX_64X64][TX_64X64];
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
-      if (count4x4 == 0 && count16x16_lp == 0 && count16x16_16x16p == 0 &&
-          count32x32_lp == 0 && count32x32_32x32p == 0 &&
-          count64x64_64x64p == 0) {
-        cm->tx_mode = ALLOW_8X8;
-        reset_skip_tx_size(cm, TX_8X8);
-      } else if (count8x8_8x8p == 0 && count8x8_lp == 0 &&
-                 count16x16_16x16p == 0 && count16x16_lp == 0 &&
-                 count32x32_32x32p == 0 && count32x32_lp == 0 &&
-                 count64x64_64x64p == 0) {
-        cm->tx_mode = ONLY_4X4;
-        reset_skip_tx_size(cm, TX_4X4);
-      } else if (count4x4 == 0 && count8x8_lp == 0 && count16x16_lp == 0 &&
-                 count32x32_lp == 0) {
-        cm->tx_mode = ALLOW_64X64;
-      } else if (count4x4 == 0 && count8x8_lp == 0 && count16x16_lp == 0 &&
-                 count64x64_64x64p == 0) {
-        cm->tx_mode = ALLOW_32X32;
-        reset_skip_tx_size(cm, TX_32X32);
-      } else if (count4x4 == 0 && count8x8_lp == 0 && count32x32_lp == 0 &&
-                 count32x32_32x32p == 0 && count64x64_64x64p == 0) {
-        cm->tx_mode = ALLOW_16X16;
-        reset_skip_tx_size(cm, TX_16X16);
-      }
-
-#else  // CONFIG_TX64X64
-
-      int count4x4 = 0;
-      int count8x8_lp = 0, count8x8_8x8p = 0;
-      int count16x16_16x16p = 0, count16x16_lp = 0;
-      int count32x32 = 0;
-      for (i = 0; i < TX_SIZE_CONTEXTS; ++i) {
-        int depth;
-        // counts->tx_size[max_depth][context_idx][this_depth_level]
-        depth = tx_size_to_depth(TX_4X4);
-        count4x4 += counts->tx_size[TX_8X8 - TX_SIZE_CTX_MIN][i][depth];
-        count4x4 += counts->tx_size[TX_16X16 - TX_SIZE_CTX_MIN][i][depth];
-        count4x4 += counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-
-        depth = tx_size_to_depth(TX_8X8);
-        count8x8_8x8p += counts->tx_size[TX_8X8 - TX_SIZE_CTX_MIN][i][depth];
-        count8x8_lp += counts->tx_size[TX_16X16 - TX_SIZE_CTX_MIN][i][depth];
-        count8x8_lp += counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-
-        depth = tx_size_to_depth(TX_16X16);
-        count16x16_16x16p +=
-            counts->tx_size[TX_16X16 - TX_SIZE_CTX_MIN][i][depth];
-        count16x16_lp += counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-
-        depth = tx_size_to_depth(TX_32X32);
-        count32x32 += counts->tx_size[TX_32X32 - TX_SIZE_CTX_MIN][i][depth];
-      }
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-      count4x4 += counts->tx_size_implied[TX_4X4][TX_4X4];
-      count4x4 += counts->tx_size_implied[TX_8X8][TX_4X4];
-      count4x4 += counts->tx_size_implied[TX_16X16][TX_4X4];
-      count4x4 += counts->tx_size_implied[TX_32X32][TX_4X4];
-      count8x8_8x8p += counts->tx_size_implied[TX_8X8][TX_8X8];
-      count8x8_lp += counts->tx_size_implied[TX_16X16][TX_8X8];
-      count8x8_lp += counts->tx_size_implied[TX_32X32][TX_8X8];
-      count16x16_16x16p += counts->tx_size_implied[TX_16X16][TX_16X16];
-      count16x16_lp += counts->tx_size_implied[TX_32X32][TX_16X16];
-      count32x32 += counts->tx_size_implied[TX_32X32][TX_32X32];
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
-      if (count4x4 == 0 && count16x16_lp == 0 && count16x16_16x16p == 0 &&
-          count32x32 == 0) {
-        cm->tx_mode = ALLOW_8X8;
-        reset_skip_tx_size(cm, TX_8X8);
-      } else if (count8x8_8x8p == 0 && count16x16_16x16p == 0 &&
-                 count8x8_lp == 0 && count16x16_lp == 0 && count32x32 == 0) {
-        cm->tx_mode = ONLY_4X4;
-        reset_skip_tx_size(cm, TX_4X4);
-      } else if (count8x8_lp == 0 && count16x16_lp == 0 && count4x4 == 0) {
-        cm->tx_mode = ALLOW_32X32;
-      } else if (count32x32 == 0 && count8x8_lp == 0 && count4x4 == 0) {
-        cm->tx_mode = ALLOW_16X16;
-        reset_skip_tx_size(cm, TX_16X16);
-      }
-#endif  // CONFIG_TX64X64
-    }
-#endif
   } else {
     make_consistent_compound_tools(cm);
     encode_frame_internal(cpi);
@@ -4496,7 +4323,6 @@ static void update_palette_cdf(MACROBLOCKD *xd, const MODE_INFO *mi) {
 }
 #endif
 
-#if CONFIG_VAR_TX
 static void update_txfm_count(MACROBLOCK *x, MACROBLOCKD *xd,
                               FRAME_COUNTS *counts, TX_SIZE tx_size, int depth,
                               int blk_row, int blk_col) {
@@ -4649,7 +4475,6 @@ static void tx_partition_set_contexts(const AV1_COMMON *const cm,
     for (idx = 0; idx < mi_width; idx += bw)
       set_txfm_context(xd, max_tx_size, idy, idx);
 }
-#endif
 
 void av1_update_tx_type_count(const AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_TXK_SEL
@@ -4827,9 +4652,7 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
       }
     }
 
-#if CONFIG_VAR_TX
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-#endif
 #if CONFIG_LV_MAP
     av1_update_txb_context(cpi, td, dry_run, block_size, rate, mi_row, mi_col);
 #else   // CONFIG_LV_MAP
@@ -4890,17 +4713,9 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif
 
     av1_encode_sb((AV1_COMMON *)cm, x, block_size, mi_row, mi_col);
-#if CONFIG_VAR_TX
     if (mbmi->skip) mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
     av1_tokenize_sb_vartx(cpi, td, t, dry_run, mi_row, mi_col, block_size,
                           rate);
-#else
-#if CONFIG_LV_MAP
-    av1_update_txb_context(cpi, td, dry_run, block_size, rate, mi_row, mi_col);
-#else   // CONFIG_LV_MAP
-    av1_tokenize_sb(cpi, td, t, dry_run, block_size, rate, mi_row, mi_col);
-#endif  // CONFIG_LV_MAP
-#endif
   }
 
 #if CONFIG_DIST_8X8
@@ -4912,20 +4727,15 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif  // CONFIG_DIST_8X8
 
   if (!dry_run) {
-#if CONFIG_VAR_TX
     TX_SIZE tx_size =
         is_inter && !mbmi->skip ? mbmi->min_tx_size : mbmi->tx_size;
-#else
-    TX_SIZE tx_size = mbmi->tx_size;
-#endif
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id] &&
-#if (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+#if CONFIG_RECT_TX
         mbmi->sb_type > BLOCK_4X4 &&
 #else
         mbmi->sb_type >= BLOCK_8X8 &&
-#endif  // (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+#endif  // CONFIG_RECT_TX
         !(is_inter && (mbmi->skip || seg_skip))) {
-#if CONFIG_VAR_TX
       if (is_inter) {
         tx_partition_count_update(cm, x, bsize, mi_row, mi_col, td->counts);
       } else {
@@ -4937,17 +4747,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
         ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
         if (tx_size != max_txsize_rect_lookup[bsize]) ++x->txb_split_count;
       }
-#else
-      const int tx_size_ctx = get_tx_size_context(xd);
-      const int32_t tx_size_cat = is_inter ? inter_tx_size_cat_lookup[bsize]
-                                           : intra_tx_size_cat_lookup[bsize];
-      const TX_SIZE coded_tx_size = txsize_sqr_up_map[tx_size];
-      const int depth = tx_size_to_depth(coded_tx_size);
 
-      ++td->counts->tx_size[tx_size_cat][tx_size_ctx][depth];
-#endif
-
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
       if (is_quarter_tx_allowed(xd, mbmi, is_inter) &&
           quarter_txsize_lookup[bsize] != max_txsize_rect_lookup[bsize] &&
           (mbmi->tx_size == quarter_txsize_lookup[bsize] ||
@@ -4989,10 +4790,8 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
           if (mi_col + i < cm->mi_cols && mi_row + j < cm->mi_rows)
             mi_8x8[mis * j + i]->mbmi.tx_size = intra_tx_size;
 
-#if CONFIG_VAR_TX
       mbmi->min_tx_size = get_min_tx_size(intra_tx_size);
       if (intra_tx_size != max_txsize_rect_lookup[bsize]) ++x->txb_split_count;
-#endif
     }
 
 #if !CONFIG_TXK_SEL
@@ -5000,7 +4799,6 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
 #endif
   }
 
-#if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && mbmi->sb_type > BLOCK_4X4 && is_inter &&
       !(mbmi->skip || seg_skip) && !xd->lossless[mbmi->segment_id]) {
     if (dry_run) tx_partition_set_contexts(cm, xd, bsize, mi_row, mi_col);
@@ -5019,7 +4817,6 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     mbmi->tx_size = tx_size;
     set_txfm_ctxs(tx_size, xd->n8_w, xd->n8_h, (mbmi->skip || seg_skip), xd);
   }
-#endif  // CONFIG_VAR_TX
 #if CONFIG_CFL && CONFIG_CHROMA_SUB8X8
   CFL_CTX *const cfl = xd->cfl;
 #if CONFIG_DEBUG

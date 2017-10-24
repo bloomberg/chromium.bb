@@ -45,8 +45,7 @@ enum {
 #endif  // CONFIG_INTRA_EDGE
 
 #define INTRA_USES_EXT_TRANSFORMS 1
-#define INTRA_USES_RECT_TRANSFORMS \
-  (CONFIG_RECT_TX && (CONFIG_VAR_TX || CONFIG_EXT_TX))
+#define INTRA_USES_RECT_TRANSFORMS (CONFIG_RECT_TX)
 
 static const uint8_t extend_modes[INTRA_MODES] = {
   NEED_ABOVE | NEED_LEFT,                   // DC

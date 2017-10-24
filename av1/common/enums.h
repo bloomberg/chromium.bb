@@ -72,11 +72,9 @@ extern "C" {
 #endif
 #endif  // CONFIG_EXT_TILE
 
-#if CONFIG_VAR_TX
 #define MAX_VARTX_DEPTH 2
 #define SQR_VARTX_DEPTH_INIT 0
 #define RECT_VARTX_DEPTH_INIT 0
-#endif
 
 #define MI_SIZE_64X64 (64 >> MI_SIZE_LOG2)
 
@@ -673,10 +671,8 @@ typedef enum ATTRIBUTE_PACKED {
 #define COMP_INTER_MODE_CONTEXTS 4
 #endif  // CONFIG_COMPOUND_SINGLEREF
 
-#if CONFIG_VAR_TX
 #define TXFM_PARTITION_CONTEXTS ((TX_SIZES - TX_8X8) * 6 - 2)
 typedef uint8_t TXFM_CONTEXT;
-#endif
 
 #define NONE_FRAME -1
 #define INTRA_FRAME 0

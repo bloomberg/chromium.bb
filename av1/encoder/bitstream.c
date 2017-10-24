@@ -244,7 +244,6 @@ static void encode_unsigned_max(struct aom_write_bit_buffer *wb, int data,
   aom_wb_write_literal(wb, data, get_unsigned_bits(max));
 }
 
-#if CONFIG_VAR_TX
 static void write_tx_size_vartx(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                 const MB_MODE_INFO *mbmi, TX_SIZE tx_size,
                                 int depth, int blk_row, int blk_col,
@@ -321,7 +320,6 @@ static void update_txfm_partition_probs(AV1_COMMON *cm, aom_writer *w,
                               counts->txfm_partition[k], probwt);
 }
 #endif  // CONFIG_NEW_MULTISYMBOL
-#endif  // CONFIG_VAR_TX
 
 static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                    aom_writer *w) {
@@ -343,7 +341,7 @@ static void write_selected_tx_size(const AV1_COMMON *cm, const MACROBLOCKD *xd,
 
     aom_write_symbol(w, depth, ec_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
                      tx_size_cat + 2);
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
     if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
 #if CONFIG_NEW_MULTISYMBOL
       aom_write_symbol(w, tx_size == quarter_txsize_lookup[bsize],
@@ -597,10 +595,8 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
 #endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
                            TOKEN_STATS *token_stats) {
   const TOKENEXTRA *p = *tp;
-#if CONFIG_VAR_TX
   int count = 0;
   const int seg_eob = tx_size_2d[tx_size];
-#endif
 
 #if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
   if (tx_type == MRC_DCT && ((is_inter && SIGNAL_MRC_MASK_INTER) ||
@@ -619,9 +615,7 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     if (token == BLOCK_Z_TOKEN) {
       aom_write_symbol(w, 0, *p->head_cdf, HEAD_TOKENS + 1);
       p++;
-#if CONFIG_VAR_TX
       break;
-#endif
       continue;
     }
 
@@ -662,17 +656,15 @@ static void pack_mb_tokens(aom_writer *w, const TOKENEXTRA **tp,
     }
     ++p;
 
-#if CONFIG_VAR_TX
     ++count;
     if (eob_val == EARLY_EOB || count == seg_eob) break;
-#endif
   }
 
   *tp = p;
 }
 #endif  // !CONFIG_LV_MAP
 
-#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
+#if !CONFIG_COEF_INTERLEAVE
 #if CONFIG_LV_MAP
 static void pack_txb_tokens(aom_writer *w,
 #if CONFIG_LV_MAP
@@ -816,7 +808,7 @@ static void pack_txb_tokens(aom_writer *w, const TOKENEXTRA **tp,
   }
 }
 #endif  // CONFIG_LV_MAP
-#endif  // CONFIG_VAR_TX
+#endif
 
 static void write_segment_id(aom_writer *w, const struct segmentation *seg,
                              struct segmentation_probs *segp, int segment_id) {
@@ -1355,11 +1347,7 @@ void av1_write_tx_type(const AV1_COMMON *const cm, const MACROBLOCKD *xd,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
 #if !CONFIG_TXK_SEL
-#if CONFIG_VAR_TX
   const TX_SIZE tx_size = is_inter ? mbmi->min_tx_size : mbmi->tx_size;
-#else
-  const TX_SIZE tx_size = mbmi->tx_size;
-#endif  // CONFIG_VAR_TX
 #endif  // !CONFIG_TXK_SEL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
@@ -1576,7 +1564,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
 
   if (cm->tx_mode == TX_MODE_SELECT && block_signals_txsize(bsize) &&
       !(is_inter && skip) && !xd->lossless[segment_id]) {
-#if CONFIG_VAR_TX
     if (is_inter) {  // This implies skip flag is 0.
       const TX_SIZE max_tx_size = get_vartx_max_txsize(mbmi, bsize, 0);
       const int bh = tx_size_high_unit[max_tx_size];
@@ -1610,9 +1597,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
   } else {
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, skip, xd);
-#else
-    write_selected_tx_size(cm, xd, w);
-#endif
   }
 
   if (!is_inter) {
@@ -1829,7 +1813,6 @@ static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
     assert(mbmi->mode == DC_PRED);
     assert(mbmi->uv_mode == UV_DC_PRED);
     if ((enable_tx_size && !mbmi->skip)) {
-#if CONFIG_VAR_TX
       const BLOCK_SIZE bsize = mbmi->sb_type;
       const TX_SIZE max_tx_size = get_vartx_max_txsize(mbmi, bsize, 0);
       const int bh = tx_size_high_unit[max_tx_size];
@@ -1845,13 +1828,8 @@ static void write_intrabc_info(AV1_COMMON *cm, MACROBLOCKD *xd,
                               w);
         }
       }
-#else
-      write_selected_tx_size(cm, xd, w);
-#endif
     } else {
-#if CONFIG_VAR_TX
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
-#endif  // CONFIG_VAR_TX
     }
     int_mv dv_ref = mbmi_ext->ref_mvs[INTRA_FRAME][0];
     av1_encode_dv(w, &mbmi->mv[0].as_mv, &dv_ref.as_mv, &ec_ctx->ndvc);
@@ -1935,10 +1913,10 @@ static void write_mb_modes_kf(AV1_COMMON *cm, MACROBLOCKD *xd,
 #endif  // CONFIG_INTRABC
 
   if (enable_tx_size) write_selected_tx_size(cm, xd, w);
-#if CONFIG_INTRABC && CONFIG_VAR_TX
+#if CONFIG_INTRABC
   if (cm->allow_screen_content_tools)
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
-#endif  // CONFIG_INTRABC && CONFIG_VAR_TX
+#endif  // CONFIG_INTRABC
 
   write_intra_mode_kf(cm, ec_ctx, mi, above_mi, left_mi, 0, mbmi->mode, w);
 
@@ -1982,12 +1960,9 @@ static void dump_mode_info(MODE_INFO *mi) {
 static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
                                    int plane) {
   if (rd_stats->txb_coeff_cost[plane] != token_stats->cost) {
-#if CONFIG_VAR_TX
     int r, c;
-#endif
     printf("\nplane %d rd_stats->txb_coeff_cost %d token_stats->cost %d\n",
            plane, rd_stats->txb_coeff_cost[plane], token_stats->cost);
-#if CONFIG_VAR_TX
     printf("rd txb_coeff_cost_map\n");
     for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r) {
       for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c) {
@@ -2003,7 +1978,6 @@ static int rd_token_stats_mismatch(RD_STATS *rd_stats, TOKEN_STATS *token_stats,
       }
       printf("\n");
     }
-#endif
     return 1;
   }
   return 0;
@@ -2100,26 +2074,24 @@ static void write_mbmi_b(AV1_COMP *cpi, const TileInfo *const tile,
                  cm->mi_rows, cm->mi_cols);
 
   if (frame_is_intra_only(cm)) {
-#if CONFIG_INTRABC && CONFIG_VAR_TX
+#if CONFIG_INTRABC
     if (cm->allow_screen_content_tools) {
       xd->above_txfm_context =
           cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
       xd->left_txfm_context = xd->left_txfm_context_buffer +
                               ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
     }
-#endif  // CONFIG_INTRABC && CONFIG_VAR_TX
+#endif  // CONFIG_INTRABC
     write_mb_modes_kf(cm, xd,
 #if CONFIG_INTRABC
                       cpi->td.mb.mbmi_ext,
 #endif  // CONFIG_INTRABC
                       mi_row, mi_col, w);
   } else {
-#if CONFIG_VAR_TX
     xd->above_txfm_context =
         cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
     xd->left_txfm_context = xd->left_txfm_context_buffer +
                             ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
-#endif
 #if CONFIG_DUAL_FILTER || CONFIG_WARPED_MOTION
     // has_subpel_mv_component needs the ref frame buffers set up to look
     // up if they are scaled. has_subpel_mv_component is in turn needed by
@@ -2278,7 +2250,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
 #endif  // !CONFIG_LV_MAP
         continue;
       }
-#if CONFIG_VAR_TX
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       BLOCK_SIZE bsize = mbmi->sb_type;
 #if CONFIG_CHROMA_SUB8X8
@@ -2377,34 +2348,6 @@ static void write_tokens_b(AV1_COMP *cpi, const TileInfo *const tile,
         }
 #endif  // CONFIG_LV_MAP
       }
-#else
-      const TX_SIZE tx = av1_get_tx_size(plane, xd);
-      TOKEN_STATS token_stats;
-
-      init_token_stats(&token_stats);
-#if CONFIG_LV_MAP
-      (void)tx;
-      av1_write_coeffs_mb(cm, x, w, plane);
-#else  // CONFIG_LV_MAP
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-      TX_TYPE tx_type = av1_get_tx_type(plane ? PLANE_TYPE_UV : PLANE_TYPE_Y,
-                                        xd, blk_row, blk_col, 0, tx);
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-      pack_mb_tokens(w, tok, tok_end, cm->bit_depth, tx,
-#if CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                     tx_type, is_inter_block(mbmi),
-#endif  // CONFIG_MRC_TX && SIGNAL_ANY_MRC_MASK
-                     &token_stats);
-#endif  // CONFIG_LV_MAP
-
-#if CONFIG_RD_DEBUG
-      if (is_inter_block(mbmi) && mbmi->sb_type >= BLOCK_8X8 &&
-          rd_token_stats_mismatch(&mbmi->rd_stats, &token_stats, plane)) {
-        dump_mode_info(m);
-        assert(0);
-      }
-#endif  // CONFIG_RD_DEBUG
-#endif  // CONFIG_VAR_TX
 
 #if !CONFIG_LV_MAP
       assert(*tok < tok_end && (*tok)->token == EOSB_TOKEN);
@@ -4635,7 +4578,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
   aom_start_encode(header_bc, data);
 
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   if (cm->tx_mode == TX_MODE_SELECT)
     av1_cond_prob_diff_update(header_bc, &cm->fc->quarter_tx_size_prob,
                               cm->counts.quarter_tx_size, probwt);
@@ -4644,7 +4587,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
   av1_write_txb_probs(cpi, header_bc);
 #endif  // CONFIG_LV_MAP
 
-#if CONFIG_VAR_TX && !CONFIG_NEW_MULTISYMBOL
+#if !CONFIG_NEW_MULTISYMBOL
   if (cm->tx_mode == TX_MODE_SELECT)
     update_txfm_partition_probs(cm, header_bc, counts, probwt);
 #endif

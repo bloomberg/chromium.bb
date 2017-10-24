@@ -648,7 +648,7 @@ int main(int argc, const char **argv) {
 #endif
 
 /* Transform size */
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   cts_each_dim[0] = 2;
   optimize_entropy_table(&fc.quarter_tx_size[0], probsfile, 1, cts_each_dim,
                          NULL, 1,
@@ -657,7 +657,6 @@ int main(int argc, const char **argv) {
       &fc.quarter_tx_size[0], probsfile, 1, cts_each_dim,
       "static const aom_cdf_prob default_quarter_tx_size_cdf[CDF_SIZE(2)]");
 #endif
-#if CONFIG_VAR_TX
   cts_each_dim[0] = TXFM_PARTITION_CONTEXTS;
   cts_each_dim[1] = 2;
   optimize_entropy_table(
@@ -668,7 +667,6 @@ int main(int argc, const char **argv) {
       &fc.txfm_partition[0][0], probsfile, 2, cts_each_dim,
       "static const aom_cdf_prob\n"
       "default_txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)]");
-#endif
 
   /* Skip flag */
   cts_each_dim[0] = SKIP_CONTEXTS;

@@ -35,7 +35,6 @@ static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
   (void)tx_size;
   rd_stats->txb_coeff_cost[plane] += txb_coeff_cost;
 
-#if CONFIG_VAR_TX
   {
     const int txb_h = tx_size_high_unit[tx_size];
     const int txb_w = tx_size_wide_unit[tx_size];
@@ -48,7 +47,6 @@ static INLINE void av1_update_txb_coeff_cost(RD_STATS *rd_stats, int plane,
   }
   assert(blk_row < TXB_COEFF_COST_MAP_SIZE);
   assert(blk_col < TXB_COEFF_COST_MAP_SIZE);
-#endif
 }
 #endif
 

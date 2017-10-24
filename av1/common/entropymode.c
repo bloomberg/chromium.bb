@@ -2283,7 +2283,7 @@ static const int palette_color_index_context_lookup[MAX_COLOR_CONTEXT_HASH +
                                                     1] = { -1, -1, 0, -1, -1,
                                                            4,  3,  2, 1 };
 
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
 static const aom_prob default_quarter_tx_size_prob = 192;
 #if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_quarter_tx_size_cdf[CDF_SIZE(2)] = {
@@ -2393,7 +2393,6 @@ int av1_get_palette_color_index_context(const uint8_t *color_map, int stride,
 #undef NUM_PALETTE_NEIGHBORS
 #undef MAX_COLOR_CONTEXT_HASH
 
-#if CONFIG_VAR_TX
 static const aom_prob default_txfm_partition_probs[TXFM_PARTITION_CONTEXTS] = {
 #if CONFIG_TX64X64
   249, 240, 223, 249, 229, 177, 250, 243, 208, 226, 187,
@@ -2448,7 +2447,6 @@ static const aom_cdf_prob
 #endif  // CONFIG_TX64X64
     };
 #endif  // CONFIG_NEW_MULTISYMBOL
-#endif  // CONFIG_VAR_TX
 
 #if CONFIG_NEW_MULTISYMBOL
 static const aom_cdf_prob default_skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)] = {
@@ -6265,17 +6263,15 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #if CONFIG_COMPOUND_SINGLEREF
   av1_copy(fc->comp_inter_mode_prob, default_comp_inter_mode_p);
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   fc->quarter_tx_size_prob = default_quarter_tx_size_prob;
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->quarter_tx_size_cdf, default_quarter_tx_size_cdf);
 #endif  // CONFIG_NEW_MULTISYMBOL
 #endif
-#if CONFIG_VAR_TX
   av1_copy(fc->txfm_partition_prob, default_txfm_partition_probs);
 #if CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
-#endif
 #endif
   av1_copy(fc->newmv_prob, default_newmv_prob);
   av1_copy(fc->zeromv_prob, default_zeromv_prob);
@@ -6517,19 +6513,17 @@ void av1_adapt_intra_frame_probs(AV1_COMMON *cm) {
   const FRAME_COUNTS *counts = &cm->counts;
 
   if (cm->tx_mode == TX_MODE_SELECT) {
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
     fc->quarter_tx_size_prob = av1_mode_mv_merge_probs(
         pre_fc->quarter_tx_size_prob, counts->quarter_tx_size);
 #endif
   }
 
-#if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT) {
     for (i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
       fc->txfm_partition_prob[i] = av1_mode_mv_merge_probs(
           pre_fc->txfm_partition_prob[i], counts->txfm_partition[i]);
   }
-#endif
 
 #if !CONFIG_NEW_MULTISYMBOL
   for (i = 0; i < SKIP_CONTEXTS; ++i)

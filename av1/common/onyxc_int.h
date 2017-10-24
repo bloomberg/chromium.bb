@@ -462,11 +462,9 @@ typedef struct AV1Common {
 
   PARTITION_CONTEXT *above_seg_context;
   ENTROPY_CONTEXT *above_context[MAX_MB_PLANE];
-#if CONFIG_VAR_TX
   TXFM_CONTEXT *above_txfm_context;
   TXFM_CONTEXT *top_txfm_context[MAX_MB_PLANE];
   TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
-#endif
   int above_context_alloc_cols;
 
   // scratch memory for intraonly/keyframe forward updates from default tables
@@ -716,9 +714,7 @@ static INLINE void av1_init_macroblockd(AV1_COMMON *cm, MACROBLOCKD *xd,
   }
   xd->fc = cm->fc;
   xd->above_seg_context = cm->above_seg_context;
-#if CONFIG_VAR_TX
   xd->above_txfm_context = cm->above_txfm_context;
-#endif
 #if CONFIG_CFL
   cfl_init(cfl, cm);
   xd->cfl = cfl;
@@ -1142,18 +1138,14 @@ static INLINE void av1_zero_above_context(AV1_COMMON *const cm,
 
   av1_zero_array(cm->above_seg_context + mi_col_start, aligned_width);
 
-#if CONFIG_VAR_TX
   av1_zero_array(cm->above_txfm_context + (mi_col_start << TX_UNIT_WIDE_LOG2),
                  aligned_width << TX_UNIT_WIDE_LOG2);
-#endif  // CONFIG_VAR_TX
 }
 
 static INLINE void av1_zero_left_context(MACROBLOCKD *const xd) {
   av1_zero(xd->left_context);
   av1_zero(xd->left_seg_context);
-#if CONFIG_VAR_TX
   av1_zero(xd->left_txfm_context_buffer);
-#endif
 }
 
 // Disable array-bounds checks as the TX_SIZE enum contains values larger than
@@ -1171,7 +1163,6 @@ static INLINE TX_SIZE get_min_tx_size(TX_SIZE tx_size) {
 #pragma GCC diagnostic warning "-Warray-bounds"
 #endif
 
-#if CONFIG_VAR_TX
 static INLINE void set_txfm_ctx(TXFM_CONTEXT *txfm_ctx, uint8_t txs, int len) {
   int i;
   for (i = 0; i < len; ++i) txfm_ctx[i] = txs;
@@ -1245,7 +1236,6 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
   if (category == TXFM_PARTITION_CONTEXTS - 1) return category;
   return category * 3 + above + left;
 }
-#endif
 
 // Compute the next partition in the direction of the sb_type stored in the mi
 // array, starting with bsize.

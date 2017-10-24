@@ -33,9 +33,7 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
 #endif
 
   for (i = 0; i < MAX_MB_PLANE; ++i) {
-#if CONFIG_VAR_TX
     CHECK_MEM_ERROR(cm, ctx->blk_skip[i], aom_calloc(num_blk, sizeof(uint8_t)));
-#endif
     CHECK_MEM_ERROR(cm, ctx->coeff[i],
                     aom_memalign(32, num_pix * sizeof(*ctx->coeff[i])));
     CHECK_MEM_ERROR(cm, ctx->qcoeff[i],
@@ -65,10 +63,8 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
 static void free_mode_context(PICK_MODE_CONTEXT *ctx) {
   int i;
   for (i = 0; i < MAX_MB_PLANE; ++i) {
-#if CONFIG_VAR_TX
     aom_free(ctx->blk_skip[i]);
     ctx->blk_skip[i] = 0;
-#endif
     aom_free(ctx->coeff[i]);
     ctx->coeff[i] = 0;
     aom_free(ctx->qcoeff[i]);

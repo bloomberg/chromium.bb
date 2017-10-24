@@ -70,11 +70,9 @@ typedef enum {
 // Note in all the tokenize functions rate if non NULL is incremented
 // with the coefficient token cost only if dry_run = DRY_RUN_COSTCOEFS,
 // otherwise rate is not incremented.
-#if CONFIG_VAR_TX
 void av1_tokenize_sb_vartx(const struct AV1_COMP *cpi, struct ThreadData *td,
                            TOKENEXTRA **t, RUN_TYPE dry_run, int mi_row,
                            int mi_col, BLOCK_SIZE bsize, int *rate);
-#endif
 
 int av1_cost_color_map(const MACROBLOCK *const x, int plane, int block,
                        BLOCK_SIZE bsize, TX_SIZE tx_size, COLOR_MAP_TYPE type);

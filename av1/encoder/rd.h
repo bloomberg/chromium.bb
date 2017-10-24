@@ -383,14 +383,12 @@ static INLINE void av1_init_rd_stats(RD_STATS *rd_stats) {
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = 0;
-#if CONFIG_VAR_TX
     {
       int r, c;
       for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
         for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
           rd_stats->txb_coeff_cost_map[plane][r][c] = 0;
     }
-#endif
   }
 #endif
 }
@@ -410,14 +408,12 @@ static INLINE void av1_invalid_rd_stats(RD_STATS *rd_stats) {
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats->txb_coeff_cost[plane] = INT_MAX;
-#if CONFIG_VAR_TX
     {
       int r, c;
       for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r)
         for (c = 0; c < TXB_COEFF_COST_MAP_SIZE; ++c)
           rd_stats->txb_coeff_cost_map[plane][r][c] = INT_MAX;
     }
-#endif
   }
 #endif
 }
@@ -435,7 +431,6 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
 #if CONFIG_RD_DEBUG
   for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
     rd_stats_dst->txb_coeff_cost[plane] += rd_stats_src->txb_coeff_cost[plane];
-#if CONFIG_VAR_TX
     {
       // TODO(angiebird): optimize this part
       int r, c;
@@ -448,7 +443,6 @@ static INLINE void av1_merge_rd_stats(RD_STATS *rd_stats_dst,
         }
       assert(ref_txb_coeff_cost == rd_stats_dst->txb_coeff_cost[plane]);
     }
-#endif
   }
 #endif
 }

@@ -2319,9 +2319,7 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 
 #if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(skip_cdfs)
-#if CONFIG_VAR_TX
   AVERAGE_TILE_CDFS(txfm_partition_cdf)
-#endif
 #endif  // CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(palette_y_size_cdf)
   AVERAGE_TILE_CDFS(palette_uv_size_cdf)
@@ -2333,7 +2331,7 @@ void av1_average_tile_intra_cdfs(FRAME_CONTEXT *fc, FRAME_CONTEXT *ec_ctxs[],
 #if CONFIG_NEW_MULTISYMBOL
   AVERAGE_TILE_CDFS(palette_y_mode_cdf)
   AVERAGE_TILE_CDFS(palette_uv_mode_cdf)
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   AVERAGE_TILE_CDFS(quarter_tx_size_cdf)
 #endif
 #endif

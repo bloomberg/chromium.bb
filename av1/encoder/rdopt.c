@@ -487,7 +487,7 @@ static unsigned pixel_dist_visible_only(
   unsigned sse;
 
   if (txb_rows == visible_rows && txb_cols == visible_cols
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
       && tx_bsize < BLOCK_SIZES
 #endif
       ) {
@@ -1622,10 +1622,6 @@ static int cost_coeffs(const AV1_COMMON *const cm, MACROBLOCK *x, int plane,
   const int cat6_bits = av1_get_cat6_extrabits_size(tx_size, 8);
 #endif  // CONFIG_HIGHBITDEPTH
 
-#if !CONFIG_VAR_TX
-  // Check for consistency of tx_size with mode info
-  assert(tx_size == av1_get_tx_size(plane, xd));
-#endif  // !CONFIG_VAR_TX
   (void)cm;
 
   if (eob == 0) {
@@ -1757,7 +1753,7 @@ static void get_txb_dimensions(const MACROBLOCKD *xd, int plane,
                                BLOCK_SIZE plane_bsize, int blk_row, int blk_col,
                                BLOCK_SIZE tx_bsize, int *width, int *height,
                                int *visible_width, int *visible_height) {
-#if !(CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX))
+#if !(CONFIG_RECT_TX_EXT)
   assert(tx_bsize <= plane_bsize);
 #endif
   int txb_height = block_size_high[tx_bsize];
@@ -2057,10 +2053,6 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
       x->tune_metric != AOM_TUNE_PSNR;
 #endif  // CONFIG_DIST_8X8
 
-#if !CONFIG_VAR_TX
-  assert(tx_size == av1_get_tx_size(plane, xd));
-#endif  // !CONFIG_VAR_TX
-
   av1_init_rd_stats(&this_rd_stats);
 
   if (args->exit_early) return;
@@ -2321,7 +2313,7 @@ static int tx_size_cost(const AV1_COMMON *const cm, const MACROBLOCK *const x,
     const int depth = tx_size_to_depth(coded_tx_size);
     const int tx_size_ctx = get_tx_size_context(xd);
     int r_tx_size = x->tx_size_cost[tx_size_cat][tx_size_ctx][depth];
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
     if (is_quarter_tx_allowed(xd, mbmi, is_inter) && tx_size != coded_tx_size)
       r_tx_size +=
           x->quarter_tx_size_cost[tx_size == quarter_txsize_lookup[bsize]];
@@ -2364,9 +2356,7 @@ int av1_tx_type_cost(const AV1_COMMON *cm, const MACROBLOCK *x,
 #if CONFIG_LGT_FROM_PRED
   assert(!xd->mi[0]->mbmi.use_lgt);
 #endif
-#if CONFIG_VAR_TX
   tx_size = get_min_tx_size(tx_size);
-#endif
 
   const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int is_inter = is_inter_block(mbmi);
@@ -2553,9 +2543,7 @@ static void choose_largest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
   av1_invalid_rd_stats(rd_stats);
 
   mbmi->tx_size = tx_size_from_tx_mode(bs, cm->tx_mode, is_inter);
-#if CONFIG_VAR_TX
   mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-#endif  // CONFIG_VAR_TX
 #if CONFIG_EXT_TX
   const TxSetType tx_set_type =
       get_ext_tx_set_type(mbmi->tx_size, bs, is_inter, cm->reduced_tx_set_used);
@@ -2706,20 +2694,16 @@ static void choose_smallest_tx_size(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   mbmi->tx_size = TX_4X4;
   mbmi->tx_type = DCT_DCT;
-#if CONFIG_VAR_TX
   mbmi->min_tx_size = get_min_tx_size(TX_4X4);
-#endif  // CONFIG_VAR_TX
 
   txfm_rd_in_plane(x, cpi, rd_stats, ref_best_rd, 0, bs, mbmi->tx_size,
                    cpi->sf.use_fast_coef_costing);
 }
 
-#if CONFIG_TXK_SEL || CONFIG_VAR_TX
 static INLINE int bsize_to_num_blk(BLOCK_SIZE bsize) {
   int num_blk = 1 << (num_pels_log2_lookup[bsize] - 2 * tx_size_wide_log2[0]);
   return num_blk;
 }
-#endif  // CONFIG_TXK_SEL || CONFIG_VAR_TX
 
 static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
                                         MACROBLOCK *x, RD_STATS *rd_stats,
@@ -2970,9 +2954,7 @@ static void choose_tx_size_type_from_rd(const AV1_COMP *const cpi,
   memcpy(mbmi->txk_type, best_txk_type, sizeof(best_txk_type[0]) * 256);
 #endif
 
-#if CONFIG_VAR_TX
   mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
-#endif  // CONFIG_VAR_TX
 
 #if !CONFIG_EXT_TX
   if (mbmi->tx_size >= TX_32X32) assert(mbmi->tx_type == DCT_DCT);
@@ -3870,7 +3852,6 @@ static int super_block_uvrd(const AV1_COMP *const cpi, MACROBLOCK *x,
   return is_cost_valid;
 }
 
-#if CONFIG_VAR_TX
 void av1_tx_block_rd_b(const AV1_COMP *cpi, MACROBLOCK *x, TX_SIZE tx_size,
                        int blk_row, int blk_col, int plane, int block,
                        int plane_bsize, const ENTROPY_CONTEXT *a,
@@ -4666,14 +4647,12 @@ static void save_tx_rd_info(int n4, uint32_t hash, const MACROBLOCK *const x,
   tx_rd_info->hash_value = hash;
   tx_rd_info->tx_type = mbmi->tx_type;
   tx_rd_info->tx_size = mbmi->tx_size;
-#if CONFIG_VAR_TX
   tx_rd_info->min_tx_size = mbmi->min_tx_size;
   memcpy(tx_rd_info->blk_skip, x->blk_skip[0],
          sizeof(tx_rd_info->blk_skip[0]) * n4);
   for (int idy = 0; idy < xd->n8_h; ++idy)
     for (int idx = 0; idx < xd->n8_w; ++idx)
       tx_rd_info->inter_tx_size[idy][idx] = mbmi->inter_tx_size[idy][idx];
-#endif  // CONFIG_VAR_TX
 #if CONFIG_TXK_SEL
   av1_copy(tx_rd_info->txk_type, mbmi->txk_type);
 #endif  // CONFIG_TXK_SEL
@@ -4686,14 +4665,12 @@ static void fetch_tx_rd_info(int n4, const TX_RD_INFO *const tx_rd_info,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   mbmi->tx_type = tx_rd_info->tx_type;
   mbmi->tx_size = tx_rd_info->tx_size;
-#if CONFIG_VAR_TX
   mbmi->min_tx_size = tx_rd_info->min_tx_size;
   memcpy(x->blk_skip[0], tx_rd_info->blk_skip,
          sizeof(tx_rd_info->blk_skip[0]) * n4);
   for (int idy = 0; idy < xd->n8_h; ++idy)
     for (int idx = 0; idx < xd->n8_w; ++idx)
       mbmi->inter_tx_size[idy][idx] = tx_rd_info->inter_tx_size[idy][idx];
-#endif  // CONFIG_VAR_TX
 #if CONFIG_TXK_SEL
   av1_copy(mbmi->txk_type, tx_rd_info->txk_type);
 #endif  // CONFIG_TXK_SEL
@@ -4712,7 +4689,7 @@ static int predict_skip_flag_8bit(const MACROBLOCK *x, BLOCK_SIZE bsize) {
   DECLARE_ALIGNED(32, tran_low_t, DCT_coefs[32 * 32]);
   TxfmParam param;
   param.tx_type = DCT_DCT;
-#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX
   param.tx_size = max_txsize_rect_lookup[bsize];
 #else
   param.tx_size = max_txsize_lookup[bsize];
@@ -4744,7 +4721,7 @@ static void set_skip_flag(const AV1_COMP *cpi, MACROBLOCK *x,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const int n4 = bsize_to_num_blk(bsize);
-#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX
   const TX_SIZE tx_size = max_txsize_rect_lookup[bsize];
 #else
   const TX_SIZE tx_size = max_txsize_lookup[bsize];
@@ -5116,7 +5093,6 @@ static int inter_block_uvrd(const AV1_COMP *cpi, MACROBLOCK *x,
 
   return is_cost_valid;
 }
-#endif  // CONFIG_VAR_TX
 
 static void rd_pick_palette_intra_sbuv(const AV1_COMP *const cpi, MACROBLOCK *x,
                                        int dc_mode_cost,
@@ -8045,9 +8021,7 @@ static int64_t motion_mode_rd(
   int rate2_nocoeff = 0, best_xskip, best_disable_skip = 0;
   RD_STATS best_rd_stats, best_rd_stats_y, best_rd_stats_uv;
   MB_MODE_INFO base_mbmi, best_mbmi;
-#if CONFIG_VAR_TX
   uint8_t best_blk_skip[MAX_MB_PLANE][MAX_MIB_SIZE * MAX_MIB_SIZE * 4];
-#endif  // CONFIG_VAR_TX
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 
 #if CONFIG_WARPED_MOTION
@@ -8256,7 +8230,6 @@ static int64_t motion_mode_rd(
 
       // cost and distortion
       av1_subtract_plane(x, bsize, 0);
-#if CONFIG_VAR_TX
       if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
         select_tx_type_yrd(cpi, x, rd_stats_y, bsize, mi_row, mi_col,
                            ref_best_rd);
@@ -8269,11 +8242,6 @@ static int64_t motion_mode_rd(
         memset(x->blk_skip[0], rd_stats_y->skip,
                sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
       }
-#else
-    /* clang-format off */
-      super_block_yrd(cpi, x, rd_stats_y, bsize, ref_best_rd);
-/* clang-format on */
-#endif  // CONFIG_VAR_TX
 
       if (rd_stats_y->rate == INT_MAX) {
         av1_invalid_rd_stats(rd_stats);
@@ -8293,14 +8261,9 @@ static int64_t motion_mode_rd(
 
       rdcosty = RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
       rdcosty = AOMMIN(rdcosty, RDCOST(x->rdmult, 0, rd_stats->sse));
-/* clang-format off */
-#if CONFIG_VAR_TX
+      /* clang-format off */
       is_cost_valid_uv =
           inter_block_uvrd(cpi, x, rd_stats_uv, bsize, ref_best_rd - rdcosty);
-#else
-      is_cost_valid_uv =
-          super_block_uvrd(cpi, x, rd_stats_uv, bsize, ref_best_rd - rdcosty);
-#endif  // CONFIG_VAR_TX
       if (!is_cost_valid_uv) {
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
         continue;
@@ -8383,11 +8346,9 @@ static int64_t motion_mode_rd(
       best_rd_stats = *rd_stats;
       best_rd_stats_y = *rd_stats_y;
       best_rd_stats_uv = *rd_stats_uv;
-#if CONFIG_VAR_TX
       for (int i = 0; i < MAX_MB_PLANE; ++i)
         memcpy(best_blk_skip[i], x->blk_skip[i],
                sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
-#endif  // CONFIG_VAR_TX
       best_xskip = x->skip;
       best_disable_skip = *disable_skip;
     }
@@ -8402,11 +8363,9 @@ static int64_t motion_mode_rd(
   *rd_stats = best_rd_stats;
   *rd_stats_y = best_rd_stats_y;
   *rd_stats_uv = best_rd_stats_uv;
-#if CONFIG_VAR_TX
   for (int i = 0; i < MAX_MB_PLANE; ++i)
     memcpy(x->blk_skip[i], best_blk_skip[i],
            sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
-#endif  // CONFIG_VAR_TX
   x->skip = best_xskip;
   *disable_skip = best_disable_skip;
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
@@ -9214,7 +9173,6 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
     const int rate_mode = x->intrabc_cost[1];
     RD_STATS rd_stats, rd_stats_uv;
     av1_subtract_plane(x, bsize, 0);
-#if CONFIG_VAR_TX
     if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
       select_tx_type_yrd(cpi, x, &rd_stats, bsize, mi_row, mi_col, INT64_MAX);
     } else {
@@ -9226,9 +9184,6 @@ static int64_t rd_pick_intrabc_mode_sb(const AV1_COMP *cpi, MACROBLOCK *x,
       memset(x->blk_skip[0], rd_stats.skip,
              sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
     }
-#else
-    super_block_yrd(cpi, x, &rd_stats, bsize, INT64_MAX);
-#endif  // CONFIG_VAR_TX
     super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
     av1_merge_rd_stats(&rd_stats, &rd_stats_uv);
 #if CONFIG_RD_DEBUG
@@ -10527,11 +10482,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                            rate_y - rate_uv,
                        total_sse);
         }
-#if CONFIG_VAR_TX
         for (i = 0; i < MAX_MB_PLANE; ++i)
           memcpy(x->blk_skip_drl[i], x->blk_skip[i],
                  sizeof(uint8_t) * ctx->num_4x4_blk);
-#endif  // CONFIG_VAR_TX
 
         for (ref_idx = 0; ref_idx < ref_set; ++ref_idx) {
           int64_t tmp_alt_rd = INT64_MAX;
@@ -10705,11 +10658,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             tmp_ref_rd = tmp_alt_rd;
             backup_mbmi = *mbmi;
             backup_skip = x->skip;
-#if CONFIG_VAR_TX
             for (i = 0; i < MAX_MB_PLANE; ++i)
               memcpy(x->blk_skip_drl[i], x->blk_skip[i],
                      sizeof(uint8_t) * ctx->num_4x4_blk);
-#endif  // CONFIG_VAR_TX
           } else {
             *mbmi = backup_mbmi;
             x->skip = backup_skip;
@@ -10719,11 +10670,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         frame_mv[NEARMV][ref_frame] = backup_mv;
         frame_mv[NEWMV][ref_frame] = backup_fmv[0];
         if (comp_pred) frame_mv[NEWMV][second_ref_frame] = backup_fmv[1];
-#if CONFIG_VAR_TX
         for (i = 0; i < MAX_MB_PLANE; ++i)
           memcpy(x->blk_skip[i], x->blk_skip_drl[i],
                  sizeof(uint8_t) * ctx->num_4x4_blk);
-#endif  // CONFIG_VAR_TX
       }
       mbmi_ext->ref_mvs[ref_frame][0] = backup_ref_mv[0];
       if (comp_pred) mbmi_ext->ref_mvs[second_ref_frame][0] = backup_ref_mv[1];
@@ -10848,11 +10797,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             rate_y +
             x->skip_cost[av1_get_skip_context(xd)][this_skip2 || skippable];
         best_rate_uv = rate_uv;
-#if CONFIG_VAR_TX
         for (i = 0; i < MAX_MB_PLANE; ++i)
           memcpy(ctx->blk_skip[i], x->blk_skip[i],
                  sizeof(uint8_t) * ctx->num_4x4_blk);
-#endif  // CONFIG_VAR_TX
       }
     }
 
@@ -10926,7 +10873,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 #endif  // CONFIG_MOTION_VAR
       av1_subtract_plane(x, bsize, 0);
-#if CONFIG_VAR_TX
       if (cm->tx_mode == TX_MODE_SELECT || xd->lossless[mbmi->segment_id]) {
         select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col,
                            INT64_MAX);
@@ -10942,10 +10888,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
       }
 
       inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#else
-      super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-      super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#endif  // CONFIG_VAR_TX
     } else {
       super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
       super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
@@ -10967,15 +10909,12 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (RDCOST(x->rdmult, best_rate_y + best_rate_uv, rd_cost->dist) >
         RDCOST(x->rdmult, rd_stats_y.rate + rd_stats_uv.rate,
                (rd_stats_y.dist + rd_stats_uv.dist))) {
-#if CONFIG_VAR_TX
       int idx, idy;
-#endif  // CONFIG_VAR_TX
       best_mbmode.tx_type = mbmi->tx_type;
       best_mbmode.tx_size = mbmi->tx_size;
 #if CONFIG_LGT_FROM_PRED
       best_mbmode.use_lgt = mbmi->use_lgt;
 #endif
-#if CONFIG_VAR_TX
       for (idy = 0; idy < xd->n8_h; ++idy)
         for (idx = 0; idx < xd->n8_w; ++idx)
           best_mbmode.inter_tx_size[idy][idx] = mbmi->inter_tx_size[idy][idx];
@@ -10985,7 +10924,6 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
                sizeof(uint8_t) * ctx->num_4x4_blk);
 
       best_mbmode.min_tx_size = mbmi->min_tx_size;
-#endif  // CONFIG_VAR_TX
       rd_cost->rate +=
           (rd_stats_y.rate + rd_stats_uv.rate - best_rate_y - best_rate_uv);
       rd_cost->dist = rd_stats_y.dist + rd_stats_uv.dist;
@@ -11731,7 +11669,6 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
   av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, NULL, bsize);
 
   av1_subtract_plane(x, bsize, 0);
-#if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
     select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   } else {
@@ -11744,10 +11681,6 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
            sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
   }
   inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#else
-  super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-  super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#endif
   assert(rd_stats_y.rate != INT_MAX && rd_stats_uv.rate != INT_MAX);
   if (rd_stats_y.skip && rd_stats_uv.skip) {
     rd_stats_y.rate = rate_skip1;
@@ -11781,7 +11714,6 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
   av1_build_ncobmc_inter_predictors_sb(cm, xd, mi_row, mi_col);
 
   av1_subtract_plane(x, bsize, 0);
-#if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
     select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   } else {
@@ -11794,10 +11726,6 @@ void av1_check_ncobmc_rd(const struct AV1_COMP *cpi, struct macroblock *x,
            sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
   }
   inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#else
-  super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-  super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#endif
   assert(rd_stats_y.rate != INT_MAX && rd_stats_uv.rate != INT_MAX);
   if (rd_stats_y.skip && rd_stats_uv.skip) {
     rd_stats_y.rate = rate_skip1;
@@ -11893,7 +11821,6 @@ int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
 #endif
   av1_subtract_plane(x, bsize, 0);
 
-#if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT && !xd->lossless[mbmi->segment_id]) {
     select_tx_type_yrd(cpi, x, &rd_stats_y, bsize, mi_row, mi_col, INT64_MAX);
   } else {
@@ -11906,10 +11833,6 @@ int64_t get_prediction_rd_cost(const struct AV1_COMP *cpi, struct macroblock *x,
            sizeof(uint8_t) * xd->n8_h * xd->n8_w * 4);
   }
   inter_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#else
-  super_block_yrd(cpi, x, &rd_stats_y, bsize, INT64_MAX);
-  super_block_uvrd(cpi, x, &rd_stats_uv, bsize, INT64_MAX);
-#endif
   assert(rd_stats_y.rate != INT_MAX && rd_stats_uv.rate != INT_MAX);
 
   if (rd_stats_y.skip && rd_stats_uv.skip) {
@@ -11963,12 +11886,10 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_VAR_TX
   const int n4 = bsize_to_num_blk(bsize);
   uint8_t st_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
   uint8_t obmc_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
   uint8_t ncobmc_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
-#endif
   MB_MODE_INFO st_mbmi, obmc_mbmi, ncobmc_mbmi;
   int st_skip, obmc_skip, ncobmc_skip;
   int64_t st_rd, obmc_rd, ncobmc_rd;
@@ -11987,9 +11908,7 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
 #if CONFIG_WARPED_MOTION
   st_rd += rs;
 #endif
-#if CONFIG_VAR_TX
   memcpy(st_blk_skip, x->blk_skip[0], sizeof(st_blk_skip[0]) * n4);
-#endif
 
   mbmi->motion_mode = OBMC_CAUSAL;
   obmc_rd =
@@ -11997,9 +11916,7 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
 #if CONFIG_WARPED_MOTION
   obmc_rd += rs;
 #endif
-#if CONFIG_VAR_TX
   memcpy(obmc_blk_skip, x->blk_skip[0], sizeof(obmc_blk_skip[0]) * n4);
-#endif
 
   // Compute the rd cost for ncobmc adaptive weight
   mbmi->motion_mode = NCOBMC_ADAPT_WEIGHT;
@@ -12017,9 +11934,7 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
       ncobmc_rd +=
           RDCOST(x->rdmult, x->ncobmc_mode_cost[aob][mbmi->ncobmc_mode[1]], 0);
   }
-#if CONFIG_VAR_TX
   memcpy(ncobmc_blk_skip, x->blk_skip[0], sizeof(ncobmc_blk_skip[0]) * n4);
-#endif
 
 #if CONFIG_WARPED_MOTION
   if (is_warp_motion) {
@@ -12036,9 +11951,7 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
     if (ncobmc_rd < warp_rd) {
       x->skip = ncobmc_skip;
       *mbmi = ncobmc_mbmi;
-#if CONFIG_VAR_TX
       memcpy(x->blk_skip[0], ncobmc_blk_skip, sizeof(ncobmc_blk_skip[0]) * n4);
-#endif
     } else {
       x->skip = warp_skip;
       *mbmi = warp_mbmi;
@@ -12047,23 +11960,17 @@ void av1_check_ncobmc_adapt_weight_rd(const struct AV1_COMP *cpi,
   if (ncobmc_rd < AOMMIN(st_rd, obmc_rd)) {
     x->skip = ncobmc_skip;
     *mbmi = ncobmc_mbmi;
-#if CONFIG_VAR_TX
     memcpy(x->blk_skip[0], ncobmc_blk_skip, sizeof(ncobmc_blk_skip[0]) * n4);
-#endif
 #endif  // CONFIG_WARPED_MOTION
   } else {
     if (obmc_rd < st_rd) {
       *mbmi = obmc_mbmi;
       x->skip = obmc_skip;
-#if CONFIG_VAR_TX
       memcpy(x->blk_skip[0], obmc_blk_skip, sizeof(obmc_blk_skip[0]) * n4);
-#endif
     } else {
       *mbmi = st_mbmi;
       x->skip = st_skip;
-#if CONFIG_VAR_TX
       memcpy(x->blk_skip[0], st_blk_skip, sizeof(st_blk_skip[0]) * n4);
-#endif
     }
   }
 }

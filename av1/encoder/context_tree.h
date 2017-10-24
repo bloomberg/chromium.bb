@@ -31,9 +31,7 @@ typedef struct {
 #if CONFIG_MRC_TX
   uint8_t *mrc_mask;
 #endif  // CONFIG_MRC_TX
-#if CONFIG_VAR_TX
   uint8_t *blk_skip[MAX_MB_PLANE];
-#endif
 
   tran_low_t *coeff[MAX_MB_PLANE];
   tran_low_t *qcoeff[MAX_MB_PLANE];

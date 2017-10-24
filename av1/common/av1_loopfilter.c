@@ -2139,7 +2139,6 @@ static void get_filter_level_and_masks_non420(
     const int r_step = (r >> ss_y);
     const int col_mask = 1 << c_step;
 
-#if CONFIG_VAR_TX
     if (is_inter_block(mbmi) && !mbmi->skip) {
       const int tx_row_idx =
           (blk_row * mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2) >> 1;
@@ -2156,7 +2155,6 @@ static void get_filter_level_and_masks_non420(
                     ? uv_txsize_lookup[bsize][mb_tx_size][0][0]
                     : mb_tx_size;
     }
-#endif
 
 // Filter level can vary per MI
 #if CONFIG_EXT_DELTA_Q
@@ -2176,7 +2174,6 @@ static void get_filter_level_and_masks_non420(
     if (!(lfl_r[c_step] = get_filter_level(&cm->lf_info, mbmi))) continue;
 #endif
 
-#if CONFIG_VAR_TX
     TX_SIZE tx_size_horz_edge, tx_size_vert_edge;
 
     // filt_len_vert_edge is the length of deblocking filter for a vertical edge
@@ -2212,15 +2209,6 @@ static void get_filter_level_and_masks_non420(
     memset(cm->left_txfm_context[pl] +
                (((mi_row + idx_r) & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2),
            tx_size, mi_size_high[BLOCK_8X8] << TX_UNIT_HIGH_LOG2);
-#else
-    // The length (or equally the square tx size) of deblocking filter is only
-    // determined by
-    // a) current block's width for a vertical deblocking edge
-    // b) current block's height for a horizontal deblocking edge
-    TX_SIZE tx_size_vert_edge = txsize_horz_map[tx_size];
-    TX_SIZE tx_size_horz_edge = txsize_vert_map[tx_size];
-    (void)pl;
-#endif  // CONFIG_VAR_TX
 
     if (tx_size_vert_edge == TX_32X32)
       tx_size_mask = 3;
@@ -2254,13 +2242,8 @@ static void get_filter_level_and_masks_non420(
           col_masks.m4x4 |= col_mask;
       }
 
-#if CONFIG_VAR_TX
       if (!skip_this && tx_wide_cur < 8 && !skip_border_4x4_c &&
           (c_step & tx_size_mask) == 0)
-#else
-      if (!skip_this && tx_size_vert_edge < TX_8X8 && !skip_border_4x4_c &&
-          (c_step & tx_size_mask) == 0)
-#endif  // CONFIG_VAR_TX
         mask_4x4_int_c |= col_mask;
     }
 
@@ -2295,13 +2278,8 @@ static void get_filter_level_and_masks_non420(
           row_masks.m4x4 |= col_mask;
       }
 
-#if CONFIG_VAR_TX
       if (!skip_this && tx_high_cur < 8 && !skip_border_4x4_r &&
           (r_step & tx_size_mask) == 0)
-#else
-      if (!skip_this && tx_size_horz_edge < TX_8X8 && !skip_border_4x4_r &&
-          (r_step & tx_size_mask) == 0)
-#endif  // CONFIG_VAR_TX
         mask_4x4_int_r |= col_mask;
     }
   }
@@ -2783,7 +2761,6 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
                         : av1_get_uv_tx_size(mbmi, plane_ptr);
   assert(tx_size < TX_SIZES_ALL);
 
-#if CONFIG_VAR_TX
   // mi_row and mi_col is the absolute position of the MI block.
   // idx_c and idx_r is the relative offset of the MI within the super block
   // c and r is the relative offset of the 8x8 block within the supert block
@@ -2818,12 +2795,6 @@ static TX_SIZE av1_get_transform_size(const MODE_INFO *const mi,
                   : uv_txsize_lookup[bsize][mb_tx_size][0][0];
     assert(tx_size < TX_SIZES_ALL);
   }
-#else
-  (void)mi_row;
-  (void)mi_col;
-  (void)scale_horz;
-  (void)scale_vert;
-#endif  // CONFIG_VAR_TX
 
   // since in case of chrominance or non-square transorm need to convert
   // transform size into transform size in particular direction.
@@ -3468,17 +3439,13 @@ void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer, AV1_COMMON *cm,
   int plane;
 
 #if !CONFIG_PARALLEL_DEBLOCKING
-#if CONFIG_VAR_TX
   for (int i = 0; i < MAX_MB_PLANE; ++i)
     memset(cm->top_txfm_context[i], TX_32X32, cm->mi_cols << TX_UNIT_WIDE_LOG2);
-#endif  // CONFIG_VAR_TX
   for (mi_row = start; mi_row < stop; mi_row += cm->mib_size) {
     MODE_INFO **mi = cm->mi_grid_visible + mi_row * cm->mi_stride;
-#if CONFIG_VAR_TX
     for (int i = 0; i < MAX_MB_PLANE; ++i)
       memset(cm->left_txfm_context[i], TX_32X32,
              MAX_MIB_SIZE << TX_UNIT_HIGH_LOG2);
-#endif  // CONFIG_VAR_TX
     for (mi_col = 0; mi_col < cm->mi_cols; mi_col += cm->mib_size) {
       av1_setup_dst_planes(planes, cm->sb_size, frame_buffer, mi_row, mi_col);
 

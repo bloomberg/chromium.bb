@@ -120,12 +120,6 @@ macro (fix_experiment_configs)
     endif ()
   endif ()
 
-  if (CONFIG_VAR_TX_NO_TX_MODE)
-    if (NOT_CONFIG_VAR_TX)
-      change_config_and_warn(CONFIG_VAR_TX 1 CONFIG_VAR_TX_NO_TX_MODE)
-    endif ()
-  endif ()
-
   if (CONFIG_LPF_SB)
     if (CONFIG_LOOPFILTER_LEVEL)
       change_config_and_warn(CONFIG_LOOPFILTER_LEVEL 0 CONFIG_FRAME_SIGN_BIAS)

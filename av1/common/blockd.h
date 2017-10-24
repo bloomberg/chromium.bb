@@ -273,10 +273,8 @@ typedef struct {
 } FILTER_INTRA_MODE_INFO;
 #endif  // CONFIG_FILTER_INTRA
 
-#if CONFIG_VAR_TX
 #if CONFIG_RD_DEBUG
 #define TXB_COEFF_COST_MAP_SIZE (2 * MAX_MIB_SIZE)
-#endif
 #endif
 
 typedef struct RD_STATS {
@@ -295,10 +293,8 @@ typedef struct RD_STATS {
   uint8_t invalid_rate;
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost[MAX_MB_PLANE];
-#if CONFIG_VAR_TX
   int txb_coeff_cost_map[MAX_MB_PLANE][TXB_COEFF_COST_MAP_SIZE]
                         [TXB_COEFF_COST_MAP_SIZE];
-#endif  // CONFIG_VAR_TX
 #endif  // CONFIG_RD_DEBUG
 } RD_STATS;
 
@@ -322,12 +318,10 @@ typedef struct MB_MODE_INFO {
   BLOCK_SIZE sb_type;
   PREDICTION_MODE mode;
   TX_SIZE tx_size;
-#if CONFIG_VAR_TX
   // TODO(jingning): This effectively assigned a separate entry for each
   // 8x8 block. Apparently it takes much more space than needed.
   TX_SIZE inter_tx_size[MAX_MIB_SIZE][MAX_MIB_SIZE];
   TX_SIZE min_tx_size;
-#endif
   int8_t skip;
   int8_t segment_id;
   int8_t seg_id_predicted;  // valid only when temporal_update is enabled
@@ -709,11 +703,9 @@ typedef struct macroblockd {
   PARTITION_CONTEXT *above_seg_context;
   PARTITION_CONTEXT left_seg_context[MAX_MIB_SIZE];
 
-#if CONFIG_VAR_TX
   TXFM_CONTEXT *above_txfm_context;
   TXFM_CONTEXT *left_txfm_context;
   TXFM_CONTEXT left_txfm_context_buffer[2 * MAX_MIB_SIZE];
-#endif
 
 #if CONFIG_LOOP_RESTORATION
   WienerInfo wiener_info[MAX_MB_PLANE];
@@ -832,7 +824,7 @@ static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 #endif  // CONFIG_RECT_TX
 
 static INLINE int block_signals_txsize(BLOCK_SIZE bsize) {
-#if (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+#if CONFIG_RECT_TX
   return bsize > BLOCK_4X4;
 #else
   return bsize >= BLOCK_8X8;
@@ -1081,7 +1073,7 @@ static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
 #endif  // CONFIG_RECT_TX
 #endif  // CONFIG_EXT_TX
 
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
 static INLINE int is_quarter_tx_allowed_bsize(BLOCK_SIZE bsize) {
   static const char LUT_QTTX[BLOCK_SIZES_ALL] = {
 #if CONFIG_CHROMA_SUB8X8
@@ -1133,13 +1125,13 @@ static INLINE int is_quarter_tx_allowed(const MACROBLOCKD *xd,
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
                                            int is_inter) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
-#if (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+#if CONFIG_RECT_TX
   const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bsize];
 #else
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
-#endif  // (CONFIG_VAR_TX || CONFIG_EXT_TX) && CONFIG_RECT_TX
+#endif  // CONFIG_RECT_TX
   (void)is_inter;
-#if CONFIG_VAR_TX && CONFIG_RECT_TX
+#if CONFIG_RECT_TX
   if (bsize == BLOCK_4X4)
     return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
   if (txsize_sqr_map[max_rect_tx_size] <= largest_tx_size)
@@ -1154,7 +1146,7 @@ static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
   }
 #else
   return AOMMIN(max_tx_size, largest_tx_size);
-#endif  // CONFIG_VAR_TX && CONFIG_RECT_TX
+#endif  // CONFIG_RECT_TX
 }
 
 #if CONFIG_EXT_INTRA
@@ -1407,7 +1399,6 @@ static INLINE int is_interintra_pred(const MB_MODE_INFO *mbmi) {
   return (mbmi->ref_frame[1] == INTRA_FRAME) && is_interintra_allowed(mbmi);
 }
 
-#if CONFIG_VAR_TX
 static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
                                        BLOCK_SIZE bsize, int subsampled) {
   (void)mbmi;
@@ -1428,7 +1419,6 @@ static INLINE int get_vartx_max_txsize(const MB_MODE_INFO *const mbmi,
 
   return max_txsize;
 }
-#endif  // CONFIG_VAR_TX
 
 #if CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 static INLINE int is_motion_variation_allowed_bsize(BLOCK_SIZE bsize) {

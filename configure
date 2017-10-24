@@ -249,7 +249,6 @@ EXPERIMENT_LIST="
     fp_mb_stats
     cdef
     cdef_singlepass
-    var_tx
     rect_tx
     rect_tx_ext
     tpl_mv
@@ -515,7 +514,6 @@ post_process_cmdline() {
       soft_enable dual_filter
       soft_enable motion_var
       soft_enable warped_motion
-      soft_enable var_tx
       soft_enable wedge
       soft_enable compound_segment
       soft_enable interintra
@@ -551,7 +549,6 @@ post_process_cmdline() {
     enabled lv_map && disable_feature mrc_tx
     enabled coef_interleave && disable_feature mrc_tx
     enabled mrc_tx && enable_feature ext_tx
-    enabled mrc_tx && enable_feature var_tx
     enabled txk_sel && soft_enable lv_map
     enabled ctx1d && soft_enable lv_map
     enabled ctx1d && soft_enable ext_tx
@@ -594,10 +591,6 @@ post_process_cmdline() {
       disable_feature txmg
       disable_feature lgt
       enable_feature lowbitdepth
-    fi
-    if enabled var_tx_no_tx_mode && ! enabled var_tx; then
-      log_echo "var_tx_no_tx_mode requires var_tx, so disabling var_tx_no_tx_mode"
-      disable_feature var_tx_no_tx_mode
     fi
     if enabled ext_partition_types; then
       if enabled fp_mb_stats; then

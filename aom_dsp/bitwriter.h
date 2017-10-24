@@ -39,15 +39,12 @@ typedef struct daala_writer aom_writer;
 
 typedef struct TOKEN_STATS {
   int cost;
-#if CONFIG_VAR_TX
 #if CONFIG_RD_DEBUG
   int txb_coeff_cost_map[TXB_COEFF_COST_MAP_SIZE][TXB_COEFF_COST_MAP_SIZE];
-#endif
 #endif
 } TOKEN_STATS;
 
 static INLINE void init_token_stats(TOKEN_STATS *token_stats) {
-#if CONFIG_VAR_TX
 #if CONFIG_RD_DEBUG
   int r, c;
   for (r = 0; r < TXB_COEFF_COST_MAP_SIZE; ++r) {
@@ -55,7 +52,6 @@ static INLINE void init_token_stats(TOKEN_STATS *token_stats) {
       token_stats->txb_coeff_cost_map[r][c] = 0;
     }
   }
-#endif
 #endif
   token_stats->cost = 0;
 }

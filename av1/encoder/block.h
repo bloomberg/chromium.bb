@@ -115,11 +115,9 @@ typedef struct {
 typedef struct {
   TX_TYPE tx_type;
   TX_SIZE tx_size;
-#if CONFIG_VAR_TX
   TX_SIZE min_tx_size;
   TX_SIZE inter_tx_size[MAX_MIB_SIZE][MAX_MIB_SIZE];
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
-#endif  // CONFIG_VAR_TX
 #if CONFIG_TXK_SEL
   TX_TYPE txk_type[MAX_SB_SQUARE / (TX_SIZE_W_MIN * TX_SIZE_H_MIN)];
 #endif  // CONFIG_TXK_SEL
@@ -161,9 +159,7 @@ struct macroblock {
   int *m_search_count_ptr;
   int *ex_search_count_ptr;
 
-#if CONFIG_VAR_TX
   unsigned int txb_split_count;
-#endif
 
   // These are set to their default values at the beginning, and then adjusted
   // further in the encoding process.
@@ -196,10 +192,8 @@ struct macroblock {
   // from extending outside the UMV borders
   MvLimits mv_limits;
 
-#if CONFIG_VAR_TX
   uint8_t blk_skip[MAX_MB_PLANE][MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
   uint8_t blk_skip_drl[MAX_MB_PLANE][MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
-#endif
 
   int skip;
   int skip_chroma_rd;
@@ -277,12 +271,10 @@ struct macroblock {
   int cfl_cost[CFL_JOINT_SIGNS][CFL_PRED_PLANES][CFL_ALPHABET_SIZE];
 #endif  // CONFIG_CFL
   int tx_size_cost[TX_SIZES - 1][TX_SIZE_CONTEXTS][TX_SIZES];
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   int quarter_tx_size_cost[2];
 #endif
-#if CONFIG_VAR_TX
   int txfm_partition_cost[TXFM_PARTITION_CONTEXTS][2];
-#endif
 #if CONFIG_EXT_TX
 #if CONFIG_LGT_FROM_PRED
   int intra_lgt_cost[LGT_SIZES][INTRA_MODES][2];

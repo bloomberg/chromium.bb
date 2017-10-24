@@ -390,7 +390,6 @@ static int read_segment_id(aom_reader *r, struct segmentation_probs *segp) {
   return aom_read_symbol(r, segp->tree_cdf, MAX_SEGMENTS, ACCT_STR);
 }
 
-#if CONFIG_VAR_TX
 static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
                                MB_MODE_INFO *mbmi, FRAME_COUNTS *counts,
                                TX_SIZE tx_size, int depth, int blk_row,
@@ -472,7 +471,6 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
                           xd->left_txfm_context + blk_row, tx_size, tx_size);
   }
 }
-#endif
 
 static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int32_t tx_size_cat, aom_reader *r) {
@@ -503,7 +501,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
                                            : intra_tx_size_cat_lookup[bsize];
       const TX_SIZE coded_tx_size =
           read_selected_tx_size(cm, xd, tx_size_cat, r);
-#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX
       if (coded_tx_size > max_txsize_lookup[bsize]) {
         assert(coded_tx_size == max_txsize_lookup[bsize] + 1);
 #if CONFIG_RECT_TX_EXT
@@ -531,7 +529,7 @@ static TX_SIZE read_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd, int is_inter,
       }
 #else
       assert(coded_tx_size <= max_txsize_lookup[bsize]);
-#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#endif  // CONFIG_RECT_TX
       return coded_tx_size;
     } else {
       return tx_size_from_tx_mode(bsize, tx_mode, is_inter);
@@ -936,11 +934,7 @@ void av1_read_tx_type(const AV1_COMMON *const cm, MACROBLOCKD *xd,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int inter_block = is_inter_block(mbmi);
 #if !CONFIG_TXK_SEL
-#if CONFIG_VAR_TX
   const TX_SIZE tx_size = inter_block ? mbmi->min_tx_size : mbmi->tx_size;
-#else
-  const TX_SIZE tx_size = mbmi->tx_size;
-#endif
 #endif  // !CONFIG_TXK_SEL
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
@@ -1114,7 +1108,6 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   mbmi->use_intrabc = aom_read_symbol(r, ec_ctx->intrabc_cdf, 2, ACCT_STR);
   if (mbmi->use_intrabc) {
-#if CONFIG_VAR_TX
     const BLOCK_SIZE bsize = mbmi->sb_type;
     const int width = block_size_wide[bsize] >> tx_size_wide_log2[0];
     const int height = block_size_high[bsize] >> tx_size_high_log2[0];
@@ -1141,9 +1134,6 @@ static void read_intrabc_info(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
       set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
     }
-#else
-    mbmi->tx_size = read_tx_size(cm, xd, 1, !mbmi->skip, r);
-#endif  // CONFIG_VAR_TX
     mbmi->mode = mbmi->uv_mode = UV_DC_PRED;
     mbmi->interp_filters = av1_broadcast_interp_filter(BILINEAR);
 
@@ -1231,14 +1221,12 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   mbmi->ref_frame[1] = NONE_FRAME;
 
 #if CONFIG_INTRABC
-#if CONFIG_VAR_TX
   if (cm->allow_screen_content_tools) {
     xd->above_txfm_context =
         cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
     xd->left_txfm_context = xd->left_txfm_context_buffer +
                             ((mi_row & MAX_MIB_MASK) << TX_UNIT_HIGH_LOG2);
   }
-#endif  // CONFIG_VAR_TX
   if (av1_allow_intrabc(bsize, cm)) {
     read_intrabc_info(cm, xd, mi_row, mi_col, r);
     if (is_intrabc_block(mbmi)) return;
@@ -1246,10 +1234,10 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
 #endif  // CONFIG_INTRABC
 
   mbmi->tx_size = read_tx_size(cm, xd, 0, 1, r);
-#if CONFIG_INTRABC && CONFIG_VAR_TX
+#if CONFIG_INTRABC
   if (cm->allow_screen_content_tools)
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
-#endif  // CONFIG_INTRABC && CONFIG_VAR_TX
+#endif  // CONFIG_INTRABC
 
   (void)i;
   mbmi->mode =
@@ -2690,9 +2678,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   MODE_INFO *const mi = xd->mi[0];
   MB_MODE_INFO *const mbmi = &mi->mbmi;
   int inter_block = 1;
-#if CONFIG_VAR_TX
   BLOCK_SIZE bsize = mbmi->sb_type;
-#endif  // CONFIG_VAR_TX
 
   mbmi->mv[0].as_int = 0;
   mbmi->mv[1].as_int = 0;
@@ -2739,7 +2725,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
 
   inter_block = read_is_inter_block(cm, xd, mbmi->segment_id, r);
 
-#if CONFIG_VAR_TX
   xd->above_txfm_context =
       cm->above_txfm_context + (mi_col << TX_UNIT_WIDE_LOG2);
   xd->left_txfm_context = xd->left_txfm_context_buffer +
@@ -2800,9 +2785,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     mbmi->min_tx_size = get_min_tx_size(mbmi->tx_size);
     set_txfm_ctxs(mbmi->tx_size, xd->n8_w, xd->n8_h, mbmi->skip, xd);
   }
-#else
-  mbmi->tx_size = read_tx_size(cm, xd, inter_block, !mbmi->skip, r);
-#endif  // CONFIG_VAR_TX
 
   if (inter_block)
     read_inter_block_mode_info(pbi, xd, mi, mi_row, mi_col, r);

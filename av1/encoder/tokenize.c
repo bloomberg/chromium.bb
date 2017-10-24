@@ -564,7 +564,6 @@ int av1_is_skippable_in_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   return result;
 }
 
-#if CONFIG_VAR_TX
 void tokenize_vartx(ThreadData *td, TOKENEXTRA **t, RUN_TYPE dry_run,
                     TX_SIZE tx_size, BLOCK_SIZE plane_bsize, int blk_row,
                     int blk_col, int block, int plane, void *arg) {
@@ -736,7 +735,6 @@ void av1_tokenize_sb_vartx(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
   }
   if (rate) *rate += arg.this_rate;
 }
-#endif  // CONFIG_VAR_TX
 
 void av1_tokenize_sb(const AV1_COMP *cpi, ThreadData *td, TOKENEXTRA **t,
                      RUN_TYPE dry_run, BLOCK_SIZE bsize, int *rate,

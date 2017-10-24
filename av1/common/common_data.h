@@ -605,7 +605,7 @@ static const TX_SIZE max_txsize_lookup[BLOCK_SIZES_ALL] = {
 #endif  // CONFIG_EXT_PARTITION
 };
 
-#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX
 static const TX_SIZE max_txsize_rect_lookup[BLOCK_SIZES_ALL] = {
   // 2X2,    2X4,      4X2,
 #if   CONFIG_CHROMA_SUB8X8
@@ -689,7 +689,7 @@ static const TX_SIZE quarter_txsize_lookup[BLOCK_SIZES_ALL] = {
 #endif
 #else
 #define max_txsize_rect_lookup max_txsize_lookup
-#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#endif  // CONFIG_RECT_TX
 
 static const TX_TYPE_1D vtx_tab[TX_TYPES] = {
   DCT_1D,      ADST_1D, DCT_1D,      ADST_1D,
@@ -707,7 +707,7 @@ static const TX_TYPE_1D htx_tab[TX_TYPES] = {
 #endif  // CONFIG_EXT_TX
 };
 
-#if CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX
 // Same as "max_txsize_lookup[bsize] - TX_8X8", except for rectangular
 // block which may use a rectangular transform, in which  case it is
 // "(max_txsize_lookup[bsize] + 1) - TX_8X8", invalid for bsize < 8X8
@@ -797,7 +797,7 @@ static const int32_t intra_tx_size_cat_lookup[BLOCK_SIZES_ALL] = {
   TX_32X32 - TX_8X8,  TX_32X32 - TX_8X8
 #endif  // CONFIG_EXT_PARTITION
 };
-#endif  // CONFIG_RECT_TX && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#endif  // CONFIG_RECT_TX
 
 #define inter_tx_size_cat_lookup intra_tx_size_cat_lookup
 

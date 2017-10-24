@@ -399,11 +399,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int blk_row,
   (void)blk_row;
   (void)blk_col;
   (void)fast_mode;
-#if CONFIG_VAR_TX
   int ctx = get_entropy_context(tx_size, a, l);
-#else
-  int ctx = combine_entropy_contexts(*a, *l);
-#endif  // CONFIG_VAR_TX
   return optimize_b_greedy(cm, mb, plane, blk_row, blk_col, block, tx_size,
                            ctx);
 #else   // !CONFIG_LV_MAP
@@ -600,35 +596,23 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   uint8_t *dst;
   ENTROPY_CONTEXT *a, *l;
 
-#if CONFIG_VAR_TX
   int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
-#endif
   dst = &pd->dst
              .buf[(blk_row * pd->dst.stride + blk_col) << tx_size_wide_log2[0]];
 
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
-#if CONFIG_VAR_TX
   ctx = get_entropy_context(tx_size, a, l);
-#else
-  ctx = combine_entropy_contexts(*a, *l);
-#endif
 
-#if CONFIG_VAR_TX
   // Assert not magic number (uninitialized).
   assert(x->blk_skip[plane][blk_row * bw + blk_col] != 234);
 
-  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0)
-#endif
-  {
+  if (x->blk_skip[plane][blk_row * bw + blk_col] == 0) {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
-  }
-#if CONFIG_VAR_TX
-  else {
+  } else {
     p->eobs[block] = 0;
   }
-#endif
 
   av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size, a,
                  l, 0);
@@ -657,7 +641,6 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 }
 
-#if CONFIG_VAR_TX
 static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
                                BLOCK_SIZE plane_bsize, TX_SIZE tx_size,
                                void *arg) {
@@ -720,7 +703,6 @@ static void encode_block_inter(int plane, int block, int blk_row, int blk_col,
     }
   }
 }
-#endif
 
 typedef struct encode_block_pass1_args {
   AV1_COMMON *cm;
@@ -794,7 +776,6 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
 
     bsize = scale_chroma_bsize(bsize, subsampling_x, subsampling_y);
 
-#if CONFIG_VAR_TX
     // TODO(jingning): Clean this up.
     const struct macroblockd_plane *const pd = &xd->plane[plane];
     const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
@@ -809,18 +790,12 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
     int block = 0;
     int step = tx_size_wide_unit[max_tx_size] * tx_size_high_unit[max_tx_size];
     av1_get_entropy_contexts(bsize, 0, pd, ctx.ta[plane], ctx.tl[plane]);
-#else
-    const struct macroblockd_plane *const pd = &xd->plane[plane];
-    const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-    av1_get_entropy_contexts(bsize, tx_size, pd, ctx.ta[plane], ctx.tl[plane]);
-#endif
 
     av1_subtract_plane(x, bsize, plane);
 
     arg.ta = ctx.ta[plane];
     arg.tl = ctx.tl[plane];
 
-#if CONFIG_VAR_TX
     const BLOCK_SIZE max_unit_bsize = get_plane_block_size(BLOCK_64X64, pd);
     int mu_blocks_wide =
         block_size_wide[max_unit_bsize] >> tx_size_wide_log2[0];
@@ -844,10 +819,6 @@ void av1_encode_sb(AV1_COMMON *cm, MACROBLOCK *x, BLOCK_SIZE bsize, int mi_row,
         }
       }
     }
-#else
-    av1_foreach_transformed_block_in_plane(xd, bsize, plane, encode_block,
-                                           &arg);
-#endif
   }
 }
 
@@ -862,12 +833,10 @@ void av1_set_txb_context(MACROBLOCK *x, int plane, int block, TX_SIZE tx_size,
   *a = *l = p->txb_entropy_ctx[block];
 #endif  // !CONFIG_LV_MAP
 
-#if CONFIG_VAR_TX || CONFIG_LV_MAP
   int i;
   for (i = 0; i < tx_size_wide_unit[tx_size]; ++i) a[i] = a[0];
 
   for (i = 0; i < tx_size_high_unit[tx_size]; ++i) l[i] = l[0];
-#endif
 }
 
 static void encode_block_intra_and_set_context(int plane, int block,

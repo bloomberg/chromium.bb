@@ -313,7 +313,7 @@ static void predict_and_reconstruct_intra_block(
 #endif  // CONFIG_CFL
 }
 
-#if CONFIG_VAR_TX && !CONFIG_COEF_INTERLEAVE
+#if !CONFIG_COEF_INTERLEAVE
 static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                   aom_reader *r, MB_MODE_INFO *const mbmi,
                                   int plane, BLOCK_SIZE plane_bsize,
@@ -398,10 +398,9 @@ static void decode_reconstruct_tx(AV1_COMMON *cm, MACROBLOCKD *const xd,
     }
   }
 }
-#endif  // CONFIG_VAR_TX
+#endif
 
-#if !CONFIG_VAR_TX || CONFIG_COEF_INTERLEAVE || \
-    (!CONFIG_VAR_TX && CONFIG_EXT_TX && CONFIG_RECT_TX)
+#if CONFIG_COEF_INTERLEAVE || (!CONFIG_EXT_TX && CONFIG_RECT_TX)
 static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
                                    aom_reader *const r, int segment_id,
                                    int plane, int row, int col,
@@ -441,7 +440,7 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 
   return eob;
 }
-#endif  // !CONFIG_VAR_TX || CONFIG_SUPER_TX
+#endif  // CONFIG_SUPER_TX
 
 static void set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                         BLOCK_SIZE bsize, int mi_row, int mi_col, int bw,
@@ -888,7 +887,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
         mu_blocks_wide = AOMMIN(max_blocks_wide, mu_blocks_wide);
         mu_blocks_high = AOMMIN(max_blocks_high, mu_blocks_high);
 
-#if CONFIG_VAR_TX
         const TX_SIZE max_tx_size = get_vartx_max_txsize(
             mbmi, plane_bsize, pd->subsampling_x || pd->subsampling_y);
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
@@ -914,26 +912,6 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
             }
           }
         }
-#else
-        const TX_SIZE tx_size = av1_get_tx_size(plane, xd);
-        const int stepr = tx_size_high_unit[tx_size];
-        const int stepc = tx_size_wide_unit[tx_size];
-
-        for (row = 0; row < max_blocks_high; row += mu_blocks_high) {
-          const int unit_height = AOMMIN(mu_blocks_high + row, max_blocks_high);
-          for (col = 0; col < max_blocks_wide; col += mu_blocks_wide) {
-            int blk_row, blk_col;
-            const int unit_width =
-                AOMMIN(mu_blocks_wide + col, max_blocks_wide);
-
-            for (blk_row = row; blk_row < unit_height; blk_row += stepr)
-              for (blk_col = col; blk_col < unit_width; blk_col += stepc)
-                eobtotal +=
-                    reconstruct_inter_block(cm, xd, r, mbmi->segment_id, plane,
-                                            blk_row, blk_col, tx_size);
-          }
-        }
-#endif  // CONFIG_VAR_TX
       }
     }
   }
@@ -3520,8 +3498,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
   AV1_COMMON *const cm = &pbi->common;
   aom_reader r;
 
-#if ((CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)) || \
-     (!CONFIG_NEW_MULTISYMBOL || CONFIG_LV_MAP) ||               \
+#if ((CONFIG_RECT_TX_EXT) || (!CONFIG_NEW_MULTISYMBOL || CONFIG_LV_MAP) || \
      (CONFIG_COMPOUND_SINGLEREF))
   FRAME_CONTEXT *const fc = cm->fc;
 #endif
@@ -3534,7 +3511,7 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
     aom_internal_error(&cm->error, AOM_CODEC_MEM_ERROR,
                        "Failed to allocate bool decoder 0");
 
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   if (cm->tx_mode == TX_MODE_SELECT)
     av1_diff_update_prob(&r, &fc->quarter_tx_size_prob, ACCT_STR);
 #endif
@@ -3544,11 +3521,9 @@ static int read_compressed_header(AV1Decoder *pbi, const uint8_t *data,
 #endif  // CONFIG_LV_MAP && !LV_MAP_PROB
 
 #if !CONFIG_NEW_MULTISYMBOL
-#if CONFIG_VAR_TX
   if (cm->tx_mode == TX_MODE_SELECT)
     for (int i = 0; i < TXFM_PARTITION_CONTEXTS; ++i)
       av1_diff_update_prob(&r, &fc->txfm_partition_prob[i], ACCT_STR);
-#endif  // CONFIG_VAR_TX
   for (int i = 0; i < SKIP_CONTEXTS; ++i)
     av1_diff_update_prob(&r, &fc->skip_probs[i], ACCT_STR);
 #endif

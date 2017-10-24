@@ -285,18 +285,16 @@ typedef struct frame_contexts {
 #if CONFIG_COMPOUND_SINGLEREF
   aom_prob comp_inter_mode_prob[COMP_INTER_MODE_CONTEXTS];
 #endif  // CONFIG_COMPOUND_SINGLEREF
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   aom_prob quarter_tx_size_prob;
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob quarter_tx_size_cdf[CDF_SIZE(2)];
 #endif
 #endif
-#if CONFIG_VAR_TX
   aom_prob txfm_partition_prob[TXFM_PARTITION_CONTEXTS];
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
 #endif
-#endif  // CONFIG_VAR_TX
 #if CONFIG_NEW_MULTISYMBOL
   aom_cdf_prob skip_cdfs[SKIP_CONTEXTS][CDF_SIZE(2)];
   aom_cdf_prob intra_inter_cdf[INTRA_INTER_CONTEXTS][CDF_SIZE(2)];
@@ -477,12 +475,10 @@ typedef struct FRAME_COUNTS {
   // TODO(urvang): Only needed for !CONFIG_VAR_TX case. So can be removed when
   // CONFIG_VAR_TX flag is removed.
   unsigned int tx_size[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH + 1];
-#if CONFIG_RECT_TX_EXT && (CONFIG_EXT_TX || CONFIG_VAR_TX)
+#if CONFIG_RECT_TX_EXT
   unsigned int quarter_tx_size[2];
 #endif
-#if CONFIG_VAR_TX
   unsigned int txfm_partition[TXFM_PARTITION_CONTEXTS][2];
-#endif
   unsigned int skip[SKIP_CONTEXTS][2];
   nmv_context_counts mv[NMV_CONTEXTS];
 #if CONFIG_INTRABC
