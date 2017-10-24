@@ -27,11 +27,10 @@ tweak_info_plist("tweak_info_plist") {
   info_plist = "Info.plist"
 }
 
-compile_plist("entitlements") {
-  format = "xml1"
+compile_entitlements("entitlements") {
   substitutions = [ "IOS_BUNDLE_ID_PREFIX=$ios_app_bundle_id_prefix" ]
   output_name = "$target_gen_dir/share_extension.appex.entitlements"
-  plist_templates =
+  entitlements_templates =
       [ "entitlements/external/share_extension.appex.entitlements" ]
 }
 
