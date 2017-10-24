@@ -1618,9 +1618,10 @@ void ServiceWorkerVersion::SetTimeoutTimerInterval(base::TimeDelta interval) {
 }
 
 void ServiceWorkerVersion::OnTimeoutTimer() {
-  DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-         running_status() == EmbeddedWorkerStatus::RUNNING ||
-         running_status() == EmbeddedWorkerStatus::STOPPING)
+  // TODO(horo): This CHECK is for debugging crbug.com/759938.
+  CHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
+        running_status() == EmbeddedWorkerStatus::RUNNING ||
+        running_status() == EmbeddedWorkerStatus::STOPPING)
       << static_cast<int>(running_status());
 
   if (!context_)
@@ -1708,8 +1709,9 @@ void ServiceWorkerVersion::OnTimeoutTimer() {
 }
 
 void ServiceWorkerVersion::PingWorker() {
-  DCHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
-         running_status() == EmbeddedWorkerStatus::RUNNING);
+  // TODO(horo): This CHECK is for debugging crbug.com/759938.
+  CHECK(running_status() == EmbeddedWorkerStatus::STARTING ||
+        running_status() == EmbeddedWorkerStatus::RUNNING);
   // base::Unretained here is safe because event_dispatcher is owned by |this|.
   event_dispatcher()->Ping(base::BindOnce(
       &ServiceWorkerVersion::OnPongFromWorker, base::Unretained(this)));
