@@ -287,7 +287,7 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
   if (params->layout != wallpaper_base::WALLPAPER_LAYOUT_STRETCH &&
       resolution == chromeos::WallpaperManager::WALLPAPER_RESOLUTION_SMALL) {
     file_name = base::FilePath(file_name)
-                    .InsertBeforeExtension(wallpaper::kSmallWallpaperSuffix)
+                    .InsertBeforeExtension(chromeos::kSmallWallpaperSuffix)
                     .value();
   }
   wallpaper_path = wallpaper_path.Append(file_name);
@@ -302,7 +302,7 @@ bool WallpaperPrivateSetWallpaperIfExistsFunction::RunAsync() {
 void WallpaperPrivateSetWallpaperIfExistsFunction::
     ReadFileAndInitiateStartDecode(const base::FilePath& file_path,
                                    const base::FilePath& fallback_path) {
-  wallpaper::AssertCalledOnWallpaperSequence(GetNonBlockingTaskRunner());
+  chromeos::AssertCalledOnWallpaperSequence(GetNonBlockingTaskRunner());
   base::FilePath path = file_path;
 
   if (!base::PathExists(file_path))
@@ -399,7 +399,7 @@ void WallpaperPrivateSetWallpaperFunction::OnWallpaperDecoded(
 }
 
 void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
-  wallpaper::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
+  chromeos::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
   std::string file_name = GURL(params->url).ExtractFileName();
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPERS, file_name, params->wallpaper)) {
     wallpaper_.EnsureRepsForSupportedScales();
@@ -415,15 +415,15 @@ void WallpaperPrivateSetWallpaperFunction::SaveToFile() {
     base::FilePath wallpaper_dir;
     CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS, &wallpaper_dir));
     base::FilePath file_path =
-        wallpaper_dir.Append(file_name)
-            .InsertBeforeExtension(wallpaper::kSmallWallpaperSuffix);
+        wallpaper_dir.Append(file_name).InsertBeforeExtension(
+            chromeos::kSmallWallpaperSuffix);
     if (base::PathExists(file_path))
       return;
     // Generates and saves small resolution wallpaper. Uses CENTER_CROPPED to
     // maintain the aspect ratio after resize.
     chromeos::WallpaperManager::Get()->ResizeAndSaveWallpaper(
         wallpaper_, file_path, wallpaper::WALLPAPER_LAYOUT_CENTER_CROPPED,
-        wallpaper::kSmallWallpaperMaxWidth, wallpaper::kSmallWallpaperMaxHeight,
+        chromeos::kSmallWallpaperMaxWidth, chromeos::kSmallWallpaperMaxHeight,
         NULL);
   } else {
     std::string error = base::StringPrintf(
@@ -517,7 +517,7 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      wallpaper::kThumbnailWallpaperSubDir, wallpaper_files_id_,
+      chromeos::kThumbnailWallpaperSubDir, wallpaper_files_id_,
       params->file_name);
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
@@ -556,14 +556,14 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
     const base::FilePath& thumbnail_path,
     std::unique_ptr<gfx::ImageSkia> image) {
-  wallpaper::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
+  chromeos::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
   if (!base::PathExists(thumbnail_path.DirName()))
     base::CreateDirectory(thumbnail_path.DirName());
 
   scoped_refptr<base::RefCountedBytes> data;
   chromeos::WallpaperManager::Get()->ResizeImage(
       *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
-      wallpaper::kWallpaperThumbnailWidth, wallpaper::kWallpaperThumbnailHeight,
+      chromeos::kWallpaperThumbnailWidth, chromeos::kWallpaperThumbnailHeight,
       &data, NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -703,7 +703,7 @@ void WallpaperPrivateGetThumbnailFunction::FileLoaded(
 }
 
 void WallpaperPrivateGetThumbnailFunction::Get(const base::FilePath& path) {
-  wallpaper::AssertCalledOnWallpaperSequence(
+  chromeos::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   std::string data;
   if (GetData(path, &data)) {
@@ -757,7 +757,7 @@ void WallpaperPrivateSaveThumbnailFunction::Success() {
 
 void WallpaperPrivateSaveThumbnailFunction::Save(const std::vector<char>& data,
                                                  const std::string& file_name) {
-  wallpaper::AssertCalledOnWallpaperSequence(
+  chromeos::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   if (SaveData(chrome::DIR_CHROMEOS_WALLPAPER_THUMBNAILS, file_name, data)) {
     BrowserThread::PostTask(
@@ -788,7 +788,7 @@ bool WallpaperPrivateGetOfflineWallpaperListFunction::RunAsync() {
 }
 
 void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
-  wallpaper::AssertCalledOnWallpaperSequence(
+  chromeos::AssertCalledOnWallpaperSequence(
       WallpaperFunctionBase::GetNonBlockingTaskRunner());
   std::vector<std::string> file_list;
   base::FilePath wallpaper_dir;
@@ -800,7 +800,7 @@ void WallpaperPrivateGetOfflineWallpaperListFunction::GetList() {
          current = files.Next()) {
       std::string file_name = current.BaseName().RemoveExtension().value();
       // Do not add file name of small resolution wallpaper to the list.
-      if (!base::EndsWith(file_name, wallpaper::kSmallWallpaperSuffix,
+      if (!base::EndsWith(file_name, chromeos::kSmallWallpaperSuffix,
                           base::CompareCase::SENSITIVE))
         file_list.push_back(current.BaseName().value());
     }

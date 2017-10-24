@@ -31,7 +31,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/wallpaper/wallpaper_color_calculator.h"
 #include "components/wallpaper/wallpaper_color_profile.h"
-#include "components/wallpaper/wallpaper_manager_base.h"
 #include "components/wallpaper/wallpaper_resizer.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"

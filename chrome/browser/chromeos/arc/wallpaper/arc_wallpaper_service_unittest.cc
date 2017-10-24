@@ -72,7 +72,7 @@ class ArcWallpaperServiceTest : public ash::AshTestBase {
     pref_service_.registry()->RegisterDictionaryPref(
         ash::prefs::kWallpaperColors);
     pref_service_.registry()->RegisterDictionaryPref(
-        wallpaper::kUsersWallpaperInfo);
+        chromeos::kUsersWallpaperInfo);
 
     // Ash prefs
     auto pref_service = std::make_unique<TestingPrefServiceSimple>();

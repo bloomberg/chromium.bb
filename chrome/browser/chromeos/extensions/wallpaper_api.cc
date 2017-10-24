@@ -152,7 +152,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   chromeos::WallpaperManager* wallpaper_manager =
       chromeos::WallpaperManager::Get();
   base::FilePath thumbnail_path = wallpaper_manager->GetCustomWallpaperPath(
-      wallpaper::kThumbnailWallpaperSubDir, wallpaper_files_id_,
+      chromeos::kThumbnailWallpaperSubDir, wallpaper_files_id_,
       params_->details.filename);
 
   wallpaper::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
@@ -199,7 +199,7 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
 void WallpaperSetWallpaperFunction::GenerateThumbnail(
     const base::FilePath& thumbnail_path,
     std::unique_ptr<gfx::ImageSkia> image) {
-  wallpaper::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
+  chromeos::AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
   if (!base::PathExists(thumbnail_path.DirName()))
     base::CreateDirectory(thumbnail_path.DirName());
 
@@ -210,7 +210,7 @@ void WallpaperSetWallpaperFunction::GenerateThumbnail(
       image->height(), &original_data, NULL);
   chromeos::WallpaperManager::Get()->ResizeImage(
       *image, wallpaper::WALLPAPER_LAYOUT_STRETCH,
-      wallpaper::kWallpaperThumbnailWidth, wallpaper::kWallpaperThumbnailHeight,
+      chromeos::kWallpaperThumbnailWidth, chromeos::kWallpaperThumbnailHeight,
       &thumbnail_data, NULL);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,

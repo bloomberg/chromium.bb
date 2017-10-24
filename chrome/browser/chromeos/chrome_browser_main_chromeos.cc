@@ -156,7 +156,6 @@
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
-#include "components/wallpaper/wallpaper_manager_base.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/media_capture_devices.h"
 #include "content/public/browser/notification_service.h"
@@ -807,10 +806,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     MagnificationManager::Initialize();
   }
 
-  wallpaper::WallpaperManagerBase::SetPathIds(
-      chrome::DIR_USER_DATA,
-      chrome::DIR_CHROMEOS_WALLPAPERS,
-      chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
+  WallpaperManager::SetPathIds(chrome::DIR_USER_DATA,
+                               chrome::DIR_CHROMEOS_WALLPAPERS,
+                               chrome::DIR_CHROMEOS_CUSTOM_WALLPAPERS);
 
   // Add observers for WallpaperManager. This depends on PowerManagerClient,
   // TimezoneSettings and CrosSettings.
