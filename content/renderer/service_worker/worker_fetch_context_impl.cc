@@ -42,12 +42,12 @@ void WorkerFetchContextImpl::InitializeOnWorkerThread(
     binding_.Bind(std::move(service_worker_client_request_));
 }
 
-std::unique_ptr<blink::WebURLLoader> WorkerFetchContextImpl::CreateURLLoader(
-    const blink::WebURLRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::MakeUnique<content::WebURLLoaderImpl>(
-      resource_dispatcher_.get(), std::move(task_runner),
-      url_loader_factory_getter_->GetFactoryForURL(request.Url()));
+std::unique_ptr<blink::WebURLLoaderFactory>
+WorkerFetchContextImpl::CreateURLLoaderFactory() {
+  DCHECK(url_loader_factory_getter_);
+  return std::make_unique<content::WebURLLoaderFactoryImpl>(
+      resource_dispatcher_->GetWeakPtr(),
+      std::move(url_loader_factory_getter_));
 }
 
 void WorkerFetchContextImpl::WillSendRequest(blink::WebURLRequest& request) {

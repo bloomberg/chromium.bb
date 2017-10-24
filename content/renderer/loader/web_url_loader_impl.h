@@ -17,6 +17,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/url_request/redirect_info.h"
 #include "third_party/WebKit/public/platform/WebURLLoader.h"
+#include "third_party/WebKit/public/platform/WebURLLoaderFactory.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -25,6 +26,7 @@ class SingleThreadTaskRunner;
 
 namespace content {
 
+class ChildURLLoaderFactoryGetter;
 class ResourceDispatcher;
 struct ResourceResponseInfo;
 
@@ -50,6 +52,28 @@ struct CONTENT_EXPORT StreamOverrideParameters {
   // Called when this struct is deleted. Used to notify the browser that it can
   // release its associated StreamHandle.
   base::OnceCallback<void(const GURL&)> on_delete;
+};
+
+// Default implementation of WebURLLoaderFactory.
+class CONTENT_EXPORT WebURLLoaderFactoryImpl
+    : public blink::WebURLLoaderFactory {
+ public:
+  WebURLLoaderFactoryImpl(
+      base::WeakPtr<ResourceDispatcher> resource_dispatcher,
+      scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter);
+  ~WebURLLoaderFactoryImpl() override;
+
+  // Creates a test-only factory which can be used only for data URLs.
+  static std::unique_ptr<WebURLLoaderFactoryImpl> CreateTestOnlyFactory();
+
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const blink::WebURLRequest& request,
+      blink::SingleThreadTaskRunnerRefPtr task_runner) override;
+
+ private:
+  base::WeakPtr<ResourceDispatcher> resource_dispatcher_;
+  scoped_refptr<ChildURLLoaderFactoryGetter> loader_factory_getter_;
+  DISALLOW_COPY_AND_ASSIGN(WebURLLoaderFactoryImpl);
 };
 
 class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {

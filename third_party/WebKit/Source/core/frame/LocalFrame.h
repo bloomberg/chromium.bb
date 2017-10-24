@@ -75,14 +75,12 @@ class Node;
 class NodeTraversal;
 class PerformanceMonitor;
 class PluginData;
-class ResourceRequest;
 class ScriptController;
 class SpellChecker;
 class TextSuggestionController;
 class WebFrameScheduler;
 class WebPluginContainerImpl;
-class WebTaskRunner;
-class WebURLLoader;
+class WebURLLoaderFactory;
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
@@ -250,8 +248,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // the embedder decides that Client Lo-Fi should be used for this request.
   void MaybeAllowImagePlaceholder(FetchParameters&) const;
 
-  std::unique_ptr<WebURLLoader> CreateURLLoader(const ResourceRequest&,
-                                                scoped_refptr<WebTaskRunner>);
+  // The returned value is a off-heap raw-ptr and should not be stored.
+  WebURLLoaderFactory* GetURLLoaderFactory();
 
   bool IsInert() const { return is_inert_; }
 
@@ -338,6 +336,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   IntRect remote_viewport_intersection_;
   std::unique_ptr<FrameResourceCoordinator> frame_resource_coordinator_;
+
+  // Per-frame URLLoader factory.
+  std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

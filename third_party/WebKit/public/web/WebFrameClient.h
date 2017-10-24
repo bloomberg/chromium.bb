@@ -70,7 +70,7 @@
 #include "public/platform/WebStorageQuotaType.h"
 #include "public/platform/WebSuddenTerminationDisablerType.h"
 #include "public/platform/WebURLError.h"
-#include "public/platform/WebURLLoader.h"
+#include "public/platform/WebURLLoaderFactory.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
@@ -848,9 +848,7 @@ class BLINK_EXPORT WebFrameClient {
 
   // Loading --------------------------------------------------------------
 
-  virtual std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const WebURLRequest&,
-      SingleThreadTaskRunnerRefPtr) {
+  virtual std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() {
     NOTREACHED();
     return nullptr;
   }

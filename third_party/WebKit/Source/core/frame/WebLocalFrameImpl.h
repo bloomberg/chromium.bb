@@ -428,9 +428,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetContextMenuNode(Node* node) { context_menu_node_ = node; }
   void ClearContextMenuNode() { context_menu_node_.Clear(); }
 
-  std::unique_ptr<WebURLLoader> CreateURLLoader(
-      const WebURLRequest&,
-      SingleThreadTaskRunnerRefPtr) override;
+  std::unique_ptr<WebURLLoaderFactory> CreateURLLoaderFactory() override;
 
   WebFrameWidgetBase* LocalRootFrameWidget();
 

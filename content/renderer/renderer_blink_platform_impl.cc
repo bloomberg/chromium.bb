@@ -53,6 +53,7 @@
 #include "content/renderer/indexed_db/webidbfactory_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_getter_impl.h"
 #include "content/renderer/loader/cors_url_loader_factory.h"
+#include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/web_data_consumer_handle_impl.h"
 #include "content/renderer/loader/web_url_loader_impl.h"
 #include "content/renderer/media/audio_decoder.h"
@@ -111,6 +112,7 @@
 #include "third_party/WebKit/public/platform/WebSocketHandshakeThrottle.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebURLLoaderFactory.h"
 #include "third_party/WebKit/public/platform/WebURLRequest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/platform/modules/device_orientation/WebDeviceMotionListener.h"
@@ -337,24 +339,16 @@ void RendererBlinkPlatformImpl::Shutdown() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<blink::WebURLLoader> RendererBlinkPlatformImpl::CreateURLLoader(
-    const blink::WebURLRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-
-  if (!url_loader_factory_getter_ && render_thread)
-    url_loader_factory_getter_ = CreateDefaultURLLoaderFactoryGetter();
-
-  mojom::URLLoaderFactory* factory =
-      url_loader_factory_getter_
-          ? url_loader_factory_getter_->GetFactoryForURL(request.Url())
-          : nullptr;
-
-  // There may be no render thread in RenderViewTests.  These tests can still use
-  // data URLs to bypass the ResourceDispatcher.
-  return base::MakeUnique<WebURLLoaderImpl>(
-      render_thread ? render_thread->resource_dispatcher() : nullptr,
-      std::move(task_runner), factory);
+std::unique_ptr<blink::WebURLLoaderFactory>
+RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactory() {
+  if (!RenderThreadImpl::current()) {
+    // RenderThreadImpl is null in some tests, the default factory impl
+    // takes care of that in the case.
+    return std::make_unique<WebURLLoaderFactoryImpl>(nullptr, nullptr);
+  }
+  return std::make_unique<WebURLLoaderFactoryImpl>(
+      RenderThreadImpl::current()->resource_dispatcher()->GetWeakPtr(),
+      CreateDefaultURLLoaderFactoryGetter());
 }
 
 std::unique_ptr<blink::WebDataConsumerHandle>
@@ -374,8 +368,8 @@ RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryGetter() {
 
 PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory>
 RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
-  ChildThreadImpl* child_thread = ChildThreadImpl::current();
-  DCHECK(child_thread);
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
   PossiblyAssociatedInterfacePtr<mojom::URLLoaderFactory> url_loader_factory;
 
   if (base::FeatureList::IsEnabled(features::kNetworkService)) {
@@ -384,7 +378,7 @@ RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
     url_loader_factory = std::move(factory_ptr);
   } else {
     mojom::URLLoaderFactoryAssociatedPtr factory_ptr;
-    child_thread->channel()->GetRemoteAssociatedInterface(&factory_ptr);
+    render_thread->channel()->GetRemoteAssociatedInterface(&factory_ptr);
     url_loader_factory = std::move(factory_ptr);
   }
 

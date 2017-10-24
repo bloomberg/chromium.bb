@@ -137,13 +137,6 @@ blink::WebNavigationPolicy TestRenderFrame::DecidePolicyForNavigation(
   return RenderFrameImpl::DecidePolicyForNavigation(info);
 }
 
-std::unique_ptr<blink::WebURLLoader> TestRenderFrame::CreateURLLoader(
-    const blink::WebURLRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  return base::MakeUnique<WebURLLoaderImpl>(
-      nullptr, base::ThreadTaskRunnerHandle::Get(), nullptr);
-}
-
 std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
 TestRenderFrame::TakeLastCommitParams() {
   return mock_frame_host_->TakeLastCommitParams();

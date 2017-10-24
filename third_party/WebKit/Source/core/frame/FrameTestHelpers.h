@@ -346,11 +346,11 @@ class TestWebFrameClient : public WebFrameClient {
   service_manager::InterfaceProvider* GetInterfaceProvider() override {
     return interface_provider_.get();
   }
-  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
-      const blink::WebURLRequest& request,
-      SingleThreadTaskRunnerRefPtr task_runner) override {
-    // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-    return Platform::Current()->CreateURLLoader(request, task_runner);
+  std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory()
+      override {
+    // TODO(kinuko,toyoshim): Stop using Platform's URLLoaderFactory, but create
+    // its own WebURLLoaderFactoryWithMock. (crbug.com/751425)
+    return Platform::Current()->CreateDefaultURLLoaderFactory();
   }
 
  private:

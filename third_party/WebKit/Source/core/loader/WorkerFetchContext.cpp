@@ -22,6 +22,7 @@
 #include "public/platform/Platform.h"
 #include "public/platform/WebMixedContent.h"
 #include "public/platform/WebMixedContentContextType.h"
+#include "public/platform/WebURLLoaderFactory.h"
 #include "public/platform/WebURLRequest.h"
 #include "public/platform/WebWorkerFetchContext.h"
 
@@ -221,9 +222,11 @@ std::unique_ptr<WebURLLoader> WorkerFetchContext::CreateURLLoader(
     const ResourceRequest& request,
     scoped_refptr<WebTaskRunner> task_runner) {
   CountUsage(WebFeature::kOffMainThreadFetch);
+  if (!url_loader_factory_)
+    url_loader_factory_ = web_context_->CreateURLLoaderFactory();
   WrappedResourceRequest wrapped(request);
-  return web_context_->CreateURLLoader(wrapped,
-                                       task_runner->ToSingleThreadTaskRunner());
+  return url_loader_factory_->CreateURLLoader(
+      wrapped, task_runner->ToSingleThreadTaskRunner());
 }
 
 bool WorkerFetchContext::IsControlledByServiceWorker() const {

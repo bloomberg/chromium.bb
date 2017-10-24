@@ -198,13 +198,6 @@ blink::WebThemeEngine* PpapiBlinkPlatformImpl::ThemeEngine() {
   return NULL;
 }
 
-std::unique_ptr<blink::WebURLLoader> PpapiBlinkPlatformImpl::CreateURLLoader(
-    const blink::WebURLRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  NOTREACHED();
-  return NULL;
-}
-
 void PpapiBlinkPlatformImpl::GetPluginList(
     bool refresh,
     const blink::WebSecurityOrigin& mainFrameOrigin,

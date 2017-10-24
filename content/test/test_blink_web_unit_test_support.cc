@@ -36,6 +36,7 @@
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebThread.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
+#include "third_party/WebKit/public/platform/WebURLLoaderFactory.h"
 #include "third_party/WebKit/public/platform/scheduler/renderer/renderer_scheduler.h"
 #include "third_party/WebKit/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 #include "third_party/WebKit/public/web/WebKit.h"
@@ -89,11 +90,37 @@ class DummyTaskRunner : public base::SingleThreadTaskRunner {
   DISALLOW_COPY_AND_ASSIGN(DummyTaskRunner);
 };
 
+// TODO(kinuko,toyoshim): Deprecate this, all Blink tests should not rely
+// on this //content implementation.
+class WebURLLoaderFactoryWithMock : public blink::WebURLLoaderFactory {
+ public:
+  explicit WebURLLoaderFactoryWithMock(base::WeakPtr<blink::Platform> platform)
+      : platform_(std::move(platform)) {}
+  ~WebURLLoaderFactoryWithMock() override = default;
+
+  std::unique_ptr<blink::WebURLLoader> CreateURLLoader(
+      const blink::WebURLRequest& request,
+      blink::SingleThreadTaskRunnerRefPtr task_runner) override {
+    DCHECK(platform_);
+    // This loader should be used only for process-local resources such as
+    // data URLs.
+    auto default_loader = base::MakeUnique<content::WebURLLoaderImpl>(
+        nullptr, task_runner, nullptr);
+    return platform_->GetURLLoaderMockFactory()->CreateURLLoader(
+        std::move(default_loader));
+  }
+
+ private:
+  base::WeakPtr<blink::Platform> platform_;
+  DISALLOW_COPY_AND_ASSIGN(WebURLLoaderFactoryWithMock);
+};
+
 }  // namespace
 
 namespace content {
 
-TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport() {
+TestBlinkWebUnitTestSupport::TestBlinkWebUnitTestSupport()
+    : weak_factory_(this) {
 #if defined(OS_MACOSX)
   base::mac::ScopedNSAutoreleasePool autorelease_pool;
 #endif
@@ -188,15 +215,10 @@ blink::WebIDBFactory* TestBlinkWebUnitTestSupport::IdbFactory() {
   return NULL;
 }
 
-std::unique_ptr<blink::WebURLLoader>
-TestBlinkWebUnitTestSupport::CreateURLLoader(
-    const blink::WebURLRequest& request,
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  // This loader should be used only for process-local resources such as
-  // data URLs.
-  auto default_loader =
-      base::MakeUnique<WebURLLoaderImpl>(nullptr, task_runner, nullptr);
-  return url_loader_factory_->CreateURLLoader(std::move(default_loader));
+std::unique_ptr<blink::WebURLLoaderFactory>
+TestBlinkWebUnitTestSupport::CreateDefaultURLLoaderFactory() {
+  return std::make_unique<WebURLLoaderFactoryWithMock>(
+      weak_factory_.GetWeakPtr());
 }
 
 blink::WebString TestBlinkWebUnitTestSupport::UserAgent() {

@@ -217,7 +217,7 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebSize.h"
 #include "public/platform/WebURLError.h"
-#include "public/platform/WebURLLoader.h"
+#include "public/platform/WebURLLoaderFactory.h"
 #include "public/platform/WebVector.h"
 #include "public/web/WebAssociatedURLLoaderOptions.h"
 #include "public/web/WebAutofillClient.h"
@@ -2391,10 +2391,9 @@ WebFrameWidgetBase* WebLocalFrameImpl::FrameWidget() const {
   return frame_widget_;
 }
 
-std::unique_ptr<WebURLLoader> WebLocalFrameImpl::CreateURLLoader(
-    const WebURLRequest& request,
-    SingleThreadTaskRunnerRefPtr task_runner) {
-  return client_->CreateURLLoader(request, std::move(task_runner));
+std::unique_ptr<WebURLLoaderFactory>
+WebLocalFrameImpl::CreateURLLoaderFactory() {
+  return client_->CreateURLLoaderFactory();
 }
 
 void WebLocalFrameImpl::CopyImageAt(const WebPoint& pos_in_viewport) {

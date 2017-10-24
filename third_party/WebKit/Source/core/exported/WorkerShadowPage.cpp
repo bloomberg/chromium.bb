@@ -75,12 +75,10 @@ WorkerShadowPage::CreateApplicationCacheHost(
   return client_->CreateApplicationCacheHost(appcache_host_client);
 }
 
-std::unique_ptr<blink::WebURLLoader> WorkerShadowPage::CreateURLLoader(
-    const WebURLRequest& request,
-    SingleThreadTaskRunnerRefPtr task_runner) {
+std::unique_ptr<blink::WebURLLoaderFactory>
+WorkerShadowPage::CreateURLLoaderFactory() {
   DCHECK(IsMainThread());
-  // TODO(yhirano): Stop using Platform::CreateURLLoader() here.
-  return Platform::Current()->CreateURLLoader(request, task_runner);
+  return Platform::Current()->CreateDefaultURLLoaderFactory();
 }
 
 WebString WorkerShadowPage::GetInstrumentationToken() {
