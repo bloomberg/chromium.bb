@@ -47,14 +47,13 @@ void DataDrivenTest::RunDataDrivenTest(
   for (base::FilePath input_file = input_files.Next();
        !input_file.empty();
        input_file = input_files.Next()) {
-    RunOneDataDrivenTest(input_file, output_directory, TEST_PASSING);
+    RunOneDataDrivenTest(input_file, output_directory);
   }
 }
 
 void DataDrivenTest::RunOneDataDrivenTest(
     const base::FilePath& test_file_name,
-    const base::FilePath& output_directory,
-    DataDrivenTestStatus expected_status) {
+    const base::FilePath& output_directory) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // iOS doesn't get rid of removed test files. TODO(estade): remove this after
   // all iOS bots are clobbered.
@@ -77,15 +76,10 @@ void DataDrivenTest::RunOneDataDrivenTest(
           FILE_PATH_LITERAL(".out")));
 
   std::string output_file_contents;
-  if (ReadFile(output_file, &output_file_contents)) {
-    if (expected_status == TEST_PASSING)
-      EXPECT_EQ(output_file_contents, output);
-    else
-      EXPECT_NE(output_file_contents, output);
-  } else {
-    ASSERT_TRUE(expected_status == TEST_PASSING);
+  if (ReadFile(output_file, &output_file_contents))
+    EXPECT_EQ(output_file_contents, output);
+  else
     ASSERT_TRUE(WriteFile(output_file, output));
-  }
 }
 
 base::FilePath DataDrivenTest::GetInputDirectory(
