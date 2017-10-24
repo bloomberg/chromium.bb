@@ -95,7 +95,7 @@ void Worklet::ContextDestroyed(ExecutionContext* execution_context) {
     proxy->TerminateWorkletGlobalScope();
 }
 
-WorkletGlobalScopeProxy* Worklet::FindAvailableGlobalScope() const {
+WorkletGlobalScopeProxy* Worklet::FindAvailableGlobalScope() {
   DCHECK(IsMainThread());
   return proxies_.at(SelectGlobalScope());
 }
@@ -159,7 +159,7 @@ void Worklet::FetchAndInvokeScript(const KURL& module_url_record,
   }
 }
 
-size_t Worklet::SelectGlobalScope() const {
+size_t Worklet::SelectGlobalScope() {
   DCHECK_EQ(GetNumberOfGlobalScopes(), 1u);
   return 0u;
 }

@@ -51,7 +51,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   explicit Worklet(LocalFrame*);
 
   // Returns one of available global scopes.
-  WorkletGlobalScopeProxy* FindAvailableGlobalScope() const;
+  WorkletGlobalScopeProxy* FindAvailableGlobalScope();
 
   size_t GetNumberOfGlobalScopes() const { return proxies_.size(); }
 
@@ -70,7 +70,7 @@ class CORE_EXPORT Worklet : public ScriptWrappable,
   // there are multiple global scopes, this function MUST be overriden. The
   // default behavior is to return the global scope at index 0, which is for the
   // case where there is only one global scope.
-  virtual size_t SelectGlobalScope() const;
+  virtual size_t SelectGlobalScope();
 
   // "A Worklet has a list of the worklet's WorkletGlobalScopes. Initially this
   // list is empty; it is populated when the user agent chooses to create its
