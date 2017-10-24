@@ -301,6 +301,9 @@ struct macroblock {
   DECLARE_ALIGNED(16, uint8_t, decoded_8x8[8 * 8]);
 #endif
 #endif  // CONFIG_DIST_8X8
+#if CONFIG_JNT_COMP
+  int comp_idx_cost[COMP_INDEX_CONTEXTS][2];
+#endif  // CONFIG_JNT_COMP
 };
 
 #ifdef __cplusplus

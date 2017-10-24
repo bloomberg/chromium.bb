@@ -1824,4 +1824,9 @@ void av1_average_tile_inter_cdfs(AV1_COMMON *cm, FRAME_CONTEXT *fc,
   int j;
   for (j = 0; j < Q_SEGMENT_CDF_COUNT; j++) AVERAGE_TILE_CDFS(seg.q_seg_cdf[j]);
 #endif
+#if CONFIG_JNT_COMP
+#if CONFIG_NEW_MULTISYMBOL
+  AVERAGE_TILE_CDFS(compound_index_cdf);
+#endif  // CONFIG_NEW_MULTISYMBOL
+#endif  // CONFIG_JNT_COMP
 }

@@ -266,6 +266,9 @@ typedef struct frame_contexts {
   aom_cdf_prob txfm_partition_cdf[TXFM_PARTITION_CONTEXTS][CDF_SIZE(2)];
 #endif
 #if CONFIG_JNT_COMP
+#if CONFIG_NEW_MULTISYMBOL
+  aom_cdf_prob compound_index_cdf[COMP_INDEX_CONTEXTS][CDF_SIZE(2)];
+#endif  // CONFIG_NEW_MULTISYMBOL
   aom_prob compound_index_probs[COMP_INDEX_CONTEXTS];
 #endif  // CONFIG_JNT_COMP
 #if CONFIG_NEW_MULTISYMBOL

@@ -379,6 +379,17 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
       x->motion_mode_cost1[i][1] = av1_cost_bit(fc->obmc_prob[i], 1);
 #endif
     }
+#if CONFIG_JNT_COMP
+    for (i = 0; i < COMP_INDEX_CONTEXTS; ++i) {
+#if CONFIG_NEW_MULTISYMBOL
+      av1_cost_tokens_from_cdf(x->comp_idx_cost[i], fc->compound_index_cdf[i],
+                               NULL);
+#else
+      x->comp_idx_cost[i][0] = av1_cost_bit(fc->compound_index_probs[i], 0);
+      x->comp_idx_cost[i][1] = av1_cost_bit(fc->compound_index_probs[i], 1);
+#endif  // CONFIG_NEW_MULTISYMBOL
+    }
+#endif  // CONFIG_JNT_COMP
   }
 }
 

@@ -8249,8 +8249,7 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 #if CONFIG_JNT_COMP
   if (has_two_sided_comp_refs(cm, mbmi)) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
-    rd_stats->rate += av1_cost_bit(cm->fc->compound_index_probs[comp_index_ctx],
-                                   mbmi->compound_idx);
+    rd_stats->rate += x->comp_idx_cost[comp_index_ctx][mbmi->compound_idx];
   }
 #endif  // CONFIG_JNT_COMP
 

@@ -608,10 +608,12 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
   av1_copy_frame_mvs(cm, mi, mi_row, mi_col, x_mis, y_mis);
 
 #if CONFIG_JNT_COMP
+#if !CONFIG_NEW_MULTISYMBOL
   if (has_two_sided_comp_refs(cm, mbmi)) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
     ++td->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
   }
+#endif  // CONFIG_NEW_MULTISYMBOL
 #endif  // CONFIG_JNT_COMP
 }
 
@@ -1284,6 +1286,17 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           }
         }
       }
+
+#if CONFIG_JNT_COMP
+#if CONFIG_NEW_MULTISYMBOL
+      if (has_second_ref(mbmi)) {
+        const int comp_index_ctx = get_comp_index_context(cm, xd);
+        ++counts->compound_index[comp_index_ctx][mbmi->compound_idx];
+        update_cdf(fc->compound_index_cdf[comp_index_ctx], mbmi->compound_idx,
+                   2);
+      }
+#endif  // CONFIG_NEW_MULTISYMBOL
+#endif  // CONFIG_JNT_COMP
     }
   }
 }

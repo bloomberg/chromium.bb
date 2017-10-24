@@ -2161,8 +2161,13 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 #if CONFIG_JNT_COMP
   if (has_two_sided_comp_refs(cm, mbmi)) {
     const int comp_index_ctx = get_comp_index_context(cm, xd);
+#if CONFIG_NEW_MULTISYMBOL
+    mbmi->compound_idx = aom_read_symbol(
+        r, ec_ctx->compound_index_cdf[comp_index_ctx], 2, ACCT_STR);
+#else
     mbmi->compound_idx =
         aom_read(r, ec_ctx->compound_index_probs[comp_index_ctx], ACCT_STR);
+#endif  // CONFIG_NEW_MULTISYMBOL
     if (xd->counts)
       ++xd->counts->compound_index[comp_index_ctx][mbmi->compound_idx];
   } else {

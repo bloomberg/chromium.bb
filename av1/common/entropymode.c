@@ -1652,6 +1652,20 @@ static const aom_prob default_skip_probs[SKIP_CONTEXTS] = { 192, 128, 64 };
 #endif  // CONFIG_NEW_MULTISYMBOL
 
 #if CONFIG_JNT_COMP
+#if CONFIG_NEW_MULTISYMBOL
+static const aom_cdf_prob
+    default_compound_idx_cdfs[COMP_INDEX_CONTEXTS][CDF_SIZE(2)] = {
+      { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
+      { AOM_ICDF(8192), AOM_ICDF(32768), 0 }
+    };
+#endif  // CONFIG_NEW_MULTISYMBOL
 static const aom_prob default_compound_idx_probs[COMP_INDEX_CONTEXTS] = {
   192, 128, 64, 192, 128, 64, 192, 128, 64,
 };
@@ -3446,6 +3460,9 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->txfm_partition_cdf, default_txfm_partition_cdf);
 #endif
 #if CONFIG_JNT_COMP
+#if CONFIG_NEW_MULTISYMBOL
+  av1_copy(fc->compound_index_cdf, default_compound_idx_cdfs);
+#endif  // CONFIG_NEW_MULTISYMBOL
   av1_copy(fc->compound_index_probs, default_compound_idx_probs);
 #endif  // CONFIG_JNT_COMP
   av1_copy(fc->newmv_prob, default_newmv_prob);
