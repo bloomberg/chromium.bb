@@ -15,6 +15,7 @@
 #include "platform/scheduler/child/scheduler_tqm_delegate_for_test.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "platform/scheduler/renderer/web_view_scheduler_impl.h"
+#include "platform/testing/RuntimeEnabledFeaturesTestHelpers.h"
 #include "public/platform/WebTraceLocation.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -118,7 +119,8 @@ void IncrementCounter(int* counter) {
 }  // namespace
 
 TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInForeground) {
-  RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled(true);
+  ScopedTimerThrottlingForHiddenFramesForTest
+      timer_throttling_for_hidden_frames(true);
 
   int run_count = 0;
   web_frame_scheduler_->ThrottleableTaskRunner()->PostDelayedTask(
@@ -132,7 +134,8 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInForeground) {
 }
 
 TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInBackground) {
-  RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled(true);
+  ScopedTimerThrottlingForHiddenFramesForTest
+      timer_throttling_for_hidden_frames(true);
   web_view_scheduler_->SetPageVisible(false);
 
   int run_count = 0;
@@ -147,7 +150,8 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInBackground) {
 }
 
 TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_SameOrigin) {
-  RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled(true);
+  ScopedTimerThrottlingForHiddenFramesForTest
+      timer_throttling_for_hidden_frames(true);
   web_frame_scheduler_->SetFrameVisible(false);
 
   int run_count = 0;
@@ -162,7 +166,8 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_SameOrigin) {
 }
 
 TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameVisible_CrossOrigin) {
-  RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled(true);
+  ScopedTimerThrottlingForHiddenFramesForTest
+      timer_throttling_for_hidden_frames(true);
   web_frame_scheduler_->SetFrameVisible(true);
   web_frame_scheduler_->SetCrossOrigin(true);
 
@@ -178,7 +183,8 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameVisible_CrossOrigin) {
 }
 
 TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_CrossOrigin) {
-  RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled(true);
+  ScopedTimerThrottlingForHiddenFramesForTest
+      timer_throttling_for_hidden_frames(true);
   web_frame_scheduler_->SetFrameVisible(false);
   web_frame_scheduler_->SetCrossOrigin(true);
 
@@ -194,7 +200,8 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_CrossOrigin) {
 }
 
 TEST_F(WebFrameSchedulerImplTest, PageInBackground_ThrottlingDisabled) {
-  RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled(false);
+  ScopedTimerThrottlingForHiddenFramesForTest
+      timer_throttling_for_hidden_frames(false);
   web_view_scheduler_->SetPageVisible(false);
 
   int run_count = 0;
@@ -210,7 +217,8 @@ TEST_F(WebFrameSchedulerImplTest, PageInBackground_ThrottlingDisabled) {
 
 TEST_F(WebFrameSchedulerImplTest,
        RepeatingTimer_FrameHidden_CrossOrigin_ThrottlingDisabled) {
-  RuntimeEnabledFeatures::SetTimerThrottlingForHiddenFramesEnabled(false);
+  ScopedTimerThrottlingForHiddenFramesForTest
+      timer_throttling_for_hidden_frames(false);
   web_frame_scheduler_->SetFrameVisible(false);
   web_frame_scheduler_->SetCrossOrigin(true);
 
