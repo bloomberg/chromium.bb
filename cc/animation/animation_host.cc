@@ -305,7 +305,7 @@ bool AnimationHost::TickAnimations(base::TimeTicks monotonic_time) {
     // trees similar to other animations. However our final goal is to only call
     // it once, ideally after activation, and only when the input
     // to an active timeline has changed. http://crbug.com/767210
-    mutator_->Mutate(monotonic_time, CollectAnimatorsState(monotonic_time));
+    mutator_->Mutate(CollectAnimatorsState(monotonic_time));
     did_animate = true;
   }
 
@@ -322,7 +322,7 @@ void AnimationHost::TickScrollAnimations(base::TimeTicks monotonic_time) {
   // TODO(majidvp): We need to return a boolean here so that LTHI knows
   // whether it needs to schedule another frame.
   if (mutator_)
-    mutator_->Mutate(monotonic_time, CollectAnimatorsState(monotonic_time));
+    mutator_->Mutate(CollectAnimatorsState(monotonic_time));
 }
 
 std::unique_ptr<MutatorInputState> AnimationHost::CollectAnimatorsState(

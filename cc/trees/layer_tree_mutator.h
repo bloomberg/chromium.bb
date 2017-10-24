@@ -66,10 +66,7 @@ class CC_EXPORT LayerTreeMutator {
 
   virtual void SetClient(LayerTreeMutatorClient* client) = 0;
 
-  // TODO(petermayo): get rid of |now| since each animator now receives its own
-  // current time. http://crbug.com/746212
-  virtual void Mutate(base::TimeTicks now,
-                      std::unique_ptr<MutatorInputState> input_state) = 0;
+  virtual void Mutate(std::unique_ptr<MutatorInputState> input_state) = 0;
   // TODO(majidvp): Remove when timeline inputs are known.
   virtual bool HasAnimators() = 0;
 };

@@ -40,7 +40,6 @@ void AnimationWorkletProxyClientImpl::Dispose() {
 }
 
 void AnimationWorkletProxyClientImpl::Mutate(
-    double monotonic_time_now,
     const CompositorMutatorInputState& state) {
   DCHECK(global_scope_->IsContextThread());
 

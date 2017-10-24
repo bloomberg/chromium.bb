@@ -26,11 +26,9 @@ CompositorMutatorClient::~CompositorMutatorClient() {
 }
 
 void CompositorMutatorClient::Mutate(
-    base::TimeTicks monotonic_time,
     std::unique_ptr<cc::MutatorInputState> state) {
   TRACE_EVENT0("cc", "CompositorMutatorClient::Mutate");
-  double monotonic_time_now = (monotonic_time - base::TimeTicks()).InSecondsF();
-  mutator_->Mutate(monotonic_time_now, std::move(state));
+  mutator_->Mutate(std::move(state));
 }
 
 void CompositorMutatorClient::SetMutationUpdate(

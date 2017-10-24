@@ -55,11 +55,10 @@ CompositorMutatorImpl* CompositorMutatorImpl::Create() {
 }
 
 void CompositorMutatorImpl::Mutate(
-    double monotonic_time_now,
     std::unique_ptr<CompositorMutatorInputState> state) {
   TRACE_EVENT0("cc", "CompositorMutatorImpl::mutate");
   for (CompositorAnimator* animator : animators_) {
-    animator->Mutate(monotonic_time_now, *state);
+    animator->Mutate(*state);
   }
 }
 
