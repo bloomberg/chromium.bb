@@ -1495,6 +1495,8 @@ void GlobalActivityTracker::CleanupAfterProcess(int64_t process_id,
     while ((ref = iter.GetNextOfType(kTypeIdProcessDataRecord)) != 0) {
       const void* memory = allocator_->GetAsArray<char>(
           ref, kTypeIdProcessDataRecord, PersistentMemoryAllocator::kSizeAny);
+      if (!memory)
+        continue;
       int64_t found_id;
       int64_t create_stamp;
       if (ActivityUserData::GetOwningProcessId(memory, &found_id,
@@ -1532,6 +1534,8 @@ void GlobalActivityTracker::CleanupAfterProcess(int64_t process_id,
       case ModuleInfoRecord::kPersistentTypeId: {
         const void* memory = allocator_->GetAsArray<char>(
             ref, type, PersistentMemoryAllocator::kSizeAny);
+        if (!memory)
+          continue;
         int64_t found_id;
         int64_t create_stamp;
 
