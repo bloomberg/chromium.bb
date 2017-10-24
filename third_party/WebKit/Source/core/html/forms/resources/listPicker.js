@@ -275,7 +275,7 @@ ListPicker.prototype._layout = function() {
   this._selectElement.style.color = this._config.baseStyle.color;
   this._selectElement.style.textTransform = this._config.baseStyle.textTransform;
   this._selectElement.style.fontSize = this._config.baseStyle.fontSize + 'px';
-  this._selectElement.style.fontFamily = this._config.baseStyle.fontFamily.join(',');
+  this._selectElement.style.fontFamily = this._config.baseStyle.fontFamily.map(s => '"' + s + '"').join(',');
   this._selectElement.style.fontStyle = this._config.baseStyle.fontStyle;
   this._selectElement.style.fontVariant = this._config.baseStyle.fontVariant;
   this._updateChildren(this._selectElement, this._config);
@@ -404,7 +404,7 @@ ListPicker.prototype._applyItemStyle = function(element, styleConfig) {
   style.backgroundColor = styleConfig.backgroundColor ? styleConfig.backgroundColor : '';
   style.fontSize = styleConfig.fontSize ? styleConfig.fontSize + 'px' : '';
   style.fontWeight = styleConfig.fontWeight ? styleConfig.fontWeight : '';
-  style.fontFamily = styleConfig.fontFamily ? styleConfig.fontFamily.join(',') : '';
+  style.fontFamily = styleConfig.fontFamily ? styleConfig.fontFamily.map(s => '"' + s + '"').join(',') : '';
   style.fontStyle = styleConfig.fontStyle ? styleConfig.fontStyle : '';
   style.fontVariant = styleConfig.fontVariant ? styleConfig.fontVariant : '';
   style.textTransform = styleConfig.textTransform ? styleConfig.textTransform : '';
