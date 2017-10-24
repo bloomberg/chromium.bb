@@ -324,6 +324,8 @@ void TestDownloadHttpResponse::SendResponse(
                                   !parameters_.inject_error_cb.is_null();
   if (should_abort_immediately) {
     send.Run(std::string(), done);
+    OnResponseSentOnServerIOThread(on_response_sent_callback_,
+                                   std::move(completed_request));
     return;
   }
 
