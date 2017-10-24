@@ -366,8 +366,4 @@ KURL ClassicPendingScript::UrlForClassicScript() const {
   return GetResource()->Url();
 }
 
-void ClassicPendingScript::RemoveFromMemoryCache() {
-  GetMemoryCache()->Remove(GetResource());
-}
-
 }  // namespace blink

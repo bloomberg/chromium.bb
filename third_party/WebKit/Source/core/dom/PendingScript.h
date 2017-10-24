@@ -98,7 +98,6 @@ class CORE_EXPORT PendingScript
   // The following two methods are used for document.write() intervention and
   // have effects only for classic scripts.
   virtual KURL UrlForClassicScript() const = 0;
-  virtual void RemoveFromMemoryCache() = 0;
 
   // Used for DCHECK()s.
   bool IsExternalOrModule() const {

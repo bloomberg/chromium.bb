@@ -90,7 +90,6 @@ class CORE_EXPORT ModulePendingScript : public PendingScript {
     NOTREACHED();
     return KURL();
   }
-  void RemoveFromMemoryCache() override { NOTREACHED(); }
 
   void DisposeInternal() override;
 
