@@ -372,12 +372,10 @@ def _CreateMergeStringsReplacements(merge_string_syms,
                                     list_of_positions_by_object_path):
   """Creates replacement symbols for |merge_syms|."""
   ret = []
-  NAME_PREFIX = models.STRING_LITERAL_NAME_PREFIX
+  STRING_LITERAL_NAME = models.STRING_LITERAL_NAME
   assert len(merge_string_syms) == len(list_of_positions_by_object_path)
-  tups = itertools.izip((str(x) for x in xrange(len(merge_string_syms))),
-                        merge_string_syms,
-                        list_of_positions_by_object_path)
-  for name_suffix, merge_sym, positions_by_object_path in tups:
+  tups = itertools.izip(merge_string_syms, list_of_positions_by_object_path)
+  for merge_sym, positions_by_object_path in tups:
     merge_sym_address = merge_sym.address
     new_symbols = []
     ret.append(new_symbols)
@@ -385,7 +383,7 @@ def _CreateMergeStringsReplacements(merge_string_syms,
       for offset, size in positions:
         address = merge_sym_address + offset
         symbol = models.Symbol(
-            '.rodata', size, address, NAME_PREFIX + name_suffix,
+            '.rodata', size, address, STRING_LITERAL_NAME,
             object_path=object_path)
         new_symbols.append(symbol)
 
@@ -469,7 +467,7 @@ def _CalculatePadding(raw_symbols):
     # TODO(agrieve): See if these thresholds make sense for architectures
     #     other than arm32.
     if (not symbol.full_name.startswith('*') and
-        not symbol.full_name.startswith(models.STRING_LITERAL_NAME_PREFIX) and (
+        not symbol.IsStringLiteral() and (
         symbol.section in 'rd' and padding >= 256 or
         symbol.section in 't' and padding >= 64)):
       # Should not happen.

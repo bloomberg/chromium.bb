@@ -124,7 +124,7 @@ class _Session(object):
     ret = []
     with open(elf_path) as f:
       for symbol in thing:
-        if symbol.full_name.startswith(models.STRING_LITERAL_NAME_PREFIX):
+        if symbol.IsStringLiteral():
           f.seek(symbol.address + adjust)
           data = f.read(symbol.size_without_padding)
           ret.append((symbol, data))

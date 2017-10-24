@@ -150,6 +150,9 @@ def _LoadSizeInfoFromFile(file_obj, size_path):
           flags_part = parts[1]
 
       full_name = parts[0]
+      # Use a bit less RAM by using the same instance for this common string.
+      if full_name == models.STRING_LITERAL_NAME:
+        full_name = models.STRING_LITERAL_NAME
       flags = int(flags_part, 16) if flags_part else 0
       num_aliases = int(aliases_part, 16) if aliases_part else 0
 

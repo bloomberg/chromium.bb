@@ -24,7 +24,7 @@ Index | Running Total | Section@Address | PSS | Path
 11)  39186705 (89.5%) *@Group      3               BarAlias (count=1)
 12)  39186733 (89.5%) *@Group      28              blink::ContiguousContainerBase::ContiguousContainerBase (count=1)
 13)  39186827 (89.5%) *@Group      94              blink::PaintChunker::releasePaintChunks (count=1)
-14)  39186848 (89.5%) *@Group      21              string literal 0 (count=2)
+14)  39186848 (89.5%) *@Group      21              string literal (count=3)
 15)  39186891 (89.5%) *@Group      43              ** merge strings (count=1)
 16)  41152236 (94.0%) *@Group      1965345         ** merge constants (count=1)
 17)  41152244 (94.0%) *@Group      8                (count=1)
@@ -75,7 +75,7 @@ Index | Running Total | Section@Address | PSS | Path
 9)   39186825 (89.5%) *@Group      24              BazAlias (count=1)
 10)  39186828 (89.5%) *@Group      3               FooAlias (count=1)
 11)  39186831 (89.5%) *@Group      3               BarAlias (count=1)
-12)  39186852 (89.5%) *@Group      21              string literal 0 (count=2)
+12)  39186852 (89.5%) *@Group      21              string literal (count=3)
 13)  39186895 (89.5%) *@Group      43              ** merge strings (count=1)
 14)  41152240 (94.0%) *@Group      1965345         ** merge constants (count=1)
 15)  41152248 (94.0%) *@Group      8                (count=1)
@@ -122,7 +122,7 @@ Index | Running Total | Section@Address | PSS | Path
 10)  39186730 (89.5%) *@Group      3               FooAlias (count=1)
 11)  39186733 (89.5%) *@Group      3               BarAlias (count=1)
 12)  39186827 (89.5%) *@Group      94              blink::PaintChunker (count=1)
-13)  39186848 (89.5%) *@Group      21              string literal 0 (count=2)
+13)  39186848 (89.5%) *@Group      21              string literal (count=3)
 14)  39186891 (89.5%) *@Group      43              ** merge strings (count=1)
 15)  41152236 (94.0%) *@Group      1965345         ** merge constants (count=1)
 16)  41152244 (94.0%) *@Group      8                (count=1)
@@ -183,7 +183,7 @@ Index | Running Total | Section@Address | PSS | Path
 11)  39186831 (89.5%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              BarAlias (num_aliases=4)
 12)  39186852 (89.5%) *@Group      21             {no path}
-             string literal 0 (count=2)
+             string literal (count=3)
 13)  39186895 (89.5%) r@0x266e630  43             {no path}
              ** merge strings
 14)  41152240 (94.0%) r@0x284d600  1965345        {no path}
