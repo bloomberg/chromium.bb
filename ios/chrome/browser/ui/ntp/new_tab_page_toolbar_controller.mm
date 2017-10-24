@@ -104,7 +104,7 @@ enum {
       [_omniboxFocuser.leadingAnchor
           constraintEqualToAnchor:_forwardButton.trailingAnchor],
       [_omniboxFocuser.trailingAnchor
-          constraintEqualToAnchor:self.view.trailingAnchor
+          constraintEqualToAnchor:self.contentView.trailingAnchor
                          constant:-kOmniboxFocuserTrailing],
       [_omniboxFocuser.topAnchor
           constraintEqualToAnchor:_forwardButton.topAnchor],
