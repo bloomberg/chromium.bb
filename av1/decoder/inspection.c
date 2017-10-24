@@ -50,6 +50,8 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
   fd->base_qindex = cm->base_qindex;
   fd->tile_mi_cols = cm->tile_width;
   fd->tile_mi_rows = cm->tile_height;
+  fd->delta_q_present_flag = cm->delta_q_present_flag;
+  fd->delta_q_res = cm->delta_q_res;
 #if CONFIG_ACCOUNTING
   fd->accounting = &pbi->accounting;
 #endif
@@ -117,6 +119,8 @@ int ifd_inspect(insp_frame_data *fd, void *decoder) {
         mi->cfl_alpha_sign = 0;
       }
 #endif
+      // delta_q
+      mi->current_qindex = mbmi->current_q_index;
     }
   }
   return 1;

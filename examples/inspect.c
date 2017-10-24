@@ -58,7 +58,8 @@ typedef enum {
   UV_MODE_LAYER = 1 << 10,
   CFL_LAYER = 1 << 11,
   DUAL_FILTER_LAYER = 1 << 12,
-  ALL_LAYERS = (1 << 13) - 1
+  Q_INDEX_LAYER = 1 << 13,
+  ALL_LAYERS = (1 << 14) - 1
 } LayerType;
 
 static LayerType layers = 0;
@@ -98,6 +99,8 @@ static const arg_def_t dump_dual_filter_type_arg =
 #endif
 static const arg_def_t dump_reference_frame_arg =
     ARG_DEF("r", "referenceFrame", 0, "Dump Reference Frame");
+static const arg_def_t dump_delta_q_arg =
+    ARG_DEF("dq", "delta_q", 0, "Dump QIndex");
 static const arg_def_t usage_arg = ARG_DEF("h", "help", 0, "Help");
 
 static const arg_def_t *main_args[] = { &limit_arg,
@@ -124,6 +127,7 @@ static const arg_def_t *main_args[] = { &limit_arg,
 #endif
                                         &dump_reference_frame_arg,
                                         &dump_motion_vectors_arg,
+                                        &dump_delta_q_arg,
                                         &usage_arg,
                                         NULL };
 #define ENUM(name) \
@@ -432,7 +436,7 @@ int put_block_info(char *buffer, const map_entry *map, const char *name,
     *(buf++) = '[';
     for (c = 0; c < mi_cols; ++c) {
       insp_mi_data *mi = &frame_data.mi_grid[r * mi_cols + c];
-      int8_t *v = ((int8_t *)mi) + offset;
+      int16_t *v = (int16_t *)(((int8_t *)mi) + offset);
       if (len == 0) {
         buf += put_num(buf, 0, v[0], 0);
       } else {
@@ -448,7 +452,7 @@ int put_block_info(char *buffer, const map_entry *map, const char *name,
       if (compress) {  // RLE
         for (t = c + 1; t < mi_cols; ++t) {
           insp_mi_data *next_mi = &frame_data.mi_grid[r * mi_cols + t];
-          int8_t *nv = ((int8_t *)next_mi) + offset;
+          int16_t *nv = (int16_t *)(((int8_t *)next_mi) + offset);
           int same = 0;
           if (len == 0) {
             same = v[0] == nv[0];
@@ -584,6 +588,10 @@ void inspect(void *pbi, void *data) {
                           offsetof(insp_mi_data, cfl_alpha_sign), 0);
   }
 #endif
+  if (layers & Q_INDEX_LAYER) {
+    buf += put_block_info(buf, NULL, "delta_q",
+                          offsetof(insp_mi_data, current_qindex), 0);
+  }
   if (layers & MOTION_VECTORS_LAYER) {
     buf += put_motion_vectors(buf);
   }
@@ -607,6 +615,10 @@ void inspect(void *pbi, void *data) {
                   frame_data.tile_mi_cols);
   buf += snprintf(buf, MAX_BUFFER, "  \"tileRows\": %d,\n",
                   frame_data.tile_mi_rows);
+  buf += snprintf(buf, MAX_BUFFER, "  \"deltaQPresentFlag\": %d,\n",
+                  frame_data.delta_q_present_flag);
+  buf += snprintf(buf, MAX_BUFFER, "  \"deltaQRes\": %d,\n",
+                  frame_data.delta_q_res);
   buf += put_str(buf, "  \"config\": {");
   buf += put_map(buf, config_map);
   buf += put_str(buf, "},\n");
@@ -736,6 +748,8 @@ static void parse_args(char **argv) {
     else if (arg_match(&arg, &dump_dual_filter_type_arg, argi))
       layers |= DUAL_FILTER_LAYER;
 #endif
+    else if (arg_match(&arg, &dump_delta_q_arg, argi))
+      layers |= Q_INDEX_LAYER;
     else if (arg_match(&arg, &dump_all_arg, argi))
       layers |= ALL_LAYERS;
     else if (arg_match(&arg, &compress_arg, argi))

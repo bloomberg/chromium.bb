@@ -35,28 +35,29 @@ typedef struct insp_mi_data insp_mi_data;
 
 struct insp_mi_data {
   insp_mv mv[2];
-  int8_t ref_frame[2];
-  int8_t mode;
-  int8_t uv_mode;
-  int8_t sb_type;
-  int8_t skip;
-  int8_t segment_id;
+  int16_t ref_frame[2];
+  int16_t mode;
+  int16_t uv_mode;
+  int16_t sb_type;
+  int16_t skip;
+  int16_t segment_id;
 #if CONFIG_DUAL_FILTER
-  int8_t dual_filter_type;
-  int8_t filter[2];
+  int16_t dual_filter_type;
+  int16_t filter[2];
 #else
-  int8_t filter;
+  int16_t filter;
 #endif
-  int8_t tx_type;
-  int8_t tx_size;
+  int16_t tx_type;
+  int16_t tx_size;
 #if CONFIG_CDEF
-  int8_t cdef_level;
-  int8_t cdef_strength;
+  int16_t cdef_level;
+  int16_t cdef_strength;
 #endif
 #if CONFIG_CFL
-  int8_t cfl_alpha_idx;
-  int8_t cfl_alpha_sign;
+  int16_t cfl_alpha_idx;
+  int16_t cfl_alpha_sign;
 #endif
+  int16_t current_qindex;
 };
 
 typedef struct insp_frame_data insp_frame_data;
@@ -78,6 +79,8 @@ struct insp_frame_data {
 #if CONFIG_CDEF
 // TODO(negge): add per frame CDEF data
 #endif
+  int delta_q_present_flag;
+  int delta_q_res;
 };
 
 void ifd_init(insp_frame_data *fd, int frame_width, int frame_height);
