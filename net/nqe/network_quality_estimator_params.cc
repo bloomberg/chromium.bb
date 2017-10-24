@@ -431,6 +431,11 @@ NetworkQualityEstimatorParams::NetworkQualityEstimatorParams(
           GetValueForVariationParam(params_,
                                     "hanging_request_min_duration_msec",
                                     3000))),
+      add_default_platform_observations_(
+          GetStringValueForVariationParamWithDefaultValue(
+              params_,
+              "add_default_platform_observations",
+              "true") == "true"),
       use_small_responses_(false) {
   DCHECK_LE(0.0, correlation_uma_logging_probability_);
   DCHECK_GE(1.0, correlation_uma_logging_probability_);

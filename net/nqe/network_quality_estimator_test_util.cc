@@ -40,7 +40,6 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
                                   variation_params,
                                   true,
                                   true,
-                                  false,
                                   std::make_unique<BoundTestNetLog>()) {}
 
 TestNetworkQualityEstimator::TestNetworkQualityEstimator(
@@ -48,13 +47,11 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     const std::map<std::string, std::string>& variation_params,
     bool allow_local_host_requests_for_tests,
     bool allow_smaller_responses_for_tests,
-    bool add_default_platform_observations,
     std::unique_ptr<BoundTestNetLog> net_log)
     : TestNetworkQualityEstimator(std::move(external_estimate_provider),
                                   variation_params,
                                   allow_local_host_requests_for_tests,
                                   allow_smaller_responses_for_tests,
-                                  add_default_platform_observations,
                                   false,
                                   std::move(net_log)) {}
 
@@ -63,14 +60,12 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
     const std::map<std::string, std::string>& variation_params,
     bool allow_local_host_requests_for_tests,
     bool allow_smaller_responses_for_tests,
-    bool add_default_platform_observations,
     bool suppress_notifications_for_testing,
     std::unique_ptr<BoundTestNetLog> net_log)
     : NetworkQualityEstimator(
           std::move(external_estimate_provider),
           std::make_unique<NetworkQualityEstimatorParams>(variation_params),
           net_log->bound().net_log()),
-
       current_network_type_(NetworkChangeNotifier::CONNECTION_UNKNOWN),
       accuracy_recording_intervals_set_(false),
       rand_double_(0.0),
@@ -79,8 +74,6 @@ TestNetworkQualityEstimator::TestNetworkQualityEstimator(
       net_log_(std::move(net_log)) {
   SetUseLocalHostRequestsForTesting(allow_local_host_requests_for_tests);
   SetUseSmallResponsesForTesting(allow_smaller_responses_for_tests);
-  SetAddDefaultPlatformObservationsForTesting(
-      add_default_platform_observations);
 
   // Set up the embedded test server.
   EXPECT_TRUE(embedded_test_server_.Start());

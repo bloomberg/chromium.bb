@@ -200,6 +200,12 @@ class NET_EXPORT NetworkQualityEstimatorParams {
     return hanging_request_min_duration_;
   }
 
+  // Returns true if default values provided by the platform should be used for
+  // estimation. Set to false only for testing.
+  bool add_default_platform_observations() const {
+    return add_default_platform_observations_;
+  }
+
  private:
   // Map containing all field trial parameters related to
   // NetworkQualityEstimator field trial.
@@ -220,6 +226,7 @@ class NET_EXPORT NetworkQualityEstimatorParams {
   const base::TimeDelta historical_time_threshold_;
   const int hanging_request_duration_http_rtt_multiplier_;
   const base::TimeDelta hanging_request_min_duration_;
+  const bool add_default_platform_observations_;
 
   bool use_small_responses_;
 
