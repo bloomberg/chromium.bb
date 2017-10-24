@@ -1513,11 +1513,11 @@ static INLINE int check_br_neighbor(tran_low_t qc) {
 
 #if FAST_OPTIMIZE_TXB
 #define ALNB_REF_OFFSET_NUM 2
-static int alnb_ref_offset[ALNB_REF_OFFSET_NUM][2] = {
+static const int alnb_ref_offset[ALNB_REF_OFFSET_NUM][2] = {
   { -1, 0 }, { 0, -1 },
 };
 #define NB_REF_OFFSET_NUM 4
-static int nb_ref_offset[NB_REF_OFFSET_NUM][2] = {
+static const int nb_ref_offset[NB_REF_OFFSET_NUM][2] = {
   { -1, 0 }, { 0, -1 }, { 1, 0 }, { 0, 1 },
 };
 #endif  // FAST_OPTIMIZE_TXB
@@ -1553,7 +1553,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
   const int col = coeff_idx - (row << txb_info->bwl);
   if (check_nz_neighbor(qc)) {
 #if FAST_OPTIMIZE_TXB
-    int(*ref_offset)[2];
+    const int(*ref_offset)[2];
     int ref_num;
     if (fast_mode) {
       ref_offset = alnb_ref_offset;
@@ -1563,7 +1563,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
       ref_num = SIG_REF_OFFSET_NUM;
     }
 #else
-    int(*ref_offset)[2] = sig_ref_offset;
+    const int(*ref_offset)[2] = sig_ref_offset;
     const int ref_num = SIG_REF_OFFSET_NUM;
 #endif
     for (int i = 0; i < ref_num; ++i) {
@@ -1589,7 +1589,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
 
   if (check_base_neighbor(qc)) {
 #if FAST_OPTIMIZE_TXB
-    int(*ref_offset)[2];
+    const int(*ref_offset)[2];
     int ref_num;
     if (fast_mode) {
       ref_offset = nb_ref_offset;
@@ -1625,7 +1625,7 @@ int try_level_down(int coeff_idx, const TxbCache *txb_cache,
 
   if (check_br_neighbor(qc)) {
 #if FAST_OPTIMIZE_TXB
-    int(*ref_offset)[2];
+    const int(*ref_offset)[2];
     int ref_num;
     if (fast_mode) {
       ref_offset = nb_ref_offset;
@@ -1934,7 +1934,7 @@ int get_coeff_cost(tran_low_t qc, int scan_idx, TxbInfo *txb_info,
 
 #if TEST_OPTIMIZE_TXB
 #define ALL_REF_OFFSET_NUM 17
-static int all_ref_offset[ALL_REF_OFFSET_NUM][2] = {
+static const int all_ref_offset[ALL_REF_OFFSET_NUM][2] = {
   { 0, 0 },  { -2, -1 }, { -2, 0 }, { -2, 1 }, { -1, -2 }, { -1, -1 },
   { -1, 0 }, { -1, 1 },  { 0, -2 }, { 0, -1 }, { 1, -2 },  { 1, -1 },
   { 1, 0 },  { 2, 0 },   { 0, 1 },  { 0, 2 },  { 1, 1 },

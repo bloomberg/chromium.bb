@@ -320,15 +320,15 @@ static INLINE int get_br_ctx_coeff(const tran_low_t *const tcoeffs,
 
 #define SIG_REF_OFFSET_NUM 7
 #if CONFIG_EOB_FIRST
-static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
+static const int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
   { 2, 1 }, { 2, 0 }, { 1, 2 }, { 1, 1 }, { 1, 0 }, { 0, 2 }, { 0, 1 },
 };
 
-static int sig_ref_offset_vert[SIG_REF_OFFSET_NUM][2] = {
+static const int sig_ref_offset_vert[SIG_REF_OFFSET_NUM][2] = {
   { 2, 1 }, { 2, 0 }, { 3, 0 }, { 1, 1 }, { 1, 0 }, { 4, 0 }, { 0, 1 },
 };
 
-static int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
+static const int sig_ref_offset_horiz[SIG_REF_OFFSET_NUM][2] = {
   { 0, 3 }, { 0, 4 }, { 1, 2 }, { 1, 1 }, { 1, 0 }, { 0, 2 }, { 0, 1 },
 };
 
@@ -358,7 +358,7 @@ static INLINE int get_nz_count(const tran_low_t *tcoeffs, int bwl, int height,
   return count;
 }
 #else
-static int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
+static const int sig_ref_offset[SIG_REF_OFFSET_NUM][2] = {
   { -2, -1 }, { -2, 0 }, { -1, -2 }, { -1, -1 },
   { -1, 0 },  { 0, -2 }, { 0, -1 },
 };
@@ -704,7 +704,7 @@ static INLINE int get_empty_line_ctx(int line_idx, int16_t *eob_ls) {
 }
 
 #define MAX_POS_CTX 8
-static int pos_ctx[MAX_HVTX_SIZE] = {
+static const int pos_ctx[MAX_HVTX_SIZE] = {
   0, 1, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5,
   6, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7, 7, 7,
 };
