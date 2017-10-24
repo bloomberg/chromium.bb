@@ -344,12 +344,12 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
   TRACE_EVENT0("gpu,startup", "Initialize sandbox");
 
   if (watchdog_thread) {
-    // LinuxSandbox needs to be able to ensure that the thread
+    // SandboxLinux needs to be able to ensure that the thread
     // has really been stopped.
-    LinuxSandbox::StopThread(watchdog_thread);
+    SandboxLinux::StopThread(watchdog_thread);
   }
 
-  // LinuxSandbox::InitializeSandbox() must always be called
+  // SandboxLinux::InitializeSandbox() must always be called
   // with only one thread.
   SandboxSeccompBPF::Options sandbox_options;
   sandbox_options.use_amd_specific_policies =
@@ -362,7 +362,7 @@ bool StartSandboxLinux(gpu::GpuWatchdogThread* watchdog_thread,
       !gpu_prefs.disable_vaapi_accelerated_video_encode;
 #endif
 
-  bool res = LinuxSandbox::InitializeSandbox(
+  bool res = SandboxLinux::InitializeSandbox(
       GetGpuProcessPreSandboxHook(sandbox_options.use_amd_specific_policies),
       sandbox_options);
 

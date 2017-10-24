@@ -151,7 +151,7 @@ static void ProxyLocaltimeCallToBrowser(time_t input, struct tm* output,
                                         char* timezone_out,
                                         size_t timezone_out_len) {
   base::Pickle request;
-  request.WriteInt(LinuxSandbox::METHOD_LOCALTIME);
+  request.WriteInt(SandboxLinux::METHOD_LOCALTIME);
   request.WriteString(
       std::string(reinterpret_cast<char*>(&input), sizeof(input)));
 
@@ -510,7 +510,7 @@ static void DropAllCapabilities(int proc_fd) {
   CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd));
 }
 
-static void EnterNamespaceSandbox(LinuxSandbox* linux_sandbox,
+static void EnterNamespaceSandbox(SandboxLinux* linux_sandbox,
                                   base::Closure* post_fork_parent_callback) {
   linux_sandbox->EngageNamespaceSandbox();
 
@@ -523,7 +523,7 @@ static void EnterNamespaceSandbox(LinuxSandbox* linux_sandbox,
   }
 }
 
-static void EnterLayerOneSandbox(LinuxSandbox* linux_sandbox,
+static void EnterLayerOneSandbox(SandboxLinux* linux_sandbox,
                                  const bool using_layer1_sandbox,
                                  base::Closure* post_fork_parent_callback) {
   DCHECK(linux_sandbox);
@@ -556,7 +556,7 @@ bool ZygoteMain(
 
   std::vector<int> fds_to_close_post_fork;
 
-  LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
+  SandboxLinux* linux_sandbox = SandboxLinux::GetInstance();
 
   // Skip pre-initializing sandbox under --no-sandbox for crbug.com/444900.
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(

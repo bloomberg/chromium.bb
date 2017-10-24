@@ -42,7 +42,7 @@ namespace content {
 // InitializeSandbox(). InitializeSandbox() is also responsible for "sealing"
 // the first layer of sandboxing. That is, InitializeSandbox must always be
 // called to have any meaningful sandboxing at all.
-class LinuxSandbox {
+class SandboxLinux {
  public:
   // This is a list of sandbox IPC methods which the renderer may send to the
   // sandbox host. See https://chromium.googlesource.com/chromium/src/+/master/docs/linux_sandbox_ipc.md
@@ -58,7 +58,7 @@ class LinuxSandbox {
   };
 
   // Get our singleton instance.
-  static LinuxSandbox* GetInstance();
+  static SandboxLinux* GetInstance();
 
   // Do some initialization that can only be done before any of the sandboxes
   // are enabled. If using the setuid sandbox, this should be called manually
@@ -87,7 +87,7 @@ class LinuxSandbox {
   // an adequate policy depending on the process type and command line
   // arguments.
   // Currently the layer-2 sandbox is composed of seccomp-bpf and address space
-  // limitations. This will instantiate the LinuxSandbox singleton if it
+  // limitations. This will instantiate the SandboxLinux singleton if it
   // doesn't already exist.
   // This function should only be called without any thread running.
   static bool InitializeSandbox(SandboxSeccompBPF::PreSandboxHook hook,
@@ -141,10 +141,10 @@ class LinuxSandbox {
 #endif
 
  private:
-  friend struct base::DefaultSingletonTraits<LinuxSandbox>;
+  friend struct base::DefaultSingletonTraits<SandboxLinux>;
 
-  LinuxSandbox();
-  ~LinuxSandbox();
+  SandboxLinux();
+  ~SandboxLinux();
 
   // Some methods are static and get an instance of the Singleton. These
   // are the non-static implementations.
@@ -155,7 +155,7 @@ class LinuxSandbox {
   bool seccomp_bpf_supported() const;
   bool seccomp_bpf_with_tsync_supported() const;
   // Returns true if it can be determined that the current process has open
-  // directories that are not managed by the LinuxSandbox class. This would
+  // directories that are not managed by the SandboxLinux class. This would
   // be a vulnerability as it would allow to bypass the setuid sandbox.
   bool HasOpenDirectories() const;
   // The last part of the initialization is to make sure any temporary "hole"
@@ -186,7 +186,7 @@ class LinuxSandbox {
   std::unique_ptr<__sanitizer_sandbox_arguments> sanitizer_args_;
 #endif
 
-  DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
+  DISALLOW_COPY_AND_ASSIGN(SandboxLinux);
 };
 
 }  // namespace content

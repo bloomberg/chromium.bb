@@ -76,7 +76,7 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
 // lowered. Thus we generally have the same protection because we normally
 // set rlim_max and rlim_cur together.
 //
-// See LinuxSandbox::LimitAddressSpace() in
+// See SandboxLinux::LimitAddressSpace() in
 // content/common/sandbox_linux/sandbox_linux.cc and
 // ArrayBufferContents::ReserveMemory,
 // ArrayBufferContents::ReleaseReservedMemory in

@@ -37,13 +37,13 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   SandboxSeccompBPF::Options options;
   options.has_wasm_trap_handler =
       base::FeatureList::IsEnabled(features::kWebAssemblyTrapHandler);
-  LinuxSandbox::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(), options);
+  SandboxLinux::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(), options);
 
-  // about:sandbox uses a value returned from LinuxSandbox::GetStatus() before
+  // about:sandbox uses a value returned from SandboxLinux::GetStatus() before
   // any renderer has been started.
   // Here, we test that the status of SeccompBpf in the renderer is consistent
-  // with what LinuxSandbox::GetStatus() said we would do.
-  class LinuxSandbox* linux_sandbox = LinuxSandbox::GetInstance();
+  // with what SandboxLinux::GetStatus() said we would do.
+  class SandboxLinux* linux_sandbox = SandboxLinux::GetInstance();
   if (linux_sandbox->GetStatus() & kSandboxLinuxSeccompBPF) {
     CHECK(linux_sandbox->seccomp_bpf_started());
   }

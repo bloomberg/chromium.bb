@@ -99,7 +99,7 @@ bool GetFontTable(int fd,
 
 int MakeSharedMemorySegmentViaIPC(size_t length, bool executable) {
   base::Pickle request;
-  request.WriteInt(LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT);
+  request.WriteInt(SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT);
   request.WriteUInt32(length);
   request.WriteBool(executable);
   uint8_t reply_buf[10];

@@ -178,15 +178,15 @@ void SandboxIPCHandler::HandleRequestFromChild(int fd) {
     HandleFontMatchRequest(fd, iter, fds);
   } else if (kind == FontConfigIPC::METHOD_OPEN) {
     HandleFontOpenRequest(fd, iter, fds);
-  } else if (kind == LinuxSandbox::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
+  } else if (kind == SandboxLinux::METHOD_GET_FALLBACK_FONT_FOR_CHAR) {
     HandleGetFallbackFontForChar(fd, iter, fds);
-  } else if (kind == LinuxSandbox::METHOD_LOCALTIME) {
+  } else if (kind == SandboxLinux::METHOD_LOCALTIME) {
     HandleLocaltime(fd, iter, fds);
-  } else if (kind == LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE) {
+  } else if (kind == SandboxLinux::METHOD_GET_STYLE_FOR_STRIKE) {
     HandleGetStyleForStrike(fd, iter, fds);
-  } else if (kind == LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
+  } else if (kind == SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT) {
     HandleMakeSharedMemorySegment(fd, iter, fds);
-  } else if (kind == LinuxSandbox::METHOD_MATCH_WITH_FALLBACK) {
+  } else if (kind == SandboxLinux::METHOD_MATCH_WITH_FALLBACK) {
     HandleMatchWithFallback(fd, iter, fds);
   }
 }
