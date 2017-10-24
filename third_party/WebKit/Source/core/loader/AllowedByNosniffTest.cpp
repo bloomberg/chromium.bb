@@ -14,7 +14,7 @@ namespace blink {
 
 class AllowedByNosniffTest : public ::testing::Test {
  public:
-  void SetUp() {
+  void SetUp() override {
     // Create a new dummy page holder for each test, so that we get a fresh
     // set of counters for each.
     dummy_page_holder_ = DummyPageHolder::Create();

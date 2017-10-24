@@ -30,7 +30,7 @@ CORE_EXPORT void ProvideWorkerFetchContextToWorker(
 class WorkerFetchContext final : public BaseFetchContext {
  public:
   static WorkerFetchContext* Create(WorkerOrWorkletGlobalScope&);
-  virtual ~WorkerFetchContext();
+  ~WorkerFetchContext() override;
 
   // BaseFetchContext implementation:
   KURL GetSiteForCookies() const override;
@@ -104,7 +104,7 @@ class WorkerFetchContext final : public BaseFetchContext {
   void SetFirstPartyCookieAndRequestorOrigin(ResourceRequest&) override;
   scoped_refptr<WebTaskRunner> GetLoadingTaskRunner() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   WorkerFetchContext(WorkerOrWorkletGlobalScope&,

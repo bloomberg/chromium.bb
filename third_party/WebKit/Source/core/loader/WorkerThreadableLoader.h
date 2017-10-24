@@ -104,7 +104,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
   void OverrideTimeout(unsigned long timeout) override;
   void Cancel() override;
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   enum BlockingBehavior { kLoadSynchronously, kLoadAsynchronously };
@@ -167,7 +167,7 @@ class WorkerThreadableLoader final : public ThreadableLoader {
 
     void ContextDestroyed(WorkerThreadLifecycleContext*) override;
 
-    void Trace(blink::Visitor*);
+    void Trace(blink::Visitor*) override;
 
    private:
     MainThreadLoaderHolder(TaskForwarder*, WorkerThreadLifecycleContext*);

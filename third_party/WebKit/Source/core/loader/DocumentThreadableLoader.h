@@ -79,7 +79,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   void Cancel() override;
   void SetDefersLoading(bool);
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   enum BlockingBehavior { kLoadSynchronously, kLoadAsynchronously };

@@ -45,7 +45,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
 
   // BaseFetchContext overrides:
   KURL GetSiteForCookies() const override { return KURL(); }
-  bool AllowScriptFromSource(const KURL&) const { return false; }
+  bool AllowScriptFromSource(const KURL&) const override { return false; }
   SubresourceFilter* GetSubresourceFilter() const override { return nullptr; }
   bool ShouldBlockRequestByInspector(const KURL&) const override {
     return false;
@@ -93,7 +93,7 @@ class MockBaseFetchContext final : public BaseFetchContext {
   }
   void AddConsoleMessage(ConsoleMessage*) const override {}
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(execution_context_);
     BaseFetchContext::Trace(visitor);
   }

@@ -30,7 +30,7 @@ class TestModuleTreeClient final : public ModuleTreeClient {
  public:
   TestModuleTreeClient() = default;
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(module_script_);
     ModuleTreeClient::Trace(visitor);
   }
@@ -56,7 +56,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       : script_state_(std::move(script_state)) {}
   ~ModuleTreeLinkerTestModulator() override {}
 
-  void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   enum class ResolveResult { kFailure, kSuccess };
 

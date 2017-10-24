@@ -12,7 +12,7 @@ namespace blink {
 
 class IdlenessDetectorTest : public ::testing::Test {
  protected:
-  void SetUp() {
+  void SetUp() override {
     platform_time_ = 1;
     platform_->AdvanceClockSeconds(platform_time_);
     page_holder_ = DummyPageHolder::Create(IntSize(800, 600));

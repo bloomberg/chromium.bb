@@ -53,7 +53,7 @@ class WorkerFetchContextHolder final
     return std::move(web_context_);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     Supplement<WorkerClients>::Trace(visitor);
   }
 

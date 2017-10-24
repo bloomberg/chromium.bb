@@ -120,7 +120,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
                      const WebDragData&,
                      WebDragOperationsMask,
                      const WebImage& drag_image,
-                     const WebPoint& drag_image_offset) {}
+                     const WebPoint& drag_image_offset) override {}
   bool AcceptsLoadDrops() const override { return true; }
 
   bool ShouldReportDetailedMessageForSource(LocalFrame&,
@@ -218,7 +218,7 @@ class CORE_EXPORT EmptyChromeClient : public ChromeClient {
 
   void RegisterPopupOpeningObserver(PopupOpeningObserver*) override {}
   void UnregisterPopupOpeningObserver(PopupOpeningObserver*) override {}
-  void NotifyPopupOpeningObservers() const {}
+  void NotifyPopupOpeningObservers() const override {}
 
   void SetCursorForPlugin(const WebCursorInfo&, LocalFrame*) override {}
 
@@ -349,7 +349,7 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   WebCookieJar* CookieJar() const override { return 0; }
 
-  service_manager::InterfaceProvider* GetInterfaceProvider() {
+  service_manager::InterfaceProvider* GetInterfaceProvider() override {
     return &interface_provider_;
   }
 

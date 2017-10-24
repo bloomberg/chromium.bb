@@ -83,7 +83,7 @@ class BeaconString final : public Beacon {
     request.SetHTTPContentType(GetContentType());
   }
 
-  const AtomicString GetContentType() const {
+  const AtomicString GetContentType() const override {
     return AtomicString("text/plain;charset=UTF-8");
   }
 
@@ -116,7 +116,7 @@ class BeaconBlob final : public Beacon {
       request.SetHTTPContentType(content_type_);
   }
 
-  const AtomicString GetContentType() const { return content_type_; }
+  const AtomicString GetContentType() const override { return content_type_; }
 
  private:
   const Member<Blob> data_;
@@ -141,7 +141,7 @@ class BeaconDOMArrayBufferView final : public Beacon {
     request.SetHTTPContentType(AtomicString("application/octet-stream"));
   }
 
-  const AtomicString GetContentType() const { return g_null_atom; }
+  const AtomicString GetContentType() const override { return g_null_atom; }
 
  private:
   const Member<DOMArrayBufferView> data_;
@@ -164,7 +164,7 @@ class BeaconFormData final : public Beacon {
     request.SetHTTPContentType(content_type_);
   }
 
-  const AtomicString GetContentType() const { return content_type_; }
+  const AtomicString GetContentType() const override { return content_type_; }
 
  private:
   const Member<FormData> data_;

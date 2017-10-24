@@ -107,7 +107,7 @@ class LinkLoader::FinishObserver final
     resource_ = nullptr;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(loader_);
     visitor->Trace(resource_);
     blink::ResourceFinishObserver::Trace(visitor);

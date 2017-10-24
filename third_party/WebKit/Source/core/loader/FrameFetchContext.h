@@ -72,7 +72,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   ~FrameFetchContext() override;
 
-  bool IsFrameFetchContext() { return true; }
+  bool IsFrameFetchContext() override { return true; }
 
   void AddAdditionalRequestHeaders(ResourceRequest&,
                                    FetchResourceType) override;
@@ -159,7 +159,7 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
 
   FetchContext* Detach() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   struct FrozenState;

@@ -159,8 +159,8 @@ bool MultipartImageResourceParser::ParseHeaders() {
 // doesn't require the dashes to exist.  See nsMultiMixedConv::FindToken.
 size_t MultipartImageResourceParser::FindBoundary(const Vector<char>& data,
                                                   Vector<char>* boundary) {
-  auto it = std::search(data.data(), data.data() + data.size(),
-                        boundary->data(), boundary->data() + boundary->size());
+  auto* it = std::search(data.data(), data.data() + data.size(),
+                         boundary->data(), boundary->data() + boundary->size());
   if (it == data.data() + data.size())
     return kNotFound;
 
