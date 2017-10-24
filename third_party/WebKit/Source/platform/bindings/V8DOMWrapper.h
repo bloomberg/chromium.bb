@@ -92,7 +92,7 @@ inline void V8DOMWrapper::SetNativeInfo(
                     const_cast<WrapperTypeInfo*>(wrapper_type_info)};
   wrapper->SetAlignedPointerInInternalFields(WTF_ARRAY_LENGTH(indices), indices,
                                              values);
-  auto per_isolate_data = V8PerIsolateData::From(isolate);
+  auto* per_isolate_data = V8PerIsolateData::From(isolate);
   // We notify ScriptWrappableVisitor about the new wrapper association,
   // so the visitor can make sure to trace the association (in case it is
   // currently tracing).  Because of some optimizations, V8 will not

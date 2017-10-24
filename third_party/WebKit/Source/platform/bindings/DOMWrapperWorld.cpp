@@ -309,7 +309,7 @@ void DOMWrapperWorld::DissociateDOMWindowWrappersInAllWorlds(
 
   script_wrappable->UnsetWrapperIfAny();
 
-  for (auto& world : GetWorldMap().Values())
+  for (auto*& world : GetWorldMap().Values())
     world->DomDataStore().UnsetWrapperIfAny(script_wrappable);
 }
 

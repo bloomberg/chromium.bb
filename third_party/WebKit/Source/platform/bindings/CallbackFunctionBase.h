@@ -21,7 +21,7 @@ class PLATFORM_EXPORT CallbackFunctionBase
   virtual ~CallbackFunctionBase();
 
   virtual void Trace(blink::Visitor* visitor) {}
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   v8::Local<v8::Function> v8Value(v8::Isolate* isolate) {
     return callback_.NewLocal(isolate);
