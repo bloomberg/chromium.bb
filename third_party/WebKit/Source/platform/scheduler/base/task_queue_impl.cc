@@ -66,16 +66,6 @@ TaskQueueImpl::~TaskQueueImpl() {
 #endif
 }
 
-TaskQueueImpl::Task::Task()
-    : TaskQueue::Task(TaskQueue::PostedTask(base::Closure(), base::Location()),
-                      base::TimeTicks()),
-#ifndef NDEBUG
-      enqueue_order_set_(false),
-#endif
-      enqueue_order_(0) {
-  sequence_num = 0;
-}
-
 TaskQueueImpl::Task::Task(TaskQueue::PostedTask task,
                           base::TimeTicks desired_run_time,
                           EnqueueOrder sequence_number)
