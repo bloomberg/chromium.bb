@@ -42733,6 +42733,14 @@ Called by update_traffic_annotation_histograms.py.-->
   </int>
 </enum>
 
+<enum name="XHRPageDismissalState">
+  <int value="0" label="No page dismissal."/>
+  <int value="1" label="Page dismissal: beforeunload."/>
+  <int value="2" label="Page dismissal: pagehide."/>
+  <int value="3" label="Page dismissal: visibility change (during unload)."/>
+  <int value="4" label="Page dismissal: unload."/>
+</enum>
+
 <enum name="XMLHttpRequestHeaderValueCategoryInRFC7230">
   <int value="0" label="Header Value Invalid"/>
   <int value="1" label="Header Value Affected By Normalization"/>
