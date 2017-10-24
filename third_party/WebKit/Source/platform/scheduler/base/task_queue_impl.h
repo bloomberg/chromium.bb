@@ -85,7 +85,6 @@ class PLATFORM_EXPORT TaskQueueImpl {
 
   class PLATFORM_EXPORT Task : public TaskQueue::Task {
    public:
-    Task();
     Task(TaskQueue::PostedTask task,
          base::TimeTicks desired_run_time,
          EnqueueOrder sequence_number);
