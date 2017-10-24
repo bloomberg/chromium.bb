@@ -688,6 +688,10 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
     event.reset(wheel_event);
     wheel_event->delta_x = static_cast<float>(delta_x.fromJust());
     wheel_event->delta_y = static_cast<float>(delta_y.fromJust());
+    if (base::FeatureList::IsEnabled(
+            features::kTouchpadAndWheelScrollLatching)) {
+      wheel_event->phase = blink::WebMouseWheelEvent::kPhaseBegan;
+    }
   } else {
     mouse_event = new blink::WebMouseEvent(
         event_type,
@@ -708,10 +712,20 @@ Response InputHandler::EmulateTouchFromMouseEvent(const std::string& type,
   if (!host_ || !host_->GetRenderWidgetHost())
     return Response::InternalError();
 
-  if (wheel_event)
+  if (wheel_event) {
     host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
-  else
+    if (base::FeatureList::IsEnabled(
+            features::kTouchpadAndWheelScrollLatching)) {
+      // Send a synthetic wheel event with phaseEnded to finish scrolling.
+      wheel_event->delta_x = 0;
+      wheel_event->delta_y = 0;
+      wheel_event->phase = blink::WebMouseWheelEvent::kPhaseEnded;
+      wheel_event->dispatch_type = blink::WebInputEvent::kEventNonBlocking;
+      host_->GetRenderWidgetHost()->ForwardWheelEvent(*wheel_event);
+    }
+  } else {
     host_->GetRenderWidgetHost()->ForwardMouseEvent(*mouse_event);
+  }
   return Response::OK();
 }
 

@@ -7,7 +7,7 @@
       logs.push(text);
     }
 
-    var expectedEventCount = -1;
+    var expectedEventCount = -2;
     var eventCount = 0;
     var resolve;
     var gotEventsPromise = new Promise(f => resolve = f);
@@ -50,6 +50,15 @@
       'y': 150
     },
     {
+      // Should not produce any touch events.
+      'type': 'mouseWheel',
+      'button': 'none',
+      'x': 100,
+      'y': 200,
+      'deltaX': 50,
+      'deltaY': 70
+    },
+    {
       'type': 'mousePressed',
       'button': 'left',
       'clickCount': 1,
@@ -83,7 +92,7 @@
   await dp.Emulation.setEmitTouchEventsForMouse({enabled: true});
 
   // Moving mouse while not pressed does not generate touch events.
-  await session.evaluate(`expectedEventCount = ${events.length - 1}`);
+  await session.evaluate(`expectedEventCount = ${events.length - 2}`);
 
   var time = Number(new Date()) / 1000;
   for (var index = 0; index < events.length; index++) {
