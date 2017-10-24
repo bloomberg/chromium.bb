@@ -219,10 +219,11 @@ cr.define('print_preview', function() {
      */
     setPositionInPts: function(posInPts) {
       this.positionInPts_ = posInPts;
-      var orientationEnum = print_preview.ticket_items.CustomMarginsOrientation;
-      var x = this.translateTransform_.x;
-      var y = this.translateTransform_.y;
-      var width = null, height = null;
+      const orientationEnum =
+          print_preview.ticket_items.CustomMarginsOrientation;
+      let x = this.translateTransform_.x;
+      let y = this.translateTransform_.y;
+      let width = null, height = null;
       if (this.orientation_ == orientationEnum.TOP) {
         y = this.scaleTransform_ * posInPts + this.translateTransform_.y -
             MarginControl.RADIUS_;
@@ -268,8 +269,9 @@ cr.define('print_preview', function() {
      * @return {number} Given value expressed in points.
      */
     convertPixelsToPts: function(pixels) {
-      var pts;
-      var orientationEnum = print_preview.ticket_items.CustomMarginsOrientation;
+      let pts;
+      const orientationEnum =
+          print_preview.ticket_items.CustomMarginsOrientation;
       if (this.orientation_ == orientationEnum.TOP) {
         pts = pixels - this.translateTransform_.y + MarginControl.RADIUS_;
         pts /= this.scaleTransform_;
@@ -352,7 +354,7 @@ cr.define('print_preview', function() {
       // and MarginControls are on the single scrollable container.
       // crbug.com/601341
       if (isFocused) {
-        var previewArea = $('preview-area');
+        const previewArea = $('preview-area');
         previewArea.scrollTop = 0;
         previewArea.scrollLeft = 0;
       }
@@ -384,8 +386,8 @@ cr.define('print_preview', function() {
     onTransitionEnd_: function(event) {
       if (event.propertyName != 'opacity')
         return;
-      var elStyle = window.getComputedStyle(this.getElement());
-      var disabled = parseInt(elStyle.getPropertyValue('opacity'), 10) == 0;
+      const elStyle = window.getComputedStyle(this.getElement());
+      const disabled = parseInt(elStyle.getPropertyValue('opacity'), 10) == 0;
       this.textbox_.setAttribute('aria-hidden', disabled);
       this.textbox_.disabled = disabled;
     },
