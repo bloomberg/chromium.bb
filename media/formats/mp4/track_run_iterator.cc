@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/numerics/checked_math.h"
+#include "base/numerics/safe_conversions.h"
 #include "media/base/timestamp_constants.h"
 #include "media/formats/mp4/rcheck.h"
 #include "media/formats/mp4/sample_to_group_iterator.h"
@@ -392,24 +393,20 @@ bool TrackRunIterator::Init(const MovieFragment& moof) {
         tri.aux_info_total_size = 0;
       }
 
-      // Attempt to avoid allocating insane sample counts for invalid media.
-      // Check the first two samples to see if they're both zero size. Such
-      // samples may exist as the last sample and potentially elsewhere, but two
-      // should _hopefully_ never be adjacent.
-      tri.samples.resize(std::min(2u, trun.sample_count));
+      // Avoid allocating insane sample counts for invalid media.
+      // TODO(sandersd): Merge this limit with kDemuxerMemoryLimit,
+      // kSourceBuffer{Audio,Video}MemoryLimit.
+      const size_t max_sample_count =
+          (150 * 1024 * 1024) / sizeof(decltype(tri.samples)::value_type);
+      RCHECK_MEDIA_LOGGED(
+          base::strict_cast<size_t>(trun.sample_count) <= max_sample_count,
+          media_log_, "Metadata overhead exceeds storage limit.");
+      tri.samples.resize(trun.sample_count);
       for (size_t k = 0; k < trun.sample_count; k++) {
         if (!PopulateSampleInfo(*trex, traf.header, trun, edit_list_offset, k,
                                 &tri.samples[k], traf.sdtp.sample_depends_on(k),
                                 tri.is_audio, media_log_)) {
           return false;
-        }
-
-        if (k > 0) {
-          RCHECK_MEDIA_LOGGED(
-              tri.samples[k - 1].size + tri.samples[k].size != 0, media_log_,
-              "Adjacent zero sized samples are forbidden.");
-          if (k == 1 && tri.samples.size() < trun.sample_count)
-            tri.samples.resize(trun.sample_count);
         }
 
         RCHECK(std::numeric_limits<int64_t>::max() - tri.samples[k].duration >
