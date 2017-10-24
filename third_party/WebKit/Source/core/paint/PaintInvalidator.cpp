@@ -545,7 +545,7 @@ void PaintInvalidator::InvalidatePaint(
 }
 
 void PaintInvalidator::ProcessPendingDelayedPaintInvalidations() {
-  for (auto target : pending_delayed_paint_invalidations_) {
+  for (auto* target : pending_delayed_paint_invalidations_) {
     target->GetMutableForPainting()
         .SetShouldDoFullPaintInvalidationWithoutGeometryChange(
             PaintInvalidationReason::kDelayedFull);

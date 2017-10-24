@@ -1628,7 +1628,7 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
       scroll_size != scrolling_contents_layer_->Size() ||
       scroll_container_size_changed) {
     bool coordinator_handles_offset = false;
-    auto scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
+    auto* scrolling_coordinator = owning_layer_.GetScrollingCoordinator();
     auto* scrollable_area = owning_layer_.GetScrollableArea();
     if (scrolling_coordinator && scrollable_area) {
       coordinator_handles_offset =

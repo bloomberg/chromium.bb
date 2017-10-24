@@ -239,7 +239,7 @@ bool BoxPainterBase::CalculateFillLayerOcclusionCulling(
     FillLayerOcclusionOutputList& reversed_paint_list,
     const FillLayer& fill_layer) {
   bool is_non_associative = false;
-  for (auto current_layer = &fill_layer; current_layer;
+  for (auto* current_layer = &fill_layer; current_layer;
        current_layer = current_layer->Next()) {
     reversed_paint_list.push_back(current_layer);
     // Stop traversal when an opaque layer is encountered.
