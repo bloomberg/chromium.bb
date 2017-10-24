@@ -680,7 +680,7 @@ class OrderfileGenerator(object):
       unpatched_orderfile_filename = (
           self._GetUnpatchedOrderfileFilename() if profile_uploaded else None)
       orderfile_filename = (
-          self._GetPathToOrderfile()() if orderfile_uploaded else None)
+          self._GetPathToOrderfile() if orderfile_uploaded else None)
       self._orderfile_updater.CommitFileHashes(
           unpatched_orderfile_filename, orderfile_filename)
 
