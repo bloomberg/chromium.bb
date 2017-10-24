@@ -516,6 +516,12 @@ bool Combobox::SelectValue(const base::string16& value) {
   return false;
 }
 
+void Combobox::SetTooltipText(const base::string16& tooltip_text) {
+  arrow_button_->SetTooltipText(tooltip_text);
+  if (accessible_name_.empty())
+    accessible_name_ = tooltip_text;
+}
+
 void Combobox::SetAccessibleName(const base::string16& name) {
   accessible_name_ = name;
 }
