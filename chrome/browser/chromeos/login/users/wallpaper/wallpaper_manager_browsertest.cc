@@ -54,9 +54,9 @@ namespace chromeos {
 namespace {
 
 int kLargeWallpaperWidth = 256;
-int kLargeWallpaperHeight = wallpaper::kLargeWallpaperMaxHeight;
+int kLargeWallpaperHeight = chromeos::kLargeWallpaperMaxHeight;
 int kSmallWallpaperWidth = 256;
-int kSmallWallpaperHeight = wallpaper::kSmallWallpaperMaxHeight;
+int kSmallWallpaperHeight = chromeos::kSmallWallpaperMaxHeight;
 
 const char kTestUser1[] = "test1@domain.com";
 const char kTestUser1Hash[] = "test1@domain.com-hash";
@@ -100,20 +100,18 @@ class WallpaperManagerBrowserTest : public InProcessBrowserTest {
         wallpaper_manager->GetFilesId(account_id);
 
     base::FilePath small_wallpaper_dir =
-        WallpaperManager::GetCustomWallpaperDir(
-            wallpaper::kSmallWallpaperSubDir)
+        WallpaperManager::GetCustomWallpaperDir(chromeos::kSmallWallpaperSubDir)
             .Append(wallpaper_file_id.id());
     base::FilePath large_wallpaper_dir =
-        WallpaperManager::GetCustomWallpaperDir(
-            wallpaper::kLargeWallpaperSubDir)
+        WallpaperManager::GetCustomWallpaperDir(chromeos::kLargeWallpaperSubDir)
             .Append(wallpaper_file_id.id());
     base::FilePath original_wallpaper_dir =
         WallpaperManager::GetCustomWallpaperDir(
-            wallpaper::kOriginalWallpaperSubDir)
+            chromeos::kOriginalWallpaperSubDir)
             .Append(wallpaper_file_id.id());
     base::FilePath thumbnail_wallpaper_dir =
         WallpaperManager::GetCustomWallpaperDir(
-            wallpaper::kThumbnailWallpaperSubDir)
+            chromeos::kThumbnailWallpaperSubDir)
             .Append(wallpaper_file_id.id());
 
     while (base::PathExists(small_wallpaper_dir) ||
@@ -216,9 +214,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   LogIn(test_account_id1_, kTestUser1Hash);
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
+      chromeos::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
   base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kLargeWallpaperSubDir, test_account1_wallpaper_files_id_, id);
+      chromeos::kLargeWallpaperSubDir, test_account1_wallpaper_files_id_, id);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
@@ -303,7 +301,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   // Change wallpaper to a custom wallpaper.
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
+      chromeos::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
       small_wallpaper_path, kSmallWallpaperWidth, kSmallWallpaperHeight,
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
@@ -506,9 +504,9 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTestCacheUpdate,
   std::string id = base::Int64ToString(base::Time::Now().ToInternalValue());
   WallpaperManager* wallpaper_manager = WallpaperManager::Get();
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
+      chromeos::kSmallWallpaperSubDir, test_account1_wallpaper_files_id_, id);
   base::FilePath large_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kLargeWallpaperSubDir, test_account1_wallpaper_files_id_, id);
+      chromeos::kLargeWallpaperSubDir, test_account1_wallpaper_files_id_, id);
 
   // Saves the small/large resolution wallpapers to small/large custom
   // wallpaper paths.
@@ -885,7 +883,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest, CustomWallpaperLostTest) {
       std::abs((base::Time::Now() - base::Time::Now().LocalMidnight())
                    .InMilliseconds()));
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, test_account2_wallpaper_files_id_, id);
+      chromeos::kSmallWallpaperSubDir, test_account2_wallpaper_files_id_, id);
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
       small_wallpaper_path, kSmallWallpaperWidth, kSmallWallpaperHeight,
       wallpaper_manager_test_utils::kCustomWallpaperColor));
@@ -938,7 +936,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       std::abs((base::Time::Now() - base::Time::Now().LocalMidnight())
                    .InMilliseconds()));
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, wallpaper_file_id1, id);
+      chromeos::kSmallWallpaperSubDir, wallpaper_file_id1, id);
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
       small_wallpaper_path, kSmallWallpaperWidth, kSmallWallpaperHeight,
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
@@ -958,7 +956,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
   wallpaper::WallpaperFilesId wallpaper_file_id2 =
       wallpaper_manager->GetFilesId(test_account_id2_);
   base::FilePath small_wallpaper_path2 = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, wallpaper_file_id2, id);
+      chromeos::kSmallWallpaperSubDir, wallpaper_file_id2, id);
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
       small_wallpaper_path2, kSmallWallpaperWidth, kSmallWallpaperHeight,
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
@@ -999,7 +997,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerBrowserTest,
       std::abs((base::Time::Now() - base::Time::Now().LocalMidnight())
                    .InMilliseconds()));
   base::FilePath small_wallpaper_path = GetCustomWallpaperPath(
-      wallpaper::kSmallWallpaperSubDir, wallpaper_file_id1, id);
+      chromeos::kSmallWallpaperSubDir, wallpaper_file_id1, id);
   ASSERT_TRUE(wallpaper_manager_test_utils::WriteJPEGFile(
       small_wallpaper_path, kSmallWallpaperWidth, kSmallWallpaperHeight,
       wallpaper_manager_test_utils::kSmallDefaultWallpaperColor));
