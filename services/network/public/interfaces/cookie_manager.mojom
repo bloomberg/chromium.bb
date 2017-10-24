@@ -90,6 +90,20 @@ enum CookieDeletionSessionControl {
 // If no filters are specified then all cookies will be deleted; this can be
 // thought of as there being a default "match everything" filter which is
 // ANDed in with all other filters.
+//
+// Note that whether a domain matches a cookie or not is somewhat nuanced.  For
+// the purposes of this filter:
+//      * The host/domain cookie distinction is ignored
+//      * A cookies effective domain is considered to be the top level registry
+//        (including private registries) for the domain stored in the cookie
+//        + the next entry down.  So the effective domain for x.y.google.com
+//        would be google.com, and the effective domain for x.google.co.uk would
+//        be google.co.uk.  See the function
+//        net::registry_controlled_domains::GetDomainAndRegistry for more
+//        details.
+//      * If a cookie does not have such a top level domain (e.g. IP address
+//        or private hostname), the domain specified in the cookie (the IP
+//        address or private hostname) is used.
 struct CookieDeletionFilter {
   // Delete cookies created after a date.
   mojo.common.mojom.Time? created_after_time;
