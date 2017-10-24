@@ -17,6 +17,7 @@
 #include "content/browser/indexed_db/leveldb/leveldb_env.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 
 namespace content {
 
@@ -66,10 +67,8 @@ TEST(LevelDBDatabaseTest, CorruptionTest) {
   leveldb.reset();
   EXPECT_FALSE(leveldb);
 
-  base::FilePath file_path = temp_directory.GetPath().AppendASCII("CURRENT");
-  base::File file(file_path, base::File::FLAG_OPEN | base::File::FLAG_WRITE);
-  file.SetLength(0);
-  file.Close();
+  EXPECT_TRUE(
+      leveldb_chrome::CorruptClosedDBForTesting(temp_directory.GetPath()));
 
   status = LevelDBDatabase::Open(temp_directory.GetPath(), &comparator,
                                  kDefaultMaxOpenIteratorsPerDatabase, &leveldb);
