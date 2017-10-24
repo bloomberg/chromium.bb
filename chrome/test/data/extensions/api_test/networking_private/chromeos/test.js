@@ -637,7 +637,7 @@ var availableTests = [
           Connectable: false,
           ConnectionState: ConnectionStateType.NOT_CONNECTED,
           GUID: kCellularGuid,
-          Name: 'Cellular1_Provider (us)',
+          Name: 'Cellular1_Provider',
           Priority: 0,
           Source: 'None',
           Type: NetworkType.CELLULAR,

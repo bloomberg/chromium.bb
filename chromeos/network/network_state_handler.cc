@@ -1478,10 +1478,7 @@ void NetworkStateHandler::EnsureCellularNetwork(
     // will be provided to the UI.
     std::unique_ptr<NetworkState> network =
         NetworkState::CreateDefaultCellular(device->path());
-    std::string name = device->home_provider_id();
-    if (name.empty())
-      name = shill::kTypeCellular;
-    network->set_name(name);
+    network->set_name(device->GetName());
     UpdateGuid(network.get());
     cellular_networks->push_back(std::move(network));
     return;

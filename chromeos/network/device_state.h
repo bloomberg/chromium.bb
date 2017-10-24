@@ -38,7 +38,8 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   void set_scanning(bool scanning) { scanning_ = scanning; }
 
   // Cellular specific accessors
-  const std::string& home_provider_id() const { return home_provider_id_; }
+  const std::string& operator_name() const { return operator_name_; }
+  const std::string& country_code() const { return country_code_; }
   bool allow_roaming() const { return allow_roaming_; }
   bool provider_requires_roaming() const { return provider_requires_roaming_; }
   bool support_network_scan() const { return support_network_scan_; }
@@ -65,6 +66,9 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
     return eap_authentication_completed_;
   }
 
+  // Returns a human readable string for the device.
+  std::string GetName() const;
+
   // Returns the IP Address for |type| if it exists or an empty string.
   std::string GetIpAddressByType(const std::string& type) const;
 
@@ -76,7 +80,8 @@ class CHROMEOS_EXPORT DeviceState : public ManagedState {
   std::string mac_address_;
 
   // Cellular specific properties
-  std::string home_provider_id_;
+  std::string operator_name_;
+  std::string country_code_;
   bool allow_roaming_;
   bool provider_requires_roaming_;
   bool support_network_scan_;
