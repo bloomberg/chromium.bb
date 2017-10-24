@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/arc/voice_interaction/highlighter_controller_client.h"
 
+#include <utility>
+
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/voice_interaction/arc_voice_interaction_framework_service.h"
@@ -42,6 +44,10 @@ void HighlighterControllerClient::SimulateSelectionTimeoutForTesting() {
 
 void HighlighterControllerClient::FlushMojoForTesting() {
   highlighter_controller_.FlushForTesting();
+}
+
+void HighlighterControllerClient::Exit() {
+  highlighter_controller_->ExitHighlighterMode();
 }
 
 void HighlighterControllerClient::ConnectToHighlighterController() {

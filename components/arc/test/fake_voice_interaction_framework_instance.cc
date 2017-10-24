@@ -15,16 +15,26 @@ FakeVoiceInteractionFrameworkInstance::
     ~FakeVoiceInteractionFrameworkInstance() = default;
 
 void FakeVoiceInteractionFrameworkInstance::Init(
-    mojom::VoiceInteractionFrameworkHostPtr host_ptr) {}
+    mojom::VoiceInteractionFrameworkHostPtr host_ptr) {
+  host_ = std::move(host_ptr);
+}
 
 void FakeVoiceInteractionFrameworkInstance::StartVoiceInteractionSession(
     bool homescreen_is_active) {
   start_session_count_++;
+  state_ = ash::VoiceInteractionState::RUNNING;
+  host_->SetVoiceInteractionState(state_);
 }
 
 void FakeVoiceInteractionFrameworkInstance::ToggleVoiceInteractionSession(
     bool homescreen_is_active) {
   toggle_session_count_++;
+  if (state_ == ash::VoiceInteractionState::RUNNING)
+    state_ = ash::VoiceInteractionState::STOPPED;
+  else
+    state_ = ash::VoiceInteractionState::RUNNING;
+
+  host_->SetVoiceInteractionState(state_);
 }
 
 void FakeVoiceInteractionFrameworkInstance::
@@ -58,5 +68,9 @@ void FakeVoiceInteractionFrameworkInstance::ShowVoiceInteractionSettings() {
 
 void FakeVoiceInteractionFrameworkInstance::GetVoiceInteractionSettings(
     GetVoiceInteractionSettingsCallback callback) {}
+
+void FakeVoiceInteractionFrameworkInstance::FlushMojoForTesting() {
+  host_.FlushForTesting();
+}
 
 }  // namespace arc

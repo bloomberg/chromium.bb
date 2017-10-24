@@ -5,6 +5,7 @@
 #include "ash/highlighter/highlighter_controller.h"
 
 #include <memory>
+#include <utility>
 
 #include "ash/highlighter/highlighter_gesture_util.h"
 #include "ash/highlighter/highlighter_result_view.h"
@@ -96,6 +97,10 @@ void HighlighterController::SetClient(
   client_.set_connection_error_handler(
       base::Bind(&HighlighterController::OnClientConnectionLost,
                  weak_factory_.GetWeakPtr()));
+}
+
+void HighlighterController::ExitHighlighterMode() {
+  CallExitCallback();
 }
 
 views::View* HighlighterController::GetPointerView() const {

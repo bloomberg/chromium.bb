@@ -33,6 +33,8 @@ class FakeVoiceInteractionFrameworkInstance
   void GetVoiceInteractionSettings(
       GetVoiceInteractionSettingsCallback callback) override;
 
+  void FlushMojoForTesting();
+
   size_t start_session_count() const { return start_session_count_; }
   size_t toggle_session_count() const { return toggle_session_count_; }
   size_t setup_wizard_count() const { return setup_wizard_count_; }
@@ -64,6 +66,8 @@ class FakeVoiceInteractionFrameworkInstance
   bool metalayer_visible_ = true;
   size_t start_session_for_region_count_ = 0u;
   gfx::Rect selected_region_;
+  mojom::VoiceInteractionFrameworkHostPtr host_;
+  ash::VoiceInteractionState state_ = ash::VoiceInteractionState::STOPPED;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVoiceInteractionFrameworkInstance);
 };
