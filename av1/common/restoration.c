@@ -1376,7 +1376,8 @@ void av1_loop_restoration_filter_unit(const RestorationTileLimits *limits,
     int h = setup_processing_stripe_boundary(&remaining_stripes, rsb,
                                              procunit_height, ss_y, highbd,
                                              data8, stride, rlbs);
-    if (unit_rtype == RESTORE_WIENER) h = ALIGN_POWER_OF_TWO(h, 1);
+    // The wiener filter needs a height>=4 in order to not assert on mid_height
+    if (unit_rtype == RESTORE_WIENER) h = ALIGN_POWER_OF_TWO(h, 2);
 #else
     const int h = AOMMIN(procunit_height, (unit_h - i + 15) & ~15);
 #endif

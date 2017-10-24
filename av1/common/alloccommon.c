@@ -156,7 +156,7 @@ void av1_alloc_restoration_buffers(AV1_COMMON *cm) {
   for (p = 0; p < MAX_MB_PLANE; ++p) {
     int w = p == 0 ? width : ROUND_POWER_OF_TWO(width, cm->subsampling_x);
     int align_bits = 5;  // align for efficiency
-    int stride = ALIGN_POWER_OF_TWO(w, align_bits);
+    int stride = ALIGN_POWER_OF_TWO(w + 2 * RESTORATION_EXTRA_HORZ, align_bits);
     int num_stripes = (height + 63) / 64;
     // for each processing stripe: 2 lines above, 2 below
     int buf_size = num_stripes * 2 * stride;
@@ -186,6 +186,15 @@ void av1_free_restoration_buffers(AV1_COMMON *cm) {
     av1_free_restoration_struct(&cm->rst_info[p]);
   aom_free(cm->rst_tmpbuf);
   cm->rst_tmpbuf = NULL;
+#if CONFIG_STRIPED_LOOP_RESTORATION
+  for (p = 0; p < MAX_MB_PLANE; ++p) {
+    RestorationStripeBoundaries *boundaries = &cm->rst_info[p].boundaries;
+    aom_free(boundaries->stripe_boundary_above);
+    aom_free(boundaries->stripe_boundary_below);
+    boundaries->stripe_boundary_above = NULL;
+    boundaries->stripe_boundary_below = NULL;
+  }
+#endif
 }
 #endif  // CONFIG_LOOP_RESTORATION
 
