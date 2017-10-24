@@ -82,7 +82,7 @@ void ScriptWrappableVisitor::PerformCleanup() {
     return;
 
   CHECK(!tracing_in_progress_);
-  for (auto header : headers_to_unmark_) {
+  for (auto* header : headers_to_unmark_) {
     // Dead objects residing in the marking deque may become invalid due to
     // minor garbage collections and are therefore set to nullptr. We have
     // to skip over such objects.
@@ -127,7 +127,7 @@ void ScriptWrappableVisitor::PerformLazyCleanup(double deadline_seconds) {
   int processed_wrapper_count = 0;
   for (auto it = headers_to_unmark_.rbegin();
        it != headers_to_unmark_.rend();) {
-    auto header = *it;
+    auto* header = *it;
     // Dead objects residing in the marking deque may become invalid due to
     // minor garbage collections and are therefore set to nullptr. We have
     // to skip over such objects.
@@ -277,9 +277,9 @@ void ScriptWrappableVisitor::InvalidateDeadObjectsInMarkingDeque() {
       marking_data.Invalidate();
     }
   }
-  for (auto it = headers_to_unmark_.begin(); it != headers_to_unmark_.end();
+  for (auto** it = headers_to_unmark_.begin(); it != headers_to_unmark_.end();
        ++it) {
-    auto header = *it;
+    auto* header = *it;
     if (header && !header->IsMarked()) {
       *it = nullptr;
     }

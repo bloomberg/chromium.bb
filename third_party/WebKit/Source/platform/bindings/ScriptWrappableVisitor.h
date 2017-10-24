@@ -147,7 +147,7 @@ class PLATFORM_EXPORT ScriptWrappableVisitor : public v8::EmbedderHeapTracer {
   }
 
   ScriptWrappableVisitor(v8::Isolate* isolate) : isolate_(isolate){};
-  virtual ~ScriptWrappableVisitor();
+  ~ScriptWrappableVisitor() override;
 
   // Trace all wrappers of |t|.
   //
