@@ -1940,6 +1940,25 @@
             ]
         }
     ],
+    "NTPLessThanEightMostLikelyTiles": [
+        {
+            "platforms": [
+                "android",
+                "ios"
+            ],
+            "experiments": [
+                {
+                    "name": "OneOrMoreMLTiles",
+                    "params": {
+                        "min_suggestions": "1"
+                    },
+                    "enable_features": [
+                        "UseSuggestionsEvenIfFew"
+                    ]
+                }
+            ]
+        }
+    ],
     "NTPMostLikelyFaviconsFromServer": [
         {
             "platforms": [
