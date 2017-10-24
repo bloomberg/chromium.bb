@@ -46,12 +46,12 @@ content::SpeechRecognitionManager* GetSpeechRecognitionManager() {
 // thread to cancel a speech recognition session.
 class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
  public:
-  explicit SpeechRecognizerOnIO(
-      const base::WeakPtr<IOBrowserUIInterface>& browser_ui);
+  SpeechRecognizerOnIO();
   ~SpeechRecognizerOnIO() override;
 
   void Start(
       scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+      const base::WeakPtr<IOBrowserUIInterface>& browser_ui,
       const std::string& locale,
       const std::string& auth_scope,
       const std::string& auth_token);
@@ -102,13 +102,10 @@ class SpeechRecognizerOnIO : public content::SpeechRecognitionEventListener {
   DISALLOW_COPY_AND_ASSIGN(SpeechRecognizerOnIO);
 };
 
-SpeechRecognizerOnIO::SpeechRecognizerOnIO(
-    const base::WeakPtr<IOBrowserUIInterface>& browser_ui)
-    : browser_ui_(browser_ui),
-      speech_timeout_(new base::Timer(false, false)),
+SpeechRecognizerOnIO::SpeechRecognizerOnIO()
+    : speech_timeout_(new base::Timer(false, false)),
       session_(kInvalidSessionId),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 SpeechRecognizerOnIO::~SpeechRecognizerOnIO() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
@@ -118,12 +115,15 @@ SpeechRecognizerOnIO::~SpeechRecognizerOnIO() {
 
 void SpeechRecognizerOnIO::Start(
     scoped_refptr<net::URLRequestContextGetter> url_request_context_getter,
+    const base::WeakPtr<IOBrowserUIInterface>& browser_ui,
     const std::string& locale,
     const std::string& auth_scope,
     const std::string& auth_token) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(session_ == kInvalidSessionId)
       << "stop previous session before start new one";
+
+  browser_ui_ = browser_ui;
 
   content::SpeechRecognitionSessionConfig config;
   config.language = locale;
@@ -264,10 +264,9 @@ SpeechRecognizer::SpeechRecognizer(
     : delegate_(delegate),
       url_request_context_getter_(url_request_context_getter),
       locale_(locale),
+      speech_recognizer_on_io_(base::MakeUnique<SpeechRecognizerOnIO>()),
       weak_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  speech_recognizer_on_io_ = base::MakeUnique<SpeechRecognizerOnIO>(
-      weak_factory_.GetWeakPtr());
 }
 
 SpeechRecognizer::~SpeechRecognizer() {
@@ -291,8 +290,8 @@ void SpeechRecognizer::Start() {
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SpeechRecognizerOnIO::Start,
                      base::Unretained(speech_recognizer_on_io_.get()),
-                     url_request_context_getter_, locale_, auth_scope,
-                     auth_token));
+                     url_request_context_getter_, weak_factory_.GetWeakPtr(),
+                     locale_, auth_scope, auth_token));
 }
 
 void SpeechRecognizer::Stop() {
