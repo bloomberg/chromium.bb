@@ -29,20 +29,6 @@
 #include <sys/types.h>
 #endif
 
-#if defined(OS_MACOSX)
-// This is a bit evil, but it's standard operating procedure for |s6_addr|....
-#define s6_addr16 __u6_addr.__u6_addr16
-#endif
-
-#if defined(OS_WIN)
-// The type of |sockaddr::sa_family|.
-typedef ADDRESS_FAMILY sa_family_t;
-
-#define s6_addr16 u.Word
-#define ntohs(x) _byteswap_ushort(x)
-#define htons(x) _byteswap_ushort(x)
-#endif  // defined(OS_WIN)
-
 // The net address interface doesn't have a normal C -> C++ thunk since it
 // doesn't actually have any proxy wrapping or associated objects; it's just a
 // call into base. So we implement the entire interface here, using the thunk
