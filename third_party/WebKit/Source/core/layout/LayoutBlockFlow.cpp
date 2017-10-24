@@ -4157,9 +4157,18 @@ LayoutUnit LayoutBlockFlow::LogicalRightFloatOffsetForLine(
 
 void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
     const LayoutBox& float_box) {
+  // Normally, the ShouldPaint flags of FloatingObjects should have been set
+  // during layout, based on overhaning, intruding, self-painting status, etc.
+  // However, sometimes a layer's self painting status is affected by its
+  // compositing status, so we need to call this method during compositing
+  // update when we find a layer changes self painting status. This doesn't
+  // apply to SPv2 in which a layer's self painting status no longer depends on
+  // compositing status.
+  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(float_box.IsFloating());
   bool float_box_is_self_painting_layer =
       float_box.HasLayer() && float_box.Layer()->IsSelfPaintingLayer();
+  bool found_painting_ancestor = false;
   for (LayoutObject* ancestor = float_box.Parent();
        ancestor && ancestor->IsLayoutBlockFlow();
        ancestor = ancestor->Parent()) {
@@ -4176,17 +4185,21 @@ void LayoutBlockFlow::UpdateAncestorShouldPaintFloatingObject(
       break;
 
     FloatingObject& floating_object = **it;
-    if (!float_box_is_self_painting_layer) {
-      // This repeats the logic in addOverhangingFloats() about shouldPaint
-      // flag:
+    if (!found_painting_ancestor && !float_box_is_self_painting_layer) {
+      // This tries to repeat the logic in AddOverhangingFloats() about
+      // ShouldPaint flag with the following rules:
       // - The nearest enclosing block in which the float doesn't overhang
       //   paints the float;
       // - Or even if the float overhangs, if the ancestor block has
       //   self-painting layer, it paints the float.
+      // However it is not fully consistent with AddOverhangingFloats() when
+      // a float doesn't overhang in an ancestor but overhangs in an ancestor
+      // of the ancestor. This results different ancestor painting the float,
+      // but there seems no problem for now.
       if (ancestor_block->HasSelfPaintingLayer() ||
           !ancestor_block->IsOverhangingFloat(floating_object)) {
         floating_object.SetShouldPaint(true);
-        return;
+        found_painting_ancestor = true;
       }
     } else {
       floating_object.SetShouldPaint(false);
