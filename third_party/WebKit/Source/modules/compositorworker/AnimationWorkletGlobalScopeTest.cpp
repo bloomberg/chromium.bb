@@ -49,12 +49,16 @@ class AnimationWorkletGlobalScopeTest : public ::testing::Test {
 
     WorkerClients* clients = WorkerClients::Create();
 
-    thread->Start(WTF::MakeUnique<GlobalScopeCreationParams>(
-                      KURL("http://fake.url/"), "fake user agent", "", nullptr,
-                      kDontPauseWorkerGlobalScopeOnStart, nullptr, "",
-                      security_origin_.get(), clients, kWebAddressSpaceLocal,
-                      nullptr, nullptr, kV8CacheOptionsDefault),
-                  WTF::nullopt, ParentFrameTaskRunners::Create());
+    thread->Start(std::make_unique<GlobalScopeCreationParams>(
+                      KURL("http://fake.url/"), "fake user agent",
+                      "" /* source_code */, nullptr /* cached_meta_data */,
+                      nullptr /* content_security_policy_parsed_headers */,
+                      "" /* referrer_policy */, security_origin_.get(), clients,
+                      kWebAddressSpaceLocal, nullptr /* origin_trial_tokens */,
+                      nullptr /* worker_settings */, kV8CacheOptionsDefault),
+                  WTF::nullopt,
+                  WorkerInspectorProxy::PauseOnWorkerStart::kDontPause,
+                  ParentFrameTaskRunners::Create());
     return thread;
   }
 

@@ -50,12 +50,12 @@ const String& WorkerInspectorProxy::InspectorId() {
   return inspector_id_;
 }
 
-WorkerThreadStartMode WorkerInspectorProxy::WorkerStartMode(
+WorkerInspectorProxy::PauseOnWorkerStart
+WorkerInspectorProxy::ShouldPauseOnWorkerStart(
     ExecutionContext* execution_context) {
   bool result = false;
   probe::shouldWaitForDebuggerOnWorkerStart(execution_context, &result);
-  return result ? kPauseWorkerGlobalScopeOnStart
-                : kDontPauseWorkerGlobalScopeOnStart;
+  return result ? PauseOnWorkerStart::kPause : PauseOnWorkerStart::kDontPause;
 }
 
 void WorkerInspectorProxy::WorkerThreadCreated(
@@ -67,7 +67,7 @@ void WorkerInspectorProxy::WorkerThreadCreated(
   url_ = url.GetString();
   InspectorProxies().insert(this);
   // We expect everyone starting worker thread to synchronously ask for
-  // WorkerStartMode() right before.
+  // ShouldPauseOnWorkerStart() right before.
   bool waiting_for_debugger = false;
   probe::shouldWaitForDebuggerOnWorkerStart(execution_context_,
                                             &waiting_for_debugger);

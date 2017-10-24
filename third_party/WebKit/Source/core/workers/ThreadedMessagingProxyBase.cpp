@@ -83,8 +83,10 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
   Document* document = ToDocument(GetExecutionContext());
 
   worker_thread_ = CreateWorkerThread();
-  worker_thread_->Start(std::move(global_scope_creation_params),
-                        thread_startup_data, GetParentFrameTaskRunners());
+  worker_thread_->Start(
+      std::move(global_scope_creation_params), thread_startup_data,
+      GetWorkerInspectorProxy()->ShouldPauseOnWorkerStart(document),
+      GetParentFrameTaskRunners());
   WorkerThreadCreated();
   GetWorkerInspectorProxy()->WorkerThreadCreated(document, GetWorkerThread(),
                                                  script_url);

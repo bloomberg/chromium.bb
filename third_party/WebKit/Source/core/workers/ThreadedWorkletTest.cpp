@@ -10,7 +10,6 @@
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
 #include "core/workers/ThreadedWorkletObjectProxy.h"
-#include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "core/workers/WorkletThreadHolder.h"
@@ -157,13 +156,12 @@ class ThreadedWorkletMessagingProxyForTest
     Vector<String> origin_trial_tokens;
     std::unique_ptr<WorkerSettings> worker_settings = nullptr;
     InitializeWorkerThread(
-        WTF::MakeUnique<GlobalScopeCreationParams>(
+        std::make_unique<GlobalScopeCreationParams>(
             script_url, "fake user agent", "// fake source code",
-            std::move(cached_meta_data), kDontPauseWorkerGlobalScopeOnStart,
-            &content_security_policy_headers, referrer_policy,
-            security_origin_.get(), worker_clients, kWebAddressSpaceLocal,
-            &origin_trial_tokens, std::move(worker_settings),
-            kV8CacheOptionsDefault),
+            std::move(cached_meta_data), &content_security_policy_headers,
+            referrer_policy, security_origin_.get(), worker_clients,
+            kWebAddressSpaceLocal, &origin_trial_tokens,
+            std::move(worker_settings), kV8CacheOptionsDefault),
         WTF::nullopt, script_url);
   }
 

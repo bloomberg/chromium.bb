@@ -7,7 +7,6 @@
 
 #include "core/CoreExport.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/workers/WorkerThread.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/HashMap.h"
@@ -16,12 +15,15 @@ namespace blink {
 
 class ExecutionContext;
 class KURL;
+class WorkerThread;
 
 // A proxy for talking to the worker inspector on the worker thread.
 // All of these methods should be called on the main thread.
 class CORE_EXPORT WorkerInspectorProxy final
     : public GarbageCollectedFinalized<WorkerInspectorProxy> {
  public:
+  enum class PauseOnWorkerStart { kPause, kDontPause };
+
   static WorkerInspectorProxy* Create();
 
   ~WorkerInspectorProxy();
@@ -35,7 +37,10 @@ class CORE_EXPORT WorkerInspectorProxy final
                                            const String& message) = 0;
   };
 
-  WorkerThreadStartMode WorkerStartMode(ExecutionContext*);
+  // Returns whether WorkerThread should pause to run debugger tasks on its
+  // startup.
+  PauseOnWorkerStart ShouldPauseOnWorkerStart(ExecutionContext*);
+
   void WorkerThreadCreated(ExecutionContext*, WorkerThread*, const KURL&);
   void WorkerThreadTerminated();
   void DispatchMessageFromWorker(int session_id, const String&);

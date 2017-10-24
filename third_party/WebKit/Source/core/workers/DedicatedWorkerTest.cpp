@@ -14,7 +14,6 @@
 #include "core/workers/DedicatedWorkerThread.h"
 #include "core/workers/GlobalScopeCreationParams.h"
 #include "core/workers/WorkerBackingThreadStartupData.h"
-#include "core/workers/WorkerInspectorProxy.h"
 #include "core/workers/WorkerThread.h"
 #include "core/workers/WorkerThreadTestHelper.h"
 #include "platform/CrossThreadFunctional.h"
@@ -129,10 +128,10 @@ class DedicatedWorkerMessagingProxyForTest
     auto worker_settings = std::make_unique<WorkerSettings>(
         ToDocument(GetExecutionContext())->GetSettings());
     InitializeWorkerThread(
-        WTF::MakeUnique<GlobalScopeCreationParams>(
+        std::make_unique<GlobalScopeCreationParams>(
             script_url, "fake user agent", source,
-            nullptr /* cached_meta_data */, kDontPauseWorkerGlobalScopeOnStart,
-            headers.get(), "" /* referrer_policy */, security_origin_.get(),
+            nullptr /* cached_meta_data */, headers.get(),
+            "" /* referrer_policy */, security_origin_.get(),
             nullptr /* worker_clients */, kWebAddressSpaceLocal,
             nullptr /* origin_trial_tokens */, std::move(worker_settings),
             kV8CacheOptionsDefault),
