@@ -973,14 +973,9 @@ void ScriptLoader::PendingScriptFinished(PendingScript* pending_script) {
   DCHECK_EQ(pending_script_, pending_script);
   DCHECK_EQ(pending_script_->GetScriptType(), GetScriptType());
 
-  // We do not need this script in the memory cache. The primary goals of
-  // sending this fetch request are to let the third party server know
-  // about the document.write scripts intervention and populate the http
-  // cache for subsequent uses.
   if (document_write_intervention_ ==
       DocumentWriteIntervention::kFetchDocWrittenScriptDeferIdle) {
     DCHECK_EQ(pending_script_->GetScriptType(), ScriptType::kClassic);
-    pending_script_->RemoveFromMemoryCache();
     pending_script_->StopWatchingForLoad();
     return;
   }

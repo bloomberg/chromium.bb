@@ -314,13 +314,12 @@ void HTMLParserScriptRunner::PossiblyFetchBlockedDocWriteScript(
   // ERR_CACHE_MISS but other errors are rare with
   // WebCachePolicy::ReturnCacheDataDontLoad.
 
+  // The ScriptResource is not on MemoryCache because it is errored.
+
   EmitErrorForDocWriteScripts(pending_script->UrlForClassicScript().GetString(),
                               *document_);
   TextPosition starting_position = ParserBlockingScript()->StartingPosition();
   bool is_parser_inserted = script_loader->IsParserInserted();
-  // Remove this resource entry from memory cache as the new request
-  // should not join onto this existing entry.
-  pending_script->RemoveFromMemoryCache();
   FetchBlockedDocWriteScript(element, is_parser_inserted, starting_position);
 }
 
