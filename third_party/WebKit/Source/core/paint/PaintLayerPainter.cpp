@@ -51,7 +51,7 @@ void PaintLayerPainter::Paint(GraphicsContext& context,
   PaintLayerPaintingInfo painting_info(
       &paint_layer_, LayoutRect(EnclosingIntRect(damage_rect)),
       global_paint_flags, LayoutSize());
-  if (ShouldPaintLayerInSoftwareMode(global_paint_flags, paint_flags))
+  if (!paint_layer_.PaintsIntoOwnOrGroupedBacking(global_paint_flags))
     Paint(context, painting_info, paint_flags);
 }
 
@@ -212,7 +212,6 @@ static bool ShouldRepaintSubsequence(
     PaintLayer& paint_layer,
     const PaintLayerPaintingInfo& painting_info,
     ShouldRespectOverflowClipType respect_overflow_clip,
-    const LayoutSize& subpixel_accumulation,
     bool& should_clear_empty_paint_phase_flags) {
   bool needs_repaint = false;
 
@@ -261,7 +260,8 @@ void PaintLayerPainter::AdjustForPaintOffsetTranslation(
   // Paint offset translation for transforms or composited layers is already
   // taken care of.
   if (paint_layer_.PaintsWithTransform(painting_info.GetGlobalPaintFlags()) ||
-      paint_layer_.PaintsComposited(painting_info.GetGlobalPaintFlags()))
+      paint_layer_.PaintsIntoOwnOrGroupedBacking(
+          painting_info.GetGlobalPaintFlags()))
     return;
 
   if (const auto* properties =
@@ -351,7 +351,7 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   bool should_clear_empty_paint_phase_flags = false;
   if (should_create_subsequence) {
     if (!ShouldRepaintSubsequence(paint_layer_, painting_info_arg,
-                                  respect_overflow_clip, subpixel_accumulation,
+                                  respect_overflow_clip,
                                   should_clear_empty_paint_phase_flags) &&
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
                                                             paint_layer_))
@@ -892,12 +892,11 @@ PaintResult PaintLayerPainter::PaintChildren(
         paint_layer_.GetLayoutBox()->ScrolledContentOffset();
 
   for (; child; child = iterator.Next()) {
-    PaintLayerPainter child_painter(*child->Layer());
     // If this Layer should paint into its own backing or a grouped backing,
-    // that will be done via CompositedLayerMapping::paintContents() and
-    // CompositedLayerMapping::doPaintTask().
-    if (!child_painter.ShouldPaintLayerInSoftwareMode(
-            painting_info.GetGlobalPaintFlags(), paint_flags))
+    // that will be done via CompositedLayerMapping::PaintContents() and
+    // CompositedLayerMapping::DoPaintTask().
+    if (child->Layer()->PaintsIntoOwnOrGroupedBacking(
+            painting_info.GetGlobalPaintFlags()))
       continue;
 
     PaintLayerPaintingInfo child_painting_info = painting_info;
@@ -925,21 +924,13 @@ PaintResult PaintLayerPainter::PaintChildren(
           (*scroller)->GetLayoutBox()->ScrolledContentOffset();
     }
 
-    if (child_painter.Paint(context, child_painting_info, paint_flags) ==
+    if (PaintLayerPainter(*child->Layer())
+            .Paint(context, child_painting_info, paint_flags) ==
         kMayBeClippedByPaintDirtyRect)
       result = kMayBeClippedByPaintDirtyRect;
   }
 
   return result;
-}
-
-bool PaintLayerPainter::ShouldPaintLayerInSoftwareMode(
-    const GlobalPaintFlags global_paint_flags,
-    PaintLayerFlags paint_flags) {
-  DisableCompositingQueryAsserts disabler;
-
-  return paint_layer_.GetCompositingState() == kNotComposited ||
-         (global_paint_flags & kGlobalPaintFlattenCompositingLayers);
 }
 
 void PaintLayerPainter::PaintOverflowControlsForFragments(
@@ -1047,8 +1038,16 @@ void PaintLayerPainter::PaintFragmentWithPhase(
   Optional<ScrollRecorder> scroll_recorder;
   LayoutPoint paint_offset = -paint_layer_.LayoutBoxLocation();
   if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
-    new_cull_rect.Move(painting_info.scroll_offset_accumulation);
     paint_offset += paint_layer_.GetLayoutObject().PaintOffset();
+    new_cull_rect.Move(painting_info.scroll_offset_accumulation);
+    if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+      // For SPv175, we paint in the containing transform node's space. Now
+      // |new_cull_rect| is in the pixel-snapped border box space of
+      // |painting_info.root_layer|. Adjust it to the correct space.
+      // |paint_offset| is already in the correct space.
+      new_cull_rect.MoveBy(RoundedIntPoint(
+          painting_info.root_layer->GetLayoutObject().PaintOffset()));
+    }
   } else {
     paint_offset += ToSize(fragment.layer_bounds.Location());
     if (!painting_info.scroll_offset_accumulation.IsZero()) {
