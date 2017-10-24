@@ -80,8 +80,8 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
     return new HTMLDocumentParser(document, background_parsing_policy);
   }
   ~HTMLDocumentParser() override;
-  virtual void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   // TODO(alexclarke): Remove when background parser goes away.
   void Dispose();

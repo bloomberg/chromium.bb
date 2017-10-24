@@ -22,7 +22,7 @@ class PreloaderNetworkHintsMock : public NetworkHintsInterface {
  public:
   PreloaderNetworkHintsMock() : did_preconnect_(false) {}
 
-  void DnsPrefetchHost(const String& host) const {}
+  void DnsPrefetchHost(const String& host) const override {}
   void PreconnectHost(
       const KURL& host,
       const CrossOriginAttributeValue cross_origin) const override {
