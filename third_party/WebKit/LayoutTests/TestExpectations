@@ -2932,6 +2932,9 @@ crbug.com/717643 external/wpt/html/semantics/scripting-1/the-script-element/modu
 crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-classic.html [ Failure ]
 crbug.com/773622 external/wpt/html/semantics/scripting-1/the-script-element/module/dynamic-import/string-compilation-base-url-module.html [ Failure ]
 
+# import.meta.url is under development.
+crbug.com/773713 external/wpt/html/semantics/scripting-1/the-script-element/module/import-meta [ Skip ]
+
 # Geolocation tests
 crbug.com/745079 external/wpt/geolocation-API/PositionOptions.https.html [ Failure ]
 

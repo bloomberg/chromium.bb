@@ -115,6 +115,20 @@ void ModulatorImplBase::ResolveDynamically(
                                                referrer_info, resolver);
 }
 
+// https://html.spec.whatwg.org/#hostgetimportmetaproperties
+ModuleImportMeta ModulatorImplBase::HostGetImportMetaProperties(
+    ScriptModule record) const {
+  // 1. Let module script be moduleRecord.[[HostDefined]]. [spec text]
+  ModuleScript* module_script = script_module_resolver_->GetHostDefined(record);
+  DCHECK(module_script);
+
+  // 2. Let urlString be module script's base URL, serialized. [spec text]
+  String url_string = module_script->BaseURL().GetString();
+
+  // 3. Return <<Record { [[Key]]: "url", [[Value]]: urlString }>>. [spec text]
+  return ModuleImportMeta(url_string);
+}
+
 ScriptModule ModulatorImplBase::CompileModule(
     const String& provided_source,
     const String& url_str,

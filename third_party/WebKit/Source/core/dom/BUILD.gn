@@ -169,6 +169,7 @@ blink_core_sources("dom") {
     "Modulator.h",
     "ModulatorImplBase.cpp",
     "ModulatorImplBase.h",
+    "ModuleImportMeta.h",
     "ModuleMap.cpp",
     "ModuleMap.h",
     "ModulePendingScript.cpp",

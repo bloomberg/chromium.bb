@@ -60,6 +60,8 @@ class CORE_EXPORT ScriptModule final {
   ScriptModule();
   ~ScriptModule();
 
+  ScriptModule(v8::Isolate*, v8::Local<v8::Module>);
+
   // Returns exception, if any.
   ScriptValue Instantiate(ScriptState*);
 
@@ -89,8 +91,6 @@ class CORE_EXPORT ScriptModule final {
   // ModuleScript instances store their record as
   // TraceWrapperV8Reference<v8::Module>, and reconstructs ScriptModule from it.
   friend class ModuleScript;
-
-  ScriptModule(v8::Isolate*, v8::Local<v8::Module>);
 
   v8::Local<v8::Module> NewLocal(v8::Isolate* isolate) {
     return module_->NewLocal(isolate);

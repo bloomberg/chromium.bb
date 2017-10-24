@@ -63,6 +63,7 @@ class ModulatorImplBase : public Modulator {
                           const KURL&,
                           const ReferrerScriptInfo&,
                           ScriptPromiseResolver*) override;
+  ModuleImportMeta HostGetImportMetaProperties(ScriptModule) const override;
   ScriptModule CompileModule(const String& script,
                              const String& url_str,
                              AccessControlStatus,
