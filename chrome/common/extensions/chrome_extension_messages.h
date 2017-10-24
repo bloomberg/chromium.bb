@@ -2,11 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_COMMON_EXTENSIONS_CHROME_EXTENSION_MESSAGES_H_
+#define CHROME_COMMON_EXTENSIONS_CHROME_EXTENSION_MESSAGES_H_
+
 // Chrome-specific IPC messages for extensions.
 // Extension-related messages that aren't specific to Chrome live in
 // extensions/common/extension_messages.h.
-//
-// Multiply-included message file, hence no include guard.
 
 #include <stdint.h>
 
@@ -117,3 +118,4 @@ IPC_MESSAGE_ROUTED2(ExtensionMsg_AccessibilityEvent,
 IPC_MESSAGE_ROUTED1(ExtensionMsg_AccessibilityLocationChange,
                     ExtensionMsg_AccessibilityLocationChangeParams)
 
+#endif  // CHROME_COMMON_EXTENSIONS_CHROME_EXTENSION_MESSAGES_H_

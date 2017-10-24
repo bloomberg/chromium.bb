@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included file, no traditional include guard.
+#ifndef CHROME_COMMON_RENDER_MESSAGES_H_
+#define CHROME_COMMON_RENDER_MESSAGES_H_
+
 #include <stdint.h>
 #include <string>
 #include <vector>
@@ -30,8 +32,8 @@
 #include "url/origin.h"
 
 // Singly-included section for enums and custom IPC traits.
-#ifndef CHROME_COMMON_RENDER_MESSAGES_H_
-#define CHROME_COMMON_RENDER_MESSAGES_H_
+#ifndef INTERNAL_CHROME_COMMON_RENDER_MESSAGES_H_
+#define INTERNAL_CHROME_COMMON_RENDER_MESSAGES_H_
 
 // These are only used internally, so the order does not matter.
 enum class ChromeViewHostMsg_GetPluginInfo_Status {
@@ -57,7 +59,7 @@ enum class ChromeViewHostMsg_GetPluginInfo_Status {
   kUnauthorized,
 };
 
-#endif  // CHROME_COMMON_RENDER_MESSAGES_H_
+#endif  // INTERNAL_CHROME_COMMON_RENDER_MESSAGES_H_
 
 #define IPC_MESSAGE_START ChromeMsgStart
 
@@ -233,3 +235,5 @@ IPC_SYNC_MESSAGE_CONTROL0_1(ChromeViewHostMsg_IsCrashReportingEnabled,
 // Tells the browser to open a PDF file in a new tab. Used when no PDF Viewer is
 // available, and user clicks to view PDF.
 IPC_MESSAGE_ROUTED1(ChromeViewHostMsg_OpenPDF, GURL /* url */)
+
+#endif  // CHROME_COMMON_RENDER_MESSAGES_H_

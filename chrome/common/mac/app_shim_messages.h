@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, hence no include guard.
+#ifndef CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_
+#define CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_
 
 #include <string>
 #include <vector>
@@ -72,3 +73,5 @@ IPC_MESSAGE_CONTROL1(AppShimMsg_SetUserAttention,
 
 // Instructs the shim to show the app.
 IPC_MESSAGE_CONTROL0(AppShimMsg_UnhideWithoutActivation)
+
+#endif  // CHROME_COMMON_MAC_APP_SHIM_MESSAGES_H_

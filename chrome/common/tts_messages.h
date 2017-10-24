@@ -2,7 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included message file, hence no include guard.
+#ifndef CHROME_COMMON_TTS_MESSAGES_H_
+#define CHROME_COMMON_TTS_MESSAGES_H_
 
 #include <vector>
 
@@ -67,3 +68,5 @@ IPC_MESSAGE_CONTROL1(TtsMsg_WasCancelled,
 IPC_MESSAGE_CONTROL2(TtsMsg_SpeakingErrorOccurred,
                      int /* utterance id */,
                      std::string /* error message */)
+
+#endif  // CHROME_COMMON_TTS_MESSAGES_H_
