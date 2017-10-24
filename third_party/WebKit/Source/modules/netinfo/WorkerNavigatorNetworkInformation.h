@@ -30,7 +30,7 @@ class WorkerNavigatorNetworkInformation final
 
   static NetworkInformation* connection(ScriptState*, WorkerNavigator&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   WorkerNavigatorNetworkInformation(WorkerNavigator&, ExecutionContext*);
