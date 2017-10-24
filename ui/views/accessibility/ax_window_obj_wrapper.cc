@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/platform/aura_window_properties.h"
 #include "ui/aura/client/focus_client.h"
@@ -57,7 +58,11 @@ void AXWindowObjWrapper::GetChildren(
 
 void AXWindowObjWrapper::Serialize(ui::AXNodeData* out_node_data) {
   out_node_data->id = GetID();
-  out_node_data->role = is_alert_ ? ui::AX_ROLE_ALERT : ui::AX_ROLE_WINDOW;
+  ui::AXRole role = window_->GetProperty(ui::kAXRoleOverride);
+  if (role != ui::AX_ROLE_NONE)
+    out_node_data->role = role;
+  else
+    out_node_data->role = is_alert_ ? ui::AX_ROLE_ALERT : ui::AX_ROLE_WINDOW;
   out_node_data->AddStringAttribute(ui::AX_ATTR_NAME,
                                     base::UTF16ToUTF8(window_->GetTitle()));
   if (!window_->IsVisible())
