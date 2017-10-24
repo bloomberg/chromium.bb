@@ -12,7 +12,7 @@ namespace blink {
 
 class SVGValueNonInterpolableValue : public NonInterpolableValue {
  public:
-  virtual ~SVGValueNonInterpolableValue() {}
+  ~SVGValueNonInterpolableValue() override {}
 
   static scoped_refptr<SVGValueNonInterpolableValue> Create(
       SVGPropertyBase* svg_value) {

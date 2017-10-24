@@ -204,7 +204,7 @@ class CSSAnimations final {
           previous_iteration_(NullValue()) {}
     bool RequiresIterationEvents(const AnimationEffectReadOnly&) override;
     void OnEventCondition(const AnimationEffectReadOnly&) override;
-    virtual void Trace(blink::Visitor*);
+    void Trace(blink::Visitor*) override;
 
    private:
     const Element& AnimationTarget() const { return *animation_target_; }
@@ -232,7 +232,7 @@ class CSSAnimations final {
       return false;
     }
     void OnEventCondition(const AnimationEffectReadOnly&) override;
-    virtual void Trace(blink::Visitor*);
+    void Trace(blink::Visitor*) override;
 
    private:
     const Element& TransitionTarget() const { return *transition_target_; }

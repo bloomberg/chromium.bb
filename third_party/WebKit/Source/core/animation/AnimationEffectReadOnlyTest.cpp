@@ -94,7 +94,7 @@ class TestAnimationEffectReadOnly : public AnimationEffectReadOnly {
     return result;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(event_delegate_);
     AnimationEffectReadOnly::Trace(visitor);
   }

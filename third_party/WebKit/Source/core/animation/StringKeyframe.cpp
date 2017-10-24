@@ -88,7 +88,7 @@ PropertyHandleSet StringKeyframe::Properties() const {
     properties.insert(
         PropertyHandle(presentation_attribute_map_->PropertyAt(i).Id(), true));
 
-  for (const auto& key : svg_attribute_map_.Keys())
+  for (auto* const key : svg_attribute_map_.Keys())
     properties.insert(PropertyHandle(*key));
 
   return properties;

@@ -43,7 +43,7 @@ class CSSDefaultInterpolationType : public InterpolationType {
   InterpolationValue MaybeConvertSingle(const PropertySpecificKeyframe&,
                                         const InterpolationEnvironment&,
                                         const InterpolationValue& underlying,
-                                        ConversionCheckers&) const;
+                                        ConversionCheckers&) const override;
 
   PairwiseInterpolationValue MaybeConvertPairwise(
       const PropertySpecificKeyframe& start_keyframe,

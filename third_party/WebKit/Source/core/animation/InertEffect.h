@@ -53,7 +53,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffectReadOnly {
 
   bool IsInertEffect() const final { return true; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   void UpdateChildrenAndEffects() const override {}

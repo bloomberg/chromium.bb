@@ -21,7 +21,7 @@ namespace blink {
 
 class AnimationEffectStackTest : public ::testing::Test {
  protected:
-  virtual void SetUp() {
+  void SetUp() override {
     page_holder = DummyPageHolder::Create();
     document = &page_holder->GetDocument();
     document->GetAnimationClock().ResetTimeForTesting();
