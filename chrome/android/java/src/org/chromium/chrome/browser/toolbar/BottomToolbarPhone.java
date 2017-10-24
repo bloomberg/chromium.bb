@@ -87,6 +87,8 @@ public class BottomToolbarPhone extends ToolbarPhone {
             // movement of the sheet should unfocus it.
             if (isMovingDown && getLocationBar().isUrlBarFocused()) {
                 getLocationBar().setUrlBarFocus(false);
+                // Revert the URL to match the current page.
+                getLocationBar().setUrlToPageUrl();
             }
             boolean buttonsClickable = heightFraction == 0.f;
             mToggleTabStackButton.setClickable(buttonsClickable);
