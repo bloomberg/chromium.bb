@@ -46,8 +46,8 @@ class MODULES_EXPORT MediaSession final
   // internally when a new MediaMetadata object is set.
   void OnMetadataChanged();
 
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   friend class V8MediaSession;
