@@ -941,39 +941,6 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
     base::Optional<Iterator> iter_;
   };
 
-  // Returns a stream of non-DrawRecord ops from a top level pob with indices.
-  // Upon encountering DrawRecord ops, it returns ops from inside them
-  // without returning the DrawRecord op itself.  It does this recursively.
-  class CC_PAINT_EXPORT FlatteningIterator {
-   public:
-    // Offsets and paint op buffer must come from the same DisplayItemList.
-    FlatteningIterator(const PaintOpBuffer* buffer,
-                       const std::vector<size_t>* offsets);
-    ~FlatteningIterator();
-
-    PaintOp* operator->() const {
-      return nested_iter_.empty() ? *top_level_iter_ : *nested_iter_.back();
-    }
-    PaintOp* operator*() const { return operator->(); }
-
-    FlatteningIterator& operator++() {
-      if (nested_iter_.empty())
-        ++top_level_iter_;
-      else
-        ++nested_iter_.back();
-      FlattenCurrentOpIfNeeded();
-      return *this;
-    }
-
-    operator bool() const { return top_level_iter_; }
-
-   private:
-    void FlattenCurrentOpIfNeeded();
-
-    PaintOpBuffer::OffsetIterator top_level_iter_;
-    std::vector<Iterator> nested_iter_;
-  };
-
  private:
   friend class DisplayItemList;
   friend class PaintOpBufferOffsetsTest;

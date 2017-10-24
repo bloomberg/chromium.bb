@@ -51,6 +51,7 @@
 
 #if !defined(OS_NACL)
 #include "cc/paint/display_item_list.h"  // nogncheck
+#include "third_party/skia/include/utils/SkNoDrawCanvas.h"
 #endif
 
 #if !defined(__native_client__)
@@ -7130,6 +7131,117 @@ void GLES2Implementation::Viewport(GLint x,
   CheckGLError();
 }
 
+#if !defined(OS_NACL)
+struct SerializeHelper {
+ public:
+  SerializeHelper(cc::PaintOp::SerializeOptions& options,
+                  size_t initial_size,
+                  TransferBufferInterface* transfer_buffer,
+                  GLES2CmdHelper* helper)
+      : options_(options),
+        transfer_buffer_(initial_size, helper, transfer_buffer),
+        helper_(helper),
+        // Arbitrary canvas size.
+        canvas_(100, 100),
+        free_bytes_(initial_size) {
+    DCHECK(transfer_buffer_.valid());
+  }
+
+  ~SerializeHelper() {
+    // Need to call SendSerializedData;
+    DCHECK(!written_bytes_);
+  }
+
+  void Serialize(const cc::PaintOp* op,
+                 const cc::PlaybackParams& playback_params) {
+    char* memory = static_cast<char*>(transfer_buffer_.address());
+    size_t size = op->Serialize(memory + written_bytes_, free_bytes_, options_);
+    if (!size) {
+      SendSerializedData();
+      transfer_buffer_.Reset(kBlockAlloc);
+      memory = static_cast<char*>(transfer_buffer_.address());
+      free_bytes_ = transfer_buffer_.size();
+      size = op->Serialize(memory + written_bytes_, free_bytes_, options_);
+    }
+    DCHECK_GE(size, 4u);
+    DCHECK_EQ(size % cc::PaintOpBuffer::PaintOpAlign, 0u);
+    DCHECK_LE(size, free_bytes_);
+    DCHECK_EQ(free_bytes_ + written_bytes_, transfer_buffer_.size());
+
+    // Only pass state-changing operations to the canvas.
+    if (!op->IsDrawOp())
+      op->Raster(&canvas_, playback_params);
+
+    written_bytes_ += size;
+    free_bytes_ -= size;
+  }
+
+  void RestoreTo(int count, const cc::PlaybackParams& playback_params) {
+    cc::RestoreOp restore_op;
+    restore_op.type = static_cast<uint8_t>(cc::PaintOpType::Restore);
+
+    while (canvas_.getSaveCount() > count)
+      Serialize(&restore_op, playback_params);
+  }
+
+  void SendSerializedData() {
+    if (!written_bytes_)
+      return;
+    transfer_buffer_.Shrink(written_bytes_);
+    helper_->RasterCHROMIUM(transfer_buffer_.shm_id(),
+                            transfer_buffer_.offset(), written_bytes_);
+    written_bytes_ = 0;
+  }
+
+  SkNoDrawCanvas* canvas() { return &canvas_; }
+
+ private:
+  static constexpr unsigned int kBlockAlloc = 512 * 1024;
+
+  cc::PaintOp::SerializeOptions& options_;
+  ScopedTransferBufferPtr transfer_buffer_;
+  GLES2CmdHelper* helper_;
+  // TODO(enne): this canvas needs to persist across multiple raster calls.
+  // Probably the solution here is to move the "preamble" into the raster
+  // command itself so that the entire raster call + preamble happens in
+  // one call to GLES2Implementation::RasterChromium.
+  SkNoDrawCanvas canvas_;
+
+  size_t written_bytes_ = 0;
+  size_t free_bytes_ = 0;
+};
+
+void SerializeRecursive(const cc::PaintOpBuffer* buffer,
+                        const std::vector<size_t>* indices,
+                        SerializeHelper* serializer) {
+  cc::PlaybackParams params(nullptr, serializer->canvas()->getTotalMatrix());
+  int save_count = serializer->canvas()->getSaveCount();
+
+  for (cc::PaintOpBuffer::CompositeIterator iter(buffer, indices); iter;
+       ++iter) {
+    const cc::PaintOp* op = *iter;
+    if (op->GetType() == cc::PaintOpType::DrawRecord) {
+      // TODO(enne): Add some flag here to save ctm, or adjust setmatrix ops.
+      cc::SaveOp save_op;
+      save_op.type = static_cast<uint8_t>(cc::PaintOpType::Save);
+      serializer->Serialize(&save_op, params);
+
+      SerializeRecursive(static_cast<const cc::DrawRecordOp*>(op)->record.get(),
+                         nullptr, serializer);
+
+      cc::RestoreOp restore_op;
+      restore_op.type = static_cast<uint8_t>(cc::PaintOpType::Restore);
+      serializer->Serialize(&restore_op, params);
+      continue;
+    }
+
+    serializer->Serialize(op, params);
+  }
+
+  serializer->RestoreTo(save_count, params);
+}
+#endif
+
 void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
                                          GLint x,
                                          GLint y,
@@ -7145,51 +7257,16 @@ void GLES2Implementation::RasterCHROMIUM(const cc::DisplayItemList* list,
   // TODO(enne): tune these numbers
   // TODO(enne): convert these types here and in transfer buffer to be size_t.
   static constexpr unsigned int kMinAlloc = 16 * 1024;
-  static constexpr unsigned int kBlockAlloc = 512 * 1024;
-
   unsigned int free_size = std::max(transfer_buffer_->GetFreeSize(), kMinAlloc);
-  ScopedTransferBufferPtr buffer(free_size, helper_, transfer_buffer_);
-  DCHECK(buffer.valid());
-
-  char* memory = static_cast<char*>(buffer.address());
-  size_t written_bytes = 0;
-  size_t free_bytes = buffer.size();
-
   cc::PaintOp::SerializeOptions options;
+  SerializeHelper serializer(options, free_size, transfer_buffer_, helper_);
 
   // TODO(enne): need to implement alpha folding optimization from POB.
   // TODO(enne): don't access private members of DisplayItemList.
   gfx::Rect playback_rect(x, y, w, h);
   std::vector<size_t> indices = list->rtree_.Search(playback_rect);
-  for (cc::PaintOpBuffer::FlatteningIterator iter(&list->paint_op_buffer_,
-                                                  &indices);
-       iter; ++iter) {
-    const cc::PaintOp* op = *iter;
-    size_t size = op->Serialize(memory + written_bytes, free_bytes, options);
-    if (!size) {
-      buffer.Shrink(written_bytes);
-      helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), written_bytes);
-      buffer.Reset(kBlockAlloc);
-      memory = static_cast<char*>(buffer.address());
-      written_bytes = 0;
-      free_bytes = buffer.size();
-
-      size = op->Serialize(memory + written_bytes, free_bytes, options);
-    }
-    DCHECK_GE(size, 4u);
-    DCHECK_EQ(size % cc::PaintOpBuffer::PaintOpAlign, 0u);
-    DCHECK_LE(size, free_bytes);
-    DCHECK_EQ(free_bytes + written_bytes, buffer.size());
-
-    written_bytes += size;
-    free_bytes -= size;
-  }
-
-  buffer.Shrink(written_bytes);
-
-  if (!written_bytes)
-    return;
-  helper_->RasterCHROMIUM(buffer.shm_id(), buffer.offset(), buffer.size());
+  SerializeRecursive(&list->paint_op_buffer_, &indices, &serializer);
+  serializer.SendSerializedData();
 
   CheckGLError();
 #endif
