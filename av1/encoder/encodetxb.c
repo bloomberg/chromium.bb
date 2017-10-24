@@ -2400,11 +2400,15 @@ int av1_optimize_txb(const AV1_COMMON *cm, MACROBLOCK *x, int plane,
                        rdmult,
                        &cm->coeff_ctx_table };
 
+#if CONFIG_EOB_FIRST
+  const int update = optimize_txb(&txb_info, &txb_costs, NULL, 0, fast_mode);
+#else
   TxbCache txb_cache;
   gen_txb_cache(&txb_cache, &txb_info);
 
   const int update =
       optimize_txb(&txb_info, &txb_costs, &txb_cache, 0, fast_mode);
+#endif
   if (update) p->eobs[block] = txb_info.eob;
   return txb_info.eob;
 }
