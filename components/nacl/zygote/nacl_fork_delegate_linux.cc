@@ -39,6 +39,7 @@
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace {
 
@@ -222,11 +223,11 @@ void NaClForkDelegate::Init(const int sandboxdesc,
 
       // Append any switches that need to be forwarded to the NaCl helper.
       static const char* kForwardSwitches[] = {
-        switches::kAllowSandboxDebugging,
-        switches::kDisableSeccompFilterSandbox,
-        switches::kEnableNaClDebug,
-        switches::kNaClDangerousNoSandboxNonSfi,
-        switches::kNoSandbox,
+          service_manager::switches::kAllowSandboxDebugging,
+          service_manager::switches::kDisableSeccompFilterSandbox,
+          switches::kEnableNaClDebug,
+          switches::kNaClDangerousNoSandboxNonSfi,
+          switches::kNoSandbox,
       };
       const base::CommandLine& current_cmd_line =
           *base::CommandLine::ForCurrentProcess();

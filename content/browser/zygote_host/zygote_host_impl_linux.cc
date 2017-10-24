@@ -23,6 +23,7 @@
 #include "sandbox/linux/services/namespace_sandbox.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_host.h"
 #include "sandbox/linux/suid/common/sandbox.h"
+#include "services/service_manager/sandbox/switches.h"
 
 namespace content {
 
@@ -111,7 +112,8 @@ void ZygoteHostImpl::Init(const base::CommandLine& command_line) {
                     "OOM scores.";
     }
 #endif
-  } else if (!command_line.HasSwitch(switches::kDisableSetuidSandbox) &&
+  } else if (!command_line.HasSwitch(
+                 service_manager::switches::kDisableSetuidSandbox) &&
              !sandbox_binary_.empty()) {
     use_suid_sandbox_ = true;
 

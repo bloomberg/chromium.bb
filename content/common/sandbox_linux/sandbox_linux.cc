@@ -34,7 +34,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/sandbox_linux/sandbox_seccomp_bpf_linux.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/sandbox_linux.h"
 #include "sandbox/linux/services/credentials.h"
 #include "sandbox/linux/services/namespace_sandbox.h"
@@ -44,6 +43,7 @@
 #include "sandbox/linux/services/yama.h"
 #include "sandbox/linux/suid/client/setuid_sandbox_client.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
+#include "services/service_manager/sandbox/switches.h"
 
 #if defined(ANY_OF_AMTLU_SANITIZER)
 #include <sanitizer/common_interface_defs.h>
@@ -62,10 +62,9 @@ struct FDCloser {
 };
 
 void LogSandboxStarted(const std::string& sandbox_name) {
-  const base::CommandLine& command_line =
-      *base::CommandLine::ForCurrentProcess();
   const std::string process_type =
-      command_line.GetSwitchValueASCII(switches::kProcessType);
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          service_manager::switches::kProcessType);
   const std::string activated_sandbox =
       "Activated " + sandbox_name + " sandbox for process type: " +
       process_type + ".";
@@ -298,8 +297,8 @@ bool LinuxSandbox::InitializeSandboxImpl(
   initialize_sandbox_ran_ = true;
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  const std::string process_type =
-      command_line->GetSwitchValueASCII(switches::kProcessType);
+  const std::string process_type = command_line->GetSwitchValueASCII(
+      service_manager::switches::kProcessType);
   service_manager::SandboxType sandbox_type =
       service_manager::SandboxTypeFromCommandLine(*command_line);
 
@@ -327,20 +326,22 @@ bool LinuxSandbox::InitializeSandboxImpl(
 
 #if defined(OS_CHROMEOS)
     if (base::SysInfo::IsRunningOnChromeOS() &&
-        process_type == switches::kGpuProcess) {
+        process_type == service_manager::switches::kGpuProcess) {
       error_message += " This error can be safely ignored in VMTests.";
     }
 #endif
 
     // The GPU process is allowed to call InitializeSandbox() with threads.
-    bool sandbox_failure_fatal = process_type != switches::kGpuProcess;
+    bool sandbox_failure_fatal =
+        process_type != service_manager::switches::kGpuProcess;
     // This can be disabled with the '--gpu-sandbox-failures-fatal' flag.
     // Setting the flag with no value or any value different than 'yes' or 'no'
     // is equal to setting '--gpu-sandbox-failures-fatal=yes'.
-    if (process_type == switches::kGpuProcess &&
-        command_line->HasSwitch(switches::kGpuSandboxFailuresFatal)) {
-      const std::string switch_value =
-          command_line->GetSwitchValueASCII(switches::kGpuSandboxFailuresFatal);
+    if (process_type == service_manager::switches::kGpuProcess &&
+        command_line->HasSwitch(
+            service_manager::switches::kGpuSandboxFailuresFatal)) {
+      const std::string switch_value = command_line->GetSwitchValueASCII(
+          service_manager::switches::kGpuSandboxFailuresFatal);
       sandbox_failure_fatal = switch_value != "no";
     }
 
@@ -404,8 +405,8 @@ bool LinuxSandbox::LimitAddressSpace(
     // space under normal usage, see crbug.com/271119.
     // For now, increase limit to 16GB for renderer, worker, and GPU processes
     // to accomodate.
-    if (process_type == switches::kRendererProcess ||
-        process_type == switches::kGpuProcess) {
+    if (process_type == service_manager::switches::kRendererProcess ||
+        process_type == service_manager::switches::kGpuProcess) {
       address_space_limit = 1ULL << 34;
       if (options.has_wasm_trap_handler) {
         // WebAssembly memory objects use a large amount of address space when

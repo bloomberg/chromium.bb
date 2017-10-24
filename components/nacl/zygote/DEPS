@@ -1,5 +1,6 @@
 include_rules = [
+  "+crypto",
   "+sandbox/linux/services",
   "+sandbox/linux/suid",
-  "+crypto",
+  "+services/service_manager/sandbox",
 ]

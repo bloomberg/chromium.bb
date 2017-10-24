@@ -40,9 +40,6 @@ const char kAllowInsecureLocalhost[] = "allow-insecure-localhost";
 const char kAllowLoopbackInPeerConnection[] =
     "allow-loopback-in-peer-connection";
 
-// Allows debugging of sandboxed processes (see zygote_main_linux.cc).
-const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
-
 // Uses the android SkFontManager on linux. The specified directory should
 // include the configuration xml file with the name "fonts.xml".
 // This is used in blimp to emulate android fonts on linux.
@@ -264,12 +261,6 @@ const char kDisableRendererBackgrounding[]  = "disable-renderer-backgrounding";
 // Whether the resize lock is disabled. Default is false. This is generally only
 // useful for tests that want to force disabling.
 const char kDisableResizeLock[] = "disable-resize-lock";
-
-// Disable the seccomp filter sandbox (seccomp-bpf) (Linux only).
-const char kDisableSeccompFilterSandbox[]   = "disable-seccomp-filter-sandbox";
-
-// Disable the setuid sandbox (Linux only).
-const char kDisableSetuidSandbox[]          = "disable-setuid-sandbox";
 
 // Disable shared workers.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
@@ -555,12 +546,6 @@ const char kGpuLauncher[]                   = "gpu-launcher";
 
 // Makes this process a GPU sub-process.
 const char kGpuProcess[]                    = "gpu-process";
-
-// Allows shmat() system call in the GPU sandbox.
-const char kGpuSandboxAllowSysVShm[]        = "gpu-sandbox-allow-sysv-shm";
-
-// Makes GPU sandbox failures fatal.
-const char kGpuSandboxFailuresFatal[]       = "gpu-sandbox-failures-fatal";
 
 // Causes the GPU process to display a dialog on launch.
 const char kGpuStartupDialog[]              = "gpu-startup-dialog";

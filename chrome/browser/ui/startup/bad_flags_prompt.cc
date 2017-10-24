@@ -33,6 +33,7 @@
 #include "google_apis/gaia/gaia_switches.h"
 #include "media/base/media_switches.h"
 #include "media/media_features.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 
@@ -87,9 +88,9 @@ void ShowBadFlagsPrompt(Browser* browser) {
   // security will suffer".
   static const char* kBadFlags[] = {
     // These flags disable sandbox-related security.
-    switches::kDisableGpuSandbox,
-    switches::kDisableSeccompFilterSandbox,
-    switches::kDisableSetuidSandbox,
+    service_manager::switches::kDisableGpuSandbox,
+    service_manager::switches::kDisableSeccompFilterSandbox,
+    service_manager::switches::kDisableSetuidSandbox,
     switches::kDisableWebSecurity,
 #if BUILDFLAG(ENABLE_NACL)
     switches::kNaClDangerousNoSandboxNonSfi,

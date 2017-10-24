@@ -24,6 +24,7 @@
 #include "content/public/common/result_codes.h"
 #include "media/base/media_switches.h"
 #include "services/service_manager/embedder/switches.h"
+#include "services/service_manager/sandbox/switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gfx/switches.h"
 
@@ -251,10 +252,11 @@ void ZygoteCommunication::Init() {
   // to the zygote/renderers.
   // Should this list be obtained from browser_render_process_host.cc?
   static const char* const kForwardSwitches[] = {
+      service_manager::switches::kAllowSandboxDebugging,
       service_manager::switches::kDisableInProcessStackTraces,
-      switches::kAllowSandboxDebugging, switches::kAndroidFontsPath,
-      switches::kClearKeyCdmPathForTesting,
-      switches::kDisableSeccompFilterSandbox, switches::kEnableHeapProfiling,
+      service_manager::switches::kDisableSeccompFilterSandbox,
+      switches::kAndroidFontsPath, switches::kClearKeyCdmPathForTesting,
+      switches::kEnableHeapProfiling,
       switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
       // Need to tell the zygote that it is headless so that we don't try to use
       // the wrong type of main delegate.
