@@ -34,6 +34,20 @@ bool SimpleDataProducer::WriteStreamData(QuicStreamId id,
   return send_buffer_map_[id]->WriteStreamData(offset, data_length, writer);
 }
 
+void SimpleDataProducer::OnStreamFrameAcked(
+    const QuicStreamFrame& frame,
+    QuicTime::Delta /*ack_delay_time*/) {
+  OnStreamFrameDiscarded(frame);
+}
+
+void SimpleDataProducer::OnStreamFrameDiscarded(const QuicStreamFrame& frame) {
+  if (!QuicContainsKey(send_buffer_map_, frame.stream_id)) {
+    return;
+  }
+  send_buffer_map_[frame.stream_id]->RemoveStreamFrame(frame.offset,
+                                                       frame.data_length);
+}
+
 }  // namespace test
 
 }  // namespace net
