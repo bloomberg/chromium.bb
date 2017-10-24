@@ -333,7 +333,7 @@ class RemoteDeviceUpdater(object):
                rootfs_update=True, clobber_stateful=False, reboot=True,
                board=None, src_image_to_delta=None, wipe=True, debug=False,
                yes=False, force=False, ssh_private_key=None, ping=True,
-               disable_verification=False):
+               disable_verification=False, send_payload_in_parallel=False):
     """Initializes RemoteDeviceUpdater"""
     if not stateful_update and not rootfs_update:
       raise ValueError('No update operation to perform; either stateful or'
@@ -356,6 +356,7 @@ class RemoteDeviceUpdater(object):
     self.wipe = wipe and not debug
     self.yes = yes
     self.force = force
+    self.send_payload_in_parallel = send_payload_in_parallel
 
   def Cleanup(self):
     """Cleans up the temporary directory."""
@@ -461,7 +462,8 @@ class RemoteDeviceUpdater(object):
               reboot=self.reboot,
               disable_verification=self.disable_verification,
               clobber_stateful=self.clobber_stateful,
-              yes=self.yes)
+              yes=self.yes,
+              send_payload_in_parallel=self.send_payload_in_parallel)
           chromeos_AU.CheckPayloads()
           chromeos_AU.RunUpdate()
 
@@ -486,7 +488,7 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
           rootfs_update=True, stateful_update=True, clobber_stateful=False,
           reboot=True, wipe=True, ssh_private_key=None, ping=True,
           disable_rootfs_verification=False, clear_cache=False, yes=False,
-          force=False, debug=False):
+          force=False, debug=False, send_payload_in_parallel=False):
   """Flashes a device, USB drive, or file with an image.
 
   This provides functionality common to `cros flash` and `brillo flash`
@@ -514,6 +516,8 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
     yes: Assume "yes" for any prompt.
     force: Ignore sanity checks and prompts. Overrides |yes| if True.
     debug: Print additional debugging messages.
+    send_payload_in_parallel: Transfer payloads in chunks in parallel to speed
+        up transmissions for long haul between endpoints.
 
   Raises:
     FlashError: An unrecoverable error occured.
@@ -560,7 +564,8 @@ def Flash(device, image, board=None, install=False, src_image_to_delta=None,
         force=force,
         ssh_private_key=ssh_private_key,
         ping=ping,
-        disable_verification=disable_rootfs_verification)
+        disable_verification=disable_rootfs_verification,
+        send_payload_in_parallel=send_payload_in_parallel)
     updater.Run()
   elif device.scheme == commandline.DEVICE_SCHEME_USB:
     path = osutils.ExpandPath(device.path) if device.path else ''

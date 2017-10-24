@@ -20,6 +20,7 @@ from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import osutils
+from chromite.lib import parallel
 from chromite.lib import timeout_util
 from chromite.lib.workqueue import throttle
 
@@ -29,6 +30,8 @@ TEST_PRIVATE_KEY = os.path.normpath(
     os.path.join(_path, '../ssh_keys/testing_rsa'))
 del _path
 
+CHUNK_SIZE = 50 * 1024 * 1024
+DEGREE_OF_PARALLELISM = 8
 LOCALHOST = 'localhost'
 LOCALHOST_IP = '127.0.0.1'
 ROOT_ACCOUNT = 'root'
@@ -713,13 +716,47 @@ class RemoteDevice(object):
 
     self.tempdir.Cleanup()
 
+  def _CopyToDeviceInParallel(self, src, dest):
+    """Chop source file in chunks, send them to destination in parallel.
+
+    Transfer chunks of file in parallel and assemble in destination if the
+    file size is larger than chunk size. Fall back to scp mode otherwise.
+
+    Args:
+      src: Local path as a string.
+      dest: rsync/scp path of the form <host>:/<path> as a string.
+    """
+    src_filename = os.path.basename(src)
+    chunk_prefix = src_filename + '_'
+    with osutils.TempDir() as tempdir:
+      chunk_path = os.path.join(tempdir, chunk_prefix)
+      try:
+        cmd = ['split', '-b', str(CHUNK_SIZE), src, chunk_path]
+        cros_build_lib.RunCommand(cmd)
+        input_list = [[chunk_file, dest, 'scp']
+                      for chunk_file in glob.glob(chunk_path + '*')]
+        parallel.RunTasksInProcessPool(self.CopyToDevice,
+                                       input_list,
+                                       processes=DEGREE_OF_PARALLELISM)
+        logging.info('Assembling these chunks now.....')
+        chunks = '%s/%s*' % (dest, chunk_prefix)
+        final_dest = '%s/%s' % (dest, src_filename)
+        assemble_cmd = ['cat', chunks, '>', final_dest]
+        self.RunCommand(assemble_cmd)
+        cleanup_cmd = ['rm', '-f', chunks]
+        self.RunCommand(cleanup_cmd)
+      except IOError:
+        logging.err('Could not complete the payload transfer...')
+        raise
+    logging.info('Successfully copy %s to %s in chunks in parallel', src, dest)
+
   def CopyToDevice(self, src, dest, mode, **kwargs):
     """Copy path to device.
 
     Args:
       src: Local path as a string.
       dest: rsync/scp path of the form <host>:/<path> as a string.
-      mode: can be either 'rsync' or 'scp'.
+      mode: can be either 'rsync' or 'scp', 'throttled', 'parallel'.
         * Use rsync --compress when copying compressible (factor > 2, text/log)
         files. This uses a quite a bit of CPU but preserves bandwidth.
         * Use rsync without compression when delta transfering a whole directory
@@ -729,12 +766,26 @@ class RemoteDevice(object):
         copy (which must exist at the destination) needing minor updates.
         * Use scp when we have incompressible files (say already compressed),
         especially if we know no previous version exist at the destination.
+        * Use throttled when we want to transfer files from devserver in lab
+        with centralized throttling mode.
+        * Use parallel when we want to transfer a large file with chunks
+        and transfer them in degree of parallelism for speed especially for
+        slow network (congested, long haul, worse SNR).
     """
-    assert mode in ['rsync', 'scp', 'throttled']
+    assert mode in ['rsync', 'scp', 'throttled', 'parallel']
+    logging.info('[mode:%s] copy: %s -> %s:%s', mode, src, self.hostname, dest)
     if mode == 'throttled':
-      logging.info('Throttled copy: %s -> %s:%s', src, self.hostname, dest)
       throttle.ThrottledCopy(self.hostname, src, dest, **kwargs)
       return
+    if mode == 'parallel':
+      # Chop and send chunks in parallel only if the file size is larger than
+      # CHUNK_SIZE.
+      if os.stat(src).st_size > CHUNK_SIZE:
+        self._CopyToDeviceInParallel(src, dest)
+        return
+      else:
+        logging.info('%s is too small for parallelism, fall back to scp', src)
+        mode = 'scp'
     msg = 'Could not copy %s to device.' % src
     # Fall back to scp if device has no rsync. Happens when stateful is cleaned.
     if mode == 'scp' or not self.HasRsync():

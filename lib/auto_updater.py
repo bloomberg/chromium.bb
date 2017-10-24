@@ -185,13 +185,15 @@ class ChromiumOSFlashUpdater(BaseUpdater):
   REMOTE_UPDATE_ENGINE_PERF_RESULTS_PATH = '/var/log/perf_data_results.json'
 
   # `mode` parameter when copying payload files to the DUT.
-  PAYLOAD_MODE = 'scp'
+  PAYLOAD_MODE_PARALLEL = 'parallel'
+  PAYLOAD_MODE_SCP = 'scp'
 
 
   def __init__(self, device, payload_dir, dev_dir='', tempdir=None,
                original_payload_dir=None, do_rootfs_update=True,
                do_stateful_update=True, reboot=True, disable_verification=False,
-               clobber_stateful=False, yes=False, payload_filename=None):
+               clobber_stateful=False, yes=False, payload_filename=None,
+               send_payload_in_parallel=False):
     """Initialize a ChromiumOSFlashUpdater for auto-update a chromium OS device.
 
     Args:
@@ -222,6 +224,8 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       payload_filename: Filename of exact payload file to use for
           update instead of the default: update.gz. Defaults to None. Use
           only if you staged a payload by filename (i.e not artifact) first.
+      send_payload_in_parallel: whether to transfer payload in chunks
+          in parallel. The default is False.
     """
     super(ChromiumOSFlashUpdater, self).__init__(device, payload_dir)
     if tempdir is not None:
@@ -248,6 +252,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     self.stateful_update_bin = None
     # autoupdate_EndToEndTest uses exact payload filename for update
     self.payload_filename = payload_filename
+    if send_payload_in_parallel:
+      self.payload_mode = self.PAYLOAD_MODE_PARALLEL
+    else:
+      self.payload_mode = self.PAYLOAD_MODE_SCP
     self.perf_id = None
 
   @property
@@ -551,7 +559,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     payload_name = self._GetRootFsPayloadFileName()
     payload = os.path.join(self.payload_dir, payload_name)
     self.device.CopyToDevice(payload, device_payload_dir,
-                             mode=self.PAYLOAD_MODE,
+                             mode=self.payload_mode,
                              log_output=True, **self._cmd_kwargs)
 
     if self.is_au_endtoendtest:
@@ -599,12 +607,12 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           self.original_payload_dir, ds_wrapper.STATEFUL_FILENAME)
       self._EnsureDeviceDirectory(self.device_restore_dir)
       self.device.CopyToDevice(original_payload, self.device_restore_dir,
-                               mode=self.PAYLOAD_MODE, log_output=True,
+                               mode=self.payload_mode, log_output=True,
                                **self._cmd_kwargs)
 
     logging.info('Copying target stateful payload to device...')
     payload = os.path.join(self.payload_dir, ds_wrapper.STATEFUL_FILENAME)
-    self.device.CopyToWorkDir(payload, mode=self.PAYLOAD_MODE,
+    self.device.CopyToWorkDir(payload, mode=self.payload_mode,
                               log_output=True, **self._cmd_kwargs)
 
   def RestoreStateful(self):
