@@ -34,6 +34,7 @@
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/frame/PerformanceMonitor.h"
 #include "core/frame/Settings.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/probe/CoreProbes.h"
 #include "modules/geolocation/Coordinates.h"
 #include "modules/geolocation/GeolocationError.h"
@@ -49,6 +50,11 @@ namespace {
 const char kPermissionDeniedErrorMessage[] = "User denied Geolocation";
 const char kFramelessDocumentErrorMessage[] =
     "Geolocation cannot be used in frameless documents";
+const char kFeaturePolicyErrorMessage[] =
+    "Geolocation has been disabled in this document by Feature Policy.";
+const char kFeaturePolicyConsoleWarning[] =
+    "Geolocation access has been blocked because of a Feature Policy applied "
+    "to the current document. See https://goo.gl/EuHzyv for more details.";
 
 Geoposition* CreateGeoposition(
     const device::mojom::blink::Geoposition& position) {
@@ -143,16 +149,17 @@ void Geolocation::RecordOriginTypeAccess() const {
   Document* document = this->GetDocument();
   DCHECK(document);
 
-  // It is required by isSecureContext() but isn't
-  // actually used. This could be used later if a warning is shown in the
-  // developer console.
+  // It is required by isSecureContext() but isn't actually used. This could be
+  // used later if a warning is shown in the developer console.
   String insecure_origin_msg;
   if (document->IsSecureContext(insecure_origin_msg)) {
     UseCounter::Count(document, WebFeature::kGeolocationSecureOrigin);
     UseCounter::CountCrossOriginIframe(
         *document, WebFeature::kGeolocationSecureOriginIframe);
-    Deprecation::CountDeprecationFeaturePolicy(
-        *document, WebFeaturePolicyFeature::kGeolocation);
+    if (!RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
+      Deprecation::CountDeprecationFeaturePolicy(
+          *document, WebFeaturePolicyFeature::kGeolocation);
+    }
   } else if (GetFrame()
                  ->GetSettings()
                  ->GetAllowGeolocationOnInsecureOrigins()) {
@@ -167,8 +174,10 @@ void Geolocation::RecordOriginTypeAccess() const {
         WebFeature::kGeolocationInsecureOriginIframeDeprecatedNotRemoved);
     HostsUsingFeatures::CountAnyWorld(
         *document, HostsUsingFeatures::Feature::kGeolocationInsecureHost);
-    Deprecation::CountDeprecationFeaturePolicy(
-        *document, WebFeaturePolicyFeature::kGeolocation);
+    if (!RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
+      Deprecation::CountDeprecationFeaturePolicy(
+          *document, WebFeaturePolicyFeature::kGeolocation);
+    }
   } else {
     Deprecation::CountDeprecation(document,
                                   WebFeature::kGeolocationInsecureOrigin);
@@ -225,6 +234,19 @@ void Geolocation::StartRequest(GeoNotifier* notifier) {
     notifier->SetFatalError(
         PositionError::Create(PositionError::kPermissionDenied, error_message));
     return;
+  }
+
+  if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
+    if (!GetFrame()->IsFeatureEnabled(WebFeaturePolicyFeature::kGeolocation)) {
+      UseCounter::Count(GetDocument(),
+                        WebFeature::kGeolocationDisabledByFeaturePolicy);
+      GetDocument()->AddConsoleMessage(
+          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                                 kFeaturePolicyConsoleWarning));
+      notifier->SetFatalError(PositionError::Create(
+          PositionError::kPermissionDenied, kFeaturePolicyErrorMessage));
+      return;
+    }
   }
 
   if (HaveSuitableCachedPosition(notifier->Options())) {

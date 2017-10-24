@@ -120,11 +120,6 @@
   },
   {
     "prefix": "feature-policy-permissions",
-    "base": "http/tests/geolocation-api",
-    "args": ["--enable-features=UseFeaturePolicyForPermissions"]
-  },
-  {
-    "prefix": "feature-policy-permissions",
     "base": "external/wpt/mediacapture-streams",
     "args": ["--enable-features=UseFeaturePolicyForPermissions",
              "--use-fake-device-for-media-stream",

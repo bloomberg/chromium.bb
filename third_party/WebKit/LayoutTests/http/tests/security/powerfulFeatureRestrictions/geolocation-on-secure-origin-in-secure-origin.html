@@ -35,7 +35,7 @@
                         "</sc" + "ript>" +
                         "<iframe src='" + get_host_info().HTTP_ORIGIN +
                         "/security/powerfulFeatureRestrictions/resources/" +
-                        "geolocation.html'>" +
+                        "geolocation.html' allow='geolocation *;'>" +
                         "</iframe>";
         document.body.appendChild(iframe);
 
@@ -44,6 +44,7 @@
         iframe.sandbox = "allow-scripts";
         iframe.src = "/security/powerfulFeatureRestrictions/resources/" +
                      "geolocation.html";
+        iframe.allow = 'geolocation *;';
         document.body.appendChild(iframe);
 
         // Insecure origin frames sandboxed secure origin frames secure
@@ -53,6 +54,7 @@
         iframe.src = get_host_info().HTTP_ORIGIN +
                      "/security/powerfulFeatureRestrictions/resources/" +
                      "geolocation-in-iframe.html";
+        iframe.allow = 'geolocation *;';
         document.body.appendChild(iframe);
 
         // Regression test for crbug.com/478784
@@ -64,7 +66,7 @@
                         "<iframe sandbox='allow-scripts' src='" +
                         get_host_info().HTTP_ORIGIN +
                         "/security/powerfulFeatureRestrictions/resources/" +
-                        "geolocation.html'>" +
+                        "geolocation.html' allow='geolocation *;'>" +
                         "</iframe>";
         document.body.appendChild(iframe);
 

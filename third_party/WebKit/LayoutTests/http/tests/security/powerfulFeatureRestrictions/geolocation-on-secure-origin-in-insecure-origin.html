@@ -32,6 +32,7 @@
             iframe.src = get_host_info().HTTP_ORIGIN +
                          "/security/powerfulFeatureRestrictions/" +
                          "resources/geolocation.html";
+            iframe.allow = 'geolocation *;';
            document.body.appendChild(iframe);
 
            // A srcdoc should be skipped in the ancestor check.
@@ -42,8 +43,9 @@
                            "</sc" + "ript>" +
                            "<iframe src='" + get_host_info().HTTP_ORIGIN +
                            "/security/powerfulFeatureRestrictions/resources" +
-                           "/geolocation.html'>" +
+                           "/geolocation.html' allow='geolocation *;'>" +
                            "</iframe>";
+           iframe.allow = 'geolocation *;';
            document.body.appendChild(iframe);
 
            // A sandboxed iframe should use the frame's URL as the origin to
@@ -53,6 +55,7 @@
            iframe.src = get_host_info().HTTP_ORIGIN +
                         "/security/powerfulFeatureRestrictions/resources/" +
                         "geolocation.html";
+           iframe.allow = 'geolocation *;';
            document.body.appendChild(iframe);
 
            // Insecure origin frames sandboxed secure origin frames secure
@@ -62,6 +65,7 @@
            iframe.src = get_host_info().HTTP_ORIGIN +
                         "/security/powerfulFeatureRestrictions/resources/" +
                         "geolocation-in-iframe.html";
+           iframe.allow = 'geolocation *;';
            document.body.appendChild(iframe);
 
 
