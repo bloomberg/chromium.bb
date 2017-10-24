@@ -37,7 +37,7 @@ class CanvasCaptureMediaStreamTrack final : public MediaStreamTrack {
 
   CanvasCaptureMediaStreamTrack* clone(ScriptState*) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   CanvasCaptureMediaStreamTrack(const CanvasCaptureMediaStreamTrack&,

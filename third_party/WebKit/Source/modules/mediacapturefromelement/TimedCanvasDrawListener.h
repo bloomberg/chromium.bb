@@ -21,14 +21,14 @@ class TimedCanvasDrawListener final
   USING_GARBAGE_COLLECTED_MIXIN(TimedCanvasDrawListener);
 
  public:
-  ~TimedCanvasDrawListener();
+  ~TimedCanvasDrawListener() override;
   static TimedCanvasDrawListener* Create(
       std::unique_ptr<WebCanvasCaptureHandler>,
       double frame_rate,
       ExecutionContext*);
   void SendNewFrame(sk_sp<SkImage>) override;
 
-  void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 
  private:
   TimedCanvasDrawListener(std::unique_ptr<WebCanvasCaptureHandler>,
