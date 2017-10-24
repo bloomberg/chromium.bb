@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/service_manager/public/cpp/standalone_service/linux_sandbox.h"
+#include "services/service_manager/public/cpp/standalone_service/sandbox_linux.h"
 
 #include <fcntl.h>
 #include <sys/syscall.h>
@@ -116,16 +116,16 @@ class SandboxPolicy : public sandbox::BaselinePolicy {
 
 }  // namespace
 
-LinuxSandbox::LinuxSandbox(const std::vector<BrokerFilePermission>& permissions)
+SandboxLinux::SandboxLinux(const std::vector<BrokerFilePermission>& permissions)
     : broker_(new sandbox::syscall_broker::BrokerProcess(EPERM, permissions)) {
   CHECK(broker_->Init(
       base::Bind<bool (*)()>(&sandbox::Credentials::DropAllCapabilities)));
   policy_ = std::make_unique<SandboxPolicy>(broker_.get());
 }
 
-LinuxSandbox::~LinuxSandbox() {}
+SandboxLinux::~SandboxLinux() {}
 
-void LinuxSandbox::Warmup() {
+void SandboxLinux::Warmup() {
   proc_fd_ = sandbox::ProcUtil::OpenProc();
   warmed_up_ = true;
 
@@ -135,7 +135,7 @@ void LinuxSandbox::Warmup() {
   CHECK(!sandbox::ProcUtil::HasOpenDirectory(proc_fd_.get()));
 }
 
-void LinuxSandbox::EngageNamespaceSandbox() {
+void SandboxLinux::EngageNamespaceSandbox() {
   CHECK(warmed_up_);
   CHECK_EQ(1, getpid());
   CHECK(sandbox::NamespaceSandbox::InNewPidNamespace());
@@ -144,7 +144,7 @@ void LinuxSandbox::EngageNamespaceSandbox() {
   CHECK(sandbox::Credentials::DropAllCapabilities(proc_fd_.get()));
 }
 
-void LinuxSandbox::EngageSeccompSandbox() {
+void SandboxLinux::EngageSeccompSandbox() {
   CHECK(warmed_up_);
   sandbox::SandboxBPF sandbox(std::move(policy_));
   base::ScopedFD proc_fd(HANDLE_EINTR(
@@ -162,7 +162,7 @@ void LinuxSandbox::EngageSeccompSandbox() {
   ANNOTATE_LEAKING_OBJECT_PTR(leaked_broker);
 }
 
-void LinuxSandbox::Seal() {
+void SandboxLinux::Seal() {
   proc_fd_.reset();
 }
 

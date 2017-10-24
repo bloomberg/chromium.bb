@@ -50,7 +50,7 @@ int UtilityMain(const MainFunctionParams& parameters) {
   // TODO(jorgelo): move this after GTK initialization when we enable a strict
   // Seccomp-BPF policy.
   if (parameters.zygote_child) {
-    LinuxSandbox::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(),
+    SandboxLinux::InitializeSandbox(SandboxSeccompBPF::PreSandboxHook(),
                                     SandboxSeccompBPF::Options());
   }
 #elif defined(OS_WIN)

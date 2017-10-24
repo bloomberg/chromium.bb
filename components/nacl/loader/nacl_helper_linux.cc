@@ -87,8 +87,8 @@ void BecomeNaClLoader(base::ScopedFD browser_fd,
   // In Non-SFI mode, it's important to close any non-expected IPC channels.
   CHECK(uses_nonsfi_mode);
   // The low-level kSandboxIPCChannel is used by renderers and NaCl for
-  // various operations. See the LinuxSandbox::METHOD_* methods. NaCl uses
-  // LinuxSandbox::METHOD_MAKE_SHARED_MEMORY_SEGMENT in SFI mode, so this
+  // various operations. See the SandboxLinux::METHOD_* methods. NaCl uses
+  // SandboxLinux::METHOD_MAKE_SHARED_MEMORY_SEGMENT in SFI mode, so this
   // should only be closed in Non-SFI mode.
   // This file descriptor is insidiously used by a number of APIs. Closing it
   // could lead to difficult to debug issues. Instead of closing it, replace

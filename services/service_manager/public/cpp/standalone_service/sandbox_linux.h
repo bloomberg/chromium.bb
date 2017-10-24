@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_LINUX_SANDBOX_H_
-#define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_LINUX_SANDBOX_H_
+#ifndef SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_SANDBOX_LINUX_H_
+#define SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_SANDBOX_LINUX_H_
 
 #include <memory>
 
@@ -17,12 +17,12 @@ namespace service_manager {
 
 // Encapsulates all tasks related to raising the sandbox for a standalone
 // service.
-class LinuxSandbox {
+class SandboxLinux {
  public:
-  explicit LinuxSandbox(
+  explicit SandboxLinux(
       const std::vector<sandbox::syscall_broker::BrokerFilePermission>&
           permissions);
-  ~LinuxSandbox();
+  ~SandboxLinux();
 
   // Grabs a file descriptor to /proc.
   void Warmup();
@@ -44,9 +44,9 @@ class LinuxSandbox {
   std::unique_ptr<sandbox::syscall_broker::BrokerProcess> broker_;
   std::unique_ptr<sandbox::bpf_dsl::Policy> policy_;
 
-  DISALLOW_COPY_AND_ASSIGN(LinuxSandbox);
+  DISALLOW_COPY_AND_ASSIGN(SandboxLinux);
 };
 
 }  // namespace service_manager
 
-#endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_LINUX_SANDBOX_H_
+#endif  // SERVICES_SERVICE_MANAGER_PUBLIC_CPP_STANDALONE_SERVICE_SANDBOX_LINUX_H_

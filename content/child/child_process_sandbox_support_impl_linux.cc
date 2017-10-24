@@ -30,7 +30,7 @@ void GetFallbackFontForCharacter(int32_t character,
   TRACE_EVENT0("sandbox_ipc", "GetFontFamilyForCharacter");
 
   base::Pickle request;
-  request.WriteInt(LinuxSandbox::METHOD_GET_FALLBACK_FONT_FOR_CHAR);
+  request.WriteInt(SandboxLinux::METHOD_GET_FALLBACK_FONT_FOR_CHAR);
   request.WriteInt(character);
   request.WriteString(preferred_locale);
 
@@ -79,7 +79,7 @@ void GetRenderStyleForStrike(const char* family,
     return;
 
   base::Pickle request;
-  request.WriteInt(LinuxSandbox::METHOD_GET_STYLE_FOR_STRIKE);
+  request.WriteInt(SandboxLinux::METHOD_GET_STYLE_FOR_STRIKE);
   request.WriteString(family);
   request.WriteBool(bold);
   request.WriteBool(italic);
@@ -118,7 +118,7 @@ int MatchFontWithFallback(const std::string& face,
   TRACE_EVENT0("sandbox_ipc", "MatchFontWithFallback");
 
   base::Pickle request;
-  request.WriteInt(LinuxSandbox::METHOD_MATCH_WITH_FALLBACK);
+  request.WriteInt(SandboxLinux::METHOD_MATCH_WITH_FALLBACK);
   request.WriteString(face);
   request.WriteBool(bold);
   request.WriteBool(italic);

@@ -25,8 +25,8 @@ source_set("standalone_service") {
 
   if (is_linux && !is_android) {
     sources += [
-      "linux_sandbox.cc",
-      "linux_sandbox.h",
+      "sandbox_linux.cc",
+      "sandbox_linux.h",
     ]
 
     deps += [

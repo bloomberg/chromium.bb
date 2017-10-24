@@ -102,7 +102,7 @@ base::ScopedFD OpenProc(int proc_fd) {
 
 namespace content {
 
-LinuxSandbox::LinuxSandbox()
+SandboxLinux::SandboxLinux()
     : proc_fd_(-1),
       seccomp_bpf_started_(false),
       sandbox_status_flags_(kSandboxLinuxInvalid),
@@ -121,19 +121,19 @@ LinuxSandbox::LinuxSandbox()
 #endif
 }
 
-LinuxSandbox::~LinuxSandbox() {
+SandboxLinux::~SandboxLinux() {
   if (pre_initialized_) {
     CHECK(initialize_sandbox_ran_);
   }
 }
 
-LinuxSandbox* LinuxSandbox::GetInstance() {
-  LinuxSandbox* instance = base::Singleton<LinuxSandbox>::get();
+SandboxLinux* SandboxLinux::GetInstance() {
+  SandboxLinux* instance = base::Singleton<SandboxLinux>::get();
   CHECK(instance);
   return instance;
 }
 
-void LinuxSandbox::PreinitializeSandbox() {
+void SandboxLinux::PreinitializeSandbox() {
   CHECK(!pre_initialized_);
   seccomp_bpf_supported_ = false;
 #if defined(ANY_OF_AMTLU_SANITIZER)
@@ -145,7 +145,7 @@ void LinuxSandbox::PreinitializeSandbox() {
 
   // Open proc_fd_. It would break the security of the setuid sandbox if it was
   // not closed.
-  // If LinuxSandbox::PreinitializeSandbox() runs, InitializeSandbox() must run
+  // If SandboxLinux::PreinitializeSandbox() runs, InitializeSandbox() must run
   // as well.
   proc_fd_ = HANDLE_EINTR(open("/proc", O_DIRECTORY | O_RDONLY | O_CLOEXEC));
   CHECK_GE(proc_fd_, 0);
@@ -170,7 +170,7 @@ void LinuxSandbox::PreinitializeSandbox() {
   pre_initialized_ = true;
 }
 
-void LinuxSandbox::EngageNamespaceSandbox() {
+void SandboxLinux::EngageNamespaceSandbox() {
   CHECK(pre_initialized_);
   // Check being in a new PID namespace created by the namespace sandbox and
   // being the init process.
@@ -190,7 +190,7 @@ void LinuxSandbox::EngageNamespaceSandbox() {
   CHECK(sandbox::Credentials::SetCapabilities(proc_fd_, caps));
 }
 
-std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
+std::vector<int> SandboxLinux::GetFileDescriptorsToClose() {
   std::vector<int> fds;
   if (proc_fd_ >= 0) {
     fds.push_back(proc_fd_);
@@ -198,18 +198,18 @@ std::vector<int> LinuxSandbox::GetFileDescriptorsToClose() {
   return fds;
 }
 
-bool LinuxSandbox::InitializeSandbox(
+bool SandboxLinux::InitializeSandbox(
     SandboxSeccompBPF::PreSandboxHook hook,
     const SandboxSeccompBPF::Options& options) {
-  return LinuxSandbox::GetInstance()->InitializeSandboxImpl(std::move(hook),
+  return SandboxLinux::GetInstance()->InitializeSandboxImpl(std::move(hook),
                                                             options);
 }
 
-void LinuxSandbox::StopThread(base::Thread* thread) {
-  LinuxSandbox::GetInstance()->StopThreadImpl(thread);
+void SandboxLinux::StopThread(base::Thread* thread) {
+  SandboxLinux::GetInstance()->StopThreadImpl(thread);
 }
 
-int LinuxSandbox::GetStatus() {
+int SandboxLinux::GetStatus() {
   if (!pre_initialized_) {
     return 0;
   }
@@ -251,7 +251,7 @@ int LinuxSandbox::GetStatus() {
 // Threads are counted via /proc/self/task. This is a little hairy because of
 // PID namespaces and existing sandboxes, so "self" must really be used instead
 // of using the pid.
-bool LinuxSandbox::IsSingleThreaded() const {
+bool SandboxLinux::IsSingleThreaded() const {
   base::ScopedFD proc_fd(OpenProc(proc_fd_));
 
   CHECK(proc_fd.is_valid()) << "Could not count threads, the sandbox was not "
@@ -263,17 +263,16 @@ bool LinuxSandbox::IsSingleThreaded() const {
   return is_single_threaded;
 }
 
-bool LinuxSandbox::seccomp_bpf_started() const {
+bool SandboxLinux::seccomp_bpf_started() const {
   return seccomp_bpf_started_;
 }
 
-sandbox::SetuidSandboxClient*
-    LinuxSandbox::setuid_sandbox_client() const {
+sandbox::SetuidSandboxClient* SandboxLinux::setuid_sandbox_client() const {
   return setuid_sandbox_client_.get();
 }
 
 // For seccomp-bpf, we use the SandboxSeccompBPF class.
-bool LinuxSandbox::StartSeccompBPF(service_manager::SandboxType sandbox_type,
+bool SandboxLinux::StartSeccompBPF(service_manager::SandboxType sandbox_type,
                                    SandboxSeccompBPF::PreSandboxHook hook,
                                    const SandboxSeccompBPF::Options& opts) {
   CHECK(!seccomp_bpf_started_);
@@ -290,7 +289,7 @@ bool LinuxSandbox::StartSeccompBPF(service_manager::SandboxType sandbox_type,
   return true;
 }
 
-bool LinuxSandbox::InitializeSandboxImpl(
+bool SandboxLinux::InitializeSandboxImpl(
     SandboxSeccompBPF::PreSandboxHook hook,
     const SandboxSeccompBPF::Options& options) {
   DCHECK(!initialize_sandbox_ran_);
@@ -306,11 +305,11 @@ bool LinuxSandbox::InitializeSandboxImpl(
   // returning.
   // Unretained() since the current object is a Singleton.
   base::ScopedClosureRunner sandbox_sealer(
-      base::BindOnce(&LinuxSandbox::SealSandbox, base::Unretained(this)));
+      base::BindOnce(&SandboxLinux::SealSandbox, base::Unretained(this)));
   // Make sure that this function enables sandboxes as promised by GetStatus().
   // Unretained() since the current object is a Singleton.
   base::ScopedClosureRunner sandbox_promise_keeper(
-      base::BindOnce(&LinuxSandbox::CheckForBrokenPromises,
+      base::BindOnce(&SandboxLinux::CheckForBrokenPromises,
                      base::Unretained(this), sandbox_type));
 
   // No matter what, it's always an error to call InitializeSandbox() after
@@ -366,22 +365,22 @@ bool LinuxSandbox::InitializeSandboxImpl(
   return StartSeccompBPF(sandbox_type, std::move(hook), options);
 }
 
-void LinuxSandbox::StopThreadImpl(base::Thread* thread) {
+void SandboxLinux::StopThreadImpl(base::Thread* thread) {
   DCHECK(thread);
   StopThreadAndEnsureNotCounted(thread);
 }
 
-bool LinuxSandbox::seccomp_bpf_supported() const {
+bool SandboxLinux::seccomp_bpf_supported() const {
   CHECK(pre_initialized_);
   return seccomp_bpf_supported_;
 }
 
-bool LinuxSandbox::seccomp_bpf_with_tsync_supported() const {
+bool SandboxLinux::seccomp_bpf_with_tsync_supported() const {
   CHECK(pre_initialized_);
   return seccomp_bpf_with_tsync_supported_;
 }
 
-bool LinuxSandbox::LimitAddressSpace(
+bool SandboxLinux::LimitAddressSpace(
     const std::string& process_type,
     const SandboxSeccompBPF::Options& options) {
 #if !defined(ANY_OF_AMTLU_SANITIZER)
@@ -452,11 +451,11 @@ bool LinuxSandbox::LimitAddressSpace(
         // !defined(THREAD_SANITIZER)
 }
 
-bool LinuxSandbox::HasOpenDirectories() const {
+bool SandboxLinux::HasOpenDirectories() const {
   return sandbox::ProcUtil::HasOpenDirectory(proc_fd_);
 }
 
-void LinuxSandbox::SealSandbox() {
+void SandboxLinux::SealSandbox() {
   if (proc_fd_ >= 0) {
     int ret = IGNORE_EINTR(close(proc_fd_));
     CHECK_EQ(0, ret);
@@ -464,7 +463,7 @@ void LinuxSandbox::SealSandbox() {
   }
 }
 
-void LinuxSandbox::CheckForBrokenPromises(
+void SandboxLinux::CheckForBrokenPromises(
     service_manager::SandboxType sandbox_type) {
   if (sandbox_type != service_manager::SANDBOX_TYPE_RENDERER &&
       sandbox_type != service_manager::SANDBOX_TYPE_PPAPI) {
@@ -477,7 +476,7 @@ void LinuxSandbox::CheckForBrokenPromises(
   CHECK(!promised_seccomp_bpf_would_start || seccomp_bpf_started_);
 }
 
-void LinuxSandbox::StopThreadAndEnsureNotCounted(base::Thread* thread) const {
+void SandboxLinux::StopThreadAndEnsureNotCounted(base::Thread* thread) const {
   DCHECK(thread);
   base::ScopedFD proc_fd(OpenProc(proc_fd_));
   PCHECK(proc_fd.is_valid());
