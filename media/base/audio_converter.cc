@@ -14,6 +14,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/trace_event/trace_event.h"
 #include "media/base/audio_bus.h"
 #include "media/base/audio_pull_fifo.h"
 #include "media/base/channel_mixer.h"
@@ -156,10 +157,14 @@ void AudioConverter::ConvertWithDelay(uint32_t initial_frames_delayed,
 }
 
 void AudioConverter::Convert(AudioBus* dest) {
+  TRACE_EVENT1("audio", "AudioConverter::Convert", "sample rate ratio",
+               io_sample_rate_ratio_);
   ConvertWithDelay(0, dest);
 }
 
 void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
+  TRACE_EVENT1("audio", "AudioConverter::SourceCallback", "fifo frame delay",
+               fifo_frame_delay);
   const bool needs_downmix = channel_mixer_ && downmix_early_;
 
   if (!mixer_input_audio_bus_ ||
@@ -240,6 +245,8 @@ void AudioConverter::SourceCallback(int fifo_frame_delay, AudioBus* dest) {
 }
 
 void AudioConverter::ProvideInput(int resampler_frame_delay, AudioBus* dest) {
+  TRACE_EVENT1("audio", "AudioConverter::ProvideInput", "resampler frame delay",
+               resampler_frame_delay);
   resampler_frames_delayed_ = resampler_frame_delay;
   if (audio_fifo_)
     audio_fifo_->Consume(dest, dest->frames());
