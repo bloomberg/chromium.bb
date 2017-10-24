@@ -376,7 +376,8 @@ bool InsertListCommand::DoApplyForSingleParagraph(
 
     // If the entire list is selected, then convert the whole list.
     if (switch_list_type &&
-        IsNodeVisiblyContainedWithin(*list_element, current_selection)) {
+        IsNodeVisiblyContainedWithin(*list_element,
+                                     EphemeralRange(&current_selection))) {
       bool range_start_is_in_list =
           VisiblePositionBeforeNode(*list_element).DeepEquivalent() ==
           CreateVisiblePosition(current_selection.StartPosition())
