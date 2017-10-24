@@ -52,7 +52,7 @@ class WaitUntilObserver::ThenFunction final : public ScriptFunction {
     return self->BindToV8Function();
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(observer_);
     ScriptFunction::Trace(visitor);
   }
