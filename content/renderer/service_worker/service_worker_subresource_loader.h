@@ -68,6 +68,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void OnResponseBlob(const ServiceWorkerResponse& response,
                       blink::mojom::BlobPtr blob,
                       base::Time dispatch_event_time) override;
+  void OnResponseLegacyBlob(const ServiceWorkerResponse& response,
+                            base::Time dispatch_event_time,
+                            OnResponseLegacyBlobCallback callback) override;
   void OnResponseStream(
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,

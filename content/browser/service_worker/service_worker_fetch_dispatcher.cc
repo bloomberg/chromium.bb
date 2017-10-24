@@ -378,6 +378,15 @@ class ServiceWorkerFetchDispatcher::ResponseCallback
                    SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
                    dispatch_event_time);
   }
+  void OnResponseLegacyBlob(const ServiceWorkerResponse& response,
+                            base::Time dispatch_event_time,
+                            OnResponseLegacyBlobCallback callback) override {
+    HandleResponse(fetch_dispatcher_, version_, fetch_event_id_, response,
+                   nullptr /* body_as_stream */, nullptr /* body_as_blob */,
+                   SERVICE_WORKER_FETCH_EVENT_RESULT_RESPONSE,
+                   dispatch_event_time);
+    std::move(callback).Run();
+  }
   void OnResponseStream(
       const ServiceWorkerResponse& response,
       blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
