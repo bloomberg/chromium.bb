@@ -430,8 +430,8 @@ cr.define('print_preview', function() {
       if (!this.isOffline) {
         return '';
       }
-      var offlineDurationMs = Date.now() - this.lastAccessTime_;
-      var offlineMessageId;
+      const offlineDurationMs = Date.now() - this.lastAccessTime_;
+      let offlineMessageId;
       if (offlineDurationMs > 31622400000.0) {  // One year.
         offlineMessageId = 'offlineForYear';
       } else if (offlineDurationMs > 2678400000.0) {  // One month.

@@ -11,7 +11,7 @@ cr.define('print_preview', function() {
    * return {?print_preview.PrinterType} The corresponding PrinterType.
    *     Returns null if no match is found.
    */
-  var originToType = function(origin) {
+  const originToType = function(origin) {
     if (origin === print_preview.DestinationOrigin.LOCAL ||
         origin === print_preview.DestinationOrigin.CROS) {
       return print_preview.PrinterType.LOCAL_PRINTER;

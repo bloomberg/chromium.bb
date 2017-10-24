@@ -48,24 +48,21 @@ cr.define('print_preview', function() {
        */
       this.pageCount_ = 0;
 
-      // Create the document info with some initial settings. Actual
-      // page-related information won't be set until preview generation occurs,
-      // so we'll use some defaults until then. This way, the print ticket store
-      // will be valid even if no preview can be generated.
-      var initialPageSize = new print_preview.Size(612, 792);  // 8.5"x11"
-
       /**
-       * Size of the pages of the document in points.
+       * Size of the pages of the document in points. Actual page-related
+       * information won't be set until preview generation occurs, so use
+       * a default value until then. This way, the print ticket store will be
+       * valid even if no preview can be generated.
        * @private {!print_preview.Size}
        */
-      this.pageSize_ = initialPageSize;
+      this.pageSize_ = new print_preview.Size(612, 792);  // 8.5"x11"
 
       /**
        * Printable area of the document in points.
        * @private {!print_preview.PrintableArea}
        */
       this.printableArea_ = new print_preview.PrintableArea(
-          new print_preview.Coordinate2d(0, 0), initialPageSize);
+          new print_preview.Coordinate2d(0, 0), this.pageSize_);
 
       /**
        * Title of document.

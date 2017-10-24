@@ -96,8 +96,8 @@ cr.define('print_preview', function() {
      * @return {number} Rounded value.
      */
     roundValue(value) {
-      var precision = this.measurementSystemPrefs_.precision;
-      var roundedValue = Math.round(value / precision) * precision;
+      const precision = this.measurementSystemPrefs_.precision;
+      const roundedValue = Math.round(value / precision) * precision;
       // Truncate
       return +roundedValue.toFixed(this.measurementSystemPrefs_.decimalPlaces);
     }
@@ -124,7 +124,7 @@ cr.define('print_preview', function() {
    * @private {!Map<!print_preview.MeasurementSystemUnitType,
    *                !print_preview.MeasurementSystemPrefs>}
    */
-  var measurementSystemPrefs = new Map([
+  const measurementSystemPrefs = new Map([
     [
       print_preview.MeasurementSystemUnitType.METRIC, {
         precision: 0.5,

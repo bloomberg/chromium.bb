@@ -63,7 +63,7 @@ cr.define('print_preview', function() {
      *     modification made to the specified margin.
      */
     set(orientation, value) {
-      var newValue = this.clone_();
+      const newValue = this.clone_();
       newValue[orientation] = value;
       return new Margins(
           newValue[print_preview.ticket_items.CustomMarginsOrientation.TOP],
@@ -81,7 +81,7 @@ cr.define('print_preview', function() {
       if (other == null) {
         return false;
       }
-      for (var orientation in this.value_) {
+      for (const orientation in this.value_) {
         if (this.value_[orientation] != other.value_[orientation]) {
           return false;
         }
@@ -99,8 +99,8 @@ cr.define('print_preview', function() {
      * @private
      */
     clone_() {
-      var clone = {};
-      for (var o in this.value_) {
+      const clone = {};
+      for (const o in this.value_) {
         clone[o] = this.value_[o];
       }
       return clone;

@@ -9,7 +9,7 @@ cr.define('cloudprint', function() {
    * Enumeration of cloud destination field names.
    * @enum {string}
    */
-  var CloudDestinationField = {
+  const CloudDestinationField = {
     CAPABILITIES: 'capabilities',
     CONNECTION_STATUS: 'connectionStatus',
     DESCRIPTION: 'description',
@@ -24,19 +24,19 @@ cr.define('cloudprint', function() {
    * Special tag that denotes whether the destination has been recently used.
    * @const {string}
    */
-  var RECENT_TAG = '^recent';
+  const RECENT_TAG = '^recent';
 
   /**
    * Special tag that denotes whether the destination is owned by the user.
    * @const {string}
    */
-  var OWNED_TAG = '^own';
+  const OWNED_TAG = '^own';
 
   /**
    * Enumeration of cloud destination types that are supported by print preview.
    * @enum {string}
    */
-  var DestinationCloudType = {
+  const DestinationCloudType = {
     ANDROID: 'ANDROID_CHROME_SNAPSHOT',
     DOCS: 'DOCS',
     IOS: 'IOS_CHROME_SNAPSHOT'
@@ -71,17 +71,17 @@ cr.define('cloudprint', function() {
    *     empty string, if origin != COOKIES.
    * @return {!print_preview.Destination} Parsed destination.
    */
-  var parseCloudDestination = function(json, origin, account) {
+  function parseCloudDestination(json, origin, account) {
     if (!json.hasOwnProperty(CloudDestinationField.ID) ||
         !json.hasOwnProperty(CloudDestinationField.TYPE) ||
         !json.hasOwnProperty(CloudDestinationField.DISPLAY_NAME)) {
       throw Error('Cloud destination does not have an ID or a display name');
     }
-    var id = json[CloudDestinationField.ID];
-    var tags = json[CloudDestinationField.TAGS] || [];
-    var connectionStatus = json[CloudDestinationField.CONNECTION_STATUS] ||
+    const id = json[CloudDestinationField.ID];
+    const tags = json[CloudDestinationField.TAGS] || [];
+    const connectionStatus = json[CloudDestinationField.CONNECTION_STATUS] ||
         print_preview.DestinationConnectionStatus.UNKNOWN;
-    var optionalParams = {
+    const optionalParams = {
       account: account,
       tags: tags,
       isOwned: arrayContains(tags, OWNED_TAG),
@@ -90,7 +90,7 @@ cr.define('cloudprint', function() {
       cloudID: id,
       description: json[CloudDestinationField.DESCRIPTION]
     };
-    var cloudDest = new print_preview.Destination(
+    const cloudDest = new print_preview.Destination(
         id, parseType(json[CloudDestinationField.TYPE]), origin,
         json[CloudDestinationField.DISPLAY_NAME],
         arrayContains(tags, RECENT_TAG) /*isRecent*/, connectionStatus,
@@ -100,13 +100,13 @@ cr.define('cloudprint', function() {
           json[CloudDestinationField.CAPABILITIES]);
     }
     return cloudDest;
-  };
+  }
 
   /**
    * Enumeration of invitation field names.
    * @enum {string}
    */
-  var InvitationField = {
+  const InvitationField = {
     PRINTER: 'printer',
     RECEIVER: 'receiver',
     SENDER: 'sender'
@@ -116,7 +116,7 @@ cr.define('cloudprint', function() {
    * Enumeration of cloud destination types that are supported by print preview.
    * @enum {string}
    */
-  var InvitationAclType =
+  const InvitationAclType =
       {DOMAIN: 'DOMAIN', GROUP: 'GROUP', PUBLIC: 'PUBLIC', USER: 'USER'};
 
   /**
@@ -125,23 +125,23 @@ cr.define('cloudprint', function() {
    * @param {string} account The account this invitation is sent for.
    * @return {!print_preview.Invitation} Parsed invitation.
    */
-  var parseInvitation = function(json, account) {
+  function parseInvitation(json, account) {
     if (!json.hasOwnProperty(InvitationField.SENDER) ||
         !json.hasOwnProperty(InvitationField.RECEIVER) ||
         !json.hasOwnProperty(InvitationField.PRINTER)) {
       throw Error('Invitation does not have necessary info.');
     }
 
-    var nameFormatter = function(name, scope) {
+    const nameFormatter = function(name, scope) {
       return name && scope ? (name + ' (' + scope + ')') : (name || scope);
     };
 
-    var sender = json[InvitationField.SENDER];
-    var senderName = nameFormatter(sender['name'], sender['email']);
+    const sender = json[InvitationField.SENDER];
+    const senderName = nameFormatter(sender['name'], sender['email']);
 
-    var receiver = json[InvitationField.RECEIVER];
-    var receiverName = '';
-    var receiverType = receiver['type'];
+    const receiver = json[InvitationField.RECEIVER];
+    let receiverName = '';
+    const receiverType = receiver['type'];
     if (receiverType == InvitationAclType.USER) {
       // It's a personal invitation, empty name indicates just that.
     } else if (
@@ -152,13 +152,13 @@ cr.define('cloudprint', function() {
       throw Error('Invitation of unsupported receiver type');
     }
 
-    var destination = cloudprint.parseCloudDestination(
+    const destination = cloudprint.parseCloudDestination(
         json[InvitationField.PRINTER], print_preview.DestinationOrigin.COOKIES,
         account);
 
     return new print_preview.Invitation(
         senderName, receiverName, destination, receiver, account);
-  };
+  }
 
   // Export
   return {

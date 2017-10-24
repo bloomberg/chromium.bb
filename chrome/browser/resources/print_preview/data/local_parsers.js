@@ -16,7 +16,7 @@ cr.define('print_preview', function() {
    *       For EXTENSION_PRINTER => print_preview.ProvisionalDestinationInfo
    * @return {!Array<!print_preview.Destination> | !print_preview.Destination}
    */
-  var parseDestination = function(type, printer) {
+  function parseDestination(type, printer) {
     if (type === print_preview.PrinterType.LOCAL_PRINTER) {
       return parseLocalDestination(
           /** @type {!print_preview.LocalDestinationInfo} */ (printer));
@@ -31,7 +31,7 @@ cr.define('print_preview', function() {
     }
     assertNotReached('Unknown printer type ' + type);
     return [];
-  };
+  }
 
   /**
    * Parses a local print destination.
@@ -39,8 +39,8 @@ cr.define('print_preview', function() {
    *     describing a local print destination.
    * @return {!print_preview.Destination} Parsed local print destination.
    */
-  var parseLocalDestination = function(destinationInfo) {
-    var options = {
+  function parseLocalDestination(destinationInfo) {
+    const options = {
       description: destinationInfo.printerDescription,
       isEnterprisePrinter: destinationInfo.cupsEnterprisePrinter
     };
@@ -57,7 +57,7 @@ cr.define('print_preview', function() {
                         print_preview.DestinationOrigin.LOCAL,
         destinationInfo.printerName, false /*isRecent*/,
         print_preview.DestinationConnectionStatus.ONLINE, options);
-  };
+  }
 
   /**
    * Parses a privet destination as one or more local printers.
@@ -66,8 +66,8 @@ cr.define('print_preview', function() {
    * @return {!print_preview.Destination |
    *          !Array<!print_preview.Destination>} Parsed destination info.
    */
-  var parsePrivetDestination = function(destinationInfo) {
-    var returnedPrinters = [];
+  function parsePrivetDestination(destinationInfo) {
+    const returnedPrinters = [];
 
     if (destinationInfo.hasLocalPrinting) {
       returnedPrinters.push(new print_preview.Destination(
@@ -87,7 +87,7 @@ cr.define('print_preview', function() {
 
     return returnedPrinters.length === 1 ? returnedPrinters[0] :
                                            returnedPrinters;
-  };
+  }
 
   /**
    * Parses an extension destination from an extension supplied printer
@@ -96,8 +96,8 @@ cr.define('print_preview', function() {
    *     describing an extension printer.
    * @return {!print_preview.Destination} Parsed destination.
    */
-  var parseExtensionDestination = function(destinationInfo) {
-    var provisionalType = destinationInfo.provisional ?
+  function parseExtensionDestination(destinationInfo) {
+    const provisionalType = destinationInfo.provisional ?
         print_preview.DestinationProvisionalType.NEEDS_USB_PERMISSION :
         print_preview.DestinationProvisionalType.NONE;
 
@@ -111,7 +111,7 @@ cr.define('print_preview', function() {
           extensionName: destinationInfo.extensionName || '',
           provisionalType: provisionalType
         });
-  };
+  }
 
   // Export
   return {
