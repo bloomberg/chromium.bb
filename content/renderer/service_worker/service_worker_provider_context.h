@@ -14,9 +14,12 @@
 #include "content/common/service_worker/service_worker_container.mojom.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
-#include "content/renderer/service_worker/service_worker_dispatcher.h"
 #include "content/public/renderer/child_url_loader_factory_getter.h"
+#include "content/renderer/service_worker/service_worker_dispatcher.h"
+#include "content/renderer/service_worker/web_service_worker_provider_impl.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/WebServiceWorkerProviderClient.h"
+#include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_object.mojom.h"
 #include "third_party/WebKit/public/platform/modules/serviceworker/service_worker_registration.mojom.h"
 
 namespace base {
@@ -102,8 +105,6 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
 
   // For service worker clients. The controller for
   // ServiceWorkerContainer#controller.
-  void SetController(std::unique_ptr<ServiceWorkerHandleReference> controller,
-                     const std::set<uint32_t>& used_features);
   ServiceWorkerHandleReference* controller();
 
   // S13nServiceWorker:
@@ -114,6 +115,14 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // For service worker clients. Keeps track of feature usage for UseCounter.
   void CountFeature(uint32_t feature);
   const std::set<uint32_t>& used_features() const;
+
+  // For service worker clients. Sets a weak pointer back to the
+  // WebServiceWorkerProviderImpl (which corresponds to ServiceWorkerContainer
+  // in JavaScript) which has a strong reference to |this|. This allows us to
+  // notify the WebServiceWorkerProviderImpl when
+  // ServiceWorkerContainer#controller should be changed.
+  void SetWebServiceWorkerProvider(
+      base::WeakPtr<WebServiceWorkerProviderImpl> provider);
 
   // For service worker clients. Creates a ServiceWorkerWorkerClientRequest
   // which can be used to bind with a WorkerFetchContextImpl in a (dedicated or
@@ -156,6 +165,11 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
   // Clears the information of the ServiceWorkerWorkerClient of dedicated (or
   // shared) worker, when the connection to the worker is disconnected.
   void UnregisterWorkerFetchContext(mojom::ServiceWorkerWorkerClient*);
+
+  // Implementation of mojom::ServiceWorkerContainer.
+  void SetController(blink::mojom::ServiceWorkerObjectInfoPtr controller,
+                     const std::vector<blink::mojom::WebFeature>& used_features,
+                     bool should_notify_controllerchange) override;
 
   const ServiceWorkerProviderType provider_type_;
   const int provider_id_;
