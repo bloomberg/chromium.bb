@@ -1,2 +1,2 @@
-AXSelectedRowsChanged on AXOutline
 AXFocusedUIElementChanged on AXRow AXTitle="Minor Ninth"
+AXSelectedRowsChanged on AXOutline

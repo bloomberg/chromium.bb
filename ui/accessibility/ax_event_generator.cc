@@ -4,6 +4,7 @@
 
 #include "ui/accessibility/ax_event_generator.h"
 
+#include "base/stl_util.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_role_properties.h"
 
@@ -50,22 +51,47 @@ AXEventGenerator::TargetedEvent AXEventGenerator::Iterator::operator*() const {
   return AXEventGenerator::TargetedEvent(map_iter_->first, *set_iter_);
 }
 
+AXEventGenerator::AXEventGenerator() : tree_(nullptr) {}
+
 AXEventGenerator::AXEventGenerator(AXTree* tree) : tree_(tree) {
-  DCHECK(tree_);
-  tree_->SetDelegate(this);
+  if (tree_)
+    tree_->SetDelegate(this);
 }
 
 AXEventGenerator::~AXEventGenerator() {
-  DCHECK(tree_);
-  tree_->SetDelegate(nullptr);
+  if (tree_)
+    tree_->SetDelegate(nullptr);
 }
 
-void AXEventGenerator::Clear() {
+void AXEventGenerator::SetTree(AXTree* new_tree) {
+  if (tree_)
+    tree_->SetDelegate(nullptr);
+  tree_ = new_tree;
+  if (tree_)
+    tree_->SetDelegate(this);
+}
+
+void AXEventGenerator::ReleaseTree() {
+  tree_ = nullptr;
+}
+
+void AXEventGenerator::ClearEvents() {
   tree_events_.clear();
 }
 
 void AXEventGenerator::AddEvent(ui::AXNode* node,
                                 AXEventGenerator::Event event) {
+  if (node->data().role == AX_ROLE_INLINE_TEXT_BOX)
+    return;
+
+  // A newly created live region or alert should not *also* fire a
+  // live region changed event.
+  if (event == Event::LIVE_REGION_CHANGED &&
+      (base::ContainsKey(tree_events_[node], Event::ALERT) ||
+       base::ContainsKey(tree_events_[node], Event::LIVE_REGION_CREATED))) {
+    return;
+  }
+
   tree_events_[node].insert(event);
 }
 
@@ -162,6 +188,7 @@ void AXEventGenerator::OnIntAttributeChanged(AXTree* tree,
   switch (attr) {
     case ui::AX_ATTR_ACTIVEDESCENDANT_ID:
       AddEvent(node, Event::ACTIVE_DESCENDANT_CHANGED);
+      active_descendant_changed_.push_back(node);
       break;
     case ui::AX_ATTR_CHECKED_STATE:
       AddEvent(node, Event::CHECKED_STATE_CHANGED);
@@ -292,16 +319,46 @@ void AXEventGenerator::OnAtomicUpdateFinished(
     }
     if (change.node->data().HasStringAttribute(
             ui::AX_ATTR_CONTAINER_LIVE_STATUS)) {
-      if (!change.node->data().GetStringAttribute(ui::AX_ATTR_NAME).empty())
-        AddEvent(change.node, Event::LIVE_REGION_NODE_CHANGED);
-      ui::AXNode* live_root = change.node;
-      while (live_root &&
-             !live_root->data().HasStringAttribute(ui::AX_ATTR_LIVE_STATUS))
-        live_root = live_root->parent();
-      if (live_root)
-        AddEvent(live_root, Event::LIVE_REGION_CHANGED);
+      FireLiveRegionEvents(change.node);
     }
   }
+
+  FireActiveDescendantEvents();
+}
+
+void AXEventGenerator::FireLiveRegionEvents(AXNode* node) {
+  ui::AXNode* live_root = node;
+  while (live_root &&
+         !live_root->data().HasStringAttribute(ui::AX_ATTR_LIVE_STATUS))
+    live_root = live_root->parent();
+
+  if (live_root && !live_root->data().GetBoolAttribute(ui::AX_ATTR_BUSY)) {
+    // Fire LIVE_REGION_NODE_CHANGED on each node that changed.
+    if (!node->data().GetStringAttribute(ui::AX_ATTR_NAME).empty())
+      AddEvent(node, Event::LIVE_REGION_NODE_CHANGED);
+    // Fire LIVE_REGION_NODE_CHANGED on the root of the live region.
+    AddEvent(live_root, Event::LIVE_REGION_CHANGED);
+  }
+}
+
+void AXEventGenerator::FireActiveDescendantEvents() {
+  for (AXNode* node : active_descendant_changed_) {
+    AXNode* descendant = tree_->GetFromId(
+        node->data().GetIntAttribute(ui::AX_ATTR_ACTIVEDESCENDANT_ID));
+    if (!descendant)
+      continue;
+    switch (descendant->data().role) {
+      case ui::AX_ROLE_MENU_ITEM:
+      case ui::AX_ROLE_MENU_ITEM_CHECK_BOX:
+      case ui::AX_ROLE_MENU_ITEM_RADIO:
+      case ui::AX_ROLE_MENU_LIST_OPTION:
+        AddEvent(descendant, Event::MENU_ITEM_SELECTED);
+        break;
+      default:
+        break;
+    }
+  }
+  active_descendant_changed_.clear();
 }
 
 }  // namespace ui

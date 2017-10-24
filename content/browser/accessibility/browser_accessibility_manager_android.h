@@ -78,13 +78,16 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAndroid
 
   // BrowserAccessibilityManager overrides.
   BrowserAccessibility* GetFocus() override;
-  void NotifyAccessibilityEvent(
-      BrowserAccessibilityEvent::Source source,
-      ui::AXEvent event_type,
-      BrowserAccessibility* node) override;
   void SendLocationChangeEvents(
       const std::vector<AccessibilityHostMsg_LocationChangeParams>& params)
           override;
+  void FireFocusEvent(BrowserAccessibility* node) override;
+  void FireBlinkEvent(ui::AXEvent event_type,
+                      BrowserAccessibility* node) override;
+  void FireGeneratedEvent(AXEventGenerator::Event event_type,
+                          BrowserAccessibility* node) override;
+
+  void FireLocationChanged(BrowserAccessibility* node);
 
   // Helper functions to compute the next start and end index when moving
   // forwards or backwards by character, word, or line. This part is

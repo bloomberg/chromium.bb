@@ -159,10 +159,36 @@ BrowserAccessibility* BrowserAccessibilityManagerMac::GetFocus() {
   return GetActiveDescendant(focus);
 }
 
-void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
-    BrowserAccessibilityEvent::Source source,
+void BrowserAccessibilityManagerMac::FireFocusEvent(
+    BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireFocusEvent(node);
+  FireNativeMacNotification(NSAccessibilityFocusedUIElementChangedNotification,
+                            node);
+}
+
+void BrowserAccessibilityManagerMac::FireBlinkEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
+  NSString* mac_notification = nullptr;
+  switch (event_type) {
+    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
+      mac_notification = NSAccessibilityAutocorrectionOccurredNotification;
+      break;
+    case ui::AX_EVENT_LAYOUT_COMPLETE:
+      mac_notification = NSAccessibilityLayoutCompleteNotification;
+      break;
+    default:
+      return;
+  }
+
+  FireNativeMacNotification(mac_notification, node);
+}
+
+void BrowserAccessibilityManagerMac::FireGeneratedEvent(
+    AXEventGenerator::Event event_type,
+    BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
   if (!node->IsNative())
     return;
 
@@ -170,9 +196,9 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
   DCHECK(native_node);
 
   // Refer to |AXObjectCache::postPlatformNotification| in WebKit source code.
-  NSString* mac_notification;
+  NSString* mac_notification = nullptr;
   switch (event_type) {
-    case ui::AX_EVENT_ACTIVEDESCENDANTCHANGED:
+    case Event::ACTIVE_DESCENDANT_CHANGED:
       if (node->GetRole() == ui::AX_ROLE_TREE) {
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
       } else if (node->GetRole() == ui::AX_ROLE_COMBO_BOX) {
@@ -187,16 +213,7 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         return;
       }
       break;
-    case ui::AX_EVENT_AUTOCORRECTION_OCCURED:
-      mac_notification = NSAccessibilityAutocorrectionOccurredNotification;
-      break;
-    case ui::AX_EVENT_FOCUS:
-      mac_notification = NSAccessibilityFocusedUIElementChangedNotification;
-      break;
-    case ui::AX_EVENT_LAYOUT_COMPLETE:
-      mac_notification = NSAccessibilityLayoutCompleteNotification;
-      break;
-    case ui::AX_EVENT_LOAD_COMPLETE:
+    case Event::LOAD_COMPLETE:
       // This notification should only be fired on the top document.
       // Iframes should use |AX_EVENT_LAYOUT_COMPLETE| to signify that they have
       // finished loading.
@@ -206,17 +223,17 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         mac_notification = NSAccessibilityLayoutCompleteNotification;
       }
       break;
-    case ui::AX_EVENT_INVALID_STATUS_CHANGED:
+    case Event::INVALID_STATUS_CHANGED:
       mac_notification = NSAccessibilityInvalidStatusChangedNotification;
       break;
-    case ui::AX_EVENT_SELECTED_CHILDREN_CHANGED:
+    case Event::SELECTED_CHILDREN_CHANGED:
       if (ui::IsTableLikeRole(node->GetRole())) {
         mac_notification = NSAccessibilitySelectedRowsChangedNotification;
       } else {
         mac_notification = NSAccessibilitySelectedChildrenChangedNotification;
       }
       break;
-    case ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED: {
+    case Event::DOCUMENT_SELECTION_CHANGED: {
       mac_notification = NSAccessibilitySelectedTextChangedNotification;
       // WebKit fires a notification both on the focused object and the page
       // root.
@@ -250,10 +267,10 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
       }
       break;
     }
-    case ui::AX_EVENT_CHECKED_STATE_CHANGED:
+    case Event::CHECKED_STATE_CHANGED:
       mac_notification = NSAccessibilityValueChangedNotification;
       break;
-    case ui::AX_EVENT_VALUE_CHANGED:
+    case Event::VALUE_CHANGED:
       mac_notification = NSAccessibilityValueChangedNotification;
       if (base::mac::IsAtLeastOS10_11() && !text_edits_.empty()) {
         base::string16 deleted_text;
@@ -280,18 +297,17 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
         return;
       }
       break;
-    case ui::AX_EVENT_LIVE_REGION_CREATED:
+    case Event::LIVE_REGION_CREATED:
       mac_notification = NSAccessibilityLiveRegionCreatedNotification;
       break;
-    case ui::AX_EVENT_ALERT:
+    case Event::ALERT:
       NSAccessibilityPostNotification(
           native_node, NSAccessibilityLiveRegionCreatedNotification);
       // Voiceover requires a live region changed notification to actually
       // announce the live region.
-      NotifyAccessibilityEvent(BrowserAccessibilityEvent::FromTreeChange,
-                               ui::AX_EVENT_LIVE_REGION_CHANGED, node);
+      FireGeneratedEvent(Event::LIVE_REGION_CHANGED, node);
       return;
-    case ui::AX_EVENT_LIVE_REGION_CHANGED: {
+    case Event::LIVE_REGION_CHANGED: {
       // Voiceover seems to drop live region changed notifications if they come
       // too soon after a live region created notification.
       // TODO(nektar): Limit the number of changed notifications as well.
@@ -315,48 +331,57 @@ void BrowserAccessibilityManagerMac::NotifyAccessibilityEvent(
               },
               std::move(retained_node)),
           base::TimeDelta::FromMilliseconds(kLiveRegionChangeIntervalMS));
-    }
       return;
-    case ui::AX_EVENT_ROW_COUNT_CHANGED:
+    }
+    case Event::ROW_COUNT_CHANGED:
       mac_notification = NSAccessibilityRowCountChangedNotification;
       break;
-    case ui::AX_EVENT_ROW_EXPANDED:
-      mac_notification = NSAccessibilityRowExpandedNotification;
+    case Event::EXPANDED:
+      if (node->GetRole() == ui::AX_ROLE_ROW ||
+          node->GetRole() == ui::AX_ROLE_TREE_ITEM) {
+        mac_notification = NSAccessibilityRowExpandedNotification;
+      } else {
+        mac_notification = NSAccessibilityExpandedChanged;
+      }
       break;
-    case ui::AX_EVENT_ROW_COLLAPSED:
-      mac_notification = NSAccessibilityRowCollapsedNotification;
+    case Event::COLLAPSED:
+      if (node->GetRole() == ui::AX_ROLE_ROW ||
+          node->GetRole() == ui::AX_ROLE_TREE_ITEM) {
+        mac_notification = NSAccessibilityRowCollapsedNotification;
+      } else {
+        mac_notification = NSAccessibilityExpandedChanged;
+      }
       break;
-    // TODO(nektar): Add events for busy.
-    case ui::AX_EVENT_EXPANDED_CHANGED:
-      mac_notification = NSAccessibilityExpandedChanged;
-      break;
-    // TODO(nektar): Support menu open/close notifications.
-    case ui::AX_EVENT_MENU_LIST_ITEM_SELECTED:
+    case Event::MENU_ITEM_SELECTED:
       mac_notification = NSAccessibilityMenuItemSelectedNotification;
       break;
-
-    // These events are not used on Mac for now.
-    case ui::AX_EVENT_TEXT_CHANGED:
-    case ui::AX_EVENT_CHILDREN_CHANGED:
-    case ui::AX_EVENT_MENU_LIST_VALUE_CHANGED:
-    case ui::AX_EVENT_SCROLL_POSITION_CHANGED:
-    case ui::AX_EVENT_SCROLLED_TO_ANCHOR:
-    case ui::AX_EVENT_ARIA_ATTRIBUTE_CHANGED:
-    case ui::AX_EVENT_LOCATION_CHANGED:
-      return;
-
-    // Deprecated events.
-    case ui::AX_EVENT_BLUR:
-    case ui::AX_EVENT_HIDE:
-    case ui::AX_EVENT_HOVER:
-    case ui::AX_EVENT_TEXT_SELECTION_CHANGED:
-    case ui::AX_EVENT_SHOW:
-      return;
-    default:
-      DLOG(WARNING) << "Unknown accessibility event: " << event_type;
+    case Event::CHILDREN_CHANGED:
+    case Event::DESCRIPTION_CHANGED:
+    case Event::DOCUMENT_TITLE_CHANGED:
+    case Event::LIVE_REGION_NODE_CHANGED:
+    case Event::NAME_CHANGED:
+    case Event::OTHER_ATTRIBUTE_CHANGED:
+    case Event::ROLE_CHANGED:
+    case Event::SCROLL_POSITION_CHANGED:
+    case Event::SELECTED_CHANGED:
+    case Event::STATE_CHANGED:
+      // There are some notifications that aren't meaningful on Mac.
+      // It's okay to skip them.
       return;
   }
 
+  FireNativeMacNotification(mac_notification, node);
+}
+
+void BrowserAccessibilityManagerMac::FireNativeMacNotification(
+    NSString* mac_notification,
+    BrowserAccessibility* node) {
+  if (!node->IsNative())
+    return;
+
+  DCHECK(mac_notification);
+  auto native_node = ToBrowserAccessibilityCocoa(node);
+  DCHECK(native_node);
   NSAccessibilityPostNotification(native_node, mac_notification);
 }
 
@@ -366,116 +391,6 @@ void BrowserAccessibilityManagerMac::OnAccessibilityEvents(
   // Call the base method last as it might delete the tree if it receives an
   // invalid message.
   BrowserAccessibilityManager::OnAccessibilityEvents(details);
-}
-
-void BrowserAccessibilityManagerMac::OnTreeDataChanged(
-    ui::AXTree* tree,
-    const ui::AXTreeData& old_tree_data,
-    const ui::AXTreeData& new_tree_data) {
-  BrowserAccessibilityManager::OnTreeDataChanged(tree, old_tree_data,
-                                                 new_tree_data);
-  if (new_tree_data.loaded && !old_tree_data.loaded)
-    tree_events_[tree->root()->id()].insert(ui::AX_EVENT_LOAD_COMPLETE);
-  if (new_tree_data.sel_anchor_object_id !=
-          old_tree_data.sel_anchor_object_id ||
-      new_tree_data.sel_anchor_offset != old_tree_data.sel_anchor_offset ||
-      new_tree_data.sel_anchor_affinity != old_tree_data.sel_anchor_affinity ||
-      new_tree_data.sel_focus_object_id != old_tree_data.sel_focus_object_id ||
-      new_tree_data.sel_focus_offset != old_tree_data.sel_focus_offset ||
-      new_tree_data.sel_focus_affinity != old_tree_data.sel_focus_affinity) {
-    tree_events_[tree->root()->id()].insert(
-        ui::AX_EVENT_DOCUMENT_SELECTION_CHANGED);
-  }
-}
-
-void BrowserAccessibilityManagerMac::OnStateChanged(ui::AXTree* tree,
-                                                    ui::AXNode* node,
-                                                    ui::AXState state,
-                                                    bool new_value) {
-  BrowserAccessibilityManager::OnStateChanged(tree, node, state, new_value);
-  if (state == ui::AX_STATE_EXPANDED) {
-    if (node->data().role == ui::AX_ROLE_ROW ||
-        node->data().role == ui::AX_ROLE_TREE_ITEM) {
-      if (new_value)
-        tree_events_[node->id()].insert(ui::AX_EVENT_ROW_EXPANDED);
-      else
-        tree_events_[node->id()].insert(ui::AX_EVENT_ROW_COLLAPSED);
-      ui::AXNode* container = node;
-      while (container && !ui::IsRowContainer(container->data().role))
-        container = container->parent();
-      if (container)
-        tree_events_[container->id()].insert(ui::AX_EVENT_ROW_COUNT_CHANGED);
-    } else {
-      tree_events_[node->id()].insert(ui::AX_EVENT_EXPANDED_CHANGED);
-    }
-  }
-  if (state == ui::AX_STATE_SELECTED) {
-    ui::AXNode* container = node;
-    while (container &&
-           !ui::IsContainerWithSelectableChildrenRole(container->data().role))
-      container = container->parent();
-    if (container)
-      tree_events_[container->id()].insert(
-          ui::AX_EVENT_SELECTED_CHILDREN_CHANGED);
-  }
-}
-
-void BrowserAccessibilityManagerMac::OnStringAttributeChanged(
-    ui::AXTree* tree,
-    ui::AXNode* node,
-    ui::AXStringAttribute attr,
-    const std::string& old_value,
-    const std::string& new_value) {
-  BrowserAccessibilityManager::OnStringAttributeChanged(tree, node, attr,
-                                                        old_value, new_value);
-  switch (attr) {
-    case ui::AX_ATTR_VALUE:
-      tree_events_[node->id()].insert(ui::AX_EVENT_VALUE_CHANGED);
-      break;
-    case ui::AX_ATTR_ARIA_INVALID_VALUE:
-      tree_events_[node->id()].insert(ui::AX_EVENT_INVALID_STATUS_CHANGED);
-      break;
-    case ui::AX_ATTR_LIVE_STATUS:
-      tree_events_[node->id()].insert(ui::AX_EVENT_LIVE_REGION_CREATED);
-      break;
-    default:
-      break;
-  }
-}
-
-void BrowserAccessibilityManagerMac::OnIntAttributeChanged(
-    ui::AXTree* tree,
-    ui::AXNode* node,
-    ui::AXIntAttribute attr,
-    int32_t old_value,
-    int32_t new_value) {
-  BrowserAccessibilityManager::OnIntAttributeChanged(tree, node, attr,
-                                                     old_value, new_value);
-  switch (attr) {
-    case ui::AX_ATTR_CHECKED_STATE:
-      tree_events_[node->id()].insert(ui::AX_EVENT_VALUE_CHANGED);
-      break;
-    case ui::AX_ATTR_ACTIVEDESCENDANT_ID:
-      tree_events_[node->id()].insert(ui::AX_EVENT_ACTIVEDESCENDANTCHANGED);
-      break;
-    case ui::AX_ATTR_INVALID_STATE:
-      tree_events_[node->id()].insert(ui::AX_EVENT_INVALID_STATUS_CHANGED);
-      break;
-    default:
-      break;
-  }
-}
-
-void BrowserAccessibilityManagerMac::OnFloatAttributeChanged(
-    ui::AXTree* tree,
-    ui::AXNode* node,
-    ui::AXFloatAttribute attr,
-    float old_value,
-    float new_value) {
-  BrowserAccessibilityManager::OnFloatAttributeChanged(tree, node, attr,
-                                                       old_value, new_value);
-  if (attr == ui::AX_ATTR_VALUE_FOR_RANGE)
-    tree_events_[node->id()].insert(ui::AX_EVENT_VALUE_CHANGED);
 }
 
 void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
@@ -494,25 +409,6 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
       if (editable_root && [editable_root instanceActive])
         changed_editable_roots.insert(editable_root);
     }
-
-    if ((change.type == NODE_CREATED || change.type == SUBTREE_CREATED) &&
-        change.node->data().HasStringAttribute(ui::AX_ATTR_LIVE_STATUS)) {
-      if (change.node->data().role == ui::AX_ROLE_ALERT)
-        tree_events_[change.node->id()].insert(ui::AX_EVENT_ALERT);
-      else
-        tree_events_[change.node->id()].insert(
-            ui::AX_EVENT_LIVE_REGION_CREATED);
-      continue;
-    }
-    if (change.node->data().HasStringAttribute(
-            ui::AX_ATTR_CONTAINER_LIVE_STATUS)) {
-      ui::AXNode* live_root = change.node;
-      while (live_root &&
-             !live_root->data().HasStringAttribute(ui::AX_ATTR_LIVE_STATUS))
-        live_root = live_root->parent();
-      if (live_root)
-        tree_events_[live_root->id()].insert(ui::AX_EVENT_LIVE_REGION_CHANGED);
-    }
   }
 
   for (const BrowserAccessibilityCocoa* obj : changed_editable_roots) {
@@ -521,9 +417,6 @@ void BrowserAccessibilityManagerMac::OnAtomicUpdateFinished(
     if (!text_edit.IsEmpty())
       text_edits_[[obj browserAccessibility]->GetId()] = text_edit;
   }
-
-  if (root_changed && tree->data().loaded)
-    tree_events_[tree->root()->id()].insert(ui::AX_EVENT_LOAD_COMPLETE);
 }
 
 NSDictionary* BrowserAccessibilityManagerMac::

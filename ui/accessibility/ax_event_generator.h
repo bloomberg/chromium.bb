@@ -31,10 +31,11 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
     DOCUMENT_TITLE_CHANGED,
     EXPANDED,
     INVALID_STATUS_CHANGED,
-    LIVE_REGION_CHANGED,
+    LIVE_REGION_CHANGED,  // Fired on the root of a live region.
     LIVE_REGION_CREATED,
-    LIVE_REGION_NODE_CHANGED,
+    LIVE_REGION_NODE_CHANGED,  // Fired on a node within a live region.
     LOAD_COMPLETE,
+    MENU_ITEM_SELECTED,
     NAME_CHANGED,
     OTHER_ATTRIBUTE_CHANGED,
     ROLE_CHANGED,
@@ -70,12 +71,25 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
     std::set<Event>::const_iterator set_iter_;
   };
 
+  // If you use this constructor, you must call SetTree
+  // before using this class.
+  AXEventGenerator();
+
   // Automatically registers itself as the delegate of |tree| and
   // clears it on desctruction. |tree| must be valid for the lifetime
   // of this object.
-  AXEventGenerator(AXTree* tree);
+  explicit AXEventGenerator(AXTree* tree);
 
   ~AXEventGenerator() override;
+
+  // Clears this class as the delegate of the previous tree that was
+  // being monitored, if any, and starts monitoring |new_tree|, if not
+  // nullptr. Note that |new_tree| must be valid for the lifetime of
+  // this object or until you call SetTree again.
+  void SetTree(AXTree* new_tree);
+
+  // Null |tree_| without accessing it or destroying it.
+  void ReleaseTree();
 
   Iterator begin() const {
     return Iterator(tree_events_, tree_events_.begin());
@@ -83,7 +97,7 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
   Iterator end() const { return Iterator(tree_events_, tree_events_.end()); }
 
   // Clear any previously added events.
-  void Clear();
+  void ClearEvents();
 
   // This is called automatically based on changes to the tree observed
   // by AXTreeDelegate, but you can also call it directly to add events
@@ -153,8 +167,15 @@ class AX_EXPORT AXEventGenerator : public AXTreeDelegate {
                               const std::vector<Change>& changes) override;
 
  private:
+  void FireLiveRegionEvents(AXNode* node);
+  void FireActiveDescendantEvents();
+
   AXTree* tree_;  // Not owned.
   std::map<AXNode*, std::set<Event>> tree_events_;
+
+  // Valid between the call to OnIntAttributeChanged and the call to
+  // OnAtomicUpdateFinished. List of nodes whose active descendant changed.
+  std::vector<AXNode*> active_descendant_changed_;
 };
 
 }  // namespace ui

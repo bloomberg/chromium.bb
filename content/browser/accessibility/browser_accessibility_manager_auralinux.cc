@@ -48,11 +48,24 @@ ui::AXTreeUpdate
   return update;
 }
 
-void BrowserAccessibilityManagerAuraLinux::NotifyAccessibilityEvent(
-    BrowserAccessibilityEvent::Source source,
+void BrowserAccessibilityManagerAuraLinux::FireFocusEvent(
+    BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireFocusEvent(node);
+  // Need to implement.
+}
+
+void BrowserAccessibilityManagerAuraLinux::FireBlinkEvent(
     ui::AXEvent event_type,
     BrowserAccessibility* node) {
-  // TODO(shreeram.k) : Implement.
+  BrowserAccessibilityManager::FireBlinkEvent(event_type, node);
+  // Need to implement.
+}
+
+void BrowserAccessibilityManagerAuraLinux::FireGeneratedEvent(
+    AXEventGenerator::Event event_type,
+    BrowserAccessibility* node) {
+  BrowserAccessibilityManager::FireGeneratedEvent(event_type, node);
+  // Need to implement.
 }
 
 }  // namespace content
