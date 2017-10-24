@@ -47,5 +47,5 @@
     [RuntimeEnabled=ImplementsFeatureName] attribute Node implementsRuntimeEnabledNodeAttribute;
 
     [NotEnumerable] stringifier;
-    [NotEnumerable, RaisesException] serializer;
+    serializer;
 };

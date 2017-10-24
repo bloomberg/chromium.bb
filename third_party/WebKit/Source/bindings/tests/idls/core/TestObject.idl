@@ -540,8 +540,7 @@ interface TestObject {
     [NewObject] Promise<TestInterface> newObjectTestInterfacePromiseMethod();
     [RuntimeCallStatsCounter=RuntimeCallStatsCounterMethod] void RuntimeCallStatsCounterMethod();
 
-
-    serializer DOMString serializerMethod();
+    serializer = { attribute };
 
     // Extended attributes on referenced interfaces
     // (not self; self-reference tests at interface themselves)
