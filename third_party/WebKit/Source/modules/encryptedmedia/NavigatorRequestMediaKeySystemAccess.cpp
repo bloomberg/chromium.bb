@@ -276,7 +276,7 @@ ScriptPromise NavigatorRequestMediaKeySystemAccess::requestMediaKeySystemAccess(
   Deprecation::CountDeprecationFeaturePolicy(
       *document, WebFeaturePolicyFeature::kEncryptedMedia);
 
-  if (RuntimeEnabledFeatures::FeaturePolicyForEncryptedMediaEnabled()) {
+  if (RuntimeEnabledFeatures::FeaturePolicyForPermissionsEnabled()) {
     if (!document->GetFrame() ||
         !document->GetFrame()->IsFeatureEnabled(
             WebFeaturePolicyFeature::kEncryptedMedia)) {
