@@ -304,6 +304,22 @@ video::-webkit-media-controls-volume-slider {
   display: none;
 }
 
+input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+  position: absolute;
+  background: rgba(0, 0, 0, .54);
+  border-radius: 100px;
+  height: 2px;
+
+  right: 0;
+  left: 0;
+  top: 0;
+  display: none;
+}
+
+.state-buffering input[pseudo="-webkit-media-controls-timeline" i]::-internal-track-segment-buffering {
+  display: block;
+}
+
 /**
  * Time Display
  */
