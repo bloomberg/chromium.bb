@@ -59,7 +59,7 @@ class PickerIndicatorElement final : public HTMLDivElement,
 
   static PickerIndicatorElement* Create(Document&, PickerIndicatorOwner&);
   ~PickerIndicatorElement() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   void OpenPopup();
   void ClosePopup();

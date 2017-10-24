@@ -71,14 +71,14 @@ class PopupMenuCSSFontSelector : public CSSFontSelector,
     return new PopupMenuCSSFontSelector(document, owner_font_selector);
   }
 
-  ~PopupMenuCSSFontSelector();
+  ~PopupMenuCSSFontSelector() override;
 
   // We don't override willUseFontData() for now because the old PopupListBox
   // only worked with fonts loaded when opening the popup.
   scoped_refptr<FontData> GetFontData(const FontDescription&,
                                       const AtomicString&) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   PopupMenuCSSFontSelector(Document*, CSSFontSelector*);

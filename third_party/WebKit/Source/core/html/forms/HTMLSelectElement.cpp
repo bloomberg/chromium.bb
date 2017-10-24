@@ -240,7 +240,7 @@ void HTMLSelectElement::setValue(const String& value, bool send_events) {
   HTMLOptionElement* option = nullptr;
   // Find the option with value() matching the given parameter and make it the
   // current selection.
-  for (const auto& item : GetOptionList()) {
+  for (auto* const item : GetOptionList()) {
     if (item->value() == value) {
       option = item;
       break;
@@ -270,7 +270,7 @@ void HTMLSelectElement::SetSuggestedValue(const String& value) {
     return;
   }
 
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     if (option->value() == value) {
       SetSuggestedOption(option);
       is_autofilled_by_preview_ = true;
@@ -427,7 +427,7 @@ void HTMLSelectElement::setLength(unsigned new_len,
     // remove then attempt to remove them one at a time.
     HeapVector<Member<HTMLOptionElement>> items_to_remove;
     size_t option_index = 0;
-    for (const auto& option : GetOptionList()) {
+    for (auto* const option : GetOptionList()) {
       if (option_index++ >= new_len) {
         DCHECK(option->parentNode());
         items_to_remove.push_back(option);
@@ -587,7 +587,7 @@ void HTMLSelectElement::SaveListboxActiveSelection() {
   //   m_activeSelectionEndIndex = 3, options at 1-3 indices are selected.
   //   updateListBoxSelection needs to clear selection of the fifth OPTION.
   cached_state_for_active_selection_.resize(0);
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     cached_state_for_active_selection_.push_back(option->Selected());
   }
 }
@@ -610,7 +610,7 @@ void HTMLSelectElement::UpdateListBoxSelection(bool deselect_other_options,
   int end = std::max(active_selection_anchor_index, active_selection_end_index);
 
   int i = 0;
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     if (option->IsDisabledFormControl() || !option->GetLayoutObject()) {
       ++i;
       continue;
@@ -796,7 +796,7 @@ void HTMLSelectElement::ResetToDefaultSelection(ResetReason reason) {
   // We can't use HTMLSelectElement::options here because this function is
   // called in Node::insertedInto and Node::removedFrom before invalidating
   // node collections.
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     if (option->Selected()) {
       if (last_selected_option) {
         last_selected_option->SetSelectedState(false);
@@ -829,7 +829,7 @@ void HTMLSelectElement::ResetToDefaultSelection(ResetReason reason) {
 }
 
 HTMLOptionElement* HTMLSelectElement::SelectedOption() const {
-  for (const auto option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     if (option->Selected())
       return option;
   }
@@ -840,7 +840,7 @@ int HTMLSelectElement::selectedIndex() const {
   unsigned index = 0;
 
   // Return the number of the first option selected.
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     if (option->Selected())
       return index;
     ++index;
@@ -1079,7 +1079,7 @@ bool HTMLSelectElement::DeselectItemsWithoutValidation(
     return true;
   }
   bool did_update_selection = false;
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     if (option != exclude_element) {
       if (option->Selected())
         did_update_selection = true;
@@ -1199,14 +1199,14 @@ void HTMLSelectElement::AppendToFormData(FormData& form_data) {
   if (name.IsEmpty())
     return;
 
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     if (option->Selected() && !option->IsDisabledFormControl())
       form_data.append(name, option->value());
   }
 }
 
 void HTMLSelectElement::ResetImpl() {
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     option->SetSelectedState(option->FastHasAttribute(selectedAttr));
     option->SetDirty(false);
   }
@@ -1767,7 +1767,7 @@ void HTMLSelectElement::SelectOptionByAccessKey(HTMLOptionElement* option) {
 
 unsigned HTMLSelectElement::length() const {
   unsigned options = 0;
-  for (const auto& option : GetOptionList()) {
+  for (auto* const option : GetOptionList()) {
     ALLOW_UNUSED_LOCAL(option);
     ++options;
   }
@@ -2025,7 +2025,7 @@ class HTMLSelectElement::PopupUpdater : public MutationObserver::Delegate {
 
   void Dispose() { observer_->disconnect(); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(select_);
     visitor->Trace(observer_);
     MutationObserver::Delegate::Trace(visitor);

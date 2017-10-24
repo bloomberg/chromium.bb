@@ -84,7 +84,7 @@ class ListAttributeTargetObserver : public IdTargetObserver {
  public:
   static ListAttributeTargetObserver* Create(const AtomicString& id,
                                              HTMLInputElement*);
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
   void IdTargetChanged() override;
 
  private:

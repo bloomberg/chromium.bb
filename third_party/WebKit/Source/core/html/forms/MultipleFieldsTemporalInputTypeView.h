@@ -56,7 +56,7 @@ class MultipleFieldsTemporalInputTypeView final
   static MultipleFieldsTemporalInputTypeView* Create(HTMLInputElement&,
                                                      BaseTemporalInputType&);
   ~MultipleFieldsTemporalInputTypeView() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   MultipleFieldsTemporalInputTypeView(HTMLInputElement&,

@@ -45,7 +45,7 @@ class MockFormValidationMessageClient
 
   void DocumentDetached(const Document&) override {}
   void WillBeDestroyed() override {}
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(anchor_);
     ValidationMessageClient::Trace(visitor);
   }
@@ -153,7 +153,7 @@ TEST_F(HTMLFormControlElementTest, DoNotUpdateLayoutDuringDOMMutation) {
   HTMLFormControlElement* const select =
       ToHTMLFormControlElement(GetDocument().QuerySelector("select"));
   Element* const optgroup = GetDocument().createElement("optgroup");
-  auto validation_client = new MockFormValidationMessageClient();
+  auto* validation_client = new MockFormValidationMessageClient();
   GetDocument().GetPage()->SetValidationMessageClient(validation_client);
 
   select->setCustomValidity("foobar");

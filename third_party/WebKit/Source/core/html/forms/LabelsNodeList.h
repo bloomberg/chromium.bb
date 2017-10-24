@@ -38,7 +38,7 @@ class LabelsNodeList final : public LiveNodeList {
     return new LabelsNodeList(owner_node);
   }
 
-  virtual ~LabelsNodeList();
+  ~LabelsNodeList() override;
 
  protected:
   explicit LabelsNodeList(ContainerNode&);

@@ -44,7 +44,7 @@ class ClearButtonElement final : public HTMLDivElement {
   static ClearButtonElement* Create(Document&, ClearButtonOwner&);
   void RemoveClearButtonOwner() { clear_button_owner_ = nullptr; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   ClearButtonElement(Document&, ClearButtonOwner&);

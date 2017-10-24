@@ -215,7 +215,7 @@ void RadioButtonGroupScope::AddButton(HTMLInputElement* element) {
   if (!name_to_group_map_)
     name_to_group_map_ = new NameToGroupMap;
 
-  auto key_value =
+  auto* key_value =
       name_to_group_map_->insert(element->GetName(), nullptr).stored_value;
   if (!key_value->value)
     key_value->value = RadioButtonGroup::Create();

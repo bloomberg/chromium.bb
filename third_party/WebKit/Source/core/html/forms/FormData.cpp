@@ -68,7 +68,7 @@ class FormDataIterationSource final
     return true;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(form_data_);
     PairIterable<String, FormDataEntryValue>::IterationSource::Trace(visitor);
   }

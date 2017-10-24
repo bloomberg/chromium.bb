@@ -92,7 +92,7 @@ class CORE_EXPORT HTMLOptionElement final : public HTMLElement {
 
  private:
   explicit HTMLOptionElement(Document&);
-  ~HTMLOptionElement();
+  ~HTMLOptionElement() override;
 
   bool SupportsFocus() const override;
   bool MatchesDefaultPseudoClass() const override;

@@ -42,7 +42,7 @@ class Element;
 class CORE_EXPORT DateTimeChooserClient : public GarbageCollectedMixin {
  public:
   virtual ~DateTimeChooserClient();
-  virtual void Trace(blink::Visitor* visitor) {}
+  void Trace(blink::Visitor* visitor) override {}
 
   virtual Element& OwnerElement() const = 0;
   // Called when user picked a value.

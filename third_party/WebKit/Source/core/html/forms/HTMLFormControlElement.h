@@ -50,7 +50,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
 
  public:
   ~HTMLFormControlElement() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   String formAction() const;
   void setFormAction(const AtomicString&);
@@ -177,7 +177,7 @@ class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
   bool IsFormControlElement() const final { return true; }
   bool AlwaysCreateUserAgentShadowRoot() const override { return true; }
 
-  int tabIndex() const;
+  int tabIndex() const override;
 
   bool IsValidElement() override;
   bool MatchesValidityPseudoClasses() const override;

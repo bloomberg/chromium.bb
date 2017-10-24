@@ -41,8 +41,8 @@ namespace blink {
 class ImageInputType final : public BaseButtonInputType {
  public:
   static InputType* Create(HTMLInputElement&);
-  virtual scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
-      scoped_refptr<ComputedStyle>);
+  scoped_refptr<ComputedStyle> CustomStyleForLayoutObject(
+      scoped_refptr<ComputedStyle>) override;
 
  private:
   ImageInputType(HTMLInputElement&);
@@ -71,7 +71,7 @@ class ImageInputType final : public BaseButtonInputType {
 
   void ReattachFallbackContent();
   void SetUseFallbackContent();
-  bool HasFallbackContent() const { return use_fallback_content_; }
+  bool HasFallbackContent() const override { return use_fallback_content_; }
 
   // Valid only during HTMLFormElement::prepareForSubmission().
   IntPoint click_location_;
