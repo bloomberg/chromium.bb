@@ -141,7 +141,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
                 unsigned short code,
                 const String& reason) override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   static bool IsValidSubprotocolString(const String&);
 

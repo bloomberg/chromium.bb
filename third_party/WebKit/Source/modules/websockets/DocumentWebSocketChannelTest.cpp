@@ -131,7 +131,7 @@ class DocumentWebSocketChannelTest : public ::testing::Test {
             this, &DocumentWebSocketChannelTest::DidConsumeBufferedAmount));
   }
 
-  ~DocumentWebSocketChannelTest() { Channel()->Disconnect(); }
+  ~DocumentWebSocketChannelTest() override { Channel()->Disconnect(); }
 
   void SetUp() override {
     channel_ = DocumentWebSocketChannel::CreateForTesting(
