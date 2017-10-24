@@ -482,9 +482,6 @@ typedef struct FRAME_COUNTS {
 #if CONFIG_COMPOUND_SINGLEREF
   unsigned int comp_inter_mode[COMP_INTER_MODE_CONTEXTS][2];
 #endif  // CONFIG_COMPOUND_SINGLEREF
-  // TODO(urvang): Only needed for !CONFIG_VAR_TX case. So can be removed when
-  // CONFIG_VAR_TX flag is removed.
-  unsigned int tx_size[MAX_TX_DEPTH][TX_SIZE_CONTEXTS][MAX_TX_DEPTH + 1];
 #if CONFIG_RECT_TX_EXT
   unsigned int quarter_tx_size[2];
 #endif

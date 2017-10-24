@@ -474,7 +474,6 @@ static void read_tx_size_vartx(AV1_COMMON *cm, MACROBLOCKD *xd,
 
 static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
                                      int32_t tx_size_cat, aom_reader *r) {
-  FRAME_COUNTS *counts = xd->counts;
   const int ctx = get_tx_size_context(xd);
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
   (void)cm;
@@ -485,7 +484,6 @@ static TX_SIZE read_selected_tx_size(AV1_COMMON *cm, MACROBLOCKD *xd,
 #if CONFIG_RECT_TX
   assert(!is_rect_tx(tx_size));
 #endif  // CONFIG_RECT_TX
-  if (counts) ++counts->tx_size[tx_size_cat][ctx][depth];
   return tx_size;
 }
 
