@@ -20,9 +20,17 @@ UserEntry = cros_build_lib.Collection('UserEntry',
 GroupEntry = cros_build_lib.Collection('GroupEntry', group=None, encpasswd='!',
                                        gid=None, users=set())
 
+# For users that we allow to login to the system, whitelist a number of
+# alternative shells.  These are equivalent from a security POV.
+_VALID_LOGIN_SHELLS = set((
+    '/bin/sh',
+    '/bin/bash',
+    '/bin/dash',
+))
+
 USER_BASELINE = dict((e.user, e) for e in (
     UserEntry(user='root', encpasswd='x', uid=0, gid=0, home='/root',
-              shell='/bin/bash'),
+              shell=_VALID_LOGIN_SHELLS),
     UserEntry(user='bin', uid=1, gid=1, home='/bin'),
     UserEntry(user='daemon', uid=2, gid=2, home='/sbin'),
     UserEntry(user='adm', uid=3, gid=4, home='/var/adm'),
@@ -32,7 +40,7 @@ USER_BASELINE = dict((e.user, e) for e in (
     UserEntry(user='portage', uid=250, gid=250, home='/var/tmp/portage'),
     UserEntry(user='nobody', uid=65534, gid=65534, home='/var/empty'),
     UserEntry(user='chronos', encpasswd='x', uid=1000, gid=1000,
-              home='/home/chronos/user', shell='/bin/bash'),
+              home='/home/chronos/user', shell=_VALID_LOGIN_SHELLS),
     UserEntry(user='chronos-access', uid=1001, gid=1001),
     UserEntry(user='sshd', uid=204, gid=204, home='/var/empty'),
     UserEntry(user='tss', uid=207, gid=207, home='/var/lib/tpm'),
@@ -49,10 +57,6 @@ USER_BASELINE_LAKITU = dict((e.user, e) for e in (
 ))
 
 USER_BASELINE_JETSTREAM = dict((e.user, e) for e in (
-    UserEntry(user='root', encpasswd='x', uid=0, gid=0, home='/root',
-              shell='/bin/dash'),
-    UserEntry(user='chronos', encpasswd='x', uid=1000, gid=1000,
-              home='/home/chronos/user', shell='/bin/dash'),
     UserEntry(user='ap-monitor', uid=1102, gid=1103),
 ))
 

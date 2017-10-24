@@ -451,7 +451,11 @@ class UserGroupTest(image_test_lib.ImageTestCase):
       logging.error('Expected home "%s" for user "%s", got "%s".',
                     expected.home, expected.user, actual.home)
 
-    if expected.shell != actual.shell:
+    if isinstance(expected.shell, set):
+      valid_shell = actual.shell in expected.shell
+    else:
+      valid_shell = actual.shell == expected.shell
+    if not valid_shell:
       matched = False
       logging.error('Expected shell "%s" for user "%s", got "%s".',
                     expected.shell, expected.user, actual.shell)
