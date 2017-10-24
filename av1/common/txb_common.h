@@ -49,47 +49,6 @@ static const int base_ref_offset[BASE_CONTEXT_POSITION_NUM][2] = {
 // TODO(linfengz): Some functions have coeff_is_byte_flag to handle different
 // types of input coefficients. If possible, unify types to uint8_t* later.
 
-static INLINE int get_level_count(const tran_low_t *tcoeffs, int bwl,
-                                  int height, int row, int col, int level,
-                                  int (*nb_offset)[2], int nb_num) {
-  int count = 0;
-  for (int idx = 0; idx < nb_num; ++idx) {
-    const int ref_row = row + nb_offset[idx][0];
-    const int ref_col = col + nb_offset[idx][1];
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
-        ref_col >= (1 << bwl))
-      continue;
-    const int pos = (ref_row << bwl) + ref_col;
-    tran_low_t abs_coeff = abs(tcoeffs[pos]);
-    count += abs_coeff > level;
-  }
-  return count;
-}
-
-static INLINE void get_mag(int *mag, const tran_low_t *tcoeffs, int bwl,
-                           int height, int row, int col, int (*nb_offset)[2],
-                           int nb_num) {
-  mag[0] = 0;
-  mag[1] = 0;
-  for (int idx = 0; idx < nb_num; ++idx) {
-    const int ref_row = row + nb_offset[idx][0];
-    const int ref_col = col + nb_offset[idx][1];
-    if (ref_row < 0 || ref_col < 0 || ref_row >= height ||
-        ref_col >= (1 << bwl))
-      continue;
-    const int pos = (ref_row << bwl) + ref_col;
-    tran_low_t abs_coeff = abs(tcoeffs[pos]);
-    if (nb_offset[idx][0] >= 0 && nb_offset[idx][1] >= 0) {
-      if (abs_coeff > mag[0]) {
-        mag[0] = abs_coeff;
-        mag[1] = 1;
-      } else if (abs_coeff == mag[0]) {
-        ++mag[1];
-      }
-    }
-  }
-}
-
 static INLINE void get_base_count_mag(int *mag, int *count,
                                       const tran_low_t *tcoeffs, int bwl,
                                       int height, int row, int col) {
