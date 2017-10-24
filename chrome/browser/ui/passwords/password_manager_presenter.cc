@@ -343,6 +343,12 @@ void PasswordManagerPresenter::RequestShowPassword(size_t index) {
 
 std::vector<std::unique_ptr<autofill::PasswordForm>>
 PasswordManagerPresenter::GetAllPasswords() {
+#if !defined(OS_ANDROID)  // Reauthentication is handled differently on Android.
+  if (!password_access_authenticator_.EnsureUserIsAuthenticated()) {
+    return std::vector<std::unique_ptr<autofill::PasswordForm>>();
+  }
+#endif  // !defined(OS_ANDROID)
+
   std::vector<std::unique_ptr<autofill::PasswordForm>> ret_val;
 
   for (const auto& form : password_list_) {
