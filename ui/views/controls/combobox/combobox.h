@@ -81,6 +81,9 @@ class VIEWS_EXPORT Combobox : public View,
 
   ui::ComboboxModel* model() const { return model_; }
 
+  // Set the tooltip text, and the accessible name if it is currently empty.
+  void SetTooltipText(const base::string16& tooltip_text);
+
   // Set the accessible name of the combobox.
   void SetAccessibleName(const base::string16& name);
 
