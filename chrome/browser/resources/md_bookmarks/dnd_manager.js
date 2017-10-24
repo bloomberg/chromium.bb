@@ -330,6 +330,7 @@ cr.define('bookmarks', function() {
      */
     update: function(dropDest) {
       this.timerProxy.clearTimeout(this.removeDropIndicatorTimeoutId_);
+      this.removeDropIndicatorTimeoutId_ = null;
 
       const indicatorElement = dropDest.element.getDropTarget();
       const position = dropDest.position;
@@ -342,9 +343,11 @@ cr.define('bookmarks', function() {
      * Stop displaying the drop indicator.
      */
     finish: function() {
+      if (this.removeDropIndicatorTimeoutId_)
+        return;
+
       // The use of a timeout is in order to reduce flickering as we move
       // between valid drop targets.
-      this.timerProxy.clearTimeout(this.removeDropIndicatorTimeoutId_);
       this.removeDropIndicatorTimeoutId_ = this.timerProxy.setTimeout(() => {
         this.removeDropIndicatorStyle();
       }, 100);
