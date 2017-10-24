@@ -113,6 +113,9 @@ struct FullscreenToolbarLayout {
 // return a float that ranges from (0, 1).
 - (CGFloat)toolbarFraction;
 
+// Returns |toolbarStyle_|.
+- (FullscreenToolbarStyle)toolbarStyle;
+
 // Computes and return the layout for the fullscreen toolbar.
 - (FullscreenToolbarLayout)computeLayout;
 
