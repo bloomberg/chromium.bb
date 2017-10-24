@@ -45,7 +45,8 @@ is cut as the release build. All ReleaseBlock-Stable bugs should be fixed by the
 stable cut, which consequently corresponds to the absolute last date a merge to
 the release branch should be taken for inclusion in the initial stable release.
 The stable cut will, unless there are exceptions, use the final beta as its
-basis. For Chrome OS, the stable cut date may be different than the rest of Chrome.
+basis. For Chrome OS, the stable cut date may be different than the rest of
+Chrome.
 
 ### Stable Release
 
@@ -75,3 +76,7 @@ Except for extremely critical issues (e.g. security or privacy escalations),
 a Chrome stable refresh should not be pushed more than **2 weeks** after the
 initial build has been released to the public. In this case, we should consider
 punting any detected production issues to the next release.
+
+## More Info
+
+For more information, see these [guidelines for considering branch dates in project planning](../release_branch_guidance.md).
