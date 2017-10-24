@@ -1133,3 +1133,29 @@ TEST_F(ManagePasswordsUIControllerTest,
     testing::Mock::VerifyAndClearExpectations(controller());
   }
 }
+
+TEST_F(ManagePasswordsUIControllerTest, AutofillDuringSignInPromo) {
+  std::unique_ptr<password_manager::PasswordFormManager> test_form_manager(
+      CreateFormManager());
+  test_form_manager->ProvisionallySave(
+      test_local_form(),
+      password_manager::PasswordFormManager::IGNORE_OTHER_POSSIBLE_USERNAMES);
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnPasswordSubmitted(std::move(test_form_manager));
+
+  controller()->SavePassword(test_local_form().username_value,
+                             test_local_form().password_value);
+  // The state is 'Managed' but the bubble may still be on the screen showing
+  // the sign-in promo.
+  ExpectIconStateIs(password_manager::ui::MANAGE_STATE);
+  // The controller shouldn't force close the bubble if an autofill happened.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility()).Times(0);
+  std::map<base::string16, const autofill::PasswordForm*> map;
+  base::string16 test_username = test_local_form().username_value;
+  map.insert(std::make_pair(test_username, &test_local_form()));
+  controller()->OnPasswordAutofilled(map, map.begin()->second->origin, nullptr);
+
+  // Once the bubble is closed the controller is reacting again.
+  EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
+  controller()->OnBubbleHidden();
+}
