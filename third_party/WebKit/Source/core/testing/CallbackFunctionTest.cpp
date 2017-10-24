@@ -14,8 +14,6 @@
 
 namespace blink {
 
-void CallbackFunctionTest::Trace(blink::Visitor* visitor) {}
-
 String CallbackFunctionTest::testCallback(V8TestCallback* callback,
                                           const String& message1,
                                           const String& message2,

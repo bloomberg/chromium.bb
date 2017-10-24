@@ -24,8 +24,7 @@ class ScriptState;
 // BluetoothRemoteGATTServer provides a way to interact with a connected
 // bluetooth peripheral.
 class BluetoothRemoteGATTServer
-    : public GarbageCollectedFinalized<BluetoothRemoteGATTServer>,
-      public ScriptWrappable,
+    : public ScriptWrappable,
       public ContextLifecycleObserver,
       public mojom::blink::WebBluetoothServerClient {
   USING_PRE_FINALIZER(BluetoothRemoteGATTServer, Dispose);

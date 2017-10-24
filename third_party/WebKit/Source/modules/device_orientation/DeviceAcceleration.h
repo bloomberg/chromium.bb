@@ -32,8 +32,7 @@
 
 namespace blink {
 
-class DeviceAcceleration final : public GarbageCollected<DeviceAcceleration>,
-                                 public ScriptWrappable {
+class DeviceAcceleration final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

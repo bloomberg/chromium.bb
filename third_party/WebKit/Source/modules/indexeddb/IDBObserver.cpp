@@ -101,6 +101,7 @@ void IDBObserver::unobserve(IDBDatabase* database,
 void IDBObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(callback_);
   visitor->Trace(observer_ids_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void IDBObserver::TraceWrappers(const ScriptWrappableVisitor* visitor) const {

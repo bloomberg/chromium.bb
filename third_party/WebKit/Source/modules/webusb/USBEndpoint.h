@@ -14,8 +14,7 @@ namespace blink {
 class ExceptionState;
 class USBAlternateInterface;
 
-class USBEndpoint : public GarbageCollected<USBEndpoint>,
-                    public ScriptWrappable {
+class USBEndpoint : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

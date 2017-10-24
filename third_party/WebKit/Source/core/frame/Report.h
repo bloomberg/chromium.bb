@@ -9,8 +9,7 @@
 
 namespace blink {
 
-class CORE_EXPORT Report : public GarbageCollectedFinalized<Report>,
-                           public ScriptWrappable {
+class CORE_EXPORT Report : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -23,7 +22,10 @@ class CORE_EXPORT Report : public GarbageCollectedFinalized<Report>,
   String url() const { return url_; }
   ReportBody* body() const { return body_; }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(body_); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(body_);
+    ScriptWrappable::Trace(visitor);
+  }
 
  private:
   const String type_;

@@ -756,6 +756,7 @@ void FontFace::Trace(blink::Visitor* visitor) {
   visitor->Trace(loaded_property_);
   visitor->Trace(css_font_face_);
   visitor->Trace(callbacks_);
+  ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
 }
 

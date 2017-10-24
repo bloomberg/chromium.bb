@@ -34,6 +34,7 @@
 #include "core/dom/QualifiedName.h"
 #include "core/svg/SVGElement.h"
 #include "core/svg/properties/SVGProperty.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
@@ -42,8 +43,7 @@ class ExceptionState;
 
 enum PropertyIsAnimValType { kPropertyIsNotAnimVal, kPropertyIsAnimVal };
 
-class SVGPropertyTearOffBase
-    : public GarbageCollectedFinalized<SVGPropertyTearOffBase> {
+class SVGPropertyTearOffBase : public ScriptWrappable {
  public:
   virtual ~SVGPropertyTearOffBase() {}
 
@@ -72,9 +72,7 @@ class SVGPropertyTearOffBase
     attribute_name_ = attribute_name;
   }
 
-  virtual void Trace(blink::Visitor* visitor) {}
-
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     visitor->TraceWrappersWithManualWriteBarrier(context_element_.Get());
   }
 

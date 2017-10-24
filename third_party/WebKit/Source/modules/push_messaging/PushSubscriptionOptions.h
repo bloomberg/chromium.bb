@@ -16,9 +16,7 @@ class ExceptionState;
 class PushSubscriptionOptionsInit;
 struct WebPushSubscriptionOptions;
 
-class PushSubscriptionOptions final
-    : public GarbageCollected<PushSubscriptionOptions>,
-      public ScriptWrappable {
+class PushSubscriptionOptions final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

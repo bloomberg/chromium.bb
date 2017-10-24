@@ -18,9 +18,7 @@ class ExceptionState;
 class ScriptPromise;
 class ScriptState;
 
-class MODULES_EXPORT CredentialsContainer final
-    : public GarbageCollected<CredentialsContainer>,
-      public ScriptWrappable {
+class MODULES_EXPORT CredentialsContainer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -34,8 +32,6 @@ class MODULES_EXPORT CredentialsContainer final
                        ExceptionState&);
   ScriptPromise preventSilentAccess(ScriptState*);
   ScriptPromise requireUserMediation(ScriptState*);
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  private:
   CredentialsContainer();

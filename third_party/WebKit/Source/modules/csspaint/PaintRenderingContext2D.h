@@ -17,10 +17,8 @@ namespace blink {
 class CanvasImageSource;
 class Color;
 
-class MODULES_EXPORT PaintRenderingContext2D
-    : public GarbageCollectedFinalized<PaintRenderingContext2D>,
-      public BaseRenderingContext2D,
-      public ScriptWrappable {
+class MODULES_EXPORT PaintRenderingContext2D : public ScriptWrappable,
+                                               public BaseRenderingContext2D {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(PaintRenderingContext2D);
   WTF_MAKE_NONCOPYABLE(PaintRenderingContext2D);
@@ -32,6 +30,11 @@ class MODULES_EXPORT PaintRenderingContext2D
       float zoom) {
     return new PaintRenderingContext2D(std::move(image_buffer),
                                        context_settings, zoom);
+  }
+
+  void Trace(blink::Visitor* visitor) override {
+    ScriptWrappable::Trace(visitor);
+    BaseRenderingContext2D::Trace(visitor);
   }
 
   // BaseRenderingContext2D

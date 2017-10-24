@@ -10,7 +10,6 @@
 #include "modules/ModulesExport.h"
 #include "modules/canvas/canvas2d/CanvasRenderingContext2D.h"
 #include "modules/shapedetection/ShapeDetector.h"
-#include "platform/bindings/ScriptWrappable.h"
 #include "services/shape_detection/public/interfaces/facedetection.mojom-blink.h"
 
 namespace blink {
@@ -18,8 +17,7 @@ namespace blink {
 class ExecutionContext;
 class FaceDetectorOptions;
 
-class MODULES_EXPORT FaceDetector final : public ShapeDetector,
-                                          public ScriptWrappable {
+class MODULES_EXPORT FaceDetector final : public ShapeDetector {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

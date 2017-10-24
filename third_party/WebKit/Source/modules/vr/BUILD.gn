@@ -12,7 +12,6 @@ blink_modules_sources("vr") {
     "VRController.h",
     "VRDisplay.cpp",
     "VRDisplay.h",
-    "VRDisplayCapabilities.cpp",
     "VRDisplayCapabilities.h",
     "VRDisplayEvent.cpp",
     "VRDisplayEvent.h",

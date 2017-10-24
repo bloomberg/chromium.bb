@@ -124,11 +124,12 @@ void PerformanceObserver::Deliver() {
 }
 
 void PerformanceObserver::Trace(blink::Visitor* visitor) {
-  ContextClient::Trace(visitor);
   visitor->Trace(execution_context_);
   visitor->Trace(callback_);
   visitor->Trace(performance_);
   visitor->Trace(performance_entries_);
+  ScriptWrappable::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 void PerformanceObserver::TraceWrappers(

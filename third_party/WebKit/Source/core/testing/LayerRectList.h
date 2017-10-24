@@ -42,8 +42,7 @@ class DOMRectReadOnly;
 class LayerRect;
 class Node;
 
-class LayerRectList final : public GarbageCollected<LayerRectList>,
-                            public ScriptWrappable {
+class LayerRectList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

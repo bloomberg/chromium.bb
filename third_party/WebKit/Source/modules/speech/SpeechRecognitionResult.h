@@ -33,9 +33,7 @@
 
 namespace blink {
 
-class MODULES_EXPORT SpeechRecognitionResult final
-    : public GarbageCollected<SpeechRecognitionResult>,
-      public ScriptWrappable {
+class MODULES_EXPORT SpeechRecognitionResult final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

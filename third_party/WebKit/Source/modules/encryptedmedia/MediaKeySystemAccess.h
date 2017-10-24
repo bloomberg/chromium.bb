@@ -14,9 +14,7 @@
 
 namespace blink {
 
-class MediaKeySystemAccess final
-    : public GarbageCollectedFinalized<MediaKeySystemAccess>,
-      public ScriptWrappable {
+class MediaKeySystemAccess final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -27,8 +25,6 @@ class MediaKeySystemAccess final
   const String& keySystem() const { return key_system_; }
   void getConfiguration(MediaKeySystemConfiguration& result);
   ScriptPromise createMediaKeys(ScriptState*);
-
-  void Trace(blink::Visitor*);
 
  private:
   const String key_system_;

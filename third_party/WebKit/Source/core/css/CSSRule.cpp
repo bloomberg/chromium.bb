@@ -64,6 +64,7 @@ void CSSRule::Trace(blink::Visitor* visitor) {
     visitor->Trace(parent_rule_);
   else
     visitor->Trace(parent_style_sheet_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void CSSRule::TraceWrappers(const ScriptWrappableVisitor* visitor) const {

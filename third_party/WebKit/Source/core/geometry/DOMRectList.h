@@ -35,8 +35,7 @@
 
 namespace blink {
 
-class CORE_EXPORT DOMRectList final : public GarbageCollected<DOMRectList>,
-                                      public ScriptWrappable {
+class CORE_EXPORT DOMRectList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

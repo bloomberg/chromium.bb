@@ -14,8 +14,7 @@ namespace blink {
 class ExceptionState;
 class ScriptState;
 
-class TrackDefault final : public GarbageCollectedFinalized<TrackDefault>,
-                           public ScriptWrappable {
+class TrackDefault final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -38,8 +37,6 @@ class TrackDefault final : public GarbageCollectedFinalized<TrackDefault>,
   String language() const { return language_; }
   String label() const { return label_; }
   ScriptValue kinds(ScriptState*) const;
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   TrackDefault(const AtomicString& type,

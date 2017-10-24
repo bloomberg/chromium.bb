@@ -51,6 +51,7 @@ Vector<String> FileList::PathsForUserVisibleFiles() const {
 
 void FileList::Trace(blink::Visitor* visitor) {
   visitor->Trace(files_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

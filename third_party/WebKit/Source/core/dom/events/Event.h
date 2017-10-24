@@ -42,8 +42,7 @@ class EventDispatchMediator;
 class EventTarget;
 class ScriptState;
 
-class CORE_EXPORT Event : public GarbageCollectedFinalized<Event>,
-                          public ScriptWrappable {
+class CORE_EXPORT Event : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -33,12 +33,10 @@
 
 #include "core/svg/SVGStringList.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
-#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 
-class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>,
-                             public ScriptWrappable {
+class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -129,8 +127,6 @@ class SVGStringListTearOff : public SVGPropertyTearOff<SVGStringList>,
     CommitChange();
     return item;
   }
-
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
  protected:
   SVGStringListTearOff(SVGStringList*,

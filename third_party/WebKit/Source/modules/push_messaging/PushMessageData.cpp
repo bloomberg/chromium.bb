@@ -88,6 +88,4 @@ String PushMessageData::text() const {
   return UTF8Encoding().Decode(data_.data(), data_.size());
 }
 
-void PushMessageData::Trace(blink::Visitor* visitor) {}
-
 }  // namespace blink

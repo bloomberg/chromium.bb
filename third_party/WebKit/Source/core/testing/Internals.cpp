@@ -3134,6 +3134,7 @@ ScriptPromise Internals::promiseCheckOverload(ScriptState* script_state,
 void Internals::Trace(blink::Visitor* visitor) {
   visitor->Trace(runtime_flags_);
   visitor->Trace(document_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void Internals::setValueForUser(HTMLInputElement* element,

@@ -38,9 +38,10 @@
 namespace blink {
 
 class SVGAnimatedPreserveAspectRatio
-    : public SVGAnimatedProperty<SVGPreserveAspectRatio>,
-      public ScriptWrappable {
+    : public ScriptWrappable,
+      public SVGAnimatedProperty<SVGPreserveAspectRatio> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedPreserveAspectRatio);
 
  public:
   static SVGAnimatedPreserveAspectRatio* Create(
@@ -49,7 +50,12 @@ class SVGAnimatedPreserveAspectRatio
     return new SVGAnimatedPreserveAspectRatio(context_element, attribute_name);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGPreserveAspectRatio>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
+
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGPreserveAspectRatio>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

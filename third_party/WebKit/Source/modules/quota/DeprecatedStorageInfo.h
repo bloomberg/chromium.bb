@@ -43,9 +43,7 @@ class StorageErrorCallback;
 class StorageQuotaCallback;
 class StorageUsageCallback;
 
-class DeprecatedStorageInfo final
-    : public GarbageCollected<DeprecatedStorageInfo>,
-      public ScriptWrappable {
+class DeprecatedStorageInfo final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

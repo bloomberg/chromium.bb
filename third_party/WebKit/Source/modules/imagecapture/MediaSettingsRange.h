@@ -10,8 +10,7 @@
 
 namespace blink {
 
-class MediaSettingsRange final : public GarbageCollected<MediaSettingsRange>,
-                                 public ScriptWrappable {
+class MediaSettingsRange final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -28,8 +27,6 @@ class MediaSettingsRange final : public GarbageCollected<MediaSettingsRange>,
   double max() const { return max_; }
   double min() const { return min_; }
   double step() const { return step_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   MediaSettingsRange(double max, double min, double step)

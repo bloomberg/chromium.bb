@@ -69,8 +69,7 @@ class CORE_EXPORT MediaQuerySet : public RefCounted<MediaQuerySet> {
   Vector<std::unique_ptr<MediaQuery>> queries_;
 };
 
-class MediaList final : public GarbageCollectedFinalized<MediaList>,
-                        public ScriptWrappable {
+class MediaList final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

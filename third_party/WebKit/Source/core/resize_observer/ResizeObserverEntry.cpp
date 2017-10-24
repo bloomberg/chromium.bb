@@ -20,6 +20,7 @@ ResizeObserverEntry::ResizeObserverEntry(Element* target,
 void ResizeObserverEntry::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(content_rect_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

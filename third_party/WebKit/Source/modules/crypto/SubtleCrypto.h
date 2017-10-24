@@ -46,8 +46,7 @@ class CryptoKey;
 typedef ArrayBufferOrArrayBufferView BufferSource;
 typedef DictionaryOrString AlgorithmIdentifier;
 
-class SubtleCrypto final : public GarbageCollected<SubtleCrypto>,
-                           public ScriptWrappable {
+class SubtleCrypto final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -112,8 +111,6 @@ class SubtleCrypto final : public GarbageCollected<SubtleCrypto>,
                           const AlgorithmIdentifier&,
                           bool extractable,
                           const Vector<String>&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   SubtleCrypto();

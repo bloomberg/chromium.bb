@@ -34,9 +34,7 @@ namespace blink {
 
 class ExceptionState;
 
-class NodeIterator final : public GarbageCollected<NodeIterator>,
-                           public ScriptWrappable,
-                           public NodeIteratorBase {
+class NodeIterator final : public ScriptWrappable, public NodeIteratorBase {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(NodeIterator);
 

@@ -16,9 +16,7 @@ class RTCRtpReceiver;
 class WebRTCRtpContributingSource;
 
 // https://w3c.github.io/webrtc-pc/#dom-rtcrtpcontributingsource
-class RTCRtpContributingSource final
-    : public GarbageCollectedFinalized<RTCRtpContributingSource>,
-      public ScriptWrappable {
+class RTCRtpContributingSource final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

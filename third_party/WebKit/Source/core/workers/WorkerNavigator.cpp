@@ -38,6 +38,7 @@ String WorkerNavigator::userAgent() const {
 }
 
 void WorkerNavigator::Trace(blink::Visitor* visitor) {
+  ScriptWrappable::Trace(visitor);
   Supplementable<WorkerNavigator>::Trace(visitor);
 }
 

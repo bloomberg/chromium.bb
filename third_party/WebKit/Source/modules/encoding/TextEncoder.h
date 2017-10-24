@@ -35,7 +35,6 @@
 #include "core/typed_arrays/ArrayBufferViewHelpers.h"
 #include "core/typed_arrays/DOMTypedArray.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/text/TextCodec.h"
 #include "platform/wtf/text/TextEncoding.h"
 #include "platform/wtf/text/WTFString.h"
@@ -45,8 +44,7 @@ namespace blink {
 class ExecutionContext;
 class ExceptionState;
 
-class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>,
-                          public ScriptWrappable {
+class TextEncoder final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -56,8 +54,6 @@ class TextEncoder final : public GarbageCollectedFinalized<TextEncoder>,
   // Implement the IDL
   String encoding() const;
   NotShared<DOMUint8Array> encode(const String&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   TextEncoder(const WTF::TextEncoding&);

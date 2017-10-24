@@ -18,8 +18,7 @@ class IDBValue;
 class ScriptState;
 struct WebIDBObservation;
 
-class IDBObservation final : public GarbageCollectedFinalized<IDBObservation>,
-                             public ScriptWrappable {
+class IDBObservation final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

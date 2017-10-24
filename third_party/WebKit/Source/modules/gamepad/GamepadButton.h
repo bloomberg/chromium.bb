@@ -12,8 +12,7 @@
 
 namespace blink {
 
-class GamepadButton final : public GarbageCollected<GamepadButton>,
-                            public ScriptWrappable {
+class GamepadButton final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -30,8 +29,6 @@ class GamepadButton final : public GarbageCollected<GamepadButton>,
 
   bool IsEqual(const device::GamepadButton&) const;
   void UpdateValuesFrom(const device::GamepadButton&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   GamepadButton();

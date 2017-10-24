@@ -18,8 +18,7 @@ class ExceptionState;
 class ScriptState;
 class ScriptValue;
 
-class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
-                                     public ScriptWrappable {
+class CORE_EXPORT DOMPointReadOnly : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -30,8 +29,6 @@ class CORE_EXPORT DOMPointReadOnly : public GarbageCollected<DOMPointReadOnly>,
   double y() const { return y_; }
   double z() const { return z_; }
   double w() const { return w_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
   ScriptValue toJSONForBinding(ScriptState*) const;
   DOMPoint* matrixTransform(DOMMatrixInit&, ExceptionState&);

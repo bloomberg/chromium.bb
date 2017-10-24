@@ -16,8 +16,7 @@
 namespace blink {
 
 // https://w3c.github.io/webrtc-pc/#rtcstatsreport-object
-class RTCStatsReport final : public GarbageCollectedFinalized<RTCStatsReport>,
-                             public ScriptWrappable,
+class RTCStatsReport final : public ScriptWrappable,
                              public Maplike<String, v8::Local<v8::Value>> {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -34,8 +33,6 @@ class RTCStatsReport final : public GarbageCollectedFinalized<RTCStatsReport>,
                    const String& key,
                    v8::Local<v8::Value>&,
                    ExceptionState&) override;
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  private:
   std::unique_ptr<WebRTCStatsReport> report_;

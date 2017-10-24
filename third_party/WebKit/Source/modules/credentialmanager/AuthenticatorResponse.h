@@ -12,9 +12,7 @@
 
 namespace blink {
 
-class MODULES_EXPORT AuthenticatorResponse
-    : public GarbageCollectedFinalized<AuthenticatorResponse>,
-      public ScriptWrappable {
+class MODULES_EXPORT AuthenticatorResponse : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

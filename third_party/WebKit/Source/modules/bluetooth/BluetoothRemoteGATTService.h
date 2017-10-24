@@ -27,9 +27,7 @@ class ScriptState;
 // CallbackPromiseAdapter templatized with this class. See this class's
 // "Interface required by CallbackPromiseAdapter" section and the
 // CallbackPromiseAdapter class comments.
-class BluetoothRemoteGATTService final
-    : public GarbageCollectedFinalized<BluetoothRemoteGATTService>,
-      public ScriptWrappable {
+class BluetoothRemoteGATTService final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

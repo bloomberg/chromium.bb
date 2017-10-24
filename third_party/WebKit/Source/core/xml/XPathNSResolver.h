@@ -28,20 +28,16 @@
 #define XPathNSResolver_h
 
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/Forward.h"
 
 namespace blink {
 
-class XPathNSResolver : public GarbageCollectedFinalized<XPathNSResolver>,
-                        public ScriptWrappable {
+class XPathNSResolver : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   virtual ~XPathNSResolver() {}
   virtual AtomicString lookupNamespaceURI(const String& prefix) = 0;
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   XPathNSResolver() {}

@@ -17,8 +17,7 @@
 
 namespace blink {
 
-class RecordTest final : public GarbageCollectedFinalized<RecordTest>,
-                         public ScriptWrappable {
+class RecordTest final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

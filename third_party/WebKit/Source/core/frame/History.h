@@ -44,8 +44,7 @@ class SecurityOrigin;
 class ScriptState;
 
 // This class corresponds to the History interface.
-class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
-                                  public ScriptWrappable,
+class CORE_EXPORT History final : public ScriptWrappable,
                                   public DOMWindowClient {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(History);
@@ -79,7 +78,7 @@ class CORE_EXPORT History final : public GarbageCollectedFinalized<History>,
   bool stateChanged() const;
   bool IsSameAsCurrentState(SerializedScriptValue*) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(HistoryTest, CanChangeToURL);

@@ -226,6 +226,7 @@ void DictionaryTest::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_or_null_member_);
   visitor->Trace(double_or_string_sequence_member_);
   visitor->Trace(event_target_or_null_member_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

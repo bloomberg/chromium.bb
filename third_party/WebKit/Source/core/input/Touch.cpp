@@ -106,6 +106,7 @@ Touch* Touch::CloneWithNewTarget(EventTarget* event_target) const {
 
 void Touch::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

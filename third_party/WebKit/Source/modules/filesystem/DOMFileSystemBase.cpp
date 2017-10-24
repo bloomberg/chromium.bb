@@ -74,6 +74,7 @@ DOMFileSystemBase::~DOMFileSystemBase() {}
 
 void DOMFileSystemBase::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
+  ScriptWrappable::Trace(visitor);
 }
 
 WebFileSystem* DOMFileSystemBase::FileSystem() const {

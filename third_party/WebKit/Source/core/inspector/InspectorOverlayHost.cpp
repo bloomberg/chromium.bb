@@ -49,6 +49,7 @@ void InspectorOverlayHost::ClearListener() {
 
 void InspectorOverlayHost::Trace(blink::Visitor* visitor) {
   visitor->Trace(listener_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -15,9 +15,7 @@ namespace blink {
 
 class ScriptState;
 
-class CORE_EXPORT TrustedURL final
-    : public GarbageCollectedFinalized<TrustedURL>,
-      public ScriptWrappable {
+class CORE_EXPORT TrustedURL final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -27,8 +25,6 @@ class CORE_EXPORT TrustedURL final
   String toString() const;
   static TrustedURL* create(ScriptState*, const String& url);
   static TrustedURL* unsafelyCreate(ScriptState*, const String& url);
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  private:
   TrustedURL(const KURL&);

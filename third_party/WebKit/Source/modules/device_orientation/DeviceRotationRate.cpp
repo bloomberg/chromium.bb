@@ -33,6 +33,7 @@ DeviceRotationRate::DeviceRotationRate(
 
 void DeviceRotationRate::Trace(blink::Visitor* visitor) {
   visitor->Trace(rotation_rate_);
+  ScriptWrappable::Trace(visitor);
 }
 
 double DeviceRotationRate::alpha(bool& is_null) const {

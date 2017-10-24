@@ -39,8 +39,7 @@
 
 namespace blink {
 
-class LayerRect final : public GarbageCollectedFinalized<LayerRect>,
-                        public ScriptWrappable {
+class LayerRect final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -61,6 +60,7 @@ class LayerRect final : public GarbageCollectedFinalized<LayerRect>,
   void Trace(blink::Visitor* visitor) {
     visitor->Trace(layer_associated_node_);
     visitor->Trace(rect_);
+    ScriptWrappable::Trace(visitor);
   }
 
  private:

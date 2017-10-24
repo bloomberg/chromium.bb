@@ -12,8 +12,7 @@
 
 namespace blink {
 
-class VRStageBounds final : public GarbageCollected<VRStageBounds>,
-                            public ScriptWrappable {
+class VRStageBounds final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

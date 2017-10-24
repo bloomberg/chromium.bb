@@ -16,8 +16,7 @@ namespace blink {
 class VREyeParameters;
 class VRPose;
 
-class VRFrameData final : public GarbageCollected<VRFrameData>,
-                          public ScriptWrappable {
+class VRFrameData final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -44,7 +43,7 @@ class VRFrameData final : public GarbageCollected<VRFrameData>,
               float depth_near,
               float depth_far);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Member<DOMFloat32Array> left_projection_matrix_;

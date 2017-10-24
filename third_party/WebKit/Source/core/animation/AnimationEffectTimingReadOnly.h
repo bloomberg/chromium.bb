@@ -14,9 +14,7 @@ namespace blink {
 
 class UnrestrictedDoubleOrString;
 
-class CORE_EXPORT AnimationEffectTimingReadOnly
-    : public GarbageCollected<AnimationEffectTimingReadOnly>,
-      public ScriptWrappable {
+class CORE_EXPORT AnimationEffectTimingReadOnly : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -204,8 +204,7 @@ class AudioParamHandler final : public ThreadSafeRefCounted<AudioParamHandler>,
 };
 
 // AudioParam class represents web-exposed AudioParam interface.
-class AudioParam final : public GarbageCollectedFinalized<AudioParam>,
-                         public ScriptWrappable {
+class AudioParam final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

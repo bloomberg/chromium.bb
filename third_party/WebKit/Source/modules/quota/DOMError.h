@@ -34,8 +34,7 @@
 
 namespace blink {
 
-class MODULES_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>,
-                                public ScriptWrappable {
+class MODULES_EXPORT DOMError : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -57,8 +56,6 @@ class MODULES_EXPORT DOMError : public GarbageCollectedFinalized<DOMError>,
 
   const String& name() const { return name_; }
   const String& message() const { return message_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  protected:
   explicit DOMError(const String& name);

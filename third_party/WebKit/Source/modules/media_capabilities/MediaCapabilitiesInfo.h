@@ -15,9 +15,7 @@ namespace blink {
 class ScriptPromiseResolver;
 
 // Implementation of the MediaCapabilitiesInfo interface.
-class MediaCapabilitiesInfo final
-    : public GarbageCollectedFinalized<MediaCapabilitiesInfo>,
-      public ScriptWrappable {
+class MediaCapabilitiesInfo final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -28,8 +26,6 @@ class MediaCapabilitiesInfo final
   bool supported() const;
   bool smooth() const;
   bool powerEfficient() const;
-
-  virtual void Trace(blink::Visitor*);
 
  private:
   MediaCapabilitiesInfo() = delete;

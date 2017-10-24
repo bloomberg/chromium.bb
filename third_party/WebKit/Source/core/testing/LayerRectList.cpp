@@ -60,6 +60,7 @@ void LayerRectList::Append(Node* layer_root_node,
 
 void LayerRectList::Trace(blink::Visitor* visitor) {
   visitor->Trace(list_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

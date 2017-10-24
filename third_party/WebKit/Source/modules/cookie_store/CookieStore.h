@@ -21,8 +21,7 @@ class CookieStoreSetOptions;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class CookieStore final : public GarbageCollectedFinalized<CookieStore>,
-                          public ScriptWrappable,
+class CookieStore final : public ScriptWrappable,
                           public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(CookieStore);
@@ -48,7 +47,8 @@ class CookieStore final : public GarbageCollectedFinalized<CookieStore>,
                     const CookieStoreSetOptions&,
                     ExceptionState&);
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
+    ScriptWrappable::Trace(visitor);
     ContextLifecycleObserver::Trace(visitor);
   }
 

@@ -36,7 +36,10 @@
 
 namespace blink {
 
-class SVGAnimatedPath : public SVGAnimatedProperty<SVGPath> {
+class SVGAnimatedPath final : public GarbageCollectedFinalized<SVGAnimatedPath>,
+                              public SVGAnimatedProperty<SVGPath> {
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedPath);
+
  public:
   ~SVGAnimatedPath() override;
 

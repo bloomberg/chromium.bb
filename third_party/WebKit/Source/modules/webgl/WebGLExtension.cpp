@@ -38,6 +38,7 @@ WebGLExtension::WebGLExtension(WebGLRenderingContextBase* context)
 
 void WebGLExtension::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

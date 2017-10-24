@@ -49,8 +49,7 @@ class ScriptState;
 typedef FileOrUSVString FormDataEntryValue;
 
 class CORE_EXPORT FormData final
-    : public GarbageCollected<FormData>,
-      public ScriptWrappable,
+    : public ScriptWrappable,
       public PairIterable<String, FormDataEntryValue> {
   DEFINE_WRAPPERTYPEINFO();
 

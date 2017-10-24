@@ -39,9 +39,7 @@ namespace blink {
 
 class ExceptionState;
 
-class CORE_EXPORT TimeRanges final
-    : public GarbageCollectedFinalized<TimeRanges>,
-      public ScriptWrappable {
+class CORE_EXPORT TimeRanges final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -106,8 +104,6 @@ class CORE_EXPORT TimeRanges final
 
   double Nearest(double new_playback_position,
                  double current_playback_position) const;
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   TimeRanges() {}

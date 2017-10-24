@@ -95,6 +95,7 @@ FormData::FormData(HTMLFormElement* form) : encoding_(UTF8Encoding()) {
 
 void FormData::Trace(blink::Visitor* visitor) {
   visitor->Trace(entries_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void FormData::append(const String& name, const String& value) {

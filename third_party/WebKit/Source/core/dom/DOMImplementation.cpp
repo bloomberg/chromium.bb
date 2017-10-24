@@ -287,6 +287,7 @@ Document* DOMImplementation::createDocument(const String& type,
 
 void DOMImplementation::Trace(blink::Visitor* visitor) {
   visitor->Trace(document_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

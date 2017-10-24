@@ -14,8 +14,7 @@ namespace blink {
 // CSSStyleVariableReferenceValue represents a CSS var() value for CSS Typed OM.
 // The corresponding idl file is CSSVariableReferenceValue.idl.
 class CORE_EXPORT CSSStyleVariableReferenceValue final
-    : public GarbageCollectedFinalized<CSSStyleVariableReferenceValue>,
-      public ScriptWrappable {
+    : public ScriptWrappable {
   WTF_MAKE_NONCOPYABLE(CSSStyleVariableReferenceValue);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -34,7 +33,10 @@ class CORE_EXPORT CSSStyleVariableReferenceValue final
     return const_cast<CSSUnparsedValue*>(fallback_.Get());
   }
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(fallback_); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(fallback_);
+    ScriptWrappable::Trace(visitor);
+  }
 
  protected:
   CSSStyleVariableReferenceValue(const String& variable,

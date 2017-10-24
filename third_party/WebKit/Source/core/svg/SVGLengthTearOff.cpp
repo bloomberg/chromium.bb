@@ -249,10 +249,4 @@ SVGLengthTearOff* SVGLengthTearOff::CreateDetached() {
                 QualifiedName::Null());
 }
 
-void SVGLengthTearOff::TraceWrappers(
-    const ScriptWrappableVisitor* visitor) const {
-  SVGPropertyTearOff<SVGLength>::TraceWrappers(visitor);
-  ScriptWrappable::TraceWrappers(visitor);
-}
-
 }  // namespace blink

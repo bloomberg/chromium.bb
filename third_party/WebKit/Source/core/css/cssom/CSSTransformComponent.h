@@ -19,9 +19,7 @@ class ExceptionState;
 // the individual CSS transforms. They are combined in a CSSTransformValue
 // before they can be used as a value for properties like "transform".
 // See CSSTransformComponent.idl for more information about this class.
-class CORE_EXPORT CSSTransformComponent
-    : public GarbageCollectedFinalized<CSSTransformComponent>,
-      public ScriptWrappable {
+class CORE_EXPORT CSSTransformComponent : public ScriptWrappable {
   WTF_MAKE_NONCOPYABLE(CSSTransformComponent);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -54,8 +52,6 @@ class CORE_EXPORT CSSTransformComponent
   virtual TransformComponentType GetType() const = 0;
   virtual const CSSFunctionValue* ToCSSValue() const = 0;
   virtual const DOMMatrix* AsMatrix(ExceptionState&) const = 0;
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   CSSTransformComponent(bool is2D) : is2D_(is2D) {}

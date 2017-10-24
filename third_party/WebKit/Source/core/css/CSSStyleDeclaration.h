@@ -35,9 +35,7 @@ class CSSStyleSheet;
 class CSSValue;
 class ExceptionState;
 
-class CORE_EXPORT CSSStyleDeclaration
-    : public GarbageCollectedFinalized<CSSStyleDeclaration>,
-      public ScriptWrappable {
+class CORE_EXPORT CSSStyleDeclaration : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(CSSStyleDeclaration);
 
@@ -82,8 +80,6 @@ class CORE_EXPORT CSSStyleDeclaration
 
   virtual bool CssPropertyMatches(CSSPropertyID, const CSSValue*) const = 0;
   virtual CSSStyleSheet* ParentStyleSheet() const { return 0; }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   CSSStyleDeclaration() {}

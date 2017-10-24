@@ -19,8 +19,7 @@
 namespace blink {
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpreceiver-interface
-class RTCRtpReceiver final : public GarbageCollectedFinalized<RTCRtpReceiver>,
-                             public ScriptWrappable {
+class RTCRtpReceiver final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

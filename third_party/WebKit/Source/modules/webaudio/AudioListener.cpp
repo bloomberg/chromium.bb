@@ -103,6 +103,8 @@ void AudioListener::Trace(blink::Visitor* visitor) {
   visitor->Trace(up_x_);
   visitor->Trace(up_y_);
   visitor->Trace(up_z_);
+
+  ScriptWrappable::Trace(visitor);
 }
 
 void AudioListener::AddPanner(PannerHandler& panner) {

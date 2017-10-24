@@ -9,7 +9,6 @@
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/typed_arrays/DOMArrayPiece.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Heap.h"
 
 namespace blink {
 
@@ -22,8 +21,7 @@ class WebData;
 // is a keychange event, iteration order and completeness is not guaranteed
 // if the event loop runs.
 class MediaKeyStatusMap final
-    : public GarbageCollected<MediaKeyStatusMap>,
-      public ScriptWrappable,
+    : public ScriptWrappable,
       public PairIterable<ArrayBufferOrArrayBufferView, String> {
   DEFINE_WRAPPERTYPEINFO();
 

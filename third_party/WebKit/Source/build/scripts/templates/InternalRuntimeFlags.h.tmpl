@@ -14,9 +14,7 @@
 
 namespace blink {
 
-class InternalRuntimeFlags :
-    public GarbageCollected<InternalRuntimeFlags>,
-    public ScriptWrappable {
+class InternalRuntimeFlags : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
  public:
   static InternalRuntimeFlags* create() {
@@ -36,8 +34,6 @@ class InternalRuntimeFlags :
     return RuntimeEnabledFeatures::{{feature.name}}Enabled();
   }
   {% endfor %}
-
-  void Trace(Visitor*) {}
 
  private:
   InternalRuntimeFlags() {}

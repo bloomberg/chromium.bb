@@ -7,11 +7,10 @@
 
 #include "modules/webmidi/MIDIInput.h"
 #include "modules/webmidi/MIDIPortMap.h"
-#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 
-class MIDIInputMap : public MIDIPortMap<MIDIInput>, public ScriptWrappable {
+class MIDIInputMap : public MIDIPortMap<MIDIInput> {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

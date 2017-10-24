@@ -61,6 +61,7 @@ SpeechGrammarList::SpeechGrammarList() {}
 
 void SpeechGrammarList::Trace(blink::Visitor* visitor) {
   visitor->Trace(grammars_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

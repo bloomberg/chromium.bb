@@ -6,16 +6,13 @@
 #define BluetoothCharacteristicProperties_h
 
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
 
 namespace blink {
 
 // Each BluetoothRemoteGATTCharacteristic exposes its characteristic properties
 // through a BluetoothCharacteristicProperties object. These properties express
 // what operations are valid on the characteristic.
-class BluetoothCharacteristicProperties final
-    : public GarbageCollected<BluetoothCharacteristicProperties>,
-      public ScriptWrappable {
+class BluetoothCharacteristicProperties final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -31,8 +28,6 @@ class BluetoothCharacteristicProperties final
   bool authenticatedSignedWrites() const;
   bool reliableWrite() const;
   bool writableAuxiliaries() const;
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit BluetoothCharacteristicProperties(uint32_t properties);

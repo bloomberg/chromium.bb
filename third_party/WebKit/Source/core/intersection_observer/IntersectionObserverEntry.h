@@ -15,9 +15,7 @@ namespace blink {
 
 class Element;
 
-class IntersectionObserverEntry final
-    : public GarbageCollected<IntersectionObserverEntry>,
-      public ScriptWrappable {
+class IntersectionObserverEntry final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -82,6 +82,7 @@ bool CheckTokensSyntax(const Vector<String>& tokens,
 
 void DOMTokenList::Trace(blink::Visitor* visitor) {
   visitor->Trace(element_);
+  ScriptWrappable::Trace(visitor);
 }
 
 // https://dom.spec.whatwg.org/#concept-domtokenlist-validation

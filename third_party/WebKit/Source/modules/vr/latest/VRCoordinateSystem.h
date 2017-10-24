@@ -15,8 +15,7 @@ namespace blink {
 class TransformationMatrix;
 class VRSession;
 
-class VRCoordinateSystem : public GarbageCollectedFinalized<VRCoordinateSystem>,
-                           public ScriptWrappable {
+class VRCoordinateSystem : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

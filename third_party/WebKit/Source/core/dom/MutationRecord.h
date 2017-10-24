@@ -43,8 +43,7 @@ template <typename NodeType>
 class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 
-class MutationRecord : public GarbageCollectedFinalized<MutationRecord>,
-                       public ScriptWrappable {
+class MutationRecord : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -76,8 +75,6 @@ class MutationRecord : public GarbageCollectedFinalized<MutationRecord>,
   virtual const AtomicString& attributeNamespace() { return g_null_atom; }
 
   virtual String oldValue() { return String(); }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

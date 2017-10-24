@@ -113,6 +113,7 @@ void DataTransferItem::Trace(blink::Visitor* visitor) {
   visitor->Trace(data_transfer_);
   visitor->Trace(item_);
   visitor->Trace(callbacks_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void DataTransferItem::TraceWrappers(

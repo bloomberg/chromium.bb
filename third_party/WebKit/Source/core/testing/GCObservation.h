@@ -38,8 +38,7 @@
 
 namespace blink {
 
-class GCObservation final : public GarbageCollectedFinalized<GCObservation>,
-                            public ScriptWrappable {
+class GCObservation final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -53,8 +52,6 @@ class GCObservation final : public GarbageCollectedFinalized<GCObservation>,
   // common case.
   bool wasCollected() const { return collected_; }
   void SetWasCollected();
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit GCObservation(v8::Local<v8::Value>);

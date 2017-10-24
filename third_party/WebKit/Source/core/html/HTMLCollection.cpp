@@ -528,6 +528,7 @@ HTMLCollection::NamedItemCache::NamedItemCache() {}
 void HTMLCollection::Trace(blink::Visitor* visitor) {
   visitor->Trace(named_item_cache_);
   visitor->Trace(collection_items_cache_);
+  ScriptWrappable::Trace(visitor);
   LiveNodeListBase::Trace(visitor);
 }
 

@@ -22,8 +22,7 @@ class ScriptState;
 // This is the entry point into the browser for the BudgetService API, which is
 // designed to give origins the ability to perform background operations
 // on the user's behalf.
-class BudgetService final : public GarbageCollectedFinalized<BudgetService>,
-                            public ScriptWrappable {
+class BudgetService final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -38,8 +37,6 @@ class BudgetService final : public GarbageCollectedFinalized<BudgetService>,
   ScriptPromise getCost(ScriptState*, const AtomicString& operation);
   ScriptPromise getBudget(ScriptState*);
   ScriptPromise reserve(ScriptState*, const AtomicString& operation);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   // Callbacks from the BudgetService to the blink layer.

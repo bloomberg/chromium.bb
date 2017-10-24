@@ -54,6 +54,7 @@ DOMURL::~DOMURL() {}
 
 void DOMURL::Trace(blink::Visitor* visitor) {
   visitor->Trace(search_params_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void DOMURL::SetInput(const String& value) {

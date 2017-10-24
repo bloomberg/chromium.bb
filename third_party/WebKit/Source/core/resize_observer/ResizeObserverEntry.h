@@ -14,8 +14,7 @@ class Element;
 class DOMRectReadOnly;
 class LayoutRect;
 
-class ResizeObserverEntry final : public GarbageCollected<ResizeObserverEntry>,
-                                  public ScriptWrappable {
+class ResizeObserverEntry final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

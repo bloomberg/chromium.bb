@@ -38,8 +38,7 @@ namespace blink {
 class Element;
 class ExceptionState;
 
-class CORE_EXPORT DOMTokenList : public GarbageCollectedFinalized<DOMTokenList>,
-                                 public ScriptWrappable {
+class CORE_EXPORT DOMTokenList : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(DOMTokenList);
 

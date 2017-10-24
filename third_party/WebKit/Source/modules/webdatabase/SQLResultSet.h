@@ -37,8 +37,7 @@ namespace blink {
 
 class ExceptionState;
 
-class SQLResultSet final : public GarbageCollected<SQLResultSet>,
-                           public ScriptWrappable {
+class SQLResultSet final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

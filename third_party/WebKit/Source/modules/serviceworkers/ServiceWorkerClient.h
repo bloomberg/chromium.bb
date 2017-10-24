@@ -19,9 +19,7 @@ namespace blink {
 class ScriptPromiseResolver;
 class ScriptState;
 
-class MODULES_EXPORT ServiceWorkerClient
-    : public GarbageCollectedFinalized<ServiceWorkerClient>,
-      public ScriptWrappable {
+class MODULES_EXPORT ServiceWorkerClient : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -45,8 +43,6 @@ class MODULES_EXPORT ServiceWorkerClient
                    ExceptionState&);
 
   static bool CanTransferArrayBuffersAndImageBitmaps() { return false; }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   explicit ServiceWorkerClient(const WebServiceWorkerClientInfo&);

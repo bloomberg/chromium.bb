@@ -14,7 +14,6 @@
 #include "platform/animation/CompositorAnimationDelegate.h"
 #include "platform/animation/CompositorAnimationPlayer.h"
 #include "platform/animation/CompositorAnimationPlayerClient.h"
-#include "platform/bindings/ScriptWrappable.h"
 
 namespace blink {
 
@@ -30,7 +29,6 @@ namespace blink {
 //
 // Spec: https://wicg.github.io/animation-worklet/#worklet-animation-desc
 class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
-                                        public ScriptWrappable,
                                         public CompositorAnimationPlayerClient,
                                         public CompositorAnimationDelegate {
   DEFINE_WRAPPERTYPEINFO();

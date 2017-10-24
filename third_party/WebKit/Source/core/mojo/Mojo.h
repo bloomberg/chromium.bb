@@ -18,7 +18,7 @@ class MojoCreateSharedBufferResult;
 class MojoHandle;
 class ScriptState;
 
-class Mojo final : public GarbageCollected<Mojo>, public ScriptWrappable {
+class Mojo final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -56,8 +56,6 @@ class Mojo final : public GarbageCollected<Mojo>, public ScriptWrappable {
                             const String& interface_name,
                             MojoHandle*,
                             const String& scope);
-
-  void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

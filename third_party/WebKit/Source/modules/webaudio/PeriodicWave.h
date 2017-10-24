@@ -43,8 +43,7 @@ class BaseAudioContext;
 class ExceptionState;
 class PeriodicWaveOptions;
 
-class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>,
-                           public ScriptWrappable {
+class PeriodicWave final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -89,8 +88,6 @@ class PeriodicWave final : public GarbageCollectedFinalized<PeriodicWave>,
 
   // The number of ranges needed for the given sampling rate and FFT size.
   unsigned NumberOfRanges() const { return number_of_ranges_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit PeriodicWave(float sample_rate);

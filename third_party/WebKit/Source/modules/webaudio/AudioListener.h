@@ -43,8 +43,7 @@ class PannerHandler;
 // AudioListener maintains the state of the listener in the audio scene as
 // defined in the OpenAL specification.
 
-class AudioListener : public GarbageCollectedFinalized<AudioListener>,
-                      public ScriptWrappable {
+class AudioListener : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

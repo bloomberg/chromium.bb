@@ -34,9 +34,7 @@
 
 namespace blink {
 
-class SpeechSynthesisVoice final
-    : public GarbageCollectedFinalized<SpeechSynthesisVoice>,
-      public ScriptWrappable {
+class SpeechSynthesisVoice final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -53,8 +51,6 @@ class SpeechSynthesisVoice final
   PlatformSpeechSynthesisVoice* PlatformVoice() const {
     return platform_voice_.get();
   }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit SpeechSynthesisVoice(scoped_refptr<PlatformSpeechSynthesisVoice>);

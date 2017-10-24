@@ -21,8 +21,7 @@ class IDBObserverInit;
 class IDBTransaction;
 class V8IDBObserverCallback;
 
-class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
-                                         public ScriptWrappable {
+class MODULES_EXPORT IDBObserver final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

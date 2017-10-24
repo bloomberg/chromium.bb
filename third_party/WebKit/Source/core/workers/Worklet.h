@@ -23,8 +23,7 @@ class ScriptPromiseResolver;
 // https://drafts.css-houdini.org/worklets/#worklet
 // Although some worklets run off the main thread, this must be created and
 // destroyed on the main thread.
-class CORE_EXPORT Worklet : public GarbageCollectedFinalized<Worklet>,
-                            public ScriptWrappable,
+class CORE_EXPORT Worklet : public ScriptWrappable,
                             public ContextLifecycleObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Worklet);

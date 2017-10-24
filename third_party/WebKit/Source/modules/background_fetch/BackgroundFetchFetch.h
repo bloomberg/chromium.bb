@@ -14,8 +14,7 @@ class Request;
 
 // Base interface for providing developers with access to the fetch
 // information associated with a background fetch.
-class BackgroundFetchFetch : public GarbageCollected<BackgroundFetchFetch>,
-                             public ScriptWrappable {
+class BackgroundFetchFetch : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

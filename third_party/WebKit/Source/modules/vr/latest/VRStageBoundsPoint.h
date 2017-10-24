@@ -11,8 +11,7 @@
 
 namespace blink {
 
-class VRStageBoundsPoint final : public GarbageCollected<VRStageBoundsPoint>,
-                                 public ScriptWrappable {
+class VRStageBoundsPoint final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -20,8 +19,6 @@ class VRStageBoundsPoint final : public GarbageCollected<VRStageBoundsPoint>,
 
   double x() const { return x_; }
   double z() const { return z_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   double x_;

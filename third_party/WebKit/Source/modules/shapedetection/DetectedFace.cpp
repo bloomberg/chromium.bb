@@ -40,6 +40,7 @@ DetectedFace::DetectedFace(DOMRect* bounding_box,
 void DetectedFace::Trace(blink::Visitor* visitor) {
   visitor->Trace(bounding_box_);
   visitor->Trace(landmarks_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

@@ -48,19 +48,17 @@ class Document;
 class LocalFrame;
 class ExecutionContext;
 
-class MODULES_EXPORT Geolocation final
-    : public GarbageCollectedFinalized<Geolocation>,
-      public ScriptWrappable,
-      public ContextLifecycleObserver,
-      public PageVisibilityObserver {
+class MODULES_EXPORT Geolocation final : public ScriptWrappable,
+                                         public ContextLifecycleObserver,
+                                         public PageVisibilityObserver {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(Geolocation);
 
  public:
   static Geolocation* Create(ExecutionContext*);
   ~Geolocation();
-  virtual void Trace(blink::Visitor*);
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   // Inherited from ContextLifecycleObserver and PageVisibilityObserver.
   void ContextDestroyed(ExecutionContext*) override;

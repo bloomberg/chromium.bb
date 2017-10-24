@@ -43,8 +43,7 @@ namespace blink {
 class ExceptionState;
 class IDBObjectStore;
 
-class IDBIndex final : public GarbageCollectedFinalized<IDBIndex>,
-                       public ScriptWrappable {
+class IDBIndex final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

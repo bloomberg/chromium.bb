@@ -48,8 +48,7 @@ class Node;
 class NodeWithIndex;
 class Text;
 
-class CORE_EXPORT Range final : public GarbageCollected<Range>,
-                                public ScriptWrappable {
+class CORE_EXPORT Range final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

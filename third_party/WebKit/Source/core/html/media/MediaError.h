@@ -28,14 +28,11 @@
 
 #include "core/CoreExport.h"
 #include "platform/bindings/ScriptWrappable.h"
-#include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
-class CORE_EXPORT MediaError final
-    : public GarbageCollectedFinalized<MediaError>,
-      public ScriptWrappable {
+class CORE_EXPORT MediaError final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -55,8 +52,6 @@ class CORE_EXPORT MediaError final
   // Returns either an empty string, or a human readable string describing
   // additional error detail.
   String message() const { return message_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   MediaError(ErrorCode code, const String& message)

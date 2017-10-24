@@ -32,8 +32,7 @@ namespace blink {
 class CSSRule;
 class CSSStyleSheet;
 
-class CSSRuleList : public GarbageCollected<CSSRuleList>,
-                    public ScriptWrappable {
+class CSSRuleList : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   WTF_MAKE_NONCOPYABLE(CSSRuleList);
 
@@ -42,8 +41,6 @@ class CSSRuleList : public GarbageCollected<CSSRuleList>,
   virtual CSSRule* item(unsigned index) const = 0;
 
   virtual CSSStyleSheet* GetStyleSheet() const = 0;
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   CSSRuleList() {}

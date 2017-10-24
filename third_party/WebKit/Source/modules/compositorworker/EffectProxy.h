@@ -13,8 +13,7 @@
 
 namespace blink {
 
-class MODULES_EXPORT EffectProxy : public GarbageCollected<EffectProxy>,
-                                   public ScriptWrappable {
+class MODULES_EXPORT EffectProxy : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -27,8 +26,6 @@ class MODULES_EXPORT EffectProxy : public GarbageCollected<EffectProxy>,
   double localTime() const { return local_time_.InSecondsF(); }
 
   WTF::TimeDelta GetLocalTime() const { return local_time_; }
-
-  void Trace(Visitor*) {}
 
  private:
   WTF::TimeDelta local_time_;

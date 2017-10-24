@@ -71,6 +71,7 @@ bool Storage::NamedPropertyQuery(const AtomicString& name,
 
 void Storage::Trace(blink::Visitor* visitor) {
   visitor->Trace(storage_area_);
+  ScriptWrappable::Trace(visitor);
   ContextClient::Trace(visitor);
 }
 

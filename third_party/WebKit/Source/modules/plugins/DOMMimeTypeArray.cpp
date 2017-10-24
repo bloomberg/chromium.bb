@@ -36,8 +36,9 @@ DOMMimeTypeArray::DOMMimeTypeArray(LocalFrame* frame)
 }
 
 void DOMMimeTypeArray::Trace(blink::Visitor* visitor) {
-  ContextLifecycleObserver::Trace(visitor);
   visitor->Trace(dom_mime_types_);
+  ScriptWrappable::Trace(visitor);
+  ContextLifecycleObserver::Trace(visitor);
 }
 
 unsigned DOMMimeTypeArray::length() const {

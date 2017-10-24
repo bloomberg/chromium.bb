@@ -108,6 +108,7 @@ URLSearchParams::~URLSearchParams() {}
 
 void URLSearchParams::Trace(blink::Visitor* visitor) {
   visitor->Trace(url_object_);
+  ScriptWrappable::Trace(visitor);
 }
 
 #if DCHECK_IS_ON()

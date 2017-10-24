@@ -48,11 +48,15 @@ namespace blink {
 // a ScriptWrappable.  v8::Object as platform object is called "wrapper object".
 // The wrapper object for the main world is stored in ScriptWrappable.  Wrapper
 // objects for other worlds are stored in DOMWrapperMap.
-class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
+class PLATFORM_EXPORT ScriptWrappable
+    : public GarbageCollectedFinalized<ScriptWrappable>,
+      public TraceWrapperBase {
   WTF_MAKE_NONCOPYABLE(ScriptWrappable);
 
  public:
-  ScriptWrappable() {}
+  virtual ~ScriptWrappable() = default;
+
+  virtual void Trace(blink::Visitor*) {}
 
   bool IsScriptWrappable() const override { return true; }
 
@@ -144,6 +148,9 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
   //  ScriptWrappableVisitor::markWrapper(ScriptWrappable*, v8::Isolate*)
   void MarkWrapper(const ScriptWrappableVisitor*) const;
 
+ protected:
+  ScriptWrappable() = default;
+
  private:
   // These classes are exceptionally allowed to use MainWorldWrapper().
   friend class DOMDataStore;
@@ -165,9 +172,9 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
   v8::Persistent<v8::Object> main_world_wrapper_;
 };
 
-// Defines 'wrapperTypeInfo' virtual method which returns the WrapperTypeInfo of
-// the instance. Also declares a static member of type WrapperTypeInfo, of which
-// the definition is given by the IDL code generator.
+// Defines |GetWrapperTypeInfo| virtual method which returns the WrapperTypeInfo
+// of the instance. Also declares a static member of type WrapperTypeInfo, of
+// which the definition is given by the IDL code generator.
 //
 // All the derived classes of ScriptWrappable, regardless of directly or
 // indirectly, must write this macro in the class definition as long as the
@@ -181,7 +188,7 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
  private:                                                      \
   static const WrapperTypeInfo& wrapper_type_info_
 
-// Declares 'wrapperTypeInfo' method without definition.
+// Declares |GetWrapperTypeInfo| method without definition.
 //
 // This macro is used for template classes. e.g. DOMTypedArray<>.
 // To export such a template class X, we need to instantiate X with EXPORT_API,
@@ -196,7 +203,7 @@ class PLATFORM_EXPORT ScriptWrappable : public TraceWrapperBase {
   const WrapperTypeInfo* GetWrapperTypeInfo() const override; \
                                                               \
  private:                                                     \
-  typedef void end_of_define_wrappertypeinfo_not_reached_t
+  typedef void end_of_declare_wrappertypeinfo_t
 
 }  // namespace blink
 

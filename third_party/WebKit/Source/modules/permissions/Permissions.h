@@ -17,13 +17,10 @@ class ExecutionContext;
 class ScriptPromiseResolver;
 class ScriptState;
 
-class Permissions final : public GarbageCollectedFinalized<Permissions>,
-                          public ScriptWrappable {
+class Permissions final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  void Trace(blink::Visitor* visitor) {}
-
   ScriptPromise query(ScriptState*, const Dictionary&);
   ScriptPromise request(ScriptState*, const Dictionary&);
   ScriptPromise revoke(ScriptState*, const Dictionary&);

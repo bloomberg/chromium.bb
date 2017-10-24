@@ -8,14 +8,14 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/Maplike.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
 namespace blink {
 
 template <typename T>
-class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>,
-                    public Maplike<String, T*> {
+class MIDIPortMap : public ScriptWrappable, public Maplike<String, T*> {
  public:
   explicit MIDIPortMap(const HeapVector<Member<T>>& entries)
       : entries_(entries) {}
@@ -23,7 +23,10 @@ class MIDIPortMap : public GarbageCollected<MIDIPortMap<T>>,
   // IDL attributes / methods
   size_t size() const { return entries_.size(); }
 
-  virtual void Trace(blink::Visitor* visitor) { visitor->Trace(entries_); }
+  void Trace(blink::Visitor* visitor) override {
+    visitor->Trace(entries_);
+    ScriptWrappable::Trace(visitor);
+  }
 
  private:
   // We use HeapVector here to keep the entry order.

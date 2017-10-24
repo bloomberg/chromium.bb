@@ -43,6 +43,7 @@ DOMParser::DOMParser(Document& document)
 
 void DOMParser::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_document_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

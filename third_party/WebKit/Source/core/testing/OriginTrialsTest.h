@@ -16,8 +16,7 @@ class ScriptState;
 // OriginTrialsTest is a very simple interface used for testing
 // origin-trial-enabled features which are attached directly to interfaces at
 // run-time.
-class OriginTrialsTest : public GarbageCollectedFinalized<OriginTrialsTest>,
-                         public ScriptWrappable {
+class OriginTrialsTest : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -47,8 +46,6 @@ class OriginTrialsTest : public GarbageCollectedFinalized<OriginTrialsTest>,
   static bool secureStaticAttribute() { return true; }
   bool secureMethod() { return true; }
   static bool secureStaticMethod() { return true; }
-
-  void Trace(blink::Visitor*);
 
  private:
   OriginTrialsTest() = default;

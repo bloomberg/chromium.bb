@@ -19,9 +19,7 @@ class ScriptValue;
 
 // The base class for all CSS values returned by the Typed OM.
 // See CSSStyleValue.idl for additional documentation about this class.
-class CORE_EXPORT CSSStyleValue
-    : public GarbageCollectedFinalized<CSSStyleValue>,
-      public ScriptWrappable {
+class CORE_EXPORT CSSStyleValue : public ScriptWrappable {
   WTF_MAKE_NONCOPYABLE(CSSStyleValue);
   DEFINE_WRAPPERTYPEINFO();
 
@@ -64,8 +62,6 @@ class CORE_EXPORT CSSStyleValue
     // rewritten.
     return result ? result->CssText() : "";
   }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 
  protected:
   static String StyleValueTypeToString(StyleValueType);

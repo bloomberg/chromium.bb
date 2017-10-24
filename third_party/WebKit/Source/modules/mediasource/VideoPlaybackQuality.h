@@ -38,8 +38,7 @@ namespace blink {
 
 class Document;
 
-class VideoPlaybackQuality : public GarbageCollected<VideoPlaybackQuality>,
-                             public ScriptWrappable {
+class VideoPlaybackQuality : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -52,8 +51,6 @@ class VideoPlaybackQuality : public GarbageCollected<VideoPlaybackQuality>,
   unsigned totalVideoFrames() const { return total_video_frames_; }
   unsigned droppedVideoFrames() const { return dropped_video_frames_; }
   unsigned corruptedVideoFrames() const { return corrupted_video_frames_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   VideoPlaybackQuality(const Document&,

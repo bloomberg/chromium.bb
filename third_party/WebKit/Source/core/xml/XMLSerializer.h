@@ -28,16 +28,13 @@ namespace blink {
 
 class Node;
 
-class XMLSerializer final : public GarbageCollected<XMLSerializer>,
-                            public ScriptWrappable {
+class XMLSerializer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static XMLSerializer* Create() { return new XMLSerializer; }
 
   String serializeToString(Node*);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   XMLSerializer() {}

@@ -284,6 +284,7 @@ void Database::Trace(blink::Visitor* visitor) {
   visitor->Trace(sqlite_database_);
   visitor->Trace(database_authorizer_);
   visitor->Trace(creation_callback_);
+  ScriptWrappable::Trace(visitor);
 }
 
 void Database::TraceWrappers(const ScriptWrappableVisitor* visitor) const {

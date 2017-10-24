@@ -11,10 +11,7 @@
 
 namespace blink {
 
-class CORE_EXPORT AudioTrack final
-    : public GarbageCollectedFinalized<AudioTrack>,
-      public TrackBase,
-      public ScriptWrappable {
+class CORE_EXPORT AudioTrack final : public ScriptWrappable, public TrackBase {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(AudioTrack);
 
@@ -29,7 +26,7 @@ class CORE_EXPORT AudioTrack final
   }
 
   ~AudioTrack() override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   bool enabled() const { return enabled_; }
   void setEnabled(bool);

@@ -10,9 +10,7 @@
 
 namespace blink {
 
-class CORE_EXPORT AnimationTimeline
-    : public GarbageCollectedFinalized<AnimationTimeline>,
-      public ScriptWrappable {
+class CORE_EXPORT AnimationTimeline : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -21,8 +19,6 @@ class CORE_EXPORT AnimationTimeline
   virtual double currentTime(bool&) = 0;
 
   virtual bool IsDocumentTimeline() const { return false; }
-
-  virtual void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

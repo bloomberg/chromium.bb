@@ -84,6 +84,7 @@ SubtleCrypto* Crypto::subtle() {
 
 void Crypto::Trace(blink::Visitor* visitor) {
   visitor->Trace(subtle_crypto_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

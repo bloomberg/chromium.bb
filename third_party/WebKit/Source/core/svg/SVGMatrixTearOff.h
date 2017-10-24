@@ -46,9 +46,7 @@ class SVGTransformTearOff;
 // Its instance can either hold a static value, or this can be teared off from
 // |SVGTransform.matrix|.  This does not derive from SVGPropertyTearOff, as its
 // instances are never tied to an animated property nor an XML attribute.
-class CORE_EXPORT SVGMatrixTearOff final
-    : public GarbageCollected<SVGMatrixTearOff>,
-      public ScriptWrappable {
+class CORE_EXPORT SVGMatrixTearOff final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

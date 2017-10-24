@@ -37,8 +37,7 @@ class ExecutionContext;
 class ScriptState;
 class ScriptValue;
 
-class MODULES_EXPORT IDBKeyRange final : public GarbageCollected<IDBKeyRange>,
-                                         public ScriptWrappable {
+class MODULES_EXPORT IDBKeyRange final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

@@ -201,6 +201,7 @@ void NodeIterator::UpdateForNodeRemoval(Node& removed_node,
 void NodeIterator::Trace(blink::Visitor* visitor) {
   visitor->Trace(reference_node_);
   visitor->Trace(candidate_node_);
+  ScriptWrappable::Trace(visitor);
   NodeIteratorBase::Trace(visitor);
 }
 

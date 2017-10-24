@@ -39,8 +39,7 @@ namespace blink {
 
 class LocalFrame;
 
-class CORE_EXPORT Screen final : public GarbageCollected<Screen>,
-                                 public ScriptWrappable,
+class CORE_EXPORT Screen final : public ScriptWrappable,
                                  public DOMWindowClient,
                                  public Supplementable<Screen> {
   DEFINE_WRAPPERTYPEINFO();
@@ -58,7 +57,7 @@ class CORE_EXPORT Screen final : public GarbageCollected<Screen>,
   int availHeight() const;
   int availWidth() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   explicit Screen(LocalFrame*);

@@ -27,8 +27,7 @@ class MojoWriteDataResult;
 class ScriptState;
 class V8MojoWatchCallback;
 
-class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
-                         public ScriptWrappable {
+class MojoHandle final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -62,8 +61,6 @@ class MojoHandle final : public GarbageCollectedFinalized<MojoHandle>,
   void mapBuffer(unsigned offset, unsigned num_bytes, MojoMapBufferResult&);
   void duplicateBufferHandle(const MojoDuplicateBufferHandleOptions&,
                              MojoCreateSharedBufferResult&);
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit MojoHandle(mojo::ScopedHandle);

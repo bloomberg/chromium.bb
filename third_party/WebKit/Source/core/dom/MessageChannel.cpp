@@ -42,6 +42,7 @@ MessageChannel::MessageChannel(ExecutionContext* context)
 void MessageChannel::Trace(blink::Visitor* visitor) {
   visitor->Trace(port1_);
   visitor->Trace(port2_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

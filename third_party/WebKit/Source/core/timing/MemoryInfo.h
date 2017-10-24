@@ -48,8 +48,7 @@ struct HeapInfo {
   size_t js_heap_size_limit;
 };
 
-class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>,
-                                     public ScriptWrappable {
+class CORE_EXPORT MemoryInfo final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -58,8 +57,6 @@ class CORE_EXPORT MemoryInfo final : public GarbageCollected<MemoryInfo>,
   size_t totalJSHeapSize() const { return info_.total_js_heap_size; }
   size_t usedJSHeapSize() const { return info_.used_js_heap_size; }
   size_t jsHeapSizeLimit() const { return info_.js_heap_size_limit; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   MemoryInfo();

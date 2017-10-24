@@ -28,10 +28,9 @@ class WorkletPendingTasks;
 class WorkerReportingProxy;
 
 class CORE_EXPORT WorkletGlobalScope
-    : public GarbageCollectedFinalized<WorkletGlobalScope>,
+    : public ScriptWrappable,
       public SecurityContext,
       public WorkerOrWorkletGlobalScope,
-      public ScriptWrappable,
       public ActiveScriptWrappable<WorkletGlobalScope> {
   DEFINE_WRAPPERTYPEINFO();
   USING_GARBAGE_COLLECTED_MIXIN(WorkletGlobalScope);

@@ -33,7 +33,6 @@
 
 #include "core/fileapi/FileError.h"
 #include "modules/filesystem/DirectoryReaderBase.h"
-#include "platform/bindings/ScriptWrappable.h"
 #include "platform/heap/Handle.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -44,7 +43,7 @@ class ExceptionState;
 
 typedef HeapVector<Member<EntrySync>> EntrySyncHeapVector;
 
-class DirectoryReaderSync : public DirectoryReaderBase, public ScriptWrappable {
+class DirectoryReaderSync : public DirectoryReaderBase {
   DEFINE_WRAPPERTYPEINFO();
 
  public:

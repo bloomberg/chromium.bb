@@ -37,9 +37,10 @@
 
 namespace blink {
 
-class SVGAnimatedBoolean final : public SVGAnimatedProperty<SVGBoolean>,
-                                 public ScriptWrappable {
+class SVGAnimatedBoolean final : public ScriptWrappable,
+                                 public SVGAnimatedProperty<SVGBoolean> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedBoolean);
 
  public:
   static SVGAnimatedBoolean* Create(SVGElement* context_element,
@@ -47,7 +48,12 @@ class SVGAnimatedBoolean final : public SVGAnimatedProperty<SVGBoolean>,
     return new SVGAnimatedBoolean(context_element, attribute_name);
   }
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+  void Trace(blink::Visitor* visitor) override {
+    SVGAnimatedProperty<SVGBoolean>::Trace(visitor);
+    ScriptWrappable::Trace(visitor);
+  }
+
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const override {
     SVGAnimatedProperty<SVGBoolean>::TraceWrappers(visitor);
     ScriptWrappable::TraceWrappers(visitor);
   }

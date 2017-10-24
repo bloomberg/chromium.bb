@@ -41,9 +41,10 @@ namespace blink {
 class SVGAnimatedIntegerOptionalInteger;
 
 // SVG Spec: http://www.w3.org/TR/SVG11/types.html#InterfaceSVGAnimatedInteger
-class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger>,
-                           public ScriptWrappable {
+class SVGAnimatedInteger : public ScriptWrappable,
+                           public SVGAnimatedProperty<SVGInteger> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedInteger);
 
  public:
   static SVGAnimatedInteger* Create(SVGElement* context_element,
@@ -60,9 +61,9 @@ class SVGAnimatedInteger : public SVGAnimatedProperty<SVGInteger>,
     parent_integer_optional_integer_ = number_optional_integer;
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   SVGAnimatedInteger(SVGElement* context_element,

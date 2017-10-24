@@ -22,9 +22,7 @@ class DOMMatrixInit;
 class DOMPoint;
 class DOMPointInit;
 
-class CORE_EXPORT DOMMatrixReadOnly
-    : public GarbageCollectedFinalized<DOMMatrixReadOnly>,
-      public ScriptWrappable {
+class CORE_EXPORT DOMMatrixReadOnly : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -105,8 +103,6 @@ class CORE_EXPORT DOMMatrixReadOnly
   ScriptValue toJSONForBinding(ScriptState*) const;
 
   const TransformationMatrix& Matrix() const { return *matrix_; }
-
-  void Trace(blink::Visitor* visitor) {}
 
  protected:
   DOMMatrixReadOnly() {}

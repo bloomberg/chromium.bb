@@ -22,9 +22,8 @@ class MediaMetadata;
 class V8MediaSessionActionHandler;
 
 class MODULES_EXPORT MediaSession final
-    : public GarbageCollectedFinalized<MediaSession>,
+    : public ScriptWrappable,
       public ContextClient,
-      public ScriptWrappable,
       blink::mojom::blink::MediaSessionClient {
   USING_GARBAGE_COLLECTED_MIXIN(MediaSession);
   DEFINE_WRAPPERTYPEINFO();

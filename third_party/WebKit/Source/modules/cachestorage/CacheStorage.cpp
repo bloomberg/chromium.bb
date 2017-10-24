@@ -361,6 +361,7 @@ void CacheStorage::Dispose() {
 
 void CacheStorage::Trace(blink::Visitor* visitor) {
   visitor->Trace(scoped_fetcher_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

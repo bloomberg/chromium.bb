@@ -84,6 +84,7 @@ ScriptPromise NavigationPreloadManager::SetEnabled(bool enable,
 
 void NavigationPreloadManager::Trace(blink::Visitor* visitor) {
   visitor->Trace(registration_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

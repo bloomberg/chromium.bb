@@ -419,6 +419,7 @@ void VTTRegion::ScrollTimerFired(TimerBase*) {
 void VTTRegion::Trace(blink::Visitor* visitor) {
   visitor->Trace(cue_container_);
   visitor->Trace(region_display_tree_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

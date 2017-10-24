@@ -37,9 +37,10 @@
 
 namespace blink {
 
-class SVGAnimatedString : public SVGAnimatedProperty<SVGString>,
-                          public ScriptWrappable {
+class SVGAnimatedString : public ScriptWrappable,
+                          public SVGAnimatedProperty<SVGString> {
   DEFINE_WRAPPERTYPEINFO();
+  USING_GARBAGE_COLLECTED_MIXIN(SVGAnimatedString);
 
  public:
   static SVGAnimatedString* Create(SVGElement* context_element,
@@ -51,7 +52,8 @@ class SVGAnimatedString : public SVGAnimatedProperty<SVGString>,
   virtual void setBaseVal(const String&, ExceptionState&);
   virtual String animVal();
 
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  protected:
   SVGAnimatedString(SVGElement* context_element,

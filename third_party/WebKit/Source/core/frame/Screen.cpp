@@ -139,6 +139,7 @@ int Screen::availWidth() const {
 }
 
 void Screen::Trace(blink::Visitor* visitor) {
+  ScriptWrappable::Trace(visitor);
   DOMWindowClient::Trace(visitor);
   Supplementable<Screen>::Trace(visitor);
 }

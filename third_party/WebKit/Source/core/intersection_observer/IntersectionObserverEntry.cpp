@@ -32,6 +32,7 @@ void IntersectionObserverEntry::Trace(blink::Visitor* visitor) {
   visitor->Trace(root_bounds_);
   visitor->Trace(intersection_rect_);
   visitor->Trace(target_);
+  ScriptWrappable::Trace(visitor);
 }
 
 }  // namespace blink

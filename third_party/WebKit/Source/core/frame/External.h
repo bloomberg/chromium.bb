@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class External : public GarbageCollected<External>, public ScriptWrappable {
+class External : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -18,8 +18,6 @@ class External : public GarbageCollected<External>, public ScriptWrappable {
 
   void AddSearchProvider() {}
   void IsSearchProviderInstalled() {}
-
-  void Trace(blink::Visitor* visitor) {}
 };
 
 }  // namespace blink

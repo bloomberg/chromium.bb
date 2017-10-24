@@ -42,9 +42,7 @@ class RTCSessionDescriptionInit;
 class ScriptState;
 class ScriptValue;
 
-class RTCSessionDescription final
-    : public GarbageCollectedFinalized<RTCSessionDescription>,
-      public ScriptWrappable {
+class RTCSessionDescription final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -61,8 +59,6 @@ class RTCSessionDescription final
   ScriptValue toJSONForBinding(ScriptState*);
 
   WebRTCSessionDescription WebSessionDescription();
-
-  void Trace(blink::Visitor* visitor) {}
 
  private:
   explicit RTCSessionDescription(WebRTCSessionDescription);

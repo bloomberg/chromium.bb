@@ -42,8 +42,7 @@ class AudioBus;
 class AudioBufferOptions;
 class ExceptionState;
 
-class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
-                                         public ScriptWrappable {
+class MODULES_EXPORT AudioBuffer final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -102,7 +101,10 @@ class MODULES_EXPORT AudioBuffer final : public GarbageCollected<AudioBuffer>,
 
   void Zero();
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(channels_); }
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(channels_);
+    ScriptWrappable::Trace(visitor);
+  }
 
  private:
   // How to initialize the contents of an AudioBuffer.  Default is to

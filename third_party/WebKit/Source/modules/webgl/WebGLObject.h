@@ -55,8 +55,7 @@ GLuint ObjectNonZero(const T* object) {
   return result;
 }
 
-class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
-                    public ScriptWrappable {
+class WebGLObject : public ScriptWrappable {
   WTF_MAKE_NONCOPYABLE(WebGLObject);
 
  public:
@@ -91,10 +90,7 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
   // refer back to their owning context in their destructor to delete their
   // resources if they are GC'd before the context is.
   EAGERLY_FINALIZE();
-
-  virtual void Trace(blink::Visitor* visitor) {}
-
-  virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
+  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
 
  protected:
   explicit WebGLObject(WebGLRenderingContextBase*);

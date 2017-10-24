@@ -41,11 +41,9 @@ enum ColorSpaceInfoUpdate {
   kDontUpdateColorSpaceInformation,
 };
 
-class CORE_EXPORT ImageBitmap final
-    : public GarbageCollectedFinalized<ImageBitmap>,
-      public ScriptWrappable,
-      public CanvasImageSource,
-      public ImageBitmapSource {
+class CORE_EXPORT ImageBitmap final : public ScriptWrappable,
+                                      public CanvasImageSource,
+                                      public ImageBitmapSource {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -144,8 +142,6 @@ class CORE_EXPORT ImageBitmap final
     SkFilterQuality resize_quality = kLow_SkFilterQuality;
     CanvasColorParams color_params;
   };
-
-  virtual void Trace(blink::Visitor*);
 
  private:
   ImageBitmap(ImageElementBase*,

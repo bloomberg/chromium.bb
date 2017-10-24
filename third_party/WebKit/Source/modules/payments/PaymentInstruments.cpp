@@ -228,8 +228,6 @@ ScriptPromise PaymentInstruments::clear(ScriptState* script_state) {
   return promise;
 }
 
-void PaymentInstruments::Trace(blink::Visitor* visitor) {}
-
 void PaymentInstruments::onDeletePaymentInstrument(
     ScriptPromiseResolver* resolver,
     payments::mojom::blink::PaymentHandlerStatus status) {
