@@ -12,6 +12,7 @@
 #include <emmintrin.h>  // SSE2
 
 #include "./aom_dsp_rtcd.h"
+#include "aom_dsp/x86/synonyms.h"
 #include "aom_ports/mem.h"
 #include "aom_ports/emmintrin_compat.h"
 
@@ -179,13 +180,10 @@ void aom_lpf_horizontal_4_sse2(uint8_t *s, int p /* pitch */,
   FILTER4;
 
 #if CONFIG_PARALLEL_DEBLOCKING
-  *(int32_t *)(s - 1 * p) = _mm_cvtsi128_si32(ps1ps0);
-  ps1ps0 = _mm_srli_si128(ps1ps0, 8);
-  *(int32_t *)(s - 2 * p) = _mm_cvtsi128_si32(ps1ps0);
-
-  *(int32_t *)(s + 0 * p) = _mm_cvtsi128_si32(qs1qs0);
-  qs1qs0 = _mm_srli_si128(qs1qs0, 8);
-  *(int32_t *)(s + 1 * p) = _mm_cvtsi128_si32(qs1qs0);
+  xx_storel_32(s - 1 * p, ps1ps0);
+  xx_storel_32(s - 2 * p, _mm_srli_si128(ps1ps0, 8));
+  xx_storel_32(s + 0 * p, qs1qs0);
+  xx_storel_32(s + 1 * p, _mm_srli_si128(qs1qs0, 8));
 #else
   _mm_storeh_pi((__m64 *)(s - 2 * p), _mm_castsi128_ps(ps1ps0));  // *op1
   _mm_storel_epi64((__m128i *)(s - 1 * p), ps1ps0);               // *op0
@@ -284,33 +282,25 @@ void aom_lpf_vertical_4_sse2(uint8_t *s, int p /* pitch */,
   // 00 10 20 30 01 11 21 31  02 12 22 32 03 13 23 33
   ps1ps0 = _mm_unpacklo_epi8(ps1ps0, x0);
 
-  *(int *)(s + 0 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
-  ps1ps0 = _mm_srli_si128(ps1ps0, 4);
-  *(int *)(s + 1 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
-  ps1ps0 = _mm_srli_si128(ps1ps0, 4);
-  *(int *)(s + 2 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
-  ps1ps0 = _mm_srli_si128(ps1ps0, 4);
-  *(int *)(s + 3 * p - 2) = _mm_cvtsi128_si32(ps1ps0);
+  xx_storel_32(s + 0 * p - 2, ps1ps0);
+  xx_storel_32(s + 1 * p - 2, _mm_srli_si128(ps1ps0, 4));
+  xx_storel_32(s + 2 * p - 2, _mm_srli_si128(ps1ps0, 8));
+  xx_storel_32(s + 3 * p - 2, _mm_srli_si128(ps1ps0, 12));
 #if !CONFIG_PARALLEL_DEBLOCKING
-  *(int *)(s + 4 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
-  qs1qs0 = _mm_srli_si128(qs1qs0, 4);
-  *(int *)(s + 5 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
-  qs1qs0 = _mm_srli_si128(qs1qs0, 4);
-  *(int *)(s + 6 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
-  qs1qs0 = _mm_srli_si128(qs1qs0, 4);
-  *(int *)(s + 7 * p - 2) = _mm_cvtsi128_si32(qs1qs0);
+  xx_storel_32(s + 4 * p - 2, qs1qs0);
+  xx_storel_32(s + 5 * p - 2, _mm_srli_si128(qs1qs0, 4));
+  xx_storel_32(s + 6 * p - 2, _mm_srli_si128(qs1qs0, 8));
+  xx_storel_32(s + 7 * p - 2, _mm_srli_si128(qs1qs0, 12));
 #endif
 }
 
-static INLINE void store_buffer_horz_8(const __m128i *x, int p, int num,
-                                       uint8_t *s) {
+static INLINE void store_buffer_horz_8(__m128i x, int p, int num, uint8_t *s) {
 #if CONFIG_PARALLEL_DEBLOCKING
-  *(int32_t *)(s - (num + 1) * p) = _mm_cvtsi128_si32(*x);
-  const __m128i hi = _mm_srli_si128(*x, 8);
-  *(int32_t *)(s + num * p) = _mm_cvtsi128_si32(hi);
+  xx_storel_32(s - (num + 1) * p, x);
+  xx_storel_32(s + num * p, _mm_srli_si128(x, 8));
 #else
-  _mm_storel_epi64((__m128i *)(s - (num + 1) * p), *x);
-  _mm_storeh_pi((__m64 *)(s + num * p), _mm_castsi128_ps(*x));
+  xx_storel_64(s - (num + 1) * p, x);
+  _mm_storeh_pi((__m64 *)(s + num * p), _mm_castsi128_ps(x));
 #endif
 }
 
@@ -605,37 +595,37 @@ void aom_lpf_horizontal_edge_8_sse2(unsigned char *s, int p,
     q6p6 = _mm_andnot_si128(flat2, q6p6);
     flat2_q6p6 = _mm_and_si128(flat2, flat2_q6p6);
     q6p6 = _mm_or_si128(q6p6, flat2_q6p6);
-    store_buffer_horz_8(&q6p6, p, 6, s);
+    store_buffer_horz_8(q6p6, p, 6, s);
 
     q5p5 = _mm_andnot_si128(flat2, q5p5);
     flat2_q5p5 = _mm_and_si128(flat2, flat2_q5p5);
     q5p5 = _mm_or_si128(q5p5, flat2_q5p5);
-    store_buffer_horz_8(&q5p5, p, 5, s);
+    store_buffer_horz_8(q5p5, p, 5, s);
 
     q4p4 = _mm_andnot_si128(flat2, q4p4);
     flat2_q4p4 = _mm_and_si128(flat2, flat2_q4p4);
     q4p4 = _mm_or_si128(q4p4, flat2_q4p4);
-    store_buffer_horz_8(&q4p4, p, 4, s);
+    store_buffer_horz_8(q4p4, p, 4, s);
 
     q3p3 = _mm_andnot_si128(flat2, q3p3);
     flat2_q3p3 = _mm_and_si128(flat2, flat2_q3p3);
     q3p3 = _mm_or_si128(q3p3, flat2_q3p3);
-    store_buffer_horz_8(&q3p3, p, 3, s);
+    store_buffer_horz_8(q3p3, p, 3, s);
 
     q2p2 = _mm_andnot_si128(flat2, q2p2);
     flat2_q2p2 = _mm_and_si128(flat2, flat2_q2p2);
     q2p2 = _mm_or_si128(q2p2, flat2_q2p2);
-    store_buffer_horz_8(&q2p2, p, 2, s);
+    store_buffer_horz_8(q2p2, p, 2, s);
 
     q1p1 = _mm_andnot_si128(flat2, q1p1);
     flat2_q1p1 = _mm_and_si128(flat2, flat2_q1p1);
     q1p1 = _mm_or_si128(q1p1, flat2_q1p1);
-    store_buffer_horz_8(&q1p1, p, 1, s);
+    store_buffer_horz_8(q1p1, p, 1, s);
 
     q0p0 = _mm_andnot_si128(flat2, q0p0);
     flat2_q0p0 = _mm_and_si128(flat2, flat2_q0p0);
     q0p0 = _mm_or_si128(q0p0, flat2_q0p0);
-    store_buffer_horz_8(&q0p0, p, 0, s);
+    store_buffer_horz_8(q0p0, p, 0, s);
   }
 }
 
@@ -676,17 +666,17 @@ static INLINE void store_buffer_horz_16(PixelOutput pixel_num, const __m128i *x,
   int i;
   if (pixel_num == FOUR_PIXELS) {
     for (i = 13; i >= 0; i--) {
-      *(int32_t *)(s - (i - offset) * p) = _mm_cvtsi128_si32(x[i]);
+      xx_storel_32(s - (i - offset) * p, x[i]);
     }
   }
   if (pixel_num == EIGHT_PIXELS) {
     for (i = 13; i >= 0; i--) {
-      _mm_storel_epi64((__m128i *)(s - (i - offset) * p), x[i]);
+      xx_storel_64(s - (i - offset) * p, x[i]);
     }
   }
   if (pixel_num == SIXTEEN_PIXELS) {
     for (i = 13; i >= 0; i--) {
-      _mm_storeu_si128((__m128i *)(s - (i - offset) * p), x[i]);
+      xx_storeu_128(s - (i - offset) * p, x[i]);
     }
   }
 }
@@ -1217,19 +1207,19 @@ void aom_lpf_horizontal_8_sse2(unsigned char *s, int p,
     p2 = _mm_or_si128(work_a, p2);
 
 #if CONFIG_PARALLEL_DEBLOCKING
-    *(int32_t *)(s - 3 * p) = _mm_cvtsi128_si32(p2);
-    *(int32_t *)(s - 2 * p) = _mm_cvtsi128_si32(p1);
-    *(int32_t *)(s - 1 * p) = _mm_cvtsi128_si32(p0);
-    *(int32_t *)(s + 0 * p) = _mm_cvtsi128_si32(q0);
-    *(int32_t *)(s + 1 * p) = _mm_cvtsi128_si32(q1);
-    *(int32_t *)(s + 2 * p) = _mm_cvtsi128_si32(q2);
+    xx_storel_32(s - 3 * p, p2);
+    xx_storel_32(s - 2 * p, p1);
+    xx_storel_32(s - 1 * p, p0);
+    xx_storel_32(s + 0 * p, q0);
+    xx_storel_32(s + 1 * p, q1);
+    xx_storel_32(s + 2 * p, q2);
 #else
-    _mm_storel_epi64((__m128i *)(s - 3 * p), p2);
-    _mm_storel_epi64((__m128i *)(s - 2 * p), p1);
-    _mm_storel_epi64((__m128i *)(s - 1 * p), p0);
-    _mm_storel_epi64((__m128i *)(s + 0 * p), q0);
-    _mm_storel_epi64((__m128i *)(s + 1 * p), q1);
-    _mm_storel_epi64((__m128i *)(s + 2 * p), q2);
+    xx_storel_64(s - 3 * p, p2);
+    xx_storel_64(s - 2 * p, p1);
+    xx_storel_64(s - 1 * p, p0);
+    xx_storel_64(s + 0 * p, q0);
+    xx_storel_64(s + 1 * p, q1);
+    xx_storel_64(s + 2 * p, q2);
 #endif
   }
 }
@@ -1706,7 +1696,6 @@ static INLINE void transpose8x16(unsigned char *in0, unsigned char *in1,
 #define punpcklbw(r0, r1) _mm_unpacklo_epi8(r0, r1)
 #define punpcklwd(r0, r1) _mm_unpacklo_epi16(r0, r1)
 #define punpckhwd(r0, r1) _mm_unpackhi_epi16(r0, r1)
-#define movd(p, r) *((uint32_t *)(p)) = _mm_cvtsi128_si32(r)
 #define pshufd(r, imm) _mm_shuffle_epi32(r, imm)
 enum { ROTATE_DWORD_RIGHT = 0x39 };
 static INLINE void transpose16x4(uint8_t *pDst, const ptrdiff_t dstStride,
@@ -1725,20 +1714,20 @@ static INLINE void transpose16x4(uint8_t *pDst, const ptrdiff_t dstStride,
     r1 = punpckhwd(r0, r2);
     r0 = punpcklwd(r0, r2);
     // store data
-    movd(pDst, r0);
+    xx_storel_32(pDst, r0);
     r0 = pshufd(r0, ROTATE_DWORD_RIGHT);
-    movd(pDst + dstStride, r0);
+    xx_storel_32(pDst + dstStride, r0);
     r0 = pshufd(r0, ROTATE_DWORD_RIGHT);
-    movd(pDst + dstStride * 2, r0);
+    xx_storel_32(pDst + dstStride * 2, r0);
     r0 = pshufd(r0, ROTATE_DWORD_RIGHT);
-    movd(pDst + dstStride * 3, r0);
-    movd(pDst + dstStride * 4, r1);
+    xx_storel_32(pDst + dstStride * 3, r0);
+    xx_storel_32(pDst + dstStride * 4, r1);
     r1 = pshufd(r1, ROTATE_DWORD_RIGHT);
-    movd(pDst + dstStride * 5, r1);
+    xx_storel_32(pDst + dstStride * 5, r1);
     r1 = pshufd(r1, ROTATE_DWORD_RIGHT);
-    movd(pDst + dstStride * 6, r1);
+    xx_storel_32(pDst + dstStride * 6, r1);
     r1 = pshufd(r1, ROTATE_DWORD_RIGHT);
-    movd(pDst + dstStride * 7, r1);
+    xx_storel_32(pDst + dstStride * 7, r1);
     // advance the pointers
     pDst += dstStride * 8;
     pSrc += 8;
