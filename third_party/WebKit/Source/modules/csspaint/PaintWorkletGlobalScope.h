@@ -43,8 +43,8 @@ class MODULES_EXPORT PaintWorkletGlobalScope final
   CSSPaintDefinition* FindDefinition(const String& name);
   double devicePixelRatio() const;
 
-  virtual void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
  private:
   PaintWorkletGlobalScope(LocalFrame*,

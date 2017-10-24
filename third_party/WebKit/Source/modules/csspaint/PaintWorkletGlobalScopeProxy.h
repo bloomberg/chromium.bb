@@ -28,7 +28,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
   PaintWorkletGlobalScopeProxy(LocalFrame*,
                                PaintWorkletPendingGeneratorRegistry*,
                                size_t global_scope_number);
-  virtual ~PaintWorkletGlobalScopeProxy() = default;
+  ~PaintWorkletGlobalScopeProxy() override = default;
 
   // Implements WorkletGlobalScopeProxy.
   void FetchAndInvokeScript(
@@ -44,7 +44,7 @@ class MODULES_EXPORT PaintWorkletGlobalScopeProxy
 
   PaintWorkletGlobalScope* global_scope() const { return global_scope_.Get(); }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   std::unique_ptr<MainThreadWorkletReportingProxy> reporting_proxy_;
