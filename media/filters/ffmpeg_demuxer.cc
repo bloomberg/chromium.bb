@@ -384,11 +384,6 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
   }
 #endif
 
-  // Get side data if any. For now, the only type of side_data is VP8 Alpha. We
-  // keep this generic so that other side_data types in the future can be
-  // handled the same way as well.
-  av_packet_split_side_data(packet.get());
-
   scoped_refptr<DecoderBuffer> buffer;
 
   if (type() == DemuxerStream::TEXT) {

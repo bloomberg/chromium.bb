@@ -251,9 +251,6 @@ class AudioDecoderTest
     AVPacket packet;
     ASSERT_TRUE(reader_->ReadPacketForTesting(&packet));
 
-    // Split out packet metadata before making a copy.
-    av_packet_split_side_data(&packet);
-
     scoped_refptr<DecoderBuffer> buffer =
         DecoderBuffer::CopyFrom(packet.data, packet.size);
     buffer->set_timestamp(ConvertFromTimeBase(

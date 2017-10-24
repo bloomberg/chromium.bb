@@ -126,6 +126,9 @@ FFmpegGlue::FFmpegGlue(FFmpegURLProtocol* protocol) {
   // Enable fast, but inaccurate seeks for MP3.
   format_context_->flags |= AVFMT_FLAG_FAST_SEEK;
 
+  // Ensures we can read out various metadata bits like vp8 alpha.
+  format_context_->flags |= AVFMT_FLAG_KEEP_SIDE_DATA;
+
   format_context_->pb = avio_context_.get();
 }
 
