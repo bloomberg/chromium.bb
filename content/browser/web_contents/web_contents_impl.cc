@@ -1068,10 +1068,17 @@ void WebContentsImpl::SetAccessibilityMode(ui::AXMode mode) {
 
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
     UpdateAccessibilityModeOnFrame(node->current_frame_host());
+    // Also update accessibility mode on the pending RenderFrameHost for this
+    // FrameTreeNode, if one exists.  speculative_frame_host() is used with
+    // PlzNavigate, and pending_frame_host() is used without it.
     RenderFrameHost* pending_frame_host =
         node->render_manager()->pending_frame_host();
     if (pending_frame_host)
       UpdateAccessibilityModeOnFrame(pending_frame_host);
+    RenderFrameHost* speculative_frame_host =
+        node->render_manager()->speculative_frame_host();
+    if (speculative_frame_host)
+      UpdateAccessibilityModeOnFrame(speculative_frame_host);
   }
 }
 
