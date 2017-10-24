@@ -198,6 +198,9 @@ struct GPU_EXPORT ContextState {
                Logger* logger);
   ~ContextState();
 
+  void set_api(gl::GLApi* api) { api_ = api; }
+  gl::GLApi* api() const { return api_; }
+
   void Initialize();
 
   void SetLineWidthBounds(GLfloat min, GLfloat max);
@@ -251,14 +254,14 @@ struct GPU_EXPORT ContextState {
     cached_color_mask_green = green;
     cached_color_mask_blue = blue;
     cached_color_mask_alpha = alpha;
-    glColorMask(red, green, blue, alpha);
+    api()->glColorMaskFn(red, green, blue, alpha);
   }
 
   inline void SetDeviceDepthMask(GLboolean mask) {
     if (cached_depth_mask == mask && !ignore_cached_state)
       return;
     cached_depth_mask = mask;
-    glDepthMask(mask);
+    api()->glDepthMaskFn(mask);
   }
 
   inline void SetDeviceStencilMaskSeparate(GLenum op, GLuint mask) {
@@ -274,7 +277,7 @@ struct GPU_EXPORT ContextState {
       NOTREACHED();
       return;
     }
-    glStencilMaskSeparate(op, mask);
+    api()->glStencilMaskSeparateFn(op, mask);
   }
 
   ErrorState* GetErrorState();
@@ -394,6 +397,7 @@ struct GPU_EXPORT ContextState {
   GLfloat line_width_min_ = 0.0f;
   GLfloat line_width_max_ = 1.0f;
 
+  gl::GLApi* api_ = nullptr;
   FeatureInfo* feature_info_;
   std::unique_ptr<ErrorState> error_state_;
 };

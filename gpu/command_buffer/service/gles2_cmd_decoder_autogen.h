@@ -180,7 +180,7 @@ error::Error GLES2DecoderImpl::HandleBlendColor(uint32_t immediate_data_size,
     state_.blend_color_green = green;
     state_.blend_color_blue = blue;
     state_.blend_color_alpha = alpha;
-    glBlendColor(red, green, blue, alpha);
+    api()->glBlendColorFn(red, green, blue, alpha);
   }
   return error::kNoError;
 }
@@ -199,7 +199,7 @@ error::Error GLES2DecoderImpl::HandleBlendEquation(
       state_.blend_equation_alpha != mode) {
     state_.blend_equation_rgb = mode;
     state_.blend_equation_alpha = mode;
-    glBlendEquation(mode);
+    api()->glBlendEquationFn(mode);
   }
   return error::kNoError;
 }
@@ -226,7 +226,7 @@ error::Error GLES2DecoderImpl::HandleBlendEquationSeparate(
       state_.blend_equation_alpha != modeAlpha) {
     state_.blend_equation_rgb = modeRGB;
     state_.blend_equation_alpha = modeAlpha;
-    glBlendEquationSeparate(modeRGB, modeAlpha);
+    api()->glBlendEquationSeparateFn(modeRGB, modeAlpha);
   }
   return error::kNoError;
 }
@@ -252,7 +252,7 @@ error::Error GLES2DecoderImpl::HandleBlendFunc(uint32_t immediate_data_size,
     state_.blend_dest_rgb = dfactor;
     state_.blend_source_alpha = sfactor;
     state_.blend_dest_alpha = dfactor;
-    glBlendFunc(sfactor, dfactor);
+    api()->glBlendFuncFn(sfactor, dfactor);
   }
   return error::kNoError;
 }
@@ -291,7 +291,7 @@ error::Error GLES2DecoderImpl::HandleBlendFuncSeparate(
     state_.blend_dest_rgb = dstRGB;
     state_.blend_source_alpha = srcAlpha;
     state_.blend_dest_alpha = dstAlpha;
-    glBlendFuncSeparate(srcRGB, dstRGB, srcAlpha, dstAlpha);
+    api()->glBlendFuncSeparateFn(srcRGB, dstRGB, srcAlpha, dstAlpha);
   }
   return error::kNoError;
 }
@@ -480,7 +480,7 @@ error::Error GLES2DecoderImpl::HandleClearColor(uint32_t immediate_data_size,
     state_.color_clear_green = green;
     state_.color_clear_blue = blue;
     state_.color_clear_alpha = alpha;
-    glClearColor(red, green, blue, alpha);
+    api()->glClearColorFn(red, green, blue, alpha);
   }
   return error::kNoError;
 }
@@ -506,7 +506,7 @@ error::Error GLES2DecoderImpl::HandleClearStencil(
   GLint s = static_cast<GLint>(c.s);
   if (state_.stencil_clear != s) {
     state_.stencil_clear = s;
-    glClearStencil(s);
+    api()->glClearStencilFn(s);
   }
   return error::kNoError;
 }
@@ -687,7 +687,7 @@ error::Error GLES2DecoderImpl::HandleCreateProgram(
   if (GetProgram(client_id)) {
     return error::kInvalidArguments;
   }
-  GLuint service_id = glCreateProgram();
+  GLuint service_id = api()->glCreateProgramFn();
   if (service_id) {
     CreateProgram(client_id, service_id);
   }
@@ -708,7 +708,7 @@ error::Error GLES2DecoderImpl::HandleCreateShader(
   if (GetShader(client_id)) {
     return error::kInvalidArguments;
   }
-  GLuint service_id = glCreateShader(type);
+  GLuint service_id = api()->glCreateShaderFn(type);
   if (service_id) {
     CreateShader(client_id, service_id, type);
   }
@@ -726,7 +726,7 @@ error::Error GLES2DecoderImpl::HandleCullFace(uint32_t immediate_data_size,
   }
   if (state_.cull_mode != mode) {
     state_.cull_mode = mode;
-    glCullFace(mode);
+    api()->glCullFaceFn(mode);
   }
   return error::kNoError;
 }
@@ -880,7 +880,7 @@ error::Error GLES2DecoderImpl::HandleDepthFunc(uint32_t immediate_data_size,
   }
   if (state_.depth_func != func) {
     state_.depth_func = func;
-    glDepthFunc(func);
+    api()->glDepthFuncFn(func);
   }
   return error::kNoError;
 }
@@ -1099,7 +1099,7 @@ error::Error GLES2DecoderImpl::HandleFrontFace(uint32_t immediate_data_size,
   }
   if (state_.front_face != mode) {
     state_.front_face = mode;
-    glFrontFace(mode);
+    api()->glFrontFaceFn(mode);
   }
   return error::kNoError;
 }
@@ -2100,7 +2100,7 @@ error::Error GLES2DecoderImpl::HandleHint(uint32_t immediate_data_size,
       if (state_.hint_generate_mipmap != mode) {
         state_.hint_generate_mipmap = mode;
         if (!feature_info_->gl_version_info().is_desktop_core_profile) {
-          glHint(target, mode);
+          api()->glHintFn(target, mode);
         }
       }
       break;
@@ -2108,7 +2108,7 @@ error::Error GLES2DecoderImpl::HandleHint(uint32_t immediate_data_size,
       if (state_.hint_fragment_shader_derivative != mode) {
         state_.hint_fragment_shader_derivative = mode;
         if (feature_info_->feature_flags().oes_standard_derivatives) {
-          glHint(target, mode);
+          api()->glHintFn(target, mode);
         }
       }
       break;
@@ -2416,7 +2416,7 @@ error::Error GLES2DecoderImpl::HandlePolygonOffset(
       state_.polygon_offset_units != units) {
     state_.polygon_offset_factor = factor;
     state_.polygon_offset_units = units;
-    glPolygonOffset(factor, units);
+    api()->glPolygonOffsetFn(factor, units);
   }
   return error::kNoError;
 }
@@ -2663,7 +2663,7 @@ error::Error GLES2DecoderImpl::HandleStencilFunc(
     state_.stencil_back_func = func;
     state_.stencil_back_ref = ref;
     state_.stencil_back_mask = mask;
-    glStencilFunc(func, ref, mask);
+    api()->glStencilFuncFn(func, ref, mask);
   }
   return error::kNoError;
 }
@@ -2707,7 +2707,7 @@ error::Error GLES2DecoderImpl::HandleStencilFuncSeparate(
       state_.stencil_back_ref = ref;
       state_.stencil_back_mask = mask;
     }
-    glStencilFuncSeparate(face, func, ref, mask);
+    api()->glStencilFuncSeparateFn(face, func, ref, mask);
   }
   return error::kNoError;
 }
@@ -2788,7 +2788,7 @@ error::Error GLES2DecoderImpl::HandleStencilOp(uint32_t immediate_data_size,
     state_.stencil_back_fail_op = fail;
     state_.stencil_back_z_fail_op = zfail;
     state_.stencil_back_z_pass_op = zpass;
-    glStencilOp(fail, zfail, zpass);
+    api()->glStencilOpFn(fail, zfail, zpass);
   }
   return error::kNoError;
 }
@@ -2840,7 +2840,7 @@ error::Error GLES2DecoderImpl::HandleStencilOpSeparate(
       state_.stencil_back_z_fail_op = zfail;
       state_.stencil_back_z_pass_op = zpass;
     }
-    glStencilOpSeparate(face, fail, zfail, zpass);
+    api()->glStencilOpSeparateFn(face, fail, zfail, zpass);
   }
   return error::kNoError;
 }
@@ -5061,7 +5061,7 @@ error::Error GLES2DecoderImpl::HandleBlendBarrierKHR(
     return error::kUnknownCommand;
   }
 
-  glBlendBarrierKHR();
+  api()->glBlendBarrierKHRFn();
   return error::kNoError;
 }
 

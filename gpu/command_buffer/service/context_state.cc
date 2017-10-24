@@ -266,18 +266,18 @@ void ContextState::RestoreTextureUnitBindings(
     return;
   }
 
-  glActiveTexture(GL_TEXTURE0 + unit);
+  api()->glActiveTextureFn(GL_TEXTURE0 + unit);
   if (bind_texture_2d) {
-    glBindTexture(GL_TEXTURE_2D, service_id_2d);
+    api()->glBindTextureFn(GL_TEXTURE_2D, service_id_2d);
   }
   if (bind_texture_cube) {
-    glBindTexture(GL_TEXTURE_CUBE_MAP, service_id_cube);
+    api()->glBindTextureFn(GL_TEXTURE_CUBE_MAP, service_id_cube);
   }
   if (bind_texture_oes) {
-    glBindTexture(GL_TEXTURE_EXTERNAL_OES, service_id_oes);
+    api()->glBindTextureFn(GL_TEXTURE_EXTERNAL_OES, service_id_oes);
   }
   if (bind_texture_arb) {
-    glBindTexture(GL_TEXTURE_RECTANGLE_ARB, service_id_arb);
+    api()->glBindTextureFn(GL_TEXTURE_RECTANGLE_ARB, service_id_arb);
   }
 }
 
@@ -294,32 +294,32 @@ void ContextState::RestoreSamplerBinding(GLuint unit,
     prev_id = prev_sampler ? prev_sampler->service_id() : 0;
   }
   if (!prev_state || cur_id != prev_id) {
-    glBindSampler(unit, cur_id);
+    api()->glBindSamplerFn(unit, cur_id);
   }
 }
 
 void ContextState::PushTextureDecompressionUnpackState() const {
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  api()->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, 1);
 
   if (bound_pixel_unpack_buffer.get()) {
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
+    api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
+    api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
   }
 }
 
 void ContextState::RestoreUnpackState() const {
-  glPixelStorei(GL_UNPACK_ALIGNMENT, unpack_alignment);
+  api()->glPixelStoreiFn(GL_UNPACK_ALIGNMENT, unpack_alignment);
   if (bound_pixel_unpack_buffer.get()) {
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER,
-                 GetBufferId(bound_pixel_unpack_buffer.get()));
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
-    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER,
+                          GetBufferId(bound_pixel_unpack_buffer.get()));
+    api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+    api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
   }
 }
 
 void ContextState::DoLineWidth(GLfloat width) const {
-  glLineWidth(
+  api()->glLineWidthFn(
       std::min(std::max(width, line_width_min_), line_width_max_));
 }
 
@@ -327,23 +327,25 @@ void ContextState::RestoreBufferBindings() const {
   if (vertex_attrib_manager.get()) {
     Buffer* element_array_buffer =
         vertex_attrib_manager->element_array_buffer();
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, GetBufferId(element_array_buffer));
+    api()->glBindBufferFn(GL_ELEMENT_ARRAY_BUFFER,
+                          GetBufferId(element_array_buffer));
   }
-  glBindBuffer(GL_ARRAY_BUFFER, GetBufferId(bound_array_buffer.get()));
+  api()->glBindBufferFn(GL_ARRAY_BUFFER, GetBufferId(bound_array_buffer.get()));
   if (feature_info_->IsES3Capable()) {
-    glBindBuffer(GL_COPY_READ_BUFFER,
-                 GetBufferId(bound_copy_read_buffer.get()));
-    glBindBuffer(GL_COPY_WRITE_BUFFER,
-                 GetBufferId(bound_copy_write_buffer.get()));
-    glBindBuffer(GL_PIXEL_PACK_BUFFER,
-                 GetBufferId(bound_pixel_pack_buffer.get()));
+    api()->glBindBufferFn(GL_COPY_READ_BUFFER,
+                          GetBufferId(bound_copy_read_buffer.get()));
+    api()->glBindBufferFn(GL_COPY_WRITE_BUFFER,
+                          GetBufferId(bound_copy_write_buffer.get()));
+    api()->glBindBufferFn(GL_PIXEL_PACK_BUFFER,
+                          GetBufferId(bound_pixel_pack_buffer.get()));
     UpdatePackParameters();
-    glBindBuffer(GL_PIXEL_UNPACK_BUFFER,
-                 GetBufferId(bound_pixel_unpack_buffer.get()));
+    api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER,
+                          GetBufferId(bound_pixel_unpack_buffer.get()));
     UpdateUnpackParameters();
-    glBindBuffer(GL_TRANSFORM_FEEDBACK_BUFFER,
-                 GetBufferId(bound_transform_feedback_buffer.get()));
-    glBindBuffer(GL_UNIFORM_BUFFER, GetBufferId(bound_uniform_buffer.get()));
+    api()->glBindBufferFn(GL_TRANSFORM_FEEDBACK_BUFFER,
+                          GetBufferId(bound_transform_feedback_buffer.get()));
+    api()->glBindBufferFn(GL_UNIFORM_BUFFER,
+                          GetBufferId(bound_uniform_buffer.get()));
   }
 }
 
@@ -361,15 +363,16 @@ void ContextState::RestoreProgramSettings(
     if (prev_state->bound_transform_feedback.get() &&
         prev_state->bound_transform_feedback->active() &&
         !prev_state->bound_transform_feedback->paused()) {
-      glPauseTransformFeedback();
+      api()->glPauseTransformFeedbackFn();
     }
   }
-  glUseProgram(current_program.get() ? current_program->service_id() : 0);
+  api()->glUseProgramFn(current_program.get() ? current_program->service_id()
+                                              : 0);
   if (flag) {
     if (bound_transform_feedback.get()) {
       bound_transform_feedback->DoBindTransformFeedback(GL_TRANSFORM_FEEDBACK);
     } else {
-      glBindTransformFeedback(GL_TRANSFORM_FEEDBACK, 0);
+      api()->glBindTransformFeedbackFn(GL_TRANSFORM_FEEDBACK, 0);
     }
   }
 }
@@ -383,7 +386,7 @@ void ContextState::RestoreIndexedUniformBufferBindings(
 }
 
 void ContextState::RestoreActiveTexture() const {
-  glActiveTexture(GL_TEXTURE0 + active_texture_unit);
+  api()->glActiveTextureFn(GL_TEXTURE0 + active_texture_unit);
 }
 
 void ContextState::RestoreAllTextureUnitAndSamplerBindings(
@@ -400,7 +403,7 @@ void ContextState::RestoreActiveTextureUnitBinding(unsigned int target) const {
   DCHECK_LT(active_texture_unit, texture_units.size());
   const TextureUnit& texture_unit = texture_units[active_texture_unit];
   if (TargetIsSupported(feature_info_, target))
-    glBindTexture(target, GetServiceId(texture_unit, target));
+    api()->glBindTextureFn(target, GetServiceId(texture_unit, target));
 }
 
 void ContextState::RestoreVertexAttribValues() const {
@@ -411,21 +414,21 @@ void ContextState::RestoreVertexAttribValues() const {
         {
           GLfloat v[4];
           attrib_values[attrib].GetValues(v);
-          glVertexAttrib4fv(attrib, v);
+          api()->glVertexAttrib4fvFn(attrib, v);
         }
         break;
       case SHADER_VARIABLE_INT:
         {
           GLint v[4];
           attrib_values[attrib].GetValues(v);
-          glVertexAttribI4iv(attrib, v);
+          api()->glVertexAttribI4ivFn(attrib, v);
         }
         break;
       case SHADER_VARIABLE_UINT:
         {
           GLuint v[4];
           attrib_values[attrib].GetValues(v);
-          glVertexAttribI4uiv(attrib, v);
+          api()->glVertexAttribI4uivFn(attrib, v);
         }
         break;
       default:
@@ -444,7 +447,7 @@ void ContextState::RestoreVertexAttribArrays(
 
   // Bind VAO if supported.
   if (feature_info_->feature_flags().native_vertex_array_object)
-    glBindVertexArrayOES(vao_service_id);
+    api()->glBindVertexArrayOESFn(vao_service_id);
 
   // Restore vertex attrib arrays.
   for (size_t attrib_index = 0; attrib_index < attrib_manager->num_attribs();
@@ -454,23 +457,20 @@ void ContextState::RestoreVertexAttribArrays(
     // Restore vertex array.
     Buffer* buffer = attrib->buffer();
     GLuint buffer_service_id = buffer ? buffer->service_id() : 0;
-    glBindBuffer(GL_ARRAY_BUFFER, buffer_service_id);
+    api()->glBindBufferFn(GL_ARRAY_BUFFER, buffer_service_id);
     const void* ptr = reinterpret_cast<const void*>(attrib->offset());
-    glVertexAttribPointer(attrib_index,
-                          attrib->size(),
-                          attrib->type(),
-                          attrib->normalized(),
-                          attrib->gl_stride(),
-                          ptr);
+    api()->glVertexAttribPointerFn(attrib_index, attrib->size(), attrib->type(),
+                                   attrib->normalized(), attrib->gl_stride(),
+                                   ptr);
 
     // Restore attrib divisor if supported.
     if (feature_info_->feature_flags().angle_instanced_arrays)
-      glVertexAttribDivisorANGLE(attrib_index, attrib->divisor());
+      api()->glVertexAttribDivisorANGLEFn(attrib_index, attrib->divisor());
 
     if (attrib->enabled_in_driver()) {
-      glEnableVertexAttribArray(attrib_index);
+      api()->glEnableVertexAttribArrayFn(attrib_index);
     } else {
-      glDisableVertexAttribArray(attrib_index);
+      api()->glDisableVertexAttribArrayFn(attrib_index);
     }
   }
 }
@@ -491,7 +491,7 @@ void ContextState::RestoreVertexAttribs() const {
     // default above.
     GLuint curr_vao_service_id = vertex_attrib_manager->service_id();
     if (curr_vao_service_id != 0)
-      glBindVertexArrayOES(curr_vao_service_id);
+      api()->glBindVertexArrayOESFn(curr_vao_service_id);
   } else {
     // If native VAO isn't supported, emulated VAOs are used.
     // Restore to the currently bound VAO.
@@ -535,9 +535,9 @@ void ContextState::EnableDisable(GLenum pname, bool enable) const {
     return;
   }
   if (enable) {
-    glEnable(pname);
+    api()->glEnableFn(pname);
   } else {
-    glDisable(pname);
+    api()->glDisableFn(pname);
   }
 }
 
@@ -545,9 +545,9 @@ void ContextState::UpdatePackParameters() const {
   if (!feature_info_->IsES3Capable())
     return;
   if (bound_pixel_pack_buffer.get()) {
-    glPixelStorei(GL_PACK_ROW_LENGTH, pack_row_length);
+    api()->glPixelStoreiFn(GL_PACK_ROW_LENGTH, pack_row_length);
   } else {
-    glPixelStorei(GL_PACK_ROW_LENGTH, 0);
+    api()->glPixelStoreiFn(GL_PACK_ROW_LENGTH, 0);
   }
 }
 
@@ -555,11 +555,11 @@ void ContextState::UpdateUnpackParameters() const {
   if (!feature_info_->IsES3Capable())
     return;
   if (bound_pixel_unpack_buffer.get()) {
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, unpack_row_length);
-    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
+    api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, unpack_row_length);
+    api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, unpack_image_height);
   } else {
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-    glPixelStorei(GL_UNPACK_IMAGE_HEIGHT, 0);
+    api()->glPixelStoreiFn(GL_UNPACK_ROW_LENGTH, 0);
+    api()->glPixelStoreiFn(GL_UNPACK_IMAGE_HEIGHT, 0);
   }
 }
 
@@ -635,50 +635,50 @@ void ContextState::UnbindTexture(TextureRef* texture) {
     if (unit.bound_texture_2d.get() == texture) {
       unit.bound_texture_2d = NULL;
       if (active_unit != jj) {
-        glActiveTexture(GL_TEXTURE0 + jj);
+        api()->glActiveTextureFn(GL_TEXTURE0 + jj);
         active_unit = jj;
       }
-      glBindTexture(GL_TEXTURE_2D, 0);
+      api()->glBindTextureFn(GL_TEXTURE_2D, 0);
     } else if (unit.bound_texture_cube_map.get() == texture) {
       unit.bound_texture_cube_map = NULL;
       if (active_unit != jj) {
-        glActiveTexture(GL_TEXTURE0 + jj);
+        api()->glActiveTextureFn(GL_TEXTURE0 + jj);
         active_unit = jj;
       }
-      glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+      api()->glBindTextureFn(GL_TEXTURE_CUBE_MAP, 0);
     } else if (unit.bound_texture_external_oes.get() == texture) {
       unit.bound_texture_external_oes = NULL;
       if (active_unit != jj) {
-        glActiveTexture(GL_TEXTURE0 + jj);
+        api()->glActiveTextureFn(GL_TEXTURE0 + jj);
         active_unit = jj;
       }
-      glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0);
+      api()->glBindTextureFn(GL_TEXTURE_EXTERNAL_OES, 0);
     } else if (unit.bound_texture_rectangle_arb.get() == texture) {
       unit.bound_texture_rectangle_arb = NULL;
       if (active_unit != jj) {
-        glActiveTexture(GL_TEXTURE0 + jj);
+        api()->glActiveTextureFn(GL_TEXTURE0 + jj);
         active_unit = jj;
       }
-      glBindTexture(GL_TEXTURE_RECTANGLE_ARB, 0);
+      api()->glBindTextureFn(GL_TEXTURE_RECTANGLE_ARB, 0);
     } else if (unit.bound_texture_3d.get() == texture) {
       unit.bound_texture_3d = NULL;
       if (active_unit != jj) {
-        glActiveTexture(GL_TEXTURE0 + jj);
+        api()->glActiveTextureFn(GL_TEXTURE0 + jj);
         active_unit = jj;
       }
-      glBindTexture(GL_TEXTURE_3D, 0);
+      api()->glBindTextureFn(GL_TEXTURE_3D, 0);
     } else if (unit.bound_texture_2d_array.get() == texture) {
       unit.bound_texture_2d_array = NULL;
       if (active_unit != jj) {
-        glActiveTexture(GL_TEXTURE0 + jj);
+        api()->glActiveTextureFn(GL_TEXTURE0 + jj);
         active_unit = jj;
       }
-      glBindTexture(GL_TEXTURE_2D_ARRAY, 0);
+      api()->glBindTextureFn(GL_TEXTURE_2D_ARRAY, 0);
     }
   }
 
   if (active_unit != active_texture_unit) {
-    glActiveTexture(GL_TEXTURE0 + active_texture_unit);
+    api()->glActiveTextureFn(GL_TEXTURE0 + active_texture_unit);
   }
 }
 
@@ -686,7 +686,7 @@ void ContextState::UnbindSampler(Sampler* sampler) {
   for (size_t jj = 0; jj < sampler_units.size(); ++jj) {
     if (sampler_units[jj].get() == sampler) {
       sampler_units[jj] = nullptr;
-      glBindSampler(jj, 0);
+      api()->glBindSamplerFn(jj, 0);
     }
   }
 }

@@ -614,7 +614,8 @@ void ContextGroup::Destroy(GLES2Decoder* decoder, bool have_context) {
   memory_tracker_ = NULL;
 
   if (passthrough_resources_) {
-    passthrough_resources_->Destroy(have_context);
+    gl::GLApi* api = have_context ? gl::g_current_gl_context : nullptr;
+    passthrough_resources_->Destroy(api);
     passthrough_resources_.reset();
     ReportProgress();
   }

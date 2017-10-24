@@ -9406,7 +9406,7 @@ class Function(object):
     """Gets the function to call to execute GL for this command."""
     if self.GetInfo('decoder_func'):
       return self.GetInfo('decoder_func')
-    return "gl%s" % self.original_name
+    return "api()->gl%sFn" % self.original_name
 
   def GetGLTestFunctionName(self):
     gl_func_name = self.GetInfo('gl_test_func')
@@ -10154,9 +10154,9 @@ class GLGenerator(object):
                 return;
             }
             if (enable)
-              glEnable(cap);
+              api()->glEnableFn(cap);
             else
-              glDisable(cap);
+              api()->glDisableFn(cap);
           }
           """)
     self.generated_cpp_filenames.append(filename)
@@ -10330,7 +10330,7 @@ void ContextState::InitState(const ContextState *prev_state) const {
               if test_prev:
                 f.write(")\n")
               f.write(
-                  "  gl%s(%s, %s);\n" %
+                  "  api()->gl%sFn(%s, %s);\n" %
                   (state['func'], ('GL_FRONT', 'GL_BACK')[ndx],
                    ", ".join(args)))
           elif state['type'] == 'NamedParameter':
@@ -10348,7 +10348,7 @@ void ContextState::InitState(const ContextState *prev_state) const {
                   operation.append("  if (prev_state->%s != %s) {\n  " %
                                       (item_name, item_name))
 
-              operation.append("  gl%s(%s, %s);\n" %
+              operation.append("  api()->gl%sFn(%s, %s);\n" %
                              (state['func'],
                              (item['enum_set']
                                  if 'enum_set' in item else item['enum']),
@@ -10379,7 +10379,8 @@ void ContextState::InitState(const ContextState *prev_state) const {
             if 'custom_function' in state:
               f.write("  %s(%s);\n" % (state['func'], ", ".join(args)))
             else:
-              f.write("  gl%s(%s);\n" % (state['func'], ", ".join(args)))
+              f.write("  api()->gl%sFn(%s);\n" % (state['func'],
+                                                  ", ".join(args)))
 
       f.write("  if (prev_state) {")
       WriteStates(True)
