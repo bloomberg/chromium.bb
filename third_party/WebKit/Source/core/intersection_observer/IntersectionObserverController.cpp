@@ -75,11 +75,8 @@ void IntersectionObserverController::ComputeTrackedIntersectionObservations() {
   TRACE_EVENT0(
       "blink",
       "IntersectionObserverController::computeTrackedIntersectionObservations");
-  for (auto& observer : tracked_intersection_observers_) {
+  for (auto& observer : tracked_intersection_observers_)
     observer->ComputeIntersectionObservations();
-    if (observer->HasEntries())
-      ScheduleIntersectionObserverForDelivery(*observer);
-  }
 }
 
 void IntersectionObserverController::AddTrackedObserver(
