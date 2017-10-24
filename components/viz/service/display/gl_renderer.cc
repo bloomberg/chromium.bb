@@ -2173,10 +2173,8 @@ void GLRenderer::DrawYUVVideoQuad(const YUVVideoDrawQuad* quad,
   // Invalid or unspecified color spaces should be treated as REC709.
   if (!src_color_space.IsValid())
     src_color_space = gfx::ColorSpace::CreateREC709();
-#if DCHECK_IS_ON()
-  else if (base::FeatureList::IsEnabled(media::kVideoColorManagement))
+  else
     DCHECK_EQ(src_color_space, y_plane_lock.color_space());
-#endif
 
   // The source color space should never be RGB.
   DCHECK_NE(src_color_space, src_color_space.GetAsFullRangeRGB());

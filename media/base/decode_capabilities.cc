@@ -22,15 +22,12 @@ extern "C" {
 namespace media {
 
 bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
-  bool color_management =
-      base::FeatureList::IsEnabled(features::kHighDynamicRange) ||
-      base::FeatureList::IsEnabled(media::kVideoColorManagement);
   switch (color_space.primaries) {
     case media::VideoColorSpace::PrimaryID::EBU_3213_E:
     case media::VideoColorSpace::PrimaryID::INVALID:
       return false;
 
-    // Transfers supported without color management.
+    // Transfers supported before color management.
     case media::VideoColorSpace::PrimaryID::BT709:
     case media::VideoColorSpace::PrimaryID::UNSPECIFIED:
     case media::VideoColorSpace::PrimaryID::BT470M:
@@ -45,13 +42,11 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
     case media::VideoColorSpace::PrimaryID::SMPTEST428_1:
     case media::VideoColorSpace::PrimaryID::SMPTEST431_2:
     case media::VideoColorSpace::PrimaryID::SMPTEST432_1:
-      if (!color_management)
-        return false;
       break;
   }
 
   switch (color_space.transfer) {
-    // Transfers supported without color management.
+    // Transfers supported before color management.
     case media::VideoColorSpace::TransferID::UNSPECIFIED:
     case media::VideoColorSpace::TransferID::GAMMA22:
     case media::VideoColorSpace::TransferID::BT709:
@@ -72,8 +67,6 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
     case media::VideoColorSpace::TransferID::IEC61966_2_4:
     case media::VideoColorSpace::TransferID::SMPTEST428_1:
     case media::VideoColorSpace::TransferID::ARIB_STD_B67:
-      if (!color_management)
-        return false;
       break;
 
     // Never supported.
@@ -82,7 +75,7 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
   }
 
   switch (color_space.matrix) {
-    // Supported without color management.
+    // Supported before color management.
     case media::VideoColorSpace::MatrixID::BT709:
     case media::VideoColorSpace::MatrixID::UNSPECIFIED:
     case media::VideoColorSpace::MatrixID::BT470BG:
@@ -97,8 +90,6 @@ bool IsColorSpaceSupported(const media::VideoColorSpace& color_space) {
     case media::VideoColorSpace::MatrixID::YCOCG:
     case media::VideoColorSpace::MatrixID::YDZDX:
     case media::VideoColorSpace::MatrixID::BT2020_CL:
-      if (!color_management)
-        return false;
       break;
 
     // Never supported.
