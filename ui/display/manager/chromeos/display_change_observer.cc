@@ -11,11 +11,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
+#include "ui/display/display_switches.h"
 #include "ui/display/manager/chromeos/touchscreen_util.h"
 #include "ui/display/manager/display_layout_store.h"
 #include "ui/display/manager/display_manager.h"
@@ -216,8 +218,14 @@ void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
 
 void DisplayChangeObserver::UpdateInternalDisplay(
     const DisplayConfigurator::DisplayStateList& display_states) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  bool use_first_display_as_internal =
+      command_line->HasSwitch(::switches::kUseFirstDisplayAsInternal);
   for (auto* state : display_states) {
-    if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    if (state->type() == DISPLAY_CONNECTION_TYPE_INTERNAL ||
+        (use_first_display_as_internal &&
+         (!Display::HasInternalDisplay() ||
+          state->display_id() == Display::InternalDisplayId()))) {
       if (Display::HasInternalDisplay())
         DCHECK_EQ(Display::InternalDisplayId(), state->display_id());
       Display::SetInternalDisplayId(state->display_id());
@@ -235,6 +243,7 @@ void DisplayChangeObserver::UpdateInternalDisplay(
             CreateManagedDisplayInfo(state, state->native_mode());
         display_manager_->UpdateInternalDisplay(new_info);
       }
+      return;
     }
   }
 }
