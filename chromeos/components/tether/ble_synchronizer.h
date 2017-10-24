@@ -81,6 +81,7 @@ class BleSynchronizer : public BleSynchronizerBase {
   BluetoothAdvertisementResult BluetoothAdvertisementErrorCodeToResult(
       device::BluetoothAdvertisement::ErrorCode error_code);
   void RecordDiscoverySessionStarted(bool success);
+  void RecordDiscoverySessionStopped(bool success);
 
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
 

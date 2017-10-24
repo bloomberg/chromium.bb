@@ -337,9 +337,10 @@ class BleSynchronizerTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  void InvokeStartDiscoveryCallback(bool success,
-                                    size_t start_arg_index,
-                                    size_t expected_discovery_result_count) {
+  void InvokeStartDiscoveryCallback(
+      bool success,
+      size_t start_arg_index,
+      size_t expected_start_discovery_result_count) {
     EXPECT_TRUE(start_discovery_args_list_.size() >= start_arg_index);
 
     if (success) {
@@ -351,7 +352,7 @@ class BleSynchronizerTest : public testing::Test {
 
     histogram_tester_.ExpectUniqueSample(
         "InstantTethering.BluetoothDiscoverySessionStarted", success ? 1 : 0,
-        expected_discovery_result_count);
+        expected_start_discovery_result_count);
 
     // Reset to make sure that this callback is never double-invoked.
     start_discovery_args_list_[start_arg_index].reset();
@@ -375,13 +376,20 @@ class BleSynchronizerTest : public testing::Test {
                    base::Unretained(this)));
   }
 
-  void InvokeStopDiscoveryCallback(bool success, size_t stop_arg_index) {
+  void InvokeStopDiscoveryCallback(
+      bool success,
+      size_t stop_arg_index,
+      size_t expected_stop_discovery_result_count) {
     EXPECT_TRUE(stop_discovery_args_list_.size() >= stop_arg_index);
 
     if (success)
       stop_discovery_args_list_[stop_arg_index]->callback.Run();
     else
       stop_discovery_args_list_[stop_arg_index]->error_callback.Run();
+
+    histogram_tester_.ExpectUniqueSample(
+        "InstantTethering.BluetoothDiscoverySessionStopped", success ? 1 : 0,
+        expected_stop_discovery_result_count);
 
     // Reset to make sure that this callback is never double-invoked.
     stop_discovery_args_list_[stop_arg_index].reset();
@@ -482,26 +490,28 @@ TEST_F(BleSynchronizerTest, TestUnregisterError) {
 TEST_F(BleSynchronizerTest, TestStartSuccess) {
   StartDiscoverySession();
   InvokeStartDiscoveryCallback(true /* success */, 0u /* reg_arg_index */,
-                               1 /* expected_discovery_result_count */);
+                               1 /* expected_start_discovery_result_count */);
   EXPECT_EQ(1, num_start_success_);
 }
 
 TEST_F(BleSynchronizerTest, TestStartError) {
   StartDiscoverySession();
   InvokeStartDiscoveryCallback(false /* success */, 0u /* reg_arg_index */,
-                               1 /* expected_discovery_result_count */);
+                               1 /* expected_start_discovery_result_count */);
   EXPECT_EQ(1, num_start_error_);
 }
 
 TEST_F(BleSynchronizerTest, TestStopSuccess) {
   StopDiscoverySession(fake_discovery_session_weak_ptr_factory_.GetWeakPtr());
-  InvokeStopDiscoveryCallback(true /* success */, 0u /* unreg_arg_index */);
+  InvokeStopDiscoveryCallback(true /* success */, 0u /* unreg_arg_index */,
+                              1 /* expected_stop_discovery_result_count */);
   EXPECT_EQ(1, num_stop_success_);
 }
 
 TEST_F(BleSynchronizerTest, TestStopError) {
   StopDiscoverySession(fake_discovery_session_weak_ptr_factory_.GetWeakPtr());
-  InvokeStopDiscoveryCallback(false /* success */, 0u /* unreg_arg_index */);
+  InvokeStopDiscoveryCallback(false /* success */, 0u /* unreg_arg_index */,
+                              1 /* expected_stop_discovery_result_count */);
   EXPECT_EQ(1, num_stop_error_);
 }
 

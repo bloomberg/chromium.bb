@@ -177,7 +177,7 @@ void BleSynchronizer::OnErrorUnregisteringAdvertisement(
 
 void BleSynchronizer::OnDiscoverySessionStarted(
     std::unique_ptr<device::BluetoothDiscoverySession> discovery_session) {
-  RecordDiscoverySessionStarted(true);
+  RecordDiscoverySessionStarted(true /* success */);
   ScheduleCommandCompletion();
   StartDiscoveryArgs* start_discovery_args =
       current_command_->start_discovery_args.get();
@@ -186,7 +186,7 @@ void BleSynchronizer::OnDiscoverySessionStarted(
 }
 
 void BleSynchronizer::OnErrorStartingDiscoverySession() {
-  RecordDiscoverySessionStarted(false);
+  RecordDiscoverySessionStarted(false /* success */);
   ScheduleCommandCompletion();
   StartDiscoveryArgs* start_discovery_args =
       current_command_->start_discovery_args.get();
@@ -195,6 +195,7 @@ void BleSynchronizer::OnErrorStartingDiscoverySession() {
 }
 
 void BleSynchronizer::OnDiscoverySessionStopped() {
+  RecordDiscoverySessionStopped(true /* success */);
   ScheduleCommandCompletion();
   StopDiscoveryArgs* stop_discovery_args =
       current_command_->stop_discovery_args.get();
@@ -203,6 +204,7 @@ void BleSynchronizer::OnDiscoverySessionStopped() {
 }
 
 void BleSynchronizer::OnErrorStoppingDiscoverySession() {
+  RecordDiscoverySessionStopped(false /* success */);
   ScheduleCommandCompletion();
   StopDiscoveryArgs* stop_discovery_args =
       current_command_->stop_discovery_args.get();
@@ -273,6 +275,11 @@ BleSynchronizer::BluetoothAdvertisementErrorCodeToResult(
 
 void BleSynchronizer::RecordDiscoverySessionStarted(bool success) {
   UMA_HISTOGRAM_BOOLEAN("InstantTethering.BluetoothDiscoverySessionStarted",
+                        success);
+}
+
+void BleSynchronizer::RecordDiscoverySessionStopped(bool success) {
+  UMA_HISTOGRAM_BOOLEAN("InstantTethering.BluetoothDiscoverySessionStopped",
                         success);
 }
 
