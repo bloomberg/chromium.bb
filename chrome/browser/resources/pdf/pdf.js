@@ -196,7 +196,7 @@ function PDFViewer(browserApi) {
 
   this.gestureDetector_ = new GestureDetector(this.plugin_);
   this.gestureDetector_.addEventListener(
-      'pinchstart', this.viewport_.pinchZoomStart.bind(this.viewport_));
+      'pinchstart', this.onPinchStart_.bind(this));
   this.sentPinchEvent_ = false;
   this.gestureDetector_.addEventListener(
       'pinchupdate', this.onPinchUpdate_.bind(this));
@@ -758,6 +758,19 @@ PDFViewer.prototype = {
     // sent after the pinch end.
     window.requestAnimationFrame(() => {
       this.viewport_.pinchZoomEnd(e);
+    });
+  },
+
+  /**
+   * @private
+   * A callback that's called when the start of a pinch zoom is detected.
+   * @param {!Object} e the pinch event.
+   */
+  onPinchStart_: function(e) {
+    // We also use rAF for pinch start, so that if there is a pinch end event
+    // scheduled by rAF, this pinch start will be sent after.
+    window.requestAnimationFrame(() => {
+      this.viewport_.pinchZoomStart(e);
     });
   },
 
