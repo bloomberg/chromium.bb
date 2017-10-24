@@ -339,8 +339,11 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
   }
 
   copy("cronet_package_copy") {
+    _cronet_framework_gen_dir =
+        get_label_info(":cronet_framework", "target_gen_dir")
+
     sources = [
-      "$root_out_dir/Cronet.framework",
+      "$_cronet_framework_gen_dir/Cronet.framework",
       "//AUTHORS",
       "//chrome/VERSION",
     ]
