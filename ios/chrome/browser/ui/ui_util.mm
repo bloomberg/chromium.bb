@@ -5,6 +5,7 @@
 #include "ios/chrome/browser/ui/ui_util.h"
 
 #import <UIKit/UIKit.h>
+#include <limits>
 
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -109,6 +110,10 @@ CGRect CGRectCopyWithOrigin(CGRect rect, CGFloat x, CGFloat y) {
 CGRect CGRectMakeAlignedAndCenteredAt(CGFloat x, CGFloat y, CGFloat width) {
   return AlignRectOriginAndSizeToPixels(
       CGRectMake(x - width / 2.0, y - width / 2.0, width, width));
+}
+
+bool AreCGFloatsEqual(CGFloat a, CGFloat b) {
+  return std::fabs(a - b) <= std::numeric_limits<CGFloat>::epsilon();
 }
 
 // Based on an original size and a target size applies the transformations.

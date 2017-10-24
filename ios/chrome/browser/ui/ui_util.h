@@ -65,6 +65,9 @@ CGRect CGRectCopyWithOrigin(CGRect rect, CGFloat x, CGFloat y);
 // Both the position and the size of the CGRect will be aligned to points.
 CGRect CGRectMakeAlignedAndCenteredAt(CGFloat x, CGFloat y, CGFloat width);
 
+// Returns whether |a| and |b| are within CGFloat's epsilon value.
+bool AreCGFloatsEqual(CGFloat a, CGFloat b);
+
 // This function is used to figure out how to resize an image from an
 // |originalSize| to a |targetSize|. It returns a |revisedTargetSize| of the
 // resized  image and |projectTo| that is used to describe the rectangle in the
