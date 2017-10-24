@@ -1,6 +1,5 @@
 Verifies that cancelling property value editing doesn't affect undo stack.
 
-Text
 
 Running: selectNode
 
@@ -11,7 +10,7 @@ Running: editProperty
 element.style { ()
 
 [expanded] 
-#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:13)
+#inspected { (<style>…</style>)
     color: blue;
     : ;
 
@@ -27,7 +26,7 @@ Running: undoStyles
 element.style { ()
 
 [expanded] 
-#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:13)
+#inspected { (<style>…</style>)
     color: blue;
 
 [expanded] 
@@ -40,7 +39,7 @@ Running: onUndoedProperty
 element.style { ()
 
 [expanded] 
-#inspected { (undo-after-canc…editing.html:6 -> undo-after-cancelled-editing.html:6:13)
+#inspected { (<style>…</style>)
 
 [expanded] 
 div { (user agent stylesheet)

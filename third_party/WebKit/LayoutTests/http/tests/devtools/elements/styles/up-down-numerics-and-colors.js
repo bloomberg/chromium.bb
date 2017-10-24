@@ -1,19 +1,22 @@
-<html>
-<head>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-<style>
-h1 {
-    color: #FF2;
-    opacity: .5;
-    transform: rotate(1000000000000000065537deg);
-}
-</style>
+(async function() {
+  TestRunner.addResult(`Tests that numeric and color values are incremented/decremented correctly.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <style>
+      h1 {
+          color: #FF2;
+          opacity: .5;
+          transform: rotate(1000000000000000065537deg);
+      }
+      </style>
+      <h1 id="inspected">Inspect Me</h1>
+    `);
 
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
-
-function test() {
   TestRunner.runTestSuite([
     function testInit(next) {
       ElementsTestRunner.selectNodeAndWaitForStyles('inspected', next);
@@ -68,14 +71,4 @@ function test() {
       next();
     }
   ]);
-}
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that numeric and color values are incremented/decremented correctly.
-</p>
-<h1 id="inspected">Inspect Me</h1>
-</body>
-</html>
+})();

@@ -1,10 +1,19 @@
-<html>
-<head>
-<script src="../../../inspector/inspector-test.js"></script>
-<script src="../../../inspector/elements-test.js"></script>
-<script>
+// Copyright 2017 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
-function test() {
+(async function() {
+  TestRunner.addResult(`Tests that Styles sidebar DOM rebuilds are throttled during consecutive updates. Bug 78086.\n`);
+  await TestRunner.loadModule('elements_test_runner');
+  await TestRunner.showPanel('elements');
+  await TestRunner.loadHTML(`
+      <p>
+      Tests that Styles sidebar DOM rebuilds are throttled during consecutive updates. <a href="https://bugs.webkit.org/show_bug.cgi?id=78086">Bug 78086</a>.
+      </p>
+
+      <div id="inspected"></div>
+    `);
+
   var UPDATE_COUNT = 5;
   var rebuildCount = 0;
 
@@ -29,17 +38,4 @@ function test() {
   function sniffRebuild() {
     ++rebuildCount;
   }
-}
-
-</script>
-</head>
-
-<body onload="runTest()">
-<p>
-Tests that Styles sidebar DOM rebuilds are throttled during consecutive updates. <a href="https://bugs.webkit.org/show_bug.cgi?id=78086">Bug 78086</a>.
-</p>
-
-<div id="inspected"></div>
-
-</body>
-</html>
+})();

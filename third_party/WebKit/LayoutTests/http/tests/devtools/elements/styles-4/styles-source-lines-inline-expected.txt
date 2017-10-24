@@ -1,12 +1,11 @@
 Tests that elements panel shows proper inline style locations in the sidebar panel.
 
-
 [expanded] 
 element.style { ()
     display: none;
 
 [expanded] 
-.foo { (styles-source-l…-inline.html:7 -> styles-source-lines-inline.html:7:7)
+.foo { (styles-source-l…-helper.html:4 -> styles-source-lines-inline-helper.html:4:7)
     color: blue;
 
 [expanded] 

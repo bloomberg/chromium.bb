@@ -4,9 +4,9 @@ Tests file system project mappings.
 Running: testEditingRulesInElementsPanelDoesNotAddSourceURLToOriginalFile
 Dumping uiSourceCode content:
 #inspected {
-    color: red;
-}
-
+          color: red;
+      }
+      
 Dumping matched rules:
 [expanded] 
 element.style { ()
@@ -36,7 +36,7 @@ div { (user agent stylesheet)
 
 Dumping uiSourceCode content:
 #inspected {
-    color: green;
-}
-
+          color: green;
+      }
+      
 
