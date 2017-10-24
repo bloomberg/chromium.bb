@@ -7,5 +7,5 @@
     SecureContext
 ] dictionary VRFrameOfReferenceOptions {
   boolean disableStageEmulation = false;
-  [EnforceRange] double stageEmulationHeight = 0.0;
+  double stageEmulationHeight = 0.0;
 };
