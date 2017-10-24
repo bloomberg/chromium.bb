@@ -42,7 +42,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
       scoped_refptr<SerializedScriptValue>,
       ExceptionState&);
 
-  virtual ~WorkletAnimation() {}
+  ~WorkletAnimation() override {}
 
   String playState();
   void play();
@@ -71,7 +71,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   const scoped_refptr<SerializedScriptValue> Options() { return options_; }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   WorkletAnimation(const String& animator_name,

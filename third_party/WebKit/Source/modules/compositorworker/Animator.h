@@ -28,7 +28,7 @@ class Animator final : public GarbageCollectedFinalized<Animator>,
   Animator(v8::Isolate*, AnimatorDefinition*, v8::Local<v8::Object> instance);
   ~Animator();
   void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
 
   // Returns true if it successfully invoked animate callback in JS. It receives
   // latest state coming from |AnimationHost| as input and fills

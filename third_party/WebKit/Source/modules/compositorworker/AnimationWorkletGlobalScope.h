@@ -36,8 +36,8 @@ class MODULES_EXPORT AnimationWorkletGlobalScope
       v8::Isolate*,
       WorkerThread*);
   ~AnimationWorkletGlobalScope() override;
-  void Trace(blink::Visitor*);
-  void TraceWrappers(const ScriptWrappableVisitor*) const;
+  void Trace(blink::Visitor*) override;
+  void TraceWrappers(const ScriptWrappableVisitor*) const override;
   void Dispose() override;
   bool IsAnimationWorkletGlobalScope() const final { return true; }
 
