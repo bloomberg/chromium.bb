@@ -1500,6 +1500,9 @@ extern const char kEnableEncryptionMigrationDescription[];
 extern const char kEnableExternalDriveRename[];
 extern const char kEnableExternalDriveRenameDescription[];
 
+extern const char kEnableFloatingVirtualKeyboardName[];
+extern const char kEnableFloatingVirtualKeyboardDescription[];
+
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
 

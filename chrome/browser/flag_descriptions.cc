@@ -2435,6 +2435,11 @@ const char kEnableExternalDriveRenameDescription[] =
     "If enabled, external removable drives will get 'Rename' action in the "
     "context menu";
 
+const char kEnableFloatingVirtualKeyboardName[] =
+    "Enable floating virtual keyboard";
+const char kEnableFloatingVirtualKeyboardDescription[] =
+    "If enabled, the keyboard will use floating behavior by default.";
+
 const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";

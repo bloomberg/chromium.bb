@@ -24248,6 +24248,7 @@ from previous Chrome versions.
   <int value="-711991950" label="SiteExplorationUi:enabled"/>
   <int value="-711890895" label="enable-website-settings-manager"/>
   <int value="-709058455" label="ui-slow-animations"/>
+  <int value="-706733351" label="enable-floating-virtual-keyboard:enabled"/>
   <int value="-702477233" label="ContentFullscreen:enabled"/>
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-697751423" label="disable-quickoffice-component-app"/>
@@ -24573,6 +24574,7 @@ from previous Chrome versions.
   <int value="350399958" label="ModuleScriptsImportMetaUrl:disabled"/>
   <int value="352191859" label="disabled-new-style-notification"/>
   <int value="352937987" label="OverflowIconsForMediaControls:disabled"/>
+  <int value="357138275" label="enable-floating-virtual-keyboard:disabled"/>
   <int value="358399482" label="enable-high-dpi-fixed-position-compositing"/>
   <int value="358493847" label="BackgroundLoader:disabled"/>
   <int value="360391863" label="NTPOfflineBadge:enabled"/>
