@@ -260,7 +260,7 @@ Address BaseArena::LazySweep(size_t allocation_size, size_t gc_info_index) {
 
   TRACE_EVENT0("blink_gc", "BaseArena::lazySweepPages");
   ThreadState::SweepForbiddenScope sweep_forbidden(GetThreadState());
-  ScriptForbiddenIfMainThreadScope script_forbidden;
+  ScriptForbiddenScope script_forbidden;
 
   double start_time = WTF::MonotonicallyIncreasingTimeMS();
   Address result = LazySweepPages(allocation_size, gc_info_index);
@@ -295,8 +295,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
 
   CHECK(GetThreadState()->IsSweepingInProgress());
   DCHECK(GetThreadState()->SweepForbidden());
-  DCHECK(!GetThreadState()->IsMainThread() ||
-         ScriptForbiddenScope::IsScriptForbidden());
+  DCHECK(ScriptForbiddenScope::IsScriptForbidden());
 
   NormalPageArena* normal_arena = nullptr;
   if (first_unswept_page_ && !first_unswept_page_->IsLargeObjectPage()) {
@@ -329,8 +328,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
 void BaseArena::CompleteSweep() {
   CHECK(GetThreadState()->IsSweepingInProgress());
   DCHECK(GetThreadState()->SweepForbidden());
-  DCHECK(!GetThreadState()->IsMainThread() ||
-         ScriptForbiddenScope::IsScriptForbidden());
+  DCHECK(ScriptForbiddenScope::IsScriptForbidden());
 
   while (first_unswept_page_) {
     SweepUnsweptPage();

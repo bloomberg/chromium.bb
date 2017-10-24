@@ -294,8 +294,7 @@ void V8GCController::GcPrologue(v8::Isolate* isolate,
                                 v8::GCType type,
                                 v8::GCCallbackFlags flags) {
   RUNTIME_CALL_TIMER_SCOPE(isolate, RuntimeCallStats::CounterId::kGcPrologue);
-  if (IsMainThread())
-    ScriptForbiddenScope::Enter();
+  ScriptForbiddenScope::Enter();
 
   // Attribute garbage collection to the all frames instead of a specific
   // frame.
@@ -389,8 +388,7 @@ void V8GCController::GcEpilogue(v8::Isolate* isolate,
       NOTREACHED();
   }
 
-  if (IsMainThread())
-    ScriptForbiddenScope::Exit();
+  ScriptForbiddenScope::Exit();
 
   if (BlameContext* blame_context =
           Platform::Current()->GetTopLevelBlameContext())

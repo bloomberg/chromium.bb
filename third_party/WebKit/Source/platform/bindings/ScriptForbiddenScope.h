@@ -9,12 +9,10 @@
 #include "platform/PlatformExport.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/AutoReset.h"
-#include "platform/wtf/Optional.h"
 
 namespace blink {
 
-// Scoped disabling of script execution on the main thread,
-// and only to be used by the main thread.
+// Scoped disabling of script execution.
 class PLATFORM_EXPORT ScriptForbiddenScope final {
   STACK_ALLOCATED();
   DISALLOW_COPY_AND_ASSIGN(ScriptForbiddenScope);
@@ -28,56 +26,24 @@ class PLATFORM_EXPORT ScriptForbiddenScope final {
     DISALLOW_COPY_AND_ASSIGN(AllowUserAgentScript);
 
    public:
-    AllowUserAgentScript() {
-      if (IsMainThread())
-        change_.emplace(&script_forbidden_count_, 0);
-    }
-    ~AllowUserAgentScript() {
-      DCHECK(!IsMainThread() || !script_forbidden_count_);
-    }
+    AllowUserAgentScript() : saved_counter_(&GetMutableCounter(), 0) {}
+    ~AllowUserAgentScript() { DCHECK(!IsScriptForbidden()); }
 
    private:
-    Optional<AutoReset<unsigned>> change_;
+    AutoReset<unsigned> saved_counter_;
   };
 
-  static void Enter() {
-    DCHECK(IsMainThread());
-    ++script_forbidden_count_;
-  }
+  static bool IsScriptForbidden() { return GetMutableCounter() > 0; }
+
+  // DO NOT USE THESE FUNCTIONS FROM OUTSIDE OF THIS CLASS.
+  static void Enter() { ++GetMutableCounter(); }
   static void Exit() {
-    DCHECK(script_forbidden_count_);
-    --script_forbidden_count_;
-  }
-  static bool IsScriptForbidden() {
-    return IsMainThread() && script_forbidden_count_;
+    DCHECK(IsScriptForbidden());
+    --GetMutableCounter();
   }
 
  private:
-  static unsigned script_forbidden_count_;
-};
-
-// Scoped disabling of script execution on the main thread,
-// if called on the main thread.
-//
-// No effect when used by from other threads -- simplifies
-// call sites that might be used by multiple threads to have
-// this scope object perform the is-main-thread check on
-// its behalf.
-class PLATFORM_EXPORT ScriptForbiddenIfMainThreadScope final {
-  STACK_ALLOCATED();
-  DISALLOW_COPY_AND_ASSIGN(ScriptForbiddenIfMainThreadScope);
-
- public:
-  ScriptForbiddenIfMainThreadScope() {
-    is_main_thread_ = IsMainThread();
-    if (is_main_thread_)
-      ScriptForbiddenScope::Enter();
-  }
-  ~ScriptForbiddenIfMainThreadScope() {
-    if (is_main_thread_)
-      ScriptForbiddenScope::Exit();
-  }
-  bool is_main_thread_;
+  static unsigned& GetMutableCounter();
 };
 
 }  // namespace blink

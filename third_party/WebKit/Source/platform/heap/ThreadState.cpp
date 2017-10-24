@@ -613,7 +613,7 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
                deadline_seconds - MonotonicallyIncreasingTime());
 
   SweepForbiddenScope scope(this);
-  ScriptForbiddenIfMainThreadScope script_forbidden_scope;
+  ScriptForbiddenScope script_forbidden_scope;
 
   double start_time = WTF::MonotonicallyIncreasingTimeMS();
   bool sweep_completed = Heap().AdvanceLazySweep(deadline_seconds);
@@ -857,7 +857,7 @@ void ThreadState::PreSweep(BlinkGC::GCType gc_type) {
   // schedule compaction until those have run. Similarly for eager sweeping.
   {
     SweepForbiddenScope scope(this);
-    ScriptForbiddenIfMainThreadScope script_forbidden_scope;
+    ScriptForbiddenScope script_forbidden_scope;
     NoAllocationScope no_allocation_scope(this);
     Heap().Compact();
   }
@@ -887,7 +887,7 @@ void ThreadState::EagerSweep() {
   DCHECK(IsSweepingInProgress());
 
   SweepForbiddenScope scope(this);
-  ScriptForbiddenIfMainThreadScope script_forbidden_scope;
+  ScriptForbiddenScope script_forbidden_scope;
 
   double start_time = WTF::MonotonicallyIncreasingTimeMS();
   Heap().Arena(BlinkGC::kEagerSweepArenaIndex)->CompleteSweep();
@@ -907,7 +907,7 @@ void ThreadState::CompleteSweep() {
     return;
 
   SweepForbiddenScope scope(this);
-  ScriptForbiddenIfMainThreadScope script_forbidden_scope;
+  ScriptForbiddenScope script_forbidden_scope;
 
   TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
   double start_time = WTF::MonotonicallyIncreasingTimeMS();
@@ -1180,7 +1180,7 @@ void ThreadState::InvokePreFinalizers() {
   TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
 
   SweepForbiddenScope sweep_forbidden(this);
-  ScriptForbiddenIfMainThreadScope script_forbidden;
+  ScriptForbiddenScope script_forbidden;
   // Pre finalizers may access unmarked objects but are forbidden from
   // ressurecting them.
   ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
@@ -1318,7 +1318,7 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 void ThreadState::MarkPhaseVisitRoots() {
   double start_time = WTF::MonotonicallyIncreasingTimeMS();
 
-  ScriptForbiddenIfMainThreadScope script_forbidden;
+  ScriptForbiddenScope script_forbidden;
   // Disallow allocation during garbage collection (but not during the
   // finalization that happens when the visitorScope is torn down).
   NoAllocationScope no_allocation_scope(this);
@@ -1339,7 +1339,7 @@ void ThreadState::MarkPhaseVisitRoots() {
 bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
   double start_time = WTF::MonotonicallyIncreasingTimeMS();
 
-  ScriptForbiddenIfMainThreadScope script_forbidden;
+  ScriptForbiddenScope script_forbidden;
   // Disallow allocation during garbage collection (but not during the
   // finalization that happens when the visitorScope is torn down).
   NoAllocationScope no_allocation_scope(this);
