@@ -2270,7 +2270,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
 # These isolated tests don't use telemetry. They need to be placed in the
 # isolated_scripts section of the generated json.
 NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
-  # We run angle_perftests on the ANGLE CQ to ensure the tests don't crash.
+  # We run perf tests on the CQ to ensure the tests don't crash.
   'angle_perftests': {
     'tester_configs': [
       {
@@ -2304,6 +2304,66 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
     'args': [
       # Tell the tests to exit after one frame for faster iteration.
       '--one-frame-only',
+    ],
+  },
+
+  'validating_command_buffer_perftests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.FYI_AND_OPTIONAL,
+        # Run on the Win Release NVIDIA bots.
+        # TODO(jmadill): Run on Linux bots when possible.
+        'build_configs': ['Release'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux Ozone (Intel)',
+        ],
+      },
+    ],
+    'compile_target': 'command_buffer_perftests',
+    'isolate_name': 'command_buffer_perftests',
+    'args': [
+      '--use-cmd-decoder=validating',
+      '--use-stub',
+    ],
+  },
+
+  'passthrough_command_buffer_perftests': {
+    'tester_configs': [
+      {
+        'predicate': Predicates.FYI_AND_OPTIONAL,
+        # Run on the Win Release NVIDIA bots.
+        # TODO(jmadill): Run on Linux bots when possible.
+        'build_configs': ['Release'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': NVIDIA_GEFORCE_610_ALL_DRIVERS,
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+        ],
+      },
+    ],
+    'disabled_tester_configs': [
+      {
+        'names': [
+          'Linux Ozone (Intel)',
+        ],
+      },
+    ],
+    'compile_target': 'command_buffer_perftests',
+    'isolate_name': 'command_buffer_perftests',
+    'args': [
+      '--use-cmd-decoder=passthrough',
+      '--use-angle=gl-null',
     ],
   },
 }
@@ -2586,9 +2646,15 @@ def generate_telemetry_tests(tester_name, tester_config,
 
 def generate_non_telemetry_isolated_test(tester_name, tester_config,
                                          test, test_config):
+  override_compile_targets = None
+  if 'compile_target' in test_config:
+    override_compile_targets = [test_config['compile_target']]
+  isolate_name = test
+  if 'isolate_name' in test_config:
+    isolate_name = test_config['isolate_name']
   return generate_isolated_test(tester_name, tester_config, test,
-                                test_config,
-                                None, test, None, [])
+                                test_config, None, isolate_name,
+                                override_compile_targets, [])
 
 def generate_non_telemetry_isolated_tests(tester_name, tester_config,
                                           test_dictionary):
