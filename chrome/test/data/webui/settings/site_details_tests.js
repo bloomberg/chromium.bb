@@ -32,6 +32,9 @@ suite('SiteDetails', function() {
   setup(function() {
     prefs = {
       defaults: {
+        ads: {
+          setting: settings.ContentSetting.BLOCK,
+        },
         auto_downloads: {
           setting: settings.ContentSetting.ASK,
         },
@@ -76,6 +79,7 @@ suite('SiteDetails', function() {
         },
       },
       exceptions: {
+        ads: [createExceptionForTest()],
         auto_downloads: [createExceptionForTest()],
         background_sync: [createExceptionForTest()],
         camera: [createExceptionForTest()],
@@ -193,6 +197,7 @@ suite('SiteDetails', function() {
     browserProxy.setPrefs(prefs);
     // Make sure all the possible content settings are shown for this test.
     loadTimeData.overrideValues({enableSoundContentSetting: true});
+    loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
     testElement = createSiteDetails('https://foo.com:443');
 
     return browserProxy.whenCalled('isOriginValid')
@@ -265,7 +270,7 @@ suite('SiteDetails', function() {
       assertEquals(testElement.origin, args[0]);
       assertDeepEquals(testElement.getCategoryList_(), args[1]);
       assertEquals(settings.ContentSetting.DEFAULT, args[2]);
-    })
+    });
   });
 
   test('permissions update dynamically', function() {
@@ -347,5 +352,48 @@ suite('SiteDetails', function() {
               settings.routes.SITE_SETTINGS.path,
               settings.getCurrentRoute().path);
         })
+  });
+
+  test('resetting permissions will set ads back to default', function() {
+    browserProxy.setPrefs(prefs);
+    loadTimeData.overrideValues({enableSafeBrowsingSubresourceFilter: true});
+    testElement = createSiteDetails('https://foo.com:443');
+
+    var siteDetailsPermission = testElement.root.querySelector('#ads');
+
+    return browserProxy.whenCalled('isOriginValid')
+        .then(() => {
+          return browserProxy.whenCalled('getOriginPermissions');
+        })
+        .then(() => {
+          browserProxy.resetResolver('getOriginPermissions');
+          // Sanity check prefs are correct and that Ads was set to 'Allow'.
+          assertEquals(
+              settings.ContentSetting.ALLOW,
+              siteDetailsPermission.$.permission.value);
+
+          // Since the ads permission will only show 'Allow' and 'Block',
+          // check the user can still clear this setting by resetting all
+          // permissions.
+          MockInteractions.tap(testElement.$.clearAndReset);
+          assertTrue(testElement.$.confirmDeleteDialog.open);
+          var actionButtonList =
+              testElement.$.confirmDeleteDialog.getElementsByClassName(
+                  'action-button');
+          assertEquals(1, actionButtonList.length);
+          MockInteractions.tap(actionButtonList[0]);
+
+          return browserProxy.whenCalled('setOriginPermissions');
+        })
+        .then(() => {
+          return browserProxy.whenCalled('getOriginPermissions');
+        })
+        .then((args) => {
+          assertTrue(args[1].includes(settings.ContentSettingsTypes.ADS));
+          // Check the ads permission is set to default.
+          assertEquals(
+              settings.ContentSetting.DEFAULT,
+              siteDetailsPermission.$.permission.value);
+        });
   });
 });

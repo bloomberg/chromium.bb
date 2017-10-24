@@ -51,6 +51,14 @@ Polymer({
     },
 
     /** @private */
+    enableSafeBrowsingSubresourceFilter_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
+      },
+    },
+
+    /** @private */
     enableSoundContentSetting_: {
       type: Boolean,
       value: function() {
@@ -125,8 +133,9 @@ Polymer({
    */
   onPermissionChanged_: function(category, origin, embeddingOrigin) {
     if (this.origin === undefined || this.origin == '' ||
-        origin === undefined || origin == '')
+        origin === undefined || origin == '') {
       return;
+    }
     if (!this.getCategoryList_().includes(category))
       return;
 
