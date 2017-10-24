@@ -29,6 +29,7 @@ IN_PROC_BROWSER_TEST_F(WebClipboardImplTest, PasteRTF) {
 
   // paste_listener.html takes RTF from the clipboard and sets the title.
   NavigateToURL(shell(), GetTestUrl(".", "paste_listener.html"));
+  base::RunLoop().RunUntilIdle();
 
   const base::string16 expected_title = base::UTF8ToUTF16(rtf_content);
   content::TitleWatcher title_watcher(shell()->web_contents(), expected_title);
