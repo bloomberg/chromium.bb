@@ -761,13 +761,7 @@
     </style>
     <style name="SuggestionCardAction" parent="ButtonCompatBorderless">
         <item name="android:textAppearance">@style/BlueButtonText2</item>
-        <item name="android:paddingStart">16dp</item>
-        <item name="android:paddingEnd">16dp</item>
-
-        <!-- Negative marginEnd to balance the padding from the parent (SuggestionCardModern).
-             Buttons are supposed to have 8dp margin while we have a 16dp margin at the parent
-             level. -->
-        <item name="android:layout_marginEnd">-8dp</item>
+        <item name="android:minHeight">48dp</item>
     </style>
 
     <!-- Password manager settings page -->
