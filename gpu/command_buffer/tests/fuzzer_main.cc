@@ -174,11 +174,7 @@ class CommandBufferSetup {
     attrib_helper.alpha_size = 8;
     attrib_helper.depth_size = 0;
     attrib_helper.stencil_size = 0;
-#if defined(GPU_FUZZER_USE_SWIFTSHADER)
-    attrib_helper.context_type = gles2::CONTEXT_TYPE_OPENGLES2;
-#else
     attrib_helper.context_type = gles2::CONTEXT_TYPE_OPENGLES3;
-#endif
 
     auto result =
         decoder_->Initialize(surface_.get(), context_.get(), true,
