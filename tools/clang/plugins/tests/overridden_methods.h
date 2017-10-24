@@ -28,14 +28,14 @@ class InterimClass : public BaseClass {
 namespace blink {
 class WebKitObserver {
  public:
-  virtual void WebKitModifiedSomething() {};
+  virtual void WebKitModifiedSomething() {}
 };
 }  // namespace blink
 
 namespace webkit_glue {
 class WebKitObserverImpl : blink::WebKitObserver {
  public:
-  virtual void WebKitModifiedSomething() {};
+  virtual void WebKitModifiedSomething() {}
 };
 }  // namespace webkit_glue
 
@@ -65,6 +65,17 @@ class DerivedClass : public InterimClass,
   virtual void SomeMethodWithComment();  // This is a comment.
   // Should warn and place correctly even if there is a comment and body.
   virtual void SomeMethodWithCommentAndBody() {}  // This is a comment.
+};
+
+class BaseClassWithDefaultedVirtualDtor {
+ public:
+  virtual ~BaseClassWithDefaultedVirtualDtor() = default;
+};
+
+class DerivedClassWithDefaultedDtor : public BaseClassWithDefaultedVirtualDtor {
+ public:
+  DerivedClassWithDefaultedDtor();
+  ~DerivedClassWithDefaultedDtor() = default;
 };
 
 #endif  // OVERRIDDEN_METHODS_H_

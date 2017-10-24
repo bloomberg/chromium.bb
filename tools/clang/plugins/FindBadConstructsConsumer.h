@@ -114,6 +114,7 @@ class FindBadConstructsConsumer
 
   unsigned diag_method_requires_override_;
   unsigned diag_redundant_virtual_specifier_;
+  unsigned diag_will_be_redundant_virtual_specifier_;
   unsigned diag_base_method_virtual_and_final_;
   unsigned diag_virtual_with_inline_body_;
   unsigned diag_no_explicit_ctor_;

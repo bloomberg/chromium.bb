@@ -9,6 +9,8 @@ void DerivedClass::SomeMethod() {}
 void DerivedClass::SomeOtherMethod() {}
 void DerivedClass::WebKitModifiedSomething() {}
 
+DerivedClassWithDefaultedDtor::DerivedClassWithDefaultedDtor() {}
+
 class ImplementationInterimClass : public BaseClass {
  public:
   // Should warn about pure virtual methods.
@@ -46,4 +48,5 @@ class ImplementationDerivedClass : public ImplementationInterimClass,
 int main() {
   DerivedClass something;
   ImplementationDerivedClass something_else;
+  DerivedClassWithDefaultedDtor defaulted_dtor;
 }
