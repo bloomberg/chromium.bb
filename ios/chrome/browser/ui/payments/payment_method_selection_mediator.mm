@@ -18,10 +18,10 @@
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
 #include "ios/chrome/browser/payments/payment_request.h"
 #include "ios/chrome/browser/payments/payment_request_util.h"
+#import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/payments/cells/payment_method_item.h"
 #import "ios/chrome/browser/ui/payments/cells/payments_text_item.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
-#include "ios/chrome/grit/ios_theme_resources.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -92,7 +92,8 @@ using ::payment_request_util::
 - (CollectionViewItem*)addButtonItem {
   PaymentsTextItem* addButtonItem = [[PaymentsTextItem alloc] init];
   addButtonItem.text = l10n_util::GetNSString(IDS_PAYMENTS_ADD_CARD);
-  addButtonItem.leadingImage = NativeImage(IDR_IOS_PAYMENTS_ADD);
+  addButtonItem.trailingImage = TintImage([UIImage imageNamed:@"ic_add"],
+                                          [[MDCPalette greyPalette] tint400]);
   return addButtonItem;
 }
 
