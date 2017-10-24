@@ -33,6 +33,9 @@ const uint32_t kAxisMinimumUsageNumber = 0x30;
 const uint32_t kGameControlsUsagePage = 0x05;
 const uint32_t kButtonUsagePage = 0x09;
 
+const uint32_t kVendorOculus = 0x2833;
+const uint32_t kVendorBlue = 0xb58e;
+
 }  // namespace
 
 RawGamepadInfo::RawGamepadInfo() {}
@@ -274,9 +277,11 @@ RawGamepadInfo* RawInputDataFetcher::ParseGamepadInfo(HANDLE hDevice) {
     }
   }
 
-  // This is terrible, but the Oculus Rift seems to think it's a gamepad.
-  // Filter out any Oculus devices. (We'll handle Oculus Touch elsewhere.)
-  if (device_info->hid.dwVendorId == 0x2833) {
+  // This is terrible, but the Oculus Rift and some Blue Yeti microphones seem
+  // to think they are gamepads. Filter out any such devices. Oculus Touch is
+  // handled elsewhere.
+  if (device_info->hid.dwVendorId == kVendorOculus ||
+      device_info->hid.dwVendorId == kVendorBlue) {
     valid_type = false;
   }
 
