@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "chrome/common/thumbnail_capturer.mojom.h"
+#include "chrome/common/chrome_render_frame.mojom.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/geometry/size.h"
@@ -80,7 +80,7 @@ class CoreTabHelper : public content::WebContentsObserver,
   void BeforeUnloadDialogCancelled() override;
 
   void DoSearchByImageInNewTab(
-      chrome::mojom::ThumbnailCapturerPtr thumbnail_capturer,
+      chrome::mojom::ChromeRenderFrameAssociatedPtr chrome_render_frame,
       const GURL& src_url,
       const std::vector<uint8_t>& thumbnail_data,
       const gfx::Size& original_size);
