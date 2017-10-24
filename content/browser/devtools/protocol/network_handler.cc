@@ -652,6 +652,7 @@ NetworkHandler::NetworkHandler(const std::string& host_id)
       enabled_(false),
       interception_enabled_(false),
       host_id_(host_id),
+      bypass_service_worker_(false),
       weak_factory_(this) {
   static bool have_configured_service_worker_context = false;
   if (have_configured_service_worker_context)
@@ -892,6 +893,11 @@ Response NetworkHandler::EmulateNetworkConditions(
     network_conditions->upload_throughput = upload_throughput;
   }
   SetNetworkConditions(std::move(network_conditions));
+  return Response::FallThrough();
+}
+
+Response NetworkHandler::SetBypassServiceWorker(bool bypass) {
+  bypass_service_worker_ = bypass;
   return Response::FallThrough();
 }
 
@@ -1244,6 +1250,10 @@ void NetworkHandler::AppendDevToolsHeaders(net::HttpRequestHeaders* headers) {
     headers->SetHeader(net::HttpRequestHeaders::kUserAgent, user_agent_);
   for (auto& entry : extra_headers_)
     headers->SetHeader(entry.first, entry.second);
+}
+
+bool NetworkHandler::ShouldBypassServiceWorker() const {
+  return bypass_service_worker_;
 }
 
 void NetworkHandler::SetNetworkConditions(

@@ -415,6 +415,10 @@ NavigationRequest::NavigationRequest(
     }
   }
   begin_params_.headers = headers.ToString();
+
+  // Check whether DevTools wants to skip the service worker.
+  if (RenderFrameDevToolsAgentHost::ShouldBypassServiceWorker(frame_tree_node))
+    begin_params_.skip_service_worker = true;
 }
 
 NavigationRequest::~NavigationRequest() {

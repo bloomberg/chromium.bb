@@ -64,6 +64,7 @@ class CONTENT_EXPORT RenderFrameDevToolsAgentHost
   static bool IsNetworkHandlerEnabled(FrameTreeNode* frame_tree_node);
   static void AppendDevToolsHeaders(FrameTreeNode* frame_tree_node,
                                     net::HttpRequestHeaders* headers);
+  static bool ShouldBypassServiceWorker(FrameTreeNode* frame_tree_node);
   static void WebContentsCreated(WebContents* web_contents);
 
   static void SignalSynchronousSwapCompositorFrame(
