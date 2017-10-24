@@ -131,7 +131,7 @@ class FetchLoaderClient final
   void DidFetchDataLoadedDataPipe() override { handle_->Completed(); }
   void DidFetchDataLoadFailed() override { handle_->Aborted(); }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     FetchDataLoader::Client::Trace(visitor);
   }
 

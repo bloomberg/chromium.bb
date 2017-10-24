@@ -55,7 +55,7 @@ class MODULES_EXPORT ExtendableEvent : public Event {
   void waitUntil(ScriptState*, ScriptPromise, ExceptionState&);
 
   const AtomicString& InterfaceName() const override;
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   ExtendableEvent(const AtomicString& type, const ExtendableEventInit&);

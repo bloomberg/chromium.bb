@@ -43,7 +43,7 @@ class MODULES_EXPORT ForeignFetchEvent final : public ExtendableEvent {
 
   const AtomicString& InterfaceName() const override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   ForeignFetchEvent(ScriptState*,

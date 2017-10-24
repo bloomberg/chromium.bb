@@ -66,9 +66,9 @@ class MODULES_EXPORT ServiceWorkerContainer final
 
   static ServiceWorkerContainer* Create(ExecutionContext*,
                                         NavigatorServiceWorker*);
-  ~ServiceWorkerContainer();
+  ~ServiceWorkerContainer() override;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
   ServiceWorker* controller() { return controller_; }
   ScriptPromise ready(ScriptState*);
