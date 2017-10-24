@@ -348,20 +348,13 @@ void CanvasRenderingContext2D::ScrollPathIntoViewInternal(const Path& path) {
   bool is_horizontal_writing_mode =
       canvas()->EnsureComputedStyle()->IsHorizontalWritingMode();
 
-  bool make_visible_in_visual_viewport = !canvas()
-                                              ->GetDocument()
-                                              .GetPage()
-                                              ->GetSettings()
-                                              .GetInertVisualViewport();
-
   renderer->ScrollRectToVisible(
       path_rect,
       is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
                                  : ScrollAlignment::kAlignLeftAlways,
       !is_horizontal_writing_mode ? ScrollAlignment::kAlignToEdgeIfNeeded
                                   : ScrollAlignment::kAlignTopAlways,
-      kProgrammaticScroll, make_visible_in_visual_viewport,
-      kScrollBehaviorAuto);
+      kProgrammaticScroll, false, kScrollBehaviorAuto);
 }
 
 void CanvasRenderingContext2D::clearRect(double x,

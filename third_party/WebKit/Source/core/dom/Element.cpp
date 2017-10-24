@@ -516,9 +516,6 @@ void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
   if (!GetLayoutObject() || !GetDocument().GetPage())
     return;
 
-  bool make_visible_in_visual_viewport =
-      !GetDocument().GetPage()->GetSettings().GetInertVisualViewport();
-
   ScrollBehavior behavior = (options.behavior() == "smooth")
                                 ? kScrollBehaviorSmooth
                                 : kScrollBehaviorAuto;
@@ -531,9 +528,8 @@ void Element::scrollIntoViewWithOptions(const ScrollIntoViewOptions& options) {
       ToPhysicalAlignment(options, kVerticalScroll, is_horizontal_writing_mode);
 
   LayoutRect bounds = BoundingBox();
-  GetLayoutObject()->ScrollRectToVisible(
-      bounds, align_x, align_y, kProgrammaticScroll,
-      make_visible_in_visual_viewport, behavior);
+  GetLayoutObject()->ScrollRectToVisible(bounds, align_x, align_y,
+                                         kProgrammaticScroll, false, behavior);
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
 }
@@ -544,20 +540,16 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
   if (!GetLayoutObject())
     return;
 
-  bool make_visible_in_visual_viewport =
-      !GetDocument().GetPage()->GetSettings().GetInertVisualViewport();
-
   LayoutRect bounds = BoundingBox();
-  if (center_if_needed)
+  if (center_if_needed) {
     GetLayoutObject()->ScrollRectToVisible(
         bounds, ScrollAlignment::kAlignCenterIfNeeded,
-        ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll,
-        make_visible_in_visual_viewport);
-  else
+        ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false);
+  } else {
     GetLayoutObject()->ScrollRectToVisible(
         bounds, ScrollAlignment::kAlignToEdgeIfNeeded,
-        ScrollAlignment::kAlignToEdgeIfNeeded, kProgrammaticScroll,
-        make_visible_in_visual_viewport);
+        ScrollAlignment::kAlignToEdgeIfNeeded, kProgrammaticScroll, false);
+  }
 }
 
 void Element::setDistributeScroll(ScrollStateCallback* scroll_state_callback,
@@ -1086,10 +1078,7 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
   if (!frame || !frame->View() || !GetDocument().GetPage())
     return;
 
-  ScrollableArea* viewport =
-      GetDocument().GetPage()->GetSettings().GetInertVisualViewport()
-          ? frame->View()->LayoutViewportScrollableArea()
-          : frame->View()->GetScrollableArea();
+  ScrollableArea* viewport = frame->View()->LayoutViewportScrollableArea();
   if (!viewport)
     return;
 
@@ -1109,10 +1098,7 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
   if (!frame || !frame->View() || !GetDocument().GetPage())
     return;
 
-  ScrollableArea* viewport =
-      GetDocument().GetPage()->GetSettings().GetInertVisualViewport()
-          ? frame->View()->LayoutViewportScrollableArea()
-          : frame->View()->GetScrollableArea();
+  ScrollableArea* viewport = frame->View()->LayoutViewportScrollableArea();
   if (!viewport)
     return;
 

@@ -2101,8 +2101,7 @@ bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   LayoutRect target_rect(layout_object->AbsoluteBoundingBoxRect());
   layout_object->ScrollRectToVisible(
       target_rect, ScrollAlignment::kAlignCenterIfNeeded,
-      ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll,
-      !GetDocument()->GetPage()->GetSettings().GetInertVisualViewport(),
+      ScrollAlignment::kAlignCenterIfNeeded, kProgrammaticScroll, false,
       kScrollBehaviorAuto);
   AxObjectCache().PostNotification(
       AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
@@ -2126,10 +2125,9 @@ bool AXObject::OnNativeScrollToMakeVisibleWithSubFocusAction(
   // is the default behavior of element.scrollIntoView.
   ScrollAlignment scroll_alignment = {
       kScrollAlignmentNoScroll, kScrollAlignmentCenter, kScrollAlignmentCenter};
-  layout_object->ScrollRectToVisible(
-      target_rect, scroll_alignment, scroll_alignment, kProgrammaticScroll,
-      !GetDocument()->GetPage()->GetSettings().GetInertVisualViewport(),
-      kScrollBehaviorAuto);
+  layout_object->ScrollRectToVisible(target_rect, scroll_alignment,
+                                     scroll_alignment, kProgrammaticScroll,
+                                     false, kScrollBehaviorAuto);
   AxObjectCache().PostNotification(
       AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),
       AXObjectCacheImpl::kAXLocationChanged);
@@ -2146,8 +2144,7 @@ bool AXObject::OnNativeScrollToGlobalPointAction(
   target_rect.MoveBy(-global_point);
   layout_object->ScrollRectToVisible(
       target_rect, ScrollAlignment::kAlignLeftAlways,
-      ScrollAlignment::kAlignTopAlways, kProgrammaticScroll,
-      !GetDocument()->GetPage()->GetSettings().GetInertVisualViewport(),
+      ScrollAlignment::kAlignTopAlways, kProgrammaticScroll, false,
       kScrollBehaviorAuto);
   AxObjectCache().PostNotification(
       AxObjectCache().GetOrCreate(GetDocument()->GetLayoutView()),

@@ -40,7 +40,6 @@
     }
 
     var testCase = testScrolls[currentTest];
-    internals.settings.setInertVisualViewport(testScrolls[currentTest].scrollLayoutViewport);
     window.scrollTo(testCase.x, testCase.y);
     window.requestAnimationFrame(finishTest);
   }
@@ -52,7 +51,6 @@
       return;
     }
 
-    internals.settings.setInertVisualViewport(false);
     // The height/width of the layout viewport is innerHeight/Width of the window
     // when no pinch-zoom is applied.
     var layoutInnerHeight = window.innerHeight;
