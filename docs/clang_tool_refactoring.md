@@ -15,14 +15,12 @@ with a traditional find-and-replace regexp:
 
 ## Caveats
 
-An invocation of the clang tool runs on one build config. Code that only
-compiles on one platform or code that is guarded by a set of compile-time flags
-can be problematic. Performing a global refactoring typically requires running
-the tool once in each build config with code that needs to be updated.
+* Clang tools do not work with jumbo builds.
 
-Other minor issues:
-
-*   Requires a git checkout.
+* Invocations of a clang tool runs on on only one build config at a time. For
+example, running the tool across a `target_os="win"` build won't update code
+that is guarded by `OS_POSIX`. Performing a global refactoring will often
+require running the tool once for each build config.
 
 ## Prerequisites
 
@@ -33,26 +31,27 @@ For convenience, add `third_party/llvm-build/Release+Asserts/bin` to `$PATH`.
 ## Writing the tool
 
 LLVM uses C++11 and CMake. Source code for Chromium clang tools lives in
-[//tools/clang](https://chromium.googlesource.com/chromium/src/tools/clang/+/master).
-It is generally easiest to use one of the already-written tools as the base for
-writing a new tool.
+[//tools/clang]. It is generally easiest to use one of the already-written tools
+as the base for writing a new tool.
 
 Chromium clang tools generally follow this pattern:
 
-1.  Instantiate a [`clang::ast_matchers::MatchFinder`](http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder.html).
-2.  Call `addMatcher()` to register [`clang::ast_matchers::MatchFinder::MatchCallback`](http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder_1_1MatchCallback.html)
-    actions to execute when [matching](http://clang.llvm.org/docs/LibASTMatchersReference.html)
-    the AST.
+1.  Instantiate a
+    [`clang::ast_matchers::MatchFinder`][clang-docs-match-finder].
+2.  Call `addMatcher()` to register
+    [`clang::ast_matchers::MatchFinder::MatchCallback`][clang-docs-match-callback]
+    actions to execute when [matching][matcher-reference] the AST.
 3.  Create a new `clang::tooling::FrontendActionFactory` from the `MatchFinder`.
 4.  Run the action across the specified files with
-    [`clang::tooling::ClangTool::run`](http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1ClangTool.html#acec91f63b45ac7ee2d6c94cb9c10dab3).
-5.  Serialize generated [`clang::tooling::Replacement`](http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1Replacement.html)s
+    [`clang::tooling::ClangTool::run`][clang-docs-clang-tool-run].
+5.  Serialize generated [`clang::tooling::Replacement`][clang-docs-replacement]s
     to `stdout`.
 
 Other useful references when writing the tool:
 
-*   [Clang doxygen reference](http://clang.llvm.org/doxygen/index.html)
-*   [Tutorial for building tools using LibTooling and LibASTMatchers](http://clang.llvm.org/docs/LibASTMatchersTutorial.html)
+*   [Clang doxygen reference][clang-docs]
+*   [Tutorial for building tools using LibTooling and
+    LibASTMatchers][clang-tooling-tutorial]
 
 ### Edit serialization format
 ```
@@ -101,12 +100,10 @@ tools/clang/scripts/update.py --bootstrap --force-local-build --without-android 
   --extra-tools rewrite_to_chrome_style
 ```
 
-Running this command builds the [Oilpan plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/blink_gc_plugin/),
-the [Chrome style
-plugin](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/plugins/),
-and the [Blink to Chrome style rewriter](https://chromium.googlesource.com/chromium/src/+/master/tools/clang/rewrite_to_chrome_style/). Additional arguments to `--extra-tools` should be the name of
-subdirectories in
-[//tools/clang](https://chromium.googlesource.com/chromium/src/+/master/tools/clang).
+Running this command builds the [Oilpan plugin][//tools/clang/blink_gc_plugin],
+the [Chrome style plugin][//tools/clang/plugins], and the [Blink to Chrome style
+rewriter][//tools/clang/rewrite_to_chrome_style]. Additional arguments to
+`--extra-tools` should be the name of subdirectories in [//tools/clang].
 
 It is important to use --bootstrap as there appear to be [bugs](https://crbug.com/580745)
 in the clang library this script produces if you build it with gcc, which is the default.
@@ -183,11 +180,11 @@ files the clang tool is run against.
 Dumping the AST for a file:
 
 ```shell
-clang++ -cc1 -ast-dump foo.cc
+clang++ -Xclang -ast-dump -std=c++14 foo.cc | less -R
 ```
 
 Using `clang-query` to dynamically test matchers (requires checking out
-and building [clang-tools-extras](https://github.com/llvm-mirror/clang-tools-extra)):
+and building [clang-tools-extra][]):
 
 ```shell
 clang-query -p path/to/compdb base/memory/ref_counted.cc
@@ -222,3 +219,16 @@ result is saved in `*-actual.cc`.
 When `--apply-edits` switch is not presented, tool outputs are compared to
 `*-expected.txt` and if different, the result is saved in `*-actual.txt`. Note
 that in this case, only one test file is expected.
+
+[//tools/clang]: https://chromium.googlesource.com/chromium/src/+/master/tools/clang/
+[clang-docs-match-finder]: http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder.html
+[clang-docs-match-callback]: http://clang.llvm.org/doxygen/classclang_1_1ast__matchers_1_1MatchFinder_1_1MatchCallback.html
+[matcher-reference]: http://clang.llvm.org/docs/LibASTMatchersReference.html
+[clang-docs-clang-tool-run]: http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1ClangTool.html#acec91f63b45ac7ee2d6c94cb9c10dab3
+[clang-docs-replacement]: http://clang.llvm.org/doxygen/classclang_1_1tooling_1_1Replacement.html
+[clang-docs]: http://clang.llvm.org/doxygen/index.html
+[clang-tooling-tutorial]: http://clang.llvm.org/docs/LibASTMatchersTutorial.html
+[//tools/clang/blink_gc_plugin]: https://chromium.googlesource.com/chromium/src/+/master/tools/clang/blink_gc_plugin/
+[//tools/clang/plugins]: https://chromium.googlesource.com/chromium/src/+/master/tools/clang/plugins/
+[//tools/clang/rewrite_to_chrome_style]: https://chromium.googlesource.com/chromium/src/+/master/tools/clang/rewrite_to_chrome_style/
+[clang-tools-extra]: (https://github.com/llvm-mirror/clang-tools-extra)
