@@ -479,7 +479,7 @@ void PaintInvalidator::InvalidatePaint(
     const PaintPropertyTreeBuilderContext* tree_builder_context,
     PaintInvalidatorContext& context) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("blink.invalidation"),
-               "PaintInvalidator::invalidatePaintIfNeeded()", "object",
+               "PaintInvalidator::InvalidatePaint()", "object",
                object.DebugName().Ascii());
 
   if (object.IsSVGHiddenContainer()) {
@@ -502,6 +502,10 @@ void PaintInvalidator::InvalidatePaint(
 
   UpdatePaintInvalidationContainer(object, context);
   UpdateEmptyVisualRectFlag(object, context);
+
+  if (!object.ShouldCheckForPaintInvalidation() && !context.subtree_flags)
+    return;
+
   UpdateVisualRectIfNeeded(object, tree_builder_context, context);
 
   PaintInvalidationReason reason = object.InvalidatePaint(context);
