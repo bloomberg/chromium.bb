@@ -58,7 +58,7 @@ class DirectoryReader : public DirectoryReaderBase {
     return static_cast<DOMFileSystem*>(file_system_.Get());
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   class EntriesCallbackHelper;

@@ -55,7 +55,7 @@ class DirectoryReaderSync::EntriesCallbackHelper final
     reader_->AddEntries(sync_entries);
   }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
     EntriesCallback::Trace(visitor);
   }
@@ -71,7 +71,7 @@ class DirectoryReaderSync::ErrorCallbackHelper final
 
   void Invoke(FileError::ErrorCode error) override { reader_->SetError(error); }
 
-  virtual void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(reader_);
     ErrorCallbackBase::Trace(visitor);
   }

@@ -67,7 +67,7 @@ class MODULES_EXPORT DirectoryEntry final : public Entry {
   void removeRecursively(VoidCallback* success_callback = nullptr,
                          ErrorCallback* = nullptr) const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   DirectoryEntry(DOMFileSystemBase*, const String& full_path);

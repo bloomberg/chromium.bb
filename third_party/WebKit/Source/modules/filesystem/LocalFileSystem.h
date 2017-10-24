@@ -74,7 +74,7 @@ class LocalFileSystem final : public GarbageCollectedFinalized<LocalFileSystem>,
   static const char* SupplementName();
   static LocalFileSystem* From(ExecutionContext&);
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   WebFileSystem* GetFileSystem() const;

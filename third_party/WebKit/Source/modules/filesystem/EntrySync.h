@@ -62,7 +62,7 @@ class EntrySync : public EntryBase {
   void remove(ExceptionState&) const;
   EntrySync* getParent() const;
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  protected:
   EntrySync(DOMFileSystemBase*, const String& full_path);
