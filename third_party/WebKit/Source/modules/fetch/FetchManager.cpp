@@ -127,7 +127,7 @@ class SRIBytesConsumer final : public BytesConsumer {
     }
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(underlying_);
     visitor->Trace(client_);
     BytesConsumer::Trace(visitor);

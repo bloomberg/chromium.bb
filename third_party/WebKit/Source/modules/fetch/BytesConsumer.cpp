@@ -108,7 +108,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
   BytesConsumer* Destination1() const { return destination1_; }
   BytesConsumer* Destination2() const { return destination2_; }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(src_);
     visitor->Trace(destination1_);
     visitor->Trace(destination2_);
@@ -279,7 +279,7 @@ class TeeHelper final : public GarbageCollectedFinalized<TeeHelper>,
 
     bool IsCancelled() const { return is_cancelled_; }
 
-    void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       char client_name[32];
       const char* src = client_name_.IsNull() ? "" : client_name_.data();
       strncpy(client_name, src, sizeof(client_name) - 1);

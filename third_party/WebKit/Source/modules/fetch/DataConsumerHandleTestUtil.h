@@ -221,7 +221,7 @@ class DataConsumerHandleTestUtil {
       DataConsumerHandle(const String& name, scoped_refptr<Context> context)
           : name_(name.IsolatedCopy()), context_(std::move(context)) {}
 
-      std::unique_ptr<Reader> ObtainReader(Client*) {
+      std::unique_ptr<Reader> ObtainReader(Client*) override {
         return WTF::MakeUnique<ReaderImpl>(name_, context_);
       }
       const char* DebugName() const override {
@@ -359,7 +359,7 @@ class DataConsumerHandleTestUtil {
     static std::unique_ptr<ReplayingHandle> Create() {
       return WTF::WrapUnique(new ReplayingHandle());
     }
-    ~ReplayingHandle();
+    ~ReplayingHandle() override;
 
     // Add a command to this handle. This function must be called on the
     // creator thread. This function must be called BEFORE any reader is

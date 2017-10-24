@@ -74,7 +74,7 @@ class BodyStreamBuffer::LoaderClient final
     client_->DidFetchDataLoadFailed();
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(buffer_);
     visitor->Trace(client_);
     ContextLifecycleObserver::Trace(visitor);

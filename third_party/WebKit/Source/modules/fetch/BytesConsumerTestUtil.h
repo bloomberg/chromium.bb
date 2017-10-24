@@ -110,7 +110,7 @@ class BytesConsumerTestUtil {
    public:
     // The ExecutionContext is needed to get a WebTaskRunner.
     explicit ReplayingBytesConsumer(ExecutionContext*);
-    ~ReplayingBytesConsumer();
+    ~ReplayingBytesConsumer() override;
 
     // Add a command to this handle. This function must be called BEFORE
     // any BytesConsumer methods are called.
@@ -128,7 +128,7 @@ class BytesConsumerTestUtil {
 
     bool IsCancelled() const { return is_cancelled_; }
 
-    void Trace(blink::Visitor*);
+    void Trace(blink::Visitor*) override;
 
    private:
     void NotifyAsReadable(int notification_token);
@@ -157,7 +157,7 @@ class BytesConsumerTestUtil {
     String DebugName() const override { return "TwoPhaseReader"; }
     std::pair<BytesConsumer::Result, Vector<char>> Run();
 
-    void Trace(blink::Visitor* visitor) {
+    void Trace(blink::Visitor* visitor) override {
       visitor->Trace(consumer_);
       BytesConsumer::Client::Trace(visitor);
     }

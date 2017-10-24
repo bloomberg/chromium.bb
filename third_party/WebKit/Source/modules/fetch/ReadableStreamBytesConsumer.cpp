@@ -49,7 +49,7 @@ class ReadableStreamBytesConsumer::OnFulfilled final : public ScriptFunction {
     return v;
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }
@@ -74,7 +74,7 @@ class ReadableStreamBytesConsumer::OnRejected final : public ScriptFunction {
     return v;
   }
 
-  void Trace(blink::Visitor* visitor) {
+  void Trace(blink::Visitor* visitor) override {
     visitor->Trace(consumer_);
     ScriptFunction::Trace(visitor);
   }

@@ -81,7 +81,7 @@ class MODULES_EXPORT Request final : public Body {
     return request_->AttachedCredential();
   }
 
-  virtual void Trace(blink::Visitor*);
+  void Trace(blink::Visitor*) override;
 
  private:
   Request(ScriptState*, FetchRequestData*, Headers*);
