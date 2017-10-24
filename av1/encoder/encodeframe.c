@@ -3450,7 +3450,7 @@ static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
   if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
     return ALLOW_32X32 + CONFIG_TX64X64;
   else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
-           cpi->sf.tx_size_search_method == USE_TX_8X8)
+           cpi->sf.tx_size_search_method == USE_FAST_RD)
     return TX_MODE_SELECT;
   else
     return cpi->common.tx_mode;

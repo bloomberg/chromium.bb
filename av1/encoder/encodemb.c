@@ -123,7 +123,7 @@ static const int plane_rd_mult[REF_TYPES][PLANE_TYPES] = {
 
 static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
                              int blk_row, int blk_col, int block,
-                             TX_SIZE tx_size, int ctx) {
+                             TX_SIZE tx_size, int ctx, int fast_mode) {
   MACROBLOCKD *const xd = &mb->e_mbd;
   struct macroblock_plane *const p = &mb->plane[plane];
   struct macroblockd_plane *const pd = &xd->plane[plane];
@@ -172,6 +172,10 @@ static int optimize_b_greedy(const AV1_COMMON *cm, MACROBLOCK *mb, int plane,
   tran_low_t before_best_eob_dqc = 0;
 
   uint8_t token_cache[MAX_TX_SQUARE];
+
+  // TODO(debargha): Implement a fast mode. For now just skip.
+  if (fast_mode) return eob;
+
   for (i = 0; i < eob; i++) {
     const int rc = scan[i];
     token_cache[rc] = av1_pt_energy_class[av1_get_token(qcoeff[rc])];
@@ -398,10 +402,9 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int blk_row,
   (void)plane_bsize;
   (void)blk_row;
   (void)blk_col;
-  (void)fast_mode;
   int ctx = get_entropy_context(tx_size, a, l);
-  return optimize_b_greedy(cm, mb, plane, blk_row, blk_col, block, tx_size,
-                           ctx);
+  return optimize_b_greedy(cm, mb, plane, blk_row, blk_col, block, tx_size, ctx,
+                           fast_mode);
 #else   // !CONFIG_LV_MAP
   TXB_CTX txb_ctx;
   get_txb_ctx(plane_bsize, tx_size, plane, a, l, &txb_ctx);
@@ -613,7 +616,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
   av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size, a,
-                 l, 1);
+                 l, CONFIG_LV_MAP);
 
   av1_set_txb_context(x, plane, block, tx_size, a, l);
 
@@ -884,7 +887,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_FP);
     av1_optimize_b(cm, x, plane, blk_row, blk_col, block, plane_bsize, tx_size,
-                   a, l, 1);
+                   a, l, CONFIG_LV_MAP);
   } else {
     av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
                     ctx, AV1_XFORM_QUANT_B);

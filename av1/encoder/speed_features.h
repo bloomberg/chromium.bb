@@ -141,8 +141,8 @@ typedef enum {
 
 typedef enum {
   USE_FULL_RD = 0,
+  USE_FAST_RD,
   USE_LARGESTALL,
-  USE_TX_8X8
 } TX_SIZE_SEARCH_METHOD;
 
 typedef enum {

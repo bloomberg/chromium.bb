@@ -146,6 +146,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
   const int boosted = frame_is_boosted(cpi);
 
   if (speed >= 1) {
+    sf->tx_size_search_method = USE_FAST_RD;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
   }
