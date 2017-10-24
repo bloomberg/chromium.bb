@@ -79,6 +79,7 @@ class CONTENT_EXPORT CompositorImpl
   // Compositor implementation.
   void SetRootLayer(scoped_refptr<cc::Layer> root) override;
   void SetSurface(jobject surface) override;
+  void SetBackgroundColor(int color) override;
   void SetWindowBounds(const gfx::Size& size) override;
   void SetRequiresAlphaChannel(bool flag) override;
   void SetNeedsComposite() override;

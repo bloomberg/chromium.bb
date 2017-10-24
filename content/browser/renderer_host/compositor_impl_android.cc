@@ -555,6 +555,11 @@ void CompositorImpl::SetSurface(jobject surface) {
   }
 }
 
+void CompositorImpl::SetBackgroundColor(int color) {
+  DCHECK(host_);
+  host_->set_background_color(color);
+}
+
 void CompositorImpl::CreateLayerTreeHost() {
   DCHECK(!host_);
 
