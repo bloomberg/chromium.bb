@@ -69,9 +69,6 @@ class AudioFileReaderTest : public testing::Test {
       for (int j = 0; j < kReads; ++j) {
         ASSERT_TRUE(reader_->ReadPacketForTesting(&packet));
 
-        // Remove metadata from the packet data section before hashing.
-        av_packet_split_side_data(&packet);
-
         // On the first pass save the MD5 hash of each packet, on subsequent
         // passes ensure it matches.
         const std::string md5_hash = base::MD5String(base::StringPiece(
