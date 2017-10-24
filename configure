@@ -526,6 +526,7 @@ post_process_cmdline() {
       soft_enable deblock_13tap
       soft_enable frame_marker
       soft_enable kf_ctx
+      soft_enable striped_loop_restoration
     fi
 
     # Enable low-bitdepth pixel pipeline by default
@@ -554,6 +555,7 @@ post_process_cmdline() {
     enabled horzonly_frame_superres && enable_feature frame_superres
     enabled loopfilter_level && enable_feature parallel_deblocking
     enabled loopfilter_level && enable_feature ext_delta_q
+    enabled striped_loop_restoration && enable_feature loop_restoration
 
     if enabled rawbits && enabled ans; then
       log_echo "rawbits requires not ans, so disabling rawbits"
@@ -592,17 +594,6 @@ post_process_cmdline() {
     if enabled amvr; then
       log_echo "amvr requires hash_me"
       enable_feature hash_me
-    fi
-
-    if enabled striped_loop_restoration && ! enabled loop_restoration ; then
-      log_echo "striped_loop_restoration requires loop_restoration"
-      log_echo "enable loop_restoration"
-      enable_feature loop_restoration
-    fi
-    if enabled striped_loop_restoration && enabled frame_superres ; then
-      log_echo "striped_loop_restoration not compatible with frame_superres"
-      log_echo "disabling striped_loop_restoration"
-      disable_feature striped_loop_restoration
     fi
     if enabled lpf_sb; then
       log_echo "lpf_sb can't work with loopfilter_level yet."
