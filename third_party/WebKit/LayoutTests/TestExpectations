@@ -1151,10 +1151,10 @@ crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/chu
 # Part of a larger issue referenced in the bug. This specific issue will be fixed shortly.
 crbug.com/408159 accessibility/is-ignored-change-sends-notification.html [ Timeout ]
 
-crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.html [ Pass ]
-crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-sorting.html [ Pass ]
-crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-containment-sorting.html [ Pass ]
+crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Pass ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-containment-expansion-preserved-when-sorting.js [ Pass ]
+crbug.com/504706 [ Linux ] http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Pass ]
+crbug.com/667560 [ Linux ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-containment-sorting.js [ Pass ]
 
 # When drawing subpixel smoothed glyphs, CoreGraphics will fake bold the glyphs.
 # In this configuration, the pixel smoothed glyphs will be created from subpixel smoothed glyphs.
@@ -3539,8 +3539,8 @@ crbug.com/669329 virtual/threaded/http/tests/devtools/tracing/timeline-js/timeli
 crbug.com/667560 virtual/mojo-loading/http/tests/devtools/tracing/timeline-js/timeline-runtime-stats.html [ Pass Failure Crash ]
 
 # Tests timing out on WebKit Linux Trusty MSAN
-crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Timeout ]
-crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.html [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
+crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/profiler/heap-snapshot-inspect-dom-wrapper.js [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/console-timeline.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] virtual/mojo-loading/http/tests/devtools/tracing/console-timeline.html [ Pass Timeout ]
 crbug.com/760543 [ Linux Release ] http/tests/devtools/tracing/timeline-layout/timeline-layout-with-invalidations.html [ Pass Timeout ]
