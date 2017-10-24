@@ -414,18 +414,20 @@ void HTMLCanvasElement::SetNeedsCompositingUpdate() {
 
 void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   DCHECK(!dirty_rect_.IsEmpty());
+  LayoutBox* layout_box = GetLayoutBox();
   if (Is2d()) {
     FloatRect src_rect(0, 0, Size().Width(), Size().Height());
     dirty_rect_.Intersect(src_rect);
-    LayoutBox* lb = GetLayoutBox();
+
     FloatRect invalidation_rect;
-    if (lb) {
+    if (layout_box) {
+      FloatRect content_rect(layout_box->ContentBoxRect());
       FloatRect mapped_dirty_rect =
-          MapRect(dirty_rect_, src_rect, FloatRect(lb->ContentBoxRect()));
+          MapRect(dirty_rect_, src_rect, content_rect);
       if (context_->IsComposited()) {
         // Accelerated 2D canvases need the dirty rect to be expressed relative
         // to the content box, as opposed to the layout box.
-        mapped_dirty_rect.Move(-lb->ContentBoxOffset());
+        mapped_dirty_rect.MoveBy(-content_rect.Location());
       }
       invalidation_rect = mapped_dirty_rect;
     } else {
@@ -450,30 +452,29 @@ void HTMLCanvasElement::DoDeferredPaintInvalidation() {
   NotifyListenersCanvasChanged();
   did_notify_listeners_for_current_frame_ = true;
 
-  // Propagate the m_dirtyRect accumulated so far to the compositor
+  // Propagate the |dirty_rect_| accumulated so far to the compositor
   // before restarting with a blank dirty rect.
-  FloatRect src_rect(0, 0, Size().Width(), Size().Height());
-
-  LayoutBox* ro = GetLayoutBox();
   // Canvas content updates do not need to be propagated as
   // paint invalidations if the canvas is composited separately, since
   // the canvas contents are sent separately through a texture layer.
-  if (ro && (!context_ || !context_->IsComposited())) {
-    // If ro->contentBoxRect() is larger than srcRect the canvas's image is
+  if (layout_box && (!context_ || !context_->IsComposited())) {
+    // If the content box is larger than |src_rect|, the canvas's image is
     // being stretched, so we need to account for color bleeding caused by the
-    // interpollation filter.
-    if (ro->ContentBoxRect().Width() > src_rect.Width() ||
-        ro->ContentBoxRect().Height() > src_rect.Height()) {
+    // interpolation filter.
+    FloatRect src_rect(0, 0, Size().Width(), Size().Height());
+    FloatRect content_rect(layout_box->ContentBoxRect());
+    if (content_rect.Width() > src_rect.Width() ||
+        content_rect.Height() > src_rect.Height()) {
       dirty_rect_.Inflate(0.5);
     }
 
     dirty_rect_.Intersect(src_rect);
-    LayoutRect mapped_dirty_rect(EnclosingIntRect(
-        MapRect(dirty_rect_, src_rect, FloatRect(ro->ContentBoxRect()))));
-    // For querying PaintLayer::compositingState()
+    LayoutRect mapped_dirty_rect(
+        EnclosingIntRect(MapRect(dirty_rect_, src_rect, content_rect)));
+    // For querying PaintLayer::GetCompositingState()
     // FIXME: is this invalidation using the correct compositing state?
     DisableCompositingQueryAsserts disabler;
-    ro->InvalidatePaintRectangle(mapped_dirty_rect);
+    layout_box->InvalidatePaintRectangle(mapped_dirty_rect);
   }
   dirty_rect_ = FloatRect();
 
