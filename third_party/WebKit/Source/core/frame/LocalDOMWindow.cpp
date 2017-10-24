@@ -981,10 +981,7 @@ FloatSize LocalDOMWindow::GetViewportSize(
           ->UpdateStyleAndLayoutIgnorePendingStylesheets();
   }
 
-  return GetFrame()->IsMainFrame() &&
-                 !page->GetSettings().GetInertVisualViewport()
-             ? FloatSize(page->GetVisualViewport().VisibleRect().Size())
-             : FloatSize(view->VisibleContentRect(scrollbar_inclusion).Size());
+  return FloatSize(view->VisibleContentRect(scrollbar_inclusion).Size());
 }
 
 int LocalDOMWindow::innerHeight() const {
@@ -1039,9 +1036,6 @@ double LocalDOMWindow::scrollX() const {
   if (!GetFrame() || !GetFrame()->GetPage())
     return 0;
 
-  if (!GetFrame()->GetPage()->GetSettings().GetInertVisualViewport())
-    return visualViewport_->pageLeft();
-
   LocalFrameView* view = GetFrame()->View();
   if (!view)
     return 0;
@@ -1058,9 +1052,6 @@ double LocalDOMWindow::scrollX() const {
 double LocalDOMWindow::scrollY() const {
   if (!GetFrame() || !GetFrame()->GetPage())
     return 0;
-
-  if (!GetFrame()->GetPage()->GetSettings().GetInertVisualViewport())
-    return visualViewport_->pageTop();
 
   LocalFrameView* view = GetFrame()->View();
   if (!view)
@@ -1171,10 +1162,7 @@ void LocalDOMWindow::scrollBy(double x,
   x = ScrollableArea::NormalizeNonFiniteScroll(x);
   y = ScrollableArea::NormalizeNonFiniteScroll(y);
 
-  ScrollableArea* viewport = page->GetSettings().GetInertVisualViewport()
-                                 ? view->LayoutViewportScrollableArea()
-                                 : view->GetScrollableArea();
-
+  ScrollableArea* viewport = view->LayoutViewportScrollableArea();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   ScrollOffset scaled_delta(x * GetFrame()->PageZoomFactor(),
                             y * GetFrame()->PageZoomFactor());
@@ -1218,9 +1206,7 @@ void LocalDOMWindow::scrollTo(double x, double y) const {
 
   ScrollOffset layout_offset(x * GetFrame()->PageZoomFactor(),
                              y * GetFrame()->PageZoomFactor());
-  ScrollableArea* viewport = page->GetSettings().GetInertVisualViewport()
-                                 ? view->LayoutViewportScrollableArea()
-                                 : view->GetScrollableArea();
+  ScrollableArea* viewport = view->LayoutViewportScrollableArea();
   viewport->SetScrollOffset(layout_offset, kProgrammaticScroll,
                             kScrollBehaviorAuto);
 }
@@ -1247,10 +1233,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   double scaled_x = 0.0;
   double scaled_y = 0.0;
 
-  ScrollableArea* viewport = page->GetSettings().GetInertVisualViewport()
-                                 ? view->LayoutViewportScrollableArea()
-                                 : view->GetScrollableArea();
-
+  ScrollableArea* viewport = view->LayoutViewportScrollableArea();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   scaled_x = current_offset.Width();
   scaled_y = current_offset.Height();

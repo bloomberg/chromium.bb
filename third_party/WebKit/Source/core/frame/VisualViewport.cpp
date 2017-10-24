@@ -289,11 +289,6 @@ bool VisualViewport::DidSetScaleOrLocation(float scale,
     if (ScrollingCoordinator* coordinator = GetPage().GetScrollingCoordinator())
       coordinator->ScrollableAreaScrollLayerDidChange(this);
 
-    if (!GetPage().GetSettings().GetInertVisualViewport()) {
-      if (Document* document = MainFrame()->GetDocument())
-        document->EnqueueScrollEventForNode(document);
-    }
-
     EnqueueScrollEvent();
 
     MainFrame()->View()->DidChangeScrollOffset();

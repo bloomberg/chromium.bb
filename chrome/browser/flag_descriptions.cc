@@ -712,11 +712,6 @@ const char kImportantSitesInCbdDescription[] =
     "Include the option to whitelist important sites in the clear browsing "
     "data dialog.";
 
-const char kInertVisualViewportName[] = "Inert visual viewport.";
-const char kInertVisualViewportDescription[] =
-    "Experiment to have all APIs reflect the layout viewport. This will make "
-    "window.scroll properties relative to the layout viewport.";
-
 const char kInProductHelpDemoModeChoiceName[] = "In-Product Help Demo Mode";
 const char kInProductHelpDemoModeChoiceDescription[] =
     "Selects the In-Product Help demo mode.";
