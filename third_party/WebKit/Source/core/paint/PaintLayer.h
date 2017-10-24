@@ -583,9 +583,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       LayoutRect&);
 
   bool PaintsWithTransparency(GlobalPaintFlags global_paint_flags) const {
-    return IsTransparent() &&
-           ((global_paint_flags & kGlobalPaintFlattenCompositingLayers) ||
-            GetCompositingState() != kPaintsIntoOwnBacking);
+    return IsTransparent() && !PaintsIntoOwnBacking(global_paint_flags);
   }
 
   // Returns the ScrollingCoordinator associated with this layer, if
@@ -599,7 +597,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool CompositesWithOpacity() const;
 
   bool PaintsWithTransform(GlobalPaintFlags) const;
-  bool PaintsComposited(GlobalPaintFlags) const;
+  bool PaintsIntoOwnBacking(GlobalPaintFlags) const;
+  bool PaintsIntoOwnOrGroupedBacking(GlobalPaintFlags) const;
 
   bool SupportsSubsequenceCaching() const;
 
