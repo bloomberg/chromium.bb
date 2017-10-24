@@ -123,7 +123,7 @@ Optional<unsigned> NGOffsetMappingResult::StartOfNextNonCollapsedCharacter(
     unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
   if (!unit)
-    return {};
+    return WTF::nullopt;
 
   while (unit != units_.end() && unit->GetOwner() == node) {
     if (unit->DOMEnd() > offset &&
@@ -131,7 +131,7 @@ Optional<unsigned> NGOffsetMappingResult::StartOfNextNonCollapsedCharacter(
       return std::max(offset, unit->DOMStart());
     ++unit;
   }
-  return {};
+  return WTF::nullopt;
 }
 
 Optional<unsigned> NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
@@ -139,7 +139,7 @@ Optional<unsigned> NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
     unsigned offset) const {
   const NGOffsetMappingUnit* unit = GetMappingUnitForDOMOffset(node, offset);
   if (!unit)
-    return {};
+    return WTF::nullopt;
 
   while (unit->GetOwner() == node) {
     if (unit->DOMStart() < offset &&
@@ -149,7 +149,7 @@ Optional<unsigned> NGOffsetMappingResult::EndOfLastNonCollapsedCharacter(
       break;
     --unit;
   }
-  return {};
+  return WTF::nullopt;
 }
 
 bool NGOffsetMappingResult::IsBeforeNonCollapsedCharacter(
