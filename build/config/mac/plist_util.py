@@ -12,13 +12,17 @@ import tempfile
 import shlex
 
 
-# Xcode substitutes variables like ${PRODUCT_NAME} when compiling Info.plist.
-# It also supports supports modifiers like :identifier or :rfc1034identifier.
-# SUBST_RE matches a variable substitution pattern with an optional modifier,
-# while IDENT_RE matches all characters that are not valid in an "identifier"
-# value (used when applying the modifier).
-SUBST_RE = re.compile(r'\$\{(?P<id>[^}]*?)(?P<modifier>:[^}]*)?\}')
-IDENT_RE = re.compile(r'[_/\s]')
+# Xcode substitutes variables like ${PRODUCT_NAME} or $(PRODUCT_NAME) when
+# compiling Info.plist. It also supports supports modifiers like :identifier
+# or :rfc1034identifier. SUBSTITUTION_REGEXP_LIST is a list of regular
+# expressions matching a variable substitution pattern with an optional
+# modifier, while INVALID_CHARACTER_REGEXP matches all characters that are
+# not valid in an "identifier" value (used when applying the modifier).
+INVALID_CHARACTER_REGEXP = re.compile(r'[_/\s]')
+SUBSTITUTION_REGEXP_LIST = (
+    re.compile(r'\$\{(?P<id>[^}]*?)(?P<modifier>:[^}]*)?\}'),
+    re.compile(r'\$\((?P<id>[^}]*?)(?P<modifier>:[^}]*)?\)'),
+)
 
 
 class SubstitutionError(Exception):
@@ -52,12 +56,14 @@ def InterpolateString(value, substitutions):
     # "rfc1034identifier" replaces them by "-" to make valid URI too).
     modifier = match.group('modifier')
     if modifier == ':identifier':
-      return IDENT_RE.sub('_', substitutions[variable])
+      return INVALID_CHARACTER_REGEXP.sub('_', substitutions[variable])
     elif modifier == ':rfc1034identifier':
-      return IDENT_RE.sub('-', substitutions[variable])
+      return INVALID_CHARACTER_REGEXP.sub('-', substitutions[variable])
     else:
       return substitutions[variable]
-  return SUBST_RE.sub(repl, value)
+  for substitution_regexp in SUBSTITUTION_REGEXP_LIST:
+    value = substitution_regexp.sub(repl, value)
+  return value
 
 
 def Interpolate(value, substitutions):
