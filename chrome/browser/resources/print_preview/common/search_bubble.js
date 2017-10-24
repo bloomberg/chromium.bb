@@ -11,7 +11,7 @@ cr.define('print_preview', function() {
    * @extends {HTMLDivElement}
    */
   function SearchBubble(text) {
-    var el = cr.doc.createElement('div');
+    const el = cr.doc.createElement('div');
     SearchBubble.decorate(el);
     el.content = text;
     return el;
@@ -49,7 +49,7 @@ cr.define('print_preview', function() {
 
     /** Attach the bubble to the element. */
     attachTo: function(element) {
-      var parent = element.parentElement;
+      const parent = element.parentElement;
       if (!parent)
         return;
       if (parent.tagName == 'TD') {
@@ -72,8 +72,8 @@ cr.define('print_preview', function() {
     dispose: function() {
       clearInterval(this.intervalId);
 
-      var child = this.wrapper || this;
-      var parent = child.parentNode;
+      const child = this.wrapper || this;
+      const parent = child.parentNode;
       if (parent)
         parent.removeChild(child);
     },
@@ -84,16 +84,16 @@ cr.define('print_preview', function() {
      */
     updatePosition: function() {
       // This bubble is 'owned' by the next sibling.
-      var owner = (this.wrapper || this).nextSibling;
+      const owner = (this.wrapper || this).nextSibling;
 
       // If there isn't an offset parent, we have nothing to do.
       if (!owner.offsetParent)
         return;
 
       // Position the bubble below the location of the owner.
-      var left =
+      const left =
           owner.offsetLeft + owner.offsetWidth / 2 - this.offsetWidth / 2;
-      var top = owner.offsetTop + owner.offsetHeight;
+      const top = owner.offsetTop + owner.offsetHeight;
 
       // Update the position in the CSS.  Cache the last values for
       // best performance.
