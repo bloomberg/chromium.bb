@@ -106,6 +106,12 @@ void DummyModulator::ResolveDynamically(const String&,
   NOTREACHED();
 }
 
+ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
+    ScriptModule) const {
+  NOTREACHED();
+  return ModuleImportMeta(String());
+}
+
 ScriptModule DummyModulator::CompileModule(const String& script,
                                            const String& url_str,
                                            AccessControlStatus,

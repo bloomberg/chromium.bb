@@ -575,5 +575,10 @@
     "prefix": "single-renderer-process",
     "base": "external/wpt/longtask-timing/shared-renderer",
     "args": ["--renderer-process-limit=1"]
+  },
+  {
+    "prefix": "import-meta-url",
+    "base": "external/wpt/html/semantics/scripting-1/the-script-element/module/import-meta",
+    "args": ["--enable-features=ModuleScriptsImportMetaUrl"]
   }
 ]
