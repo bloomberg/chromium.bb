@@ -451,6 +451,10 @@ class BasePage {
     swept_ = false;
   }
 
+  void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
+
+  bool IsIncrementalMarking() const { return incremental_marking_; }
+
  private:
   PageMemory* storage_;
   BaseArena* arena_;
@@ -459,6 +463,8 @@ class BasePage {
   // Track the sweeping state of a page. Set to false at the start of a sweep,
   // true  upon completion of lazy sweeping.
   bool swept_;
+  // Track whether incremental marking is currently running.
+  bool incremental_marking_;
   friend class BaseArena;
 };
 
@@ -750,6 +756,9 @@ class PLATFORM_EXPORT BaseArena {
 
   bool WillObjectBeLazilySwept(BasePage*, void*) const;
 
+  void EnableIncrementalMarkingBarrier();
+  void DisableIncrementalMarkingBarrier();
+
  protected:
   BasePage* first_page_;
   BasePage* first_unswept_page_;
@@ -850,7 +859,7 @@ class LargeObjectArena final : public BaseArena {
 //
 // FIXME: Remove PLATFORM_EXPORT once we get a proper public interface to our
 // typed arenas. This is only exported to enable tests in HeapTest.cpp.
-PLATFORM_EXPORT inline BasePage* PageFromObject(const void* object) {
+PLATFORM_EXPORT ALWAYS_INLINE BasePage* PageFromObject(const void* object) {
   Address address = reinterpret_cast<Address>(const_cast<void*>(object));
   BasePage* page = reinterpret_cast<BasePage*>(BlinkPageAddress(address) +
                                                kBlinkGuardPageSize);

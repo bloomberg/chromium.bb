@@ -333,6 +333,9 @@ class PLATFORM_EXPORT ThreadState {
     wrapper_tracing_in_progress_ = value;
   }
 
+  bool IsIncrementalMarking() const { return incremental_marking_; }
+  void SetIncrementalMarking(bool value) { incremental_marking_ = value; }
+
   class MainThreadGCForbiddenScope final {
     STACK_ALLOCATED();
 
@@ -633,6 +636,7 @@ class PLATFORM_EXPORT ThreadState {
   void (*invalidate_dead_objects_in_wrappers_marking_deque_)(v8::Isolate*);
   void (*perform_cleanup_)(v8::Isolate*);
   bool wrapper_tracing_in_progress_;
+  bool incremental_marking_;
 
 #if defined(ADDRESS_SANITIZER)
   void* asan_fake_stack_;
